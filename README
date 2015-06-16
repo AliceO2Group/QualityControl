@@ -70,7 +70,7 @@ in a proper non-minimalistic way.
     and program_options. 
     
     The former is to ease the development of unit tests and the latter is 
-    to help getting options for your binaries. See apps/hellorunner/main.cpp 
+    to help getting options for your binaries. See apps/hellorunner/main.cxx 
     for an example. 
     
 6. SVN and Git

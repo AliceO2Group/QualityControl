@@ -1,5 +1,5 @@
 ///
-/// @file    Version.cpp
+/// @file    Version.cxx
 /// @brief   Version Information
 /// @author  Barthelemy von Haller
 ///

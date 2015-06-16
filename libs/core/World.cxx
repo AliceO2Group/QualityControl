@@ -1,5 +1,5 @@
 ///
-/// @file    World.cpp
+/// @file    World.cxx
 /// @author  Barthelemy von Haller
 ///
 

@@ -1,5 +1,5 @@
 ///
-/// @file    TestHello.cpp
+/// @file    TestHello.cxx
 /// @author  Barthelemy von Haller
 ///
 

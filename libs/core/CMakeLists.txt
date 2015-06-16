@@ -10,8 +10,8 @@ set(HEADERS
 )
 
 set(SOURCES
-  Version.cpp
-  World.cpp
+  Version.cxx
+  World.cxx
 )
 
 # Define two variables in order not to repeat ourselves.
