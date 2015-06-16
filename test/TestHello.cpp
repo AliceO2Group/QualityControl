@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(arithmetic_test)
 
 BOOST_AUTO_TEST_CASE(hello_test)
 {
-  AliceO2::Hello::World world;
+  AliceO2::DataSampling::World world;
   const int ret = world.returnsN(3);
   BOOST_CHECK_EQUAL(ret, 3);
 }

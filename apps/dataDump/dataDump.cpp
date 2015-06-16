@@ -3,7 +3,7 @@
 /// @author  Barthelemy von Haller
 ///
 
-#include <hello/Version.h>
+#include <datasampling/Version.h>
 #include <boost/program_options.hpp>
 #include <iostream>
 #include "../../libs/datasampling/World.h"
@@ -26,17 +26,17 @@ int main(int argc, char* argv[])
   }
   // version
   if (vm.count("version")) {
-    std::cout << "HelloRunner version " << AliceO2::Hello::Version::getString() << std::endl;
+    std::cout << "HelloRunner version " << AliceO2::DataSampling::Version::getString() << std::endl;
     return EXIT_SUCCESS;
   }
   // rev
   if (vm.count("rev")) {
-    std::cout << "SVN revision : " << AliceO2::Hello::Version::getRevision() << std::endl;
+    std::cout << "SVN revision : " << AliceO2::DataSampling::Version::getRevision() << std::endl;
     return EXIT_SUCCESS;
   }
 
   // Actual "work"
-  AliceO2::Hello::World hello;
+  AliceO2::DataSampling::World hello;
   hello.greet();
 
   return EXIT_SUCCESS;

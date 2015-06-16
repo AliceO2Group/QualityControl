@@ -7,7 +7,7 @@
 #include <iostream>
 
 namespace AliceO2 {
-namespace Hello {
+namespace DataSampling {
 
 void World::greet()
 {

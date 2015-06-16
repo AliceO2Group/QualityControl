@@ -4,11 +4,11 @@
 /// @author  Barthelemy von Haller
 ///
 
-#include <hello/Version.h>
+#include <datasampling/Version.h>
 #include <sstream>
 
 namespace AliceO2 {
-namespace Hello {
+namespace DataSampling {
 
 int Version::getMajor()
 {
