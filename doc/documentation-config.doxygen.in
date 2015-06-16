@@ -576,7 +576,6 @@ WARN_LOGFILE           =
 
 INPUT                  = @CMAKE_SOURCE_DIR@/libs \
                          @CMAKE_BINARY_DIR@/libs \
-                         @CMAKE_SOURCE_DIR@/apps \
                          @CMAKE_SOURCE_DIR@/doc
 
 # This tag can be used to specify the character encoding of the source files

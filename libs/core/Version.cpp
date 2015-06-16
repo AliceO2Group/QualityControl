@@ -4,11 +4,12 @@
 /// @author  Barthelemy von Haller
 ///
 
-#include <datasampling/Version.h>
+#include <core/Version.h>
 #include <sstream>
 
 namespace AliceO2 {
-namespace DataSampling {
+namespace QC {
+namespace Core {
 
 int Version::getMajor()
 {
@@ -42,6 +43,7 @@ std::string Version::getRevString()
   std::ostringstream version;
   version << getString() << '.' << HELLO_VCS_REVISION;
   return version.str();
+}
 }
 }
 }

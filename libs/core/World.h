@@ -3,14 +3,15 @@
 /// @author  Barthelemy von Haller
 ///
 
-#ifndef ALICEO2_HELLO_WORLD_H
-#define ALICEO2_HELLO_WORLD_H
+#ifndef ALICEO2_QC_CORE_WORLD_H
+#define ALICEO2_QC_CORE_WORLD_H
 
 /// @brief    Here you put a short description of the namespace
 /// Extended documentation for this namespace
 /// @author  	Barthelemy von Haller
 namespace AliceO2 {
-namespace DataSampling {
+namespace QC {
+namespace Core {
 
 /// @brief   Here you put a short description of the class
 /// Extended documentation for this class.
@@ -31,7 +32,8 @@ public:
   int returnsN(int n);
 };
 
-} // namespace Hello
+} // namespace Core
+} // namespace QC
 } // namespace AliceO2
 
-#endif // ALICEO2_HELLO_WORLD_H
+#endif // ALICEO2_DATASAMPLING_WORLD_H

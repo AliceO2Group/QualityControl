@@ -3,12 +3,13 @@
 /// @author  Barthelemy von Haller
 ///
 
-#include "../datasampling/World.h"
+#include "../core/World.h"
+
 #include <iostream>
 
 namespace AliceO2 {
-namespace DataSampling {
-
+namespace QC {
+namespace Core {
 void World::greet()
 {
   std::cout << "Hello world!!" << std::endl;
@@ -22,5 +23,6 @@ int World::returnsN(int n)
   return n;
 }
 
-} // namespace Hello
+} // namespace Core
+} // namespace QC
 } // namespace AliceO2

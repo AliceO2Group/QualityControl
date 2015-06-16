@@ -1,3 +1,3 @@
 # @author  Barthélémy von Haller
 
-add_subdirectory(datasampling)
+add_subdirectory(core)

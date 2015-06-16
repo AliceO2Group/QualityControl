@@ -4,13 +4,14 @@
 /// @author  bvonhall
 ///
 
-#ifndef ALICEO2_HELLO_VERSION_H
-#define ALICEO2_HELLO_VERSION_H
+#ifndef ALICEO2_QC_CORE_VERSION_H
+#define ALICEO2_QC_CORE_VERSION_H
 
 #include <string>
 
 namespace AliceO2 {
-namespace DataSampling {
+namespace QC {
+namespace Core {
 /// The current major version.
 #define HELLO_VERSION_MAJOR @VERSION_MAJOR@
 
@@ -70,5 +71,6 @@ public:
 };
 }
 }
+}
 
-#endif // ALICEO2_HELLO_VERSION_H
+#endif // ALICEO2_QC_CORE_VERSION_H
