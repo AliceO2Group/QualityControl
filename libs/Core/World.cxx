@@ -3,12 +3,12 @@
 /// @author  Barthelemy von Haller
 ///
 
-#include "../core/World.h"
+#include "../Core/World.h"
 
 #include <iostream>
 
 namespace AliceO2 {
-namespace QC {
+namespace QualityControl {
 namespace Core {
 void World::greet()
 {

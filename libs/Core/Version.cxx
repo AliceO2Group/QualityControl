@@ -4,11 +4,11 @@
 /// @author  Barthelemy von Haller
 ///
 
-#include <core/Version.h>
+#include <Core/Version.h>
 #include <sstream>
 
 namespace AliceO2 {
-namespace QC {
+namespace QualityControl {
 namespace Core {
 
 int Version::getMajor()

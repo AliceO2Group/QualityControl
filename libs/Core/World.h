@@ -10,7 +10,7 @@
 /// Extended documentation for this namespace
 /// @author  	Barthelemy von Haller
 namespace AliceO2 {
-namespace QC {
+namespace QualityControl {
 namespace Core {
 
 /// @brief   Here you put a short description of the class

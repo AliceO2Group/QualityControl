@@ -10,7 +10,7 @@
 #include <string>
 
 namespace AliceO2 {
-namespace QC {
+namespace QualityControl {
 namespace Core {
 /// The current major version.
 #define HELLO_VERSION_MAJOR @VERSION_MAJOR@

@@ -1,3 +1,3 @@
 # @author  Barthélémy von Haller
 
-add_subdirectory(core)
+add_subdirectory(Core)
