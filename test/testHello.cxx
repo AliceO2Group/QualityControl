@@ -1,6 +1,6 @@
 ///
-/// @file    TestHello.cxx
-/// @author  Barthelemy von Haller
+/// \file    TestHello.cxx
+/// \author  Barthelemy von Haller
 ///
 
 #include "../libs/Core/World.h"

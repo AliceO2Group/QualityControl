@@ -1,7 +1,7 @@
 ///
-/// @file    Version.h
-/// @brief   Report the version for this package.
-/// @author  bvonhall
+/// \file    Version.h
+/// \brief   Report the version for this package.
+/// \author  bvonhall
 ///
 
 #ifndef ALICEO2_QC_CORE_VERSION_H
@@ -51,22 +51,22 @@ namespace Core {
 /// Information about the current Hello version.
 class Version {
 public:
-  /// @return the current major version of Hello.
+  /// \return the current major version of Hello.
   static int getMajor();
 
-  /// @return the current minor version of Hello.
+  /// \return the current minor version of Hello.
   static int getMinor();
 
-  /// @return the current patch level of Hello.
+  /// \return the current patch level of Hello.
   static int getPatch();
 
-  /// @return the current Hello version (MM.mm.pp).
+  /// \return the current Hello version (MM.mm.pp).
   static std::string getString();
 
-  /// @return the SVN revision.
+  /// \return the SVN revision.
   static std::string getRevision();
 
-  /// @return the current Hello version plus the SVN revision (MM.mm.pp.rev).
+  /// \return the current Hello version plus the SVN revision (MM.mm.pp.rev).
   static std::string getRevString();
 };
 }
