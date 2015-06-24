@@ -22,7 +22,7 @@ namespace Core {
 #define HELLO_VERSION_PATCH @VERSION_PATCH@
 
 /// The current svn revision.
-#define HELLO_VCS_REVISION @VCS_REVISION@
+#define HELLO_VCS_REVISION "@VCS_REVISION@"
 
 /// True if the current version is newer than the given one.
 #define HELLO_VERSION_GT(MAJOR, MINOR, PATCH) \
@@ -64,7 +64,7 @@ public:
   static std::string getString();
 
   /// @return the SVN revision.
-  static int getRevision();
+  static std::string getRevision();
 
   /// @return the current Hello version plus the SVN revision (MM.mm.pp.rev).
   static std::string getRevString();

@@ -32,20 +32,29 @@ ELSE(Subversion_FOUND)
     SET(VCS_REVISION "-1")
 ENDIF(Subversion_FOUND) 
 
-## Git (and its revision)
-#find_package(Git)
-## GetGitRevisionDescription module to retreive branch and revision information from Git
-## Starting with Git 1.9 the module will be part of official cMake distribution, until then it has to be
-## part of the application
-## The Git module will trigger a reconfiguration for each pull that will bring a new revision on the local repository
-#set (VCS_REVISION "-1")
-#if(GIT_FOUND)
-#    include(GetGitRevisionDescription)
-#    get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-#    message(STATUS "GIT branch ${GIT_REFSPEC}")
-#    message(STATUS "GIT revision ${GIT_SHA1}")
-#    set (VCS_REVISION ${GIT_SHA1})
-#endif()
+# Git (and its revision)
+find_package(Git)
+# GetGitRevisionDescription module to retreive branch and revision information from Git
+# Starting with Git 1.9 the module will be part of official cMake distribution, until then it has to be
+# part of the application
+# The Git module will trigger a reconfiguration for each pull that will bring a new revision on the local repository
+set (VCS_REVISION "-1")
+if(GIT_FOUND)
+    include(GetGitRevisionDescription)
+    get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+    message(STATUS "GIT branch ${GIT_REFSPEC}")
+    message(STATUS "GIT revision ${GIT_SHA1}")
+    set (VCS_REVISION ${GIT_SHA1})
+endif()
+
+# C++11 needed
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG(-std=c++11 COMPILER_SUPPORTS_CXX11)
+if(COMPILER_SUPPORTS_CXX11)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+else()
+  message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
 
 # This line finds the boost lib and headers. 
 set(Boost_NO_BOOST_CMAKE ON) #  Don't do a find_package in config mode before searching for a regular boost install.
