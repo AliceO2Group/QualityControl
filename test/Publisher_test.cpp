@@ -1,15 +1,19 @@
 ///
-/// \file    TestHello.cxx
-/// \author  Barthelemy von Haller
+/// \file   Publisher_test.cpp
+/// \author Barthelemy von Haller
 ///
 
-#include "../libs/Core/World.h"
+#include "../libs/Publisher/Publisher.h"
 
 #define BOOST_TEST_MODULE hello test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <assert.h>
+
+namespace AliceO2 {
+namespace QualityControl {
+namespace Publisher {
 
 BOOST_AUTO_TEST_CASE(arithmetic_test)
 {
@@ -22,7 +26,9 @@ BOOST_AUTO_TEST_CASE(arithmetic_test)
 
 BOOST_AUTO_TEST_CASE(hello_test)
 {
-  AliceO2::QualityControl::Core::World world;
-  const int ret = world.returnsN(3);
-  BOOST_CHECK_EQUAL(ret, 3);
 }
+
+
+} /* namespace Publisher */
+} /* namespace QualityControl */
+} /* namespace AliceO2 */
