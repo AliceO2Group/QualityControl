@@ -8,12 +8,14 @@ set(HEADERS
   "${CMAKE_CURRENT_BINARY_DIR}/Version.h"
   QCTask.h
   MonitorObject.h
+  Quality.h
 )
 
 set(SOURCES
   Version.cxx
   QCTask.cxx
   MonitorObject.cxx
+  Quality.cxx
 )
 
 # Define two variables in order not to repeat ourselves.

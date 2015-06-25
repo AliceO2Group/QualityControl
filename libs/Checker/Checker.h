@@ -10,10 +10,15 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Checker {
 
+/// \brief   Here you put a short description of the class
+///
+/// \author   Barthelemy von Haller
 class Checker
 {
   public:
+    /// Default constructor
     Checker();
+    /// Destructor
     virtual ~Checker();
 };
 

@@ -10,10 +10,15 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
+/// \brief   Here you put a short description of the class
+///
+/// \author   Barthelemy von Haller
 class MonitorObject
 {
   public:
+    /// Default constructor
     MonitorObject();
+    /// Destructor
     virtual ~MonitorObject();
 };
 

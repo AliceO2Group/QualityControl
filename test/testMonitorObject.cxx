@@ -3,9 +3,9 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../libs/Core/MonitorObject.h"
+#include "Core/MonitorObject.h"
 
-#define BOOST_TEST_MODULE hello test
+#define BOOST_TEST_MODULE MO test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
@@ -22,11 +22,9 @@ BOOST_AUTO_TEST_CASE(arithmetic_test)
   BOOST_CHECK_NE(a, b);
   b = a;
   BOOST_CHECK_EQUAL(a, b);
+  AliceO2::QualityControl::Core::MonitorObject obj;
 }
 
-BOOST_AUTO_TEST_CASE(hello_test)
-{
-}
 
 
 } /* namespace Publisher */
