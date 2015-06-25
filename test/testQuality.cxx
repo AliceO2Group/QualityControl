@@ -22,9 +22,17 @@ BOOST_AUTO_TEST_CASE(hello_test)
 {
   Quality asdf(123, "asdf");
   Quality myQuality = Quality::Bad;
-//  cout << "Quality is : " << myQuality.getLevel() << " (" << myQuality.getName() << ")" << endl;
-//  BOOST_CHECK_EQUAL(myQuality, Quality::Bad);
-//  BOOST_CHECK_EQUAL(myQuality.getLevel(), 3);
+  BOOST_CHECK_EQUAL(myQuality.getLevel(), 3);
+  BOOST_CHECK_EQUAL(myQuality.getName(), "Bad");
+   myQuality = Quality::Good;
+  BOOST_CHECK_EQUAL(myQuality.getLevel(), 1);
+  BOOST_CHECK_EQUAL(myQuality.getName(), "Good");
+   myQuality = Quality::Medium;
+  BOOST_CHECK_EQUAL(myQuality.getLevel(), 2);
+  BOOST_CHECK_EQUAL(myQuality.getName(), "Medium");
+   myQuality = Quality::Null;
+  BOOST_CHECK_EQUAL(myQuality.getLevel(), 0);
+  BOOST_CHECK_EQUAL(myQuality.getName(), "Null");
 }
 
 

@@ -9,7 +9,7 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-const Quality Quality::Null(0, "No Quality");
+const Quality Quality::Null(0, "Null");
 const Quality Quality::Good(1, "Good");
 const Quality Quality::Medium(2, "Medium");
 const Quality Quality::Bad(3, "Bad");

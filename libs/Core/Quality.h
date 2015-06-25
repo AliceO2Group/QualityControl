@@ -26,10 +26,22 @@ class Quality
     static const Quality Medium;
     static const Quality Bad;
 
+    friend bool operator==(const Quality& lhs, const Quality& rhs);
+    friend bool operator!=(const Quality& lhs, const Quality& rhs);
+
   private:
     unsigned int mLevel; /// 0 is no quality, 1 is best quality, then it only goes downhill...
     std::string mName;
 };
+
+bool operator==(const Quality& lhs, const Quality& rhs)
+{
+  return (lhs.getName() == rhs.getName() && lhs.getLevel() == rhs.getLevel());
+}
+bool operator!=(const Quality& lhs, const Quality& rhs)
+{
+  return !operator==(lhs, rhs);
+}
 
 } /* namespace Core */
 } /* namespace QualityControl */
