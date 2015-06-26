@@ -47,6 +47,8 @@ if(GIT_FOUND)
     set (VCS_REVISION ${GIT_SHA1})
 endif()
 
+find_package(InfoLogger REQUIRED)
+
 # C++11 needed
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG(-std=c++11 COMPILER_SUPPORTS_CXX11)
@@ -72,6 +74,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/libs
     ${CMAKE_BINARY_DIR}/libs   # in general shouldn't be needed, but here we generate Version.h there
     ${Boost_INCLUDE_DIRS}
+    ${InfoLogger_INCLUDE_DIR}
 )
 
 enable_testing() # needed on top-level CMakeLists.txt

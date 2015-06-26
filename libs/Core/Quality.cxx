@@ -4,6 +4,7 @@
 ///
 
 #include "Quality.h"
+#include "InfoLogger.hxx"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -17,7 +18,9 @@ const Quality Quality::Bad(3, "Bad");
 Quality::Quality(unsigned int level, std::string name)
     : mLevel(level), mName(name)
 {
-
+  InfoLogger theLog;
+  theLog.log("infoLogger message test");
+  theLog << "another test message " << InfoLogger::endm;
 }
 
 Quality::~Quality()

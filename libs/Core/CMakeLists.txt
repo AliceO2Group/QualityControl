@@ -25,6 +25,9 @@ set(INCLUDE include/${LIBRARY})
 # Define the library
 add_library(${LIBRARY} SHARED ${HEADERS} ${SOURCES})
 
+# Links the target(s) against libraries
+target_link_libraries(${LIBRARY} ${InfoLogger_LIBRARIES})
+
 # Set the build version. It will be used in the name of the lib, with corresponding
 # symlinks created. SOVERSION could also be specified for api version. 
 set_target_properties(${LIBRARY} PROPERTIES
