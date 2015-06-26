@@ -73,6 +73,7 @@ include_directories(
 
 enable_testing() # needed on top-level CMakeLists.txt
 add_subdirectory(libs)
+add_subdirectory(apps)
 add_subdirectory(doc)
 add_subdirectory(test)
 

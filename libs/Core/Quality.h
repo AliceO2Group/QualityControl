@@ -15,7 +15,9 @@ namespace Core {
 class Quality
 {
   public:
+    /// Default constructor
     Quality(unsigned int level, std::string name);
+    /// Destructor
     virtual ~Quality();
 
     unsigned int getLevel() const;

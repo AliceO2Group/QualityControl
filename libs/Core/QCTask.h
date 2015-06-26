@@ -19,9 +19,9 @@ class Activity
 {
   public:
     /// Default constructor
-    Activity();
+    Activity() {}
     /// Destructor
-    virtual ~Activity();
+    virtual ~Activity() {}
 };
 
 /// \brief   Here you put a short description of the class

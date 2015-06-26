@@ -22,5 +22,5 @@ if(BUILD_DOCS AND DOXYGEN_FOUND)
 
   make_directory(${CMAKE_CURRENT_BINARY_DIR}/html) # needed for install:
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html
-          DESTINATION share/hello-${VERSION_MAJOR} COMPONENT docs)
+          DESTINATION share/QualityControl-${VERSION_MAJOR} COMPONENT docs)
 endif(BUILD_DOCS AND DOXYGEN_FOUND)

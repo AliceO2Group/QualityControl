@@ -4,7 +4,7 @@
 # Info: http://www.itk.org/Wiki/CMake:Component_Install_With_CPack
 # _____________________________________________________________________________
 
-set(CPACK_PACKAGE_NAME "Hello${VERSION_MAJOR}")
+set(CPACK_PACKAGE_NAME "QualityControl${VERSION_MAJOR}")
 
 if(APPLE)
   set(CPACK_PACKAGE_VENDOR "ALICE") # PackageMaker doesn't like http://
@@ -72,7 +72,6 @@ set(CPACK_COMPONENT_DOCS_DESCRIPTION "User Documentation")
 
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_CONTACT}")
 SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.1-6), libboost-test-dev")
-SET(CPACK_DEBIAN_PACKAGE_CONFLICTS "Hello0-apps")
 
 # RPM specific configuration (minimum)
 # _____________________________________________________________________________
