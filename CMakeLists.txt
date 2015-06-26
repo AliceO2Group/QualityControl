@@ -58,7 +58,10 @@ endif()
 
 # This line finds the boost lib and headers. 
 set(Boost_NO_BOOST_CMAKE ON) #  Don't do a find_package in config mode before searching for a regular boost install.
-find_package(Boost COMPONENTS unit_test_framework program_options REQUIRED)
+# TODO Don't hard code this...
+set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
+set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)
+find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options)
 
 # This sets the include directory for the reference project. This is
 # the -I flag in gcc. All the includes should be in this variable To
