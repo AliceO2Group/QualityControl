@@ -9,6 +9,7 @@ set(HEADERS
   QCTask.h
   MonitorObject.h
   Quality.h
+  BasicTask.h
   Exceptions.h
 )
 
@@ -17,6 +18,7 @@ set(SOURCES
   QCTask.cxx
   MonitorObject.cxx
   Quality.cxx
+  BasicTask.cxx
 )
 
 # Define two variables in order not to repeat ourselves.
@@ -24,7 +26,7 @@ set(LIBRARY QCCore)
 set(INCLUDE include/${LIBRARY})
 
 # Define the library
-add_library(${LIBRARY} SHARED ${HEADERS} ${SOURCES})
+add_library(${LIBRARY} SHARED ${HEADERS} ${SOURCES}  )
 
 # Links the target(s) against libraries
 target_link_libraries(${LIBRARY} ${InfoLogger_LIBRARIES})
