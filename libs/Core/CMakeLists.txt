@@ -9,6 +9,7 @@ set(HEADERS
   QCTask.h
   MonitorObject.h
   Quality.h
+  Exceptions.h
 )
 
 set(SOURCES

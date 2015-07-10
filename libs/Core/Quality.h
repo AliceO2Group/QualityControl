@@ -7,6 +7,7 @@
 #define QUALITYCONTROL_LIBS_CORE_QUALITY_H_
 
 #include <string>
+#include <ostream>
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -28,22 +29,24 @@ class Quality
     static const Quality Medium;
     static const Quality Bad;
 
-    friend bool operator==(const Quality& lhs, const Quality& rhs);
-    friend bool operator!=(const Quality& lhs, const Quality& rhs);
+    friend bool operator==(const Quality& lhs, const Quality& rhs)
+    {
+      return (lhs.getName() == rhs.getName() && lhs.getLevel() == rhs.getLevel());
+    }
+    friend bool operator!=(const Quality& lhs, const Quality& rhs)
+    {
+      return !operator==(lhs, rhs);
+    }
+    friend std::ostream& operator<<(std::ostream &out, const Quality& q)     //output
+    {
+      out << "Quality: " << q.getName() << " (level " << q.getLevel() << ")\n";
+      return out;
+    }
 
   private:
     unsigned int mLevel; /// 0 is no quality, 1 is best quality, then it only goes downhill...
     std::string mName;
 };
-
-bool operator==(const Quality& lhs, const Quality& rhs)
-{
-  return (lhs.getName() == rhs.getName() && lhs.getLevel() == rhs.getLevel());
-}
-bool operator!=(const Quality& lhs, const Quality& rhs)
-{
-  return !operator==(lhs, rhs);
-}
 
 } /* namespace Core */
 } /* namespace QualityControl */

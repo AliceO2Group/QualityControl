@@ -33,6 +33,8 @@ BOOST_AUTO_TEST_CASE(quality_test)
   myQuality = Quality::Null;
   BOOST_CHECK_EQUAL(myQuality.getLevel(), 0);
   BOOST_CHECK_EQUAL(myQuality.getName(), "Null");
+
+  cout << "test quality output : " << myQuality << endl;
 }
 
 } /* namespace Publisher */

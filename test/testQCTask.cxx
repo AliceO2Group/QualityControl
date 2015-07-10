@@ -8,10 +8,12 @@
 #define BOOST_TEST_MODULE QC test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
+
 #include <boost/test/unit_test.hpp>
 #include <assert.h>
 #include <iostream>
 #include <boost/test/output_test_stream.hpp>
+
 using boost::test_tools::output_test_stream;
 
 using namespace AliceO2::QualityControl;
@@ -23,13 +25,14 @@ namespace QualityControl {
 using namespace Core;
 
 namespace Test {
-class TestTask: public QCTask
+class TestTask : public QCTask
 {
   public:
     TestTask()
     {
-test = 0;
+      test = 0;
     }
+
     virtual ~TestTask()
     {
 
@@ -39,33 +42,40 @@ test = 0;
     virtual void initialize()
     {
       cout << "initialize" << endl;
-      test= 1;
+      test = 1;
     }
+
     virtual void startOfActivity(Activity &activity)
     {
       cout << "startOfActivity" << endl;
       test = 2;
     }
+
     virtual void startOfCycle()
     {
       cout << "startOfCycle" << endl;
     }
+
     virtual void monitorDataBlock(DataBlock &block)
     {
       cout << "monitorDataBlock" << endl;
     }
+
     virtual void endOfCycle()
     {
       cout << "endOfCycle" << endl;
     }
+
     virtual void endOfActivity(Activity &activity)
     {
       cout << "endOfActivity" << endl;
     }
+
     virtual void Reset()
     {
       cout << "Reset" << endl;
     }
+
     int test;
 };
 

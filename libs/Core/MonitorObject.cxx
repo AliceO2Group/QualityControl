@@ -10,14 +10,18 @@ namespace QualityControl {
 namespace Core {
 
 MonitorObject::MonitorObject()
+  : mName(""), mObject(nullptr), mQuality(Quality::Null)
 {
-  // TODO Auto-generated constructor stub
-
 }
 
 MonitorObject::~MonitorObject()
 {
-  // TODO Auto-generated destructor stub
+}
+
+MonitorObject::MonitorObject(const std::string &name, void *object)
+  : mName(name), mObject(object), mQuality(Quality::Null)
+{
+
 }
 
 } /* namespace Core */

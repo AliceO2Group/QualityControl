@@ -6,6 +6,8 @@
 #include "Quality.h"
 #include "InfoLogger.hxx"
 
+using namespace AliceO2::InfoLogger;
+
 namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
@@ -18,9 +20,9 @@ const Quality Quality::Bad(3, "Bad");
 Quality::Quality(unsigned int level, std::string name)
     : mLevel(level), mName(name)
 {
-  InfoLogger theLog;
+  AliceO2::InfoLogger::InfoLogger theLog;
   theLog.log("infoLogger message test");
-  theLog << "another test message " << InfoLogger::endm;
+  theLog << "another test message " << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 Quality::~Quality()

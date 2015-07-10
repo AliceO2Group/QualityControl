@@ -15,17 +15,23 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-BOOST_AUTO_TEST_CASE(arithmetic_test)
+BOOST_AUTO_TEST_CASE(mo)
 {
-  int a = 1;
-  int b = 2;
-  BOOST_CHECK_NE(a, b);
-  b = a;
-  BOOST_CHECK_EQUAL(a, b);
   AliceO2::QualityControl::Core::MonitorObject obj;
+  BOOST_CHECK_EQUAL(obj.getName(), "");
+  obj.setName("test");
+  BOOST_CHECK_EQUAL(obj.getName(), "test");
+  obj.setQuality(Quality::Medium);
+  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Medium);
+
+  obj.addChecker("first", "class1");
+  obj.addChecker("second", "class1");
+  obj.addChecker("third", "class2");
+  obj.addChecker("first", "class2");
+  auto checkers1 = obj.getCheckers();
+  BOOST_CHECK_EQUAL(checkers1["first"], "class2");
+  BOOST_CHECK_EQUAL(checkers1["second"], "class1");
 }
-
-
 
 } /* namespace Publisher */
 } /* namespace QualityControl */
