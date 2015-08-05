@@ -7,15 +7,16 @@
 #define QUALITYCONTROL_LIBS_PUBLISHER_PUBLISHER_H_
 
 #include <string>
-#include <Core/MonitorObject.h>
-
-using namespace AliceO2::QualityControl::Core;
+#include "Quality.h"
+#include "MonitorObject.h"
 
 namespace AliceO2 {
 namespace QualityControl {
-namespace Publisher {
+namespace Core {
 
-/// \brief   Here you put a short description of the class
+/// \brief   Contains the list of objects to publish and does the actual publication.
+///
+/// Keeps a list of the objects to publish, encapsulates them and does the actual publication.
 ///
 /// \author   Barthelemy von Haller
 class Publisher

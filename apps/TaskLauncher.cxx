@@ -5,19 +5,66 @@
 
 #include "TaskLauncher.h"
 
-#include <Core/Version.h>
+#include "Core/Version.h"
+#include "Core/Publisher.h"
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <Core/QCTask.h>
+#include <Core/BasicTask.h>
+#include <Core/TaskControl.h>
+#include <signal.h>
+#include <execinfo.h>
+#include "Core/QcInfoLogger.h"
 
 namespace po = boost::program_options;
 
-int main(int argc, char* argv[])
+using namespace std;
+using namespace AliceO2::QualityControl::Core;
+
+/// \brief Print all the entries of the stack on stderr
+/// \author Barthelemy von Haller
+void printStack()
+{
+  void *array[10];
+  size_t size;
+  size = backtrace(array, 10);
+  backtrace_symbols_fd(array, size, 2);
+}
+
+/// \brief Callback for SigSev
+/// \author Barthelemy von Haller
+void handler_sigsev(int sig)
+{
+  fprintf(stderr, "Error: signal %d:\n", sig);
+  cerr << "Error: signal " << sig << "\n";
+  printStack();
+  exit(1);
+}
+
+bool keepRunning = true; /// Indicates whether we should continue the execution loop or not.
+
+/// \brief Callback for SigINT
+/// Long description
+/// \author Barthelemy von Haller
+void handler_int(int sig)
+{
+  if (keepRunning) {
+    cout << "Catched signal " << sig <<
+    "\n  Exit the process at the end of this cycle. \n  Press again Ctrl-C to force immediate exit" << endl;
+    keepRunning = false;
+  } else {
+    cout << "Second interruption : immediate exit" << endl;
+    exit(0);
+  }
+}
+
+int main(int argc, char *argv[])
 {
   // Arguments parsing
   po::variables_map vm;
   po::options_description desc("Allowed options");
   desc.add_options()("help,h", "Produce help message.")("version,v", "Show program name/version banner and exit.")(
-      "rev", "Print the SVN revision number");
+    "rev", "Print the SVN revision number");
   po::store(parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
   // help
@@ -36,16 +83,27 @@ int main(int argc, char* argv[])
     return EXIT_SUCCESS;
   }
 
+  // install handlers
+  signal(SIGSEGV, handler_sigsev); // for seg faults
+  signal(SIGINT, handler_int); // for interruptions
+  signal(SIGTERM, handler_int); // for termination requests
+
   // Actual "work" here
-  AliceO2::QualityControl::Publisher::TaskLauncher launcher;
-  launcher.configure();
+  TaskControl taskControl;
+  taskControl.initialize();
+  taskControl.configure();
+  taskControl.start();
+  while (keepRunning) {
+    taskControl.execute();
+  }
+  taskControl.stop();
 
   return EXIT_SUCCESS;
 }
 
-namespace AliceO2 {
+/*namespace AliceO2 {
 namespace QualityControl {
-namespace Publisher {
+namespace Core {
 
 TaskLauncher::TaskLauncher()
 {
@@ -55,11 +113,20 @@ TaskLauncher::~TaskLauncher()
 {
 }
 
-void TaskLauncher::configure()
+void TaskLauncher::go()
 {
-
+  // Simulate the different state transitions
+  taskControl.initialize();
+  taskControl.configure();
+  taskControl.start();
+  while (1) {
+    taskControl.execute();
+  }
+  taskControl.stop();
+  // From here on we don't get control back until it is stopped or we receive a SIG.
 }
 
-} /* namespace Publisher */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} // namespace Publisher
+} // namespace QualityControl
+} // namespace AliceO2
+*/

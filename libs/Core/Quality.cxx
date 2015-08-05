@@ -20,9 +20,6 @@ const Quality Quality::Bad(3, "Bad");
 Quality::Quality(unsigned int level, std::string name)
     : mLevel(level), mName(name)
 {
-  AliceO2::InfoLogger::InfoLogger theLog;
-  theLog.log("infoLogger message test");
-  theLog << "another test message " << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 Quality::~Quality()

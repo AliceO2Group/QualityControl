@@ -3,16 +3,16 @@
 /// \author Barthelemy von Haller
 ///
 
-#include <InfoLogger.hxx>
+#include "QcInfoLogger.h"
 #include "Publisher.h"
-#include "../Core/MonitorObject.h"
-#include "../Core/Exceptions.h"
+#include "MonitorObject.h"
+#include "Exceptions.h"
 
 using namespace AliceO2::QualityControl::Core;
 
 namespace AliceO2 {
 namespace QualityControl {
-namespace Publisher {
+namespace Core {
 
 Publisher::Publisher()
 {
@@ -24,7 +24,6 @@ Publisher::~Publisher()
 
 void Publisher::startPublishing(std::string objectName, void *object)
 {
-  AliceO2::InfoLogger::fgLogger << "test" << AliceO2::InfoLogger::InfoLogger::endm;
   MonitorObject *newObject = new MonitorObject(objectName, object);
   mMonitorObjects[objectName] = newObject;
 }
@@ -52,9 +51,7 @@ MonitorObject *Publisher::getMonitorObject(std::string objectName)
   if (mMonitorObjects.count(objectName) > 0) {
     return mMonitorObjects[objectName];
   } else {
-    BOOST_THROW_EXCEPTION(
-      ObjectNotFoundError() <<
-      errinfo_object_name(objectName));
+    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
   }
 }
 

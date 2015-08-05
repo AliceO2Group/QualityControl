@@ -3,7 +3,7 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../libs/Publisher/Publisher.h"
+#include "../libs/Core/Publisher.h"
 
 #define BOOST_TEST_MODULE Publisher test
 #define BOOST_TEST_MAIN
@@ -17,7 +17,7 @@ using namespace AliceO2::QualityControl::Core;
 
 namespace AliceO2 {
 namespace QualityControl {
-namespace Publisher {
+namespace Core {
 
 BOOST_AUTO_TEST_CASE(publisher_test)
 {

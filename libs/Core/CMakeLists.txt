@@ -11,6 +11,9 @@ set(HEADERS
   Quality.h
   BasicTask.h
   Exceptions.h
+  TaskControl.h
+  Publisher.h
+  QcInfoLogger.h
 )
 
 set(SOURCES
@@ -19,6 +22,8 @@ set(SOURCES
   MonitorObject.cxx
   Quality.cxx
   BasicTask.cxx
+  TaskControl.cxx
+  Publisher.cxx
 )
 
 # Define two variables in order not to repeat ourselves.
