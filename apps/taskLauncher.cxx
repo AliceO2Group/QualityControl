@@ -68,33 +68,3 @@ int main(int argc, char *argv[])
 
   return EXIT_SUCCESS;
 }
-
-/*namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
-
-TaskLauncher::TaskLauncher()
-{
-}
-
-TaskLauncher::~TaskLauncher()
-{
-}
-
-void TaskLauncher::go()
-{
-  // Simulate the different state transitions
-  taskControl.initialize();
-  taskControl.configure();
-  taskControl.start();
-  while (1) {
-    taskControl.execute();
-  }
-  taskControl.stop();
-  // From here on we don't get control back until it is stopped or we receive a SIG.
-}
-
-} // namespace Publisher
-} // namespace QualityControl
-} // namespace AliceO2
-*/

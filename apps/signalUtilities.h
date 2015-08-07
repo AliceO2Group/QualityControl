@@ -41,14 +41,14 @@ bool keepRunning = true; /// Indicates whether we should continue the execution 
 /// one should start cleaning up before exiting. If a second SIGINT/SIGTERM is
 /// received before the end of the clean up we exit immediately (return value 0).
 /// Usage :
-/// \code{.cpp}
+/// \code
 ///    signal(SIGINT, handler_int);
 ///    while (keepRunning) {
 ///      // do something
 ///    }
 ///    // clean up
 ///    return EXIT_SUCCESS;
-/// \endcode{.cpp}
+/// \endcode
 /// \author Barthelemy von Haller
 void handler_interruption(int sig)
 {
