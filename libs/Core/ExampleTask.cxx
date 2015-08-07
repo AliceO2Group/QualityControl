@@ -26,7 +26,7 @@ ExampleTask::~ExampleTask()
 void ExampleTask::initialize()
 {
   QcInfoLogger::GetInstance() << "initialize" << AliceO2::InfoLogger::InfoLogger::endm;
-  mHisto1 = new TH1F("first", "asdf", 100, -10, 10);
+  mHisto1 = new TH1F("first", "asdf", 1000, 0, 990);
 }
 
 void ExampleTask::startOfActivity(Activity &activity)
@@ -42,18 +42,19 @@ void ExampleTask::startOfCycle()
 
 void ExampleTask::monitorDataBlock(DataBlock &block)
 {
-  mHisto1->FillRandom("gaus", 10);
+//  mHisto1->FillRandom("gaus", 10);
+  mHisto1->Fill(block.header.dataSize);
   QcInfoLogger::GetInstance() << "ExampleTask monitorDataBlock (5x1s)" << AliceO2::InfoLogger::InfoLogger::endm;
-  sleep(1);
-  QcInfoLogger::GetInstance() << "   ." << AliceO2::InfoLogger::InfoLogger::endm;
-  sleep(1);
-  QcInfoLogger::GetInstance() << "   ." << AliceO2::InfoLogger::InfoLogger::endm;
-  sleep(1);
-  QcInfoLogger::GetInstance() << "   ." << AliceO2::InfoLogger::InfoLogger::endm;
-  sleep(1);
-  QcInfoLogger::GetInstance() << "   ." << AliceO2::InfoLogger::InfoLogger::endm;
-  sleep(1);
-  QcInfoLogger::GetInstance() << "   ." << AliceO2::InfoLogger::InfoLogger::endm;
+//  sleep(2);
+//  QcInfoLogger::GetInstance() << "   ." << AliceO2::InfoLogger::InfoLogger::endm;
+//  sleep(1);
+//  QcInfoLogger::GetInstance() << "   ." << AliceO2::InfoLogger::InfoLogger::endm;
+//  sleep(1);
+//  QcInfoLogger::GetInstance() << "   ." << AliceO2::InfoLogger::InfoLogger::endm;
+//  sleep(1);
+//  QcInfoLogger::GetInstance() << "   ." << AliceO2::InfoLogger::InfoLogger::endm;
+//  sleep(1);
+//  QcInfoLogger::GetInstance() << "   ." << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ExampleTask::endOfCycle()

@@ -47,8 +47,6 @@ if(GIT_FOUND)
     set (VCS_REVISION ${GIT_SHA1})
 endif()
 
-find_package(InfoLogger REQUIRED)
-
 # C++11 needed
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG(-std=c++11 COMPILER_SUPPORTS_CXX11)
@@ -77,6 +75,11 @@ else()
     message(WARNING "ROOT not found, we won't compile the QC (skip, no error)")
 endif()
 
+# O2 deps
+find_package(InfoLogger REQUIRED)
+find_package(Configuration REQUIRED)
+find_package(DataSampling REQUIRED)
+
 # This sets the include directory for the reference project. This is
 # the -I flag in gcc. All the includes should be in this variable To
 # add new directories to the include path, just add them in this list
@@ -87,6 +90,8 @@ include_directories(
     ${CMAKE_BINARY_DIR}/libs   # in general shouldn't be needed, but here we generate Version.h there
     ${Boost_INCLUDE_DIRS}
     ${InfoLogger_INCLUDE_DIR}
+    ${Configuration_INCLUDE_DIR}
+    ${DataSampling_INCLUDE_DIR}
     ${ROOT_INCLUDE_DIRS}
 )
 

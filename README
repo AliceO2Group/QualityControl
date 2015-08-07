@@ -5,6 +5,8 @@ Notes :
 - FindROOT.cmake should be replaced with the Config file of ROOT when compiled with CMake.
 - Independent from O2 ideally. In the sense that it should be usable by other experiemnts.
 - Need for TApplication ?
+- The name of the task is the only required thing in the end as it should then link to all required info from the
+  Config (module, class name, source, ...).
 
 For any question, please contact:
 Barthélémy von Haller (barthelemy.von.haller@cern.ch)

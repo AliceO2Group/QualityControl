@@ -3,20 +3,26 @@
 /// \author Barthelemy von Haller
 ///
 
-#include <unistd.h>
 #include "QcInfoLogger.h"
 #include "TaskControl.h"
 #include "ExampleTask.h"
+#include <DataSampling/MockSampler.h>
 
 namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-TaskControl::TaskControl(std::string taskName)
+TaskControl::TaskControl(std::string taskName, std::string configurationSource)
 {
   AliceO2::InfoLogger::InfoLogger theLog;
   mPublisher = new Publisher();
+  //mConfiguration.load(configurationSource);
+
+  cout << "a" << endl;
+
   // TODO use a factory to load the proper plugin and class
+  string moduleName = "module";//mConfiguration.getValue<string>("ExampleTask.moduleName");
+  string className = "ExampleTask";//mConfiguration.getValue<string>("ExampleTask.moduleName");
   mTask = new AliceO2::QualityControl::ExampleModule::ExampleTask(taskName, mPublisher);
 }
 
@@ -27,6 +33,7 @@ TaskControl::~TaskControl()
 void TaskControl::initialize()
 {
   QcInfoLogger::GetInstance() << "initialize" << AliceO2::InfoLogger::InfoLogger::endm;
+
   mTask->initialize();
 }
 
@@ -38,25 +45,27 @@ void TaskControl::configure()
 void TaskControl::start()
 {
   QcInfoLogger::GetInstance() << "start" << AliceO2::InfoLogger::InfoLogger::endm;
-  // TODO get the activity from configuration (?)
-  Activity activity(123, 2);
+  Activity activity(123, 123);
+//  Activity activity(mConfiguration.getValue<int>("Activity.number"), mConfiguration.getValue<int>("Activity.type"));
   mTask->startOfActivity(activity);
+
+  // TODO create DataSampling with correct parameters, keep it
+  sampler = new AliceO2::DataSampling::MockSampler();
 }
 
 void TaskControl::execute()
 {
   mTask->startOfCycle();
-  // TODO get the data block from ??
-  DataBlock block;
-  mTask->monitorDataBlock(block);
+  DataBlock *block = sampler->getData(0);
+  mTask->monitorDataBlock(*block);
+  sampler->releaseData();
   mTask->endOfCycle();
 }
 
 void TaskControl::stop()
 {
   QcInfoLogger::GetInstance() << "stop" << AliceO2::InfoLogger::InfoLogger::endm;
-  // TODO get the activity from configuration (?)
-  Activity activity(123, 2);
+  Activity activity(mConfiguration.getValue<int>("Activity.number"), mConfiguration.getValue<int>("Activity.type"));
   mTask->endOfActivity(activity);
 }
 

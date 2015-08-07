@@ -7,8 +7,10 @@
 #define QUALITY_CONTROL_TASKCONTROL_H
 
 #include <memory>
+#include <DataSampling/Sampler.h>
 #include "Core/Publisher.h"
 #include "TaskInterface.h"
+#include "Configuration.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -19,7 +21,7 @@ class TaskControl
 
   public:
 
-    TaskControl(std::string taskName);
+    TaskControl(std::string taskName, std::string configurationSource);
     virtual ~TaskControl();
 
     void initialize();
@@ -29,8 +31,10 @@ class TaskControl
     void stop();
 
   private:
-    Publisher* mPublisher;
-    TaskInterface * mTask;
+    Publisher *mPublisher;
+    TaskInterface *mTask;
+    ConfigFile mConfiguration;
+    AliceO2::DataSampling::Sampler *sampler;
 };
 
 }
