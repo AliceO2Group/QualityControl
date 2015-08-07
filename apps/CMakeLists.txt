@@ -1,6 +1,7 @@
 # @author  Barthélémy von Haller
 
 set(HEADERS
+  signalUtilities.h
 )
 
 set(SOURCES

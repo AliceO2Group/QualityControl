@@ -1,64 +1,32 @@
 ///
-/// \file   TaskLauncher.cxx
+/// \file   taskLauncher.cxx
 /// \author Barthelemy von Haller
 ///
 
-#include "Core/Version.h"
-#include "Core/Publisher.h"
-#include <boost/program_options.hpp>
+// std
 #include <iostream>
-#include "Core/TaskControl.h"
 #include <signal.h>
-#include <execinfo.h>
+// boost
+#include <boost/program_options.hpp>
+// ROOT
 #include <TApplication.h>
+#include <TROOT.h>
+// QC
 #include "Core/QcInfoLogger.h"
+#include "signalUtilities.h"
+#include "Core/TaskControl.h"
+#include "Core/Version.h"
 
 namespace po = boost::program_options;
 
 using namespace std;
 using namespace AliceO2::QualityControl::Core;
 
-/// \brief Print all the entries of the stack on stderr
-/// \author Barthelemy von Haller
-void printStack()
-{
-  void *array[10];
-  size_t size;
-  size = backtrace(array, 10);
-  backtrace_symbols_fd(array, size, 2);
-}
-
-/// \brief Callback for SigSev
-/// \author Barthelemy von Haller
-void handler_sigsev(int sig)
-{
-  fprintf(stderr, "Error: signal %d:\n", sig);
-  cerr << "Error: signal " << sig << "\n";
-  printStack();
-  exit(1);
-}
-
-bool keepRunning = true; /// Indicates whether we should continue the execution loop or not.
-
-/// \brief Callback for SigINT
-/// Long description
-/// \author Barthelemy von Haller
-void handler_int(int sig)
-{
-  if (keepRunning) {
-    cout << "Catched signal " << sig <<
-    "\n  Exit the process at the end of this cycle. \n  Press again Ctrl-C to force immediate exit" << endl;
-    keepRunning = false;
-  } else {
-    cout << "Second interruption : immediate exit" << endl;
-    exit(0);
-  }
-}
-
 int main(int argc, char *argv[])
 {
   // This is needed for ROOT
   TApplication app("a", 0, 0);
+  gROOT->SetBatch(true);
 
   // Arguments parsing
   po::variables_map vm;
@@ -85,8 +53,8 @@ int main(int argc, char *argv[])
 
   // install handlers
   signal(SIGSEGV, handler_sigsev); // for seg faults
-  signal(SIGINT, handler_int); // for interruptions
-  signal(SIGTERM, handler_int); // for termination requests
+  signal(SIGINT, handler_interruption); // for interruptions
+  signal(SIGTERM, handler_interruption); // for termination requests
 
   // Actual "work" here
   TaskControl taskControl("ExampleTask"); // TODO get the name of class and module from arguments
