@@ -8,7 +8,7 @@
 
 #include <memory>
 #include "Core/Publisher.h"
-#include "QCTask.h"
+#include "TaskInterface.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -19,7 +19,7 @@ class TaskControl
 
   public:
 
-    TaskControl();
+    TaskControl(std::string taskName);
     virtual ~TaskControl();
 
     void initialize();
@@ -30,7 +30,7 @@ class TaskControl
 
   private:
     Publisher* mPublisher;
-    QCTask* mTask;
+    TaskInterface * mTask;
 };
 
 }

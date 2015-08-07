@@ -3,7 +3,7 @@
 /// \author  Barthelemy von Haller
 ///
 
-#include "../libs/Core/QCTask.h"
+#include "../libs/Core/TaskInterface.h"
 
 #define BOOST_TEST_MODULE QC test
 #define BOOST_TEST_MAIN
@@ -25,10 +25,10 @@ namespace QualityControl {
 using namespace Core;
 
 namespace Test {
-class TestTask : public QCTask
+class TestTask : public TaskInterface
 {
   public:
-    TestTask()
+    TestTask(std::string name, Publisher *publisher) : TaskInterface(name, publisher)
     {
       test = 0;
     }
@@ -85,7 +85,8 @@ class TestTask : public QCTask
 
 BOOST_AUTO_TEST_CASE(TestInstantiate)
 {
-  Test::TestTask tt;
+  Publisher publisher; // TODO we need a mock object
+  Test::TestTask tt("asdf", &publisher);
   BOOST_CHECK_EQUAL(tt.test, 0);
   tt.initialize();
   BOOST_CHECK_EQUAL(tt.test, 1);

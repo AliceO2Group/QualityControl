@@ -6,10 +6,10 @@ configure_file("Version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/Version.h" @ONLY)
 
 set(HEADERS
   "${CMAKE_CURRENT_BINARY_DIR}/Version.h"
-  QCTask.h
+  TaskInterface.h
   MonitorObject.h
   Quality.h
-  BasicTask.h
+  ExampleTask.h
   Exceptions.h
   TaskControl.h
   Publisher.h
@@ -18,12 +18,12 @@ set(HEADERS
 
 set(SOURCES
   Version.cxx
-  QCTask.cxx
+  TaskInterface.cxx
   MonitorObject.cxx
   Quality.cxx
-  BasicTask.cxx
   TaskControl.cxx
   Publisher.cxx
+  ExampleTask.cxx
 )
 
 # Define two variables in order not to repeat ourselves.
@@ -34,7 +34,7 @@ set(INCLUDE include/${LIBRARY})
 add_library(${LIBRARY} SHARED ${HEADERS} ${SOURCES}  )
 
 # Links the target(s) against libraries
-target_link_libraries(${LIBRARY} ${InfoLogger_LIBRARIES})
+target_link_libraries(${LIBRARY} ${InfoLogger_LIBRARIES} ${ROOT_LIBRARIES})
 
 # Set the build version. It will be used in the name of the lib, with corresponding
 # symlinks created. SOVERSION could also be specified for api version. 

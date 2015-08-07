@@ -5,7 +5,7 @@
 #ifndef QUALITY_CONTROL_QCINFOLOGGER_H
 #define QUALITY_CONTROL_QCINFOLOGGER_H
 
-#include "QCTask.h"
+#include "TaskInterface.h"
 #include <iostream>
 #include <InfoLogger.hxx>
 

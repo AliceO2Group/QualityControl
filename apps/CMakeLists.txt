@@ -1,11 +1,10 @@
 # @author  Barthélémy von Haller
 
 set(HEADERS
-  TaskLauncher.h
 )
 
 set(SOURCES
-  TaskLauncher.cxx
+  taskLauncher.cxx
 )
 
 include_directories(libs)

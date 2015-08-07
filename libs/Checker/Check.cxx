@@ -1,25 +1,25 @@
 ///
-/// \file   QCTask.cxx
+/// \file   Checker.cxx
 /// \author Barthelemy von Haller
 ///
 
-#include "QCTask.h"
+#include "Check.h"
 
 namespace AliceO2 {
 namespace QualityControl {
-namespace Core {
+namespace Checker {
 
-QCTask::QCTask()
+Check::Check()
 {
   // TODO Auto-generated constructor stub
 
 }
 
-QCTask::~QCTask()
+Check::~Check()
 {
   // TODO Auto-generated destructor stub
 }
 
-} /* namespace Core */
+} /* namespace Checker */
 } /* namespace QualityControl */
 } /* namespace AliceO2 */

@@ -1,5 +1,5 @@
 ///
-/// \file   QCTask.h
+/// \file   TaskInterface.h
 /// \author Barthelemy von Haller
 ///
 
@@ -7,6 +7,7 @@
 #define QUALITYCONTROL_LIBS_CORE_QCTASK_H_
 
 #include "DataBlock.h"
+#include "Publisher.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -20,20 +21,23 @@ class Activity
   public:
     /// Default constructor
     Activity() {}
+    Activity(int id, int type) : mId(id), mType(type) {}
     /// Destructor
     virtual ~Activity() {}
+    int mId;
+    int mType;
 };
 
 /// \brief   Here you put a short description of the class
 ///
 /// \author   Barthelemy von Haller
-class QCTask
+class TaskInterface
 {
   public:
     /// Default constructor
-    QCTask();
+    TaskInterface(std::string name, Publisher *publisher);
     /// Destructor
-    virtual ~QCTask();
+    virtual ~TaskInterface();
 
     // Definition of the methods for the template method pattern
     virtual void initialize() = 0;
@@ -43,6 +47,15 @@ class QCTask
     virtual void endOfCycle() = 0;
     virtual void endOfActivity(Activity &activity) = 0;
     virtual void Reset() = 0;
+
+    // Setters and getters
+    const std::string &getName() const;
+    void setName(const std::string &name);
+    void setPublisher(Publisher *publisher);
+
+  private:
+    std::string mName;
+    Publisher *mPublisher;
 
 };
 

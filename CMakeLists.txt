@@ -65,6 +65,18 @@ set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
 set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)
 find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options)
 
+# ROOT
+#set(ROOT_CONFIG_DEBUG true)
+# this is an ugly hack to find root as it is not installed in a standard place
+SET(ROOT_DIR "/opt/root-6/cmake/")
+# TODO make it required once in its own repo
+find_package(ROOT CONFIG COMPONENTS Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore QUIET)
+if(ROOT_FOUND)
+    message(STATUS "ROOT ${ROOT_VERSION} found")
+else()
+    message(WARNING "ROOT not found, we won't compile the QC (skip, no error)")
+endif()
+
 # This sets the include directory for the reference project. This is
 # the -I flag in gcc. All the includes should be in this variable To
 # add new directories to the include path, just add them in this list
@@ -75,17 +87,19 @@ include_directories(
     ${CMAKE_BINARY_DIR}/libs   # in general shouldn't be needed, but here we generate Version.h there
     ${Boost_INCLUDE_DIRS}
     ${InfoLogger_INCLUDE_DIR}
+    ${ROOT_INCLUDE_DIRS}
 )
 
-enable_testing() # needed on top-level CMakeLists.txt
-add_subdirectory(libs)
-add_subdirectory(apps)
-add_subdirectory(doc)
-add_subdirectory(test)
+if(ROOT_FOUND) # TODO remove this once we have our own repo
+    enable_testing() # needed on top-level CMakeLists.txt
+    add_subdirectory(libs)
+    add_subdirectory(apps)
+    add_subdirectory(doc)
+    add_subdirectory(test)
 
 
-# PACKAGING
-# _____________________________________________________________________________
+    # PACKAGING
+    # _____________________________________________________________________________
 
-include(CPackConfig)
-
+    include(CPackConfig)
+endif()

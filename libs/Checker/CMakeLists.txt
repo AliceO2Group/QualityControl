@@ -2,10 +2,12 @@
 
 set(HEADERS
   Checker.h
+  Check.h
 )
 
 set(SOURCES
   Checker.cxx
+  Check.cxx
 )
 
 # Define two variables in order not to repeat ourselves.

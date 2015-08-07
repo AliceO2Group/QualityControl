@@ -3,17 +3,14 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "TaskLauncher.h"
-
 #include "Core/Version.h"
 #include "Core/Publisher.h"
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <Core/QCTask.h>
-#include <Core/BasicTask.h>
-#include <Core/TaskControl.h>
+#include "Core/TaskControl.h"
 #include <signal.h>
 #include <execinfo.h>
+#include <TApplication.h>
 #include "Core/QcInfoLogger.h"
 
 namespace po = boost::program_options;
@@ -60,6 +57,9 @@ void handler_int(int sig)
 
 int main(int argc, char *argv[])
 {
+  // This is needed for ROOT
+  TApplication app("a", 0, 0);
+
   // Arguments parsing
   po::variables_map vm;
   po::options_description desc("Allowed options");
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
   signal(SIGTERM, handler_int); // for termination requests
 
   // Actual "work" here
-  TaskControl taskControl;
+  TaskControl taskControl("ExampleTask"); // TODO get the name of class and module from arguments
   taskControl.initialize();
   taskControl.configure();
   taskControl.start();
