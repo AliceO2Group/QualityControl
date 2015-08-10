@@ -22,7 +22,7 @@ Publisher::~Publisher()
 {
 }
 
-void Publisher::startPublishing(std::string objectName, void *object)
+void Publisher::startPublishing(std::string objectName, TObject *object)
 {
   MonitorObject *newObject = new MonitorObject(objectName, object);
   mMonitorObjects[objectName] = newObject;
@@ -55,7 +55,7 @@ MonitorObject *Publisher::getMonitorObject(std::string objectName)
   }
 }
 
-void *Publisher::getObject(std::string objectName)
+TObject *Publisher::getObject(std::string objectName)
 {
   MonitorObject *mo = getMonitorObject(objectName);
   return mo->getObject();

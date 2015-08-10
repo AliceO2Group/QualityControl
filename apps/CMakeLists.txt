@@ -16,7 +16,7 @@ set(APPLICATION qcTaskLauncher)
 add_executable(${APPLICATION} ${SOURCES})
 
 # Links the target exe (qcTaskLauncher) against the QC libraries
-target_link_libraries(${APPLICATION} QCCore QCPublisher QCChecker ${Boost_PROGRAM_OPTIONS_LIBRARY})
+target_link_libraries(${APPLICATION} QCCore QCChecker ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
 # Says how and where to install software
 install(TARGETS ${APPLICATION} DESTINATION bin COMPONENT apps)

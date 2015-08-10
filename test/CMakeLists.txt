@@ -10,7 +10,7 @@ foreach(FILE ${TEST_FILES})
     string(REGEX REPLACE "[./]" "_" NAME ${FILE})
     source_group(\\ FILES ${FILE})
     add_executable(${NAME} ${FILE})
-    target_link_libraries(${NAME} QCChecker QCCore QCPublisher ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+    target_link_libraries(${NAME} QCChecker QCCore ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
     get_target_property(EXECUTABLE ${NAME} LOCATION)
     STRING(REGEX REPLACE "\\$\\(.*\\)" "\${CTEST_CONFIGURATION_TYPE}"
       EXECUTABLE "${EXECUTABLE}")

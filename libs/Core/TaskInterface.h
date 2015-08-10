@@ -53,6 +53,9 @@ class TaskInterface
     void setName(const std::string &name);
     void setPublisher(Publisher *publisher);
 
+  protected:
+    Publisher* getPublisher();
+
   private:
     std::string mName;
     Publisher *mPublisher;

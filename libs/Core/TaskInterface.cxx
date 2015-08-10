@@ -34,6 +34,10 @@ void TaskInterface::setPublisher(Publisher *publisher)
 }
 
 
+Publisher *TaskInterface::getPublisher()
+{
+  return mPublisher;
+}
 } /* namespace Core */
 } /* namespace QualityControl */
 } /* namespace AliceO2 */

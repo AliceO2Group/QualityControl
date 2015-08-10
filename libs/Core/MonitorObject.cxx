@@ -18,7 +18,7 @@ MonitorObject::~MonitorObject()
 {
 }
 
-MonitorObject::MonitorObject(const std::string &name, void *object)
+MonitorObject::MonitorObject(const std::string &name, TObject *object)
   : mName(name), mObject(object), mQuality(Quality::Null)
 {
 

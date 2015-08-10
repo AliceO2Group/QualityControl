@@ -11,6 +11,7 @@
 #include <boost/test/unit_test.hpp>
 #include <Core/Exceptions.h>
 #include <iostream>
+#include <TObjString.h>
 
 using namespace std;
 using namespace AliceO2::QualityControl::Core;
@@ -22,10 +23,10 @@ namespace Core {
 BOOST_AUTO_TEST_CASE(publisher_test)
 {
   Publisher publisher;
-  string s = "";
+  TObjString s("content");
   publisher.startPublishing("test", &s);
-  string *s2 = (string*)(publisher.getObject("test"));
-  BOOST_CHECK_EQUAL(s, *s2);
+  TObjString *s2 = (TObjString*)(publisher.getObject("test"));
+  BOOST_CHECK_EQUAL(s.GetString(), s2->GetString());
   BOOST_CHECK_EQUAL(Quality::Null, publisher.getQuality("test"));
   publisher.setQuality("test", Quality::Medium);
   BOOST_CHECK_EQUAL(Quality::Medium, publisher.getQuality("test"));

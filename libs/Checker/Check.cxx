@@ -11,13 +11,10 @@ namespace Checker {
 
 Check::Check()
 {
-  // TODO Auto-generated constructor stub
-
 }
 
 Check::~Check()
 {
-  // TODO Auto-generated destructor stub
 }
 
 } /* namespace Checker */

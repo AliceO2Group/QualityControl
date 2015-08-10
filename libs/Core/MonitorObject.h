@@ -8,6 +8,7 @@
 
 #include "Quality.h"
 #include <map>
+#include <TObject.h>
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -21,8 +22,7 @@ class MonitorObject
   public:
     /// Default constructor
     MonitorObject();
-
-    MonitorObject(const std::string &name, void *object);
+    MonitorObject(const std::string &name, TObject *object);
 
     /// Destructor
     virtual ~MonitorObject();
@@ -47,12 +47,12 @@ class MonitorObject
       mQuality = quality;
     }
 
-    void *getObject() const
+    TObject *getObject() const
     {
       return mObject;
     }
 
-    void setObject(void *object)
+    void setObject(TObject *object)
     {
       mObject = object;
     }
@@ -77,7 +77,7 @@ class MonitorObject
   private:
     std::string mName;
     Quality mQuality;
-    void *mObject;
+    TObject *mObject;
     std::map<std::string /* name */, std::string /* checker class name */> mCheckers;
 };
 
