@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     ("version,v", "Show program name/version banner and exit.")
     ("rev", "Print the SVN revision number.")
     ("name,n", po::value<string>(), "Set the name of the task (required).")
-    ("configuration,c", po::value<string>(), "Configuration source, e.g. \"file:example.config\" (required).")
+    ("configuration,c", po::value<string>(), "Configuration source, e.g. \"file:example.ini\" (required).")
 //    ("source,s", po::value<string>(), "Set the source for the data blocks (required).")
 //    ("module,m", po::value<string>(), "Module containing the task to load (required).")
 //    ("class,c", po::value<string>(), "Module's task class to instantiate (required).")
@@ -118,15 +118,23 @@ int main(int argc, char *argv[])
   signal(SIGINT, handler_interruption); // for interruptions
   signal(SIGTERM, handler_interruption); // for termination requests
 
-  // Actual "work" starts here
-  TaskControl taskControl(taskName, configurationSource); // TODO get the name of class and module from arguments
-  taskControl.initialize();
-  taskControl.configure();
-  taskControl.start();
-  while (keepRunning) {
-    taskControl.execute();
+  try {
+
+    // Actual "work" starts here
+    TaskControl taskControl(taskName, configurationSource);
+    taskControl.initialize();
+    taskControl.configure();
+    taskControl.start();
+    while (keepRunning) {
+      taskControl.execute();
+    }
+    taskControl.stop();
+
+  } catch (exception e) {
+    std::cout << e.what() << endl;
+  } catch (string s) {
+    std::cout << s << endl;
   }
-  taskControl.stop();
 
   return EXIT_SUCCESS;
 }

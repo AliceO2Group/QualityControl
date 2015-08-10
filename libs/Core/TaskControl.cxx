@@ -16,13 +16,11 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
 {
   AliceO2::InfoLogger::InfoLogger theLog;
   mPublisher = new Publisher();
-  //mConfiguration.load(configurationSource);
-
-  cout << "a" << endl;
+  mConfiguration.load(configurationSource);
 
   // TODO use a factory to load the proper plugin and class
-  string moduleName = "module";//mConfiguration.getValue<string>("ExampleTask.moduleName");
-  string className = "ExampleTask";//mConfiguration.getValue<string>("ExampleTask.moduleName");
+  string moduleName = mConfiguration.getValue<string>("ExampleTask.moduleName");
+  string className = mConfiguration.getValue<string>("ExampleTask.moduleName");
   mTask = new AliceO2::QualityControl::ExampleModule::ExampleTask(taskName, mPublisher);
 }
 
@@ -45,8 +43,7 @@ void TaskControl::configure()
 void TaskControl::start()
 {
   QcInfoLogger::GetInstance() << "start" << AliceO2::InfoLogger::InfoLogger::endm;
-  Activity activity(123, 123);
-//  Activity activity(mConfiguration.getValue<int>("Activity.number"), mConfiguration.getValue<int>("Activity.type"));
+  Activity activity(mConfiguration.getValue<int>("Activity.number"), mConfiguration.getValue<int>("Activity.type"));
   mTask->startOfActivity(activity);
 
   // TODO create DataSampling with correct parameters, keep it
