@@ -22,6 +22,8 @@ namespace Core {
 /// \author   Barthelemy von Haller
 class Publisher
 {
+    friend class TaskControl; // TaskControl must be able to call "publish()" whenever needed. Nobody else can.
+
   public:
     /// Default constructor
     Publisher();
@@ -32,11 +34,13 @@ class Publisher
     void setQuality(std::string objectName, Quality quality);
     Quality getQuality(std::string objectName);
     void addChecker(std::string objectName, std::string checkerName, std::string checkerClassName);
-    MonitorObject* getMonitorObject(std::string objectName);
-    TObject* getObject(std::string objectName);
+    MonitorObject *getMonitorObject(std::string objectName);
+    TObject *getObject(std::string objectName);
 
   private:
-    std::map<std::string /*object name*/, QualityControl::Core::MonitorObject* /* object */> mMonitorObjects;
+    void publish();
+
+    std::map<std::string /*object name*/, QualityControl::Core::MonitorObject * /* object */> mMonitorObjects;
 };
 
 } /* namespace Publisher */

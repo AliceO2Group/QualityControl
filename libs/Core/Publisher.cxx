@@ -3,6 +3,7 @@
 /// \author Barthelemy von Haller
 ///
 
+#include <TCanvas.h>
 #include "QcInfoLogger.h"
 #include "Publisher.h"
 #include "MonitorObject.h"
@@ -59,6 +60,17 @@ TObject *Publisher::getObject(std::string objectName)
 {
   MonitorObject *mo = getMonitorObject(objectName);
   return mo->getObject();
+}
+
+void Publisher::publish()
+{
+  // TODO use a backend to publish to database, file, alfa, etc....
+  // just to see it
+  if (mMonitorObjects.size() > 0) {
+    TCanvas canvas;
+    mMonitorObjects[0]->getObject()->Draw();
+    canvas.SaveAs("test.jpg");
+  }
 }
 
 } /* namespace Publisher */

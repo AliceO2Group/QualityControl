@@ -57,6 +57,8 @@ void TaskControl::execute()
   mTask->monitorDataBlock(*block);
   sampler->releaseData();
   mTask->endOfCycle();
+
+  mPublisher->publish();
 }
 
 void TaskControl::stop()

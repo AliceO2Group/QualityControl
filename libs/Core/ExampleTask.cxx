@@ -28,7 +28,7 @@ void ExampleTask::initialize()
 {
   QcInfoLogger::GetInstance() << "initialize" << AliceO2::InfoLogger::InfoLogger::endm;
   mHisto1 = new TH1F("first", "asdf", 2048, 0, 2047);
-
+  getPublisher()->startPublishing("my object", mHisto1);
 }
 
 void ExampleTask::startOfActivity(Activity &activity)
@@ -67,10 +67,6 @@ void ExampleTask::monitorDataBlock(DataBlock &block)
 void ExampleTask::endOfCycle()
 {
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-  // just to see it
-  TCanvas canvas;
-  mHisto1->Draw();
-  canvas.SaveAs("test.jpg");
 }
 
 void ExampleTask::endOfActivity(Activity &activity)
