@@ -1,5 +1,5 @@
 ///
-/// \file   Checker.h
+/// \file   CheckInterface.h
 /// \author Barthelemy von Haller
 ///
 
@@ -13,13 +13,13 @@ namespace Checker {
 /// \brief   Here you put a short description of the class
 ///
 /// \author   Barthelemy von Haller
-class Check
+class CheckInterface
 {
   public:
     /// Default constructor
-    Check();
+    CheckInterface();
     /// Destructor
-    virtual ~Check();
+    virtual ~CheckInterface();
 };
 
 } /* namespace Checker */

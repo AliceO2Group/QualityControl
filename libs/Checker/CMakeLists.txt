@@ -2,12 +2,12 @@
 
 set(HEADERS
   Checker.h
-  Check.h
+  CheckInterface.h
 )
 
 set(SOURCES
   Checker.cxx
-  Check.cxx
+  CheckInterface.cxx
 )
 
 # Define two variables in order not to repeat ourselves.

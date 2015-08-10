@@ -1,19 +1,19 @@
 ///
-/// \file   Checker.cxx
+/// \file   CheckInterface.cxx
 /// \author Barthelemy von Haller
 ///
 
-#include "Check.h"
+#include "CheckInterface.h"
 
 namespace AliceO2 {
 namespace QualityControl {
 namespace Checker {
 
-Check::Check()
+CheckInterface::CheckInterface()
 {
 }
 
-Check::~Check()
+CheckInterface::~CheckInterface()
 {
 }
 

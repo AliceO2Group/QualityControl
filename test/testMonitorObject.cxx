@@ -24,10 +24,10 @@ BOOST_AUTO_TEST_CASE(mo)
   obj.setQuality(Quality::Medium);
   BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Medium);
 
-  obj.addChecker("first", "class1");
-  obj.addChecker("second", "class1");
-  obj.addChecker("third", "class2");
-  obj.addChecker("first", "class2");
+  obj.addCheck("first", "class1");
+  obj.addCheck("second", "class1");
+  obj.addCheck("third", "class2");
+  obj.addCheck("first", "class2");
   auto checkers1 = obj.getCheckers();
   BOOST_CHECK_EQUAL(checkers1["first"], "class2");
   BOOST_CHECK_EQUAL(checkers1["second"], "class1");

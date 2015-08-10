@@ -7,7 +7,7 @@
 #define QUALITY_CONTROL_TASKCONTROL_H
 
 #include <memory>
-#include <DataSampling/Sampler.h>
+#include <DataSampling/SamplerInterface.h>
 #include "Core/Publisher.h"
 #include "TaskInterface.h"
 #include "Configuration.h"
@@ -34,7 +34,7 @@ class TaskControl
     Publisher *mPublisher;
     TaskInterface *mTask;
     ConfigFile mConfiguration;
-    AliceO2::DataSampling::Sampler *sampler;
+    AliceO2::DataSampling::SamplerInterface *sampler;
 };
 
 }

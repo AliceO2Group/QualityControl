@@ -69,9 +69,9 @@ class MonitorObject
     /// \author Barthelemy von Haller
     /// \param name Arbitrary name to identify this checker.
     /// \param checkerClassName The name of the class of the checker.
-    void addChecker(const std::string name, const std::string &checkerClassName)
+    void addCheck(const std::string name, const std::string &checkClassName)
     {
-      mCheckers[name] = checkerClassName;
+      mCheckers[name] = checkClassName;
     }
 
   private:

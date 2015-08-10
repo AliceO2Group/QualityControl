@@ -44,7 +44,7 @@ Quality Publisher::getQuality(std::string objectName)
 void Publisher::addChecker(std::string objectName, std::string checkerName, std::string checkerClassName)
 {
   MonitorObject *mo = getMonitorObject(objectName);
-  mo->addChecker(checkerName, checkerClassName);
+  mo->addCheck(checkerName, checkerClassName);
 }
 
 MonitorObject *Publisher::getMonitorObject(std::string objectName)
