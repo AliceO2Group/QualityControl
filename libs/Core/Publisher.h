@@ -15,11 +15,12 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-/// \brief   Contains the list of objects to publish and does the actual publication.
+/// \brief  Keeps the list of encapsulated objects to publish and does the actual publication.
 ///
 /// Keeps a list of the objects to publish, encapsulates them and does the actual publication.
+/// Tasks set/get properties of the MonitorObjects via this class.
 ///
-/// \author   Barthelemy von Haller
+/// \author Barthelemy von Haller
 class Publisher
 {
     friend class TaskControl; // TaskControl must be able to call "publish()" whenever needed. Nobody else can.

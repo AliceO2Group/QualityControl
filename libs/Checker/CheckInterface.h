@@ -10,9 +10,9 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Checker {
 
-/// \brief   Here you put a short description of the class
+/// \brief  Skeleton of a check.
 ///
-/// \author   Barthelemy von Haller
+/// \author Barthelemy von Haller
 class CheckInterface
 {
   public:

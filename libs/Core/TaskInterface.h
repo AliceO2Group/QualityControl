@@ -1,6 +1,5 @@
 ///
 /// \file   TaskInterface.h
-/// \author Barthelemy von Haller
 ///
 
 #ifndef QUALITYCONTROL_LIBS_CORE_QCTASK_H_
@@ -13,8 +12,7 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-///
-/// Dummy class that should be removed when there is the official one
+/// \brief Dummy class that should be removed when there is the official one.
 /// \author   Barthelemy von Haller
 class Activity
 {
@@ -28,13 +26,17 @@ class Activity
     int mType;
 };
 
-/// \brief   Here you put a short description of the class
+/// \brief  Skeleton of a QC task.
 ///
-/// \author   Barthelemy von Haller
+/// Purely abstract class defining the skeleton of a QC task.
+/// It is needed for the template method design pattern.
+/// It is responsible for the instantiation, modification and destruction of the TObjects that are published.
+///
+/// \author Barthelemy von Haller
 class TaskInterface
 {
   public:
-    /// Default constructor
+    /// Constructor
     TaskInterface(std::string name, Publisher *publisher);
     /// Destructor
     virtual ~TaskInterface();

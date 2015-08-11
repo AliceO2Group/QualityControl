@@ -1,6 +1,7 @@
-//
-// Created by flpprotodev on 7/10/15.
-//
+///
+/// \file   ExampleTask.cxx
+/// \author Barthelemy von Haller
+///
 
 #include "ExampleTask.h"
 #include "QcInfoLogger.h"
@@ -10,13 +11,14 @@
 #include <TCanvas.h>
 #include <DataBlock.h>
 
-using namespace std;
+//using namespace std;
 
 namespace AliceO2 {
 namespace QualityControl {
 namespace ExampleModule {
 
-ExampleTask::ExampleTask(std::string name, Publisher *publisher) : TaskInterface(name, publisher)
+ExampleTask::ExampleTask(std::string name, Publisher *publisher)
+  : TaskInterface(name, publisher)
 {
 }
 
@@ -44,7 +46,7 @@ void ExampleTask::startOfCycle()
 
 void ExampleTask::monitorDataBlock(DataBlock &block)
 {
-  uint32_t payloadSizeBytes =  block.header.dataSize/8;
+  uint32_t payloadSizeBytes = block.header.dataSize / 8;
   QcInfoLogger::GetInstance() << "Payload size " << payloadSizeBytes << AliceO2::InfoLogger::InfoLogger::endm;
   mHisto1->Fill(payloadSizeBytes);
 

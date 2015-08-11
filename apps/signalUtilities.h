@@ -1,5 +1,5 @@
 ///
-/// \file   signalUtilities.cxx
+/// \file   signalUtilities.h
 /// \author Barthelemy von Haller
 /// This file proposes a set of functions to handle the signals in your program.
 /// Typically, you want to print the stack trace when there is a sigsev.

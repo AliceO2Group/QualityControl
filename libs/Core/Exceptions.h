@@ -12,7 +12,7 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-// Definitions of error_info structures to store extra info the boost way.
+/// Definitions of error_info structures to store extra info the boost way.
 typedef boost::error_info<struct errinfo_object_name_, std::string> errinfo_object_name;
 
 struct ExceptionBase : virtual std::exception, virtual boost::exception

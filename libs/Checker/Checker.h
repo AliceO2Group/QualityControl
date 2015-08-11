@@ -10,9 +10,12 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Checker {
 
-/// \brief   Here you put a short description of the class
+/// \brief The class in charge of running the checks on a MonitorObject.
 ///
-/// \author   Barthelemy von Haller
+/// A Checker is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
+/// and to run them on the MonitorObject in order to generate a quality.
+///
+/// \author Barthelemy von Haller
 class Checker
 {
   public:

@@ -14,9 +14,9 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-/// \brief   Here you put a short description of the class
+/// \brief  This class keeps the metadata about one published object.
 ///
-/// \author   Barthelemy von Haller
+/// \author Barthelemy von Haller
 class MonitorObject
 {
   public:
@@ -68,7 +68,7 @@ class MonitorObject
     /// they will get different configuration).
     /// \author Barthelemy von Haller
     /// \param name Arbitrary name to identify this checker.
-    /// \param checkerClassName The name of the class of the checker.
+    /// \param checkClassName The name of the class of the checker.
     void addCheck(const std::string name, const std::string &checkClassName)
     {
       mCheckers[name] = checkClassName;

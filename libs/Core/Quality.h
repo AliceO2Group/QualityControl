@@ -13,6 +13,9 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
+/// \brief  Class representing the quality of a MonitorObject.
+///
+/// \author Barthelemy von Haller
 class Quality
 {
   public:
