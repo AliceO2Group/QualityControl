@@ -130,9 +130,9 @@ int main(int argc, char *argv[])
     }
     taskControl.stop();
 
-  } catch (exception e) {
+  } catch (exception &e) {
     std::cout << e.what() << endl;
-  } catch (string s) {
+  } catch (string &s) {
     std::cout << s << endl;
   }
 

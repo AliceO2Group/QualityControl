@@ -51,8 +51,8 @@ class Quality
     std::string mName;
 };
 
-} /* namespace Core */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} // namespace Core
+} // namespace QualityControl
+} // namespace AliceO2
 
-#endif /* QUALITYCONTROL_LIBS_CORE_QUALITY_H_ */
+#endif // QUALITYCONTROL_LIBS_CORE_QUALITY_H_

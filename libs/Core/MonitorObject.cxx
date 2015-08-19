@@ -24,6 +24,6 @@ MonitorObject::MonitorObject(const std::string &name, TObject *object)
 
 }
 
-} /* namespace Core */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} // namespace Core
+} // namespace QualityControl
+} // namespace AliceO2

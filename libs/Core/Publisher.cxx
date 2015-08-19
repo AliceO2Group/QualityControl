@@ -3,11 +3,11 @@
 /// \author Barthelemy von Haller
 ///
 
-#include <TCanvas.h>
 #include "QcInfoLogger.h"
 #include "Publisher.h"
 #include "MonitorObject.h"
 #include "Exceptions.h"
+#include "MockPublisherBackend.h"
 
 using namespace AliceO2::QualityControl::Core;
 
@@ -17,6 +17,8 @@ namespace Core {
 
 Publisher::Publisher()
 {
+  // TODO choose proper backend based on configuration or parameters
+  mBackend = new MockPublisherBackend();
 }
 
 Publisher::~Publisher()
@@ -64,15 +66,11 @@ TObject *Publisher::getObject(std::string objectName)
 
 void Publisher::publish()
 {
-  // TODO use a backend to publish to database, file, alfa, etc....
-  // just to see it
-  if (mMonitorObjects.size() > 0) {
-    TCanvas canvas;
-    mMonitorObjects[0]->getObject()->Draw();
-    canvas.SaveAs("test.jpg");
+  for (auto &mo : mMonitorObjects) {
+    mBackend->publish(mo.second);
   }
 }
 
-} /* namespace Publisher */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} // namespace Core
+} // namespace QualityControl
+} // namespace AliceO2

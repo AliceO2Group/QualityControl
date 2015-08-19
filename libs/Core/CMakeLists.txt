@@ -14,6 +14,9 @@ set(HEADERS
   TaskControl.h
   Publisher.h
   QcInfoLogger.h
+  PublisherBackendInterface.h
+  MockPublisherBackend.h
+  TaskFactory.h
 )
 
 set(SOURCES
@@ -24,6 +27,9 @@ set(SOURCES
   TaskControl.cxx
   Publisher.cxx
   ExampleTask.cxx
+  PublisherBackendInterface.cxx
+  MockPublisherBackend.cxx
+  TaskFactory.cxx
 )
 
 # Define two variables in order not to repeat ourselves.

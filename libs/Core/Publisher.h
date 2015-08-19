@@ -10,6 +10,7 @@
 #include <TObject.h>
 #include "Quality.h"
 #include "MonitorObject.h"
+#include "PublisherBackendInterface.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -42,10 +43,11 @@ class Publisher
     void publish();
 
     std::map<std::string /*object name*/, QualityControl::Core::MonitorObject * /* object */> mMonitorObjects;
+    PublisherBackendInterface* mBackend;
 };
 
-} /* namespace Publisher */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} // namespace Core
+} // namespace QualityControl
+} // namespace AliceO2
 
-#endif /* QUALITYCONTROL_LIBS_PUBLISHER_PUBLISHER_H_ */
+#endif // QUALITYCONTROL_LIBS_PUBLISHER_PUBLISHER_H_

@@ -18,7 +18,7 @@ class Activity
 {
   public:
     /// Default constructor
-    Activity() {}
+    Activity(): mId(0), mType(0) {}
     Activity(int id, int type) : mId(id), mType(type) {}
     /// Destructor
     virtual ~Activity() {}
@@ -64,8 +64,8 @@ class TaskInterface
 
 };
 
-} /* namespace Core */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} // namespace Core
+} // namespace QualityControl
+} // namespace AliceO2
 
-#endif /* QUALITYCONTROL_LIBS_CORE_QCTASK_H_ */
+#endif // QUALITYCONTROL_LIBS_CORE_QCTASK_H_

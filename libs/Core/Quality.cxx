@@ -36,6 +36,6 @@ const std::string& Quality::getName() const
   return mName;
 }
 
-} /* namespace Core */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} // namespace Core
+} // namespace QualityControl
+} // namespace AliceO2

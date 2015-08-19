@@ -81,8 +81,8 @@ class MonitorObject
     std::map<std::string /* name */, std::string /* checker class name */> mCheckers;
 };
 
-} /* namespace Core */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} // namespace Core
+} // namespace QualityControl
+} // namespace AliceO2
 
-#endif /* QUALITYCONTROL_LIBS_CORE_MONITOROBJECT_H_ */
+#endif // QUALITYCONTROL_LIBS_CORE_MONITOROBJECT_H_

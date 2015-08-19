@@ -7,12 +7,13 @@
 #include "TaskControl.h"
 #include "ExampleTask.h"
 #include <DataSampling/MockSampler.h>
+#include "TaskFactory.h"
 
 namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-TaskControl::TaskControl(std::string taskName, std::string configurationSource)
+TaskControl::TaskControl(std::string taskName, std::string configurationSource) : sampler(0)
 {
   AliceO2::InfoLogger::InfoLogger theLog;
   mPublisher = new Publisher();
@@ -21,7 +22,9 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
   // TODO use a factory to load the proper plugin and class
   string moduleName = mConfiguration.getValue<string>("ExampleTask.moduleName");
   string className = mConfiguration.getValue<string>("ExampleTask.moduleName");
-  mTask = new AliceO2::QualityControl::ExampleModule::ExampleTask(taskName, mPublisher);
+  TaskFactory f;
+  mTask = f.create(taskName, moduleName, className, mPublisher);
+//  mTask = new AliceO2::QualityControl::ExampleModule::ExampleTask(taskName, mPublisher);
 }
 
 TaskControl::~TaskControl()
