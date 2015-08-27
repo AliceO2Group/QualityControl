@@ -8,6 +8,7 @@
 #include "MonitorObject.h"
 #include "Exceptions.h"
 #include "MockPublisherBackend.h"
+//#include "AlfaPublisherBackend.h"
 
 using namespace AliceO2::QualityControl::Core;
 
@@ -19,6 +20,7 @@ Publisher::Publisher()
 {
   // TODO choose proper backend based on configuration or parameters
   mBackend = new MockPublisherBackend();
+//  mBackend = new AlfaPublisherBackend();
 }
 
 Publisher::~Publisher()
@@ -56,6 +58,7 @@ MonitorObject *Publisher::getMonitorObject(std::string objectName)
   } else {
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
   }
+  return nullptr; // we should never reach this point
 }
 
 TObject *Publisher::getObject(std::string objectName)

@@ -32,6 +32,11 @@ set(SOURCES
   TaskFactory.cxx
 )
 
+if(FAIRROOT_FOUND)
+  list(append HEADER AlfaPublisherBackend.h)
+  list(append SOURCES AlfaPublisherBackend.cxx)
+endif(FAIRROOT_FOUND)
+
 # Define two variables in order not to repeat ourselves.
 set(LIBRARY QCCore)
 set(INCLUDE include/${LIBRARY})
@@ -40,7 +45,7 @@ set(INCLUDE include/${LIBRARY})
 add_library(${LIBRARY} SHARED ${HEADERS} ${SOURCES}  )
 
 # Links the target(s) against libraries
-target_link_libraries(${LIBRARY} ${InfoLogger_LIBRARIES} ${Configuration_LIBRARIES} ${DataSampling_LIBRARIES} ${ROOT_LIBRARIES})
+target_link_libraries(${LIBRARY} ${InfoLogger_LIBRARIES} ${Configuration_LIBRARIES} ${DataSampling_LIBRARIES} ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES})
 
 # Set the build version. It will be used in the name of the lib, with corresponding
 # symlinks created. SOVERSION could also be specified for api version. 

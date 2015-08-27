@@ -53,22 +53,41 @@ CHECK_CXX_COMPILER_FLAG(-std=c++11 COMPILER_SUPPORTS_CXX11)
 if(COMPILER_SUPPORTS_CXX11)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 else()
-  message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+  message(ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
-# This line finds the boost lib and headers. 
+# Boost
 set(Boost_NO_BOOST_CMAKE ON) #  Don't do a find_package in config mode before searching for a regular boost install.
 # TODO Don't hard code this...
 set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
 set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)
 find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options)
 
+# Alfa
+find_package(FairRoot)
+set(FAIRROOT_FOUND FALSE)
+if(FAIRROOT_FOUND)
+    # this should go away when fairrot provides a proper Find script or proper config scripts
+    # See : http://www.cmake.org/cmake/help/v3.0/command/link_directories.html
+    link_directories(${FAIRROOT_LIBRARY_DIR})
+else(FAIRROOT_FOUND)
+    message(WARNING "FairRoot not found, corresponding classes will not be compiled.")
+endif(FAIRROOT_FOUND)
+
 # ROOT
-#set(ROOT_CONFIG_DEBUG true)
-# this is an ugly hack to find root as it is not installed in a standard place
-SET(ROOT_DIR "/opt/root-6/cmake/")
+if(FAIRROOT_FOUND)
+    SET(ROOT_DIR "/home/flpprotodev/dev/ALFA-Externals/lib/root/")
+    set(ROOT_CONFIG_SEARCHPATH "/home/flpprotodev/dev/ALFA-Externals/lib/root/")
+    find_package(ROOT)
+    set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ)
+else(FAIRROOT_FOUND)
+    #set(ROOT_CONFIG_DEBUG true)
+    # this is an ugly hack to find root as it is not installed in a standard place
+    SET(ROOT_DIR "/opt/root-6/cmake/")
+    find_package(ROOT CONFIG COMPONENTS Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore QUIET)
+    set(FAIRROOT_LIBRARIES "")
+endif(FAIRROOT_FOUND)
 # TODO make it required once in its own repo
-find_package(ROOT CONFIG COMPONENTS Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore QUIET)
 if(ROOT_FOUND)
     message(STATUS "ROOT ${ROOT_VERSION} found")
 else()
@@ -93,6 +112,7 @@ include_directories(
     ${Configuration_INCLUDE_DIR}
     ${DataSampling_INCLUDE_DIR}
     ${ROOT_INCLUDE_DIRS}
+    ${FAIRROOT_INCLUDE_DIR}
 )
 
 if(ROOT_FOUND) # TODO remove this once we have our own repo

@@ -75,43 +75,6 @@ int main(int argc, char *argv[])
     std::cout << desc << std::endl;
     return EXIT_FAILURE;
   }
-  /*string source = "";
-  if (vm.count("source")) {
-    source = vm["source"].as<string>();
-  } else {
-    // we don't use the "required" option of the po::value because we want to output the help and avoid
-    // horrible template error to be displayed to the user.
-    std::cout << "\"source\" is required!" << "\n";
-    std::cout << desc << std::endl;
-    return EXIT_FAILURE;
-  }
-  string moduleName = "";
-  if (vm.count("module")) {
-    moduleName = vm["module"].as<string>();
-  } else {
-    // we don't use the "required" option of the po::value because we want to output the help and avoid
-    // horrible template error to be displayed to the user.
-    std::cout << "\"module\" is required!" << "\n";
-    std::cout << desc << std::endl;
-    return EXIT_FAILURE;
-  }
-  string className = "";
-  if (vm.count("class")) {
-    className = vm["class"].as<string>();
-  } else {
-    // we don't use the "required" option of the po::value because we want to output the help and avoid
-    // horrible template error to be displayed to the user.
-    std::cout << "\"class\" is required!" << "\n";
-    std::cout << desc << std::endl;
-    return EXIT_FAILURE;
-  }*/
-
-  // Print the configuration
-//  cout << "Task configuration : " << endl;
-//  cout << "   - Name : " << name << endl;
-//  cout << "   - Source : " << source << endl;
-//  cout << "   - Module : " << moduleName << endl;
-//  cout << "   - Task class : " << className << endl;
 
   // install handlers
   signal(SIGSEGV, handler_sigsev); // for seg faults
