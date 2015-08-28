@@ -3,11 +3,13 @@
 set(HEADERS
   Checker.h
   CheckInterface.h
+  NonEmpty.h
 )
 
 set(SOURCES
   Checker.cxx
   CheckInterface.cxx
+  NonEmpty.cxx
 )
 
 # Define two variables in order not to repeat ourselves.
