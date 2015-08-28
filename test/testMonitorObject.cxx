@@ -3,7 +3,7 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "Core/MonitorObject.h"
+#include "../include/QualityControl/MonitorObject.h"
 
 #define BOOST_TEST_MODULE MO test
 #define BOOST_TEST_MAIN

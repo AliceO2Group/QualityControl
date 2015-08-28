@@ -3,7 +3,7 @@
 /// \author  Barthelemy von Haller
 ///
 
-#include "../libs/Core/TaskInterface.h"
+#include "../include/QualityControl/TaskInterface.h"
 
 #define BOOST_TEST_MODULE QC test
 #define BOOST_TEST_MAIN

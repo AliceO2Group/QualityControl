@@ -3,7 +3,7 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../libs/Core/Quality.h"
+#include "../include/QualityControl/Quality.h"
 
 #define BOOST_TEST_MODULE Quality test
 #define BOOST_TEST_MAIN

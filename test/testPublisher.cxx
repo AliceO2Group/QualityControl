@@ -3,13 +3,13 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../libs/Core/Publisher.h"
+#include "../include/QualityControl/Publisher.h"
 
 #define BOOST_TEST_MODULE Publisher test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include <Core/Exceptions.h>
+#include "../include/QualityControl/Exceptions.h"
 #include <iostream>
 #include <TObjString.h>
 

@@ -2,35 +2,18 @@
 #
 # @author  bvonhall
 
-cmake_minimum_required(VERSION 2.6)
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
-
-# CMake 2.6+ specific
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib") 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+cmake_minimum_required(VERSION 2.8)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake) # main (top) cmake dir
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake) # project specific cmake dir
 
 # Set the name of your project here
-project("Quality Control")
+project("QualityControl")
 
 # Set the version number of your project here (format is MAJOR.MINOR.PATCHLEVEL - e.g. 1.0.0)
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "0")
 set(VERSION_PATCH "0")
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
-
-# SVN (and its revision)
-include(FindSubversion)
-IF(Subversion_FOUND) 
-    if(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
-        Subversion_WC_INFO(${CMAKE_SOURCE_DIR} MY)
-        SET(VCS_REVISION "${MY_WC_REVISION}")
-    else ()
-        SET(VCS_REVISION "-1")
-    endif()
-ELSE(Subversion_FOUND)
-    SET(VCS_REVISION "-1")
-ENDIF(Subversion_FOUND) 
 
 # Git (and its revision)
 find_package(Git)
@@ -94,10 +77,17 @@ else()
     message(WARNING "ROOT not found, we won't compile the QC (skip, no error)")
 endif()
 
-# O2 deps
-find_package(InfoLogger REQUIRED)
-find_package(Configuration REQUIRED)
-find_package(DataSampling REQUIRED)
+# O2 deps (we check whether the target exists and find the package only if we don't know it yet)
+#         (it would be the case if we are compiling from the top dir)
+if(NOT TARGET InfoLogger)
+  find_package(InfoLogger CONFIG REQUIRED)
+endif()
+if(NOT TARGET Configuration)
+  find_package(Configuration CONFIG REQUIRED)
+endif()
+if(NOT TARGET DataSampling)
+  find_package(DataSampling CONFIG REQUIRED)
+endif()
 
 # This sets the include directory for the reference project. This is
 # the -I flag in gcc. All the includes should be in this variable To
@@ -105,8 +95,8 @@ find_package(DataSampling REQUIRED)
 # (after a space), or add an include_directories statement in a
 # subdirectory's CMakeLists.
 include_directories(
-    ${CMAKE_SOURCE_DIR}/libs
-    ${CMAKE_BINARY_DIR}/libs   # in general shouldn't be needed, but here we generate Version.h there
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_BINARY_DIR}/include   # add the binary tree to the search path so that we will find Version.h
     ${Boost_INCLUDE_DIRS}
     ${InfoLogger_INCLUDE_DIR}
     ${Configuration_INCLUDE_DIR}
@@ -117,14 +107,22 @@ include_directories(
 
 if(ROOT_FOUND) # TODO remove this once we have our own repo
     enable_testing() # needed on top-level CMakeLists.txt
-    add_subdirectory(libs)
-    add_subdirectory(apps)
+    add_subdirectory(include)
+    add_subdirectory(src)
     add_subdirectory(doc)
     add_subdirectory(test)
 
 
-    # PACKAGING
+    #
+    # SYSTEM PACKAGING (RPM, TGZ, ...)
     # _____________________________________________________________________________
-
+    
     include(CPackConfig)
+    
+    
+    #
+    # CMAKE PACKAGING (for other CMake projects to use this one easily)
+    # _____________________________________________________________________________
+    
+    include(PackageConfigurator)
 endif()

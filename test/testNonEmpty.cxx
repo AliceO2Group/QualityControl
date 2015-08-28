@@ -3,7 +3,7 @@
 /// \author flpprotodev
 ///
 
-#include "Checker/NonEmpty.h"
+#include "../include/QualityControl/NonEmpty.h"
 
 #define BOOST_TEST_MODULE Publisher test
 #define BOOST_TEST_MAIN

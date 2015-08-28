@@ -3,7 +3,7 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../libs/Core/QcInfoLogger.h"
+#include "../include/QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE Quality test
 #define BOOST_TEST_MAIN
