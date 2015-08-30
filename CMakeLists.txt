@@ -15,6 +15,9 @@ set(VERSION_MINOR "0")
 set(VERSION_PATCH "0")
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
+# Set default installation
+set(CMAKE_INSTALL_PREFIX "/opt/${CMAKE_PROJECT_NAME}")
+
 # Git (and its revision)
 find_package(Git)
 # GetGitRevisionDescription module to retreive branch and revision information from Git
@@ -39,11 +42,18 @@ else()
   message(ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+# Mac needed variables (adapt according to your needs)
+set(CMAKE_MACOSX_RPATH ON)
+#set(CMAKE_SKIP_BUILD_RPATH FALSE)
+#set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+#set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # Boost
 set(Boost_NO_BOOST_CMAKE ON) #  Don't do a find_package in config mode before searching for a regular boost install.
 # TODO Don't hard code this...
-set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
-set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)
+#set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
+#set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)
 find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options)
 
 # Alfa
@@ -102,8 +112,12 @@ include_directories(
     ${Configuration_INCLUDE_DIR}
     ${DataSampling_INCLUDE_DIR}
     ${ROOT_INCLUDE_DIRS}
-    ${FAIRROOT_INCLUDE_DIR}
 )
+if(FAIRROOT_FOUND)
+    include_directories(
+            ${FAIRROOT_INCLUDE_DIR}
+    )
+endif(FAIRROOT_FOUND)
 
 if(ROOT_FOUND) # TODO remove this once we have our own repo
     enable_testing() # needed on top-level CMakeLists.txt
