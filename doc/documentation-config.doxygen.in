@@ -574,9 +574,9 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = @CMAKE_SOURCE_DIR@/libs \
-                         @CMAKE_BINARY_DIR@/libs \
-                         @CMAKE_SOURCE_DIR@/apps \
+INPUT                  = @CMAKE_SOURCE_DIR@/include \
+                         @CMAKE_BINARY_DIR@/include \
+                         @CMAKE_SOURCE_DIR@/src \
                          @CMAKE_SOURCE_DIR@/doc
 
 # This tag can be used to specify the character encoding of the source files
