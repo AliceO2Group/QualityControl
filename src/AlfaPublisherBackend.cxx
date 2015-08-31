@@ -3,7 +3,7 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "AlfaPublisherBackend.h"
+#include "QualityControl/AlfaPublisherBackend.h"
 #include "FairMQTransportFactoryZMQ.h"
 
 using namespace std;

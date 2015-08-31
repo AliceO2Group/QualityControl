@@ -39,8 +39,10 @@ set(LIB_SOURCES_CORE
 )
 
 if(FAIRROOT_FOUND)
-  list(append LIB_HEADERS_CORE AlfaPublisherBackend.h)
-  list(append LIB_SOURCES_CORE AlfaPublisherBackend.cxx)
+#  list(append LIB_HEADERS_CORE AlfaPublisherBackend.h)
+#  list(append LIB_SOURCES_CORE AlfaPublisherBackend.cxx)
+    set(LIB_HEADERS_CORE ${LIB_HEADERS_CORE} AlfaPublisherBackend.h)
+    set(LIB_SOURCES_CORE ${LIB_SOURCES_CORE} AlfaPublisherBackend.cxx)
 endif(FAIRROOT_FOUND)
 
 set(APP_HEADERS_LAUNCHER
