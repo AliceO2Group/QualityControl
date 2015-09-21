@@ -59,7 +59,7 @@ set(APP_SOURCES_LAUNCHER
 set(LIBRARY_NAME_CORE QCCore)
 add_library(${LIBRARY_NAME_CORE} SHARED ${LIB_SOURCES_CORE})
 # TODO use Configuration_LIBRARIES instead of Configuration_LIBRARIES_STATIC once the shared lib is fixed
-target_link_libraries(${LIBRARY_NAME_CORE} ${InfoLogger_LIBRARIES} ${Configuration_LIBRARIES_STATIC} DataSampling ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES})
+target_link_libraries(${LIBRARY_NAME_CORE} InfoLogger-static Configuration-static DataSampling ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES})
 set_target_properties(${LIBRARY_NAME_CORE} PROPERTIES
   VERSION ${VERSION}  # ${VERSION} was defined in the main CMakeLists.
   FRAMEWORK FALSE
