@@ -15,8 +15,8 @@ set(VERSION_MINOR "0")
 set(VERSION_PATCH "0")
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
-# Set default installation
-set(CMAKE_INSTALL_PREFIX "/opt/${CMAKE_PROJECT_NAME}")
+# Macros and variables for all O2 subprojects
+include(O2)
 
 # Git (and its revision)
 find_package(Git)
@@ -55,6 +55,10 @@ set(Boost_NO_BOOST_CMAKE ON) #  Don't do a find_package in config mode before se
 #set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
 #set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)
 find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options)
+
+# Other subprojects
+link_o2_subproject(DataFormat)
+link_o2_subproject(InfoLogger)
 
 # Alfa
 find_package(FairRoot)
