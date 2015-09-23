@@ -21,7 +21,7 @@ namespace Core {
 /// The current patch level.
 #define QUALITYCONTROL_VERSION_PATCH @VERSION_PATCH@
 
-/// The current svn revision.
+/// The current VCS revision.
 #define QUALITYCONTROL_VCS_REVISION "@VCS_REVISION@"
 
 /// True if the current version is newer than the given one.
@@ -77,13 +77,13 @@ public:
     return version.str();
   }
 
-  /// @return the SVN revision.
+  /// @return the VCS revision.
   static std::string getRevision()
   {
     return QUALITYCONTROL_VCS_REVISION;
   }
 
-  /// @return the current QualityControl version plus the SVN revision (MM.mm.pp.rev).
+  /// @return the current QualityControl version plus the VCS revision (MM.mm.pp.rev).
   static std::string getRevString()
   {
     std::ostringstream version;
