@@ -92,18 +92,6 @@ else()
     message(WARNING "ROOT not found, we won't compile the QC (skip, no error)")
 endif()
 
-# O2 deps (we check whether the target exists and find the package only if we don't know it yet)
-#         (it would be the case if we are compiling from the top dir)
-if(NOT TARGET InfoLogger)
-  find_package(InfoLogger CONFIG REQUIRED)
-endif()
-if(NOT TARGET Configuration)
-  find_package(Configuration CONFIG REQUIRED)
-endif()
-if(NOT TARGET DataSampling)
-  find_package(DataSampling CONFIG REQUIRED)
-endif()
-
 # This sets the include directory for the reference project. This is
 # the -I flag in gcc. All the includes should be in this variable To
 # add new directories to the include path, just add them in this list
