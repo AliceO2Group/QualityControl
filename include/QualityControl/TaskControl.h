@@ -7,7 +7,7 @@
 #define QUALITY_CONTROL_TASKCONTROL_H
 
 #include <DataSampling/SamplerInterface.h>
-#include "QualityControl/Publisher.h"
+#include "QualityControl/ObjectsManager.h"
 #include "QualityControl/TaskInterface.h"
 #include "Configuration/Configuration.h"
 
@@ -39,7 +39,7 @@ class TaskControl
     void stop();
 
   private:
-    Publisher *mPublisher;
+    ObjectsManager *mObjectsManager;
     TaskInterface *mTask;
     ConfigFile mConfiguration;
     AliceO2::DataSampling::SamplerInterface *sampler;

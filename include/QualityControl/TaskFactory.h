@@ -13,7 +13,7 @@ namespace QualityControl {
 namespace Core {
 
 class TaskInterface;
-class Publisher;
+class ObjectsManager;
 
 class TaskFactory
 {
@@ -26,7 +26,7 @@ class TaskFactory
     /// \brief Create a new instance of a TaskInterface.
     /// The TaskInterface actual class is decided based on the parameters passed.
     /// \author Barthelemy von Haller
-    TaskInterface *create(std::string taskName, std::string moduleName, std::string className, Publisher* publisher);
+    TaskInterface *create(std::string taskName, std::string moduleName, std::string className, ObjectsManager* objectsManager);
 };
 
 } // namespace Core

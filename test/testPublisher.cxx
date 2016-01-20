@@ -3,7 +3,7 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../include/QualityControl/Publisher.h"
+#include "QualityControl/ObjectsManager.h"
 
 #define BOOST_TEST_MODULE Publisher test
 #define BOOST_TEST_MAIN
@@ -22,19 +22,19 @@ namespace Core {
 
 BOOST_AUTO_TEST_CASE(publisher_test)
 {
-  Publisher publisher;
+  ObjectsManager objectsManager;
   TObjString s("content");
-  publisher.startPublishing("test", &s);
-  TObjString *s2 = (TObjString*)(publisher.getObject("test"));
+  objectsManager.startPublishing("test", &s);
+  TObjString *s2 = (TObjString*)(objectsManager.getObject("test"));
   BOOST_CHECK_EQUAL(s.GetString(), s2->GetString());
-  BOOST_CHECK_EQUAL(Quality::Null, publisher.getQuality("test"));
-  publisher.setQuality("test", Quality::Medium);
-  BOOST_CHECK_EQUAL(Quality::Medium, publisher.getQuality("test"));
-  BOOST_CHECK_THROW(publisher.getQuality("test2"), ObjectNotFoundError);
+  BOOST_CHECK_EQUAL(Quality::Null, objectsManager.getQuality("test"));
+  objectsManager.setQuality("test", Quality::Medium);
+  BOOST_CHECK_EQUAL(Quality::Medium, objectsManager.getQuality("test"));
+  BOOST_CHECK_THROW(objectsManager.getQuality("test2"), ObjectNotFoundError);
 
   // that is just for me to see how it looks like
   try {
-    publisher.getQuality("test2");
+    objectsManager.getQuality("test2");
   } catch (ObjectNotFoundError &e) {
     std::cout << e.what() << std::endl;
     if ( std::string const * extra  = boost::get_error_info<errinfo_object_name>(e) ) {
@@ -43,6 +43,6 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   }
 }
 
-} /* namespace Publisher */
+} /* namespace ObjectsManager */
 } /* namespace QualityControl */
 } /* namespace AliceO2 */

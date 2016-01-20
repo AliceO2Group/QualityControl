@@ -17,8 +17,8 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace ExampleModule {
 
-ExampleTask::ExampleTask(std::string name, Publisher *publisher)
-  : TaskInterface(name, publisher)
+ExampleTask::ExampleTask(std::string name, ObjectsManager *objectsManager)
+  : TaskInterface(name, objectsManager)
 {
 }
 
@@ -30,7 +30,7 @@ void ExampleTask::initialize()
 {
   QcInfoLogger::GetInstance() << "initialize" << AliceO2::InfoLogger::InfoLogger::endm;
   mHisto1 = new TH1F("first", "asdf", 2048, 0, 2047);
-  getPublisher()->startPublishing("my object", mHisto1);
+  getObjectsManager()->startPublishing("my object", mHisto1);
 }
 
 void ExampleTask::startOfActivity(Activity &activity)

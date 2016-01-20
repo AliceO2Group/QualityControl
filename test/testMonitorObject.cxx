@@ -33,6 +33,6 @@ BOOST_AUTO_TEST_CASE(mo)
   BOOST_CHECK_EQUAL(checkers1["second"], "class1");
 }
 
-} /* namespace Publisher */
+} /* namespace ObjectsManager */
 } /* namespace QualityControl */
 } /* namespace AliceO2 */

@@ -28,7 +28,7 @@ namespace Test {
 class TestTask : public TaskInterface
 {
   public:
-    TestTask(std::string name, Publisher *publisher) : TaskInterface(name, publisher)
+    TestTask(std::string name, ObjectsManager *objectsManager) : TaskInterface(name, objectsManager)
     {
       test = 0;
     }
@@ -85,8 +85,8 @@ class TestTask : public TaskInterface
 
 BOOST_AUTO_TEST_CASE(TestInstantiate)
 {
-  Publisher publisher; // TODO we need a mock object
-  Test::TestTask tt("asdf", &publisher);
+  ObjectsManager objectsManager; // TODO we need a mock object
+  Test::TestTask tt("asdf", &objectsManager);
   BOOST_CHECK_EQUAL(tt.test, 0);
   tt.initialize();
   BOOST_CHECK_EQUAL(tt.test, 1);

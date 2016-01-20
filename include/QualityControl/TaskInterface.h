@@ -6,7 +6,7 @@
 #define QUALITYCONTROL_LIBS_CORE_QCTASK_H_
 
 #include "DataFormat/DataBlock.h"
-#include "QualityControl/Publisher.h"
+#include "QualityControl/ObjectsManager.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -37,7 +37,7 @@ class TaskInterface
 {
   public:
     /// Constructor
-    TaskInterface(std::string name, Publisher *publisher);
+    TaskInterface(std::string name, ObjectsManager *objectsManager);
     /// Destructor
     virtual ~TaskInterface();
 
@@ -53,14 +53,14 @@ class TaskInterface
     // Setters and getters
     const std::string &getName() const;
     void setName(const std::string &name);
-    void setPublisher(Publisher *publisher);
+    void setObjectsManager(ObjectsManager *objectsManager);
 
   protected:
-    Publisher* getPublisher();
+    ObjectsManager* getObjectsManager();
 
   private:
     std::string mName;
-    Publisher *mPublisher;
+    ObjectsManager *mObjectsManager;
 
 };
 

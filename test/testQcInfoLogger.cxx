@@ -26,6 +26,6 @@ BOOST_AUTO_TEST_CASE(qc_info_logger)
   qc1 << "test" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-} /* namespace Publisher */
+} /* namespace ObjectsManager */
 } /* namespace QualityControl */
 } /* namespace AliceO2 */

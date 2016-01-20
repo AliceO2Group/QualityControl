@@ -20,12 +20,12 @@ TaskFactory::~TaskFactory()
 }
 
 TaskInterface* TaskFactory::create(std::string taskName, std::string moduleName, std::string className,
-    Publisher* publisher)
+                                   ObjectsManager* objectsManager)
 {
   TaskInterface *result = 0;
 
   // TODO some magic to load the proper library and class
-  result = new AliceO2::QualityControl::ExampleModule::ExampleTask(taskName, publisher);
+  result = new AliceO2::QualityControl::ExampleModule::ExampleTask(taskName, objectsManager);
 
   return result;
 }

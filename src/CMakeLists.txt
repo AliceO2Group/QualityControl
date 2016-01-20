@@ -7,7 +7,7 @@ set(LIB_HEADERS_CORE
   ../include/QualityControl/ExampleTask.h
   ../include/QualityControl/Exceptions.h
   ../include/QualityControl/TaskControl.h
-  ../include/QualityControl/Publisher.h
+        ../include/QualityControl/ObjectsManager.h
   ../include/QualityControl/QcInfoLogger.h
   ../include/QualityControl/PublisherBackendInterface.h
   ../include/QualityControl/MockPublisherBackend.h
@@ -25,7 +25,7 @@ set(LIB_SOURCES_CORE
   MonitorObject.cxx
   Quality.cxx
   TaskControl.cxx
-  Publisher.cxx
+        ObjectsManager.cxx
   ExampleTask.cxx
   PublisherBackendInterface.cxx
   MockPublisherBackend.cxx

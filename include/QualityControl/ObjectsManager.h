@@ -1,10 +1,10 @@
 ///
-/// \file   Publisher.h
+/// \file   ObjectsManager.h
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_PUBLISHER_PUBLISHER_H_
-#define QUALITYCONTROL_LIBS_PUBLISHER_PUBLISHER_H_
+#ifndef QUALITYCONTROL_LIBS_OBJECTSMANAGER_H_
+#define QUALITYCONTROL_LIBS_OBJECTSMANAGER_H_
 
 #include <string>
 #include <TObject.h>
@@ -22,15 +22,15 @@ namespace Core {
 /// Tasks set/get properties of the MonitorObjects via this class.
 ///
 /// \author Barthelemy von Haller
-class Publisher
+class ObjectsManager
 {
     friend class TaskControl; // TaskControl must be able to call "publish()" whenever needed. Nobody else can.
 
   public:
     /// Default constructor
-    Publisher();
+    ObjectsManager();
     /// Destructor
-    virtual ~Publisher();
+    virtual ~ObjectsManager();
 
     void startPublishing(std::string objectName, TObject *obj);
     void setQuality(std::string objectName, Quality quality);
@@ -50,4 +50,4 @@ class Publisher
 } // namespace QualityControl
 } // namespace AliceO2
 
-#endif // QUALITYCONTROL_LIBS_PUBLISHER_PUBLISHER_H_
+#endif // QUALITYCONTROL_LIBS_OBJECTSMANAGER_H_

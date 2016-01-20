@@ -1,10 +1,10 @@
 ///
-/// \file   Publisher.cxx
+/// \file   ObjectsManager.cxx
 /// \author Barthelemy von Haller
 ///
 
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/Publisher.h"
+#include "QualityControl/ObjectsManager.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Exceptions.h"
 #include "QualityControl/MockPublisherBackend.h"
@@ -16,42 +16,42 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-Publisher::Publisher()
+ObjectsManager::ObjectsManager()
 {
   // TODO choose proper backend based on configuration or parameters
-//  mBackend = new MockPublisherBackend();
+//  mBackend = new MockObjectsManagerBackend();
   mBackend = new AlfaPublisherBackend();
 }
 
-Publisher::~Publisher()
+ObjectsManager::~ObjectsManager()
 {
 }
 
-void Publisher::startPublishing(std::string objectName, TObject *object)
+void ObjectsManager::startPublishing(std::string objectName, TObject *object)
 {
   MonitorObject *newObject = new MonitorObject(objectName, object);
   mMonitorObjects[objectName] = newObject;
 }
 
-void Publisher::setQuality(std::string objectName, Quality quality)
+void ObjectsManager::setQuality(std::string objectName, Quality quality)
 {
   MonitorObject *mo = getMonitorObject(objectName);
   mo->setQuality(quality);
 }
 
-Quality Publisher::getQuality(std::string objectName)
+Quality ObjectsManager::getQuality(std::string objectName)
 {
   MonitorObject *mo = getMonitorObject(objectName);
   return mo->getQuality();
 }
 
-void Publisher::addChecker(std::string objectName, std::string checkerName, std::string checkerClassName)
+void ObjectsManager::addChecker(std::string objectName, std::string checkerName, std::string checkerClassName)
 {
   MonitorObject *mo = getMonitorObject(objectName);
   mo->addCheck(checkerName, checkerClassName);
 }
 
-MonitorObject *Publisher::getMonitorObject(std::string objectName)
+MonitorObject *ObjectsManager::getMonitorObject(std::string objectName)
 {
   if (mMonitorObjects.count(objectName) > 0) {
     return mMonitorObjects[objectName];
@@ -61,13 +61,13 @@ MonitorObject *Publisher::getMonitorObject(std::string objectName)
   return nullptr; // we should never reach this point
 }
 
-TObject *Publisher::getObject(std::string objectName)
+TObject *ObjectsManager::getObject(std::string objectName)
 {
   MonitorObject *mo = getMonitorObject(objectName);
   return mo->getObject();
 }
 
-void Publisher::publish()
+void ObjectsManager::publish()
 {
   for (auto &mo : mMonitorObjects) {
     mBackend->publish(mo.second);

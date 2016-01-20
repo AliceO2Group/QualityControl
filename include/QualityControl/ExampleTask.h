@@ -24,7 +24,7 @@ class ExampleTask /*final*/ : public TaskInterface // todo add back the "final" 
 {
   public:
     /// Constructor
-    ExampleTask(std::string name, Publisher *publisher);
+    ExampleTask(std::string name, ObjectsManager *objectsManager);
     /// Destructor
     virtual ~ExampleTask();
 

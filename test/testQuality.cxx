@@ -37,6 +37,6 @@ BOOST_AUTO_TEST_CASE(quality_test)
   cout << "test quality output : " << myQuality << endl;
 }
 
-} /* namespace Publisher */
+} /* namespace ObjectsManager */
 } /* namespace QualityControl */
 } /* namespace AliceO2 */

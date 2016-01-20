@@ -16,14 +16,14 @@ namespace Core {
 TaskControl::TaskControl(std::string taskName, std::string configurationSource) : sampler(0)
 {
   AliceO2::InfoLogger::InfoLogger theLog;
-  mPublisher = new Publisher();
+  mObjectsManager = new ObjectsManager();
   mConfiguration.load(configurationSource);
 
   // TODO use a factory to load the proper plugin and class
   string moduleName = mConfiguration.getValue<string>("ExampleTask.moduleName");
   string className = mConfiguration.getValue<string>("ExampleTask.moduleName");
   TaskFactory f;
-  mTask = f.create(taskName, moduleName, className, mPublisher);
+  mTask = f.create(taskName, moduleName, className, mObjectsManager);
 //  mTask = new AliceO2::QualityControl::ExampleModule::ExampleTask(taskName, mPublisher);
 }
 
@@ -61,7 +61,7 @@ void TaskControl::execute()
   sampler->releaseData();
   mTask->endOfCycle();
 
-  mPublisher->publish();
+  mObjectsManager->publish();
 }
 
 void TaskControl::stop()

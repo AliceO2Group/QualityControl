@@ -9,8 +9,8 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-TaskInterface::TaskInterface(std::string name, Publisher *publisher) :
-  mName(name), mPublisher(publisher)
+TaskInterface::TaskInterface(std::string name, ObjectsManager *objectsManager) :
+  mName(name), mObjectsManager(objectsManager)
 {
 }
 
@@ -28,15 +28,15 @@ void TaskInterface::setName(const std::string &name)
   mName = name;
 }
 
-void TaskInterface::setPublisher(Publisher *publisher)
+void TaskInterface::setObjectsManager(ObjectsManager *objectsManager)
 {
-  mPublisher = publisher;
+  mObjectsManager = objectsManager;
 }
 
 
-Publisher *TaskInterface::getPublisher()
+ObjectsManager *TaskInterface::getObjectsManager()
 {
-  return mPublisher;
+  return mObjectsManager;
 }
 } // namespace Core
 } // namespace QualityControl
