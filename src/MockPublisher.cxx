@@ -1,28 +1,28 @@
 ///
-/// \file   MockPublisherBackend.cxx
+/// \file   MockPublisher.cxx
 /// \author Barthelemy von Haller
 ///
 
 #include <TCanvas.h>
-#include "QualityControl/MockPublisherBackend.h"
+#include "QualityControl/MockPublisher.h"
 #include <boost/algorithm/string.hpp>
 
 namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-MockPublisherBackend::MockPublisherBackend()
+MockPublisher::MockPublisher()
 {
   // TODO Auto-generated constructor stub
 
 }
 
-MockPublisherBackend::~MockPublisherBackend()
+MockPublisher::~MockPublisher()
 {
   // TODO Auto-generated destructor stub
 }
 
-void MockPublisherBackend::publish(MonitorObject *mo)
+void MockPublisher::publish(MonitorObject *mo)
 {// just to see it
   TCanvas canvas;
   mo->getObject()->Draw();

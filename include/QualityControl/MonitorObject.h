@@ -17,7 +17,7 @@ namespace Core {
 /// \brief  This class keeps the metadata about one published object.
 ///
 /// \author Barthelemy von Haller
-class MonitorObject
+class MonitorObject : public TObject
 {
   public:
     /// Default constructor

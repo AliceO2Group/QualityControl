@@ -7,10 +7,9 @@
 #define QUALITYCONTROL_LIBS_OBJECTSMANAGER_H_
 
 #include <string>
-#include <TObject.h>
 #include "QualityControl/Quality.h"
 #include "QualityControl/MonitorObject.h"
-#include "QualityControl/PublisherBackendInterface.h"
+#include "QualityControl/PublisherInterface.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -43,7 +42,7 @@ class ObjectsManager
     void publish();
 
     std::map<std::string /*object name*/, QualityControl::Core::MonitorObject * /* object */> mMonitorObjects;
-    PublisherBackendInterface* mBackend;
+    PublisherInterface* mBackend;
 };
 
 } // namespace Core

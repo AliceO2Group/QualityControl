@@ -1,10 +1,10 @@
 ///
-/// \file   PublisherBackendInterface.h
+/// \file   PublisherInterface.h
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CORE_PUBLISHERBACKENDINTERFACE_H_
-#define QUALITYCONTROL_LIBS_CORE_PUBLISHERBACKENDINTERFACE_H_
+#ifndef QUALITYCONTROL_LIBS_CORE_PublisherInterface_H_
+#define QUALITYCONTROL_LIBS_CORE_PublisherInterface_H_
 
 #include "QualityControl/MonitorObject.h"
 
@@ -12,13 +12,13 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-class PublisherBackendInterface
+class PublisherInterface
 {
   public:
     /// Default constructor
-    PublisherBackendInterface();
+    PublisherInterface();
     /// Destructor
-    virtual ~PublisherBackendInterface();
+    virtual ~PublisherInterface();
 
 
     virtual void publish(MonitorObject *mo) = 0;
@@ -28,4 +28,4 @@ class PublisherBackendInterface
 } // namespace QualityControl
 } // namespace AliceO2
 
-#endif // QUALITYCONTROL_LIBS_CORE_PUBLISHERBACKENDINTERFACE_H_
+#endif // QUALITYCONTROL_LIBS_CORE_PublisherInterface_H_

@@ -1,12 +1,12 @@
 ///
-/// \file   AlfaPublisherBackend.h
+/// \file   AlfaPublisher.h
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CORE_ALFAPUBLISHERBACKEND_H_
-#define QUALITYCONTROL_LIBS_CORE_ALFAPUBLISHERBACKEND_H_
+#ifndef QUALITYCONTROL_LIBS_CORE_AlfaPublisher_H_
+#define QUALITYCONTROL_LIBS_CORE_AlfaPublisher_H_
 
-#include "QualityControl/PublisherBackendInterface.h"
+#include "QualityControl/PublisherInterface.h"
 #include "FairMQDevice.h"
 #include <TH1F.h>
 
@@ -14,13 +14,13 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-class AlfaPublisherBackend: public PublisherBackendInterface, FairMQDevice
+class AlfaPublisher: public PublisherInterface, FairMQDevice
 {
   public:
     /// Default constructor
-    AlfaPublisherBackend();
+    AlfaPublisher();
     /// Destructor
-    virtual ~AlfaPublisherBackend();
+    virtual ~AlfaPublisher();
 
     void publish(MonitorObject *mo);
 
@@ -32,11 +32,11 @@ class AlfaPublisherBackend: public PublisherBackendInterface, FairMQDevice
 
   private:
     std::string mText;
-    TH1F * th1;
+    MonitorObject *mCurrentMonitorObject;
 };
 
 } // namespace Core
 } // namespace QualityControl
 } // namespace AliceO2
 
-#endif // QUALITYCONTROL_LIBS_CORE_ALFAPUBLISHERBACKEND_H_
+#endif // QUALITYCONTROL_LIBS_CORE_AlfaPublisher_H_

@@ -1,9 +1,9 @@
 ///
-/// \file   AlfaPublisherBackend.cxx
+/// \file   AlfaPublisher.cxx
 /// \author Barthelemy von Haller
 ///
 
-#include "QualityControl/AlfaPublisherBackend.h"
+#include "QualityControl/AlfaPublisher.h"
 #include "FairMQTransportFactoryZMQ.h"
 #include "TMessage.h"
 #include "TH1F.h"
@@ -16,8 +16,8 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-AlfaPublisherBackend::AlfaPublisherBackend()
-  : mText("asdf")
+AlfaPublisher::AlfaPublisher()
+  : mText("asdf"), mCurrentMonitorObject(0)
 {
 
   FairMQProgOptions config;
@@ -46,10 +46,10 @@ AlfaPublisherBackend::AlfaPublisherBackend()
   ChangeState(INIT_TASK);
   WaitForEndOfState(INIT_TASK);
 
-  th1 = new TH1F("test", "test", 100, 0, 99);
+//  th1 = new TH1F("test", "test", 100, 0, 99);
 }
 
-AlfaPublisherBackend::~AlfaPublisherBackend()
+AlfaPublisher::~AlfaPublisher()
 {
   ChangeState(RESET_TASK);
   WaitForEndOfState(RESET_TASK);
@@ -61,17 +61,17 @@ AlfaPublisherBackend::~AlfaPublisherBackend()
 }
 
 // helper function to clean up the object holding the data after it is transported.
-void AlfaPublisherBackend::CustomCleanup(void *data, void *object)
+void AlfaPublisher::CustomCleanup(void *data, void *object)
 {
 //  delete static_cast<TMessage*>(object); // Does it delete the TH1F ?
 }
 
-void AlfaPublisherBackend::CustomCleanupTMessage(void *data, void *object)
+void AlfaPublisher::CustomCleanupTMessage(void *data, void *object)
 {
   delete (TMessage *) object;
 }
 
-void AlfaPublisherBackend::publish(MonitorObject *mo)
+void AlfaPublisher::publish(MonitorObject *mo)
 {
   // from Mohammad
 //  TH1F * th1 = new TH1F("test", "test", 100, 0, 99);
@@ -85,26 +85,26 @@ void AlfaPublisherBackend::publish(MonitorObject *mo)
   WaitForEndOfState(RUN);
 }
 
-void AlfaPublisherBackend::Init()
+void AlfaPublisher::Init()
 {
   cout << "Init()" << endl;
 }
 
-void AlfaPublisherBackend::Run()
+void AlfaPublisher::Run()
 {
 
   // this is called when the state change to RUN, i.e. when we call publish
 
-  th1->FillRandom("gaus", 10);
+//  th1->FillRandom("gaus", 10);
   TMessage *message = new TMessage(kMESS_OBJECT);
-  message->WriteObject(th1);
+  message->WriteObject(mCurrentMonitorObject);
   unique_ptr<FairMQMessage> msg(
     fTransportFactory->CreateMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
 
 //  FairMQMessage *msg = fTransportFactory->CreateMessage(message->Buffer(), message->BufferSize(), CustomCleanup,
 //                                                        message);
 
-  std::cout << "Sending \"" << th1->GetName() << "\"" << std::endl;
+  std::cout << "Sending \"" << mCurrentMonitorObject->GetName() << "\"" << std::endl;
 
   fChannels.at("data-out").at(0).Send(msg);
 

@@ -57,10 +57,12 @@ set(Boost_NO_BOOST_CMAKE ON) #  Don't do a find_package in config mode before se
 find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options) # log)
 
 # Other subprojects
+message("asdf")
 link_o2_subproject(InfoLogger)
 link_o2_subproject(Configuration)
 link_o2_subproject(DataFormat)
 link_o2_subproject(DataSampling)
+message("ccc : ${InfoLogger_FOUND}" )
 
 # Alfa
 find_package(FairRoot)

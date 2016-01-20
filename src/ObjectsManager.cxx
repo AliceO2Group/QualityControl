@@ -7,8 +7,8 @@
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Exceptions.h"
-#include "QualityControl/MockPublisherBackend.h"
-#include "QualityControl/AlfaPublisherBackend.h"
+#include "QualityControl/MockPublisher.h"
+#include "QualityControl/AlfaPublisher.h"
 
 using namespace AliceO2::QualityControl::Core;
 
@@ -20,7 +20,7 @@ ObjectsManager::ObjectsManager()
 {
   // TODO choose proper backend based on configuration or parameters
 //  mBackend = new MockObjectsManagerBackend();
-  mBackend = new AlfaPublisherBackend();
+  mBackend = new AlfaPublisher();
 }
 
 ObjectsManager::~ObjectsManager()
