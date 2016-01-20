@@ -74,6 +74,7 @@ set_target_properties(${LIBRARY_NAME_CORE} PROPERTIES
 set(APPLICATION_LAUNCHER qcTaskLauncher)
 add_executable(${APPLICATION_LAUNCHER} ${APP_SOURCES_LAUNCHER})
 target_link_libraries(${APPLICATION_LAUNCHER} QCCore ${Boost_PROGRAM_OPTIONS_LIBRARY})
+ #${Boost_LOG}) # BOOST_LOG needed because we use FairMQParser...
 install(TARGETS ${APPLICATION_LAUNCHER} DESTINATION bin COMPONENT apps)
 
 

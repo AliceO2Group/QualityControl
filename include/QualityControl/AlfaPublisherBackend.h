@@ -8,6 +8,7 @@
 
 #include "QualityControl/PublisherBackendInterface.h"
 #include "FairMQDevice.h"
+#include <TH1F.h>
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -22,14 +23,16 @@ class AlfaPublisherBackend: public PublisherBackendInterface, FairMQDevice
     virtual ~AlfaPublisherBackend();
 
     void publish(MonitorObject *mo);
-    static void CustomCleanup(void* data, void* hint);
 
   protected:
     virtual void Init();
     virtual void Run();
+    static void CustomCleanup(void *data, void *object);
+    static void CustomCleanupTMessage(void *data, void *object);
 
   private:
     std::string mText;
+    TH1F * th1;
 };
 
 } // namespace Core

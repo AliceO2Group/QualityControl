@@ -8,7 +8,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Exceptions.h"
 #include "QualityControl/MockPublisherBackend.h"
-//#include "AlfaPublisherBackend.h"
+#include "QualityControl/AlfaPublisherBackend.h"
 
 using namespace AliceO2::QualityControl::Core;
 
@@ -19,8 +19,8 @@ namespace Core {
 Publisher::Publisher()
 {
   // TODO choose proper backend based on configuration or parameters
-  mBackend = new MockPublisherBackend();
-//  mBackend = new AlfaPublisherBackend();
+//  mBackend = new MockPublisherBackend();
+  mBackend = new AlfaPublisherBackend();
 }
 
 Publisher::~Publisher()

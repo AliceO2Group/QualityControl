@@ -54,7 +54,7 @@ set(Boost_NO_BOOST_CMAKE ON) #  Don't do a find_package in config mode before se
 # TODO Don't hard code this...
 #set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
 #set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)
-find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options)
+find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options) # log)
 
 # Other subprojects
 link_o2_subproject(InfoLogger)

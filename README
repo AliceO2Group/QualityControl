@@ -7,8 +7,7 @@ Notes :
 - Need for TApplication ?
 - The name of the task is the only required thing in the end as it should then link to all required info from the
   Config (module, class name, source, ...).
-- Set ROOT to the same as alfa : export ROOTSYS=~/dev/ALFA-Externals/
- export LD_LIBRARY_PATH=/home/flpprotodev/dev/ALFA-Externals/lib/:$LD_LIBRARY_PATH
+- To test : ./src/qcTaskLauncher  -n asdf -c file:example.ini
 
 For any question, please contact:
 Barthélémy von Haller (barthelemy.von.haller@cern.ch)

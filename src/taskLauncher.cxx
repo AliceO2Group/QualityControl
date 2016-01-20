@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
     taskControl.configure();
     taskControl.start();
     while (keepRunning) {
+      sleep(2);   // durantion of the monitor cycle
       taskControl.execute();
     }
     taskControl.stop();
