@@ -61,7 +61,7 @@ class AlfaReceiverForTests : public FairMQDevice
 //          cout << "   name : " << mo->GetName() << " ; mean : " <<  dynamic_cast<TH1*>(mo->getObject())->GetMean() << endl;
 //          histo->Draw();
           mo->Draw();
-          c.SaveAs("test.png");
+          c.SaveAs((mo->getName() + ".png").c_str());
         }
       }
     }
