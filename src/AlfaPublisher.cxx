@@ -23,7 +23,7 @@ AlfaPublisher::AlfaPublisher()
 
   // set up communication layout and properties
   FairMQChannel histoChannel;
-  histoChannel.UpdateType("push");
+  histoChannel.UpdateType("pub");
   histoChannel.UpdateMethod("bind");
   histoChannel.UpdateAddress("tcp://*:5556");
   histoChannel.UpdateSndBufSize(10000);

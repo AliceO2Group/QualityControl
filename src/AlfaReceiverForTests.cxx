@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 
   try {
     FairMQChannel histoChannel;
-    histoChannel.UpdateType("pull");
+    histoChannel.UpdateType("sub");
     histoChannel.UpdateMethod("connect");
     histoChannel.UpdateAddress("tcp://localhost:5556");
     histoChannel.UpdateSndBufSize(10000);
