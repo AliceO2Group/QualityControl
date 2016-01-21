@@ -8,6 +8,8 @@
 
 using namespace AliceO2::InfoLogger;
 
+ClassImp(AliceO2::QualityControl::Core::Quality)
+
 namespace AliceO2 {
 namespace QualityControl {
 namespace Core {

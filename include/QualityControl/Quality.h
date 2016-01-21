@@ -8,6 +8,7 @@
 
 #include <string>
 #include <ostream>
+#include <TObject.h>
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -49,6 +50,8 @@ class Quality
   private:
     unsigned int mLevel; /// 0 is no quality, 1 is best quality, then it only goes downhill...
     std::string mName;
+
+    ClassDef(Quality,1);
 };
 
 } // namespace Core

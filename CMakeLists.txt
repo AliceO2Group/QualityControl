@@ -6,6 +6,11 @@ cmake_minimum_required(VERSION 2.8)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake) # main (top) cmake dir
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake) # project specific cmake dir
 
+# CMake useful variables
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+
 # Set the name of your project here
 project("QualityControl")
 
@@ -54,15 +59,13 @@ set(Boost_NO_BOOST_CMAKE ON) #  Don't do a find_package in config mode before se
 # TODO Don't hard code this...
 #set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
 #set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)
-find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options) # log)
+find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options system) # log)
 
 # Other subprojects
-message("asdf")
 link_o2_subproject(InfoLogger)
 link_o2_subproject(Configuration)
 link_o2_subproject(DataFormat)
 link_o2_subproject(DataSampling)
-message("ccc : ${InfoLogger_FOUND}" )
 
 # Alfa
 find_package(FairRoot)

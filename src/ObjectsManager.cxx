@@ -69,7 +69,7 @@ TObject *ObjectsManager::getObject(std::string objectName)
 
 void ObjectsManager::publish()
 {
-  for (auto &mo : mMonitorObjects) {
+for (auto &mo : mMonitorObjects) {
     mBackend->publish(mo.second);
   }
 }

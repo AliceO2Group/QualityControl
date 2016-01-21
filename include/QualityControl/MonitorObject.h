@@ -32,6 +32,13 @@ class MonitorObject : public TObject
       return mName;
     }
 
+    /// \brief Overwrite the TObject's method just to avoid confusion.
+    ///        One should rather use getName().
+    virtual const char * 	GetName () const
+    {
+      return getName().c_str();
+    }
+
     void setName(const std::string &name)
     {
       mName = name;
@@ -74,11 +81,17 @@ class MonitorObject : public TObject
       mCheckers[name] = checkClassName;
     }
 
+    virtual void 	Draw (Option_t *option="") {
+      mObject->Draw(option);
+    }
+
   private:
     std::string mName;
     Quality mQuality;
     TObject *mObject;
     std::map<std::string /* name */, std::string /* checker class name */> mCheckers;
+
+    ClassDef(MonitorObject,1);
 };
 
 } // namespace Core

@@ -9,6 +9,7 @@
 #include "TH1F.h"
 #include "FairMQProgOptions.h"
 #include "FairMQParser.h"
+#include "TClass.h"
 
 using namespace std;
 
@@ -19,8 +20,6 @@ namespace Core {
 AlfaPublisher::AlfaPublisher()
   : mText("asdf"), mCurrentMonitorObject(0)
 {
-
-  FairMQProgOptions config;
 
   // set up communication layout and properties
   FairMQChannel histoChannel;
@@ -81,6 +80,9 @@ void AlfaPublisher::publish(MonitorObject *mo)
 //                                                        message);
 //  fChannels.at("data-out").at(0).Send(msg);
 
+  mCurrentMonitorObject = mo;
+  cout << "alfa publisher : " << mo->getName() << " ; mean of histo : " << dynamic_cast<TH1*>(mo->getObject())->GetMean() << endl;
+
   ChangeState(RUN);
   WaitForEndOfState(RUN);
 }
@@ -97,14 +99,16 @@ void AlfaPublisher::Run()
 
 //  th1->FillRandom("gaus", 10);
   TMessage *message = new TMessage(kMESS_OBJECT);
-  message->WriteObject(mCurrentMonitorObject);
+  message->WriteObjectAny(mCurrentMonitorObject, mCurrentMonitorObject->IsA());
+  cout << "mCurrentMonitorObject->IsA() : " << mCurrentMonitorObject->IsA()->GetName() << endl;
   unique_ptr<FairMQMessage> msg(
     fTransportFactory->CreateMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
+  cout << "msg->GetSize() " << msg->GetSize() << endl;
 
 //  FairMQMessage *msg = fTransportFactory->CreateMessage(message->Buffer(), message->BufferSize(), CustomCleanup,
 //                                                        message);
 
-  std::cout << "Sending \"" << mCurrentMonitorObject->GetName() << "\"" << std::endl;
+  std::cout << "Sending \"" << mCurrentMonitorObject->getName() << "\"" << std::endl;
 
   fChannels.at("data-out").at(0).Send(msg);
 

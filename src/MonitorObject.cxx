@@ -5,6 +5,8 @@
 
 #include "QualityControl/MonitorObject.h"
 
+ClassImp(AliceO2::QualityControl::Core::MonitorObject)
+
 namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
