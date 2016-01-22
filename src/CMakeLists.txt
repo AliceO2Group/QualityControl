@@ -55,8 +55,9 @@ set(APP_SOURCES_LAUNCHER
 
 
 # DICTIONARIES
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS}/share/root/cmake/modules) # todo how to do it in a cleaner way ?
-include(RootNewMacros) # todo should we do it in the top cmakelists ?
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS}/share/root/cmake/modules) # todo how to do it in a cleaner way ?
+#include(RootNewMacros) # todo should we do it in the top cmakelists ?
+include(ROOTMacros) # todo we should use the standard rootnewmacros but it forces to install some files we don't want
 list(APPEND DICTINC
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/MonitorObject.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/Quality.h)
