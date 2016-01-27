@@ -66,6 +66,7 @@ link_o2_subproject(InfoLogger)
 link_o2_subproject(Configuration)
 link_o2_subproject(DataFormat)
 link_o2_subproject(DataSampling)
+link_o2_subproject(Monitoring)
 
 # Alfa
 find_package(FairRoot)

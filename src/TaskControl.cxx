@@ -8,6 +8,9 @@
 #include "QualityControl/ExampleTask.h"
 #include <DataSampling/MockSampler.h>
 #include "QualityControl/TaskFactory.h"
+#include <Monitoring/DataCollectorApMon.h>
+
+namespace Monitoring = AliceO2::Monitoring;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -62,6 +65,12 @@ void TaskControl::execute()
   mTask->endOfCycle();
 
   mObjectsManager->publish();
+
+  // TODO get config file from config manager
+  // TODO create a member for this collector in order to use it from other methods
+  Monitoring::Core::DataCollectorApMon collector(mConfiguration.getValue<string>("Monitoring.pathToConfig"));
+//  Monitoring::Core::DataCollector collector;
+  collector.sendValue("QC", "QC-barth", "asdf", 10);
 }
 
 void TaskControl::stop()

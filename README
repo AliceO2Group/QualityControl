@@ -7,7 +7,8 @@ Notes :
 - Need for TApplication ?
 - The name of the task is the only required thing in the end as it should then link to all required info from the
   Config (module, class name, source, ...).
-- To test : ./src/qcTaskLauncher  -n asdf -c file:../example.ini
+- To test : ./bin/qcTaskLauncher  -n asdf -c file:../example.ini
+            ./bin/alfaTestReceiver
 
 For any question, please contact:
 Barthélémy von Haller (barthelemy.von.haller@cern.ch)
