@@ -55,13 +55,12 @@ set(APP_SOURCES_LAUNCHER
 
 
 # DICTIONARIES
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS}/share/root/cmake/modules) # todo how to do it in a cleaner way ?
-#include(RootNewMacros) # todo should we do it in the top cmakelists ?
-include(ROOTMacros) # todo we should use the standard rootnewmacros but it forces to install some files we don't want
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS}/share/root/cmake/modules) # todo how to do it in a cleaner way ?
+include(RootNewMacros) # todo should we do it in the top cmakelists ?
 list(APPEND DICTINC
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/MonitorObject.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/Quality.h)
-set(CMAKE_INSTALL_LIBDIR lib) # todo remove when ROOT fixes the macro below
+set(CMAKE_ROOTTEST_DICT 1)
 ROOT_GENERATE_DICTIONARY("QCCoreDict" ${DICTINC} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/LinkDef.h)
 
 # LIBRARIES
