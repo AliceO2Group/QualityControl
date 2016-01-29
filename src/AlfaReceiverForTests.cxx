@@ -1,5 +1,5 @@
 ///
-/// @file    Receiver.cxx
+/// @file    AlfaReceiverForTests.cxx
 /// @author  Barthelemy von Haller
 ///
 

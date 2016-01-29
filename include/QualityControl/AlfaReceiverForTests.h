@@ -1,5 +1,5 @@
 ///
-/// @file    Receiver.h
+/// @file    AlfaReceiverForTests.h
 /// @author  Barthelemy von Haller
 ///
 
