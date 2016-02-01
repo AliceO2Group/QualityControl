@@ -107,11 +107,16 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_BINARY_DIR}/include   # add the binary tree to the search path so that we will find Version.h
     ${Boost_INCLUDE_DIRS}
-    ${InfoLogger_INCLUDE_DIR}
-    ${Configuration_INCLUDE_DIR}
-    ${DataSampling_INCLUDE_DIR}
+#    ${InfoLogger_INCLUDE_DIR}
+#    ${Configuration_INCLUDE_DIR}
+#    ${DataSampling_INCLUDE_DIR}
+#    ${DataFormat_INCLUDE_DIR}
     ${ROOT_INCLUDE_DIRS}
 )
+#message("asdf : ${DataSampling_INCLUDE_DIR}")
+#message("asdf : ${DataFormat_INCLUDE_DIR}")
+#message("asdf : ${DataFormat_INCLUDE_DIRS}")
+#message("asdf : ${DataFormat_INCLUDE_DIRS}")
 if(FAIRROOT_FOUND)
     include_directories(
             ${FAIRROOT_INCLUDE_DIR}
