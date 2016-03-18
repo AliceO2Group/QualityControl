@@ -18,8 +18,7 @@ namespace QualityControl {
 namespace Core {
 
 AlfaPublisher::AlfaPublisher()
-  : mText("asdf"), mCurrentMonitorObject(0)
-{
+  : mText("asdf"), mCurrentMonitorObject(0) {
 
   // set up communication layout and properties
   FairMQChannel histoChannel;
@@ -48,8 +47,7 @@ AlfaPublisher::AlfaPublisher()
 //  th1 = new TH1F("test", "test", 100, 0, 99);
 }
 
-AlfaPublisher::~AlfaPublisher()
-{
+AlfaPublisher::~AlfaPublisher() {
   ChangeState(RESET_TASK);
   WaitForEndOfState(RESET_TASK);
 

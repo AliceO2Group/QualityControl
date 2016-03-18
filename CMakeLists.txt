@@ -55,7 +55,7 @@ set(CMAKE_MACOSX_RPATH ON)
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Boost
-set(Boost_NO_BOOST_CMAKE ON) #  Don't do a find_package in config mode before searching for a regular boost install.
+#set(Boost_NO_BOOST_CMAKE ON) #  Don't do a find_package in config mode before searching for a regular boost install.
 # TODO Don't hard code this...
 #set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
 #set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)

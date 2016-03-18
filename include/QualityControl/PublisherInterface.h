@@ -20,7 +20,6 @@ class PublisherInterface
     /// Destructor
     virtual ~PublisherInterface();
 
-
     virtual void publish(MonitorObject *mo) = 0;
 };
 

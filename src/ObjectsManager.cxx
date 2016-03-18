@@ -25,6 +25,7 @@ ObjectsManager::ObjectsManager()
 
 ObjectsManager::~ObjectsManager()
 {
+  delete mBackend;
 }
 
 void ObjectsManager::startPublishing(std::string objectName, TObject *object)

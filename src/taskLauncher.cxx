@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     ("rev", "Print the SVN revision number.")
     ("name,n", po::value<string>(), "Set the name of the task (required).")
     ("configuration,c", po::value<string>(), "Configuration source, e.g. \"file:example.ini\" (required).")
+    ("cycles,C", po::value<int>(), "Number of cycles to run.")
 //    ("source,s", po::value<string>(), "Set the source for the data blocks (required).")
 //    ("module,m", po::value<string>(), "Module containing the task to load (required).")
 //    ("class,c", po::value<string>(), "Module's task class to instantiate (required).")
@@ -75,6 +76,11 @@ int main(int argc, char *argv[])
     std::cout << desc << std::endl;
     return EXIT_FAILURE;
   }
+  int maxNumberCycles = INT_MAX;
+  int cycle = 0;
+  if (vm.count("cycles")) {
+    maxNumberCycles = vm["cycles"].as<int>();
+  }
 
   // install handlers
   signal(SIGSEGV, handler_sigsev); // for seg faults
@@ -88,9 +94,11 @@ int main(int argc, char *argv[])
     taskControl.initialize();
     taskControl.configure();
     taskControl.start();
-    while (keepRunning) {
-      sleep(2);   // durantion of the monitor cycle
+    while (keepRunning && cycle < maxNumberCycles) {
+      cout << "cycle " << cycle << endl;
+      sleep(2);   // duration of the monitor cycle
       taskControl.execute();
+      cycle++;
     }
     taskControl.stop();
 
