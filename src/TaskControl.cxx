@@ -22,18 +22,21 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource) 
   mObjectsManager = new ObjectsManager();
   mConfigFile.load(configurationSource);
 
-  // TODO use a factory to load the proper plugin and class
+  // TODO could we use unique_ptr ?
   string moduleName = mConfigFile.getValue<string>("ExampleTask.moduleName");
   string className = mConfigFile.getValue<string>("ExampleTask.moduleName");
   TaskFactory f;
   mTask = f.create(taskName, moduleName, className, mObjectsManager);
-  //  mTask = new AliceO2::QualityControl::ExampleModule::ExampleTask(taskName, mPublisher);
   mCollector = new Monitoring::Core::DataCollectorApMon(mConfigFile.getValue<string>("Monitoring.pathToConfig"));
+  // TODO create DataSampling with correct parameters
+  mSampler = new AliceO2::DataSampling::MockSampler();
 }
 
 TaskControl::~TaskControl()
 {
-  cout << "~TaskControl" << endl;
+  delete mSampler;
+  delete mCollector;
+  delete mTask;
   delete mObjectsManager;
 }
 
@@ -54,9 +57,6 @@ void TaskControl::start()
   QcInfoLogger::GetInstance() << "start" << AliceO2::InfoLogger::InfoLogger::endm;
   Activity activity(mConfigFile.getValue<int>("Activity.number"), mConfigFile.getValue<int>("Activity.type"));
   mTask->startOfActivity(activity);
-
-  // TODO create DataSampling with correct parameters
-  mSampler = new AliceO2::DataSampling::MockSampler();
 }
 
 void TaskControl::execute()
@@ -64,13 +64,15 @@ void TaskControl::execute()
   mTask->startOfCycle();
   DataBlock *block = mSampler->getData(0);
   mTask->monitorDataBlock(*block);
-  mSampler->releaseData();
   mTask->endOfCycle();
 
   mObjectsManager->publish();
 
   // TODO the cast to int is WRONG ! change when new monitoring interface is available
   mCollector->sendValue("QC", "QC-barth", "dataBlockSize", (int)block->header.dataSize);
+
+  mSampler->releaseData(); // invalids the block !!!
+
 }
 
 void TaskControl::stop()

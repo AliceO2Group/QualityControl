@@ -24,6 +24,13 @@ ExampleTask::ExampleTask(std::string name, ObjectsManager *objectsManager)
 
 ExampleTask::~ExampleTask()
 {
+  // TODO use unique_ptr instead
+  if(mHisto1) {
+    delete mHisto1;
+  }
+  if(mHisto2) {
+    delete mHisto2;
+  }
 }
 
 void ExampleTask::initialize()

@@ -19,13 +19,17 @@ namespace Core {
 ObjectsManager::ObjectsManager()
 {
   // TODO choose proper backend based on configuration or parameters
-//  mBackend = new MockObjectsManagerBackend();
+//  mBackend = new MockPublisher();
   mBackend = new AlfaPublisher();
 }
 
 ObjectsManager::~ObjectsManager()
 {
   delete mBackend;
+  for(auto obj = mMonitorObjects.begin() ; obj != mMonitorObjects.end() ; obj++) {
+    delete obj->second;
+  }
+  mMonitorObjects.clear();
 }
 
 void ObjectsManager::startPublishing(std::string objectName, TObject *object)

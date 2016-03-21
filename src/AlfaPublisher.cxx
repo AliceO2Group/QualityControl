@@ -95,16 +95,12 @@ void AlfaPublisher::Run()
 
   // this is called when the state change to RUN, i.e. when we call publish
 
-//  th1->FillRandom("gaus", 10);
   TMessage *message = new TMessage(kMESS_OBJECT);
   message->WriteObjectAny(mCurrentMonitorObject, mCurrentMonitorObject->IsA());
   cout << "mCurrentMonitorObject->IsA() : " << mCurrentMonitorObject->IsA()->GetName() << endl;
   unique_ptr<FairMQMessage> msg(
     fTransportFactory->CreateMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
   cout << "msg->GetSize() " << msg->GetSize() << endl;
-
-//  FairMQMessage *msg = fTransportFactory->CreateMessage(message->Buffer(), message->BufferSize(), CustomCleanup,
-//                                                        message);
 
   std::cout << "Sending \"" << mCurrentMonitorObject->getName() << "\"" << std::endl;
 
