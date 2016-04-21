@@ -59,7 +59,10 @@ set(CMAKE_MACOSX_RPATH ON)
 # TODO Don't hard code this...
 #set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
 #set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)
-find_package(Boost 1.58 REQUIRED COMPONENTS unit_test_framework program_options system) # log)
+find_package(Boost 1.58 COMPONENTS unit_test_framework program_options system) # log)
+if(NOT BOOST_FOUND)
+    message(WARNING "Boost 1.58 not found, we won't compile the QC (skip, no error)")
+endif()
 
 # Other subprojects
 link_o2_subproject(InfoLogger)
@@ -123,7 +126,7 @@ if(FAIRROOT_FOUND)
     )
 endif(FAIRROOT_FOUND)
 
-if(ROOT_FOUND) # TODO remove this once we have our own repo
+if(ROOT_FOUND AND BOOST_FOUND) # TODO remove this once we have our own repo
     enable_testing() # needed on top-level CMakeLists.txt
     add_subdirectory(include)
     add_subdirectory(src)
