@@ -27,7 +27,8 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource) 
   string className = mConfigFile.getValue<string>("ExampleTask.moduleName");
   TaskFactory f;
   mTask = f.create(taskName, moduleName, className, mObjectsManager);
-  mCollector = new Monitoring::Core::DataCollectorApMon(mConfigFile.getValue<string>("Monitoring.pathToConfig"));
+  //mCollector = new Monitoring::Core::DataCollectorApMon(mConfigFile.getValue<string>("Monitoring.pathToConfig"));
+  mCollector = Monitoring::Core::Collector();
   // TODO create DataSampling with correct parameters
   mSampler = new AliceO2::DataSampling::MockSampler();
 }
@@ -69,7 +70,7 @@ void TaskControl::execute()
   mObjectsManager->publish();
 
   // TODO the cast to int is WRONG ! change when new monitoring interface is available
-  mCollector->sendValue("QC", "QC-barth", "dataBlockSize", (int)block->header.dataSize);
+  mCollector->send("QC", "QC-barth", "dataBlockSize", (int)block->header.dataSize);
 
   mSampler->releaseData(); // invalids the block !!!
 
