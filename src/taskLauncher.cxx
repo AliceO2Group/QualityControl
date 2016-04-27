@@ -11,9 +11,10 @@
 // ROOT
 #include <TApplication.h>
 #include <TROOT.h>
+// O2
+#include "Common/signalUtilities.h"
 // QC
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/signalUtilities.h"
 #include "QualityControl/TaskControl.h"
 #include "QualityControl/Version.h"
 
