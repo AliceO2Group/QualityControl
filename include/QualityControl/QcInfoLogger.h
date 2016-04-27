@@ -18,7 +18,7 @@ using namespace std;
 /// \brief  Singleton class that any class in the QC can use to log.
 ///
 /// The aim of this class is to avoid every class in the package to define and configure its own instance of InfoLogger.
-/// Independent InfoLogger instance can still be created when and if needed.
+/// Independent InfoLogger instances can still be created when and if needed.
 ///
 /// \author Barthelemy von Haller
 class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
