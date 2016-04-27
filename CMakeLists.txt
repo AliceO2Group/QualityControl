@@ -62,6 +62,11 @@ set(CMAKE_MACOSX_RPATH ON)
 find_package(Boost 1.58 COMPONENTS unit_test_framework program_options system) # log)
 if(NOT BOOST_FOUND AND NOT Boost_FOUND)
     message(WARNING "Boost 1.58 not found, we won't compile the QC (skip, no error)")
+    set(BOOST_FOUND 0) # because depending on the version, the cases do not always match
+    set(Boost_FOUND 0)
+else() 
+    set(BOOST_FOUND 1)
+    set(Boost_FOUND 1)
 endif()
 
 # Other subprojects
