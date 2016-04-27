@@ -8,9 +8,6 @@
 #include "QualityControl/ExampleTask.h"
 #include <DataSampling/MockSampler.h>
 #include "QualityControl/TaskFactory.h"
-#include <Monitoring/DataCollectorApMon.h>
-
-namespace Monitoring = AliceO2::Monitoring;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -28,7 +25,7 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource) 
   TaskFactory f;
   mTask = f.create(taskName, moduleName, className, mObjectsManager);
   //mCollector = new Monitoring::Core::DataCollectorApMon(mConfigFile.getValue<string>("Monitoring.pathToConfig"));
-  mCollector = Monitoring::Core::Collector();
+//  mCollector = AliceO2::Monitoring::Core::Collector();
   // TODO create DataSampling with correct parameters
   mSampler = new AliceO2::DataSampling::MockSampler();
 }
@@ -36,7 +33,7 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource) 
 TaskControl::~TaskControl()
 {
   delete mSampler;
-  delete mCollector;
+//  delete mCollector;
   delete mTask;
   delete mObjectsManager;
 }
@@ -70,7 +67,7 @@ void TaskControl::execute()
   mObjectsManager->publish();
 
   // TODO the cast to int is WRONG ! change when new monitoring interface is available
-  mCollector->send("QC", "QC-barth", "dataBlockSize", (int)block->header.dataSize);
+//  mCollector->send("QC", "QC-barth", "dataBlockSize", (int)block->header.dataSize);
 
   mSampler->releaseData(); // invalids the block !!!
 

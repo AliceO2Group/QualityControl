@@ -10,7 +10,6 @@
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/TaskInterface.h"
 #include "Configuration/Configuration.h"
-#include "Monitoring/DataCollectorApMon.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -44,7 +43,7 @@ class TaskControl
     TaskInterface *mTask;
     ConfigFile mConfigFile;
     AliceO2::DataSampling::SamplerInterface *mSampler;
-    AliceO2::Monitoring::Core::DataCollectorApMon *mCollector;
+//    AliceO2::Monitoring::Core::DataCollectorApMon *mCollector;
 };
 
 }
