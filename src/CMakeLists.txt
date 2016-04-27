@@ -50,7 +50,7 @@ set(APP_HEADERS_LAUNCHER
         )
 
 set(APP_SOURCES_LAUNCHER
-        taskLauncher.cxx
+        qcTaskLauncher.cxx
         )
 
 
