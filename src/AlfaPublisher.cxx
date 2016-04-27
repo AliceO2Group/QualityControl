@@ -18,7 +18,8 @@ namespace QualityControl {
 namespace Core {
 
 AlfaPublisher::AlfaPublisher()
-  : mText("asdf"), mCurrentMonitorObject(0) {
+    : mText("asdf"), mCurrentMonitorObject(0)
+{
 
   // set up communication layout and properties
   FairMQChannel histoChannel;
@@ -47,7 +48,8 @@ AlfaPublisher::AlfaPublisher()
 //  th1 = new TH1F("test", "test", 100, 0, 99);
 }
 
-AlfaPublisher::~AlfaPublisher() {
+AlfaPublisher::~AlfaPublisher()
+{
   ChangeState(RESET_TASK);
   WaitForEndOfState(RESET_TASK);
 
@@ -79,7 +81,8 @@ void AlfaPublisher::publish(MonitorObject *mo)
 //  fChannels.at("data-out").at(0).Send(msg);
 
   mCurrentMonitorObject = mo;
-  cout << "alfa publisher : " << mo->getName() << " ; mean of histo : " << dynamic_cast<TH1*>(mo->getObject())->GetMean() << endl;
+  cout << "alfa publisher : " << mo->getName() << " ; mean of histo : "
+      << dynamic_cast<TH1*>(mo->getObject())->GetMean() << endl;
 
   ChangeState(RUN);
   WaitForEndOfState(RUN);
@@ -98,8 +101,7 @@ void AlfaPublisher::Run()
   TMessage *message = new TMessage(kMESS_OBJECT);
   message->WriteObjectAny(mCurrentMonitorObject, mCurrentMonitorObject->IsA());
   cout << "mCurrentMonitorObject->IsA() : " << mCurrentMonitorObject->IsA()->GetName() << endl;
-  unique_ptr<FairMQMessage> msg(
-    fTransportFactory->CreateMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
+  unique_ptr<FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
   cout << "msg->GetSize() " << msg->GetSize() << endl;
 
   std::cout << "Sending \"" << mCurrentMonitorObject->getName() << "\"" << std::endl;
