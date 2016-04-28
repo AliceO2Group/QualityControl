@@ -7,6 +7,9 @@ Notes :
 - Need for TApplication ?
 - The name of the task is the only required thing in the end as it should then link to all required info from the
   Config (module, class name, source, ...).
+- Modules (user code) is in a different repo because the QC does not depend on AliceO2 but modules will. 
+  We must be able to compile a single module. For the time being it is a single project with subfolders for each
+  module. If need be we can move to independent cmake projects.
 - To test : ./bin/qcTaskLauncher  -n asdf -c file:../example.ini
             ./bin/alfaTestReceiver
 

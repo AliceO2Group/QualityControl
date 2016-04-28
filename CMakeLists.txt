@@ -89,8 +89,8 @@ endif(FAIRROOT_FOUND)
 
 # ROOT
 if(FAIRROOT_FOUND)
-    SET(ROOT_DIR "/home/flpprotodev/dev/ALFA-Externals/lib/root/")
-    set(ROOT_CONFIG_SEARCHPATH "/home/flpprotodev/dev/ALFA-Externals/lib/root/")
+#    SET(ROOT_DIR "/home/flpprotodev/dev/ALFA-Externals/lib/root/")
+#    set(ROOT_CONFIG_SEARCHPATH "/home/flpprotodev/dev/ALFA-Externals/lib/root/")
     find_package(ROOT)
     set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ)
 else(FAIRROOT_FOUND)
