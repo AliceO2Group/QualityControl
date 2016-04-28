@@ -18,7 +18,8 @@ class NonEmpty /*final*/: public CheckInterface
     NonEmpty();
     virtual ~NonEmpty();
 
-    Quality check(MonitorObject *mo) override;
+    Quality check(const MonitorObject *mo) override;
+    void beautify(MonitorObject *mo, Quality checkResult = Quality::Null) override;
     std::string getAcceptedType() override;
 };
 

@@ -5,6 +5,9 @@
 
 #include "QualityControl/CheckInterface.h"
 #include "TClass.h"
+#include <iostream>
+
+using namespace std;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -23,11 +26,11 @@ std::string CheckInterface::getAcceptedType()
   return "TObject";
 }
 
-bool CheckInterface::isObjectCheckable(MonitorObject *mo)
+bool CheckInterface::isObjectCheckable(const MonitorObject *mo)
 {
   TObject *encapsulated = mo->getObject();
 
-  if(encapsulated->Class()->InheritsFrom(getAcceptedType().c_str())) {
+  if(encapsulated->IsA()->InheritsFrom(getAcceptedType().c_str())) {
     return true;
   }
 

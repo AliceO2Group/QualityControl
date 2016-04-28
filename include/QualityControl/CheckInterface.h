@@ -17,6 +17,11 @@ namespace Checker {
 
 /// \brief  Skeleton of a check.
 ///
+/// Developer note (BvH) : the class is stateless and should stay so as we want to reuse the
+///    same object several times in a row and call the methods in whatever order.
+///    One could think that the methods should be static but then we would not be able
+///    to use polymorphism.
+///
 /// \author Barthelemy von Haller
 class CheckInterface
 {
@@ -26,7 +31,22 @@ class CheckInterface
     /// Destructor
     virtual ~CheckInterface();
 
-    virtual Quality check(MonitorObject *mo) = 0;
+    /// \brief Returns the quality associated with this object.
+    ///
+    /// @param mo The MonitorObject to check.
+    /// @return The quality of the object.
+    virtual Quality check(const MonitorObject *mo) = 0;
+
+    /// \brief Modify the aspect of the plot.
+    ///
+    /// Modify the aspect of the plot.
+    /// It is usually based on the result of the check (passed as quality)
+    ///
+    /// @param mo          The MonitorObject to beautify.
+    /// @param checkResult The quality returned by the check. It is not the same as the quality of the mo
+    ///                    as the altter represents the combination of all the checks the mo passed. This
+    ///                    parameter is to be used to pass the result of the check of the same class.
+    virtual void beautify(MonitorObject *mo, Quality checkResult = Quality::Null) = 0;
 
     /// \brief Returns the name of the class that can be treated by this check.
     ///
@@ -38,7 +58,7 @@ class CheckInterface
     /// \author Barthelemy von Haller
     virtual std::string getAcceptedType();
 
-    bool isObjectCheckable(MonitorObject *mo);
+    bool isObjectCheckable(const MonitorObject *mo);
 };
 
 } /* namespace Checker */
