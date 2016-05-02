@@ -7,6 +7,8 @@
 #include "TClass.h"
 #include <iostream>
 
+ClassImp(AliceO2::QualityControl::Checker::CheckInterface)
+
 using namespace std;
 
 namespace AliceO2 {

@@ -28,18 +28,27 @@ class Activity
 
 /// \brief  Skeleton of a QC task.
 ///
-/// Purely abstract class defining the skeleton of a QC task.
-/// It is needed for the template method design pattern.
+/// Purely abstract class defining the skeleton and the common interface of a QC task.
+/// It is therefore the parent class of any QC task.
 /// It is responsible for the instantiation, modification and destruction of the TObjects that are published.
+///
+/// It is part of the template method design pattern.
 ///
 /// \author Barthelemy von Haller
 class TaskInterface
 {
   public:
-    /// Constructor
-    TaskInterface(std::string name, ObjectsManager *objectsManager);
+    /// \brief Constructor
+    /// Can't be used when dynamically loading the class with ROOT.
+    /// @param name
+    /// @param objectsManager
+    TaskInterface(ObjectsManager *objectsManager);
+    /// Default constructor
+    /// Remember to call Init.
+    TaskInterface();
     /// Destructor
     virtual ~TaskInterface();
+    void Init(ObjectsManager *objectsManager);
 
     // Definition of the methods for the template method pattern
     virtual void initialize() = 0;
@@ -51,16 +60,13 @@ class TaskInterface
     virtual void Reset() = 0;
 
     // Setters and getters
-    const std::string &getName() const;
-    void setName(const std::string &name);
     void setObjectsManager(ObjectsManager *objectsManager);
 
   protected:
     ObjectsManager* getObjectsManager();
 
   private:
-    std::string mName;
-    ObjectsManager *mObjectsManager;
+    ObjectsManager *mObjectsManager; // TODO should we rather have a global/singleton for the objectsManager ?
 
 };
 

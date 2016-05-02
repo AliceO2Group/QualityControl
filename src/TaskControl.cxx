@@ -5,7 +5,6 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskControl.h"
-#include "QualityControl/ExampleTask.h"
 #include <DataSampling/MockSampler.h>
 #include "QualityControl/TaskFactory.h"
 
@@ -16,14 +15,16 @@ namespace Core {
 TaskControl::TaskControl(std::string taskName, std::string configurationSource) : mSampler(0)
 {
   AliceO2::InfoLogger::InfoLogger theLog;
-  mObjectsManager = new ObjectsManager();
   mConfigFile.load(configurationSource);
+
+  string publisherClassName = mConfigFile.getValue<string>("Publisher.className");
+  mObjectsManager = new ObjectsManager(publisherClassName);
 
   // TODO could we use unique_ptr ?
   string moduleName = mConfigFile.getValue<string>("ExampleTask.moduleName");
   string className = mConfigFile.getValue<string>("ExampleTask.moduleName");
   TaskFactory f;
-  mTask = f.create(taskName, moduleName, className, mObjectsManager);
+  mTask = f.create(/*taskName, */moduleName, className, mObjectsManager);
   mCollector = new Monitoring::Core::Collector(mConfigFile.getValue<string>("Monitoring.pathToConfig"));
   // TODO create DataSampling with correct parameters
   mSampler = new AliceO2::DataSampling::MockSampler();

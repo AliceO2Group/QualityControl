@@ -5,6 +5,7 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake) # main (top) cmake dir
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake) # project specific cmake dir
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS}/share/root/cmake/modules)
 
 # CMake useful variables
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
@@ -103,6 +104,7 @@ endif(FAIRROOT_FOUND)
 # TODO make it required once in its own repo
 if(ROOT_FOUND)
     message(STATUS "ROOT ${ROOT_VERSION} found")
+    include(RootNewMacros)
 else()
     message(WARNING "ROOT not found, we won't compile the QC (skip, no error)")
 endif()

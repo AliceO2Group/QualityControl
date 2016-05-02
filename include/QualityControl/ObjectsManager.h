@@ -28,6 +28,7 @@ class ObjectsManager
   public:
     /// Default constructor
     ObjectsManager();
+    ObjectsManager(std::string publisherClassName);
     /// Destructor
     virtual ~ObjectsManager();
 

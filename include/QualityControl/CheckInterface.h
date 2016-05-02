@@ -59,6 +59,8 @@ class CheckInterface
     virtual std::string getAcceptedType();
 
     bool isObjectCheckable(const MonitorObject *mo);
+
+    ClassDef(CheckInterface, 1)
 };
 
 } /* namespace Checker */

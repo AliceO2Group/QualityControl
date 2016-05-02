@@ -21,7 +21,7 @@ class Quality
 {
   public:
     /// Default constructor
-    Quality(unsigned int level, std::string name);
+    Quality(unsigned int level=0, std::string name="");
     /// Destructor
     virtual ~Quality();
 

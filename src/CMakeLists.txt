@@ -4,8 +4,6 @@ set(LIB_HEADERS_CORE
         ../include/QualityControl/TaskInterface.h
         ../include/QualityControl/MonitorObject.h
         ../include/QualityControl/Quality.h
-        ../include/QualityControl/ExampleTask.h
-        ../include/QualityControl/Exceptions.h
         ../include/QualityControl/TaskControl.h
         ../include/QualityControl/ObjectsManager.h
         ../include/QualityControl/QcInfoLogger.h
@@ -14,10 +12,6 @@ set(LIB_HEADERS_CORE
         ../include/QualityControl/TaskFactory.h
         ../include/QualityControl/Checker.h
         ../include/QualityControl/CheckInterface.h
-        ../include/QualityControl/NonEmpty.h
-        ../include/QualityControl/Checker.h
-        ../include/QualityControl/CheckInterface.h
-        ../include/QualityControl/NonEmpty.h
         )
 
 set(LIB_SOURCES_CORE
@@ -27,16 +21,11 @@ set(LIB_SOURCES_CORE
         Quality.cxx
         TaskControl.cxx
         ObjectsManager.cxx
-        ExampleTask.cxx
         PublisherInterface.cxx
         MockPublisher.cxx
         TaskFactory.cxx
         Checker.cxx
         CheckInterface.cxx
-        NonEmpty.cxx
-        Checker.cxx
-        CheckInterface.cxx
-        NonEmpty.cxx
         )
 
 if (FAIRROOT_FOUND)
@@ -46,27 +35,27 @@ if (FAIRROOT_FOUND)
 endif (FAIRROOT_FOUND)
 
 set(APP_HEADERS_LAUNCHER
-        signalUtilities.h
         )
 
 set(APP_SOURCES_LAUNCHER
         qcTaskLauncher.cxx
         )
 
+set(LIBRARY_NAME_CORE QCCore)
 
 # DICTIONARIES
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS}/share/root/cmake/modules) # todo how to do it in a cleaner way ?
-include(RootNewMacros) # todo should we do it in the top cmakelists ?
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{ROOTSYS}/share/root/cmake/modules) # todo how to do it in a cleaner way ?
+#include(RootNewMacros) # todo should we do it in the top cmakelists ?
 list(APPEND DICTINC
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/MonitorObject.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/Quality.h)
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/Quality.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/CheckInterface.h
+        )
 set(CMAKE_ROOTTEST_DICT 1)
-ROOT_GENERATE_DICTIONARY("QCCoreDict" ${DICTINC} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/LinkDef.h)
+ROOT_GENERATE_DICTIONARY("${LIBRARY_NAME_CORE}Dict" ${DICTINC} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/LinkDef.h)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME_CORE}Dict_rdict.pcm DESTINATION lib)
 
-# LIBRARIES
-
-# QCCore
-set(LIBRARY_NAME_CORE QCCore)
+# LIBRARY QCCore
 add_library(${LIBRARY_NAME_CORE} SHARED ${LIB_SOURCES_CORE} )
 # TODO use Configuration_LIBRARIES instead of Configuration_LIBRARIES_STATIC once the shared lib is fixed
 target_link_libraries(${LIBRARY_NAME_CORE} InfoLogger-static Configuration-static DataSampling DataCollector 
@@ -115,4 +104,3 @@ install(TARGETS ${LIBRARY_NAME_CORE} ${APPLICATION_LAUNCHER} ${APPLICATION_NAME_
   PUBLIC_HEADER DESTINATION include/${PROJECT_NAME} COMPONENT devel   # headers for mac (note the different component -> different package)
   INCLUDES DESTINATION include             # headers
 )
-

@@ -9,12 +9,13 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include "../include/QualityControl/Exceptions.h"
+#include "../include/Common/Exceptions.h"
 #include <iostream>
 #include <TObjString.h>
 
 using namespace std;
 using namespace AliceO2::QualityControl::Core;
+using namespace AliceO2::Common;
 
 namespace AliceO2 {
 namespace QualityControl {

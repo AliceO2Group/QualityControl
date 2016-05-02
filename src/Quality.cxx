@@ -4,9 +4,6 @@
 ///
 
 #include "QualityControl/Quality.h"
-#include "InfoLogger/InfoLogger.hxx"
-
-using namespace AliceO2::InfoLogger;
 
 ClassImp(AliceO2::QualityControl::Core::Quality)
 

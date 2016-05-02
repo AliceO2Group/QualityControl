@@ -8,6 +8,7 @@
 #include <signal.h>
 // boost
 #include <boost/program_options.hpp>
+#include <boost/exception/diagnostic_information.hpp>
 // ROOT
 #include <TApplication.h>
 #include <TROOT.h>
@@ -32,17 +33,14 @@ int main(int argc, char *argv[])
   // Arguments parsing
   po::variables_map vm;
   po::options_description desc("Allowed options");
-  desc.add_options()
-    ("help,h", "Produce help message.")
-    ("version,v", "Show program name/version banner and exit.")
-    ("rev", "Print the SVN revision number.")
-    ("name,n", po::value<string>(), "Set the name of the task (required).")
-    ("configuration,c", po::value<string>(), "Configuration source, e.g. \"file:example.ini\" (required).")
-    ("cycles,C", po::value<int>(), "Number of cycles to run.")
+  desc.add_options()("help,h", "Produce help message.")("version,v", "Show program name/version banner and exit.")(
+      "rev", "Print the SVN revision number.")("name,n", po::value<string>(), "Set the name of the task (required).")(
+      "configuration,c", po::value<string>(), "Configuration source, e.g. \"file:example.ini\" (required).")("cycles,C",
+      po::value<int>(), "Number of cycles to run.")
 //    ("source,s", po::value<string>(), "Set the source for the data blocks (required).")
 //    ("module,m", po::value<string>(), "Module containing the task to load (required).")
 //    ("class,c", po::value<string>(), "Module's task class to instantiate (required).")
-    ;
+      ;
   po::store(parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
   if (vm.count("help")) {
@@ -103,10 +101,9 @@ int main(int argc, char *argv[])
     }
     taskControl.stop();
 
-  } catch (exception &e) {
-    std::cout << e.what() << endl;
-  } catch (string &s) {
-    std::cout << s << endl;
+  } catch (...) {
+    std::cerr << "Unexpected exception, diagnostic information follows:\n"
+        << boost::current_exception_diagnostic_information();
   }
 
   return EXIT_SUCCESS;

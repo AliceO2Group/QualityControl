@@ -3,14 +3,14 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "QualityControl/QcInfoLogger.h"
+#include "Common/Exceptions.h"
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/MonitorObject.h"
-#include "QualityControl/Exceptions.h"
 #include "QualityControl/MockPublisher.h"
 #include "QualityControl/AlfaPublisher.h"
 
 using namespace AliceO2::QualityControl::Core;
+using namespace AliceO2::Common;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -18,9 +18,20 @@ namespace Core {
 
 ObjectsManager::ObjectsManager()
 {
-  // TODO choose proper backend based on configuration or parameters
-//  mBackend = new MockPublisher();
-  mBackend = new AlfaPublisher();
+  mBackend = new MockPublisher();
+}
+
+ObjectsManager::ObjectsManager(std::string publisherClassName)
+{
+  // We don't dynamically look for the class using TROOT and TSystem because we will
+  // extremly rarely add a new publisher backend. It is not worth the trouble.
+  if(publisherClassName == "MockPublisher") {
+    mBackend = new MockPublisher();
+  } else if (publisherClassName == "AlfaPublisher") {
+    mBackend = new AlfaPublisher();
+  } else {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Unknown publisher class : " + publisherClassName));
+  }
 }
 
 ObjectsManager::~ObjectsManager()
