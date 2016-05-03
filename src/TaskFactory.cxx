@@ -44,12 +44,6 @@ TaskInterface* TaskFactory::create(std::string moduleName, std::string className
   }
 
   // Get the class and instantiate
-//  logger << "all classes : " << gROOT->GetListOfClasses()->Print() << AliceO2::InfoLogger::InfoLogger::endm;
-//  gROOT->GetListOfClasses()->Print();
-  logger << "List classes in gROOT : " << AliceO2::InfoLogger::InfoLogger::endm;
-  TIter next(gROOT->GetListOfClasses());
-  while (TClass * obj = (TClass *) next())
-    logger << "   " << obj->GetName() << AliceO2::InfoLogger::InfoLogger::endm;
   logger << "Loading class " << className << AliceO2::InfoLogger::InfoLogger::endm;
   TClass* cl = TClass::GetClass(className.c_str());
   string tempString("Failed to instantiate Quality Control Module");
@@ -68,6 +62,7 @@ TaskInterface* TaskFactory::create(std::string moduleName, std::string className
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
   }
   result->setObjectsManager(objectsManager);
+  logger << "QualityControl Module " << moduleName << " loaded " << AliceO2::InfoLogger::InfoLogger::endm;
 
   return result;
 }

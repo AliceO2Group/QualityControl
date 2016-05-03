@@ -101,9 +101,14 @@ int main(int argc, char *argv[])
     }
     taskControl.stop();
 
+  } catch (std::string const& e) {
+    cerr << e << endl;
   } catch (...) {
-    std::cerr << "Unexpected exception, diagnostic information follows:\n"
-        << boost::current_exception_diagnostic_information();
+    string diagnostic = boost::current_exception_diagnostic_information();
+    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
+    if (diagnostic == "No diagnostic information available.") {
+      throw;
+    }
   }
 
   return EXIT_SUCCESS;

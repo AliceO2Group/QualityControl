@@ -12,7 +12,8 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-TaskControl::TaskControl(std::string taskName, std::string configurationSource) : mSampler(0)
+TaskControl::TaskControl(std::string taskName, std::string configurationSource)
+    : mSampler(nullptr), mCollector(nullptr)
 {
   AliceO2::InfoLogger::InfoLogger theLog;
   mConfigFile.load(configurationSource);
@@ -22,10 +23,10 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource) 
 
   // TODO could we use unique_ptr ?
   string moduleName = mConfigFile.getValue<string>("ExampleTask.moduleName");
-  string className = mConfigFile.getValue<string>("ExampleTask.moduleName");
+  string className = mConfigFile.getValue<string>("ExampleTask.className");
   TaskFactory f;
   mTask = f.create(/*taskName, */moduleName, className, mObjectsManager);
-  mCollector = new Monitoring::Core::Collector(mConfigFile.getValue<string>("Monitoring.pathToConfig"));
+//  mCollector = new Monitoring::Core::Collector(mConfigFile.getValue<string>("Monitoring.pathToConfig"));
   // TODO create DataSampling with correct parameters
   mSampler = new AliceO2::DataSampling::MockSampler();
 }
@@ -33,7 +34,7 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource) 
 TaskControl::~TaskControl()
 {
   delete mSampler;
-  delete mCollector;
+//  delete mCollector;
   delete mTask;
   delete mObjectsManager;
 }
@@ -66,8 +67,8 @@ void TaskControl::execute()
 
   mObjectsManager->publish();
 
-  // TODO the cast to int is WRONG ! change when new monitoring interface is avae
-  mCollector->send((int)block->header.dataSize, "QCdataBlockSize");
+  // TODO the cast to int is WRONG ! change when new monitoring interface is available
+//  mCollector->send((int)block->header.dataSize, "QCdataBlockSize");
 
   mSampler->releaseData(); // invalids the block !!!
 
