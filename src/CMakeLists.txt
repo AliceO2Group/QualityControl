@@ -12,6 +12,8 @@ set(LIB_HEADERS_CORE
         ../include/QualityControl/TaskFactory.h
         ../include/QualityControl/Checker.h
         ../include/QualityControl/CheckInterface.h
+        ../include/QualityControl/DatabaseInterface.h
+        ../include/QualityControl/MySqlDatabase.h
         )
 
 set(LIB_SOURCES_CORE
@@ -26,6 +28,7 @@ set(LIB_SOURCES_CORE
         TaskFactory.cxx
         Checker.cxx
         CheckInterface.cxx
+        MySqlDatabase.cxx
         )
 
 if (FAIRROOT_FOUND)
