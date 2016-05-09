@@ -1,5 +1,5 @@
 ///
-/// \file   taskLauncher.cxx
+/// \file   qcTaskLauncher.cxx
 /// \author Barthelemy von Haller
 ///
 
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
   po::variables_map vm;
   po::options_description desc("Allowed options");
   desc.add_options()("help,h", "Produce help message.")("version,v", "Show program name/version banner and exit.")(
-      "rev", "Print the SVN revision number.")("name,n", po::value<string>(), "Set the name of the task (required).")(
+      "rev", "Print the Git revision number.")("name,n", po::value<string>(), "Set the name of the task (required).")(
       "configuration,c", po::value<string>(), "Configuration source, e.g. \"file:example.ini\" (required).")("cycles,C",
       po::value<int>(), "Number of cycles to run.")
 //    ("source,s", po::value<string>(), "Set the source for the data blocks (required).")

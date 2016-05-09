@@ -9,4 +9,5 @@
 #pragma link C++ class AliceO2::QualityControl::Core::MonitorObject+;
 #pragma link C++ class AliceO2::QualityControl::Core::Quality+;
 #pragma link C++ class AliceO2::QualityControl::Checker::CheckInterface+;
+#pragma link C++ class AliceO2::QualityControl::Checker::NonEmpty+;
 #endif

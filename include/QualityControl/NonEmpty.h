@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_
-#define QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_
+#ifndef QUALITYCONTROL_CHECKER_NONEMPTY_H_
+#define QUALITYCONTROL_CHECKER_NONEMPTY_H_
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -23,19 +23,19 @@ namespace Checker {
 ///    to use polymorphism.
 ///
 /// \author Barthelemy von Haller
-class CheckInterface
+class NonEmpty
 {
   public:
     /// Default constructor
-    CheckInterface();
+    NonEmpty();
     /// Destructor
-    virtual ~CheckInterface();
+    virtual ~NonEmpty();
 
     /// \brief Returns the quality associated with this object.
     ///
     /// @param mo The MonitorObject to check.
     /// @return The quality of the object.
-    virtual Quality check(const MonitorObject *mo) = 0;
+    virtual Quality check(const MonitorObject *mo);
 
     /// \brief Modify the aspect of the plot.
     ///
@@ -46,7 +46,7 @@ class CheckInterface
     /// @param checkResult The quality returned by the check. It is not the same as the quality of the mo
     ///                    as the latter represents the combination of all the checks the mo passed. This
     ///                    parameter is to be used to pass the result of the check of the same class.
-    virtual void beautify(MonitorObject *mo, Quality checkResult = Quality::Null) = 0;
+    virtual void beautify(MonitorObject *mo, Quality checkResult = Quality::Null);
 
     /// \brief Returns the name of the class that can be treated by this check.
     ///
@@ -58,13 +58,11 @@ class CheckInterface
     /// \author Barthelemy von Haller
     virtual std::string getAcceptedType();
 
-    bool isObjectCheckable(const MonitorObject *mo);
-
-    ClassDef(CheckInterface, 1)
+    ClassDef(NonEmpty, 1)
 };
 
 } /* namespace Checker */
 } /* namespace QualityControl */
 } /* namespace AliceO2 */
 
-#endif /* QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_ */
+#endif /* QUALITYCONTROL_CHECKER_NONEMPTY_H_ */

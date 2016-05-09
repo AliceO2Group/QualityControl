@@ -64,9 +64,9 @@ class MonitorObject : public TObject
       mObject = object;
     }
 
-    const std::map<std::string, std::string> &getCheckers() const
+    const std::map<std::string, std::string> &getChecks() const
     {
-      return mCheckers;
+      return mChecks;
     }
 
     /// \brief Add a checker to be executed on this object when computing the quality.
@@ -78,7 +78,7 @@ class MonitorObject : public TObject
     /// \param checkClassName The name of the class of the checker.
     void addCheck(const std::string name, const std::string &checkClassName)
     {
-      mCheckers[name] = checkClassName;
+      mChecks[name] = checkClassName;
     }
 
     virtual void 	Draw (Option_t *option="") {
@@ -89,7 +89,7 @@ class MonitorObject : public TObject
     std::string mName;
     Quality mQuality;
     TObject *mObject;
-    std::map<std::string /* name */, std::string /* checker class name */> mCheckers;
+    std::map<std::string /* name */, std::string /* check class name */> mChecks;
 
     ClassDef(MonitorObject,1);
 };

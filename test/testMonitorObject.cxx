@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(mo)
   obj.addCheck("second", "class1");
   obj.addCheck("third", "class2");
   obj.addCheck("first", "class2");
-  auto checkers1 = obj.getCheckers();
+  auto checkers1 = obj.getChecks();
   BOOST_CHECK_EQUAL(checkers1["first"], "class2");
   BOOST_CHECK_EQUAL(checkers1["second"], "class1");
 }

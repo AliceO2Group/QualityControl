@@ -6,12 +6,12 @@
 #include <iostream>
 #include <TH1.h>
 #include <TCanvas.h>
-#include "FairMQProgOptions.h"
 
 #include <FairMQDevice.h>
 #include <TMessage.h>
 #include <FairMQTransportFactoryZMQ.h>
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/AlfaReceiverForTests.h"
 
 using namespace std;
 using namespace AliceO2::QualityControl::Core;
@@ -20,32 +20,17 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-class TestTMessage : public TMessage
+AlfaReceiverForTests::AlfaReceiverForTests()
+    {
+    }
+
+AlfaReceiverForTests::~AlfaReceiverForTests()
+    {
+    }
+
+void AlfaReceiverForTests::Run()
 {
-  public:
-    TestTMessage(void *buf, Int_t len)
-      : TMessage(buf, len)
-    {
-      ResetBit(kIsOwner);
-    }
-};
-
-class AlfaReceiverForTests : public FairMQDevice
-{
-  public :
-    AlfaReceiverForTests()
-    {
-    }
-
-    ~AlfaReceiverForTests()
-    {
-    }
-
-    void Run()
-    {
-      // TODO : clean up memory
-
-      while (CheckCurrentState(RUNNING)) {
+  while (CheckCurrentState(RUNNING)) {
         unique_ptr<FairMQMessage> msg2(fTransportFactory->CreateMessage());
 
         if (fChannels.at("data-in").at(0).Receive(msg2) > 0) {
@@ -63,9 +48,8 @@ class AlfaReceiverForTests : public FairMQDevice
           mo->Draw();
           c.SaveAs((mo->getName() + ".png").c_str());
         }
-      }
-    }
-};
+  }
+}
 
 } // namespace Core
 } // namespace QualityControl
@@ -78,7 +62,6 @@ int main(int argc, char *argv[])
 
   cout << "hello" << endl;
   AlfaReceiverForTests receiver;
-  FairMQProgOptions config;
 
   try {
     FairMQChannel histoChannel;
@@ -110,8 +93,6 @@ int main(int argc, char *argv[])
   }
   catch (std::exception &e) {
     cout << e.what();
-    cout << "Command line options are the following: ";
-    config.PrintHelp();
     return EXIT_FAILURE;
   }
 

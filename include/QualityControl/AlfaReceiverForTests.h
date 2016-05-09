@@ -3,8 +3,8 @@
 /// @author  Barthelemy von Haller
 ///
 
-#ifndef PROJECT_TEMPLATE_AlfaReceiverForTests_H
-#define PROJECT_TEMPLATE_AlfaReceiverForTests_H
+#ifndef QUALITY_CONTROL_AlfaReceiverForTests_H
+#define QUALITY_CONTROL_AlfaReceiverForTests_H
 
 #include <FairMQDevice.h>
 #include <TMessage.h>
@@ -39,4 +39,4 @@ class AlfaReceiverForTests : public FairMQDevice
 } // namespace QualityControl
 } // namespace AliceO2
 
-#endif // PROJECT_TEMPLATE_HELLO_RECEIVER_H
+#endif // QUALITY_CONTROL_AlfaReceiverForTests_H

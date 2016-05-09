@@ -14,6 +14,7 @@ set(LIB_HEADERS_CORE
         ../include/QualityControl/CheckInterface.h
         ../include/QualityControl/DatabaseInterface.h
         ../include/QualityControl/MySqlDatabase.h
+        ../include/QualityControl/NonEmpty.h
         )
 
 set(LIB_SOURCES_CORE
@@ -29,6 +30,7 @@ set(LIB_SOURCES_CORE
         Checker.cxx
         CheckInterface.cxx
         MySqlDatabase.cxx
+        NonEmpty.cxx
         )
 
 if (FAIRROOT_FOUND)
@@ -37,12 +39,13 @@ if (FAIRROOT_FOUND)
     set(APP_TEST_RECEIVER_SOURCES AlfaReceiverForTests.cxx)
 endif (FAIRROOT_FOUND)
 
-set(APP_HEADERS_LAUNCHER
-        )
-
-set(APP_SOURCES_LAUNCHER
+set(APP_SOURCES_TASK_LAUNCHER
         qcTaskLauncher.cxx
-        )
+)
+        
+set(APP_SOURCES_CHECKER_LAUNCHER
+        qcCheckerLauncher.cxx
+)
 
 set(LIBRARY_NAME_CORE QCCore)
 
@@ -53,6 +56,7 @@ list(APPEND DICTINC
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/MonitorObject.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/Quality.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/CheckInterface.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/NonEmpty.h
         )
 set(CMAKE_ROOTTEST_DICT 1)
 ROOT_GENERATE_DICTIONARY("${LIBRARY_NAME_CORE}Dict" ${DICTINC} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/LinkDef.h)
@@ -72,12 +76,28 @@ set_target_properties(${LIBRARY_NAME_CORE} PROPERTIES
 
 # BINARIES
 
-# Launcher
-set(APPLICATION_LAUNCHER qcTaskLauncher)
-add_executable(${APPLICATION_LAUNCHER} ${APP_SOURCES_LAUNCHER})
-target_link_libraries(${APPLICATION_LAUNCHER} QCCore ${Boost_PROGRAM_OPTIONS_LIBRARY})
+# Task Launcher
+set(APPLICATION_TASK_LAUNCHER qcTaskLauncher)
+add_executable(${APPLICATION_TASK_LAUNCHER} ${APP_SOURCES_TASK_LAUNCHER})
+target_link_libraries(${APPLICATION_TASK_LAUNCHER} QCCore ${Boost_PROGRAM_OPTIONS_LIBRARY})
 #${Boost_LOG}) # BOOST_LOG needed because we use FairMQParser...
-install(TARGETS ${APPLICATION_LAUNCHER} DESTINATION bin COMPONENT apps)
+install(TARGETS ${APPLICATION_TASK_LAUNCHER} DESTINATION bin COMPONENT apps)
+
+# Checker Launcher
+set(APPLICATION_CHECKER_LAUNCHER qcCheckerLauncher)
+add_executable(${APPLICATION_CHECKER_LAUNCHER} ${APP_SOURCES_CHECKER_LAUNCHER})
+target_link_libraries(${APPLICATION_CHECKER_LAUNCHER} 
+            ${Boost_LOG_LIBRARY}
+            ${Boost_THREAD_LIBRARY}
+            ${Boost_SYSTEM_LIBRARY}
+            ${FAIRROOT_LIBRARIES}
+            ${ROOT_LIBRARIES}
+            ${Boost_PROGRAM_OPTIONS_LIBRARY}
+            ${FAIRROOT_LIBRARIES}
+            pthread
+            QCCore
+            )
+install(TARGETS ${APPLICATION_CHECKER_LAUNCHER} DESTINATION bin COMPONENT apps)
 
 # alfaTestReceiver
 set(APPLICATION_NAME_RECEIVER "")
@@ -98,7 +118,7 @@ if (FAIRROOT_FOUND)
 endif (FAIRROOT_FOUND)
 
 # Says how and where to install software
-install(TARGETS ${LIBRARY_NAME_CORE} ${APPLICATION_LAUNCHER} ${APPLICATION_NAME_RECEIVER}
+install(TARGETS ${LIBRARY_NAME_CORE} ${APPLICATION_TASK_LAUNCHER} ${APPLICATION_CHECKER_LAUNCHER} ${APPLICATION_NAME_RECEIVER}
   EXPORT ${PROJECT_NAME}Targets            # for downstream dependencies
   ARCHIVE DESTINATION lib COMPONENT libs   # static lib
   RUNTIME DESTINATION bin COMPONENT libs   # binaries
