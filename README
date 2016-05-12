@@ -14,7 +14,6 @@ Notes :
             ./bin/alfaTestReceiver
             ./bin/qcCheckerLauncher
             
-TODO : add tests for the checks and the checker
 TODO : add more checks to the example task to use the configuration in the isabovemean
 TODO : clean up code and documentation
 
