@@ -70,16 +70,13 @@ void Checker::Run()
 void Checker::check(MonitorObject *mo)
 {
   // Get the Checks
-//  std::map<std::string, std::string> checks = mo->getChecks();
   std::vector<CheckDefinition> checks = mo->getChecks();
-
-  cout << "******** check mo : " << mo->getName() << endl;
 
   // Loop over the Checks and execute them followed by the beautification
   for (const auto& check : checks) {
-    std::cout << "        check name : " << check.name << std::endl;
-    std::cout << "        check className : " << check.className << std::endl;
-    std::cout << "        check libraryName : " << check.libraryName << std::endl;
+//    std::cout << "        check name : " << check.name << std::endl;
+//    std::cout << "        check className : " << check.className << std::endl;
+//    std::cout << "        check libraryName : " << check.libraryName << std::endl;
 
     // load module, instantiate, use check
     // TODO : preload modules and pre-instantiate, or keep a cache

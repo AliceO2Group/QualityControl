@@ -66,6 +66,7 @@ void ObjectsManager::addCheck(const std::string objectName, const std::string ch
 {
   MonitorObject *mo = getMonitorObject(objectName);
   mo->addCheck(checkName, checkClassName, checkLibraryName);
+  std::cout << "Added check : " << objectName << " , " << checkName << " , " << checkClassName << " , " << checkLibraryName << std::endl;
 }
 
 MonitorObject *ObjectsManager::getMonitorObject(std::string objectName)
