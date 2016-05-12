@@ -7,6 +7,8 @@
 #define QUALITYCONTROL_LIBS_CORE_TASKFACTORY_H_
 
 #include <iostream>
+// O2
+#include "Common/Exceptions.h"
 
 namespace AliceO2 {
 namespace QualityControl {
