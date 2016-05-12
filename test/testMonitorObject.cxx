@@ -24,13 +24,17 @@ BOOST_AUTO_TEST_CASE(mo)
   obj.setQuality(Quality::Medium);
   BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Medium);
 
-  obj.addCheck("first", "class1");
-  obj.addCheck("second", "class1");
-  obj.addCheck("third", "class2");
-  obj.addCheck("first", "class2");
+  obj.addCheck("first", "class1", "lib1");
+  obj.addCheck("second", "class1", "lib1");
+  obj.addCheck("third", "class2", "lib1");
+  obj.addCheck("first", "class2", "lib1");
   auto checkers1 = obj.getChecks();
-  BOOST_CHECK_EQUAL(checkers1["first"], "class2");
-  BOOST_CHECK_EQUAL(checkers1["second"], "class1");
+  BOOST_CHECK_EQUAL(checkers1[0].name, "first");
+  BOOST_CHECK_EQUAL(checkers1[0].className, "class1");
+  BOOST_CHECK_EQUAL(checkers1[0].libraryName, "lib1");
+  BOOST_CHECK_EQUAL(checkers1[1].name, "second");
+  BOOST_CHECK_EQUAL(checkers1[1].className, "class1");
+  BOOST_CHECK_EQUAL(checkers1[1].libraryName, "lib1");
 }
 
 } /* namespace ObjectsManager */

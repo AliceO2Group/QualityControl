@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_
-#define QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_
+#ifndef QUALITYCONTROL_LIBS_CHECKER_CHECKINTERFACE_H_
+#define QUALITYCONTROL_LIBS_CHECKER_CHECKINTERFACE_H_
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -30,6 +30,14 @@ class CheckInterface
     CheckInterface();
     /// Destructor
     virtual ~CheckInterface();
+
+    /// \brief Configure the check based on its name.
+    ///
+    /// The configuration of the object can't be done in the constructor because
+    /// ROOT needs an argument-less constructor when streaming it. We use this method
+    /// to configure the object. The name might be used to ask the configuration system
+    /// for specific parameters.
+    virtual void configure(std::string name);
 
     /// \brief Returns the quality associated with this object.
     ///
@@ -60,11 +68,14 @@ class CheckInterface
 
     bool isObjectCheckable(const MonitorObject *mo);
 
-    ClassDef(CheckInterface, 1)
+  private:
+    std::string mName;
+
+  ClassDef(CheckInterface, 1)
 };
 
 } /* namespace Checker */
 } /* namespace QualityControl */
 } /* namespace AliceO2 */
 
-#endif /* QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_ */
+#endif /* QUALITYCONTROL_LIBS_CHECKER_CHECKINTERFACE_H_ */

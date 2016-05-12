@@ -10,4 +10,6 @@
 #pragma link C++ class AliceO2::QualityControl::Core::Quality+;
 #pragma link C++ class AliceO2::QualityControl::Checker::CheckInterface+;
 #pragma link C++ class AliceO2::QualityControl::Checker::NonEmpty+;
+#pragma link C++ class AliceO2::QualityControl::Checker::MeanIsAbove+;
+#pragma link C++ class AliceO2::QualityControl::Core::CheckDefinition+;
 #endif

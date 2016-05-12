@@ -32,7 +32,6 @@ int main(int argc, char *argv[])
 
   cout << "hello" << endl;
   Checker receiver;
-//  FairMQProgOptions config;
 
   try {
     FairMQChannel histoChannel;
@@ -61,11 +60,15 @@ int main(int argc, char *argv[])
 
     receiver.ChangeState("RUN");
     receiver.InteractiveStateLoop();
-  } catch (std::exception &e) {
+  /*} catch (std::exception &e) {
     cout << e.what();
-//    cout << "Command line options are the following: ";
-//    config.PrintHelp();
-    return EXIT_FAILURE;
+    return EXIT_FAILURE;*/
+  } catch (...) {
+    string diagnostic = boost::current_exception_diagnostic_information();
+    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
+    if (diagnostic == "No diagnostic information available.") {
+      throw;
+    }
   }
 
   return EXIT_SUCCESS;

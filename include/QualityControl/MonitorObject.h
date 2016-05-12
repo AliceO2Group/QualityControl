@@ -6,13 +6,23 @@
 #ifndef QUALITYCONTROL_LIBS_CORE_MONITOROBJECT_H_
 #define QUALITYCONTROL_LIBS_CORE_MONITOROBJECT_H_
 
-#include "QualityControl/Quality.h"
+// std
 #include <map>
+#include <iostream>
+// ROOT
 #include <TObject.h>
+// QC
+#include "QualityControl/Quality.h"
 
 namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
+
+struct CheckDefinition {
+    std::string name;
+    std::string className;
+    std::string libraryName;
+};
 
 /// \brief  This class keeps the metadata about one published object.
 ///
@@ -64,8 +74,10 @@ class MonitorObject : public TObject
       mObject = object;
     }
 
-    const std::map<std::string, std::string> &getChecks() const
+    std::vector<CheckDefinition> getChecks() const
     {
+      std::cout << "A" << std::endl;
+      std::cout << mChecks.size() << std::endl;
       return mChecks;
     }
 
@@ -74,11 +86,16 @@ class MonitorObject : public TObject
     /// Several checkers can be added for the same checker class name, but with different names (and
     /// they will get different configuration).
     /// \author Barthelemy von Haller
-    /// \param name Arbitrary name to identify this checker.
-    /// \param checkClassName The name of the class of the checker.
-    void addCheck(const std::string name, const std::string &checkClassName)
+    /// \param name Arbitrary name to identify this Check.
+    /// \param checkClassName The name of the class of the Check.
+    /// \param checkLibraryName The name of the library containing the Check. If not specified it is taken from already loaded libraries.
+    void addCheck(const std::string name, const std::string checkClassName, const std::string checkLibraryName="")
     {
-      mChecks[name] = checkClassName;
+      CheckDefinition check;
+      check.name = name;
+      check.libraryName = checkLibraryName;
+      check.className = checkClassName;
+      mChecks.push_back(check);
     }
 
     virtual void 	Draw (Option_t *option="") {
@@ -89,7 +106,8 @@ class MonitorObject : public TObject
     std::string mName;
     Quality mQuality;
     TObject *mObject;
-    std::map<std::string /* name */, std::string /* check class name */> mChecks;
+//    std::map<std::string /* name */, std::string /* check class name */> mChecks;
+    std::vector<CheckDefinition> mChecks;
 
     ClassDef(MonitorObject,1);
 };

@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CORE_QUALITY_H_
-#define QUALITYCONTROL_LIBS_CORE_QUALITY_H_
+#ifndef QUALITYCONTROL_CORE_QUALITY_H_
+#define QUALITYCONTROL_CORE_QUALITY_H_
 
 #include <string>
 #include <ostream>
@@ -58,4 +58,4 @@ class Quality
 } // namespace QualityControl
 } // namespace AliceO2
 
-#endif // QUALITYCONTROL_LIBS_CORE_QUALITY_H_
+#endif // QUALITYCONTROL_CORE_QUALITY_H_

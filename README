@@ -12,6 +12,11 @@ Notes :
   module. If need be we can move to independent cmake projects.
 - To test : ./bin/qcTaskLauncher  -n asdf -c file:../example.ini
             ./bin/alfaTestReceiver
+            ./bin/qcCheckerLauncher
+            
+TODO : add tests for the checks and the checker
+TODO : add more checks to the example task to use the configuration in the isabovemean
+TODO : clean up code and documentation
 
 For any question, please contact:
 Barthélémy von Haller (barthelemy.von.haller@cern.ch)

@@ -56,9 +56,6 @@ TaskInterface* TaskFactory::create(std::string moduleName, std::string className
   logger << "Instantiating class " << className << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;
   result = static_cast<TaskInterface*>(cl->New());
   if (!result) {
-    tempString += " because the class named \"";
-    tempString += className;
-    tempString += "\" does not follow the TaskInterface interface";
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
   }
   result->setObjectsManager(objectsManager);

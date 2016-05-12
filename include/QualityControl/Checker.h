@@ -8,6 +8,9 @@
 
 #include "QualityControl/MonitorObject.h"
 #include <FairMQDevice.h>
+// QC
+#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/CheckInterface.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -41,6 +44,12 @@ class Checker : public FairMQDevice
 
   protected:
     virtual void Run() override;
+
+  private:
+    void loadLibrary(const std::string libraryName) const;
+    CheckInterface* instantiateCheck(std::string checkName, std::string className) const;
+
+    AliceO2::QualityControl::Core::QcInfoLogger &mLogger;
 
 };
 

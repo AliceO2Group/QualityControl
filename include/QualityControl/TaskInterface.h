@@ -1,5 +1,6 @@
 ///
 /// \file   TaskInterface.h
+/// \author Barthelemy von Haller
 ///
 
 #ifndef QUALITYCONTROL_LIBS_CORE_QCTASK_H_
@@ -43,12 +44,12 @@ class TaskInterface
     /// @param name
     /// @param objectsManager
     TaskInterface(ObjectsManager *objectsManager);
-    /// Default constructor
-    /// Remember to call Init.
+    /// \brief Default constructor
+    /// Remember to set an objectsManager.
     TaskInterface();
     /// Destructor
     virtual ~TaskInterface();
-    void Init(ObjectsManager *objectsManager);
+//    void Init(ObjectsManager *objectsManager);
 
     // Definition of the methods for the template method pattern
     virtual void initialize() = 0;

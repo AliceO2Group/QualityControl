@@ -25,7 +25,7 @@ ObjectsManager::ObjectsManager(std::string publisherClassName)
 {
   // We don't dynamically look for the class using TROOT and TSystem because we will
   // extremly rarely add a new publisher backend. It is not worth the trouble.
-  if(publisherClassName == "MockPublisher") {
+  if (publisherClassName == "MockPublisher") {
     mBackend = new MockPublisher();
   } else if (publisherClassName == "AlfaPublisher") {
     mBackend = new AlfaPublisher();
@@ -37,7 +37,7 @@ ObjectsManager::ObjectsManager(std::string publisherClassName)
 ObjectsManager::~ObjectsManager()
 {
   delete mBackend;
-  for(auto obj = mMonitorObjects.begin() ; obj != mMonitorObjects.end() ; obj++) {
+  for (auto obj = mMonitorObjects.begin(); obj != mMonitorObjects.end(); obj++) {
     delete obj->second;
   }
   mMonitorObjects.clear();
@@ -61,10 +61,11 @@ Quality ObjectsManager::getQuality(std::string objectName)
   return mo->getQuality();
 }
 
-void ObjectsManager::addChecker(std::string objectName, std::string checkerName, std::string checkerClassName)
+void ObjectsManager::addCheck(const std::string objectName, const std::string checkName,
+    const std::string checkClassName, const std::string checkLibraryName)
 {
   MonitorObject *mo = getMonitorObject(objectName);
-  mo->addCheck(checkerName, checkerClassName);
+  mo->addCheck(checkName, checkClassName, checkLibraryName);
 }
 
 MonitorObject *ObjectsManager::getMonitorObject(std::string objectName)
@@ -85,7 +86,7 @@ TObject *ObjectsManager::getObject(std::string objectName)
 
 void ObjectsManager::publish()
 {
-for (auto &mo : mMonitorObjects) {
+  for (auto &mo : mMonitorObjects) {
     mBackend->publish(mo.second);
   }
 }

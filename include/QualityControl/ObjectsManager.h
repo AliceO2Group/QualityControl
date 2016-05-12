@@ -35,7 +35,8 @@ class ObjectsManager
     void startPublishing(std::string objectName, TObject *obj);
     void setQuality(std::string objectName, Quality quality);
     Quality getQuality(std::string objectName);
-    void addChecker(std::string objectName, std::string checkerName, std::string checkerClassName);
+    void addCheck (const std::string objectName, const std::string checkName,
+        const std::string checkClassName, const std::string checkLibraryName="");
     MonitorObject *getMonitorObject(std::string objectName);
     TObject *getObject(std::string objectName);
 

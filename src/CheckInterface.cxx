@@ -16,11 +16,17 @@ namespace QualityControl {
 namespace Checker {
 
 CheckInterface::CheckInterface()
+    : mName("")
 {
 }
 
 CheckInterface::~CheckInterface()
 {
+}
+
+void CheckInterface::configure(std::string name)
+{
+  mName = name;
 }
 
 std::string CheckInterface::getAcceptedType()
@@ -32,7 +38,7 @@ bool CheckInterface::isObjectCheckable(const MonitorObject *mo)
 {
   TObject *encapsulated = mo->getObject();
 
-  if(encapsulated->IsA()->InheritsFrom(getAcceptedType().c_str())) {
+  if (encapsulated->IsA()->InheritsFrom(getAcceptedType().c_str())) {
     return true;
   }
 

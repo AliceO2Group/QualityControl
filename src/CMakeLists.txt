@@ -14,7 +14,6 @@ set(LIB_HEADERS_CORE
         ../include/QualityControl/CheckInterface.h
         ../include/QualityControl/DatabaseInterface.h
         ../include/QualityControl/MySqlDatabase.h
-        ../include/QualityControl/NonEmpty.h
         )
 
 set(LIB_SOURCES_CORE
@@ -30,7 +29,6 @@ set(LIB_SOURCES_CORE
         Checker.cxx
         CheckInterface.cxx
         MySqlDatabase.cxx
-        NonEmpty.cxx
         )
 
 if (FAIRROOT_FOUND)
@@ -56,7 +54,6 @@ list(APPEND DICTINC
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/MonitorObject.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/Quality.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/CheckInterface.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/NonEmpty.h
         )
 set(CMAKE_ROOTTEST_DICT 1)
 ROOT_GENERATE_DICTIONARY("${LIBRARY_NAME_CORE}Dict" ${DICTINC} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/LinkDef.h)

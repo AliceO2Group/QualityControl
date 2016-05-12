@@ -19,11 +19,11 @@ TaskInterface::TaskInterface() :
 {
 }
 
-void TaskInterface::Init(/*std::string &name, */ObjectsManager *objectsManager)
-{
-//  setName(name);
-  setObjectsManager(objectsManager);
-}
+//void TaskInterface::Init(/*std::string &name, */ObjectsManager *objectsManager)
+//{
+////  setName(name);
+//  setObjectsManager(objectsManager);
+//}
 
 TaskInterface::~TaskInterface()
 {

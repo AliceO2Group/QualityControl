@@ -86,7 +86,7 @@ class TestTask : public TaskInterface
 
 BOOST_AUTO_TEST_CASE(TestInstantiate)
 {
-  ObjectsManager objectsManager; // TODO we need a mock object
+  ObjectsManager objectsManager("MockPublisher");
   Test::TestTask tt(&objectsManager);
   BOOST_CHECK_EQUAL(tt.test, 0);
   tt.initialize();
