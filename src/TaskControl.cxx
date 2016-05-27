@@ -26,7 +26,7 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
   string className = mConfigFile.getValue<string>("ExampleTask.className");
   TaskFactory f;
   mTask = f.create(moduleName, className, mObjectsManager);
-  mCollector = new Monitoring::Core::Collector(mConfigFile.getValue<string>("Monitoring.pathToConfig"));
+  mCollector = new Monitoring::Core::Collector(mConfigFile);
   // TODO create DataSampling with correct parameters
   mSampler = new AliceO2::DataSampling::MockSampler();
 }
