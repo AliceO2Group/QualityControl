@@ -11,6 +11,7 @@
 // QC
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckInterface.h"
+#include "QualityControl/DatabaseInterface.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -21,7 +22,9 @@ namespace Checker {
 /// A Checker is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
 /// and to run them on the MonitorObject in order to generate a quality.
 ///
-/// \author Barthelemy von Haller
+/// TODO Evalue whether we should have a dedicated device to store in the database.
+///
+/// \author Barthélémy von Haller
 class Checker : public FairMQDevice
 {
   public:
@@ -30,6 +33,8 @@ class Checker : public FairMQDevice
     /// Destructor
     virtual ~Checker();
 
+  protected:
+    virtual void Run() override;
     /**
      * \brief Evaluate the quality of a MonitorObject.
      *
@@ -41,15 +46,20 @@ class Checker : public FairMQDevice
      *        to the worse quality encountered while running the Check's.
      */
     void check(AliceO2::QualityControl::Core::MonitorObject *mo);
-
-  protected:
-    virtual void Run() override;
+    /**
+     * \brief Store the MonitorObject in the database.
+     *
+     * @param mo The MonitorObject to be stored in the database.
+     */
+    void store(AliceO2::QualityControl::Core::MonitorObject *mo);
 
   private:
     void loadLibrary(const std::string libraryName) const;
     CheckInterface* instantiateCheck(std::string checkName, std::string className) const;
 
     AliceO2::QualityControl::Core::QcInfoLogger &mLogger;
+    AliceO2::QualityControl::Repository::DatabaseInterface *mDatabase;
+    vector<std::string> mTasksAlreadyEncountered;
 
 };
 

@@ -32,7 +32,7 @@ class MonitorObject : public TObject
   public:
     /// Default constructor
     MonitorObject();
-    MonitorObject(const std::string &name, TObject *object);
+    MonitorObject(const std::string &name, TObject *object, const std::string &taskName);
 
     /// Destructor
     virtual ~MonitorObject();
@@ -52,6 +52,16 @@ class MonitorObject : public TObject
     void setName(const std::string &name)
     {
       mName = name;
+    }
+
+    const std::string &getTaskName() const
+    {
+      return mTaskName;
+    }
+
+    void setTaskName(const std::string &taskName)
+    {
+      mTaskName = taskName;
     }
 
     const Quality &getQuality() const
@@ -106,8 +116,8 @@ class MonitorObject : public TObject
     std::string mName;
     Quality mQuality;
     TObject *mObject;
-//    std::map<std::string /* name */, std::string /* check class name */> mChecks;
     std::vector<CheckDefinition> mChecks;
+    std::string mTaskName;
 
     ClassDef(MonitorObject,1);
 };

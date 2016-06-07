@@ -13,7 +13,7 @@ set(LIB_HEADERS_CORE
         ../include/QualityControl/Checker.h
         ../include/QualityControl/CheckInterface.h
         ../include/QualityControl/DatabaseInterface.h
-        ../include/QualityControl/MySqlDatabase.h
+        ../include/QualityControl/DatabaseFactory.h
         )
 
 set(LIB_SOURCES_CORE
@@ -28,7 +28,7 @@ set(LIB_SOURCES_CORE
         TaskFactory.cxx
         Checker.cxx
         CheckInterface.cxx
-        MySqlDatabase.cxx
+        DatabaseFactory.cxx
         )
 
 if (FAIRROOT_FOUND)
@@ -36,6 +36,11 @@ if (FAIRROOT_FOUND)
     set(LIB_SOURCES_CORE ${LIB_SOURCES_CORE} AlfaPublisher.cxx)
     set(APP_TEST_RECEIVER_SOURCES AlfaReceiverForTests.cxx)
 endif (FAIRROOT_FOUND)
+
+if(MYSQL_FOUND)
+    set(LIB_HEADERS_CORE ${LIB_HEADERS_CORE} ../include/QualityControl/MySqlDatabase.h)
+    set(LIB_SOURCES_CORE ${LIB_SOURCES_CORE} MySqlDatabase.cxx)
+endif()
 
 set(APP_SOURCES_TASK_LAUNCHER
         qcTaskLauncher.cxx

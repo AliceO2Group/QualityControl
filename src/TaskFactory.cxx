@@ -31,7 +31,7 @@ TaskFactory::~TaskFactory()
 {
 }
 
-TaskInterface* TaskFactory::create(std::string moduleName, std::string className, ObjectsManager* objectsManager)
+TaskInterface* TaskFactory::create(std::string taskName, std::string moduleName, std::string className, ObjectsManager* objectsManager)
 {
   TaskInterface *result = 0;
   QcInfoLogger &logger = QcInfoLogger::GetInstance();
@@ -59,6 +59,7 @@ TaskInterface* TaskFactory::create(std::string moduleName, std::string className
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
   }
   result->setObjectsManager(objectsManager);
+  result->setName(taskName);
   logger << "QualityControl Module " << moduleName << " loaded " << AliceO2::InfoLogger::InfoLogger::endm;
 
   return result;

@@ -70,6 +70,13 @@ else()
     set(Boost_FOUND 1)
 endif()
 
+find_package(MySQL)
+if(NOT MYSQL_FOUND)
+    message(WARNING "MySQL not found, the corresponding classes won't be built.")
+else()
+    add_definitions(-D_WITH_MYSQL)
+endif()
+
 # Other subprojects
 link_o2_subproject(InfoLogger)
 link_o2_subproject(Common)
@@ -92,7 +99,7 @@ endif(FAIRROOT_FOUND)
 if(FAIRROOT_FOUND)
 #    SET(ROOT_DIR "/home/flpprotodev/dev/ALFA-Externals/lib/root/")
 #    set(ROOT_CONFIG_SEARCHPATH "/home/flpprotodev/dev/ALFA-Externals/lib/root/")
-    find_package(ROOT)
+    find_package(ROOT COMPONENTS RHTTP RMySQL Gui)
     set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ)
 else(FAIRROOT_FOUND)
     #set(ROOT_CONFIG_DEBUG true)
@@ -123,6 +130,7 @@ include_directories(
 #    ${DataSampling_INCLUDE_DIR}
 #    ${DataFormat_INCLUDE_DIR}
     ${ROOT_INCLUDE_DIRS}
+    ${MYSQL_INCLUDE_DIRS}
 )
 #message("asdf : ${DataSampling_INCLUDE_DIR}")
 #message("asdf : ${DataFormat_INCLUDE_DIR}")

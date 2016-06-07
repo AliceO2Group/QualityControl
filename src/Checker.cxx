@@ -19,6 +19,7 @@
 #include "Common/Exceptions.h"
 // QC
 #include "QualityControl/CheckInterface.h"
+#include "QualityControl/DatabaseFactory.h"
 
 using namespace AliceO2::Common;
 
@@ -37,6 +38,7 @@ using namespace std;
 namespace AliceO2 {
 namespace QualityControl {
 using namespace Core;
+using namespace Repository;
 namespace Checker {
 
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
@@ -44,10 +46,15 @@ namespace Checker {
 Checker::Checker()
     : mLogger(QcInfoLogger::GetInstance())
 {
+	// TODO load the configuration of the database here
+	mDatabase = DatabaseFactory::create("MySql");
+	mDatabase->Connect("localhost", "quality_control", "qc_user", "qc_user");
 }
 
 Checker::~Checker()
 {
+  mDatabase->Disconnect();
+  delete mDatabase;
 }
 
 void Checker::Run()
@@ -62,6 +69,7 @@ void Checker::Run()
       MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
       if (mo) {
         check(mo);
+        store(mo);
       }
     }
   }
@@ -87,6 +95,15 @@ void Checker::check(MonitorObject *mo)
     std::cout << "        result of the check : " << q.getName() << std::endl;
 
     checkInstance->beautify(mo, q);
+  }
+}
+
+void Checker::store(MonitorObject *mo)
+{
+  try {
+    mDatabase->Store(mo);
+  } catch (boost::exception & e) {
+    cerr << "Unable to " << diagnostic_information(e) << endl;
   }
 }
 

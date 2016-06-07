@@ -32,7 +32,7 @@ class ObjectsManager
     /// Destructor
     virtual ~ObjectsManager();
 
-    void startPublishing(std::string objectName, TObject *obj);
+    void startPublishing(std::string taskName, std::string objectName, TObject *obj);
     void setQuality(std::string objectName, Quality quality);
     Quality getQuality(std::string objectName);
     void addCheck (const std::string objectName, const std::string checkName,
@@ -45,6 +45,7 @@ class ObjectsManager
 
     std::map<std::string /*object name*/, QualityControl::Core::MonitorObject * /* object */> mMonitorObjects;
     PublisherInterface* mBackend;
+
 };
 
 } // namespace Core

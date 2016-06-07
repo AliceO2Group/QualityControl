@@ -60,9 +60,6 @@ int main(int argc, char *argv[])
 
     receiver.ChangeState("RUN");
     receiver.InteractiveStateLoop();
-  /*} catch (std::exception &e) {
-    cout << e.what();
-    return EXIT_FAILURE;*/
   } catch (...) {
     string diagnostic = boost::current_exception_diagnostic_information();
     std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;

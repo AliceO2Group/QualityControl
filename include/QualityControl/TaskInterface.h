@@ -62,12 +62,15 @@ class TaskInterface
 
     // Setters and getters
     void setObjectsManager(ObjectsManager *objectsManager);
+    void setName(const std::string &name);
+    const std::string &getName() const;
 
   protected:
     ObjectsManager* getObjectsManager();
 
   private:
     ObjectsManager *mObjectsManager; // TODO should we rather have a global/singleton for the objectsManager ?
+    std::string mName;
 
 };
 

@@ -29,15 +29,15 @@ TaskInterface::~TaskInterface()
 {
 }
 
-//const std::string &TaskInterface::getName() const
-//{
-//  return mName;
-//}
-//
-//void TaskInterface::setName(const std::string &name)
-//{
-//  mName = name;
-//}
+const std::string &TaskInterface::getName() const
+{
+  return mName;
+}
+
+void TaskInterface::setName(const std::string &name)
+{
+  mName = name;
+}
 
 void TaskInterface::setObjectsManager(ObjectsManager *objectsManager)
 {
