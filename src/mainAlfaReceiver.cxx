@@ -3,7 +3,7 @@
 /// @author  Barthelemy von Haller
 ///
 
-#include "AlfaReceiverForTests.h"
+#include "QualityControl/AlfaReceiverForTests.h"
 #include "FairMQParser.h"
 #include "FairMQProgOptions.h"
 #include <iostream>

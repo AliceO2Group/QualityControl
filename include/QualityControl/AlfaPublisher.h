@@ -14,6 +14,10 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
+/**
+ * \brief A publisher that uses FairMQ.
+ * It is a device. It sends MonitorObjects.
+ */
 class AlfaPublisher: public PublisherInterface, FairMQDevice
 {
   public:
@@ -31,7 +35,6 @@ class AlfaPublisher: public PublisherInterface, FairMQDevice
     static void CustomCleanupTMessage(void *data, void *object);
 
   private:
-    std::string mText;
     MonitorObject *mCurrentMonitorObject;
 };
 

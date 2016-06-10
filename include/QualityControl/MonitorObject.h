@@ -44,7 +44,7 @@ class MonitorObject : public TObject
 
     /// \brief Overwrite the TObject's method just to avoid confusion.
     ///        One should rather use getName().
-    virtual const char * 	GetName () const
+    virtual const char * 	GetName () const override
     {
       return getName().c_str();
     }
@@ -108,8 +108,18 @@ class MonitorObject : public TObject
       mChecks.push_back(check);
     }
 
-    virtual void 	Draw (Option_t *option="") {
+    virtual void 	Draw (Option_t *option="") override
+    {
       mObject->Draw(option);
+    }
+
+    virtual TObject *DrawClone(Option_t *option="") const override
+    {
+      MonitorObject* clone = new MonitorObject();
+      clone->setName(this->getName());
+      clone->setTaskName(this->getTaskName());
+      clone->setObject(mObject->DrawClone(option));
+      return clone;
     }
 
   private:
@@ -119,7 +129,7 @@ class MonitorObject : public TObject
     std::vector<CheckDefinition> mChecks;
     std::string mTaskName;
 
-    ClassDef(MonitorObject,1);
+    ClassDefOverride(MonitorObject,1);
 };
 
 } // namespace Core

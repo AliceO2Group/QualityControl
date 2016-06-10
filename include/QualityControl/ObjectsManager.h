@@ -44,7 +44,7 @@ class ObjectsManager
     void publish();
 
     std::map<std::string /*object name*/, QualityControl::Core::MonitorObject * /* object */> mMonitorObjects;
-    PublisherInterface* mBackend;
+    PublisherInterface* mPublisher;
 
 };
 

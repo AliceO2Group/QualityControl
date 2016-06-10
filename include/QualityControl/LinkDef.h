@@ -9,7 +9,9 @@
 #pragma link C++ class AliceO2::QualityControl::Core::MonitorObject+;
 #pragma link C++ class AliceO2::QualityControl::Core::Quality+;
 #pragma link C++ class AliceO2::QualityControl::Checker::CheckInterface+;
-#pragma link C++ class AliceO2::QualityControl::Checker::NonEmpty+;
-#pragma link C++ class AliceO2::QualityControl::Checker::MeanIsAbove+;
 #pragma link C++ class AliceO2::QualityControl::Core::CheckDefinition+;
+#pragma link C++ class AliceO2::QualityControl::Gui::SpyMainFrame+;
+#pragma link C++ class AliceO2::QualityControl::Gui::SpyDevice+;
+
+
 #endif

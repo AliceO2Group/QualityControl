@@ -18,7 +18,7 @@ namespace Core {
 
 ObjectsManager::ObjectsManager()
 {
-  mBackend = new MockPublisher();
+  mPublisher = new MockPublisher();
 }
 
 ObjectsManager::ObjectsManager(std::string publisherClassName)
@@ -26,9 +26,9 @@ ObjectsManager::ObjectsManager(std::string publisherClassName)
   // We don't dynamically look for the class using TROOT and TSystem because we will
   // extremly rarely add a new publisher backend. It is not worth the trouble.
   if (publisherClassName == "MockPublisher") {
-    mBackend = new MockPublisher();
+    mPublisher = new MockPublisher();
   } else if (publisherClassName == "AlfaPublisher") {
-    mBackend = new AlfaPublisher();
+    mPublisher = new AlfaPublisher();
   } else {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Unknown publisher class : " + publisherClassName));
   }
@@ -36,7 +36,7 @@ ObjectsManager::ObjectsManager(std::string publisherClassName)
 
 ObjectsManager::~ObjectsManager()
 {
-  delete mBackend;
+  delete mPublisher;
   for (auto obj = mMonitorObjects.begin(); obj != mMonitorObjects.end(); obj++) {
     delete obj->second;
   }
@@ -88,7 +88,7 @@ TObject *ObjectsManager::getObject(std::string objectName)
 void ObjectsManager::publish()
 {
   for (auto &mo : mMonitorObjects) {
-    mBackend->publish(mo.second);
+    mPublisher->publish(mo.second);
   }
 }
 

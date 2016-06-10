@@ -14,6 +14,8 @@ set(LIB_HEADERS_CORE
         ../include/QualityControl/CheckInterface.h
         ../include/QualityControl/DatabaseInterface.h
         ../include/QualityControl/DatabaseFactory.h
+        ../include/QualityControl/SpyMainFrame.h
+        ../include/QualityControl/SpyDevice.h
         )
 
 set(LIB_SOURCES_CORE
@@ -29,6 +31,8 @@ set(LIB_SOURCES_CORE
         Checker.cxx
         CheckInterface.cxx
         DatabaseFactory.cxx
+        SpyMainFrame.cxx
+        SpyDevice.cxx
         )
 
 if (FAIRROOT_FOUND)
@@ -50,6 +54,10 @@ set(APP_SOURCES_CHECKER_LAUNCHER
         qcCheckerLauncher.cxx
 )
 
+set(APP_SOURCES_SPY
+        qcSpy.cxx
+)
+
 set(LIBRARY_NAME_CORE QCCore)
 
 # DICTIONARIES
@@ -59,6 +67,8 @@ list(APPEND DICTINC
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/MonitorObject.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/Quality.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/CheckInterface.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/SpyMainFrame.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/SpyDevice.h
         )
 set(CMAKE_ROOTTEST_DICT 1)
 ROOT_GENERATE_DICTIONARY("${LIBRARY_NAME_CORE}Dict" ${DICTINC} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/LinkDef.h)
@@ -100,6 +110,22 @@ target_link_libraries(${APPLICATION_CHECKER_LAUNCHER}
             QCCore
             )
 install(TARGETS ${APPLICATION_CHECKER_LAUNCHER} DESTINATION bin COMPONENT apps)
+
+# APP_SOURCES_SPY
+set(APPLICATION_QC_SPY qcSpy)
+add_executable(${APPLICATION_QC_SPY} ${APP_SOURCES_SPY})
+target_link_libraries(${APPLICATION_QC_SPY} 
+            ${Boost_LOG_LIBRARY}
+            ${Boost_THREAD_LIBRARY}
+            ${Boost_SYSTEM_LIBRARY}
+            ${FAIRROOT_LIBRARIES}
+            ${ROOT_LIBRARIES}
+            ${Boost_PROGRAM_OPTIONS_LIBRARY}
+            ${FAIRROOT_LIBRARIES}
+            pthread
+            QCCore
+            )
+install(TARGETS ${APPLICATION_QC_SPY} DESTINATION bin COMPONENT apps)
 
 # alfaTestReceiver
 set(APPLICATION_NAME_RECEIVER "")

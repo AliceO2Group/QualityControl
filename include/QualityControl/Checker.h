@@ -53,13 +53,20 @@ class Checker : public FairMQDevice
      */
     void store(AliceO2::QualityControl::Core::MonitorObject *mo);
 
+    /**
+     * \brief Send the MonitorObject on FairMQ to whoever is listening.
+     */
+    void send(AliceO2::QualityControl::Core::MonitorObject *mo);
+
   private:
     void loadLibrary(const std::string libraryName) const;
     CheckInterface* instantiateCheck(std::string checkName, std::string className) const;
+    static void CustomCleanupTMessage(void *data, void *object);
 
     AliceO2::QualityControl::Core::QcInfoLogger &mLogger;
     AliceO2::QualityControl::Repository::DatabaseInterface *mDatabase;
     vector<std::string> mTasksAlreadyEncountered;
+    bool mBroadcast; // whether to broadcast the mo in addition to storing it to the db
 
 };
 

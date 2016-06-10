@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
     taskControl.start();
     while (keepRunning && cycle < maxNumberCycles) {
       cout << "cycle " << cycle << endl;
-      sleep(2);   // duration of the monitor cycle
+      sleep(5);   // duration of the monitor cycle
       taskControl.execute();
       cycle++;
     }
