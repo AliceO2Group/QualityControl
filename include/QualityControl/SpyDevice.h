@@ -9,7 +9,6 @@
 #include <FairMQDevice.h>
 #include <TMessage.h>
 #include "SpyMainFrame.h"
-#include "QualityControl/MonitorObject.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -46,7 +45,7 @@ class SpyDevice: public FairMQDevice
 
   private:
     SpyMainFrame *mFrame;
-    std::map<std::string, AliceO2::QualityControl::Core::MonitorObject*> mCache;
+    std::map<std::string, TObject*> mCache;
 
   ClassDef(SpyDevice,1)
     ;

@@ -2,6 +2,9 @@
 /// \file   qcSpy.cxx
 /// \author Barthelemy von Haller
 ///
+/// A little tool to connect to a FairMQ device (or any ZeroMQ device actually) and get the TObjects it
+/// is publishing. It can be any object inheriting from TObject.
+///
 /// TODO for the qcSpy
 /// - add fields to say where to connect to
 /// - add scroll bar if many objects
