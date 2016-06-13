@@ -91,6 +91,16 @@ class MonitorObject : public TObject
       return mChecks;
     }
 
+    bool isIsOwner() const
+    {
+      return mIsOwner;
+    }
+
+    void setIsOwner(bool isOwner)
+    {
+      mIsOwner = isOwner;
+    }
+
     /// \brief Add a checker to be executed on this object when computing the quality.
     /// If a checker with the same name already exists it will be replaced by this check class name.
     /// Several checkers can be added for the same checker class name, but with different names (and
@@ -129,7 +139,11 @@ class MonitorObject : public TObject
     std::vector<CheckDefinition> mChecks;
     std::string mTaskName;
 
-    ClassDefOverride(MonitorObject,1);
+    // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the object.
+    // TODO : maybe we should always be the owner ?
+    bool mIsOwner;
+
+  ClassDefOverride(MonitorObject,1);
 };
 
 } // namespace Core

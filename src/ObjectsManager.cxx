@@ -46,6 +46,7 @@ ObjectsManager::~ObjectsManager()
 void ObjectsManager::startPublishing(std::string taskName, std::string objectName, TObject *object) // TODO consider making taskname a property that we set on creation
 {
   MonitorObject *newObject = new MonitorObject(objectName, object, taskName);
+  newObject->setIsOwner(false);
   mMonitorObjects[objectName] = newObject;
 }
 
