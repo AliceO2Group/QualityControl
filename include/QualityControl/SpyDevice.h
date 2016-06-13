@@ -36,6 +36,7 @@ class SpyDevice: public FairMQDevice
 
     static void CustomCleanup(void *data, void* hint);
     void start();
+    void stop();
     void displayObject(const char* objectName); // not a string because it is a slot
 
     void setFrame(SpyMainFrame *frame);

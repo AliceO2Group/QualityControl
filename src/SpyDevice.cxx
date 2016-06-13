@@ -53,7 +53,16 @@ void SpyDevice::start()
   ChangeState("INIT_TASK");
   WaitForEndOfState("INIT_TASK");
   ChangeState("RUN");
-//  InteractiveStateLoop();
+}
+
+void SpyDevice::stop()
+{
+  ChangeState("STOP"); // synchronous
+  ChangeState("RESET_TASK");
+  WaitForEndOfState("RESET_TASK");
+  ChangeState("RESET_DEVICE");
+  WaitForEndOfState("RESET_DEVICE");
+  ChangeState("END");
 }
 
 void SpyDevice::Run()
@@ -66,11 +75,12 @@ void SpyDevice::Run()
       TestTMessage tm(message->GetData(), message->GetSize());
       TObject *tobj = tm.ReadObject(tm.GetClass());
       if (tobj) {
-        // TODO do we delete the old object ?
         // TODO once the bug in ROOt that removes spaces in strings passed in signal slot is fixed we can use the normal name.
         string objectName = tobj->GetName();
         boost::erase_all(objectName, " ");
-        cout << "* adding object '" << objectName << "' to cache " << endl;
+        if(mCache.count(objectName) && mCache[objectName]) {
+          delete mCache[objectName];
+        }
         mCache[objectName] = tobj;
         mFrame->updateList(objectName);
       } else {

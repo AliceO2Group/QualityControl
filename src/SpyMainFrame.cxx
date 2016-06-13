@@ -34,7 +34,6 @@ SpyMainFrame::SpyMainFrame(SpyDevice *spyDevice)
 
 SpyMainFrame::~SpyMainFrame()
 {
-  // delete buttons
   if(mDrawnObject) {
     delete mDrawnObject;
   }
@@ -42,6 +41,7 @@ SpyMainFrame::~SpyMainFrame()
   for(iter = mMapButtons.begin() ; iter != mMapButtons.end() ; iter++) {
     delete iter->second;
   }
+  Disconnect(this);
 }
 
 void SpyMainFrame::constructWindow()
@@ -77,6 +77,7 @@ void SpyMainFrame::constructWindow()
 void SpyMainFrame::closeWindow()
 {
   // Got close message for this MainFrame. Terminates the application.
+  mController->stop();
   gApplication->Terminate();
 }
 
