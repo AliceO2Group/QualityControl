@@ -27,14 +27,14 @@ SpyDevice::SpyDevice()
 {
   this->SetTransport(new FairMQTransportFactoryZMQ);
 
-  FairMQChannel histoChannel;
-  histoChannel.UpdateType("sub");
-  histoChannel.UpdateMethod("connect");
-  histoChannel.UpdateAddress("tcp://localhost:5556"); // todo get this from the UI
-  histoChannel.UpdateSndBufSize(10000);
-  histoChannel.UpdateRcvBufSize(10000);
-  histoChannel.UpdateRateLogging(0);
-  fChannels["data-in"].push_back(histoChannel);
+  FairMQChannel receivingChannel;
+  receivingChannel.UpdateType("sub");
+  receivingChannel.UpdateMethod("connect");
+  receivingChannel.UpdateAddress("tcp://localhost:5556"); // todo get this from the UI
+  receivingChannel.UpdateSndBufSize(10000);
+  receivingChannel.UpdateRcvBufSize(10000);
+  receivingChannel.UpdateRateLogging(0);
+  fChannels["data-in"].push_back(receivingChannel);
 }
 
 SpyDevice::~SpyDevice()
@@ -67,7 +67,6 @@ void SpyDevice::stop()
 
 void SpyDevice::Run()
 {
-  cout << "in run" << endl;
   while (CheckCurrentState(RUNNING)) {
     unique_ptr<FairMQMessage> message(fTransportFactory->CreateMessage());
 
@@ -89,7 +88,6 @@ void SpyDevice::Run()
     }
     this_thread::sleep_for(chrono::milliseconds(1000));
   }
-  cout << "out run " << endl;
 }
 
 void SpyDevice::displayObject(const char* objectName)

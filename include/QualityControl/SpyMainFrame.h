@@ -6,13 +6,15 @@
 #ifndef QUALITYCONTROL_SRC_QCSPY_H_
 #define QUALITYCONTROL_SRC_QCSPY_H_
 
+//std
+#include <map>
+// ROOT
 #include <TGMdiMainFrame.h>
 #include <TGStatusBar.h>
 #include <TGButton.h>
 #include <TGLabel.h>
 #include <TGMenu.h>
 #include <TRootEmbeddedCanvas.h>
-#include <map>
 
 namespace AliceO2 {
 namespace QualityControl {
