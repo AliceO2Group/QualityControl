@@ -38,11 +38,15 @@ class SpyDevice: public FairMQDevice
     virtual ~SpyDevice();
 
     static void CustomCleanup(void *data, void* hint);
-    void start();
     void stop();
     void displayObject(const char* objectName); // SLOT
 
     void setFrame(SpyMainFrame *frame);
+    /**
+     * \param address <url>:<port>
+     */
+    void startChannel(std::string address, std::string type);
+    void stopChannel();
 
   protected:
     virtual void Run() override;

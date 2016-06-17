@@ -15,6 +15,9 @@
 #include <TGLabel.h>
 #include <TGMenu.h>
 #include <TRootEmbeddedCanvas.h>
+#include <TGTextEntry.h>
+#include <TGCanvas.h>
+#include <TGComboBox.h>
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -43,19 +46,25 @@ class SpyMainFrame: public TGMainFrame
      * \param listName The name as it appears in the list and that might be different from obj->GetName()
      */
     void displayObject(TObject *obj);
+    void start(); // slot
+    void stop(); // slot
 
   private:
     void constructWindow();
+    void removeAllObjectsButtons();
 
-    TGHorizontalFrame *fBottomButtonFrame;
-    TGHorizontalFrame *fObjectsBrowserFrame;
-    TGTextButton *fUpdateButton;
-    TGMenuBar* fMenuBar;
-    TGStatusBar* fStatusBar;
-    TGLabel *fUpdatePeriodNumberEntryLabel;
-    TGVerticalFrame *fObjectsListFrame, *fObjectCanvasFrame;
-    TRootEmbeddedCanvas *fCanvas;
+    TGHorizontalFrame *mBottomButtonFrame;
+    TGHorizontalFrame *mObjectsBrowserFrame;
+    TGMenuBar* mMenuBar;
+    TGVerticalFrame *mObjectsListFrame;
+    TGCanvas *mScrollObjectsListContainer;
+    TRootEmbeddedCanvas *mCanvas;
     std::map<std::string, TGButton*> mMapButtons;
+    // For the form
+    TGLabel *mTypeLabel, *mAddressLabel;
+    TGTextEntry *mAddressField;
+    TGTextButton *mStartButton, *mStopButton;
+    TGComboBox *mTypeField;
 
     SpyDevice* mController;
     TObject* mDrawnObject;

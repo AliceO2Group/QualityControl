@@ -26,15 +26,6 @@ SpyDevice::SpyDevice()
     : mFrame(nullptr)
 {
   this->SetTransport(new FairMQTransportFactoryZMQ);
-
-  FairMQChannel receivingChannel;
-  receivingChannel.UpdateType("sub");
-  receivingChannel.UpdateMethod("connect");
-  receivingChannel.UpdateAddress("tcp://localhost:5556"); // todo get this from the UI
-  receivingChannel.UpdateSndBufSize(10000);
-  receivingChannel.UpdateRcvBufSize(10000);
-  receivingChannel.UpdateRateLogging(0);
-  fChannels["data-in"].push_back(receivingChannel);
 }
 
 SpyDevice::~SpyDevice()
@@ -46,22 +37,15 @@ void SpyDevice::setFrame(SpyMainFrame *frame)
   mFrame = frame;
 }
 
-void SpyDevice::start()
-{
-  ChangeState("INIT_DEVICE");
-  WaitForEndOfState("INIT_DEVICE");
-  ChangeState("INIT_TASK");
-  WaitForEndOfState("INIT_TASK");
-  ChangeState("RUN");
-}
-
 void SpyDevice::stop()
 {
+  // TODO if current state is running {
   ChangeState("STOP"); // synchronous
   ChangeState("RESET_TASK");
   WaitForEndOfState("RESET_TASK");
   ChangeState("RESET_DEVICE");
   WaitForEndOfState("RESET_DEVICE");
+  //}
   ChangeState("END");
 }
 
@@ -70,14 +54,14 @@ void SpyDevice::Run()
   while (CheckCurrentState(RUNNING)) {
     unique_ptr<FairMQMessage> message(fTransportFactory->CreateMessage());
 
-    if (fChannels.at("data-in").at(0).ReceiveAsync(message) > 0) {
+    while (fChannels.at("data-in").at(0).ReceiveAsync(message) > 0) {
       TestTMessage tm(message->GetData(), message->GetSize());
       TObject *tobj = tm.ReadObject(tm.GetClass());
       if (tobj) {
         // TODO once the bug in ROOt that removes spaces in strings passed in signal slot is fixed we can use the normal name.
         string objectName = tobj->GetName();
         boost::erase_all(objectName, " ");
-        if(mCache.count(objectName) && mCache[objectName]) {
+        if (mCache.count(objectName) && mCache[objectName]) {
           delete mCache[objectName];
         }
         mCache[objectName] = tobj;
@@ -94,10 +78,36 @@ void SpyDevice::displayObject(const char* objectName)
 {
   if (mCache.count(objectName) > 0) {
     mFrame->displayObject(mCache[objectName]);
-  }
-  else {
+  } else {
     cout << "object unknown" << endl;
   }
+}
+
+void SpyDevice::startChannel(std::string address, std::string type)
+{
+  FairMQChannel receivingChannel;
+  receivingChannel.UpdateType(type);
+  receivingChannel.UpdateAddress(address);
+  receivingChannel.UpdateSndBufSize(10000);
+  receivingChannel.UpdateRcvBufSize(10000);
+  receivingChannel.UpdateRateLogging(0);
+  receivingChannel.UpdateMethod("connect");
+  fChannels["data-in"].push_back(receivingChannel);
+  ChangeState("INIT_DEVICE");
+  WaitForEndOfState("INIT_DEVICE");
+  ChangeState("INIT_TASK");
+  WaitForEndOfState("INIT_TASK");
+  ChangeState("RUN");
+}
+
+void SpyDevice::stopChannel()
+{
+  ChangeState("STOP"); // synchronous
+  ChangeState("RESET_TASK");
+  WaitForEndOfState("RESET_TASK");
+  ChangeState("RESET_DEVICE");
+  WaitForEndOfState("RESET_DEVICE");
+  fChannels["data-in"].pop_back();
 }
 
 } // namespace Core
