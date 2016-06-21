@@ -6,8 +6,6 @@
 /// is publishing. It can be any object inheriting from TObject.
 ///
 /// TODO for the qcSpy
-/// - add fields to say where to connect to
-/// - add scroll bar if many objects
 /// - fix whatever thread and memory issues there are (?)
 
 // std

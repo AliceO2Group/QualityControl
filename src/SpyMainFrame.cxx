@@ -62,9 +62,11 @@ void SpyMainFrame::constructWindow()
 
   // browser
   mScrollObjectsListContainer = new TGCanvas(mObjectsBrowserFrame, 218, 576);
-  mObjectsListFrame = new TGVerticalFrame(mScrollObjectsListContainer->GetViewPort(), 200, 576, kChildFrame | kFixedWidth | kSunkenFrame);
+  mObjectsListFrame = new TGVerticalFrame(mScrollObjectsListContainer->GetViewPort(), 200, 576,
+      kChildFrame | kFixedWidth | kSunkenFrame);
   mScrollObjectsListContainer->SetContainer(mObjectsListFrame);
-  mObjectsBrowserFrame->AddFrame(mScrollObjectsListContainer, new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 0, 0, 0, 0));
+  mObjectsBrowserFrame->AddFrame(mScrollObjectsListContainer,
+      new TGLayoutHints(kLHintsLeft | kLHintsExpandY, 0, 0, 0, 0));
   mCanvas = new TRootEmbeddedCanvas("embedded", mObjectsBrowserFrame, 100, 100);
   mObjectsBrowserFrame->AddFrame(mCanvas, new TGLayoutHints(kLHintsExpandY | kLHintsExpandX));
 
@@ -177,15 +179,18 @@ void SpyMainFrame::removeAllObjectsButtons()
 {
   std::map<std::string, TGButton*>::iterator iter;
   for (iter = mMapButtons.begin(); iter != mMapButtons.end(); iter++) {
-//    mObjectsListFrame->RemoveFrame(iter->second);
+    // remove the button from its container
+    mObjectsListFrame->RemoveFrame(iter->second);
+    // hide it
+    iter->second->UnmapWindow();
+    // remove its parent
+    iter->second->ReparentWindow(gClient->GetDefaultRoot());
+    // finally delete it
     delete iter->second;
     cout << "deleted " << iter->first << endl;
   }
   mMapButtons.clear();
-  this->MapSubwindows();
-  this->Resize();
   Layout();
-  gSystem->ProcessEvents();
 }
 } /* namespace Gui */
 } /* namespace QualityControl */
