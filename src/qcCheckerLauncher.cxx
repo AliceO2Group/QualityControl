@@ -5,23 +5,15 @@
 
 // std
 #include <iostream>
-#include <signal.h>
 // boost
-#include <boost/program_options.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 // ROOT
 #include <TApplication.h>
 #include <TROOT.h>
 // FairRoot
 #include <FairMQTransportFactoryZMQ.h>
-// O2
-#include "Common/signalUtilities.h"
 // QC
-#include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Checker.h"
-#include "QualityControl/Version.h"
-
-namespace po = boost::program_options;
 
 using namespace std;
 using namespace AliceO2::QualityControl::Core;

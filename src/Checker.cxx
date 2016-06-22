@@ -91,6 +91,8 @@ void Checker::Run()
 
 void Checker::check(MonitorObject *mo)
 {
+  mLogger << "Checking \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
+
   // Get the Checks
   std::vector<CheckDefinition> checks = mo->getChecks();
 
@@ -114,6 +116,8 @@ void Checker::check(MonitorObject *mo)
 
 void Checker::store(MonitorObject *mo)
 {
+  mLogger << "Storing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
+
   try {
     mDatabase->Store(mo);
   } catch (boost::exception & e) {

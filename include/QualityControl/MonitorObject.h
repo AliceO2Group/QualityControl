@@ -86,8 +86,6 @@ class MonitorObject : public TObject
 
     std::vector<CheckDefinition> getChecks() const
     {
-      std::cout << "A" << std::endl;
-      std::cout << mChecks.size() << std::endl;
       return mChecks;
     }
 

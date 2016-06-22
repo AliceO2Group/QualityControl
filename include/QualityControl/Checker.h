@@ -35,6 +35,9 @@ class Checker : public FairMQDevice
 
   protected:
     virtual void Run() override;
+
+  private:
+
     /**
      * \brief Evaluate the quality of a MonitorObject.
      *
@@ -46,6 +49,7 @@ class Checker : public FairMQDevice
      *        to the worse quality encountered while running the Check's.
      */
     void check(AliceO2::QualityControl::Core::MonitorObject *mo);
+
     /**
      * \brief Store the MonitorObject in the database.
      *
@@ -58,7 +62,6 @@ class Checker : public FairMQDevice
      */
     void send(AliceO2::QualityControl::Core::MonitorObject *mo);
 
-  private:
     void loadLibrary(const std::string libraryName) const;
     CheckInterface* instantiateCheck(std::string checkName, std::string className) const;
     static void CustomCleanupTMessage(void *data, void *object);
