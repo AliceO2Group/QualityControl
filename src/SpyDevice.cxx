@@ -4,8 +4,6 @@
 ///
 
 #include <iostream>
-#include <TH1.h>
-#include <TCanvas.h>
 
 #include <FairMQDevice.h>
 #include <TMessage.h>
@@ -74,7 +72,7 @@ void SpyDevice::Run()
   }
 }
 
-void SpyDevice::displayObject(const char* objectName)
+void SpyDevice::displayObject(string objectName)
 {
   if (mCache.count(objectName) > 0) {
     mFrame->displayObject(mCache[objectName]);

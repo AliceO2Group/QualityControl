@@ -39,7 +39,7 @@ class SpyDevice: public FairMQDevice
 
     static void CustomCleanup(void *data, void* hint);
     void stop();
-    void displayObject(const char* objectName); // SLOT
+    void displayObject(std::string objectName);
 
     void setFrame(SpyMainFrame *frame);
     /**
@@ -55,7 +55,7 @@ class SpyDevice: public FairMQDevice
     SpyMainFrame *mFrame;
     std::map<std::string, TObject*> mCache;
 
-  ClassDef(SpyDevice,1);
+//  ClassDef(SpyDevice,1);
 };
 
 } // namespace Gui

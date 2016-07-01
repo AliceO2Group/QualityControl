@@ -131,13 +131,20 @@ void SpyMainFrame::displayObject(TObject *obj)
   gSystem->ProcessEvents();
 }
 
+void SpyMainFrame::displayObject(const char* objectName)
+{
+  // callback for the buttons of the monitorobjects. We don't use a slot in SpyDevice because we did not succeed
+  // to generate a dictionary for it with the latest ROOT.
+  mController->displayObject(objectName);
+}
+
 void SpyMainFrame::updateList(string name)
 {
   if (mMapButtons.count(name) == 0) {
     TGTextButton *button = new TGTextButton(mObjectsListFrame, name.c_str());
     mObjectsListFrame->AddFrame(button, new TGLayoutHints(kLHintsExpandX | kLHintsTop));
     string methodCall = string("displayObject(=\"") + name + "\")";
-    button->Connect("Clicked()", "AliceO2::QualityControl::Gui::SpyDevice", mController, methodCall.c_str());
+    button->Connect("Clicked()", "AliceO2::QualityControl::Gui::SpyMainFrame", this, methodCall.c_str());
     mMapButtons[name] = button;
     this->MapSubwindows();
     this->Resize();

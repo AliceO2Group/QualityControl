@@ -48,6 +48,7 @@ class SpyMainFrame: public TGMainFrame
     void displayObject(TObject *obj);
     void start(); // slot
     void stop(); // slot
+    void displayObject(const char* objectName); // slot
 
   private:
     void constructWindow();
