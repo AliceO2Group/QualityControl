@@ -16,7 +16,7 @@ set(LIB_HEADERS_CORE
         ../include/QualityControl/DatabaseFactory.h
         ../include/QualityControl/SpyMainFrame.h
         ../include/QualityControl/SpyDevice.h
-   #     ../include/QualityControl/ClientDataProvider.h
+        ../include/QualityControl/ClientDataProvider.h
         )
 
 set(LIB_SOURCES_CORE
@@ -34,7 +34,7 @@ set(LIB_SOURCES_CORE
         DatabaseFactory.cxx
         SpyMainFrame.cxx
         SpyDevice.cxx
-      #  ClientDataProvider.cxx
+        ClientDataProvider.cxx
         )
 
 if (FAIRROOT_FOUND)
@@ -58,6 +58,10 @@ set(APP_SOURCES_CHECKER_LAUNCHER
 
 set(APP_SOURCES_SPY
         qcSpy.cxx
+)
+
+set(APP_SOURCES_CONSUMER
+        Consumer.cxx
 )
 
 set(LIBRARY_NAME_CORE QCCore)
@@ -146,8 +150,18 @@ if (FAIRROOT_FOUND)
             )
 endif (FAIRROOT_FOUND)
 
+# qcConsumer
+set(APPLICATION_CONSUMER qcConsumer)
+add_executable(${APPLICATION_CONSUMER} ${APP_SOURCES_CONSUMER})
+target_link_libraries(${APPLICATION_CONSUMER} 
+            ${ROOT_LIBRARIES}
+            ${Boost_PROGRAM_OPTIONS_LIBRARY}
+            QCCore
+            )
+install(TARGETS ${APPLICATION_CONSUMER} DESTINATION bin COMPONENT apps)
+
 # Says how and where to install software
-install(TARGETS ${LIBRARY_NAME_CORE} ${APPLICATION_TASK_LAUNCHER} ${APPLICATION_CHECKER_LAUNCHER} ${APPLICATION_NAME_RECEIVER}
+install(TARGETS ${LIBRARY_NAME_CORE} ${APPLICATION_TASK_LAUNCHER} ${APPLICATION_CHECKER_LAUNCHER} ${APPLICATION_NAME_RECEIVER} ${APPLICATION_CONSUMER} ${APPLICATION_QC_SPY}
   EXPORT ${PROJECT_NAME}Targets            # for downstream dependencies
   ARCHIVE DESTINATION lib COMPONENT libs   # static lib
   RUNTIME DESTINATION bin COMPONENT libs   # binaries

@@ -49,7 +49,7 @@ Checker::Checker()
 {
 	// TODO load the configuration of the database here
 	mDatabase = DatabaseFactory::create("MySql");
-	mDatabase->Connect("localhost", "quality_control", "qc_user", "qc_user");
+	mDatabase->connect("localhost", "quality_control", "qc_user", "qc_user");
 
 	mBroadcast = true; // TODO configure
 	if(mBroadcast) {
@@ -66,7 +66,7 @@ Checker::Checker()
 
 Checker::~Checker()
 {
-  mDatabase->Disconnect();
+  mDatabase->disconnect();
   delete mDatabase;
 }
 
@@ -119,7 +119,7 @@ void Checker::store(MonitorObject *mo)
   mLogger << "Storing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
   try {
-    mDatabase->Store(mo);
+    mDatabase->store(mo);
   } catch (boost::exception & e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
   }

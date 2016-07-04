@@ -8,6 +8,7 @@
 #define ALICEO2_QC_CORE_VERSION_H
 
 #include <string>
+#include <sstream>
 
 namespace AliceO2 {
 namespace QualityControl {

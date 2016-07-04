@@ -15,6 +15,11 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Repository {
 
+/**
+ * TODO: consider storing directly the TObject, not the MonitorObject, and to put all its attributes as columns
+ * TODO: handle ROOT IO streamers
+ */
+
 class MySqlDatabase: public DatabaseInterface
 {
   public:
@@ -23,31 +28,34 @@ class MySqlDatabase: public DatabaseInterface
     /// Destructor
     virtual ~MySqlDatabase();
 
-    void Connect(std::string host, std::string database, std::string username, std::string password) override;
-    void Store(AliceO2::QualityControl::Core::MonitorObject *mo) override;
-    AliceO2::QualityControl::Core::MonitorObject* Retrieve(std::string name) override;
-    void Disconnect() override;
+    void connect(std::string username, std::string password) override;
+    void connect(std::string host, std::string database, std::string username, std::string password) override;
+    void store(AliceO2::QualityControl::Core::MonitorObject *mo) override;
+    AliceO2::QualityControl::Core::MonitorObject* retrieve(std::string taskName, std::string objectName) override;
+    void disconnect() override;
+    std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
+    std::vector<std::string> getListOfTasksWithPublications() override;
 
   private:
     /**
      * \brief Execute the query.
      * The result object must be deleted by the user.
      */
-    TMySQLResult* Query(std::string sql);
+    TMySQLResult* query(std::string sql);
 
     /**
      * \brief Execute a query that doesn't return results;
      * Return true if successful.
      */
-    bool Execute(std::string sql);
+    bool execute(std::string sql);
 
     /**
      * \brief Create a new index on table 'table'.
      * The name of the index is <table>_i_<column>.
      */
-    void AddIndex(std::string table, std::string column);
+    void addIndex(std::string table, std::string column);
 
-    void PrepareTaskDataContainer(std::string taskName) override;
+    void prepareTaskDataContainer(std::string taskName) override;
 
     TMySQLServer* mServer;
 
