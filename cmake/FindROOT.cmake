@@ -6,6 +6,7 @@
 # ROOT_INCLUDE_DIRS   PATH to the include directories (not cached)
 # ROOT_LIBRARIES      Most common libraries
 # ROOT_<name>_LIBRARY Full path to the library <name>
+# ROOT_<name>_FOUND   Whether a certain library is part of ROOT or not
 # ROOT_LIBRARY_DIR    PATH to the library directory
 # ROOT_DEFINITIONS    Compiler definitions
 # ROOT_CXX_FLAGS      Compiler flags to used by client packages

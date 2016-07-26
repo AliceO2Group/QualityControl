@@ -69,13 +69,6 @@ else()
     set(Boost_FOUND 1)
 endif()
 
-find_package(MySQL)
-if(NOT MYSQL_FOUND)
-    message(WARNING "MySQL not found, the corresponding classes won't be built.")
-else()
-    add_definitions(-D_WITH_MYSQL)
-endif()
-
 # Other subprojects
 link_o2_subproject(InfoLogger)
 link_o2_subproject(Common)
@@ -114,6 +107,15 @@ if(ROOT_FOUND)
     include(RootNewMacros)
 else()
     message(WARNING "ROOT not found, we won't compile the QC (skip, no error)")
+endif()
+
+find_package(MySQL)
+if(NOT MYSQL_FOUND)
+    message(WARNING "MySQL not found, the corresponding classes won't be built.")
+elseif(NOT ROOT_MYSQL_FOUND)
+    message(WARNING "MySQL ROOT class not found, the corresponding classes won't be built.")
+else()
+    add_definitions(-D_WITH_MYSQL)
 endif()
 
 # This sets the include directory for the reference project. This is
