@@ -43,7 +43,7 @@ if (FAIRROOT_FOUND)
     set(APP_TEST_RECEIVER_SOURCES AlfaReceiverForTests.cxx)
 endif (FAIRROOT_FOUND)
 
-if(MYSQL_FOUND AND ROOT_MYSQL_FOUND)
+if(MYSQL_FOUND AND ROOT_mysql_FOUND)
     set(LIB_HEADERS_CORE ${LIB_HEADERS_CORE} ../include/QualityControl/MySqlDatabase.h)
     set(LIB_SOURCES_CORE ${LIB_SOURCES_CORE} MySqlDatabase.cxx)
 endif()
