@@ -35,6 +35,13 @@ class ObjectsManager
     void startPublishing(std::string taskName, std::string objectName, TObject *obj);
     void setQuality(std::string objectName, Quality quality);
     Quality getQuality(std::string objectName);
+
+    /// \brief Add a check to the object defined by objectName.
+    /// If a check with the same already exist for this object, it will be replaced.
+    /// \param objectName
+    /// \param checkName
+    /// \param checkClassName
+    /// \param checkLibraryName
     void addCheck (const std::string objectName, const std::string checkName,
         const std::string checkClassName, const std::string checkLibraryName="");
     MonitorObject *getMonitorObject(std::string objectName);

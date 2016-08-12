@@ -72,8 +72,8 @@ void AlfaPublisher::publish(MonitorObject *mo)
 {
 
   mCurrentMonitorObject = mo;
-  cout << "alfa publisher : " << mo->getName() << " ; mean of histo : "
-      << dynamic_cast<TH1*>(mo->getObject())->GetMean() << endl;
+//  cout << "alfa publisher : " << mo->getName() << " ; mean of histo : "
+//      << dynamic_cast<TH1*>(mo->getObject())->GetMean() << endl;
 
   ChangeState(RUN);
   WaitForEndOfState(RUN);
@@ -81,7 +81,7 @@ void AlfaPublisher::publish(MonitorObject *mo)
 
 void AlfaPublisher::Init()
 {
-  cout << "Init()" << endl;
+//  cout << "Init()" << endl;
 }
 
 void AlfaPublisher::Run()
@@ -91,15 +91,13 @@ void AlfaPublisher::Run()
 
   TMessage *message = new TMessage(kMESS_OBJECT); // will be deleted by fairmq using our custom method
   message->WriteObjectAny(mCurrentMonitorObject, mCurrentMonitorObject->IsA());
-  cout << "mCurrentMonitorObject->IsA() : " << mCurrentMonitorObject->IsA()->GetName() << endl;
+//  cout << "mCurrentMonitorObject->IsA() : " << mCurrentMonitorObject->IsA()->GetName() << endl;
   unique_ptr<FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
-  cout << "msg->GetSize() " << msg->GetSize() << endl;
+//  cout << "msg->GetSize() " << msg->GetSize() << endl;
 
-  std::cout << "Sending \"" << mCurrentMonitorObject->getName() << "\"" << std::endl;
+//  std::cout << "Sending \"" << mCurrentMonitorObject->getName() << "\"" << std::endl;
 
   fChannels.at("data-out").at(0).Send(msg);
-
-  cout << "Run()" << endl;
 }
 
 } // namespace Core

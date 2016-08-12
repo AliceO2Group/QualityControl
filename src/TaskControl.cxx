@@ -8,35 +8,46 @@
 #include <DataSampling/MockSampler.h>
 #include "QualityControl/TaskFactory.h"
 
+using namespace std;
+using namespace std::chrono;
+
 namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
 TaskControl::TaskControl(std::string taskName, std::string configurationSource)
-    : mSampler(nullptr), mCollector(nullptr)
+  : mSampler(nullptr), mCollector(nullptr), mCycleDurationSeconds(5)
 {
   AliceO2::InfoLogger::InfoLogger theLog;
   mConfigFile.load(configurationSource);
 
+  // setup publisher
   string publisherClassName = mConfigFile.getValue<string>("Publisher.className");
   mObjectsManager = new ObjectsManager(publisherClassName);
 
+  // setup task
   // TODO could we use unique_ptr ?
-  string moduleName = mConfigFile.getValue<string>("ExampleTask.moduleName");
-  string className = mConfigFile.getValue<string>("ExampleTask.className");
+  string taskDefinitionName = mConfigFile.getValue<string>(taskName + ".taskDefinition");
+  string moduleName = mConfigFile.getValue<string>(taskDefinitionName + ".moduleName");
+  string className = mConfigFile.getValue<string>(taskDefinitionName + ".className");
   TaskFactory f;
   mTask = f.create(taskName, moduleName, className, mObjectsManager);
   mCollector = new Monitoring::Core::Collector(mConfigFile);
   // TODO create DataSampling with correct parameters
   mSampler = new AliceO2::DataSampling::MockSampler();
+
+  // other configuration
+  mCycleDurationSeconds = mConfigFile.getValue<int>(taskDefinitionName + ".cycleDurationSeconds");
 }
 
 TaskControl::~TaskControl()
 {
-  if(mSampler)
+  if (mSampler) {
     delete mSampler;
-  if(mCollector)
+  }
+  if (mCollector) {
     delete mCollector;
+  }
   delete mTask;
   delete mObjectsManager;
 }
@@ -62,18 +73,24 @@ void TaskControl::start()
 
 void TaskControl::execute()
 {
+  // todo measure duration of monitor cycle and publication
   mTask->startOfCycle();
-  DataBlock *block = mSampler->getData(0);
-  mTask->monitorDataBlock(*block);
+  auto start = system_clock::now();
+  auto end = start + seconds(mCycleDurationSeconds);
+  int numberBlocks = 0;
+  while (system_clock::now() < end) {
+//    cout << "now : " << system_clock::to_time_t(system_clock::now()) << endl;
+//    cout << "end : " << system_clock::to_time_t(end) << endl;
+    DataBlock *block = mSampler->getData(0);
+    mTask->monitorDataBlock(*block);
+    mSampler->releaseData(); // invalids the block !!!
+    numberBlocks++;
+  }
   mTask->endOfCycle();
 
   mObjectsManager->publish();
 
-  // TODO the cast to int is WRONG ! change when new monitoring interface is available
-//  mCollector->send((int)block->header.dataSize, "QCdataBlockSize");
-
-  mSampler->releaseData(); // invalids the block !!!
-
+  mCollector->send(numberBlocks, "QC_numberofblocks_in_cycle");
 }
 
 void TaskControl::stop()

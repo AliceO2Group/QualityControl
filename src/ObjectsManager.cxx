@@ -8,6 +8,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/MockPublisher.h"
 #include "QualityControl/AlfaPublisher.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace AliceO2::QualityControl::Core;
 using namespace AliceO2::Common;
@@ -43,7 +44,8 @@ ObjectsManager::~ObjectsManager()
   mMonitorObjects.clear();
 }
 
-void ObjectsManager::startPublishing(std::string taskName, std::string objectName, TObject *object) // TODO consider making taskname a property that we set on creation
+void ObjectsManager::startPublishing(std::string taskName, std::string objectName,
+                                     TObject *object) // TODO consider making taskname a property that we set on creation
 {
   MonitorObject *newObject = new MonitorObject(objectName, object, taskName);
   newObject->setIsOwner(false);
@@ -63,11 +65,13 @@ Quality ObjectsManager::getQuality(std::string objectName)
 }
 
 void ObjectsManager::addCheck(const std::string objectName, const std::string checkName,
-    const std::string checkClassName, const std::string checkLibraryName)
+                              const std::string checkClassName, const std::string checkLibraryName)
 {
   MonitorObject *mo = getMonitorObject(objectName);
   mo->addCheck(checkName, checkClassName, checkLibraryName);
-  std::cout << "Added check : " << objectName << " , " << checkName << " , " << checkClassName << " , " << checkLibraryName << std::endl;
+
+  QcInfoLogger::GetInstance() << "Added check : " << objectName << " , " << checkName << " , " << checkClassName
+                              << " , " << checkLibraryName << infologger::endm;
 }
 
 MonitorObject *ObjectsManager::getMonitorObject(std::string objectName)

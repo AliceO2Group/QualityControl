@@ -9,16 +9,18 @@
 #include <iostream>
 #include <InfoLogger/InfoLogger.hxx>
 
+typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time -> log::endm
+
 namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-using namespace std;
-
 /// \brief  Singleton class that any class in the QC can use to log.
 ///
-/// The aim of this class is to avoid every class in the package to define and configure its own instance of InfoLogger.
+/// The aim of this class is to avoid every class in the package to define
+/// and configure its own instance of InfoLogger.
 /// Independent InfoLogger instances can still be created when and if needed.
+/// Usage :   QcInfoLogger::GetInstance() << "blabla" << infologger::endm;
 ///
 /// \author Barthelemy von Haller
 class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
@@ -38,7 +40,7 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
     QcInfoLogger()
     {
       // TODO configure the QC infologger, e.g. proper facility
-      *this << "QC infologger initialized" << AliceO2::InfoLogger::InfoLogger::endm;
+      *this << "QC infologger initialized" << infologger::endm;
     }
 
     virtual ~QcInfoLogger()
@@ -49,7 +51,6 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
     // Disallow copying
     QcInfoLogger &operator=(const QcInfoLogger &) = delete;
     QcInfoLogger(const QcInfoLogger &) = delete;
-
 };
 
 }

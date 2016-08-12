@@ -68,7 +68,7 @@ class Checker : public FairMQDevice
 
     AliceO2::QualityControl::Core::QcInfoLogger &mLogger;
     AliceO2::QualityControl::Repository::DatabaseInterface *mDatabase;
-    vector<std::string> mTasksAlreadyEncountered;
+    std::vector<std::string> mTasksAlreadyEncountered;
     bool mBroadcast; // whether to broadcast the mo in addition to storing it to the db
 
 };

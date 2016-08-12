@@ -99,9 +99,9 @@ class MonitorObject : public TObject
       mIsOwner = isOwner;
     }
 
-    /// \brief Add a checker to be executed on this object when computing the quality.
-    /// If a checker with the same name already exists it will be replaced by this check class name.
-    /// Several checkers can be added for the same checker class name, but with different names (and
+    /// \brief Add a check to be executed on this object when computing the quality.
+    /// If a check with the same name already exists it will be replaced by this check.
+    /// Several checks can be added for the same check class name, but with different names (and
     /// they will get different configuration).
     /// \author Barthelemy von Haller
     /// \param name Arbitrary name to identify this Check.

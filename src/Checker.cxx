@@ -167,6 +167,7 @@ CheckInterface* Checker::instantiateCheck(string checkName, string className) co
     tempString += " because no dictionary for class named \"";
     tempString += className;
     tempString += "\" could be retrieved";
+    cerr << tempString << endl;
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
   }
   mLogger << "Instantiating class " << className << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;

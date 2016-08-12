@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
   int maxNumberCycles = INT_MAX;
-  int cycle = 0;
   if (vm.count("cycles")) {
     maxNumberCycles = vm["cycles"].as<int>();
   }
@@ -93,9 +92,9 @@ int main(int argc, char *argv[])
     taskControl.initialize();
     taskControl.configure();
     taskControl.start();
+    int cycle = 0;
     while (keepRunning && cycle < maxNumberCycles) {
-      cout << "cycle " << cycle << endl;
-      sleep(5);   // duration of the monitor cycle
+      QcInfoLogger::GetInstance() << "cycle " << cycle << AliceO2::InfoLogger::InfoLogger::endm;
       taskControl.execute();
       cycle++;
     }

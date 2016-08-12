@@ -14,9 +14,11 @@
 #include "Common/Exceptions.h"
 // QC
 #include "QualityControl/MySqlDatabase.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace AliceO2::Common;
 using namespace std;
+using namespace AliceO2::QualityControl::Core;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -68,7 +70,7 @@ void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
   if (!execute(query)) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to create data table"));
   } else {
-    cout << "Create data table for task " << taskName << endl;
+    QcInfoLogger::GetInstance() << "Create data table for task " << taskName << infologger::endm;
   }
 }
 
@@ -78,7 +80,6 @@ void MySqlDatabase::store(AliceO2::QualityControl::Core::MonitorObject *mo)
   // try to insert if it fails we check whether the table is there or not and create it if needed
 
   // Prepare statement
-  bool success = false;
   TMySQLStatement *statement;
   string query;
   query += "REPlACE INTO `data_" + taskName

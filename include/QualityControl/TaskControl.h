@@ -36,6 +36,7 @@ class TaskControl
     void initialize();
     void configure();
     void start();
+    /// This corresponds to a cycle here.
     void execute();
     void stop();
 
@@ -45,6 +46,8 @@ class TaskControl
     ConfigFile mConfigFile;
     AliceO2::DataSampling::SamplerInterface *mSampler;
     AliceO2::Monitoring::Core::Collector *mCollector;
+
+    int mCycleDurationSeconds;
 };
 
 }
