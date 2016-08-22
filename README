@@ -13,9 +13,15 @@ Notes :
 - To test : ./bin/qcTaskLauncher  -n asdf -c file:../example.ini
             ./bin/alfaTestReceiver
             ./bin/qcCheckerLauncher
+            ./bin/qcSpy
             
 TODO : add more checks to the example task to use the configuration in the isabovemean
 TODO : clean up code and documentation
+
+Configuration :
+We use an indirect system to allow multiple tasks (T1, T2, ...) to share most of their definition.
+The configuration for T1 and T2 can point to taskDefinition1 which in turn defines the class name,
+the module name, etc...
 
 For any question, please contact:
 Barthélémy von Haller (barthelemy.von.haller@cern.ch)
