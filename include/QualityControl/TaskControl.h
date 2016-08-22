@@ -11,6 +11,7 @@
 #include "QualityControl/TaskInterface.h"
 #include "Configuration/Configuration.h"
 #include "Monitoring/Collector.h"
+#include "QualityControl/TaskConfig.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -41,9 +42,12 @@ class TaskControl
     void stop();
 
   private:
+    void populateConfig(std::string taskName);
+
     ObjectsManager *mObjectsManager;
     TaskInterface *mTask;
     ConfigFile mConfigFile;
+    TaskConfig mTaskConfig;
     AliceO2::DataSampling::SamplerInterface *mSampler;
     AliceO2::Monitoring::Core::Collector *mCollector;
 

@@ -33,6 +33,8 @@ class Checker : public FairMQDevice
     /// Destructor
     virtual ~Checker();
 
+    void createChannel(std::string type, std::string method, std::string address, std::string channelName);
+
   protected:
     virtual void Run() override;
 

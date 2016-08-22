@@ -17,15 +17,15 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-AlfaPublisher::AlfaPublisher()
+AlfaPublisher::AlfaPublisher(TaskConfig& taskConfig)
     : mCurrentMonitorObject(0)
 {
-
   // set up communication layout and properties
   FairMQChannel histoChannel;
   histoChannel.UpdateType("pub");
   histoChannel.UpdateMethod("bind");
-  histoChannel.UpdateAddress("tcp://*:5556");
+  cout << "address > " << taskConfig.address << endl;
+  histoChannel.UpdateAddress(taskConfig.address);
   histoChannel.UpdateSndBufSize(10000);
   histoChannel.UpdateRcvBufSize(10000);
   histoChannel.UpdateRateLogging(0);

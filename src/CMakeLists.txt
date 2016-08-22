@@ -17,6 +17,7 @@ set(LIB_HEADERS_CORE
         ../include/QualityControl/SpyMainFrame.h
         ../include/QualityControl/SpyDevice.h
         ../include/QualityControl/ClientDataProvider.h
+        ../include/QualityControl/TaskConfig.h
         )
 
 set(LIB_SOURCES_CORE

@@ -14,9 +14,13 @@ Notes :
             ./bin/alfaTestReceiver
             ./bin/qcCheckerLauncher
             ./bin/qcSpy
-            
+- To start DB :
+            sudo systemctl start mariadb
+
 TODO : add more checks to the example task to use the configuration in the isabovemean
 TODO : clean up code and documentation
+TODO : we give the taskName to most classes because it is important to get the config. Should we rather pass the
+TODO :       config itself or make the Control a singleton that anyone can contact to get any of those two ?
 
 Configuration :
 We use an indirect system to allow multiple tasks (T1, T2, ...) to share most of their definition.

@@ -10,6 +10,7 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/PublisherInterface.h"
+#include "QualityControl/TaskConfig.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -28,11 +29,11 @@ class ObjectsManager
   public:
     /// Default constructor
     ObjectsManager();
-    ObjectsManager(std::string publisherClassName);
+    ObjectsManager(TaskConfig& taskConfig);
     /// Destructor
     virtual ~ObjectsManager();
 
-    void startPublishing(std::string taskName, std::string objectName, TObject *obj);
+    void startPublishing(std::string objectName, TObject *obj);
     void setQuality(std::string objectName, Quality quality);
     Quality getQuality(std::string objectName);
 
@@ -42,8 +43,8 @@ class ObjectsManager
     /// \param checkName
     /// \param checkClassName
     /// \param checkLibraryName
-    void addCheck (const std::string objectName, const std::string checkName,
-        const std::string checkClassName, const std::string checkLibraryName="");
+    void addCheck (const std::string& objectName, const std::string& checkName,
+        const std::string& checkClassName, const std::string& checkLibraryName="");
     MonitorObject *getMonitorObject(std::string objectName);
     TObject *getObject(std::string objectName);
 
@@ -52,6 +53,7 @@ class ObjectsManager
 
     std::map<std::string /*object name*/, QualityControl::Core::MonitorObject * /* object */> mMonitorObjects;
     PublisherInterface* mPublisher;
+    std::string mTaskName;
 
 };
 

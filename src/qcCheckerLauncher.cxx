@@ -21,19 +21,15 @@ using namespace AliceO2::QualityControl::Checker;
 
 int main(int argc, char *argv[])
 {
-
-  cout << "hello" << endl;
-  Checker receiver;
+  Checker checker;
 
   try {
-    FairMQChannel histoChannel;
-    histoChannel.UpdateType("sub");
-    histoChannel.UpdateMethod("connect");
-    histoChannel.UpdateAddress("tcp://localhost:5556");
-    histoChannel.UpdateSndBufSize(10000);
-    histoChannel.UpdateRcvBufSize(10000);
-    histoChannel.UpdateRateLogging(0);
-    receiver.fChannels["data-in"].push_back(histoChannel);
+    // todo create the number of channels required to listen to all the tasks we have been assigned.
+    // todo we need to get this information from somewhere (config ? )
+    vector <string> taskAddresses = {"tcp://localhost:5556", "tcp://localhost:5558"};
+    for (auto address : taskAddresses) {
+      checker.createChannel("sub", "connect", address, "data-in");
+    }
 
     // Get the proper transport factory
 #ifdef NANOMSG
@@ -42,22 +38,22 @@ int main(int argc, char *argv[])
     FairMQTransportFactory *transportFactory = new FairMQTransportFactoryZMQ();
 #endif
 
-    receiver.SetTransport(transportFactory);
+    checker.SetTransport(transportFactory);
 
-    receiver.ChangeState("INIT_DEVICE");
-    receiver.WaitForEndOfState("INIT_DEVICE");
+    checker.ChangeState("INIT_DEVICE");
+    checker.WaitForEndOfState("INIT_DEVICE");
 
-    receiver.ChangeState("INIT_TASK");
-    receiver.WaitForEndOfState("INIT_TASK");
+    checker.ChangeState("INIT_TASK");
+    checker.WaitForEndOfState("INIT_TASK");
 
-    receiver.ChangeState("RUN");
-    receiver.InteractiveStateLoop();
-  } catch (...) {
-    string diagnostic = boost::current_exception_diagnostic_information();
-    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
-    if (diagnostic == "No diagnostic information available.") {
-      throw;
-    }
+    checker.ChangeState("RUN");
+    checker.InteractiveStateLoop();
+  }
+  catch (const boost::exception &e) {
+    cerr << diagnostic_information(e) << endl;
+  }
+  catch (const std::exception &e) {
+    cerr << "Error: " << e.what() << endl;
   }
 
   return EXIT_SUCCESS;

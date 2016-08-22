@@ -18,26 +18,21 @@ namespace Core {
 TaskControl::TaskControl(std::string taskName, std::string configurationSource)
   : mSampler(nullptr), mCollector(nullptr), mCycleDurationSeconds(5)
 {
-  AliceO2::InfoLogger::InfoLogger theLog;
   mConfigFile.load(configurationSource);
+  populateConfig(taskName);
 
   // setup publisher
-  string publisherClassName = mConfigFile.getValue<string>("Publisher.className");
-  mObjectsManager = new ObjectsManager(publisherClassName);
+  mObjectsManager = new ObjectsManager(mTaskConfig);
 
   // setup task
-  // TODO could we use unique_ptr ?
-  string taskDefinitionName = mConfigFile.getValue<string>(taskName + ".taskDefinition");
-  string moduleName = mConfigFile.getValue<string>(taskDefinitionName + ".moduleName");
-  string className = mConfigFile.getValue<string>(taskDefinitionName + ".className");
   TaskFactory f;
-  mTask = f.create(taskName, moduleName, className, mObjectsManager);
+  mTask = f.create(mTaskConfig, mObjectsManager);  // TODO could we use unique_ptr ?
+
+  // setup monitoring
   mCollector = new Monitoring::Core::Collector(mConfigFile);
+
   // TODO create DataSampling with correct parameters
   mSampler = new AliceO2::DataSampling::MockSampler();
-
-  // other configuration
-  mCycleDurationSeconds = mConfigFile.getValue<int>(taskDefinitionName + ".cycleDurationSeconds");
 }
 
 TaskControl::~TaskControl()
@@ -50,6 +45,22 @@ TaskControl::~TaskControl()
   }
   delete mTask;
   delete mObjectsManager;
+}
+
+void TaskControl::populateConfig(std::string taskName)
+{
+  string taskDefinitionName = mConfigFile.getValue<string>(taskName + ".taskDefinition");
+
+  mTaskConfig.taskName = taskName;
+  mTaskConfig.moduleName = mConfigFile.getValue<string>(taskDefinitionName + ".moduleName");
+  mTaskConfig.address = mConfigFile.getValue<string>(taskName + ".address");
+  mTaskConfig.numberHistos = mConfigFile.getValue<int>(taskDefinitionName + ".numberHistos");
+  mTaskConfig.numberChecks = mConfigFile.getValue<int>(taskDefinitionName + ".numberChecks");
+  mTaskConfig.typeOfChecks = mConfigFile.getValue<string>(taskDefinitionName + ".typeOfChecks");
+  mTaskConfig.className = mConfigFile.getValue<string>(taskDefinitionName + ".className");
+  mTaskConfig.cycleDurationSeconds = mConfigFile.getValue<int>(taskDefinitionName + ".cycleDurationSeconds");
+  mTaskConfig.publisherClassName = mConfigFile.getValue<string>("Publisher.className");
+
 }
 
 void TaskControl::initialize()

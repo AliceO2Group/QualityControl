@@ -17,21 +17,22 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-ObjectsManager::ObjectsManager()
+ObjectsManager::ObjectsManager() : mTaskName("anonymous task")
 {
   mPublisher = new MockPublisher();
 }
 
-ObjectsManager::ObjectsManager(std::string publisherClassName)
+ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskName(taskConfig.taskName)
 {
   // We don't dynamically look for the class using TROOT and TSystem because we will
   // extremly rarely add a new publisher backend. It is not worth the trouble.
-  if (publisherClassName == "MockPublisher") {
+  if (taskConfig.publisherClassName == "MockPublisher") {
     mPublisher = new MockPublisher();
-  } else if (publisherClassName == "AlfaPublisher") {
-    mPublisher = new AlfaPublisher();
+  } else if (taskConfig.publisherClassName == "AlfaPublisher") {
+    mPublisher = new AlfaPublisher(taskConfig);
   } else {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Unknown publisher class : " + publisherClassName));
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Unknown publisher class : " +
+                                                                taskConfig.publisherClassName));
   }
 }
 
@@ -44,10 +45,10 @@ ObjectsManager::~ObjectsManager()
   mMonitorObjects.clear();
 }
 
-void ObjectsManager::startPublishing(std::string taskName, std::string objectName,
-                                     TObject *object) // TODO consider making taskname a property that we set on creation
+void ObjectsManager::startPublishing(std::string objectName,
+                                     TObject *object)
 {
-  MonitorObject *newObject = new MonitorObject(objectName, object, taskName);
+  MonitorObject *newObject = new MonitorObject(objectName, object, mTaskName);
   newObject->setIsOwner(false);
   mMonitorObjects[objectName] = newObject;
 }
@@ -64,8 +65,8 @@ Quality ObjectsManager::getQuality(std::string objectName)
   return mo->getQuality();
 }
 
-void ObjectsManager::addCheck(const std::string objectName, const std::string checkName,
-                              const std::string checkClassName, const std::string checkLibraryName)
+void ObjectsManager::addCheck(const std::string& objectName, const std::string& checkName,
+                              const std::string& checkClassName, const std::string& checkLibraryName)
 {
   MonitorObject *mo = getMonitorObject(objectName);
   mo->addCheck(checkName, checkClassName, checkLibraryName);

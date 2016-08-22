@@ -9,6 +9,7 @@
 #include <iostream>
 // O2
 #include "Common/Exceptions.h"
+#include "QualityControl/TaskConfig.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -29,7 +30,7 @@ class TaskFactory
     /// The TaskInterface actual class is decided based on the parameters passed.
     /// TODO make it static ?
     /// \author Barthelemy von Haller
-    TaskInterface *create(std::string taskName, std::string moduleName, std::string className, ObjectsManager* objectsManager);
+    TaskInterface *create(TaskConfig& taskConfig, ObjectsManager* objectsManager);
 };
 
 } // namespace Core

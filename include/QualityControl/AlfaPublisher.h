@@ -9,6 +9,7 @@
 #include "QualityControl/PublisherInterface.h"
 #include "FairMQDevice.h"
 #include <TH1F.h>
+#include "QualityControl/TaskConfig.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -21,8 +22,8 @@ namespace Core {
 class AlfaPublisher: public PublisherInterface, FairMQDevice
 {
   public:
-    /// Default constructor
-    AlfaPublisher();
+    /// Constructor
+    AlfaPublisher(TaskConfig& taskConfig);
     /// Destructor
     virtual ~AlfaPublisher();
 

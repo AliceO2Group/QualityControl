@@ -31,36 +31,36 @@ TaskFactory::~TaskFactory()
 {
 }
 
-TaskInterface* TaskFactory::create(std::string taskName, std::string moduleName, std::string className, ObjectsManager* objectsManager)
+TaskInterface* TaskFactory::create(TaskConfig& taskConfig, ObjectsManager* objectsManager)
 {
   TaskInterface *result = 0;
   QcInfoLogger &logger = QcInfoLogger::GetInstance();
 
   // Load the library
-  string library = "lib" + moduleName + ".so";
+  string library = "lib" + taskConfig.moduleName + ".so";
   logger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
   if (gSystem->Load(library.c_str())) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
   }
 
   // Get the class and instantiate
-  logger << "Loading class " << className << AliceO2::InfoLogger::InfoLogger::endm;
-  TClass* cl = TClass::GetClass(className.c_str());
+  logger << "Loading class " << taskConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
+  TClass* cl = TClass::GetClass(taskConfig.className.c_str());
   string tempString("Failed to instantiate Quality Control Module");
   if (!cl) {
     tempString += " because no dictionary for class named \"";
-    tempString += className;
+    tempString += taskConfig.className;
     tempString += "\" could be retrieved";
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
   }
-  logger << "Instantiating class " << className << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;
+  logger << "Instantiating class " << taskConfig.className << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;
   result = static_cast<TaskInterface*>(cl->New());
   if (!result) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
   }
   result->setObjectsManager(objectsManager);
-  result->setName(taskName);
-  logger << "QualityControl Module " << moduleName << " loaded " << AliceO2::InfoLogger::InfoLogger::endm;
+  result->setName(taskConfig.taskName);
+  logger << "QualityControl Module " << taskConfig.moduleName << " loaded " << AliceO2::InfoLogger::InfoLogger::endm;
 
   return result;
 }

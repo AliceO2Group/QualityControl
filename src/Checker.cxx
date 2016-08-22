@@ -15,6 +15,7 @@
 #include <TClass.h>
 // FairRoot
 #include <FairMQTransportFactoryZMQ.h>
+#include <FairMQPoller.h>
 // O2
 #include "Common/Exceptions.h"
 // QC
@@ -23,11 +24,11 @@
 
 using namespace AliceO2::Common;
 
-class TestTMessage: public TMessage
+class TestTMessage : public TMessage
 {
   public:
     TestTMessage(void *buf, Int_t len)
-        : TMessage(buf, len)
+      : TMessage(buf, len)
     {
       ResetBit(kIsOwner);
     }
@@ -45,23 +46,26 @@ namespace Checker {
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
 
 Checker::Checker()
-    : mLogger(QcInfoLogger::GetInstance())
+  : mLogger(QcInfoLogger::GetInstance())
 {
-	// TODO load the configuration of the database here
-	mDatabase = DatabaseFactory::create("MySql");
-	mDatabase->connect("localhost", "quality_control", "qc_user", "qc_user");
+  // TODO load the configuration of the database here
+  mDatabase = DatabaseFactory::create("MySql");
+  mDatabase->connect("localhost", "quality_control", "qc_user", "qc_user");
 
-	mBroadcast = true; // TODO configure
-	if(mBroadcast) {
-	  FairMQChannel histoChannel;
-	  histoChannel.UpdateType("pub");
-	  histoChannel.UpdateMethod("bind");
-	  histoChannel.UpdateAddress("tcp://*:5557");
-	  histoChannel.UpdateSndBufSize(10000);
-	  histoChannel.UpdateRcvBufSize(10000);
-	  histoChannel.UpdateRateLogging(0);
-	  fChannels["data-out"].push_back(histoChannel);
-	}
+  mBroadcast = true; // TODO configure
+  if (mBroadcast) {
+    createChannel("pub", "bind", "tcp://*:5557", "data-out");
+  }
+}
+
+void Checker::createChannel(std::string type, std::string method, std::string address, std::string channelName)
+{
+  FairMQChannel channel;
+  channel.UpdateType(type);
+  channel.UpdateMethod(method);
+  channel.UpdateAddress(address);
+  channel.UpdateRateLogging(0);
+  fChannels[channelName].push_back(channel);
 }
 
 Checker::~Checker()
@@ -72,18 +76,25 @@ Checker::~Checker()
 
 void Checker::Run()
 {
+  unique_ptr <FairMQPoller> poller(fTransportFactory->CreatePoller(fChannels["data-in"]));
+
   while (CheckCurrentState(RUNNING)) {
 
-    unique_ptr<FairMQMessage> msg(fTransportFactory->CreateMessage());
+    poller->Poll(100);
 
-    if (fChannels.at("data-in").at(0).Receive(msg) > 0) {
-      mLogger << "Receiving a mo of size " << msg->GetSize() << AliceO2::InfoLogger::InfoLogger::endm;
-      TestTMessage tm(msg->GetData(), msg->GetSize());
-      MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
-      if (mo) {
-        check(mo);
-        store(mo);
-        send(mo);
+    for (int i = 0; i < fChannels["data-in"].size(); i++) {
+      if (poller->CheckInput(i)) {
+        unique_ptr <FairMQMessage> msg(fTransportFactory->CreateMessage());
+        if (fChannels.at("data-in").at(i).Receive(msg) > 0) {
+          mLogger << "Receiving a mo of size " << msg->GetSize() << AliceO2::InfoLogger::InfoLogger::endm;
+          TestTMessage tm(msg->GetData(), msg->GetSize());
+          MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
+          if (mo) {
+            check(mo);
+            store(mo);
+            send(mo);
+          }
+        }
       }
     }
   }
@@ -94,10 +105,10 @@ void Checker::check(MonitorObject *mo)
   mLogger << "Checking \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // Get the Checks
-  std::vector<CheckDefinition> checks = mo->getChecks();
+  std::vector <CheckDefinition> checks = mo->getChecks();
 
   // Loop over the Checks and execute them followed by the beautification
-  for (const auto& check : checks) {
+  for (const auto &check : checks) {
 //    std::cout << "        check name : " << check.name << std::endl;
 //    std::cout << "        check className : " << check.className << std::endl;
 //    std::cout << "        check libraryName : " << check.libraryName << std::endl;
@@ -120,7 +131,7 @@ void Checker::store(MonitorObject *mo)
 
   try {
     mDatabase->store(mo);
-  } catch (boost::exception & e) {
+  } catch (boost::exception &e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
@@ -136,7 +147,7 @@ void Checker::send(MonitorObject *mo)
 
   TMessage *message = new TMessage(kMESS_OBJECT);
   message->WriteObjectAny(mo, mo->IsA());
-  unique_ptr<FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
+  unique_ptr <FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
   fChannels.at("data-out").at(0).Send(msg);
 }
 
@@ -156,12 +167,12 @@ void Checker::loadLibrary(const string libraryName) const
   }
 }
 
-CheckInterface* Checker::instantiateCheck(string checkName, string className) const
+CheckInterface *Checker::instantiateCheck(string checkName, string className) const
 {
   CheckInterface *result = 0;
   // Get the class and instantiate
   mLogger << "Loading class " << className << AliceO2::InfoLogger::InfoLogger::endm;
-  TClass* cl = TClass::GetClass(className.c_str());
+  TClass *cl = TClass::GetClass(className.c_str());
   string tempString("Failed to instantiate Quality Control Module");
   if (!cl) {
     tempString += " because no dictionary for class named \"";
@@ -171,7 +182,7 @@ CheckInterface* Checker::instantiateCheck(string checkName, string className) co
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
   }
   mLogger << "Instantiating class " << className << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;
-  result = static_cast<CheckInterface*>(cl->New());
+  result = static_cast<CheckInterface *>(cl->New());
   if (!result) {
     tempString += " because the class named \"";
     tempString += className;
