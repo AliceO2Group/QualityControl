@@ -34,6 +34,7 @@ class Checker : public FairMQDevice
     virtual ~Checker();
 
     void createChannel(std::string type, std::string method, std::string address, std::string channelName);
+    void setBroadcast(bool broadcast){mBroadcast = broadcast;}
 
   protected:
     virtual void Run() override;

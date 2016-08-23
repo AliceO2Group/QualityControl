@@ -46,13 +46,12 @@ namespace Checker {
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
 
 Checker::Checker()
-  : mLogger(QcInfoLogger::GetInstance())
+  : mLogger(QcInfoLogger::GetInstance()), mBroadcast(false)
 {
   // TODO load the configuration of the database here
   mDatabase = DatabaseFactory::create("MySql");
   mDatabase->connect("localhost", "quality_control", "qc_user", "qc_user");
 
-  mBroadcast = true; // TODO configure
   if (mBroadcast) {
     createChannel("pub", "bind", "tcp://*:5557", "data-out");
   }
@@ -143,6 +142,9 @@ void Checker::CustomCleanupTMessage(void *data, void *object)
 
 void Checker::send(MonitorObject *mo)
 {
+  if(!mBroadcast) {
+    return;
+  }
   mLogger << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
   TMessage *message = new TMessage(kMESS_OBJECT);
