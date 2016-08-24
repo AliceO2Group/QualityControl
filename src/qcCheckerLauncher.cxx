@@ -16,9 +16,9 @@
 // FairRoot
 #include <FairMQTransportFactoryZMQ.h>
 // O2
+#include "Common/signalUtilities.h"
 #include "QualityControl/Checker.h"
 #include "QualityControl/Version.h"
-#include "Configuration/Configuration.h"
 
 using namespace std;
 using namespace AliceO2::QualityControl::Core;
@@ -27,8 +27,11 @@ namespace po = boost::program_options;
 
 int main(int argc, char *argv[])
 {
-  Checker checker;
-  string checkName, configurationSource;
+  string checkerName, configurationSource;
+
+  // This is needed for ROOT
+  TApplication app("a", 0, 0);
+  gROOT->SetBatch(true);
 
   // Argument parsing
   po::variables_map vm;
@@ -51,7 +54,7 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
   }
   if (vm.count("name")) {
-    checkName = vm["name"].as<string>();
+    checkerName = vm["name"].as<string>();
   } else {
     // we don't use the "required" option of the po::value because we want to output the help and avoid
     // horrible template error to be displayed to the user.
@@ -69,24 +72,14 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
-  // Config parsing
-  ConfigFile config;
   try {
+    // Config parsing
+    Checker checker(checkerName, configurationSource);
+    ConfigFile config;
     config.load(configurationSource);
-    try {
-      bool broadcast = config.getValue<int>(checkName + ".broadcast");
-      checker.setBroadcast(broadcast);
-    }catch (const string& s) {
-      // we failed getting the broadcast value and we don't care. It would be nice to have
-      // a proper way to check whether a value exist without using exceptions...
-    }
-//  string inputs = config.getValue<string>(checkName + ".inputs");
-//  vector <string> inputsVector;
-//  split(inputsVector, inputs, is_any_of(","), token_compress_on);
     int numberCheckers = config.getValue<int>("checkers.numberCheckers");
     int numberTasks = config.getValue<int>("checkers.numberTasks");
-    int id = config.getValue<int>(checkName + ".id");
-//  int numberTasksPerCheckers = numberTasks / numberCheckers; // TODO that is stupid
+    int id = config.getValue<int>(checkerName + ".id");
     string addresses = config.getValue<string>("checkers.tasksAddresses");
     vector<string> addressesVector;
     boost::algorithm::split(addressesVector, addresses, boost::is_any_of(","), boost::token_compress_on);
@@ -97,7 +90,6 @@ int main(int argc, char *argv[])
         cout << "We will get data from this address : " << addressesVector[i] << endl;
       }
     }
-
     for (auto address : addressesForThisChecker) {
       checker.createChannel("sub", "connect", address, "data-in");
     }
@@ -108,6 +100,8 @@ int main(int argc, char *argv[])
 #else
     FairMQTransportFactory *transportFactory = new FairMQTransportFactoryZMQ();
 #endif
+
+    checker.CatchSignals();
 
     checker.SetTransport(transportFactory);
 

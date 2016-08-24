@@ -7,11 +7,15 @@
 #define QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_
 
 #include "QualityControl/MonitorObject.h"
+#include "Configuration/Configuration.h"
 #include <FairMQDevice.h>
 // QC
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "QualityControl/CheckerConfig.h"
+#include "Monitoring/Collector.h"
+#include "Monitoring/ProcessMonitor.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -29,12 +33,11 @@ class Checker : public FairMQDevice
 {
   public:
     /// Default constructor
-    Checker();
+    Checker(std::string checkerName, std::string configurationSource);
     /// Destructor
     virtual ~Checker();
 
     void createChannel(std::string type, std::string method, std::string address, std::string channelName);
-    void setBroadcast(bool broadcast){mBroadcast = broadcast;}
 
   protected:
     virtual void Run() override;
@@ -68,11 +71,16 @@ class Checker : public FairMQDevice
     void loadLibrary(const std::string libraryName) const;
     CheckInterface* instantiateCheck(std::string checkName, std::string className) const;
     static void CustomCleanupTMessage(void *data, void *object);
+    void populateConfig(ConfigFile& configFile, std::string checkerName);
 
     AliceO2::QualityControl::Core::QcInfoLogger &mLogger;
     AliceO2::QualityControl::Repository::DatabaseInterface *mDatabase;
     std::vector<std::string> mTasksAlreadyEncountered;
-    bool mBroadcast; // whether to broadcast the mo in addition to storing it to the db
+    CheckerConfig mCheckerConfig;
+
+    // monitoring
+    std::shared_ptr<AliceO2::Monitoring::Core::Collector> mCollector;
+    std::unique_ptr<Monitoring::Core::ProcessMonitor> mMonitor;
 
 };
 

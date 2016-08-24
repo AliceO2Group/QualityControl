@@ -5,7 +5,8 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskControl.h"
-#include <DataSampling/MockSampler.h>
+#include "DataSampling/MockSampler.h"
+#include "Common/Timer.h"
 #include "QualityControl/TaskFactory.h"
 
 using namespace std;
@@ -16,10 +17,18 @@ namespace QualityControl {
 namespace Core {
 
 TaskControl::TaskControl(std::string taskName, std::string configurationSource)
-  : mSampler(nullptr), mCollector(nullptr), mCycleDurationSeconds(5)
+  : mSampler(nullptr),
+    mCycleDurationSeconds(5), mTotalNumberObjectsPublished(0)
 {
+  // configuration
   mConfigFile.load(configurationSource);
   populateConfig(taskName);
+
+  // monitoring
+  mCollector = std::shared_ptr<Monitoring::Core::Collector>(new Monitoring::Core::Collector(mConfigFile));
+  mMonitor = std::unique_ptr<Monitoring::Core::ProcessMonitor>(
+    new Monitoring::Core::ProcessMonitor(mCollector, mConfigFile));
+  //mMonitor->startMonitor();
 
   // setup publisher
   mObjectsManager = new ObjectsManager(mTaskConfig);
@@ -27,9 +36,6 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
   // setup task
   TaskFactory f;
   mTask = f.create(mTaskConfig, mObjectsManager);  // TODO could we use unique_ptr ?
-
-  // setup monitoring
-  mCollector = new Monitoring::Core::Collector(mConfigFile);
 
   // TODO create DataSampling with correct parameters
   mSampler = new AliceO2::DataSampling::MockSampler();
@@ -39,9 +45,6 @@ TaskControl::~TaskControl()
 {
   if (mSampler) {
     delete mSampler;
-  }
-  if (mCollector) {
-    delete mCollector;
   }
   delete mTask;
   delete mObjectsManager;
@@ -60,7 +63,6 @@ void TaskControl::populateConfig(std::string taskName)
   mTaskConfig.className = mConfigFile.getValue<string>(taskDefinitionName + ".className");
   mTaskConfig.cycleDurationSeconds = mConfigFile.getValue<int>(taskDefinitionName + ".cycleDurationSeconds");
   mTaskConfig.publisherClassName = mConfigFile.getValue<string>("Publisher.className");
-
 }
 
 void TaskControl::initialize()
@@ -84,24 +86,34 @@ void TaskControl::start()
 
 void TaskControl::execute()
 {
-  // todo measure duration of monitor cycle and publication
+  // monitor cycle
+  AliceO2::Common::Timer timer;
   mTask->startOfCycle();
   auto start = system_clock::now();
   auto end = start + seconds(mCycleDurationSeconds);
   int numberBlocks = 0;
   while (system_clock::now() < end) {
-//    cout << "now : " << system_clock::to_time_t(system_clock::now()) << endl;
-//    cout << "end : " << system_clock::to_time_t(end) << endl;
     DataBlock *block = mSampler->getData(0);
     mTask->monitorDataBlock(*block);
     mSampler->releaseData(); // invalids the block !!!
     numberBlocks++;
   }
   mTask->endOfCycle();
+  double durationCycle = timer.getTime();
+  timer.reset();
 
-  mObjectsManager->publish();
+  // publication
+  int numberObjectsPublished = mObjectsManager->publish();
 
+  // monitoring metrics
+  double durationPublication = timer.getTime();
   mCollector->send(numberBlocks, "QC_numberofblocks_in_cycle");
+  mCollector->send(durationCycle, "Module's cycle duration");
+  mCollector->send(durationPublication, "Publication duration");
+  mCollector->send(numberObjectsPublished, "Number of objects published");
+  double rate = numberObjectsPublished / (durationCycle + durationPublication);
+  mCollector->send(rate, "Number of objects published");
+  mTotalNumberObjectsPublished+=numberObjectsPublished;
 }
 
 void TaskControl::stop()

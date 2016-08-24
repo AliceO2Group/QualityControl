@@ -49,7 +49,9 @@ class ObjectsManager
     TObject *getObject(std::string objectName);
 
   private:
-    void publish();
+    /// \brief Do the actual publication of objects using the PublisherInterface
+    /// \return Number of objects published.
+    int publish();
 
     std::map<std::string /*object name*/, QualityControl::Core::MonitorObject * /* object */> mMonitorObjects;
     PublisherInterface* mPublisher;

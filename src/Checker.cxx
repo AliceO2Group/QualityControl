@@ -7,6 +7,7 @@
 
 // std
 #include <iostream>
+#include <chrono>
 // boost
 #include <boost/algorithm/string.hpp>
 // ROOT
@@ -18,9 +19,11 @@
 #include <FairMQPoller.h>
 // O2
 #include "Common/Exceptions.h"
+#include "Common/Timer.h"
 // QC
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/DatabaseFactory.h"
+#include "QualityControl/CheckerConfig.h"
 
 using namespace AliceO2::Common;
 
@@ -35,9 +38,10 @@ class TestTMessage : public TMessage
 };
 
 using namespace std;
+using namespace AliceO2::InfoLogger;
+using namespace std::chrono;
 
 namespace AliceO2 {
-using namespace AliceO2::InfoLogger;
 namespace QualityControl {
 using namespace Core;
 using namespace Repository;
@@ -45,16 +49,40 @@ namespace Checker {
 
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
 
-Checker::Checker()
-  : mLogger(QcInfoLogger::GetInstance()), mBroadcast(false)
+Checker::Checker(std::string checkerName, std::string configurationSource)
+  : mLogger(QcInfoLogger::GetInstance())
 {
-  // TODO load the configuration of the database here
+  // configuration
+  ConfigFile configFile;
+  configFile.load(configurationSource);
+  populateConfig(configFile, checkerName);
+
+  // monitoring
+  mCollector = std::shared_ptr<Monitoring::Core::Collector>(new Monitoring::Core::Collector(configFile));
+  mMonitor = std::unique_ptr<Monitoring::Core::ProcessMonitor>(
+    new Monitoring::Core::ProcessMonitor(mCollector, configFile));
+  //mMonitor->startMonitor();
+
+  // TODO load the configuran of the database here
   mDatabase = DatabaseFactory::create("MySql");
   mDatabase->connect("localhost", "quality_control", "qc_user", "qc_user");
 
-  if (mBroadcast) {
-    createChannel("pub", "bind", "tcp://*:5557", "data-out");
+  if (mCheckerConfig.broadcast) {
+    createChannel("pub", "bind", mCheckerConfig.broadcastAddress, "data-out");
   }
+}
+
+void Checker::populateConfig(ConfigFile &configFile, std::string checkerName)
+{
+
+  mCheckerConfig.checkerName = checkerName;
+  mCheckerConfig.broadcast = (bool) configFile.getValue<int>(checkerName + ".broadcast");
+  mCheckerConfig.broadcastAddress = configFile.getValue<string>(checkerName + ".broadcastAddress");
+  mCheckerConfig.id = configFile.getValue<int>(checkerName + ".id");
+
+  mCheckerConfig.numberCheckers = configFile.getValue<int>("checkers.numberCheckers");
+  mCheckerConfig.tasksAddresses = configFile.getValue<string>("checkers.tasksAddresses");
+  mCheckerConfig.numberTasks = configFile.getValue<int>("checkers.numberTasks");
 }
 
 void Checker::createChannel(std::string type, std::string method, std::string address, std::string channelName)
@@ -75,28 +103,57 @@ Checker::~Checker()
 
 void Checker::Run()
 {
-  unique_ptr <FairMQPoller> poller(fTransportFactory->CreatePoller(fChannels["data-in"]));
+  // statistics
+  int totalNumberHistosReceived = 0, numberHistosLastTime = 0;
+  auto startFirstObject = system_clock::now();
+  auto endLastObject = system_clock::now();
+  bool first = true;
+  Timer timer;
+  timer.reset(10000000); // 10 s.
+
+  unique_ptr<FairMQPoller> poller(fTransportFactory->CreatePoller(fChannels["data-in"]));
 
   while (CheckCurrentState(RUNNING)) {
-
     poller->Poll(100);
 
     for (int i = 0; i < fChannels["data-in"].size(); i++) {
       if (poller->CheckInput(i)) {
-        unique_ptr <FairMQMessage> msg(fTransportFactory->CreateMessage());
+        unique_ptr<FairMQMessage> msg(fTransportFactory->CreateMessage());
         if (fChannels.at("data-in").at(i).Receive(msg) > 0) {
+
+          if (first == true) {
+            startFirstObject = system_clock::now();
+            first = false;
+          }
+
           mLogger << "Receiving a mo of size " << msg->GetSize() << AliceO2::InfoLogger::InfoLogger::endm;
           TestTMessage tm(msg->GetData(), msg->GetSize());
           MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
           if (mo) {
+            totalNumberHistosReceived++;
             check(mo);
             store(mo);
             send(mo);
           }
+          endLastObject = system_clock::now();
         }
       }
     }
+
+    // every 10 seconds publish stats
+    if (timer.isTimeout()) {
+      double current = timer.getTime();
+      int objectsPublished = totalNumberHistosReceived - numberHistosLastTime;
+      numberHistosLastTime = totalNumberHistosReceived;
+      QcInfoLogger::GetInstance() << "Rate in the last 10 seconds : " << (objectsPublished / current)
+                                  << " events/second" << AliceO2::InfoLogger::InfoLogger::endm;
+      timer.increment();
+    }
   }
+
+  std::chrono::duration<double> diff = endLastObject - startFirstObject;
+  mCollector->send(diff.count(), "Time between first and last objects received");
+  mCollector->send(totalNumberHistosReceived, "Total number histos treated");
 }
 
 void Checker::check(MonitorObject *mo)
@@ -104,7 +161,7 @@ void Checker::check(MonitorObject *mo)
   mLogger << "Checking \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // Get the Checks
-  std::vector <CheckDefinition> checks = mo->getChecks();
+  std::vector<CheckDefinition> checks = mo->getChecks();
 
   // Loop over the Checks and execute them followed by the beautification
   for (const auto &check : checks) {
@@ -142,14 +199,14 @@ void Checker::CustomCleanupTMessage(void *data, void *object)
 
 void Checker::send(MonitorObject *mo)
 {
-  if(!mBroadcast) {
+  if (!mCheckerConfig.broadcast) {
     return;
   }
   mLogger << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
   TMessage *message = new TMessage(kMESS_OBJECT);
   message->WriteObjectAny(mo, mo->IsA());
-  unique_ptr <FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
+  unique_ptr<FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
   fChannels.at("data-out").at(0).Send(msg);
 }
 

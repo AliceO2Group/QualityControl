@@ -14,6 +14,7 @@
 #include <TROOT.h>
 // O2
 #include "Common/signalUtilities.h"
+#include "Common/Timer.h"
 // QC
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskControl.h"
@@ -93,10 +94,23 @@ int main(int argc, char *argv[])
     taskControl.configure();
     taskControl.start();
     int cycle = 0;
+    AliceO2::Common::Timer timer;
+    timer.reset(10000000); // 10 s.
+    int lastNumberObjects = 0;
     while (keepRunning && cycle < maxNumberCycles) {
       QcInfoLogger::GetInstance() << "cycle " << cycle << AliceO2::InfoLogger::InfoLogger::endm;
       taskControl.execute();
       cycle++;
+
+      // if 10 s we publish stats
+      if(timer.isTimeout()) {
+        double current = timer.getTime();
+        int objectsPublished = (taskControl.getTotalNumberObjectsPublished()-lastNumberObjects);
+        lastNumberObjects = taskControl.getTotalNumberObjectsPublished();
+        QcInfoLogger::GetInstance() << "Rate in the last 10 seconds : " << (objectsPublished/current)
+                                    << " events/second" <<  AliceO2::InfoLogger::InfoLogger::endm;
+        timer.increment();
+      }
     }
     taskControl.stop();
 

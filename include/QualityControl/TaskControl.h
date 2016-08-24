@@ -12,6 +12,7 @@
 #include "Configuration/Configuration.h"
 #include "Monitoring/Collector.h"
 #include "QualityControl/TaskConfig.h"
+#include "Monitoring/ProcessMonitor.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -41,6 +42,8 @@ class TaskControl
     void execute();
     void stop();
 
+    int getTotalNumberObjectsPublished(){return mTotalNumberObjectsPublished;}
+
   private:
     void populateConfig(std::string taskName);
 
@@ -49,9 +52,11 @@ class TaskControl
     ConfigFile mConfigFile;
     TaskConfig mTaskConfig;
     AliceO2::DataSampling::SamplerInterface *mSampler;
-    AliceO2::Monitoring::Core::Collector *mCollector;
+    std::shared_ptr<AliceO2::Monitoring::Core::Collector> mCollector;
+    std::unique_ptr<Monitoring::Core::ProcessMonitor> mMonitor;
 
     int mCycleDurationSeconds;
+    int mTotalNumberObjectsPublished;
 };
 
 }

@@ -91,11 +91,12 @@ TObject *ObjectsManager::getObject(std::string objectName)
   return mo->getObject();
 }
 
-void ObjectsManager::publish()
+int ObjectsManager::publish()
 {
   for (auto &mo : mMonitorObjects) {
     mPublisher->publish(mo.second);
   }
+  return mMonitorObjects.size();
 }
 
 } // namespace Core
