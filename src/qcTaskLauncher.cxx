@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
   int maxNumberCycles = INT_MAX;
   if (vm.count("cycles")) {
     maxNumberCycles = vm["cycles"].as<int>();
+    std::cout << "Max number cycles : " << maxNumberCycles << std::endl;
   }
 
   // install handlers
@@ -93,10 +94,12 @@ int main(int argc, char *argv[])
     taskControl.initialize();
     taskControl.configure();
     taskControl.start();
+
     int cycle = 0;
     AliceO2::Common::Timer timer;
     timer.reset(10000000); // 10 s.
     int lastNumberObjects = 0;
+
     while (keepRunning && cycle < maxNumberCycles) {
       QcInfoLogger::GetInstance() << "cycle " << cycle << AliceO2::InfoLogger::InfoLogger::endm;
       taskControl.execute();
@@ -112,6 +115,7 @@ int main(int argc, char *argv[])
         timer.increment();
       }
     }
+
     taskControl.stop();
 
   } catch (std::string const& e) {
