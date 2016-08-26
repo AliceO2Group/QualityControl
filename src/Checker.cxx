@@ -65,7 +65,7 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
 
   // TODO load the configuran of the database here
   mDatabase = DatabaseFactory::create("MySql");
-  mDatabase->connect("localhost", "quality_control", "qc_user", "qc_user");
+  mDatabase->connect(configFile.getValue<string>("database.host"), configFile.getValue<string>("database.name"), configFile.getValue<string>("database.username"), configFile.getValue<string>("database.password"));
 
   if (mCheckerConfig.broadcast) {
     createChannel("pub", "bind", mCheckerConfig.broadcastAddress, "data-out");

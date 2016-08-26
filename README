@@ -27,6 +27,15 @@ We use an indirect system to allow multiple tasks (T1, T2, ...) to share most of
 The configuration for T1 and T2 can point to taskDefinition1 which in turn defines the class name,
 the module name, etc...
 
+BENCHMARK
+Master machine : has connection to all the other machines as root password less. (phaidgw02)
+Update the list of machines in benchmark_machine_setup.sh. Run it.
+update the list of task and checker machines in benchmark.sh. Also decide the test matrix.
+Run benchmark.sh
+
+
+
+
 For any question, please contact:
 Barthélémy von Haller (barthelemy.von.haller@cern.ch)
 

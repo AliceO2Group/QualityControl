@@ -95,6 +95,10 @@ int main(int argc, char *argv[])
     taskControl.configure();
     taskControl.start();
 
+    ConfigFile configFile;
+    configFile.load(configurationSource);
+    std::shared_ptr<AliceO2::Monitoring::Core::Collector> collector(new AliceO2::Monitoring::Core::Collector(configFile));
+
     int cycle = 0;
     AliceO2::Common::Timer timer;
     timer.reset(10000000); // 10 s.
@@ -110,8 +114,7 @@ int main(int argc, char *argv[])
         double current = timer.getTime();
         int objectsPublished = (taskControl.getTotalNumberObjectsPublished()-lastNumberObjects);
         lastNumberObjects = taskControl.getTotalNumberObjectsPublished();
-        QcInfoLogger::GetInstance() << "Rate in the last 10 seconds : " << (objectsPublished/current)
-                                    << " events/second" <<  AliceO2::InfoLogger::InfoLogger::endm;
+        collector->send(objectsPublished/current, "Rate in the last 10 seconds");
         timer.increment();
       }
     }
