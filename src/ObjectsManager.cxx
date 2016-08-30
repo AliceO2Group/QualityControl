@@ -82,7 +82,6 @@ MonitorObject *ObjectsManager::getMonitorObject(std::string objectName)
   } else {
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
   }
-  return nullptr; // we should never reach this point
 }
 
 TObject *ObjectsManager::getObject(std::string objectName)
@@ -91,7 +90,7 @@ TObject *ObjectsManager::getObject(std::string objectName)
   return mo->getObject();
 }
 
-int ObjectsManager::publish()
+unsigned long ObjectsManager::publish()
 {
   for (auto &mo : mMonitorObjects) {
     mPublisher->publish(mo.second);

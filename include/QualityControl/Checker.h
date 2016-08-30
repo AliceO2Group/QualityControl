@@ -9,6 +9,8 @@
 #include "QualityControl/MonitorObject.h"
 #include "Configuration/Configuration.h"
 #include <FairMQDevice.h>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
 // QC
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckInterface.h"
@@ -16,6 +18,8 @@
 #include "QualityControl/CheckerConfig.h"
 #include "Monitoring/Collector.h"
 #include "Monitoring/ProcessMonitor.h"
+
+namespace ba = boost::accumulators;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -81,6 +85,12 @@ class Checker : public FairMQDevice
     // monitoring
     std::shared_ptr<AliceO2::Monitoring::Core::Collector> mCollector;
     std::unique_ptr<Monitoring::Core::ProcessMonitor> mMonitor;
+
+    // metrics
+    ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> pcpus;
+    ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> pmems;
+    ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mAccProcessTime;
+    int mTotalNumberHistosReceived = 0;
 
 };
 

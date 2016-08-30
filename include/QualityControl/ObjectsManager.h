@@ -51,7 +51,7 @@ class ObjectsManager
   private:
     /// \brief Do the actual publication of objects using the PublisherInterface
     /// \return Number of objects published.
-    int publish();
+    unsigned long publish();
 
     std::map<std::string /*object name*/, QualityControl::Core::MonitorObject * /* object */> mMonitorObjects;
     PublisherInterface* mPublisher;

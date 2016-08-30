@@ -112,7 +112,8 @@ int main(int argc, char *argv[])
     checker.WaitForEndOfState("INIT_TASK");
 
     checker.ChangeState("RUN");
-    checker.InteractiveStateLoop();
+    checker.WaitForEndOfState("RUN");
+//    checker.InteractiveStateLoop();
   }
   catch (const boost::exception &e) {
     cerr << diagnostic_information(e) << endl;

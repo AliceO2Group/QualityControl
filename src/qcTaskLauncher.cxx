@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
         double current = timer.getTime();
         int objectsPublished = (taskControl.getTotalNumberObjectsPublished()-lastNumberObjects);
         lastNumberObjects = taskControl.getTotalNumberObjectsPublished();
-        collector->send(objectsPublished/current, "Rate in the last 10 seconds");
+        collector->send(objectsPublished/current, "QC_task_Rate_objects_published_per_10_seconds");
         timer.increment();
       }
     }

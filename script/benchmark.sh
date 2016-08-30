@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e ;# exit on error
 set -u ;# exit when using undeclared variable
-set -x ;# debugging
+#set -x ;# debugging
 
 ### Notes
 # Most of the configuration is in the config file we distribute.
@@ -13,7 +13,7 @@ set -x ;# debugging
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(1);# 2 4) ;# 5 10 20 30)
+NB_OF_TASKS=(1 2);# 2 4) ;# 5 10 20 30)
 NB_OF_CHECKERS=(1);# 2) ;# 2 5 10)
 NB_OF_HISTOS_PER_CYCLE_PER_TASK=(1) ;# 10 100 1000 10000)
 NB_OF_CHECKS_PER_CHECKER=(1) ;# 10 100 1000)
@@ -22,17 +22,17 @@ NB_OF_CHECKS_PER_CHECKER=(1) ;# 10 100 1000)
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
 LOG_FILE_PREFIX=/tmp/logQcBenchmark_
-NUMBER_CYCLES=180 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes + the publication time
-ORIGINAL_CONFIG_FILE_NAME=../example.ini
+NUMBER_CYCLES=10 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes + the publication time
+TIMEOUT_DURATION=$(awk -v m="$NUMBER_CYCLES" 'BEGIN { print m * 2 }');# 100% margin
+ORIGINAL_CONFIG_FILE_NAME=example.ini
 MODIFIED_CONFIG_FILE_NAME=newconfig.ini
 TASKS_FULL_ADDRESSES="\
-tcp://aido2qc10:5556,\
-tcp://aido2qc10:5557,\
-tcp://aido2qc11:5556,\
-tcp://aido2qc11:5557\
+tcp://localhost:5556,\
+tcp://localhost:5557\
 " ;# comma delimited, no space
-NODES_CHECKER=("aido2qc12" "aido2qc13")
-USER=benchmarkQC
+NODES_CHECKER=("localhost" "localhost")
+USER=bvonhall
+TASKS_PIDS=()
 
 
 ### Compute addresses of task nodes for our different usages
@@ -42,7 +42,8 @@ addresses_string=`cat /tmp/sed.temp.2 | sed -n -e 's/:[0-9]*//gp'`
 IFS=',' read -r -a NODES_TASKS <<< "$addresses_string" ;# echo "${array[0]}"
 # Replace the "localhost" with "*" in the addresses, needed for the tasks config,
 # and store in TASKS_ADDRESSES_FOR_CONFIG
-addresses_string=${TASKS_FULL_ADDRESSES//localhost/*}
+echo ${TASKS_FULL_ADDRESSES} | sed -n -e 's/tcp:\/\/[^:]*/tcp:\/\/\*/gp' > /tmp/sed.temp.3
+addresses_string=`cat /tmp/sed.temp.3`
 IFS=',' read -r -a TASKS_ADDRESSES_FOR_CONFIG <<< "$addresses_string" ;# echo "${array[0]}"
 
 
@@ -84,7 +85,7 @@ function prepareConfigFile {
 # \param 1 : host
 function sendConfigFile {
   host=$1
-  scp ${MODIFIED_CONFIG_FILE_NAME} ${USER}@${host}:~
+  scp ${MODIFIED_CONFIG_FILE_NAME} ${USER}@${host}:~/${ORIGINAL_CONFIG_FILE_NAME}
 }
 # Start a task
 # \param 1 : host
@@ -96,8 +97,9 @@ function startTask {
   log_file_suffix=$3
   log_file_name=${LOG_FILE_PREFIX}${log_file_suffix}.log
   echo "Starting task ${name} on host ${host}, logs in ${log_file_name}"
-  ssh ${USER}@${host} "qcTaskLauncher -c file:${MODIFIED_CONFIG_FILE_NAME} -n ${name} -C ${NUMBER_CYCLES} \
-                > ${log_file_name} 2>&1" &
+  echo "qcTaskLauncher -c file:${ORIGINAL_CONFIG_FILE_NAME} -n ${name} -C ${NUMBER_CYCLES} > ${log_file_name} 2>&1"
+  ssh ${USER}@${host} "qcTaskLauncher -c file:${ORIGINAL_CONFIG_FILE_NAME} -n ${name} -C ${NUMBER_CYCLES} > ${log_file_name} 2>&1" &
+  pidLastTask=$!
 }
 # Start a checker
 # \param 1 : host
@@ -109,8 +111,22 @@ function startChecker {
   log_file_suffix=$3
   log_file_name=${LOG_FILE_PREFIX}${log_file_suffix}.log
   echo "Starting checker ${name} on host ${host}, logs in ${log_file_name}"
-  ssh ${USER}@${host} "qcTaskLauncher -c file:${MODIFIED_CONFIG_FILE_NAME} -n ${name} -C ${NUMBER_CYCLES} \
+  echo "qcCheckerLauncher -c file:${ORIGINAL_CONFIG_FILE_NAME} -n ${name} \
+                > ${log_file_name} 2>&1"
+  ssh ${USER}@${host} "qcCheckerLauncher -c file:${ORIGINAL_CONFIG_FILE_NAME} -n ${name}  \
                 > ${log_file_name} 2>&1" &
+  pidLastChecker=$!
+}
+# Kill all processes named "name"
+# \param 1 : name
+# \param 2 : host
+# \param 3 : extra flag for killall
+function killAll {
+    name=$1
+    host=$2
+    extra=${3:-""}
+    echo "Killing all processes called $name on $host"
+    ssh ${USER}@${host} "killall ${extra} ${name}  > /dev/null 2>&1" &
 }
 
 
@@ -123,13 +139,21 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
         echo "***************************
         Launching test for $nb_tasks tasks, $nb_checkers checkers, $nb_histos histos, $nb_checks checks"
 
+        if (( $nb_tasks < nb_checkers ))
+        then
+          echo "number tasks is less than number checkers, skip"
+          continue;
+        fi
+
         prepareConfigFile $nb_histos $nb_checks $nb_tasks $nb_checkers
 
+	      echo "Kill all old processes"
+        for (( checker=0; checker<$nb_checkers; checker++ )); do
+	        killAll "qcCheckerLauncher" ${NODES_CHECKER[${checker}]} "-9"
+	      done
         for (( task=0; task<$nb_tasks; task++ )); do
-          sendConfigFile ${NODES_TASKS[${task}]}
-          startTask ${NODES_TASKS[${task}]} benchmarkTask_${task} \
-                    "benchmarkTask_${task}_${nb_tasks}_${nb_checkers}_${nb_histos}_${nb_checks}"
-        done
+	        killAll "qcTaskLauncher" ${NODES_TASKS[${task}]} "-9"
+	      done
 
         for (( checker=0; checker<$nb_checkers; checker++ )); do
           sendConfigFile ${NODES_CHECKER[${checker}]}
@@ -137,8 +161,32 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
                     "checker_${checker}_${nb_tasks}_${nb_checkers}_${nb_histos}_${nb_checks}"
         done
 
-        echo "Now wait..."
-        wait
+        echo "Let the checkers start up... wait 2 sec."
+        sleep 2
+        echo "Now start the tasks"
+
+        for (( task=0; task<$nb_tasks; task++ )); do
+          sendConfigFile ${NODES_TASKS[${task}]}
+          startTask ${NODES_TASKS[${task}]} benchmarkTask_${task} \
+                    "benchmarkTask_${task}_${nb_tasks}_${nb_checkers}_${nb_histos}_${nb_checks}"
+          TASKS_PIDS+=($pidLastTask)
+        done
+
+        #echo "Now wait $waitTime seconds"
+        echo "Now wait for the tasks to finish"
+        wait ${TASKS_PIDS[*]};# the checker never stops, we can't just wait
+#	      sleep $waitTime
+
+        for (( checker=0; checker<$nb_checkers; checker++ )); do
+	        killAll "qcCheckerLauncher" ${NODES_CHECKER[${checker}]}
+	      done
+        for (( task=0; task<$nb_tasks; task++ )); do
+	        killAll "qcTaskLauncher" ${NODES_TASKS[${task}]}
+	      done
+	      sleep 10 # leave time to finish
+
+	      TASKS_PIDS=()
+
         echo "OK, ready for the next round !"
 
       done

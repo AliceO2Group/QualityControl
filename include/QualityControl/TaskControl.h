@@ -13,6 +13,11 @@
 #include "Monitoring/Collector.h"
 #include "QualityControl/TaskConfig.h"
 #include "Monitoring/ProcessMonitor.h"
+#include "Common/Timer.h"
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
+
+namespace ba = boost::accumulators;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -55,8 +60,11 @@ class TaskControl
     std::shared_ptr<AliceO2::Monitoring::Core::Collector> mCollector;
     std::unique_ptr<Monitoring::Core::ProcessMonitor> mMonitor;
 
-    int mCycleDurationSeconds;
+    // stats
     int mTotalNumberObjectsPublished;
+    AliceO2::Common::Timer timerTotalDurationActivity;
+    ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> pcpus;
+    ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> pmems;
 };
 
 }

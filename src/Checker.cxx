@@ -50,7 +50,7 @@ namespace Checker {
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
 
 Checker::Checker(std::string checkerName, std::string configurationSource)
-  : mLogger(QcInfoLogger::GetInstance())
+  : mLogger(QcInfoLogger::GetInstance()), mTotalNumberHistosReceived(0)
 {
   // configuration
   ConfigFile configFile;
@@ -63,7 +63,7 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
     new Monitoring::Core::ProcessMonitor(mCollector, configFile));
   //mMonitor->startMonitor();
 
-  // TODO load the configuran of the database here
+  // load the configuran of the database here
   mDatabase = DatabaseFactory::create("MySql");
   mDatabase->connect(configFile.getValue<string>("database.host"), configFile.getValue<string>("database.name"), configFile.getValue<string>("database.username"), configFile.getValue<string>("database.password"));
 
@@ -74,10 +74,14 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
 
 void Checker::populateConfig(ConfigFile &configFile, std::string checkerName)
 {
-
   mCheckerConfig.checkerName = checkerName;
-  mCheckerConfig.broadcast = (bool) configFile.getValue<int>(checkerName + ".broadcast");
-  mCheckerConfig.broadcastAddress = configFile.getValue<string>(checkerName + ".broadcastAddress");
+  try {
+    mCheckerConfig.broadcast = (bool) configFile.getValue<int>(checkerName + ".broadcast");
+    mCheckerConfig.broadcastAddress = configFile.getValue<string>(checkerName + ".broadcastAddress");
+  } catch (const std::string &s) {
+    // ignore, we don't care that it is not there. Would be nice to have a proper way to test a key.
+    mCheckerConfig.broadcast = false;
+  }
   mCheckerConfig.id = configFile.getValue<int>(checkerName + ".id");
 
   mCheckerConfig.numberCheckers = configFile.getValue<int>("checkers.numberCheckers");
@@ -104,11 +108,11 @@ Checker::~Checker()
 void Checker::Run()
 {
   // statistics
-  int totalNumberHistosReceived = 0, numberHistosLastTime = 0;
+  int numberHistosLastTime = 0;
   auto startFirstObject = system_clock::now();
   auto endLastObject = system_clock::now();
   bool first = true;
-  Timer timer;
+  Timer timer, timerProcessing;
   timer.reset(10000000); // 10 s.
 
   unique_ptr<FairMQPoller> poller(fTransportFactory->CreatePoller(fChannels["data-in"]));
@@ -127,15 +131,17 @@ void Checker::Run()
           }
 
           mLogger << "Receiving a mo of size " << msg->GetSize() << AliceO2::InfoLogger::InfoLogger::endm;
+          timerProcessing.reset();
           TestTMessage tm(msg->GetData(), msg->GetSize());
           MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
           if (mo) {
-            totalNumberHistosReceived++;
+            mTotalNumberHistosReceived++;
             check(mo);
             store(mo);
             send(mo);
           }
           endLastObject = system_clock::now();
+          mAccProcessTime(timerProcessing.getTime());
         }
       }
     }
@@ -143,17 +149,28 @@ void Checker::Run()
     // every 10 seconds publish stats
     if (timer.isTimeout()) {
       double current = timer.getTime();
-      int objectsPublished = totalNumberHistosReceived - numberHistosLastTime;
-      numberHistosLastTime = totalNumberHistosReceived;
+      int objectsPublished = mTotalNumberHistosReceived - numberHistosLastTime;
+      numberHistosLastTime = mTotalNumberHistosReceived;
       QcInfoLogger::GetInstance() << "Rate in the last 10 seconds : " << (objectsPublished / current)
                                   << " events/second" << AliceO2::InfoLogger::InfoLogger::endm;
+      mCollector->send((objectsPublished / current), "QC_checker_Rate_objects_checked_per_10_seconds");
       timer.increment();
+
+      std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
+      pcpus(std::stod(pidStatus[3]));
+      pmems(std::stod(pidStatus[4]));
     }
   }
 
+  // Monitoring
   std::chrono::duration<double> diff = endLastObject - startFirstObject;
-  mCollector->send(diff.count(), "Time between first and last objects received");
-  mCollector->send(totalNumberHistosReceived, "Total number histos treated");
+  mCollector->send(diff.count(), "QC_checker_Time_between_first_and_last_objects_received");
+  mCollector->send(mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated");
+  double rate = mTotalNumberHistosReceived / diff.count();
+  mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
+  mCollector->send(ba::mean(pcpus), "QC_checker_Mean_pcpu_whole_run");
+  mCollector->send(ba::mean(pmems), "QC_checker_Mean_pmem_whole_run");
+  mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
 }
 
 void Checker::check(MonitorObject *mo)
