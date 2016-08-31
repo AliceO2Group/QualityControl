@@ -72,8 +72,8 @@ class Checker : public FairMQDevice
      */
     void send(AliceO2::QualityControl::Core::MonitorObject *mo);
 
-    void loadLibrary(const std::string libraryName) const;
-    CheckInterface* instantiateCheck(std::string checkName, std::string className) const;
+    void loadLibrary(const std::string libraryName);
+    CheckInterface* instantiateCheck(std::string checkName, std::string className);
     static void CustomCleanupTMessage(void *data, void *object);
     void populateConfig(ConfigFile& configFile, std::string checkerName);
 
@@ -81,6 +81,10 @@ class Checker : public FairMQDevice
     AliceO2::QualityControl::Repository::DatabaseInterface *mDatabase;
     std::vector<std::string> mTasksAlreadyEncountered;
     CheckerConfig mCheckerConfig;
+
+    std::vector<std::string> mLibrariesLoaded;
+    std::map<std::string,CheckInterface*> mChecksLoaded;
+    std::map<std::string,TClass*> mClassesLoaded;
 
     // monitoring
     std::shared_ptr<AliceO2::Monitoring::Core::Collector> mCollector;

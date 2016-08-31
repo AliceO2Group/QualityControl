@@ -109,14 +109,14 @@ int main(int argc, char *argv[])
       taskControl.execute();
       cycle++;
 
-      // if 10 s we publish stats
-      if(timer.isTimeout()) {
-        double current = timer.getTime();
-        int objectsPublished = (taskControl.getTotalNumberObjectsPublished()-lastNumberObjects);
-        lastNumberObjects = taskControl.getTotalNumberObjectsPublished();
-        collector->send(objectsPublished/current, "QC_task_Rate_objects_published_per_10_seconds");
-        timer.increment();
-      }
+//      // if 10 s we publish stats
+//      if(timer.isTimeout()) {
+//        double current = timer.getTime();
+//        int objectsPublished = (taskControl.getTotalNumberObjectsPublished()-lastNumberObjects);
+//        lastNumberObjects = taskControl.getTotalNumberObjectsPublished();
+//        collector->send(objectsPublished/current, "QC_task_Rate_objects_published_per_10_seconds");
+//        timer.increment();
+//      }
     }
 
     taskControl.stop();

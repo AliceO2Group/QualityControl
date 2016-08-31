@@ -172,10 +172,8 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
           TASKS_PIDS+=($pidLastTask)
         done
 
-        #echo "Now wait $waitTime seconds"
         echo "Now wait for the tasks to finish"
         wait ${TASKS_PIDS[*]};# the checker never stops, we can't just wait
-#	      sleep $waitTime
 
         for (( checker=0; checker<$nb_checkers; checker++ )); do
 	        killAll "qcCheckerLauncher" ${NODES_CHECKER[${checker}]}

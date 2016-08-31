@@ -76,9 +76,13 @@ list(APPEND DICTINC
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/Quality.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/CheckInterface.h
         ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/SpyMainFrame.h
+#        MonitorObject.h
+#        Quality.h
+#        CheckInterface.h
+#        SpyMainFrame.h
         )
 set(CMAKE_ROOTTEST_DICT 1)
-ROOT_GENERATE_DICTIONARY("${LIBRARY_NAME_CORE}Dict" ${DICTINC} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/LinkDef.h)
+ROOT_GENERATE_DICTIONARY("${LIBRARY_NAME_CORE}Dict" ${DICTINC} LINKDEF ${CMAKE_CURRENT_SOURCE_DIR}/../include/QualityControl/LinkDef.h )
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME_CORE}Dict_rdict.pcm DESTINATION lib)
 
 # LIBRARY QCCore

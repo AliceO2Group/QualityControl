@@ -116,6 +116,12 @@ void TaskControl::execute()
   std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
   pcpus(std::stod(pidStatus[3]));
   pmems(std::stod(pidStatus[4]));
+  double whole_run_rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();
+  mCollector->send(mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run");
+  mCollector->send(timerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run");
+  mCollector->send(whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run");
+  mCollector->send(ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run");
+  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
 }
 
 void TaskControl::stop()
@@ -124,10 +130,10 @@ void TaskControl::stop()
   Activity activity(mConfigFile.getValue<int>("Activity.number"), mConfigFile.getValue<int>("Activity.type"));
   mTask->endOfActivity(activity);
 
-  double rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();
-  mCollector->send(rate, "QC_task_Rate_objects_published_per_second_whole_run");
-  mCollector->send(ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run");
-  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
+//  double rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();
+//  mCollector->send(rate, "QC_task_Rate_objects_published_per_second_whole_run");
+//  mCollector->send(ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run");
+//  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
 }
 
 }

@@ -8,6 +8,7 @@
 // std
 #include <iostream>
 #include <chrono>
+#include <algorithm>
 // boost
 #include <boost/algorithm/string.hpp>
 // ROOT
@@ -118,7 +119,7 @@ void Checker::Run()
   unique_ptr<FairMQPoller> poller(fTransportFactory->CreatePoller(fChannels["data-in"]));
 
   while (CheckCurrentState(RUNNING)) {
-    poller->Poll(100);
+    poller->Poll(1);
 
     for (int i = 0; i < fChannels["data-in"].size(); i++) {
       if (poller->CheckInput(i)) {
@@ -142,6 +143,7 @@ void Checker::Run()
           }
           endLastObject = system_clock::now();
           mAccProcessTime(timerProcessing.getTime());
+          mLogger << "Finished processing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
         }
       }
     }
@@ -153,24 +155,33 @@ void Checker::Run()
       numberHistosLastTime = mTotalNumberHistosReceived;
       QcInfoLogger::GetInstance() << "Rate in the last 10 seconds : " << (objectsPublished / current)
                                   << " events/second" << AliceO2::InfoLogger::InfoLogger::endm;
-      mCollector->send((objectsPublished / current), "QC_checker_Rate_objects_checked_per_10_seconds");
+      mCollector->send((objectsPublished / current), "QC_checker_Rate_objects_checked_per_second");
       timer.increment();
 
       std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
       pcpus(std::stod(pidStatus[3]));
       pmems(std::stod(pidStatus[4]));
+
+      std::chrono::duration<double> diff = endLastObject - startFirstObject;
+      mCollector->send(diff.count(), "QC_checker_Time_between_first_and_last_objects_received");
+      mCollector->send(mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated");
+      double rate = mTotalNumberHistosReceived / diff.count();
+      mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
+      mCollector->send(ba::mean(pcpus), "QC_checker_Mean_pcpu_whole_run");
+      mCollector->send(ba::mean(pmems), "QC_checker_Mean_pmem_whole_run");
+      mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
     }
   }
 
   // Monitoring
-  std::chrono::duration<double> diff = endLastObject - startFirstObject;
-  mCollector->send(diff.count(), "QC_checker_Time_between_first_and_last_objects_received");
-  mCollector->send(mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated");
-  double rate = mTotalNumberHistosReceived / diff.count();
-  mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
-  mCollector->send(ba::mean(pcpus), "QC_checker_Mean_pcpu_whole_run");
-  mCollector->send(ba::mean(pmems), "QC_checker_Mean_pmem_whole_run");
-  mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
+//  std::chrono::duration<double> diff = endLastObject - startFirstObject;
+//  mCollector->send(diff.count(), "QC_checker_Time_between_first_and_last_objects_received");
+//  mCollector->send(mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated");
+//  double rate = mTotalNumberHistosReceived / diff.count();
+//  mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
+//  mCollector->send(ba::mean(pcpus), "QC_checker_Mean_pcpu_whole_run");
+//  mCollector->send(ba::mean(pmems), "QC_checker_Mean_pmem_whole_run");
+//  mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
 }
 
 void Checker::check(MonitorObject *mo)
@@ -229,7 +240,7 @@ void Checker::send(MonitorObject *mo)
 
 /// \brief Load a library.
 /// \param libraryName The name of the library to load.
-void Checker::loadLibrary(const string libraryName) const
+void Checker::loadLibrary(const string libraryName)
 {
   if (boost::algorithm::trim_copy(libraryName) == "") {
     mLogger << "no library name specified" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -237,35 +248,53 @@ void Checker::loadLibrary(const string libraryName) const
   }
 
   string library = "lib" + libraryName + ".so";
-  mLogger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
-  if (gSystem->Load(library.c_str())) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
+  // if vector does not contain -> first time we see it
+  if(std::find(mLibrariesLoaded.begin(), mLibrariesLoaded.end(), library) == mLibrariesLoaded.end()) {
+    mLogger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
+    if (gSystem->Load(library.c_str())) {
+      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
+    }
+    mLibrariesLoaded.push_back(library);
   }
 }
 
-CheckInterface *Checker::instantiateCheck(string checkName, string className) const
+CheckInterface *Checker::instantiateCheck(string checkName, string className)
 {
   CheckInterface *result = 0;
   // Get the class and instantiate
-  mLogger << "Loading class " << className << AliceO2::InfoLogger::InfoLogger::endm;
-  TClass *cl = TClass::GetClass(className.c_str());
+  TClass *cl;
   string tempString("Failed to instantiate Quality Control Module");
-  if (!cl) {
-    tempString += " because no dictionary for class named \"";
-    tempString += className;
-    tempString += "\" could be retrieved";
-    cerr << tempString << endl;
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
+
+  if(mClassesLoaded.count(className) == 0) {
+    mLogger << "Loading class " << className << AliceO2::InfoLogger::InfoLogger::endm;
+    cl = TClass::GetClass(className.c_str());
+    if (!cl) {
+      tempString += " because no dictionary for class named \"";
+      tempString += className;
+      tempString += "\" could be retrieved";
+      cerr << tempString << endl;
+      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
+    }
+    mClassesLoaded[className] = cl;
+  } else {
+    cl = mClassesLoaded[className];
   }
-  mLogger << "Instantiating class " << className << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;
-  result = static_cast<CheckInterface *>(cl->New());
-  if (!result) {
-    tempString += " because the class named \"";
-    tempString += className;
-    tempString += "\" does not follow the TaskInterface interface";
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
+
+  if(mChecksLoaded.count(checkName) == 0) {
+    mLogger << "Instantiating class " << className << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;
+    result = static_cast<CheckInterface *>(cl->New());
+    if (!result) {
+      tempString += " because the class named \"";
+      tempString += className;
+      tempString += "\" does not follow the TaskInterface interface";
+      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
+    }
+    result->configure(checkName);
+    mChecksLoaded[checkName] = result;
+  } else {
+    result = mChecksLoaded[checkName];
   }
-  result->configure(checkName);
+
   return result;
 }
 
