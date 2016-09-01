@@ -13,7 +13,7 @@ set -u ;# exit when using undeclared variable
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(1 2);# 2 4) ;# 5 10 20 30)
+NB_OF_TASKS=(1);# 2 4) ;# 5 10 20 30)
 NB_OF_CHECKERS=(1);# 2) ;# 2 5 10)
 NB_OF_HISTOS_PER_CYCLE_PER_TASK=(1) ;# 10 100 1000 10000)
 NB_OF_CHECKS_PER_CHECKER=(1) ;# 10 100 1000)
