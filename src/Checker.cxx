@@ -136,14 +136,18 @@ void Checker::Run()
           TestTMessage tm(msg->GetData(), msg->GetSize());
           MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
           if (mo) {
+            shared_ptr<MonitorObject> mo_shared(mo);
             mTotalNumberHistosReceived++;
-            check(mo);
-            store(mo);
-            send(mo);
+            check(mo_shared);
+            store(mo_shared);
+            send(mo_shared);
+
+            endLastObject = system_clock::now();
+            mAccProcessTime(timerProcessing.getTime());
+            mLogger << "Finished processing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
+          } else {
+            mLogger << "the mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
           }
-          endLastObject = system_clock::now();
-          mAccProcessTime(timerProcessing.getTime());
-          mLogger << "Finished processing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
         }
       }
     }
@@ -184,7 +188,7 @@ void Checker::Run()
 //  mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
 }
 
-void Checker::check(MonitorObject *mo)
+void Checker::check(shared_ptr<MonitorObject> mo)
 {
   mLogger << "Checking \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -201,15 +205,15 @@ void Checker::check(MonitorObject *mo)
     // TODO : preload modules and pre-instantiate, or keep a cache
     loadLibrary(check.libraryName);
     CheckInterface *checkInstance = instantiateCheck(check.name, check.className);
-    Quality q = checkInstance->check(mo);
+    Quality q = checkInstance->check(mo.get());
 
     mLogger << "        result of the check : " << q.getName() << AliceO2::InfoLogger::InfoLogger::endm;
 
-    checkInstance->beautify(mo, q);
+    checkInstance->beautify(mo.get(), q);
   }
 }
 
-void Checker::store(MonitorObject *mo)
+void Checker::store(shared_ptr<MonitorObject> mo)
 {
   mLogger << "Storing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -225,7 +229,7 @@ void Checker::CustomCleanupTMessage(void *data, void *object)
   delete (TMessage *) object;
 }
 
-void Checker::send(MonitorObject *mo)
+void Checker::send(shared_ptr<MonitorObject> mo)
 {
   if (!mCheckerConfig.broadcast) {
     return;
@@ -233,7 +237,7 @@ void Checker::send(MonitorObject *mo)
   mLogger << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
   TMessage *message = new TMessage(kMESS_OBJECT);
-  message->WriteObjectAny(mo, mo->IsA());
+  message->WriteObjectAny(mo.get(), mo->IsA());
   unique_ptr<FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
   fChannels.at("data-out").at(0).Send(msg);
 }

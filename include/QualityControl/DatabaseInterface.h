@@ -7,6 +7,7 @@
 #define QUALITYCONTROL_REPOSITORY_DATABASE_INTERFACE_H_
 
 #include "QualityControl/MonitorObject.h"
+#include <memory>
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -29,7 +30,8 @@ class DatabaseInterface
 
     virtual void connect(std::string username, std::string password) = 0;
     virtual void connect(std::string host, std::string database, std::string username, std::string password) = 0;
-    virtual void store(AliceO2::QualityControl::Core::MonitorObject *mo) = 0;
+    virtual void store(std::shared_ptr<AliceO2::QualityControl::Core::MonitorObject> mo) = 0;
+
     /**
      * Look up an object of a task and return it.
      * \details It returns the object if found or nullptr if not.

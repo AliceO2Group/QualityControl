@@ -11,6 +11,8 @@
 #include <FairMQDevice.h>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
+#include <memory>
+
 // QC
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckInterface.h"
@@ -58,19 +60,19 @@ class Checker : public FairMQDevice
      * @param mo The MonitorObject to evaluate and whose quality will be set according
      *        to the worse quality encountered while running the Check's.
      */
-    void check(AliceO2::QualityControl::Core::MonitorObject *mo);
+    void check(std::shared_ptr<MonitorObject> mo);
 
     /**
      * \brief Store the MonitorObject in the database.
      *
      * @param mo The MonitorObject to be stored in the database.
      */
-    void store(AliceO2::QualityControl::Core::MonitorObject *mo);
+    void store(std::shared_ptr<MonitorObject> mo);
 
     /**
      * \brief Send the MonitorObject on FairMQ to whoever is listening.
      */
-    void send(AliceO2::QualityControl::Core::MonitorObject *mo);
+    void send(std::shared_ptr<MonitorObject> mo);
 
     void loadLibrary(const std::string libraryName);
     CheckInterface* instantiateCheck(std::string checkName, std::string className);

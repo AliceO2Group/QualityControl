@@ -25,8 +25,9 @@ namespace QualityControl {
 namespace Repository {
 
 MySqlDatabase::MySqlDatabase()
-    : mServer(nullptr)
+    : mServer(nullptr), queueSize(0)
 {
+  lastStorage.reset();
 }
 
 MySqlDatabase::~MySqlDatabase()
@@ -36,7 +37,6 @@ MySqlDatabase::~MySqlDatabase()
 
 void MySqlDatabase::connect(std::string username, std::string password)
 {
-  // TODO use the configuration system to connect to the database
   connect("localhost", "quality_control", username, password);
 }
 
@@ -66,7 +66,7 @@ void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
   string query;
   query += "CREATE TABLE IF NOT EXISTS `data_" + taskName
       + "` (object_name CHAR(64), updatetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, data LONGBLOB, size INT, run INT, "
-          "fill INT, PRIMARY KEY(object_name, run))";
+          "fill INT, PRIMARY KEY(object_name, run)) ENGINE=MyISAM";
   if (!execute(query)) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to create data table"));
   } else {
@@ -74,39 +74,77 @@ void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
   }
 }
 
-void MySqlDatabase::store(AliceO2::QualityControl::Core::MonitorObject *mo)
+void MySqlDatabase::store(shared_ptr<MonitorObject> mo)
 {
-  string taskName = mo->getTaskName();
-  // try to insert if it fails we check whether the table is there or not and create it if needed
+  // we execute grouped insertions. Here we just register that we should keep this mo in memory.
+  mObjectsQueue[mo->getTaskName()].push_back(mo);
+  queueSize++;
+  if(queueSize > 100 || lastStorage.getTime() > 10 /*sec*/) { // TODO use a configuration to set the max limits
+    storeQueue();
+  }
+}
+
+void MySqlDatabase::storeQueue()
+{
+  cout << "Database queue will now be processed ("<< queueSize << " objects)" << endl;
+
+  for (auto& kv : mObjectsQueue) {
+    storeForTask(kv.first);
+  }
+  mObjectsQueue.clear();
+  queueSize = 0;
+  lastStorage.reset();
+}
+
+void MySqlDatabase::storeForTask(std::string taskName)
+{
+  vector<shared_ptr<MonitorObject>> objects = mObjectsQueue[taskName];
+
+  cout << "** Store for task " << taskName << endl;
+  cout << "        # objects : " << objects.size() << endl;
+
+  // build statement string
+  string query;
+  query += "REPlACE INTO `data_" + taskName
+           + "` (object_name, data, size, run, fill) values ";
+  for(size_t i = 0 ; i < objects.size() ; i++) {
+    if(i != 0) {
+      query += ",";
+    }
+    query += "(?,?,octet_length(data),?,?)";
+  }
 
   // Prepare statement
   TMySQLStatement *statement;
-  string query;
-  query += "REPlACE INTO `data_" + taskName
-      + "` (object_name, data, size, run, fill) values (?,?,octet_length(data),?,?)";
-  statement = (TMySQLStatement*) mServer->Statement(query.c_str());
+  // try to insert if it fails we check whether the table is there or not and create it if needed
+  statement = (TMySQLStatement *) mServer->Statement(query.c_str());
   if (mServer->IsError() && mServer->GetErrorCode() == 1146) { // table does not exist
-  // try to create the table
+    // try to create the table
     prepareTaskDataContainer(taskName);
-    statement = (TMySQLStatement*) mServer->Statement(query.c_str());
+    statement = (TMySQLStatement *) mServer->Statement(query.c_str());
   }
-
   if (mServer->IsError()) {
     BOOST_THROW_EXCEPTION(
-        DatabaseException() << errinfo_details("Encountered an error when creating statement in MySqlDatabase")
-            << errinfo_db_message(mServer->GetErrorMsg()) << errinfo_db_errno(mServer->GetErrorCode()));
+      DatabaseException() << errinfo_details("Encountered an error when creating statement in MySqlDatabase")
+                          << errinfo_db_message(mServer->GetErrorMsg()) << errinfo_db_errno(mServer->GetErrorCode()));
   }
 
   // Assign data
+  int i=0;
   TMessage message(kMESS_OBJECT);
-  message.WriteObjectAny(mo, mo->IsA());
-  statement->NextIteration();
-  statement->SetString(0, mo->getName().c_str());
-  statement->SetBinary(1, message.Buffer(), message.Length(), message.Length());
-  statement->SetInt(2, 0);
-  statement->SetInt(3, 0);
+  for(auto mo : objects) {
+    message.Reset();
+    message.WriteObjectAny(mo.get(), mo->IsA());
+    statement->NextIteration();
+    statement->SetString(i+0, mo->getName().c_str());
+    statement->SetBinary(i+1, message.Buffer(), message.Length(), message.Length());
+    statement->SetInt(i+2, 0);
+    statement->SetInt(i+3, 0);
+  }
   statement->Process();
   delete statement;
+
+  objects.clear();
 }
 
 AliceO2::QualityControl::Core::MonitorObject* MySqlDatabase::retrieve(std::string taskName, std::string objectName)
@@ -160,6 +198,8 @@ AliceO2::QualityControl::Core::MonitorObject* MySqlDatabase::retrieve(std::strin
 
 void MySqlDatabase::disconnect()
 {
+  storeQueue();
+
   if (mServer) {
     if (mServer->IsConnected()) {
       mServer->Close();
