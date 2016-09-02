@@ -54,6 +54,7 @@ do
   taskFileName="$LOG_FOLDER/logQcBenchmark_benchmarkTask_0_${number_tasks}_${number_checkers}_${number_histos}_${number_checks}.log"
   if [ ! -f "$taskFileName" ]; then
     echo "file $taskFileName does not exist, skip"
+    continue
   fi
 
   # get data for task

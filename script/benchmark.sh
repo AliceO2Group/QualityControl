@@ -4,35 +4,68 @@ set -u ;# exit when using undeclared variable
 #set -x ;# debugging
 
 ### Notes
-# Most of the configuration is in the config file we distribute.
-# The list of task addresses is defined there as well and we pick
-# it up and parse it to know where to launch tasks.
-# In the config file, the ports in the variable tasksAddresses must
-# match the ones in the benchmark_task definitions.
-# TODO the point above could be improved
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(1);# 2 4) ;# 5 10 20 30)
-NB_OF_CHECKERS=(1);# 2) ;# 2 5 10)
-NB_OF_HISTOS_PER_CYCLE_PER_TASK=(1) ;# 10 100 1000 10000)
-NB_OF_CHECKS_PER_CHECKER=(1) ;# 10 100 1000)
+NB_OF_TASKS=(5);# 2 5 10 20 30);# 2 4) ;# 5 10 20 30)
+NB_OF_CHECKERS=(5);# 2 5 10)
+NB_OF_HISTOS_PER_CYCLE_PER_TASK=(10);# 10 100 1000)
+NB_OF_CHECKS_PER_CHECKER=(1 10 100 1000);#000)
 
 
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
 LOG_FILE_PREFIX=/tmp/logQcBenchmark_
-NUMBER_CYCLES=10 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes + the publication time
-TIMEOUT_DURATION=$(awk -v m="$NUMBER_CYCLES" 'BEGIN { print m * 2 }');# 100% margin
+NUMBER_CYCLES=150 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes + the publication time
 ORIGINAL_CONFIG_FILE_NAME=example.ini
 MODIFIED_CONFIG_FILE_NAME=newconfig.ini
+#  for i in $(seq -f "%03g" 16 45); do echo tcp://aidrefpc$i:5556,\\; done
 TASKS_FULL_ADDRESSES="\
-tcp://localhost:5556,\
-tcp://localhost:5557\
+tcp://aidrefpc016:5556,\
+tcp://aidrefpc017:5556,\
+tcp://aidrefpc018:5556,\
+tcp://aidrefpc019:5556,\
+tcp://aidrefpc020:5556,\
+tcp://aidrefpc021:5556,\
+tcp://aidrefpc022:5556,\
+tcp://aidrefpc023:5556,\
+tcp://aidrefpc024:5556,\
+tcp://aidrefpc025:5556,\
+tcp://aidrefpc026:5556,\
+tcp://aidrefpc027:5556,\
+tcp://aidrefpc028:5556,\
+tcp://aidrefpc029:5556,\
+tcp://aidrefpc030:5556,\
+tcp://aidrefpc031:5556,\
+tcp://aidrefpc032:5556,\
+tcp://aidrefpc033:5556,\
+tcp://aidrefpc034:5556,\
+tcp://aidrefpc035:5556,\
+tcp://aidrefpc036:5556,\
+tcp://aidrefpc037:5556,\
+tcp://aidrefpc038:5556,\
+tcp://aidrefpc039:5556,\
+tcp://aidrefpc040:5556,\
+tcp://aidrefpc041:5556,\
+tcp://aidrefpc042:5556,\
+tcp://aidrefpc043:5556,\
+tcp://aidrefpc044:5556,\
+tcp://aidrefpc045:5556\
 " ;# comma delimited, no space
-NODES_CHECKER=("localhost" "localhost")
-USER=bvonhall
-TASKS_PIDS=()
+# for i in $(seq -f "%03g" 5 14); do echo \"aidrefpc$i\"; done
+NODES_CHECKER=(
+"aidrefpc005"
+"aidrefpc006"
+"aidrefpc007"
+"aidrefpc008"
+"aidrefpc009"
+"aidrefpc010"
+"aidrefpc011"
+"aidrefpc012"
+"aidrefpc013"
+"aidrefpc014"
+)
+USER=benchmarkQC
 
 
 ### Compute addresses of task nodes for our different usages
@@ -40,7 +73,7 @@ TASKS_PIDS=()
 echo ${TASKS_FULL_ADDRESSES} | sed -n -e 's/tcp:\/\///gp' > /tmp/sed.temp.2
 addresses_string=`cat /tmp/sed.temp.2 | sed -n -e 's/:[0-9]*//gp'`
 IFS=',' read -r -a NODES_TASKS <<< "$addresses_string" ;# echo "${array[0]}"
-# Replace the "localhost" with "*" in the addresses, needed for the tasks config,
+# Replace the address with "*" in the addresses, needed for the tasks config,
 # and store in TASKS_ADDRESSES_FOR_CONFIG
 echo ${TASKS_FULL_ADDRESSES} | sed -n -e 's/tcp:\/\/[^:]*/tcp:\/\/\*/gp' > /tmp/sed.temp.3
 addresses_string=`cat /tmp/sed.temp.3`
@@ -63,6 +96,7 @@ function prepareConfigFile {
   sed "s/tasksAddresses=.*$/tasksAddresses="${TASKS_FULL_ADDRESSES//\//\\/}"/g" < ${ORIGINAL_CONFIG_FILE_NAME} > ${MODIFIED_CONFIG_FILE_NAME}
   sed -i "s/numberCheckers=.*$/numberCheckers="${number_checkers}"/" ${MODIFIED_CONFIG_FILE_NAME}
   sed -i "s/numberTasks=.*$/numberTasks="${number_tasks}"/" ${MODIFIED_CONFIG_FILE_NAME}
+  sed -i "s/numberHistos=.*$/numberHistos="${number_histos}"/" ${MODIFIED_CONFIG_FILE_NAME}
 
   # Generate tasks
   for (( task=0; task<${number_tasks}; task++ )); do
@@ -136,7 +170,7 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
   for nb_checkers in ${NB_OF_CHECKERS[@]}; do
     for nb_histos in ${NB_OF_HISTOS_PER_CYCLE_PER_TASK[@]}; do
       for nb_checks in ${NB_OF_CHECKS_PER_CHECKER[@]}; do
-        echo "***************************
+        echo "*************************** $(date)
         Launching test for $nb_tasks tasks, $nb_checkers checkers, $nb_histos histos, $nb_checks checks"
 
         if (( $nb_tasks < nb_checkers ))
@@ -172,8 +206,10 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
           TASKS_PIDS+=($pidLastTask)
         done
 
-        echo "Now wait for the tasks to finish"
+        echo "Now wait for the tasks to finish "
         wait ${TASKS_PIDS[*]};# the checker never stops, we can't just wait
+
+        sleep 5 # leave time to finish
 
         for (( checker=0; checker<$nb_checkers; checker++ )); do
 	        killAll "qcCheckerLauncher" ${NODES_CHECKER[${checker}]}
@@ -181,7 +217,8 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
         for (( task=0; task<$nb_tasks; task++ )); do
 	        killAll "qcTaskLauncher" ${NODES_TASKS[${task}]}
 	      done
-	      sleep 10 # leave time to finish
+
+        sleep 20 # leave time to finish
 
 	      TASKS_PIDS=()
 
