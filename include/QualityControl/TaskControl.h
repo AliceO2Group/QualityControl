@@ -58,7 +58,7 @@ class TaskControl
     TaskConfig mTaskConfig;
     AliceO2::DataSampling::SamplerInterface *mSampler;
     std::shared_ptr<AliceO2::Monitoring::Core::Collector> mCollector;
-    std::unique_ptr<Monitoring::Core::ProcessMonitor> mMonitor;
+    //std::unique_ptr<Monitoring::Core::ProcessMonitor> mMonitor;
 
     // stats
     int mTotalNumberObjectsPublished;

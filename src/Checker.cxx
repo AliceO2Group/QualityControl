@@ -60,8 +60,8 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
 
   // monitoring
   mCollector = std::shared_ptr<Monitoring::Core::Collector>(new Monitoring::Core::Collector(configFile));
-  mMonitor = std::unique_ptr<Monitoring::Core::ProcessMonitor>(
-    new Monitoring::Core::ProcessMonitor(mCollector, configFile));
+  //mMonitor = std::unique_ptr<Monitoring::Core::ProcessMonitor>(
+   // new Monitoring::Core::ProcessMonitor(mCollector, configFile));
   //mMonitor->startMonitor();
 
   // load the configuran of the database here
@@ -162,9 +162,9 @@ void Checker::Run()
       mCollector->send((objectsPublished / current), "QC_checker_Rate_objects_checked_per_second");
       timer.increment();
 
-      std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
-      pcpus(std::stod(pidStatus[3]));
-      pmems(std::stod(pidStatus[4]));
+      //std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
+      //pcpus(std::stod(pidStatus[3]));
+      //pmems(std::stod(pidStatus[4]));
 
       std::chrono::duration<double> diff = endLastObject - startFirstObject;
       mCollector->send(diff.count(), "QC_checker_Time_between_first_and_last_objects_received");

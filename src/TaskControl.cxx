@@ -25,8 +25,8 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
 
   // monitoring
   mCollector = std::shared_ptr<Monitoring::Core::Collector>(new Monitoring::Core::Collector(mConfigFile));
-  mMonitor = std::unique_ptr<Monitoring::Core::ProcessMonitor>(
-    new Monitoring::Core::ProcessMonitor(mCollector, mConfigFile));
+  //mMonitor = std::unique_ptr<Monitoring::Core::ProcessMonitor>(
+  //new Monitoring::Core::ProcessMonitor(mCollector, mConfigFile));
 
   // setup publisher
   mObjectsManager = new ObjectsManager(mTaskConfig);
@@ -113,9 +113,9 @@ void TaskControl::execute()
   double rate = numberObjectsPublished / (durationCycle + durationPublication);
   mCollector->send(rate, "QC_task_Rate_objects_published_per_second");
   mTotalNumberObjectsPublished += numberObjectsPublished;
-  std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
-  pcpus(std::stod(pidStatus[3]));
-  pmems(std::stod(pidStatus[4]));
+  //std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
+  //pcpus(std::stod(pidStatus[3]));
+  //pmems(std::stod(pidStatus[4]));
   double whole_run_rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();
   mCollector->send(mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run");
   mCollector->send(timerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run");
