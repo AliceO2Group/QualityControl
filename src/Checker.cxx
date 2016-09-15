@@ -135,16 +135,18 @@ void Checker::Run()
           timerProcessing.reset();
           TestTMessage tm(msg->GetData(), msg->GetSize());
           MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
+          mo->setIsOwner(true);
           if (mo) {
-            shared_ptr<MonitorObject> mo_shared(mo);
+//            shared_ptr<MonitorObject> mo_shared(mo);
+            string name = mo->getName();
             mTotalNumberHistosReceived++;
-            check(mo_shared);
-            store(mo_shared);
-            send(mo_shared);
+            check(mo);
+            send(mo);
+            store(mo);
 
             endLastObject = system_clock::now();
             mAccProcessTime(timerProcessing.getTime());
-            mLogger << "Finished processing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
+            mLogger << "Finished processing \"" << name << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
           } else {
             mLogger << "the mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
           }
@@ -171,7 +173,7 @@ void Checker::Run()
       mCollector->send(mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated");
       double rate = mTotalNumberHistosReceived / diff.count();
       mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
-      mCollector->send(ba::mean(pcpus), "QC_checker_Mean_pcpu_whole_run");
+      mCollector->send(std::stod(pidStatus[3]), "QC_checker_Mean_pcpu_whole_run");
       mCollector->send(ba::mean(pmems), "QC_checker_Mean_pmem_whole_run");
       mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
     }
@@ -188,7 +190,7 @@ void Checker::Run()
 //  mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
 }
 
-void Checker::check(shared_ptr<MonitorObject> mo)
+void Checker::check(MonitorObject* mo)
 {
   mLogger << "Checking \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -205,15 +207,15 @@ void Checker::check(shared_ptr<MonitorObject> mo)
     // TODO : preload modules and pre-instantiate, or keep a cache
     loadLibrary(check.libraryName);
     CheckInterface *checkInstance = instantiateCheck(check.name, check.className);
-    Quality q = checkInstance->check(mo.get());
+    Quality q = checkInstance->check(mo);
 
     mLogger << "        result of the check : " << q.getName() << AliceO2::InfoLogger::InfoLogger::endm;
 
-    checkInstance->beautify(mo.get(), q);
+    checkInstance->beautify(mo, q);
   }
 }
 
-void Checker::store(shared_ptr<MonitorObject> mo)
+void Checker::store(MonitorObject* mo)
 {
   mLogger << "Storing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -229,7 +231,7 @@ void Checker::CustomCleanupTMessage(void *data, void *object)
   delete (TMessage *) object;
 }
 
-void Checker::send(shared_ptr<MonitorObject> mo)
+void Checker::send(MonitorObject*  mo)
 {
   if (!mCheckerConfig.broadcast) {
     return;
@@ -237,7 +239,7 @@ void Checker::send(shared_ptr<MonitorObject> mo)
   mLogger << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
   TMessage *message = new TMessage(kMESS_OBJECT);
-  message->WriteObjectAny(mo.get(), mo->IsA());
+  message->WriteObjectAny(mo, mo->IsA());
   unique_ptr<FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
   fChannels.at("data-out").at(0).Send(msg);
 }

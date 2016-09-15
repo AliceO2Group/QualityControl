@@ -120,7 +120,7 @@ void TaskControl::execute()
   mCollector->send(mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run");
   mCollector->send(timerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run");
   mCollector->send(whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run");
-  mCollector->send(ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run");
+  mCollector->send(std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run");
   mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
 }
 

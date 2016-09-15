@@ -60,19 +60,19 @@ class Checker : public FairMQDevice
      * @param mo The MonitorObject to evaluate and whose quality will be set according
      *        to the worse quality encountered while running the Check's.
      */
-    void check(std::shared_ptr<MonitorObject> mo);
+    void check(MonitorObject*  mo);
 
     /**
      * \brief Store the MonitorObject in the database.
      *
      * @param mo The MonitorObject to be stored in the database.
      */
-    void store(std::shared_ptr<MonitorObject> mo);
+    void store(MonitorObject*  mo);
 
     /**
      * \brief Send the MonitorObject on FairMQ to whoever is listening.
      */
-    void send(std::shared_ptr<MonitorObject> mo);
+    void send(MonitorObject*  mo);
 
     void loadLibrary(const std::string libraryName);
     CheckInterface* instantiateCheck(std::string checkName, std::string className);

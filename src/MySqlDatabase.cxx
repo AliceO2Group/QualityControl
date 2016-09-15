@@ -74,8 +74,9 @@ void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
   }
 }
 
-void MySqlDatabase::store(shared_ptr<MonitorObject> mo)
+void MySqlDatabase::store(MonitorObject* mo)
 {
+  // TODO we take ownership here to delete later -> clearly to be improved
   // we execute grouped insertions. Here we just register that we should keep this mo in memory.
   mObjectsQueue[mo->getTaskName()].push_back(mo);
   queueSize++;
@@ -98,7 +99,11 @@ void MySqlDatabase::storeQueue()
 
 void MySqlDatabase::storeForTask(std::string taskName)
 {
-  vector<shared_ptr<MonitorObject>> objects = mObjectsQueue[taskName];
+  vector<MonitorObject*> objects = mObjectsQueue[taskName];
+
+  if(objects.size() == 0) {
+    return;
+  }
 
   cout << "** Store for task " << taskName << endl;
   cout << "        # objects : " << objects.size() << endl;
@@ -134,7 +139,7 @@ void MySqlDatabase::storeForTask(std::string taskName)
   TMessage message(kMESS_OBJECT);
   for(auto mo : objects) {
     message.Reset();
-    message.WriteObjectAny(mo.get(), mo->IsA());
+    message.WriteObjectAny(mo, mo->IsA());
     statement->NextIteration();
     statement->SetString(i+0, mo->getName().c_str());
     statement->SetBinary(i+1, message.Buffer(), message.Length(), message.Length());
@@ -144,6 +149,9 @@ void MySqlDatabase::storeForTask(std::string taskName)
   statement->Process();
   delete statement;
 
+  for(auto mo : objects) {
+    delete mo;
+  }
   objects.clear();
 }
 
