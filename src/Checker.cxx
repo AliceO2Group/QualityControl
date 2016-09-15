@@ -173,7 +173,7 @@ void Checker::Run()
       mCollector->send(mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated");
       double rate = mTotalNumberHistosReceived / diff.count();
       mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
-      mCollector->send(std::stod(pidStatus[3]), "QC_checker_Mean_pcpu_whole_run");
+//      mCollector->send(std::stod(pidStatus[3]), "QC_checker_Mean_pcpu_whole_run");
       mCollector->send(ba::mean(pmems), "QC_checker_Mean_pmem_whole_run");
       mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
     }
