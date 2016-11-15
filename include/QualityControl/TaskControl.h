@@ -54,7 +54,7 @@ class TaskControl
 
     ObjectsManager *mObjectsManager;
     TaskInterface *mTask;
-    ConfigFile mConfigFile;
+    AliceO2::Configuration::ConfigFile mConfigFile;
     TaskConfig mTaskConfig;
     AliceO2::DataSampling::SamplerInterface *mSampler;
     std::shared_ptr<AliceO2::Monitoring::Core::Collector> mCollector;

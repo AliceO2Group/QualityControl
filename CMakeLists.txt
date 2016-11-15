@@ -72,10 +72,12 @@ endif()
 # Other subprojects
 link_o2_subproject(InfoLogger)
 link_o2_subproject(Common)
-link_o2_subproject(Configuration)
+#link_o2_subproject(Configuration)
 link_o2_subproject(DataFormat)
 link_o2_subproject(DataSampling)
 link_o2_subproject(Monitoring)
+
+find_package(Configuration REQUIRED)
 
 # Alfa
 find_package(FairRoot)
@@ -129,6 +131,7 @@ include_directories(
     ${Boost_INCLUDE_DIRS}
     ${ROOT_INCLUDE_DIRS}
     ${MYSQL_INCLUDE_DIRS}
+    ${Configuration_INCLUDE_DIRS}
 )
 
 if(FAIRROOT_FOUND)

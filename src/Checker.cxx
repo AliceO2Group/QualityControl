@@ -27,6 +27,7 @@
 #include "QualityControl/CheckerConfig.h"
 
 using namespace AliceO2::Common;
+using namespace AliceO2::Configuration;
 
 class TestTMessage : public TMessage
 {

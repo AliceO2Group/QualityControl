@@ -22,6 +22,7 @@
 
 using namespace std;
 using namespace AliceO2::QualityControl::Core;
+using namespace AliceO2::Configuration;
 using namespace AliceO2::QualityControl::Checker;
 namespace po = boost::program_options;
 

@@ -88,7 +88,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME_CORE}Dict_rdict.pcm DES
 # LIBRARY QCCore
 add_library(${LIBRARY_NAME_CORE} SHARED ${LIB_SOURCES_CORE} )
 # TODO use Configuration_LIBRARIES instead of Configuration_LIBRARIES_STATIC once the shared lib is fixed
-target_link_libraries(${LIBRARY_NAME_CORE} Common InfoLogger-static Configuration-static DataSampling DataCollector DataFormat
+target_link_libraries(${LIBRARY_NAME_CORE} Common InfoLogger-static ${Configuration_LIBRARIES} DataSampling DataCollector DataFormat
                         ${ROOT_LIBRARIES} ${FAIRROOT_LIBRARIES})
 set_target_properties(${LIBRARY_NAME_CORE} PROPERTIES
         VERSION ${VERSION}  # ${VERSION} was defined in the main CMakeLists.
