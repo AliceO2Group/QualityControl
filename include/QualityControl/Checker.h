@@ -89,8 +89,8 @@ class Checker : public FairMQDevice
     std::map<std::string,TClass*> mClassesLoaded;
 
     // monitoring
-    std::shared_ptr<AliceO2::Monitoring::Core::Collector> mCollector;
-    std::unique_ptr<Monitoring::Core::ProcessMonitor> mMonitor;
+    std::shared_ptr<AliceO2::Monitoring::Collector> mCollector;
+    std::unique_ptr<Monitoring::ProcessMonitor> mMonitor;
 
     // metrics
     ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> pcpus;

@@ -60,9 +60,9 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
   populateConfig(configFile, checkerName);
 
   // monitoring
-  mCollector = std::shared_ptr<Monitoring::Core::Collector>(new Monitoring::Core::Collector(configurationSource));
-  //mMonitor = std::unique_ptr<Monitoring::Core::ProcessMonitor>(
-   // new Monitoring::Core::ProcessMonitor(mCollector, configFile));
+  mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
+  //mMonitor = std::unique_ptr<Monitoring::ProcessMonitor>(
+   // new Monitoring::ProcessMonitor(mCollector, configFile));
   //mMonitor->startMonitor();
 
   // load the configuran of the database here

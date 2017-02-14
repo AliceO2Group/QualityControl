@@ -24,9 +24,9 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
   populateConfig(taskName);
 
   // monitoring
-  mCollector = std::shared_ptr<Monitoring::Core::Collector>(new Monitoring::Core::Collector(configurationSource));
-  //mMonitor = std::unique_ptr<Monitoring::Core::ProcessMonitor>(
-  //new Monitoring::Core::ProcessMonitor(mCollector, mConfigFile));
+  mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
+  //mMonitor = std::unique_ptr<Monitoring::ProcessMonitor>(
+  //new Monitoring::ProcessMonitor(mCollector, mConfigFile));
 
   // setup publisher
   mObjectsManager = new ObjectsManager(mTaskConfig);
