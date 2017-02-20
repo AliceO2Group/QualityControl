@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
     taskControl.configure();
     taskControl.start();
 
-    std::shared_ptr<AliceO2::Monitoring::Collector> collector(new AliceO2::Monitoring::Collector(configurationSource));
+//    std::shared_ptr<AliceO2::Monitoring::Collector> collector(new AliceO2::Monitoring::Collector(configurationSource));
 
     int cycle = 0;
     AliceO2::Common::Timer timer;
