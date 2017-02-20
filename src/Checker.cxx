@@ -60,7 +60,7 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
   populateConfig(configFile, checkerName);
 
   // monitoring
-  mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
+//  mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
   //mMonitor = std::unique_ptr<Monitoring::ProcessMonitor>(
    // new Monitoring::ProcessMonitor(mCollector, configFile));
   //mMonitor->startMonitor();
@@ -162,7 +162,7 @@ void Checker::Run()
       numberHistosLastTime = mTotalNumberHistosReceived;
       QcInfoLogger::GetInstance() << "Rate in the last 10 seconds : " << (objectsPublished / current)
                                   << " events/second" << AliceO2::InfoLogger::InfoLogger::endm;
-      mCollector->send((objectsPublished / current), "QC_checker_Rate_objects_checked_per_second");
+      /*mCollector->send((objectsPublished / current), "QC_checker_Rate_objects_checked_per_second");
       timer.increment();
 
       //std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
@@ -176,7 +176,7 @@ void Checker::Run()
       mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
 //      mCollector->send(std::stod(pidStatus[3]), "QC_checker_Mean_pcpu_whole_run");
       mCollector->send(ba::mean(pmems), "QC_checker_Mean_pmem_whole_run");
-      mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
+      mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");*/
     }
   }
 
