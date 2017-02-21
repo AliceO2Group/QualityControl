@@ -132,6 +132,7 @@ include_directories(
     ${ROOT_INCLUDE_DIRS}
     ${MYSQL_INCLUDE_DIRS}
     ${Configuration_INCLUDE_DIRS}
+    ${ZEROMQ_INCLUDE_DIR}
 )
 
 if(FAIRROOT_FOUND)
