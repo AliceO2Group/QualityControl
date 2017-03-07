@@ -72,7 +72,6 @@ endif()
 # Other subprojects
 link_o2_subproject(InfoLogger)
 link_o2_subproject(Common)
-#link_o2_subproject(Configuration)
 link_o2_subproject(DataFormat)
 link_o2_subproject(DataSampling)
 link_o2_subproject(Monitoring)

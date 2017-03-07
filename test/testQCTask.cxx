@@ -90,12 +90,12 @@ BOOST_AUTO_TEST_CASE(TestInstantiate)
   config.publisherClassName="MockPublisher";
   config.taskName="my task name";
   ObjectsManager objectsManager(config);
-  Test::TestTask tt(&objectsManager);
-  BOOST_CHECK_EQUAL(tt.test, 0);
-  tt.initialize();
-  BOOST_CHECK_EQUAL(tt.test, 1);
-  Activity act;
-  tt.startOfActivity(act);
-  BOOST_CHECK_EQUAL(tt.test, 2);
+//  Test::TestTask tt(&objectsManager);
+//  BOOST_CHECK_EQUAL(tt.test, 0);
+//  tt.initialize();
+//  BOOST_CHECK_EQUAL(tt.test, 1);
+//  Activity act;
+//  tt.startOfActivity(act);
+//  BOOST_CHECK_EQUAL(tt.test, 2);
 }
 

@@ -23,7 +23,7 @@ namespace Gui {
 SpyDevice::SpyDevice()
     : mFrame(nullptr)
 {
-  this->SetTransport(new FairMQTransportFactoryZMQ);
+  SetTransport("zeromq"); // or "nanomsg", etc
 }
 
 SpyDevice::~SpyDevice()

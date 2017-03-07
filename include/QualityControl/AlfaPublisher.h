@@ -34,9 +34,11 @@ class AlfaPublisher: public PublisherInterface, FairMQDevice
     virtual void Run();
     static void CustomCleanup(void *data, void *object);
     static void CustomCleanupTMessage(void *data, void *object);
+    virtual void PreRun() override {std::cout << "PreRun Alfa !!!!\n   " << fChannels["data-out"].size() << std::endl;};
 
   private:
     MonitorObject *mCurrentMonitorObject;
+    bool mAvailableData;
 };
 
 } // namespace Core

@@ -3,9 +3,11 @@
 /// \author Barthelemy von Haller
 ///
 
+//#include <DataSampling/FairSampler.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskControl.h"
-#include "DataSampling/MockSampler.h"
+#include "DataSampling/SamplerFactory.h"
+#include "DataSampling/SamplerInterface.h"
 #include "QualityControl/TaskFactory.h"
 
 using namespace std;
@@ -36,7 +38,9 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
   mTask = f.create(mTaskConfig, mObjectsManager);  // TODO could we use unique_ptr ?
 
   // TODO create DataSampling with correct parameters
-  mSampler = new AliceO2::DataSampling::MockSampler();
+  string dataSamplingImplementation = mConfigFile.getValue<string>("DataSampling.implementation");
+  QcInfoLogger::GetInstance() << "DataSampling implementation is '" << dataSamplingImplementation << "'" << AliceO2::InfoLogger::InfoLogger::endm;
+  mSampler = AliceO2::DataSampling::SamplerFactory::create(dataSamplingImplementation);
 }
 
 TaskControl::~TaskControl()
@@ -65,7 +69,7 @@ void TaskControl::populateConfig(std::string taskName)
 
 void TaskControl::initialize()
 {
-  QcInfoLogger::GetInstance() << "initialize" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "initialize TaskControl" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mTask->initialize();
 }
@@ -92,10 +96,12 @@ void TaskControl::execute()
   auto end = start + seconds(mTaskConfig.cycleDurationSeconds);
   int numberBlocks = 0;
   while (system_clock::now() < end) {
-    DataBlock *block = mSampler->getData(0);
+    std::vector<std::shared_ptr<DataBlockContainer>> *block = mSampler->getData(100);
+    if(block) {
     mTask->monitorDataBlock(*block);
     mSampler->releaseData(); // invalids the block !!!
     numberBlocks++;
+  }
   }
   mTask->endOfCycle();
   double durationCycle = timer.getTime();

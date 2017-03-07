@@ -18,7 +18,7 @@ namespace QualityControl {
 namespace Core {
 
 AlfaPublisher::AlfaPublisher(TaskConfig& taskConfig)
-    : mCurrentMonitorObject(0)
+    : mCurrentMonitorObject(0), mAvailableData(false)
 {
   // set up communication layout and properties
   FairMQChannel histoChannel;
@@ -44,10 +44,13 @@ AlfaPublisher::AlfaPublisher(TaskConfig& taskConfig)
 
   ChangeState(INIT_TASK);
   WaitForEndOfState(INIT_TASK);
+
+  ChangeState(FairMQStateMachine::Event::RUN);
 }
 
 AlfaPublisher::~AlfaPublisher()
 {
+  ChangeState(STOP);
   ChangeState(RESET_TASK);
   WaitForEndOfState(RESET_TASK);
 
@@ -72,11 +75,13 @@ void AlfaPublisher::publish(MonitorObject *mo)
 {
 
   mCurrentMonitorObject = mo;
+  mAvailableData = true;
 //  cout << "alfa publisher : " << mo->getName() << " ; mean of histo : "
 //      << dynamic_cast<TH1*>(mo->getObject())->GetMean() << endl;
 
-  ChangeState(RUN);
-  WaitForEndOfState(RUN);
+//  ChangeState(RUN);
+//  WaitForEndOfState(RUN);
+  Run();
 }
 
 void AlfaPublisher::Init()
@@ -86,6 +91,11 @@ void AlfaPublisher::Init()
 
 void AlfaPublisher::Run()
 {
+
+  if (!mAvailableData) {
+    return;
+  }
+  mAvailableData = false;
 
   // this is called when the state change to RUN, i.e. when we call publish
 
