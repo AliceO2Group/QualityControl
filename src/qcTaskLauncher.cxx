@@ -88,14 +88,14 @@ int main(int argc, char *argv[])
   signal(SIGINT, handler_interruption); // for interruptions
   signal(SIGTERM, handler_interruption); // for termination requests
 
-  TaskControl taskControl(taskName, configurationSource);
+  TaskControl *taskControl = new TaskControl(taskName, configurationSource);
   try {
     // Actual "work" starts here
-    taskControl.initialize();
-    taskControl.configure();
-    taskControl.start();
+    taskControl->initialize();
+    taskControl->configure();
+    taskControl->start();
 
-//    std::shared_ptr<AliceO2::Monitoring::Collector> collector(new AliceO2::Monitoring::Collector(configurationSource));
+    std::shared_ptr<AliceO2::Monitoring::Collector> collector(new AliceO2::Monitoring::Collector(configurationSource));
 
     int cycle = 0;
     AliceO2::Common::Timer timer;
@@ -104,20 +104,20 @@ int main(int argc, char *argv[])
 
     while (keepRunning && cycle < maxNumberCycles) {
       QcInfoLogger::GetInstance() << "cycle " << cycle << AliceO2::InfoLogger::InfoLogger::endm;
-      taskControl.execute();
+      taskControl->execute();
       cycle++;
 
-//      // if 10 s we publish stats
-//      if(timer.isTimeout()) {
-//        double current = timer.getTime();
-//        int objectsPublished = (taskControl.getTotalNumberObjectsPublished()-lastNumberObjects);
-//        lastNumberObjects = taskControl.getTotalNumberObjectsPublished();
-//        collector->send(objectsPublished/current, "QC_task_Rate_objects_published_per_10_seconds");
-//        timer.increment();
-//      }
+      // if 10 s we publish stats
+      if(timer.isTimeout()) {
+        double current = timer.getTime();
+        int objectsPublished = (taskControl->getTotalNumberObjectsPublished()-lastNumberObjects);
+        lastNumberObjects = taskControl->getTotalNumberObjectsPublished();
+        collector->send(objectsPublished/current, "QC_task_Rate_objects_published_per_10_seconds");
+        timer.increment();
+      }
     }
 
-    taskControl.stop();
+    taskControl->stop();
 
   } catch (std::string const& e) {
     cerr << e << endl;
@@ -128,6 +128,7 @@ int main(int argc, char *argv[])
       throw;
     }
   }
+  delete taskControl;
 
   return EXIT_SUCCESS;
 }

@@ -26,9 +26,8 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
   populateConfig(taskName);
 
   // monitoring
-//  mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
-  //mMonitor = std::unique_ptr<Monitoring::ProcessMonitor>(
-  //new Monitoring::ProcessMonitor(mCollector, mConfigFile));
+  mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
+//  mMonitor = std::unique_ptr<Monitoring::ProcessMonitor>(new Monitoring::ProcessMonitor(mCollector, mConfigFile));
 
   // setup publisher
   mObjectsManager = new ObjectsManager(mTaskConfig);
@@ -110,7 +109,7 @@ void TaskControl::execute()
   unsigned long numberObjectsPublished = mObjectsManager->publish();
 
   // monitoring metrics
-  /*double durationPublication = timer.getTime();
+  double durationPublication = timer.getTime();
   mCollector->send(numberBlocks, "QC_task_Numberofblocks_in_cycle");
   mCollector->send(durationCycle, "QC_task_Module_cycle_duration");
   mCollector->send(durationPublication, "QC_task_Publication_duration");
@@ -126,7 +125,7 @@ void TaskControl::execute()
   mCollector->send(timerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run");
   mCollector->send(whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run");
 //  mCollector->send(std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run");
-  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");*/
+  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
 }
 
 void TaskControl::stop()
@@ -135,10 +134,10 @@ void TaskControl::stop()
   Activity activity(mConfigFile.getValue<int>("Activity.number"), mConfigFile.getValue<int>("Activity.type"));
   mTask->endOfActivity(activity);
 
-//  double rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();
-//  mCollector->send(rate, "QC_task_Rate_objects_published_per_second_whole_run");
-//  mCollector->send(ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run");
-//  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
+  double rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();
+  mCollector->send(rate, "QC_task_Rate_objects_published_per_second_whole_run");
+  mCollector->send(ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run");
+  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
 }
 
 }
