@@ -18,6 +18,8 @@
 // FairRoot
 #include <FairMQTransportFactoryZMQ.h>
 #include <FairMQPoller.h>
+#include <Configuration/ConfigurationInterface.h>
+#include <Configuration/ConfigurationFactory.h>
 // O2
 #include "Common/Exceptions.h"
 #include "Common/Timer.h"
@@ -42,6 +44,7 @@ class TestTMessage : public TMessage
 using namespace std;
 using namespace AliceO2::InfoLogger;
 using namespace std::chrono;
+using namespace AliceO2::Configuration;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -55,40 +58,42 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
   : mLogger(QcInfoLogger::GetInstance()), mTotalNumberHistosReceived(0)
 {
   // configuration
-  ConfigFile configFile;
-  configFile.load(configurationSource);
-  populateConfig(configFile, checkerName);
+  unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configurationSource);
+  populateConfig(config, checkerName);
 
   // monitoring
 //  mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
   //mMonitor = std::unique_ptr<Monitoring::ProcessMonitor>(
-   // new Monitoring::ProcessMonitor(mCollector, configFile));
+  // new Monitoring::ProcessMonitor(mCollector, config));
   //mMonitor->startMonitor();
 
   // load the configuran of the database here
   mDatabase = DatabaseFactory::create("MySql");
-  mDatabase->connect(configFile.getValue<string>("database.host"), configFile.getValue<string>("database.name"), configFile.getValue<string>("database.username"), configFile.getValue<string>("database.password"));
+  mDatabase->connect(config->get<string>("database/host").value(),
+                     config->get<string>("database/name").value(),
+                     config->get<string>("database/username").value(),
+                     config->get<string>("database/password").value());
 
   if (mCheckerConfig.broadcast) {
     createChannel("pub", "bind", mCheckerConfig.broadcastAddress, "data-out");
   }
 }
 
-void Checker::populateConfig(ConfigFile &configFile, std::string checkerName)
+void Checker::populateConfig(unique_ptr<ConfigurationInterface> &config, std::string checkerName)
 {
   mCheckerConfig.checkerName = checkerName;
   try {
-    mCheckerConfig.broadcast = (bool) configFile.getValue<int>(checkerName + ".broadcast");
-    mCheckerConfig.broadcastAddress = configFile.getValue<string>(checkerName + ".broadcastAddress");
+    mCheckerConfig.broadcast = (bool) config->get<int>(checkerName + "/broadcast").value();
+    mCheckerConfig.broadcastAddress = config->get<string>(checkerName + "/broadcastAddress").value();
   } catch (const std::string &s) {
     // ignore, we don't care that it is not there. Would be nice to have a proper way to test a key.
     mCheckerConfig.broadcast = false;
   }
-  mCheckerConfig.id = configFile.getValue<int>(checkerName + ".id");
+  mCheckerConfig.id = config->get<int>(checkerName + ".id").value();
 
-  mCheckerConfig.numberCheckers = configFile.getValue<int>("checkers.numberCheckers");
-  mCheckerConfig.tasksAddresses = configFile.getValue<string>("checkers.tasksAddresses");
-  mCheckerConfig.numberTasks = configFile.getValue<int>("checkers.numberTasks");
+  mCheckerConfig.numberCheckers = config->get<int>("checkers/numberCheckers").value();
+  mCheckerConfig.tasksAddresses = config->get<string>("checkers/tasksAddresses").value();
+  mCheckerConfig.numberTasks = config->get<int>("checkers/numberTasks").value();
 }
 
 void Checker::createChannel(std::string type, std::string method, std::string address, std::string channelName)
@@ -127,7 +132,7 @@ void Checker::Run()
         unique_ptr<FairMQMessage> msg(fTransportFactory->CreateMessage());
         if (fChannels.at("data-in").at(i).Receive(msg) > 0) {
 
-          if (first == true) {
+          if (first) {
             startFirstObject = system_clock::now();
             first = false;
           }
@@ -136,8 +141,8 @@ void Checker::Run()
           timerProcessing.reset();
           TestTMessage tm(msg->GetData(), msg->GetSize());
           MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
-          mo->setIsOwner(true);
           if (mo) {
+            mo->setIsOwner(true);
 //            shared_ptr<MonitorObject> mo_shared(mo);
             string name = mo->getName();
             mTotalNumberHistosReceived++;
@@ -191,7 +196,7 @@ void Checker::Run()
 //  mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
 }
 
-void Checker::check(MonitorObject* mo)
+void Checker::check(MonitorObject *mo)
 {
   mLogger << "Checking \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -216,7 +221,7 @@ void Checker::check(MonitorObject* mo)
   }
 }
 
-void Checker::store(MonitorObject* mo)
+void Checker::store(MonitorObject *mo)
 {
   mLogger << "Storing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -232,7 +237,7 @@ void Checker::CustomCleanupTMessage(void *data, void *object)
   delete (TMessage *) object;
 }
 
-void Checker::send(MonitorObject*  mo)
+void Checker::send(MonitorObject *mo)
 {
   if (!mCheckerConfig.broadcast) {
     return;
@@ -256,7 +261,7 @@ void Checker::loadLibrary(const string libraryName)
 
   string library = "lib" + libraryName + ".so";
   // if vector does not contain -> first time we see it
-  if(std::find(mLibrariesLoaded.begin(), mLibrariesLoaded.end(), library) == mLibrariesLoaded.end()) {
+  if (std::find(mLibrariesLoaded.begin(), mLibrariesLoaded.end(), library) == mLibrariesLoaded.end()) {
     mLogger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
     if (gSystem->Load(library.c_str())) {
       BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
@@ -272,7 +277,7 @@ CheckInterface *Checker::instantiateCheck(string checkName, string className)
   TClass *cl;
   string tempString("Failed to instantiate Quality Control Module");
 
-  if(mClassesLoaded.count(className) == 0) {
+  if (mClassesLoaded.count(className) == 0) {
     mLogger << "Loading class " << className << AliceO2::InfoLogger::InfoLogger::endm;
     cl = TClass::GetClass(className.c_str());
     if (!cl) {
@@ -287,7 +292,7 @@ CheckInterface *Checker::instantiateCheck(string checkName, string className)
     cl = mClassesLoaded[className];
   }
 
-  if(mChecksLoaded.count(checkName) == 0) {
+  if (mChecksLoaded.count(checkName) == 0) {
     mLogger << "Instantiating class " << className << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;
     result = static_cast<CheckInterface *>(cl->New());
     if (!result) {

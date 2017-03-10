@@ -4,6 +4,7 @@
 ///
 
 //#include <DataSampling/FairSampler.h>
+#include <Configuration/ConfigurationFactory.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskControl.h"
 #include "DataSampling/SamplerFactory.h"
@@ -12,6 +13,7 @@
 
 using namespace std;
 using namespace std::chrono;
+using namespace AliceO2::Configuration;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -22,12 +24,11 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
     mTotalNumberObjectsPublished(0)
 {
   // configuration
-  mConfigFile.load(configurationSource);
+  mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   populateConfig(taskName);
 
   // monitoring
   mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
-//  mMonitor = std::unique_ptr<Monitoring::ProcessMonitor>(new Monitoring::ProcessMonitor(mCollector, mConfigFile));
 
   // setup publisher
   mObjectsManager = new ObjectsManager(mTaskConfig);
@@ -37,7 +38,7 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
   mTask = f.create(mTaskConfig, mObjectsManager);  // TODO could we use unique_ptr ?
 
   // TODO create DataSampling with correct parameters
-  string dataSamplingImplementation = mConfigFile.getValue<string>("DataSampling.implementation");
+  string dataSamplingImplementation = mConfigFile->get<std::string>("DataSampling/implementation").value();
   QcInfoLogger::GetInstance() << "DataSampling implementation is '" << dataSamplingImplementation << "'" << AliceO2::InfoLogger::InfoLogger::endm;
   mSampler = AliceO2::DataSampling::SamplerFactory::create(dataSamplingImplementation);
 }
@@ -53,17 +54,17 @@ TaskControl::~TaskControl()
 
 void TaskControl::populateConfig(std::string taskName)
 {
-  string taskDefinitionName = mConfigFile.getValue<string>(taskName + ".taskDefinition");
+  string taskDefinitionName = mConfigFile->get<string>(taskName + "/taskDefinition").value();
 
   mTaskConfig.taskName = taskName;
-  mTaskConfig.moduleName = mConfigFile.getValue<string>(taskDefinitionName + ".moduleName");
-  mTaskConfig.address = mConfigFile.getValue<string>(taskName + ".address");
-  mTaskConfig.numberHistos = mConfigFile.getValue<int>(taskDefinitionName + ".numberHistos");
-  mTaskConfig.numberChecks = mConfigFile.getValue<int>(taskDefinitionName + ".numberChecks");
-  mTaskConfig.typeOfChecks = mConfigFile.getValue<string>(taskDefinitionName + ".typeOfChecks");
-  mTaskConfig.className = mConfigFile.getValue<string>(taskDefinitionName + ".className");
-  mTaskConfig.cycleDurationSeconds = mConfigFile.getValue<int>(taskDefinitionName + ".cycleDurationSeconds");
-  mTaskConfig.publisherClassName = mConfigFile.getValue<string>("Publisher.className");
+  mTaskConfig.moduleName = mConfigFile->get<string>(taskDefinitionName + "/moduleName").value();
+  mTaskConfig.address = mConfigFile->get<string>(taskName + "/address").value();
+  mTaskConfig.numberHistos = mConfigFile->get<int>(taskDefinitionName + "/numberHistos").value();
+  mTaskConfig.numberChecks = mConfigFile->get<int>(taskDefinitionName + "/numberChecks").value();
+  mTaskConfig.typeOfChecks = mConfigFile->get<string>(taskDefinitionName + "/typeOfChecks").value();
+  mTaskConfig.className = mConfigFile->get<string>(taskDefinitionName + "/className").value();
+  mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(taskDefinitionName + "/cycleDurationSeconds").value();
+  mTaskConfig.publisherClassName = mConfigFile->get<string>("Publisher.className").value();
 }
 
 void TaskControl::initialize()
@@ -81,7 +82,7 @@ void TaskControl::start()
 {
   QcInfoLogger::GetInstance() << "start" << AliceO2::InfoLogger::InfoLogger::endm;
   timerTotalDurationActivity.reset();
-  Activity activity(mConfigFile.getValue<int>("Activity.number"), mConfigFile.getValue<int>("Activity.type"));
+  Activity activity(mConfigFile->get<int>("Activity/number").value(), mConfigFile->get<int>("Activity/type").value());
   mTask->startOfActivity(activity);
 }
 
@@ -131,7 +132,7 @@ void TaskControl::execute()
 void TaskControl::stop()
 {
   QcInfoLogger::GetInstance() << "stop" << AliceO2::InfoLogger::InfoLogger::endm;
-  Activity activity(mConfigFile.getValue<int>("Activity.number"), mConfigFile.getValue<int>("Activity.type"));
+  Activity activity(mConfigFile->get<int>("Activity.number").value(), mConfigFile->get<int>("Activity.type").value());
   mTask->endOfActivity(activity);
 
   double rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();

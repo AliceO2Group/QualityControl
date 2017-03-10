@@ -16,6 +16,7 @@
 #include "Common/Timer.h"
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
+#include <Configuration/ConfigurationInterface.h>
 
 namespace ba = boost::accumulators;
 
@@ -54,7 +55,7 @@ class TaskControl
 
     ObjectsManager *mObjectsManager;
     TaskInterface *mTask;
-    AliceO2::Configuration::ConfigFile mConfigFile;
+    std::unique_ptr<AliceO2::Configuration::ConfigurationInterface> mConfigFile;
     TaskConfig mTaskConfig;
     AliceO2::DataSampling::SamplerInterface *mSampler;
     std::shared_ptr<AliceO2::Monitoring::Collector> mCollector;

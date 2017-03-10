@@ -12,6 +12,7 @@
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <memory>
+#include <Configuration/ConfigurationInterface.h>
 
 // QC
 #include "QualityControl/QcInfoLogger.h"
@@ -77,7 +78,7 @@ class Checker : public FairMQDevice
     void loadLibrary(const std::string libraryName);
     CheckInterface* instantiateCheck(std::string checkName, std::string className);
     static void CustomCleanupTMessage(void *data, void *object);
-    void populateConfig(AliceO2::Configuration::ConfigFile& configFile, std::string checkerName);
+    void populateConfig( std::unique_ptr<AliceO2::Configuration::ConfigurationInterface>& config, std::string checkerName);
 
     AliceO2::QualityControl::Core::QcInfoLogger &mLogger;
     AliceO2::QualityControl::Repository::DatabaseInterface *mDatabase;

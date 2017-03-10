@@ -10,9 +10,10 @@ Notes :
 - Modules (user code) is in a different repo because the QC does not depend on AliceO2 but modules will. 
   We must be able to compile a single module. For the time being it is a single project with subfolders for each
   module. If need be we can move to independent cmake projects.
-- To test (from build dir): ./bin/qcTaskLauncher  -n myTask_1 -c file://$PWD/../QualityControl/example.ini
+- To test (from build dir):
+            ./bin/qcTaskLauncher  -n myTask_1 -c file://$PWD/../QualityControl/example.ini
             ./bin/alfaTestReceiver
-            ./bin/qcCheckerLauncher
+            ./bin/qcCheckerLauncher -c file://$PWD/../QualityControl/example.ini -n checker_0
             ./bin/qcSpy
 - To start DB :
             sudo systemctl start mariadb

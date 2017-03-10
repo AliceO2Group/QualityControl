@@ -15,6 +15,8 @@
 #include <TROOT.h>
 // FairRoot
 #include <FairMQTransportFactoryZMQ.h>
+#include <Configuration/ConfigurationInterface.h>
+#include <Configuration/ConfigurationFactory.h>
 // O2
 #include "Common/signalUtilities.h"
 #include "QualityControl/Checker.h"
@@ -76,12 +78,11 @@ int main(int argc, char *argv[])
   try {
     // Config parsing
     Checker checker(checkerName, configurationSource);
-    ConfigFile config;
-    config.load(configurationSource);
-    int numberCheckers = config.getValue<int>("checkers.numberCheckers");
-    int numberTasks = config.getValue<int>("checkers.numberTasks");
-    int id = config.getValue<int>(checkerName + ".id");
-    string addresses = config.getValue<string>("checkers.tasksAddresses");
+    unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configurationSource);;
+    int numberCheckers = config->get<int>("checkers.numberCheckers").value();
+    int numberTasks = config->get<int>("checkers.numberTasks").value();
+    int id = config->get<int>(checkerName + ".id").value();
+    string addresses = config->get<string>("checkers.tasksAddresses").value();
     vector<string> addressesVector;
     boost::algorithm::split(addressesVector, addresses, boost::is_any_of(","), boost::token_compress_on);
     vector<string> addressesForThisChecker;
