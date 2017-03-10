@@ -69,9 +69,8 @@ void TaskControl::populateConfig(std::string taskName)
 
 void TaskControl::initialize()
 {
-  QcInfoLogger::GetInstance() << "initialize TaskControl" << AliceO2::InfoLogger::InfoLogger::endm;
-
-  mTask->initialize();
+    QcInfoLogger::GetInstance() << "initialize TaskControl" << AliceO2::InfoLogger::InfoLogger::endm;
+    mTask->initialize();
 }
 
 void TaskControl::configure()

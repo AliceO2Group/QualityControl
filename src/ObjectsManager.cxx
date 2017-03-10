@@ -45,12 +45,12 @@ ObjectsManager::~ObjectsManager()
   mMonitorObjects.clear();
 }
 
-void ObjectsManager::startPublishing(std::string objectName,
-                                     TObject *object)
+void ObjectsManager::startPublishing(TObject *object, std::string objectName)
 {
-  MonitorObject *newObject = new MonitorObject(objectName, object, mTaskName);
+  std::string nonEmptyName = objectName == "" ? object->GetName() : objectName;
+  MonitorObject *newObject = new MonitorObject(nonEmptyName, object, mTaskName);
   newObject->setIsOwner(false);
-  mMonitorObjects[objectName] = newObject;
+  mMonitorObjects[nonEmptyName] = newObject;
 }
 
 void ObjectsManager::setQuality(std::string objectName, Quality quality)
@@ -96,6 +96,12 @@ unsigned long ObjectsManager::publish()
     mPublisher->publish(mo.second);
   }
   return mMonitorObjects.size();
+}
+
+void ObjectsManager::addCheck(const TObject *object, const std::string &checkName, const std::string &checkClassName,
+                              const std::string &checkLibraryName)
+{
+  addCheck(object->GetName(), checkName, checkClassName, checkLibraryName);
 }
 
 } // namespace Core

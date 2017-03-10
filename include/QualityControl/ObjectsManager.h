@@ -33,7 +33,7 @@ class ObjectsManager
     /// Destructor
     virtual ~ObjectsManager();
 
-    void startPublishing(std::string objectName, TObject *obj);
+    void startPublishing(TObject *obj, std::string objectName = "");
     void setQuality(std::string objectName, Quality quality);
     Quality getQuality(std::string objectName);
 
@@ -45,6 +45,8 @@ class ObjectsManager
     /// \param checkLibraryName
     void addCheck (const std::string& objectName, const std::string& checkName,
         const std::string& checkClassName, const std::string& checkLibraryName="");
+    void addCheck (const TObject* object, const std::string& checkName,
+                   const std::string& checkClassName, const std::string& checkLibraryName="");
     MonitorObject *getMonitorObject(std::string objectName);
     TObject *getObject(std::string objectName);
 

@@ -35,13 +35,14 @@ int main(int argc, char *argv[])
   po::variables_map vm;
   po::options_description desc("Allowed options");
   desc.add_options()("help,h", "Produce help message.")("version,v", "Show program name/version banner and exit.")(
-      "rev", "Print the Git revision number.")("name,n", po::value<string>(), "Set the name of the task (required).")(
-      "configuration,c", po::value<string>(), "Configuration source, e.g. \"file:example.ini\" (required).")("cycles,C",
-      po::value<int>(), "Number of cycles to run.")
+    "rev", "Print the Git revision number.")("name,n", po::value<string>(), "Set the name of the task (required).")(
+    "configuration,c", po::value<string>(), "Configuration source, e.g. \"file:example.ini\" (required).")("cycles,C",
+                                                                                                           po::value<int>(),
+                                                                                                           "Number of cycles to run.")
 //    ("source,s", po::value<string>(), "Set the source for the data blocks (required).")
 //    ("module,m", po::value<string>(), "Module containing the task to load (required).")
 //    ("class,c", po::value<string>(), "Module's task class to instantiate (required).")
-      ;
+    ;
   po::store(parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
   if (vm.count("help")) {
@@ -87,10 +88,9 @@ int main(int argc, char *argv[])
   signal(SIGINT, handler_interruption); // for interruptions
   signal(SIGTERM, handler_interruption); // for termination requests
 
+  TaskControl taskControl(taskName, configurationSource);
   try {
-
     // Actual "work" starts here
-    TaskControl taskControl(taskName, configurationSource);
     taskControl.initialize();
     taskControl.configure();
     taskControl.start();
