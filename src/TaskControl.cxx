@@ -3,13 +3,14 @@
 /// \author Barthelemy von Haller
 ///
 
-//#include <DataSampling/FairSampler.h>
+// O2
 #include <Configuration/ConfigurationFactory.h>
-#include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/TaskControl.h"
 #include "DataSampling/SamplerFactory.h"
 #include "DataSampling/SamplerInterface.h"
+// QC
 #include "QualityControl/TaskFactory.h"
+#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/TaskControl.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -39,7 +40,8 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
 
   // TODO create DataSampling with correct parameters
   string dataSamplingImplementation = mConfigFile->get<std::string>("DataSampling/implementation").value();
-  QcInfoLogger::GetInstance() << "DataSampling implementation is '" << dataSamplingImplementation << "'" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "DataSampling implementation is '" << dataSamplingImplementation << "'"
+                              << AliceO2::InfoLogger::InfoLogger::endm;
   mSampler = AliceO2::DataSampling::SamplerFactory::create(dataSamplingImplementation);
 }
 
@@ -64,13 +66,13 @@ void TaskControl::populateConfig(std::string taskName)
   mTaskConfig.typeOfChecks = mConfigFile->get<string>(taskDefinitionName + "/typeOfChecks").value();
   mTaskConfig.className = mConfigFile->get<string>(taskDefinitionName + "/className").value();
   mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(taskDefinitionName + "/cycleDurationSeconds").value();
-  mTaskConfig.publisherClassName = mConfigFile->get<string>("Publisher.className").value();
+  mTaskConfig.publisherClassName = mConfigFile->get<string>("Publisher/className").value();
 }
 
 void TaskControl::initialize()
 {
-    QcInfoLogger::GetInstance() << "initialize TaskControl" << AliceO2::InfoLogger::InfoLogger::endm;
-    mTask->initialize();
+  QcInfoLogger::GetInstance() << "initialize TaskControl" << AliceO2::InfoLogger::InfoLogger::endm;
+  mTask->initialize();
 }
 
 void TaskControl::configure()
@@ -96,11 +98,11 @@ void TaskControl::execute()
   int numberBlocks = 0;
   while (system_clock::now() < end) {
     std::vector<std::shared_ptr<DataBlockContainer>> *block = mSampler->getData(100);
-    if(block) {
-    mTask->monitorDataBlock(*block);
-    mSampler->releaseData(); // invalids the block !!!
-    numberBlocks++;
-  }
+    if (block) {
+      mTask->monitorDataBlock(*block);
+      mSampler->releaseData(); // invalids the block !!!
+      numberBlocks++;
+    }
   }
   mTask->endOfCycle();
   double durationCycle = timer.getTime();
@@ -114,7 +116,8 @@ void TaskControl::execute()
   mCollector->send(numberBlocks, "QC_task_Numberofblocks_in_cycle");
   mCollector->send(durationCycle, "QC_task_Module_cycle_duration");
   mCollector->send(durationPublication, "QC_task_Publication_duration");
-  mCollector->send((int)numberObjectsPublished, "QC_task_Number_objects_published_in_cycle"); // cast due to Monitoring accepting only int
+  mCollector->send((int) numberObjectsPublished,
+                   "QC_task_Number_objects_published_in_cycle"); // cast due to Monitoring accepting only int
   double rate = numberObjectsPublished / (durationCycle + durationPublication);
   mCollector->send(rate, "QC_task_Rate_objects_published_per_second");
   mTotalNumberObjectsPublished += numberObjectsPublished;
@@ -132,7 +135,7 @@ void TaskControl::execute()
 void TaskControl::stop()
 {
   QcInfoLogger::GetInstance() << "stop" << AliceO2::InfoLogger::InfoLogger::endm;
-  Activity activity(mConfigFile->get<int>("Activity.number").value(), mConfigFile->get<int>("Activity.type").value());
+  Activity activity(mConfigFile->get<int>("Activity/number").value(), mConfigFile->get<int>("Activity/type").value());
   mTask->endOfActivity(activity);
 
   double rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();

@@ -13,6 +13,10 @@
 #include <boost/accumulators/statistics.hpp>
 #include <memory>
 #include <Configuration/ConfigurationInterface.h>
+#include <Common/Timer.h>
+#include <chrono>
+
+#include "Common/Timer.h"
 
 // QC
 #include "QualityControl/QcInfoLogger.h"
@@ -43,11 +47,19 @@ class Checker : public FairMQDevice
     Checker(std::string checkerName, std::string configurationSource);
     /// Destructor
     virtual ~Checker();
-
-    void createChannel(std::string type, std::string method, std::string address, std::string channelName);
+    /**
+     * \brief Create a new channel.
+     * Create a new channel.
+     * @param type
+     * @param method
+     * @param address
+     * @param channelName
+     * @param createCallback
+     */
+    void createChannel(std::string type, std::string method, std::string address, std::string channelName, bool createCallback=false);
 
   protected:
-    virtual void Run() override;
+    bool HandleData(FairMQMessagePtr&, int);
 
   private:
 
@@ -91,14 +103,10 @@ class Checker : public FairMQDevice
 
     // monitoring
     std::shared_ptr<AliceO2::Monitoring::Collector> mCollector;
-    std::unique_ptr<Monitoring::ProcessMonitor> mMonitor;
-
-    // metrics
-    ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> pcpus;
-    ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> pmems;
-    ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mAccProcessTime;
+    std::chrono::system_clock::time_point startFirstObject;
+    std::chrono::system_clock::time_point endLastObject;
     int mTotalNumberHistosReceived = 0;
-
+    AliceO2::Common::Timer timer;
 };
 
 } /* namespace Checker */

@@ -79,10 +79,10 @@ int main(int argc, char *argv[])
     // Config parsing
     Checker checker(checkerName, configurationSource);
     unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configurationSource);;
-    int numberCheckers = config->get<int>("checkers.numberCheckers").value();
-    int numberTasks = config->get<int>("checkers.numberTasks").value();
-    int id = config->get<int>(checkerName + ".id").value();
-    string addresses = config->get<string>("checkers.tasksAddresses").value();
+    int numberCheckers = config->get<int>("checkers/numberCheckers").value();
+    int numberTasks = config->get<int>("checkers/numberTasks").value();
+    int id = config->get<int>(checkerName + "/id").value();
+    string addresses = config->get<string>("checkers/tasksAddresses").value();
     vector<string> addressesVector;
     boost::algorithm::split(addressesVector, addresses, boost::is_any_of(","), boost::token_compress_on);
     vector<string> addressesForThisChecker;
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
       }
     }
     for (auto address : addressesForThisChecker) {
-      checker.createChannel("sub", "connect", address, "data-in");
+      checker.createChannel("sub", "connect", address, "data-in", true);
     }
 
     // Get the proper transport factory
@@ -116,15 +116,14 @@ int main(int argc, char *argv[])
     checker.ChangeState("RUN");
     checker.WaitForEndOfState("RUN");
 //    checker.InteractiveStateLoop();
-  }
-  catch (const boost::exception &e) {
-    cerr << diagnostic_information(e) << endl;
-  }
-  catch (const std::exception &e) {
-    cerr << "Error: " << e.what() << endl;
-  }
-  catch (const std::string &e) {
-    cerr << "Error: " << e << endl;
+  } catch (std::string const &e) {
+    cerr << e << endl;
+  } catch (...) {
+    string diagnostic = boost::current_exception_diagnostic_information();
+    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
+    if (diagnostic == "No diagnostic information available.") {
+      throw;
+    }
   }
 
   return EXIT_SUCCESS;

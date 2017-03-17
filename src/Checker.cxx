@@ -9,8 +9,6 @@
 #include <iostream>
 #include <chrono>
 #include <algorithm>
-// boost
-#include <boost/algorithm/string.hpp>
 // ROOT
 #include <TMessage.h>
 #include <TSystem.h>
@@ -22,7 +20,6 @@
 #include <Configuration/ConfigurationFactory.h>
 // O2
 #include "Common/Exceptions.h"
-#include "Common/Timer.h"
 // QC
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/DatabaseFactory.h"
@@ -31,10 +28,15 @@
 using namespace AliceO2::Common;
 using namespace AliceO2::Configuration;
 
-class TestTMessage : public TMessage
+/**
+ * \brief Handy class to deserialize messages and make sure buffer is not deleted along with the message.
+ *
+ * Avoids some boilerplate.
+ */
+class HistoMessage : public TMessage
 {
   public:
-    TestTMessage(void *buf, Int_t len)
+    HistoMessage(void *buf, Int_t len)
       : TMessage(buf, len)
     {
       ResetBit(kIsOwner);
@@ -62,18 +64,18 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
   populateConfig(config, checkerName);
 
   // monitoring
-//  mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
-  //mMonitor = std::unique_ptr<Monitoring::ProcessMonitor>(
-  // new Monitoring::ProcessMonitor(mCollector, config));
-  //mMonitor->startMonitor();
+  try {
+    mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
+    mCollector->addDerivedMetric("objects", AliceO2::Monitoring::DerivedMetricMode::RATE);
+  } catch (...) {
+    string diagnostic = boost::current_exception_diagnostic_information();
+    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
+    throw;
+  }
+  startFirstObject = std::chrono::system_clock::time_point::min();
+  timer.reset(1000000); // 10 s.
 
-  // load the configuran of the database here
-  mDatabase = DatabaseFactory::create("MySql");
-  mDatabase->connect(config->get<string>("database/host").value(),
-                     config->get<string>("database/name").value(),
-                     config->get<string>("database/username").value(),
-                     config->get<string>("database/password").value());
-
+  // Setup broadcast channel
   if (mCheckerConfig.broadcast) {
     createChannel("pub", "bind", mCheckerConfig.broadcastAddress, "data-out");
   }
@@ -81,22 +83,34 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
 
 void Checker::populateConfig(unique_ptr<ConfigurationInterface> &config, std::string checkerName)
 {
-  mCheckerConfig.checkerName = checkerName;
   try {
-    mCheckerConfig.broadcast = (bool) config->get<int>(checkerName + "/broadcast").value();
-    mCheckerConfig.broadcastAddress = config->get<string>(checkerName + "/broadcastAddress").value();
-  } catch (const std::string &s) {
-    // ignore, we don't care that it is not there. Would be nice to have a proper way to test a key.
-    mCheckerConfig.broadcast = false;
-  }
-  mCheckerConfig.id = config->get<int>(checkerName + ".id").value();
+    // General configuration
+    mCheckerConfig.checkerName = checkerName;
+    mCheckerConfig.broadcast = (bool) config->get<int>(checkerName + "/broadcast").value_or(0);
+    if (mCheckerConfig.broadcast) {
+      mCheckerConfig.broadcastAddress = config->get<string>(checkerName + "/broadcastAddress").value();
+    }
+    mCheckerConfig.id = config->get<int>(checkerName + "/id").value();
+    mCheckerConfig.numberCheckers = config->get<int>("checkers/numberCheckers").value();
+    mCheckerConfig.tasksAddresses = config->get<string>("checkers/tasksAddresses").value();
+    mCheckerConfig.numberTasks = config->get<int>("checkers/numberTasks").value();
 
-  mCheckerConfig.numberCheckers = config->get<int>("checkers/numberCheckers").value();
-  mCheckerConfig.tasksAddresses = config->get<string>("checkers/tasksAddresses").value();
-  mCheckerConfig.numberTasks = config->get<int>("checkers/numberTasks").value();
+    // configuration of the database
+    mDatabase = DatabaseFactory::create("MySql");
+    mDatabase->connect(config->get<string>("database/host").value(),
+                       config->get<string>("database/name").value(),
+                       config->get<string>("database/username").value(),
+                       config->get<string>("database/password").value());
+  } catch (...) { // catch already here the configuration exception and print it
+    // because if we are in a constructor, the exception could be lost
+    string diagnostic = boost::current_exception_diagnostic_information();
+    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
+    throw;
+  }
 }
 
-void Checker::createChannel(std::string type, std::string method, std::string address, std::string channelName)
+void Checker::createChannel(std::string type, std::string method, std::string address, std::string channelName,
+                            bool createCallback)
 {
   FairMQChannel channel;
   channel.UpdateType(type);
@@ -104,96 +118,64 @@ void Checker::createChannel(std::string type, std::string method, std::string ad
   channel.UpdateAddress(address);
   channel.UpdateRateLogging(0);
   fChannels[channelName].push_back(channel);
+  if (createCallback) {
+    OnData(channelName, &Checker::HandleData);
+  }
 }
 
 Checker::~Checker()
 {
   mDatabase->disconnect();
   delete mDatabase;
-}
-
-void Checker::Run()
-{
-  // statistics
-  int numberHistosLastTime = 0;
-  auto startFirstObject = system_clock::now();
-  auto endLastObject = system_clock::now();
-  bool first = true;
-  Timer timer, timerProcessing;
-  timer.reset(10000000); // 10 s.
-
-  unique_ptr<FairMQPoller> poller(fTransportFactory->CreatePoller(fChannels["data-in"]));
-
-  while (CheckCurrentState(RUNNING)) {
-    poller->Poll(1);
-
-    for (int i = 0; i < fChannels["data-in"].size(); i++) {
-      if (poller->CheckInput(i)) {
-        unique_ptr<FairMQMessage> msg(fTransportFactory->CreateMessage());
-        if (fChannels.at("data-in").at(i).Receive(msg) > 0) {
-
-          if (first) {
-            startFirstObject = system_clock::now();
-            first = false;
-          }
-
-          mLogger << "Receiving a mo of size " << msg->GetSize() << AliceO2::InfoLogger::InfoLogger::endm;
-          timerProcessing.reset();
-          TestTMessage tm(msg->GetData(), msg->GetSize());
-          MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
-          if (mo) {
-            mo->setIsOwner(true);
-//            shared_ptr<MonitorObject> mo_shared(mo);
-            string name = mo->getName();
-            mTotalNumberHistosReceived++;
-            check(mo);
-            send(mo);
-            store(mo);
-
-            endLastObject = system_clock::now();
-            mAccProcessTime(timerProcessing.getTime());
-            mLogger << "Finished processing \"" << name << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
-          } else {
-            mLogger << "the mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
-          }
-        }
-      }
-    }
-
-    // every 10 seconds publish stats
-    if (timer.isTimeout()) {
-      double current = timer.getTime();
-      int objectsPublished = mTotalNumberHistosReceived - numberHistosLastTime;
-      numberHistosLastTime = mTotalNumberHistosReceived;
-      QcInfoLogger::GetInstance() << "Rate in the last 10 seconds : " << (objectsPublished / current)
-                                  << " events/second" << AliceO2::InfoLogger::InfoLogger::endm;
-      /*mCollector->send((objectsPublished / current), "QC_checker_Rate_objects_checked_per_second");
-      timer.increment();
-
-      //std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
-      //pcpus(std::stod(pidStatus[3]));
-      //pmems(std::stod(pidStatus[4]));
-
-      std::chrono::duration<double> diff = endLastObject - startFirstObject;
-      mCollector->send(diff.count(), "QC_checker_Time_between_first_and_last_objects_received");
-      mCollector->send(mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated");
-      double rate = mTotalNumberHistosReceived / diff.count();
-      mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
-//      mCollector->send(std::stod(pidStatus[3]), "QC_checker_Mean_pcpu_whole_run");
-      mCollector->send(ba::mean(pmems), "QC_checker_Mean_pmem_whole_run");
-      mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");*/
-    }
-  }
 
   // Monitoring
-//  std::chrono::duration<double> diff = endLastObject - startFirstObject;
-//  mCollector->send(diff.count(), "QC_checker_Time_between_first_and_last_objects_received");
-//  mCollector->send(mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated");
-//  double rate = mTotalNumberHistosReceived / diff.count();
-//  mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
-//  mCollector->send(ba::mean(pcpus), "QC_checker_Mean_pcpu_whole_run");
-//  mCollector->send(ba::mean(pmems), "QC_checker_Mean_pmem_whole_run");
-//  mCollector->send(ba::mean(mAccProcessTime), "QC_checker_Mean_processing_time_per_event");
+  std::chrono::duration<double> diff = endLastObject - startFirstObject;
+  mCollector->send(diff.count(), "QC_checker_Time_between_first_and_last_objects_received");
+  mCollector->send(mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated");
+  double rate = mTotalNumberHistosReceived / diff.count();
+  mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
+}
+
+int size_t2int(size_t val)
+{
+  if (val > INT_MAX) {
+    throw new out_of_range("Conversion from size_t to int failed.");
+  }
+  return (int) val;
+}
+
+bool Checker::HandleData(FairMQMessagePtr &msg, int index)
+{
+  mLogger << "Receiving a mo of size " << msg->GetSize() << AliceO2::InfoLogger::InfoLogger::endm;
+
+  // Save time of first object
+  if (startFirstObject == std::chrono::system_clock::time_point::min()) {
+    startFirstObject = system_clock::now();
+  }
+
+  // Deserialize the object and process it
+  HistoMessage tm(msg->GetData(), size_t2int(msg->GetSize()));
+  MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
+  if (mo) {
+    mo->setIsOwner(true);
+    check(mo);
+    send(mo);
+    store(mo);
+    mTotalNumberHistosReceived++;
+  } else {
+    mLogger << "the mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
+  }
+
+  // monitoring
+  endLastObject = system_clock::now();
+  // if 10 seconds elapsed publish stats
+  if (timer.isTimeout()) {
+    double current = timer.getTime();
+    timer.reset(1000000); // 10 s.
+    mCollector->send(mTotalNumberHistosReceived, "objects");
+  }
+
+  return true; // keep running
 }
 
 void Checker::check(MonitorObject *mo)
