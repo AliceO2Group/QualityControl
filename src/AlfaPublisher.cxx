@@ -18,7 +18,7 @@ namespace QualityControl {
 namespace Core {
 
 AlfaPublisher::AlfaPublisher(TaskConfig& taskConfig)
-    : mCurrentMonitorObject(0), mAvailableData(false)
+    : mCurrentMonitorObject(nullptr), mAvailableData(false)
 {
   // set up communication layout and properties
   FairMQChannel histoChannel;

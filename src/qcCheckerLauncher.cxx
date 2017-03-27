@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
   string checkerName, configurationSource;
 
   // This is needed for ROOT
-  TApplication app("a", 0, 0);
+  TApplication app("a", nullptr, nullptr);
   gROOT->SetBatch(true);
 
   // Argument parsing

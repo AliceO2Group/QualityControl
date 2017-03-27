@@ -254,7 +254,7 @@ void Checker::loadLibrary(const string libraryName)
 
 CheckInterface *Checker::instantiateCheck(string checkName, string className)
 {
-  CheckInterface *result = 0;
+  CheckInterface *result = nullptr;
   // Get the class and instantiate
   TClass *cl;
   string tempString("Failed to instantiate Quality Control Module");

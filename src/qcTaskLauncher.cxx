@@ -28,7 +28,7 @@ using namespace AliceO2::QualityControl::Core;
 int main(int argc, char *argv[])
 {
   // This is needed for ROOT
-  TApplication app("a", 0, 0);
+  TApplication app("a", nullptr, nullptr);
   gROOT->SetBatch(true);
 
   // Arguments parsing

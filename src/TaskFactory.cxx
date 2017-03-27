@@ -33,7 +33,7 @@ TaskFactory::~TaskFactory()
 
 TaskInterface* TaskFactory::create(TaskConfig& taskConfig, ObjectsManager* objectsManager)
 {
-  TaskInterface *result = 0;
+  TaskInterface *result = nullptr;
   QcInfoLogger &logger = QcInfoLogger::GetInstance();
 
   // Load the library

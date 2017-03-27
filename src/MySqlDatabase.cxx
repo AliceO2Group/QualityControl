@@ -47,7 +47,7 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
       mServer->Close();
     }
     delete mServer;
-    mServer = 0;
+    mServer = nullptr;
   }
   stringstream connectionString;
   connectionString << "mysql://" << host << "/" << database;
@@ -158,7 +158,7 @@ void MySqlDatabase::storeForTask(std::string taskName)
 AliceO2::QualityControl::Core::MonitorObject* MySqlDatabase::retrieve(std::string taskName, std::string objectName)
 {
   string query;
-  TMySQLStatement *statement = 0;
+  TMySQLStatement *statement = nullptr;
 
   query += "SELECT object_name, data, updatetime, run, fill FROM " + taskName + " WHERE object_name = ?";
   statement = (TMySQLStatement*) mServer->Statement(query.c_str());
@@ -184,7 +184,7 @@ AliceO2::QualityControl::Core::MonitorObject* MySqlDatabase::retrieve(std::strin
   AliceO2::QualityControl::Core::MonitorObject* mo = nullptr;
   if (statement->NextResultRow()) { // Consider only the first result
     string name = statement->GetString(0);
-    void* blob = 0;
+    void* blob = nullptr;
     Long_t blobSize;
     statement->GetBinary(1, blob, blobSize); // retrieve the data
     TDatime updatetime(statement->GetYear(2), statement->GetMonth(2), statement->GetDay(2), statement->GetHour(2),
@@ -213,7 +213,7 @@ void MySqlDatabase::disconnect()
       mServer->Close();
     }
     delete mServer;
-    mServer = 0;
+    mServer = nullptr;
   }
 }
 
@@ -222,7 +222,7 @@ TMySQLResult* MySqlDatabase::query(string sql)
   if (mServer) {
     return ((TMySQLResult*) mServer->Query(sql.c_str()));
   } else {
-    return (0);
+    return (nullptr);
   }
 }
 
