@@ -6,7 +6,7 @@
 #include "QualityControl/Consumer.h"
 // std
 #include <iostream>
-#include <signal.h>
+#include <csignal>
 // O2
 #include "Common/signalUtilities.h"
 #include "QualityControl/Version.h"

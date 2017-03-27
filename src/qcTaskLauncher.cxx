@@ -5,7 +5,7 @@
 
 // std
 #include <iostream>
-#include <signal.h>
+#include <csignal>
 // boost
 #include <boost/program_options.hpp>
 #include <boost/exception/diagnostic_information.hpp>
