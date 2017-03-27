@@ -123,7 +123,7 @@ class MonitorObject : public TObject
 
     TObject *DrawClone(Option_t *option="") const override
     {
-      MonitorObject* clone = new MonitorObject();
+      auto* clone = new MonitorObject();
       clone->setName(this->getName());
       clone->setTaskName(this->getTaskName());
       clone->setObject(mObject->DrawClone(option));

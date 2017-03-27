@@ -48,7 +48,7 @@ ObjectsManager::~ObjectsManager()
 void ObjectsManager::startPublishing(TObject *object, std::string objectName)
 {
   std::string nonEmptyName = objectName == "" ? object->GetName() : objectName;
-  MonitorObject *newObject = new MonitorObject(nonEmptyName, object, mTaskName);
+  auto *newObject = new MonitorObject(nonEmptyName, object, mTaskName);
   newObject->setIsOwner(false);
   mMonitorObjects[nonEmptyName] = newObject;
 }

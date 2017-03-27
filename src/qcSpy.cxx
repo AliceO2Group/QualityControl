@@ -23,8 +23,8 @@ int main(int argc, char *argv[])
 {
   TApplication theApp("App", &argc, argv);
 
-  SpyDevice *device = new SpyDevice();
-  SpyMainFrame *frame = new SpyMainFrame(device);
+  auto *device = new SpyDevice();
+  auto *frame = new SpyMainFrame(device);
   device->setFrame(frame);
 
   theApp.Run();

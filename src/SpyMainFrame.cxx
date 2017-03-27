@@ -55,7 +55,7 @@ void SpyMainFrame::constructWindow()
   AddFrame(mBottomButtonFrame, new TGLayoutHints(kLHintsExpandX, 0, 0, 0, 0));
 
 // menu
-  TGPopupMenu* fFile = new TGPopupMenu(gClient->GetRoot());
+  auto* fFile = new TGPopupMenu(gClient->GetRoot());
   fFile->Connect("Activated(Int_t)", "AliceO2::QualityControl::Gui::SpyMainFrame", this, "menuHandler(Int_t)");
   fFile->AddEntry("Exit", FILE_EXIT);
   mMenuBar->AddPopup("&File", fFile, new TGLayoutHints(kLHintsTop | kLHintsLeft));
@@ -141,7 +141,7 @@ void SpyMainFrame::displayObject(const char* objectName)
 void SpyMainFrame::updateList(string name)
 {
   if (mMapButtons.count(name) == 0) {
-    TGTextButton *button = new TGTextButton(mObjectsListFrame, name.c_str());
+    auto *button = new TGTextButton(mObjectsListFrame, name.c_str());
     mObjectsListFrame->AddFrame(button, new TGLayoutHints(kLHintsExpandX | kLHintsTop));
     string methodCall = string("displayObject(=\"") + name + "\")";
     button->Connect("Clicked()", "AliceO2::QualityControl::Gui::SpyMainFrame", this, methodCall.c_str());

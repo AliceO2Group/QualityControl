@@ -226,7 +226,7 @@ void Checker::send(MonitorObject *mo)
   }
   mLogger << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  TMessage *message = new TMessage(kMESS_OBJECT);
+  auto *message = new TMessage(kMESS_OBJECT);
   message->WriteObjectAny(mo, mo->IsA());
   unique_ptr<FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
   fChannels.at("data-out").at(0).Send(msg);

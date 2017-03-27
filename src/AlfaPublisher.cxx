@@ -99,7 +99,7 @@ void AlfaPublisher::Run()
 
   // this is called when the state change to RUN, i.e. when we call publish
 
-  TMessage *message = new TMessage(kMESS_OBJECT); // will be deleted by fairmq using our custom method
+  auto *message = new TMessage(kMESS_OBJECT); // will be deleted by fairmq using our custom method
   message->WriteObjectAny(mCurrentMonitorObject, mCurrentMonitorObject->IsA());
 //  cout << "mCurrentMonitorObject->IsA() : " << mCurrentMonitorObject->IsA()->GetName() << endl;
   unique_ptr<FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
