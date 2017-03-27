@@ -59,7 +59,7 @@ set(CMAKE_MACOSX_RPATH ON)
 # TODO Don't hard code this...
 #set(Boost_INCLUDE_DIR /opt/boost_1_58_0)
 #set(Boost_LIBRARY_DIR /opt/boost_1_58_0/stage/lib)
-find_package(Boost 1.58 COMPONENTS unit_test_framework program_options system) # log)
+find_package(Boost 1.58 COMPONENTS unit_test_framework program_options system log)
 if(NOT BOOST_FOUND AND NOT Boost_FOUND)
     message(WARNING "Boost 1.58 not found, we won't compile the QC (skip, no error)")
     set(BOOST_FOUND 0) # because depending on the version, the cases do not always match
@@ -93,7 +93,7 @@ if(FAIRROOT_FOUND)
 #    SET(ROOT_DIR "/home/flpprotodev/dev/ALFA-Externals/lib/root/")
 #    set(ROOT_CONFIG_SEARCHPATH "/home/flpprotodev/dev/ALFA-Externals/lib/root/")
     find_package(ROOT COMPONENTS RHTTP RMySQL Gui)
-    set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ)
+    set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ fairmq_logger)
 else(FAIRROOT_FOUND)
     #set(ROOT_CONFIG_DEBUG true)
     # this is an ugly hack to find root as it is not installed in a standard place

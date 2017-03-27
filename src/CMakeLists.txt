@@ -117,6 +117,7 @@ target_link_libraries(${APPLICATION_CHECKER_LAUNCHER}
             ${FAIRROOT_LIBRARIES}
             pthread
             QCCore
+            dl
             )
 install(TARGETS ${APPLICATION_CHECKER_LAUNCHER} DESTINATION bin COMPONENT apps)
 
