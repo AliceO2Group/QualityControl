@@ -27,7 +27,7 @@ class MySqlDatabase: public DatabaseInterface
     /// Default constructor
     MySqlDatabase();
     /// Destructor
-    virtual ~MySqlDatabase();
+    ~MySqlDatabase() override;
 
     void connect(std::string username, std::string password) override;
     void connect(std::string host, std::string database, std::string username, std::string password) override;

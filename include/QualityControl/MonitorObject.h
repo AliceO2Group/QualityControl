@@ -35,7 +35,7 @@ class MonitorObject : public TObject
     MonitorObject(const std::string &name, TObject *object, const std::string &taskName);
 
     /// Destructor
-    virtual ~MonitorObject();
+    ~MonitorObject() override;
 
     const std::string &getName() const
     {
@@ -44,7 +44,7 @@ class MonitorObject : public TObject
 
     /// \brief Overwrite the TObject's method just to avoid confusion.
     ///        One should rather use getName().
-    virtual const char * 	GetName () const override
+    const char * 	GetName () const override
     {
       return getName().c_str();
     }
@@ -116,12 +116,12 @@ class MonitorObject : public TObject
       mChecks.push_back(check);
     }
 
-    virtual void 	Draw (Option_t *option="") override
+    void 	Draw (Option_t *option="") override
     {
       mObject->Draw(option);
     }
 
-    virtual TObject *DrawClone(Option_t *option="") const override
+    TObject *DrawClone(Option_t *option="") const override
     {
       MonitorObject* clone = new MonitorObject();
       clone->setName(this->getName());

@@ -35,7 +35,7 @@ class SpyDevice: public FairMQDevice
   public:
     SpyDevice();
 
-    virtual ~SpyDevice();
+    ~SpyDevice() override;
 
     static void CustomCleanup(void *data, void* hint);
     void stop();
@@ -49,7 +49,7 @@ class SpyDevice: public FairMQDevice
     void stopChannel();
 
   protected:
-    virtual void Run() override;
+    void Run() override;
 
   private:
     SpyMainFrame *mFrame;

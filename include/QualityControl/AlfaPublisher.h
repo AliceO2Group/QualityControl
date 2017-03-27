@@ -25,16 +25,16 @@ class AlfaPublisher: public PublisherInterface, FairMQDevice
     /// Constructor
     AlfaPublisher(TaskConfig& taskConfig);
     /// Destructor
-    virtual ~AlfaPublisher();
+    ~AlfaPublisher() override;
 
-    void publish(MonitorObject *mo);
+    void publish(MonitorObject *mo) override;
 
   protected:
-    virtual void Init();
-    virtual void Run();
+    void Init() override;
+    void Run() override;
     static void CustomCleanup(void *data, void *object);
     static void CustomCleanupTMessage(void *data, void *object);
-    virtual void PreRun() override {std::cout << "PreRun Alfa !!!!\n   " << fChannels["data-out"].size() << std::endl;};
+    void PreRun() override {std::cout << "PreRun Alfa !!!!\n   " << fChannels["data-out"].size() << std::endl;};
 
   private:
     MonitorObject *mCurrentMonitorObject;

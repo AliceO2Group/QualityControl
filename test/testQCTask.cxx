@@ -34,25 +34,25 @@ class TestTask : public TaskInterface
       test = 0;
     }
 
-    virtual ~TestTask()
+    ~TestTask() override
     {
 
     }
 
     // Definition of the methods for the template method pattern
-    virtual void initialize()
+    void initialize() override
     {
       cout << "initialize" << endl;
       test = 1;
     }
 
-    virtual void startOfActivity(Activity &activity)
+    void startOfActivity(Activity &activity) override
     {
       cout << "startOfActivity" << endl;
       test = 2;
     }
 
-    virtual void startOfCycle()
+    void startOfCycle() override
     {
       cout << "startOfCycle" << endl;
     }
@@ -62,17 +62,17 @@ class TestTask : public TaskInterface
       cout << "monitorDataBlock" << endl;
     }
 
-    virtual void endOfCycle()
+    void endOfCycle() override
     {
       cout << "endOfCycle" << endl;
     }
 
-    virtual void endOfActivity(Activity &activity)
+    void endOfActivity(Activity &activity) override
     {
       cout << "endOfActivity" << endl;
     }
 
-    virtual void Reset()
+    void Reset() override
     {
       cout << "Reset" << endl;
     }

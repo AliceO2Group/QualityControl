@@ -32,7 +32,7 @@ class SpyMainFrame: public TGMainFrame
      * \param spyDevice Needed to connect the buttons to their slot in the Device that acts as Controller.
      */
     SpyMainFrame(SpyDevice *spyDevice);
-    virtual ~SpyMainFrame();
+    ~SpyMainFrame() override;
 
     enum MenuIDs
     {

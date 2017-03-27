@@ -43,7 +43,7 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
       *this << "QC infologger initialized" << infologger::endm;
     }
 
-    virtual ~QcInfoLogger()
+    ~QcInfoLogger() override
     {
 
     }

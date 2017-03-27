@@ -28,10 +28,10 @@ class AlfaReceiverForTests : public FairMQDevice
   public:
     AlfaReceiverForTests();
 
-    virtual ~AlfaReceiverForTests();
+    ~AlfaReceiverForTests() override;
 
   protected:
-    virtual void Run() override;
+    void Run() override;
 
 };
 

@@ -18,9 +18,9 @@ class MockPublisher: public PublisherInterface
     /// Default constructor
     MockPublisher();
     /// Destructor
-    virtual ~MockPublisher();
+    ~MockPublisher() override;
 
-    void publish(MonitorObject *mo);
+    void publish(MonitorObject *mo) override;
 };
 
 } // namespace Core

@@ -46,7 +46,7 @@ class Checker : public FairMQDevice
     /// Default constructor
     Checker(std::string checkerName, std::string configurationSource);
     /// Destructor
-    virtual ~Checker();
+    ~Checker() override;
     /**
      * \brief Create a new channel.
      * Create a new channel.
