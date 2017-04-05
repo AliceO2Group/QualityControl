@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
     timer.reset(10000000); // 10 s.
     int lastNumberObjects = 0;
 
-    while (keepRunning && cycle < maxNumberCycles) {
+    while (keepRunning && cycle < maxNumberCycles) { //
       QcInfoLogger::GetInstance() << "cycle " << cycle << AliceO2::InfoLogger::InfoLogger::endm;
       taskControl->execute();
       cycle++;
