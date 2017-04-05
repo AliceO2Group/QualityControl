@@ -6,6 +6,7 @@
 // std
 #include <iostream>
 #include <csignal>
+#include <memory>
 // boost
 #include <boost/program_options.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -24,6 +25,7 @@ namespace po = boost::program_options;
 
 using namespace std;
 using namespace AliceO2::QualityControl::Core;
+using namespace AliceO2::Monitoring;
 
 int main(int argc, char *argv[])
 {
@@ -88,14 +90,14 @@ int main(int argc, char *argv[])
   signal(SIGINT, handler_interruption); // for interruptions
   signal(SIGTERM, handler_interruption); // for termination requests
 
-  TaskControl *taskControl = new TaskControl(taskName, configurationSource);
+  unique_ptr<TaskControl> taskControl(make_unique<TaskControl>(taskName, configurationSource));
   try {
     // Actual "work" starts here
     taskControl->initialize();
     taskControl->configure();
     taskControl->start();
 
-    std::shared_ptr<AliceO2::Monitoring::Collector> collector(new AliceO2::Monitoring::Collector(configurationSource));
+    unique_ptr<Collector> collector(make_unique<Collector>(configurationSource));
 
     int cycle = 0;
     AliceO2::Common::Timer timer;
@@ -128,7 +130,6 @@ int main(int argc, char *argv[])
       throw;
     }
   }
-  delete taskControl;
 
   return EXIT_SUCCESS;
 }
