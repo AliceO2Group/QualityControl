@@ -11,9 +11,9 @@ Notes :
   We must be able to compile a single module. For the time being it is a single project with subfolders for each
   module. If need be we can move to independent cmake projects.
 - To test (from build dir):
-            ./bin/qcTaskLauncher  -n myTask_1 -c file://$PWD/../QualityControl/example.ini
+            ./bin/qcTaskLauncher  -n myTask_1 -c file://$PWD/../QualityControl/example-default.ini
             ./bin/alfaTestReceiver
-            ./bin/qcCheckerLauncher -c file://$PWD/../QualityControl/example.ini -n checker_0
+            ./bin/qcCheckerLauncher -c file://$PWD/../QualityControl/example-default.ini -n checker_0
             ./bin/qcSpy
 - To start DB :
             sudo systemctl start mariadb
