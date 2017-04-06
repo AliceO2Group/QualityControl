@@ -15,6 +15,7 @@
 using namespace std;
 using namespace std::chrono;
 using namespace AliceO2::Configuration;
+using namespace AliceO2::Monitoring;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -29,10 +30,10 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
   populateConfig(taskName);
 
   // monitoring
-  mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
+  mCollector = make_unique<Collector>(configurationSource);
 
   // setup publisher
-  mObjectsManager = new ObjectsManager(mTaskConfig);
+  mObjectsManager = make_shared<ObjectsManager>(mTaskConfig);
 
   // setup task
   TaskFactory f;
@@ -47,11 +48,7 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
 
 TaskControl::~TaskControl()
 {
-  if (mSampler) {
-    delete mSampler;
-  }
   delete mTask;
-  delete mObjectsManager;
 }
 
 void TaskControl::populateConfig(std::string taskName)

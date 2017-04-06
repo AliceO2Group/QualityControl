@@ -39,13 +39,13 @@ void TaskInterface::setName(const std::string &name)
   mName = name;
 }
 
-void TaskInterface::setObjectsManager(ObjectsManager *objectsManager)
+void TaskInterface::setObjectsManager(std::shared_ptr<ObjectsManager> objectsManager)
 {
   mObjectsManager = objectsManager;
 }
 
 
-ObjectsManager *TaskInterface::getObjectsManager()
+std::shared_ptr<ObjectsManager> TaskInterface::getObjectsManager()
 {
   return mObjectsManager;
 }

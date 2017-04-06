@@ -53,13 +53,12 @@ class TaskControl
   private:
     void populateConfig(std::string taskName);
 
-    ObjectsManager *mObjectsManager;
+    std::shared_ptr<ObjectsManager> mObjectsManager;
     TaskInterface *mTask;
     std::unique_ptr<AliceO2::Configuration::ConfigurationInterface> mConfigFile;
     TaskConfig mTaskConfig;
-    AliceO2::DataSampling::SamplerInterface *mSampler;
-    std::shared_ptr<AliceO2::Monitoring::Collector> mCollector;
-    //std::unique_ptr<Monitoring::ProcessMonitor> mMonitor;
+    std::unique_ptr<AliceO2::DataSampling::SamplerInterface> mSampler;
+    std::unique_ptr<AliceO2::Monitoring::Collector> mCollector;
 
     // stats
     int mTotalNumberObjectsPublished;

@@ -31,7 +31,7 @@ TaskFactory::~TaskFactory()
 {
 }
 
-TaskInterface* TaskFactory::create(TaskConfig& taskConfig, ObjectsManager* objectsManager)
+TaskInterface* TaskFactory::create(TaskConfig& taskConfig, shared_ptr<ObjectsManager> objectsManager)
 {
   TaskInterface *result = nullptr;
   QcInfoLogger &logger = QcInfoLogger::GetInstance();

@@ -63,15 +63,15 @@ class TaskInterface
     virtual void Reset() = 0;
 
     // Setters and getters
-    void setObjectsManager(ObjectsManager *objectsManager);
+    void setObjectsManager(std::shared_ptr<ObjectsManager>objectsManager);
     void setName(const std::string &name);
     const std::string &getName() const;
 
   protected:
-    ObjectsManager* getObjectsManager();
+    std::shared_ptr<ObjectsManager> getObjectsManager();
 
   private:
-    ObjectsManager *mObjectsManager; // TODO should we rather have a global/singleton for the objectsManager ?
+    std::shared_ptr<ObjectsManager> mObjectsManager; // TODO should we rather have a global/singleton for the objectsManager ?
     std::string mName;
 
 };

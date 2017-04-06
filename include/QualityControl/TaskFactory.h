@@ -7,6 +7,7 @@
 #define QUALITYCONTROL_LIBS_CORE_TASKFACTORY_H_
 
 #include <iostream>
+#include <memory>
 // O2
 #include "Common/Exceptions.h"
 #include "QualityControl/TaskConfig.h"
@@ -30,7 +31,7 @@ class TaskFactory
     /// The TaskInterface actual class is decided based on the parameters passed.
     /// TODO make it static ?
     /// \author Barthelemy von Haller
-    TaskInterface *create(TaskConfig& taskConfig, ObjectsManager* objectsManager);
+    TaskInterface *create(TaskConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager);
 };
 
 } // namespace Core
