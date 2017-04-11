@@ -169,12 +169,12 @@ O2_GENERATE_EXECUTABLE(
 )
 
 if (FAIRROOT_FOUND)
-    O2_GENERATE_EXECUTABLE(
-            EXE_NAME alfaTestReceiver
-            SOURCES src/alfaTestReceiver.cxx
-            MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-            BUCKET_NAME ${BUCKET_NAME}
-    )
+    #O2_GENERATE_EXECUTABLE(
+    #        EXE_NAME alfaTestReceiver
+    #        SOURCES src/alfaTestReceiver.cxx
+    #        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+    #        BUCKET_NAME ${BUCKET_NAME}
+    #)
 
     O2_GENERATE_EXECUTABLE(
             EXE_NAME qcConsumer
