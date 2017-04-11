@@ -10,7 +10,7 @@
 #include <FairMQTransportFactoryZMQ.h>
 
 using namespace std;
-using namespace AliceO2::ProjectTemplate::AlfaTest;
+using namespace AliceO2::QualityControl::Core;
 
 int main(int argc, char* argv[])
 {
