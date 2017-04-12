@@ -39,6 +39,7 @@ if(ROOT_FOUND)
     include(RootNewMacros)
 else()
     message(WARNING "ROOT not found, we won't compile the QC (skip, no error)")
+    return()
 endif()
 
 # Set the default build type to "RelWithDebInfo"
