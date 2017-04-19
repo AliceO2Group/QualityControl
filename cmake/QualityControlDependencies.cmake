@@ -1,6 +1,7 @@
 find_package(Boost 1.58 COMPONENTS unit_test_framework program_options system log)
 find_package(Git QUIET)
 find_package(Configuration REQUIRED)
+find_package(Monitoring REQUIRED)
 find_package(FairRoot)
 find_package(MySQL)
 
@@ -44,7 +45,7 @@ o2_define_bucket(
         InfoLogger
         ${Configuration_LIBRARIES}
         DataSampling
-        Monitoring
+        ${MONITORING_LIBRARIES}
         DataFormat
         ${ROOT_LIBRARIES}
         ${Boost_LOG_DEBUG}
@@ -54,6 +55,7 @@ o2_define_bucket(
         ${ROOT_INCLUDE_DIR}
         ${MYSQL_INCLUDE_DIRS}
         ${Configuration_INCLUDE_DIRS}
+        ${MONITORING_INCLUDE_DIRS}
         ${ZEROMQ_INCLUDE_DIR}
 )
 

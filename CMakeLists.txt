@@ -30,7 +30,6 @@ link_o2_subproject(Common)
 link_o2_subproject(InfoLogger)
 link_o2_subproject(DataFormat)
 link_o2_subproject(DataSampling)
-link_o2_subproject(Monitoring)
 
 # TODO make it required, once in its own repo
 if(ROOT_FOUND)
