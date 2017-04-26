@@ -45,7 +45,7 @@ o2_define_bucket(
         InfoLogger
         ${Configuration_LIBRARIES}
         DataSampling
-        ${MONITORING_LIBRARIES}
+        ${Monitoring_LIBRARIES}
         DataFormat
         ${ROOT_LIBRARIES}
         ${Boost_LOG_DEBUG}
@@ -55,7 +55,7 @@ o2_define_bucket(
         ${ROOT_INCLUDE_DIR}
         ${MYSQL_INCLUDE_DIRS}
         ${Configuration_INCLUDE_DIRS}
-        ${MONITORING_INCLUDE_DIRS}
+        ${Monitoring_INCLUDE_DIRS}
         ${ZEROMQ_INCLUDE_DIR}
 )
 
