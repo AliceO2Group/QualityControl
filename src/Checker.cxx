@@ -14,7 +14,6 @@
 #include <TSystem.h>
 #include <TClass.h>
 // FairRoot
-#include <FairMQTransportFactoryZMQ.h>
 #include <FairMQPoller.h>
 #include <Configuration/ConfigurationInterface.h>
 #include <Configuration/ConfigurationFactory.h>

@@ -1,16 +1,30 @@
 ///
-/// @file    main.cxx
+/// @file    alfaTestReceiver.cxx
 /// @author  Barthelemy von Haller
 ///
 
 #include "QualityControl/AlfaReceiverForTests.h"
-#include "FairMQParser.h"
-#include "FairMQProgOptions.h"
-#include <iostream>
-#include <FairMQTransportFactoryZMQ.h>
+#include "runFairMQDevice.h"
 
+
+namespace bpo = boost::program_options;
 using namespace std;
 using namespace AliceO2::QualityControl::Core;
+
+void addCustomOptions(bpo::options_description& options)
+{
+}
+
+FairMQDevicePtr getDevice(const FairMQProgOptions& /*config*/)
+{
+  return new AlfaReceiverForTests();
+}
+
+/*#include "FairMQParser.h"
+#include "FairMQProgOptions.h"
+#include <FairMQTransportFactoryZMQ.h>
+
+
 
 int main(int argc, char* argv[])
 {
@@ -52,4 +66,4 @@ int main(int argc, char* argv[])
   }
 
   return EXIT_SUCCESS;
-}
+}*/

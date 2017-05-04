@@ -7,7 +7,6 @@
 
 #include <FairMQDevice.h>
 #include <TMessage.h>
-#include <FairMQTransportFactoryZMQ.h>
 #include "QualityControl/SpyDevice.h"
 #include <TSystem.h>
 #include <chrono>

@@ -9,7 +9,7 @@
 
 #include <FairMQDevice.h>
 #include <TMessage.h>
-#include <FairMQTransportFactoryZMQ.h>
+//#include <FairMQTransportFactoryZMQ.h>
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/AlfaReceiverForTests.h"
 
@@ -21,12 +21,23 @@ namespace QualityControl {
 namespace Core {
 
 AlfaReceiverForTests::AlfaReceiverForTests()
-    {
-    }
+{
+//  OnData("data", &AlfaReceiverForTests::HandleData);
+}
 
 AlfaReceiverForTests::~AlfaReceiverForTests()
-    {
-    }
+{
+}
+
+
+// handler is called whenever a message arrives on "data", with a reference to the message and a sub-channel index (here 0)
+//bool AlfaReceiverForTests::HandleData(FairMQMessagePtr &msg, int /*index*/)
+//{
+//  LOG(INFO) << "Received: \"" << string(static_cast<char *>(msg->GetData()), msg->GetSize()) << "\"";
+//
+//  // return true if want to be called again (otherwise go to IDLE state)
+//  return true;
+//}
 
 void AlfaReceiverForTests::Run()
 {
@@ -55,46 +66,46 @@ void AlfaReceiverForTests::Run()
 } // namespace QualityControl
 } // namespace AliceO2
 
-using namespace AliceO2::QualityControl::Core;
-
-int main(int argc, char *argv[])
-{
-
-  cout << "hello" << endl;
-  AlfaReceiverForTests receiver;
-
-  try {
-    FairMQChannel histoChannel;
-    histoChannel.UpdateType("sub");
-    histoChannel.UpdateMethod("connect");
-    histoChannel.UpdateAddress("tcp://localhost:5556");
-    histoChannel.UpdateSndBufSize(10000);
-    histoChannel.UpdateRcvBufSize(10000);
-    histoChannel.UpdateRateLogging(0);
-    receiver.fChannels["data-in"].push_back(histoChannel);
-
-    // Get the proper transport factory
-#ifdef NANOMSG
-    FairMQTransportFactory* transportFactory = new FairMQTransportFactoryNN();
-#else
-    FairMQTransportFactory *transportFactory = new FairMQTransportFactoryZMQ();
-#endif
-
-    receiver.SetTransport(transportFactory);
-
-    receiver.ChangeState("INIT_DEVICE");
-    receiver.WaitForEndOfState("INIT_DEVICE");
-
-    receiver.ChangeState("INIT_TASK");
-    receiver.WaitForEndOfState("INIT_TASK");
-
-    receiver.ChangeState("RUN");
-    receiver.InteractiveStateLoop();
-  }
-  catch (std::exception &e) {
-    cout << e.what();
-    return EXIT_FAILURE;
-  }
-
-  return EXIT_SUCCESS;
-}
+//using namespace AliceO2::QualityControl::Core;
+//
+//int main(int argc, char *argv[])
+//{
+//
+//  cout << "hello" << endl;
+//  AlfaReceiverForTests receiver;
+//
+//  try {
+//    FairMQChannel histoChannel;
+//    histoChannel.UpdateType("sub");
+//    histoChannel.UpdateMethod("connect");
+//    histoChannel.UpdateAddress("tcp://localhost:5556");
+//    histoChannel.UpdateSndBufSize(10000);
+//    histoChannel.UpdateRcvBufSize(10000);
+//    histoChannel.UpdateRateLogging(0);
+//    receiver.fChannels["data-in"].push_back(histoChannel);
+//
+//    // Get the proper transport factory
+//#ifdef NANOMSG
+//    FairMQTransportFactory* transportFactory = new FairMQTransportFactoryNN();
+//#else
+//    FairMQTransportFactory *transportFactory = new FairMQTransportFactoryZMQ();
+//#endif
+//
+//    receiver.SetTransport(transportFactory);
+//
+//    receiver.ChangeState("INIT_DEVICE");
+//    receiver.WaitForEndOfState("INIT_DEVICE");
+//
+//    receiver.ChangeState("INIT_TASK");
+//    receiver.WaitForEndOfState("INIT_TASK");
+//
+//    receiver.ChangeState("RUN");
+//    receiver.InteractiveStateLoop();
+//  }
+//  catch (std::exception &e) {
+//    cout << e.what();
+//    return EXIT_FAILURE;
+//  }
+//
+//  return EXIT_SUCCESS;
+//}

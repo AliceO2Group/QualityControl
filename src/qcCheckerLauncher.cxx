@@ -13,11 +13,9 @@
 // ROOT
 #include <TApplication.h>
 #include <TROOT.h>
-// FairRoot
-#include <FairMQTransportFactoryZMQ.h>
+// O2
 #include <Configuration/ConfigurationInterface.h>
 #include <Configuration/ConfigurationFactory.h>
-// O2
 #include "Common/signalUtilities.h"
 #include "QualityControl/Checker.h"
 #include "QualityControl/Version.h"
@@ -97,15 +95,15 @@ int main(int argc, char *argv[])
     }
 
     // Get the proper transport factory
-#ifdef NANOMSG
-    FairMQTransportFactory* transportFactory = new FairMQTransportFactoryNN();
-#else
-    FairMQTransportFactory *transportFactory = new FairMQTransportFactoryZMQ();
-#endif
+//#ifdef NANOMSG
+//    FairMQTransportFactory* transportFactory = new FairMQTransportFactoryNN();
+//#else
+//    FairMQTransportFactory *transportFactory = new FairMQTransportFactoryZMQ();
+//#endif
 
     checker.CatchSignals();
 
-    checker.SetTransport(transportFactory);
+//    checker.SetTransport(transportFactory);
 
     checker.ChangeState("INIT_DEVICE");
     checker.WaitForEndOfState("INIT_DEVICE");
