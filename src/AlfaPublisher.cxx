@@ -31,13 +31,7 @@ AlfaPublisher::AlfaPublisher(TaskConfig& taskConfig)
   histoChannel.UpdateRateLogging(0);
   fChannels["data-out"].push_back(histoChannel);
 
-//  // Get the transport layer
-//#ifdef NANOMSG
-//  FairMQTransportFactory* transportFactory = new FairMQTransportFactoryNN();
-//#else
-//  FairMQTransportFactory *transportFactory = new FairMQTransportFactoryZMQ();
-//#endif
-//  SetTransport(transportFactory);
+  SetTransport("zeromq");
 
   ChangeState(INIT_DEVICE);
   WaitForEndOfState(INIT_DEVICE);
