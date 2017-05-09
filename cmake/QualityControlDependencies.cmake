@@ -11,10 +11,6 @@ if(BOOST_FOUND AND NOT Boost_FOUND)
     set(Boost_FOUND 1)
 endif()
 
-if(NOT ROOT_FOUND)
-  return()
-endif()
-
 if(FAIRROOT_FOUND)
     # this should go away when fairrot provides a proper Find script or proper config scripts
     # See : http://www.cmake.org/cmake/help/v3.0/command/link_directories.html
@@ -28,6 +24,10 @@ else(FAIRROOT_FOUND)
     find_package(ROOT CONFIG COMPONENTS Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore QUIET)
     set(FAIRROOT_LIBRARIES "")
 endif(FAIRROOT_FOUND)
+
+if(NOT ROOT_FOUND)
+    return()
+endif()
 
 if(NOT MYSQL_FOUND)
     message(WARNING "MySQL not found, the corresponding classes won't be built.")
