@@ -23,7 +23,7 @@ Notes :
 - On a proper setup :
             qcTaskLauncher -n myTask_1 -c file://$PWD/example-default.ini
             alfaTestReceiver --id receiver --mq-config $PWD/alfaTestReceiver.json
-
+            qcCheckerLauncher -c file://$PWD/example-default.ini -n checker_0
 
 TODO : add more checks to the example task to use the configuration in the isabovemean
 TODO : clean up code and documentation
