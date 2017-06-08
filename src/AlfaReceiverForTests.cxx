@@ -45,3 +45,6 @@ bool AlfaReceiverForTests::HandleData(FairMQMessagePtr &msg, int /*index*/)
   // return true if want to be called again (otherwise go to IDLE state)
   return true;
 }
+}
+}
+}

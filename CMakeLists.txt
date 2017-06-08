@@ -201,3 +201,6 @@ if(ROOT_FOUND) # TODO remove this once we have our own repo
     )
 
 endif()
+
+# Install extra scripts
+install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)

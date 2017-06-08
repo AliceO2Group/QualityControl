@@ -20,7 +20,7 @@ Notes :
 - To start DB :
             sudo systemctl start mariadb
 
-
+- On a proper setup :
             qcTaskLauncher -n myTask_1 -c file://$PWD/example-default.ini
             alfaTestReceiver --id receiver --mq-config $PWD/alfaTestReceiver.json
 
