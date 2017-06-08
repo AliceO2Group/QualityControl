@@ -14,11 +14,16 @@ Notes :
   module. If need be we can move to independent cmake projects.
 - To test (from build dir):
             ./bin/qcTaskLauncher  -n myTask_1 -c file://$PWD/../QualityControl/example-default.ini
-            ./bin/alfaTestReceiver
+            ./bin/alfaTestReceiver --id receiver --mq-config ../QualityControl/alfaTestReceiver.json
             ./bin/qcCheckerLauncher -c file://$PWD/../QualityControl/example-default.ini -n checker_0
             ./bin/qcSpy
 - To start DB :
             sudo systemctl start mariadb
+
+
+            qcTaskLauncher -n myTask_1 -c file://$PWD/example-default.ini
+            alfaTestReceiver --id receiver --mq-config $PWD/alfaTestReceiver.json
+
 
 TODO : add more checks to the example task to use the configuration in the isabovemean
 TODO : clean up code and documentation
