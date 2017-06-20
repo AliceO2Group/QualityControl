@@ -119,7 +119,7 @@ if (FAIRROOT_FOUND)
     list(APPEND SRCS src/AlfaPublisher.cxx src/AlfaReceiverForTests.cxx)
 endif (FAIRROOT_FOUND)
 
-if(MYSQL_FOUND AND ROOT_RMySQL_LIBRARY)
+if(MYSQL_FOUND)
     list(APPEND SRCS src/MySqlDatabase.cxx)
 endif()
 
