@@ -20,7 +20,7 @@ namespace QualityControl {
 namespace Gui {
 
 SpyDevice::SpyDevice()
-    : mFrame(nullptr)
+  : mFrame(nullptr)
 {
   SetTransport("zeromq"); // or "nanomsg", etc
 }
@@ -99,12 +99,14 @@ void SpyDevice::startChannel(std::string address, std::string type)
 
 void SpyDevice::stopChannel()
 {
-  ChangeState("STOP"); // synchronous
-  ChangeState("RESET_TASK");
-  WaitForEndOfState("RESET_TASK");
-  ChangeState("RESET_DEVICE");
-  WaitForEndOfState("RESET_DEVICE");
-  fChannels["data-in"].pop_back();
+  if (CheckCurrentState(RUNNING)) {
+    ChangeState("STOP"); // synchronous
+    ChangeState("RESET_TASK");
+    WaitForEndOfState("RESET_TASK");
+    ChangeState("RESET_DEVICE");
+    WaitForEndOfState("RESET_DEVICE");
+    fChannels["data-in"].pop_back();
+  }
 }
 
 } // namespace Core

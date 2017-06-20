@@ -58,6 +58,8 @@ namespace Checker {
 Checker::Checker(std::string checkerName, std::string configurationSource)
   : mLogger(QcInfoLogger::GetInstance()), mTotalNumberHistosReceived(0)
 {
+  SetTransport("zeromq");
+
   // configuration
   unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configurationSource);
   populateConfig(config, checkerName);

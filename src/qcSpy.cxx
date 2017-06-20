@@ -21,10 +21,19 @@ using namespace AliceO2::QualityControl::Gui;
 
 int main(int argc, char *argv[])
 {
+  // Arguments parsing
+  std::string configurationSource;
+  if(argc > 1) {
+    configurationSource = argv[1];
+    cout << "configuration file : " << configurationSource << endl;
+  } else {
+    cout << "no configuration file passed as argument, database won't work." << endl;
+  }
+
   TApplication theApp("App", &argc, argv);
 
   auto *device = new SpyDevice();
-  auto *frame = new SpyMainFrame(device);
+  auto *frame = new SpyMainFrame(device, configurationSource);
   device->setFrame(frame);
 
   theApp.Run();

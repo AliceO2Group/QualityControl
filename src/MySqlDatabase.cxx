@@ -53,8 +53,13 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
   connectionString << "mysql://" << host << "/" << database;
   // Important as the agent can be inactive for more than 8 hours and Mysql will drop idle connections older than 8 hours
   connectionString << "?reconnect=1";
-  if (!(mServer = new TMySQLServer(connectionString.str().c_str(), username.c_str(), password.c_str()))) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to connect to the database"));
+  mServer = new TMySQLServer(connectionString.str().c_str(), username.c_str(), password.c_str());
+  if (!mServer || mServer->GetErrorCode()) {
+    string s = "Failed to connect to the database\n";
+    if(mServer->GetErrorCode()) {
+      s+= mServer->GetErrorMsg();
+    }
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(s));
   } else {
     cout << "Connected to the database" << endl;
   }
@@ -160,7 +165,7 @@ AliceO2::QualityControl::Core::MonitorObject* MySqlDatabase::retrieve(std::strin
   string query;
   TMySQLStatement *statement = nullptr;
 
-  query += "SELECT object_name, data, updatetime, run, fill FROM " + taskName + " WHERE object_name = ?";
+  query += "SELECT object_name, data, updatetime, run, fill FROM data_" + taskName + " WHERE object_name = ?";
   statement = (TMySQLStatement*) mServer->Statement(query.c_str());
   if (mServer->IsError()) {
     if (statement)

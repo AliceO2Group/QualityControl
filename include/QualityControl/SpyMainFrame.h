@@ -21,6 +21,9 @@
 
 namespace AliceO2 {
 namespace QualityControl {
+namespace Repository {
+class DatabaseInterface;
+}
 namespace Gui {
 
 class SpyDevice;
@@ -31,7 +34,7 @@ class SpyMainFrame: public TGMainFrame
     /**
      * \param spyDevice Needed to connect the buttons to their slot in the Device that acts as Controller.
      */
-    SpyMainFrame(SpyDevice *spyDevice);
+    SpyMainFrame(SpyDevice *spyDevice, std::string configurationSource);
     ~SpyMainFrame() override;
 
     enum MenuIDs
@@ -41,7 +44,7 @@ class SpyMainFrame: public TGMainFrame
 
     void closeWindow();
     void menuHandler(Int_t id);
-    void updateList(std::string name);
+    void updateList(std::string name, std::string taskName = "");
     /**
      * \param listName The name as it appears in the list and that might be different from obj->GetName()
      */
@@ -49,6 +52,10 @@ class SpyMainFrame: public TGMainFrame
     void start(); // slot
     void stop(); // slot
     void displayObject(const char* objectName); // slot
+    void ToggleSource(Bool_t on);
+    bool dbIsSelected();
+    void dbDisplayObject(std::string objectName);
+    void dbRun();
 
   private:
     void constructWindow();
@@ -62,13 +69,20 @@ class SpyMainFrame: public TGMainFrame
     TRootEmbeddedCanvas *mCanvas;
     std::map<std::string, TGButton*> mMapButtons;
     // For the form
-    TGLabel *mTypeLabel, *mAddressLabel;
+    TGButtonGroup *mRadioButtonGroup;
+    TGRadioButton *mSourceDb, *mSourceFairmq;
+    TGLabel *mSourceLabel, *mTypeLabel, *mAddressLabel;
     TGTextEntry *mAddressField;
     TGTextButton *mStartButton, *mStopButton;
     TGComboBox *mTypeField;
+    TGLabel *mTaskLabel;
+    TGTextEntry *mTaskField;
 
     SpyDevice* mController;
     TObject* mDrawnObject;
+    AliceO2::QualityControl::Repository::DatabaseInterface* mDbInterface;
+
+    bool mDbRunning;
 
   ClassDef(SpyMainFrame,1);
 };
