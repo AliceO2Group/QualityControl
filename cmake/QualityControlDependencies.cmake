@@ -35,6 +35,7 @@ if(NOT MYSQL_FOUND)
 #    message(WARNING "MySQL ROOT class not found, the corresponding classes won't be built.")
 else()
     add_definitions(-D_WITH_MYSQL)
+    set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -lRMySQL")
 endif()
 
 o2_define_bucket(
