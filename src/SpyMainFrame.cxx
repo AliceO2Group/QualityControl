@@ -172,7 +172,6 @@ void SpyMainFrame::menuHandler(Int_t id)
 
 void SpyMainFrame::ToggleSource(Bool_t on)
 {
-  stop();
   if (dbIsSelected()) {
     mTypeLabel->Disable(true);
     mTypeField->SetEnabled(false);
@@ -183,6 +182,7 @@ void SpyMainFrame::ToggleSource(Bool_t on)
     mStartButton->SetText("Update list");
     mStopButton->SetEnabled(false);
   } else {
+    stop();
     mTypeLabel->Disable(false);
     mTypeField->SetEnabled(true);
     mAddressLabel->Disable(false);
@@ -190,7 +190,7 @@ void SpyMainFrame::ToggleSource(Bool_t on)
     mTaskField->SetEnabled(false);
     mTaskLabel->Disable(true);
     mStartButton->SetText("Start");
-    mStopButton->SetEnabled(true);
+    mStopButton->SetEnabled(false);
   }
   Resize();
 }
@@ -244,18 +244,39 @@ void SpyMainFrame::updateList(string name, string taskName)
 
 void SpyMainFrame::start()
 {
-  // toggle buttons
-  mStopButton->SetEnabled(true);
-  mStartButton->SetEnabled(false);
-
   if (dbIsSelected()) {
     dbRun();
   } else {
-    // tell the controller
+    mSourceFairmq->SetEnabled(false);
+    mSourceDb->SetEnabled(false);
+    mSourceLabel->Disable(true);
+    mStopButton->SetEnabled(true);
+    mStartButton->SetEnabled(false);
     string address = mAddressField->GetText();
     string type = mTypeField->GetSelectedEntry()->GetTitle();
     mController->startChannel(address, type);
   }
+}
+
+void SpyMainFrame::stop()
+{
+  removeAllObjectsButtons();
+  // tell the controller
+  if (dbIsSelected()) {
+    mDbRunning = false;
+  } else {
+    // toggle buttons and remove list
+    if(!mSourceFairmq->IsEnabled()) {
+      mSourceFairmq->SetEnabled(true);
+      mSourceDb->SetEnabled(true);
+      mSourceLabel->Disable(false);
+    }
+    mStopButton->SetEnabled(false);
+    mStartButton->SetEnabled(true);
+    mController->stopChannel();
+  }
+  delete mDrawnObject;
+  mDrawnObject = nullptr;
 }
 
 bool SpyMainFrame::dbIsSelected()
@@ -286,20 +307,6 @@ void SpyMainFrame::dbDisplayObject(string objectName)
     delete mo;
   } else {
     cerr << "mo " << objectNameOnly << " of task " << taskName << " could not be retrieved from database" << endl;
-  }
-}
-
-void SpyMainFrame::stop()
-{
-  // toggle buttons and remove list
-  mStopButton->SetEnabled(false);
-  mStartButton->SetEnabled(true);
-  removeAllObjectsButtons();
-  // tell the controller
-  if (dbIsSelected()) {
-    mDbRunning = false;
-  } else {
-    mController->stopChannel();
   }
 }
 

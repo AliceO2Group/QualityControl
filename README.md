@@ -23,13 +23,13 @@ Search and install packages:
 
 You can then install it (change the version number appropriately):
 
-    yum install -y alisw-flpproto+v0.1.0-1
+    yum install -y alisw-flpproto+v0.1.1-1
 
 Packages are not installed in system directories.
 You’ll need to enable them explicitly, in your terminal or in your
 `.bashrc` (adapt the version number):
 
-    eval `modulecmd bash load flpproto/v0.1.0-1`
+    eval `modulecmd bash load flpproto/v0.1.1-1`
 
 Errors saying something like:
 
