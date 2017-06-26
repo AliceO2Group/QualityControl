@@ -16,6 +16,7 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Repository {
 
+/// \brief Factory to get a database accessor
 class DatabaseFactory
 {
   public:
@@ -23,8 +24,8 @@ class DatabaseFactory
     /// \brief Create a new instance of a DatabaseInterface.
     /// The DatabaseInterface actual class is decided based on the parameters passed.
     /// The ownership is returned as well.
-    /// TODO use unique_ptr
-    /// \param name MySql
+    /// \todo use unique_ptr
+    /// \param name Possible values : "mysql"
     /// \author Barthelemy von Haller
     static DatabaseInterface* create(std::string name);
 };

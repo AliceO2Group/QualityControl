@@ -12,6 +12,7 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
+/// \brief A publisher that dumps images of the objects it publishes.
 class MockPublisher: public PublisherInterface
 {
   public:

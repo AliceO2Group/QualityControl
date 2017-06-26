@@ -18,6 +18,7 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
+/// \brief Container for the definition of a check
 struct CheckDefinition {
     std::string name;
     std::string className;

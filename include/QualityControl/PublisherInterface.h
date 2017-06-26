@@ -12,6 +12,7 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
+/// \brief Interface used by the Tasks to publish their objects
 class PublisherInterface
 {
   public:

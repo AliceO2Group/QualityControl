@@ -16,11 +16,9 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Repository {
 
-/**
- * TODO: consider storing directly the TObject, not the MonitorObject, and to put all its attributes as columns
- * TODO: handle ROOT IO streamers
- */
-
+/// \brief Implementation of the DatabaseInterface for MySQL
+/// \todo consider storing directly the TObject, not the MonitorObject, and to put all its attributes as columns
+/// \todo handle ROOT IO streamers
 class MySqlDatabase: public DatabaseInterface
 {
   public:

@@ -19,6 +19,10 @@ namespace Core {
 class TaskInterface;
 class ObjectsManager;
 
+/// \brief Factory in charge of creating tasks
+///
+/// The factory needs a library name and a class name provided as an object of type TaskConfig.
+/// The class loaded in the library must inherit from TaskInterface.
 class TaskFactory
 {
   public:
