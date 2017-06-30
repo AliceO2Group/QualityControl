@@ -14,6 +14,7 @@
 #include "QualityControl/TaskConfig.h"
 #include "Monitoring/ProcessMonitor.h"
 #include "Common/Timer.h"
+#include <boost/serialization/array_wrapper.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <Configuration/ConfigurationInterface.h>

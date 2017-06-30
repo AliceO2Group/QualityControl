@@ -9,6 +9,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "Configuration/Configuration.h"
 #include <FairMQDevice.h>
+#include <boost/serialization/array_wrapper.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <memory>
