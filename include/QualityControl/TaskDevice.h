@@ -9,6 +9,7 @@
 // fairroot
 #include <fairmq/FairMQDevice.h>
 // boost (should be first but then it makes errors in fairmq)
+#include <boost/serialization/array_wrapper.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 // O2
