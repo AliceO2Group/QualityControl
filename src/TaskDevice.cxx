@@ -50,7 +50,8 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-TaskDevice::TaskDevice(std::string taskName, std::string configurationSource) : mTaskName(taskName), mTotalNumberObjectsPublished(0)
+TaskDevice::TaskDevice(std::string taskName, std::string configurationSource) : mTaskName(taskName),
+                                                                                mTotalNumberObjectsPublished(0)
 {
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
@@ -91,14 +92,15 @@ void TaskDevice::populateConfig(std::string taskName)
 
   mTaskConfig.taskName = taskName;
   mTaskConfig.moduleName = mConfigFile->get<string>(taskDefinitionName + "/moduleName").value();
-  mTaskConfig.address = mConfigFile->get<string>(taskName + "/address").value();
   mTaskConfig.numberHistos = mConfigFile->get<int>(taskDefinitionName + "/numberHistos").value();
   mTaskConfig.numberChecks = mConfigFile->get<int>(taskDefinitionName + "/numberChecks").value();
   mTaskConfig.typeOfChecks = mConfigFile->get<string>(taskDefinitionName + "/typeOfChecks").value();
   mTaskConfig.className = mConfigFile->get<string>(taskDefinitionName + "/className").value();
   mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(taskDefinitionName + "/cycleDurationSeconds").value();
   mTaskConfig.publisherClassName = mConfigFile->get<string>("Publisher/className").value();
-  mTaskConfig.maxNumberCycles = mConfigFile->get<int>(taskDefinitionName + "/maxNumberCycles").value();
+  mTaskConfig.maxNumberCycles = mConfigFile->exists(taskDefinitionName + "/maxNumberCycles") ?
+                                mConfigFile->get<int>(taskDefinitionName + "/maxNumberCycles").value() :
+                                -1;
 }
 
 void TaskDevice::InitTask()
@@ -124,7 +126,7 @@ void TaskDevice::Run()
   startOfActivity();
 
   int cycle = 0;
-  while (CheckCurrentState(RUNNING) && cycle < mTaskConfig.maxNumberCycles) {
+  while (CheckCurrentState(RUNNING) && (mTaskConfig.maxNumberCycles < 0 || cycle < mTaskConfig.maxNumberCycles)) {
     QcInfoLogger::GetInstance() << "cycle " << cycle << AliceO2::InfoLogger::InfoLogger::endm;
     monitorCycle();
     cycle++;
