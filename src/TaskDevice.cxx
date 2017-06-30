@@ -1,35 +1,62 @@
 ///
-/// \file   TaskControl.cxx
+/// \file   TaskDevice.cxx
 /// \author Barthelemy von Haller
 ///
 
-// O2
+#include <Common/Timer.h>
+#include "QualityControl/TaskDevice.h"
 #include <Configuration/ConfigurationFactory.h>
+#include <InfoLogger/InfoLogger.hxx>
+#include <QualityControl/QcInfoLogger.h>
+#include <QualityControl/TaskFactory.h>
+#include <TMessage.h>
+#include "Monitoring/Collector.h"
+#include <TClass.h>
 #include "DataSampling/SamplerFactory.h"
-#include "DataSampling/SamplerInterface.h"
-// QC
-#include "QualityControl/TaskFactory.h"
-#include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/TaskControl.h"
 
+#include "runFairMQDevice.h"
+
+namespace bpo = boost::program_options;
 using namespace std;
 using namespace std::chrono;
 using namespace AliceO2::Configuration;
 using namespace AliceO2::Monitoring;
 
+/*
+ * Runner
+ */
+
+void addCustomOptions(bpo::options_description &options)
+{
+  options.add_options()
+    ("name,n", bpo::value<string>()->required(), "Name of the task (required).")
+    ("configuration,c", bpo::value<string>()->required(),
+     "Configuration source, e.g. \"file:example.ini\" (required).");
+}
+
+FairMQDevicePtr getDevice(const FairMQProgOptions &config)
+{
+  std::string taskName = config.GetValue<std::string>("name");
+  std::string configurationSource = config.GetValue<std::string>("configuration");
+
+  return new AliceO2::QualityControl::Core::TaskDevice(taskName, configurationSource);
+}
+
+/*
+ * TaskDevice
+ */
+
 namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-TaskControl::TaskControl(std::string taskName, std::string configurationSource)
-  : mSampler(nullptr),
-    mTotalNumberObjectsPublished(0)
+TaskDevice::TaskDevice(std::string taskName, std::string configurationSource) : mTaskName(taskName), mTotalNumberObjectsPublished(0)
 {
-  // configuration
+  // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-  populateConfig(taskName);
+  populateConfig(mTaskName);
 
-  // monitoring
+  // setup monitoring
   mCollector = make_unique<Collector>(configurationSource);
 
   // setup publisher
@@ -39,19 +66,26 @@ TaskControl::TaskControl(std::string taskName, std::string configurationSource)
   TaskFactory f;
   mTask = f.create(mTaskConfig, mObjectsManager);  // TODO could we use unique_ptr ?
 
-  // TODO create DataSampling with correct parameters
+  // setup datasampling
   string dataSamplingImplementation = mConfigFile->get<std::string>("DataSampling/implementation").value();
   QcInfoLogger::GetInstance() << "DataSampling implementation is '" << dataSamplingImplementation << "'"
                               << AliceO2::InfoLogger::InfoLogger::endm;
   mSampler = AliceO2::DataSampling::SamplerFactory::create(dataSamplingImplementation);
+
+  // setup device --> It does not work thus we use a json file
+//  FairMQChannel histoChannel;
+//  histoChannel.UpdateType("pub");
+//  histoChannel.UpdateMethod("bind");
+//  histoChannel.UpdateAddress(mTaskConfig.address);
+//  histoChannel.UpdateSndBufSize(10000);
+//  histoChannel.UpdateRcvBufSize(10000);
+//  histoChannel.UpdateRateLogging(0);
+//  fChannels["data-out"].push_back(histoChannel);
+//  cout << "data-out size : " << fChannels["data-out"].size() << endl;
+//  cout << "data-out : " << fChannels["data-out"][0].GetAddress() << endl;
 }
 
-TaskControl::~TaskControl()
-{
-  delete mTask;
-}
-
-void TaskControl::populateConfig(std::string taskName)
+void TaskDevice::populateConfig(std::string taskName)
 {
   string taskDefinitionName = mConfigFile->get<string>(taskName + "/taskDefinition").value();
 
@@ -64,28 +98,52 @@ void TaskControl::populateConfig(std::string taskName)
   mTaskConfig.className = mConfigFile->get<string>(taskDefinitionName + "/className").value();
   mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(taskDefinitionName + "/cycleDurationSeconds").value();
   mTaskConfig.publisherClassName = mConfigFile->get<string>("Publisher/className").value();
+  mTaskConfig.maxNumberCycles = mConfigFile->get<int>(taskDefinitionName + "/maxNumberCycles").value();
 }
 
-void TaskControl::initialize()
+void TaskDevice::InitTask()
 {
-  QcInfoLogger::GetInstance() << "initialize TaskControl" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "initialize TaskDevice" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  // init user's task
   mTask->initialize();
 }
 
-void TaskControl::configure()
+TaskDevice::~TaskDevice()
 {
-  QcInfoLogger::GetInstance() << "configure" << AliceO2::InfoLogger::InfoLogger::endm;
+  delete mTask;
 }
 
-void TaskControl::start()
+void TaskDevice::Run()
 {
-  QcInfoLogger::GetInstance() << "start" << AliceO2::InfoLogger::InfoLogger::endm;
-  timerTotalDurationActivity.reset();
-  Activity activity(mConfigFile->get<int>("Activity/number").value(), mConfigFile->get<int>("Activity/type").value());
-  mTask->startOfActivity(activity);
+  AliceO2::Common::Timer timer;
+  timer.reset(10000000); // 10 s.
+  int lastNumberObjects = 0;
+
+  // in the future the start of an activity/run will come from the control
+  startOfActivity();
+
+  int cycle = 0;
+  while (CheckCurrentState(RUNNING) && cycle < mTaskConfig.maxNumberCycles) {
+    QcInfoLogger::GetInstance() << "cycle " << cycle << AliceO2::InfoLogger::InfoLogger::endm;
+    monitorCycle();
+    cycle++;
+
+    // if 10 s we publish stats
+    if (timer.isTimeout()) {
+      double current = timer.getTime();
+      int objectsPublished = (mTotalNumberObjectsPublished-lastNumberObjects);
+      lastNumberObjects = mTotalNumberObjectsPublished;
+      mCollector->send(objectsPublished/current, "QC_task_Rate_objects_published_per_10_seconds");
+      timer.increment();
+    }
+  }
+
+  // in the future the end of an activity/run will come from the control
+  endOfActivity();
 }
 
-void TaskControl::execute()
+void TaskDevice::monitorCycle()
 {
   // monitor cycle
   AliceO2::Common::Timer timer;
@@ -106,7 +164,7 @@ void TaskControl::execute()
   timer.reset();
 
   // publication
-  unsigned long numberObjectsPublished = mObjectsManager->publish();
+  unsigned long numberObjectsPublished = publish();
 
   // monitoring metrics
   double durationPublication = timer.getTime();
@@ -129,9 +187,46 @@ void TaskControl::execute()
   mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
 }
 
-void TaskControl::stop()
+unsigned long TaskDevice::publish()
 {
-  QcInfoLogger::GetInstance() << "stop" << AliceO2::InfoLogger::InfoLogger::endm;
+  unsigned int sentMessages = 0;
+
+  for (auto &pair : *mObjectsManager) {
+    auto *mo = pair.second;
+    TMessage *message = new TMessage(kMESS_OBJECT); // will be deleted by fairmq using our custom method
+    message->WriteObjectAny(mo, mo->IsA());
+    FairMQMessagePtr msg(NewMessage(message->Buffer(),
+                                    message->BufferSize(),
+                                    CustomCleanupTMessage,
+                                    message));
+    QcInfoLogger::GetInstance() << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
+    Send(msg, "data-out");
+    sentMessages++;
+  }
+
+  return sentMessages;
+}
+
+void TaskDevice::CustomCleanupTMessage(void *data, void *object)
+{
+  delete (TMessage *) object;
+}
+
+void TaskDevice::Reset()
+{
+  FairMQDevice::Reset();
+  mTask->reset();
+}
+
+void TaskDevice::startOfActivity()
+{
+  timerTotalDurationActivity.reset();
+  Activity activity(mConfigFile->get<int>("Activity/number").value(), mConfigFile->get<int>("Activity/type").value());
+  mTask->startOfActivity(activity);
+}
+
+void TaskDevice::endOfActivity()
+{
   Activity activity(mConfigFile->get<int>("Activity/number").value(), mConfigFile->get<int>("Activity/type").value());
   mTask->endOfActivity(activity);
 
@@ -144,3 +239,4 @@ void TaskControl::stop()
 }
 }
 }
+

@@ -1,0 +1,24 @@
+{
+    "fairMQOptions": {
+        "devices": [
+            {
+                "id": "myTask_1",
+                "channels": [
+                    {
+                        "name": "data-out",
+                        "sockets": [
+                            {
+                                "type": "pub",
+                                "method": "bind",
+                                "address": "tcp://*:5556",
+                                "sndBufSize": 10000,
+                                "rcvBufSize": 10000,
+                                "rateLogging": 0
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

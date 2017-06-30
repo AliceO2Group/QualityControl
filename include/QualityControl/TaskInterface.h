@@ -20,10 +20,16 @@ class Activity
 {
   public:
     /// Default constructor
-    Activity(): mId(0), mType(0) {}
-    Activity(int id, int type) : mId(id), mType(type) {}
+    Activity() : mId(0), mType(0)
+    {}
+
+    Activity(int id, int type) : mId(id), mType(type)
+    {}
+
     /// Destructor
-    virtual ~Activity() {}
+    virtual ~Activity()
+    {}
+
     int mId;
     int mType;
 };
@@ -45,25 +51,25 @@ class TaskInterface
     /// @param name
     /// @param objectsManager
     TaskInterface(ObjectsManager *objectsManager);
+
     /// \brief Default constructor
     /// Remember to set an objectsManager.
     TaskInterface();
-    /// Destructor
+
     virtual ~TaskInterface();
-//    void Init(ObjectsManager *objectsManager);
 
     // Definition of the methods for the template method pattern
     virtual void initialize() = 0;
     virtual void startOfActivity(Activity &activity) = 0;
     virtual void startOfCycle() = 0;
+    //    virtual void monitorDataBlock(vector<pair<DataHeader*, char*>>& datablock) = 0;
     virtual void monitorDataBlock(std::vector<std::shared_ptr<DataBlockContainer>> &block) = 0;
-//    virtual void monitorDataBlock(vector<pair<DataHeader*, char*>>& datablock) = 0;
     virtual void endOfCycle() = 0;
     virtual void endOfActivity(Activity &activity) = 0;
-    virtual void Reset() = 0;
+    virtual void reset() = 0;
 
     // Setters and getters
-    void setObjectsManager(std::shared_ptr<ObjectsManager>objectsManager);
+    void setObjectsManager(std::shared_ptr<ObjectsManager> objectsManager);
     void setName(const std::string &name);
     const std::string &getName() const;
 
@@ -73,7 +79,6 @@ class TaskInterface
   private:
     std::shared_ptr<ObjectsManager> mObjectsManager; // TODO should we rather have a global/singleton for the objectsManager ?
     std::string mName;
-
 };
 
 } // namespace Core

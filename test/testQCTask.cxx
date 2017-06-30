@@ -72,9 +72,9 @@ class TestTask : public TaskInterface
       cout << "endOfActivity" << endl;
     }
 
-    void Reset() override
+    void reset() override
     {
-      cout << "Reset" << endl;
+      cout << "reset" << endl;
     }
 
     int test;

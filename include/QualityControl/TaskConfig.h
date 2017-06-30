@@ -26,6 +26,7 @@ struct TaskConfig
     std::string typeOfChecks;
     int cycleDurationSeconds;
     std::string publisherClassName;
+    int maxNumberCycles;
 };
 
 } // namespace Core

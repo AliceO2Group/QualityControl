@@ -7,9 +7,9 @@
 #define QUALITYCONTROL_LIBS_OBJECTSMANAGER_H_
 
 #include <string>
+#include <boost/concept_check.hpp>
 #include "QualityControl/Quality.h"
 #include "QualityControl/MonitorObject.h"
-#include "QualityControl/PublisherInterface.h"
 #include "QualityControl/TaskConfig.h"
 
 namespace AliceO2 {
@@ -29,12 +29,16 @@ class ObjectsManager
   public:
     /// Default constructor
     ObjectsManager();
-    ObjectsManager(TaskConfig& taskConfig);
+
+    ObjectsManager(TaskConfig &taskConfig);
+
     /// Destructor
     virtual ~ObjectsManager();
 
     void startPublishing(TObject *obj, std::string objectName = "");
+
     void setQuality(std::string objectName, Quality quality);
+
     Quality getQuality(std::string objectName);
 
     /// \brief Add a check to the object defined by objectName.
@@ -43,22 +47,34 @@ class ObjectsManager
     /// \param checkName
     /// \param checkClassName
     /// \param checkLibraryName
-    void addCheck (const std::string& objectName, const std::string& checkName,
-        const std::string& checkClassName, const std::string& checkLibraryName="");
-    void addCheck (const TObject* object, const std::string& checkName,
-                   const std::string& checkClassName, const std::string& checkLibraryName="");
+    void addCheck(const std::string &objectName, const std::string &checkName,
+                  const std::string &checkClassName, const std::string &checkLibraryName = "");
+
+    void addCheck(const TObject *object, const std::string &checkName,
+                  const std::string &checkClassName, const std::string &checkLibraryName = "");
+
     MonitorObject *getMonitorObject(std::string objectName);
+
     TObject *getObject(std::string objectName);
 
+    typedef typename std::map<std::string, QualityControl::Core::MonitorObject *>::iterator iterator;
+    typedef typename std::map<std::string, QualityControl::Core::MonitorObject *>::const_iterator const_iterator;
+
+    const_iterator begin() const
+    { return mMonitorObjects.begin(); }
+
+    const_iterator end() const
+    { return mMonitorObjects.end(); }
+
+    iterator begin()
+    { return mMonitorObjects.begin(); }
+
+    iterator end()
+    { return mMonitorObjects.end(); }
+
   private:
-    /// \brief Do the actual publication of objects using the PublisherInterface
-    /// \return Number of objects published.
-    unsigned long publish();
-
     std::map<std::string /*object name*/, QualityControl::Core::MonitorObject * /* object */> mMonitorObjects;
-    PublisherInterface* mPublisher;
     std::string mTaskName;
-
 };
 
 } // namespace Core

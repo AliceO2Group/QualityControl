@@ -9,21 +9,15 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Core {
 
-TaskInterface::TaskInterface(/*std::string &name, */ObjectsManager *objectsManager) :
-  /*mName(name), */mObjectsManager(objectsManager)
+TaskInterface::TaskInterface(ObjectsManager *objectsManager) :
+  mObjectsManager(objectsManager)
 {
 }
 
 TaskInterface::TaskInterface() :
-  /*mName(""), */mObjectsManager(nullptr)
+  mObjectsManager(nullptr)
 {
 }
-
-//void TaskInterface::Init(/*std::string &name, */ObjectsManager *objectsManager)
-//{
-////  setName(name);
-//  setObjectsManager(objectsManager);
-//}
 
 TaskInterface::~TaskInterface()
 {
@@ -43,7 +37,6 @@ void TaskInterface::setObjectsManager(std::shared_ptr<ObjectsManager> objectsMan
 {
   mObjectsManager = objectsManager;
 }
-
 
 std::shared_ptr<ObjectsManager> TaskInterface::getObjectsManager()
 {
