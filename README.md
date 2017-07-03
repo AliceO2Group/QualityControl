@@ -80,15 +80,16 @@ qcDatabaseSetup.sh
 
 ## QC Configuration
 
-The QC requires a number of configuration items. An example file is
-provided in the repo under the name _example-default.ini_.
+The QC requires a number of configuration items. An example config file is
+provided in the repo under the name _example-default.ini_. Moreover, the
+outgoing channel over which histograms are sent is defined in a JSON
+file such as the one called _alfa.json_ in the repo.
 
-QC tasks must be defined in the configuration :
+**QC tasks** must be defined in the configuration :
 
 ```
 [myTask_1]                      # define parameters for task myTask_1
 taskDefinition=taskDefinition_1 # indirection to the actual definition
-address=tcp://*:5556            # address on which data will be sent
 ```
 
 We use an indirect system to allow multiple tasks to share
@@ -101,7 +102,36 @@ moduleName=QcExample     # which library contains the class
 cycleDurationSeconds=1
 ```
 
-For checkers, one has to define them :
+The JSON file contains a typical FairMQ device definition. One can
+ change the or the address there:
+```
+{
+    "fairMQOptions": {
+        "devices": [
+            {
+                "id": "myTask_1",
+                "channels": [
+                    {
+                        "name": "data-out",
+                        "sockets": [
+                            {
+                                "type": "pub",
+                                "method": "bind",
+                                "address": "tcp://*:5556",
+                                "sndBufSize": 10000,
+                                "rcvBufSize": 10000,
+                                "rateLogging": 0
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+
+**QC checkers** are defined in the config file :
 
 ```
 [checker_0]
@@ -125,16 +155,71 @@ database connection, the monitoring or the data sampling.
 
 ## Execution
 
+### Basic
+With the default config files provided, we run a qctask that processes
+random data and forwards it to a GUI and a checker that will check and
+store the MonitorObjects.
+
 ```
 # Launch a task named myTask_1
-qcTaskLauncher -n myTask_1 -c file://$PWD/example-default.ini
+qcTaskLauncher -n myTask_1 \
+               -c file:///absolute/path/to/example-default.ini \
+               --id myTask_1 \
+               --mq-config path/to/alfa.json
 
 # Launch a gui to check what is being sent
+# don't forget to click the button Start !
 qcSpy
 
 # Launch a checker named checker_0
-qcCheckerLauncher -c file://$PWD/example-default.ini -n checker_0
+qcCheckerLauncher -c file:///absolute/path/to/example-default.ini -n checker_0
 ```
+
+### Readout chain
+
+1. Modify the config file of readout (Readout/configDummy.cfg) :
+```
+[readout]
+exitTimeout=-1
+(...)
+[sampling]
+# enable/disable data sampling (1/0)
+enabled=1
+# which class of datasampling to use (FairInjector, MockInjector)
+class=FairInjector
+```
+2. Start Readout
+```
+readout.exe file:///absolute/path/to/configDummy.cfg
+```
+3. Modify the config file of the QC (QualityControl/example-default.ini) :
+```
+[DataSampling]
+implementation=FairSampler
+```
+4. Launch the QC task
+```
+qcTaskLauncher -n myTask_1 \
+               -c file:///absolute/path/to/configDummy.cfg \
+               --id myTask_1 \
+               --mq-config path/to/alfa.json
+```
+5. Launch the checker
+```
+qcCheckerLauncher -c file:///absolute/path/to/example-default.ini -n checker_0
+```
+6. Launch the gui
+```
+qcSpy file:///absolute/path/to/example-default.ini
+# then click Start !
+```
+In the gui, one can change the source and point to the checker by
+changing the path in the field at the bottom of the window (first click
+`Stop` and `Start` after filling in the details). The port of the checker
+is 5600.
+One can also check what is stored in the database by clicking `Stop`
+and then switching to `Database` source. This will only work if a config
+file was passed to the `qcSpy` utility.
 
 ## Development notes
 
@@ -146,7 +231,7 @@ qcCheckerLauncher -c file://$PWD/example-default.ini -n checker_0
 - Need for TApplication ?
 - The name of the task is the only required thing in the end as it should then link to all required info from the
   Config (module, class name, source, ...).
-- Modules (user code) is in a different repo because the QC does not depend on AliceO2 but modules will. 
+- Modules (user code) is in a different repo because the QC does not depend on AliceO2 but modules will.
   We must be able to compile a single module. For the time being it is a single project with subfolders for each
   module. If need be we can move to independent cmake projects.
 - To test (from build dir):
