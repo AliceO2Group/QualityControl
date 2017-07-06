@@ -204,4 +204,4 @@ endif()
 
 # Install extra scripts
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
-install(PROGRAMS example-default.ini DESTINATION etc)
+install(FILES example-default.ini alfa.json DESTINATION etc)
