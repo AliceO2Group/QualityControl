@@ -8,29 +8,32 @@ yum install devtoolset-6
 source /opt/rh/devtoolset-6/enable # to be added to your .bashrc
 ```
 
-Setup alibuild (see [here](https://alisw.github.io/alibuild/o2-tutorial.html) for details):
+For development we use alibuild (see [here](https://alisw.github.io/alibuild/o2-tutorial.html) for details). 
 
 ```
+# Install alibuild
 sudo pip install alibuild==1.4.0 # or a later version
+
+# Check out flpproto repository
 mkdir -p $HOME/alice
 cd $HOME/alice
 aliBuild init flpproto
+
+# Check what dependencies you are missing and you would like to add.
+aliDoctor --defaults o2-daq flpproto
+
+# Build dependencies and flp prototype
+aliBuild --defaults o2-daq build flpproto
 ```
 
-Check what dependencies you are missing and you would like to add.
+### Post installation 
 
-    aliDoctor --defaults o2-daq flpproto
+Load environment to use or develop (add it to .bashrc if you wish)
 
-Build dependencies and flp prototype
-
-    aliBuild --defaults o2-daq build flpproto
-
-Load environment to use or develop
-
-    ALICE_WORK_DIR=$HOME/alice/sw; eval "`alienv shell-helper`" # Add it to .bashrc
+    ALICE_WORK_DIR=$HOME/alice/sw; eval "`alienv shell-helper`" 
     alienv load flpproto/latest
 
-### Post installation items
+Start and populate database : 
 
 ```
 sudo systemctl start mariadb
