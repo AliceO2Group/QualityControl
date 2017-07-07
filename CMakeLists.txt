@@ -31,6 +31,8 @@ link_o2_subproject(InfoLogger)
 link_o2_subproject(DataFormat)
 link_o2_subproject(DataSampling)
 
+add_subdirectory(doc)
+
 # TODO make it required, once in its own repo
 if(ROOT_FOUND)
     message(STATUS "ROOT ${ROOT_VERSION} found in '${ROOTSYS}'")
@@ -79,8 +81,6 @@ if(hasParent)
     set(PROJECT_${PROJECT_NAME} true PARENT_SCOPE)
 endif()
 include(PackageConfigurator)
-
-add_subdirectory(doc)
 
 
 ####################################
