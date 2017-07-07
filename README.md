@@ -1,6 +1,10 @@
+## Requirements
+
+A CC7 machine or a mac.
+
 ## Setup
 
-Install devtoolset-6:
+On CC7, install devtoolset-6:
 
 ```
 yum install centos-release-scl
@@ -40,7 +44,7 @@ sudo systemctl start mariadb
 qcDatabaseSetup.sh
 ```
 
-## QC Configuration
+## Configuration
 
 The QC requires a number of configuration items. An example config file is
 provided in the repo under the name _example-default.ini_. Moreover, the
@@ -115,7 +119,7 @@ tasksAddresses=tcp://localhost:5556,tcp://localhost:5557,tcp://localhost:5558,tc
 There are configuration items for many other aspects, for example the
 database connection, the monitoring or the data sampling.
 
-## Execution
+## Usage
 
 ### Basic
 With the default config files provided, we run a qctask that processes
@@ -182,3 +186,6 @@ is 5600.
 One can also check what is stored in the database by clicking `Stop`
 and then switching to `Database` source. This will only work if a config
 file was passed to the `qcSpy` utility.
+
+## Documentation todo 
+- a step by step to develop a new module
