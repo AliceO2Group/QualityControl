@@ -155,7 +155,7 @@ void SpyMainFrame::constructWindow()
 void SpyMainFrame::closeWindow()
 {
   // Got close message for this MainFrame. Terminates the application.
-  mController->stop();
+  mController->stopSpy();
   gApplication->Terminate();
 }
 
@@ -266,7 +266,7 @@ void SpyMainFrame::stop()
     mDbRunning = false;
   } else {
     // toggle buttons and remove list
-    if(!mSourceFairmq->IsEnabled()) {
+    if (!mSourceFairmq->IsEnabled()) {
       mSourceFairmq->SetEnabled(true);
       mSourceDb->SetEnabled(true);
       mSourceLabel->Disable(false);
@@ -300,9 +300,9 @@ void SpyMainFrame::dbRun()
 void SpyMainFrame::dbDisplayObject(string objectName)
 {
   string taskName = objectName.substr(0, objectName.find("/"));
-  string objectNameOnly = objectName.substr(objectName.find("/")+1);
-  AliceO2::QualityControl::Core::MonitorObject* mo = mDbInterface->retrieve(taskName, objectNameOnly);
-  if(mo) {
+  string objectNameOnly = objectName.substr(objectName.find("/") + 1);
+  AliceO2::QualityControl::Core::MonitorObject *mo = mDbInterface->retrieve(taskName, objectNameOnly);
+  if (mo) {
     displayObject(mo->getObject());
     delete mo;
   } else {

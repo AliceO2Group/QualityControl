@@ -5,24 +5,16 @@
 
 #include "QualityControl/Checker.h"
 
-// std
-#include <iostream>
-#include <chrono>
-#include <algorithm>
 // ROOT
 #include <TMessage.h>
 #include <TSystem.h>
 #include <TClass.h>
 // FairRoot
-#include <FairMQPoller.h>
-#include <Configuration/ConfigurationInterface.h>
 #include <Configuration/ConfigurationFactory.h>
 // O2
 #include "Common/Exceptions.h"
 // QC
-#include "QualityControl/CheckInterface.h"
 #include "QualityControl/DatabaseFactory.h"
-#include "QualityControl/CheckerConfig.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::Configuration;

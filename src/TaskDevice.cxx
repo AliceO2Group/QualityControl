@@ -10,7 +10,6 @@
 #include <QualityControl/QcInfoLogger.h>
 #include <QualityControl/TaskFactory.h>
 #include <TMessage.h>
-#include "Monitoring/Collector.h"
 #include <TClass.h>
 #include "DataSampling/SamplerFactory.h"
 

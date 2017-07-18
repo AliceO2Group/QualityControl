@@ -37,8 +37,7 @@ class SpyDevice: public FairMQDevice
 
     ~SpyDevice() override;
 
-    static void CustomCleanup(void *data, void* hint);
-    void stop();
+    void stopSpy();
     void displayObject(std::string objectName);
 
     void setFrame(SpyMainFrame *frame);

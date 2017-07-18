@@ -34,9 +34,9 @@ void SpyDevice::setFrame(SpyMainFrame *frame)
   mFrame = frame;
 }
 
-void SpyDevice::stop()
+void SpyDevice::stopSpy()
 {
-  // TODO if current state is running {
+  // TODO if current state is running {   CheckCurrentState(RUNNING)?
   ChangeState("STOP"); // synchronous
   ChangeState("RESET_TASK");
   WaitForEndOfState("RESET_TASK");
