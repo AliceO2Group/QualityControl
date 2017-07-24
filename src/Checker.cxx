@@ -9,10 +9,9 @@
 #include <TMessage.h>
 #include <TSystem.h>
 #include <TClass.h>
-// FairRoot
-#include <Configuration/ConfigurationFactory.h>
 // O2
 #include "Common/Exceptions.h"
+#include <Configuration/ConfigurationFactory.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
 

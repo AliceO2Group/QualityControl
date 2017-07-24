@@ -1,13 +1,14 @@
-//
-// Created by flpprotodev on 7/10/15.
-//
+///
+/// @file    QcInfoLogger.h
+/// @author  Barthelemy von Haller
+///
 
 #ifndef QUALITY_CONTROL_QCINFOLOGGER_H
 #define QUALITY_CONTROL_QCINFOLOGGER_H
 
-#include "QualityControl/TaskInterface.h"
 #include <iostream>
 #include <InfoLogger/InfoLogger.hxx>
+#include "TaskInterface.h"
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time -> log::endm
 

@@ -6,26 +6,26 @@
 #ifndef QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_
 #define QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_
 
-#include "QualityControl/MonitorObject.h"
-#include "Configuration/Configuration.h"
-#include <FairMQDevice.h>
+// std & boost
+#include <chrono>
+#include <memory
 #include <boost/serialization/array_wrapper.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
-#include <memory>
+// FairRoot
+#include <FairMQDevice.h>
+// O2
 #include <Configuration/ConfigurationInterface.h>
+#include <Configuration/Configuration.h>
 #include <Common/Timer.h>
-#include <chrono>
-
-#include "Common/Timer.h"
-
+#include <Monitoring/Collector.h>
+#include <Monitoring/ProcessMonitor.h>
 // QC
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/CheckerConfig.h"
-#include "Monitoring/Collector.h"
-#include "Monitoring/ProcessMonitor.h"
+#include "QualityControl/MonitorObject.h"
 
 namespace ba = boost::accumulators;
 
