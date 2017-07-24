@@ -153,7 +153,7 @@ void TaskDevice::monitorCycle()
   auto end = start + seconds(mTaskConfig.cycleDurationSeconds);
   int numberBlocks = 0;
   while (system_clock::now() < end) {
-    std::vector<std::shared_ptr<DataBlockContainer>> *block = mSampler->getData(100);
+    DataSetReference block = mSampler->getData(100);
     if (block) {
       mTask->monitorDataBlock(*block);
       mSampler->releaseData(); // invalids the block !!!
