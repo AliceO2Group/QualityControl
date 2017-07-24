@@ -4,38 +4,9 @@ A CC7 machine or a mac.
 
 ## Setup
 
-On CC7, install devtoolset-6:
-
-```
-yum install centos-release-scl
-yum install devtoolset-6
-source /opt/rh/devtoolset-6/enable # to be added to your .bashrc
-```
-
-For development we use alibuild (see [here](https://alisw.github.io/alibuild/o2-tutorial.html) for details). 
-
-```
-# Install alibuild
-sudo pip install alibuild==1.4.0 # or a later version
-
-# Check out flpproto repository
-mkdir -p $HOME/alice
-cd $HOME/alice
-aliBuild init flpproto
-
-# Check what dependencies you are missing and you would like to add.
-aliDoctor --defaults o2-daq flpproto
-
-# Build dependencies and flp prototype
-aliBuild --defaults o2-daq build flpproto
-```
+We use alibuild, see instructions [here](https://alisw.github.io/alibuild/o2-daq-tutorial.html).
 
 ### Post installation 
-
-Load environment to use or develop (add it to .bashrc if you wish)
-
-    ALICE_WORK_DIR=$HOME/alice/sw; eval "`alienv shell-helper`" 
-    alienv load flpproto/latest
 
 Start and populate database : 
 
@@ -68,7 +39,15 @@ moduleName=QcExample     # which library contains the class
 cycleDurationSeconds=1
 ```
 
-The JSON file contains a typical FairMQ device definition. One can
+The source of the data is defined here : 
+
+```
+[DataSampling]
+;implementation=FairSampler # get data from readout
+implementation=MockSampler  # get random data
+```
+
+The JSON `alfa.json` file contains a typical FairMQ device definition. One can
  change the or the address there:
 ```
 {
@@ -187,5 +166,6 @@ One can also check what is stored in the database by clicking `Stop`
 and then switching to `Database` source. This will only work if a config
 file was passed to the `qcSpy` utility.
 
-## Documentation todo 
-- a step by step to develop a new module
+## Modules development
+
+TODO
