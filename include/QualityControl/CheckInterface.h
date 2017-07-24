@@ -6,8 +6,8 @@
 #ifndef QUALITYCONTROL_LIBS_CHECKER_CHECKINTERFACE_H_
 #define QUALITYCONTROL_LIBS_CHECKER_CHECKINTERFACE_H_
 
-#include "MonitorObject.h"
-#include "Quality.h"
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 
 using namespace AliceO2::QualityControl::Core;
 

@@ -19,8 +19,8 @@
 #include <Monitoring/Collector.h>
 #include <DataSampling/SamplerInterface.h>
 // QC
-#include "TaskConfig.h"
-#include "ObjectsManager.h"
+#include "QualityControl/TaskConfig.h"
+#include "QualityControl/ObjectsManager.h"
 
 namespace ba = boost::accumulators;
 

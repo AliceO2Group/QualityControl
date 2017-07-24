@@ -8,7 +8,7 @@
 
 // std & boost
 #include <chrono>
-#include <memory
+#include <memory>
 #include <boost/serialization/array_wrapper.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>

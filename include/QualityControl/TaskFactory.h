@@ -10,8 +10,8 @@
 #include <memory>
 // O2
 #include <Common/Exceptions.h>
-#include "TaskConfig.h"
-#include "TaskDevice.h"
+#include "QualityControl/TaskConfig.h"
+#include "QualityControl/TaskDevice.h"
 
 namespace AliceO2 {
 namespace QualityControl {
