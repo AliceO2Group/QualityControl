@@ -6,9 +6,9 @@ A CC7 machine or a mac.
 
 We use alibuild, see instructions [here](https://alisw.github.io/alibuild/o2-daq-tutorial.html).
 
-### Post installation 
+### Post installation
 
-Start and populate database : 
+Start and populate database :
 
 ```
 sudo systemctl start mariadb
@@ -39,7 +39,7 @@ moduleName=QcExample     # which library contains the class
 cycleDurationSeconds=1
 ```
 
-The source of the data is defined here : 
+The source of the data is defined here :
 
 ```
 [DataSampling]
@@ -168,4 +168,17 @@ file was passed to the `qcSpy` utility.
 
 ## Modules development
 
-TODO
+Steps to create a new module Abc
+
+1. Duplicate the skeleton of module located in QualityControlModules/Skeleton.
+2. Call it Abc
+3. Use a (smart) editor to find and replace all occurrences of Skeleton by Abc
+4. Make sure to rename the include/Skeleton to include/Abc as well
+5. Rename all files (Skeleton->Abc)
+6. Near the end of the file QualityControlModules/CMakeLists.txt add `add_subdirectory(Abc)`
+7. Compile
+
+From here, fill in the methods in AbcTask.cxx, and AbcCheck.cxx if needed.
+
+In case special additional dependencies are needed, create a new bucket in QualityControlModules/cmake/QualityControlModulesDependencies.cmake.
+
