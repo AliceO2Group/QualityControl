@@ -87,9 +87,6 @@ class TestTask : public TaskInterface
 BOOST_AUTO_TEST_CASE(TestInstantiate)
 {
   TaskConfig config;
-  config.publisherClassName="MockPublisher";
-  config.taskName="my task name";
-  ObjectsManager objectsManager(config);
 //  Test::TestTask tt(&objectsManager);
 //  BOOST_CHECK_EQUAL(tt.test, 0);
 //  tt.initialize();

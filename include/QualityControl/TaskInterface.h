@@ -6,9 +6,10 @@
 #ifndef QUALITYCONTROL_LIBS_CORE_QCTASK_H_
 #define QUALITYCONTROL_LIBS_CORE_QCTASK_H_
 
-#include "DataFormat/DataBlockContainer.h"
-#include "QualityControl/ObjectsManager.h"
 #include <memory>
+
+#include "QualityControl/ObjectsManager.h"
+#include <DataFormat/DataSet.h>
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -63,7 +64,7 @@ class TaskInterface
     virtual void startOfActivity(Activity &activity) = 0;
     virtual void startOfCycle() = 0;
     //    virtual void monitorDataBlock(vector<pair<DataHeader*, char*>>& datablock) = 0;
-    virtual void monitorDataBlock(std::vector<std::shared_ptr<DataBlockContainer>> &block) = 0;
+    virtual void monitorDataBlock(DataSetReference block) = 0;
     virtual void endOfCycle() = 0;
     virtual void endOfActivity(Activity &activity) = 0;
     virtual void reset() = 0;

@@ -91,15 +91,9 @@ void TaskDevice::populateConfig(std::string taskName)
 
   mTaskConfig.taskName = taskName;
   mTaskConfig.moduleName = mConfigFile->get<string>(taskDefinitionName + "/moduleName").value();
-  mTaskConfig.numberHistos = mConfigFile->get<int>(taskDefinitionName + "/numberHistos").value();
-  mTaskConfig.numberChecks = mConfigFile->get<int>(taskDefinitionName + "/numberChecks").value();
-  mTaskConfig.typeOfChecks = mConfigFile->get<string>(taskDefinitionName + "/typeOfChecks").value();
   mTaskConfig.className = mConfigFile->get<string>(taskDefinitionName + "/className").value();
-  mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(taskDefinitionName + "/cycleDurationSeconds").value();
-  mTaskConfig.publisherClassName = mConfigFile->get<string>("Publisher/className").value();
-  mTaskConfig.maxNumberCycles = mConfigFile->exists(taskDefinitionName + "/maxNumberCycles") ?
-                                mConfigFile->get<int>(taskDefinitionName + "/maxNumberCycles").value() :
-                                -1;
+  mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(taskDefinitionName + "/cycleDurationSeconds").value_or(10);
+  mTaskConfig.maxNumberCycles = mConfigFile->get<int>(taskDefinitionName + "/maxNumberCycles").value_or(-1);
 }
 
 void TaskDevice::InitTask()
@@ -153,9 +147,9 @@ void TaskDevice::monitorCycle()
   auto end = start + seconds(mTaskConfig.cycleDurationSeconds);
   int numberBlocks = 0;
   while (system_clock::now() < end) {
-    DataSetReference block = mSampler->getData(100);
-    if (block) {
-      mTask->monitorDataBlock(*block);
+    DataSetReference dataSetReference = mSampler->getData(100);
+    if (dataSetReference) {
+      mTask->monitorDataBlock(dataSetReference);
       mSampler->releaseData(); // invalids the block !!!
       numberBlocks++;
     }
