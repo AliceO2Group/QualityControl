@@ -8,12 +8,14 @@
 #include <FairMQDevice.h>
 #include <TMessage.h>
 #include "QualityControl/SpyDevice.h"
+#include "QualityControl/MonitorObject.h"
 #include <TSystem.h>
 #include <chrono>
 #include <thread>
 #include <boost/algorithm/string.hpp>
 
 using namespace std;
+using namespace AliceO2::QualityControl::Core;
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -57,12 +59,14 @@ void SpyDevice::Run()
       if (tobj) {
         // TODO once the bug in ROOt that removes spaces in strings passed in signal slot is fixed we can use the normal name.
         string objectName = tobj->GetName();
+        MonitorObject *mo = dynamic_cast<MonitorObject*>(tobj);
+        Quality q = mo ? mo->getQuality() : Quality::Null;
         boost::erase_all(objectName, " ");
         if (mCache.count(objectName) && mCache[objectName]) {
           delete mCache[objectName];
         }
         mCache[objectName] = tobj;
-        mFrame->updateList(objectName);
+        mFrame->updateList(objectName/*, q*/); // TODO give quality to show in the gui
       } else {
         cerr << "not a tobject !" << endl;
       }

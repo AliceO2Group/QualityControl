@@ -18,6 +18,7 @@
 #include <TGTextEntry.h>
 #include <TGCanvas.h>
 #include <TGComboBox.h>
+#include "QualityControl/Quality.h"
 
 namespace AliceO2 {
 namespace QualityControl {
@@ -44,7 +45,7 @@ class SpyMainFrame: public TGMainFrame
 
     void closeWindow();
     void menuHandler(Int_t id);
-    void updateList(std::string name, std::string taskName = "");
+    void updateList(std::string name/*, AliceO2::QualityControl::Core::Quality quality*/, std::string taskName = "");
     /**
      * \param listName The name as it appears in the list and that might be different from obj->GetName()
      */

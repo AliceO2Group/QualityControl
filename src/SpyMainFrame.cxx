@@ -15,6 +15,7 @@
 #include <QualityControl/DatabaseFactory.h>
 #include <Configuration/Configuration.h>
 #include <Configuration/ConfigurationFactory.h>
+#include <TGraph.h>
 
 using namespace std;
 using namespace AliceO2::QualityControl::Repository;
@@ -202,7 +203,13 @@ void SpyMainFrame::displayObject(TObject *obj)
     delete mDrawnObject;
     gPad->Clear();
   }
-  mDrawnObject = obj->DrawClone();
+
+  string drawOptions = "";
+  if (((AliceO2::QualityControl::Core::MonitorObject *) obj)->getObject()->IsA() == TGraph::Class()) {
+    drawOptions = "ALP";
+  }
+
+  mDrawnObject = obj->DrawClone(drawOptions.c_str());
   gPad->Modified();
   gPad->Update();
   gSystem->ProcessEvents();
@@ -220,7 +227,7 @@ void SpyMainFrame::displayObject(const char *objectName)
   }
 }
 
-void SpyMainFrame::updateList(string name, string taskName)
+void SpyMainFrame::updateList(string name, /*AliceO2::QualityControl::Core::Quality quality, */string taskName)
 {
   if (mMapButtons.count(name) == 0) { // object unknown yet
     auto *button = new TGTextButton(mObjectsListFrame, name.c_str());

@@ -189,7 +189,7 @@ void Checker::check(MonitorObject *mo)
     CheckInterface *checkInstance = instantiateCheck(check.name, check.className);
     Quality q = checkInstance->check(mo);
 
-    mLogger << "        result of the check : " << q.getName() << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << "  result of the check " << check.name << ": " << q.getName() << AliceO2::InfoLogger::InfoLogger::endm;
 
     checkInstance->beautify(mo, q);
   }
