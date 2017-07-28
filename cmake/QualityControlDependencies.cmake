@@ -6,37 +6,27 @@ find_package(FairRoot)
 find_package(MySQL)
 
 # todo not sure why this is needed
-if(BOOST_FOUND AND NOT Boost_FOUND)
+if (BOOST_FOUND AND NOT Boost_FOUND)
     set(BOOST_FOUND 1)
     set(Boost_FOUND 1)
-endif()
+endif ()
 
-if(FAIRROOT_FOUND)
-    # this should go away when fairrot provides a proper Find script or proper config scripts
-    # See : http://www.cmake.org/cmake/help/v3.0/command/link_directories.html
-    link_directories(${FAIRROOT_LIBRARY_DIR})
-    find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui)
-    set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ)
-else(FAIRROOT_FOUND)
-    message(WARNING "FairRoot not found, corresponding classes will not be compiled.")
-        # todo not sure that it is needed (when using alibuild it hsould not)
-    SET(ROOT_DIR "/opt/root-6/cmake/")
-    find_package(ROOT CONFIG COMPONENTS Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore QUIET)
-    set(FAIRROOT_LIBRARIES "")
-endif(FAIRROOT_FOUND)
+link_directories(${FAIRROOT_LIBRARY_DIR})
+find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui)
+set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ)
 
-if(NOT ROOT_FOUND)
+if (NOT ROOT_FOUND)
     return()
-endif()
+endif ()
 
-if(NOT MYSQL_FOUND)
+if (NOT MYSQL_FOUND)
     message(WARNING "MySQL not found, the corresponding classes won't be built.")
-#elseif(NOT ROOT_RMySQL_LIBRARY)
-#    message(WARNING "MySQL ROOT class not found, the corresponding classes won't be built.")
-else()
+    #elseif(NOT ROOT_RMySQL_LIBRARY)
+    #    message(WARNING "MySQL ROOT class not found, the corresponding classes won't be built.")
+else ()
     add_definitions(-D_WITH_MYSQL)
     set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -lRMySQL")
-endif()
+endif ()
 
 o2_define_bucket(
         NAME
