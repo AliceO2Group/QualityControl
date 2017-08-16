@@ -5,6 +5,7 @@ find_package(Monitoring REQUIRED)
 find_package(FairRoot)
 find_package(MySQL)
 find_package(Common REQUIRED)
+find_package(InfoLogger REQUIRED)
 
 # todo not sure why this is needed
 if (BOOST_FOUND AND NOT Boost_FOUND)
@@ -38,13 +39,13 @@ o2_define_bucket(
         ${Boost_THREAD_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         ${Common_LIBRARIES}
-        InfoLogger
         ${Configuration_LIBRARIES}
         DataSampling
         ${Monitoring_LIBRARIES}
         DataFormat
         ${ROOT_LIBRARIES}
         ${Boost_LOG_DEBUG}
+        ${InfoLogger_LIBRARIES}
 
         SYSTEMINCLUDE_DIRECTORIES
         ${Boost_INCLUDE_DIRS}
@@ -54,6 +55,7 @@ o2_define_bucket(
         ${Monitoring_INCLUDE_DIRS}
         ${ZEROMQ_INCLUDE_DIR}
         ${Common_INCLUDE_DIRS}
+        ${InfoLogger_INCLUDE_DIRS}
 )
 
 o2_define_bucket(
