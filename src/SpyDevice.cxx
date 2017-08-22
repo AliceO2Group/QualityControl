@@ -27,10 +27,6 @@ SpyDevice::SpyDevice()
   SetTransport("zeromq"); // or "nanomsg", etc
 }
 
-SpyDevice::~SpyDevice()
-{
-}
-
 void SpyDevice::setFrame(SpyMainFrame *frame)
 {
   mFrame = frame;
@@ -56,13 +52,13 @@ void SpyDevice::Run()
     while (fChannels.at("data-in").at(0).ReceiveAsync(message) > 0) {
       TestTMessage tm(message->GetData(), message->GetSize());
       TObject *tobj = tm.ReadObject(tm.GetClass());
-      if (tobj) {
+      if (tobj != nullptr) {
         // TODO once the bug in ROOt that removes spaces in strings passed in signal slot is fixed we can use the normal name.
         string objectName = tobj->GetName();
-        MonitorObject *mo = dynamic_cast<MonitorObject*>(tobj);
+        auto *mo = dynamic_cast<MonitorObject*>(tobj);
         Quality q = mo ? mo->getQuality() : Quality::Null;
         boost::erase_all(objectName, " ");
-        if (mCache.count(objectName) && mCache[objectName]) {
+        if (mCache.count(objectName) > 0 && mCache[objectName] != nullptr) {
           delete mCache[objectName];
         }
         mCache[objectName] = tobj;

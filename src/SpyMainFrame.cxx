@@ -204,7 +204,7 @@ void SpyMainFrame::displayObject(TObject *obj)
     gPad->Clear();
   }
 
-  string drawOptions = "";
+  string drawOptions;
   if (((AliceO2::QualityControl::Core::MonitorObject *) obj)->getObject()->IsA() == TGraph::Class()) {
     drawOptions = "ALP";
   }
@@ -240,7 +240,7 @@ void SpyMainFrame::updateList(string name, /*AliceO2::QualityControl::Core::Qual
     this->MapSubwindows();
     this->Resize();
     gSystem->ProcessEvents();
-  } else if (mDrawnObject) { // object is known and it is the one displayed -> redraw it
+  } else if (mDrawnObject != nullptr) { // object is known and it is the one displayed -> redraw it
     string noSpaceName = mDrawnObject->GetName();
     boost::erase_all(noSpaceName, " ");
     if (noSpaceName == name) {
@@ -306,10 +306,10 @@ void SpyMainFrame::dbRun()
 
 void SpyMainFrame::dbDisplayObject(string objectName)
 {
-  string taskName = objectName.substr(0, objectName.find("/"));
-  string objectNameOnly = objectName.substr(objectName.find("/") + 1);
+  string taskName = objectName.substr(0, objectName.find('/'));
+  string objectNameOnly = objectName.substr(objectName.find('/') + 1);
   AliceO2::QualityControl::Core::MonitorObject *mo = mDbInterface->retrieve(taskName, objectNameOnly);
-  if (mo) {
+  if (mo != nullptr) {
     displayObject(mo->getObject());
     delete mo;
   } else {

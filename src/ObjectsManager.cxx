@@ -24,15 +24,15 @@ ObjectsManager::ObjectsManager(TaskConfig &taskConfig) : mTaskName(taskConfig.ta
 
 ObjectsManager::~ObjectsManager()
 {
-  for (auto obj = mMonitorObjects.begin(); obj != mMonitorObjects.end(); obj++) {
-    delete obj->second;
+  for (auto &mMonitorObject : mMonitorObjects) {
+    delete mMonitorObject.second;
   }
   mMonitorObjects.clear();
 }
 
 void ObjectsManager::startPublishing(TObject *object, std::string objectName)
 {
-  std::string nonEmptyName = objectName == "" ? object->GetName() : objectName;
+  std::string nonEmptyName = objectName.empty() ? object->GetName() : objectName;
   auto *newObject = new MonitorObject(nonEmptyName, object, mTaskName);
   newObject->setIsOwner(false);
   mMonitorObjects[nonEmptyName] = newObject;

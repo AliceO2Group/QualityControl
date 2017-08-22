@@ -38,6 +38,15 @@ class MonitorObject : public TObject
     /// Destructor
     ~MonitorObject() override;
 
+    /// Copy constructor
+    MonitorObject (const MonitorObject& other) = default;
+    /// Move constructor
+    MonitorObject (MonitorObject&& other) noexcept = default;
+    /// Copy assignment operator
+    MonitorObject& operator= (const MonitorObject& other) = default;
+    /// Move assignment operator
+    MonitorObject& operator= (MonitorObject&& other) noexcept = default;
+
     const std::string &getName() const
     {
       return mName;

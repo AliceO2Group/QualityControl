@@ -34,8 +34,7 @@ class SpyDevice: public FairMQDevice
 {
   public:
     SpyDevice();
-
-    ~SpyDevice() override;
+    ~SpyDevice() override = default;
 
     void stopSpy();
     void displayObject(std::string objectName);
