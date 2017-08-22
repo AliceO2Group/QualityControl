@@ -69,7 +69,7 @@ class TaskInterface
     /// Copy assignment operator
     TaskInterface& operator= (const TaskInterface& other) = default;
     /// Move assignment operator
-    TaskInterface& operator= (TaskInterface&& other) noexcept = default;
+    TaskInterface& operator= (TaskInterface&& other)/* noexcept */ = default; // error with gcc if noexcept
 
 
     // Definition of the methods for the template method pattern
