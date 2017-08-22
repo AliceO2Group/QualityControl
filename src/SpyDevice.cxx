@@ -89,8 +89,8 @@ void SpyDevice::startChannel(std::string address, std::string type)
   FairMQChannel receivingChannel;
   receivingChannel.UpdateType(type);
   receivingChannel.UpdateAddress(address);
-  receivingChannel.UpdateSndBufSize(10000);
-  receivingChannel.UpdateRcvBufSize(10000);
+  receivingChannel.UpdateSndBufSize(100);
+  receivingChannel.UpdateRcvBufSize(100);
   receivingChannel.UpdateRateLogging(0);
   receivingChannel.UpdateMethod("connect");
   fChannels["data-in"].push_back(receivingChannel);

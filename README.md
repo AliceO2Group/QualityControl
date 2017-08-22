@@ -63,8 +63,8 @@ The JSON `alfa.json` file contains a typical FairMQ device definition. One can
                                 "type": "pub",
                                 "method": "bind",
                                 "address": "tcp://*:5556",
-                                "sndBufSize": 10000,
-                                "rcvBufSize": 10000,
+                                "sndBufSize": 100,
+                                "rcvBufSize": 100,
                                 "rateLogging": 0
                             }
                         ]
