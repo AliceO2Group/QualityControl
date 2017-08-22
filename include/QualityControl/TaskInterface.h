@@ -16,23 +16,27 @@ namespace QualityControl {
 namespace Core {
 
 /// \brief Dummy class that should be removed when there is the official one.
+/// This corresponds to a Run1/2 "run".
 /// \author   Barthelemy von Haller
 class Activity
 {
   public:
-    /// Default constructor
-    Activity() : mId(0), mType(0)
-    {}
-
+    Activity() = default;
     Activity(int id, int type) : mId(id), mType(type)
     {}
+    /// Copy constructor
+    Activity (const Activity& other) = default;
+    /// Move constructor
+    Activity (Activity&& other) noexcept = default;
+    /// Copy assignment operator
+    Activity& operator= (const Activity& other) = default;
+    /// Move assignment operator
+    Activity& operator= (Activity&& other) noexcept = default;
 
-    /// Destructor
-    virtual ~Activity()
-    {}
+    virtual ~Activity() = default;
 
-    int mId;
-    int mType;
+    int mId{0};
+    int mType{0};
 };
 
 /// \brief  Skeleton of a QC task.
@@ -51,19 +55,27 @@ class TaskInterface
     /// Can't be used when dynamically loading the class with ROOT.
     /// @param name
     /// @param objectsManager
-    TaskInterface(ObjectsManager *objectsManager);
+    explicit TaskInterface(ObjectsManager *objectsManager);
 
     /// \brief Default constructor
-    /// Remember to set an objectsManager.
     TaskInterface();
 
-    virtual ~TaskInterface();
+    /// \brief Destructor
+    virtual ~TaskInterface() noexcept = default;
+    /// Copy constructor
+    TaskInterface (const TaskInterface& other) = default;
+    /// Move constructor
+    TaskInterface (TaskInterface&& other) noexcept = default;
+    /// Copy assignment operator
+    TaskInterface& operator= (const TaskInterface& other) = default;
+    /// Move assignment operator
+    TaskInterface& operator= (TaskInterface&& other) noexcept = default;
+
 
     // Definition of the methods for the template method pattern
     virtual void initialize() = 0;
     virtual void startOfActivity(Activity &activity) = 0;
     virtual void startOfCycle() = 0;
-    //    virtual void monitorDataBlock(vector<pair<DataHeader*, char*>>& datablock) = 0;
     virtual void monitorDataBlock(DataSetReference block) = 0;
     virtual void endOfCycle() = 0;
     virtual void endOfActivity(Activity &activity) = 0;

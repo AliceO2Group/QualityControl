@@ -3,6 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
+#include <utility>
+
 #include "QualityControl/TaskInterface.h"
 
 namespace AliceO2 {
@@ -16,10 +18,6 @@ TaskInterface::TaskInterface(ObjectsManager *objectsManager) :
 
 TaskInterface::TaskInterface() :
   mObjectsManager(nullptr)
-{
-}
-
-TaskInterface::~TaskInterface()
 {
 }
 
