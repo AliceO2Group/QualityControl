@@ -27,9 +27,9 @@ class CheckInterface
 {
   public:
     /// Default constructor
-    CheckInterface();
+    CheckInterface() = default;
     /// Destructor
-    virtual ~CheckInterface();
+    virtual ~CheckInterface() = default;
 
     /// \brief Configure the check based on its name.
     ///
@@ -37,7 +37,7 @@ class CheckInterface
     /// ROOT needs an argument-less constructor when streaming it. We use this method
     /// to configure the object. The name might be used to ask the configuration system
     /// for specific parameters.
-    virtual void configure(std::string name);
+    virtual void configure(std::string name) = 0;
 
     /// \brief Returns the quality associated with this object.
     ///
@@ -68,8 +68,8 @@ class CheckInterface
 
     bool isObjectCheckable(const MonitorObject *mo);
 
-  private:
-    std::string mName;
+//  private:
+//    std::string mName;
 
   ClassDef(CheckInterface, 1)
 };

@@ -15,19 +15,19 @@ namespace AliceO2 {
 namespace QualityControl {
 namespace Checker {
 
-CheckInterface::CheckInterface()
-    : mName("")
-{
-}
+//CheckInterface::CheckInterface()
+////    : mName("")
+//{
+//}
+//
+//CheckInterface::~CheckInterface()
+//{
+//}
 
-CheckInterface::~CheckInterface()
-{
-}
-
-void CheckInterface::configure(std::string name)
-{
-  mName = name;
-}
+//void CheckInterface::configure(std::string name)
+//{
+//  mName = name;
+//}
 
 std::string CheckInterface::getAcceptedType()
 {
