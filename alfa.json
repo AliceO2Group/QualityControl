@@ -11,8 +11,26 @@
                                 "type": "pub",
                                 "method": "bind",
                                 "address": "tcp://*:5556",
-                                "sndBufSize": 10000,
-                                "rcvBufSize": 10000,
+                                "sndBufSize": 100,
+                                "rcvBufSize": 100,
+                                "rateLogging": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "daqTask",
+                "channels": [
+                    {
+                        "name": "data-out",
+                        "sockets": [
+                            {
+                                "type": "pub",
+                                "method": "bind",
+                                "address": "tcp://*:5556",
+                                "sndBufSize": 100,
+                                "rcvBufSize": 100,
                                 "rateLogging": 0
                             }
                         ]
