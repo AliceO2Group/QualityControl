@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "QualityControl/ObjectsManager.h"
-#include <DataFormat/DataSet.h>
+#include <Common/DataSet.h>
 
 namespace AliceO2 {
 namespace QualityControl {

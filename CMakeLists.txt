@@ -26,7 +26,6 @@ include(O2Utils)
 include(QualityControlDependencies)
 include(O2) # to be removed
 
-link_o2_subproject(DataFormat)
 link_o2_subproject(DataSampling)
 
 add_subdirectory(doc)

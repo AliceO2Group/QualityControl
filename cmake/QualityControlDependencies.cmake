@@ -42,7 +42,6 @@ o2_define_bucket(
         ${Configuration_LIBRARIES}
         DataSampling
         ${Monitoring_LIBRARIES}
-        DataFormat
         ${ROOT_LIBRARIES}
         ${Boost_LOG_DEBUG}
         ${InfoLogger_LIBRARIES}
