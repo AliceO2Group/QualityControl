@@ -2,20 +2,6 @@
 # General project definition
 ####################################
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.5.2 FATAL_ERROR)
-
-### CMP0025   Compiler id for Apple Clang is now AppleClang.
-### CMP0042   MACOSX_RPATH is enabled by default.
-
-FOREACH (p
-        CMP0025 # CMake 3.0
-        CMP0042 # CMake 3.0
-        )
-    IF (POLICY ${p})
-        cmake_policy(SET ${p} NEW)
-    ENDIF ()
-endforeach ()
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake) # project specific cmake dir
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
 
@@ -24,7 +10,6 @@ project(QualityControl)
 # Load some basic macros which are needed later on
 include(O2Utils)
 include(QualityControlDependencies)
-include(O2) # to be removed
 
 # TODO make it required, once in its own repo
 if(ROOT_FOUND)

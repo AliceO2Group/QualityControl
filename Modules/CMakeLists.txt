@@ -21,7 +21,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
 project(QualityControlModules)
 
 # Load some basic macros which are needed later on
-include(O2)
 include(O2Utils)
 include(QualityControlDependencies)
 
@@ -63,8 +62,6 @@ ENDIF ()
 
 # Add compiler flags for warnings and (more importantly) fPIC and debug symbols
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -fPIC")
-
-link_o2_subproject(QualityControl)
 
 add_subdirectory(Common)
 add_subdirectory(Example)

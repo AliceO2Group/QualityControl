@@ -7,6 +7,7 @@ find_package(MySQL)
 find_package(Common REQUIRED)
 find_package(InfoLogger REQUIRED)
 find_package(DataSampling REQUIRED)
+find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
 
 # todo not sure why this is needed
 if (BOOST_FOUND AND NOT Boost_FOUND)
@@ -15,12 +16,7 @@ if (BOOST_FOUND AND NOT Boost_FOUND)
 endif ()
 
 link_directories(${FAIRROOT_LIBRARY_DIR})
-find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui)
 set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ)
-
-if (NOT ROOT_FOUND)
-    return()
-endif ()
 
 if (NOT MYSQL_FOUND)
     message(WARNING "MySQL not found, the corresponding classes won't be built.")
@@ -28,7 +24,7 @@ if (NOT MYSQL_FOUND)
     #    message(WARNING "MySQL ROOT class not found, the corresponding classes won't be built.")
 else ()
     add_definitions(-D_WITH_MYSQL)
-    set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -lRMySQL")
+#    set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -lRMySQL")
 endif ()
 
 o2_define_bucket(
@@ -74,10 +70,6 @@ o2_define_bucket(
 )
 
 
-# todo just a quick fix to get the dictionary working . to be revisited when extracting
-#list(APPEND GLOBAL_ALL_MODULES_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/../QualityControl/include)
-#list(APPEND GLOBAL_ALL_MODULES_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/../DataFormat/include)
-
 o2_define_bucket(
         NAME
         o2_qcmodules_base
@@ -94,7 +86,7 @@ o2_define_bucket(
         ${Monitoring_INCLUDE_DIRS}
         ${InfoLogger_INCLUDE_DIRS}
         ${Common_INCLUDE_DIRS}
-        ${CMAKE_SOURCE_DIR}/QualityControl/Framework/include # another module's include dir
+        ${CMAKE_SOURCE_DIR}/Framework/include # another module's include dir
 )
 
 o2_define_bucket(
