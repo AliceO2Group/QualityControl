@@ -72,3 +72,47 @@ o2_define_bucket(
         ${FAIRROOT_INCLUDE_DIR}
         ${FAIRROOT_INCLUDE_DIR}/fairmq
 )
+
+
+# todo just a quick fix to get the dictionary working . to be revisited when extracting
+#list(APPEND GLOBAL_ALL_MODULES_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/../QualityControl/include)
+#list(APPEND GLOBAL_ALL_MODULES_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/../DataFormat/include)
+
+o2_define_bucket(
+        NAME
+        o2_qcmodules_base
+
+        DEPENDENCIES
+        ${Boost_PROGRAM_OPTIONS_LIBRARY}
+        ${Monitoring_LIBRARIES}
+        ${InfoLogger_LIBRARIES}
+        ${Common_LIBRARIES}
+        QualityControl
+
+        SYSTEMINCLUDE_DIRECTORIES
+        ${Boost_INCLUDE_DIRS}
+        ${Monitoring_INCLUDE_DIRS}
+        ${InfoLogger_INCLUDE_DIRS}
+        ${Common_INCLUDE_DIRS}
+        ${CMAKE_SOURCE_DIR}/QualityControl/Framework/include # another module's include dir
+)
+
+o2_define_bucket(
+        NAME
+        o2_qcmodules_common
+
+        DEPENDENCIES
+        o2_qcmodules_base
+)
+
+o2_define_bucket(
+        NAME
+        o2_qcmodules_example
+
+        DEPENDENCIES
+        o2_qcmodules_base
+
+        SYSTEMINCLUDE_DIRECTORIES
+        ${Boost_INCLUDE_DIRS}
+        ${Configuration_INCLUDE_DIRS}
+)
