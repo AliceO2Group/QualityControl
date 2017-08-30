@@ -14,12 +14,12 @@
 #include <TObjString.h>
 
 using namespace std;
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 BOOST_AUTO_TEST_CASE(publisher_test)
 {
@@ -45,5 +45,5 @@ BOOST_AUTO_TEST_CASE(publisher_test)
 }
 
 } /* namespace ObjectsManager */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace quality_control */
+} /* namespace o2 */

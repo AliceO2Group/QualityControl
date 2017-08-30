@@ -21,9 +21,9 @@
 #include "QualityControl/Version.h"
 
 using namespace std;
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 using namespace AliceO2::Configuration;
-using namespace AliceO2::QualityControl::Checker;
+using namespace o2::quality_control::Checker;
 namespace po = boost::program_options;
 
 int main(int argc, char *argv[])
@@ -47,11 +47,11 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
   }
   if (vm.count("version")) {
-    std::cout << "QualityControl version " << AliceO2::QualityControl::Core::Version::getString() << std::endl;
+    std::cout << "QualityControl version " << o2::quality_control::core::Version::getString() << std::endl;
     return EXIT_SUCCESS;
   }
   if (vm.count("rev")) {
-    std::cout << "SVN revision : " << AliceO2::QualityControl::Core::Version::getRevision() << std::endl;
+    std::cout << "SVN revision : " << o2::quality_control::core::Version::getRevision() << std::endl;
     return EXIT_SUCCESS;
   }
   if (vm.count("name")) {

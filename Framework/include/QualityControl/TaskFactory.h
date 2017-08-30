@@ -13,9 +13,9 @@
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/TaskDevice.h"
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 class TaskInterface;
 
@@ -38,8 +38,8 @@ class TaskFactory
     TaskInterface *create(TaskConfig &taskConfig, std::shared_ptr<ObjectsManager> objectsManager);
 };
 
-} // namespace Core
+} // namespace core
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITYCONTROL_LIBS_CORE_TASKFACTORY_H_

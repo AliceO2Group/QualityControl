@@ -29,8 +29,8 @@
 
 namespace ba = boost::accumulators;
 
-namespace AliceO2 {
-namespace QualityControl {
+namespace o2 {
+namespace quality_control {
 namespace Checker {
 
 /// \brief The class in charge of running the checks on a MonitorObject.
@@ -93,8 +93,8 @@ class Checker : public FairMQDevice
     static void CustomCleanupTMessage(void *data, void *object);
     void populateConfig( std::unique_ptr<AliceO2::Configuration::ConfigurationInterface>& config, std::string checkerName);
 
-    AliceO2::QualityControl::Core::QcInfoLogger &mLogger;
-    AliceO2::QualityControl::Repository::DatabaseInterface *mDatabase;
+    o2::quality_control::core::QcInfoLogger &mLogger;
+    o2::quality_control::repository::DatabaseInterface *mDatabase;
     std::vector<std::string> mTasksAlreadyEncountered;
     CheckerConfig mCheckerConfig;
 
@@ -112,6 +112,6 @@ class Checker : public FairMQDevice
 
 } /* namespace Checker */
 } /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace o2 */
 
 #endif /* QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_ */

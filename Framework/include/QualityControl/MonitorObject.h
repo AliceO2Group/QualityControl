@@ -14,9 +14,9 @@
 // QC
 #include "QualityControl/Quality.h"
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 /// \brief Container for the definition of a check
 struct CheckDefinition {
@@ -154,8 +154,8 @@ class MonitorObject : public TObject
   ClassDefOverride(MonitorObject,1);
 };
 
-} // namespace Core
+} // namespace core
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITYCONTROL_LIBS_CORE_MONITOROBJECT_H_

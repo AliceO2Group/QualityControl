@@ -9,10 +9,10 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 
-namespace AliceO2 {
-namespace QualityControl {
+namespace o2 {
+namespace quality_control {
 namespace Checker {
 
 /// \brief  Skeleton of a check.
@@ -76,6 +76,6 @@ class CheckInterface
 
 } /* namespace Checker */
 } /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace o2 */
 
 #endif /* QUALITYCONTROL_LIBS_CHECKER_CHECKINTERFACE_H_ */

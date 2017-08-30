@@ -11,13 +11,13 @@
 #include <boost/test/unit_test.hpp>
 #include <cassert>
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 BOOST_AUTO_TEST_CASE(mo)
 {
-  AliceO2::QualityControl::Core::MonitorObject obj;
+  o2::quality_control::core::MonitorObject obj;
   BOOST_CHECK_EQUAL(obj.getName(), "");
   obj.setName("test");
   BOOST_CHECK_EQUAL(obj.getName(), "test");
@@ -38,5 +38,5 @@ BOOST_AUTO_TEST_CASE(mo)
 }
 
 } /* namespace ObjectsManager */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace quality_control */
+} /* namespace o2 */

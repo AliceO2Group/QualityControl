@@ -13,13 +13,13 @@
 // O2
 #include "Configuration/Configuration.h"
 
-ClassImp(AliceO2::QualityControlModules::Common::MeanIsAbove)
+ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Common {
+namespace o2 {
+namespace quality_control_modules {
+namespace common {
 
 MeanIsAbove::MeanIsAbove()
     : mThreshold(0.0)
@@ -87,7 +87,7 @@ void MeanIsAbove::beautify(MonitorObject *mo, Quality checkResult)
     lineMin->SetLineColor(kWhite);
   }
 }
-} /* namespace Common */
-} /* namespace QualityControlModules */
-} /* namespace AliceO2 */
+} /* namespace common */
+} /* namespace quality_control_modules */
+} /* namespace o2 */
 

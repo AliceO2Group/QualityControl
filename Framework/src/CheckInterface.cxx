@@ -7,12 +7,12 @@
 #include "TClass.h"
 #include <iostream>
 
-ClassImp(AliceO2::QualityControl::Checker::CheckInterface)
+ClassImp(o2::quality_control::Checker::CheckInterface)
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControl {
+namespace o2 {
+namespace quality_control {
 namespace Checker {
 
 //CheckInterface::CheckInterface()
@@ -46,6 +46,6 @@ bool CheckInterface::isObjectCheckable(const MonitorObject *mo)
 }
 
 } /* namespace Checker */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace quality_control */
+} /* namespace o2 */
 

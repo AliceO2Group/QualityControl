@@ -9,11 +9,12 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/DatabaseInterface.h"
 
-using namespace AliceO2::QualityControl;
+using namespace o2::quality_control;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Client {
+namespace o2 {
+namespace quality_control {
+namespace client
+{
 
 /// \brief Class to access all information a client can need.
 /// It is a Facade for the various specialized and specific data providers (eg. DB or IS)
@@ -35,12 +36,12 @@ class ClientDataProvider
 
   private:
     // Facaded systems
-    Repository::DatabaseInterface *database;
+    repository::DatabaseInterface *database;
 
 };
 
 } /* namespace Client */
 } /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace o2 */
 
 #endif /* QUALITYCONTROL_CLIENT_CLIENT_DATA_PROVIDER_H_ */

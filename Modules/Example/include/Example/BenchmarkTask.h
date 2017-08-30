@@ -13,11 +13,11 @@
 
 class TH1F;
 
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Example {
+namespace o2 {
+namespace quality_control_modules {
+namespace example {
 
 /// \brief Quality Control Task for benchmarking
 /// It publishes a number of TH1F (configurable, see example.ini in module QualityControl).

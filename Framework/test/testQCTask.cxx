@@ -17,13 +17,13 @@
 
 using boost::test_tools::output_test_stream;
 
-using namespace AliceO2::QualityControl;
+using namespace o2::quality_control;
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControl {
+namespace o2 {
+namespace quality_control {
 
-using namespace Core;
+using namespace core;
 
 namespace Test {
 class TestTask : public TaskInterface
@@ -81,8 +81,8 @@ class TestTask : public TaskInterface
 };
 
 } /* namespace Test */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace quality_control */
+} /* namespace o2 */
 
 BOOST_AUTO_TEST_CASE(TestInstantiate)
 {

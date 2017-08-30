@@ -9,7 +9,7 @@
 
 namespace bpo = boost::program_options;
 using namespace std;
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 
 void addCustomOptions(bpo::options_description& options)
 {

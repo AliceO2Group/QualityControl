@@ -14,13 +14,13 @@
 #include <TH1F.h>
 #include <TList.h>
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Common {
+namespace o2 {
+namespace quality_control_modules {
+namespace common {
 
 BOOST_AUTO_TEST_CASE(test_checks)
 {
-  AliceO2::QualityControl::Core::MonitorObject mo;
+  o2::quality_control::core::MonitorObject mo;
   mo.setName("test");
   mo.setQuality(Quality::Null);
   TH1F th1f("h1", "h1", 10, 0, 9);
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(test_checks)
   BOOST_CHECK_EQUAL(quality, Quality::Good);
 
   check.beautify(&mo); // add a line
-  BOOST_CHECK_EQUAL(1, th1f.GetListOfFunctions()->GetEntries()); 
+  BOOST_CHECK_EQUAL(1, th1f.GetListOfFunctions()->GetEntries());
 
   check.beautify(&mo);
   // Should update the line, not add one --> TODO THIS FAILS
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(test_checks)
 
 BOOST_AUTO_TEST_CASE(test_types)
 {
-  AliceO2::QualityControl::Core::MonitorObject mo;
+  o2::quality_control::core::MonitorObject mo;
   mo.setName("test");
   mo.setQuality(Quality::Null);
   TObject obj;
@@ -66,6 +66,6 @@ BOOST_AUTO_TEST_CASE(test_types)
   BOOST_CHECK_EQUAL(quality, Quality::Null);
 }
 
-} /* namespace Common */
-} /* namespace QualityControlModules */
-} /* namespace AliceO2 */
+} /* namespace common */
+} /* namespace quality_control_modules */
+} /* namespace o2 */

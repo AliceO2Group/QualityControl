@@ -24,9 +24,9 @@
 
 namespace ba = boost::accumulators;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 class TaskInterface;
 
@@ -64,7 +64,7 @@ class TaskDevice : public FairMQDevice
     std::unique_ptr<AliceO2::Configuration::ConfigurationInterface> mConfigFile;
     std::unique_ptr<AliceO2::Monitoring::Collector> mCollector;
     std::unique_ptr<AliceO2::DataSampling::SamplerInterface> mSampler;
-    AliceO2::QualityControl::Core::TaskInterface *mTask;
+    o2::quality_control::core::TaskInterface *mTask;
     std::shared_ptr<ObjectsManager> mObjectsManager;
 
     // stats

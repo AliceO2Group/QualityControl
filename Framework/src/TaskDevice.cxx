@@ -38,16 +38,16 @@ FairMQDevicePtr getDevice(const FairMQProgOptions &config)
   std::string taskName = config.GetValue<std::string>("name");
   std::string configurationSource = config.GetValue<std::string>("configuration");
 
-  return new AliceO2::QualityControl::Core::TaskDevice(taskName, configurationSource);
+  return new o2::quality_control::core::TaskDevice(taskName, configurationSource);
 }
 
 /*
  * TaskDevice
  */
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 TaskDevice::TaskDevice(std::string taskName, std::string configurationSource) : mTaskName(taskName),
                                                                                 mTotalNumberObjectsPublished(0)

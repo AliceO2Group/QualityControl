@@ -20,12 +20,12 @@
 #include <TGComboBox.h>
 #include "QualityControl/Quality.h"
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Repository {
+namespace o2 {
+namespace quality_control {
+namespace repository {
 class DatabaseInterface;
 }
-namespace Gui {
+namespace gui {
 
 class SpyDevice;
 
@@ -45,7 +45,7 @@ class SpyMainFrame: public TGMainFrame
 
     void closeWindow();
     void menuHandler(Int_t id);
-    void updateList(std::string name/*, AliceO2::QualityControl::Core::Quality quality*/, std::string taskName = "");
+    void updateList(std::string name/*, o2::quality_control::core::Quality quality*/, std::string taskName = "");
     /**
      * \param listName The name as it appears in the list and that might be different from obj->GetName()
      */
@@ -81,15 +81,15 @@ class SpyMainFrame: public TGMainFrame
 
     SpyDevice* mController;
     TObject* mDrawnObject;
-    AliceO2::QualityControl::Repository::DatabaseInterface* mDbInterface;
+    o2::quality_control::repository::DatabaseInterface* mDbInterface;
 
     bool mDbRunning;
 
   ClassDef(SpyMainFrame,1);
 };
 
-} /* namespace Gui */
+} /* namespace gui */
 } /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace o2 */
 
 #endif /* QUALITYCONTROL_SRC_QCSPY_H_ */

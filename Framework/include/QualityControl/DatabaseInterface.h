@@ -9,9 +9,9 @@
 #include "QualityControl/MonitorObject.h"
 #include <memory>
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Repository {
+namespace o2 {
+namespace quality_control {
+namespace repository {
 
 /// \brief The interface to the MonitorObject's repository.
 ///
@@ -30,7 +30,7 @@ class DatabaseInterface
 
     virtual void connect(std::string username, std::string password) = 0;
     virtual void connect(std::string host, std::string database, std::string username, std::string password) = 0;
-    virtual void store(AliceO2::QualityControl::Core::MonitorObject* mo) = 0;
+    virtual void store(o2::quality_control::core::MonitorObject* mo) = 0;
 
     /**
      * Look up an object of a task and return it.
@@ -38,7 +38,7 @@ class DatabaseInterface
      * TODO evaluate whether we should have more methods to retrieve objects of different types (with or without templates)
      * TODO evaluate whether we should have a method to retrieve a list of objects (optimization)
      */
-    virtual AliceO2::QualityControl::Core::MonitorObject* retrieve(std::string taskName, std::string objectName) = 0;
+    virtual o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName) = 0;
     virtual void disconnect() = 0;
     /**
      * \brief Prepare the container, such as a table in a relational database, that will contain the MonitorObject's for the given Task.
@@ -49,8 +49,8 @@ class DatabaseInterface
     virtual std::vector<std::string> getPublishedObjectNames(std::string taskName) = 0;
 };
 
-} /* namespace Repository */
+} /* namespace repository */
 } /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace o2 */
 
 #endif /* QUALITYCONTROL_REPOSITORY_DATABASE_INTERFACE_H_ */

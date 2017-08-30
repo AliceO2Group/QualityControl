@@ -12,9 +12,9 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/TaskConfig.h"
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 /// \brief  Keeps the list of encapsulated objects to publish and does the actual publication.
 ///
@@ -57,8 +57,8 @@ class ObjectsManager
 
     TObject *getObject(std::string objectName);
 
-    typedef typename std::map<std::string, QualityControl::Core::MonitorObject *>::iterator iterator;
-    typedef typename std::map<std::string, QualityControl::Core::MonitorObject *>::const_iterator const_iterator;
+    typedef typename std::map<std::string, quality_control::core::MonitorObject *>::iterator iterator;
+    typedef typename std::map<std::string, quality_control::core::MonitorObject *>::const_iterator const_iterator;
 
     const_iterator begin() const
     { return mMonitorObjects.begin(); }
@@ -73,12 +73,12 @@ class ObjectsManager
     { return mMonitorObjects.end(); }
 
   private:
-    std::map<std::string /*object name*/, QualityControl::Core::MonitorObject * /* object */> mMonitorObjects;
+    std::map<std::string /*object name*/, quality_control::core::MonitorObject * /* object */> mMonitorObjects;
     std::string mTaskName;
 };
 
-} // namespace Core
+} // namespace core
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITYCONTROL_LIBS_OBJECTSMANAGER_H_

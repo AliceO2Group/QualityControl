@@ -12,9 +12,9 @@
 // QC
 #include "QualityControl/DatabaseInterface.h"
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Repository {
+namespace o2 {
+namespace quality_control {
+namespace repository {
 
 /// \brief Factory to get a database accessor
 class DatabaseFactory
@@ -30,8 +30,8 @@ class DatabaseFactory
     static DatabaseInterface* create(std::string name);
 };
 
-} // namespace Core
+} // namespace core
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITYCONTROL_LIBS_CORE_DatabaseFactory_H_

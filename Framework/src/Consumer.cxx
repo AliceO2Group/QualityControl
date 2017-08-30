@@ -15,12 +15,12 @@
 #include <boost/exception/diagnostic_information.hpp>
 
 using namespace std;
-using namespace AliceO2::QualityControl;
+using namespace o2::quality_control;
 namespace po = boost::program_options;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Client {
+namespace o2 {
+namespace quality_control {
+namespace client {
 
 Consumer::Consumer()
     : mNumberCycles(0), mNumberObjects(0), mNumberTasks(0)
@@ -55,9 +55,9 @@ void Consumer::print()
   cout.flush();
 }
 
-} // namespace Client
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace client
+} // namespace quality_control
+} // namespace o2
 
 int main(int argc, char *argv[])
 {
@@ -75,11 +75,11 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
   }
   if (vm.count("version")) {
-    std::cout << "QualityControl version " << AliceO2::QualityControl::Core::Version::getString() << std::endl;
+    std::cout << "quality_control version " << o2::quality_control::core::Version::getString() << std::endl;
     return EXIT_SUCCESS;
   }
   if (vm.count("rev")) {
-    std::cout << "SVN revision : " << AliceO2::QualityControl::Core::Version::getRevision() << std::endl;
+    std::cout << "SVN revision : " << o2::quality_control::core::Version::getRevision() << std::endl;
     return EXIT_SUCCESS;
   }
   string configurationSource = "";
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 
   try {
 
-    AliceO2::QualityControl::Client::Consumer consumer;
+    o2::quality_control::client::Consumer consumer;
     int cycle = 0;
     while (keepRunning) {
       sleep(cycleDuration);   // duration of the monitor cycle

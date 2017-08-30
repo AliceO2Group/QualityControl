@@ -9,9 +9,9 @@
 #include <FairMQDevice.h>
 #include <TMessage.h>
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 class TestTMessage : public TMessage
 {
@@ -34,8 +34,8 @@ class AlfaReceiverForTests : public FairMQDevice
 
 };
 
-} // namespace Core
+} // namespace core
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITY_CONTROL_AlfaReceiverForTests_H

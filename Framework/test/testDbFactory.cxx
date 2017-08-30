@@ -16,11 +16,11 @@
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Repository {
+namespace o2 {
+namespace quality_control {
+namespace repository {
 
-bool do_nothing( Common::FatalException const& ex ) { return true; }
+bool do_nothing( AliceO2::Common::FatalException const& ex ) { return true; }
 
 BOOST_AUTO_TEST_CASE(db_factory_test)
 {
@@ -31,10 +31,10 @@ BOOST_AUTO_TEST_CASE(db_factory_test)
 #endif
 
   DatabaseInterface *database2 = nullptr;
-  BOOST_CHECK_EXCEPTION(database2 = DatabaseFactory::create("asf"), Common::FatalException, do_nothing );
+  BOOST_CHECK_EXCEPTION(database2 = DatabaseFactory::create("asf"), AliceO2::Common::FatalException, do_nothing );
   BOOST_CHECK(!database2);
 }
 
-} /* namespace Repository */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace repository */
+} /* namespace quality_control */
+} /* namespace o2 */

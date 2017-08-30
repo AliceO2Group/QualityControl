@@ -7,12 +7,12 @@
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/QcInfoLogger.h"
 
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 ObjectsManager::ObjectsManager() : mTaskName("anonymous task")
 {
@@ -81,6 +81,6 @@ void ObjectsManager::addCheck(const TObject *object, const std::string &checkNam
   addCheck(object->GetName(), checkName, checkClassName, checkLibraryName);
 }
 
-} // namespace Core
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace core
+} // namespace quality_control
+} // namespace o2

@@ -12,9 +12,9 @@
 
 class TMySQLResult;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Repository {
+namespace o2 {
+namespace quality_control {
+namespace repository {
 
 /// \brief Implementation of the DatabaseInterface for MySQL
 /// \todo consider storing directly the TObject, not the MonitorObject, and to put all its attributes as columns
@@ -29,8 +29,8 @@ class MySqlDatabase: public DatabaseInterface
 
     void connect(std::string username, std::string password) override;
     void connect(std::string host, std::string database, std::string username, std::string password) override;
-    void store(AliceO2::QualityControl::Core::MonitorObject* mo) override;
-    AliceO2::QualityControl::Core::MonitorObject* retrieve(std::string taskName, std::string objectName) override;
+    void store(o2::quality_control::core::MonitorObject* mo) override;
+    o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName) override;
     void disconnect() override;
     std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
     std::vector<std::string> getListOfTasksWithPublications() override;
@@ -63,13 +63,13 @@ class MySqlDatabase: public DatabaseInterface
 
     // Queue
     // name of tasks -> vector of mo
-    std::map<std::string, std::vector<AliceO2::QualityControl::Core::MonitorObject*>> mObjectsQueue;
+    std::map<std::string, std::vector<o2::quality_control::core::MonitorObject*>> mObjectsQueue;
     size_t queueSize;
     AliceO2::Common::Timer lastStorage;
 };
 
-} // namespace Core
+} // namespace core
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITYCONTROL_REPOSITORY_MYSQL_DATABASE_H_

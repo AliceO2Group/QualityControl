@@ -69,6 +69,10 @@ set(SRCS
         src/CheckInterface.cxx
         src/DatabaseFactory.cxx
         src/ClientDataProvider.cxx
+        src/AlfaReceiverForTests.cxx
+        src/TaskDevice.cxx
+        src/SpyDevice.cxx
+        src/SpyMainFrame.cxx
         )
 
 set(HEADERS # needed for the dictionary generation
@@ -76,16 +80,22 @@ set(HEADERS # needed for the dictionary generation
         include/QualityControl/Quality.h
         include/QualityControl/CheckInterface.h
         include/QualityControl/SpyMainFrame.h
-)
 
-if (FAIRROOT_FOUND)
-    list(APPEND SRCS
-            src/AlfaReceiverForTests.cxx
-            src/TaskDevice.cxx
-            src/SpyDevice.cxx
-            src/SpyMainFrame.cxx
-            )
-endif (FAIRROOT_FOUND)
+        include/QualityControl/TaskInterface.h
+        include/QualityControl/ObjectsManager.h
+        include/QualityControl/TaskFactory.h
+        include/QualityControl/Checker.h
+        include/QualityControl/DatabaseFactory.h
+        include/QualityControl/ClientDataProvider.h
+        include/QualityControl/AlfaReceiverForTests.h
+        include/QualityControl/TaskDevice.h
+        include/QualityControl/SpyDevice.h
+        include/QualityControl/CheckerConfig.h
+        include/QualityControl/Consumer.h
+        include/QualityControl/DatabaseInterface.h
+        include/QualityControl/QcInfoLogger.h
+        include/QualityControl/TaskConfig.h
+)
 
 if(MYSQL_FOUND)
     list(APPEND SRCS src/MySqlDatabase.cxx)

@@ -7,16 +7,16 @@
 #include "QualityControl/DatabaseFactory.h"
 
 using namespace std;
-using namespace AliceO2::QualityControl;
+using namespace o2::quality_control;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Client {
+namespace o2 {
+namespace quality_control {
+namespace client {
 
 ClientDataProvider::ClientDataProvider()
 {
   // TODO use the configuration system
-  database = Repository::DatabaseFactory::create("MySql");
+  database = repository::DatabaseFactory::create("MySql");
   database->connect("qc_user", "qc_user");
 }
 
@@ -28,7 +28,7 @@ ClientDataProvider::~ClientDataProvider()
 
 TObject* ClientDataProvider::getObject(std::string taskName, std::string objectName)
 {
-  Core::MonitorObject *mo = database->retrieve(taskName, objectName);
+  core::MonitorObject *mo = database->retrieve(taskName, objectName);
   if(!mo) {
     return nullptr;
   }
@@ -77,6 +77,6 @@ std::vector<std::string> ClientDataProvider::getPublicationList(std::string task
   return result;
 }
 
-} // namespace Client
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace client
+} // namespace quality_control
+} // namespace o2

@@ -14,9 +14,9 @@
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Daq {
+namespace o2 {
+namespace quality_control_modules {
+namespace daq {
 
 DaqTask::DaqTask()
   : TaskInterface(),
@@ -43,7 +43,7 @@ void DaqTask::initialize()
   mPayloadSize = new TH1F("payloadSize", "Payload size of blocks;bytes", 2048, 0, 2047);
   mPayloadSize->SetCanExtend(TH1::kXaxis);
   getObjectsManager()->startPublishing(mPayloadSize);
-  getObjectsManager()->addCheck(mPayloadSize, "checkNonEmpty", "AliceO2::QualityControlModules::Common::NonEmpty",
+  getObjectsManager()->addCheck(mPayloadSize, "checkNonEmpty", "o2::quality_control_modules::common::NonEmpty",
                                 "QcCommon");
   mNumberSubblocks = new TH1F("numberSubBlocks", "Number of subblocks", 100, 1, 100);
   getObjectsManager()->startPublishing(mNumberSubblocks);
@@ -61,9 +61,9 @@ void DaqTask::initialize()
   mIds->GetXaxis()->SetLabelSize(0.02);
   mIds->GetYaxis()->SetLabelSize(0.02);
   getObjectsManager()->startPublishing(mIds);
-  getObjectsManager()->addCheck(mIds, "checkIncreasingIDs", "AliceO2::QualityControlModules::Daq::EverIncreasingGraph",
+  getObjectsManager()->addCheck(mIds, "checkIncreasingIDs", "o2::quality_control_modules::daq::EverIncreasingGraph",
                                 "QcDaq");
-  getObjectsManager()->addCheck(mIds, "checkNonEmpty", "AliceO2::QualityControlModules::Common::NonEmpty", "QcCommon");
+  getObjectsManager()->addCheck(mIds, "checkNonEmpty", "o2::quality_control_modules::common::NonEmpty", "QcCommon");
 }
 
 void DaqTask::startOfActivity(Activity &activity)

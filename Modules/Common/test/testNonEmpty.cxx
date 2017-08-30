@@ -13,9 +13,9 @@
 
 #include <TH1.h>
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Common {
+namespace o2 {
+namespace quality_control_modules {
+namespace common {
 
 BOOST_AUTO_TEST_CASE(checkable)
 {
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(beautify)
   quality = myCheck.check(&monitorObject);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);
   }
-  
-} // namespace Checker 
-} // namespace QualityControl 
-} // namespace AliceO2 
+
+} // namespace Checker
+} // namespace quality_control
+} // namespace o2

@@ -10,11 +10,11 @@
 
 using namespace std;
 
-ClassImp(AliceO2::QualityControlModules::Common::NonEmpty)
+ClassImp(o2::quality_control_modules::common::NonEmpty)
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Common {
+namespace o2 {
+namespace quality_control_modules {
+namespace common {
 
 NonEmpty::NonEmpty()
 {
@@ -58,6 +58,6 @@ void NonEmpty::beautify(MonitorObject *mo, Quality checkResult)
 }
 
 }  // namespace Checker
-}  // namespace QualityControl
-} // namespace AliceO2
+}  // namespace quality_control
+} // namespace o2
 

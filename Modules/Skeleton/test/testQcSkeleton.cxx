@@ -17,9 +17,9 @@
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Skeleton {
+namespace o2 {
+namespace quality_control_modules {
+namespace skeleton {
 
 BOOST_AUTO_TEST_CASE(instantiate_task)
 {
@@ -32,6 +32,6 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   BOOST_CHECK(manager->getMonitorObject("example")->getObject() != nullptr);
 }
 
-} // namespace Skeleton
-} // namespace QualityControlModules
-} // namespace AliceO2
+} // namespace skeleton
+} // namespace quality_control_modules
+} // namespace o2

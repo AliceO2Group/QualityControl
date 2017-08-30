@@ -10,14 +10,14 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/CheckInterface.h"
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Example {
+namespace o2 {
+namespace quality_control_modules {
+namespace example {
 
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Barthelemy von Haller
-class FakeCheck : public AliceO2::QualityControl::Checker::CheckInterface
+class FakeCheck : public o2::quality_control::Checker::CheckInterface
 {
   public:
     /// Default constructor
@@ -34,7 +34,7 @@ class FakeCheck : public AliceO2::QualityControl::Checker::CheckInterface
 };
 
 } // namespace Example
-} // namespace QualityControl 
-} // namespace AliceO2 
+} // namespace QualityControl
+} // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CHECKER_FakeCheck_H_ 
+#endif // QUALITYCONTROL_LIBS_CHECKER_FakeCheck_H_

@@ -10,9 +10,9 @@
 #include <ostream>
 #include <TObject.h>
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 /// \brief  Class representing the quality of a MonitorObject.
 ///
@@ -54,8 +54,8 @@ class Quality
     ClassDef(Quality,1);
 };
 
-} // namespace Core
+} // namespace core
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITYCONTROL_CORE_QUALITY_H_

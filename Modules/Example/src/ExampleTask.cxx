@@ -11,9 +11,9 @@
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Example {
+namespace o2 {
+namespace quality_control_modules {
+namespace example {
 
 ExampleTask::ExampleTask()
   : TaskInterface()
@@ -48,10 +48,10 @@ void ExampleTask::initialize()
 
   // Add checks (first by name, then by reference)
   getObjectsManager()->addCheck("array-0", "checkMeanIsAbove",
-                                "AliceO2::QualityControlModules::Common::MeanIsAbove", "QcCommon");
-  getObjectsManager()->addCheck(mHistos[0], "checkNonEmpty", "AliceO2::QualityControlModules::Common::NonEmpty",
+                                "o2::quality_control_modules::common::MeanIsAbove", "QcCommon");
+  getObjectsManager()->addCheck(mHistos[0], "checkNonEmpty", "o2::quality_control_modules::common::NonEmpty",
                                 "QcCommon");
-  getObjectsManager()->addCheck(mHistos[0], "checkFromExample", "AliceO2::QualityControlModules::Example::FakeCheck",
+  getObjectsManager()->addCheck(mHistos[0], "checkFromExample", "o2::quality_control_modules::example::FakeCheck",
                                 "QcExample");
 }
 

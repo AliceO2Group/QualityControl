@@ -19,12 +19,12 @@
 
 #include <TH1.h>
 
-//using namespace AliceO2::Common;
+//using namespace o2::common;
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Common {
+namespace o2 {
+namespace quality_control_modules {
+namespace common {
 
 BOOST_AUTO_TEST_CASE(Task_Factory)
 {
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
   TaskConfig config;
   config.taskName = "task";
   config.moduleName = "QcCommon";
-  config.className = "AliceO2::QualityControlModules::Example::ExampleTask";
+  config.className = "o2::quality_control_modules::example::ExampleTask";
   auto manager = make_shared<ObjectsManager>(config);
   try {
     gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local paths for the test
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures)
 
   config.taskName = "task";
   config.moduleName = "WRONGNAME";
-  config.className = "AliceO2::QualityControlModules::Example::ExampleTask";
+  config.className = "o2::quality_control_modules::example::ExampleTask";
   BOOST_CHECK_EXCEPTION(
     factory.create(config, manager),
     AliceO2::Common::FatalException, is_critical);
@@ -70,5 +70,5 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures)
 }
 
 } // namespace Checker
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace quality_control
+} // namespace o2

@@ -17,7 +17,7 @@
 #include "QualityControl/SpyDevice.h"
 
 using namespace std;
-using namespace AliceO2::QualityControl::Gui;
+using namespace o2::quality_control::gui;
 
 int main(int argc, char *argv[])
 {

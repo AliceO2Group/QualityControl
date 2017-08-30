@@ -10,18 +10,18 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/CheckInterface.h"
 
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 
-namespace AliceO2 {
-namespace QualityControlModules {
+namespace o2 {
+namespace quality_control_modules {
 
 /// Namespace containing all the common, non detector specific, checks.
-namespace Common {
+namespace common {
 
 /// \brief  Check whether the mean of the plot is above a certain limit.
 ///
 /// \author Barthelemy von Haller
-class MeanIsAbove : public AliceO2::QualityControl::Checker::CheckInterface
+class MeanIsAbove : public o2::quality_control::Checker::CheckInterface
 {
   public:
     /// Default constructor

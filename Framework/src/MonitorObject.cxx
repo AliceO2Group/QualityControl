@@ -5,11 +5,11 @@
 
 #include "QualityControl/MonitorObject.h"
 
-ClassImp(AliceO2::QualityControl::Core::MonitorObject)
+ClassImp(o2::quality_control::core::MonitorObject)
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 MonitorObject::MonitorObject()
   : TObject(), mName(""), mObject(nullptr), mQuality(Quality::Null), mTaskName(""), mIsOwner(true)
@@ -29,6 +29,6 @@ MonitorObject::MonitorObject(const std::string &name, TObject *object, const std
 
 }
 
-} // namespace Core
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace core
+} // namespace quality_control
+} // namespace o2

@@ -11,9 +11,9 @@
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Example {
+namespace o2 {
+namespace quality_control_modules {
+namespace example {
 
 BenchmarkTask::BenchmarkTask()
   : TaskInterface()

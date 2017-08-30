@@ -18,12 +18,12 @@
 #include <TGraph.h>
 
 using namespace std;
-using namespace AliceO2::QualityControl::Repository;
+using namespace o2::quality_control::repository;
 using namespace AliceO2::Configuration;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Gui {
+namespace o2 {
+namespace quality_control {
+namespace gui {
 
 SpyMainFrame::SpyMainFrame(SpyDevice *spyDevice, string configurationSource)
   : TGMainFrame(gClient->GetRoot(), 1024, 640, kFixedSize), mController(spyDevice), mDrawnObject(nullptr),
@@ -53,7 +53,7 @@ SpyMainFrame::SpyMainFrame(SpyDevice *spyDevice, string configurationSource)
 
   // use hierarchical cleaning
   SetCleanup(kDeepCleanup);
-  Connect("CloseWindow()", "AliceO2::QualityControl::Gui::SpyMainFrame", this, "closeWindow()");
+  Connect("CloseWindow()", "o2::quality_control::gui::SpyMainFrame", this, "closeWindow()");
   SetWindowName("Quality Control Spy");
 
   constructWindow();
@@ -83,7 +83,7 @@ void SpyMainFrame::constructWindow()
 
   // menu
   auto *fFile = new TGPopupMenu(gClient->GetRoot());
-  fFile->Connect("Activated(Int_t)", "AliceO2::QualityControl::Gui::SpyMainFrame", this, "menuHandler(Int_t)");
+  fFile->Connect("Activated(Int_t)", "o2::quality_control::gui::SpyMainFrame", this, "menuHandler(Int_t)");
   fFile->AddEntry("Exit", FILE_EXIT);
   mMenuBar->AddPopup("&File", fFile, new TGLayoutHints(kLHintsTop | kLHintsLeft));
 
@@ -109,8 +109,8 @@ void SpyMainFrame::constructWindow()
     mSourceDb->SetEnabled(false);
     mSourceDb->SetToolTipText("Pass a config file to enable the database option.");
   }
-  mSourceDb->Connect("Toggled(Bool_t)", "AliceO2::QualityControl::Gui::SpyMainFrame", this, "ToggleSource(Bool_t)");
-  mSourceFairmq->Connect("Toggled(Bool_t)", "AliceO2::QualityControl::Gui::SpyMainFrame", this, "ToggleSource(Bool_t)");
+  mSourceDb->Connect("Toggled(Bool_t)", "o2::quality_control::gui::SpyMainFrame", this, "ToggleSource(Bool_t)");
+  mSourceFairmq->Connect("Toggled(Bool_t)", "o2::quality_control::gui::SpyMainFrame", this, "ToggleSource(Bool_t)");
   mBottomButtonFrame->AddFrame(mRadioButtonGroup, new TGLayoutHints(kLHintsCenterY | kLHintsLeft));
 
   mTypeLabel = new TGLabel(mBottomButtonFrame, "Type :");
@@ -139,11 +139,11 @@ void SpyMainFrame::constructWindow()
 
   mStartButton = new TGTextButton(mBottomButtonFrame);
   mStartButton->SetText("Start");
-  mStartButton->Connect("Clicked()", "AliceO2::QualityControl::Gui::SpyMainFrame", this, "start()");
+  mStartButton->Connect("Clicked()", "o2::quality_control::gui::SpyMainFrame", this, "start()");
   mBottomButtonFrame->AddFrame(mStartButton, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 25, 0, 0, 0));
   mStopButton = new TGTextButton(mBottomButtonFrame);
   mStopButton->SetText("Stop");
-  mStopButton->Connect("Clicked()", "AliceO2::QualityControl::Gui::SpyMainFrame", this, "stop()");
+  mStopButton->Connect("Clicked()", "o2::quality_control::gui::SpyMainFrame", this, "stop()");
   mStopButton->SetEnabled(false);
   mBottomButtonFrame->AddFrame(mStopButton, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 25, 0, 0, 0));
 
@@ -205,7 +205,7 @@ void SpyMainFrame::displayObject(TObject *obj)
   }
 
   string drawOptions;
-  if (((AliceO2::QualityControl::Core::MonitorObject *) obj)->getObject()->IsA() == TGraph::Class()) {
+  if (((o2::quality_control::core::MonitorObject *) obj)->getObject()->IsA() == TGraph::Class()) {
     drawOptions = "ALP";
   }
 
@@ -227,7 +227,7 @@ void SpyMainFrame::displayObject(const char *objectName)
   }
 }
 
-void SpyMainFrame::updateList(string name, /*AliceO2::QualityControl::Core::Quality quality, */string taskName)
+void SpyMainFrame::updateList(string name, /*o2::quality_control::core::Quality quality, */string taskName)
 {
   if (mMapButtons.count(name) == 0) { // object unknown yet
     auto *button = new TGTextButton(mObjectsListFrame, name.c_str());
@@ -235,7 +235,7 @@ void SpyMainFrame::updateList(string name, /*AliceO2::QualityControl::Core::Qual
     string methodCall = string("displayObject(=\"");
     methodCall += taskName.length() > 0 ? taskName + "/" : "";
     methodCall += name + "\")";
-    button->Connect("Clicked()", "AliceO2::QualityControl::Gui::SpyMainFrame", this, methodCall.c_str());
+    button->Connect("Clicked()", "o2::quality_control::gui::SpyMainFrame", this, methodCall.c_str());
     mMapButtons[name] = button;
     this->MapSubwindows();
     this->Resize();
@@ -308,7 +308,7 @@ void SpyMainFrame::dbDisplayObject(string objectName)
 {
   string taskName = objectName.substr(0, objectName.find('/'));
   string objectNameOnly = objectName.substr(objectName.find('/') + 1);
-  AliceO2::QualityControl::Core::MonitorObject *mo = mDbInterface->retrieve(taskName, objectNameOnly);
+  o2::quality_control::core::MonitorObject *mo = mDbInterface->retrieve(taskName, objectNameOnly);
   if (mo != nullptr) {
     displayObject(mo->getObject());
     delete mo;
@@ -334,6 +334,6 @@ void SpyMainFrame::removeAllObjectsButtons()
   mMapButtons.clear();
   Layout();
 }
-} /* namespace Gui */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace gui */
+} /* namespace quality_control */
+} /* namespace o2 */

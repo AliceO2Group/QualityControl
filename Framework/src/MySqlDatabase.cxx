@@ -18,11 +18,11 @@
 
 using namespace AliceO2::Common;
 using namespace std;
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Repository {
+namespace o2 {
+namespace quality_control {
+namespace repository {
 
 MySqlDatabase::MySqlDatabase()
     : mServer(nullptr), queueSize(0)
@@ -160,7 +160,7 @@ void MySqlDatabase::storeForTask(std::string taskName)
   objects.clear();
 }
 
-AliceO2::QualityControl::Core::MonitorObject* MySqlDatabase::retrieve(std::string taskName, std::string objectName)
+o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string taskName, std::string objectName)
 {
   string query;
   TMySQLStatement *statement = nullptr;
@@ -186,7 +186,7 @@ AliceO2::QualityControl::Core::MonitorObject* MySqlDatabase::retrieve(std::strin
             << errinfo_db_message(mServer->GetErrorMsg()) << errinfo_db_errno(mServer->GetErrorCode()));
   }
 
-  AliceO2::QualityControl::Core::MonitorObject* mo = nullptr;
+  o2::quality_control::core::MonitorObject* mo = nullptr;
   if (statement->NextResultRow()) { // Consider only the first result
     string name = statement->GetString(0);
     void* blob = nullptr;
@@ -201,7 +201,7 @@ AliceO2::QualityControl::Core::MonitorObject* MySqlDatabase::retrieve(std::strin
     mess.SetBuffer(blob, blobSize, kFALSE);
     mess.SetReadMode();
     mess.Reset();
-    mo = (AliceO2::QualityControl::Core::MonitorObject*) (mess.ReadObjectAny(mess.GetClass()));
+    mo = (o2::quality_control::core::MonitorObject*) (mess.ReadObjectAny(mess.GetClass()));
   }
   if (statement)
     delete statement;
@@ -289,6 +289,6 @@ std::vector<std::string> MySqlDatabase::getListOfTasksWithPublications()
   return result;
 }
 
-} // namespace Repository
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace repository
+} // namespace quality_control
+} // namespace o2

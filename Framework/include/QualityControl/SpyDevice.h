@@ -13,9 +13,9 @@
 // QC
 #include "SpyMainFrame.h"
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Gui {
+namespace o2 {
+namespace quality_control {
+namespace gui {
 
 class TestTMessage: public TMessage
 {
@@ -56,8 +56,8 @@ class SpyDevice: public FairMQDevice
 //  ClassDef(SpyDevice,1);
 };
 
-} // namespace Gui
+} // namespace gui
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITY_CONTROL_SpyDevice_H

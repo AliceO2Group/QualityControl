@@ -10,9 +10,9 @@
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Skeleton {
+namespace o2 {
+namespace quality_control_modules {
+namespace skeleton {
 
 SkeletonTask::SkeletonTask()
   : TaskInterface(), mHistogram(nullptr)
@@ -28,10 +28,10 @@ void SkeletonTask::initialize()
 {
   QcInfoLogger::GetInstance() << "initialize SkeletonTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mHistogram = new TH1F("example", "Example", 100, 0, 99);
+  mHistogram = new TH1F("example", "example", 100, 0, 99);
   getObjectsManager()->startPublishing(mHistogram);
   getObjectsManager()->addCheck(mHistogram, "checkFromSkeleton",
-                                "AliceO2::QualityControlModules::Skeleton::SkeletonCheck",
+                                "o2::quality_control_modules::skeleton::SkeletonCheck",
                                 "QcSkeleton");
 }
 

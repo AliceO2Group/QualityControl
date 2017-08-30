@@ -13,11 +13,11 @@
 #include "QualityControl/AlfaReceiverForTests.h"
 
 using namespace std;
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 AlfaReceiverForTests::AlfaReceiverForTests()
 {

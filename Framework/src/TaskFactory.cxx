@@ -20,9 +20,9 @@
 using namespace std;
 using namespace AliceO2::Common;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 TaskFactory::TaskFactory()
 {
@@ -67,6 +67,6 @@ TaskInterface *TaskFactory::create(TaskConfig &taskConfig, shared_ptr<ObjectsMan
   return result;
 }
 
-} // namespace Core
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace core
+} // namespace quality_control
+} // namespace o2

@@ -8,9 +8,9 @@
 
 #include <string>
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 /// \brief  Container for the configuration of a Task
 ///
@@ -28,8 +28,8 @@ struct CheckerConfig
     std::string tasksAddresses;
 };
 
-} // namespace Core
+} // namespace core
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITYCONTROL_CORE_CHECKERCONFIG_H_

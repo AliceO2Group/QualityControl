@@ -17,9 +17,9 @@
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Daq {
+namespace o2 {
+namespace quality_control_modules {
+namespace daq {
 
 BOOST_AUTO_TEST_CASE(instantiate_task)
 {
@@ -47,6 +47,6 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
 
 
 
-} // namespace Daq
-} // namespace QualityControlModules
-} // namespace AliceO2
+} // namespace daq
+} // namespace quality_control_modules
+} // namespace o2

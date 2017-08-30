@@ -4,15 +4,15 @@
 /// \author  bvonhall
 ///
 
-#ifndef ALICEO2_QC_CORE_VERSION_H
-#define ALICEO2_QC_CORE_VERSION_H
+#ifndef O2_QC_CORE_VERSION_H
+#define O2_QC_CORE_VERSION_H
 
 #include <string>
 #include <sstream>
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 /// The current major version.
 #define QUALITYCONTROL_VERSION_MAJOR @VERSION_MAJOR@
 
@@ -96,4 +96,4 @@ public:
 }
 }
 
-#endif // ALICEO2_QC_CORE_VERSION_H
+#endif // O2_QC_CORE_VERSION_H

@@ -10,14 +10,14 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/CheckInterface.h"
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Common {
+namespace o2 {
+namespace quality_control_modules {
+namespace common {
 
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Barthelemy von Haller
-class NonEmpty : public AliceO2::QualityControl::Checker::CheckInterface
+class NonEmpty : public o2::quality_control::Checker::CheckInterface
 {
   public:
     /// Default constructor
@@ -33,8 +33,8 @@ class NonEmpty : public AliceO2::QualityControl::Checker::CheckInterface
     ClassDefOverride(NonEmpty,1);
 };
 
-} // namespace Checker 
-} // namespace QualityControl 
-} // namespace AliceO2 
+} // namespace Checker
+} // namespace QualityControl
+} // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CHECKER_NONEMPTY_H_ 
+#endif // QUALITYCONTROL_LIBS_CHECKER_NONEMPTY_H_

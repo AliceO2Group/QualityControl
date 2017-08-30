@@ -38,10 +38,10 @@ using namespace AliceO2::InfoLogger;
 using namespace std::chrono;
 using namespace AliceO2::Configuration;
 
-namespace AliceO2 {
-namespace QualityControl {
-using namespace Core;
-using namespace Repository;
+namespace o2 {
+namespace quality_control {
+using namespace core;
+using namespace repository;
 namespace Checker {
 
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
@@ -57,7 +57,7 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
 
   // monitoring
   try {
-    mCollector = std::shared_ptr<Monitoring::Collector>(new Monitoring::Collector(configurationSource));
+    mCollector = std::shared_ptr<AliceO2::Monitoring::Collector>(new AliceO2::Monitoring::Collector(configurationSource));
     mCollector->addDerivedMetric("objects", AliceO2::Monitoring::DerivedMetricMode::RATE);
   } catch (...) {
     string diagnostic = boost::current_exception_diagnostic_information();
@@ -285,6 +285,6 @@ CheckInterface *Checker::instantiateCheck(string checkName, string className)
 }
 
 } /* namespace Checker */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace quality_control */
+} /* namespace o2 */
 

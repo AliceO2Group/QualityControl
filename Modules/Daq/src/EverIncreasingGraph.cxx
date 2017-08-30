@@ -13,11 +13,11 @@
 
 using namespace std;
 
-ClassImp(AliceO2::QualityControlModules::Daq::EverIncreasingGraph)
+ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Daq {
+namespace o2 {
+namespace quality_control_modules {
+namespace daq {
 
 EverIncreasingGraph::EverIncreasingGraph()
 {
@@ -82,7 +82,7 @@ void EverIncreasingGraph::beautify(MonitorObject *mo, Quality checkResult)
   g->GetListOfFunctions()->AddLast(paveText);
 }
 
-}  // namespace Example
-}  // namespace QualityControl
-} // namespace AliceO2
+}  // namespace example
+}  // namespace quality_control
+} // namespace o2
 

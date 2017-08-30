@@ -12,14 +12,14 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/CheckInterface.h"
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Daq {
+namespace o2 {
+namespace quality_control_modules {
+namespace daq {
 
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Barthelemy von Haller
-class EverIncreasingGraph : public AliceO2::QualityControl::Checker::CheckInterface
+class EverIncreasingGraph : public o2::quality_control::Checker::CheckInterface
 {
   public:
     /// Default constructor
@@ -40,6 +40,6 @@ class EverIncreasingGraph : public AliceO2::QualityControl::Checker::CheckInterf
 
 } // namespace Example
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITYCONTROL_LIBS_CHECKER_EverIncreasingGraph_H_

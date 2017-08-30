@@ -5,11 +5,11 @@
 
 #include "QualityControl/Quality.h"
 
-ClassImp(AliceO2::QualityControl::Core::Quality)
+ClassImp(o2::quality_control::core::Quality)
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 const Quality Quality::Null(0, "Null");
 const Quality Quality::Good(1, "Good");
@@ -35,6 +35,6 @@ const std::string& Quality::getName() const
   return mName;
 }
 
-} // namespace Core
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace core
+} // namespace quality_control
+} // namespace o2

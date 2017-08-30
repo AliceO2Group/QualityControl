@@ -14,9 +14,9 @@
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 BOOST_AUTO_TEST_CASE(qc_info_logger)
 {
@@ -27,5 +27,5 @@ BOOST_AUTO_TEST_CASE(qc_info_logger)
 }
 
 } /* namespace ObjectsManager */
-} /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace quality_control */
+} /* namespace o2 */

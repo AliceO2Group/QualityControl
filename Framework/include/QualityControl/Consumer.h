@@ -9,11 +9,11 @@
 // QC
 #include "QualityControl/ClientDataProvider.h"
 
-using namespace AliceO2::QualityControl;
+using namespace o2::quality_control;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Client {
+namespace o2 {
+namespace quality_control {
+namespace client {
 
 /// \brief A special client that polls and consumes all available data.
 /// It is used to stress the system for benchmarks.
@@ -37,6 +37,6 @@ class Consumer
 
 } /* namespace Client */
 } /* namespace QualityControl */
-} /* namespace AliceO2 */
+} /* namespace o2 */
 
 #endif /* QUALITYCONTROL_CLIENT_CONSUMER_H_ */

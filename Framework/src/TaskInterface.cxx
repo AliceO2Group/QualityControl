@@ -7,9 +7,9 @@
 
 #include "QualityControl/TaskInterface.h"
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 TaskInterface::TaskInterface(ObjectsManager *objectsManager) :
   mObjectsManager(objectsManager)
@@ -41,6 +41,6 @@ std::shared_ptr<ObjectsManager> TaskInterface::getObjectsManager()
   return mObjectsManager;
 }
 
-} // namespace Core
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace core
+} // namespace quality_control
+} // namespace o2

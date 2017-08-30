@@ -10,11 +10,11 @@
 
 using namespace std;
 
-ClassImp(AliceO2::QualityControlModules::Skeleton::SkeletonCheck)
+ClassImp(o2::quality_control_modules::skeleton::SkeletonCheck)
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Skeleton {
+namespace o2 {
+namespace quality_control_modules {
+namespace skeleton {
 
 SkeletonCheck::SkeletonCheck()
 {
@@ -45,7 +45,7 @@ void SkeletonCheck::beautify(MonitorObject *mo, Quality checkResult)
 // NOOP
 }
 
-} // namespace Skeleton
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace skeleton
+} // namespace quality_control
+} // namespace o2
 

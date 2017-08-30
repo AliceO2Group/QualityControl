@@ -8,9 +8,9 @@
 
 #include <string>
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 /// \brief  Container for the configuration of a Task
 ///
@@ -27,8 +27,8 @@ struct TaskConfig
     int maxNumberCycles;
 };
 
-} // namespace Core
+} // namespace core
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITYCONTROL_CORE_TASKCONFIG_H_

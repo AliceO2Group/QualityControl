@@ -18,9 +18,9 @@
 
 using namespace std;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Example {
+namespace o2 {
+namespace quality_control_modules {
+namespace example {
 
 BOOST_AUTO_TEST_CASE(insantiate_task)
 {
@@ -52,6 +52,6 @@ BOOST_AUTO_TEST_CASE(insantiate_task)
 
 }
 
-} // namespace Example
-} // namespace QualityControlModules
-} // namespace AliceO2
+} // namespace example
+} // namespace quality_control_modules
+} // namespace o2

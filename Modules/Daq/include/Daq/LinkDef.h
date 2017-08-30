@@ -3,7 +3,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class AliceO2::QualityControlModules::Daq::DaqTask+;
-#pragma link C++ class AliceO2::QualityControlModules::Daq::EverIncreasingGraph+;
+#pragma link C++ class o2::quality_control_modules::daq::DaqTask+;
+#pragma link C++ class o2::quality_control_modules::daq::EverIncreasingGraph+;
 
 #endif

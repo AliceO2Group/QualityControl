@@ -10,11 +10,11 @@
 
 class TH1F;
 
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 
-namespace AliceO2 {
-namespace QualityControlModules {
-namespace Skeleton {
+namespace o2 {
+namespace quality_control_modules {
+namespace skeleton {
 
 /// \brief Example Quality Control Task
 /// It is final because there is no reason to derive from it. Just remove it if needed.

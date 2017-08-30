@@ -11,9 +11,9 @@
 #include "QualityControl/ObjectsManager.h"
 #include <Common/DataSet.h>
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Core {
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 /// \brief Dummy class that should be removed when there is the official one.
 /// This corresponds to a Run1/2 "run".
@@ -94,8 +94,8 @@ class TaskInterface
     std::string mName;
 };
 
-} // namespace Core
+} // namespace core
 } // namespace QualityControl
-} // namespace AliceO2
+} // namespace o2
 
 #endif // QUALITYCONTROL_LIBS_CORE_QCTASK_H_

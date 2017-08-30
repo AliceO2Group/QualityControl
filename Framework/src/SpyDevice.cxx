@@ -15,11 +15,11 @@
 #include <boost/algorithm/string.hpp>
 
 using namespace std;
-using namespace AliceO2::QualityControl::Core;
+using namespace o2::quality_control::core;
 
-namespace AliceO2 {
-namespace QualityControl {
-namespace Gui {
+namespace o2 {
+namespace quality_control {
+namespace gui {
 
 SpyDevice::SpyDevice()
   : mFrame(nullptr)
@@ -109,7 +109,7 @@ void SpyDevice::stopChannel()
   }
 }
 
-} // namespace Core
-} // namespace QualityControl
-} // namespace AliceO2
+} // namespace core
+} // namespace quality_control
+} // namespace o2
 
