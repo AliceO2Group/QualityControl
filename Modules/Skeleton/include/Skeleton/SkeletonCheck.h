@@ -17,7 +17,7 @@ namespace skeleton {
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Barthelemy von Haller
-class SkeletonCheck : public o2::quality_control::Checker::CheckInterface
+class SkeletonCheck : public o2::quality_control::checker::CheckInterface
 {
   public:
     /// Default constructor

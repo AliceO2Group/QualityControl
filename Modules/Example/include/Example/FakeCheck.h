@@ -17,7 +17,7 @@ namespace example {
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Barthelemy von Haller
-class FakeCheck : public o2::quality_control::Checker::CheckInterface
+class FakeCheck : public o2::quality_control::checker::CheckInterface
 {
   public:
     /// Default constructor

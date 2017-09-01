@@ -21,7 +21,7 @@ namespace common {
 /// \brief  Check whether the mean of the plot is above a certain limit.
 ///
 /// \author Barthelemy von Haller
-class MeanIsAbove : public o2::quality_control::Checker::CheckInterface
+class MeanIsAbove : public o2::quality_control::checker::CheckInterface
 {
   public:
     /// Default constructor

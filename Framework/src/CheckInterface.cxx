@@ -7,13 +7,13 @@
 #include "TClass.h"
 #include <iostream>
 
-ClassImp(o2::quality_control::Checker::CheckInterface)
+ClassImp(o2::quality_control::checker::CheckInterface)
 
 using namespace std;
 
 namespace o2 {
 namespace quality_control {
-namespace Checker {
+namespace checker {
 
 //CheckInterface::CheckInterface()
 ////    : mName("")

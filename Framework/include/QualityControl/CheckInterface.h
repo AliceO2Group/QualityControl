@@ -13,7 +13,7 @@ using namespace o2::quality_control::core;
 
 namespace o2 {
 namespace quality_control {
-namespace Checker {
+namespace checker {
 
 /// \brief  Skeleton of a check.
 ///

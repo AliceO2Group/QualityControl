@@ -23,7 +23,7 @@
 using namespace std;
 using namespace o2::quality_control::core;
 using namespace AliceO2::Configuration;
-using namespace o2::quality_control::Checker;
+using namespace o2::quality_control::checker;
 namespace po = boost::program_options;
 
 int main(int argc, char *argv[])

@@ -42,7 +42,7 @@ namespace o2 {
 namespace quality_control {
 using namespace core;
 using namespace repository;
-namespace Checker {
+namespace checker {
 
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
 

@@ -31,7 +31,7 @@ namespace ba = boost::accumulators;
 
 namespace o2 {
 namespace quality_control {
-namespace Checker {
+namespace checker {
 
 /// \brief The class in charge of running the checks on a MonitorObject.
 ///
