@@ -34,7 +34,7 @@ void EverIncreasingGraph::configure(std::string name)
 Quality EverIncreasingGraph::check(const MonitorObject *mo)
 {
   Quality result = Quality::Good;
-  TGraph *g = dynamic_cast<TGraph *>(mo->getObject());
+  auto *g = dynamic_cast<TGraph *>(mo->getObject());
 
   // simplistic and inefficient way to check that points are always increasing
   int nbPoints = g->GetN();
@@ -65,13 +65,13 @@ void EverIncreasingGraph::beautify(MonitorObject *mo, Quality checkResult)
     return;
   }
 
-  TGraph *g = dynamic_cast<TGraph*>(mo->getObject());
+  auto *g = dynamic_cast<TGraph*>(mo->getObject());
   if(!g){
     cerr << "MO should be a graph" << endl;
     return;
   }
 
-  TPaveText *paveText = new TPaveText(0.3, 0.8, 0.7, 0.95, "NDC");
+  auto *paveText = new TPaveText(0.3, 0.8, 0.7, 0.95, "NDC");
   if (checkResult == Quality::Good) {
     paveText->SetFillColor(kGreen);
     paveText->AddText("No anomalies");

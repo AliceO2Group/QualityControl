@@ -41,7 +41,7 @@ class DaqTask /*final*/: public TaskInterface // todo add back the "final" when 
 
     TH1F *mPayloadSize;
     TGraph *mIds;
-    int fNPoints;
+    int mNPoints;
     TH1F *mNumberSubblocks;
     TH1F *mSubPayloadSize;
     UInt_t mTimeLastRecord;

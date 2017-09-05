@@ -12,7 +12,7 @@ namespace quality_control {
 namespace core {
 
 MonitorObject::MonitorObject()
-  : TObject(), mName(""), mObject(nullptr), mQuality(Quality::Null), mTaskName(""), mIsOwner(true)
+  : TObject(), mName(""), mQuality(Quality::Null), mObject(nullptr), mTaskName(""), mIsOwner(true)
 {
 }
 
@@ -24,7 +24,7 @@ MonitorObject::~MonitorObject()
 }
 
 MonitorObject::MonitorObject(const std::string &name, TObject *object, const std::string &taskName)
-  : TObject(), mName(name), mObject(object), mQuality(Quality::Null), mTaskName(taskName), mIsOwner(true)
+  : TObject(), mName(name), mQuality(Quality::Null), mObject(object), mTaskName(taskName), mIsOwner(true)
 {
 
 }

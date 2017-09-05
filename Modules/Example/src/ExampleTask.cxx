@@ -18,16 +18,16 @@ namespace example {
 ExampleTask::ExampleTask()
   : TaskInterface()
 {
-  for (int i = 0; i < 25; i++) {
-    mHistos[i] = nullptr;
+  for (auto &mHisto : mHistos) {
+    mHisto = nullptr;
   }
 }
 
 ExampleTask::~ExampleTask()
 {
-  for (int i = 0; i < 25; i++) {
-    if (mHistos[i]) {
-      delete mHistos[i];
+  for (auto &mHisto : mHistos) {
+    if (mHisto) {
+      delete mHisto;
     }
   }
 }
@@ -58,8 +58,8 @@ void ExampleTask::initialize()
 void ExampleTask::startOfActivity(Activity &activity)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
-  for (int i = 0; i < 25; i++) {
-    mHistos[i]->Reset();
+  for (auto &mHisto : mHistos) {
+    mHisto->Reset();
   }
 }
 

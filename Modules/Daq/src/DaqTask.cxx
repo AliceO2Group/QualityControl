@@ -22,7 +22,7 @@ DaqTask::DaqTask()
   : TaskInterface(),
     mPayloadSize(nullptr),
     mIds(nullptr),
-    fNPoints(0),
+    mNPoints(0),
     mNumberSubblocks(nullptr),
     mSubPayloadSize(nullptr)
 {
@@ -73,7 +73,7 @@ void DaqTask::startOfActivity(Activity &activity)
   mNumberSubblocks->Reset();
   mSubPayloadSize->Reset();
   mIds->Set(0);
-  fNPoints = 0;
+  mNPoints = 0;
 }
 
 void DaqTask::startOfCycle()
@@ -83,13 +83,13 @@ void DaqTask::startOfCycle()
 
 void DaqTask::monitorDataBlock(DataSetReference dataSet)
 {
-  if (dataSet->size() <= 0) {
+  if (dataSet->empty()) {
     cout << "Empty vector!" << endl;
     return;
   }
 
   uint32_t totalPayloadSize = 0;
-  for (auto b : *dataSet) {
+  for (const auto &b : *dataSet) {
     uint32_t size = b->getData()->header.dataSize / 8;
     mSubPayloadSize->Fill(size);
     totalPayloadSize += size;
@@ -104,8 +104,8 @@ void DaqTask::monitorDataBlock(DataSetReference dataSet)
   }
   TDatime now;
   if ((now.Get() - mTimeLastRecord) >= 1) {
-    mIds->SetPoint(fNPoints, now.Convert(), dataSet->at(0)->getData()->header.id);
-    fNPoints++;
+    mIds->SetPoint(mNPoints, now.Convert(), dataSet->at(0)->getData()->header.id);
+    mNPoints++;
     mTimeLastRecord = now.Get();
   }
 }

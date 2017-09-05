@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     std::cout << "SVN revision : " << o2::quality_control::core::Version::getRevision() << std::endl;
     return EXIT_SUCCESS;
   }
-  string configurationSource = "";
+  string configurationSource;
   if (vm.count("configuration")) {
     configurationSource = vm["configuration"].as<string>();
   } /*else {

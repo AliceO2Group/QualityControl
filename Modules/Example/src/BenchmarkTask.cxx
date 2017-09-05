@@ -40,7 +40,7 @@ void BenchmarkTask::initialize()
 
   // Create and publish the histos
   for (size_t i = 0; i < mNumberHistos; i++) {
-    assert(mHistos.size() == 0); // because otherwise the code below makes no sense.
+    assert(mHistos.empty()); // because otherwise the code below makes no sense.
     stringstream name;
     name << "histogram_" << getName() << "_" << i;
     mHistos.push_back(new TH1F(name.str().c_str(), name.str().c_str(), 1000, -5, 5));

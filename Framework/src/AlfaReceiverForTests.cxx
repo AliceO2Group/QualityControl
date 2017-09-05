@@ -34,7 +34,7 @@ bool AlfaReceiverForTests::HandleData(FairMQMessagePtr &msg, int /*index*/)
   LOG(INFO) << "Received an object of size " << msg->GetSize();
 
   TestTMessage tm(msg->GetData(), msg->GetSize());
-  MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
+  auto *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
 
   LOG(INFO) << "    Name : \"" << mo->GetName() << "\"";
 

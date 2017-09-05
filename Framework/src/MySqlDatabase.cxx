@@ -178,8 +178,7 @@ o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string ta
   statement->SetString(0, objectName.c_str());
 
   if (!(statement->Process() && statement->StoreResult())) {
-    if (statement)
-      delete statement;
+    delete statement;
     BOOST_THROW_EXCEPTION(
         DatabaseException()
             << errinfo_details("Encountered an error when processing and storing results in MySqlDatabase")
@@ -203,8 +202,7 @@ o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string ta
     mess.Reset();
     mo = (o2::quality_control::core::MonitorObject*) (mess.ReadObjectAny(mess.GetClass()));
   }
-  if (statement)
-    delete statement;
+  delete statement;
 
   return mo;
 }

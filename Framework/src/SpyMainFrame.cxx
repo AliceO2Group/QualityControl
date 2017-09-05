@@ -47,7 +47,7 @@ SpyMainFrame::SpyMainFrame(SpyDevice *spyDevice, string configurationSource)
       throw;
     }
   } else {
-    mDbInterface = 0;
+    mDbInterface = nullptr;
   }
   cout << "mDbInterface : " << mDbInterface << endl;
 
@@ -61,9 +61,7 @@ SpyMainFrame::SpyMainFrame(SpyDevice *spyDevice, string configurationSource)
 
 SpyMainFrame::~SpyMainFrame()
 {
-  if (mDrawnObject) {
-    delete mDrawnObject;
-  }
+  delete mDrawnObject;
   std::map<std::string, TGButton *>::iterator iter;
   for (iter = mMapButtons.begin(); iter != mMapButtons.end(); iter++) {
     delete iter->second;
@@ -105,7 +103,7 @@ void SpyMainFrame::constructWindow()
   mSourceFairmq = new TGRadioButton(mRadioButtonGroup, "FairMQ");
   mSourceDb = new TGRadioButton(mRadioButtonGroup, "Database");
   mSourceFairmq->SetOn();
-  if (mDbInterface == 0) {
+  if (mDbInterface == nullptr) {
     mSourceDb->SetEnabled(false);
     mSourceDb->SetToolTipText("Pass a config file to enable the database option.");
   }
@@ -296,10 +294,10 @@ void SpyMainFrame::dbRun()
   // Get list of objects
   string s = "data_";
   s += mTaskField->GetText();
-  vector<string> objectNames = mDbInterface->getPublishedObjectNames(s.c_str());
+  vector<string> objectNames = mDbInterface->getPublishedObjectNames(s);
 
   // UpdateList for each
-  for (auto name : objectNames) {
+  for (const auto &name : objectNames) {
     updateList(name, mTaskField->GetText());
   }
 }

@@ -10,7 +10,7 @@
 #include <TSystem.h>
 #include <TClass.h>
 // O2
-#include "Common/Exceptions.h"
+#include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
@@ -57,7 +57,7 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
 
   // monitoring
   try {
-    mCollector = std::shared_ptr<AliceO2::Monitoring::Collector>(new AliceO2::Monitoring::Collector(configurationSource));
+    mCollector = std::make_shared<AliceO2::Monitoring::Collector>(configurationSource);
     mCollector->addDerivedMetric("objects", AliceO2::Monitoring::DerivedMetricMode::RATE);
   } catch (...) {
     string diagnostic = boost::current_exception_diagnostic_information();
@@ -131,7 +131,7 @@ Checker::~Checker()
 int size_t2int(size_t val)
 {
   if (val > INT_MAX) {
-    throw new out_of_range("Conversion from size_t to int failed.");
+    throw out_of_range("Conversion from size_t to int failed.");
   }
   return (int) val;
 }
@@ -147,7 +147,7 @@ bool Checker::HandleData(FairMQMessagePtr &msg, int index)
 
   // Deserialize the object and process it
   HistoMessage tm(msg->GetData(), size_t2int(msg->GetSize()));
-  MonitorObject *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
+  auto *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
   if (mo) {
     mo->setIsOwner(true);
     check(mo);
@@ -162,7 +162,6 @@ bool Checker::HandleData(FairMQMessagePtr &msg, int index)
   endLastObject = system_clock::now();
   // if 10 seconds elapsed publish stats
   if (timer.isTimeout()) {
-    double current = timer.getTime();
     timer.reset(1000000); // 10 s.
     mCollector->send(mTotalNumberHistosReceived, "objects");
   }
@@ -228,7 +227,7 @@ void Checker::send(MonitorObject *mo)
 /// \param libraryName The name of the library to load.
 void Checker::loadLibrary(const string libraryName)
 {
-  if (boost::algorithm::trim_copy(libraryName) == "") {
+  if (boost::algorithm::trim_copy(libraryName).empty()) {
     mLogger << "no library name specified" << AliceO2::InfoLogger::InfoLogger::endm;
     return;
   }
@@ -255,9 +254,9 @@ CheckInterface *Checker::instantiateCheck(string checkName, string className)
     mLogger << "Loading class " << className << AliceO2::InfoLogger::InfoLogger::endm;
     cl = TClass::GetClass(className.c_str());
     if (!cl) {
-      tempString += " because no dictionary for class named \"";
+      tempString +=  R"( because no dictionary for class named ")";
       tempString += className;
-      tempString += "\" could be retrieved";
+      tempString +=  R"(" could be retrieved)";
       cerr << tempString << endl;
       BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
     }
@@ -270,9 +269,9 @@ CheckInterface *Checker::instantiateCheck(string checkName, string className)
     mLogger << "Instantiating class " << className << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;
     result = static_cast<CheckInterface *>(cl->New());
     if (!result) {
-      tempString += " because the class named \"";
+      tempString += R"( because the class named ")";
       tempString += className;
-      tempString += "\" does not follow the TaskInterface interface";
+      tempString += R"( because the class named ")";
       BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
     }
     result->configure(checkName);

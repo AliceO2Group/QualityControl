@@ -188,7 +188,7 @@ unsigned long TaskDevice::publish()
 
   for (auto &pair : *mObjectsManager) {
     auto *mo = pair.second;
-    TMessage *message = new TMessage(kMESS_OBJECT); // will be deleted by fairmq using our custom method
+    auto *message = new TMessage(kMESS_OBJECT); // will be deleted by fairmq using our custom method
     message->WriteObjectAny(mo, mo->IsA());
     FairMQMessagePtr msg(NewMessage(message->Buffer(),
                                     message->BufferSize(),

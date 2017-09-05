@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
   } else {
     // we don't use the "required" option of the po::value because we want to output the help and avoid
     // horrible template error to be displayed to the user.
-    std::cout << "\"name\" is required!" << "\n";
+    std::cout <<  R"("name" is required!)" << "\n";
     std::cout << desc << std::endl;
     return EXIT_FAILURE;
   }
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
   } else {
     // we don't use the "required" option of the po::value because we want to output the help and avoid
     // horrible template error to be displayed to the user.
-    std::cout << "\"configuration\" is required!" << "\n";
+    std::cout <<  R"("configuration" is required!)" << "\n";
     std::cout << desc << std::endl;
     return EXIT_FAILURE;
   }
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
         cout << "We will get data from this address : " << addressesVector[i] << endl;
       }
     }
-    for (auto address : addressesForThisChecker) {
+    for (const auto &address : addressesForThisChecker) {
       checker.createChannel("sub", "connect", address, "data-in", true);
     }
 
