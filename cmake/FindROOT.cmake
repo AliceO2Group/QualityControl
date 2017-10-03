@@ -1,23 +1,23 @@
  ################################################################################
  #    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    #
  #                                                                              #
- #              This software is distributed under the terms of the             # 
- #         GNU Lesser General Public Licence version 3 (LGPL) version 3,        #  
+ #              This software is distributed under the terms of the             #
+ #         GNU Lesser General Public Licence version 3 (LGPL) version 3,        #
  #                  copied verbatim in the file "LICENSE"                       #
  ################################################################################
 # - Find ROOT instalation
 # This module tries to find the ROOT installation on your system.
-# It tries to find the root-config script which gives you all the needed 
+# It tries to find the root-config script which gives you all the needed
 # information.
 # If the system variable ROOTSYS is set this is straight forward.
 # If not the module uses the pathes given in ROOT_CONFIG_SEARCHPATH.
-# If you need an other path you should add this path to this varaible.  
+# If you need an other path you should add this path to this varaible.
 # The root-config script is then used to detect basically everything else.
 # This module defines a number of key variables and macros.
 #
 # Variables defined by this module:
 #
-#   ROOT_FOUND               System has ROOT, this means the root-config 
+#   ROOT_FOUND               System has ROOT, this means the root-config
 #                            executable was found.
 #
 #   ROOT_INCLUDE_DIR         ROOT include directories: not cached
@@ -35,7 +35,7 @@
 #   ROOT_VERSION_MINOR       Minor version number of ROOT
 #   ROOT_VERSION_PATCH       Patch version number of ROOT
 #
-#   ROOT_VERSION_NUMBER      A unique version number which is calculated from 
+#   ROOT_VERSION_NUMBER      A unique version number which is calculated from
 #                            major, minor and patch version found
 #
 #   ROOT_CINT_EXECUTABLE     The rootcint executable.
@@ -56,18 +56,18 @@ Set(ROOT_DEFINITIONS "")
 Set(ROOT_INSTALLED_VERSION_TOO_OLD FALSE)
 Set(ROOT_CONFIG_EXECUTABLE ROOT_CONFIG_EXECUTABLE-NOTFOUND)
 
-Find_Program(ROOT_CONFIG_EXECUTABLE NAMES root-config 
+Find_Program(ROOT_CONFIG_EXECUTABLE NAMES root-config
              PATHS ${ROOT_CONFIG_SEARCHPATH}
              NO_DEFAULT_PATH
             )
-     
+
 If(ROOT_CONFIG_EXECUTABLE)
-   
-  String(REGEX REPLACE "(^.*)/bin/root-config" "\\1" test ${ROOT_CONFIG_EXECUTABLE}) 
+
+  String(REGEX REPLACE "(^.*)/bin/root-config" "\\1" test ${ROOT_CONFIG_EXECUTABLE})
   Set(ENV{ROOTSYS} ${test})
   Set(ROOTSYS ${test})
 
-  Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --version 
+  Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --version
                   OUTPUT_VARIABLE ROOT_VERSION_STRING
                  )
   Execute_Process(COMMAND ${ROOT_CONFIG_EXECUTABLE} --prefix
@@ -78,8 +78,8 @@ If(ROOT_CONFIG_EXECUTABLE)
 
 
   MESSAGE(STATUS "Looking for Root... - Found ${ROOT_INSTALL_DIR}/bin/root")
-  MESSAGE(STATUS "Looking for Root... - Found version is ${ROOT_VERSION_STRING} ")   
-   
+  MESSAGE(STATUS "Looking for Root... - Found version is ${ROOT_VERSION_STRING} ")
+
   # extract major, minor, and patch versions from
   # the version string given by root-config
   String(REGEX REPLACE "^([0-9]+)\\.[0-9][0-9]+\\/[0-9][0-9]+.*" "\\1" ROOT_VERSION_MAJOR "${ROOT_VERSION_STRING}")
@@ -152,8 +152,8 @@ If(ROOT_FOUND)
 
   #######################################
   #
-  #       Check the executables of ROOT 
-  #          ( rootcint ) 
+  #       Check the executables of ROOT
+  #          ( rootcint )
   #
   #######################################
 
@@ -174,9 +174,7 @@ If(ROOT_FOUND)
 Else(ROOT_FOUND)
 
   If(ROOT_FIND_REQUIRED)
-    Message(STATUS "Looking for ROOT... - Found version to old.")
-    Message(STATUS "Looking for ROOT... - Minimum required version is ${ROOT_FIND_VERSION}")
-    Message(FATAL_ERROR "Stop here because of a wrong Root version.")
+    Message(FATAL_ERROR "Stop here because ROOT not found.")
   EndIf(ROOT_FIND_REQUIRED)
 
 Endif(ROOT_FOUND)
