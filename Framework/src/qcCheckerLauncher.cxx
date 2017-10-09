@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 //    FairMQTransportFactory *transportFactory = new FairMQTransportFactoryZMQ();
 //#endif
 
-    checker.CatchSignals();
+//    checker.CatchSignals(); // to be added back
 
 //    checker.SetTransport(transportFactory);
 
