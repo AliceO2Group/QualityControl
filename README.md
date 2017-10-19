@@ -182,3 +182,4 @@ From here, fill in the methods in AbcTask.cxx, and AbcCheck.cxx if needed.
 
 In case special additional dependencies are needed, create a new bucket in QualityControlModules/cmake/QualityControlModulesDependencies.cmake.
 
+ 
