@@ -114,8 +114,8 @@ int main(int argc, char *argv[])
     checker.ChangeState("RUN");
     checker.WaitForEndOfState("RUN");
 //    checker.InteractiveStateLoop();
-  } catch (std::string const &e) {
-    cerr << e << endl;
+  } catch(std::string const &e) {
+    cerr << "exception : " << e << endl;
   } catch (...) {
     string diagnostic = boost::current_exception_diagnostic_information();
     std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;

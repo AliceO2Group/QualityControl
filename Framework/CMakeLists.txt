@@ -73,6 +73,7 @@ set(SRCS
         src/TaskDevice.cxx
         src/SpyDevice.cxx
         src/SpyMainFrame.cxx
+        src/CcdbDatabase.cxx
         )
 
 set(HEADERS # needed for the dictionary generation
@@ -80,6 +81,8 @@ set(HEADERS # needed for the dictionary generation
         include/QualityControl/Quality.h
         include/QualityControl/CheckInterface.h
         include/QualityControl/SpyMainFrame.h
+        include/QualityControl/DatabaseInterface.h
+        include/QualityControl/CcdbDatabase.h
         )
 
 if(MYSQL_FOUND)

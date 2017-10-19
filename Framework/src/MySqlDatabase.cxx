@@ -35,11 +35,6 @@ MySqlDatabase::~MySqlDatabase()
   disconnect();
 }
 
-void MySqlDatabase::connect(std::string username, std::string password)
-{
-  connect("localhost", "quality_control", username, password);
-}
-
 void MySqlDatabase::connect(std::string host, std::string database, std::string username, std::string password)
 {
   if (mServer) {

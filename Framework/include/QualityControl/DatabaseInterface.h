@@ -28,7 +28,6 @@ class DatabaseInterface
     {
     }
 
-    virtual void connect(std::string username, std::string password) = 0;
     virtual void connect(std::string host, std::string database, std::string username, std::string password) = 0;
     virtual void store(o2::quality_control::core::MonitorObject* mo) = 0;
 

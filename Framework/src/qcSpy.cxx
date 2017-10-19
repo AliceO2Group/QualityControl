@@ -15,19 +15,21 @@
 // QC
 #include "QualityControl/SpyMainFrame.h"
 #include "QualityControl/SpyDevice.h"
+#include <QualityControl/QcInfoLogger.h>
 
 using namespace std;
 using namespace o2::quality_control::gui;
+using namespace o2::quality_control::core;
 
 int main(int argc, char *argv[])
 {
   // Arguments parsing
   std::string configurationSource;
-  if(argc > 1) {
+  if (argc > 1) {
     configurationSource = argv[1];
-    cout << "configuration file : " << configurationSource << endl;
   } else {
-    cout << "no configuration file passed as argument, database won't work." << endl;
+    QcInfoLogger::GetInstance() << "no configuration file passed as argument, database won't work."
+                                << QcInfoLogger::endm;
   }
 
   TApplication theApp("App", &argc, argv);

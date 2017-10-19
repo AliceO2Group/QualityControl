@@ -8,6 +8,7 @@ find_package(Common REQUIRED)
 find_package(InfoLogger REQUIRED)
 find_package(DataSampling REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
+find_package(CURL REQUIRED)
 
 # todo not sure why this is needed
 if (BOOST_FOUND AND NOT Boost_FOUND)
@@ -43,6 +44,7 @@ o2_define_bucket(
         ${Boost_LOG_DEBUG}
         ${InfoLogger_LIBRARIES}
         ${DataSampling_LIBRARIES}
+        ${CURL_LIBRARIES}
 
         SYSTEMINCLUDE_DIRECTORIES
         ${Boost_INCLUDE_DIRS}
@@ -54,6 +56,7 @@ o2_define_bucket(
         ${Common_INCLUDE_DIRS}
         ${InfoLogger_INCLUDE_DIRS}
         ${DataSampling_INCLUDE_DIRS}
+        ${CURL_INCLUDE_DIRS}
 )
 
 o2_define_bucket(

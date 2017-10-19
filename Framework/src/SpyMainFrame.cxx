@@ -32,12 +32,12 @@ SpyMainFrame::SpyMainFrame(SpyDevice *spyDevice, string configurationSource)
   if (configurationSource.length() > 0) {
     try {
       unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configurationSource);
-      mDbInterface = DatabaseFactory::create("MySql");
+      mDbInterface = DatabaseFactory::create(config->get<string>("database/implementation").value());
       mDbInterface->connect(config->get<string>("database/host").value(),
                             config->get<string>("database/name").value(),
                             config->get<string>("database/username").value(),
                             config->get<string>("database/password").value());
-    } catch (std::string s) {
+    } catch (std::string &s) {
       std::cerr << s << endl;
       throw;
     } catch (...) { // catch already here the configuration exception and print it
@@ -49,7 +49,6 @@ SpyMainFrame::SpyMainFrame(SpyDevice *spyDevice, string configurationSource)
   } else {
     mDbInterface = nullptr;
   }
-  cout << "mDbInterface : " << mDbInterface << endl;
 
   // use hierarchical cleaning
   SetCleanup(kDeepCleanup);
@@ -131,7 +130,7 @@ void SpyMainFrame::constructWindow()
   mBottomButtonFrame->AddFrame(mTaskLabel, new TGLayoutHints(kLHintsCenterY | kLHintsLeft, 25, 0, 0, 0));
   mTaskField = new TGTextEntry(mBottomButtonFrame);
   mTaskField->Resize(100, 18);
-  mTaskField->SetText("myTask_1");
+  mTaskField->SetText("daqTask");
   mTaskField->SetEnabled(false);
   mBottomButtonFrame->AddFrame(mTaskField, new TGLayoutHints(kLHintsCenterY | kLHintsLeft));
 
@@ -202,12 +201,18 @@ void SpyMainFrame::displayObject(TObject *obj)
     gPad->Clear();
   }
 
+  // this is an ugly beast...
   string drawOptions;
-  if (((o2::quality_control::core::MonitorObject *) obj)->getObject()->IsA() == TGraph::Class()) {
+  if (obj->IsA() == o2::quality_control::core::MonitorObject::Class()) { // it is a MonitorObject
+    if (((o2::quality_control::core::MonitorObject *) obj)->getObject()->IsA() ==
+        TGraph::Class()) { // containing a TGraph
+      drawOptions = "ALP";
+    }
+  } else if (obj->IsA() == TGraph::Class()) { // it is a TGraph
     drawOptions = "ALP";
   }
-
   mDrawnObject = obj->DrawClone(drawOptions.c_str());
+
   gPad->Modified();
   gPad->Update();
   gSystem->ProcessEvents();

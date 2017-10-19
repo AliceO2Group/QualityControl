@@ -17,7 +17,7 @@ ClientDataProvider::ClientDataProvider()
 {
   // TODO use the configuration system
   database = repository::DatabaseFactory::create("MySql");
-  database->connect("qc_user", "qc_user");
+  database->connect("localhost", "quality_control", "qc_user", "qc_user");
 }
 
 ClientDataProvider::~ClientDataProvider()

@@ -52,8 +52,17 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
   SetTransport("zeromq");
 
   // configuration
-  unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configurationSource);
-  populateConfig(config, checkerName);
+  try {
+    unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configurationSource);
+    populateConfig(config, checkerName);
+  } catch (std::string const &e) { // we have to catch here to print the exception because the device will make it disappear
+    std::cerr << "exception : " << e << endl;
+    throw;
+  } catch (...) {
+    string diagnostic = boost::current_exception_diagnostic_information();
+    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
+    throw;
+  }
 
   // monitoring
   try {
@@ -88,7 +97,7 @@ void Checker::populateConfig(unique_ptr<ConfigurationInterface> &config, std::st
     mCheckerConfig.numberTasks = config->get<int>("checkers/numberTasks").value();
 
     // configuration of the database
-    mDatabase = DatabaseFactory::create("MySql");
+    mDatabase = DatabaseFactory::create(config->get<string>("database/implementation").value());
     mDatabase->connect(config->get<string>("database/host").value(),
                        config->get<string>("database/name").value(),
                        config->get<string>("database/username").value(),
@@ -254,9 +263,9 @@ CheckInterface *Checker::instantiateCheck(string checkName, string className)
     mLogger << "Loading class " << className << AliceO2::InfoLogger::InfoLogger::endm;
     cl = TClass::GetClass(className.c_str());
     if (!cl) {
-      tempString +=  R"( because no dictionary for class named ")";
+      tempString += R"( because no dictionary for class named ")";
       tempString += className;
-      tempString +=  R"(" could be retrieved)";
+      tempString += R"(" could be retrieved)";
       cerr << tempString << endl;
       BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
     }
