@@ -23,7 +23,9 @@ namespace core {
 
 BOOST_AUTO_TEST_CASE(publisher_test)
 {
-  ObjectsManager objectsManager;
+  TaskConfig config;
+  config.taskName = "test";
+  ObjectsManager objectsManager(config);
   TObjString s("content");
   objectsManager.startPublishing(&s, "test");
   TObjString *s2 = (TObjString*)(objectsManager.getObject("test"));

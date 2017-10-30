@@ -11,6 +11,8 @@ namespace o2 {
 namespace quality_control {
 namespace core {
 
+    constexpr char MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST[];
+
 MonitorObject::MonitorObject()
   : TObject(), mName(""), mQuality(Quality::Null), mObject(nullptr), mTaskName(""), mIsOwner(true)
 {

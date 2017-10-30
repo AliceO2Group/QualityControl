@@ -11,6 +11,7 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/TaskConfig.h"
+#include <TObjString.h>
 
 namespace o2 {
 namespace quality_control {
@@ -27,9 +28,6 @@ class ObjectsManager
     friend class TaskControl; // TaskControl must be able to call "publish()" whenever needed. Nobody else can.
 
   public:
-    /// Default constructor
-    ObjectsManager();
-
     ObjectsManager(TaskConfig &taskConfig);
 
     /// Destructor
@@ -38,6 +36,7 @@ class ObjectsManager
     void startPublishing(TObject *obj, std::string objectName = "");
 
     void setQuality(std::string objectName, Quality quality);
+    // todo stop publishing
 
     Quality getQuality(std::string objectName);
 
@@ -73,8 +72,14 @@ class ObjectsManager
     { return mMonitorObjects.end(); }
 
   private:
+    void UpdateIndex(const std::string &nonEmptyName) ;
+
+  private:
     std::map<std::string /*object name*/, quality_control::core::MonitorObject * /* object */> mMonitorObjects;
     std::string mTaskName;
+    // todo make it a vector of string when support added
+    TObjString mObjectsList; // the list of objects we publish. (comma separated)
+                       // Possibly needed on the client side to know what was there at a given time.
 };
 
 } // namespace core

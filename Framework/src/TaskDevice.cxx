@@ -155,13 +155,13 @@ void TaskDevice::monitorCycle()
     }
   }
   mTask->endOfCycle();
-  double durationCycle = timer.getTime();
-  timer.reset();
 
   // publication
   unsigned long numberObjectsPublished = publish();
 
   // monitoring metrics
+  double durationCycle = timer.getTime();
+  timer.reset();
   double durationPublication = timer.getTime();
   mCollector->send(numberBlocks, "QC_task_Numberofblocks_in_cycle");
   mCollector->send(durationCycle, "QC_task_Module_cycle_duration");

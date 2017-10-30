@@ -3,7 +3,11 @@
 //
 
 #include <TMessage.h>
+#include <TObjString.h>
 #include "QualityControl/CcdbDatabase.h"
+#include <regex>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace o2 {
 namespace quality_control {
@@ -253,13 +257,27 @@ void CcdbDatabase::prepareTaskDataContainer(std::string taskName)
 
 std::vector<std::string> CcdbDatabase::getListOfTasksWithPublications()
 {
-  std::vector<string> result{"daqTask"};
+  std::vector<string> result{"daqTask"}; // TODO we need the "ls" feature in CCDB to list the top level nodes.
   return result;
 }
 
 std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskName)
 {
-  std::vector<string> result{"IDs", "numberSubBlocks", "payloadSize", "PayloadSizeSubBlocks"};
+  std::vector<string> result;
+  // we use the "index" string to know what objects are published.
+  // get the information from the CCDB itself.
+  core::MonitorObject *mo = retrieve(taskName, core::MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST);
+  auto *indexString = dynamic_cast<TObjString *>(mo->getObject());
+  if (indexString) {
+    string s = indexString->GetString().Data();
+    boost::algorithm::split(result, s, boost::algorithm::is_any_of(","),boost::algorithm::token_compress_on);
+    // sanitize : remove system objects object and empty objects
+    result.erase(std::remove(result.begin(), result.end(), ""));
+    result.erase(std::remove(result.begin(), result.end(), core::MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST));
+  } else {
+    cerr << "ok we should do something here. The 'index' object must be a TObjString" << endl;
+  }
+
   return result;
 }
 

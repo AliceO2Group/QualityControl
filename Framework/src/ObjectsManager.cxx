@@ -9,17 +9,15 @@
 
 using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
+using namespace std;
 
 namespace o2 {
 namespace quality_control {
 namespace core {
 
-ObjectsManager::ObjectsManager() : mTaskName("anonymous task")
-{
-}
-
 ObjectsManager::ObjectsManager(TaskConfig &taskConfig) : mTaskName(taskConfig.taskName)
 {
+  startPublishing(&mObjectsList, MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST);
 }
 
 ObjectsManager::~ObjectsManager()
@@ -36,6 +34,17 @@ void ObjectsManager::startPublishing(TObject *object, std::string objectName)
   auto *newObject = new MonitorObject(nonEmptyName, object, mTaskName);
   newObject->setIsOwner(false);
   mMonitorObjects[nonEmptyName] = newObject;
+
+  //update index
+  UpdateIndex(nonEmptyName);
+}
+
+void ObjectsManager::UpdateIndex(const string &nonEmptyName)
+{
+  string newString = this->mObjectsList.GetString().Data();
+  newString += nonEmptyName;
+  newString += ",";
+  this->mObjectsList.SetString(newString.c_str());
 }
 
 void ObjectsManager::setQuality(std::string objectName, Quality quality)

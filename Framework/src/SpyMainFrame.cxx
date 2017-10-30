@@ -297,8 +297,8 @@ bool SpyMainFrame::dbIsSelected()
 void SpyMainFrame::dbRun()
 {
   // Get list of objects
-  string s = "data_";
-  s += mTaskField->GetText();
+//  string s = "data_";
+  string s = mTaskField->GetText();
   vector<string> objectNames = mDbInterface->getPublishedObjectNames(s);
 
   // UpdateList for each
