@@ -105,6 +105,8 @@ With the default config files provided, we run a qctask that processes
 random data and forwards it to a GUI and a checker that will check and
 store the MonitorObjects.
 
+**Note the prefix "file://" for the config file.**
+
 ```
 # Launch a task named myTask_1
 qcTaskLauncher -n myTask_1 \
