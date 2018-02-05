@@ -17,7 +17,7 @@ if (BOOST_FOUND AND NOT Boost_FOUND)
 endif ()
 
 link_directories(${FAIRROOT_LIBRARY_DIR})
-set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ)
+set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ Logger)
 
 if (NOT MYSQL_FOUND)
     message(WARNING "MySQL not found, the corresponding classes won't be built.")
