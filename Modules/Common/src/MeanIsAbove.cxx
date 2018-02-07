@@ -11,11 +11,12 @@
 #include <TList.h>
 #include <TLine.h>
 // O2
-#include "Configuration/Configuration.h"
+#include "Configuration/ConfigurationFactory.h"
 
 ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 
 using namespace std;
+using namespace AliceO2::Configuration;
 
 namespace o2 {
 namespace quality_control_modules {
@@ -29,9 +30,8 @@ MeanIsAbove::MeanIsAbove()
 void MeanIsAbove::configure(std::string name)
 {
   // TODO use the configuration system to set the params
-  AliceO2::Configuration::ConfigFile configFile;
   try {
-    configFile.load("file:../example.ini"); // not ok...
+    auto configFile = ConfigurationFactory::getConfiguration("file:../example.ini"); // not ok...
   } catch (string &exception) {
     cout << "error getting config file in MeanIsAbove : " << exception << endl;
     mThreshold = 1.0f;
