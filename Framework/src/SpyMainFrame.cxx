@@ -13,7 +13,6 @@
 #include <TClass.h>
 #include <TGButtonGroup.h>
 #include <QualityControl/DatabaseFactory.h>
-#include <Configuration/Configuration.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <TGraph.h>
 
