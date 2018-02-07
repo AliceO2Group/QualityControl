@@ -17,7 +17,7 @@
 // O2
 #include <Configuration/ConfigurationInterface.h>
 #include <Common/Timer.h>
-#include <Monitoring/Collector.h>
+#include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/ProcessMonitor.h>
 // QC
 #include "QualityControl/QcInfoLogger.h"
