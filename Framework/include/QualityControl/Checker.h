@@ -18,7 +18,6 @@
 #include <Configuration/ConfigurationInterface.h>
 #include <Common/Timer.h>
 #include <Monitoring/MonitoringFactory.h>
-#include <Monitoring/ProcessMonitor.h>
 // QC
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckInterface.h"
