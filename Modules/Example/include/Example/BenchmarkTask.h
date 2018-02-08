@@ -9,7 +9,7 @@
 #include "QualityControl/TaskInterface.h"
 
 #include <vector>
-#include "Configuration/Configuration.h"
+#include "Configuration/ConfigurationFactory.h"
 
 class TH1F;
 
@@ -44,7 +44,7 @@ class BenchmarkTask: public TaskInterface
   private:
 
     std::vector<TH1F*> mHistos;
-    AliceO2::Configuration::ConfigFile mConfigFile;
+    std::unique_ptr<AliceO2::Configuration::ConfigurationInterface> mConfigFile;
     size_t mNumberHistos;
     size_t mNumberChecks;
     std::string mTypeOfChecks;

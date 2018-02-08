@@ -37,6 +37,7 @@ using namespace std;
 using namespace AliceO2::InfoLogger;
 using namespace std::chrono;
 using namespace AliceO2::Configuration;
+using namespace AliceO2::Monitoring;
 
 namespace o2 {
 namespace quality_control {
@@ -66,7 +67,7 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
 
   // monitoring
   try {
-    mCollector = std::make_shared<AliceO2::Monitoring::Collector>(configurationSource);
+    mCollector = MonitoringFactory::Get("infologger://");
     mCollector->addDerivedMetric("objects", AliceO2::Monitoring::DerivedMetricMode::RATE);
   } catch (...) {
     string diagnostic = boost::current_exception_diagnostic_information();

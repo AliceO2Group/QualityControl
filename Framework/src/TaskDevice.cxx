@@ -57,7 +57,7 @@ TaskDevice::TaskDevice(std::string taskName, std::string configurationSource) : 
   populateConfig(mTaskName);
 
   // setup monitoring
-  mCollector = make_unique<Collector>(configurationSource);
+  mCollector = MonitoringFactory::Get("infologger://");
 
   // setup publisher
   mObjectsManager = make_shared<ObjectsManager>(mTaskConfig);

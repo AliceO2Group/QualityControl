@@ -16,10 +16,8 @@
 #include <FairMQDevice.h>
 // O2
 #include <Configuration/ConfigurationInterface.h>
-#include <Configuration/Configuration.h>
 #include <Common/Timer.h>
-#include <Monitoring/Collector.h>
-#include <Monitoring/ProcessMonitor.h>
+#include <Monitoring/MonitoringFactory.h>
 // QC
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckInterface.h"

@@ -10,6 +10,7 @@
 #include <thread>
 
 using namespace std;
+using namespace AliceO2::Configuration;
 
 namespace o2 {
 namespace quality_control_modules {
@@ -29,12 +30,12 @@ void BenchmarkTask::initialize()
   QcInfoLogger::GetInstance() << "initialize benchmarktask \"" << getName() << "\""
                               << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mConfigFile.load("file:./example.ini");
-  string taskDefinitionName = mConfigFile.getValue<string>(getName() + ".taskDefinition");
-  mNumberHistos = mConfigFile.getValue<size_t>(taskDefinitionName + ".numberHistos");
-  mNumberChecks = mConfigFile.getValue<size_t>(taskDefinitionName + ".numberChecks");
-  mTypeOfChecks = mConfigFile.getValue<string>(taskDefinitionName + ".typeOfChecks");
-  mModuleOfChecks = mConfigFile.getValue<string>(taskDefinitionName + ".moduleOfChecks");
+  mConfigFile = ConfigurationFactory::getConfiguration("file:./example.ini");
+  string taskDefinitionName = mConfigFile->get<std::string>(getName() + ".taskDefinition").value();
+  mNumberHistos = mConfigFile->get<int>(taskDefinitionName + ".numberHistos").value();
+  mNumberChecks = mConfigFile->get<int>(taskDefinitionName + ".numberChecks").value();
+  mTypeOfChecks = mConfigFile->get<std::string>(taskDefinitionName + ".typeOfChecks").value();
+  mModuleOfChecks = mConfigFile->get<std::string>(taskDefinitionName + ".moduleOfChecks").value();
 
   mHistos.reserve(mNumberHistos);
 

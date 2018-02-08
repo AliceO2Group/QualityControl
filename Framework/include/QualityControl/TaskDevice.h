@@ -14,9 +14,8 @@
 #include <boost/accumulators/statistics.hpp>
 // O2
 #include <Common/Timer.h>
-#include <Configuration/Configuration.h>
 #include <Configuration/ConfigurationInterface.h>
-#include <Monitoring/Collector.h>
+#include <Monitoring/MonitoringFactory.h>
 #include <DataSampling/SamplerInterface.h>
 // QC
 #include "QualityControl/TaskConfig.h"
