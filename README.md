@@ -1,10 +1,10 @@
 ## Requirements
 
-A CC7 machine or a mac.
+A CC7 machine or a Mac.
 
 ## Setup
 
-We use alibuild, see instructions [here](https://alisw.github.io/alibuild/o2-daq-tutorial.html).
+We use `aliBuild`, see instructions [here](https://alisw.github.io/alibuild/o2-daq-tutorial.html).
 
 ### Post installation
 
