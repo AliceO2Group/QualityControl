@@ -45,6 +45,10 @@ TObject2Json::TObject2Json(std::unique_ptr<Backend> backend, std::string zeromqU
   QcInfoLogger::GetInstance() << "ZeroMQ server: Socket bound " << zeromqUrl << infologger::endm;
 }
 
+TObject2Json::~TObject2Json() {
+  zmq_close(mZeromqSocket);
+}
+
 string TObject2Json::handleRequest(string request)
 {
   // Check empty messagae
