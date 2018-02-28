@@ -9,6 +9,7 @@ find_package(InfoLogger REQUIRED)
 find_package(DataSampling REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
 find_package(CURL REQUIRED)
+find_package(ZeroMQ REQUIRED)
 
 # todo not sure why this is needed
 if (BOOST_FOUND AND NOT Boost_FOUND)
@@ -110,4 +111,17 @@ o2_define_bucket(
         SYSTEMINCLUDE_DIRECTORIES
         ${Boost_INCLUDE_DIRS}
         ${Configuration_INCLUDE_DIRS}
+)
+
+
+o2_define_bucket(
+        NAME
+        o2_qc_tobject2json
+
+        DEPENDENCIES
+        o2_qualitycontrol_bucket
+        ${ZeroMQ_LIBRARY_STATIC}
+
+        SYSTEMINCLUDE_DIRECTORIES
+        ${ZeroMQ_INCLUDE_DIR}
 )
