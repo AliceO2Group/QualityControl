@@ -16,7 +16,7 @@
 #include "TObject2JsonFactory.h"
 #include "TObject2Json.h"
 #include "TObject2JsonMySql.h"
-#include "UriParser.h"
+#include "external/UriParser.h"
 
 namespace o2 {
 namespace quality_control {
