@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TObject2JsonBackend.h
+/// \file   Backend.h
 /// \author Vladimir Kosmala
 /// \author Adam Wegrzynek
 ///
@@ -26,7 +26,7 @@ namespace o2 {
 namespace quality_control {
 namespace tobject_to_json {
 
-/// TObject2Json backend interfance
+/// \brief Converts ROOT objects into JSON format, readable by JSROOT
 class Backend
 {
   public:

@@ -29,21 +29,19 @@ namespace tobject_to_json {
 class TObject2Json
 {
   public:
-    /// Constructs backend and configures ZeroMQ endpoint
     TObject2Json(std::unique_ptr<Backend> backend, std::string zeromqUrl);
-
-    /// Destroys ZeroMQ socket
-    ~TObject2Json();
-
     /// Listens on the the ZMQ server endpoint
     void start();
 
   private:
-    /// ZeroMQ socket
-    void *mZeromqSocket;
-
-    /// Backend instance from QualityControl framework
+    /// MySQL client instance from QualityControl framework
     std::unique_ptr<Backend> mBackend;
+
+    /// ZeroMQ context
+    void *mContext;
+
+    /// ZeroMQ server socket
+    void *mSocket;
 
     // Handle ZeroMQ request
     std::string handleRequest(std::string message);
