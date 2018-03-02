@@ -29,7 +29,7 @@ namespace quality_control {
 namespace tobject_to_json {
 namespace backends {
 
-/// Converts ROOT objects into JSON format, readable by JSROOT
+/// Takes TObject from MySQL database and returns JSON formatted object
 class MySql final : public Backend
 {
   public:
@@ -40,7 +40,7 @@ class MySql final : public Backend
     std::string getJsonObject(std::string agentName, std::string objectName) override;
   
   private:
-    /// \brief MySQL client instance from QualityControl framework
+    /// MySQL client instance
     std::unique_ptr<MySqlDatabase> mSqlClient;
 };
 

@@ -29,8 +29,10 @@ namespace tobject_to_json {
 class TObject2Json
 {
   public:
+    /// Creates backend and binds ZeroMQ socket
     TObject2Json(std::unique_ptr<Backend> backend, std::string zeromqUrl);
-    /// Listens on the the ZMQ server endpoint
+
+    /// Listens to the ZeroMQ server endpoint
     void start();
 
   private:

@@ -26,7 +26,7 @@ namespace o2 {
 namespace quality_control {
 namespace tobject_to_json {
 
-/// \brief Converts ROOT objects into JSON format, readable by JSROOT
+/// \brief Converts ROOT objects into JSON format which is readable by JSROOT
 class Backend
 {
   public:

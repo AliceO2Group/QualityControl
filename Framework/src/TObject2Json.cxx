@@ -50,13 +50,12 @@ TObject2Json::TObject2Json(std::unique_ptr<Backend> backend, std::string zeromqU
 
 string TObject2Json::handleRequest(string request)
 {
-  // Check empty messagae
   if (request.length() == 0) {
     QcInfoLogger::GetInstance() << "Empty request received, ignoring..." << infologger::endm;
     return "";
   }
 
-  // Split request into command and arguments
+  // Split arguments with space
   vector<string> parts;
   boost::split(parts, request, boost::is_any_of(" "));
   
@@ -77,7 +76,7 @@ void TObject2Json::start()
 {
   while(1) {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    // Wait for next request from client inside a zmq message
+    // Wait for next request
     zmq_msg_t messageReq;
     zmq_msg_init(&messageReq);
     int size = zmq_msg_recv(&messageReq, mSocket, 0);
@@ -92,7 +91,7 @@ void TObject2Json::start()
     QcInfoLogger::GetInstance() << "Received request (" << request << ")" << infologger::endm;
     string response = handleRequest(request);
     QcInfoLogger::GetInstance() << "Response generated" << infologger::endm;
-    // Send back response inside a zmq message
+    // Send back response
     zmq_msg_t messageRep;
     zmq_msg_init_size(&messageRep, response.size());
     memcpy(zmq_msg_data(&messageRep), response.data(), response.size());
