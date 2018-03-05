@@ -166,6 +166,12 @@ if(ROOT_FOUND) # TODO remove this once we have our own repo
             TEST_SRCS ${TEST_SRCS}
     )
 
+    O2_GENERATE_EXECUTABLE(
+        EXE_NAME "tobject2json"
+        SOURCES "src/TObject2JsonServer.cxx" "src/TObject2Json.cxx" "src/TObject2JsonMySql.cxx" "src/TObject2JsonFactory.cxx"
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME "o2_qc_tobject2json"
+    )
 endif()
 
 # Install extra scripts
