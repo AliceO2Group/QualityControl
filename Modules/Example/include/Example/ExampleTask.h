@@ -47,8 +47,9 @@ class ExampleTask /*final*/: public TaskInterface // todo add back the "final" w
     }
 
   private:
-
+    int mNumberCycles;
     TH1F *mHistos[25];
+    void publishHisto(int i);
 };
 
 }

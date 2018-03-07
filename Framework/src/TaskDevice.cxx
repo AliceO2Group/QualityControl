@@ -199,6 +199,8 @@ unsigned long TaskDevice::publish()
     sentMessages++;
   }
 
+  sendToInformationService(mObjectsManager->getObjectsListString());
+
   return sentMessages;
 }
 
@@ -229,6 +231,36 @@ void TaskDevice::endOfActivity()
   mCollector->send(rate, "QC_task_Rate_objects_published_per_second_whole_run");
   mCollector->send(ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run");
   mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
+}
+
+void TaskDevice::sendToInformationService(string objectsListString)
+{
+  // todo only send if a certain time has passed and also if the list has changed
+
+  string* text = new std::string(mTaskName);
+  *text += ":" + objectsListString;
+  // todo escape names with a comma or a colon
+
+  // create message object with a pointer to the data buffer,
+  // its size,
+  // custom deletion function (called when transfer is done),
+  // and pointer to the object managing the data buffer
+  FairMQMessagePtr msg(NewMessage(const_cast<char*>(text->c_str()),
+                                   text->length(),
+                                   [](void* /*data*/, void* object) { delete static_cast<string*>(object); },
+                                   text));
+
+  LOG(info) << "Sending \"" << *text << "\"";
+  LOG(info) << " llength : " << text->length();
+
+  // in case of error or transfer interruption, return false to go to IDLE state
+  // successfull transfer will return number of bytes transfered (can be 0 if sending an empty message).
+  int ret = Send(msg, "information-service-out");
+  if(ret < 0)
+  {
+      LOG(error) << "Error sending" << endl;
+  }
+
 }
 
 }

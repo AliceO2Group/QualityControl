@@ -21,6 +21,7 @@ ExampleTask::ExampleTask()
   for (auto &mHisto : mHistos) {
     mHisto = nullptr;
   }
+  mNumberCycles = 0;
 }
 
 ExampleTask::~ExampleTask()
@@ -36,11 +37,8 @@ void ExampleTask::initialize()
 {
   QcInfoLogger::GetInstance() << "initialize ExampleTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  for (int i = 0; i < 25; i++) {
-    stringstream name;
-    name << "array-" << i;
-    mHistos[i] = new TH1F(name.str().c_str(), name.str().c_str(), 100, 0, 99);
-    getObjectsManager()->startPublishing(mHistos[i], name.str());
+  for (int i = 0; i < 24; i++) {
+    publishHisto(i);
   }
 
   // Extendable axis
@@ -55,11 +53,21 @@ void ExampleTask::initialize()
                                 "QcExample");
 }
 
+void ExampleTask::publishHisto(int i)
+{
+  stringstream name;
+  name << "array-" << i;
+  mHistos[i] = new TH1F(name.str().c_str(), name.str().c_str(), 100, 0, 99);
+  getObjectsManager()->startPublishing(mHistos[i], name.str());
+}
+
 void ExampleTask::startOfActivity(Activity &activity)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   for (auto &mHisto : mHistos) {
-    mHisto->Reset();
+    if (mHisto) {
+      mHisto->Reset();
+    }
   }
 }
 
@@ -71,14 +79,22 @@ void ExampleTask::startOfCycle()
 void ExampleTask::monitorDataBlock(DataSetReference dataSet)
 {
   mHistos[0]->Fill(dataSet->at(0)->getData()->header.dataSize);
-  for (int i = 1; i < 25; i++) {
-    mHistos[i]->FillRandom("gaus", 1);
+  for (auto &mHisto : mHistos) {
+    if (mHisto) {
+      mHisto->FillRandom("gaus", 1);
+    }
   }
 }
 
 void ExampleTask::endOfCycle()
 {
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  mNumberCycles++;
+
+  // Add one more object just to show that we can do it
+  if(mNumberCycles == 3) {
+    publishHisto(24);
+  }
 }
 
 void ExampleTask::endOfActivity(Activity &activity)

@@ -74,6 +74,8 @@ set(SRCS
         src/SpyDevice.cxx
         src/SpyMainFrame.cxx
         src/CcdbDatabase.cxx
+        src/InformationService.cxx
+        src/InformationServiceDump.cxx
         )
 
 set(HEADERS # needed for the dictionary generation
@@ -130,6 +132,20 @@ O2_GENERATE_EXECUTABLE(
 O2_GENERATE_EXECUTABLE(
         EXE_NAME qcSpy
         SOURCES src/qcSpy.cxx
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME ${BUCKET_NAME}
+)
+
+O2_GENERATE_EXECUTABLE(
+        EXE_NAME qcInfoService
+        SOURCES src/runInformationService.cxx
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME ${BUCKET_NAME}
+)
+
+O2_GENERATE_EXECUTABLE(
+        EXE_NAME qcInfoServiceDump
+        SOURCES src/runInformationServiceDump.cxx
         MODULE_LIBRARY_NAME ${LIBRARY_NAME}
         BUCKET_NAME ${BUCKET_NAME}
 )

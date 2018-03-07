@@ -29,15 +29,10 @@ class ObjectsManager
 
   public:
     ObjectsManager(TaskConfig &taskConfig);
-
-    /// Destructor
     virtual ~ObjectsManager();
-
     void startPublishing(TObject *obj, std::string objectName = "");
-
+    // todo stoppublishing
     void setQuality(std::string objectName, Quality quality);
-    // todo stop publishing
-
     Quality getQuality(std::string objectName);
 
     /// \brief Add a check to the object defined by objectName.
@@ -70,6 +65,9 @@ class ObjectsManager
 
     iterator end()
     { return mMonitorObjects.end(); }
+
+    std::string getObjectsListString()
+    { return mObjectsList.GetString().Data(); }
 
   private:
     void UpdateIndex(const std::string &nonEmptyName) ;

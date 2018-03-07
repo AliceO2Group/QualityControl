@@ -27,6 +27,15 @@ namespace o2 {
 namespace quality_control {
 namespace core {
 
+//class InformationServiceSender{
+//  public:
+//    InformationServiceSender();
+//    virtual ~InformationServiceSender();
+//    void send(std::string objectsListString);
+//  private:
+//    std::string lastListSent;
+//};
+
 class TaskInterface;
 
 /// \brief The device driving the execution of a QC task.
@@ -56,6 +65,7 @@ class TaskDevice : public FairMQDevice
     void monitorCycle();
     unsigned long publish();
     static void CustomCleanupTMessage(void *data, void *object);
+    void sendToInformationService(std::string objectsListString);
 
   private:
     std::string mTaskName;
@@ -65,6 +75,8 @@ class TaskDevice : public FairMQDevice
     std::unique_ptr<AliceO2::DataSampling::SamplerInterface> mSampler;
     o2::quality_control::core::TaskInterface *mTask;
     std::shared_ptr<ObjectsManager> mObjectsManager;
+//    InformationServiceSender infoServiceSender;
+    std::string lastListSent;
 
     // stats
     int mTotalNumberObjectsPublished;
