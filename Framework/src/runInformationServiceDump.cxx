@@ -25,5 +25,8 @@ void addCustomOptions(bpo::options_description& /*options*/)
 
 FairMQDevicePtr getDevice(const FairMQProgOptions& /*config*/)
 {
-  return new InformationServiceDump();
+  boost::asio::io_service io;
+  InformationServiceDump *isDump = new InformationServiceDump(io);
+  io.run();
+  return isDump;
 }

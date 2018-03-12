@@ -29,6 +29,19 @@
                 "rateLogging": 0
               }
             ]
+          },
+          {
+            "name": "request_data",
+            "sockets": [
+              {
+                "type": "rep",
+                "method": "bind",
+                "address": "tcp://*:5562",
+                "sndBufSize": 1000,
+                "rcvBufSize": 1000,
+                "rateLogging": 0
+              }
+            ]
           }
         ]
       },
@@ -42,6 +55,19 @@
                 "type": "sub",
                 "method": "connect",
                 "address": "tcp://localhost:5561",
+                "sndBufSize": 1000,
+                "rcvBufSize": 1000,
+                "rateLogging": 0
+              }
+            ]
+          },
+          {
+            "name": "send_request",
+            "sockets": [
+              {
+                "type": "req",
+                "method": "connect",
+                "address": "tcp://localhost:5562",
                 "sndBufSize": 1000,
                 "rcvBufSize": 1000,
                 "rateLogging": 0
