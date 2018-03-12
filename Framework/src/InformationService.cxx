@@ -16,6 +16,7 @@
 
 #include "InformationService.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <options/FairMQProgOptions.h> // device->fConfig
 
 using namespace std;
 typedef boost::tokenizer<boost::char_separator<char> > t_tokenizer;
@@ -23,31 +24,56 @@ using namespace o2::quality_control::core;
 
 int timeOutIntervals = 5; // in seconds
 
-InformationService::InformationService()
-//  : mTimer(io, boost::posix_time::seconds(timeOutIntervals))
+InformationService::InformationService() : th(nullptr), mFakeDataIndex(0)
 {
   OnData("tasks_input", &InformationService::handleTaskInputData);
   OnData("request_data", &InformationService::handleRequestData);
+}
 
-//  mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(timeOutIntervals));
-//  mTimer->async_wait(boost::bind(&InformationService::checkTimedOut, this));
-//  std::cout << " If we see this before the callback function, we know async_wait() returns immediately.\n This confirms async_wait() is non-blocking call!\n";
-//  io.run();
+void InformationService::Init()
+{
+  string fakeDataFile = fConfig->GetValue<string>("fake-data-file");
+
+  // todo put this in a method
+  if(fConfig->GetValue<string>("fake-data-file") != "") {
+    // if user specified a fake data file we load the file
+    std::string line;
+    std::ifstream myfile(fakeDataFile);
+    if(!myfile) //Always test the file open.
+    {
+      std::cout<<"Error opening fake data file"<< std::endl;
+      return;
+    }
+    while (std::getline(myfile, line))
+    {
+      mFakeData.push_back(line);
+    }
+
+    // if user specified a fake data file we start a timer
+    mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(timeOutIntervals));
+    mTimer->async_wait(boost::bind(&InformationService::checkTimedOut, this));
+    th = new thread([&] { io.run(); });
+  }
 }
 
 InformationService::~InformationService()
 {
 }
 
-//void InformationService::checkTimedOut()
-//{
-//  // todo check each agent if alive
-//  cout << "checkTimedOut" << endl;
-//
-//  // restart timer
-//  mTimer->expires_at(mTimer->expires_at() + boost::posix_time::seconds(timeOutIntervals));
-//  mTimer->async_wait(boost::bind(&InformationService::checkTimedOut, this));
-//}
+void InformationService::checkTimedOut()
+{
+  cout << "checkTimedOut" << endl;
+
+  cout << "index : " << mFakeDataIndex << endl;
+  string line = mFakeData[mFakeDataIndex % mFakeData.size()];
+  cout << "line : " << line << endl;
+  handleTaskInputData(line);
+  mFakeDataIndex++;
+
+  // restart timer
+  mTimer->expires_at(mTimer->expires_at() + boost::posix_time::seconds(timeOutIntervals));
+  mTimer->async_wait(boost::bind(&InformationService::checkTimedOut, this));
+}
 
 bool InformationService::handleRequestData(FairMQMessagePtr &request, int /*index*/)
 {
@@ -82,11 +108,24 @@ bool InformationService::handleTaskInputData(FairMQMessagePtr &msg, int /*index*
   string *receivedData = new std::string(static_cast<char *>(msg->GetData()), msg->GetSize());
   LOG(INFO) << "Received data, processing...";
   LOG(INFO) << "    " << *receivedData;
-  std::string taskName = getTaskName(receivedData);
+
+  handleTaskInputData(*receivedData);
+
+  return true; // keep running
+}
+
+bool InformationService::handleTaskInputData(std::string receivedData)
+{
+  std::string taskName = getTaskName(&receivedData);
+  LOG(DEBUG) << "task : " << taskName;
 
   // check if new data
   boost::hash<std::string> string_hash;
-  int hash = string_hash(*receivedData);
+  size_t hash = string_hash(receivedData);
+  cout << "hash : " << hash << endl;
+  cout << "mCacheTasksObjectsHash.count(taskName) : " << mCacheTasksObjectsHash.count(taskName) << endl;
+  if(mCacheTasksObjectsHash.count(taskName) > 0)
+    cout << "mCacheTasksObjectsHash[taskName] : " << mCacheTasksObjectsHash[taskName] << endl;
   if (mCacheTasksObjectsHash.count(taskName) > 0 && hash == mCacheTasksObjectsHash[taskName]) {
     LOG(INFO) << "Data already known, we skip it" << endl;
     return true;
@@ -94,8 +133,7 @@ bool InformationService::handleTaskInputData(FairMQMessagePtr &msg, int /*index*
   mCacheTasksObjectsHash[taskName] = hash;
 
   // parse
-  vector<string> objects = getObjects(receivedData);
-  LOG(DEBUG) << "task : " << taskName;
+  vector<string> objects = getObjects(&receivedData);
 
   // store
   mCacheTasksData[taskName] = objects;
@@ -105,8 +143,13 @@ bool InformationService::handleTaskInputData(FairMQMessagePtr &msg, int /*index*
 
   // publish
   sendJson(json);
+}
 
-  return true; // keep running
+void InformationService::readFile(std::string filePath)
+{
+  // Read file line by line and call handleTaskInputData for each line.
+  // We could also read one line each call. or put it in a long vector and we read one element at
+  // regular intervals.
 }
 
 vector<string> InformationService::getObjects(string *receivedData)
@@ -181,4 +224,3 @@ void InformationService::sendJson(std::string *json)
     LOG(error) << "Error sending update" << endl;
   }
 }
-

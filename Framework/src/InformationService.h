@@ -56,6 +56,7 @@ class InformationService : public FairMQDevice
     bool handleTaskInputData(FairMQMessagePtr&, int);
     /// Callback for the requests coming from clients
     bool handleRequestData(FairMQMessagePtr&, int);
+    void Init();
 
   private:
     /// Extract the list of objects from the string received from the tasks
@@ -68,13 +69,19 @@ class InformationService : public FairMQDevice
     /// Send the JSON string to all clients (subscribers)
     void sendJson(std::string *json);
     pt::ptree buildTaskNode(std::string taskName);
-//    void checkTimedOut();
+    void checkTimedOut();
+    bool handleTaskInputData(std::string inputString);
+    void readFile(std::string filePath);
 
   private:
     std::map<std::string,std::vector<std::string>> mCacheTasksData; /// the list of objects names for each task
-    std::map<std::string /*task name*/, int /*hash of the objects list*/> mCacheTasksObjectsHash; /// used to check whether we already have received this list of objects
-//    boost::asio::deadline_timer *mTimer; /// the asynchronous timer to check if agents have timed out
-//    boost::asio::io_service io;
+    std::map<std::string /*task name*/, size_t /*hash of the objects list*/> mCacheTasksObjectsHash; /// used to check whether we already have received this list of objects
+    boost::asio::deadline_timer *mTimer; /// the asynchronous timer to check if agents have timed out
+    std::vector<std::string> mFakeData; /// container for the fake data (if any). Each line is in a string and used in turn.
+    int mFakeDataIndex;
+    // variables for the timer
+    boost::asio::io_service io;
+    std::thread *th;
 
 };
 
