@@ -19,11 +19,14 @@
 
 namespace bpo = boost::program_options;
 
-void addCustomOptions(bpo::options_description& /*options*/)
+void addCustomOptions(bpo::options_description &options)
 {
+  options.add_options()
+    ("request-task", bpo::value<std::string>()->default_value("all"),
+     "The name of the task it will request (default: all)");
 }
 
-FairMQDevicePtr getDevice(const FairMQProgOptions& /*config*/)
+FairMQDevicePtr getDevice(const FairMQProgOptions & /*config*/)
 {
   boost::asio::io_service io;
   InformationServiceDump *isDump = new InformationServiceDump(io);

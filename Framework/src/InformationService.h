@@ -35,9 +35,10 @@ namespace pt = boost::property_tree;
 /// See InformationService.json to know the port where updates are published.
 /// See InformationService.json to know the port where to request information for all tasks (param "all") or
 /// for a specific task (param "<name_of_task>").
+/// See runInformationService.cxx for the steering code.
 ///
 /// Example usage :
-///      qcInfoService -c /absolute/path/to/InformationService.json -n information_service \
+///      qcInfoService -c /absolute/path/to/InformationService.json -n information_service \\
 ///                    --id information_service --mq-config /absolute/path/to/InformationService.json
 
 class InformationService : public FairMQDevice

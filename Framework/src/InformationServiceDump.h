@@ -22,7 +22,19 @@
 #include <boost/asio.hpp>
 
 /// \brief Dump the publications received from the InformationService.
+///
 /// Useful for checking the InformationService.
+/// It will receive the updates from the tasks. Upon reception , it dumps it and send a request for all or a single
+/// task data and displays the reply.
+/// To decide which task the request should target, use parameter "request-task". By default it asks for all.
+///
+/// See runInformationServiceDump.cxx for the steering code.
+///
+///
+/// Example usage :
+///       qcInfoServiceDump -c /absolute/path/to/InformationService.json -n information_service_dump
+///                         --id information_service_dump --mq-config /absolute/path/to/InformationService.json
+///                         --request-task myTask1
 class InformationServiceDump : public FairMQDevice
 {
   public:
@@ -31,8 +43,6 @@ class InformationServiceDump : public FairMQDevice
 
   protected:
     bool HandleData(FairMQMessagePtr&, int);
-    void sendRequest();
-    virtual bool ConditionalRun();
 
   private:
     boost::asio::deadline_timer mTimer; /// the asynchronous timer to call print at regular intervals

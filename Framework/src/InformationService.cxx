@@ -25,23 +25,32 @@ using namespace o2::quality_control::core;
 InformationService::InformationService()
 {
   OnData("tasks_input", &InformationService::HandleData);
-  OnData("request_data", &InformationService::requestFullData);
+  OnData("request_data", &InformationService::requestData);
 }
 
 bool InformationService::requestData(FairMQMessagePtr &request, int /*index*/)
 {
-  LOG(INFO) << "Received request from client: \"" << string(static_cast<char *>(request->GetData()), request->GetSize())
-            << "\"";
+  string requestParam = string(static_cast<char *>(request->GetData()), request->GetSize());
+  LOG(INFO) << "Received request from client: \"" << requestParam << "\"";
 
-  string *text = new string(produceJsonAll());
+  string *result = nullptr;
+  if(requestParam == "all") {
+    result = new string(produceJsonAll());
+  } else {
+    if(mCacheTasksData.count(requestParam) >0 ) {
+      result = new string(produceJson(requestParam));
+    } else {
+      result = new string("{\"error\": \"no such task\"}");
+    }
+  }
 
   LOG(INFO) << "Sending reply to client.";
-  FairMQMessagePtr reply(NewMessage(const_cast<char *>(text->c_str()), // data
-                                    text->length(), // size
+  FairMQMessagePtr reply(NewMessage(const_cast<char *>(result->c_str()), // data
+                                    result->length(), // size
                                     [](void * /*data*/,
                                        void *object) { delete static_cast<string *>(object); }, // deletion callback
-                                    text)); // object that manages the data
-  if (Send(reply, "request_full_data") <= 0) {
+                                    result)); // object that manages the data
+  if (Send(reply, "request_data") <= 0) {
     cout << "error sending reply" << endl;
   }
   return true; // keep running
@@ -127,7 +136,7 @@ std::string InformationService::produceJsonAll()
 
   std::stringstream ss;
   pt::json_parser::write_json(ss, main_node);
-  LOG(DEBUG) << "json : " << endl << ss.str();
+  LOG(debug) << "json : " << endl << ss.str();
   return ss.str();
 }
 
