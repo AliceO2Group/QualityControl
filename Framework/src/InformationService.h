@@ -23,6 +23,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/asio.hpp>
 
 namespace pt = boost::property_tree;
 
@@ -40,6 +41,9 @@ namespace pt = boost::property_tree;
 /// Example usage :
 ///      qcInfoService -c /absolute/path/to/InformationService.json -n information_service \\
 ///                    --id information_service --mq-config /absolute/path/to/InformationService.json
+///
+/// \todo Handle tasks dying and their removal from the cache and the publication of an update (heartbeat ?).
+/// \todo Handle tasks sending information that they are disappearing.
 
 class InformationService : public FairMQDevice
 {
@@ -48,20 +52,30 @@ class InformationService : public FairMQDevice
     virtual ~InformationService();
 
   protected:
-    bool HandleData(FairMQMessagePtr&, int);
-    bool requestData(FairMQMessagePtr&, int);
+    /// Callback for data coming from qcTasks
+    bool handleTaskInputData(FairMQMessagePtr&, int);
+    /// Callback for the requests coming from clients
+    bool handleRequestData(FairMQMessagePtr&, int);
 
   private:
+    /// Extract the list of objects from the string received from the tasks
     std::vector<std::string> getObjects(std::string *receivedData);
+    /// Extract the task name from the string received from the tasks
     std::string getTaskName(std::string *receivedData);
     std::string produceJson(std::string taskName);
+    /// Produce the JSON string for all tasks and objects
     std::string produceJsonAll();
+    /// Send the JSON string to all clients (subscribers)
     void sendJson(std::string *json);
     pt::ptree buildTaskNode(std::string taskName);
+//    void checkTimedOut();
 
   private:
     std::map<std::string,std::vector<std::string>> mCacheTasksData; /// the list of objects names for each task
     std::map<std::string /*task name*/, int /*hash of the objects list*/> mCacheTasksObjectsHash; /// used to check whether we already have received this list of objects
+//    boost::asio::deadline_timer *mTimer; /// the asynchronous timer to check if agents have timed out
+//    boost::asio::io_service io;
+
 };
 
 #endif //PROJECT_INFORMATIONSERVICE_H

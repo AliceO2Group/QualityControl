@@ -235,8 +235,6 @@ void TaskDevice::endOfActivity()
 
 void TaskDevice::sendToInformationService(string objectsListString)
 {
-  // todo only send if a certain time has passed and also if the list has changed
-
   string* text = new std::string(mTaskName);
   *text += ":" + objectsListString;
   // todo escape names with a comma or a colon

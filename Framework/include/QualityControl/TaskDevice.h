@@ -27,15 +27,6 @@ namespace o2 {
 namespace quality_control {
 namespace core {
 
-//class InformationServiceSender{
-//  public:
-//    InformationServiceSender();
-//    virtual ~InformationServiceSender();
-//    void send(std::string objectsListString);
-//  private:
-//    std::string lastListSent;
-//};
-
 class TaskInterface;
 
 /// \brief The device driving the execution of a QC task.

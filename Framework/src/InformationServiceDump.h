@@ -42,8 +42,8 @@ class InformationServiceDump : public FairMQDevice
     virtual ~InformationServiceDump();
 
   protected:
+    /// Callback for data coming from InformationService
     bool HandleData(FairMQMessagePtr&, int);
-
 };
 
 #endif //PROJECT_InformationServiceDump_H

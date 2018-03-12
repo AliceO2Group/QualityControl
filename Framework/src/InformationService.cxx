@@ -15,20 +15,41 @@
 ///
 
 #include "InformationService.h"
-
 #include "QualityControl/QcInfoLogger.h"
 
 using namespace std;
 typedef boost::tokenizer<boost::char_separator<char> > t_tokenizer;
 using namespace o2::quality_control::core;
 
+int timeOutIntervals = 5; // in seconds
+
 InformationService::InformationService()
+//  : mTimer(io, boost::posix_time::seconds(timeOutIntervals))
 {
-  OnData("tasks_input", &InformationService::HandleData);
-  OnData("request_data", &InformationService::requestData);
+  OnData("tasks_input", &InformationService::handleTaskInputData);
+  OnData("request_data", &InformationService::handleRequestData);
+
+//  mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(timeOutIntervals));
+//  mTimer->async_wait(boost::bind(&InformationService::checkTimedOut, this));
+//  std::cout << " If we see this before the callback function, we know async_wait() returns immediately.\n This confirms async_wait() is non-blocking call!\n";
+//  io.run();
 }
 
-bool InformationService::requestData(FairMQMessagePtr &request, int /*index*/)
+InformationService::~InformationService()
+{
+}
+
+//void InformationService::checkTimedOut()
+//{
+//  // todo check each agent if alive
+//  cout << "checkTimedOut" << endl;
+//
+//  // restart timer
+//  mTimer->expires_at(mTimer->expires_at() + boost::posix_time::seconds(timeOutIntervals));
+//  mTimer->async_wait(boost::bind(&InformationService::checkTimedOut, this));
+//}
+
+bool InformationService::handleRequestData(FairMQMessagePtr &request, int /*index*/)
 {
   string requestParam = string(static_cast<char *>(request->GetData()), request->GetSize());
   LOG(INFO) << "Received request from client: \"" << requestParam << "\"";
@@ -56,7 +77,7 @@ bool InformationService::requestData(FairMQMessagePtr &request, int /*index*/)
   return true; // keep running
 }
 
-bool InformationService::HandleData(FairMQMessagePtr &msg, int /*index*/)
+bool InformationService::handleTaskInputData(FairMQMessagePtr &msg, int /*index*/)
 {
   string *receivedData = new std::string(static_cast<char *>(msg->GetData()), msg->GetSize());
   LOG(INFO) << "Received data, processing...";
@@ -161,6 +182,3 @@ void InformationService::sendJson(std::string *json)
   }
 }
 
-InformationService::~InformationService()
-{
-}

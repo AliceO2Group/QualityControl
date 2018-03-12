@@ -168,6 +168,26 @@ One can also check what is stored in the database by clicking `Stop`
 and then switching to `Database` source. This will only work if a config
 file was passed to the `qcSpy` utility.
 
+### Information Service
+
+The information service is needed in case some GUIs need information
+about the running tasks and the objects they publish.
+
+To run it :
+```
+qcInfoService -c /absolute/path/to/InformationService.json -n information_service \
+              --id information_service --mq-config /absolute/path/to/InformationService.json
+```
+
+To check what is being output by the Information Service, one can
+run the InformationServiceDump :
+```
+qcInfoServiceDump -c /absolute/path/to/InformationService.json -n information_service_dump \
+                  --id information_service_dump --mq-config /absolute/path/to/InformationService.json
+                  --request-task myTask1
+```
+The last parameter can be omitted to receive information about all tasks.
+
 ## Modules development
 
 Steps to create a new module Abc
@@ -184,4 +204,4 @@ From here, fill in the methods in AbcTask.cxx, and AbcCheck.cxx if needed.
 
 In case special additional dependencies are needed, create a new bucket in QualityControlModules/cmake/QualityControlModulesDependencies.cmake.
 
- 
+

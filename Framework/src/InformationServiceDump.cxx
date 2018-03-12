@@ -31,6 +31,10 @@ InformationServiceDump::InformationServiceDump()
   OnData("info_service_input", &InformationServiceDump::HandleData);
 }
 
+InformationServiceDump::~InformationServiceDump()
+{
+}
+
 bool InformationServiceDump::HandleData(FairMQMessagePtr &msg, int /*index*/)
 {
   string *receivedData = new std::string(static_cast<char *>(msg->GetData()), msg->GetSize());
@@ -38,7 +42,7 @@ bool InformationServiceDump::HandleData(FairMQMessagePtr &msg, int /*index*/)
   LOG(INFO) << "    " << *receivedData;
 
   string* text = new string( fConfig->GetValue<string>("request-task"));
-  cout << "preparing request for \"" << text << "\"" << endl;
+  cout << "preparing request for \"" << *text << "\"" << endl;
   FairMQMessagePtr request(NewMessage(const_cast<char*>(text->c_str()), // data
                                       text->length(), // size
                                       [](void* /*data*/, void* object) { delete static_cast<string*>(object); }, // deletion callback
@@ -57,8 +61,4 @@ bool InformationServiceDump::HandleData(FairMQMessagePtr &msg, int /*index*/)
   }
 
   return true; // keep running
-}
-
-InformationServiceDump::~InformationServiceDump()
-{
 }
