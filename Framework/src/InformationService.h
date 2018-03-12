@@ -60,7 +60,8 @@ class InformationService : public FairMQDevice
     pt::ptree buildTaskNode(std::string taskName);
 
   private:
-    std::map<std::string,std::vector<std::string>> mCacheTasksData;
+    std::map<std::string,std::vector<std::string>> mCacheTasksData; /// the list of objects names for each task
+    std::map<std::string /*task name*/, int /*hash of the objects list*/> mCacheTasksObjectsHash; /// used to check whether we already have received this list of objects
 };
 
 #endif //PROJECT_INFORMATIONSERVICE_H

@@ -34,10 +34,10 @@ bool InformationService::requestData(FairMQMessagePtr &request, int /*index*/)
   LOG(INFO) << "Received request from client: \"" << requestParam << "\"";
 
   string *result = nullptr;
-  if(requestParam == "all") {
+  if (requestParam == "all") {
     result = new string(produceJsonAll());
   } else {
-    if(mCacheTasksData.count(requestParam) >0 ) {
+    if (mCacheTasksData.count(requestParam) > 0) {
       result = new string(produceJson(requestParam));
     } else {
       result = new string("{\"error\": \"no such task\"}");
@@ -61,9 +61,18 @@ bool InformationService::HandleData(FairMQMessagePtr &msg, int /*index*/)
   string *receivedData = new std::string(static_cast<char *>(msg->GetData()), msg->GetSize());
   LOG(INFO) << "Received data, processing...";
   LOG(INFO) << "    " << *receivedData;
+  std::string taskName = getTaskName(receivedData);
+
+  // check if new data
+  boost::hash<std::string> string_hash;
+  int hash = string_hash(*receivedData);
+  if (mCacheTasksObjectsHash.count(taskName) > 0 && hash == mCacheTasksObjectsHash[taskName]) {
+    LOG(INFO) << "Data already known, we skip it" << endl;
+    return true;
+  }
+  mCacheTasksObjectsHash[taskName] = hash;
 
   // parse
-  std::string taskName = getTaskName(receivedData);
   vector<string> objects = getObjects(receivedData);
   LOG(DEBUG) << "task : " << taskName;
 

@@ -26,8 +26,7 @@
 using namespace std;
 namespace pt = boost::property_tree;
 
-InformationServiceDump::InformationServiceDump(boost::asio::io_service& io)
-  : mTimer(io, boost::posix_time::seconds(requestIntervals))
+InformationServiceDump::InformationServiceDump()
 {
   OnData("info_service_input", &InformationServiceDump::HandleData);
 }

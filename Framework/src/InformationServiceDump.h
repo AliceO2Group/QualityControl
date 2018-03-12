@@ -38,14 +38,11 @@
 class InformationServiceDump : public FairMQDevice
 {
   public:
-    InformationServiceDump(boost::asio::io_service& io);
+    InformationServiceDump();
     virtual ~InformationServiceDump();
 
   protected:
     bool HandleData(FairMQMessagePtr&, int);
-
-  private:
-    boost::asio::deadline_timer mTimer; /// the asynchronous timer to call print at regular intervals
 
 };
 
