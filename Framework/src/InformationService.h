@@ -42,6 +42,11 @@ namespace pt = boost::property_tree;
 ///      qcInfoService -c /absolute/path/to/InformationService.json -n information_service \\
 ///                    --id information_service --mq-config /absolute/path/to/InformationService.json
 ///
+/// Format of the string coming from the tasks :
+///      `task_id:obj0,obj1,obj2`
+/// Format of the JSON output for one task or all tasks :
+///      See README
+///
 /// \todo Handle tasks dying and their removal from the cache and the publication of an update (heartbeat ?).
 /// \todo Handle tasks sending information that they are disappearing.
 
@@ -63,6 +68,7 @@ class InformationService : public FairMQDevice
     std::vector<std::string> getObjects(std::string *receivedData);
     /// Extract the task name from the string received from the tasks
     std::string getTaskName(std::string *receivedData);
+    /// Produce the JSON string for the specified task
     std::string produceJson(std::string taskName);
     /// Produce the JSON string for all tasks and objects
     std::string produceJsonAll();
@@ -70,8 +76,12 @@ class InformationService : public FairMQDevice
     void sendJson(std::string *json);
     pt::ptree buildTaskNode(std::string taskName);
     void checkTimedOut();
+    /// Compute and send the JSON using the inputString from a task
     bool handleTaskInputData(std::string inputString);
-    void readFile(std::string filePath);
+    /// Reads a file containing data in format as received from the tasks.
+    /// Store the items and use them at regular intervals to simulate tasks inputs.
+    /// Calling again this method will delete the former fake data cache.
+    void readFakeDataFile(std::string filePath);
 
   private:
     std::map<std::string,std::vector<std::string>> mCacheTasksData; /// the list of objects names for each task

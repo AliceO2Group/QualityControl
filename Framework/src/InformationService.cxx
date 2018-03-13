@@ -16,7 +16,7 @@
 
 #include "InformationService.h"
 #include "QualityControl/QcInfoLogger.h"
-#include <options/FairMQProgOptions.h> // device->fConfig
+#include <options/FairMQProgOptions.h>
 
 using namespace std;
 typedef boost::tokenizer<boost::char_separator<char> > t_tokenizer;
@@ -35,24 +35,8 @@ void InformationService::Init()
   string fakeDataFile = fConfig->GetValue<string>("fake-data-file");
 
   // todo put this in a method
-  if(fConfig->GetValue<string>("fake-data-file") != "") {
-    // if user specified a fake data file we load the file
-    std::string line;
-    std::ifstream myfile(fakeDataFile);
-    if(!myfile) //Always test the file open.
-    {
-      std::cout<<"Error opening fake data file"<< std::endl;
-      return;
-    }
-    while (std::getline(myfile, line))
-    {
-      mFakeData.push_back(line);
-    }
-
-    // if user specified a fake data file we start a timer
-    mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(timeOutIntervals));
-    mTimer->async_wait(boost::bind(&InformationService::checkTimedOut, this));
-    th = new thread([&] { io.run(); });
+  if (fakeDataFile != "") {
+    readFakeDataFile(fakeDataFile);
   }
 }
 
@@ -62,11 +46,7 @@ InformationService::~InformationService()
 
 void InformationService::checkTimedOut()
 {
-  cout << "checkTimedOut" << endl;
-
-  cout << "index : " << mFakeDataIndex << endl;
   string line = mFakeData[mFakeDataIndex % mFakeData.size()];
-  cout << "line : " << line << endl;
   handleTaskInputData(line);
   mFakeDataIndex++;
 
@@ -98,7 +78,7 @@ bool InformationService::handleRequestData(FairMQMessagePtr &request, int /*inde
                                        void *object) { delete static_cast<string *>(object); }, // deletion callback
                                     result)); // object that manages the data
   if (Send(reply, "request_data") <= 0) {
-    cout << "error sending reply" << endl;
+    LOG(ERROR) << "error sending reply";
   }
   return true; // keep running
 }
@@ -122,13 +102,11 @@ bool InformationService::handleTaskInputData(std::string receivedData)
   // check if new data
   boost::hash<std::string> string_hash;
   size_t hash = string_hash(receivedData);
-  cout << "hash : " << hash << endl;
-  cout << "mCacheTasksObjectsHash.count(taskName) : " << mCacheTasksObjectsHash.count(taskName) << endl;
-  if(mCacheTasksObjectsHash.count(taskName) > 0)
-    cout << "mCacheTasksObjectsHash[taskName] : " << mCacheTasksObjectsHash[taskName] << endl;
-  if (mCacheTasksObjectsHash.count(taskName) > 0 && hash == mCacheTasksObjectsHash[taskName]) {
-    LOG(INFO) << "Data already known, we skip it" << endl;
-    return true;
+  if (mCacheTasksObjectsHash.count(taskName) > 0) {
+    if (mCacheTasksObjectsHash.count(taskName) > 0 && hash == mCacheTasksObjectsHash[taskName]) {
+      LOG(INFO) << "Data already known, we skip it";
+      return true;
+    }
   }
   mCacheTasksObjectsHash[taskName] = hash;
 
@@ -145,11 +123,24 @@ bool InformationService::handleTaskInputData(std::string receivedData)
   sendJson(json);
 }
 
-void InformationService::readFile(std::string filePath)
+void InformationService::readFakeDataFile(std::string fakeDataFile)
 {
-  // Read file line by line and call handleTaskInputData for each line.
-  // We could also read one line each call. or put it in a long vector and we read one element at
-  // regular intervals.
+  std::string line;
+  std::ifstream myfile(fakeDataFile);
+  if (!myfile) //Always test the file open.
+  {
+    LOG(ERROR) << "Error opening fake data file";
+    return;
+  }
+  mFakeData.clear();
+  while (std::getline(myfile, line)) {
+    mFakeData.push_back(line);
+  }
+
+  // start a timer to use the fake data
+  mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(timeOutIntervals));
+  mTimer->async_wait(boost::bind(&InformationService::checkTimedOut, this));
+  th = new thread([&] { io.run(); });
 }
 
 vector<string> InformationService::getObjects(string *receivedData)
@@ -209,7 +200,7 @@ std::string InformationService::produceJsonAll()
 
   std::stringstream ss;
   pt::json_parser::write_json(ss, main_node);
-  LOG(debug) << "json : " << endl << ss.str();
+  LOG(DEBUG) << "json : " << endl << ss.str();
   return ss.str();
 }
 
@@ -221,6 +212,6 @@ void InformationService::sendJson(std::string *json)
                                    json));
   int ret = Send(msg2, "updates_output");
   if (ret < 0) {
-    LOG(error) << "Error sending update" << endl;
+    LOG(ERROR) << "Error sending update";
   }
 }

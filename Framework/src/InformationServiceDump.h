@@ -30,7 +30,6 @@
 ///
 /// See runInformationServiceDump.cxx for the steering code.
 ///
-///
 /// Example usage :
 ///       qcInfoServiceDump -c /absolute/path/to/InformationService.json -n information_service_dump
 ///                         --id information_service_dump --mq-config /absolute/path/to/InformationService.json
@@ -43,7 +42,7 @@ class InformationServiceDump : public FairMQDevice
 
   protected:
     /// Callback for data coming from InformationService
-    bool HandleData(FairMQMessagePtr&, int);
+    bool HandleData(FairMQMessagePtr &, int);
 };
 
 #endif //PROJECT_InformationServiceDump_H

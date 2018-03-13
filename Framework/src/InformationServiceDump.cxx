@@ -21,7 +21,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 
 #include "FairMQLogger.h"
-#include <options/FairMQProgOptions.h> // device->fConfig
+#include <options/FairMQProgOptions.h>
 
 using namespace std;
 namespace pt = boost::property_tree;
@@ -42,22 +42,22 @@ bool InformationServiceDump::HandleData(FairMQMessagePtr &msg, int /*index*/)
   LOG(INFO) << "    " << *receivedData;
 
   string* text = new string( fConfig->GetValue<string>("request-task"));
-  cout << "preparing request for \"" << *text << "\"" << endl;
+  LOG(INFO) << "Preparing request for \"" << *text << "\"";
   FairMQMessagePtr request(NewMessage(const_cast<char*>(text->c_str()), // data
                                       text->length(), // size
                                       [](void* /*data*/, void* object) { delete static_cast<string*>(object); }, // deletion callback
                                       text)); // object that manages the data
-  cout << "Sending request " << endl;
+  LOG(INFO) << "Sending request ";
   if (Send(request, "send_request") > 0) {
     FairMQMessagePtr reply(NewMessage());
     if (Receive(reply, "send_request") >= 0)
     {
       LOG(INFO) << "Received reply from server: \"" << string(static_cast<char*>(reply->GetData()), reply->GetSize()) << "\"";
     } else {
-      cout << "Problem receiving reply" << endl;
+      LOG(ERROR) << "Problem receiving reply";
     }
   } else {
-    cout << "problem sending request" << endl;
+    LOG(ERROR) << "problem sending request";
   }
 
   return true; // keep running
