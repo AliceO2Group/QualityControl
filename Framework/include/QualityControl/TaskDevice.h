@@ -56,6 +56,7 @@ class TaskDevice : public FairMQDevice
     void monitorCycle();
     unsigned long publish();
     static void CustomCleanupTMessage(void *data, void *object);
+    void sendToInformationService(std::string objectsListString);
 
   private:
     std::string mTaskName;
@@ -65,6 +66,8 @@ class TaskDevice : public FairMQDevice
     std::unique_ptr<AliceO2::DataSampling::SamplerInterface> mSampler;
     o2::quality_control::core::TaskInterface *mTask;
     std::shared_ptr<ObjectsManager> mObjectsManager;
+//    InformationServiceSender infoServiceSender;
+    std::string lastListSent;
 
     // stats
     int mTotalNumberObjectsPublished;

@@ -36,7 +36,9 @@ void ObjectsManager::startPublishing(TObject *object, std::string objectName)
   mMonitorObjects[nonEmptyName] = newObject;
 
   //update index
-  UpdateIndex(nonEmptyName);
+  if(objectName != MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST) {
+    UpdateIndex(nonEmptyName);
+  }
 }
 
 void ObjectsManager::UpdateIndex(const string &nonEmptyName)

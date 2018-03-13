@@ -168,6 +168,90 @@ One can also check what is stored in the database by clicking `Stop`
 and then switching to `Database` source. This will only work if a config
 file was passed to the `qcSpy` utility.
 
+### Information Service
+
+The information service publishes information about the tasks currently
+running and the objects they publish. It is needed by some GUIs, or
+other clients.
+
+By default it will publish on port 5561 the json description of a task
+when it is updated. A client can also request on port 5562 the information
+about a specific task or about all the tasks, by passing the name of the
+task as a parameter or "all" respectively.
+
+The JSON for a task looks like :
+```
+{
+    "name": "myTask_1",
+    "objects": [
+        {
+            "id": "array-0"
+        },
+        {
+            "id": "array-1"
+        },
+        {
+            "id": "array-2"
+        },
+        {
+            "id": "array-3"
+        },
+        {
+            "id": "array-4"
+        }
+    ]
+}
+```
+
+The JSON for all tasks looks like :
+```
+{
+    "tasks": [
+        {
+            "name": "myTask_1",
+            "objects": [
+                {
+                    "id": "array-0"
+                },
+                {
+                    "id": "array-1"
+                }
+            ]
+        },
+        {
+            "name": "myTask_2",
+            "objects": [
+                {
+                    "id": "array-0"
+                },
+                {
+                    "id": "array-1"
+                }
+            ]
+        }
+    ]
+}
+```
+#### Usage
+```
+qcInfoService -c /absolute/path/to/InformationService.json -n information_service \
+              --id information_service --mq-config /absolute/path/to/InformationService.json
+```
+
+The `qcInfoService` can provide fake data from a file. This is useful
+to test the clients. Use the option `--fake-data-file` and provide the
+absolute path to the file. The file `infoServiceFake.json` is provided
+as an example.
+
+To check what is being output by the Information Service, one can
+run the InformationServiceDump :
+```
+qcInfoServiceDump -c /absolute/path/to/InformationService.json -n information_service_dump \
+                  --id information_service_dump --mq-config /absolute/path/to/InformationService.json
+                  --request-task myTask1
+```
+The last parameter can be omitted to receive information about all tasks.
+
 ## Modules development
 
 Steps to create a new module Abc
@@ -184,4 +268,4 @@ From here, fill in the methods in AbcTask.cxx, and AbcCheck.cxx if needed.
 
 In case special additional dependencies are needed, create a new bucket in QualityControlModules/cmake/QualityControlModulesDependencies.cmake.
 
- 
+
