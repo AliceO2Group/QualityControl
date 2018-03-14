@@ -82,19 +82,23 @@ void TaskDataProcessor::initCallback(InitContext& iCtx)
   // in the future the start of an activity/run will come from the control
   startOfActivity();
 
-  //  AliceO2::Common::Timer timer;
   mStatsTimer.reset(10000000); // 10 s.
   mLastNumberObjects = 0;
 
   QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << AliceO2::InfoLogger::InfoLogger::endm;
   mNumberBlocks = 0;
-  mCycleStart = system_clock::now();
-  mCycleEnd = mCycleStart + seconds(mTaskConfig.cycleDurationSeconds);
   mCycleOn = true;
+
+  // start a timer for finishing cycle and publishing the results
+  mCycleTimer = std::make_shared<boost::asio::deadline_timer>(io, boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds));
+  mCycleTimer->async_wait(boost::bind(&TaskDataProcessor::finishCycle, this));
+  ioThread = std::make_shared<std::thread>([&] { io.run(); });
 }
 
 void TaskDataProcessor::processCallback(ProcessingContext& pCtx)
 {
+  std::lock_guard<std::mutex> lock(mTaskMutex);
+
   if (!mCycleOn) {
     if (/*CheckCurrentState(RUNNING) &&*/ (mTaskConfig.maxNumberCycles < 0 ||
                                            mCycleNumber < mTaskConfig.maxNumberCycles)) {
@@ -103,8 +107,6 @@ void TaskDataProcessor::processCallback(ProcessingContext& pCtx)
 
       mTask->startOfCycle();
 
-      mCycleStart = system_clock::now();
-      mCycleEnd = mCycleStart + seconds(mTaskConfig.cycleDurationSeconds);
       mNumberBlocks = 0;
       mCycleOn = true;
     }
@@ -116,39 +118,6 @@ void TaskDataProcessor::processCallback(ProcessingContext& pCtx)
     if (dataSetReference) {
       mTask->monitorDataBlock(dataSetReference);
       mNumberBlocks++;
-    }
-
-    if (system_clock::now() > mCycleEnd) {
-
-      mTask->endOfCycle();
-
-      // publication
-      unsigned long numberObjectsPublished = publish();
-
-      // monitoring metrics
-      double durationCycle = mCycleTimer.getTime();
-      mCycleTimer.reset();
-      double durationPublication = mCycleTimer.getTime();
-      mCollector->send(mNumberBlocks, "QC_task_Numberofblocks_in_cycle");
-      mCollector->send(durationCycle, "QC_task_Module_cycle_duration");
-      mCollector->send(durationPublication, "QC_task_Publication_duration");
-      mCollector->send((int)numberObjectsPublished,
-                       "QC_task_Number_objects_published_in_cycle"); // cast due to Monitoring accepting only int
-      double rate = numberObjectsPublished / (durationCycle + durationPublication);
-      mCollector->send(rate, "QC_task_Rate_objects_published_per_second");
-      mTotalNumberObjectsPublished += numberObjectsPublished;
-      // std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
-      // pcpus(std::stod(pidStatus[3]));
-      // pmems(std::stod(pidStatus[4]));
-      double whole_run_rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
-      mCollector->send(mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run");
-      mCollector->send(mTimerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run");
-      mCollector->send(whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run");
-      //  mCollector->send(std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run");
-//      mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
-
-      mCycleNumber++;
-      mCycleOn = false;
     }
   }
 
@@ -189,6 +158,46 @@ void TaskDataProcessor::endOfActivity()
   mCollector->send(rate, "QC_task_Rate_objects_published_per_second_whole_run");
 //  mCollector->send(ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run");
 //  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
+}
+
+void TaskDataProcessor::finishCycle()
+{
+  {
+    std::lock_guard<std::mutex> lock(mTaskMutex);
+
+    mTask->endOfCycle();
+
+    double durationCycle = (boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds) - mCycleTimer->expires_from_now()).total_nanoseconds() / double(1e9);
+    mCycleTimer->expires_at(mCycleTimer->expires_at() + boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds));
+
+    // publication
+    unsigned long numberObjectsPublished = publish();
+
+    // monitoring metrics
+    double durationPublication = (boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds) - mCycleTimer->expires_from_now()).total_nanoseconds() / double(1e9);
+    mCollector->send(mNumberBlocks, "QC_task_Numberofblocks_in_cycle");
+    mCollector->send(durationCycle, "QC_task_Module_cycle_duration");
+    mCollector->send(durationPublication, "QC_task_Publication_duration");
+    mCollector->send((int) numberObjectsPublished,
+                     "QC_task_Number_objects_published_in_cycle"); // cast due to Monitoring accepting only int
+    double rate = numberObjectsPublished / (durationCycle + durationPublication);
+    mCollector->send(rate, "QC_task_Rate_objects_published_per_second");
+    mTotalNumberObjectsPublished += numberObjectsPublished;
+    //std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
+    //pcpus(std::stod(pidStatus[3]));
+    //pmems(std::stod(pidStatus[4]));
+    double whole_run_rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
+    mCollector->send(mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run");
+    mCollector->send(mTimerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run");
+    mCollector->send(whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run");
+//  mCollector->send(std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run");
+//  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
+
+    mCycleNumber++;
+    mCycleOn = false;
+  }
+  // restart timer
+  mCycleTimer->async_wait(boost::bind(&TaskDataProcessor::finishCycle, this));
 }
 
 unsigned long TaskDataProcessor::publish()

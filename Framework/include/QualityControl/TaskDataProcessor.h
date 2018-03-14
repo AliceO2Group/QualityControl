@@ -6,10 +6,13 @@
 #ifndef TASKDATAPROCESSOR_H
 #define TASKDATAPROCESSOR_H
 
+#include <thread>
+#include <mutex>
 // boost (should be first but then it makes errors in fairmq)
 //#include <boost/accumulators/accumulators.hpp>
 //#include <boost/accumulators/statistics.hpp>
 //#include <boost/serialization/array_wrapper.hpp>
+#include <boost/asio.hpp>
 // O2
 #include "Common/Timer.h"
 #include "Configuration/ConfigurationInterface.h"
@@ -68,7 +71,7 @@ class TaskDataProcessor {
   void populateConfig(std::string taskName);
   void startOfActivity();
   void endOfActivity();
-  //  void monitorCycle();
+  void finishCycle();
   unsigned long publish();
   static void CustomCleanupTMessage(void* data, void* object);
 
@@ -80,14 +83,16 @@ class TaskDataProcessor {
   std::shared_ptr<AliceO2::Monitoring::Collector> mCollector;
   TaskInterface* mTask;
   std::shared_ptr<ObjectsManager> mObjectsManager;
+  std::mutex mTaskMutex;
 
-  AliceO2::Common::Timer mCycleTimer;
+  std::shared_ptr<boost::asio::deadline_timer> mCycleTimer; /// the asynchronous timer to check if agents have timed out
   int mNumberBlocks;
   int mLastNumberObjects;
   bool mCycleOn;
   int mCycleNumber;
-  decltype(system_clock::now()) mCycleStart;
-  decltype(system_clock::now()) mCycleEnd;
+
+  boost::asio::io_service io;
+  std::shared_ptr<std::thread> ioThread;
 
   // stats
   AliceO2::Common::Timer mStatsTimer;
