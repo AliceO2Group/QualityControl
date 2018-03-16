@@ -8,47 +8,25 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-#include <boost/algorithm/string.hpp>
-#include <iostream>
 #include <memory>
 
-#include <fairmq/FairMQDevice.h>
-
 #include "Framework/DataSampling.h"
-#include "Framework/RawDeviceService.h"
 #include "Framework/runDataProcessing.h"
-#include <Configuration/ConfigurationInterface.h>
-#include <Configuration/ConfigurationFactory.h>
-#include <Common/DataBlock.h>
-//#include "DataSampling/SamplerFactory.h"
-#include "QualityControl/TaskDevice.h"
-#include "QualityControl/TaskConfig.h"
-#include "QualityControl/ObjectsManager.h"
-#include "QualityControl/TaskFactory.h"
-#include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskDataProcessor.h"
 
 using namespace std;
 using namespace AliceO2;
-using namespace AliceO2::Configuration;
-using namespace AliceO2::Monitoring;
 using namespace o2::framework;
 using namespace o2::quality_control::core;
 using namespace std::chrono;
 
 //todo:
 // rename it to taskDPL.cxx, move it to src, say it is not usable because there are no arguments passed to exe
-// finish task in separate thread if possible
 
 void defineDataProcessing(vector<DataProcessorSpec>& specs)
-// clion introspections go bananas in this function
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCDFAInspection"
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "CannotResolve"
 {
   const string qcTaskName = "daqTask";
-  const string qcConfigurationSource = "file:///home/pkonopka/alice/QualityControl/Framework/example-default.ini";
+  const std::string qcConfigurationSource = std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.ini";
 
   DataProcessorSpec qcTask{
     "daqTask",
@@ -78,11 +56,8 @@ void defineDataProcessing(vector<DataProcessorSpec>& specs)
 
   specs.push_back(qcTask);
 
-  string configFilePath = "file:///home/pkonopka/alice/QualityControl/Framework/dataSamplingConfig.ini";
 
-  LOG(INFO) << "Using config file '" << configFilePath << "'";
 
-  o2::framework::DataSampling::GenerateInfrastructure(specs, configFilePath);
+  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 }
-#pragma clang diagnostic pop
-#pragma clang diagnostic pop
