@@ -12,6 +12,7 @@
 
 #include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
+#include "QualityControl/TaskDataProcessorFactory.h"
 #include "QualityControl/TaskDataProcessor.h"
 
 using namespace std;

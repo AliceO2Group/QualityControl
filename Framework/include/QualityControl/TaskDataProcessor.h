@@ -39,17 +39,22 @@ using namespace std::chrono;
 /// It finally publishes the MonitorObjects owned and filled by the QC task and managed by the ObjectsManager.
 /// Usage:
 /// \code{.cxx}
-/// AlgorithmSpec{
-///   (AlgorithmSpec::InitCallback) [qcTaskName, qcConfigurationSource](InitContext& initContext) {
+/// auto qcTask = std::make_shared<TaskDataProcessor>(taskName, configurationSource);
+/// DataProcessorSpec newTask{
+///   taskName,
+///   qcTask->getInputsSpecs(),
+///   Outputs{ qcTask->getOutputSpec() },
+///   AlgorithmSpec{
+///     (AlgorithmSpec::InitCallback) [qcTask = std::move(qcTask)](InitContext& initContext) {
 ///
-///     auto qcTask = std::make_shared<TaskDataProcessor>(qcTaskName, qcConfigurationSource);
-///     qcTask->initCallback(initContext);
+///       qcTask->initCallback(initContext);
 ///
-///     return (AlgorithmSpec::ProcessCallback) [qcTask = std::move(qcTask)] (ProcessingContext &processingContext) {
-///       qcTask->processCallback(processingContext);
-///     };
+///       return (AlgorithmSpec::ProcessCallback) [qcTask = std::move(qcTask)] (ProcessingContext &processingContext) {
+///         qcTask->processCallback(processingContext);
+///       };
+///     }
 ///   }
-/// }
+/// };
 /// \endcode
 ///
 /// \author Piotr Konopka, Barthelemy von Haller
@@ -64,6 +69,9 @@ class TaskDataProcessor {
   void processCallback(ProcessingContext& pCtx);
   /// \brief To be invoked inside Data Processor's TimerCallback
   void timerCallback(ProcessingContext& pCtx);
+
+  const Inputs& getInputsSpecs() { return mInputSpecs; };
+  const OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
 
  private:
   void populateConfig(std::string taskName);

@@ -77,6 +77,7 @@ set(SRCS
         src/InformationService.cxx
         src/InformationServiceDump.cxx
         src/TaskDataProcessor.cxx
+        src/TaskDataProcessorFactory.cxx
         )
 
 set(HEADERS # needed for the dictionary generation
@@ -87,6 +88,7 @@ set(HEADERS # needed for the dictionary generation
         include/QualityControl/DatabaseInterface.h
         include/QualityControl/CcdbDatabase.h
         include/QualityControl/TaskDataProcessor.h
+        include/QualityControl/TaskDataProcessorFactory.h
         )
 
 if(MYSQL_FOUND)
