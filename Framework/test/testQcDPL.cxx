@@ -28,35 +28,25 @@ void defineDataProcessing(vector<DataProcessorSpec>& specs)
   const string qcTaskName = "daqTask";
   const std::string qcConfigurationSource = std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.ini";
 
-  DataProcessorSpec qcTask{
-    "daqTask",
+  TaskDataProcessorFactory qcFactory;
+  specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
+
+  DataProcessorSpec checker{
+    "checker",
     Inputs{
-      {"dataITS", "ITS", "RAWDATA_S", 0, InputSpec::Timeframe}
+      {"aaa", "ITS", "HIST_DAQTASK", 0, InputSpec::QA}
     },
-    Outputs{
-      {"ITS", "HISTO", 0, OutputSpec::Timeframe}
-    },
+    Outputs{},
     AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [qcTaskName, qcConfigurationSource](InitContext& initContext) {
+      (AlgorithmSpec::InitCallback) [](InitContext& initContext) {
 
-        auto qcTask = std::make_shared<TaskDataProcessor>(qcTaskName, qcConfigurationSource);
-        qcTask->initCallback(initContext);
-
-        return (AlgorithmSpec::ProcessCallback) [qcTask = std::move(qcTask)] (ProcessingContext &processingContext) mutable {
-          qcTask->processCallback(processingContext);
+        return (AlgorithmSpec::ProcessCallback) [] (ProcessingContext &processingContext) mutable {
+          LOG(INFO) << "checker invoked";
         };
       }
-    },
-    {
-      ConfigParamSpec{
-        "channel-config", VariantType::String,
-        "name=data-out,type=pub,method=bind,address=tcp://*:5556,rateLogging=0", {"Out-of-band channel config"}}
     }
   };
-
-  specs.push_back(qcTask);
-
-
+  specs.push_back(checker);
 
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
   o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
