@@ -19,8 +19,8 @@
 #include "Framework/DataProcessorSpec.h"
 #include "Monitoring/Collector.h"
 // QC
+#include "QualityControl/TaskInterfaceDPL.h"
 #include "QualityControl/TaskConfig.h"
-#include "QualityControl/TaskInterface.h"
 
 namespace ba = boost::accumulators;
 
@@ -82,12 +82,11 @@ class TaskDataProcessor {
   static void CustomCleanupTMessage(void* data, void* object);
 
  private:
-  FairMQDevice* mDevice; // to be dropped
   std::string mTaskName;
   TaskConfig mTaskConfig;
   std::shared_ptr<AliceO2::Configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<AliceO2::Monitoring::Collector> mCollector;
-  TaskInterface* mTask;
+  TaskInterfaceDPL* mTask;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::recursive_mutex mTaskMutex; // should be plain mutex, when timer callback is implemented in dpl
 

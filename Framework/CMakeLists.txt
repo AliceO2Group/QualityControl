@@ -64,7 +64,6 @@ set(SRCS
         src/MonitorObject.cxx
         src/Quality.cxx
         src/ObjectsManager.cxx
-        src/TaskFactory.cxx
         src/Checker.cxx
         src/CheckInterface.cxx
         src/DatabaseFactory.cxx
@@ -78,6 +77,7 @@ set(SRCS
         src/InformationServiceDump.cxx
         src/TaskDataProcessor.cxx
         src/TaskDataProcessorFactory.cxx
+        src/TaskInterfaceDPL.cxx
         )
 
 set(HEADERS # needed for the dictionary generation

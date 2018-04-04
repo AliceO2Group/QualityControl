@@ -1,6 +1,7 @@
-//
-// Created by pkonopka on 3/9/18.
-//
+///
+/// \file   TaskDataProcessor.cxx
+/// \author Piotr Konopka
+///
 
 #include <memory>
 
@@ -23,30 +24,6 @@ using namespace AliceO2::Configuration;
 using namespace AliceO2::Monitoring;
 using namespace std::chrono;
 
-DataSetReference convertO2DataModelToDataSetReference(o2::framework::DataRef& input)
-{
-  const auto* header = o2::header::get<o2::header::DataHeader>(input.header);
-
-  DataSetReference mDataSet = std::make_shared<DataSet>();
-
-  // header
-  static DataBlockId id = 1;
-
-  auto block = std::make_shared<SelfReleasingBlockContainer>();
-  block->getData()->header.blockType = DataBlockType::H_BASE; // = *static_cast<DataBlockHeaderBase *>(msg->GetData());
-  block->getData()->header.headerSize = sizeof(DataBlockHeaderBase);
-  block->getData()->header.dataSize = (uint32_t)header->payloadSize;
-  block->getData()->header.id = id++;
-  block->getData()->header.linkId = 0;
-
-  block->getData()->data = new char[header->payloadSize];
-  memcpy(block->getData()->data, const_cast<char*>(input.payload), header->payloadSize);
-
-  mDataSet->push_back(block);
-
-  return mDataSet;
-}
-
 TaskDataProcessor::TaskDataProcessor(std::string taskName, std::string configurationSource)
   : mTaskName(taskName),
     mNumberBlocks(0),
@@ -67,7 +44,7 @@ TaskDataProcessor::TaskDataProcessor(std::string taskName, std::string configura
 
   // setup task
   TaskFactory f;
-  mTask = f.create(mTaskConfig, mObjectsManager); // TODO could we use unique_ptr ?
+  mTask = f.create<TaskInterfaceDPL>(mTaskConfig, mObjectsManager); // TODO could we use unique_ptr ?
 }
 
 TaskDataProcessor::~TaskDataProcessor()
@@ -77,12 +54,10 @@ TaskDataProcessor::~TaskDataProcessor()
 
 void TaskDataProcessor::initCallback(InitContext& iCtx)
 {
-  mDevice = iCtx.services().get<o2::framework::RawDeviceService>().device();
-
   QcInfoLogger::GetInstance() << "initialize TaskDevicee" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // init user's task
-  mTask->initialize();
+  mTask->initialize(iCtx);
 
   // in the future the start of an activity/run will come from the control
   startOfActivity();
@@ -118,12 +93,8 @@ void TaskDataProcessor::processCallback(ProcessingContext& pCtx)
   }
   if (mCycleOn) {
 
-    DataRef input = *pCtx.inputs().begin();
-    DataSetReference dataSetReference = convertO2DataModelToDataSetReference(input);
-    if (dataSetReference) {
-      mTask->monitorDataBlock(dataSetReference);
-      mNumberBlocks++;
-    }
+    mTask->monitorDataBlock(pCtx);
+    mNumberBlocks++;
   }
 
   // if 10 s we publish stats
@@ -249,17 +220,9 @@ unsigned long TaskDataProcessor::publish(DataAllocator& allocator)
   for (auto& pair : *mObjectsManager) {
 
     auto* mo = pair.second;
-//    auto* message = new TMessage(kMESS_OBJECT); // will be deleted by fairmq using our custom method
-//    message->WriteObjectAny(mo, mo->IsA());
-//    FairMQMessagePtr msg(mDevice->NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
-//    if( mo->getName() == "IDs" ) {
-//      auto *h = dynamic_cast<TGraph *>(mo->getObject());
-//      LOG(INFO) << "payloadSize size " << h->Sizeof() << " mean " << h->GetMean();
-//    }
     allocator.snapshot<decltype(*mo)>(mMonitorObjectsSpec, *mo);
 
     QcInfoLogger::GetInstance() << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
-//    mDevice->Send(msg, "data-out");
     sentMessages++;
   }
 
