@@ -26,7 +26,7 @@ using namespace std::chrono;
 
 void defineDataProcessing(vector<DataProcessorSpec>& specs)
 {
-  const string qcTaskName = "daqTask";
+  const string qcTaskName = "skeletonTask";
   const std::string qcConfigurationSource = std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.ini";
 
   TaskDataProcessorFactory qcFactory;
@@ -35,7 +35,7 @@ void defineDataProcessing(vector<DataProcessorSpec>& specs)
   DataProcessorSpec checker{
     "checker",
     Inputs{
-      {"aaa", "ITS", "HIST_DAQTASK", 0, InputSpec::QA}
+      {"aaa", "ITS", "HIST_SKLT_TASK", 0, InputSpec::QA}
     },
     Outputs{},
     AlgorithmSpec{

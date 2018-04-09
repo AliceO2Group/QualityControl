@@ -119,7 +119,6 @@ o2_define_bucket(
         ${Configuration_INCLUDE_DIRS}
 )
 
-
 o2_define_bucket(
         NAME
         o2_qc_tobject2json
@@ -130,4 +129,17 @@ o2_define_bucket(
 
         SYSTEMINCLUDE_DIRECTORIES
         ${ZeroMQ_INCLUDE_DIR}
+)
+
+o2_define_bucket(
+        NAME
+        o2_qcmodules_dpl
+
+        DEPENDENCIES
+        o2_qcmodules_base
+        ${FAIRROOT_LIBRARIES}
+
+        SYSTEMINCLUDE_DIRECTORIES
+        ${FAIRROOT_INCLUDE_DIR}
+        ${FAIRROOT_INCLUDE_DIR}/fairmq
 )

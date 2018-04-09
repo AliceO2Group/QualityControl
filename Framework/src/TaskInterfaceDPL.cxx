@@ -3,8 +3,6 @@
 /// \author Piotr Konopka
 ///
 
-#include <utility>
-
 #include "QualityControl/TaskInterfaceDPL.h"
 
 namespace o2 {
