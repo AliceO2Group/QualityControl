@@ -8,7 +8,9 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+#include <random>
 #include <memory>
+#include <TH1F.h>
 
 #include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
@@ -26,6 +28,34 @@ using namespace std::chrono;
 
 void defineDataProcessing(vector<DataProcessorSpec>& specs)
 {
+  DataProcessorSpec producer{
+    "producer",
+    Inputs{},
+    Outputs{
+      {"ITS", "RAWDATA", 0, OutputSpec::Timeframe}
+    },
+    AlgorithmSpec{
+      (AlgorithmSpec::InitCallback) [](InitContext& initContext) {
+
+        std::default_random_engine generator(11);
+
+        return (AlgorithmSpec::ProcessCallback) [generator] (ProcessingContext &processingContext) mutable {
+
+          usleep(100000);
+          size_t length = generator() % 10000;
+
+          auto data = processingContext.allocator().make<char>(OutputSpec{ "ITS", "RAWDATA", 0, OutputSpec::Timeframe },
+                                                               length);
+          for (auto&& item : data) {
+            item = static_cast<char>(generator());
+          }
+        };
+      }
+    }
+  };
+
+  specs.push_back(producer);
+
   const string qcTaskName = "skeletonTask";
   const std::string qcConfigurationSource = std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.ini";
 
@@ -43,6 +73,17 @@ void defineDataProcessing(vector<DataProcessorSpec>& specs)
 
         return (AlgorithmSpec::ProcessCallback) [] (ProcessingContext &processingContext) mutable {
           LOG(INFO) << "checker invoked";
+          auto mo = processingContext.inputs().get<MonitorObject>("aaa");
+
+          if (mo->getName() == "example") {
+            auto *g = dynamic_cast<TH1F *>(mo->getObject());
+            std::string bins = "BINS:";
+            for(int i=0; i < g->GetNbinsX(); i++) {
+              bins += " " + std::to_string((int)g->GetBinContent(i));
+            }
+            LOG(INFO) << bins;
+          }
+
         };
       }
     }

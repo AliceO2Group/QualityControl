@@ -29,7 +29,7 @@ void SkeletonTaskDPL::initialize(o2::framework::InitContext& ctx)
 {
   QcInfoLogger::GetInstance() << "initialize SkeletonTaskDPL" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mHistogram = new TH1F("example", "example", 100, 0, 99);
+  mHistogram = new TH1F("example", "example", 20, 0, 10000);
   getObjectsManager()->startPublishing(mHistogram);
 //  getObjectsManager()->addCheck(mHistogram, "checkFromSkeleton",
 //                                "o2::quality_control_modules::skeleton_dpl::_SkeletonCheck",
@@ -39,6 +39,7 @@ void SkeletonTaskDPL::initialize(o2::framework::InitContext& ctx)
 void SkeletonTaskDPL::startOfActivity(Activity &activity)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  mHistogram->Reset();
 }
 
 void SkeletonTaskDPL::startOfCycle()
@@ -49,8 +50,11 @@ void SkeletonTaskDPL::startOfCycle()
 void SkeletonTaskDPL::monitorDataBlock(o2::framework::ProcessingContext& ctx)
 {
   QcInfoLogger::GetInstance() << "monitorDataBlock" << AliceO2::InfoLogger::InfoLogger::endm;
-//  LOG(INFO) << "monitorDataBlock";
-  mHistogram->FillRandom("gaus", 1);
+
+  for (auto && input : ctx.inputs()){
+    const auto* header = o2::header::get<header::DataHeader*>(input.header);
+    mHistogram->Fill(header->payloadSize);
+  }
 }
 
 void SkeletonTaskDPL::endOfCycle()
