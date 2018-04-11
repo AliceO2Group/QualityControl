@@ -268,4 +268,47 @@ From here, fill in the methods in AbcTask.cxx, and AbcCheck.cxx if needed.
 
 In case special additional dependencies are needed, create a new bucket in QualityControlModules/cmake/QualityControlModulesDependencies.cmake.
 
+## QC in Data Processing Layer framework
 
+Quality Control has been adapted to be used as Data Processor in
+[O2 framework](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/Core#data-processing-layer-in-o2-framework).
+Keep in mind, that checkers are not available at this moment.
+To add a QC task into workflow:
+
+1. Create your module using SkeletonDPL as a base. Refer to the steps mentioned
+in the chapter [Modules development](https://github.com/AliceO2Group/QualityControl#modules-development)
+- they are the same.
+2. Define inputs and parameters of your QC Task in .ini config file. Use
+[Framework/qcTaskDplConfig.ini](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/qcTaskDplConfig.ini)
+as a reference.
+3. Insert following lines in your workflow declaration code. Change the names
+accordingly.
+```
+...
+
+#include "QualityControl/TaskDataProcessorFactory.h"
+#include "QualityControl/TaskDataProcessor.h"
+#include "Framework/DataSampling.h"
+#include "Framework/runDataProcessing.h"
+
+...
+
+void defineDataProcessing(std::vector<DataProcessorSpec>& specs) {
+
+  ...
+
+  // A path to your config .ini file. In this case, it is a file installed during compilation.
+  const std::string qcConfigurationSource = std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.ini";
+  // An entry in config file which describes your QC task
+  const std::string qcTaskName = "skeletonTask";
+  o2::quality_control::core::TaskDataProcessorFactory qcFactory;
+  specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
+
+  o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+}
+```
+4. Compile & run.
+
+In [Framework/src/TaskDPL.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/TaskDPL.cxx)
+there is an exemplary DPL workflow with QC task. It is compiled to an
+executable `taskDPL`.
