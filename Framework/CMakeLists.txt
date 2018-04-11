@@ -155,8 +155,8 @@ O2_GENERATE_EXECUTABLE(
 )
 
 O2_GENERATE_EXECUTABLE(
-        EXE_NAME testQcDPL
-        SOURCES test/testQcDPL.cxx
+        EXE_NAME taskDPL
+        SOURCES src/TaskDPL.cxx
         MODULE_LIBRARY_NAME ${LIBRARY_NAME}
         BUCKET_NAME ${BUCKET_NAME}
 )

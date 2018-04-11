@@ -1,12 +1,15 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
-//
-// See http://alice-o2.web.cern.ch/license for full licensing information.
-//
-// In applying this license CERN does not waive the privileges and immunities
-// granted to it by virtue of its status as an Intergovernmental Organization
-// or submit itself to any jurisdiction.
+///
+/// \file    TaskDPL.cxx
+/// \author  Piotr Konopka
+///
+/// \brief This is an executable showing QC Task's usage in Data Processing Layer.
+///
+/// This is an executable showing QC Task's usage in Data Processing Layer. The workflow consists of data producer,
+/// which generates arrays of random size and content. Its output is dispatched to QC task using Data Sampling
+/// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The resulting historgram contents
+/// are printed by checker.
+/// QC task is instantiated by TaskDataProcessorFactory with preinstalled config file, which can be found in
+/// ${QUALITYCONTROL_ROOT}/etc/qcTaskDplConfig.ini or Framework/qcTaskDplConfig.ini (original one).
 
 #include <random>
 #include <memory>
@@ -17,29 +20,25 @@
 #include "QualityControl/TaskDataProcessorFactory.h"
 #include "QualityControl/TaskDataProcessor.h"
 
-using namespace std;
 using namespace AliceO2;
 using namespace o2::framework;
 using namespace o2::quality_control::core;
 using namespace std::chrono;
 
-//todo:
-// rename it to taskDPL.cxx, move it to src, say it is not usable because there are no arguments passed to exe
-
-void defineDataProcessing(vector<DataProcessorSpec>& specs)
+void defineDataProcessing(std::vector<DataProcessorSpec>& specs)
 {
   DataProcessorSpec producer{
     "producer",
     Inputs{},
     Outputs{
-      {"ITS", "RAWDATA", 0, OutputSpec::Timeframe}
+      { "ITS", "RAWDATA", 0, OutputSpec::Timeframe }
     },
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback) [](InitContext& initContext) {
 
         std::default_random_engine generator(11);
 
-        return (AlgorithmSpec::ProcessCallback) [generator] (ProcessingContext &processingContext) mutable {
+        return (AlgorithmSpec::ProcessCallback) [generator](ProcessingContext& processingContext) mutable {
 
           usleep(100000);
           size_t length = generator() % 10000;
@@ -56,30 +55,31 @@ void defineDataProcessing(vector<DataProcessorSpec>& specs)
 
   specs.push_back(producer);
 
-  const string qcTaskName = "skeletonTask";
-  const std::string qcConfigurationSource = std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.ini";
-
+  // Exemplary initialization of QC Task:
+  const std::string qcTaskName = "skeletonTask";
+  const std::string qcConfigurationSource =
+    std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.ini";
   TaskDataProcessorFactory qcFactory;
   specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
 
   DataProcessorSpec checker{
     "checker",
     Inputs{
-      {"aaa", "ITS", "HIST_SKLT_TASK", 0, InputSpec::QA}
+      { "aaa", "ITS", "HIST_SKLT_TASK", 0, InputSpec::QA }
     },
     Outputs{},
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback) [](InitContext& initContext) {
 
-        return (AlgorithmSpec::ProcessCallback) [] (ProcessingContext &processingContext) mutable {
+        return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
           LOG(INFO) << "checker invoked";
           auto mo = processingContext.inputs().get<MonitorObject>("aaa");
 
           if (mo->getName() == "example") {
-            auto *g = dynamic_cast<TH1F *>(mo->getObject());
+            auto* g = dynamic_cast<TH1F*>(mo->getObject());
             std::string bins = "BINS:";
-            for(int i=0; i < g->GetNbinsX(); i++) {
-              bins += " " + std::to_string((int)g->GetBinContent(i));
+            for (int i = 0; i < g->GetNbinsX(); i++) {
+              bins += " " + std::to_string((int) g->GetBinContent(i));
             }
             LOG(INFO) << bins;
           }
