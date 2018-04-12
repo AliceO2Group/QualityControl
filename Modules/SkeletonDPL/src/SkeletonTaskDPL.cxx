@@ -51,10 +51,31 @@ void SkeletonTaskDPL::monitorDataBlock(o2::framework::ProcessingContext& ctx)
 {
   QcInfoLogger::GetInstance() << "monitorDataBlock" << AliceO2::InfoLogger::InfoLogger::endm;
 
+  // exemplary ways of accessing inputs:
+  // 1. in a loop
   for (auto && input : ctx.inputs()){
     const auto* header = o2::header::get<header::DataHeader*>(input.header);
     mHistogram->Fill(header->payloadSize);
+
+    // const char* payload = input.payload;
   }
+
+  // 2. get payload of a specific input, which is a char array:
+  // auto payload = ctx.inputs().get("binding").payload;
+  //
+  // 3. get payload of a specific input, which is a structure array:
+  // const auto* header = o2::header::get<DataHeader*>(ctx.inputs().get("binding").header);
+  // auto structures = reinterpret_cast<StructureType*>(ctx.inputs().get("binding").payload);
+  // for (int j = 0; j < header->payloadSize / sizeof(StructureType); ++j) {
+  //   someProcessing(structures[j].someField);
+  // }
+
+  // 4. get payload of a specific input, which is a root object
+  // auto h = ctx.inputs().get<TH1F>("histos");
+  // Double_t stats[4];
+  // h->GetStats(stats);
+  // auto s = ctx.inputs().get<TObjString>("string");
+  // LOG(INFO) << "String is " << s->GetString().Data();
 }
 
 void SkeletonTaskDPL::endOfCycle()
