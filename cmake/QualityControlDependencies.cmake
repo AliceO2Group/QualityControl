@@ -138,8 +138,11 @@ o2_define_bucket(
         DEPENDENCIES
         o2_qcmodules_base
         ${FAIRROOT_LIBRARIES}
+        ${AliceO2_LIBRARIES}
 
         SYSTEMINCLUDE_DIRECTORIES
         ${FAIRROOT_INCLUDE_DIR}
         ${FAIRROOT_INCLUDE_DIR}/fairmq
+        ${AliceO2_INCLUDE_DIRS}
+        ${MS_GSL_INCLUDE_DIR}
 )
