@@ -28,12 +28,12 @@ namespace core {
 /// It is therefore the parent class of any QC task.
 /// It is responsible for the instantiation, modification and destruction of the TObjects that are published.
 ///
-/// It is part of the template method design pattern.
+/// It is a part of the template method design pattern.
 ///
-/// \author Barthelemy von Haller, Piotr Konopka
-class TaskInterfaceDPL
-{
- public:
+/// \author Barthelemy von Haller
+/// \author Piotr Konopka
+class TaskInterfaceDPL {
+public:
   /// \brief Constructor
   /// Can't be used when dynamically loading the class with ROOT.
   /// @param name
@@ -52,14 +52,13 @@ class TaskInterfaceDPL
   /// Copy assignment operator
   TaskInterfaceDPL& operator=(const TaskInterfaceDPL& other) = default;
   /// Move assignment operator
-  TaskInterfaceDPL& operator=(TaskInterfaceDPL&& other)/* noexcept */ = default; // error with gcc if noexcept
-
+  TaskInterfaceDPL& operator=(TaskInterfaceDPL&& other) /* noexcept */ = default; // error with gcc if noexcept
 
   // Definition of the methods for the template method pattern
   virtual void initialize(o2::framework::InitContext& ctx) = 0;
   virtual void startOfActivity(Activity& activity) = 0;
   virtual void startOfCycle() = 0;
-  virtual void monitorDataBlock(o2::framework::ProcessingContext& ctx) = 0;
+  virtual void monitorData(o2::framework::ProcessingContext& ctx) = 0;
   virtual void endOfCycle() = 0;
   virtual void endOfActivity(Activity& activity) = 0;
   virtual void reset() = 0;
@@ -69,11 +68,12 @@ class TaskInterfaceDPL
   void setName(const std::string& name);
   const std::string& getName() const;
 
- protected:
+protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
 
- private:
-  std::shared_ptr<ObjectsManager> mObjectsManager; // TODO should we rather have a global/singleton for the objectsManager ?
+private:
+  // TODO should we rather have a global/singleton for the objectsManager ?
+  std::shared_ptr<ObjectsManager> mObjectsManager;
   std::string mName;
 };
 

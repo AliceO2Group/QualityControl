@@ -6,10 +6,20 @@
 ///
 /// This is an executable showing QC Task's usage in Data Processing Layer. The workflow consists of data producer,
 /// which generates arrays of random size and content. Its output is dispatched to QC task using Data Sampling
-/// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The resulting historgram contents
+/// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The resulting histogram contents
 /// are printed by checker.
 /// QC task is instantiated by TaskDataProcessorFactory with preinstalled config file, which can be found in
 /// ${QUALITYCONTROL_ROOT}/etc/qcTaskDplConfig.ini or Framework/qcTaskDplConfig.ini (original one).
+///
+/// To launch it, build the project, load the environment and run the executable:
+///   \code{.sh}
+///   > aliBuild build QualityControl --defaults o2
+///   > alienv enter QualityControl/latest
+///   > taskDPL
+///   \endcode
+/// If you have glfw installed, you should see a window with the workflow visualization and sub-windows for each Data
+/// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
+/// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
 #include <random>
 #include <memory>

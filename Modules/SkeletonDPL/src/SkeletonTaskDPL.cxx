@@ -1,6 +1,7 @@
 ///
-/// \file   SkeletonTask.cxx
+/// \file   SkeletonTaskDPL.cxx
 /// \author Barthelemy von Haller
+/// \author Piotr Konopka
 ///
 
 #include <TH1.h>
@@ -47,11 +48,16 @@ void SkeletonTaskDPL::startOfCycle()
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void SkeletonTaskDPL::monitorDataBlock(o2::framework::ProcessingContext& ctx)
+void SkeletonTaskDPL::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  QcInfoLogger::GetInstance() << "monitorDataBlock" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  // exemplary ways of accessing inputs:
+  // exemplary ways of accessing inputs (incoming data), that were specified in the .ini file - e.g.:
+  //  [readoutInput]
+  //  inputName=readout
+  //  dataOrigin=ITS
+  //  dataDescription=RAWDATA
+
   // 1. in a loop
   for (auto && input : ctx.inputs()){
     const auto* header = o2::header::get<header::DataHeader*>(input.header);
@@ -60,12 +66,13 @@ void SkeletonTaskDPL::monitorDataBlock(o2::framework::ProcessingContext& ctx)
     // const char* payload = input.payload;
   }
 
-  // 2. get payload of a specific input, which is a char array:
-  // auto payload = ctx.inputs().get("binding").payload;
+  // 2. get payload of a specific input, which is a char array. Change <inputName> to the previously specified binding
+  // (e.g. readout).
+  // auto payload = ctx.inputs().get("<inputName>").payload;
   //
   // 3. get payload of a specific input, which is a structure array:
-  // const auto* header = o2::header::get<DataHeader*>(ctx.inputs().get("binding").header);
-  // auto structures = reinterpret_cast<StructureType*>(ctx.inputs().get("binding").payload);
+  // const auto* header = o2::header::get<DataHeader*>(ctx.inputs().get("<inputName>").header);
+  // auto structures = reinterpret_cast<StructureType*>(ctx.inputs().get("<inputName>").payload);
   // for (int j = 0; j < header->payloadSize / sizeof(StructureType); ++j) {
   //   someProcessing(structures[j].someField);
   // }

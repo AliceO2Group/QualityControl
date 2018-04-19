@@ -57,7 +57,8 @@ using namespace std::chrono;
 /// };
 /// \endcode
 ///
-/// \author Piotr Konopka, Barthelemy von Haller
+/// \author Piotr Konopka
+/// \author Barthelemy von Haller
 class TaskDataProcessor {
  public:
   TaskDataProcessor(std::string taskName, std::string configurationSource);
@@ -88,27 +89,23 @@ class TaskDataProcessor {
   std::shared_ptr<AliceO2::Monitoring::Collector> mCollector;
   TaskInterfaceDPL* mTask;
   std::shared_ptr<ObjectsManager> mObjectsManager;
-  std::recursive_mutex mTaskMutex; // should be plain mutex, when timer callback is implemented in dpl
+  std::recursive_mutex mTaskMutex; // \todo should be plain mutex, when timer callback is implemented in dpl
 
   // consider moving these two to TaskConfig
   Inputs mInputSpecs;
   OutputSpec mMonitorObjectsSpec;
 
-//  std::shared_ptr<boost::asio::deadline_timer> mCycleTimer; /// the asynchronous timer to check if agents have timed out
   int mNumberBlocks;
   int mLastNumberObjects;
   bool mCycleOn;
   int mCycleNumber;
 
-//  boost::asio::io_service io;
-//  std::shared_ptr<std::thread> ioThread;
-
   // stats
   AliceO2::Common::Timer mStatsTimer;
   int mTotalNumberObjectsPublished;
   AliceO2::Common::Timer mTimerTotalDurationActivity;
-  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> pcpus;
-  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> pmems;
+  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPCpus;
+  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
 };
 
 }

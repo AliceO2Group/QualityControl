@@ -1,5 +1,6 @@
 ///
 /// \file   TaskDataProcessor.cxx
+/// \author Barthelemy von Haller
 /// \author Piotr Konopka
 ///
 
@@ -93,7 +94,7 @@ void TaskDataProcessor::processCallback(ProcessingContext& pCtx)
   }
   if (mCycleOn) {
 
-    mTask->monitorDataBlock(pCtx);
+    mTask->monitorData(pCtx);
     mNumberBlocks++;
   }
 
@@ -168,8 +169,8 @@ void TaskDataProcessor::endOfActivity()
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
   mCollector->send(rate, "QC_task_Rate_objects_published_per_second_whole_run");
-  mCollector->send(ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run");
-  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
+  mCollector->send(ba::mean(mPCpus), "QC_task_Mean_pcpu_whole_run");
+  mCollector->send(ba::mean(mPMems), "QC_task_Mean_pmem_whole_run");
 }
 
 void TaskDataProcessor::finishCycle(DataAllocator& allocator)
@@ -196,14 +197,14 @@ void TaskDataProcessor::finishCycle(DataAllocator& allocator)
     mCollector->send(rate, "QC_task_Rate_objects_published_per_second");
     mTotalNumberObjectsPublished += numberObjectsPublished;
     //std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
-    //pcpus(std::stod(pidStatus[3]));
-    //pmems(std::stod(pidStatus[4]));
+    //mPCpus(std::stod(pidStatus[3]));
+    //mPMems(std::stod(pidStatus[4]));
     double whole_run_rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
     mCollector->send(mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run");
     mCollector->send(mTimerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run");
     mCollector->send(whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run");
 //    mCollector->send(std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run");
-    mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
+    mCollector->send(ba::mean(mPMems), "QC_task_Mean_pmem_whole_run");
 
     mCycleNumber++;
     mCycleOn = false;

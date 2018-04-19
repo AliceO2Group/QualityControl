@@ -1,6 +1,7 @@
 ///
 /// \file   testQcSkeletonDPL.cxx
 /// \author Barthelemy von Haller
+/// \author Piotr Konopka
 ///
 
 #include "SkeletonDPL/SkeletonTaskDPL.h"
