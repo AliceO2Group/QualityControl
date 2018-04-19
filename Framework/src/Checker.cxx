@@ -37,7 +37,7 @@ using namespace std;
 using namespace AliceO2::InfoLogger;
 using namespace std::chrono;
 using namespace AliceO2::Configuration;
-using namespace AliceO2::Monitoring;
+using namespace o2::monitoring;
 
 namespace o2 {
 namespace quality_control {
@@ -68,7 +68,6 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
   // monitoring
   try {
     mCollector = MonitoringFactory::Get("infologger://");
-    mCollector->addDerivedMetric("objects", AliceO2::Monitoring::DerivedMetricMode::RATE);
   } catch (...) {
     string diagnostic = boost::current_exception_diagnostic_information();
     std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
@@ -132,10 +131,10 @@ Checker::~Checker()
 
   // Monitoring
   std::chrono::duration<double> diff = endLastObject - startFirstObject;
-  mCollector->send(diff.count(), "QC_checker_Time_between_first_and_last_objects_received");
-  mCollector->send(mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated");
+  mCollector->send({diff.count(), "QC_checker_Time_between_first_and_last_objects_received"});
+  mCollector->send({mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated"});
   double rate = mTotalNumberHistosReceived / diff.count();
-  mCollector->send(rate, "QC_checker_Rate_objects_treated_per_second_whole_run");
+  mCollector->send({rate, "QC_checker_Rate_objects_treated_per_second_whole_run"});
 }
 
 int size_t2int(size_t val)
@@ -173,7 +172,7 @@ bool Checker::HandleData(FairMQMessagePtr &msg, int index)
   // if 10 seconds elapsed publish stats
   if (timer.isTimeout()) {
     timer.reset(1000000); // 10 s.
-    mCollector->send(mTotalNumberHistosReceived, "objects");
+    mCollector->send({mTotalNumberHistosReceived, "objects"}, o2::monitoring::DerivedMetricMode::RATE);
   }
 
   return true; // keep running

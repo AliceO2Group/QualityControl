@@ -62,7 +62,7 @@ class TaskDevice : public FairMQDevice
     std::string mTaskName;
     TaskConfig mTaskConfig;
     std::unique_ptr<AliceO2::Configuration::ConfigurationInterface> mConfigFile;
-    std::unique_ptr<AliceO2::Monitoring::Collector> mCollector;
+    std::unique_ptr<o2::monitoring::Monitoring> mCollector;
     std::unique_ptr<AliceO2::DataSampling::SamplerInterface> mSampler;
     o2::quality_control::core::TaskInterface *mTask;
     std::shared_ptr<ObjectsManager> mObjectsManager;

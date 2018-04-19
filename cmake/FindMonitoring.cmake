@@ -20,7 +20,7 @@
 include(FindPackageHandleStandardArgs)
 
 # find includes
-find_path(MONITORING_INCLUDE_DIR Collector.h
+find_path(MONITORING_INCLUDE_DIR Monitoring.h
            HINTS ${Monitoring_ROOT}/include ENV LD_LIBRARY_PATH PATH_SUFFIXES "../include/Monitoring" "../../include/Monitoring" )
 
 # Remove the final "Monitoring"

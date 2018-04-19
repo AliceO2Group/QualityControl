@@ -19,7 +19,7 @@ namespace bpo = boost::program_options;
 using namespace std;
 using namespace std::chrono;
 using namespace AliceO2::Configuration;
-using namespace AliceO2::Monitoring;
+using namespace o2::monitoring;
 
 /*
  * Runner
@@ -129,7 +129,7 @@ void TaskDevice::Run()
       double current = timer.getTime();
       int objectsPublished = (mTotalNumberObjectsPublished-lastNumberObjects);
       lastNumberObjects = mTotalNumberObjectsPublished;
-      mCollector->send(objectsPublished/current, "QC_task_Rate_objects_published_per_10_seconds");
+      mCollector->send({objectsPublished/current, "QC_task_Rate_objects_published_per_10_seconds"});
       timer.increment();
     }
   }
@@ -163,23 +163,23 @@ void TaskDevice::monitorCycle()
   double durationCycle = timer.getTime();
   timer.reset();
   double durationPublication = timer.getTime();
-  mCollector->send(numberBlocks, "QC_task_Numberofblocks_in_cycle");
-  mCollector->send(durationCycle, "QC_task_Module_cycle_duration");
-  mCollector->send(durationPublication, "QC_task_Publication_duration");
-  mCollector->send((int) numberObjectsPublished,
-                   "QC_task_Number_objects_published_in_cycle"); // cast due to Monitoring accepting only int
+  mCollector->send({numberBlocks, "QC_task_Numberofblocks_in_cycle"});
+  mCollector->send({durationCycle, "QC_task_Module_cycle_duration"});
+  mCollector->send({durationPublication, "QC_task_Publication_duration"});
+  mCollector->send({(int) numberObjectsPublished,
+                   "QC_task_Number_objects_published_in_cycle"}); // cast due to Monitoring accepting only int
   double rate = numberObjectsPublished / (durationCycle + durationPublication);
-  mCollector->send(rate, "QC_task_Rate_objects_published_per_second");
+  mCollector->send({rate, "QC_task_Rate_objects_published_per_second"});
   mTotalNumberObjectsPublished += numberObjectsPublished;
   //std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
   //pcpus(std::stod(pidStatus[3]));
   //pmems(std::stod(pidStatus[4]));
   double whole_run_rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();
-  mCollector->send(mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run");
-  mCollector->send(timerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run");
-  mCollector->send(whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run");
-//  mCollector->send(std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run");
-  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
+  mCollector->send({mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run"});
+  mCollector->send({timerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run"});
+  mCollector->send({whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run"});
+//  mCollector->send({std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run"});
+  mCollector->send({ba::mean(pmems), "QC_task_Mean_pmem_whole_run"});
 }
 
 unsigned long TaskDevice::publish()
@@ -228,9 +228,9 @@ void TaskDevice::endOfActivity()
   mTask->endOfActivity(activity);
 
   double rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();
-  mCollector->send(rate, "QC_task_Rate_objects_published_per_second_whole_run");
-  mCollector->send(ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run");
-  mCollector->send(ba::mean(pmems), "QC_task_Mean_pmem_whole_run");
+  mCollector->send({rate, "QC_task_Rate_objects_published_per_second_whole_run"});
+  mCollector->send({ba::mean(pcpus), "QC_task_Mean_pcpu_whole_run"});
+  mCollector->send({ba::mean(pmems), "QC_task_Mean_pmem_whole_run"});
 }
 
 void TaskDevice::sendToInformationService(string objectsListString)
