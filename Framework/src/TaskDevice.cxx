@@ -18,7 +18,7 @@
 namespace bpo = boost::program_options;
 using namespace std;
 using namespace std::chrono;
-using namespace AliceO2::Configuration;
+using namespace o2::configuration;
 using namespace o2::monitoring;
 
 /*

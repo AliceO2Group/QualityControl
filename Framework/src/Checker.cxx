@@ -16,7 +16,7 @@
 #include "QualityControl/DatabaseFactory.h"
 
 using namespace AliceO2::Common;
-using namespace AliceO2::Configuration;
+using namespace o2::configuration;
 
 /**
  * \brief Handy class to deserialize messages and make sure buffer is not deleted along with the message.
@@ -36,7 +36,7 @@ class HistoMessage : public TMessage
 using namespace std;
 using namespace AliceO2::InfoLogger;
 using namespace std::chrono;
-using namespace AliceO2::Configuration;
+using namespace o2::configuration;
 using namespace o2::monitoring;
 
 namespace o2 {

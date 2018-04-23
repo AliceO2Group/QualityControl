@@ -89,7 +89,7 @@ class Checker : public FairMQDevice
     void loadLibrary(const std::string libraryName);
     CheckInterface* instantiateCheck(std::string checkName, std::string className);
     static void CustomCleanupTMessage(void *data, void *object);
-    void populateConfig( std::unique_ptr<AliceO2::Configuration::ConfigurationInterface>& config, std::string checkerName);
+    void populateConfig( std::unique_ptr<o2::configuration::ConfigurationInterface>& config, std::string checkerName);
 
     o2::quality_control::core::QcInfoLogger &mLogger;
     o2::quality_control::repository::DatabaseInterface *mDatabase;

@@ -16,7 +16,7 @@
 ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 
 using namespace std;
-using namespace AliceO2::Configuration;
+using namespace o2::configuration;
 
 namespace o2 {
 namespace quality_control_modules {
