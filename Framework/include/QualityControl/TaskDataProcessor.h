@@ -17,7 +17,7 @@
 #include "Common/Timer.h"
 #include "Configuration/ConfigurationInterface.h"
 #include "Framework/DataProcessorSpec.h"
-#include "Monitoring/Collector.h"
+#include "Monitoring/MonitoringFactory.h"
 // QC
 #include "QualityControl/TaskInterfaceDPL.h"
 #include "QualityControl/TaskConfig.h"
@@ -86,7 +86,7 @@ class TaskDataProcessor {
   std::string mTaskName;
   TaskConfig mTaskConfig;
   std::shared_ptr<AliceO2::Configuration::ConfigurationInterface> mConfigFile; // used in init only
-  std::shared_ptr<AliceO2::Monitoring::Collector> mCollector;
+  std::shared_ptr<o2::monitoring::Monitoring> mCollector;
   TaskInterfaceDPL* mTask;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::recursive_mutex mTaskMutex; // \todo should be plain mutex, when timer callback is implemented in dpl
