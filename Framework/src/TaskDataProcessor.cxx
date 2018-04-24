@@ -113,7 +113,7 @@ void TaskDataProcessor::processCallback(ProcessingContext& pCtx)
 
 void TaskDataProcessor::timerCallback(ProcessingContext& pCtx)
 {
-  finishCycle(pCtx.allocator());
+  finishCycle(pCtx.outputs());
 }
 
 void TaskDataProcessor::populateConfig(std::string taskName)
@@ -152,7 +152,7 @@ void TaskDataProcessor::populateConfig(std::string taskName)
   mMonitorObjectsSpec.origin.runtimeInit(mConfigFile->getString(taskDefinitionName + "/outputDataOrigin").value().c_str());
   mMonitorObjectsSpec.description.runtimeInit(mConfigFile->getString(taskDefinitionName + "/outputDataDescription").value().c_str());
   mMonitorObjectsSpec.subSpec = 0;
-  mMonitorObjectsSpec.lifetime = o2::framework::OutputSpec::QA;
+  mMonitorObjectsSpec.lifetime = o2::framework::Lifetime::QA;
 }
 
 void TaskDataProcessor::startOfActivity()
@@ -173,7 +173,7 @@ void TaskDataProcessor::endOfActivity()
   mCollector->send({ba::mean(mPMems), "QC_task_Mean_pmem_whole_run"});
 }
 
-void TaskDataProcessor::finishCycle(DataAllocator& allocator)
+void TaskDataProcessor::finishCycle(DataAllocator& outputs)
 {
   {
     std::lock_guard<std::recursive_mutex> lock(mTaskMutex);
@@ -184,7 +184,7 @@ void TaskDataProcessor::finishCycle(DataAllocator& allocator)
     // mCycleTimer->expires_at(mCycleTimer->expires_at() + boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds));
 
     // publication
-    unsigned long numberObjectsPublished = publish(allocator);
+    unsigned long numberObjectsPublished = publish(outputs);
 
     // monitoring metrics
     double durationPublication = 0; // (boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds) - mCycleTimer->expires_from_now()).total_nanoseconds() / double(1e9);
@@ -214,14 +214,21 @@ void TaskDataProcessor::finishCycle(DataAllocator& allocator)
 }
 
 
-unsigned long TaskDataProcessor::publish(DataAllocator& allocator)
+unsigned long TaskDataProcessor::publish(DataAllocator& outputs)
 {
   unsigned int sentMessages = 0;
 
   for (auto& pair : *mObjectsManager) {
 
     auto* mo = pair.second;
-    allocator.snapshot<decltype(*mo)>(mMonitorObjectsSpec, *mo);
+    outputs.snapshot<MonitorObject>(
+      Output{
+        mMonitorObjectsSpec.origin,
+        mMonitorObjectsSpec.description,
+        mMonitorObjectsSpec.subSpec,
+        mMonitorObjectsSpec.lifetime
+        },
+      *mo);
 
     QcInfoLogger::GetInstance() << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
     sentMessages++;

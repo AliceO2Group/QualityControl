@@ -41,7 +41,7 @@ void defineDataProcessing(std::vector<DataProcessorSpec>& specs)
     "producer",
     Inputs{},
     Outputs{
-      { "ITS", "RAWDATA", 0, OutputSpec::Timeframe }
+      { "ITS", "RAWDATA", 0, Lifetime::Timeframe }
     },
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback) [](InitContext& initContext) {
@@ -53,7 +53,7 @@ void defineDataProcessing(std::vector<DataProcessorSpec>& specs)
           usleep(100000);
           size_t length = generator() % 10000;
 
-          auto data = processingContext.allocator().make<char>(OutputSpec{ "ITS", "RAWDATA", 0, OutputSpec::Timeframe },
+          auto data = processingContext.outputs().make<char>(Output{ "ITS", "RAWDATA", 0, Lifetime::Timeframe },
                                                                length);
           for (auto&& item : data) {
             item = static_cast<char>(generator());
@@ -75,7 +75,7 @@ void defineDataProcessing(std::vector<DataProcessorSpec>& specs)
   DataProcessorSpec checker{
     "checker",
     Inputs{
-      { "aaa", "ITS", "HIST_SKLT_TASK", 0, InputSpec::QA }
+      { "aaa", "ITS", "HIST_SKLT_TASK", 0, Lifetime::QA }
     },
     Outputs{},
     AlgorithmSpec{

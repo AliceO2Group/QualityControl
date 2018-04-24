@@ -78,8 +78,8 @@ class TaskDataProcessor {
   void populateConfig(std::string taskName);
   void startOfActivity();
   void endOfActivity();
-  void finishCycle(DataAllocator& allocator);
-  unsigned long publish(DataAllocator& allocator);
+  void finishCycle(DataAllocator& outputs);
+  unsigned long publish(DataAllocator& outputs);
   static void CustomCleanupTMessage(void* data, void* object);
 
  private:
