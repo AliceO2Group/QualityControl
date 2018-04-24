@@ -21,7 +21,7 @@ namespace o2 {
 namespace quality_control {
 namespace core {
 
-using namespace AliceO2::Configuration;
+using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace std::chrono;
 

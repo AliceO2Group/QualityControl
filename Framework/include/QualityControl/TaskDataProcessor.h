@@ -85,7 +85,7 @@ class TaskDataProcessor {
  private:
   std::string mTaskName;
   TaskConfig mTaskConfig;
-  std::shared_ptr<AliceO2::Configuration::ConfigurationInterface> mConfigFile; // used in init only
+  std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
   TaskInterfaceDPL* mTask;
   std::shared_ptr<ObjectsManager> mObjectsManager;
