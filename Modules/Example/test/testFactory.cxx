@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
   auto manager = make_shared<ObjectsManager>(config);
   try {
     gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local paths for the test
-    factory.create(config, manager);
+    factory.create<TaskInterface>(config, manager);
   } catch (...) {
     BOOST_TEST_FAIL(boost::current_exception_diagnostic_information());
   }
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures)
   config.moduleName = "WRONGNAME";
   config.className = "o2::quality_control_modules::example::ExampleTask";
   BOOST_CHECK_EXCEPTION(
-    factory.create(config, manager),
+    factory.create<TaskInterface>(config, manager),
     AliceO2::Common::FatalException, is_critical);
 
   std::string addition = "lib:../../lib:../../../lib:";
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures)
   config.taskName = "task";
   config.moduleName = "QcCommon";
   config.className = "WRONGCLASS";
-  BOOST_CHECK_EXCEPTION(factory.create(config, manager), AliceO2::Common::FatalException, is_critical);
+  BOOST_CHECK_EXCEPTION(factory.create<TaskInterface>(config, manager), AliceO2::Common::FatalException, is_critical);
 
 }
 

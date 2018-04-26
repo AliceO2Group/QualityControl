@@ -7,9 +7,11 @@ find_package(MySQL REQUIRED)
 find_package(Common REQUIRED)
 find_package(InfoLogger REQUIRED)
 find_package(DataSampling REQUIRED)
+find_package(AliceO2 REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZeroMQ REQUIRED)
+include_directories(${MS_GSL_INCLUDE_DIR})
 
 # todo not sure why this is needed
 if (BOOST_FOUND AND NOT Boost_FOUND)
@@ -29,6 +31,7 @@ else ()
 #    set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -lRMySQL")
 endif ()
 
+
 o2_define_bucket(
         NAME
         o2_qualitycontrol_bucket
@@ -46,6 +49,7 @@ o2_define_bucket(
         ${InfoLogger_LIBRARIES}
         ${DataSampling_LIBRARIES}
         ${CURL_LIBRARIES}
+        ${AliceO2_LIBRARIES}
 
         SYSTEMINCLUDE_DIRECTORIES
         ${Boost_INCLUDE_DIRS}
@@ -58,6 +62,8 @@ o2_define_bucket(
         ${InfoLogger_INCLUDE_DIRS}
         ${DataSampling_INCLUDE_DIRS}
         ${CURL_INCLUDE_DIRS}
+        ${AliceO2_INCLUDE_DIRS}
+        ${MS_GSL_INCLUDE_DIR}
 )
 
 o2_define_bucket(
@@ -113,7 +119,6 @@ o2_define_bucket(
         ${Configuration_INCLUDE_DIRS}
 )
 
-
 o2_define_bucket(
         NAME
         o2_qc_tobject2json
@@ -124,4 +129,20 @@ o2_define_bucket(
 
         SYSTEMINCLUDE_DIRECTORIES
         ${ZeroMQ_INCLUDE_DIR}
+)
+
+o2_define_bucket(
+        NAME
+        o2_qcmodules_dpl
+
+        DEPENDENCIES
+        o2_qcmodules_base
+        ${FAIRROOT_LIBRARIES}
+        ${AliceO2_LIBRARIES}
+
+        SYSTEMINCLUDE_DIRECTORIES
+        ${FAIRROOT_INCLUDE_DIR}
+        ${FAIRROOT_INCLUDE_DIR}/fairmq
+        ${AliceO2_INCLUDE_DIRS}
+        ${MS_GSL_INCLUDE_DIR}
 )

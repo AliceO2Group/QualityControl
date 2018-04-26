@@ -64,7 +64,7 @@ TaskDevice::TaskDevice(std::string taskName, std::string configurationSource) : 
 
   // setup task
   TaskFactory f;
-  mTask = f.create(mTaskConfig, mObjectsManager);  // TODO could we use unique_ptr ?
+  mTask = f.create<TaskInterface>(mTaskConfig, mObjectsManager);  // TODO could we use unique_ptr ?
 
   // setup datasampling
   string dataSamplingImplementation = mConfigFile->get<std::string>("DataSampling/implementation").value();
