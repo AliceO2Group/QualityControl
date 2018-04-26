@@ -18,6 +18,8 @@
 #include "TObject2JsonMySql.h"
 #include "external/UriParser.h"
 
+#include <functional>
+
 namespace o2 {
 namespace quality_control {
 namespace tobject_to_json {
