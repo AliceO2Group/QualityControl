@@ -47,3 +47,24 @@ if [ "$?" != "0" ]; then
 else
 	echo "User $QC_DB_MYSQL_USER created."
 fi
+
+mysql -h $QC_DB_MYSQL_HOST -u $QC_DB_MYSQL_USER -p$QC_DB_MYSQL_PASSWORD $QC_DB_MYSQL_DBNAME << "EOF"
+CREATE TABLE IF NOT EXISTS `layout` (
+  `id` varchar(24) NOT NULL DEFAULT '',
+  `name` varchar(30) NOT NULL DEFAULT '',
+  `owner_id` int(11) NOT NULL,
+  `owner_name` varchar(200) NOT NULL DEFAULT '',
+  `tabs` text NOT NULL COMMENT 'JSON payload',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_name` (`name`),
+  KEY `index_owner_name` (`owner_name`),
+  KEY `index_owner_id` (`owner_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+EOF
+
+if [ "$?" != "0" ]; then
+  echo "Failure to create QCG table."
+  exit 6
+else
+  echo "QCG table created."
+fi
