@@ -59,7 +59,7 @@ class TestTask : public TaskInterface
 
     virtual void monitorDataBlock(DataBlock &block)
     {
-      cout << "monitorDataBlock" << endl;
+      cout << "monitorData" << endl;
     }
 
     void endOfCycle() override
