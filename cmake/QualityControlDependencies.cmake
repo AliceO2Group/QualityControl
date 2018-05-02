@@ -11,6 +11,7 @@ find_package(AliceO2 REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZeroMQ REQUIRED)
+find_package(nanomsg REQUIRED)
 include_directories(${MS_GSL_INCLUDE_DIR})
 
 # todo not sure why this is needed
@@ -49,6 +50,8 @@ o2_define_bucket(
         ${InfoLogger_LIBRARIES}
         ${DataSampling_LIBRARIES}
         ${CURL_LIBRARIES}
+        ${ZeroMQ_LIBRARY_SHARED}
+        ${NANOMSG_LIBRARIES}
         ${AliceO2_LIBRARIES}
 
         SYSTEMINCLUDE_DIRECTORIES
