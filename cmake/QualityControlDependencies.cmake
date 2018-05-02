@@ -10,6 +10,7 @@ find_package(DataSampling REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
 find_package(CURL REQUIRED)
 find_package(ZeroMQ REQUIRED)
+find_package(nanomsg REQUIRED)
 
 # todo not sure why this is needed
 if (BOOST_FOUND AND NOT Boost_FOUND)
@@ -46,6 +47,8 @@ o2_define_bucket(
         ${InfoLogger_LIBRARIES}
         ${DataSampling_LIBRARIES}
         ${CURL_LIBRARIES}
+        ${ZeroMQ_LIBRARY_SHARED}
+        ${NANOMSG_LIBRARIES}
 
         SYSTEMINCLUDE_DIRECTORIES
         ${Boost_INCLUDE_DIRS}
