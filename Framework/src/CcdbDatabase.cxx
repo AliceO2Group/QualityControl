@@ -1,23 +1,31 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
 //
-// Created by bvonhall on 17/10/17.
+// See http://alice-o2.web.cern.ch/license for full licensing information.
 //
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
-#include <TMessage.h>
-#include <TObjString.h>
+///
+/// \file   CcdbDatabase.cxx
+/// \author Barthelemy von Haller
+///
+
 #include "QualityControl/CcdbDatabase.h"
 #include <regex>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include <curl/curl.h>
+#include <TMessage.h>
+#include <TObjString.h>
 
 namespace o2 {
 namespace quality_control {
 namespace repository {
 
 using namespace std;
-
-CcdbDatabase::CcdbDatabase()
-{
-}
 
 void CcdbDatabase::connect(std::string host, std::string database, std::string username, std::string password)
 {
@@ -26,46 +34,47 @@ void CcdbDatabase::connect(std::string host, std::string database, std::string u
 
 void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
 {
+  // Serialize the object mo
   TMessage message(kMESS_OBJECT);
   message.Reset();
   message.WriteObjectAny(mo, mo->IsA());
-  string fullUrl = url + "/" + mo->getTaskName() + "/" + mo->getName() + "/1/100000";
-  CURL *curl;
 
+  // Prepare URL and filename
+  string fullUrl = url + "/" + mo->getTaskName() + "/" + mo->getName() + "/" + getCurrentTimestampString()
+                   + "/1000000"; // todo set a proper timestamp for the end
+  string tmpFileName = mo->getTaskName() + "_" + mo->getName() + ".root";
+
+  // Curl preparation
+  CURL *curl;
   CURLM *multi_handle;
   int still_running;
-
   struct curl_httppost *formpost = nullptr;
   struct curl_httppost *lastptr = nullptr;
   struct curl_slist *headerlist = nullptr;
   static const char buf[] = "Expect:";
-
-  /* data from buffer in memory */
   curl_formadd(&formpost,
                &lastptr,
                CURLFORM_COPYNAME, "send",
-               CURLFORM_BUFFER, "test.txt",
+               CURLFORM_BUFFER, tmpFileName.c_str(),
                CURLFORM_BUFFERPTR, message.Buffer(),
                CURLFORM_BUFFERLENGTH, message.Length(),
                CURLFORM_END);
 
+  // Curl init
   curl = curl_easy_init();
   multi_handle = curl_multi_init();
 
-  /* initialize custom header list (stating that Expect: 100-continue is not
-     wanted */
+  // Curl magic to send object
+  // See https://curl.haxx.se/libcurl/c/multi-formadd.html for the details.
+  // This piece does not comply to our coding guidelines as it is copy pasted from C example for CURL.
   headerlist = curl_slist_append(headerlist, buf);
   if (curl && multi_handle) {
-
-    /* what URL that receives this POST */
     curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
-//    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
     curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
+//    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
     curl_multi_add_handle(multi_handle, curl);
-
     curl_multi_perform(multi_handle, &still_running);
 
     do {
@@ -125,9 +134,7 @@ void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
         case 0:
         default:
           /* timeout or readable/writable sockets */
-//          printf("perform!\n");
           curl_multi_perform(multi_handle, &still_running);
-//          printf("running: %d!\n", still_running);
           break;
       }
     }
@@ -146,22 +153,25 @@ void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
   }
 }
 
-core::MonitorObject *CcdbDatabase::retrieve(std::string taskName, std::string objectName)
-{
-// first get the redirection
-  string location = getObjectPath(taskName, objectName);//"/daqTask/IDs/1/5ace77e0-b3e6-11e7-be2d-7f0000015566";
-  // then get the object
-  return downloadObject(location);
-}
-
+/**
+ * Struct to store the data we will receive from the CCDB with CURL.
+ */
 struct MemoryStruct
 {
     char *memory;
     unsigned int size;
 };
 
-static size_t
-WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
+/**
+ * Callback used by CURL to store the data received from the CCDB.
+ * See https://curl.haxx.se/libcurl/c/getinmemory.html
+ * @param contents
+ * @param size
+ * @param nmemb
+ * @param userp a MemoryStruct where data is stored.
+ * @return the size of the data we received and stored at userp.
+ */
+static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
   size_t realsize = size * nmemb;
   auto *mem = (struct MemoryStruct *) userp;
@@ -179,21 +189,24 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
   return realsize;
 }
 
-core::MonitorObject *CcdbDatabase::downloadObject(std::string location)
+core::MonitorObject *CcdbDatabase::retrieve(std::string taskName, std::string objectName)
 {
+  // Note : based on https://curl.haxx.se/libcurl/c/getinmemory.html
+  // Thus it does not comply to our coding guidelines as it is a copy paste.
+
+  // Prepare CURL
+  string fullUrl = url + "/" + taskName + "/" + objectName + "/" + getCurrentTimestampString();
   CURL *curl_handle;
   CURLcode res;
-
   struct MemoryStruct chunk{(char *) malloc(1)/*memory*/, 0/*size*/};
   o2::quality_control::core::MonitorObject *mo = nullptr;
-
   curl_global_init(CURL_GLOBAL_ALL);
 
   /* init the curl session */
   curl_handle = curl_easy_init();
 
   /* specify URL to get */
-  curl_easy_setopt(curl_handle, CURLOPT_URL, location.c_str());
+  curl_easy_setopt(curl_handle, CURLOPT_URL, fullUrl.c_str());
 
   /* send all data to this function  */
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
@@ -204,6 +217,9 @@ core::MonitorObject *CcdbDatabase::downloadObject(std::string location)
   /* some servers don't like requests that are made without a user-agent
      field, so we provide one */
   curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+
+  /* if redirected , we tell libcurl to follow redirection */
+  curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
 
   /* get it! */
   res = curl_easy_perform(curl_handle);
@@ -216,22 +232,36 @@ core::MonitorObject *CcdbDatabase::downloadObject(std::string location)
     /*
      * Now, our chunk.memory points to a memory block that is chunk.size
      * bytes big and contains the remote file.
-     *
-     * Do something nice with it!
      */
 
 //    printf("%lu bytes retrieved\n", (long) chunk.size);
+
+    long response_code;
+    res = curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &response_code);
+    if ((res == CURLE_OK) && (response_code != 404)) {
 
 //    TDatime updatetime(statement->GetYear(2), statement->GetMonth(2), statement->GetDay(2), statement->GetHour(2),
 //                       statement->GetMinute(2), statement->GetSecond(2));
 //    int run = statement->IsNull(3) ? -1 : statement->GetInt(3);
 //    int fill = statement->IsNull(4) ? -1 : statement->GetInt(4);
 
-    TMessage mess(kMESS_OBJECT);
-    mess.SetBuffer(chunk.memory, chunk.size, kFALSE);
-    mess.SetReadMode();
-    mess.Reset();
-    mo = (o2::quality_control::core::MonitorObject *) (mess.ReadObjectAny(mess.GetClass()));
+      TMessage mess(kMESS_OBJECT);
+      mess.SetBuffer(chunk.memory, chunk.size, kFALSE);
+      mess.SetReadMode();
+      mess.Reset();
+      mo = (o2::quality_control::core::MonitorObject *) (mess.ReadObjectAny(mess.GetClass()));
+    } else {
+      cerr << "invalid URL : " << fullUrl << endl;
+    }
+
+    // Print data
+//    cout << "size : " << chunk.size << endl;
+//    cout << "data : " << endl;
+//    char* mem = (char*)chunk.memory;
+//    for (int i = 0 ; i < chunk.size/4 ; i++)  {
+//      cout << mem;
+//      mem += 4;
+//    }
   }
 
   /* cleanup curl stuff */
@@ -247,12 +277,12 @@ core::MonitorObject *CcdbDatabase::downloadObject(std::string location)
 
 void CcdbDatabase::disconnect()
 {
-
+  // NOOP for CCDB
 }
 
 void CcdbDatabase::prepareTaskDataContainer(std::string taskName)
 {
-
+  // NOOP for CCDB
 }
 
 std::vector<std::string> CcdbDatabase::getListOfTasksWithPublications()
@@ -267,62 +297,34 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
   // we use the "index" string to know what objects are published.
   // get the information from the CCDB itself.
   core::MonitorObject *mo = retrieve(taskName, core::MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST);
-  auto *indexString = dynamic_cast<TObjString *>(mo->getObject());
-  if (indexString) {
-    string s = indexString->GetString().Data();
-    boost::algorithm::split(result, s, boost::algorithm::is_any_of(","),boost::algorithm::token_compress_on);
-    // sanitize : remove system objects object and empty objects
-    result.erase(std::remove(result.begin(), result.end(), ""));
-    result.erase(std::remove(result.begin(), result.end(), core::MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST));
-  } else {
-    cerr << "ok we should do something here. The 'index' object must be a TObjString" << endl;
+  if (!mo) {
+    cerr << "could not retrieve the objects lists for task " << taskName << endl;
+    return result;
   }
+  auto *indexString = dynamic_cast<TObjString *>(mo->getObject());
+  if (!indexString) {
+    cerr << "could not cast the objects lists for task " << taskName << " to a TObjString" << endl;
+    return result;
+  }
+  string s = indexString->GetString().Data();
+  boost::algorithm::split(result, s, boost::algorithm::is_any_of(","), boost::algorithm::token_compress_on);
+  // sanitize : remove system objects object and empty objects
+  result.erase(std::remove(result.begin(), result.end(), ""));
+  result.erase(std::remove(result.begin(), result.end(), core::MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST));
 
   return result;
 }
 
-std::string CcdbDatabase::getObjectPath(std::string taskName, std::string objectName)
+time_t CcdbDatabase::getCurrentTimestamp()
 {
-  CURL *curl;
-  CURLcode res;
-  char *location;
-  long response_code;
-  string result;
+  return time(0); // is that ok ?
+}
 
-  string fullUrl = url + "/" + taskName + "/" + objectName + "/1";
-
-  curl = curl_easy_init();
-  if (curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
-
-    /* Perform the request, res will get the return code */
-    res = curl_easy_perform(curl);
-    /* Check for errors */
-    if (res != CURLE_OK) {
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-      // TODO do something
-    } else {
-      res = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
-      if ((res == CURLE_OK) && ((response_code / 100) != 3)) {
-        /* a redirect implies a 3xx response code */
-        fprintf(stderr, "Not a redirect.\n");
-        // tODO do something, this is wrong
-      } else {
-        res = curl_easy_getinfo(curl, CURLINFO_REDIRECT_URL, &location);
-
-        if ((res == CURLE_OK) && location) {
-          /* This is the new absolute URL that you could redirect to, even if
-           * the Location: response header may have been a relative URL. */
-//          printf("Redirected to: %s\n", location);
-          result = location;
-        }
-      }
-    }
-
-    /* always cleanup */
-    curl_easy_cleanup(curl);
-  }
-  return result;
+std::string CcdbDatabase::getCurrentTimestampString()
+{
+  stringstream ss;
+  ss << getCurrentTimestamp();
+  return ss.str();
 }
 
 }

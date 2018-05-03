@@ -24,8 +24,8 @@
                                 "type": "pub",
                                 "method": "connect",
                                 "address": "tcp://localhost:5560",
-                                "sndBufSize": 10,
-                                "rcvBufSize": 10,
+                                "sndBufSize": 100,
+                                "rcvBufSize": 100,
                                 "rateLogging": 0
                             }
                         ]
@@ -42,8 +42,8 @@
                                 "type": "pub",
                                 "method": "bind",
                                 "address": "tcp://*:5557",
-                                "sndBufSize": 1,
-                                "rcvBufSize": 1,
+                                "sndBufSize": 100,
+                                "rcvBufSize": 100,
                                 "rateLogging": 0
                             }
                         ]
@@ -55,8 +55,8 @@
                                 "type": "pub",
                                 "method": "connect",
                                 "address": "tcp://localhost:5560",
-                                "sndBufSize": 1,
-                                "rcvBufSize": 1,
+                                "sndBufSize": 100,
+                                "rcvBufSize": 100,
                                 "rateLogging": 0
                             }
                         ]

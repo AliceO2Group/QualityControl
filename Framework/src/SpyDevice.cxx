@@ -1,18 +1,27 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   SpyDevice.cxx
 /// \author Barthelemy von Haller
 ///
 
 #include <iostream>
-
-#include <FairMQDevice.h>
-#include <TMessage.h>
-#include "QualityControl/SpyDevice.h"
-#include "QualityControl/MonitorObject.h"
-#include <TSystem.h>
 #include <chrono>
 #include <thread>
 #include <boost/algorithm/string.hpp>
+#include <FairMQDevice.h>
+#include <TMessage.h>
+#include <TSystem.h>
+#include "QualityControl/SpyDevice.h"
+#include "QualityControl/MonitorObject.h"
 
 using namespace std;
 using namespace o2::quality_control::core;
@@ -24,7 +33,6 @@ namespace gui {
 SpyDevice::SpyDevice()
   : mFrame(nullptr)
 {
-  SetTransport("zeromq"); // or "nanomsg", etc
 }
 
 void SpyDevice::setFrame(SpyMainFrame *frame)
