@@ -17,6 +17,7 @@
 #define PROJECT_CCDBDATABASE_H
 
 #include <ctime>
+#include <chrono>
 #include "QualityControl/DatabaseInterface.h"
 
 namespace o2 {
@@ -60,8 +61,9 @@ class CcdbDatabase : public DatabaseInterface
     std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
 
   private:
-    std::time_t getCurrentTimestamp();
-    std::string getCurrentTimestampString();
+    long getCurrentTimestamp();
+    std::string getTimestampString(long timestamp);
+    long getFutureTimestamp(int secondsInFuture);
 
     std::string url;
 };

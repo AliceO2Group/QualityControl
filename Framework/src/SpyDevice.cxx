@@ -33,6 +33,7 @@ namespace gui {
 SpyDevice::SpyDevice()
   : mFrame(nullptr)
 {
+  SetTransport("zeromq"); // or "nanomsg", etc
 }
 
 void SpyDevice::setFrame(SpyMainFrame *frame)

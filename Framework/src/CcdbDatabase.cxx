@@ -21,6 +21,8 @@
 #include <TMessage.h>
 #include <TObjString.h>
 
+using namespace std::chrono;
+
 namespace o2 {
 namespace quality_control {
 namespace repository {
@@ -40,8 +42,8 @@ void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
   message.WriteObjectAny(mo, mo->IsA());
 
   // Prepare URL and filename
-  string fullUrl = url + "/" + mo->getTaskName() + "/" + mo->getName() + "/" + getCurrentTimestampString()
-                   + "/1000000"; // todo set a proper timestamp for the end
+  string fullUrl = url + "/" + mo->getTaskName() + "/" + mo->getName() + "/" + getTimestampString(getCurrentTimestamp())
+                   + "/" + getTimestampString(getFutureTimestamp(60*60*24*365*10)); // todo set a proper timestamp for the end
   string tmpFileName = mo->getTaskName() + "_" + mo->getName() + ".root";
 
   // Curl preparation
@@ -195,7 +197,7 @@ core::MonitorObject *CcdbDatabase::retrieve(std::string taskName, std::string ob
   // Thus it does not comply to our coding guidelines as it is a copy paste.
 
   // Prepare CURL
-  string fullUrl = url + "/" + taskName + "/" + objectName + "/" + getCurrentTimestampString();
+  string fullUrl = url + "/" + taskName + "/" + objectName + "/" + getTimestampString(getCurrentTimestamp());
   CURL *curl_handle;
   CURLcode res;
   struct MemoryStruct chunk{(char *) malloc(1)/*memory*/, 0/*size*/};
@@ -315,15 +317,29 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
   return result;
 }
 
-time_t CcdbDatabase::getCurrentTimestamp()
+long CcdbDatabase::getFutureTimestamp(int secondsInFuture)
 {
-  return time(0); // is that ok ?
+  std::chrono::seconds sec(secondsInFuture);
+  auto future = std::chrono::system_clock::now() + sec;
+  auto future_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(future);
+  auto epoch = future_ms.time_since_epoch();
+  auto value = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
+  return value.count();
 }
 
-std::string CcdbDatabase::getCurrentTimestampString()
+long CcdbDatabase::getCurrentTimestamp()
+{
+  auto now = std::chrono::system_clock::now();
+  auto now_ms = std::chrono::time_point_cast<std::chrono::milliseconds>(now);
+  auto epoch = now_ms.time_since_epoch();
+  auto value = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
+  return value.count();
+}
+
+std::string CcdbDatabase::getTimestampString(long timestamp)
 {
   stringstream ss;
-  ss << getCurrentTimestamp();
+  ss << timestamp;
   return ss.str();
 }
 
