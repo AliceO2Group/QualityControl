@@ -64,6 +64,7 @@ class CcdbDatabase : public DatabaseInterface
     long getCurrentTimestamp();
     std::string getTimestampString(long timestamp);
     long getFutureTimestamp(int secondsInFuture);
+    std::string getListing(std::string subpath = "");
 
     std::string url;
 };

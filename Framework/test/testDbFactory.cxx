@@ -23,6 +23,7 @@
 #include <curl/curl.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <QualityControl/CcdbDatabase.h>
 
 using namespace std;
 
@@ -32,7 +33,7 @@ namespace repository {
 
 bool do_nothing(AliceO2::Common::FatalException const &ex)
 { return true; }
-/*
+
 BOOST_AUTO_TEST_CASE(db_factory_test)
 {
 #ifdef _WITH_MYSQL
@@ -44,8 +45,27 @@ BOOST_AUTO_TEST_CASE(db_factory_test)
   DatabaseInterface *database2 = nullptr;
   BOOST_CHECK_EXCEPTION(database2 = DatabaseFactory::create("asf"), AliceO2::Common::FatalException, do_nothing );
   BOOST_CHECK(!database2);
+
+  DatabaseInterface *database3 = DatabaseFactory::create("CCDB");
+  BOOST_CHECK(database3);
+  BOOST_CHECK(dynamic_cast<CcdbDatabase*>(database3));
 }
 
+BOOST_AUTO_TEST_CASE(db_ccdb_listing)
+{
+  DatabaseInterface *database3 = DatabaseFactory::create("CCDB");
+  BOOST_CHECK(database3);
+  BOOST_CHECK(dynamic_cast<CcdbDatabase*>(database3));
+
+  database3->connect("ccdb-test.cern.ch:8080", "", "", "");
+  std::vector<std::string> list = database3->getListOfTasksWithPublications();
+
+  for(auto item : list) {
+    cout << "item : " << item << endl;
+  }
+}
+
+/*
 BOOST_AUTO_TEST_CASE(test_libcurl)
 {
   CURL* easyhandle= curl_easy_init();
@@ -511,48 +531,50 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 //  /* we're done with libcurl, so clean it up */
 //  curl_global_cleanup();
 //}
+//
+//BOOST_AUTO_TEST_CASE(test_curl_get_reloc)
+//{
+//  CURL *curl;
+//  CURLcode res;
+//  char *location;
+//  long response_code;
+//
+//  curl = curl_easy_init();
+//  if(curl) {
+//    curl_easy_setopt(curl, CURLOPT_URL, "localhost:8080/daqTask/IDs/1");
+//
+//    /* example.com is redirected, figure out the redirection! */
+//
+//    /* Perform the request, res will get the return code */
+//    res = curl_easy_perform(curl);
+//    /* Check for errors */
+//    if(res != CURLE_OK)
+//      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+//              curl_easy_strerror(res));
+//    else {
+//      res = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+//      if((res == CURLE_OK) &&
+//         ((response_code / 100) != 3)) {
+//        /* a redirect implies a 3xx response code */
+//        fprintf(stderr, "Not a redirect.\n");
+//      }
+//      else {
+//        res = curl_easy_getinfo(curl, CURLINFO_REDIRECT_URL, &location);
+//
+//        if((res == CURLE_OK) && location) {
+//          /* This is the new absolute URL that you could redirect to, even if
+//           * the Location: response header may have been a relative URL. */
+//          printf("Redirected to: %s\n", location);
+//        }
+//      }
+//    }
+//
+//    /* always cleanup */
+//    curl_easy_cleanup(curl);
+//  }
+//}
 
-BOOST_AUTO_TEST_CASE(test_curl_get_reloc)
-{
-  CURL *curl;
-  CURLcode res;
-  char *location;
-  long response_code;
 
-  curl = curl_easy_init();
-  if(curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:8080/daqTask/IDs/1");
-
-    /* example.com is redirected, figure out the redirection! */
-
-    /* Perform the request, res will get the return code */
-    res = curl_easy_perform(curl);
-    /* Check for errors */
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
-    else {
-      res = curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
-      if((res == CURLE_OK) &&
-         ((response_code / 100) != 3)) {
-        /* a redirect implies a 3xx response code */
-        fprintf(stderr, "Not a redirect.\n");
-      }
-      else {
-        res = curl_easy_getinfo(curl, CURLINFO_REDIRECT_URL, &location);
-
-        if((res == CURLE_OK) && location) {
-          /* This is the new absolute URL that you could redirect to, even if
-           * the Location: response header may have been a relative URL. */
-          printf("Redirected to: %s\n", location);
-        }
-      }
-    }
-
-    /* always cleanup */
-    curl_easy_cleanup(curl);
-  }
-}
 
 
 } /* namespace repository */

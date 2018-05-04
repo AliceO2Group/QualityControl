@@ -20,6 +20,7 @@
 #include <curl/curl.h>
 #include <TMessage.h>
 #include <TObjString.h>
+#include <algorithm>
 
 using namespace std::chrono;
 
@@ -43,7 +44,8 @@ void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
 
   // Prepare URL and filename
   string fullUrl = url + "/" + mo->getTaskName() + "/" + mo->getName() + "/" + getTimestampString(getCurrentTimestamp())
-                   + "/" + getTimestampString(getFutureTimestamp(60*60*24*365*10)); // todo set a proper timestamp for the end
+                   + "/" + getTimestampString(
+    getFutureTimestamp(60 * 60 * 24 * 365 * 10)); // todo set a proper timestamp for the end
   string tmpFileName = mo->getTaskName() + "_" + mo->getName() + ".root";
 
   // Curl preparation
@@ -287,9 +289,87 @@ void CcdbDatabase::prepareTaskDataContainer(std::string taskName)
   // NOOP for CCDB
 }
 
+size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s)
+{
+  size_t newLength = size * nmemb;
+  size_t oldLength = s->size();
+  try {
+    s->resize(oldLength + newLength);
+  }
+  catch (std::bad_alloc &e) {
+    cerr << "memory error when getting data from CCDB" << endl;
+    return 0;
+  }
+
+  std::copy((char *) contents, (char *) contents + newLength, s->begin() + oldLength);
+  return size * nmemb;
+}
+
+std::string CcdbDatabase::getListing(std::string subpath)
+{
+  CURL *curl;
+  CURLcode res;
+  string fullUrl = url + "/browse/" + subpath;
+  std::string tempString;
+
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+
+  curl = curl_easy_init();
+  if (curl != nullptr) {
+
+    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempString);
+    curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "text/plain");
+
+    // Perform the request, res will get the return code
+    res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    }
+
+    curl_easy_cleanup(curl);
+  }
+
+  return tempString;
+}
+
+/// trim from start (in place)
+/// https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+static inline void ltrim(std::string &s)
+{
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+    return !std::isspace(ch);
+  }));
+}
+
+/// trim from end (in place)
+/// https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+static inline void rtrim(std::string &s)
+{
+  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+    return !std::isspace(ch);
+  }).base(), s.end());
+}
+
 std::vector<std::string> CcdbDatabase::getListOfTasksWithPublications()
 {
-  std::vector<string> result{"daqTask"}; // TODO we need the "ls" feature in CCDB to list the top level nodes.
+  std::vector<string> result;
+
+  // Get the listing from CCDB
+  string listing = getListing();
+
+  // Split the string we received, by line. Also trim it and remove empty lines.
+  std::stringstream ss(listing);
+  std::string line;
+  while (std::getline(ss, line, '\n')) {
+    ltrim(line);
+    rtrim(line);
+    if (line.length() > 0 && line != "Subfolders:") {
+      result.push_back(line);
+    }
+  }
+
   return result;
 }
 
