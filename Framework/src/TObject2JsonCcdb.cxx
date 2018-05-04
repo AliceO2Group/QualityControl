@@ -36,7 +36,7 @@ Ccdb::Ccdb(std::string host, unsigned int port, std::string database, std::strin
   host += ":" + std::to_string(port);
   mCcdbClient = std::make_unique<CcdbDatabase>();
   mCcdbClient->connect(host, database, username, password);
-  QcInfoLogger::GetInstance() << "MySQL backend created: " << host << "/" << database << infologger::endm;
+  QcInfoLogger::GetInstance() << "CCDB backend created: " << host << "/" << database << infologger::endm;
 }
 
 std::string Ccdb::getJsonObject(std::string agentName, std::string objectName)
