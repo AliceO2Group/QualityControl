@@ -49,7 +49,6 @@ std::unique_ptr<TObject2Json> TObject2JsonFactory::Get(std::string url, std::str
   if (parsedUrl.protocol.empty()) {
     throw std::runtime_error("Ill-formed URI");
   }
-std::cout << "parsedUrlprotocol : " << parsedUrl.protocol << std::endl;
   auto iterator = map.find(parsedUrl.protocol);
   if (iterator != map.end()) {
     return std::make_unique<TObject2Json>(iterator->second(parsedUrl), zeromqUrl);
