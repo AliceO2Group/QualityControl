@@ -31,7 +31,8 @@ TaskDataProcessor::TaskDataProcessor(std::string taskName, std::string configura
     mTotalNumberObjectsPublished(0),
     mLastNumberObjects(0),
     mCycleOn(false),
-    mCycleNumber(0)
+    mCycleNumber(0),
+    mMonitorObjectsSpec("", "", 0)
 {
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
