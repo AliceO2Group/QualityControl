@@ -16,6 +16,7 @@
 #include "TObject2JsonFactory.h"
 #include "TObject2Json.h"
 #include "TObject2JsonMySql.h"
+#include "TObject2JsonCcdb.h"
 #include "external/UriParser.h"
 
 namespace o2 {
@@ -24,29 +25,36 @@ namespace tobject_to_json {
 
 
 auto getMySql(const http::url& uri) {
-  unsigned int port = (uri.port == 0) ? 3306 : uri.port;
+  int port = (uri.port == 0) ? 3306 : uri.port;
   std::string database = uri.path;
   database.erase(database.begin(), database.begin() + 1);
   return std::make_unique<backends::MySql>(uri.host, port, database, uri.user, uri.password);
 }
 
+auto getCcdb(const http::url& uri) {
+  int port = (uri.port == 0) ? 3306 : uri.port;
+  std::string database = uri.path;
+  database.erase(database.begin(), database.begin() + 1);
+  return std::make_unique<backends::Ccdb>(uri.host, port, database, uri.user, uri.password);
+}
+
 
 std::unique_ptr<TObject2Json> TObject2JsonFactory::Get(std::string url, std::string zeromqUrl) {
-  static const std::map<std::string, std::function<std::unique_ptr<Backend>(const http::url&)>> map = { 
-      {"mysql", getMySql}
+  static const std::map<std::string, std::function<std::unique_ptr<Backend>(const http::url&)>> map = {
+      {"mysql", getMySql},
+      {"ccdb", getCcdb}
   };
 
   http::url parsedUrl = http::ParseHttpUrl(url);
   if (parsedUrl.protocol.empty()) {
     throw std::runtime_error("Ill-formed URI");
-  }   
-
+  }
   auto iterator = map.find(parsedUrl.protocol);
   if (iterator != map.end()) {
     return std::make_unique<TObject2Json>(iterator->second(parsedUrl), zeromqUrl);
   } else {
     throw std::runtime_error("Unrecognized backend " + parsedUrl.protocol);
-  }   
+  }
 }
 
 } // namespace tobject_to_json
