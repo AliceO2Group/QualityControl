@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   SpyMainFrame.cxx
 /// \author Barthelemy von Haller
@@ -36,6 +46,7 @@ SpyMainFrame::SpyMainFrame(SpyDevice *spyDevice, string configurationSource)
                             config->get<string>("database/name").value(),
                             config->get<string>("database/username").value(),
                             config->get<string>("database/password").value());
+
     } catch (std::string &s) {
       std::cerr << s << endl;
       throw;
@@ -51,10 +62,17 @@ SpyMainFrame::SpyMainFrame(SpyDevice *spyDevice, string configurationSource)
 
   // use hierarchical cleaning
   SetCleanup(kDeepCleanup);
-  Connect("CloseWindow()", "o2::quality_control::gui::SpyMainFrame", this, "closeWindow()");
+  Connect("CloseWindow()", "o2::quality_control::gui::SpyMainFrame", this, "close()");
   SetWindowName("Quality Control Spy");
 
   constructWindow();
+
+  // uncomment this if you want to default to database implementation
+//  if (mDbInterface != nullptr) {
+//    mSourceDb->SetOn();
+//    mSourceFairmq->SetOn(false);
+//    ToggleSource(true);
+//  }
 }
 
 SpyMainFrame::~SpyMainFrame()
@@ -149,7 +167,7 @@ void SpyMainFrame::constructWindow()
   MapWindow();
 }
 
-void SpyMainFrame::closeWindow()
+void SpyMainFrame::close()
 {
   // Got close message for this MainFrame. Terminates the application.
   mController->stopSpy();
@@ -160,7 +178,7 @@ void SpyMainFrame::menuHandler(Int_t id)
 {
   switch (id) {
     case SpyMainFrame::FILE_EXIT:
-      closeWindow();
+      close();
       break;
     default:
       break;
@@ -195,7 +213,7 @@ void SpyMainFrame::ToggleSource(Bool_t on)
 void SpyMainFrame::displayObject(TObject *obj)
 {
   mCanvas->GetCanvas()->cd();
-  if (mDrawnObject) {
+  if (mDrawnObject != nullptr) {
     delete mDrawnObject;
     gPad->Clear();
   }
