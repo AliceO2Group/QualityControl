@@ -13,7 +13,8 @@ include(FindPackageHandleStandardArgs)
 
 # find includes
 find_path(AliceO2_INCLUDE_DIR runDataProcessing.h
-        HINTS ENV LD_LIBRARY_PATH PATH_SUFFIXES "../include/Framework" )
+        HINTS ${O2_ROOT}/include ENV LD_LIBRARY_PATH PATH_SUFFIXES "../include/Framework" "../../include/Framework")
+
 # Remove the final "Headers"
 get_filename_component(AliceO2_INCLUDE_DIR ${AliceO2_INCLUDE_DIR} DIRECTORY)
 set(AliceO2_INCLUDE_DIRS ${AliceO2_INCLUDE_DIR})
