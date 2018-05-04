@@ -91,6 +91,14 @@ set(HEADERS # needed for the dictionary generation
         include/QualityControl/TaskDataProcessorFactory.h
         )
 
+set(SRCS_TOBJECT2JSON
+        src/TObject2JsonServer.cxx
+        src/TObject2Json.cxx
+        src/TObject2JsonMySql.cxx
+        src/TObject2JsonFactory.cxx
+        src/TObject2JsonCcdb.cxx
+        )
+
 if(MYSQL_FOUND)
     list(APPEND SRCS src/MySqlDatabase.cxx)
 endif()
@@ -196,7 +204,7 @@ if(ROOT_FOUND) # TODO remove this once we have our own repo
 
     O2_GENERATE_EXECUTABLE(
         EXE_NAME "tobject2json"
-        SOURCES "src/TObject2JsonServer.cxx" "src/TObject2Json.cxx" "src/TObject2JsonMySql.cxx" "src/TObject2JsonFactory.cxx"
+        SOURCES ${SRCS_TOBJECT2JSON}
         MODULE_LIBRARY_NAME ${LIBRARY_NAME}
         BUCKET_NAME "o2_qc_tobject2json"
     )
