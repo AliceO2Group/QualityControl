@@ -119,7 +119,8 @@ void TaskDataProcessor::timerCallback(ProcessingContext& pCtx)
 
 void TaskDataProcessor::populateConfig(std::string taskName)
 {
-  std::string taskDefinitionName = mConfigFile->get<std::string>(taskName + "/taskDefinition").value();
+  std::string prefix = std::string("qc/tasks_config")+taskName;
+  std::string taskDefinitionName = mConfigFile->get<std::string>(prefix + "/taskDefinition").value();
 
   mTaskConfig.taskName = taskName;
   mTaskConfig.moduleName = mConfigFile->get<std::string>(taskDefinitionName + "/moduleName").value();

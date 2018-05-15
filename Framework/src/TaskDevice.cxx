@@ -96,7 +96,8 @@ TaskDevice::TaskDevice(std::string taskName, std::string configurationSource) : 
 
 void TaskDevice::populateConfig(std::string taskName)
 {
-  string taskDefinitionName = mConfigFile->get<string>(taskName + "/taskDefinition").value();
+  std::string prefix = std::string("qc/tasks_config")+taskName;
+  string taskDefinitionName = mConfigFile->get<string>(prefix + "/taskDefinition").value();
 
   mTaskConfig.taskName = taskName;
   mTaskConfig.moduleName = mConfigFile->get<string>(taskDefinitionName + "/moduleName").value();
