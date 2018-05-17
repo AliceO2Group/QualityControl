@@ -119,54 +119,62 @@ void TaskDataProcessor::timerCallback(ProcessingContext& pCtx)
 
 void TaskDataProcessor::populateConfig(std::string taskName)
 {
-  std::string prefix = std::string("qc/tasks_config")+taskName;
-  std::string taskDefinitionName = mConfigFile->get<std::string>(prefix + "/taskDefinition").value();
+  try {
+    std::string prefix = std::string("qc/tasks_config/");
+    std::string taskDefinitionName = mConfigFile->get<std::string>(prefix + taskName + "/taskDefinition").value();
 
-  mTaskConfig.taskName = taskName;
-  mTaskConfig.moduleName = mConfigFile->get<std::string>(taskDefinitionName + "/moduleName").value();
-  mTaskConfig.className = mConfigFile->get<std::string>(taskDefinitionName + "/className").value();
-  mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(taskDefinitionName + "/cycleDurationSeconds").value_or(10);
-  mTaskConfig.maxNumberCycles = mConfigFile->get<int>(taskDefinitionName + "/maxNumberCycles").value_or(-1);
+    mTaskConfig.taskName = taskName;
+    mTaskConfig.moduleName = mConfigFile->get<std::string>(prefix + taskDefinitionName + "/moduleName").value();
+    mTaskConfig.className = mConfigFile->get<std::string>(prefix + taskDefinitionName + "/className").value();
+    mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(prefix + taskDefinitionName + "/cycleDurationSeconds").value_or(10);
+    mTaskConfig.maxNumberCycles = mConfigFile->get<int>(prefix + taskDefinitionName + "/maxNumberCycles").value_or(-1);
 
-  // maybe it should be moved somewhere else?
-  std::string taskInputsNames = mConfigFile->getString(taskDefinitionName + "/inputs").value();
-  std::vector<std::string> taskInputsSplit;
-  boost::split(taskInputsSplit, taskInputsNames, boost::is_any_of(","));
+    // maybe it should be moved somewhere else?
+    std::string taskInputsNames = mConfigFile->getString(prefix + taskDefinitionName + "/inputs").value();
+    std::vector<std::string> taskInputsSplit;
+    boost::split(taskInputsSplit, taskInputsNames, boost::is_any_of(","));
 
-  for (auto&& input : taskInputsSplit) {
-    InputSpec inputSpec;
-    inputSpec.binding = mConfigFile->getString(input + "/inputName").value();
-    inputSpec.origin.runtimeInit(mConfigFile->getString(input + "/dataOrigin").value().c_str());
-    inputSpec.description.runtimeInit(mConfigFile->getString(input + "/dataDescription").value().c_str());
-    size_t len = strlen(inputSpec.description.str);
-    if (len < inputSpec.description.size - 2) {
-      inputSpec.description.str[len] = '_';
-      inputSpec.description.str[len + 1] = 'S';
+    for (auto&& input : taskInputsSplit) {
+      InputSpec inputSpec;
+      inputSpec.binding = mConfigFile->getString(prefix + input + "/inputName").value();
+      inputSpec.origin.runtimeInit(mConfigFile->getString(prefix + input + "/dataOrigin").value().c_str());
+      inputSpec.description.runtimeInit(mConfigFile->getString(prefix + input + "/dataDescription").value().c_str());
+      size_t len = strlen(inputSpec.description.str);
+      if (len < inputSpec.description.size - 2) {
+        inputSpec.description.str[len] = '_';
+        inputSpec.description.str[len + 1] = 'S';
+      }
+      else {
+        BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(
+          std::string("Too long description name: ") + inputSpec.description.str));
+      }
+      inputSpec.subSpec = 0;
+      mInputSpecs.push_back(inputSpec);
     }
-    else {
-      BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(
-        std::string("Too long description name: ") + inputSpec.description.str));
-    }
-    inputSpec.subSpec = 0;
-    mInputSpecs.push_back(inputSpec);
+
+    mMonitorObjectsSpec.origin.runtimeInit(mConfigFile->getString(prefix + taskDefinitionName + "/outputDataOrigin").value().c_str());
+    mMonitorObjectsSpec.description.runtimeInit(mConfigFile->getString(prefix + taskDefinitionName + "/outputDataDescription").value().c_str());
+    mMonitorObjectsSpec.subSpec = 0;
+    mMonitorObjectsSpec.lifetime = o2::framework::Lifetime::QA;
+
+  } catch (...) { // catch already here the configuration exception and print it
+    // because if we are in a constructor, the exception could be lost
+    std::string diagnostic = boost::current_exception_diagnostic_information();
+    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << std::endl;
+    throw;
   }
-
-  mMonitorObjectsSpec.origin.runtimeInit(mConfigFile->getString(taskDefinitionName + "/outputDataOrigin").value().c_str());
-  mMonitorObjectsSpec.description.runtimeInit(mConfigFile->getString(taskDefinitionName + "/outputDataDescription").value().c_str());
-  mMonitorObjectsSpec.subSpec = 0;
-  mMonitorObjectsSpec.lifetime = o2::framework::Lifetime::QA;
 }
 
 void TaskDataProcessor::startOfActivity()
 {
   mTimerTotalDurationActivity.reset();
-  Activity activity(mConfigFile->get<int>("Activity/number").value(), mConfigFile->get<int>("Activity/type").value());
+  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(), mConfigFile->get<int>("qc/config/Activity/type").value());
   mTask->startOfActivity(activity);
 }
 
 void TaskDataProcessor::endOfActivity()
 {
-  Activity activity(mConfigFile->get<int>("Activity/number").value(), mConfigFile->get<int>("Activity/type").value());
+  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(), mConfigFile->get<int>("qc/config/Activity/type").value());
   mTask->endOfActivity(activity);
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();

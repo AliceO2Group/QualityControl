@@ -168,7 +168,6 @@ O2_GENERATE_EXECUTABLE(
         MODULE_LIBRARY_NAME ${LIBRARY_NAME}
         BUCKET_NAME ${BUCKET_NAME}
 )
-Install(FILES qcTaskDplConfig.ini DESTINATION etc/)
 
 if (FAIRROOT_FOUND)
     O2_GENERATE_EXECUTABLE(
@@ -213,3 +212,4 @@ endif()
 # Install extra scripts
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
 install(FILES example-default.ini example-default.json alfa.json DESTINATION etc)
+Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json DESTINATION etc/)

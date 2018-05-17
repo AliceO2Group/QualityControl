@@ -9,7 +9,7 @@
 /// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The resulting histogram contents
 /// are printed by checker.
 /// QC task is instantiated by TaskDataProcessorFactory with preinstalled config file, which can be found in
-/// ${QUALITYCONTROL_ROOT}/etc/qcTaskDplConfig.ini or Framework/qcTaskDplConfig.ini (original one).
+/// ${QUALITYCONTROL_ROOT}/etc/qcTaskDplConfig.json or Framework/qcTaskDplConfig.json (original one).
 ///
 /// To launch it, build the project, load the environment and run the executable:
 ///   \code{.sh}
@@ -68,7 +68,7 @@ void defineDataProcessing(std::vector<DataProcessorSpec>& specs)
   // Exemplary initialization of QC Task:
   const std::string qcTaskName = "skeletonTask";
   const std::string qcConfigurationSource =
-    std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.ini";
+    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.json";
   TaskDataProcessorFactory qcFactory;
   specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
 
