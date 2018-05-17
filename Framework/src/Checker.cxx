@@ -87,21 +87,19 @@ void Checker::populateConfig(unique_ptr<ConfigurationInterface> &config, std::st
   try {
     // General configuration
     mCheckerConfig.checkerName = checkerName;
-    mCheckerConfig.broadcast = (bool) config->get<int>(checkerName + "/broadcast").value_or(0);
+    std::string prefix = std::string("qc/checkers_config/");
+    mCheckerConfig.broadcast = (bool) config->get<int>(prefix + checkerName + "/broadcast").value_or(0);
     if (mCheckerConfig.broadcast) {
-      mCheckerConfig.broadcastAddress = config->get<string>(checkerName + "/broadcastAddress").value();
+      mCheckerConfig.broadcastAddress = config->get<string>(prefix + checkerName + "/broadcastAddress").value();
     }
-    mCheckerConfig.id = config->get<int>(checkerName + "/id").value();
-    mCheckerConfig.numberCheckers = config->get<int>("checkers/numberCheckers").value();
-    mCheckerConfig.tasksAddresses = config->get<string>("checkers/tasksAddresses").value();
-    mCheckerConfig.numberTasks = config->get<int>("checkers/numberTasks").value();
+    mCheckerConfig.id = config->get<int>(prefix + checkerName + "/id").value();
+    mCheckerConfig.numberCheckers = config->get<int>(prefix + "numberCheckers").value();
+    mCheckerConfig.tasksAddresses = config->get<string>(prefix + "tasksAddresses").value();
+    mCheckerConfig.numberTasks = config->get<int>(prefix + "numberTasks").value();
 
     // configuration of the database
-    mDatabase = DatabaseFactory::create(config->get<string>("database/implementation").value());
-    mDatabase->connect(config->get<string>("database/host").value(),
-                       config->get<string>("database/name").value(),
-                       config->get<string>("database/username").value(),
-                       config->get<string>("database/password").value());
+    mDatabase = DatabaseFactory::create(config->get<string>("qc/config/database/implementation").value());
+    mDatabase->connect(config);
   } catch (...) { // catch already here the configuration exception and print it
     // because if we are in a constructor, the exception could be lost
     string diagnostic = boost::current_exception_diagnostic_information();

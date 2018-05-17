@@ -76,7 +76,7 @@ TaskDevice::TaskDevice(std::string taskName, std::string configurationSource) : 
   mTask = f.create<TaskInterface>(mTaskConfig, mObjectsManager);  // TODO could we use unique_ptr ?
 
   // setup datasampling
-  string dataSamplingImplementation = mConfigFile->get<std::string>("DataSampling/implementation").value();
+  string dataSamplingImplementation = mConfigFile->get<std::string>("qc/config/DataSampling/implementation").value();
   QcInfoLogger::GetInstance() << "DataSampling implementation is '" << dataSamplingImplementation << "'"
                               << AliceO2::InfoLogger::InfoLogger::endm;
   mSampler = AliceO2::DataSampling::SamplerFactory::create(dataSamplingImplementation);
@@ -96,14 +96,21 @@ TaskDevice::TaskDevice(std::string taskName, std::string configurationSource) : 
 
 void TaskDevice::populateConfig(std::string taskName)
 {
-  std::string prefix = std::string("qc/tasks_config")+taskName;
-  string taskDefinitionName = mConfigFile->get<string>(prefix + "/taskDefinition").value();
+  try {
+    std::string prefix = "qc/tasks_config/";
+    string taskDefinitionName = mConfigFile->get<string>(prefix + taskName + "/taskDefinition").value();
 
-  mTaskConfig.taskName = taskName;
-  mTaskConfig.moduleName = mConfigFile->get<string>(taskDefinitionName + "/moduleName").value();
-  mTaskConfig.className = mConfigFile->get<string>(taskDefinitionName + "/className").value();
-  mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(taskDefinitionName + "/cycleDurationSeconds").value_or(10);
-  mTaskConfig.maxNumberCycles = mConfigFile->get<int>(taskDefinitionName + "/maxNumberCycles").value_or(-1);
+    mTaskConfig.taskName = taskName;
+    mTaskConfig.moduleName = mConfigFile->get<string>(prefix + taskDefinitionName + "/moduleName").value();
+    mTaskConfig.className = mConfigFile->get<string>(prefix + taskDefinitionName + "/className").value();
+    mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(prefix + taskDefinitionName + "/cycleDurationSeconds").value_or(10);
+    mTaskConfig.maxNumberCycles = mConfigFile->get<int>(prefix + taskDefinitionName + "/maxNumberCycles").value_or(-1);
+  } catch (...) { // catch already here the configuration exception and print it
+    // because if we are in a constructor, the exception could be lost
+    string diagnostic = boost::current_exception_diagnostic_information();
+    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
+    throw;
+  }
 }
 
 void TaskDevice::InitTask()
@@ -228,13 +235,13 @@ void TaskDevice::Reset()
 void TaskDevice::startOfActivity()
 {
   timerTotalDurationActivity.reset();
-  Activity activity(mConfigFile->get<int>("Activity/number").value(), mConfigFile->get<int>("Activity/type").value());
+  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(), mConfigFile->get<int>("qc/config/Activity/type").value());
   mTask->startOfActivity(activity);
 }
 
 void TaskDevice::endOfActivity()
 {
-  Activity activity(mConfigFile->get<int>("Activity/number").value(), mConfigFile->get<int>("Activity/type").value());
+  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(), mConfigFile->get<int>("qc/config/Activity/type").value());
   mTask->endOfActivity(activity);
 
   double rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();

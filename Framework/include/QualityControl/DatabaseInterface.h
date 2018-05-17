@@ -8,10 +8,14 @@
 
 #include "QualityControl/MonitorObject.h"
 #include <memory>
+#include <Configuration/ConfigurationInterface.h>
+//#include <bits/unique_ptr.h>
 
 namespace o2 {
 namespace quality_control {
 namespace repository {
+
+using namespace o2::configuration;
 
 /// \brief The interface to the MonitorObject's repository.
 ///
@@ -28,7 +32,27 @@ class DatabaseInterface
     {
     }
 
+    /**
+     * Connects to the database.
+     * For some implementations, this is a noop.
+     * @param host
+     * @param database
+     * @param username
+     * @param password
+     * @deprecated
+     */
     virtual void connect(std::string host, std::string database, std::string username, std::string password) = 0;
+    /**
+     * Connects to the database.
+     * For some implementations, this is a noop.
+     * @param config Configuration where the connection parameters are stored.
+     */
+    virtual void connect(std::unique_ptr<ConfigurationInterface> &config) = 0;
+
+    /**
+     * Stores the serialized MonitorObject in the database.
+     * @param mo The MonitorObject to serialize and store.
+     */
     virtual void store(o2::quality_control::core::MonitorObject* mo) = 0;
 
     /**

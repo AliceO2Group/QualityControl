@@ -53,6 +53,7 @@ class CcdbDatabase : public DatabaseInterface
   public:
     CcdbDatabase() = default;
     void connect(std::string host, std::string database, std::string username, std::string password) override;
+    void connect(std::unique_ptr<ConfigurationInterface> &config) override;
     void store(o2::quality_control::core::MonitorObject *mo) override;
     core::MonitorObject *retrieve(std::string taskName, std::string objectName) override;
     void disconnect() override;

@@ -1,0 +1,69 @@
+{
+  "qc": {
+    "config": {
+      "DataSampling": {
+        "implementation": "MockSampler"
+      },
+      "database": {
+        "username": "qc_user",
+        "password": "qc_user",
+        "name": "quality_control",
+        "implementation": "CCDB",
+        "host": "localhost:8080"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      }
+    },
+    "tasks_config": {
+      "myTask_1": {
+        "taskDefinition": "taskDefinition_1"
+      },
+      "myTask_2": {
+        "taskDefinition": "taskDefinition_1"
+      },
+      "taskDefinition_1": {
+        "className": "o2::quality_control_modules::example::ExampleTask",
+        "moduleName": "QcExample",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1"
+      },
+      "daqTask": {
+        "taskDefinition": "daqTaskDefinition"
+      },
+      "daqTaskDefinition": {
+        "className": "o2::quality_control_modules::daq::DaqTask",
+        "moduleName": "QcDaq",
+        "moduleOfChecks": "QcExample",
+        "maxNumberCycles": "-1",
+        "cycleDurationSeconds": "10"
+      },
+      "benchmarkTask_0": {
+        "taskDefinition": "benchmark"
+      },
+      "benchmark": {
+        "className": "o2::quality_control_modules::example::BenchmarkTask",
+        "moduleName": "QcExample",
+        "numberHistos": "1",
+        "numberChecks": "1",
+        "typeOfChecks": "o2::quality_control_modules::example::FakeCheck",
+        "moduleOfChecks": "QcExample",
+        "cycleDurationSeconds": "1"
+      }
+    },
+    "checkers_config": {
+      "numberCheckers": "1",
+      "numberTasks": "1",
+      "tasksAddresses": "tcp://localhost:5556,tcp://localhost:5557,tcp://localhost:5558,tcp://localhost:5559",
+      "checker_0": {
+        "broadcast": "0",
+        "broadcastAddress": "tcp://*:5600",
+        "id": "0"
+      },
+      "Checks": {
+        "checkMeanIsAbove/threshold": "1"
+      }
+    }
+  }
+}

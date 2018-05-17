@@ -35,6 +35,11 @@ void CcdbDatabase::connect(std::string host, std::string database, std::string u
   url = host;
 }
 
+void CcdbDatabase::connect(std::unique_ptr<ConfigurationInterface> &config)
+{
+  url = config->get<string>("qc/config/database/host").value();
+}
+
 void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
 {
   // Serialize the object mo

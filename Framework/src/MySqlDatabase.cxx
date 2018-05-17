@@ -60,6 +60,14 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
   }
 }
 
+void MySqlDatabase::connect(std::unique_ptr<ConfigurationInterface> &config)
+{
+  this->connect(config->get<string>("qc/config/database/host").value(),
+                     config->get<string>("qc/config/database/name").value(),
+                     config->get<string>("qc/config/database/username").value(),
+                     config->get<string>("qc/config/database/password").value());
+}
+
 void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
 {
   // one object per run
