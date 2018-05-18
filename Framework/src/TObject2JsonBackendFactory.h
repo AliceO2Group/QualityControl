@@ -9,39 +9,39 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TObejct2Json.h
+/// \file   TObject2JsonBackendFactory.h
 /// \author Adam Wegrzynek
+/// \author Vladimir Kosmala
 ///
 
-#ifndef QUALITYCONTROL_TOBJECT2JSON_FACTORY_H
-#define QUALITYCONTROL_TOBJECT2JSON_FACTORY_H
+#ifndef QUALITYCONTROL_TOBJECT2JSON_BACKEND_FACTORY_H
+#define QUALITYCONTROL_TOBJECT2JSON_BACKEND_FACTORY_H
 
-#include "TObject2Json.h"
+#include "TObject2JsonServer.h"
 #include "TObject2JsonBackend.h"
 
 namespace o2 {
 namespace quality_control {
 namespace tobject_to_json {
 
-/// Creates and condifures TObject2Json object
-class TObject2JsonFactory
+/// Creates a backend instance
+class TObject2JsonBackendFactory
 {
   public:
     /// Disables copy constructor
-    TObject2JsonFactory & operator=(const TObject2JsonFactory&) = delete;
-    TObject2JsonFactory(const TObject2JsonFactory&) = delete;
+    TObject2JsonBackendFactory & operator=(const TObject2JsonBackendFactory&) = delete;
+    TObject2JsonBackendFactory(const TObject2JsonBackendFactory&) = delete;
 
-    /// Creates an instance of TObject2Json
-    /// \return              renerence to TObject2Json object
-    static std::unique_ptr<TObject2Json> Get(std::string url, std::string zeromqUrl);
+    /// Creates an instance of backend depending on the URL passed
+    static std::unique_ptr<Backend> get(std::string url);
 
   private:
     /// Private constructor disallows to create instance of Factory
-    TObject2JsonFactory() = default;
+    TObject2JsonBackendFactory() = default;
 };
 
 } // namespace tobject_to_json {
 } // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_TOBJECT2JSON_FACTORY_H
+#endif // QUALITYCONTROL_TOBJECT2JSON_BACKEND_FACTORY_H

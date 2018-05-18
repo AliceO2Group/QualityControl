@@ -312,3 +312,51 @@ void defineDataProcessing(std::vector<DataProcessorSpec>& specs) {
 In [Framework/src/TaskDPL.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/TaskDPL.cxx)
 there is an exemplary DPL workflow with QC task. It is compiled to an
 executable `taskDPL`.
+
+## TObject2Json
+
+Single binary multi-threaded using QC data-sources (MySQL and CCDB) to expose ROOT objects as JSON over ZeroMQ.
+
+### Usage
+
+```bash
+alienv enter QualityControl/latest
+tobject2json --backend mysql://qc_user:qc_user@localhost/quality_control --zeromq-server tcp://127.0.0.1:7777 --workers 4
+```
+
+### Protocol
+
+Request:
+
+```
+<agent>/<objectName>
+```
+
+Response (one of the following):
+
+```
+{"request": "<agent>/<objectName>", "payload": "<object requested in json>"}
+{"request": "<agent>/<objectName>", "error": 400, "message": "Wrong request", "why": "because..."}
+{"request": "<agent>/<objectName>", "error": 404, "message": "Object not found"}
+{"request": "<agent>/<objectName>", "error": 500, "message": "Internal error", "why": "because..."}
+```
+
+### Architecture
+
+```
++-----------+
+|   main    |
++-----------+
+      |
+      |
+      v
++-----------+    +-----------+
+|  Server   |--->|  Factory  |
++-----------+    +-----------+
+      ^ 1
+      |
+      v N
++-----------+    +-----------+
+|  Worker   |<-->|  Backend  |
++-----------+1  N+-----------+
+```

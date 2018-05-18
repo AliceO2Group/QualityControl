@@ -1,33 +1,75 @@
+
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
-/// \file   TObject2JsonServer.cxx
+/// \file   TObejct2Json.cxx
+/// \author Vladimir Kosmala
 /// \author Adam Wegrzynek
 ///
 
 // TObject2Json
-#include "TObject2JsonFactory.h"
-#include <boost/program_options.hpp>
+#include "TObject2JsonServer.h"
+#include "TObject2JsonWorker.h"
+#include "TObject2JsonBackendFactory.h"
+#include "QualityControl/QcInfoLogger.h"
 
-using o2::quality_control::tobject_to_json::TObject2JsonFactory;
+// ZMQ
+#include "zmq.h"
 
-int main(int argc, char *argv[])
-{
-  boost::program_options::variables_map vm;
-  boost::program_options::options_description desc("Allowed options");
-  desc.add_options()
-    ("backend", boost::program_options::value<std::string>()->required(), "Backend URL, eg.: mysql://<loign>:<password>@<hostname>:<port>/<database>")
-    ("zeromq-server", boost::program_options::value<std::string>()->required(), "ZeroMQ server endpoint, eg.: tcp://<host>:<port>")
-  ;
-  try {
-    boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
-    boost::program_options::notify(vm);
-  } catch (...) {
-    std::cout << desc << std::endl;
-    return 1;
+// Boost
+#include <boost/algorithm/string.hpp>
+
+using namespace std;
+using namespace o2::quality_control::core;
+using namespace std::string_literals;
+using o2::quality_control::tobject_to_json::TObject2JsonBackendFactory;
+
+namespace o2 {
+namespace quality_control {
+namespace tobject_to_json {
+
+TObject2JsonServer::TObject2JsonServer()
+  : mCtx(1),
+    mFrontend(mCtx, ZMQ_ROUTER),
+    mBackend(mCtx, ZMQ_DEALER)
+{}
+
+void TObject2JsonServer::start(std::string backendUrl, std::string zeromq, uint8_t numThreads) {
+  if (numThreads <= 0) {
+    throw std::runtime_error("Number of workers must be >= 1");
   }
-  std::string backend = vm["backend"].as<std::string>();
-  std::string zeromq = vm["zeromq-server"].as<std::string>();
 
-  auto converter = TObject2JsonFactory::Get(backend, zeromq);
-  converter->start();
-  return 0;
+  std::vector<std::unique_ptr<TObject2JsonWorker>> workers;
+
+  QcInfoLogger::GetInstance() << "Deploying workers..." << infologger::endm;
+  for (int i = 0; i < numThreads; ++i) {
+    std::unique_ptr<Backend> backendInstance = TObject2JsonBackendFactory::get(backendUrl);
+    TObject2JsonWorker *worker = new TObject2JsonWorker(mCtx, std::move(backendInstance));
+    workers.push_back(std::unique_ptr<TObject2JsonWorker>(worker));
+    QcInfoLogger::GetInstance() << "Worker " << i << " started" << infologger::endm;
+  }
+
+  QcInfoLogger::GetInstance() << "Starting ZeroMQ server..." << infologger::endm;
+  mFrontend.bind(zeromq);
+  mBackend.bind("inproc://backend");
+  QcInfoLogger::GetInstance() << "Ready for incoming requests" << infologger::endm;
+
+  try {
+    zmq::proxy(mFrontend, mBackend, nullptr);
+  }
+  catch (std::exception &e) {
+    QcInfoLogger::GetInstance() << "Closing server/backend proxy: " << e.what() << infologger::endm;
+  }
 }
+
+} // namespace tobject_to_json
+} // namespace quality_control
+} // namespace o2

@@ -9,12 +9,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TObject2JsonFactory.cxx
+/// \file   TObject2JsonBackendFactory.cxx
 /// \author Adam Wegrzynek
 ///
 
-#include "TObject2JsonFactory.h"
-#include "TObject2Json.h"
+#include "TObject2JsonBackendFactory.h"
+#include "TObject2JsonServer.h"
 #include "TObject2JsonMySql.h"
 #include "TObject2JsonCcdb.h"
 #include "external/UriParser.h"
@@ -41,7 +41,7 @@ auto getCcdb(const http::url& uri) {
 }
 
 
-std::unique_ptr<TObject2Json> TObject2JsonFactory::Get(std::string url, std::string zeromqUrl) {
+std::unique_ptr<Backend> TObject2JsonBackendFactory::get(std::string url) {
   static const std::map<std::string, std::function<std::unique_ptr<Backend>(const http::url&)>> map = {
       {"mysql", getMySql},
       {"ccdb", getCcdb}
@@ -53,7 +53,7 @@ std::unique_ptr<TObject2Json> TObject2JsonFactory::Get(std::string url, std::str
   }
   auto iterator = map.find(parsedUrl.protocol);
   if (iterator != map.end()) {
-    return std::make_unique<TObject2Json>(iterator->second(parsedUrl), zeromqUrl);
+    return iterator->second(parsedUrl);
   } else {
     throw std::runtime_error("Unrecognized backend " + parsedUrl.protocol);
   }

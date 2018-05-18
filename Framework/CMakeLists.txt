@@ -92,10 +92,11 @@ set(HEADERS # needed for the dictionary generation
         )
 
 set(SRCS_TOBJECT2JSON
-        src/TObject2JsonServer.cxx
         src/TObject2Json.cxx
+        src/TObject2JsonServer.cxx
+        src/TObject2JsonWorker.cxx
         src/TObject2JsonMySql.cxx
-        src/TObject2JsonFactory.cxx
+        src/TObject2JsonBackendFactory.cxx
         src/TObject2JsonCcdb.cxx
         )
 
