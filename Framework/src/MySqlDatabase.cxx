@@ -191,7 +191,12 @@ o2::quality_control::core::MonitorObject *MySqlDatabase::retrieve(std::string ta
     mess.SetBuffer(blob, blobSize, kFALSE);
     mess.SetReadMode();
     mess.Reset();
-    mo = (o2::quality_control::core::MonitorObject *) (mess.ReadObjectAny(mess.GetClass()));
+    try {
+      mo = (o2::quality_control::core::MonitorObject *) (mess.ReadObjectAny(mess.GetClass()));
+    } catch (...) {
+      QcInfoLogger::GetInstance() << "Node: unable to parse TObject from MySQL" << infologger::endm;
+      throw;
+    }
   }
   delete statement;
 

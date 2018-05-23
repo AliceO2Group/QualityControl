@@ -95,6 +95,7 @@ std::string TObject2JsonWorker::handleRequest(std::string request) {
   try {
     // calls to getJsonObject implies the process to have a 'Interrupted system call', why?
     std::string result = mBackend->getJsonObject(agentName, objectName);
+    QcInfoLogger::GetInstance() << "Successful request: '" << request << "'" << infologger::endm;
 
     return std::string("{\"request\": \"") +
       request +

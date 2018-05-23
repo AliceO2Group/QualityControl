@@ -20,6 +20,8 @@
 // std
 #include <sstream>
 
+#include <thread>
+
 #include "TObject2JsonBackend.h"
 #include "zmq.h"
 
@@ -33,7 +35,11 @@ class TObject2JsonServer {
 public:
   TObject2JsonServer();
 
+  /// Prepare and start all threads (server and workers)
   void start(std::string backend, std::string zeromq, uint8_t numThreads);
+
+  /// Thread function of server
+  void run();
 
 private:
   /// ZeroMQ context for server and backend sockets
@@ -44,6 +50,8 @@ private:
 
   /// ZeroMQ backend in-process socket
   zmq::socket_t mBackend;
+
+
 };
 
 } // namespace tobject_to_json {

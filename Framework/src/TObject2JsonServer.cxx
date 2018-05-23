@@ -27,6 +27,8 @@
 // Boost
 #include <boost/algorithm/string.hpp>
 
+#include <TROOT.h>
+
 using namespace std;
 using namespace o2::quality_control::core;
 using namespace std::string_literals;
@@ -40,7 +42,10 @@ TObject2JsonServer::TObject2JsonServer()
   : mCtx(1),
     mFrontend(mCtx, ZMQ_ROUTER),
     mBackend(mCtx, ZMQ_DEALER)
-{}
+{
+  // Make ROOT aware that workers will do calls from threads
+  ROOT::EnableThreadSafety();
+}
 
 void TObject2JsonServer::start(std::string backendUrl, std::string zeromq, uint8_t numThreads) {
   if (numThreads <= 0) {
@@ -62,6 +67,13 @@ void TObject2JsonServer::start(std::string backendUrl, std::string zeromq, uint8
   mBackend.bind("inproc://backend");
   QcInfoLogger::GetInstance() << "Ready for incoming requests" << infologger::endm;
 
+  // We start zmq proxy in a separe thread to let main thread continue to handle signals
+  // (avoid "Interrupted system call" error)
+  std::thread mThread(std::bind(&TObject2JsonServer::run, this));
+  mThread.join();
+}
+
+void TObject2JsonServer::run() {
   try {
     zmq::proxy(mFrontend, mBackend, nullptr);
   }
