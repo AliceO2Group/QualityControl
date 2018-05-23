@@ -40,13 +40,15 @@ TObject2JsonWorker::TObject2JsonWorker(zmq::context_t &ctx, std::unique_ptr<Back
     mThread(std::bind(&TObject2JsonWorker::start, this))
 {}
 
-TObject2JsonWorker::~TObject2JsonWorker() {
+TObject2JsonWorker::~TObject2JsonWorker()
+{
   mRun = false;
   QcInfoLogger::GetInstance() << "Ending worker" << infologger::endm;
   mThread.join();
 }
 
-void TObject2JsonWorker::start() {
+void TObject2JsonWorker::start()
+{
   mRun = true;
   mWorkerSocket.setsockopt(ZMQ_RCVTIMEO, 200);
   mWorkerSocket.connect("inproc://backend");
@@ -77,7 +79,8 @@ void TObject2JsonWorker::start() {
   }
 }
 
-std::string TObject2JsonWorker::handleRequest(std::string request) {
+std::string TObject2JsonWorker::handleRequest(std::string request)
+{
   std::string agentName;
   std::string objectName;
   const auto slashIndex = request.find_first_of('/');
@@ -119,18 +122,20 @@ std::string TObject2JsonWorker::handleRequest(std::string request) {
 }
 
 //  Receive 0MQ string from socket and convert into string
-std::string TObject2JsonWorker::socketReceive() {
+std::string TObject2JsonWorker::socketReceive()
+{
   zmq::message_t message;
   bool received = mWorkerSocket.recv(&message);
   if (!received) {
     // timeout
-    return std::string("");
+    return std::string();
   }
   return std::string(static_cast<char*>(message.data()), message.size());
 }
 
 //  Sends string as 0MQ string, as multipart non-terminal
-bool TObject2JsonWorker::socketSend(const std::string & identity, const std::string & payload) {
+bool TObject2JsonWorker::socketSend(const std::string & identity, const std::string & payload)
+{
   zmq::message_t identityMessage(identity.size());
   memcpy(identityMessage.data(), identity.data(), identity.size());
 

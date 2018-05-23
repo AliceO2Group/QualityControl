@@ -31,27 +31,26 @@ namespace o2 {
 namespace quality_control {
 namespace tobject_to_json {
 
-class TObject2JsonServer {
-public:
-  TObject2JsonServer();
+class TObject2JsonServer
+{
+  public:
+    TObject2JsonServer();
 
-  /// Prepare and start all threads (server and workers)
-  void start(std::string backend, std::string zeromq, uint8_t numThreads);
+    /// Prepare and start all threads (server and workers)
+    void start(std::string backend, std::string zeromq, uint8_t numThreads);
 
-  /// Thread function of server
-  void run();
+    /// Thread function of server
+    void run();
 
-private:
-  /// ZeroMQ context for server and backend sockets
-  zmq::context_t mCtx;
+  private:
+    /// ZeroMQ context for server and backend sockets
+    zmq::context_t mCtx;
 
-  /// ZeroMQ server socket
-  zmq::socket_t mFrontend;
+    /// ZeroMQ server socket
+    zmq::socket_t mFrontend;
 
-  /// ZeroMQ backend in-process socket
-  zmq::socket_t mBackend;
-
-
+    /// ZeroMQ backend in-process socket
+    zmq::socket_t mBackend;
 };
 
 } // namespace tobject_to_json {

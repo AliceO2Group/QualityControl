@@ -47,7 +47,8 @@ TObject2JsonServer::TObject2JsonServer()
   ROOT::EnableThreadSafety();
 }
 
-void TObject2JsonServer::start(std::string backendUrl, std::string zeromq, uint8_t numThreads) {
+void TObject2JsonServer::start(std::string backendUrl, std::string zeromq, uint8_t numThreads)
+{
   if (numThreads <= 0) {
     throw std::runtime_error("Number of workers must be >= 1");
   }
@@ -73,7 +74,8 @@ void TObject2JsonServer::start(std::string backendUrl, std::string zeromq, uint8
   mThread.join();
 }
 
-void TObject2JsonServer::run() {
+void TObject2JsonServer::run()
+{
   try {
     zmq::proxy(mFrontend, mBackend, nullptr);
   }
