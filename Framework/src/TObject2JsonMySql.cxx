@@ -43,6 +43,9 @@ MySql::MySql(std::string host, unsigned int port, std::string database, std::str
 std::string MySql::getJsonObject(std::string agentName, std::string objectName)
 {
   std::unique_ptr<MonitorObject> monitor(mSqlClient->retrieve(agentName, objectName));
+  if (!monitor) {
+    return std::string();
+  }
   std::unique_ptr<TObject> obj(monitor->getObject());
   monitor->setIsOwner(false);
   TString json = TBufferJSON::ConvertToJSON(obj.get());
