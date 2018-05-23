@@ -95,8 +95,14 @@ std::string TObject2JsonWorker::handleRequest(std::string request) {
   try {
     // calls to getJsonObject implies the process to have a 'Interrupted system call', why?
     std::string result = mBackend->getJsonObject(agentName, objectName);
-    QcInfoLogger::GetInstance() << "Successful request: '" << request << "'" << infologger::endm;
+    if (result.empty()) {
+      QcInfoLogger::GetInstance() << "Object not found '" << request << "'" << infologger::endm;
+      return std::string("{\"request\": \"") + request + std::string("\", ") +
+        std::string("\"error\": 404, \"message\": \"Not found\", ") +
+        std::string("\"why\": \"The requested object was not found\"}");
+    }
 
+    QcInfoLogger::GetInstance() << "Successful request: '" << request << "'" << infologger::endm;
     return std::string("{\"request\": \"") +
       request +
       std::string("\", \"payload\": ") +
