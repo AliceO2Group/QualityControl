@@ -114,7 +114,7 @@ std::string TObject2JsonWorker::response200(std::string request, std::string pay
 
   response
     << "{\"request\": \"" << request << "\", "
-    << "\"payload\": \"" << payload << "\"}";
+    << "\"payload\": " << payload << "}";
 
   return response.str();
 }
