@@ -56,7 +56,7 @@ void TObject2JsonServer::start(std::string backendUrl, std::string zeromq, uint8
 
   QcInfoLogger::GetInstance() << "Deploying workers..." << infologger::endm;
   for (int i = 0; i < numThreads; ++i) {
-    std::unique_ptr<Backend> backendInstance = TObject2JsonBackendFactory::get(backendUrl);
+    std::unique_ptr<Backend> backendInstance = TObject2JsonBackendFactory::Get(backendUrl);
     auto worker = std::make_unique<TObject2JsonWorker>(mCtx, std::move(backendInstance));
     workers.push_back(std::move(worker));
     QcInfoLogger::GetInstance() << "Worker " << i << " started" << infologger::endm;

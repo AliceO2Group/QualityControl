@@ -41,7 +41,7 @@ auto getCcdb(const http::url& uri) {
 }
 
 
-std::unique_ptr<Backend> TObject2JsonBackendFactory::get(std::string url) {
+std::unique_ptr<Backend> TObject2JsonBackendFactory::Get(std::string url) {
   static const std::map<std::string, std::function<std::unique_ptr<Backend>(const http::url&)>> map = {
       {"mysql", getMySql},
       {"ccdb", getCcdb}

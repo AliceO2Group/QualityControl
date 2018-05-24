@@ -33,7 +33,7 @@ class TObject2JsonBackendFactory
     TObject2JsonBackendFactory(const TObject2JsonBackendFactory&) = delete;
 
     /// Creates an instance of backend depending on the URL passed
-    static std::unique_ptr<Backend> get(std::string url);
+    static std::unique_ptr<Backend> Get(std::string url);
 
   private:
     /// Private constructor disallows to create instance of Factory

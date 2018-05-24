@@ -42,7 +42,7 @@ Ccdb::Ccdb(std::string host, unsigned int port, std::string database, std::strin
 std::string Ccdb::getJsonObject(std::string agentName, std::string objectName)
 {
   std::unique_ptr<MonitorObject> monitor(mCcdbClient->retrieve(agentName, objectName));
-  if (!monitor) {
+  if (monitor == nullptr) {
     return std::string();
   }
   std::unique_ptr<TObject> obj(monitor->getObject());
