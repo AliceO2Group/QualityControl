@@ -86,10 +86,7 @@ std::string TObject2JsonWorker::handleRequest(std::string request)
   const auto slashIndex = request.find_first_of('/');
 
   if (std::string::npos == slashIndex) {
-    QcInfoLogger::GetInstance() << "Wrong request request received: '" << request << "'" << infologger::endm;
-    return std::string("{\"request\": \"") + request + std::string("\", ") +
-      std::string("\"error\": 400, \"message\": \"Wrong request\", ") +
-      std::string("\"why\": \"Ill-formed path, slash required\"}");
+    return response400(request);
   }
 
   agentName = request.substr(0, slashIndex);
@@ -99,26 +96,72 @@ std::string TObject2JsonWorker::handleRequest(std::string request)
     // calls to getJsonObject implies the process to have a 'Interrupted system call', why?
     std::string result = mBackend->getJsonObject(agentName, objectName);
     if (result.empty()) {
-      QcInfoLogger::GetInstance() << "Object not found '" << request << "'" << infologger::endm;
-      return std::string("{\"request\": \"") + request + std::string("\", ") +
-        std::string("\"error\": 404, \"message\": \"Not found\", ") +
-        std::string("\"why\": \"The requested object was not found\"}");
+      return response404(request);
     }
 
-    QcInfoLogger::GetInstance() << "Successful request: '" << request << "'" << infologger::endm;
-    return std::string("{\"request\": \"") +
-      request +
-      std::string("\", \"payload\": ") +
-      result +
-      std::string("}");
+    return response200(request, result);
   } catch (const std::exception& error) {
-    QcInfoLogger::GetInstance() <<
-      "Internal error for request '" << request << "': '" << error.what() << "'" <<
-      infologger::endm;
-    return std::string("{\"request\": \"") + request + std::string("\", ") +
-      std::string("\"error\": 500, \"message\": \"Internal error\", ") +
-      std::string("\"why\": \"") + error.what() + std::string("\"}");
+    return response500(request, error.what());
   }
+}
+
+std::string TObject2JsonWorker::response200(std::string request, std::string payload)
+{
+  std::stringstream response;
+  QcInfoLogger::GetInstance()
+    << "Successful request: '" << request << "'"
+    << infologger::endm;
+
+  response
+    << "{\"request\": \"" << request << "\", "
+    << "\"payload\": \"" << payload << "\"}";
+
+  return response.str();
+}
+
+std::string TObject2JsonWorker::response400(std::string request)
+{
+  std::stringstream response;
+  QcInfoLogger::GetInstance()
+    << "Wrong request request received: '" << request << "'"
+    << infologger::endm;
+
+  response
+    << "{\"request\": \"" << request << "\", "
+    << "\"error\": 400, \"message\": \"Wrong request\", "
+    << "\"why\": \"Ill-formed path, slash required\"}";
+
+  return response.str();
+}
+
+std::string TObject2JsonWorker::response404(std::string request)
+{
+  std::stringstream response;
+  QcInfoLogger::GetInstance()
+    << "Object not found '" << request << "'"
+    << infologger::endm;
+
+  response
+    << "{\"request\": \"" << request << "\", "
+    << "\"error\": 404, \"message\": \"Not found\", "
+    << "\"why\": \"The requested object was not found\"}";
+
+  return response.str();
+}
+
+std::string TObject2JsonWorker::response500(std::string request, std::string error)
+{
+  std::stringstream response;
+  QcInfoLogger::GetInstance()
+    << "Internal error for request '" << request << "': '" << error << "'"
+    << infologger::endm;
+
+  response
+    << "{\"request\": \"" << request << "\", "
+    << "\"error\": 500, \"message\": \"Internal error\", "
+    << "\"why\": \"" << error << "\"}";
+
+  return response.str();
 }
 
 //  Receive 0MQ string from socket and convert into string

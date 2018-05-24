@@ -1,4 +1,3 @@
-
 // Copyright CERN and copyright holders of ALICE O2. This software is
 // distributed under the terms of the GNU General Public License v3 (GPL
 // Version 3), copied verbatim in the file "COPYING".
@@ -10,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TObejct2Json.cxx
+/// \file   TObject2JsonServer.cxx
 /// \author Vladimir Kosmala
 /// \author Adam Wegrzynek
 ///
@@ -58,8 +57,8 @@ void TObject2JsonServer::start(std::string backendUrl, std::string zeromq, uint8
   QcInfoLogger::GetInstance() << "Deploying workers..." << infologger::endm;
   for (int i = 0; i < numThreads; ++i) {
     std::unique_ptr<Backend> backendInstance = TObject2JsonBackendFactory::get(backendUrl);
-    TObject2JsonWorker *worker = new TObject2JsonWorker(mCtx, std::move(backendInstance));
-    workers.push_back(std::unique_ptr<TObject2JsonWorker>(worker));
+    auto worker = std::make_unique<TObject2JsonWorker>(mCtx, std::move(backendInstance));
+    workers.push_back(std::move(worker));
     QcInfoLogger::GetInstance() << "Worker " << i << " started" << infologger::endm;
   }
 

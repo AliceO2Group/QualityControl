@@ -51,6 +51,11 @@ class TObject2JsonWorker
     ///  Sends string as 0MQ string, as multipart non-terminal
     bool socketSend(const std::string & identity, const std::string & payload);
 
+    std::string response200(std::string request, std::string payload);
+    std::string response400(std::string request);
+    std::string response404(std::string request);
+    std::string response500(std::string request, std::string error);
+
   private:
     /// Backend instance (MySQL or CCDB)
     std::unique_ptr<Backend> mBackend;
