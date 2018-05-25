@@ -52,9 +52,7 @@ class TObject2JsonWorker
     bool socketSend(const std::string & identity, const std::string & payload);
 
     std::string response200(std::string request, std::string payload);
-    std::string response400(std::string request);
-    std::string response404(std::string request);
-    std::string response500(std::string request, std::string error);
+    std::string responseError(int code, std::string request, std::string error = {});
 
   private:
     /// Backend instance (MySQL or CCDB)
