@@ -6,7 +6,13 @@ A CC7 machine or a mac.
 
 ## Setup
 
-We use alibuild, see instructions [here](https://alisw.github.io/alibuild/o2-daq-tutorial.html).
+We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/) and install O2 (no need to `init` it, just `build` it).
+
+Build/install the QualityControl package : `aliBuild init QualityControl ; aliBuild build QualityControl --defaults o2`
+
+Also build/install the qcg package : `aliBuild build qcg --default o2`
+
+Note that you can also use the `defaults` called `o2-dataflow`. 
 
 ### Post installation
 
@@ -16,6 +22,8 @@ Start and populate database :
 sudo systemctl start mariadb
 qcDatabaseSetup.sh
 ```
+
+Whenever you want to work with O2 and QualityControl, do either `alienv enter qcg/latest` or `alienv load qcg/latest`. 
 
 ## Configuration
 
