@@ -10,8 +10,8 @@ A CC7 machine or a mac.
   * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/) and install O2 (no need to `init` it, just `build` it).
   
 2. Install the MySQL/MariaDB development package 
-  * CC7 : sudo yum install mariadb-devel
-  * Mac : brew install mysql
+  * CC7 : `sudo yum install mariadb-server`
+  * Mac (or download the dmg from Oracl) : `brew install mysql`
 
 3. Build/install the QualityControl package : `aliBuild init QualityControl ; aliBuild build QualityControl --defaults o2`
 
