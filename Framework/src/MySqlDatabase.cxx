@@ -81,7 +81,7 @@ void MySqlDatabase::store(MonitorObject *mo)
   // we execute grouped insertions. Here we just register that we should keep this mo in memory.
   mObjectsQueue[mo->getTaskName()].push_back(mo);
   queueSize++;
-  if (queueSize > 1 || lastStorage.getTime() > 10 /*sec*/) { // TODO use a configuration to set the max limits
+  if (queueSize > 2 || lastStorage.getTime() > 10 /*sec*/) { // TODO use a configuration to set the max limits
     storeQueue();
   }
 }

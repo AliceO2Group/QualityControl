@@ -30,13 +30,13 @@ MeanIsAbove::MeanIsAbove()
 void MeanIsAbove::configure(std::string name)
 {
   // TODO use the configuration system to set the params
-  try {
-    auto configFile = ConfigurationFactory::getConfiguration("file:../example.ini"); // not ok...
-  } catch (string &exception) {
-    cout << "error getting config file in MeanIsAbove : " << exception << endl;
-    mThreshold = 1.0f;
-    return;
-  }
+//  try {
+//    auto configFile = ConfigurationFactory::getConfiguration("file:../example.ini"); // not ok...
+//  } catch (string &exception) {
+//    cout << "error getting config file in MeanIsAbove : " << exception << endl;
+//    mThreshold = 1.0f;
+//    return;
+//  }
   mThreshold = 1.0f;//std::stof(configFile.getValue<string>("Checks.checkMeanIsAbove/threshold"));
 }
 
