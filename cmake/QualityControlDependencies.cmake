@@ -1,4 +1,4 @@
-find_package(Boost 1.58 COMPONENTS unit_test_framework program_options system log)
+find_package(Boost 1.58 COMPONENTS container unit_test_framework program_options system log)
 find_package(Git QUIET)
 find_package(Configuration REQUIRED)
 find_package(Monitoring REQUIRED)
@@ -42,6 +42,7 @@ o2_define_bucket(
         ${Boost_THREAD_LIBRARY}
         ${Boost_SYSTEM_LIBRARY}
         ${Boost_PROGRAM_OPTIONS_LIBRARY}
+        ${Boost_CONTAINER_LIBRARY}
         ${Common_LIBRARIES}
         ${Configuration_LIBRARIES}
         ${Monitoring_LIBRARIES}
