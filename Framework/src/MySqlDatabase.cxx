@@ -56,7 +56,7 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
     }
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(s));
   } else {
-    cout << "Connected to the database" << endl;
+    QcInfoLogger::GetInstance() << "Connected to the database" << infologger::endm;
   }
 }
 
@@ -89,14 +89,14 @@ void MySqlDatabase::store(MonitorObject *mo)
   // we execute grouped insertions. Here we just register that we should keep this mo in memory.
   mObjectsQueue[mo->getTaskName()].push_back(mo);
   queueSize++;
-  if (queueSize > 1 || lastStorage.getTime() > 10 /*sec*/) { // TODO use a configuration to set the max limits
+  if (queueSize > 2 || lastStorage.getTime() > 10 /*sec*/) { // TODO use a configuration to set the max limits
     storeQueue();
   }
 }
 
 void MySqlDatabase::storeQueue()
 {
-  cout << "Database queue will now be processed (" << queueSize << " objects)" << endl;
+  QcInfoLogger::GetInstance() << "Database queue will now be processed (" << queueSize << " objects)" << infologger::endm;
 
   for (auto &kv : mObjectsQueue) {
     storeForTask(kv.first);
@@ -199,7 +199,12 @@ o2::quality_control::core::MonitorObject *MySqlDatabase::retrieve(std::string ta
     mess.SetBuffer(blob, blobSize, kFALSE);
     mess.SetReadMode();
     mess.Reset();
-    mo = (o2::quality_control::core::MonitorObject *) (mess.ReadObjectAny(mess.GetClass()));
+    try {
+      mo = (o2::quality_control::core::MonitorObject *) (mess.ReadObjectAny(mess.GetClass()));
+    } catch (...) {
+      QcInfoLogger::GetInstance() << "Node: unable to parse TObject from MySQL" << infologger::endm;
+      throw;
+    }
   }
   delete statement;
 

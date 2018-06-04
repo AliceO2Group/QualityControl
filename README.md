@@ -1,19 +1,35 @@
+[![JIRA](https://img.shields.io/badge/JIRA-Report%20issue-blue.svg)](https://alice.its.cern.ch/jira/secure/CreateIssue.jspa?pid=11201&issuetype=1)
+
 ## Requirements
 
 A CC7 machine or a mac.
 
 ## Setup
 
-We use alibuild, see instructions [here](https://alisw.github.io/alibuild/o2-daq-tutorial.html).
+1. Install O2
+  * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/) and install O2 (no need to `init` it, just `build` it).
+  
+2. Install the MySQL/MariaDB development package 
+  * CC7 : `sudo yum install mariadb-server`
+  * Mac (or download the dmg from Oracl) : `brew install mysql`
+
+3. Build/install the QualityControl package : `aliBuild init QualityControl ; aliBuild build QualityControl --defaults o2`
+
+4. Build/install the qcg (GUI) package : `aliBuild build qcg --default o2`
+
+Note that you can also use the `alibuild defaults` called `o2-dataflow`. 
 
 ### Post installation
 
 Start and populate database :
 
 ```
-sudo systemctl start mariadb
+sudo systemctl start mariadb # for CC7, check for your specific OS
+alienv enter qcg/latest
 qcDatabaseSetup.sh
 ```
+
+Whenever you want to work with O2 and QualityControl, do either `alienv enter qcg/latest` or `alienv load qcg/latest`. 
 
 ## Configuration
 
@@ -143,6 +159,16 @@ qcSpy
 # Launch a checker named checker_0
 qcCheckerLauncher -c file:///absolute/path/to/example-default.ini -n checker_0
 ```
+
+### QCG (Web QC GUI)
+
+To run :
+```
+alienv enter qcg/latest-o2
+tobject2json --backend mysql://qc_user:qc_user@localhost/quality_control --zeromq-server tcp://127.0.0.1:7777
+qcg
+```
+Then open your browser at `localhost:8080`.
 
 ### Readout chain
 
@@ -334,3 +360,51 @@ void defineDataProcessing(std::vector<DataProcessorSpec>& specs) {
 In [Framework/src/TaskDPL.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/TaskDPL.cxx)
 there is an exemplary DPL workflow with QC task. It is compiled to an
 executable `taskDPL`.
+
+## TObject2Json
+
+Single binary multi-threaded using QC data-sources (MySQL and CCDB) to expose ROOT objects as JSON over ZeroMQ.
+
+### Usage
+
+```bash
+alienv enter QualityControl/latest
+tobject2json --backend mysql://qc_user:qc_user@localhost/quality_control --zeromq-server tcp://127.0.0.1:7777 --workers 4
+```
+
+### Protocol
+
+Request:
+
+```
+<agent>/<objectName>
+```
+
+Response (one of the following):
+
+```
+{"request": "<agent>/<objectName>", "payload": "<object requested in json>"}
+{"request": "<agent>/<objectName>", "error": 400, "message": "Wrong request", "why": "because..."}
+{"request": "<agent>/<objectName>", "error": 404, "message": "Object not found"}
+{"request": "<agent>/<objectName>", "error": 500, "message": "Internal error", "why": "because..."}
+```
+
+### Architecture
+
+```
++-----------+
+|   main    |
++-----------+
+      |
+      |
+      v
++-----------+    +-----------+
+|  Server   |--->|  Factory  |
++-----------+    +-----------+
+      ^ 1
+      |
+      v N
++-----------+    +-----------+
+|  Worker   |<-->|  Backend  |
++-----------+1  N+-----------+
+```

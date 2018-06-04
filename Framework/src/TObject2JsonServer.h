@@ -9,15 +9,21 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TObejct2Json.h
+/// \file   TObejct2JsonServer.h
 /// \author Vladimir Kosmala
 /// \author Adam Wegrzynek
 ///
 
-#ifndef QUALITYCONTROL_TOBJECT2JSON_H
-#define QUALITYCONTROL_TOBJECT2JSON_H
+#ifndef QUALITYCONTROL_TOBJECT2JSON_SERVER_H
+#define QUALITYCONTROL_TOBJECT2JSON_SERVER_H
+
+// std
+#include <sstream>
+
+#include <thread>
 
 #include "TObject2JsonBackend.h"
+#include "zmq.h"
 
 using o2::quality_control::repository::MySqlDatabase;
 
@@ -25,32 +31,30 @@ namespace o2 {
 namespace quality_control {
 namespace tobject_to_json {
 
-/// \brief Converts ROOT objects into JSON format, readable by JSROOT
-class TObject2Json
+class TObject2JsonServer
 {
   public:
-    /// Creates backend and binds ZeroMQ socket
-    TObject2Json(std::unique_ptr<Backend> backend, std::string zeromqUrl);
+    TObject2JsonServer();
 
-    /// Listens to the ZeroMQ server endpoint
-    void start();
+    /// Prepare and start all threads (server and workers)
+    void start(std::string backend, std::string zeromq, uint8_t numThreads);
+
+    /// Thread function of server
+    void run();
 
   private:
-    /// MySQL client instance from QualityControl framework
-    std::unique_ptr<Backend> mBackend;
-
-    /// ZeroMQ context
-    void *mContext;
+    /// ZeroMQ context for server and backend sockets
+    zmq::context_t mCtx;
 
     /// ZeroMQ server socket
-    void *mSocket;
+    zmq::socket_t mFrontend;
 
-    // Handle ZeroMQ request
-    std::string handleRequest(std::string message);
+    /// ZeroMQ backend in-process socket
+    zmq::socket_t mBackend;
 };
 
 } // namespace tobject_to_json {
 } // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_TOBJECT2JSON_H
+#endif // QUALITYCONTROL_TOBJECT2JSON_SERVER_H

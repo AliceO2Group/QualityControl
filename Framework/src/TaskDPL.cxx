@@ -35,8 +35,9 @@ using namespace o2::framework;
 using namespace o2::quality_control::core;
 using namespace std::chrono;
 
-void defineDataProcessing(std::vector<DataProcessorSpec>& specs)
+WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
+  WorkflowSpec specs;
   DataProcessorSpec producer{
     "producer",
     Inputs{},
@@ -102,4 +103,6 @@ void defineDataProcessing(std::vector<DataProcessorSpec>& specs)
 
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
   o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+
+  return specs;
 }
