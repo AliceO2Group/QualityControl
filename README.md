@@ -13,9 +13,9 @@ A CC7 machine or a mac.
   * CC7 : sudo yum install mariadb-devel
   * Mac : brew install mysql
 
-2. Build/install the QualityControl package : `aliBuild init QualityControl ; aliBuild build QualityControl --defaults o2`
+3. Build/install the QualityControl package : `aliBuild init QualityControl ; aliBuild build QualityControl --defaults o2`
 
-3. Build/install the qcg (GUI) package : `aliBuild build qcg --default o2`
+4. Build/install the qcg (GUI) package : `aliBuild build qcg --default o2`
 
 Note that you can also use the `alibuild defaults` called `o2-dataflow`. 
 
@@ -137,6 +137,16 @@ qcSpy
 # Launch a checker named checker_0
 qcCheckerLauncher -c file:///absolute/path/to/example-default.ini -n checker_0
 ```
+
+### QCG (Web QC GUI)
+
+To run :
+```
+alienv enter qcg/latest-o2-dataflow
+tobject2json --backend mysql://qc_user:qc_user@localhost/quality_control --zeromq-server tcp://127.0.0.1:7777
+qcg
+```
+Then open your browser at `localhost:8080`.
 
 ### Readout chain
 
