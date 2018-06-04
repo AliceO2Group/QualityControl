@@ -6,20 +6,26 @@ A CC7 machine or a mac.
 
 ## Setup
 
-We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/) and install O2 (no need to `init` it, just `build` it).
+1. Install O2
+  * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/) and install O2 (no need to `init` it, just `build` it).
+  
+2. Install the MySQL/MariaDB development package 
+  * CC7 : sudo yum install mariadb-devel
+  * Mac : brew install mysql
 
-Build/install the QualityControl package : `aliBuild init QualityControl ; aliBuild build QualityControl --defaults o2`
+2. Build/install the QualityControl package : `aliBuild init QualityControl ; aliBuild build QualityControl --defaults o2`
 
-Also build/install the qcg package : `aliBuild build qcg --default o2`
+3. Build/install the qcg (GUI) package : `aliBuild build qcg --default o2`
 
-Note that you can also use the `defaults` called `o2-dataflow`. 
+Note that you can also use the `alibuild defaults` called `o2-dataflow`. 
 
 ### Post installation
 
 Start and populate database :
 
 ```
-sudo systemctl start mariadb
+sudo systemctl start mariadb # for CC7, check for your specific OS
+alienv enter qcg/latest
 qcDatabaseSetup.sh
 ```
 
@@ -47,7 +53,7 @@ most of their definition.
 className=AliceO2::QualityControlModules::Example::ExampleTask
 moduleName=QcExample     # which library contains the class
 cycleDurationSeconds=1
-```
+``` 
 
 The source of the data is defined here :
 
