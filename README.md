@@ -34,37 +34,53 @@ Whenever you want to work with O2 and QualityControl, do either `alienv enter qc
 ## Configuration
 
 The QC requires a number of configuration items. An example config file is
-provided in the repo under the name _example-default.ini_. Moreover, the
+provided in the repo under the name _example-default.json_. Moreover, the
 outgoing channel over which histograms are sent is defined in a JSON
 file such as the one called _alfa.json_ in the repo.
 
-**QC tasks** must be defined in the configuration :
+**QC tasks** must be defined in the configuration within the element `qc/tasks_config` :
 
 ```
-[myTask_1]                      # define parameters for task myTask_1
-taskDefinition=taskDefinition_1 # indirection to the actual definition
+   "tasks_config": {
+      "myTask_1": {
+        "taskDefinition": "taskDefinition_1"
+      },
+    ...
 ```
 
 We use an indirect system to allow multiple tasks to share
-most of their definition.
+most of their definition (`myTask_1` uses defintion `taskDefinition_1`):
 
 ```
-[taskDefinition_1]
-className=AliceO2::QualityControlModules::Example::ExampleTask
-moduleName=QcExample     # which library contains the class
-cycleDurationSeconds=1
-``` 
+    ...
+      "taskDefinition_1": {
+        "className": "o2::quality_control_modules::example::ExampleTask",
+        "moduleName": "QcExample",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1"
+      },
+```
+The `moduleName` refers to which library contains the class `className`.
 
-The source of the data is defined here :
+The data source for the task is defined in the section `qc/config/DataSampling` :
 
 ```
+{
+  "qc": {
+    "config": {
+      "DataSampling": {
+        "implementation": "MockSampler"
+      },
 [DataSampling]
 ;implementation=FairSampler # get data from readout
 implementation=MockSampler  # get random data
 ```
 
+Implementation can be `FairSampler` to get data from readout or
+`MockSampler` to get random data.
+
 The JSON `alfa.json` file contains a typical FairMQ device definition. One can
- change the or the address there:
+ change the port or the address there:
 ```
 {
     "fairMQOptions": {
@@ -92,24 +108,30 @@ The JSON `alfa.json` file contains a typical FairMQ device definition. One can
 }
 ```
 
-**QC checkers** are defined in the config file :
+**QC checkers** are defined in the config file in section `checkers_config`:
 
 ```
-[checker_0]
-broadcast=0 # whether to broadcast the plots in addition to storing them
-broadcastAddress=tcp://*:5600
-id=0        # only required item
+    "checkers_config": {
+      "checker_0": {
+        "broadcast": "0",
+        "broadcastAddress": "tcp://*:5600",
+        "id": "0"
+      },
+      ...
 ```
+
+Here, `checker_0` is not going to broadcast its data but just store
+it in the database.
 
 And for the time, the mapping between checkers and tasks must be explicit :
 
 ```
-[checkers] ; needed for the time being because we don't have an information service
-numberCheckers=1
-; can be less than the number of items in tasksAddresses
-numberTasks=1
-tasksAddresses=tcp://localhost:5556,tcp://localhost:5557,tcp://localhost:5558,tcp://localhost:5559
+      ...
+      "numberCheckers": "1",
+      "numberTasks": "1",
+      "tasksAddresses": "tcp://localhost:5556,tcp://localhost:5557,tcp://localhost:5558,tcp://localhost:5559",
 ```
+It is needed for the time being because we don't have an information service.
 
 There are configuration items for many other aspects, for example the
 database connection, the monitoring or the data sampling.
@@ -126,7 +148,7 @@ store the MonitorObjects.
 ```
 # Launch a task named myTask_1
 qcTaskLauncher -n myTask_1 \
-               -c file:///absolute/path/to/example-default.ini \
+               -c file:///absolute/path/to/example-default.json \
                --id myTask_1 \
                --mq-config path/to/alfa.json
 
@@ -173,17 +195,17 @@ implementation=FairSampler
 4. Launch the QC task
 ```
 qcTaskLauncher -n myTask_1 \
-               -c file:///absolute/path/to/configDummy.cfg \
+               -c file:///absolute/path/to/example-default.json \
                --id myTask_1 \
                --mq-config path/to/alfa.json
 ```
 5. Launch the checker
 ```
-qcCheckerLauncher -c file:///absolute/path/to/example-default.ini -n checker_0
+qcCheckerLauncher -c file:///absolute/path/to/example-default.json -n checker_0
 ```
 6. Launch the gui
 ```
-qcSpy file:///absolute/path/to/example-default.ini
+qcSpy file:///absolute/path/to/example-default.json
 # then click Start !
 ```
 In the gui, one can change the source and point to the checker by
@@ -304,7 +326,7 @@ To add a QC task into workflow:
 1. Create your module using SkeletonDPL as a base. Refer to the steps mentioned
 in the chapter [Modules development](https://github.com/AliceO2Group/QualityControl#modules-development)
 - they are the same.
-2. Define input data and parameters of your QC Task in .ini config file. Use
+2. Define input data and parameters of your QC Task in .json config file. Use
 [Framework/qcTaskDplConfig.ini](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/qcTaskDplConfig.ini)
 as a reference - just update the variables in the section 'Tasks'.
 3. Insert following lines in your workflow declaration code. Change the names

@@ -87,10 +87,10 @@ int main(int argc, char *argv[])
     // Config parsing
     Checker checker(checkerName, configurationSource);
     unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configurationSource);
-    int numberCheckers = config->get<int>("checkers/numberCheckers").value();
-    int numberTasks = config->get<int>("checkers/numberTasks").value();
-    int id = config->get<int>(checkerName + "/id").value();
-    string addresses = config->get<string>("checkers/tasksAddresses").value();
+    int numberCheckers = config->get<int>("qc/checkers_config/numberCheckers").value();
+    int numberTasks = config->get<int>("qc/checkers_config/numberTasks").value();
+    int id = config->get<int>(string("qc/checkers_config/") + checkerName + "/id").value();
+    string addresses = config->get<string>("qc/checkers_config/tasksAddresses").value();
     vector<string> addressesVector;
     boost::algorithm::split(addressesVector, addresses, boost::is_any_of(","), boost::token_compress_on);
     vector<string> addressesForThisChecker;

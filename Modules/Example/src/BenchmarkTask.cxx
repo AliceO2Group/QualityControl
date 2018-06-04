@@ -31,7 +31,8 @@ void BenchmarkTask::initialize()
                               << AliceO2::InfoLogger::InfoLogger::endm;
 
   mConfigFile = ConfigurationFactory::getConfiguration("file:./example.ini");
-  string taskDefinitionName = mConfigFile->get<std::string>(getName() + ".taskDefinition").value();
+  string prefix = "/qc/tasks_config/" + getName();
+  string taskDefinitionName = mConfigFile->get<std::string>(prefix + ".taskDefinition").value();
   mNumberHistos = mConfigFile->get<int>(taskDefinitionName + ".numberHistos").value();
   mNumberChecks = mConfigFile->get<int>(taskDefinitionName + ".numberChecks").value();
   mTypeOfChecks = mConfigFile->get<std::string>(taskDefinitionName + ".typeOfChecks").value();

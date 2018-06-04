@@ -42,10 +42,10 @@ SpyMainFrame::SpyMainFrame(SpyDevice *spyDevice, string configurationSource)
     try {
       unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configurationSource);
       mDbInterface = DatabaseFactory::create(config->get<string>("database/implementation").value());
-      mDbInterface->connect(config->get<string>("database/host").value(),
-                            config->get<string>("database/name").value(),
-                            config->get<string>("database/username").value(),
-                            config->get<string>("database/password").value());
+      mDbInterface->connect(config->get<string>("/qc/config/database/host").value(),
+                            config->get<string>("/qc/config/database/name").value(),
+                            config->get<string>("/qc/config/database/username").value(),
+                            config->get<string>("/qc/config/database/password").value());
 
     } catch (std::string &s) {
       std::cerr << s << endl;
