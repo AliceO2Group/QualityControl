@@ -142,7 +142,7 @@ qcCheckerLauncher -c file:///absolute/path/to/example-default.ini -n checker_0
 
 To run :
 ```
-alienv enter qcg/latest-o2-dataflow
+alienv enter qcg/latest-o2
 tobject2json --backend mysql://qc_user:qc_user@localhost/quality_control --zeromq-server tcp://127.0.0.1:7777
 qcg
 ```
