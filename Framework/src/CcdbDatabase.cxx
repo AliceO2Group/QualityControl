@@ -310,7 +310,7 @@ size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmem
   return size * nmemb;
 }
 
-std::string CcdbDatabase::getListing(std::string subpath)
+std::string CcdbDatabase::getListing(std::string subpath, std::string accept)
 {
   CURL *curl;
   CURLcode res;
@@ -325,14 +325,19 @@ std::string CcdbDatabase::getListing(std::string subpath)
     curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempString);
-    curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, "text/plain");
+//    curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, accept.c_str());
+
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, (string("Accept: ") + accept).c_str());
+    headers = curl_slist_append(headers, (string("Content-Type: ") + accept).c_str());
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
     // Perform the request, res will get the return code
     res = curl_easy_perform(curl);
     if (res != CURLE_OK) {
       fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
     }
-
+    curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
   }
 
@@ -426,6 +431,55 @@ std::string CcdbDatabase::getTimestampString(long timestamp)
   stringstream ss;
   ss << timestamp;
   return ss.str();
+}
+
+void CcdbDatabase::deleteObject(std::string taskName, std::string objectName, string timestamp)
+{
+  CURL *curl;
+  CURLcode res;
+  stringstream fullUrl;
+  fullUrl << url << "/" << taskName << "/" << objectName << "/" << timestamp;
+
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+
+  curl = curl_easy_init();
+  if (curl != nullptr) {
+    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.str().c_str());
+
+    // Perform the request, res will get the return code
+    res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    }
+    curl_easy_cleanup(curl);
+  }
+}
+
+void CcdbDatabase::deleteAllObjectVersions(std::string taskName, std::string objectName)
+{
+  vector<string> result;
+
+  // Get the listing from CCDB
+  string listing = getListing(taskName + "/" + objectName, "application/json");
+
+  // Split the string we received, by line.  keep only the lines with "validFrom" and extract those values
+  std::stringstream ss(listing);
+  std::string line;
+  while (std::getline(ss, line, '\n')) {
+    ltrim(line);
+    rtrim(line);
+    size_t found = line.find("validFrom");
+    if (line.length() > 0 && found != std::string::npos) {
+      result.push_back(line.substr(13, line.length()-13-2));
+    }
+  }
+
+  // loop over the list and delete each object
+for(string validFrom : result) {
+    cout << validFrom << endl;
+    deleteObject(taskName, objectName, validFrom);
+  }
 }
 
 }

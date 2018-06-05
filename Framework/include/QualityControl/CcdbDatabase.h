@@ -60,12 +60,26 @@ class CcdbDatabase : public DatabaseInterface
     void prepareTaskDataContainer(std::string taskName) override;
     std::vector<std::string> getListOfTasksWithPublications() override;
     std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
+    /**
+     * Delete all the versions of the specified object.
+     * @param taskName
+     * @param objectName
+     */
+    void deleteAllObjectVersions(std::string taskName, std::string objectName);
+    /**
+     * Delete the object.
+     * @todo Raise an exception if no such object exist.
+     * @param taskName
+     * @param objectName
+     * @param timestamp
+     */
+    void deleteObject(std::string taskName, std::string objectName, std::string timestamp);
 
   private:
     long getCurrentTimestamp();
     std::string getTimestampString(long timestamp);
     long getFutureTimestamp(int secondsInFuture);
-    std::string getListing(std::string subpath = "");
+    std::string getListing(std::string subpath = "", std::string accept = "text/plain");
 
     std::string url;
 };
