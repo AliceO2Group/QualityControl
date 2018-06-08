@@ -21,6 +21,7 @@
 #include <TMessage.h>
 #include <TObjString.h>
 #include <algorithm>
+#include <unordered_set>
 
 using namespace std::chrono;
 
@@ -458,7 +459,7 @@ void CcdbDatabase::deleteObject(std::string taskName, std::string objectName, st
 
 void CcdbDatabase::deleteAllObjectVersions(std::string taskName, std::string objectName)
 {
-  vector<string> result;
+  unordered_set<string> toBeDeleted;
 
   // Get the listing from CCDB
   string listing = getListing(taskName + "/" + objectName, "application/json");
@@ -471,14 +472,20 @@ void CcdbDatabase::deleteAllObjectVersions(std::string taskName, std::string obj
     rtrim(line);
     size_t found = line.find("validFrom");
     if (line.length() > 0 && found != std::string::npos) {
-      result.push_back(line.substr(13, line.length()-13-2));
+      toBeDeleted.insert(line.substr(13, line.length() - 13 - 2));
     }
   }
 
+  cout << "Number of objects to delete : " << toBeDeleted.size() << endl;
+
   // loop over the list and delete each object
-for(string validFrom : result) {
+  int i = 0; // just to inform users every 10 objects
+  for (string validFrom : toBeDeleted) {
     cout << "Deletion of object " << objectName << " valid from " << validFrom << endl;
     deleteObject(taskName, objectName, validFrom);
+    if(++i % 10 == 0) {
+      cout << "Number of objects still to be deleted : " << toBeDeleted.size()-i << endl;
+    }
   }
 }
 

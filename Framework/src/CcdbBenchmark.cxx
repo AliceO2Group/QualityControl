@@ -108,6 +108,7 @@ bool CcdbBenchmark::ConditionalRun()
 
   high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
+  // Store the object
   for(int i = 0 ; i < mNumberObjects ; i++) {
     mDatabase->store(mMyObject);
   }
@@ -115,15 +116,13 @@ bool CcdbBenchmark::ConditionalRun()
   mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
 
   high_resolution_clock::time_point t2 = high_resolution_clock::now();
+  int duration = duration_cast<milliseconds>(t2 - t1).count();
+  mMonitoring->send({duration, "storeDuration_ms"});
 
-  auto duration = duration_cast<microseconds>(t2 - t1).count();
-
-  QcInfoLogger::GetInstance() << "Execution duration : " << duration << " us" << infologger::endm;
-
+  // determine how long we should wait till next iteration in order to have 1 sec between storage
   auto duration2 = duration_cast<microseconds>(t2 - t1);
   auto remaining = duration_cast<microseconds>(std::chrono::seconds(1) - duration2);
 //  QcInfoLogger::GetInstance() << "Remaining duration : " << remaining.count() << " us" << infologger::endm;
-
   if(remaining.count() < 0) {
     QcInfoLogger::GetInstance() << "Remaining duration is negative, we don't sleep " << infologger::endm;
   } else {

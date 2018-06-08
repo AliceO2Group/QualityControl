@@ -38,7 +38,8 @@ function startTask {
   log_file_name=${LOG_FILE_PREFIX}${log_file_suffix}.log
   echo "Starting task ${name} on host ${host}, logs in ${log_file_name}"
   cmd="ccdbBenchmark --max-iterations ${NUMBER_CYCLES} --id ${name} --mq-config ~/dev/alice/QualityControl/Framework/alfa.json \
-        --delete 0 --control static --size-objects ${size_objects} --number-objects ${number_objects} > ${log_file_name} 2>&1 &"
+        --delete 0 --control static --size-objects ${size_objects} --number-objects ${number_objects} \
+        --task-name ${name} > ${log_file_name} 2>&1 &"
   echo ${cmd}
   eval ${cmd}
   pidLastTask=$!
@@ -57,8 +58,11 @@ function killAll {
 }
 
 # Delete the database content
+# \param 1 : name of the task to delete content for
 function cleanDatabase {
-  cmd="ccdbBenchmark --id test --mq-config ~/dev/alice/QualityControl/Framework/alfa.json --delete 1 --control static > /dev/null 2>&1"
+  name=$1
+  cmd="ccdbBenchmark --id test --mq-config ~/dev/alice/QualityControl/Framework/alfa.json --delete 1 --control static \
+       --task-name ${name} > /dev/null 2>&1"
   echo ${cmd}
   eval ${cmd}
 }
@@ -79,7 +83,7 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
       #done
 
       echo "Delete database content"
-      cleanDatabase
+      cleanDatabase "benchmarkTask_${task}"
 
       echo "Now start the tasks"
 
