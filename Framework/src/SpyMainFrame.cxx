@@ -25,6 +25,7 @@
 #include <QualityControl/DatabaseFactory.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <TGraph.h>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 using namespace o2::quality_control::repository;
