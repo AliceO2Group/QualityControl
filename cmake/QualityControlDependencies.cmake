@@ -1,8 +1,7 @@
-find_package(Boost 1.58 COMPONENTS container unit_test_framework program_options system log)
+find_package(Boost 1.58 COMPONENTS container unit_test_framework program_options system log signals )
 find_package(Git QUIET)
 find_package(Configuration REQUIRED)
 find_package(Monitoring REQUIRED)
-find_package(FairRoot REQUIRED)
 find_package(MySQL REQUIRED)
 find_package(Common REQUIRED)
 find_package(InfoLogger REQUIRED)
@@ -20,8 +19,17 @@ if (BOOST_FOUND AND NOT Boost_FOUND)
     set(Boost_FOUND 1)
 endif ()
 
+find_package(FairRoot REQUIRED)
+find_package(FairMQInFairRoot) # DEPRECATED: This looks for FairMQ embedded in old FairRoot versions,
+# before FairMQ and FairLogger have moved to separate repos.
+# Remove this line, once we require FairMQ 1.2+.
+if(NOT FairMQInFairRoot_FOUND) # DEPRECATED: Remove this condition, once we require FairMQ 1.2+
+    find_package(FairMQ REQUIRED)
+    find_package(FairLogger REQUIRED)
+endif()
+
+
 link_directories(${FAIRROOT_LIBRARY_DIR})
-set(FAIRROOT_LIBRARIES Base FairMQ BaseMQ Logger)
 
 if (NOT MYSQL_FOUND)
     message(WARNING "MySQL not found, the corresponding classes won't be built.")
@@ -32,6 +40,25 @@ else ()
 #    set(ROOT_LIBRARIES "${ROOT_LIBRARIES} -lRMySQL")
 endif ()
 
+get_target_property(_boost_incdir Boost::boost INTERFACE_INCLUDE_DIRECTORIES)
+
+
+if(FairMQInFairRoot_FOUND)
+    # DEPRECATED: Remove this case, once we require FairMQ 1.2+
+    get_target_property(_fairmq_incdir FairRoot::FairMQ INTERFACE_INCLUDE_DIRECTORIES)
+    o2_define_bucket(NAME fairmq_bucket
+            DEPENDENCIES FairRoot::FairMQ
+            INCLUDE_DIRECTORIES ${_boost_incdir} ${_fairmq_incdir}
+            )
+else()
+    get_target_property(_fairmq_incdir FairMQ::FairMQ INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(_fairlogger_incdir FairLogger::FairLogger INTERFACE_INCLUDE_DIRECTORIES)
+    o2_define_bucket(NAME fairmq_bucket
+            DEPENDENCIES FairMQ::FairMQ
+            INCLUDE_DIRECTORIES ${_boost_incdir} ${_fairmq_incdir} ${_fairlogger_incdir}
+            )
+    set(_fairlogger_incdir)
+endif()
 
 o2_define_bucket(
         NAME
@@ -76,7 +103,7 @@ o2_define_bucket(
 
         DEPENDENCIES
         o2_qualitycontrol_bucket
-        ${FAIRROOT_LIBRARIES}
+        fairmq_bucket
 
         SYSTEMINCLUDE_DIRECTORIES
         ${FAIRROOT_INCLUDE_DIR}
@@ -141,7 +168,7 @@ o2_define_bucket(
 
         DEPENDENCIES
         o2_qcmodules_base
-        ${FAIRROOT_LIBRARIES}
+        fairmq_bucket
         ${AliceO2_LIBRARIES}
 
         SYSTEMINCLUDE_DIRECTORIES
