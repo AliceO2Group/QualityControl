@@ -65,15 +65,15 @@ class CcdbDatabase : public DatabaseInterface
      * @param taskName
      * @param objectName
      */
-    void deleteAllObjectVersions(std::string taskName, std::string objectName);
+    void deleteObject(std::string taskName, std::string objectName);
     /**
-     * Delete the object.
+     * Delete the matching version of this object.
      * @todo Raise an exception if no such object exist.
      * @param taskName
      * @param objectName
      * @param timestamp
      */
-    void deleteObject(std::string taskName, std::string objectName, std::string timestamp);
+    void deleteObjectVersion(std::string taskName, std::string objectName, std::string timestamp);
 
   private:
     long getCurrentTimestamp();

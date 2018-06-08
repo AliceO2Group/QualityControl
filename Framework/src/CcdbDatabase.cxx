@@ -434,7 +434,7 @@ std::string CcdbDatabase::getTimestampString(long timestamp)
   return ss.str();
 }
 
-void CcdbDatabase::deleteObject(std::string taskName, std::string objectName, string timestamp)
+void CcdbDatabase::deleteObjectVersion(std::string taskName, std::string objectName, string timestamp)
 {
   CURL *curl;
   CURLcode res;
@@ -457,35 +457,27 @@ void CcdbDatabase::deleteObject(std::string taskName, std::string objectName, st
   }
 }
 
-void CcdbDatabase::deleteAllObjectVersions(std::string taskName, std::string objectName)
+void CcdbDatabase::deleteObject(std::string taskName, std::string objectName)
 {
-  unordered_set<string> toBeDeleted;
+  cout << "truncating data for " << taskName << "/" << objectName << endl;
 
-  // Get the listing from CCDB
-  string listing = getListing(taskName + "/" + objectName, "application/json");
+  CURL *curl;
+  CURLcode res;
+  stringstream fullUrl;
+  fullUrl << url << "/truncate/" << taskName << "/" << objectName;
 
-  // Split the string we received, by line.  keep only the lines with "validFrom" and extract those values
-  std::stringstream ss(listing);
-  std::string line;
-  while (std::getline(ss, line, '\n')) {
-    ltrim(line);
-    rtrim(line);
-    size_t found = line.find("validFrom");
-    if (line.length() > 0 && found != std::string::npos) {
-      toBeDeleted.insert(line.substr(13, line.length() - 13 - 2));
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+
+  curl = curl_easy_init();
+  if (curl != nullptr) {
+    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.str().c_str());
+
+    // Perform the request, res will get the return code
+    res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
     }
-  }
-
-  cout << "Number of objects to delete : " << toBeDeleted.size() << endl;
-
-  // loop over the list and delete each object
-  int i = 0; // just to inform users every 10 objects
-  for (string validFrom : toBeDeleted) {
-    cout << "Deletion of object " << objectName << " valid from " << validFrom << endl;
-    deleteObject(taskName, objectName, validFrom);
-    if(++i % 10 == 0) {
-      cout << "Number of objects still to be deleted : " << toBeDeleted.size()-i << endl;
-    }
+    curl_easy_cleanup(curl);
   }
 }
 

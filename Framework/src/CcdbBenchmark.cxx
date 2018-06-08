@@ -140,7 +140,7 @@ bool CcdbBenchmark::ConditionalRun()
 
 void CcdbBenchmark::emptyDatabase()
 {
-  mDatabase->deleteAllObjectVersions(mTaskName, mObjectName);
+  mDatabase->deleteObject(mTaskName, mObjectName);
 }
 
 }
