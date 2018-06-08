@@ -16,9 +16,10 @@
 #ifndef PROJECT_CCDBBENCHMARK_H
 #define PROJECT_CCDBBENCHMARK_H
 
-#include "FairMQDevice.h"
+#include <FairMQDevice.h>
 #include "QualityControl/CcdbDatabase.h"
 #include <TH1F.h>
+#include <Monitoring/MonitoringFactory.h>
 
 namespace o2 {
 namespace quality_control {
@@ -28,7 +29,7 @@ class CcdbBenchmark : public FairMQDevice
 {
   public:
     CcdbBenchmark();
-    virtual ~CcdbBenchmark();
+    virtual ~CcdbBenchmark()= default;
 
   protected:
     virtual void InitTask();
@@ -42,6 +43,10 @@ class CcdbBenchmark : public FairMQDevice
     uint64_t mSizeObjects;
     std::string mTaskName;
     std::string mObjectName;
+
+    std::unique_ptr<o2::monitoring::Monitoring> mMonitoring;
+    uint64_t mTotalNumberObjects;
+
     bool mDeletionMode;
     o2::quality_control::repository::CcdbDatabase* mDatabase;
     MonitorObject *mMyObject;

@@ -21,8 +21,8 @@
 #include <TH2F.h>
 #include <QualityControl/CcdbDatabase.h>
 
-#include "FairMQLogger.h"
-#include "options/FairMQProgOptions.h" // device->fConfig
+#include <FairMQLogger.h>
+#include <options/FairMQProgOptions.h> // device->fConfig
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseFactory.h"
@@ -32,18 +32,20 @@ using namespace std;
 using namespace std::chrono;
 using namespace AliceO2::Common;
 using namespace o2::quality_control::repository;
+using namespace o2::monitoring;
 
 namespace o2 {
 namespace quality_control {
 namespace core {
 
 CcdbBenchmark::CcdbBenchmark()
-  : mMaxIterations(0), mNumIterations(0), mSizeObjects(1), mNumberObjects(1)
+  : mMaxIterations(0), mNumIterations(0), mSizeObjects(1), mNumberObjects(1), mTotalNumberObjects(0)
 {
 }
 
 void CcdbBenchmark::InitTask()
 {
+  // parse arguments
   try {
     string db = fConfig->GetValue<string>("ccdb-url");
     mDatabase = dynamic_cast<CcdbDatabase*>(o2::quality_control::repository::DatabaseFactory::create("CCDB"));
@@ -62,6 +64,14 @@ void CcdbBenchmark::InitTask()
   mTaskName = fConfig->GetValue<string>("task-name");
   mObjectName = fConfig->GetValue<string>("object-name");
 
+  mMonitoring = MonitoringFactory::Get(fConfig->GetValue<string>("monitoring-url"));
+  mMonitoring->enableProcessMonitoring(1); // collect every seconds metrics for this process
+  mMonitoring->send({1, "testasdf"});
+
+//  this_thread::sleep_for(chrono::seconds(10));
+//
+//  exit(1);
+
   if (mDeletionMode) {
     QcInfoLogger::GetInstance() << "Deletion mode..." << infologger::endm;
     emptyDatabase();
@@ -79,9 +89,9 @@ void CcdbBenchmark::InitTask()
       break;
     case 1000:
       mMyHisto = new TH2F("h", "h", 2500, 0, 99, 100, 0, 99); // 1MB
-      for (unsigned int i = 0; i < 1000; i++) {
-        mMyHisto->Fill(i);
-      }
+//      for (unsigned int i = 0; i < 1000; i++) {
+//        mMyHisto->Fill(i);
+//      }
       break;
     default:
       BOOST_THROW_EXCEPTION(
@@ -101,6 +111,8 @@ bool CcdbBenchmark::ConditionalRun()
   for(int i = 0 ; i < mNumberObjects ; i++) {
     mDatabase->store(mMyObject);
   }
+  mTotalNumberObjects+=mNumberObjects;
+  mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
 
   high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
@@ -125,10 +137,6 @@ bool CcdbBenchmark::ConditionalRun()
   }
 
   return true;
-}
-
-CcdbBenchmark::~CcdbBenchmark()
-{
 }
 
 void CcdbBenchmark::emptyDatabase()

@@ -477,7 +477,7 @@ void CcdbDatabase::deleteAllObjectVersions(std::string taskName, std::string obj
 
   // loop over the list and delete each object
 for(string validFrom : result) {
-    cout << validFrom << endl;
+    cout << "Deletion of object " << objectName << " valid from " << validFrom << endl;
     deleteObject(taskName, objectName, validFrom);
   }
 }

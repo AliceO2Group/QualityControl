@@ -27,7 +27,8 @@ void addCustomOptions(bpo::options_description& options)
     ("ccdb-url", bpo::value<std::string>()->default_value("ccdb-test.cern.ch:8080"), "Database url (default : ccdb-test.cern.ch:8080")
     ("task-name", bpo::value<std::string>()->default_value("benchmarkTask"), "Name of the task (default : benchmarkTask)")
     ("object-name", bpo::value<std::string>()->default_value("benchmark"), "Name of the object (default : benchmark)")
-    ("delete", bpo::value<int>()->default_value(0), "Deletion mode (deletes all the versions of the object, 1:true, 0:false)");
+    ("delete", bpo::value<int>()->default_value(0), "Deletion mode (deletes all the versions of the object, 1:true, 0:false)")
+    ("monitoring-url", bpo::value<std::string>()->default_value("infologger://"), "The URL to the monitoring system (default : \"infologger://\")");
 }
 
 FairMQDevicePtr getDevice(const FairMQProgOptions& /*config*/)
