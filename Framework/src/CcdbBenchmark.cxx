@@ -66,11 +66,7 @@ void CcdbBenchmark::InitTask()
 
   mMonitoring = MonitoringFactory::Get(fConfig->GetValue<string>("monitoring-url"));
   mMonitoring->enableProcessMonitoring(1); // collect every seconds metrics for this process
-  mMonitoring->send({1, "testasdf"});
-
-//  this_thread::sleep_for(chrono::seconds(10));
-//
-//  exit(1);
+  mMonitoring->addGlobalTag("taskName", mTaskName);
 
   if (mDeletionMode) {
     QcInfoLogger::GetInstance() << "Deletion mode..." << infologger::endm;
@@ -89,9 +85,6 @@ void CcdbBenchmark::InitTask()
       break;
     case 1000:
       mMyHisto = new TH2F("h", "h", 2500, 0, 99, 100, 0, 99); // 1MB
-//      for (unsigned int i = 0; i < 1000; i++) {
-//        mMyHisto->Fill(i);
-//      }
       break;
     default:
       BOOST_THROW_EXCEPTION(

@@ -8,9 +8,9 @@ set -u ;# exit when using undeclared variable
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(1 5 10 25 50);
-NB_OF_OBJECTS=(1 10 100 1000);
-SIZE_OBJECTS=(1 10 100 1000);# in kB
+NB_OF_TASKS=(1);# 5 10 25 50);
+NB_OF_OBJECTS=(1);# 10 100 1000);
+SIZE_OBJECTS=(1);# 10 100 1000);# in kB
 
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
@@ -58,7 +58,7 @@ function killAll {
 }
 
 # Delete the database content
-# \param 1 : name of the task to delete content for
+# \param 1 : number
 function cleanDatabase {
   name=$1
   cmd="ccdbBenchmark --id test --mq-config ~/dev/alice/QualityControl/Framework/alfa.json --delete 1 --control static \
@@ -83,7 +83,7 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
       #done
 
       echo "Delete database content"
-      cleanDatabase "benchmarkTask_${task}"
+      cleanDatabase $nb_tasks
 
       echo "Now start the tasks"
 
