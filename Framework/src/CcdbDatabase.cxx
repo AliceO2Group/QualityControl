@@ -326,7 +326,6 @@ std::string CcdbDatabase::getListing(std::string subpath, std::string accept)
     curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempString);
-//    curl_easy_setopt(curl, CURLOPT_ACCEPT_ENCODING, accept.c_str());
 
     struct curl_slist *headers = NULL;
     headers = curl_slist_append(headers, (string("Accept: ") + accept).c_str());
@@ -386,24 +385,55 @@ std::vector<std::string> CcdbDatabase::getListOfTasksWithPublications()
 
 std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskName)
 {
+
+  // get all the objects published for a given task
+  // URL : http://ccdb-test.cern.ch:8080/latest/[taskName]/.*
   std::vector<string> result;
-  // we use the "index" string to know what objects are published.
-  // get the information from the CCDB itself.
-  core::MonitorObject *mo = retrieve(taskName, core::MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST);
-  if (!mo) {
-    cerr << "could not retrieve the objects lists for task " << taskName << endl;
-    return result;
+  CURL *curl;
+  CURLcode res;
+  string fullUrl = url + "/latest/" + taskName + "/.*";
+  std::string tempString;
+
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+
+  curl = curl_easy_init();
+  if (curl != nullptr) {
+
+    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempString);
+
+    // JSON accept
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, string("Accept: Application/JSON").c_str());
+    headers = curl_slist_append(headers, string("Content-Type: Application/JSON").c_str());
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+    // Perform the request, res will get the return code
+    res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    }
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
   }
-  auto *indexString = dynamic_cast<TObjString *>(mo->getObject());
-  if (!indexString) {
-    cerr << "could not cast the objects lists for task " << taskName << " to a TObjString" << endl;
-    return result;
+
+  // Split the string we received, by line. Also trim it and remove empty lines. Select the lines starting with "path".
+  std::stringstream ss(tempString);
+  std::string line;
+  while (std::getline(ss, line, '\n')) {
+//    cout << "line : " << line;
+    ltrim(line);
+    rtrim(line);
+    if (line.length() > 0 && line.find("\"path\"") == 0) {
+      unsigned long objNameStart = 9 + taskName.length();
+      string path = line.substr(objNameStart, line.length() - 2 /*final 2 char*/ - objNameStart);
+      result.push_back(path);
+//      cout << "...yes" << endl;
+    } else {
+//      cout << "...no" << endl;
+    }
   }
-  string s = indexString->GetString().Data();
-  boost::algorithm::split(result, s, boost::algorithm::is_any_of(","), boost::algorithm::token_compress_on);
-  // sanitize : remove system objects object and empty objects
-  result.erase(std::remove(result.begin(), result.end(), ""));
-  result.erase(std::remove(result.begin(), result.end(), core::MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST));
 
   return result;
 }
@@ -457,7 +487,7 @@ void CcdbDatabase::deleteObjectVersion(std::string taskName, std::string objectN
   }
 }
 
-void CcdbDatabase::deleteObject(std::string taskName, std::string objectName)
+void CcdbDatabase::truncateObject(std::string taskName, std::string objectName)
 {
   cout << "truncating data for " << taskName << "/" << objectName << endl;
 

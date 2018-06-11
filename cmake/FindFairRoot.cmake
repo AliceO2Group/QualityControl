@@ -1,34 +1,33 @@
  ################################################################################
  #    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    #
  #                                                                              #
- #              This software is distributed under the terms of the             # 
- #         GNU Lesser General Public Licence version 3 (LGPL) version 3,        #  
+ #              This software is distributed under the terms of the             #
+ #              GNU Lesser General Public Licence (LGPL) version 3,             #
  #                  copied verbatim in the file "LICENSE"                       #
  ################################################################################
-# Find FairRoot installation 
-# Check the environment variable "FAIRROOTPATH" or "FAIRROOT_ROOT"
+# Find FairRoot installation
+# Check the environment variable "FAIRROOTPATH"
 
 if(FairRoot_DIR)
-  SET(FAIRROOTPATH ${FairRoot_DIR})
-elseif(DEFINED ENV{FAIRROOT_ROOT})
-  SET(FAIRROOTPATH $ENV{FAIRROOT_ROOT})	
+  set(FAIRROOTPATH ${FairRoot_DIR})
 else()
   if(NOT DEFINED ENV{FAIRROOTPATH})
-    set(user_message "You did not define the environment variable FAIRROOTPATH or FAIRROOT_ROOT which are needed to find FairRoot.\nPlease set one of these variables and execute cmake again." )
+    set(user_message "You did not define the environment variable FAIRROOTPATH which is needed to find FairRoot.\
+         Please set this variable and execute cmake again." )
     if(FairRoot_FIND_REQUIRED)
-        MESSAGE(FATAL_ERROR ${user_message})
+      MESSAGE(FATAL_ERROR ${user_message})
     else(FairRoot_FIND_REQUIRED)
-        MESSAGE(WARNING ${user_message})
-        return()
+      MESSAGE(WARNING ${user_message})
+      return()
     endif(FairRoot_FIND_REQUIRED)
   endif(NOT DEFINED ENV{FAIRROOTPATH})
- 
-  SET(FAIRROOTPATH $ENV{FAIRROOTPATH})
+
+  set(FAIRROOTPATH $ENV{FAIRROOTPATH})
 endif()
 
 MESSAGE(STATUS "Setting FairRoot environment…")
 
-FIND_PATH(FAIRROOT_INCLUDE_DIR NAMES FairRun.h  PATHS
+FIND_PATH(FAIRROOT_INCLUDE_DIR NAMES FairRun.h PATHS
   ${FAIRROOTPATH}/include
   NO_DEFAULT_PATH
 )
@@ -43,6 +42,14 @@ FIND_PATH(FAIRROOT_CMAKEMOD_DIR NAMES CMakeLists.txt  PATHS
   NO_DEFAULT_PATH
 )
 
+# look for exported FairMQ targets and include them
+find_file(_fairroot_fairmq_cmake
+    NAMES FairMQ.cmake
+    HINTS ${FAIRROOTPATH}/include/cmake
+)
+if(_fairroot_fairmq_cmake)
+    include(${_fairroot_fairmq_cmake})
+endif()
 
 if(FAIRROOT_INCLUDE_DIR AND FAIRROOT_LIBRARY_DIR)
    set(FAIRROOT_FOUND TRUE)
@@ -53,6 +60,6 @@ if(FAIRROOT_INCLUDE_DIR AND FAIRROOT_LIBRARY_DIR)
 
 else(FAIRROOT_INCLUDE_DIR AND FAIRROOT_LIBRARY_DIR)
    set(FAIRROOT_FOUND FALSE)
-   #MESSAGE(FATAL_ERROR "FairRoot installation not found")
+   MESSAGE(FATAL_ERROR "FairRoot installation not found")
 endif (FAIRROOT_INCLUDE_DIR AND FAIRROOT_LIBRARY_DIR)
 

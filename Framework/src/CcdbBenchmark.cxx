@@ -67,6 +67,8 @@ void CcdbBenchmark::InitTask()
   mMonitoring = MonitoringFactory::Get(fConfig->GetValue<string>("monitoring-url"));
   mMonitoring->enableProcessMonitoring(1); // collect every seconds metrics for this process
   mMonitoring->addGlobalTag("taskName", mTaskName);
+  mMonitoring->addGlobalTag("numberObject", to_string(mNumberObjects));
+  mMonitoring->addGlobalTag("sizeObject", to_string(mSizeObjects));
 
   if (mDeletionMode) {
     QcInfoLogger::GetInstance() << "Deletion mode..." << infologger::endm;
@@ -109,8 +111,8 @@ bool CcdbBenchmark::ConditionalRun()
   mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
 
   high_resolution_clock::time_point t2 = high_resolution_clock::now();
-  int duration = duration_cast<milliseconds>(t2 - t1).count();
-  mMonitoring->send({duration, "storeDuration_ms"});
+  long duration = duration_cast<milliseconds>(t2 - t1).count();
+  mMonitoring->send({duration/mNumberObjects, "storeDurationForOneObject_ms"}, DerivedMetricMode::NONE);
 
   // determine how long we should wait till next iteration in order to have 1 sec between storage
   auto duration2 = duration_cast<microseconds>(t2 - t1);
@@ -133,7 +135,7 @@ bool CcdbBenchmark::ConditionalRun()
 
 void CcdbBenchmark::emptyDatabase()
 {
-  mDatabase->deleteObject(mTaskName, mObjectName);
+  mDatabase->truncateObject(mTaskName, mObjectName);
 }
 
 }

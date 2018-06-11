@@ -65,7 +65,7 @@ class CcdbDatabase : public DatabaseInterface
      * @param taskName
      * @param objectName
      */
-    void deleteObject(std::string taskName, std::string objectName);
+    void truncateObject(std::string taskName, std::string objectName);
     /**
      * Delete the matching version of this object.
      * @todo Raise an exception if no such object exist.
@@ -79,6 +79,12 @@ class CcdbDatabase : public DatabaseInterface
     long getCurrentTimestamp();
     std::string getTimestampString(long timestamp);
     long getFutureTimestamp(int secondsInFuture);
+    /**
+     * Return the listing of folder and/or objects in the subpath.
+     * @param subpath The folder we want to list the children of.
+     * @param accept The format of the returned string as an \"Accept\", i.e. text/plain, application/json, text/xml
+     * @return The listing of folder and/or objects in the format requested and as returned by the http server.
+     */
     std::string getListing(std::string subpath = "", std::string accept = "text/plain");
 
     std::string url;

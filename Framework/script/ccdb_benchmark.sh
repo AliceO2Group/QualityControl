@@ -8,14 +8,14 @@ set -u ;# exit when using undeclared variable
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(1);# 5 10 25 50);
-NB_OF_OBJECTS=(1);# 10 100 1000);
-SIZE_OBJECTS=(1);# 10 100 1000);# in kB
+NB_OF_TASKS=(1 5 10 25);# 5 10 25 50);
+NB_OF_OBJECTS=(5);# 10 100 1000);
+SIZE_OBJECTS=(1000);# 10 100 1000);# in kB
 
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
 LOG_FILE_PREFIX=/tmp/logCcdbBenchmark_
-NUMBER_CYCLES=10 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes
+NUMBER_CYCLES=60 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes
 USER=benchmarkCCDB
 TASKS_FULL_ADDRESSES="\
 pcald02a.cern.ch,\
@@ -39,7 +39,7 @@ function startTask {
   echo "Starting task ${name} on host ${host}, logs in ${log_file_name}"
   cmd="ccdbBenchmark --max-iterations ${NUMBER_CYCLES} --id ${name} --mq-config ~/dev/alice/QualityControl/Framework/alfa.json \
         --delete 0 --control static --size-objects ${size_objects} --number-objects ${number_objects} \
-        --task-name ${name} > ${log_file_name} 2>&1 &"
+        --monitoring-url influxdb-udp://aido2mon-gpn.cern.ch:8087 --task-name ${name} > ${log_file_name} 2>&1 &"
   echo ${cmd}
   eval ${cmd}
   pidLastTask=$!
@@ -58,13 +58,16 @@ function killAll {
 }
 
 # Delete the database content
-# \param 1 : number
+# \param 1 : number of tasks
 function cleanDatabase {
-  name=$1
-  cmd="ccdbBenchmark --id test --mq-config ~/dev/alice/QualityControl/Framework/alfa.json --delete 1 --control static \
-       --task-name ${name} > /dev/null 2>&1"
-  echo ${cmd}
-  eval ${cmd}
+  number_tasks=$1
+  for (( task=0; task<$nb_tasks; task++ )); do
+    name=benchmarkTask_${task}
+    cmd="ccdbBenchmark --id test --mq-config ~/dev/alice/QualityControl/Framework/alfa.json --delete 1 --control static \
+         --task-name ${name}" ;# > /dev/null 2>&1"
+    echo ${cmd}
+    eval ${cmd}
+  done
 }
 
 
