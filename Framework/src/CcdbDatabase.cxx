@@ -17,7 +17,6 @@
 #include <regex>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
-#include <curl/curl.h>
 #include <TMessage.h>
 #include <TObjString.h>
 #include <algorithm>
@@ -31,14 +30,23 @@ namespace repository {
 
 using namespace std;
 
+void CcdbDatabase::curlInit()
+{
+  curl_global_init(CURL_GLOBAL_DEFAULT);
+  mCurl = curl_easy_init();
+  mMultiHandle = curl_multi_init();
+}
+
 void CcdbDatabase::connect(std::string host, std::string database, std::string username, std::string password)
 {
-  url = host;
+  mUrl = host;
+  curlInit();
 }
 
 void CcdbDatabase::connect(std::unique_ptr<ConfigurationInterface> &config)
 {
-  url = config->get<string>("qc/config/database/host").value();
+  mUrl = config->get<string>("qc/config/database/host").value();
+  curlInit();
 }
 
 void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
@@ -49,14 +57,16 @@ void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
   message.WriteObjectAny(mo, mo->IsA());
 
   // Prepare URL and filename
-  string fullUrl = url + "/" + mo->getTaskName() + "/" + mo->getName() + "/" + getTimestampString(getCurrentTimestamp())
-                   + "/" + getTimestampString(
-    getFutureTimestamp(60 * 60 * 24 * 365 * 10)); // todo set a proper timestamp for the end
+  string fullUrl =
+    mUrl + "/" + mo->getTaskName() + "/" + mo->getName() + "/" + getTimestampString(getCurrentTimestamp())
+    + "/" + getTimestampString(
+      getFutureTimestamp(60 * 60 * 24 * 365 * 10)); // todo set a proper timestamp for the end
   string tmpFileName = mo->getTaskName() + "_" + mo->getName() + ".root";
+  cout << "fullUrl : " << fullUrl << endl;
 
   // Curl preparation
   CURL *curl;
-  CURLM *multi_handle;
+//  CURLM *multi_handle;
   int still_running;
   struct curl_httppost *formpost = nullptr;
   struct curl_httppost *lastptr = nullptr;
@@ -70,107 +80,155 @@ void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
                CURLFORM_BUFFERLENGTH, message.Length(),
                CURLFORM_END);
 
-  // Curl init
   curl = curl_easy_init();
-  multi_handle = curl_multi_init();
-
-  // Curl magic to send object
-  // See https://curl.haxx.se/libcurl/c/multi-formadd.html for the details.
-  // This piece does not comply to our coding guidelines as it is copy pasted from C example for CURL.
   headerlist = curl_slist_append(headerlist, buf);
-  if (curl && multi_handle) {
+  if (curl) {
+    /* what URL that receives this POST */
     curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
     curl_easy_setopt(curl, CURLOPT_HTTPPOST, formpost);
-//    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
-    curl_multi_add_handle(multi_handle, curl);
-    curl_multi_perform(multi_handle, &still_running);
-
-    do {
-      int rc; /* select() return code */
-      CURLMcode mc; /* curl_multi_fdset() return code */
-      int maxfd = -1;
-      long curl_timeo = -1;
-
-      fd_set fdread;
-      fd_set fdwrite;
-      fd_set fdexcep;
-      FD_ZERO(&fdread);
-      FD_ZERO(&fdwrite);
-      FD_ZERO(&fdexcep);
-
-      /* set a suitable timeout to play around with */
-      struct timeval timeout{1/*tv_sec*/, 0/*tv_usec*/};
-
-      curl_multi_timeout(multi_handle, &curl_timeo);
-      if (curl_timeo >= 0) {
-        timeout.tv_sec = curl_timeo / 1000;
-        if (timeout.tv_sec > 1) {
-          timeout.tv_sec = 1;
-        } else {
-          timeout.tv_usec = (curl_timeo % 1000) * 1000;
-        }
-      }
-
-      /* get file descriptors from the transfers */
-      mc = curl_multi_fdset(multi_handle, &fdread, &fdwrite, &fdexcep, &maxfd);
-
-      if (mc != CURLM_OK) {
-        fprintf(stderr, "curl_multi_fdset() failed, code %d.\n", mc);
-        break;
-      }
-
-      /* On success the value of maxfd is guaranteed to be >= -1. We call
-         select(maxfd + 1, ...); specially in case of (maxfd == -1) there are
-         no fds ready yet so we call select(0, ...) --or Sleep() on Windows--
-         to sleep 100ms, which is the minimum suggested value in the
-         curl_multi_fdset() doc. */
-
-      if (maxfd == -1) {
-        /* Portable sleep for platforms other than Windows. */
-        struct timeval wait = {0, 100 * 1000}; /* 100ms */
-        rc = select(0, nullptr, nullptr, nullptr, &wait);
-      } else {
-        /* Note that on some platforms 'timeout' may be modified by select().
-           If you need access to the original value save a copy beforehand. */
-        rc = select(maxfd + 1, &fdread, &fdwrite, &fdexcep, &timeout);
-      }
-
-      switch (rc) {
-        case -1:
-          /* select error */
-          break;
-        case 0:
-        default:
-          /* timeout or readable/writable sockets */
-          curl_multi_perform(multi_handle, &still_running);
-          break;
-      }
+    /* Perform the request, res will get the return code */
+      CURLcode res = curl_easy_perform(curl);
+    /* Check for errors */
+    if (res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n",
+              curl_easy_strerror(res));
     }
-    while (still_running);
-
-    curl_multi_cleanup(multi_handle);
 
     /* always cleanup */
     curl_easy_cleanup(curl);
 
     /* then cleanup the formpost chain */
     curl_formfree(formpost);
-
     /* free slist */
     curl_slist_free_all(headerlist);
   }
 }
 
-/**
- * Struct to store the data we will receive from the CCDB with CURL.
- */
-struct MemoryStruct
-{
-    char *memory;
-    unsigned int size;
-};
+//void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
+//{
+//
+//  // Serialize the object mo
+//  TMessage message(kMESS_OBJECT);
+//  message.Reset();
+//  message.WriteObjectAny(mo, mo->IsA());
+//
+//  // Prepare URL and filename
+//  string fullUrl = mUrl + "/" + mo->getTaskName() + "/" + mo->getName() + "/" + getTimestampString(getCurrentTimestamp())
+//                   + "/" + getTimestampString(
+//    getFutureTimestamp(60 * 60 * 24 * 365 * 10)); // todo set a proper timestamp for the end
+//  string tmpFileName = mo->getTaskName() + "_" + mo->getName() + ".root";
+//
+//  // Curl preparation
+////  CURL *curl;
+////  CURLM *multi_handle;
+//  int still_running;
+//  struct curl_httppost *formpost = nullptr;
+//  struct curl_httppost *lastptr = nullptr;
+//  struct curl_slist *headerlist = nullptr;
+//  static const char buf[] = "Expect:";
+//  curl_formadd(&formpost,
+//               &lastptr,
+//               CURLFORM_COPYNAME, "send",
+//               CURLFORM_BUFFER, tmpFileName.c_str(),
+//               CURLFORM_BUFFERPTR, message.Buffer(),
+//               CURLFORM_BUFFERLENGTH, message.Length(),
+//               CURLFORM_END);
+//
+//  // Curl init
+////  curl = curl_easy_init();
+////  multi_handle = curl_multi_init();
+//
+//  // Curl magic to send object
+//  // See https://curl.haxx.se/libcurl/c/multi-formadd.html for the details.
+//  // This piece does not comply to our coding guidelines as it is copy pasted from C example for CURL.
+//  headerlist = curl_slist_append(headerlist, buf);
+//  if (mCurl && mMultiHandle) {
+//    curl_easy_setopt(mCurl, CURLOPT_URL, fullUrl.c_str());
+//    curl_easy_setopt(mCurl, CURLOPT_HTTPHEADER, headerlist);
+//    curl_easy_setopt(mCurl, CURLOPT_HTTPPOST, formpost);
+////    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+//
+//    curl_multi_add_handle(mMultiHandle, mCurl);
+//    curl_multi_perform(mMultiHandle, &still_running);
+//
+//    do {
+//      int rc; /* select() return code */
+//      CURLMcode mc; /* curl_multi_fdset() return code */
+//      int maxfd = -1;
+//      long curl_timeo = -1;
+//
+//      fd_set fdread;
+//      fd_set fdwrite;
+//      fd_set fdexcep;
+//      FD_ZERO(&fdread);
+//      FD_ZERO(&fdwrite);
+//      FD_ZERO(&fdexcep);
+//
+//      /* set a suitable timeout to play around with */
+//      struct timeval timeout{1/*tv_sec*/, 0/*tv_usec*/};
+//
+//      curl_multi_timeout(mMultiHandle, &curl_timeo);
+//      if (curl_timeo >= 0) {
+//        timeout.tv_sec = curl_timeo / 1000;
+//        if (timeout.tv_sec > 1) {
+//          timeout.tv_sec = 1;
+//        } else {
+//          timeout.tv_usec = (curl_timeo % 1000) * 1000;
+//        }
+//      }
+//
+//      /* get file descriptors from the transfers */
+//      mc = curl_multi_fdset(mMultiHandle, &fdread, &fdwrite, &fdexcep, &maxfd);
+//
+//      if (mc != CURLM_OK) {
+//        fprintf(stderr, "curl_multi_fdset() failed, code %d.\n", mc);
+//        break;
+//      }
+//
+//      /* On success the value of maxfd is guaranteed to be >= -1. We call
+//         select(maxfd + 1, ...); specially in case of (maxfd == -1) there are
+//         no fds ready yet so we call select(0, ...) --or Sleep() on Windows--
+//         to sleep 100ms, which is the minimum suggested value in the
+//         curl_multi_fdset() doc. */
+//
+//      if (maxfd == -1) {
+//        /* Portable sleep for platforms other than Windows. */
+//        struct timeval wait = {0, 100 * 1000}; /* 100ms */
+//        rc = select(0, nullptr, nullptr, nullptr, &wait);
+//      } else {
+//        /* Note that on some platforms 'timeout' may be modified by select().
+//           If you need access to the original value save a copy beforehand. */
+//        rc = select(maxfd + 1, &fdread, &fdwrite, &fdexcep, &timeout);
+//      }
+//
+//      switch (rc) {
+//        case -1:
+//          /* select error */
+//          break;
+//        case 0:
+//        default:
+//          /* timeout or readable/writable sockets */
+//          curl_multi_perform(mMultiHandle, &still_running);
+//          break;
+//      }
+//    }
+//    while (still_running);
+//
+//
+////    curl_multi_cleanup(multi_handle);
+////
+////    /* always cleanup */
+////    curl_easy_cleanup(curl);
+//
+//    /* then cleanup the formpost chain */
+//    curl_formfree(formpost);
+//
+//    /* free slist */
+//    curl_slist_free_all(headerlist);
+//  }
+//}
 
 /**
  * Callback used by CURL to store the data received from the CCDB.
@@ -199,13 +257,22 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
   return realsize;
 }
 
+/**
+ * Struct to store the data we will receive from the CCDB with CURL.
+ */
+struct MemoryStruct
+{
+    char *memory;
+    unsigned int size;
+};
+
 core::MonitorObject *CcdbDatabase::retrieve(std::string taskName, std::string objectName)
 {
   // Note : based on https://curl.haxx.se/libcurl/c/getinmemory.html
   // Thus it does not comply to our coding guidelines as it is a copy paste.
 
   // Prepare CURL
-  string fullUrl = url + "/" + taskName + "/" + objectName + "/" + getTimestampString(getCurrentTimestamp());
+  string fullUrl = mUrl + "/" + taskName + "/" + objectName + "/" + getTimestampString(getCurrentTimestamp());
   CURL *curl_handle;
   CURLcode res;
   struct MemoryStruct chunk{(char *) malloc(1)/*memory*/, 0/*size*/};
@@ -279,15 +346,15 @@ core::MonitorObject *CcdbDatabase::retrieve(std::string taskName, std::string ob
 
   free(chunk.memory);
 
-  /* we're done with libcurl, so clean it up */
-  curl_global_cleanup();
-
   return mo;
 }
 
 void CcdbDatabase::disconnect()
 {
-  // NOOP for CCDB
+  /* we're done with libcurl, so clean it up */
+  curl_multi_cleanup(mMultiHandle);
+  curl_easy_cleanup(mCurl);
+  curl_global_cleanup();
 }
 
 void CcdbDatabase::prepareTaskDataContainer(std::string taskName)
@@ -315,10 +382,8 @@ std::string CcdbDatabase::getListing(std::string subpath, std::string accept)
 {
   CURL *curl;
   CURLcode res;
-  string fullUrl = url + "/browse/" + subpath;
+  string fullUrl = mUrl + "/browse/" + subpath;
   std::string tempString;
-
-  curl_global_init(CURL_GLOBAL_DEFAULT);
 
   curl = curl_easy_init();
   if (curl != nullptr) {
@@ -391,10 +456,8 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
   std::vector<string> result;
   CURL *curl;
   CURLcode res;
-  string fullUrl = url + "/latest/" + taskName + "/.*";
+  string fullUrl = mUrl + "/latest/" + taskName + "/.*";
   std::string tempString;
-
-  curl_global_init(CURL_GLOBAL_DEFAULT);
 
   curl = curl_easy_init();
   if (curl != nullptr) {
@@ -469,9 +532,7 @@ void CcdbDatabase::deleteObjectVersion(std::string taskName, std::string objectN
   CURL *curl;
   CURLcode res;
   stringstream fullUrl;
-  fullUrl << url << "/" << taskName << "/" << objectName << "/" << timestamp;
-
-  curl_global_init(CURL_GLOBAL_DEFAULT);
+  fullUrl << mUrl << "/" << taskName << "/" << objectName << "/" << timestamp;
 
   curl = curl_easy_init();
   if (curl != nullptr) {
@@ -494,9 +555,7 @@ void CcdbDatabase::truncateObject(std::string taskName, std::string objectName)
   CURL *curl;
   CURLcode res;
   stringstream fullUrl;
-  fullUrl << url << "/truncate/" << taskName << "/" << objectName;
-
-  curl_global_init(CURL_GLOBAL_DEFAULT);
+  fullUrl << mUrl << "/truncate/" << taskName << "/" << objectName;
 
   curl = curl_easy_init();
   if (curl != nullptr) {

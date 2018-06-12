@@ -19,6 +19,7 @@
 #include <ctime>
 #include <chrono>
 #include "QualityControl/DatabaseInterface.h"
+#include <curl/curl.h>
 
 namespace o2 {
 namespace quality_control {
@@ -87,7 +88,10 @@ class CcdbDatabase : public DatabaseInterface
      */
     std::string getListing(std::string subpath = "", std::string accept = "text/plain");
 
-    std::string url;
+    std::string mUrl;
+    CURL *mCurl;
+    CURLM *mMultiHandle;
+    void curlInit();
 };
 
 }

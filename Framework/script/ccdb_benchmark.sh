@@ -43,7 +43,7 @@ function startTask {
   number_tasks=$6
   log_file_name=${LOG_FILE_PREFIX}${log_file_suffix}.log
   echo "Starting task ${name} on host ${host}, logs in ${log_file_name}"
-  cmd="cd alice ; alienv setenv QualityControl/latest -c ccdbBenchmark --max-iterations ${NUMBER_CYCLES} \
+  cmd="cd alice ; alienv setenv --no-refresh QualityControl/latest -c ccdbBenchmark --max-iterations ${NUMBER_CYCLES} \
         --id ${name} --mq-config ~/alice/QualityControl/Framework/alfa.json --number-tasks ${number_tasks}\
         --delete 0 --control static --size-objects ${size_objects} --number-objects ${number_objects} \
         --monitoring-url influxdb-udp://aido2mon-gpn.cern.ch:8087 --task-name ${name} > ${log_file_name} 2>&1 "
@@ -104,9 +104,9 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
         node_index=$((task%${#NODES[@]}))
 
         # wait a bit between rounds on the machines because alienv is stupid
-        if (( node_index == $((${#NODES[@]}-1)) )); then
-          sleep 3
-        fi
+#        if (( node_index == $((${#NODES[@]}-1)) )); then
+#          sleep 3
+#        fi
 
         startTask "${NODES[$node_index]}" benchmarkTask_${task} \
                   "benchmarkTask_${task}_${nb_tasks}_${nb_objects}_${size_objects}" \
