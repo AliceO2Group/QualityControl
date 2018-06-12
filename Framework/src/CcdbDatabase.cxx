@@ -230,6 +230,16 @@ void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
 //  }
 //}
 
+
+/**
+ * Struct to store the data we will receive from the CCDB with CURL.
+ */
+struct MemoryStruct
+{
+    char *memory;
+    unsigned int size;
+};
+
 /**
  * Callback used by CURL to store the data received from the CCDB.
  * See https://curl.haxx.se/libcurl/c/getinmemory.html
@@ -256,15 +266,6 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 
   return realsize;
 }
-
-/**
- * Struct to store the data we will receive from the CCDB with CURL.
- */
-struct MemoryStruct
-{
-    char *memory;
-    unsigned int size;
-};
 
 core::MonitorObject *CcdbDatabase::retrieve(std::string taskName, std::string objectName)
 {
