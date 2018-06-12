@@ -8,14 +8,14 @@ set -u ;# exit when using undeclared variable
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(1) ;#1 2 5 10 25 50 100);
-NB_OF_OBJECTS=(10 100 200);# 10 100 1000);
+NB_OF_TASKS=(1 10) ;#1 2 5 10 25 50 100);
+NB_OF_OBJECTS=(10 100);# 10 100 1000);
 SIZE_OBJECTS=(1);# 10 100 1000);# in kB
 
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
 LOG_FILE_PREFIX=/tmp/logCcdbBenchmark_
-NUMBER_CYCLES=120 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes
+NUMBER_CYCLES=60 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes
 NODES=(
 #"aldaqci@aidrefflp01"
 "ccdb@barth-ccdb-606a6b90-1d83-48d5-8e46-ca72a63fc586"

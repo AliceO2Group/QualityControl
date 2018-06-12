@@ -62,7 +62,6 @@ void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
     + "/" + getTimestampString(
       getFutureTimestamp(60 * 60 * 24 * 365 * 10)); // todo set a proper timestamp for the end
   string tmpFileName = mo->getTaskName() + "_" + mo->getName() + ".root";
-  cout << "fullUrl : " << fullUrl << endl;
 
   // Curl preparation
   CURL *curl;
