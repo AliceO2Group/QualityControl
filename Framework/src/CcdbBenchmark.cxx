@@ -70,9 +70,11 @@ void CcdbBenchmark::InitTask()
   mMonitoring->addGlobalTag("taskName", mTaskName);
   mMonitoring->addGlobalTag("numberObject", to_string(mNumberObjects));
   mMonitoring->addGlobalTag("sizeObject", to_string(mSizeObjects));
-  mMonitoring->send({mNumberObjects, "param-number-objects"});
-  mMonitoring->send({mSizeObjects, "param-size-objects"});
-  mMonitoring->send({numberTasks, "param-number-tasks"});
+  if(mTaskName == "benchmarkTask_0") { // send these parameters to monitoring only once per benchmark run
+    mMonitoring->send({mNumberObjects, "param-number-objects"});
+    mMonitoring->send({mSizeObjects, "param-size-objects"});
+    mMonitoring->send({numberTasks, "param-number-tasks"});
+  }
 
   if (mDeletionMode) {
     QcInfoLogger::GetInstance() << "Deletion mode..." << infologger::endm;

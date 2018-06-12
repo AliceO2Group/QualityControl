@@ -33,16 +33,18 @@ NODES=(
 # \param 3 : log file suffix
 # \param 4 : size of the objects
 # \param 5 : number of objects
+# \param 6 : number of tasks
 function startTask {
   host=$1
   name=$2
   log_file_suffix=$3
   size_objects=$4
   number_objects=$5
+  number_tasks=$6
   log_file_name=${LOG_FILE_PREFIX}${log_file_suffix}.log
   echo "Starting task ${name} on host ${host}, logs in ${log_file_name}"
   cmd="cd alice ; alienv setenv QualityControl/latest -c ccdbBenchmark --max-iterations ${NUMBER_CYCLES} \
-        --id ${name} --mq-config ~/alice/QualityControl/Framework/alfa.json \
+        --id ${name} --mq-config ~/alice/QualityControl/Framework/alfa.json --number-tasks ${number_tasks}\
         --delete 0 --control static --size-objects ${size_objects} --number-objects ${number_objects} \
         --monitoring-url influxdb-udp://aido2mon-gpn.cern.ch:8087 --task-name ${name} > ${log_file_name} 2>&1 "
   echo "ssh ${host} \"${cmd}\" &"
@@ -103,7 +105,7 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
         echo "node_index : $node_index"
         startTask "${NODES[$node_index]}" benchmarkTask_${task} \
                   "benchmarkTask_${task}_${nb_tasks}_${nb_objects}_${size_objects}" \
-                  ${size_objects} ${nb_objects}
+                  ${size_objects} ${nb_objects} ${nb_tasks}
         TASKS_PIDS+=($pidLastTask)
       done
 
