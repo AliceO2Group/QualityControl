@@ -63,12 +63,16 @@ void CcdbBenchmark::InitTask()
   mDeletionMode = static_cast<bool>(fConfig->GetValue<int>("delete"));
   mTaskName = fConfig->GetValue<string>("task-name");
   mObjectName = fConfig->GetValue<string>("object-name");
+  uint64_t numberTasks = fConfig->GetValue<uint64_t>("number-tasks");
 
   mMonitoring = MonitoringFactory::Get(fConfig->GetValue<string>("monitoring-url"));
   mMonitoring->enableProcessMonitoring(1); // collect every seconds metrics for this process
   mMonitoring->addGlobalTag("taskName", mTaskName);
   mMonitoring->addGlobalTag("numberObject", to_string(mNumberObjects));
   mMonitoring->addGlobalTag("sizeObject", to_string(mSizeObjects));
+  mMonitoring->send({mNumberObjects, "param-number-objects"});
+  mMonitoring->send({mSizeObjects, "param-size-objects"});
+  mMonitoring->send({numberTasks, "param-number-tasks"});
 
   if (mDeletionMode) {
     QcInfoLogger::GetInstance() << "Deletion mode..." << infologger::endm;
@@ -104,7 +108,7 @@ bool CcdbBenchmark::ConditionalRun()
   high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
   // Store the object
-  for(int i = 0 ; i < mNumberObjects ; i++) {
+  for(unsigned int i = 0 ; i < mNumberObjects ; i++) {
     mDatabase->store(mMyObject);
   }
   mTotalNumberObjects+=mNumberObjects;

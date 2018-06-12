@@ -8,18 +8,22 @@ set -u ;# exit when using undeclared variable
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(1 5 10 25);# 5 10 25 50);
-NB_OF_OBJECTS=(5);# 10 100 1000);
-SIZE_OBJECTS=(1000);# 10 100 1000);# in kB
+NB_OF_TASKS=(1);# 5 10 25 50);
+NB_OF_OBJECTS=(10);# 10 100 1000);
+SIZE_OBJECTS=(1);# 10 100 1000);# in kB
 
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
 LOG_FILE_PREFIX=/tmp/logCcdbBenchmark_
 NUMBER_CYCLES=60 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes
-USER=benchmarkCCDB
-TASKS_FULL_ADDRESSES="\
-pcald02a.cern.ch,\
-" ;# comma delimited, no space
+NODES=(
+#"aldaqci@aidrefflp01"
+"ccdb@barth-ccdb-606a6b90-1d83-48d5-8e46-ca72a63fc586"
+"ccdb@barth-ccdb-6f859d93-034c-4151-a4c8-571be0fe90f5"
+"ccdb@barth-ccdb-c518e99c-c05c-4066-a5dd-63613755985f"
+"ccdb@barth-ccdb-1394cef1-a627-4cf0-944f-40bf63f62ce1"
+"ccdb@barth-ccdb-a53241f0-f9f5-4862-8bca-66c081f7bd14"
+) ;# space delimited
 
 
 ### Utility functions
@@ -37,11 +41,12 @@ function startTask {
   number_objects=$5
   log_file_name=${LOG_FILE_PREFIX}${log_file_suffix}.log
   echo "Starting task ${name} on host ${host}, logs in ${log_file_name}"
-  cmd="ccdbBenchmark --max-iterations ${NUMBER_CYCLES} --id ${name} --mq-config ~/dev/alice/QualityControl/Framework/alfa.json \
+  cmd="cd alice ; alienv setenv QualityControl/latest -c ccdbBenchmark --max-iterations ${NUMBER_CYCLES} \
+        --id ${name} --mq-config ~/alice/QualityControl/Framework/alfa.json \
         --delete 0 --control static --size-objects ${size_objects} --number-objects ${number_objects} \
-        --monitoring-url influxdb-udp://aido2mon-gpn.cern.ch:8087 --task-name ${name} > ${log_file_name} 2>&1 &"
-  echo ${cmd}
-  eval ${cmd}
+        --monitoring-url influxdb-udp://aido2mon-gpn.cern.ch:8087 --task-name ${name} > ${log_file_name} 2>&1 "
+  echo "ssh ${host} \"${cmd}\" &"
+  ssh ${host} "${cmd}" &
   pidLastTask=$!
 }
 
@@ -54,7 +59,7 @@ function killAll {
     host=$2
     extra=${3:-""}
     echo "Killing all processes called $name on $host"
-    ssh ${USER}@${host} "killall ${extra} ${name}  > /dev/null 2>&1" &
+    ssh ${host} "killall ${extra} ${name}> /dev/null 2>&1 || true" ;# ignore errors
 }
 
 # Delete the database content
@@ -80,10 +85,10 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
       Launching test for $nb_tasks tasks, $nb_objects objects, $size_objects kB objects"
 
       echo "Kill all old processes"
-      #for (( task=0; task<$nb_tasks; task++ )); do
-        killall -9 ccdbBenchmark || true ;# ignore errors
-#        killAll "ccdbBenchmark" ${NODES_TASKS[${task}]} "-9"
-      #done
+      for machine in ${NODES[@]}; do
+#        killall -9 ccdbBenchmark || true ;# ignore errors
+        killAll "ccdbBenchmark" ${machine} "-9"
+      done
 
       echo "Delete database content"
       cleanDatabase $nb_tasks
@@ -92,7 +97,11 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
 
       for (( task=0; task<$nb_tasks; task++ )); do
         echo "*** ~~~ *** Start task"
-        startTask "localhost" benchmarkTask_${task} \
+
+        # select a node for this task : task % #node -> index of node
+        node_index=$((task%${#NODES[@]}))
+        echo "node_index : $node_index"
+        startTask "${NODES[$node_index]}" benchmarkTask_${task} \
                   "benchmarkTask_${task}_${nb_tasks}_${nb_objects}_${size_objects}" \
                   ${size_objects} ${nb_objects}
         TASKS_PIDS+=($pidLastTask)
@@ -103,10 +112,10 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
 
       sleep 5 # leave time to finish
 
-      #for (( task=0; task<$nb_tasks; task++ )); do
-        killall -9 ccdbBenchmark || true ;# ignore errors
-        #killAll "qcTaskLauncher" ${NODES_TASKS[${task}]}
-     # done
+      for machine in ${NODES[@]}; do
+#        killall -9 ccdbBenchmark || true ;# ignore errors
+        killAll "ccdbBenchmark" ${machine} "-9"
+      done
 
       sleep 5 # leave time to finish
 
