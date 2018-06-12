@@ -8,14 +8,14 @@ set -u ;# exit when using undeclared variable
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(1);# 5 10 25 50);
-NB_OF_OBJECTS=(10);# 10 100 1000);
+NB_OF_TASKS=(1 2 5 10 25 50 100);
+NB_OF_OBJECTS=(9);# 10 100 1000);
 SIZE_OBJECTS=(1);# 10 100 1000);# in kB
 
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
 LOG_FILE_PREFIX=/tmp/logCcdbBenchmark_
-NUMBER_CYCLES=60 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes
+NUMBER_CYCLES=120 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes
 NODES=(
 #"aldaqci@aidrefflp01"
 "ccdb@barth-ccdb-606a6b90-1d83-48d5-8e46-ca72a63fc586"
@@ -102,7 +102,12 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
 
         # select a node for this task : task % #node -> index of node
         node_index=$((task%${#NODES[@]}))
-        echo "node_index : $node_index"
+
+        # wait a bit between rounds on the machines because alienv is stupid
+        if (( node_index == $((${#NODES[@]}-1)) )); then
+          sleep 3
+        fi
+
         startTask "${NODES[$node_index]}" benchmarkTask_${task} \
                   "benchmarkTask_${task}_${nb_tasks}_${nb_objects}_${size_objects}" \
                   ${size_objects} ${nb_objects} ${nb_tasks}

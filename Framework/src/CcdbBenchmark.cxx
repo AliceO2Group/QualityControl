@@ -48,7 +48,7 @@ void CcdbBenchmark::InitTask()
   // parse arguments
   try {
     string db = fConfig->GetValue<string>("ccdb-url");
-    mDatabase = dynamic_cast<CcdbDatabase*>(o2::quality_control::repository::DatabaseFactory::create("CCDB"));
+    mDatabase = dynamic_cast<CcdbDatabase *>(o2::quality_control::repository::DatabaseFactory::create("CCDB"));
     mDatabase->connect(db, "", "", "");
   } catch (boost::exception &exc) {
     string diagnostic = boost::current_exception_diagnostic_information();
@@ -70,10 +70,10 @@ void CcdbBenchmark::InitTask()
   mMonitoring->addGlobalTag("taskName", mTaskName);
   mMonitoring->addGlobalTag("numberObject", to_string(mNumberObjects));
   mMonitoring->addGlobalTag("sizeObject", to_string(mSizeObjects));
-  if(mTaskName == "benchmarkTask_0") { // send these parameters to monitoring only once per benchmark run
-    mMonitoring->send({mNumberObjects, "param-number-objects"});
-    mMonitoring->send({mSizeObjects, "param-size-objects"});
-    mMonitoring->send({numberTasks, "param-number-tasks"});
+  if (mTaskName == "benchmarkTask_0") { // send these parameters to monitoring only once per benchmark run
+    mMonitoring->sendGrouped("ccdb-benchmark-parameters", {{mNumberObjects, "number-objects"},
+                                                            {mSizeObjects,   "size-objects"},
+                                                            {numberTasks,    "number-tasks"}});
   }
 
   if (mDeletionMode) {
@@ -110,21 +110,21 @@ bool CcdbBenchmark::ConditionalRun()
   high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
   // Store the object
-  for(unsigned int i = 0 ; i < mNumberObjects ; i++) {
+  for (unsigned int i = 0; i < mNumberObjects; i++) {
     mDatabase->store(mMyObject);
   }
-  mTotalNumberObjects+=mNumberObjects;
+  mTotalNumberObjects += mNumberObjects;
   mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
 
   high_resolution_clock::time_point t2 = high_resolution_clock::now();
   long duration = duration_cast<milliseconds>(t2 - t1).count();
-  mMonitoring->send({duration/mNumberObjects, "storeDurationForOneObject_ms"}, DerivedMetricMode::NONE);
+  mMonitoring->send({duration / mNumberObjects, "storeDurationForOneObject_ms"}, DerivedMetricMode::NONE);
 
   // determine how long we should wait till next iteration in order to have 1 sec between storage
   auto duration2 = duration_cast<microseconds>(t2 - t1);
   auto remaining = duration_cast<microseconds>(std::chrono::seconds(1) - duration2);
 //  QcInfoLogger::GetInstance() << "Remaining duration : " << remaining.count() << " us" << infologger::endm;
-  if(remaining.count() < 0) {
+  if (remaining.count() < 0) {
     QcInfoLogger::GetInstance() << "Remaining duration is negative, we don't sleep " << infologger::endm;
   } else {
     this_thread::sleep_for(chrono::microseconds(remaining));
