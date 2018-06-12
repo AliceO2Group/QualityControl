@@ -24,8 +24,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <QualityControl/CcdbDatabase.h>
+#include <QualityControl/MonitorObject.h>
+#include <TH1F.h>
 
 using namespace std;
+using namespace o2::quality_control::core;
 
 namespace o2 {
 namespace quality_control {
@@ -55,14 +58,42 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
 {
   DatabaseInterface *database3 = DatabaseFactory::create("CCDB");
   BOOST_CHECK(database3);
-  BOOST_CHECK(dynamic_cast<CcdbDatabase*>(database3));
+  auto *ccdb = dynamic_cast<CcdbDatabase*>(database3);
+  BOOST_CHECK(ccdb);
 
-  database3->connect("ccdb-test.cern.ch:8080", "", "", "");
-  std::vector<std::string> list = database3->getListOfTasksWithPublications();
+  ccdb->connect("ccdb-test.cern.ch:8080", "", "", "");
 
-  for(auto item : list) {
-    cout << "item : " << item << endl;
+  // prepare stuff in the db
+  ccdb->truncateObject("functional_test", "object1");
+  ccdb->truncateObject("functional_test", "object2");
+  ccdb->truncateObject("functional_test", "path/to/object3");
+  auto *h1 = new TH1F("object1", "object1", 100, 0, 99);
+  auto *h2 = new TH1F("object2", "object2", 100, 0, 99);
+  auto *h3 = new TH1F("object3", "object3", 100, 0, 99);
+  MonitorObject *mo1 = new MonitorObject("object1", h1, "functional_test");
+  MonitorObject *mo2 = new MonitorObject("object2", h2, "functional_test");
+  MonitorObject *mo3 = new MonitorObject("path/to/object3", h3, "functional_test");
+  ccdb->store(mo1);
+  ccdb->store(mo2);
+  ccdb->store(mo3);
+
+  // test getting list of tasks
+  std::vector<std::string> list = ccdb->getListOfTasksWithPublications();
+  for(const auto &item : list) {
+    cout << "task : " << item << endl;
   }
+  BOOST_CHECK(std::find(list.begin(), list.end(), "functional_test") != list.end());
+
+  // test getting objects list from task
+  auto objectNames = ccdb->getPublishedObjectNames("functional_test");
+  cout << "objects in task functional_test" << endl;
+  for (auto name : objectNames) {
+    cout << " - object : " << name << endl;
+  }
+  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "object1") != objectNames.end());
+  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "object2") != objectNames.end());
+  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "path/to/object3") != objectNames.end());
+
 }
 
 /*

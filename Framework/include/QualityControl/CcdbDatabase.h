@@ -19,6 +19,7 @@
 #include <ctime>
 #include <chrono>
 #include "QualityControl/DatabaseInterface.h"
+#include <curl/curl.h>
 
 namespace o2 {
 namespace quality_control {
@@ -60,14 +61,37 @@ class CcdbDatabase : public DatabaseInterface
     void prepareTaskDataContainer(std::string taskName) override;
     std::vector<std::string> getListOfTasksWithPublications() override;
     std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
+    /**
+     * Delete all the versions of the specified object.
+     * @param taskName
+     * @param objectName
+     */
+    void truncateObject(std::string taskName, std::string objectName);
+    /**
+     * Delete the matching version of this object.
+     * @todo Raise an exception if no such object exist.
+     * @param taskName
+     * @param objectName
+     * @param timestamp
+     */
+    void deleteObjectVersion(std::string taskName, std::string objectName, std::string timestamp);
 
   private:
     long getCurrentTimestamp();
     std::string getTimestampString(long timestamp);
     long getFutureTimestamp(int secondsInFuture);
-    std::string getListing(std::string subpath = "");
+    /**
+     * Return the listing of folder and/or objects in the subpath.
+     * @param subpath The folder we want to list the children of.
+     * @param accept The format of the returned string as an \"Accept\", i.e. text/plain, application/json, text/xml
+     * @return The listing of folder and/or objects in the format requested and as returned by the http server.
+     */
+    std::string getListing(std::string subpath = "", std::string accept = "text/plain");
 
-    std::string url;
+    std::string mUrl;
+    CURL *mCurl;
+    CURLM *mMultiHandle;
+    void curlInit();
 };
 
 }

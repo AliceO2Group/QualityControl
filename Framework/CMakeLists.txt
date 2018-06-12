@@ -11,15 +11,9 @@ project(QualityControl)
 include(O2Utils)
 include(QualityControlDependencies)
 
-# TODO make it required, once in its own repo
-if(ROOT_FOUND)
-    message(STATUS "ROOT ${ROOT_VERSION} found in '${ROOTSYS}'")
-    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ROOTSYS}/share/root/cmake/modules)
-    include(RootNewMacros)
-else()
-    message(WARNING "ROOT not found, we won't compile the QC (skip, no error)")
-    return()
-endif()
+message(STATUS "ROOT ${ROOT_VERSION} found in '${ROOTSYS}'")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ROOTSYS}/share/root/cmake/modules)
+include(RootNewMacros)
 
 # Set the default build type to "RelWithDebInfo"
 if(NOT CMAKE_BUILD_TYPE)
@@ -78,6 +72,7 @@ set(SRCS
         src/TaskDataProcessor.cxx
         src/TaskDataProcessorFactory.cxx
         src/TaskInterfaceDPL.cxx
+        src/CcdbBenchmark.cxx
         )
 
 set(HEADERS # needed for the dictionary generation
@@ -170,45 +165,48 @@ O2_GENERATE_EXECUTABLE(
         BUCKET_NAME ${BUCKET_NAME}
 )
 
-if (FAIRROOT_FOUND)
-    O2_GENERATE_EXECUTABLE(
-            EXE_NAME alfaTestReceiver
-            SOURCES src/alfaTestReceiver.cxx
-            MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-            BUCKET_NAME ${BUCKET_NAME}
-    )
-
-    O2_GENERATE_EXECUTABLE(
-            EXE_NAME qcConsumer
-            SOURCES src/Consumer.cxx
-            MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-            BUCKET_NAME ${BUCKET_NAME}
-    )
-endif()
-
-if(ROOT_FOUND) # TODO remove this once we have our own repo
-    set(TEST_SRCS
-            test/testDbFactory.cxx
-            test/testMonitorObject.cxx
-            test/testPublisher.cxx
-            test/testQcInfoLogger.cxx
-            test/testQCTask.cxx
-            test/testQuality.cxx
-            )
-
-    O2_GENERATE_TESTS(
-            MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-            BUCKET_NAME ${BUCKET_NAME}
-            TEST_SRCS ${TEST_SRCS}
-    )
-
-    O2_GENERATE_EXECUTABLE(
-        EXE_NAME "tobject2json"
-        SOURCES ${SRCS_TOBJECT2JSON}
+O2_GENERATE_EXECUTABLE(
+        EXE_NAME alfaTestReceiver
+        SOURCES src/alfaTestReceiver.cxx
         MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME "o2_qc_tobject2json"
-    )
-endif()
+        BUCKET_NAME ${BUCKET_NAME}
+)
+
+O2_GENERATE_EXECUTABLE(
+        EXE_NAME qcConsumer
+        SOURCES src/Consumer.cxx
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME ${BUCKET_NAME}
+)
+
+O2_GENERATE_EXECUTABLE(
+        EXE_NAME ccdbBenchmark
+        SOURCES src/runCcdbBenchmark.cxx
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME ${BUCKET_NAME}
+)
+
+set(TEST_SRCS
+        test/testDbFactory.cxx
+        test/testMonitorObject.cxx
+        test/testPublisher.cxx
+        test/testQcInfoLogger.cxx
+        test/testQCTask.cxx
+        test/testQuality.cxx
+        )
+
+O2_GENERATE_TESTS(
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME ${BUCKET_NAME}
+        TEST_SRCS ${TEST_SRCS}
+)
+
+O2_GENERATE_EXECUTABLE(
+    EXE_NAME "tobject2json"
+    SOURCES ${SRCS_TOBJECT2JSON}
+    MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+    BUCKET_NAME "o2_qc_tobject2json"
+)
 
 # Install extra scripts
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)

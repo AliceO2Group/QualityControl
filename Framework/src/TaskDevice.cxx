@@ -62,9 +62,14 @@ TaskDevice::TaskDevice(std::string taskName, std::string configurationSource) : 
                                                                                 mTotalNumberObjectsPublished(0)
 {
   // setup configuration
-  mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-  populateConfig(mTaskName);
-
+  try {
+    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
+    populateConfig(mTaskName);
+  } catch (...) {
+    string diagnostic = boost::current_exception_diagnostic_information();
+    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
+    throw; // we can't do much , let's just fail
+  }
   // setup monitoring
   mCollector = MonitoringFactory::Get("infologger://");
 
@@ -103,7 +108,8 @@ void TaskDevice::populateConfig(std::string taskName)
     mTaskConfig.taskName = taskName;
     mTaskConfig.moduleName = mConfigFile->get<string>(prefix + taskDefinitionName + "/moduleName").value();
     mTaskConfig.className = mConfigFile->get<string>(prefix + taskDefinitionName + "/className").value();
-    mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(prefix + taskDefinitionName + "/cycleDurationSeconds").value_or(10);
+    mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(
+      prefix + taskDefinitionName + "/cycleDurationSeconds").value_or(10);
     mTaskConfig.maxNumberCycles = mConfigFile->get<int>(prefix + taskDefinitionName + "/maxNumberCycles").value_or(-1);
   } catch (...) { // catch already here the configuration exception and print it
     // because if we are in a constructor, the exception could be lost
@@ -144,9 +150,9 @@ void TaskDevice::Run()
     // if 10 s we publish stats
     if (timer.isTimeout()) {
       double current = timer.getTime();
-      int objectsPublished = (mTotalNumberObjectsPublished-lastNumberObjects);
+      int objectsPublished = (mTotalNumberObjectsPublished - lastNumberObjects);
       lastNumberObjects = mTotalNumberObjectsPublished;
-      mCollector->send({objectsPublished/current, "QC_task_Rate_objects_published_per_10_seconds"});
+      mCollector->send({objectsPublished / current, "QC_task_Rate_objects_published_per_10_seconds"});
       timer.increment();
     }
   }
@@ -183,8 +189,10 @@ void TaskDevice::monitorCycle()
   mCollector->send({numberBlocks, "QC_task_Numberofblocks_in_cycle"});
   mCollector->send({durationCycle, "QC_task_Module_cycle_duration"});
   mCollector->send({durationPublication, "QC_task_Publication_duration"});
-  mCollector->send({(int) numberObjectsPublished,
-                   "QC_task_Number_objects_published_in_cycle"}); // cast due to Monitoring accepting only int
+  mCollector->send({
+                     (int) numberObjectsPublished,
+                     "QC_task_Number_objects_published_in_cycle"
+                   }); // cast due to Monitoring accepting only int
   double rate = numberObjectsPublished / (durationCycle + durationPublication);
   mCollector->send({rate, "QC_task_Rate_objects_published_per_second"});
   mTotalNumberObjectsPublished += numberObjectsPublished;
@@ -235,13 +243,15 @@ void TaskDevice::Reset()
 void TaskDevice::startOfActivity()
 {
   timerTotalDurationActivity.reset();
-  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(), mConfigFile->get<int>("qc/config/Activity/type").value());
+  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(),
+                    mConfigFile->get<int>("qc/config/Activity/type").value());
   mTask->startOfActivity(activity);
 }
 
 void TaskDevice::endOfActivity()
 {
-  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(), mConfigFile->get<int>("qc/config/Activity/type").value());
+  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(),
+                    mConfigFile->get<int>("qc/config/Activity/type").value());
   mTask->endOfActivity(activity);
 
   double rate = mTotalNumberObjectsPublished / timerTotalDurationActivity.getTime();
@@ -252,7 +262,7 @@ void TaskDevice::endOfActivity()
 
 void TaskDevice::sendToInformationService(string objectsListString)
 {
-  string* text = new std::string(mTaskName);
+  string *text = new std::string(mTaskName);
   *text += ":" + objectsListString;
   // todo escape names with a comma or a colon
 
@@ -260,10 +270,10 @@ void TaskDevice::sendToInformationService(string objectsListString)
   // its size,
   // custom deletion function (called when transfer is done),
   // and pointer to the object managing the data buffer
-  FairMQMessagePtr msg(NewMessage(const_cast<char*>(text->c_str()),
-                                   text->length(),
-                                   [](void* /*data*/, void* object) { delete static_cast<string*>(object); },
-                                   text));
+  FairMQMessagePtr msg(NewMessage(const_cast<char *>(text->c_str()),
+                                  text->length(),
+                                  [](void * /*data*/, void *object) { delete static_cast<string *>(object); },
+                                  text));
 
   LOG(info) << "Sending \"" << *text << "\"";
   LOG(info) << " llength : " << text->length();
@@ -271,9 +281,8 @@ void TaskDevice::sendToInformationService(string objectsListString)
   // in case of error or transfer interruption, return false to go to IDLE state
   // successfull transfer will return number of bytes transfered (can be 0 if sending an empty message).
   int ret = Send(msg, "information-service-out");
-  if(ret < 0)
-  {
-      LOG(error) << "Error sending" << endl;
+  if (ret < 0) {
+    LOG(error) << "Error sending" << endl;
   }
 
 }
