@@ -63,7 +63,7 @@ void CcdbBenchmark::InitTask()
   mDeletionMode = static_cast<bool>(fConfig->GetValue<int>("delete"));
   mTaskName = fConfig->GetValue<string>("task-name");
   mObjectName = fConfig->GetValue<string>("object-name");
-  uint64_t numberTasks = fConfig->GetValue<uint64_t>("number-tasks");
+  auto numberTasks = fConfig->GetValue<uint64_t>("number-tasks");
 
   mMonitoring = MonitoringFactory::Get(fConfig->GetValue<string>("monitoring-url"));
   mMonitoring->enableProcessMonitoring(1); // collect every seconds metrics for this process
@@ -81,6 +81,7 @@ void CcdbBenchmark::InitTask()
     emptyDatabase();
   }
 
+  // Prepare objects (and clean up existing ones)
   switch (mSizeObjects) {
     case 1:
       mMyHisto = new TH1F("h", "h", 100, 0, 99); // 1kB
@@ -98,7 +99,11 @@ void CcdbBenchmark::InitTask()
       BOOST_THROW_EXCEPTION(
         FatalException() << errinfo_details("size of histo must be 1, 10, 100 or 1000, not " + mSizeObjects));
   }
-  mMyObject = new MonitorObject(mObjectName, mMyHisto, mTaskName);
+  for(uint64_t i = 0 ; i < mNumberObjects ; i++) {
+    MonitorObject *mo = new MonitorObject(mObjectName+to_string(i), mMyHisto, mTaskName);
+    mMyObjects.push_back(mo);
+    mDatabase->truncateObject(mTaskName, mObjectName+to_string(i));
+  }
 }
 
 bool CcdbBenchmark::ConditionalRun()
@@ -111,7 +116,7 @@ bool CcdbBenchmark::ConditionalRun()
 
   // Store the object
   for (unsigned int i = 0; i < mNumberObjects; i++) {
-    mDatabase->store(mMyObject);
+    mDatabase->store(mMyObjects[i]);
   }
   mTotalNumberObjects += mNumberObjects;
   mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);

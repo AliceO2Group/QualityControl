@@ -49,7 +49,7 @@ class CcdbBenchmark : public FairMQDevice
 
     bool mDeletionMode;
     o2::quality_control::repository::CcdbDatabase* mDatabase;
-    MonitorObject *mMyObject;
+    std::vector<MonitorObject*> mMyObjects;
     TH1 *mMyHisto;
 };
 

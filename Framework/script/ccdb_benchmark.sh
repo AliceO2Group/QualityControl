@@ -8,8 +8,8 @@ set -u ;# exit when using undeclared variable
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(1 2 5 10 25 50 100);
-NB_OF_OBJECTS=(9);# 10 100 1000);
+NB_OF_TASKS=(1) ;#1 2 5 10 25 50 100);
+NB_OF_OBJECTS=(10 100 200);# 10 100 1000);
 SIZE_OBJECTS=(1);# 10 100 1000);# in kB
 
 ### Misc variables
@@ -88,25 +88,18 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
 
       echo "Kill all old processes"
       for machine in ${NODES[@]}; do
-#        killall -9 ccdbBenchmark || true ;# ignore errors
         killAll "ccdbBenchmark" ${machine} "-9"
       done
 
-      echo "Delete database content"
-      cleanDatabase $nb_tasks
+#      echo "Delete database content"
+#      cleanDatabase $nb_tasks
 
       echo "Now start the tasks"
-
       for (( task=0; task<$nb_tasks; task++ )); do
         echo "*** ~~~ *** Start task"
 
         # select a node for this task : task % #node -> index of node
         node_index=$((task%${#NODES[@]}))
-
-        # wait a bit between rounds on the machines because alienv is stupid
-#        if (( node_index == $((${#NODES[@]}-1)) )); then
-#          sleep 3
-#        fi
 
         startTask "${NODES[$node_index]}" benchmarkTask_${task} \
                   "benchmarkTask_${task}_${nb_tasks}_${nb_objects}_${size_objects}" \
@@ -120,7 +113,6 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
       sleep 5 # leave time to finish
 
       for machine in ${NODES[@]}; do
-#        killall -9 ccdbBenchmark || true ;# ignore errors
         killAll "ccdbBenchmark" ${machine} "-9"
       done
 
