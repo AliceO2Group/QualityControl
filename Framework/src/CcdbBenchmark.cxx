@@ -72,7 +72,7 @@ void CcdbBenchmark::InitTask()
   mMonitoring->addGlobalTag("sizeObject", to_string(mSizeObjects));
   if (mTaskName == "benchmarkTask_0") { // send these parameters to monitoring only once per benchmark run
     mMonitoring->sendGrouped("ccdb-benchmark-parameters", {{mNumberObjects, "number-objects"},
-                                                            {mSizeObjects,   "size-objects"},
+                                                            {mSizeObjects*1024,   "size-objects"},
                                                             {numberTasks,    "number-tasks"}});
   }
 
