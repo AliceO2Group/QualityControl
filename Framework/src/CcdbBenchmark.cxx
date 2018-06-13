@@ -92,12 +92,21 @@ void CcdbBenchmark::InitTask()
     case 100:
       mMyHisto = new TH2F("h", "h", 260, 0, 99, 100, 0, 99); // 100kB
       break;
+    case 500:
+      mMyHisto = new TH2F("h", "h", 1250, 0, 99, 100, 0, 99); // 500kB
+      break;
     case 1000:
       mMyHisto = new TH2F("h", "h", 2500, 0, 99, 100, 0, 99); // 1MB
       break;
+    case 2500:
+      mMyHisto = new TH2F("h", "h", 6250, 0, 99, 100, 0, 99); // 2.5MB
+      break;
+    case 5000:
+      mMyHisto = new TH2F("h", "h", 12500, 0, 99, 100, 0, 99); // 5MB
+      break;
     default:
       BOOST_THROW_EXCEPTION(
-        FatalException() << errinfo_details("size of histo must be 1, 10, 100 or 1000, not " + mSizeObjects));
+        FatalException() << errinfo_details("size of histo must be 1, 10, 100, 500, 1000, 2500 or 5000 (was: " + to_string(mSizeObjects) + ")"));
   }
   for(uint64_t i = 0 ; i < mNumberObjects ; i++) {
     MonitorObject *mo = new MonitorObject(mObjectName+to_string(i), mMyHisto, mTaskName);
