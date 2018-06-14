@@ -144,12 +144,12 @@ With the default config files provided, we run a qctask that processes
 random data and forwards it to a GUI and a checker that will check and
 store the MonitorObjects.
 
-**Note the prefix "file://" for the config file.**
+**Note the prefix "json://" for the config file.**
 
 ```
 # Launch a task named myTask_1
 qcTaskLauncher -n myTask_1 \
-               -c file:///absolute/path/to/example-default.json \
+               -c json:///absolute/path/to/example-default.json \
                --id myTask_1 \
                --mq-config path/to/alfa.json
 
@@ -158,7 +158,7 @@ qcTaskLauncher -n myTask_1 \
 qcSpy
 
 # Launch a checker named checker_0
-qcCheckerLauncher -c file:///absolute/path/to/example-default.ini -n checker_0
+qcCheckerLauncher -c json:///absolute/path/to/example-default.json -n checker_0
 ```
 
 ### QCG (Web QC GUI)
@@ -196,17 +196,17 @@ implementation=FairSampler
 4. Launch the QC task
 ```
 qcTaskLauncher -n myTask_1 \
-               -c file:///absolute/path/to/example-default.json \
+               -c json:///absolute/path/to/example-default.json \
                --id myTask_1 \
                --mq-config path/to/alfa.json
 ```
 5. Launch the checker
 ```
-qcCheckerLauncher -c file:///absolute/path/to/example-default.json -n checker_0
+qcCheckerLauncher -c json:///absolute/path/to/example-default.json -n checker_0
 ```
 6. Launch the gui
 ```
-qcSpy file:///absolute/path/to/example-default.json
+qcSpy json:///absolute/path/to/example-default.json
 # then click Start !
 ```
 In the gui, one can change the source and point to the checker by
