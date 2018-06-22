@@ -85,16 +85,16 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
         return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
           LOG(INFO) << "checker invoked";
-//          auto mo = processingContext.inputs().get<o2::quality_control::core::MonitorObject>("aaa");
-//
-//          if (mo->getName() == "example") {
-//            auto* g = dynamic_cast<TH1F*>(mo->getObject());
-//            std::string bins = "BINS:";
-//            for (int i = 0; i < g->GetNbinsX(); i++) {
-//              bins += " " + std::to_string((int) g->GetBinContent(i));
-//            }
-//            LOG(INFO) << bins;
-//          }
+          auto mo = processingContext.inputs().get<o2::quality_control::core::MonitorObject*>("aaa").get();
+
+          if (mo->getName() == "example") {
+            auto* g = dynamic_cast<TH1F*>(mo->getObject());
+            std::string bins = "BINS:";
+            for (int i = 0; i < g->GetNbinsX(); i++) {
+              bins += " " + std::to_string((int) g->GetBinContent(i));
+            }
+            LOG(INFO) << bins;
+          }
 
         };
       }
