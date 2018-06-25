@@ -26,6 +26,7 @@
 #include <TH1F.h>
 
 #include "Framework/DataSampling.h"
+#include "Framework/InputRecord.h"
 #include "Framework/runDataProcessing.h"
 #include "QualityControl/TaskDataProcessorFactory.h"
 #include "QualityControl/TaskDataProcessor.h"
@@ -84,7 +85,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
         return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
           LOG(INFO) << "checker invoked";
-          auto mo = processingContext.inputs().get<MonitorObject>("aaa");
+          auto mo = processingContext.inputs().get<o2::quality_control::core::MonitorObject*>("aaa").get();
 
           if (mo->getName() == "example") {
             auto* g = dynamic_cast<TH1F*>(mo->getObject());
