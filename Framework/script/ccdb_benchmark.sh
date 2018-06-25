@@ -15,14 +15,23 @@ SIZE_OBJECTS=(1 10 100 1000 5000);# 10 100 1000);# in kB
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
 LOG_FILE_PREFIX=/tmp/logCcdbBenchmark_
-NUMBER_CYCLES=60 ;# 180 ;# 1 sec per cycle -> ~ 3 minutes
+NUMBER_CYCLES=240 ;# ec per cycle -> # seconds
+PAUSE_BTW_RUNS=120 ;# in seconds, pause between tests
+CCDB_URL="ccdb-test.cern.ch:8080" ;#"aido2qc43:8080" ;#
+COMMAND_PREFIX="cd alice ; unset http_proxy ; unset https_proxy ; alienv setenv --no-refresh QualityControl/latest -c "
+MONITORING_URL="influxdb-udp://aido2mon.cern.ch:8087" ;#"influxdb-udp://aido2mon-gpn.cern.ch:8087"
 NODES=(
-#"aldaqci@aidrefflp01"
-"ccdb@barth-ccdb-606a6b90-1d83-48d5-8e46-ca72a63fc586"
-"ccdb@barth-ccdb-6f859d93-034c-4151-a4c8-571be0fe90f5"
-"ccdb@barth-ccdb-c518e99c-c05c-4066-a5dd-63613755985f"
-"ccdb@barth-ccdb-1394cef1-a627-4cf0-944f-40bf63f62ce1"
-"ccdb@barth-ccdb-a53241f0-f9f5-4862-8bca-66c081f7bd14"
+"ccdb@aido2qc10"
+"ccdb@aido2qc40"
+"ccdb@aido2qc11"
+"ccdb@aido2qc12"
+"ccdb@aido2fe05"
+#"ccdb@localhost"
+#"ccdb@barth-ccdb-606a6b90-1d83-48d5-8e46-ca72a63fc586"a
+#"ccdb@barth-ccdb-6f859d93-034c-4151-a4c8-571be0fe90f5"
+#"ccdb@barth-ccdb-c518e99c-c05c-4066-a5dd-63613755985f"
+#"ccdb@barth-ccdb-1394cef1-a627-4cf0-944f-40bf63f62ce1"
+#"ccdb@barth-ccdb-a53241f0-f9f5-4862-8bca-66c081f7bd14"
 ) ;# space delimited
 
 
@@ -43,10 +52,11 @@ function startTask {
   number_tasks=$6
   log_file_name=${LOG_FILE_PREFIX}${log_file_suffix}.log
   echo "Starting task ${name} on host ${host}, logs in ${log_file_name}"
-  cmd="cd alice ; alienv setenv --no-refresh QualityControl/latest -c ccdbBenchmark --max-iterations ${NUMBER_CYCLES} \
+    cmd="${COMMAND_PREFIX} ccdbBenchmark --max-iterations ${NUMBER_CYCLES} \
         --id ${name} --mq-config ~/alice/QualityControl/Framework/alfa.json --number-tasks ${number_tasks}\
         --delete 0 --control static --size-objects ${size_objects} --number-objects ${number_objects} \
-        --monitoring-url influxdb-udp://aido2mon-gpn.cern.ch:8087 --task-name ${name} > ${log_file_name} 2>&1 "
+        --monitoring-url ${MONITORING_URL} --task-name ${name} \
+        --ccdb-url ${CCDB_URL} > ${log_file_name} 2>&1 "
   echo "ssh ${host} \"${cmd}\" &"
   ssh ${host} "${cmd}" &
   pidLastTask=$!
@@ -108,7 +118,7 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
       done
 
       echo "Now wait for the tasks to finish "
-      wait ${TASKS_PIDS[*]};# the checker never stops, we can't just wait
+      wait ${TASKS_PIDS[*]}
 
       sleep 5 # leave time to finish
 
@@ -116,7 +126,7 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
         killAll "ccdbBenchmark" ${machine} "-9"
       done
 
-      sleep 5 # leave time to finish
+      sleep ${PAUSE_BTW_RUNS} # leave time to finish
 
       TASKS_PIDS=()
 
