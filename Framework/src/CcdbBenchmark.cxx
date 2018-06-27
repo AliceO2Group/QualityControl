@@ -113,6 +113,20 @@ void CcdbBenchmark::InitTask()
     mMyObjects.push_back(mo);
     mDatabase->truncateObject(mTaskName, mObjectName+to_string(i));
   }
+
+  // start a timer to send monitoring metrics
+  mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(1));
+  mTimer->async_wait(boost::bind(&CcdbBenchmark::checkTimedOut, this));
+  th = new thread([&] { io.run(); });
+}
+
+void CcdbBenchmark::checkTimedOut()
+{
+  mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
+
+  // restart timer
+  mTimer->expires_at(mTimer->expires_at() + boost::posix_time::seconds(1));
+  mTimer->async_wait(boost::bind(&CcdbBenchmark::checkTimedOut, this));
 }
 
 bool CcdbBenchmark::ConditionalRun()
@@ -126,9 +140,10 @@ bool CcdbBenchmark::ConditionalRun()
   // Store the object
   for (unsigned int i = 0; i < mNumberObjects; i++) {
     mDatabase->store(mMyObjects[i]);
+    mTotalNumberObjects++;
   }
-  mTotalNumberObjects += mNumberObjects;
-  mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
+//  mTotalNumberObjects += mNumberObjects;
+//  mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
 
   high_resolution_clock::time_point t2 = high_resolution_clock::now();
   long duration = duration_cast<milliseconds>(t2 - t1).count();

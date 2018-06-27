@@ -20,6 +20,7 @@
 #include "QualityControl/CcdbDatabase.h"
 #include <TH1F.h>
 #include <Monitoring/MonitoringFactory.h>
+#include <boost/asio.hpp>
 
 namespace o2 {
 namespace quality_control {
@@ -35,6 +36,7 @@ class CcdbBenchmark : public FairMQDevice
     virtual void InitTask();
     virtual bool ConditionalRun();
     void emptyDatabase();
+    void checkTimedOut();
 
   private:
     uint64_t mMaxIterations;
@@ -51,6 +53,11 @@ class CcdbBenchmark : public FairMQDevice
     o2::quality_control::repository::CcdbDatabase* mDatabase;
     std::vector<MonitorObject*> mMyObjects;
     TH1 *mMyHisto;
+
+    // variables for the timer
+    boost::asio::deadline_timer *mTimer; /// the asynchronous timer to send monitoring data
+    boost::asio::io_service io;
+    std::thread *th;
 };
 
 }

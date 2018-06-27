@@ -8,9 +8,9 @@ set -u ;# exit when using undeclared variable
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(10) ;#1 2 5 10 25 50 100);
-NB_OF_OBJECTS=(10);# 10 100 1000);
-SIZE_OBJECTS=(1 10 100 1000 5000);# 10 100 1000);# in kB
+NB_OF_TASKS=(5) ;#1 2 5 10 25 50 100);
+NB_OF_OBJECTS=(5);# 10 100 1000);
+SIZE_OBJECTS=(1 10 100 500 1000 2500 5000);# 10 100 1000);# in kB
 
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
