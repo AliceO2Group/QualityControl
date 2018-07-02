@@ -45,13 +45,14 @@ class CcdbBenchmark : public FairMQDevice
     uint64_t mSizeObjects;
     std::string mTaskName;
     std::string mObjectName;
+    bool mThreadedMonitoring;
 
     std::unique_ptr<o2::monitoring::Monitoring> mMonitoring;
     uint64_t mTotalNumberObjects;
 
     bool mDeletionMode;
-    o2::quality_control::repository::CcdbDatabase* mDatabase;
-    std::vector<MonitorObject*> mMyObjects;
+    o2::quality_control::repository::DatabaseInterface* mDatabase;
+    std::vector<std::shared_ptr<MonitorObject>> mMyObjects;
     TH1 *mMyHisto;
 
     // variables for the timer

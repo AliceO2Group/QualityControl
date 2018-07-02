@@ -70,9 +70,9 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   auto *h1 = new TH1F("object1", "object1", 100, 0, 99);
   auto *h2 = new TH1F("object2", "object2", 100, 0, 99);
   auto *h3 = new TH1F("object3", "object3", 100, 0, 99);
-  MonitorObject *mo1 = new MonitorObject("object1", h1, "functional_test");
-  MonitorObject *mo2 = new MonitorObject("object2", h2, "functional_test");
-  MonitorObject *mo3 = new MonitorObject("path/to/object3", h3, "functional_test");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>("object1", h1, "functional_test");
+  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>("object2", h2, "functional_test");
+  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>("path/to/object3", h3, "functional_test");
   ccdb->store(mo1);
   ccdb->store(mo2);
   ccdb->store(mo3);

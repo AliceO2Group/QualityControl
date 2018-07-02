@@ -55,18 +55,13 @@ class CcdbDatabase : public DatabaseInterface
     CcdbDatabase() = default;
     void connect(std::string host, std::string database, std::string username, std::string password) override;
     void connect(std::unique_ptr<ConfigurationInterface> &config) override;
-    void store(o2::quality_control::core::MonitorObject *mo) override;
+    void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
     core::MonitorObject *retrieve(std::string taskName, std::string objectName) override;
     void disconnect() override;
     void prepareTaskDataContainer(std::string taskName) override;
     std::vector<std::string> getListOfTasksWithPublications() override;
     std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
-    /**
-     * Delete all the versions of the specified object.
-     * @param taskName
-     * @param objectName
-     */
-    void truncateObject(std::string taskName, std::string objectName);
+    void truncateObject(std::string taskName, std::string objectName) override;
     /**
      * Delete the matching version of this object.
      * @todo Raise an exception if no such object exist.

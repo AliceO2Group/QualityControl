@@ -154,7 +154,7 @@ bool Checker::HandleData(FairMQMessagePtr &msg, int index)
 
   // Deserialize the object and process it
   HistoMessage tm(msg->GetData(), size_t2int(msg->GetSize()));
-  auto *mo = dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass()));
+  shared_ptr<MonitorObject> mo(dynamic_cast<MonitorObject *>(tm.ReadObject(tm.GetClass())));
   if (mo) {
     mo->setIsOwner(true);
     check(mo);
@@ -176,7 +176,7 @@ bool Checker::HandleData(FairMQMessagePtr &msg, int index)
   return true; // keep running
 }
 
-void Checker::check(MonitorObject *mo)
+void Checker::check(shared_ptr<MonitorObject> mo)
 {
   mLogger << "Checking \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -193,15 +193,15 @@ void Checker::check(MonitorObject *mo)
     // TODO : preload modules and pre-instantiate, or keep a cache
     loadLibrary(check.libraryName);
     CheckInterface *checkInstance = instantiateCheck(check.name, check.className);
-    Quality q = checkInstance->check(mo);
+    Quality q = checkInstance->check(mo.get());
 
     mLogger << "  result of the check " << check.name << ": " << q.getName() << AliceO2::InfoLogger::InfoLogger::endm;
 
-    checkInstance->beautify(mo, q);
+    checkInstance->beautify(mo.get(), q);
   }
 }
 
-void Checker::store(MonitorObject *mo)
+void Checker::store(shared_ptr<MonitorObject> mo)
 {
   mLogger << "Storing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -217,7 +217,7 @@ void Checker::CustomCleanupTMessage(void *data, void *object)
   delete (TMessage *) object;
 }
 
-void Checker::send(MonitorObject *mo)
+void Checker::send(shared_ptr<MonitorObject> mo)
 {
   if (!mCheckerConfig.broadcast) {
     return;
@@ -225,7 +225,7 @@ void Checker::send(MonitorObject *mo)
   mLogger << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
   auto *message = new TMessage(kMESS_OBJECT);
-  message->WriteObjectAny(mo, mo->IsA());
+  message->WriteObjectAny(mo.get(), mo->IsA());
   unique_ptr<FairMQMessage> msg(NewMessage(message->Buffer(), message->BufferSize(), CustomCleanupTMessage, message));
   fChannels.at("data-out").at(0).Send(msg);
 }

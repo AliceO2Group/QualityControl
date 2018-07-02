@@ -39,17 +39,24 @@ namespace quality_control {
 namespace core {
 
 CcdbBenchmark::CcdbBenchmark()
-  : mMaxIterations(0), mNumIterations(0), mSizeObjects(1), mNumberObjects(1), mTotalNumberObjects(0)
+  : mMaxIterations(0), mNumIterations(0), mNumberObjects(1), mSizeObjects(1), mThreadedMonitoring(true),
+    mTotalNumberObjects(0)
 {
 }
 
 void CcdbBenchmark::InitTask()
 {
-  // parse arguments
+  // parse arguments database
+  string dbUrl = fConfig->GetValue<string>("database-url");
+  string dbBackend = fConfig->GetValue<string>("database-backend");
+  mTaskName = fConfig->GetValue<string>("task-name");
   try {
-    string db = fConfig->GetValue<string>("ccdb-url");
-    mDatabase = dynamic_cast<CcdbDatabase *>(o2::quality_control::repository::DatabaseFactory::create("CCDB"));
-    mDatabase->connect(db, "", "", "");
+    mDatabase = o2::quality_control::repository::DatabaseFactory::create(dbBackend);
+    mDatabase->connect(fConfig->GetValue<string>("database-url"),
+                       fConfig->GetValue<string>("database-name"),
+                       fConfig->GetValue<string>("database-username"),
+                       fConfig->GetValue<string>("database-password"));
+    mDatabase->prepareTaskDataContainer(mTaskName);
   } catch (boost::exception &exc) {
     string diagnostic = boost::current_exception_diagnostic_information();
     std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
@@ -57,11 +64,12 @@ void CcdbBenchmark::InitTask()
       throw;
     }
   }
+  // parse other arguments
   mMaxIterations = fConfig->GetValue<uint64_t>("max-iterations");
   mNumberObjects = fConfig->GetValue<uint64_t>("number-objects");
   mSizeObjects = fConfig->GetValue<uint64_t>("size-objects");
   mDeletionMode = static_cast<bool>(fConfig->GetValue<int>("delete"));
-  mTaskName = fConfig->GetValue<string>("task-name");
+  mThreadedMonitoring = static_cast<bool>(fConfig->GetValue<int>("monitoring-threaded"));
   mObjectName = fConfig->GetValue<string>("object-name");
   auto numberTasks = fConfig->GetValue<uint64_t>("number-tasks");
 
@@ -109,15 +117,18 @@ void CcdbBenchmark::InitTask()
         FatalException() << errinfo_details("size of histo must be 1, 10, 100, 500, 1000, 2500 or 5000 (was: " + to_string(mSizeObjects) + ")"));
   }
   for(uint64_t i = 0 ; i < mNumberObjects ; i++) {
-    MonitorObject *mo = new MonitorObject(mObjectName+to_string(i), mMyHisto, mTaskName);
+    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(mObjectName+to_string(i), mMyHisto, mTaskName);
+    mo->setIsOwner(false);
     mMyObjects.push_back(mo);
     mDatabase->truncateObject(mTaskName, mObjectName+to_string(i));
   }
 
-  // start a timer to send monitoring metrics
-  mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(1));
-  mTimer->async_wait(boost::bind(&CcdbBenchmark::checkTimedOut, this));
-  th = new thread([&] { io.run(); });
+  // start a timer in a thread to send monitoring metrics, if needed
+  if(mThreadedMonitoring) {
+    mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(1));
+    mTimer->async_wait(boost::bind(&CcdbBenchmark::checkTimedOut, this));
+    th = new thread([&] { io.run(); });
+  }
 }
 
 void CcdbBenchmark::checkTimedOut()
@@ -142,8 +153,9 @@ bool CcdbBenchmark::ConditionalRun()
     mDatabase->store(mMyObjects[i]);
     mTotalNumberObjects++;
   }
-//  mTotalNumberObjects += mNumberObjects;
-//  mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
+  if(!mThreadedMonitoring) {
+    mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
+  }
 
   high_resolution_clock::time_point t2 = high_resolution_clock::now();
   long duration = duration_cast<milliseconds>(t2 - t1).count();

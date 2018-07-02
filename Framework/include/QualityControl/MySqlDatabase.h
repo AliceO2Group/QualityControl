@@ -29,11 +29,12 @@ class MySqlDatabase: public DatabaseInterface
 
     void connect(std::string host, std::string database, std::string username, std::string password) override;
     void connect(std::unique_ptr<ConfigurationInterface> &config) override;
-    void store(o2::quality_control::core::MonitorObject* mo) override;
+    void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
     o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName) override;
     void disconnect() override;
     std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
     std::vector<std::string> getListOfTasksWithPublications() override;
+    void truncateObject(std::string taskName, std::string objectName) override;
 
   private:
     /**
@@ -63,7 +64,7 @@ class MySqlDatabase: public DatabaseInterface
 
     // Queue
     // name of tasks -> vector of mo
-    std::map<std::string, std::vector<o2::quality_control::core::MonitorObject*>> mObjectsQueue;
+    std::map<std::string, std::vector<std::shared_ptr<o2::quality_control::core::MonitorObject>>> mObjectsQueue;
     size_t queueSize;
     AliceO2::Common::Timer lastStorage;
 };
