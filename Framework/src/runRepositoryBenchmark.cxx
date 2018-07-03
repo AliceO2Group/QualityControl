@@ -34,6 +34,7 @@ void addCustomOptions(bpo::options_description& options)
     ("delete", bpo::value<int>()->default_value(0), "Deletion mode (deletes all the versions of the object, 1:true, 0:false)")
     ("database-backend", bpo::value<std::string>()->default_value("CCDB"), "Name of the database backend (\"CCDB\" (default) or \"MySql\"")
     ("monitoring-threaded", bpo::value<int>()->default_value(1), "Whether to send the objects rate from a dedicated thread (1, default) or directly from the main thread (0)")
+    ("monitoring-threaded-interval", bpo::value<int>()->default_value(1), "In case we have a thread for the monitoring, interval in sec. between sending monitoring data")
     ("monitoring-url", bpo::value<std::string>()->default_value("infologger://"), "The URL to the monitoring system (default : \"infologger://\")");
 }
 

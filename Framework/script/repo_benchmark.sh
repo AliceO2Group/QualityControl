@@ -17,7 +17,7 @@ SIZE_OBJECTS=(2500 5000);# 10 100 1000);# in kB
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
 LOG_FILE_PREFIX=/tmp/logRepositoryBenchmark_
 NUMBER_CYCLES=30 ;# ec per cycle -> # seconds
-PAUSE_BTW_RUNS=120 ;# in seconds, pause between tests
+PAUSE_BTW_RUNS=30 ;# in seconds, pause between tests
 DB_URL="ccdb-test.cern.ch:8080" ;#"aido2qc43:8080" ;#
 DB_USERNAME=""
 DB_PASSWORD=""
@@ -97,6 +97,10 @@ function cleanDatabase {
   done
 }
 
+sleep_fraction() {
+  /usr/bin/perl -e "select(undef, undef, undef, $1)"
+}
+
 
 ### Benchmark starts here
 # Loop through the matrix of tests
@@ -125,6 +129,7 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
                   "benchmarkTask_${task}_${nb_tasks}_${nb_objects}_${size_objects}" \
                   ${size_objects} ${nb_objects} ${nb_tasks}
         TASKS_PIDS+=($pidLastTask)
+        sleep_fraction 1/${nb_tasks}
       done
 
       echo "Now wait for the tasks to finish "

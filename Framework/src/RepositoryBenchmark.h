@@ -46,12 +46,13 @@ class RepositoryBenchmark : public FairMQDevice
     uint64_t mSizeObjects;
     std::string mTaskName;
     std::string mObjectName;
-    bool mThreadedMonitoring;
     bool mDeletionMode;
 
     // monitoring
     std::unique_ptr<o2::monitoring::Monitoring> mMonitoring;
     uint64_t mTotalNumberObjects;
+    bool mThreadedMonitoring;
+    uint64_t mThreadedMonitoringInterval;
 
     // internal state
     o2::quality_control::repository::DatabaseInterface* mDatabase;

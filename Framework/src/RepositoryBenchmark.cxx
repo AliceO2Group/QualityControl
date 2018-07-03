@@ -64,16 +64,19 @@ void RepositoryBenchmark::InitTask()
       throw;
     }
   }
+
   // parse other arguments
   mMaxIterations = fConfig->GetValue<uint64_t>("max-iterations");
   mNumberObjects = fConfig->GetValue<uint64_t>("number-objects");
   mSizeObjects = fConfig->GetValue<uint64_t>("size-objects");
   mDeletionMode = static_cast<bool>(fConfig->GetValue<int>("delete"));
-  mThreadedMonitoring = static_cast<bool>(fConfig->GetValue<int>("monitoring-threaded"));
   mObjectName = fConfig->GetValue<string>("object-name");
   auto numberTasks = fConfig->GetValue<uint64_t>("number-tasks");
 
+  // monitoring
   mMonitoring = MonitoringFactory::Get(fConfig->GetValue<string>("monitoring-url"));
+  mThreadedMonitoring = static_cast<bool>(fConfig->GetValue<int>("monitoring-threaded"));
+  mThreadedMonitoringInterval = fConfig->GetValue<int>("monitoring-threaded-interval");
   mMonitoring->enableProcessMonitoring(1); // collect every seconds metrics for this process
   mMonitoring->addGlobalTag("taskName", mTaskName);
   mMonitoring->addGlobalTag("numberObject", to_string(mNumberObjects));
@@ -125,7 +128,7 @@ void RepositoryBenchmark::InitTask()
 
   // start a timer in a thread to send monitoring metrics, if needed
   if(mThreadedMonitoring) {
-    mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(1));
+    mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(mThreadedMonitoringInterval));
     mTimer->async_wait(boost::bind(&RepositoryBenchmark::checkTimedOut, this));
     th = new thread([&] { io.run(); });
   }
@@ -136,7 +139,7 @@ void RepositoryBenchmark::checkTimedOut()
   mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
 
   // restart timer
-  mTimer->expires_at(mTimer->expires_at() + boost::posix_time::seconds(1));
+  mTimer->expires_at(mTimer->expires_at() + boost::posix_time::seconds(mThreadedMonitoringInterval));
   mTimer->async_wait(boost::bind(&RepositoryBenchmark::checkTimedOut, this));
 }
 
