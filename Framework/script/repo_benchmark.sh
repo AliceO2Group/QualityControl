@@ -8,16 +8,16 @@ set -u ;# exit when using undeclared variable
 # One must have ssh keys to connect to all hosts.
 
 ### Define matrix of tests
-NB_OF_TASKS=(20) ;#1 2 5 10 25 50 100);
-NB_OF_OBJECTS=(20);# 10 100 1000);
+NB_OF_TASKS=(10) ;#1 2 5 10 25 50 100);
+NB_OF_OBJECTS=(10 50 100 150);
 #SIZE_OBJECTS=(1 10 100 500 1000 2500 5000);# 10 100 1000);# in kB
-SIZE_OBJECTS=(2500 5000);# 10 100 1000);# in kB
+SIZE_OBJECTS=(1000);# 100 500 1000 2500 5000);# 10 100 1000);# in kB
 
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
 LOG_FILE_PREFIX=/tmp/logRepositoryBenchmark_
-NUMBER_CYCLES=30 ;# ec per cycle -> # seconds
-PAUSE_BTW_RUNS=30 ;# in seconds, pause between tests
+NUMBER_CYCLES=120 ;# ec per cycle -> # seconds
+PAUSE_BTW_RUNS=60 ;# in seconds, pause between tests
 DB_URL="ccdb-test.cern.ch:8080" ;#"aido2qc43:8080" ;#
 DB_USERNAME=""
 DB_PASSWORD=""
@@ -66,7 +66,9 @@ function startTask {
         --database-username ${DB_USERNAME:-\"\"} \
         --database-password ${DB_PASSWORD:-\"\"} \
         --database-url ${DB_URL:-\"\"} \
-        --monitoring-threaded 0 > ${log_file_name} 2>&1 "
+        --monitoring-threaded 1 \
+        --monitoring-threaded-interval 1 \
+        > ${log_file_name} 2>&1 "
   echo "ssh ${host} \"${cmd}\" &"
   ssh ${host} "${cmd}" &
   pidLastTask=$!
