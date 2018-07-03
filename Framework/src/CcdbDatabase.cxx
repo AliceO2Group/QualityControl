@@ -30,11 +30,12 @@ namespace repository {
 
 using namespace std;
 
+CcdbDatabase::CcdbDatabase() : mUrl("")
+{}
+
 void CcdbDatabase::curlInit()
 {
   curl_global_init(CURL_GLOBAL_DEFAULT);
-  mCurl = curl_easy_init();
-  mMultiHandle = curl_multi_init();
 }
 
 void CcdbDatabase::connect(std::string host, std::string database, std::string username, std::string password)
@@ -65,6 +66,7 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
     mUrl + "/" + mo->getTaskName() + "/" + mo->getName() + "/" + getTimestampString(getCurrentTimestamp())
     + "/" + getTimestampString(
       getFutureTimestamp(60 * 60 * 24 * 365 * 10)); // todo set a proper timestamp for the end
+  fullUrl += "/quality=" + std::to_string(mo->getQuality().getLevel());
   string tmpFileName = mo->getTaskName() + "_" + mo->getName() + ".root";
 
   // Curl preparation
@@ -92,7 +94,7 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
 
 //    t1 = high_resolution_clock::now();
     /* Perform the request, res will get the return code */
-      CURLcode res = curl_easy_perform(curl);
+    CURLcode res = curl_easy_perform(curl);
 //    t2 = high_resolution_clock::now();
 //    duration = duration_cast<milliseconds>(t2 - t1).count();
 //    cout << "duration perform : " << duration << endl;
@@ -159,7 +161,6 @@ core::MonitorObject *CcdbDatabase::retrieve(std::string taskName, std::string ob
   CURLcode res;
   struct MemoryStruct chunk{(char *) malloc(1)/*memory*/, 0/*size*/};
   o2::quality_control::core::MonitorObject *mo = nullptr;
-  curl_global_init(CURL_GLOBAL_ALL);
 
   /* init the curl session */
   curl_handle = curl_easy_init();
@@ -234,8 +235,6 @@ core::MonitorObject *CcdbDatabase::retrieve(std::string taskName, std::string ob
 void CcdbDatabase::disconnect()
 {
   /* we're done with libcurl, so clean it up */
-  curl_multi_cleanup(mMultiHandle);
-  curl_easy_cleanup(mCurl);
   curl_global_cleanup();
 }
 

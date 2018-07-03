@@ -52,7 +52,8 @@ namespace repository {
 class CcdbDatabase : public DatabaseInterface
 {
   public:
-    CcdbDatabase() = default;
+    CcdbDatabase();
+
     void connect(std::string host, std::string database, std::string username, std::string password) override;
     void connect(std::unique_ptr<ConfigurationInterface> &config) override;
     void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
@@ -84,8 +85,6 @@ class CcdbDatabase : public DatabaseInterface
     std::string getListing(std::string subpath = "", std::string accept = "text/plain");
 
     std::string mUrl;
-    CURL *mCurl;
-    CURLM *mMultiHandle;
     void curlInit();
 };
 
