@@ -9,12 +9,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   CcdbBenchmark.h
+/// \file   RepositoryBenchmark.h
 /// \author Barthelemy von Haller
 ///
 
-#ifndef PROJECT_CCDBBENCHMARK_H
-#define PROJECT_CCDBBENCHMARK_H
+#ifndef PROJECT_REPOSITORYBENCHMARK_H
+#define PROJECT_REPOSITORYBENCHMARK_H
 
 #include <FairMQDevice.h>
 #include "QualityControl/CcdbDatabase.h"
@@ -26,11 +26,11 @@ namespace o2 {
 namespace quality_control {
 namespace core {
 
-class CcdbBenchmark : public FairMQDevice
+class RepositoryBenchmark : public FairMQDevice
 {
   public:
-    CcdbBenchmark();
-    virtual ~CcdbBenchmark()= default;
+    RepositoryBenchmark();
+    virtual ~RepositoryBenchmark()= default;
 
   protected:
     virtual void InitTask();
@@ -39,6 +39,7 @@ class CcdbBenchmark : public FairMQDevice
     void checkTimedOut();
 
   private:
+    // user params
     uint64_t mMaxIterations;
     uint64_t mNumIterations;
     uint64_t mNumberObjects;
@@ -46,11 +47,13 @@ class CcdbBenchmark : public FairMQDevice
     std::string mTaskName;
     std::string mObjectName;
     bool mThreadedMonitoring;
+    bool mDeletionMode;
 
+    // monitoring
     std::unique_ptr<o2::monitoring::Monitoring> mMonitoring;
     uint64_t mTotalNumberObjects;
 
-    bool mDeletionMode;
+    // internal state
     o2::quality_control::repository::DatabaseInterface* mDatabase;
     std::vector<std::shared_ptr<MonitorObject>> mMyObjects;
     TH1 *mMyHisto;

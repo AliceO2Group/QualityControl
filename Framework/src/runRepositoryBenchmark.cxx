@@ -9,12 +9,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   runCcdbBenchmark.cxx
+/// \file   runRepositoryBenchmark.cxx
 /// \author Barthelemy von Haller
 ///
 
 #include "runFairMQDevice.h"
-#include "CcdbBenchmark.h"
+#include "RepositoryBenchmark.h"
 
 namespace bpo = boost::program_options;
 
@@ -39,5 +39,5 @@ void addCustomOptions(bpo::options_description& options)
 
 FairMQDevicePtr getDevice(const FairMQProgOptions& /*config*/)
 {
-  return new o2::quality_control::core::CcdbBenchmark();
+  return new o2::quality_control::core::RepositoryBenchmark();
 }

@@ -9,11 +9,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   CcdbBenchmark.cxx
+/// \file   RepositoryBenchmark.cxx
 /// \author Barthelemy von Haller
 ///
 
-#include "CcdbBenchmark.h"
+#include "RepositoryBenchmark.h"
 
 #include <thread> // this_thread::sleep_for
 #include <chrono>
@@ -38,13 +38,13 @@ namespace o2 {
 namespace quality_control {
 namespace core {
 
-CcdbBenchmark::CcdbBenchmark()
+RepositoryBenchmark::RepositoryBenchmark()
   : mMaxIterations(0), mNumIterations(0), mNumberObjects(1), mSizeObjects(1), mThreadedMonitoring(true),
     mTotalNumberObjects(0)
 {
 }
 
-void CcdbBenchmark::InitTask()
+void RepositoryBenchmark::InitTask()
 {
   // parse arguments database
   string dbUrl = fConfig->GetValue<string>("database-url");
@@ -126,21 +126,21 @@ void CcdbBenchmark::InitTask()
   // start a timer in a thread to send monitoring metrics, if needed
   if(mThreadedMonitoring) {
     mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(1));
-    mTimer->async_wait(boost::bind(&CcdbBenchmark::checkTimedOut, this));
+    mTimer->async_wait(boost::bind(&RepositoryBenchmark::checkTimedOut, this));
     th = new thread([&] { io.run(); });
   }
 }
 
-void CcdbBenchmark::checkTimedOut()
+void RepositoryBenchmark::checkTimedOut()
 {
   mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
 
   // restart timer
   mTimer->expires_at(mTimer->expires_at() + boost::posix_time::seconds(1));
-  mTimer->async_wait(boost::bind(&CcdbBenchmark::checkTimedOut, this));
+  mTimer->async_wait(boost::bind(&RepositoryBenchmark::checkTimedOut, this));
 }
 
-bool CcdbBenchmark::ConditionalRun()
+bool RepositoryBenchmark::ConditionalRun()
 {
   if (mDeletionMode) { //the only way to not run is to return false from here.
     return false;
@@ -180,7 +180,7 @@ bool CcdbBenchmark::ConditionalRun()
   return true;
 }
 
-void CcdbBenchmark::emptyDatabase()
+void RepositoryBenchmark::emptyDatabase()
 {
   mDatabase->truncateObject(mTaskName, mObjectName);
 }
