@@ -72,7 +72,7 @@ set(SRCS
         src/TaskDataProcessor.cxx
         src/TaskDataProcessorFactory.cxx
         src/TaskInterfaceDPL.cxx
-        src/CcdbBenchmark.cxx
+        src/RepositoryBenchmark.cxx
         )
 
 set(HEADERS # needed for the dictionary generation
@@ -180,8 +180,8 @@ O2_GENERATE_EXECUTABLE(
 )
 
 O2_GENERATE_EXECUTABLE(
-        EXE_NAME ccdbBenchmark
-        SOURCES src/runCcdbBenchmark.cxx
+        EXE_NAME repositoryBenchmark
+        SOURCES src/runRepositoryBenchmark.cxx
         MODULE_LIBRARY_NAME ${LIBRARY_NAME}
         BUCKET_NAME ${BUCKET_NAME}
 )

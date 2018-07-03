@@ -49,13 +49,13 @@ void CcdbDatabase::connect(std::unique_ptr<ConfigurationInterface> &config)
   curlInit();
 }
 
-void CcdbDatabase::store(o2::quality_control::core::MonitorObject *mo)
+void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
 {
   // Serialize the object mo
 //  high_resolution_clock::time_point t1 = high_resolution_clock::now();
   TMessage message(kMESS_OBJECT);
   message.Reset();
-  message.WriteObjectAny(mo, mo->IsA());
+  message.WriteObjectAny(mo.get(), mo->IsA());
 //  high_resolution_clock::time_point t2 = high_resolution_clock::now();
 //  long duration = duration_cast<milliseconds>(t2 - t1).count();
 //  cout << "duration serization : " << duration << endl;

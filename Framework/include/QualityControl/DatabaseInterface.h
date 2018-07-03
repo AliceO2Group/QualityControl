@@ -53,7 +53,7 @@ class DatabaseInterface
      * Stores the serialized MonitorObject in the database.
      * @param mo The MonitorObject to serialize and store.
      */
-    virtual void store(o2::quality_control::core::MonitorObject* mo) = 0;
+    virtual void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) = 0;
 
     /**
      * Look up an object of a task and return it.
@@ -70,6 +70,12 @@ class DatabaseInterface
     virtual void prepareTaskDataContainer(std::string taskName) = 0;
     virtual std::vector<std::string> getListOfTasksWithPublications() = 0;
     virtual std::vector<std::string> getPublishedObjectNames(std::string taskName) = 0;
+    /**
+     * Delete all versions of a given object
+     * @param taskName Task sending the object
+     * @param objectName Name of the object
+     */
+     virtual void truncateObject(std::string taskName, std::string objectName) = 0;
 };
 
 } /* namespace repository */

@@ -63,9 +63,9 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
 void MySqlDatabase::connect(std::unique_ptr<ConfigurationInterface> &config)
 {
   this->connect(config->get<string>("qc/config/database/host").value(),
-                     config->get<string>("qc/config/database/name").value(),
-                     config->get<string>("qc/config/database/username").value(),
-                     config->get<string>("qc/config/database/password").value());
+                config->get<string>("qc/config/database/name").value(),
+                config->get<string>("qc/config/database/username").value(),
+                config->get<string>("qc/config/database/password").value());
 }
 
 void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
@@ -75,7 +75,7 @@ void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
   query += "CREATE TABLE IF NOT EXISTS `data_" + taskName
            +
            "` (object_name CHAR(64), updatetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, data LONGBLOB, size INT, run INT, "
-             "fill INT, PRIMARY KEY(object_name, run)) ENGINE=MyISAM";
+           "fill INT, PRIMARY KEY(object_name, run)) ENGINE=MyISAM";
   if (!execute(query)) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to create data table"));
   } else {
@@ -83,20 +83,21 @@ void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
   }
 }
 
-void MySqlDatabase::store(MonitorObject *mo)
+void MySqlDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
 {
   // TODO we take ownership here to delete later -> clearly to be improved
   // we execute grouped insertions. Here we just register that we should keep this mo in memory.
   mObjectsQueue[mo->getTaskName()].push_back(mo);
   queueSize++;
-  if (queueSize > 2 || lastStorage.getTime() > 10 /*sec*/) { // TODO use a configuration to set the max limits
+  if (queueSize > 4 || lastStorage.getTime() > 10 /*sec*/) { // TODO use a configuration to set the max limits
     storeQueue();
   }
 }
 
 void MySqlDatabase::storeQueue()
 {
-  QcInfoLogger::GetInstance() << "Database queue will now be processed (" << queueSize << " objects)" << infologger::endm;
+  QcInfoLogger::GetInstance() << "Database queue will now be processed (" << queueSize << " objects)"
+                              << infologger::endm;
 
   for (auto &kv : mObjectsQueue) {
     storeForTask(kv.first);
@@ -108,7 +109,7 @@ void MySqlDatabase::storeQueue()
 
 void MySqlDatabase::storeForTask(std::string taskName)
 {
-  vector<MonitorObject *> objects = mObjectsQueue[taskName];
+  vector<std::shared_ptr<o2::quality_control::core::MonitorObject> > objects = mObjectsQueue[taskName];
 
   if (objects.size() == 0) {
     return;
@@ -138,11 +139,10 @@ void MySqlDatabase::storeForTask(std::string taskName)
   }
 
   // Assign data
-//  int i = 0;
   TMessage message(kMESS_OBJECT);
   for (auto mo : objects) {
     message.Reset();
-    message.WriteObjectAny(mo, mo->IsA());
+    message.WriteObjectAny(mo.get(), mo->IsA());
     statement->NextIteration();
     statement->SetString(0, mo->getName().c_str());
     statement->SetBinary(1, message.Buffer(), message.Length(), message.Length());
@@ -152,9 +152,9 @@ void MySqlDatabase::storeForTask(std::string taskName)
   statement->Process();
   delete statement;
 
-  for (auto mo : objects) {
-    delete mo;
-  }
+//  for (auto mo : objects) {
+//    delete mo;
+//  }
   objects.clear();
 }
 
@@ -291,6 +291,18 @@ std::vector<std::string> MySqlDatabase::getListOfTasksWithPublications()
   }
 
   return result;
+}
+
+void MySqlDatabase::truncateObject(std::string taskName, std::string objectName)
+{
+  string queryString = string("delete ignore from `data_") + taskName + "` where object_name='" + objectName + "'";
+
+  if (!execute(queryString)) {
+    string s = string("Failed to delete object ") + objectName + " from task " + taskName;
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(s));
+  } else {
+    QcInfoLogger::GetInstance() << "Delete object " << objectName << " from task " << taskName << infologger::endm;
+  }
 }
 
 } // namespace repository
