@@ -409,4 +409,3 @@ Response (one of the following):
 |  Worker   |<-->|  Backend  |
 +-----------+1  N+-----------+
 ```
-.
