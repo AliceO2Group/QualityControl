@@ -119,11 +119,12 @@ void RepositoryBenchmark::InitTask()
       BOOST_THROW_EXCEPTION(
         FatalException() << errinfo_details("size of histo must be 1, 10, 100, 500, 1000, 2500 or 5000 (was: " + to_string(mSizeObjects) + ")"));
   }
+
+  // prepare objects
   for(uint64_t i = 0 ; i < mNumberObjects ; i++) {
     shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(mObjectName+to_string(i), mMyHisto, mTaskName);
     mo->setIsOwner(false);
     mMyObjects.push_back(mo);
-    mDatabase->truncateObject(mTaskName, mObjectName+to_string(i));
   }
 
   // start a timer in a thread to send monitoring metrics, if needed
@@ -186,6 +187,9 @@ bool RepositoryBenchmark::ConditionalRun()
 void RepositoryBenchmark::emptyDatabase()
 {
   mDatabase->truncateObject(mTaskName, mObjectName);
+  for(uint64_t i = 0 ; i < mNumberObjects ; i++) {
+    mDatabase->truncateObject(mTaskName, mObjectName+to_string(i));
+  }
 }
 
 }

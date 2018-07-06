@@ -88,12 +88,14 @@ function killAll {
 
 # Delete the database content
 # \param 1 : number of tasks
+# \param 2 : number of objects
 function cleanDatabase {
   number_tasks=$1
+  number_objects=$2
   for (( task=0; task<$nb_tasks; task++ )); do
     name=benchmarkTask_${task}
     cmd="repositoryBenchmark --id test --mq-config ~/dev/alice/QualityControl/Framework/alfa.json --delete 1 --control static \
-         --task-name ${name}" ;# > /dev/null 2>&1"
+         --task-name ${name} --number-objects ${number_objects}" ;# > /dev/null 2>&1"
     echo ${cmd}
     eval ${cmd}
   done
@@ -117,9 +119,6 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
         killAll "repositoryBenchmark" ${machine} "-9"
       done
 
-#      echo "Delete database content"
-#      cleanDatabase $nb_tasks
-
       echo "Now start the tasks"
       for (( task=0; task<$nb_tasks; task++ )); do
         echo "*** ~~~ *** Start task"
@@ -142,6 +141,9 @@ for nb_tasks in ${NB_OF_TASKS[@]}; do
       for machine in ${NODES[@]}; do
         killAll "repositoryBenchmark" ${machine} "-9"
       done
+
+      echo "Delete database content"
+      cleanDatabase $nb_tasks
 
       sleep ${PAUSE_BTW_RUNS} # leave time to finish
 
