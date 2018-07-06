@@ -204,7 +204,6 @@ void Checker::check(shared_ptr<MonitorObject> mo)
 void Checker::store(shared_ptr<MonitorObject> mo)
 {
   mLogger << "Storing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
-
   try {
     mDatabase->store(mo);
   } catch (boost::exception &e) {

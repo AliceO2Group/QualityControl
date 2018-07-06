@@ -21,8 +21,11 @@
 #include <TObjString.h>
 #include <algorithm>
 #include <unordered_set>
+#include <TFile.h>
+#include "Common/Exceptions.h"
 
 using namespace std::chrono;
+using namespace AliceO2::Common;
 
 namespace o2 {
 namespace quality_control {
@@ -52,6 +55,11 @@ void CcdbDatabase::connect(std::unique_ptr<ConfigurationInterface> &config)
 
 void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
 {
+  if(mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
+    BOOST_THROW_EXCEPTION(
+      DatabaseException() << errinfo_details("Object and task names can't be empty. Do not store."));
+  }
+
   // Serialize the object mo
 //  high_resolution_clock::time_point t1 = high_resolution_clock::now();
   TMessage message(kMESS_OBJECT);
