@@ -325,10 +325,10 @@ Keep in mind, that checkers are not available at this moment.
 To add a QC task into workflow:
 
 1. Create your module using SkeletonDPL as a base. Refer to the steps mentioned
-in the chapter [Modules development](https://github.com/AliceO2Group/QualityControl#modules-development)
-- they are the same.
+in the chapter [Modules development](https://github.com/AliceO2Group/QualityControl#modules-development),
+they are the same.
 2. Define input data and parameters of your QC Task in .json config file. Use
-[Framework/qcTaskDplConfig.ini](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/qcTaskDplConfig.ini)
+[Framework/qcTaskDplConfig.ini](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/qcTaskDplConfig.json)
 as a reference - just update the variables in the section 'Tasks'.
 3. Insert following lines in your workflow declaration code. Change the names
 accordingly.
@@ -342,18 +342,21 @@ accordingly.
 
 ...
 
-void defineDataProcessing(std::vector<DataProcessorSpec>& specs) {
-
+WorkflowSpec defineDataProcessing(ConfigContext const&) {
+  
+  std::vector<DataProcessorSpec> specs;
   ...
 
-  // A path to your config .ini file. In this case, it is a file installed during compilation.
-  const std::string qcConfigurationSource = std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.ini";
+  // A path to your config .json file. In this case, it is a file installed during compilation.
+  const std::string qcConfigurationSource = std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.json";
   // An entry in config file which describes your QC task
   const std::string qcTaskName = "skeletonTask";
   o2::quality_control::core::TaskDataProcessorFactory qcFactory;
   specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
 
   o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+  
+  return specs;
 }
 ```
 4. Compile & run.
