@@ -328,7 +328,7 @@ To add a QC task into workflow:
 in the chapter [Modules development](https://github.com/AliceO2Group/QualityControl#modules-development),
 they are the same.
 2. Define input data and parameters of your QC Task in .json config file. Use
-[Framework/qcTaskDplConfig.ini](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/qcTaskDplConfig.json)
+[Framework/qcTaskDplConfig.json](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/qcTaskDplConfig.json)
 as a reference - just update the variables in the section 'Tasks'.
 3. Insert following lines in your workflow declaration code. Change the names
 accordingly.
