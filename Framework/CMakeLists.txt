@@ -166,6 +166,13 @@ O2_GENERATE_EXECUTABLE(
 )
 
 O2_GENERATE_EXECUTABLE(
+        EXE_NAME runReadoutChainTemplate
+        SOURCES src/runReadoutChainTemplate.cxx
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME ${BUCKET_NAME}
+)
+
+O2_GENERATE_EXECUTABLE(
         EXE_NAME alfaTestReceiver
         SOURCES src/alfaTestReceiver.cxx
         MODULE_LIBRARY_NAME ${LIBRARY_NAME}
@@ -211,4 +218,4 @@ O2_GENERATE_EXECUTABLE(
 # Install extra scripts
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
 install(FILES example-default.ini example-default.json alfa.json DESTINATION etc)
-Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json DESTINATION etc/)
+Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json DESTINATION etc/)

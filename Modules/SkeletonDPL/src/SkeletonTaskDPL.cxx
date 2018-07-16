@@ -30,7 +30,7 @@ void SkeletonTaskDPL::initialize(o2::framework::InitContext& ctx)
 {
   QcInfoLogger::GetInstance() << "initialize SkeletonTaskDPL" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mHistogram = new TH1F("example", "example", 20, 0, 10000);
+  mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
 //  getObjectsManager()->addCheck(mHistogram, "checkFromSkeleton",
 //                                "o2::quality_control_modules::skeleton_dpl::_SkeletonCheck",
@@ -50,7 +50,9 @@ void SkeletonTaskDPL::startOfCycle()
 
 void SkeletonTaskDPL::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
+  // todo: update API examples or refer to DPL README.md
+
+//  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // exemplary ways of accessing inputs (incoming data), that were specified in the .ini file - e.g.:
   //  [readoutInput]
