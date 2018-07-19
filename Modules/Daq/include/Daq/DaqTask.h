@@ -6,6 +6,8 @@
 #ifndef QC_MODULE_EXAMPLE_EXAMPLETASK_H
 #define QC_MODULE_EXAMPLE_EXAMPLETASK_H
 
+#include <TCanvas.h>
+#include <TPaveText.h>
 #include "QualityControl/TaskInterface.h"
 
 class TH1F;
@@ -45,6 +47,9 @@ class DaqTask /*final*/: public TaskInterface // todo add back the "final" when 
     TH1F *mNumberSubblocks;
     TH1F *mSubPayloadSize;
     UInt_t mTimeLastRecord;
+    TObjString *mObjString;
+    TCanvas *mCanvas;
+    TPaveText *mPaveText;
 };
 
 }
