@@ -24,12 +24,19 @@ DaqTask::DaqTask()
     mIds(nullptr),
     mNPoints(0),
     mNumberSubblocks(nullptr),
-    mSubPayloadSize(nullptr)
+    mSubPayloadSize(nullptr),
+    mObjString(nullptr),
+    mCanvas(nullptr),
+    mPaveText(nullptr)
 {
+
 }
 
 DaqTask::~DaqTask()
 {
+  delete mPaveText;
+  delete mCanvas;
+  delete mObjString;
   delete mPayloadSize;
   delete mIds;
   delete mNumberSubblocks;
@@ -64,6 +71,18 @@ void DaqTask::initialize()
   getObjectsManager()->addCheck(mIds, "checkIncreasingIDs", "o2::quality_control_modules::daq::EverIncreasingGraph",
                                 "QcDaq");
   getObjectsManager()->addCheck(mIds, "checkNonEmpty", "o2::quality_control_modules::common::NonEmpty", "QcCommon");
+
+  mObjString = new TObjString("hello");
+  getObjectsManager()->startPublishing(mObjString);
+
+  mCanvas = new TCanvas();
+  mCanvas->cd();
+  getObjectsManager()->startPublishing(mCanvas);
+
+  mPaveText = new TPaveText(0.1, 0.1, 0.9, 0.9);
+  mPaveText->AddText("hello");
+  mPaveText->SetName("");
+  getObjectsManager()->startPublishing(mPaveText);
 }
 
 void DaqTask::startOfActivity(Activity &activity)
