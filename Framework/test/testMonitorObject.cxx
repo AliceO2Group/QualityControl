@@ -21,8 +21,6 @@ BOOST_AUTO_TEST_CASE(mo)
   BOOST_CHECK_EQUAL(obj.getName(), "");
   obj.setName("test");
   BOOST_CHECK_EQUAL(obj.getName(), "test");
-//  obj.setQuality(Quality::Medium);
-//  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Medium);
 
   obj.addCheck("first", "class1", "lib1");
   obj.addCheck("second", "class1", "lib1");
@@ -53,7 +51,7 @@ BOOST_AUTO_TEST_CASE(mo_check)
   check.name = "test";
   check.libraryName = "test";
   check.className = "test";
-  obj.addOrUpdateCheck("test", check);
+  obj.addOrReplaceCheck("test", check);
   BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Null);
 
 }

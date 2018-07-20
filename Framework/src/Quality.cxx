@@ -3,7 +3,6 @@
 /// \author Barthelemy von Haller
 ///
 
-#include <limits>
 #include "QualityControl/Quality.h"
 
 ClassImp(o2::quality_control::core::Quality)

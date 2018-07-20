@@ -87,19 +87,20 @@ void MonitorObject::addCheck(const std::string name, const std::string checkClas
   mChecks[name] = check;
 }
 
-void MonitorObject::addOrUpdateCheck(std::string checkName, CheckDefinition check)
+void MonitorObject::addOrReplaceCheck(std::string checkName, CheckDefinition check)
 {
   mChecks[checkName] = check;
 }
 
-const Quality MonitorObject::getQuality() const
+Quality MonitorObject::getQuality() const
 {
   Quality global = Quality::Null;
 
-  for(const auto &checkDef : getChecks()) {
-    if(checkDef.second.result != Quality::Null) {
-      if(checkDef.second.result.isWorstThan(global) || global == Quality::Null) {
-        global = checkDef.second.result;
+  for(const auto &checkPair : getChecks()) {
+    const CheckDefinition &checkDef = checkPair.second;
+    if(checkDef.result != Quality::Null) {
+      if(checkDef.result.isWorstThan(global) || global == Quality::Null) {
+        global = checkDef.result;
       }
     }
   }

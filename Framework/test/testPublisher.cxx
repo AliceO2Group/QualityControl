@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   check.libraryName = "test";
   check.className = "test";
   check.result = Quality::Medium;
-  mo->addOrUpdateCheck("test", check);
+  mo->addOrReplaceCheck("test", check);
   BOOST_CHECK_EQUAL(Quality::Medium, objectsManager.getQuality("test"));
   BOOST_CHECK_THROW(objectsManager.getQuality("test2"), ObjectNotFoundError);
 
