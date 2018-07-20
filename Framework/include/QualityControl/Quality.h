@@ -9,7 +9,6 @@
 #include <string>
 #include <ostream>
 #include <TObject.h>
-#include <climits>
 
 namespace o2 {
 namespace quality_control {
