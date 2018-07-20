@@ -338,40 +338,38 @@ endfunction(O2_GENERATE_EXECUTABLE)
 # arg BUCKET_NAME
 # arg TEST_SRCS
 # arg MODULE_LIBRARY_NAME - Name of the library of the module this executable belongs to.
-# arg TIMEOUT in seconds after which the test is considered failed.
 function(O2_GENERATE_TESTS)
   cmake_parse_arguments(
-      PARSED_ARGS
-      "" # bool args
-      "BUCKET_NAME;MODULE_LIBRARY_NAME;TIMEOUT" # mono-valued arguments
-      "TEST_SRCS" # multi-valued arguments
-      ${ARGN} # arguments
+          PARSED_ARGS
+          "" # bool args
+          "BUCKET_NAME;MODULE_LIBRARY_NAME;TIMEOUT" # mono-valued arguments
+          "TEST_SRCS;COMMAND_LINE_ARGS" # multi-valued arguments
+          ${ARGN} # arguments
   )
 
-  CHECK_VARIABLE(PARSED_ARGS_BUCKET_NAME "You must provide a bucket name")
+  # Note: the BUCKET_NAME and MODULE_LIBRARY_NAME are optional arguments
   CHECK_VARIABLE(PARSED_ARGS_TEST_SRCS "You must provide the list of sources")
-  CHECK_VARIABLE(PARSED_ARGS_MODULE_LIBRARY_NAME "You must provide the module library name this executable belongs to")
 
   foreach (test ${PARSED_ARGS_TEST_SRCS})
     string(REGEX REPLACE ".*/" "" test_name ${test})
     string(REGEX REPLACE "\\..*" "" test_name ${test_name})
-
-    message(STATUS "Generate test ${test_name}")
+    set(test_name test_${MODULE_NAME}_${test_name})
 
     O2_GENERATE_EXECUTABLE(
-        EXE_NAME ${test_name}
-        SOURCES ${test}
-        MODULE_LIBRARY_NAME ${PARSED_ARGS_MODULE_LIBRARY_NAME}
-        BUCKET_NAME ${PARSED_ARGS_BUCKET_NAME}
-        NO_INSTALL FALSE
+            EXE_NAME ${test_name}
+            SOURCES ${test}
+            MODULE_LIBRARY_NAME ${PARSED_ARGS_MODULE_LIBRARY_NAME}
+            BUCKET_NAME ${PARSED_ARGS_BUCKET_NAME}
+            NO_INSTALL FALSE
     )
-    target_link_libraries(${test_name} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-    add_test(NAME ${test_name} COMMAND ${test_name})
-    if(PARSED_ARGS_TIMEOUT)
+    target_link_libraries(${test_name} Boost::unit_test_framework)
+    add_test(NAME ${test_name} COMMAND ${test_name} ${PARSED_ARGS_COMMAND_LINE_ARGS})
+    if (PARSED_ARGS_TIMEOUT)
       set_tests_properties(${test_name} PROPERTIES TIMEOUT ${PARSED_ARGS_TIMEOUT})
     endif()
   endforeach ()
 endfunction()
+
 
 
 #------------------------------------------------------------------------------
