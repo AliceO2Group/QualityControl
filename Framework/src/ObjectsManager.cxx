@@ -59,12 +59,6 @@ void ObjectsManager::UpdateIndex(const string &nonEmptyName)
   this->mObjectsList.SetString(newString.c_str());
 }
 
-void ObjectsManager::setQuality(std::string objectName, Quality quality)
-{
-  MonitorObject *mo = getMonitorObject(objectName);
-  mo->setQuality(quality);
-}
-
 Quality ObjectsManager::getQuality(std::string objectName)
 {
   MonitorObject *mo = getMonitorObject(objectName);

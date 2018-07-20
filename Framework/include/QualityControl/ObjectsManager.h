@@ -32,7 +32,6 @@ class ObjectsManager
     virtual ~ObjectsManager();
     void startPublishing(TObject *obj, std::string objectName = "");
     // todo stoppublishing
-    void setQuality(std::string objectName, Quality quality);
     Quality getQuality(std::string objectName);
 
     /// \brief Add a check to the object defined by objectName.

@@ -20,9 +20,11 @@ namespace core {
 
 /// \brief Container for the definition of a check
 struct CheckDefinition {
+    CheckDefinition():result(Quality::Null){}
     std::string name;
     std::string className;
     std::string libraryName;
+    Quality     result;
 };
 
 /// \brief  This class keeps the metadata about one published object.
@@ -74,15 +76,15 @@ class MonitorObject : public TObject
       mTaskName = taskName;
     }
 
-    const Quality &getQuality() const
-    {
-      return mQuality;
-    }
-
-    void setQuality(const Quality &quality)
-    {
-      mQuality = quality;
-    }
+    /**
+     * \brief Get the quality of this object.
+     *
+     * The method returns the lowest quality met amongst all the checks listed in \ref mChecks.
+     * If there are no checks, the method returns \ref Quality::Null.
+     *
+     * @return the quality of the object
+     */
+    const Quality getQuality() const;
 
     TObject *getObject() const
     {
@@ -94,7 +96,7 @@ class MonitorObject : public TObject
       mObject = object;
     }
 
-    std::vector<CheckDefinition> getChecks() const
+    std::map<std::string, CheckDefinition> getChecks() const
     {
       return mChecks;
     }
@@ -117,45 +119,29 @@ class MonitorObject : public TObject
     /// \param name Arbitrary name to identify this Check.
     /// \param checkClassName The name of the class of the Check.
     /// \param checkLibraryName The name of the library containing the Check. If not specified it is taken from already loaded libraries.
-    void addCheck(const std::string name, const std::string checkClassName, const std::string checkLibraryName="")
-    {
-      CheckDefinition check;
-      check.name = name;
-      check.libraryName = checkLibraryName;
-      check.className = checkClassName;
-      mChecks.push_back(check);
-    }
+    void addCheck(const std::string name, const std::string checkClassName, const std::string checkLibraryName="");
+    void addOrUpdateCheck(std::string checkName, CheckDefinition check);
+    void setQualityForCheck(std::string checkName, Quality quality);
+    CheckDefinition getCheck(std::string checkName) const;
 
-    void 	Draw (Option_t *option="") override
-    {
-      mObject->Draw(option);
-    }
+    void 	Draw (Option_t *option) override;
+    TObject *DrawClone(Option_t *option) const override;
 
-    TObject *DrawClone(Option_t *option="") const override
-    {
-      auto* clone = new MonitorObject();
-      clone->setName(this->getName());
-      clone->setTaskName(this->getTaskName());
-      clone->setObject(mObject->DrawClone(option));
-      return clone;
-    }
-
-  // Names of special objects published by the framework for each task, behind the scene.
+    // Names of special objects published by the framework for each task, behind the scene.
   public:
     static constexpr char SYSTEM_OBJECT_PUBLICATION_LIST[] = "objectsList"; // list of objects published by the task
 
   private:
     std::string mName;
-    Quality mQuality;
     TObject *mObject;
-    std::vector<CheckDefinition> mChecks;
+    std::map<std::string /*checkName*/, CheckDefinition> mChecks;
     std::string mTaskName;
 
     // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the object.
     // TODO : maybe we should always be the owner ?
     bool mIsOwner;
 
-  ClassDefOverride(MonitorObject,1);
+  ClassDefOverride(MonitorObject,2);
 };
 
 } // namespace core

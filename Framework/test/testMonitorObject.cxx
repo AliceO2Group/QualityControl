@@ -21,21 +21,43 @@ BOOST_AUTO_TEST_CASE(mo)
   BOOST_CHECK_EQUAL(obj.getName(), "");
   obj.setName("test");
   BOOST_CHECK_EQUAL(obj.getName(), "test");
-  obj.setQuality(Quality::Medium);
-  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Medium);
+//  obj.setQuality(Quality::Medium);
+//  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Medium);
 
   obj.addCheck("first", "class1", "lib1");
   obj.addCheck("second", "class1", "lib1");
   obj.addCheck("third", "class2", "lib1");
   obj.addCheck("first", "class2", "lib1");
   auto checkers1 = obj.getChecks();
-  BOOST_CHECK_EQUAL(checkers1[0].name, "first");
-  BOOST_CHECK_EQUAL(checkers1[0].className, "class1");
-  BOOST_CHECK_EQUAL(checkers1[0].libraryName, "lib1");
-  BOOST_CHECK_EQUAL(checkers1[1].name, "second");
-  BOOST_CHECK_EQUAL(checkers1[1].className, "class1");
-  BOOST_CHECK_EQUAL(checkers1[1].libraryName, "lib1");
+  BOOST_CHECK_EQUAL(checkers1["first"].name, "first");
+  BOOST_CHECK_EQUAL(checkers1["first"].className, "class2");
+  BOOST_CHECK_EQUAL(checkers1["first"].libraryName, "lib1");
+  BOOST_CHECK_EQUAL(obj.getCheck("second").name, "second");
+  BOOST_CHECK_EQUAL(obj.getCheck("second").className, "class1");
+  BOOST_CHECK_EQUAL(obj.getCheck("second").libraryName, "lib1");
+
+  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Null);
+  obj.setQualityForCheck("first", Quality::Good);
+  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Good);
+  obj.setQualityForCheck("second", Quality::Bad);
+  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Bad);
+  obj.setQualityForCheck("second", Quality::Medium);
+  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Medium);
+
 }
+BOOST_AUTO_TEST_CASE(mo_check)
+{
+  o2::quality_control::core::MonitorObject obj;
+  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Null);
+  CheckDefinition check;
+  check.name = "test";
+  check.libraryName = "test";
+  check.className = "test";
+  obj.addOrUpdateCheck("test", check);
+  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Null);
+
+}
+
 
 } /* namespace ObjectsManager */
 } /* namespace quality_control */

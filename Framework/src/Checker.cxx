@@ -181,7 +181,7 @@ void Checker::check(shared_ptr<MonitorObject> mo)
   mLogger << "Checking \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // Get the Checks
-  std::vector<CheckDefinition> checks = mo->getChecks();
+  std::map<std::string /*checkName*/, CheckDefinition> checks = mo->getChecks();
 
   // Loop over the Checks and execute them followed by the beautification
   for (const auto &check : checks) {
@@ -191,11 +191,11 @@ void Checker::check(shared_ptr<MonitorObject> mo)
 
     // load module, instantiate, use check
     // TODO : preload modules and pre-instantiate, or keep a cache
-    loadLibrary(check.libraryName);
-    CheckInterface *checkInstance = instantiateCheck(check.name, check.className);
+    loadLibrary(check.second.libraryName);
+    CheckInterface *checkInstance = instantiateCheck(check.second.name, check.second.className);
     Quality q = checkInstance->check(mo.get());
 
-    mLogger << "  result of the check " << check.name << ": " << q.getName() << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << "  result of the check " << check.second.name << ": " << q.getName() << AliceO2::InfoLogger::InfoLogger::endm;
 
     checkInstance->beautify(mo.get(), q);
   }
