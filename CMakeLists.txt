@@ -12,6 +12,7 @@ FOREACH (p
     ENDIF ()
 endforeach ()
 
+enable_testing()
 
 add_subdirectory(Framework)
 add_subdirectory(Modules)
