@@ -14,5 +14,7 @@
 #pragma link C++ class o2::quality_control::gui::SpyMainFrame+;
 //#pragma link C++ class o2::quality_control::gui::SpyDevice+;
 
+#pragma link C++ class std::pair<std::string, o2::quality_control::core::CheckDefinition>;
+#pragma link C++ class std::map<std::string, o2::quality_control::core::CheckDefinition>;
 
 #endif

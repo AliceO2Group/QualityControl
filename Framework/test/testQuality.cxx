@@ -31,10 +31,20 @@ BOOST_AUTO_TEST_CASE(quality_test)
   BOOST_CHECK_EQUAL(myQuality.getLevel(), 2);
   BOOST_CHECK_EQUAL(myQuality.getName(), "Medium");
   myQuality = Quality::Null;
-  BOOST_CHECK_EQUAL(myQuality.getLevel(), 0);
+  BOOST_CHECK_EQUAL(myQuality.getLevel(), Quality::NullLevel);
   BOOST_CHECK_EQUAL(myQuality.getName(), "Null");
 
   cout << "test quality output : " << myQuality << endl;
+
+  BOOST_CHECK(Quality::Bad.isWorstThan(Quality::Medium));
+  BOOST_CHECK(Quality::Bad.isWorstThan(Quality::Good));
+  BOOST_CHECK(!Quality::Bad.isWorstThan(Quality::Null));
+  BOOST_CHECK(!Quality::Bad.isWorstThan(Quality::Bad));
+
+  BOOST_CHECK(Quality::Good.isBetterThan(Quality::Medium));
+  BOOST_CHECK(Quality::Good.isBetterThan(Quality::Bad));
+  BOOST_CHECK(Quality::Good.isBetterThan(Quality::Null));
+  BOOST_CHECK(!Quality::Good.isBetterThan(Quality::Good));
 }
 
 } /* namespace ObjectsManager */

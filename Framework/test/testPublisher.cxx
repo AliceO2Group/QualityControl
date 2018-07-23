@@ -31,7 +31,14 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   TObjString *s2 = (TObjString*)(objectsManager.getObject("test"));
   BOOST_CHECK_EQUAL(s.GetString(), s2->GetString());
   BOOST_CHECK_EQUAL(Quality::Null, objectsManager.getQuality("test"));
-  objectsManager.setQuality("test", Quality::Medium);
+  auto mo = objectsManager.getMonitorObject("test");
+  BOOST_CHECK_THROW(mo->setQualityForCheck("test", Quality::Medium), AliceO2::Common::ObjectNotFoundError);
+  CheckDefinition check;
+  check.name = "test";
+  check.libraryName = "test";
+  check.className = "test";
+  check.result = Quality::Medium;
+  mo->addOrReplaceCheck("test", check);
   BOOST_CHECK_EQUAL(Quality::Medium, objectsManager.getQuality("test"));
   BOOST_CHECK_THROW(objectsManager.getQuality("test2"), ObjectNotFoundError);
 

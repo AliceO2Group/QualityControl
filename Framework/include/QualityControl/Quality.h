@@ -21,7 +21,8 @@ class Quality
 {
   public:
     /// Default constructor
-    Quality(unsigned int level=0, std::string name="");
+    /// Not 'explicit', we allow implicit conversion from uint to Quality.
+    Quality(unsigned int level=Quality::NullLevel, std::string name="");
     /// Destructor
     virtual ~Quality();
 
@@ -32,6 +33,7 @@ class Quality
     static const Quality Good;
     static const Quality Medium;
     static const Quality Bad;
+    static const unsigned int NullLevel;
 
     friend bool operator==(const Quality& lhs, const Quality& rhs)
     {
@@ -45,6 +47,25 @@ class Quality
     {
       out << "Quality: " << q.getName() << " (level " << q.getLevel() << ")\n";
       return out;
+    }
+
+    /**
+     * \brief Checks whether this quality object is worst than another one.
+     * If compared to Null it returns false.
+     * @param quality
+     * @return true if it is worse, false otherwise or if compared to Quality::Null.
+     */
+    bool isWorstThan(const Quality& quality) const {
+      return this->mLevel > quality.getLevel();
+    }
+    /**
+     * \brief Checks whether this quality object is better than another one.
+     * If compared to Null it returns false.
+     * @param quality
+     * @return true if it is better, false otherwise or if compared to Quality::Null.
+     */
+    bool isBetterThan(const Quality& quality) const {
+      return this->mLevel < quality.getLevel();
     }
 
   private:

@@ -19,10 +19,15 @@ namespace quality_control {
 namespace core {
 
 /// \brief Container for the definition of a check
-struct CheckDefinition {
+struct CheckDefinition
+{
+    CheckDefinition() : result(Quality::Null)
+    {}
+
     std::string name;
     std::string className;
     std::string libraryName;
+    Quality result;
 };
 
 /// \brief  This class keeps the metadata about one published object.
@@ -39,13 +44,13 @@ class MonitorObject : public TObject
     ~MonitorObject() override;
 
     /// Copy constructor
-    MonitorObject (const MonitorObject& other) = default;
+    MonitorObject(const MonitorObject &other) = default;
     /// Move constructor
-    MonitorObject (MonitorObject&& other) /*noexcept*/ = default;
+    MonitorObject(MonitorObject &&other) /*noexcept*/ = default;
     /// Copy assignment operator
-    MonitorObject& operator= (const MonitorObject& other) = default;
+    MonitorObject &operator=(const MonitorObject &other) = default;
     /// Move assignment operator
-    MonitorObject& operator= (MonitorObject&& other) /*noexcept*/ = default;
+    MonitorObject &operator=(MonitorObject &&other) /*noexcept*/ = default;
 
     const std::string &getName() const
     {
@@ -54,7 +59,7 @@ class MonitorObject : public TObject
 
     /// \brief Overwrite the TObject's method just to avoid confusion.
     ///        One should rather use getName().
-    const char * 	GetName () const override
+    const char *GetName() const override
     {
       return getName().c_str();
     }
@@ -74,15 +79,15 @@ class MonitorObject : public TObject
       mTaskName = taskName;
     }
 
-    const Quality &getQuality() const
-    {
-      return mQuality;
-    }
-
-    void setQuality(const Quality &quality)
-    {
-      mQuality = quality;
-    }
+    ///
+    /// \brief Get the quality of this object.
+    ///
+    /// The method returns the lowest quality met amongst all the checks listed in \ref mChecks.
+    /// If there are no checks, the method returns \ref Quality::Null.
+    ///
+    /// @return the quality of the object
+    ///
+    Quality getQuality() const;
 
     TObject *getObject() const
     {
@@ -94,7 +99,7 @@ class MonitorObject : public TObject
       mObject = object;
     }
 
-    std::vector<CheckDefinition> getChecks() const
+    std::map<std::string, CheckDefinition> getChecks() const
     {
       return mChecks;
     }
@@ -117,45 +122,45 @@ class MonitorObject : public TObject
     /// \param name Arbitrary name to identify this Check.
     /// \param checkClassName The name of the class of the Check.
     /// \param checkLibraryName The name of the library containing the Check. If not specified it is taken from already loaded libraries.
-    void addCheck(const std::string name, const std::string checkClassName, const std::string checkLibraryName="")
-    {
-      CheckDefinition check;
-      check.name = name;
-      check.libraryName = checkLibraryName;
-      check.className = checkClassName;
-      mChecks.push_back(check);
-    }
+    void addCheck(const std::string name, const std::string checkClassName, const std::string checkLibraryName = "");
 
-    void 	Draw (Option_t *option="") override
-    {
-      mObject->Draw(option);
-    }
+    /// \brief Add or update the check with the provided name.
+    /// @param checkName The name of the check. If another check has already been added with this name it will be replaced.
+    /// @param check The check to add or replace.
+    void addOrReplaceCheck(std::string checkName, CheckDefinition check);
 
-    TObject *DrawClone(Option_t *option="") const override
-    {
-      auto* clone = new MonitorObject();
-      clone->setName(this->getName());
-      clone->setTaskName(this->getTaskName());
-      clone->setObject(mObject->DrawClone(option));
-      return clone;
-    }
+    /// \brief Set the given quality to the check called \ref checkName.
+    /// If no check exists with this name, it throws a \ref AliceO2::Common::ObjectNotFoundError.
+    /// @param checkName The name of the check
+    /// @param quality The new quality of the check.
+    /// \throw AliceO2::Common::ObjectNotFoundError
+    void setQualityForCheck(std::string checkName, Quality quality);
 
-  // Names of special objects published by the framework for each task, behind the scene.
+    /// Return the check (by value!) for the given name.
+    /// If no such check exists, AliceO2::Common::ObjectNotFoundError is thrown.
+    /// \param checkName The name of the check
+    /// \return The CheckDefinition of the check named checkName.
+    /// \throw AliceO2::Common::ObjectNotFoundError
+    CheckDefinition getCheck(std::string checkName) const;
+
+    void Draw(Option_t *option) override;
+    TObject *DrawClone(Option_t *option) const override;
+
+    // Names of special objects published by the framework for each task, behind the scene.
   public:
     static constexpr char SYSTEM_OBJECT_PUBLICATION_LIST[] = "objectsList"; // list of objects published by the task
 
   private:
     std::string mName;
-    Quality mQuality;
     TObject *mObject;
-    std::vector<CheckDefinition> mChecks;
+    std::map<std::string /*checkName*/, CheckDefinition> mChecks;
     std::string mTaskName;
 
     // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the object.
     // TODO : maybe we should always be the owner ?
     bool mIsOwner;
 
-  ClassDefOverride(MonitorObject,1);
+  ClassDefOverride(MonitorObject, 2);
 };
 
 } // namespace core
