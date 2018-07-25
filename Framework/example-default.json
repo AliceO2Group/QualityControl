@@ -35,7 +35,6 @@
       "daqTaskDefinition": {
         "className": "o2::quality_control_modules::daq::DaqTask",
         "moduleName": "QcDaq",
-        "moduleOfChecks": "QcExample",
         "maxNumberCycles": "-1",
         "cycleDurationSeconds": "10"
       },
