@@ -280,7 +280,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&) {
 ```
 4. Compile & run.
 
-In [Framework/src/TaskDPL.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/taskDPL.cxx)
+In [Framework/src/runTaskDPL.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/runTaskDPL.cxx)
 there is an exemplary DPL workflow with QC task. It is compiled to an
 executable `taskDPL`.
 
