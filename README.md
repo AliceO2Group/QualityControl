@@ -3,14 +3,14 @@
 
 ## Requirements
 
-A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the exact supported versions. 
+A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the exact supported versions.
 
 ## Setup
 
 1. Install O2
   * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/)
-  
-2. Install the MySQL/MariaDB development package 
+
+2. Install the MySQL/MariaDB development package
   * CC7 : `sudo yum install mariadb-server`
   * Mac (or download the dmg from Oracle) : `brew install mysql`
 
@@ -18,7 +18,7 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 
 4. Build/install the qcg (GUI) package : `aliBuild build qcg --default o2`
 
-Note that you can also use the alibuild "defaults" called `o2-dataflow`. 
+Note that you can also use the alibuild "defaults" called `o2-dataflow`.
 
 ### Post installation
 
@@ -30,7 +30,7 @@ alienv enter qcg/latest
 qcDatabaseSetup.sh
 ```
 
-Whenever you want to work with O2 and QualityControl, do either `alienv enter qcg/latest` or `alienv load qcg/latest`. 
+Whenever you want to work with O2 and QualityControl, do either `alienv enter qcg/latest` or `alienv load qcg/latest`.
 
 ## Configuration
 
@@ -167,7 +167,7 @@ alienv enter qcg/latest-o2
 tobject2json --backend mysql://qc_user:qc_user@localhost/quality_control --zeromq-server tcp://127.0.0.1:7777
 qcg
 ```
-Then open your browser at `localhost:8080`. It will show the objects as they are stored in the the database. 
+Then open your browser at `localhost:8080`. It will show the objects as they are stored in the the database.
 
 ### Readout chain
 
@@ -262,7 +262,7 @@ accordingly.
 ...
 
 WorkflowSpec defineDataProcessing(ConfigContext const&) {
-  
+
   std::vector<DataProcessorSpec> specs;
   ...
 
@@ -274,13 +274,13 @@ WorkflowSpec defineDataProcessing(ConfigContext const&) {
   specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
 
   o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
-  
+
   return specs;
 }
 ```
 4. Compile & run.
 
-In [Framework/src/TaskDPL.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/TaskDPL.cxx)
+In [Framework/src/TaskDPL.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/taskDPL.cxx)
 there is an exemplary DPL workflow with QC task. It is compiled to an
 executable `taskDPL`.
 
