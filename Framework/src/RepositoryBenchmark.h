@@ -55,7 +55,7 @@ class RepositoryBenchmark : public FairMQDevice
     uint64_t mThreadedMonitoringInterval;
 
     // internal state
-    o2::quality_control::repository::DatabaseInterface* mDatabase;
+    std::unique_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
     std::vector<std::shared_ptr<MonitorObject>> mMyObjects;
     TH1 *mMyHisto;
 

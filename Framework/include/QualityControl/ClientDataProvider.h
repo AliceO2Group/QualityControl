@@ -36,7 +36,7 @@ class ClientDataProvider
 
   private:
     // Facaded systems
-    repository::DatabaseInterface *database;
+    std::unique_ptr<repository::DatabaseInterface> database;
 
 };
 

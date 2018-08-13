@@ -6,7 +6,7 @@
 #ifndef QUALITYCONTROL_LIBS_CORE_DatabaseFactory_H_
 #define QUALITYCONTROL_LIBS_CORE_DatabaseFactory_H_
 
-#include <iostream>
+#include <memory>
 // O2
 #include "Common/Exceptions.h"
 // QC
@@ -24,10 +24,9 @@ class DatabaseFactory
     /// \brief Create a new instance of a DatabaseInterface.
     /// The DatabaseInterface actual class is decided based on the parameters passed.
     /// The ownership is returned as well.
-    /// \todo use unique_ptr
-    /// \param name Possible values : "mysql"
+    /// \param name Possible values : "MySql", "CCDB"
     /// \author Barthelemy von Haller
-    static DatabaseInterface* create(std::string name);
+    static std::unique_ptr<DatabaseInterface> create(std::string name);
 };
 
 } // namespace core

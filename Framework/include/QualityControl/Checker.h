@@ -92,7 +92,7 @@ class Checker : public FairMQDevice
     void populateConfig( std::unique_ptr<o2::configuration::ConfigurationInterface>& config, std::string checkerName);
 
     o2::quality_control::core::QcInfoLogger &mLogger;
-    o2::quality_control::repository::DatabaseInterface *mDatabase;
+    std::unique_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
     std::vector<std::string> mTasksAlreadyEncountered;
     CheckerConfig mCheckerConfig;
 
