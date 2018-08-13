@@ -36,6 +36,11 @@ using namespace std;
 CcdbDatabase::CcdbDatabase() : mUrl("")
 {}
 
+CcdbDatabase::~CcdbDatabase()
+{
+  disconnect();
+}
+
 void CcdbDatabase::curlInit()
 {
   curl_global_init(CURL_GLOBAL_DEFAULT);

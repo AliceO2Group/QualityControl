@@ -53,6 +53,7 @@ class CcdbDatabase : public DatabaseInterface
 {
   public:
     CcdbDatabase();
+    ~CcdbDatabase();
 
     void connect(std::string host, std::string database, std::string username, std::string password) override;
     void connect(std::unique_ptr<ConfigurationInterface> &config) override;
