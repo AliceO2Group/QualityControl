@@ -91,7 +91,7 @@ class SpyMainFrame: public TGMainFrame
 
     SpyDevice* mController;
     TObject* mDrawnObject;
-    o2::quality_control::repository::DatabaseInterface* mDbInterface;
+    std::unique_ptr<o2::quality_control::repository::DatabaseInterface> mDbInterface;
 
     bool mDbRunning;
 

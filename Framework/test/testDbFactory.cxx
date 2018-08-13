@@ -40,25 +40,25 @@ bool do_nothing(AliceO2::Common::FatalException const &ex)
 BOOST_AUTO_TEST_CASE(db_factory_test)
 {
 #ifdef _WITH_MYSQL
-  DatabaseInterface *database = DatabaseFactory::create("MySql");
+  std::unique_ptr<DatabaseInterface> database = DatabaseFactory::create("MySql");
   BOOST_CHECK(database);
-  BOOST_CHECK(dynamic_cast<MySqlDatabase*>(database));
+  BOOST_CHECK(dynamic_cast<MySqlDatabase*>(database.get()));
 #endif
 
-  DatabaseInterface *database2 = nullptr;
+  std::unique_ptr<DatabaseInterface> database2 = nullptr;
   BOOST_CHECK_EXCEPTION(database2 = DatabaseFactory::create("asf"), AliceO2::Common::FatalException, do_nothing );
   BOOST_CHECK(!database2);
 
-  DatabaseInterface *database3 = DatabaseFactory::create("CCDB");
+  std::unique_ptr<DatabaseInterface> database3 = DatabaseFactory::create("CCDB");
   BOOST_CHECK(database3);
-  BOOST_CHECK(dynamic_cast<CcdbDatabase*>(database3));
+  BOOST_CHECK(dynamic_cast<CcdbDatabase*>(database3.get()));
 }
 
 BOOST_AUTO_TEST_CASE(db_ccdb_listing)
 {
-  DatabaseInterface *database3 = DatabaseFactory::create("CCDB");
+  std::unique_ptr<DatabaseInterface> database3 = DatabaseFactory::create("CCDB");
   BOOST_CHECK(database3);
-  auto *ccdb = dynamic_cast<CcdbDatabase*>(database3);
+  auto *ccdb = dynamic_cast<CcdbDatabase*>(database3.get());
   BOOST_CHECK(ccdb);
 
   ccdb->connect("ccdb-test.cern.ch:8080", "", "", "");

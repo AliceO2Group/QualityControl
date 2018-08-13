@@ -125,7 +125,6 @@ void Checker::createChannel(std::string type, std::string method, std::string ad
 Checker::~Checker()
 {
   mDatabase->disconnect();
-  delete mDatabase;
 
   // Monitoring
   std::chrono::duration<double> diff = endLastObject - startFirstObject;
