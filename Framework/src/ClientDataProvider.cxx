@@ -22,7 +22,6 @@ ClientDataProvider::ClientDataProvider()
 
 ClientDataProvider::~ClientDataProvider()
 {
-  database->disconnect();
 }
 
 TObject* ClientDataProvider::getObject(std::string taskName, std::string objectName)

@@ -124,8 +124,6 @@ void Checker::createChannel(std::string type, std::string method, std::string ad
 
 Checker::~Checker()
 {
-  mDatabase->disconnect();
-
   // Monitoring
   std::chrono::duration<double> diff = endLastObject - startFirstObject;
   mCollector->send({diff.count(), "QC_checker_Time_between_first_and_last_objects_received"});
