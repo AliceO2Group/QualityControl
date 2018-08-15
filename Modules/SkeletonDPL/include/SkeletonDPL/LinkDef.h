@@ -4,4 +4,5 @@
 #pragma link off all functions;
 
 #pragma link C++ class o2::quality_control_modules::skeleton_dpl::SkeletonTaskDPL+;
+#pragma link C++ class o2::quality_control_modules::skeleton_dpl::SkeletonCheckDPL+;
 #endif

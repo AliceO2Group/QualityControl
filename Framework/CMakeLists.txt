@@ -59,6 +59,8 @@ set(SRCS
         src/Quality.cxx
         src/ObjectsManager.cxx
         src/Checker.cxx
+        src/CheckerDataProcessor.cxx
+        src/CheckerDataProcessorFactory.cxx
         src/CheckInterface.cxx
         src/DatabaseFactory.cxx
         src/ClientDataProvider.cxx
@@ -79,6 +81,8 @@ set(HEADERS # needed for the dictionary generation
         include/QualityControl/MonitorObject.h
         include/QualityControl/Quality.h
         include/QualityControl/CheckInterface.h
+        include/QualityControl/CheckerDataProcessor.h
+        include/QualityControl/CheckerDataProcessorFactory.h
         include/QualityControl/SpyMainFrame.h
         include/QualityControl/DatabaseInterface.h
         include/QualityControl/CcdbDatabase.h

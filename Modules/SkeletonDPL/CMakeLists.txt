@@ -4,7 +4,7 @@ O2_SETUP(NAME ${MODULE_NAME})
 
 set(SRCS
         src/SkeletonTaskDPL.cxx
-#        src/_SkeletonCheck.cxx
+        src/SkeletonCheckDPL.cxx
         )
 
 include_directories(
@@ -13,7 +13,7 @@ include_directories(
 
 set(HEADERS
         include/SkeletonDPL/SkeletonTaskDPL.h
-#        include/SkeletonDPL/_SkeletonCheck.h
+        include/SkeletonDPL/SkeletonCheckDPL.h
         )
 
 set(LIBRARY_NAME ${MODULE_NAME})

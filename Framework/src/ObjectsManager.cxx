@@ -64,7 +64,7 @@ Quality ObjectsManager::getQuality(std::string objectName)
   MonitorObject *mo = getMonitorObject(objectName);
   return mo->getQuality();
 }
-
+// fixme: keep user informed, that giving the same names for their objects is a bad idea
 void ObjectsManager::addCheck(const std::string &objectName, const std::string &checkName,
                               const std::string &checkClassName, const std::string &checkLibraryName)
 {

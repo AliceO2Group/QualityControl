@@ -74,6 +74,8 @@ class TaskDataProcessor {
   const Inputs& getInputsSpecs() { return mInputSpecs; };
   const OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
 
+  static o2::header::DataDescription taskDataDescription(const std::string taskName);
+
  private:
   void populateConfig(std::string taskName);
   void startOfActivity();

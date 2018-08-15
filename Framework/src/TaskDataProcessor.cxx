@@ -117,6 +117,13 @@ void TaskDataProcessor::timerCallback(ProcessingContext& pCtx)
   finishCycle(pCtx.outputs());
 }
 
+o2::header::DataDescription TaskDataProcessor::taskDataDescription(const std::string taskName)
+{
+  o2::header::DataDescription description;
+  description.runtimeInit(std::string(taskName.substr(0,o2::header::DataDescription::size-3) + "-mo").c_str());
+  return description;
+}
+
 void TaskDataProcessor::populateConfig(std::string taskName)
 {
   try {
@@ -152,8 +159,8 @@ void TaskDataProcessor::populateConfig(std::string taskName)
       mInputSpecs.push_back(inputSpec);
     }
 
-    mMonitorObjectsSpec.origin.runtimeInit(mConfigFile->getString(prefix + taskDefinitionName + "/outputDataOrigin").value().c_str());
-    mMonitorObjectsSpec.description.runtimeInit(mConfigFile->getString(prefix + taskDefinitionName + "/outputDataDescription").value().c_str());
+    mMonitorObjectsSpec.origin.runtimeInit("QC");
+    mMonitorObjectsSpec.description = taskDataDescription(taskName);
     mMonitorObjectsSpec.subSpec = 0;
     mMonitorObjectsSpec.lifetime = o2::framework::Lifetime::QA;
 
