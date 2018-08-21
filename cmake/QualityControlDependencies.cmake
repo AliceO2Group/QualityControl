@@ -12,6 +12,7 @@ find_package(CURL REQUIRED)
 find_package(ZeroMQ REQUIRED)
 find_package(nanomsg REQUIRED)
 include_directories(${MS_GSL_INCLUDE_DIR})
+find_package(Arrow REQUIRED)
 
 # todo not sure why this is needed
 if (BOOST_FOUND AND NOT Boost_FOUND)
@@ -81,6 +82,7 @@ o2_define_bucket(
         ${ZeroMQ_LIBRARY_SHARED}
         ${NANOMSG_LIBRARIES}
         ${AliceO2_LIBRARIES}
+        ${ARROW_SHARED_LIB}
 
         SYSTEMINCLUDE_DIRECTORIES
         ${Boost_INCLUDE_DIRS}
@@ -95,6 +97,7 @@ o2_define_bucket(
         ${CURL_INCLUDE_DIRS}
         ${AliceO2_INCLUDE_DIRS}
         ${MS_GSL_INCLUDE_DIR}
+        ${ARROW_INCLUDE_DIR}
 )
 
 o2_define_bucket(
@@ -120,6 +123,7 @@ o2_define_bucket(
         ${Monitoring_LIBRARIES}
         ${InfoLogger_LIBRARIES}
         ${Common_LIBRARIES}
+        ${ARROW_SHARED_LIB}
         QualityControl
 
         SYSTEMINCLUDE_DIRECTORIES
@@ -127,6 +131,7 @@ o2_define_bucket(
         ${Monitoring_INCLUDE_DIRS}
         ${InfoLogger_INCLUDE_DIRS}
         ${Common_INCLUDE_DIRS}
+        ${ARROW_INCLUDE_DIR}
         ${CMAKE_SOURCE_DIR}/Framework/include # another module's include dir
 )
 
