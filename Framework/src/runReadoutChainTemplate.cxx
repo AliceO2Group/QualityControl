@@ -26,9 +26,12 @@
 #include "Framework/runDataProcessing.h"
 #include "QualityControl/TaskDataProcessorFactory.h"
 #include "QualityControl/TaskDataProcessor.h"
+#include "QualityControl/CheckerDataProcessorFactory.h"
+#include "QualityControl/CheckerDataProcessor.h"
 
 using namespace o2::framework;
 using namespace o2::quality_control::core;
+using namespace o2::quality_control::checker;
 
 WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
@@ -40,19 +43,20 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutChainTemplate.json";
   TaskDataProcessorFactory qcFactory;
   specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
+  CheckerDataProcessorFactory checkerFactory;
+  specs.push_back(checkerFactory.create("checker_0", qcTaskName, qcConfigurationSource));
 
-  DataProcessorSpec checker{
-    "checker",
+  DataProcessorSpec printer{
+    "printer",
     Inputs{
-      { "aaa", "ITS", "HIST_SKLT_TASK", 0, Lifetime::QA }
+      { "checked-mo", "QC", CheckerDataProcessor::checkerDataDescription(qcTaskName), 0 }
     },
     Outputs{},
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback) [](InitContext& initContext) {
 
         return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
-          LOG(INFO) << "checker invoked";
-          auto mo = processingContext.inputs().get<o2::quality_control::core::MonitorObject*>("aaa").get();
+          auto mo = processingContext.inputs().get<MonitorObject*>("checked-mo").get();
 
           if (mo->getName() == "example") {
             auto* g = dynamic_cast<TH1F*>(mo->getObject());
@@ -62,12 +66,11 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
             }
             LOG(INFO) << bins;
           }
-
         };
       }
     }
   };
-  specs.push_back(checker);
+  specs.push_back(printer);
 
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
   o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);

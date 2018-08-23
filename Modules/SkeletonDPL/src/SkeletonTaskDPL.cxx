@@ -32,9 +32,9 @@ void SkeletonTaskDPL::initialize(o2::framework::InitContext& ctx)
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
-//  getObjectsManager()->addCheck(mHistogram, "checkFromSkeleton",
-//                                "o2::quality_control_modules::skeleton_dpl::_SkeletonCheck",
-//                                "QcSkeletonDpl");
+  getObjectsManager()->addCheck(mHistogram, "checkFromSkeleton",
+                                "o2::quality_control_modules::skeleton_dpl::SkeletonCheckDPL",
+                                "QcSkeletonDpl");
 }
 
 void SkeletonTaskDPL::startOfActivity(Activity &activity)

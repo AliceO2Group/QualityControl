@@ -36,7 +36,7 @@ namespace checker {
 /// A Checker is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
 /// and to run them on the MonitorObject in order to generate a quality.
 ///
-/// TODO Evalue whether we should have a dedicated device to store in the database.
+/// TODO Evaluate whether we should have a dedicated device to store in the database.
 ///
 /// \author Barthélémy von Haller
 class Checker : public FairMQDevice
