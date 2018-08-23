@@ -74,6 +74,7 @@ class TaskDataProcessor {
   const Inputs& getInputsSpecs() { return mInputSpecs; };
   const OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
 
+  /// \brief Unified DataDescription naming scheme for all tasks
   static o2::header::DataDescription taskDataDescription(const std::string taskName);
 
  private:

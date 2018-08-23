@@ -1,6 +1,6 @@
 ///
-/// \file   SkeletonCheck.h
-/// \author Barthelemy von Haller
+/// \file   SkeletonCheckDPL.h
+/// \author Piotr Konopka
 ///
 
 #ifndef QUALITYCONTROL_LIBS_CHECKER_SkeletonCheckDPL_H_

@@ -29,9 +29,10 @@ namespace checker {
 /// \brief The class in charge of running the checks on a MonitorObject.
 ///
 /// A Checker is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
-/// and to run them on the MonitorObject in order to generate a quality.
+/// and to run them on the MonitorObject in order to generate a quality. At the moment, a checker also stores the MO
+/// and its quality in the repository.
 ///
-/// TODO Evalue whether we should have a dedicated device to store in the database.
+/// TODO Evaluate whether we should have a dedicated device to store in the database.
 ///
 /// \author Barthélémy von Haller
 class CheckerDataProcessor : public framework::Task {
@@ -49,6 +50,7 @@ public:
   framework::InputSpec getInputSpec() { return mInputSpec; };
   framework::OutputSpec getOutputSpec() { return mOutputSpec; };
 
+  /// \brief Unified DataDescription naming scheme for all checkers
   static o2::header::DataDescription checkerDataDescription(const std::string taskName);
 
 private:

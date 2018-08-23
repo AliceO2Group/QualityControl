@@ -1,6 +1,6 @@
 ///
 /// \file   SkeletonCheckDPL.cxx
-/// \author Barthelemy von Haller
+/// \author Piotr Konopka
 ///
 
 #include "SkeletonDPL/SkeletonCheckDPL.h"
@@ -26,7 +26,7 @@ SkeletonCheckDPL::~SkeletonCheckDPL()
 {
 }
 
-void SkeletonCheckDPL::configure(std::string name)
+void SkeletonCheckDPL::configure(std::string)
 {
 }
 
@@ -61,26 +61,16 @@ void SkeletonCheckDPL::beautify(MonitorObject *mo, Quality checkResult)
   if (mo->getName() == "example") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
-
-//    auto* paveText = new TPaveText(0.3, 0.8, 0.7, 0.95, "NDC");
     if (checkResult == Quality::Good) {
       h->SetFillColor(kGreen);
-//      paveText->SetFillColor(kGreen);
-//      paveText->AddText("No anomalies");
     } else if (checkResult == Quality::Bad) {
       LOG(INFO) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
-//      paveText->SetFillColor(kRed);
-//      paveText->AddText("Some missing values in between bin 1 and 7");
     } else if (checkResult == Quality::Medium) {
       LOG(INFO) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
-//      paveText->SetFillColor(kOrange);
-//      paveText->AddText("Some values in bin 0 or bins above 7");
     }
     h->SetLineColor(kBlack);
-//  h->GetListOfFunctions()->AddLast(paveText);
-
   }
 }
 
