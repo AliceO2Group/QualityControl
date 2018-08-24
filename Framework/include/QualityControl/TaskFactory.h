@@ -38,6 +38,7 @@ class TaskFactory
 
   using FatalException = AliceO2::Common::FatalException;
   using errinfo_details = AliceO2::Common::errinfo_details;
+
   /// \brief Create a new instance of a TaskInterface.
   /// The TaskInterface actual class is decided based on the parameters passed.
   /// \todo make it static ?
@@ -49,9 +50,10 @@ class TaskFactory
     QcInfoLogger& logger = QcInfoLogger::GetInstance();
 
     // Load the library
-    std::string library = "lib" + taskConfig.moduleName + ".so";
+    std::string library = "lib" + taskConfig.moduleName;
     logger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
-    if (gSystem->Load(library.c_str())) {
+    int libLoaded = gSystem->Load(library.c_str(), "", true);
+    if (libLoaded) {
       BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
     }
 
