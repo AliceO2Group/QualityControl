@@ -31,6 +31,7 @@ using namespace repository;
 namespace checker {
 
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
+// TODO maybe we could use the CheckerDataProcessorFactory
 
 CheckerDataProcessor::CheckerDataProcessor(std::string checkerName, std::string taskName,
                                            std::string configurationSource)

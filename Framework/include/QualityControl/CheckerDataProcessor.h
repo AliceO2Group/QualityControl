@@ -35,71 +35,94 @@ namespace checker {
 /// TODO Evaluate whether we should have a dedicated device to store in the database.
 ///
 /// \author Barthélémy von Haller
-class CheckerDataProcessor : public framework::Task {
-public:
-  /// Constructor
-  CheckerDataProcessor(std::string checkerName, std::string taskName, std::string configurationSource);
-  /// Destructor
-  ~CheckerDataProcessor() override;
+class CheckerDataProcessor : public framework::Task
+{
+  public:
+    /// Constructor
+    CheckerDataProcessor(std::string checkerName, std::string taskName, std::string configurationSource);
 
-  /// \brief Checker init callback
-  void init(framework::InitContext& ctx) override;
-  /// \brief Checker process callback
-  void run(framework::ProcessingContext& ctx) override;
+    /// Destructor
+    ~CheckerDataProcessor() override;
 
-  framework::InputSpec getInputSpec() { return mInputSpec; };
-  framework::OutputSpec getOutputSpec() { return mOutputSpec; };
+    /// \brief Checker init callback
+    void init(framework::InitContext &ctx) override;
 
-  /// \brief Unified DataDescription naming scheme for all checkers
-  static o2::header::DataDescription checkerDataDescription(const std::string taskName);
+    /// \brief Checker process callback
+    void run(framework::ProcessingContext &ctx) override;
 
-private:
-  /**
-   * \brief Evaluate the quality of a MonitorObject.
-   *
-   * The Check's associated with this MonitorObject are run and a global quality is built by
-   * taking the worse quality encountered. The MonitorObject is modified by setting its quality
-   * and by calling the "beautifying" methods of the Check's.
-   *
-   * @param mo The MonitorObject to evaluate and whose quality will be set according
-   *        to the worse quality encountered while running the Check's.
-   */
-  void check(std::shared_ptr<MonitorObject> mo);
+    framework::InputSpec getInputSpec()
+    { return mInputSpec; };
 
-  /**
-   * \brief Store the MonitorObject in the database.
-   *
-   * @param mo The MonitorObject to be stored in the database.
-   */
-  void store(std::shared_ptr<MonitorObject> mo);
+    framework::OutputSpec getOutputSpec()
+    { return mOutputSpec; };
 
-  /**
-   * \brief Send the MonitorObject on FairMQ to whoever is listening.
-   */
-  void send(std::shared_ptr<MonitorObject> mo, framework::DataAllocator& allocator);
+    /// \brief Unified DataDescription naming scheme for all checkers
+    static o2::header::DataDescription checkerDataDescription(const std::string taskName);
 
-  void loadLibrary(const std::string libraryName);
-  CheckInterface* instantiateCheck(std::string checkName, std::string className);
-  void populateConfig(std::unique_ptr<o2::configuration::ConfigurationInterface>& config);
+  private:
+    /**
+     * \brief Evaluate the quality of a MonitorObject.
+     *
+     * The Check's associated with this MonitorObject are run and a global quality is built by
+     * taking the worse quality encountered. The MonitorObject is modified by setting its quality
+     * and by calling the "beautifying" methods of the Check's.
+     *
+     * @param mo The MonitorObject to evaluate and whose quality will be set according
+     *        to the worse quality encountered while running the Check's.
+     */
+    void check(std::shared_ptr<MonitorObject> mo);
 
-  std::string mCheckerName;
-  std::string mConfigurationSource;
-  o2::framework::InputSpec mInputSpec;
-  o2::framework::OutputSpec mOutputSpec;
+    /**
+     * \brief Store the MonitorObject in the database.
+     *
+     * @param mo The MonitorObject to be stored in the database.
+     */
+    void store(std::shared_ptr<MonitorObject> mo);
 
-  o2::quality_control::core::QcInfoLogger& mLogger;
-  std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
+    /**
+     * \brief Send the MonitorObject on FairMQ to whoever is listening.
+     */
+    void send(std::shared_ptr<MonitorObject> mo, framework::DataAllocator &allocator);
 
-  std::vector<std::string> mLibrariesLoaded;
-  std::map<std::string, CheckInterface*> mChecksLoaded;
-  std::map<std::string, TClass*> mClassesLoaded;
+    /**
+     * \brief Load a library.
+     * Load a library if it is not already in the cache.
+     * \param libraryName The name of the library to load.
+     */
+    void loadLibrary(const std::string libraryName);
 
-  // monitoring
-  std::shared_ptr<o2::monitoring::Monitoring> mCollector;
-  std::chrono::system_clock::time_point startFirstObject;
-  std::chrono::system_clock::time_point endLastObject;
-  int mTotalNumberHistosReceived;
-  AliceO2::Common::Timer timer;
+    /**
+     * Get the check specified by its name and class.
+     * If it has never been asked for before it is instantiated and cached. There can be several copies
+     * of the same check but with different names in order to have them configured differently.
+     * @todo Pass the name of the task that will use it. It will help with getting the correct configuration.
+     * @param checkName
+     * @param className
+     * @return the check object
+     */
+    CheckInterface *getCheck(std::string checkName, std::string className);
+
+    // General state
+    std::string mCheckerName;
+    std::string mConfigurationSource;
+    o2::quality_control::core::QcInfoLogger &mLogger;
+    std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
+
+    // DPL
+    o2::framework::InputSpec mInputSpec;
+    o2::framework::OutputSpec mOutputSpec;
+
+    // Checks cache
+    std::vector<std::string> mLibrariesLoaded;
+    std::map<std::string, CheckInterface *> mChecksLoaded;
+    std::map<std::string, TClass *> mClassesLoaded;
+
+    // monitoring
+    std::shared_ptr<o2::monitoring::Monitoring> mCollector;
+    std::chrono::system_clock::time_point startFirstObject;
+    std::chrono::system_clock::time_point endLastObject;
+    int mTotalNumberHistosReceived;
+    AliceO2::Common::Timer timer;
 };
 
 } /* namespace Checker */
