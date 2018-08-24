@@ -62,7 +62,9 @@ void CheckerDataProcessor::init(framework::InitContext&)
   // configuration
   try {
     std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-    populateConfig(config);
+    // configuration of the database
+    mDatabase = DatabaseFactory::create(config->get<std::string>("qc/config/database/implementation").value());
+    mDatabase->connect(config);
   }
   catch (
     std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
@@ -130,21 +132,6 @@ o2::header::DataDescription CheckerDataProcessor::checkerDataDescription(const s
   return description;
 }
 
-void CheckerDataProcessor::populateConfig(std::unique_ptr<ConfigurationInterface>& config)
-{
-  try {
-    // configuration of the database
-    mDatabase = DatabaseFactory::create(config->get<std::string>("qc/config/database/implementation").value());
-    mDatabase->connect(config);
-  }
-  catch (...) { // catch already here the configuration exception and print it
-    // because if we are in a constructor, the exception could be lost
-    std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n" << diagnostic; // << endl;
-    throw;
-  }
-}
-
 void CheckerDataProcessor::check(std::shared_ptr<MonitorObject> mo)
 {
   std::map<std::string /*checkName*/, CheckDefinition> checks = mo->getChecks();
@@ -162,7 +149,7 @@ void CheckerDataProcessor::check(std::shared_ptr<MonitorObject> mo)
     // load module, instantiate, use check
     // TODO : preload modules and pre-instantiate, or keep a cache
     loadLibrary(check.second.libraryName);
-    CheckInterface* checkInstance = instantiateCheck(check.second.name, check.second.className);
+    CheckInterface* checkInstance = getCheck(check.second.name, check.second.className);
     Quality q = checkInstance->check(mo.get());
 
     mLogger << "  result of the check " << check.second.name << ": " << q.getName()
@@ -192,8 +179,6 @@ void CheckerDataProcessor::send(std::shared_ptr<MonitorObject> mo, framework::Da
     framework::Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec, mOutputSpec.lifetime }, *mo);
 }
 
-/// \brief Load a library.
-/// \param libraryName The name of the library to load.
 void CheckerDataProcessor::loadLibrary(const std::string libraryName)
 {
   if (boost::algorithm::trim_copy(libraryName).empty()) {
@@ -201,11 +186,11 @@ void CheckerDataProcessor::loadLibrary(const std::string libraryName)
     return;
   }
 
-  std::string library = "lib" + libraryName + ".so";
+  std::string library = "lib" + libraryName;
   // if vector does not contain -> first time we see it
   if (std::find(mLibrariesLoaded.begin(), mLibrariesLoaded.end(), library) == mLibrariesLoaded.end()) {
     mLogger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
-    int libLoaded = gSystem->Load(library.c_str());
+    int libLoaded = gSystem->Load(library.c_str(), "", true);
     if (libLoaded == 1) {
       mLogger << "Already loaded before" << AliceO2::InfoLogger::InfoLogger::endm;
     }
@@ -216,7 +201,7 @@ void CheckerDataProcessor::loadLibrary(const std::string libraryName)
   }
 }
 
-CheckInterface* CheckerDataProcessor::instantiateCheck(std::string checkName, std::string className)
+CheckInterface* CheckerDataProcessor::getCheck(std::string checkName, std::string className)
 {
   CheckInterface* result = nullptr;
   // Get the class and instantiate
