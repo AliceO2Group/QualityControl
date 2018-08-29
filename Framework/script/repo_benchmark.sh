@@ -9,9 +9,8 @@ set -u ;# exit when using undeclared variable
 
 ### Define matrix of tests
 NB_OF_TASKS=(10) ;#1 2 5 10 25 50 100);
-NB_OF_OBJECTS=(10 50 100 150);
-#SIZE_OBJECTS=(1 10 100 500 1000 2500 5000);# 10 100 1000);# in kB
-SIZE_OBJECTS=(1000);# 100 500 1000 2500 5000);# 10 100 1000);# in kB
+NB_OF_OBJECTS=(200);
+SIZE_OBJECTS=(10);# 100 500 1000 2500 5000);# 10 100 1000);# in kB
 
 ### Misc variables
 # The log prefix will be followed by the benchmark description, e.g. 1 task 1 checker... or an id or both
