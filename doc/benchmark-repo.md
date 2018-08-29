@@ -48,8 +48,10 @@ repositoryBenchmark as many times needed on the machine(s).
 1. Edit the bash script `repo_benchmarks.sh` by modifying the variables
 NB_OF_TASKS, NB_OF_OBJECTS and SIZE_OBJECTS at the top. They arrays
 that should contain all the possible values for these three variables.
-2. Edit the other variables if needed, such as NUMBER_CYCLES, MONITORING_URL
-NODES or DB_*.
-3.
+2. Find a set of machines and assign the variable NODES accordingly.
+3. Edit the other variables if needed, such as NUMBER_CYCLES, MONITORING_URL
+DB_*.
+4. Make sure that the QC is installed on the client nodes and that there
+is the key there for a password-less ssh connection.
 
 
