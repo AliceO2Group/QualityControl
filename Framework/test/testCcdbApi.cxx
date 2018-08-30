@@ -25,15 +25,17 @@ using namespace o2::ccdb;
 
 struct test_fixture
 {
-  test_fixture()
-  {
-    api.init("http://ccdb-test.cern.ch:8080");
-  }
-  ~test_fixture()
-  {
-  }
-  CcdbApi api;
-  map<string, string> metadata;
+    test_fixture()
+    {
+      api.init("http://ccdb-test.cern.ch:8080");
+    }
+
+    ~test_fixture()
+    {
+    }
+
+    CcdbApi api;
+    map<string, string> metadata;
 };
 
 BOOST_AUTO_TEST_CASE(store_test)
@@ -80,13 +82,95 @@ BOOST_AUTO_TEST_CASE(delete_test)
   BOOST_CHECK(h2 == nullptr);
 }
 
+
+/// trim from start (in place)
+/// https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+static inline void ltrim(std::string &s)
+{
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+    return !std::isspace(ch);
+  }));
+}
+
+/// trim from end (in place)
+/// https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
+static inline void rtrim(std::string &s)
+{
+  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+    return !std::isspace(ch);
+  }).base(), s.end());
+}
+
+void countItems(const string &s, int &countObjects, int &countSubfolders)
+{
+  countObjects = 0;
+  countSubfolders = 0;
+  std::stringstream ss(s);
+  std::string line;
+  bool subfolderMode = false;
+  while (std::getline(ss, line, '\n')) {
+    ltrim(line);
+    rtrim(line);
+    if (line.length() == 0) {
+      continue;
+    }
+
+    if (line.find("subfolders") != std::string::npos) {
+      subfolderMode = true;
+      continue;
+    }
+
+    if (subfolderMode) {
+      if (line.find(']') == 0) {
+        break;
+      } else {
+        countSubfolders++;
+      }
+    }
+
+    if (line.find("\"path\"") == 0) {
+      countObjects++;
+    }
+  }
+}
+
 BOOST_AUTO_TEST_CASE(list_test)
 {
   test_fixture f;
 
-  string s = f.api.list(); // top dir
-  cout << "s : " << s << endl;
+  // test non-empty top dir
+  string s = f.api.list("", "application/json"); // top dir
+  long nbLines = std::count(s.begin(), s.end(), '\n') + 1;
+  BOOST_CHECK(nbLines > 5);
 
+  // test empty dir
   f.api.truncate("Test/Detector");
+  s = f.api.list("Test/Detector", false, "application/json");
+  int countObjects = 0;
+  int countSubfolders = 0;
+  countItems(s, countObjects, countSubfolders);
+  BOOST_CHECK_EQUAL(countObjects, 0);
 
+  // more complex tree
+  auto h1 = new TH1F("object1", "object1", 100, 0, 99);
+  f.api.store(h1, "Test", f.metadata);
+  f.api.store(h1, "Test/Detector", f.metadata);
+  f.api.store(h1, "Test/Detector", f.metadata);
+  f.api.store(h1, "Test/Detector", f.metadata);
+  f.api.store(h1, "Test/Detector/Sub/abc", f.metadata);
+
+  s = f.api.list("Test/Detector", false, "application/json");
+  countItems(s, countObjects, countSubfolders);
+  BOOST_CHECK_EQUAL(countObjects, 3);
+//  BOOST_CHECK_EQUAL(countSubfolders, 1);
+
+  s = f.api.list("Test/Detector*", false, "application/json");
+  countItems(s, countObjects, countSubfolders);
+  cout << "s : " << s << endl;
+  BOOST_CHECK_EQUAL(countObjects, 4);
+//  BOOST_CHECK_EQUAL(countSubfolders, 0);
+
+  s = f.api.list("Test/Detector", true, "application/json");
+  countItems(s, countObjects, countSubfolders);
+  BOOST_CHECK_EQUAL(countObjects, 1);
 }

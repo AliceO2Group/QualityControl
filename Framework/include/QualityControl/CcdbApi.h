@@ -27,6 +27,9 @@ namespace o2 {
 namespace ccdb {
 
 /**
+ * Interface to the CCDB.
+ * It uses Curl to talk to the REST api.
+ *
  * @todo use smart pointers ?
  * @todo handle errors and exceptions
  * @todo extend code coverage
@@ -41,12 +44,14 @@ class CcdbApi //: public DatabaseInterface
 
     /**
      * Initialize connection to CCDB
+     *
      * @param host The URL to the CCDB (e.g. "ccdb-test.cern.ch:8080")
      */
     void init(std::string host);
 
     /**
      * Stores an object in the CCDB
+     *
      * @param rootObject Shared pointer to the object to store.
      * @param path The path where the object is going to be stored.
      * @param metadata Key-values representing the metadata for this object.
@@ -58,6 +63,7 @@ class CcdbApi //: public DatabaseInterface
 
     /**
      * Retrieve object at the given path for the given timestamp.
+     *
      * @param path The path where the object is to be found.
      * @param metadata Key-values representing the metadata to filter out objects.
      * @param timestamp Timestamp of the object to retrieve. If omitted, current timestamp is used.
@@ -71,6 +77,7 @@ class CcdbApi //: public DatabaseInterface
 
     /**
      * Delete all versions of the object at this path.
+     *
      * @todo Raise an exception if no such object exist.
      * @param path
      */
@@ -78,6 +85,7 @@ class CcdbApi //: public DatabaseInterface
 
     /**
      * Delete the matching version of this object.
+     *
      * @todo Raise an exception if no such object exist.
      * @param path Path to the object to delete
      * @param timestamp Timestamp of the object to delete.
@@ -85,27 +93,45 @@ class CcdbApi //: public DatabaseInterface
     void deleteObject(std::string path, long timestamp = -1);
 
     /**
-     * Return the listing of folder and/or objects in the subpath.
-     * @param path The folder we want to list the children of (default : top dir).
-     * @param accept The format of the returned string -> one of "text/plain (default)", "application/json", "text/xml"
+     * Return the listing of objects, and in some cases subfolders, matching this path.
+     * The path can contain sql patterns (correctly encoded) or regexps.
+     *
+     * In the case where there is no pattern, the list of subfolders is returned along with all the objects at
+     * this path. It does not work recursively and objects from the subfolders are not returned.
+     *
+     * In the case where there is a pattern, subfolders are not returned and any object matching the pattern will
+     * be returned, including those in subfolders if they match.
+     *
+     * Example : Task/Detector will return objects and subfolders in /Task/Detector but not the object(s) in
+     * /Task/Detector/Sub.
+     * Example : Task/Detector/.* will return any object below Detector recursively.
+     * Example : Te*e* will return any object matching this pattern, including Test/detector and TestSecond/A/B.
+     *
+     * @todo accept should use an enum class.
+     * @param path The path to the folder we want to list the children of (default : top dir).
+     * @param latestOnly In case there are several versions of the same object, list only the latest one.
+     * @param returnFormat The format of the returned string -> one of "text/plain (default)", "application/json", "text/xml"
      * @return The listing of folder and/or objects in the format requested
      */
-    std::string list(std::string path = "", std::string accept = "text/plain");
+    std::string list(std::string path = "", bool latestOnly = false, std::string returnFormat = "text/plain");
 
   private:
     /**
      * Get the current timestamp.
+     *
      * @return the current timestamp as a long
      */
     long getCurrentTimestamp();
     /**
      * Transform and return a string representation of the given timestamp.
+     *
      * @param timestamp
      * @return a string representation of the given timestamp.
      */
     std::string getTimestampString(long timestamp);
     /**
      * Compute and return a timestamp X seconds in the future.
+     *
      * @param secondsInFuture The number of seconds in the future.
      * @return the future timestamp
      */
@@ -113,6 +139,7 @@ class CcdbApi //: public DatabaseInterface
 
     /**
      * Build the full url to store an object.
+     *
      * @param path The path where the object is going to be stored.
      * @param metadata Key-values representing the metadata for this object.
      * @param startValidityTimestamp Start of validity. If omitted or negative, the current timestamp is used.

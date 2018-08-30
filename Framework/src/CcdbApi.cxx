@@ -277,11 +277,13 @@ size_t CurlWrite_CallbackFunc_StdString2(void *contents, size_t size, size_t nme
   return size * nmemb;
 }
 
-std::string CcdbApi::list(std::string path, std::string accept)
+std::string CcdbApi::list(std::string path, bool latestOnly, std::string returnFormat)
 {
   CURL *curl;
   CURLcode res;
-  string fullUrl = mUrl + "/browse/" + path;
+  string fullUrl = mUrl;
+  fullUrl += latestOnly ? "/latest/" : "/browse/";
+  fullUrl += path;
   std::string result;
 
   curl = curl_easy_init();
@@ -292,8 +294,8 @@ std::string CcdbApi::list(std::string path, std::string accept)
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
 
     struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, (string("Accept: ") + accept).c_str());
-    headers = curl_slist_append(headers, (string("Content-Type: ") + accept).c_str());
+    headers = curl_slist_append(headers, (string("Accept: ") + returnFormat).c_str());
+    headers = curl_slist_append(headers, (string("Content-Type: ") + returnFormat).c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 
     // Perform the request, res will get the return code

@@ -150,33 +150,9 @@ size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmem
   return size * nmemb;
 }
 
-std::string CcdbDatabase::getListing(std::string subpath, std::string accept)
+std::string CcdbDatabase::getListing(std::string path, std::string accept)
 {
-  CURL *curl;
-  CURLcode res;
-  string fullUrl = mUrl + "/browse/" + subpath;
-  std::string tempString;
-
-  curl = curl_easy_init();
-  if (curl != nullptr) {
-
-    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempString);
-
-    struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, (string("Accept: ") + accept).c_str());
-    headers = curl_slist_append(headers, (string("Content-Type: ") + accept).c_str());
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-    // Perform the request, res will get the return code
-    res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    }
-    curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
-  }
+  std::string tempString = ccdbApi.list(path, false, accept);
 
   return tempString;
 }
