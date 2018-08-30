@@ -70,7 +70,7 @@ class CcdbApi //: public DatabaseInterface
 //    std::vector<std::string> getPublishedObjectNames(std::string taskName);
 
     /**
-     * Delete all version of the object at this path.
+     * Delete all versions of the object at this path.
      * @todo Raise an exception if no such object exist.
      * @param path
      */
@@ -93,8 +93,22 @@ class CcdbApi //: public DatabaseInterface
     std::string list(std::string path = "", std::string accept = "text/plain");
 
   private:
+    /**
+     * Get the current timestamp.
+     * @return the current timestamp as a long
+     */
     long getCurrentTimestamp();
+    /**
+     * Transform and return a string representation of the given timestamp.
+     * @param timestamp
+     * @return a string representation of the given timestamp.
+     */
     std::string getTimestampString(long timestamp);
+    /**
+     * Compute and return a timestamp X seconds in the future.
+     * @param secondsInFuture The number of seconds in the future.
+     * @return the future timestamp
+     */
     long getFutureTimestamp(int secondsInFuture);
 
     /**
@@ -118,8 +132,13 @@ class CcdbApi //: public DatabaseInterface
     std::string getFullUrlForRetrieval(const std::string &path, const std::map<std::string, std::string> &metadata,
                                        long timestamp = -1);
 
-    std::string mUrl;
+    /**
+     * Initialization of CURL
+     */
     void curlInit();
+
+    /// Base URL of the CCDB (with port)
+    std::string mUrl;
 
 };
 
