@@ -41,14 +41,14 @@ BOOST_AUTO_TEST_CASE(store_test)
   test_fixture f;
 
   auto h1 = new TH1F("object1", "object1", 100, 0, 99);
-  f.api.store(h1, "Task/Detector", f.metadata);
+  f.api.store(h1, "Test/Detector", f.metadata);
 }
 
 BOOST_AUTO_TEST_CASE(retrieve_test)
 {
   test_fixture f;
 
-  auto h1 = f.api.retrieve("Task/Detector", f.metadata);
+  auto h1 = f.api.retrieve("Test/Detector", f.metadata);
   BOOST_CHECK(h1 != nullptr);
   BOOST_CHECK_EQUAL(h1->GetName(), "object1");
 
@@ -60,10 +60,10 @@ BOOST_AUTO_TEST_CASE(truncate_test)
 {
   test_fixture f;
 
-  auto h1 = f.api.retrieve("Task/Detector", f.metadata);
+  auto h1 = f.api.retrieve("Test/Detector", f.metadata);
   BOOST_CHECK(h1 != nullptr);
-  f.api.truncate("Task/Detector");
-  h1 = f.api.retrieve("Task/Detector", f.metadata);
+  f.api.truncate("Test/Detector");
+  h1 = f.api.retrieve("Test/Detector", f.metadata);
   BOOST_CHECK(h1 == nullptr);
 }
 
@@ -72,10 +72,21 @@ BOOST_AUTO_TEST_CASE(delete_test)
   test_fixture f;
 
   auto h1 = new TH1F("object1", "object1", 100, 0, 99);
-  f.api.store(h1, "Task/Detector", f.metadata);
-  auto h2 = f.api.retrieve("Task/Detector", f.metadata);
+  f.api.store(h1, "Test/Detector", f.metadata);
+  auto h2 = f.api.retrieve("Test/Detector", f.metadata);
   BOOST_CHECK(h2 != nullptr);
-  f.api.deleteObject("Task/Detector");
-  h2 = f.api.retrieve("Task/Detector", f.metadata);
+  f.api.deleteObject("Test/Detector");
+  h2 = f.api.retrieve("Test/Detector", f.metadata);
   BOOST_CHECK(h2 == nullptr);
+}
+
+BOOST_AUTO_TEST_CASE(list_test)
+{
+  test_fixture f;
+
+  string s = f.api.list(); // top dir
+  cout << "s : " << s << endl;
+
+  f.api.truncate("Test/Detector");
+
 }

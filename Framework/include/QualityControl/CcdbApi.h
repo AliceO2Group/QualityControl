@@ -70,7 +70,7 @@ class CcdbApi //: public DatabaseInterface
 //    std::vector<std::string> getPublishedObjectNames(std::string taskName);
 
     /**
-     * Delete all data at this path.
+     * Delete all version of the object at this path.
      * @todo Raise an exception if no such object exist.
      * @param path
      */
@@ -83,6 +83,14 @@ class CcdbApi //: public DatabaseInterface
      * @param timestamp Timestamp of the object to delete.
      */
     void deleteObject(std::string path, long timestamp = -1);
+
+    /**
+     * Return the listing of folder and/or objects in the subpath.
+     * @param path The folder we want to list the children of (default : top dir).
+     * @param accept The format of the returned string -> one of "text/plain (default)", "application/json", "text/xml"
+     * @return The listing of folder and/or objects in the format requested
+     */
+    std::string list(std::string path = "", std::string accept = "text/plain");
 
   private:
     long getCurrentTimestamp();
@@ -110,13 +118,6 @@ class CcdbApi //: public DatabaseInterface
     std::string getFullUrlForRetrieval(const std::string &path, const std::map<std::string, std::string> &metadata,
                                        long timestamp = -1);
 
-    /**
-     * Return the listing of folder and/or objects in the subpath.
-     * @param subpath The folder we want to list the children of.
-     * @param accept The format of the returned string as an \"Accept\", i.e. text/plain, application/json, text/xml
-     * @return The listing of folder and/or objects in the format requested and as returned by the http server.
-     */
-//    std::string getListing(std::string subpath = "", std::string accept = "text/plain");
     std::string mUrl;
     void curlInit();
 

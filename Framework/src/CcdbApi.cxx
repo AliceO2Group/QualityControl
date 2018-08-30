@@ -261,52 +261,52 @@ TObject* CcdbApi::retrieve(std::string path, std::map<std::string, std::string> 
 //  // NOOP for CCDB
 //}
 
-//size_t CurlWrite_CallbackFunc_StdString2(void *contents, size_t size, size_t nmemb, std::string *s)
-//{
-//  size_t newLength = size * nmemb;
-//  size_t oldLength = s->size();
-//  try {
-//    s->resize(oldLength + newLength);
-//  }
-//  catch (std::bad_alloc &e) {
-//    cerr << "memory error when getting data from CCDB" << endl;
-//    return 0;
-//  }
-//
-//  std::copy((char *) contents, (char *) contents + newLength, s->begin() + oldLength);
-//  return size * nmemb;
-//}
+size_t CurlWrite_CallbackFunc_StdString2(void *contents, size_t size, size_t nmemb, std::string *s)
+{
+  size_t newLength = size * nmemb;
+  size_t oldLength = s->size();
+  try {
+    s->resize(oldLength + newLength);
+  }
+  catch (std::bad_alloc &e) {
+    cerr << "memory error when getting data from CCDB" << endl;
+    return 0;
+  }
 
-//std::string CcdbApi::getListing(std::string subpath, std::string accept)
-//{
-//  CURL *curl;
-//  CURLcode res;
-//  string fullUrl = mUrl + "/browse/" + subpath;
-//  std::string tempString;
-//
-//  curl = curl_easy_init();
-//  if (curl != nullptr) {
-//
-//    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
-//    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString2);
-//    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempString);
-//
-//    struct curl_slist *headers = NULL;
-//    headers = curl_slist_append(headers, (string("Accept: ") + accept).c_str());
-//    headers = curl_slist_append(headers, (string("Content-Type: ") + accept).c_str());
-//    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-//
-//    // Perform the request, res will get the return code
-//    res = curl_easy_perform(curl);
-//    if (res != CURLE_OK) {
-//      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-//    }
-//    curl_slist_free_all(headers);
-//    curl_easy_cleanup(curl);
-//  }
-//
-//  return tempString;
-//}
+  std::copy((char *) contents, (char *) contents + newLength, s->begin() + oldLength);
+  return size * nmemb;
+}
+
+std::string CcdbApi::list(std::string path, std::string accept)
+{
+  CURL *curl;
+  CURLcode res;
+  string fullUrl = mUrl + "/browse/" + path;
+  std::string result;
+
+  curl = curl_easy_init();
+  if (curl != nullptr) {
+
+    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString2);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result);
+
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, (string("Accept: ") + accept).c_str());
+    headers = curl_slist_append(headers, (string("Content-Type: ") + accept).c_str());
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+
+    // Perform the request, res will get the return code
+    res = curl_easy_perform(curl);
+    if (res != CURLE_OK) {
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    }
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+  }
+
+  return result;
+}
 
 ///// trim from start (in place)
 ///// https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
