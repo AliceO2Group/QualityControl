@@ -34,7 +34,7 @@ class MySqlDatabase: public DatabaseInterface
     void disconnect() override;
     std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
     std::vector<std::string> getListOfTasksWithPublications() override;
-    void truncateObject(std::string taskName, std::string objectName) override;
+    void truncate(std::string taskName, std::string objectName) override;
 
   private:
     /**

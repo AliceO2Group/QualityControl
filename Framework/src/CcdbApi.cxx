@@ -187,7 +187,7 @@ TObject* CcdbApi::retrieve(std::string path, std::map<std::string, std::string> 
   CURL *curl_handle;
   CURLcode res;
   struct MemoryStruct chunk{(char *) malloc(1)/*memory*/, 0/*size*/};
-  TObject* result;
+  TObject* result = nullptr;
 
   /* init the curl session */
   curl_handle = curl_easy_init();
@@ -425,14 +425,15 @@ std::string CcdbApi::getTimestampString(long timestamp)
   ss << timestamp;
   return ss.str();
 }
-/*
 
-void CcdbApi::deleteObjectVersion(std::string taskName, std::string objectName, string timestamp)
+void CcdbApi::deleteObject(std::string path, long timestamp)
 {
   CURL *curl;
   CURLcode res;
   stringstream fullUrl;
-  fullUrl << mUrl << "/" << taskName << "/" << objectName << "/" << timestamp;
+  long timestampLocal = timestamp == -1 ? getCurrentTimestamp() : timestamp;
+
+  fullUrl << mUrl << "/" << path << "/" << timestampLocal;
 
   curl = curl_easy_init();
   if (curl != nullptr) {
@@ -448,14 +449,12 @@ void CcdbApi::deleteObjectVersion(std::string taskName, std::string objectName, 
   }
 }
 
-void CcdbApi::truncateObject(std::string taskName, std::string objectName)
+void CcdbApi::truncate(std::string path)
 {
-  cout << "truncating data for " << taskName << "/" << objectName << endl;
-
   CURL *curl;
   CURLcode res;
   stringstream fullUrl;
-  fullUrl << mUrl << "/truncate/" << taskName << "/" << objectName;
+  fullUrl << mUrl << "/truncate/" << path;
 
   curl = curl_easy_init();
   if (curl != nullptr) {
@@ -469,7 +468,7 @@ void CcdbApi::truncateObject(std::string taskName, std::string objectName)
     curl_easy_cleanup(curl);
   }
 }
-*/
+
 
 }
 }

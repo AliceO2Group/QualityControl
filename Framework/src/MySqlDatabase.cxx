@@ -293,7 +293,7 @@ std::vector<std::string> MySqlDatabase::getListOfTasksWithPublications()
   return result;
 }
 
-void MySqlDatabase::truncateObject(std::string taskName, std::string objectName)
+void MySqlDatabase::truncate(std::string taskName, std::string objectName)
 {
   string queryString = string("delete ignore from `data_") + taskName + "` where object_name='" + objectName + "'";
 

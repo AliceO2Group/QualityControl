@@ -186,9 +186,9 @@ bool RepositoryBenchmark::ConditionalRun()
 
 void RepositoryBenchmark::emptyDatabase()
 {
-  mDatabase->truncateObject(mTaskName, mObjectName);
+  mDatabase->truncate(mTaskName, mObjectName);
   for(uint64_t i = 0 ; i < mNumberObjects ; i++) {
-    mDatabase->truncateObject(mTaskName, mObjectName+to_string(i));
+    mDatabase->truncate(mTaskName, mObjectName + to_string(i));
   }
 }
 

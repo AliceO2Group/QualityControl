@@ -320,26 +320,11 @@ void CcdbDatabase::deleteObjectVersion(std::string taskName, std::string objectN
   }
 }
 
-void CcdbDatabase::truncateObject(std::string taskName, std::string objectName)
+void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 {
   cout << "truncating data for " << taskName << "/" << objectName << endl;
 
-  CURL *curl;
-  CURLcode res;
-  stringstream fullUrl;
-  fullUrl << mUrl << "/truncate/" << taskName << "/" << objectName;
-
-  curl = curl_easy_init();
-  if (curl != nullptr) {
-    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.str().c_str());
-
-    // Perform the request, res will get the return code
-    res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    }
-    curl_easy_cleanup(curl);
-  }
+  ccdbApi.truncate(taskName + "/" + objectName);
 }
 
 }

@@ -75,7 +75,7 @@ class DatabaseInterface
      * @param taskName Task sending the object
      * @param objectName Name of the object
      */
-     virtual void truncateObject(std::string taskName, std::string objectName) = 0;
+     virtual void truncate(std::string taskName, std::string objectName) = 0;
 };
 
 } /* namespace repository */

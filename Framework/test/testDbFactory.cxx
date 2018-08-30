@@ -64,9 +64,9 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   ccdb->connect("ccdb-test.cern.ch:8080", "", "", "");
 
   // prepare stuff in the db
-  ccdb->truncateObject("functional_test", "object1");
-  ccdb->truncateObject("functional_test", "object2");
-  ccdb->truncateObject("functional_test", "path/to/object3");
+  ccdb->truncate("functional_test", "object1");
+  ccdb->truncate("functional_test", "object2");
+  ccdb->truncate("functional_test", "path/to/object3");
   auto *h1 = new TH1F("object1", "object1", 100, 0, 99);
   auto *h2 = new TH1F("object2", "object2", 100, 0, 99);
   auto *h3 = new TH1F("object3", "object3", 100, 0, 99);

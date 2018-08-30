@@ -64,7 +64,7 @@ class CcdbDatabase : public DatabaseInterface
     void prepareTaskDataContainer(std::string taskName) override;
     std::vector<std::string> getListOfTasksWithPublications() override;
     std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
-    void truncateObject(std::string taskName, std::string objectName) override;
+    void truncate(std::string taskName, std::string objectName) override;
     /**
      * Delete the matching version of this object.
      * @todo Raise an exception if no such object exist.
