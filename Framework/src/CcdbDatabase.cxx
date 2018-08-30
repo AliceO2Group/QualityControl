@@ -14,16 +14,9 @@
 ///
 
 #include "QualityControl/CcdbDatabase.h"
-#include <regex>
-#include <boost/algorithm/string/split.hpp>
+#include <chrono>
 #include <boost/algorithm/string.hpp>
-#include <TMessage.h>
-#include <TObjString.h>
-#include <algorithm>
-#include <unordered_set>
-#include <TFile.h>
 #include "Common/Exceptions.h"
-#include "QualityControl/CcdbApi.h"
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -42,22 +35,15 @@ CcdbDatabase::~CcdbDatabase()
   disconnect();
 }
 
-void CcdbDatabase::curlInit()
-{
-  curl_global_init(CURL_GLOBAL_DEFAULT);
-}
-
 void CcdbDatabase::connect(std::string host, std::string database, std::string username, std::string password)
 {
   mUrl = host;
-  curlInit();
   ccdbApi.init(mUrl);
 }
 
 void CcdbDatabase::connect(std::unique_ptr<ConfigurationInterface> &config)
 {
   mUrl = config->get<string>("qc/config/database/host").value();
-  curlInit();
   ccdbApi.init(mUrl);
 }
 
@@ -74,6 +60,7 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10); // todo set a proper timestamp for the end
 
+  cout << "storing : " << path << endl;
   ccdbApi.store(mo.get(), path, metadata, from, to);
 }
 
@@ -85,33 +72,6 @@ struct MemoryStruct
     char *memory;
     unsigned int size;
 };
-
-/**
- * Callback used by CURL to store the data received from the CCDB.
- * See https://curl.haxx.se/libcurl/c/getinmemory.html
- * @param contents
- * @param size
- * @param nmemb
- * @param userp a MemoryStruct where data is stored.
- * @return the size of the data we received and stored at userp.
- */
-static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
-{
-  size_t realSize = size * nmemb;
-  auto *mem = (struct MemoryStruct *) userp;
-
-  mem->memory = (char *) realloc(mem->memory, mem->size + realSize + 1);
-  if (mem->memory == nullptr) {
-    printf("not enough memory (realloc returned NULL)\n");
-    return 0;
-  }
-
-  memcpy(&(mem->memory[mem->size]), contents, realSize);
-  mem->size += realSize;
-  mem->memory[mem->size] = 0;
-
-  return realSize;
-}
 
 core::MonitorObject *CcdbDatabase::retrieve(std::string taskName, std::string objectName)
 {
@@ -132,22 +92,6 @@ void CcdbDatabase::disconnect()
 void CcdbDatabase::prepareTaskDataContainer(std::string taskName)
 {
   // NOOP for CCDB
-}
-
-size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s)
-{
-  size_t newLength = size * nmemb;
-  size_t oldLength = s->size();
-  try {
-    s->resize(oldLength + newLength);
-  }
-  catch (std::bad_alloc &e) {
-    cerr << "memory error when getting data from CCDB" << endl;
-    return 0;
-  }
-
-  std::copy((char *) contents, (char *) contents + newLength, s->begin() + oldLength);
-  return size * nmemb;
 }
 
 std::string CcdbDatabase::getListing(std::string path, std::string accept)
@@ -198,51 +142,20 @@ std::vector<std::string> CcdbDatabase::getListOfTasksWithPublications()
 
 std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskName)
 {
-
-  // get all the objects published for a given task
-  // URL : http://ccdb-test.cern.ch:8080/latest/[taskName]/.*
   std::vector<string> result;
-  CURL *curl;
-  CURLcode res;
-  string fullUrl = mUrl + "/latest/" + taskName + "/.*";
-  std::string tempString;
 
-  curl = curl_easy_init();
-  if (curl != nullptr) {
-
-    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempString);
-
-    // JSON accept
-    struct curl_slist *headers = NULL;
-    headers = curl_slist_append(headers, string("Accept: Application/JSON").c_str());
-    headers = curl_slist_append(headers, string("Content-Type: Application/JSON").c_str());
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-    // Perform the request, res will get the return code
-    res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    }
-    curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
-  }
+  string listing = ccdbApi.list(taskName+"/.*", true, "Application/JSON");
 
   // Split the string we received, by line. Also trim it and remove empty lines. Select the lines starting with "path".
-  std::stringstream ss(tempString);
+  std::stringstream ss(listing);
   std::string line;
   while (std::getline(ss, line, '\n')) {
-//    cout << "line : " << line;
     ltrim(line);
     rtrim(line);
     if (line.length() > 0 && line.find("\"path\"") == 0) {
       unsigned long objNameStart = 9 + taskName.length();
       string path = line.substr(objNameStart, line.length() - 2 /*final 2 char*/ - objNameStart);
       result.push_back(path);
-//      cout << "...yes" << endl;
-    } else {
-//      cout << "...no" << endl;
     }
   }
 
@@ -266,13 +179,6 @@ long CcdbDatabase::getCurrentTimestamp()
   auto epoch = now_ms.time_since_epoch();
   auto value = std::chrono::duration_cast<std::chrono::milliseconds>(epoch);
   return value.count();
-}
-
-std::string CcdbDatabase::getTimestampString(long timestamp)
-{
-  stringstream ss;
-  ss << timestamp;
-  return ss.str();
 }
 
 void CcdbDatabase::truncate(std::string taskName, std::string objectName)

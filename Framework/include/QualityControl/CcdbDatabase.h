@@ -16,11 +16,8 @@
 #ifndef PROJECT_CCDBDATABASE_H
 #define PROJECT_CCDBDATABASE_H
 
-#include <ctime>
-#include <chrono>
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/CcdbApi.h"
-#include <curl/curl.h>
 
 namespace o2 {
 namespace quality_control {
@@ -54,7 +51,7 @@ class CcdbDatabase : public DatabaseInterface
 {
   public:
     CcdbDatabase();
-    ~CcdbDatabase();
+    virtual ~CcdbDatabase();
 
     void connect(std::string host, std::string database, std::string username, std::string password) override;
     void connect(std::unique_ptr<ConfigurationInterface> &config) override;
@@ -79,7 +76,6 @@ class CcdbDatabase : public DatabaseInterface
     std::string getListing(std::string subpath = "", std::string accept = "text/plain");
     o2::ccdb::CcdbApi ccdbApi;
     std::string mUrl;
-    void curlInit();
 };
 
 }

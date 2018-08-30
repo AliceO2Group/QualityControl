@@ -15,17 +15,8 @@
 
 #include "QualityControl/CcdbApi.h"
 #include <regex>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string.hpp>
+#include <chrono>
 #include <TMessage.h>
-#include <TObjString.h>
-#include <algorithm>
-#include <unordered_set>
-#include <TFile.h>
-#include "Common/Exceptions.h"
-
-using namespace std::chrono;
-using namespace AliceO2::Common;
 
 namespace o2 {
 namespace ccdb {
