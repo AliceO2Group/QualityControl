@@ -19,6 +19,7 @@
 #include <ctime>
 #include <chrono>
 #include "QualityControl/DatabaseInterface.h"
+#include "QualityControl/CcdbApi.h"
 #include <curl/curl.h>
 
 namespace o2 {
@@ -84,7 +85,7 @@ class CcdbDatabase : public DatabaseInterface
      * @return The listing of folder and/or objects in the format requested and as returned by the http server.
      */
     std::string getListing(std::string subpath = "", std::string accept = "text/plain");
-
+    o2::ccdb::CcdbApi ccdbApi;
     std::string mUrl;
     void curlInit();
 };

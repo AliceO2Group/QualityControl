@@ -88,6 +88,7 @@ set(SRCS
         src/TaskDataProcessorFactory.cxx
         src/TaskInterfaceDPL.cxx
         src/RepositoryBenchmark.cxx
+        src/CcdbApi.cxx
         )
 
 set(HEADERS # needed for the dictionary generation
@@ -217,6 +218,7 @@ set(TEST_SRCS
         test/testQcInfoLogger.cxx
         test/testQCTask.cxx
         test/testQuality.cxx
+        test/testCcdbApi.cxx
         )
 
 O2_GENERATE_TESTS(

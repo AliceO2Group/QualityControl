@@ -94,6 +94,10 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "object2") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "path/to/object3") != objectNames.end());
 
+  // test retrieve object
+  MonitorObject* mo1_retrieved = ccdb->retrieve("functional_test", "object1");
+  BOOST_CHECK(mo1_retrieved != nullptr);
+
 }
 
 /*
