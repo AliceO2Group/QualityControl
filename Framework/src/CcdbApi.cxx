@@ -43,7 +43,7 @@ void CcdbApi::init(std::string host)
   curlInit();
 }
 
-void CcdbApi::store(TObject* rootObject, std::string path, std::map<std::string, std::string> metadata,
+void CcdbApi::store(TObject *rootObject, std::string path, std::map<std::string, std::string> metadata,
                     long startValidityTimestamp, long endValidityTimestamp)
 {
   // Serialize the object
@@ -135,8 +135,8 @@ string CcdbApi::getFullUrlForRetrieval(const string &path, const map<string, str
  */
 struct MemoryStruct
 {
-    char *memory;
-    unsigned int size;
+  char *memory;
+  unsigned int size;
 };
 
 /**
@@ -166,8 +166,8 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
   return realsize;
 }
 
-TObject* CcdbApi::retrieve(std::string path, std::map<std::string, std::string> metadata,
-                                           long timestamp)
+TObject *CcdbApi::retrieve(std::string path, std::map<std::string, std::string> metadata,
+                           long timestamp)
 {
   // Note : based on https://curl.haxx.se/libcurl/c/getinmemory.html
   // Thus it does not comply to our coding guidelines as it is a copy paste.
@@ -178,7 +178,7 @@ TObject* CcdbApi::retrieve(std::string path, std::map<std::string, std::string> 
   CURL *curl_handle;
   CURLcode res;
   struct MemoryStruct chunk{(char *) malloc(1)/*memory*/, 0/*size*/};
-  TObject* result = nullptr;
+  TObject *result = nullptr;
 
   /* init the curl session */
   curl_handle = curl_easy_init();

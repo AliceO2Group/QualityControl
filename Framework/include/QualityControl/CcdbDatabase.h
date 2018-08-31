@@ -49,33 +49,33 @@ namespace repository {
 
 class CcdbDatabase : public DatabaseInterface
 {
-  public:
-    CcdbDatabase();
-    virtual ~CcdbDatabase();
+ public:
+  CcdbDatabase();
+  virtual ~CcdbDatabase();
 
-    void connect(std::string host, std::string database, std::string username, std::string password) override;
-    void connect(std::unique_ptr<ConfigurationInterface> &config) override;
-    void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
-    core::MonitorObject *retrieve(std::string taskName, std::string objectName) override;
-    void disconnect() override;
-    void prepareTaskDataContainer(std::string taskName) override;
-    std::vector<std::string> getListOfTasksWithPublications() override;
-    std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
-    void truncate(std::string taskName, std::string objectName) override;
+  void connect(std::string host, std::string database, std::string username, std::string password) override;
+  void connect(std::unique_ptr<ConfigurationInterface> &config) override;
+  void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
+  core::MonitorObject *retrieve(std::string taskName, std::string objectName) override;
+  void disconnect() override;
+  void prepareTaskDataContainer(std::string taskName) override;
+  std::vector<std::string> getListOfTasksWithPublications() override;
+  std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
+  void truncate(std::string taskName, std::string objectName) override;
 
-  private:
-    long getCurrentTimestamp();
-    std::string getTimestampString(long timestamp);
-    long getFutureTimestamp(int secondsInFuture);
-    /**
-     * Return the listing of folder and/or objects in the subpath.
-     * @param subpath The folder we want to list the children of.
-     * @param accept The format of the returned string as an \"Accept\", i.e. text/plain, application/json, text/xml
-     * @return The listing of folder and/or objects in the format requested and as returned by the http server.
-     */
-    std::string getListing(std::string subpath = "", std::string accept = "text/plain");
-    o2::ccdb::CcdbApi ccdbApi;
-    std::string mUrl;
+ private:
+  long getCurrentTimestamp();
+  std::string getTimestampString(long timestamp);
+  long getFutureTimestamp(int secondsInFuture);
+  /**
+   * Return the listing of folder and/or objects in the subpath.
+   * @param subpath The folder we want to list the children of.
+   * @param accept The format of the returned string as an \"Accept\", i.e. text/plain, application/json, text/xml
+   * @return The listing of folder and/or objects in the format requested and as returned by the http server.
+   */
+  std::string getListing(std::string subpath = "", std::string accept = "text/plain");
+  o2::ccdb::CcdbApi ccdbApi;
+  std::string mUrl;
 };
 
 }
