@@ -247,11 +247,6 @@ TObject *CcdbApi::retrieve(std::string path, std::map<std::string, std::string> 
   return result;
 }
 
-//void CcdbApi::prepareTaskDataContainer(std::string taskName)
-//{
-//  // NOOP for CCDB
-//}
-
 size_t CurlWrite_CallbackFunc_StdString2(void *contents, size_t size, size_t nmemb, std::string *s)
 {
   size_t newLength = size * nmemb;
@@ -300,98 +295,6 @@ std::string CcdbApi::list(std::string path, bool latestOnly, std::string returnF
 
   return result;
 }
-
-///// trim from start (in place)
-///// https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-//static inline void ltrim(std::string &s)
-//{
-//  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-//    return !std::isspace(ch);
-//  }));
-//}
-//
-///// trim from end (in place)
-///// https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-//static inline void rtrim(std::string &s)
-//{
-//  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
-//    return !std::isspace(ch);
-//  }).base(), s.end());
-//}
-
-//std::vector<std::string> CcdbApi::getListOfTasksWithPublications()
-//{
-//  std::vector<string> result;
-//
-//  // Get the listing from CCDB
-//  string listing = getListing();
-//
-//  // Split the string we received, by line. Also trim it and remove empty lines.
-//  std::stringstream ss(listing);
-//  std::string line;
-//  while (std::getline(ss, line, '\n')) {
-//    ltrim(line);
-//    rtrim(line);
-//    if (line.length() > 0 && line != "Subfolders:") {
-//      result.push_back(line);
-//    }
-//  }
-//
-//  return result;
-//}
-//
-//std::vector<std::string> CcdbApi::getPublishedObjectNames(std::string taskName)
-//{
-//
-//  // get all the objects published for a given task
-//  // URL : http://ccdb-test.cern.ch:8080/latest/[taskName]/.*
-//  std::vector<string> result;
-//  CURL *curl;
-//  CURLcode res;
-//  string fullUrl = mUrl + "/latest/" + taskName + "/.*";
-//  std::string tempString;
-//
-//  curl = curl_easy_init();
-//  if (curl != nullptr) {
-//
-//    curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
-//    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString2);
-//    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &tempString);
-//
-//    // JSON accept
-//    struct curl_slist *headers = NULL;
-//    headers = curl_slist_append(headers, string("Accept: Application/JSON").c_str());
-//    headers = curl_slist_append(headers, string("Content-Type: Application/JSON").c_str());
-//    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-//
-//    // Perform the request, res will get the return code
-//    res = curl_easy_perform(curl);
-//    if (res != CURLE_OK) {
-//      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-//    }
-//    curl_slist_free_all(headers);
-//    curl_easy_cleanup(curl);
-//  }
-//
-//  // Split the string we received, by line. Also trim it and remove empty lines. Select the lines starting with "path".
-//  std::stringstream ss(tempString);
-//  std::string line;
-//  while (std::getline(ss, line, '\n')) {
-////    cout << "line : " << line;
-//    ltrim(line);
-//    rtrim(line);
-//    if (line.length() > 0 && line.find("\"path\"") == 0) {
-//      unsigned long objNameStart = 9 + taskName.length();
-//      string path = line.substr(objNameStart, line.length() - 2 /*final 2 char*/ - objNameStart);
-//      result.push_back(path);
-////      cout << "...yes" << endl;
-//    } else {
-////      cout << "...no" << endl;
-//    }
-//  }
-//
-//  return result;
-//}
 
 long CcdbApi::getFutureTimestamp(int secondsInFuture)
 {
@@ -461,7 +364,6 @@ void CcdbApi::truncate(std::string path)
     curl_easy_cleanup(curl);
   }
 }
-
 
 }
 }
