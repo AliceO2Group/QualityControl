@@ -99,7 +99,10 @@ void SkeletonTaskDPL::endOfActivity(Activity &activity)
 
 void SkeletonTaskDPL::reset()
 {
-  QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm;
+  // clean all the monitor objects here
+
+  QcInfoLogger::GetInstance() << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  mHistogram->Reset();
 }
 
 }

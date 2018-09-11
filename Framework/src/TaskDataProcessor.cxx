@@ -32,7 +32,8 @@ TaskDataProcessor::TaskDataProcessor(std::string taskName, std::string configura
     mLastNumberObjects(0),
     mCycleOn(false),
     mCycleNumber(0),
-    mMonitorObjectsSpec("", "", 0)
+    mMonitorObjectsSpec("", "", 0),
+    mResetAfterPublish(false)
 {
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
@@ -109,6 +110,9 @@ void TaskDataProcessor::processCallback(ProcessingContext& pCtx)
 
     // temporarily here, until timer callback is implemented in dpl
     timerCallback(pCtx);
+    if (mResetAfterPublish) {
+      mTask->reset();
+    }
   }
 }
 
@@ -116,6 +120,12 @@ void TaskDataProcessor::timerCallback(ProcessingContext& pCtx)
 {
   finishCycle(pCtx.outputs());
 }
+
+void TaskDataProcessor::setResetAfterPublish(bool resetAfterPublish)
+{
+  mResetAfterPublish = resetAfterPublish;
+}
+
 
 o2::header::DataDescription TaskDataProcessor::taskDataDescription(const std::string taskName)
 {

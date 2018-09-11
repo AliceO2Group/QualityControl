@@ -74,6 +74,8 @@ class TaskDataProcessor {
   const Inputs& getInputsSpecs() { return mInputSpecs; };
   const OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
 
+  void setResetAfterPublish(bool);
+
   /// \brief Unified DataDescription naming scheme for all tasks
   static o2::header::DataDescription taskDataDescription(const std::string taskName);
 
@@ -91,6 +93,7 @@ class TaskDataProcessor {
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
   TaskInterfaceDPL* mTask;
+  bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::recursive_mutex mTaskMutex; // \todo should be plain mutex, when timer callback is implemented in dpl
 
