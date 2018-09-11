@@ -7,18 +7,18 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 
 ## Setup
 
-1. Install O2
-  * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/)
+1. Install the MySQL/MariaDB development package
+     * CC7 : `sudo yum install mariadb-server`
+     * Mac (or download the dmg from Oracle) : `brew install mysql`
 
-2. Install the MySQL/MariaDB development package
-  * CC7 : `sudo yum install mariadb-server`
-  * Mac (or download the dmg from Oracle) : `brew install mysql`
+2. Install O2
+     * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/)
 
-3. Build/install the QualityControl package : `aliBuild init QualityControl ; aliBuild build QualityControl --defaults o2`
+3. Build/install the QualityControl development package : `aliBuild init QualityControl ; aliBuild build QualityControl --defaults o2`
 
 4. Build/install the qcg (GUI) package : `aliBuild build qcg --default o2`
 
-Note that you can also use the alibuild "defaults" called `o2-dataflow`.
+Note that you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
 
 ### Post installation
 
@@ -29,6 +29,8 @@ sudo systemctl start mariadb # for CC7, check for your specific OS
 alienv enter qcg/latest
 qcDatabaseSetup.sh
 ```
+
+### Environment loading
 
 Whenever you want to work with O2 and QualityControl, do either `alienv enter qcg/latest` or `alienv load qcg/latest`.
 
