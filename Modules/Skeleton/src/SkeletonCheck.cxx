@@ -46,6 +46,6 @@ void SkeletonCheck::beautify(MonitorObject *mo, Quality checkResult)
 }
 
 } // namespace skeleton
-} // namespace quality_control
+} // namespace quality_control_modules
 } // namespace o2
 

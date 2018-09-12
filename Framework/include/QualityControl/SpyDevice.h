@@ -3,8 +3,8 @@
 /// @author  Barthelemy von Haller
 ///
 
-#ifndef QUALITY_CONTROL_SpyDevice_H
-#define QUALITY_CONTROL_SpyDevice_H
+#ifndef QC_GUI_SPYDEVICE_H
+#define QC_GUI_SPYDEVICE_H
 
 // ROOT
 #include <TMessage.h>
@@ -57,7 +57,7 @@ class SpyDevice: public FairMQDevice
 };
 
 } // namespace gui
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITY_CONTROL_SpyDevice_H
+#endif // QC_GUI_SPYDEVICE_H

@@ -3,8 +3,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef TASKDATAPROCESSOR_H
-#define TASKDATAPROCESSOR_H
+#ifndef QC_CORE_TASKDATAPROCESSOR_H
+#define QC_CORE_TASKDATAPROCESSOR_H
 
 #include <thread>
 #include <mutex>
@@ -114,8 +114,8 @@ class TaskDataProcessor {
   ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
 };
 
-}
-}
-}
+} // namespace core
+} // namespace quality_control
+} // namespace o2
 
-#endif // TASKDATAPROCESSOR_H
+#endif // QC_CORE_TASKDATAPROCESSOR_H

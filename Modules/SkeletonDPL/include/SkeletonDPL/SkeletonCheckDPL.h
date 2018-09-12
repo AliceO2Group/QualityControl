@@ -3,8 +3,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CHECKER_SkeletonCheckDPL_H_
-#define QUALITYCONTROL_LIBS_CHECKER_SkeletonCheckDPL_H_
+#ifndef QC_MODULE_SKELETONDPL_SKELETONCHECKDPL_H
+#define QC_MODULE_SKELETONDPL_SKELETONCHECKDPL_H
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -34,8 +34,8 @@ class SkeletonCheckDPL : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(SkeletonCheckDPL, 1);
 };
 
-} // namespace Example
-} // namespace QualityControl
+} // namespace skeleton_dpl
+} // namespace quality_control_modules
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CHECKER_SkeletonCheck_H_
+#endif // QC_MODULE_SKELETONDPL_SKELETONCHECKDPL_H

@@ -3,8 +3,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CORE_QCTASKDPL_H_
-#define QUALITYCONTROL_LIBS_CORE_QCTASKDPL_H_
+#ifndef QC_CORE_TASKINTERFACEDPL_H
+#define QC_CORE_TASKINTERFACEDPL_H
 
 #include <memory>
 // fixes problem of ''assert' not declared in this scope' in Framework/InitContext.h.
@@ -78,7 +78,7 @@ private:
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CORE_QCTASKDPL_H_
+#endif // QC_CORE_TASKINTERFACEDPL_H

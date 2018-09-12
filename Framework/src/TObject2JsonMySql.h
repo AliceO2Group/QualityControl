@@ -14,8 +14,8 @@
 /// \author Adam Wegrzynek
 ///
 
-#ifndef QUALITYCONTROL_TOBJECT2JSON_MYSQL_H
-#define QUALITYCONTROL_TOBJECT2JSON_MYSQL_H
+#ifndef QC_TOBJECT2JSON_MYSQL_H
+#define QC_TOBJECT2JSON_MYSQL_H
 
 #include "TObject2JsonBackend.h"
 
@@ -49,4 +49,4 @@ class MySql final : public Backend
 } // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_TOBJECT2JSON_MYSQL_H
+#endif // QC_TOBJECT2JSON_MYSQL_H

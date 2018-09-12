@@ -57,6 +57,6 @@ BOOST_AUTO_TEST_CASE(mo_check)
 }
 
 
-} /* namespace ObjectsManager */
+} /* namespace core */
 } /* namespace quality_control */
 } /* namespace o2 */

@@ -286,7 +286,7 @@ CheckInterface *Checker::instantiateCheck(string checkName, string className)
   return result;
 }
 
-} /* namespace Checker */
+} /* namespace checker */
 } /* namespace quality_control */
 } /* namespace o2 */
 

@@ -47,6 +47,6 @@ std::unique_ptr<DatabaseInterface> DatabaseFactory::create(std::string name)
   return nullptr;
 }
 
-} // namespace core
+} // namespace repository
 } // namespace quality_control
 } // namespace o2

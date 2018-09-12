@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_REPOSITORY_DATABASE_INTERFACE_H_
-#define QUALITYCONTROL_REPOSITORY_DATABASE_INTERFACE_H_
+#ifndef QC_REPOSITORY_DATABASEINTERFACE_H
+#define QC_REPOSITORY_DATABASEINTERFACE_H
 
 #include "QualityControl/MonitorObject.h"
 #include <memory>
@@ -79,7 +79,7 @@ class DatabaseInterface
 };
 
 } /* namespace repository */
-} /* namespace QualityControl */
+} /* namespace quality_control */
 } /* namespace o2 */
 
-#endif /* QUALITYCONTROL_REPOSITORY_DATABASE_INTERFACE_H_ */
+#endif /* QC_REPOSITORY_DATABASEINTERFACE_H */

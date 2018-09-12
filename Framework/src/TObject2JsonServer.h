@@ -14,8 +14,8 @@
 /// \author Adam Wegrzynek
 ///
 
-#ifndef QUALITYCONTROL_TOBJECT2JSON_SERVER_H
-#define QUALITYCONTROL_TOBJECT2JSON_SERVER_H
+#ifndef QC_TOBJECT2JSON_SERVER_H
+#define QC_TOBJECT2JSON_SERVER_H
 
 // std
 #include <sstream>
@@ -57,4 +57,4 @@ class TObject2JsonServer
 } // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_TOBJECT2JSON_SERVER_H
+#endif // QC_TOBJECT2JSON_SERVER_H

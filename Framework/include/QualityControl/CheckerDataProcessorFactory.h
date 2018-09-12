@@ -2,8 +2,8 @@
 /// \file   CheckerDataProcessorFactory.h
 /// \author Piotr Konopka
 ///
-#ifndef PROJECT_CHECKERDATAPROCESSORFACTORY_H
-#define PROJECT_CHECKERDATAPROCESSORFACTORY_H
+#ifndef QC_CHECKER_DATAPROCESSORFACTORY_H
+#define QC_CHECKER_DATAPROCESSORFACTORY_H
 
 #include "Framework/DataProcessorSpec.h"
 
@@ -24,4 +24,4 @@ public:
 } // namespace quality_control
 } // namespace o2
 
-#endif // PROJECT_CHECKERDATAPROCESSORFACTORY_H
+#endif // QC_CHECKER_DATAPROCESSORFACTORY_H

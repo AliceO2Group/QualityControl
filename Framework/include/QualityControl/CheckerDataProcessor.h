@@ -4,8 +4,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_CORE_CHECKERDATAPROCESSOR_H
-#define QUALITYCONTROL_CORE_CHECKERDATAPROCESSOR_H
+#ifndef QC_CHECKER_CHECKERDATAPROCESSOR_H
+#define QC_CHECKER_CHECKERDATAPROCESSOR_H
 
 // std & boost
 #include <chrono>
@@ -125,8 +125,8 @@ class CheckerDataProcessor : public framework::Task
     AliceO2::Common::Timer timer;
 };
 
-} /* namespace Checker */
-} /* namespace QualityControl */
+} /* namespace checker */
+} /* namespace quality_control */
 } /* namespace o2 */
 
-#endif // QUALITYCONTROL_CORE_CHECKERDATAPROCESSOR_H
+#endif // QC_CHECKER_CHECKERDATAPROCESSOR_H

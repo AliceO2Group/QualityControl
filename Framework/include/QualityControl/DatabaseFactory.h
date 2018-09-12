@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CORE_DatabaseFactory_H_
-#define QUALITYCONTROL_LIBS_CORE_DatabaseFactory_H_
+#ifndef QC_REPOSITORY_DATABASEFACTORY_H
+#define QC_REPOSITORY_DATABASEFACTORY_H
 
 #include <memory>
 // O2
@@ -29,8 +29,8 @@ class DatabaseFactory
     static std::unique_ptr<DatabaseInterface> create(std::string name);
 };
 
-} // namespace core
-} // namespace QualityControl
+} // namespace repository
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CORE_DatabaseFactory_H_
+#endif // QC_REPOSITORY_DATABASEFACTORY_H

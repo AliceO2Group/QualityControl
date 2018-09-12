@@ -266,6 +266,6 @@ unsigned long TaskDataProcessor::publish(DataAllocator& outputs)
 
 void TaskDataProcessor::CustomCleanupTMessage(void* data, void* object) { delete (TMessage*)object; }
 
-}
-}
-}
+} // namespace core
+} // namespace quality_control
+} // namespace o2

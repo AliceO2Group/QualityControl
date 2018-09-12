@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_OBJECTSMANAGER_H_
-#define QUALITYCONTROL_LIBS_OBJECTSMANAGER_H_
+#ifndef QC_CORE_OBJECTMANAGER_H
+#define QC_CORE_OBJECTMANAGER_H
 
 #include <string>
 #include <boost/concept_check.hpp>
@@ -80,7 +80,7 @@ class ObjectsManager
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_OBJECTSMANAGER_H_
+#endif // QC_CORE_OBJECTMANAGER_H

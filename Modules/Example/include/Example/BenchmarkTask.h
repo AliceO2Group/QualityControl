@@ -53,8 +53,8 @@ class BenchmarkTask: public TaskInterface
 //    ClassDef(BenchmarkTask,1);
 };
 
-}
-}
-}
+} // namespace example
+} // namespace quality_control_modules
+} // namespace o2
 
 #endif //QC_MODULE_EXAMPLE_BENCHMARKTASK_H

@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_CLIENT_CONSUMER_H_
-#define QUALITYCONTROL_CLIENT_CONSUMER_H_
+#ifndef QC_CLIENT_CONSUMER_H
+#define QC_CLIENT_CONSUMER_H
 
 // QC
 #include "QualityControl/ClientDataProvider.h"
@@ -35,8 +35,8 @@ class Consumer
     unsigned int mNumberCycles, mNumberObjects, mNumberTasks;
 };
 
-} /* namespace Client */
-} /* namespace QualityControl */
+} /* namespace client */
+} /* namespace quality_control */
 } /* namespace o2 */
 
-#endif /* QUALITYCONTROL_CLIENT_CONSUMER_H_ */
+#endif /* QC_CLIENT_CONSUMER_H */

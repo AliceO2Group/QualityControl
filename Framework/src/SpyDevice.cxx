@@ -118,7 +118,7 @@ void SpyDevice::stopChannel()
   }
 }
 
-} // namespace core
+} // namespace gui
 } // namespace quality_control
 } // namespace o2
 

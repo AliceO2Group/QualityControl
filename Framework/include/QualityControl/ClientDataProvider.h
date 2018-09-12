@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_CLIENT_CLIENT_DATA_PROVIDER_H_
-#define QUALITYCONTROL_CLIENT_CLIENT_DATA_PROVIDER_H_
+#ifndef QC_CLIENT_CLIENTDATAPROVIDER_H
+#define QC_CLIENT_CLIENTDATAPROVIDER_H
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/DatabaseInterface.h"
@@ -40,8 +40,8 @@ class ClientDataProvider
 
 };
 
-} /* namespace Client */
-} /* namespace QualityControl */
+} /* namespace client */
+} /* namespace quality_control */
 } /* namespace o2 */
 
-#endif /* QUALITYCONTROL_CLIENT_CLIENT_DATA_PROVIDER_H_ */
+#endif /* QC_CLIENT_CLIENTDATAPROVIDER_H */

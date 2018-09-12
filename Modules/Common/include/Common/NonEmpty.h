@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CHECKER_NONEMPTY_H_
-#define QUALITYCONTROL_LIBS_CHECKER_NONEMPTY_H_
+#ifndef QC_MODULE_COMMON_NONEMPTY_H
+#define QC_MODULE_COMMON_NONEMPTY_H
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -33,8 +33,8 @@ class NonEmpty : public o2::quality_control::checker::CheckInterface
     ClassDefOverride(NonEmpty,1);
 };
 
-} // namespace Checker
-} // namespace QualityControl
+} // namespace common
+} // namespace quality_control_modules
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CHECKER_NONEMPTY_H_
+#endif // QC_MODULE_COMMON_NONEMPTY_H

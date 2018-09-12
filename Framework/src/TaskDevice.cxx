@@ -287,7 +287,6 @@ void TaskDevice::sendToInformationService(string objectsListString)
 
 }
 
-}
-}
-}
-
+} // namespace core
+} // namespace quality_control
+} // namespace o2

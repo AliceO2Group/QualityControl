@@ -13,8 +13,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef PROJECT_REPOSITORYBENCHMARK_H
-#define PROJECT_REPOSITORYBENCHMARK_H
+#ifndef QC_REPOSITORYBENCHMARK_H
+#define QC_REPOSITORYBENCHMARK_H
 
 #include <FairMQDevice.h>
 #include "QualityControl/CcdbDatabase.h"
@@ -65,8 +65,8 @@ class RepositoryBenchmark : public FairMQDevice
     std::thread *th;
 };
 
-}
-}
-}
+} // namespace core
+} // namespace quality_control
+} // namespace o2
 
-#endif //PROJECT_CCDBBENCHMARK_H
+#endif //QC_REPOSITORYBENCHMARK_H

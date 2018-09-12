@@ -144,6 +144,6 @@ void DaqTask::reset()
   QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-}
-}
-}
+} // namespace daq
+} // namespace quality_control_modules
+} // namespace o2

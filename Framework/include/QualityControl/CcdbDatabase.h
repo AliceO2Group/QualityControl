@@ -13,8 +13,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef PROJECT_CCDBDATABASE_H
-#define PROJECT_CCDBDATABASE_H
+#ifndef QC_REPOSITORY_CCDBDATABASE_H
+#define QC_REPOSITORY_CCDBDATABASE_H
 
 #include <ctime>
 #include <chrono>
@@ -93,4 +93,4 @@ class CcdbDatabase : public DatabaseInterface
 }
 }
 
-#endif //PROJECT_CCDBDATABASE_H
+#endif //QC_REPOSITORY_CCDBDATABASE_H

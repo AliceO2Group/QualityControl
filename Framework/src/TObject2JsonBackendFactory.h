@@ -14,8 +14,8 @@
 /// \author Vladimir Kosmala
 ///
 
-#ifndef QUALITYCONTROL_TOBJECT2JSON_BACKEND_FACTORY_H
-#define QUALITYCONTROL_TOBJECT2JSON_BACKEND_FACTORY_H
+#ifndef QC_TOBJECT2JSON_BACKENDFACTORY_H
+#define QC_TOBJECT2JSON_BACKENDFACTORY_H
 
 #include "TObject2JsonServer.h"
 #include "TObject2JsonBackend.h"
@@ -44,4 +44,4 @@ class TObject2JsonBackendFactory
 } // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_TOBJECT2JSON_BACKEND_FACTORY_H
+#endif // QC_TOBJECT2JSON_BACKENDFACTORY_H

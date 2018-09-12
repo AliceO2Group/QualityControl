@@ -15,8 +15,8 @@
 ///
 
 
-#ifndef PROJECT_INFORMATIONSERVICE_H
-#define PROJECT_INFORMATIONSERVICE_H
+#ifndef QC_INFORMATIONSERVICE_H
+#define QC_INFORMATIONSERVICE_H
 
 #include <InfoLogger/InfoLogger.hxx>
 #include "FairMQDevice.h"
@@ -95,4 +95,4 @@ class InformationService : public FairMQDevice
 
 };
 
-#endif //PROJECT_INFORMATIONSERVICE_H
+#endif //QC_INFORMATIONSERVICE_H
