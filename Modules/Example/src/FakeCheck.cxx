@@ -45,7 +45,7 @@ void FakeCheck::beautify(MonitorObject *mo, Quality checkResult)
 // NOOP
 }
 
-}  // namespace example
-}  // namespace quality_control
+} // namespace example
+} // namespace quality_control_modules
 } // namespace o2
 

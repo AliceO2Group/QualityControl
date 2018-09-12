@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CORE_MONITOROBJECT_H_
-#define QUALITYCONTROL_LIBS_CORE_MONITOROBJECT_H_
+#ifndef QC_CORE_MONITOROBJECT_H
+#define QC_CORE_MONITOROBJECT_H
 
 // std
 #include <map>
@@ -164,7 +164,7 @@ class MonitorObject : public TObject
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CORE_MONITOROBJECT_H_
+#endif // QC_CORE_MONITOROBJECT_H

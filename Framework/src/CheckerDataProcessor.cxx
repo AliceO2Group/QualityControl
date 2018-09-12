@@ -244,6 +244,6 @@ CheckInterface* CheckerDataProcessor::getCheck(std::string checkName, std::strin
   return result;
 }
 
-} /* namespace Checker */
+} /* namespace checker */
 } /* namespace quality_control */
 } /* namespace o2 */

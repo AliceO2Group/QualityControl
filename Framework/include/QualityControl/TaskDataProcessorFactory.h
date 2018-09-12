@@ -3,8 +3,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef PROJECT_TASKDATAPROCESSORFACTORY_H
-#define PROJECT_TASKDATAPROCESSORFACTORY_H
+#ifndef QC_CORE_TASKDATAPROCESSORFACTORY_H
+#define QC_CORE_TASKDATAPROCESSORFACTORY_H
 
 #include "Framework/DataProcessorSpec.h"
 
@@ -23,7 +23,7 @@ class TaskDataProcessorFactory
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif //PROJECT_TASKDATAPROCESSORFACTORY_H
+#endif //QC_CORE_TASKDATAPROCESSORFACTORY_H

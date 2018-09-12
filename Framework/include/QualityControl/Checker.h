@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_
-#define QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_
+#ifndef QC_CHECKER_CHECKER_H
+#define QC_CHECKER_CHECKER_H
 
 // std & boost
 #include <chrono>
@@ -108,8 +108,8 @@ class Checker : public FairMQDevice
     AliceO2::Common::Timer timer;
 };
 
-} /* namespace Checker */
-} /* namespace QualityControl */
+} /* namespace checker */
+} /* namespace quality_control */
 } /* namespace o2 */
 
-#endif /* QUALITYCONTROL_LIBS_CHECKER_CHECKER_H_ */
+#endif /* QC_CHECKER_CHECKER_H */

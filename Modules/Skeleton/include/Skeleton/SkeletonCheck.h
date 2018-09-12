@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CHECKER_SkeletonCheck_H_
-#define QUALITYCONTROL_LIBS_CHECKER_SkeletonCheck_H_
+#ifndef QC_MODULE_SKELETON_SKELETONCHECK_H
+#define QC_MODULE_SKELETON_SKELETONCHECK_H
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -34,8 +34,8 @@ class SkeletonCheck : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(SkeletonCheck, 1);
 };
 
-} // namespace Example
-} // namespace QualityControl
+} // namespace skeleton
+} // namespace quality_control_modules
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CHECKER_SkeletonCheck_H_
+#endif // QC_MODULE_SKELETON_SKELETONCHECK_H

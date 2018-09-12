@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_CORE_QUALITY_H_
-#define QUALITYCONTROL_CORE_QUALITY_H_
+#ifndef QC_CORE_QUALITY_H
+#define QC_CORE_QUALITY_H
 
 #include <string>
 #include <ostream>
@@ -76,7 +76,7 @@ class Quality
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_CORE_QUALITY_H_
+#endif // QC_CORE_QUALITY_H

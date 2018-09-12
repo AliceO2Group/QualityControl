@@ -13,8 +13,8 @@
 /// \author Vladimir Kosmala
 ///
 
-#ifndef QUALITYCONTROL_TOBJECT2JSON_WORKER_H
-#define QUALITYCONTROL_TOBJECT2JSON_WORKER_H
+#ifndef QC_TOBJECT2JSON_WORKER_H
+#define QC_TOBJECT2JSON_WORKER_H
 
 #include <thread>
 
@@ -75,4 +75,4 @@ class TObject2JsonWorker
 } // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_TOBJECT2JSON_WORKER_H
+#endif // QC_TOBJECT2JSON_WORKER_H

@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_CORE_ACTIVITY_H
-#define QUALITYCONTROL_CORE_ACTIVITY_H
+#ifndef QC_CORE_ACTIVITY_H
+#define QC_CORE_ACTIVITY_H
 
 namespace o2 {
 namespace quality_control {
@@ -35,7 +35,7 @@ class Activity
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_CORE_ACTIVITY_H
+#endif // QC_CORE_ACTIVITY_H

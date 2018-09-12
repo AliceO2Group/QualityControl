@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_CHECKER_MEANISABOVE_H_
-#define QUALITYCONTROL_CHECKER_MEANISABOVE_H_
+#ifndef QC_MODULE_COMMON_MEANISABOVE_H
+#define QC_MODULE_COMMON_MEANISABOVE_H
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -41,8 +41,8 @@ class MeanIsAbove : public o2::quality_control::checker::CheckInterface
     ClassDefOverride(MeanIsAbove, 1)
 };
 
-} /* namespace Common */
-} /* namespace QualityControlModules */
-} /* namespace AliceO2 */
+} /* namespace common */
+} /* namespace quality_control_modules */
+} /* namespace o2 */
 
-#endif /* QUALITYCONTROL_CHECKER_MEANISABOVE_H_ */
+#endif /* QC_MODULE_COMMON_MEANISABOVE_H */

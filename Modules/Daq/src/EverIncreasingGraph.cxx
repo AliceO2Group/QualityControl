@@ -82,7 +82,7 @@ void EverIncreasingGraph::beautify(MonitorObject *mo, Quality checkResult)
   g->GetListOfFunctions()->AddLast(paveText);
 }
 
-}  // namespace example
-}  // namespace quality_control
+} // namespace daq
+} // namespace quality_control_modules
 } // namespace o2
 

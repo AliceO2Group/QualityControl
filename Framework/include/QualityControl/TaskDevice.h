@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_TASKDEVICE_H
-#define QUALITYCONTROL_TASKDEVICE_H
+#ifndef QC_CORE_TASKDEVICE_H
+#define QC_CORE_TASKDEVICE_H
 
 // fairroot
 #include <fairmq/FairMQDevice.h>
@@ -76,8 +76,8 @@ class TaskDevice : public FairMQDevice
     ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> pmems;
 };
 
-}
-}
-}
+} // namespace core
+} // namespace quality_control
+} // namespace o2
 
-#endif //QUALITYCONTROL_TASKDEVICE_H
+#endif //QC_CORE_TASKDEVICE_H

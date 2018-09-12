@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QC_MODULE_EXAMPLE_EXAMPLETASK_H
-#define QC_MODULE_EXAMPLE_EXAMPLETASK_H
+#ifndef QC_MODULE_DAQ_DAQTASK_H
+#define QC_MODULE_DAQ_DAQTASK_H
 
 #include <TCanvas.h>
 #include <TPaveText.h>
@@ -52,8 +52,8 @@ class DaqTask /*final*/: public TaskInterface // todo add back the "final" when 
     TPaveText *mPaveText;
 };
 
-}
-}
-}
+} // namespace daq
+} // namespace quality_control_modules
+} // namespace o2
 
-#endif //QC_MODULE_EXAMPLE_EXAMPLETASK_H
+#endif //QC_MODULE_DAQ_DAQTASK_H

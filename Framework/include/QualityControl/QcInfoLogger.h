@@ -3,8 +3,8 @@
 /// @author  Barthelemy von Haller
 ///
 
-#ifndef QUALITY_CONTROL_QCINFOLOGGER_H
-#define QUALITY_CONTROL_QCINFOLOGGER_H
+#ifndef QC_CORE_QCINFOLOGGER_H
+#define QC_CORE_QCINFOLOGGER_H
 
 #include <iostream>
 #include <InfoLogger/InfoLogger.hxx>
@@ -54,8 +54,8 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
     QcInfoLogger(const QcInfoLogger &) = delete;
 };
 
-}
-}
-}
+} // namespace core
+} // namespace quality_control
+} // namespace o2
 
-#endif //QUALITY_CONTROL_BASICTASK_H
+#endif //QC_CORE_QCINFOLOGGER_H

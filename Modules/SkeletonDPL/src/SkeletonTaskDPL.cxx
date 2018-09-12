@@ -105,6 +105,6 @@ void SkeletonTaskDPL::reset()
   mHistogram->Reset();
 }
 
-}
-}
-}
+} // namespace skeleton_dpl
+} // namespace quality_control_modules
+} // namespace o2

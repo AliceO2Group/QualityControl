@@ -4,8 +4,8 @@
 /// \author  bvonhall
 ///
 
-#ifndef O2_QC_CORE_VERSION_H
-#define O2_QC_CORE_VERSION_H
+#ifndef QC_CORE_VERSION_H
+#define QC_CORE_VERSION_H
 
 #include <string>
 #include <sstream>
@@ -92,8 +92,9 @@ public:
     return version.str();
   }
 };
-}
-}
-}
 
-#endif // O2_QC_CORE_VERSION_H
+} // namespace core
+} // namespace quality_control
+} // namespace o2
+
+#endif // QC_CORE_VERSION_H

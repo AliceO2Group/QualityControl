@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CORE_TASKFACTORY_H_
-#define QUALITYCONTROL_LIBS_CORE_TASKFACTORY_H_
+#ifndef QC_CORE_TASKFACTORY_H
+#define QC_CORE_TASKFACTORY_H
 
 #include <iostream>
 #include <memory>
@@ -82,7 +82,7 @@ class TaskFactory
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CORE_TASKFACTORY_H_
+#endif // QC_CORE_TASKFACTORY_H

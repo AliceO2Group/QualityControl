@@ -45,7 +45,7 @@ bool CheckInterface::isObjectCheckable(const MonitorObject *mo)
   return false;
 }
 
-} /* namespace Checker */
+} /* namespace checker */
 } /* namespace quality_control */
 } /* namespace o2 */
 

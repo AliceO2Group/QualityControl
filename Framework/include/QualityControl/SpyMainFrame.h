@@ -13,8 +13,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_SRC_QCSPY_H_
-#define QUALITYCONTROL_SRC_QCSPY_H_
+#ifndef QC_GUI_SPYMAINFRAME_H
+#define QC_GUI_SPYMAINFRAME_H
 
 //std
 #include <map>
@@ -99,7 +99,7 @@ class SpyMainFrame: public TGMainFrame
 };
 
 } /* namespace gui */
-} /* namespace QualityControl */
+} /* namespace quality_control */
 } /* namespace o2 */
 
-#endif /* QUALITYCONTROL_SRC_QCSPY_H_ */
+#endif /* QC_GUI_SPYMAINFRAME_H */

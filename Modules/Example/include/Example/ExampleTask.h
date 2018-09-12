@@ -52,8 +52,8 @@ class ExampleTask /*final*/: public TaskInterface // todo add back the "final" w
     void publishHisto(int i);
 };
 
-}
-}
-}
+} // namespace example
+} // namespace quality_control_modules
+} // namespace o2
 
 #endif //QC_MODULE_EXAMPLE_EXAMPLETASK_H

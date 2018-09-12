@@ -464,6 +464,6 @@ void CcdbDatabase::truncateObject(std::string taskName, std::string objectName)
   }
 }
 
-}
-}
-}
+} // namespace repository
+} // namespace quality_control
+} // namespace o2

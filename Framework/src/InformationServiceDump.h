@@ -15,8 +15,8 @@
 ///
 
 
-#ifndef PROJECT_INFORMATIONSERVICEDUMP_H
-#define PROJECT_INFORMATIONSERVICEDUMP_H
+#ifndef QC_INFORMATIONSERVICEDUMP_H
+#define QC_INFORMATIONSERVICEDUMP_H
 
 #include "FairMQDevice.h"
 #include <boost/asio.hpp>
@@ -45,4 +45,4 @@ class InformationServiceDump : public FairMQDevice
     bool HandleData(FairMQMessagePtr &, int);
 };
 
-#endif //PROJECT_InformationServiceDump_H
+#endif //QC_INFORMATIONSERVICEDUMP_H

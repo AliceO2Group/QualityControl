@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_CORE_CHECKERCONFIG_H_
-#define QUALITYCONTROL_CORE_CHECKERCONFIG_H_
+#ifndef QC_CORE_CHECKERCONFIG_H
+#define QC_CORE_CHECKERCONFIG_H
 
 #include <string>
 
@@ -29,7 +29,7 @@ struct CheckerConfig
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_CORE_CHECKERCONFIG_H_
+#endif // QC_CORE_CHECKERCONFIG_H

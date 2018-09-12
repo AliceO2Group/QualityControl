@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CHECKER_EverIncreasingGraph_H_
-#define QUALITYCONTROL_LIBS_CHECKER_EverIncreasingGraph_H_
+#ifndef QC_MODULE_DAQ_EVERINCREASINGRAPH_H
+#define QC_MODULE_DAQ_EVERINCREASINGRAPH_H
 
 #include <Common/DataBlock.h>
 
@@ -38,8 +38,8 @@ class EverIncreasingGraph : public o2::quality_control::checker::CheckInterface
     ClassDefOverride(EverIncreasingGraph,1);
 };
 
-} // namespace Example
-} // namespace QualityControl
+} // namespace daq
+} // namespace quality_control_modules
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CHECKER_EverIncreasingGraph_H_
+#endif // QC_MODULE_DAQ_EVERINCREASINGRAPH_H

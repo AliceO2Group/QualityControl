@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_CORE_TASKCONFIG_H_
-#define QUALITYCONTROL_CORE_TASKCONFIG_H_
+#ifndef QC_CORE_TASKCONFIG_H
+#define QC_CORE_TASKCONFIG_H
 
 #include <string>
 
@@ -28,7 +28,7 @@ struct TaskConfig
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_CORE_TASKCONFIG_H_
+#endif // QC_CORE_TASKCONFIG_H

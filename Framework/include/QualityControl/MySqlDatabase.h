@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_REPOSITORY_MYSQL_DATABASE_H_
-#define QUALITYCONTROL_REPOSITORY_MYSQL_DATABASE_H_
+#ifndef QC_REPOSITORY_MYSQLDATABASE_H
+#define QC_REPOSITORY_MYSQLDATABASE_H
 
 #include "QualityControl/DatabaseInterface.h"
 #include "TMySQLServer.h"
@@ -70,7 +70,7 @@ class MySqlDatabase: public DatabaseInterface
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_REPOSITORY_MYSQL_DATABASE_H_
+#endif // QC_REPOSITORY_MYSQLDATABASE_H

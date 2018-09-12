@@ -192,6 +192,6 @@ void RepositoryBenchmark::emptyDatabase()
   }
 }
 
-}
-}
-}
+} // namespace core
+} // namespace quality_control
+} // namespace o2

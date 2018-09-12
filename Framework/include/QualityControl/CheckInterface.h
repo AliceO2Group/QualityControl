@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CHECKER_CHECKINTERFACE_H_
-#define QUALITYCONTROL_LIBS_CHECKER_CHECKINTERFACE_H_
+#ifndef QC_CHECKER_CHECKINTERFACE_H
+#define QC_CHECKER_CHECKINTERFACE_H
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -74,8 +74,8 @@ class CheckInterface
   ClassDef(CheckInterface, 1)
 };
 
-} /* namespace Checker */
-} /* namespace QualityControl */
+} /* namespace checker */
+} /* namespace quality_control */
 } /* namespace o2 */
 
-#endif /* QUALITYCONTROL_LIBS_CHECKER_CHECKINTERFACE_H_ */
+#endif /* QC_CHECKER_CHECKINTERFACE_H */

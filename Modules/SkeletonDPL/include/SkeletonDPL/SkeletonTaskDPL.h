@@ -4,8 +4,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_MODULE_EXAMPLE_EXAMPLETASKDPL_H
-#define QC_MODULE_EXAMPLE_EXAMPLETASKDPL_H
+#ifndef QC_MODULE_SKELETONDPL_SKELETONTASKDPL_H
+#define QC_MODULE_SKELETONDPL_SKELETONTASKDPL_H
 
 #include "QualityControl/TaskInterfaceDPL.h"
 
@@ -43,8 +43,8 @@ class SkeletonTaskDPL /*final*/: public TaskInterfaceDPL // todo add back the "f
     TH1F *mHistogram;
 };
 
-}
-}
-}
+} // namespace skeleton_dpl
+} // namespace quality_control_modules
+} // namespace o2
 
-#endif //QC_MODULE_EXAMPLE_EXAMPLETASKDPL_H
+#endif //QC_MODULE_SKELETONDPL_SKELETONTASKDPL_H

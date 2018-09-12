@@ -47,6 +47,6 @@ BOOST_AUTO_TEST_CASE(quality_test)
   BOOST_CHECK(!Quality::Good.isBetterThan(Quality::Good));
 }
 
-} /* namespace ObjectsManager */
+} /* namespace core */
 } /* namespace quality_control */
 } /* namespace o2 */

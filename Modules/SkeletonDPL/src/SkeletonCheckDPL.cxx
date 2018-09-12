@@ -75,6 +75,6 @@ void SkeletonCheckDPL::beautify(MonitorObject *mo, Quality checkResult)
 }
 
 } // namespace skeleton_dpl
-} // namespace quality_control
+} // namespace quality_control_modules
 } // namespace o2
 

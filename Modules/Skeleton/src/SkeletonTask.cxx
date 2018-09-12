@@ -65,6 +65,6 @@ void SkeletonTask::reset()
   QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-}
-}
-}
+} // namespace skeleton
+} // namespace quality_control_modules
+} // namespace o2

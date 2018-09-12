@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CORE_QCTASK_H_
-#define QUALITYCONTROL_LIBS_CORE_QCTASK_H_
+#ifndef QC_CORE_TASKINTERFACE_H
+#define QC_CORE_TASKINTERFACE_H
 
 #include <memory>
 
@@ -72,7 +72,7 @@ class TaskInterface
 };
 
 } // namespace core
-} // namespace QualityControl
+} // namespace quality_control
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CORE_QCTASK_H_
+#endif // QC_CORE_TASKINTERFACE_H

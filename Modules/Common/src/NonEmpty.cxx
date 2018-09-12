@@ -57,7 +57,7 @@ void NonEmpty::beautify(MonitorObject *mo, Quality checkResult)
 // NOOP
 }
 
-}  // namespace Checker
-}  // namespace quality_control
+}  // namespace common
+}  // namespace quality_control_modules
 } // namespace o2
 

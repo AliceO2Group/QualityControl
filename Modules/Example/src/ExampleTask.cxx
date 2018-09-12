@@ -107,6 +107,6 @@ void ExampleTask::reset()
   QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-}
-}
-}
+} // namespace example
+} // namespace quality_control_modules
+} // namespace o2

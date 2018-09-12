@@ -53,6 +53,6 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   }
 }
 
-} /* namespace ObjectsManager */
+} /* namespace core */
 } /* namespace quality_control */
 } /* namespace o2 */

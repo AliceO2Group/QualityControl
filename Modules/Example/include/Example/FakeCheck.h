@@ -3,8 +3,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_LIBS_CHECKER_FakeCheck_H_
-#define QUALITYCONTROL_LIBS_CHECKER_FakeCheck_H_
+#ifndef QC_MODULE_EXAMPLE_FAKECHECK_H
+#define QC_MODULE_EXAMPLE_FAKECHECK_H
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -33,8 +33,8 @@ class FakeCheck : public o2::quality_control::checker::CheckInterface
     ClassDefOverride(FakeCheck,1);
 };
 
-} // namespace Example
-} // namespace QualityControl
+} // namespace example
+} // namespace quality_control_modules
 } // namespace o2
 
-#endif // QUALITYCONTROL_LIBS_CHECKER_FakeCheck_H_
+#endif // QC_MODULE_EXAMPLE_FAKECHECK_H
