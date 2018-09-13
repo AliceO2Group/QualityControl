@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e ;# exit on error
 set -u ;# exit when using undeclared variable
-#set -x ;# debugging
+set -x ;# debugging
 
 DONOR=SkeletonDPL
 DONOR_LC=skeleton_dpl
