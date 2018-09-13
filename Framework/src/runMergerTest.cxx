@@ -62,9 +62,8 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     specs.push_back(producer1);
   }
 
-  HistoMerger merger("merger");
+  HistoMerger merger("merger", 1);
   merger.configureEdges("TST", "HISTO", {1, producersAmount});
-  merger.setPublicationRate(1000000);
   DataProcessorSpec mergerSpec{
     merger.getName(),
     merger.getInputSpecs(),

@@ -25,7 +25,7 @@ namespace core {
 class HistoMerger : public framework::Task {
 public:
   /// Constructor
-  HistoMerger(std::string mergerName);
+  HistoMerger(std::string mergerName, double publicationPeriodSeconds = 10);
 
   /// Destructor
   ~HistoMerger() override;
@@ -44,14 +44,11 @@ public:
   std::vector<o2::framework::InputSpec>  getInputSpecs() { return mInputSpecs; };
   framework::OutputSpec getOutputSpec() { return mOutputSpec; };
 
-  void setPublicationRate(int us);
-
 private:
   // General state
   std::string mMergerName;
   std::shared_ptr<MonitorObject> mMonitorObject;
   AliceO2::Common::Timer mPublicationTimer;
-  int mPublicationRate;
 
   // DPL
   std::vector<o2::framework::InputSpec> mInputSpecs;

@@ -15,11 +15,11 @@ using namespace framework;
 namespace quality_control {
 namespace core {
 
-HistoMerger::HistoMerger(std::string mergerName)
+HistoMerger::HistoMerger(std::string mergerName, double publicationPeriodSeconds)
   : mMergerName(mergerName),
-    mPublicationRate(10000000),
     mOutputSpec{ header::gDataOriginInvalid, header::gDataDescriptionInvalid }
 {
+  mPublicationTimer.reset(static_cast<int>(publicationPeriodSeconds * 1000000));
 }
 
 HistoMerger::~HistoMerger() {}
@@ -27,7 +27,6 @@ HistoMerger::~HistoMerger() {}
 void HistoMerger::init(framework::InitContext& ctx)
 {
   mMonitorObject.reset();
-  mPublicationTimer.reset(mPublicationRate); // 10 s.
 }
 
 void HistoMerger::run(framework::ProcessingContext& ctx)
@@ -46,10 +45,15 @@ void HistoMerger::run(framework::ProcessingContext& ctx)
     }
   }
   if (mPublicationTimer.isTimeout()) {
-    mPublicationTimer.increment();
+    if (mMonitorObject) {
+      ctx.outputs().snapshot<MonitorObject>(Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec },
+                                            *mMonitorObject);
+    }
 
-    ctx.outputs().snapshot<MonitorObject>(Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec },
-                                          *mMonitorObject);
+    // avoid publishing mo many times consecutively because of too long initial waiting time
+    do {
+      mPublicationTimer.increment();
+    } while (mPublicationTimer.isTimeout());
   }
 }
 
@@ -64,11 +68,6 @@ void HistoMerger::configureEdges(DataOrigin origin, DataDescription description,
   mOutputSpec = OutputSpec{ origin, description, 0 };
 }
 
-void HistoMerger::setPublicationRate(int us)
-{
-  mPublicationRate = us;
-  mPublicationTimer.reset(us);
-}
-}
-}
-}
+} // namespace core
+} // namespace quality_control
+} // namespace o2
