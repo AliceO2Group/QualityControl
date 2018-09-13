@@ -33,9 +33,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
   WorkflowSpec specs;
 
-  size_t producersAmount = 20;
+  size_t producersAmount = 10;
   for(size_t p = 0; p < producersAmount; p++) {
-    DataProcessorSpec producer1{
+    DataProcessorSpec producer{
       "producer" + std::to_string(p),
       Inputs{},
       Outputs{
@@ -53,17 +53,17 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
           mo->setIsOwner(false);
 
           processingContext.outputs().snapshot<MonitorObject>(Output{"TST", "HISTO", p + 1}, *mo);
-//        processingContext.outputs().snapshot<MonitorObject>(OutputRef{ "mo", 1 }, *mo);
+//        processingContext.outputs().snapshot<MonitorObject>(OutputRef{ "mo", p + 1 }, *mo); // dpl template bug?
           delete mo;
           delete histo;
         }
       }
     };
-    specs.push_back(producer1);
+    specs.push_back(producer);
   }
 
   HistoMerger merger("merger", 1);
-  merger.configureEdges("TST", "HISTO", {1, producersAmount});
+  merger.configureInputsOutputs("TST", "HISTO", { 1, producersAmount });
   DataProcessorSpec mergerSpec{
     merger.getName(),
     merger.getInputSpecs(),

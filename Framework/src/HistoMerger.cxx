@@ -7,13 +7,16 @@
 
 #include <Framework/DataRefUtils.h>
 
-namespace o2 {
+namespace o2
+{
 using header::DataOrigin;
 using header::DataDescription;
 using SubSpecificationType = header::DataHeader::SubSpecificationType;
 using namespace framework;
-namespace quality_control {
-namespace core {
+namespace quality_control
+{
+namespace core
+{
 
 HistoMerger::HistoMerger(std::string mergerName, double publicationPeriodSeconds)
   : mMergerName(mergerName),
@@ -36,8 +39,7 @@ void HistoMerger::run(framework::ProcessingContext& ctx)
 
       if (!mMonitorObject) {
         mMonitorObject.reset(DataRefUtils::as<MonitorObject>(input).release());
-      }
-      else {
+      } else {
         TH1* h = dynamic_cast<TH1*>(mMonitorObject->getObject());
         const TH1* hUpdate = dynamic_cast<TH1*>(DataRefUtils::as<MonitorObject>(input)->getObject());
         h->Add(hUpdate);
@@ -57,8 +59,8 @@ void HistoMerger::run(framework::ProcessingContext& ctx)
   }
 }
 
-void HistoMerger::configureEdges(DataOrigin origin, DataDescription description,
-                                 std::pair<SubSpecificationType, SubSpecificationType> subSpecRange)
+void HistoMerger::configureInputsOutputs(DataOrigin origin, DataDescription description,
+                                         std::pair<SubSpecificationType, SubSpecificationType> subSpecRange)
 {
   mInputSpecs.clear();
 
