@@ -17,6 +17,7 @@
 #include <chrono>
 #include <boost/algorithm/string.hpp>
 #include "Common/Exceptions.h"
+#include <sstream>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;

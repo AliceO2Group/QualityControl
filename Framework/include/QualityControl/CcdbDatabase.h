@@ -17,7 +17,7 @@
 #define PROJECT_CCDBDATABASE_H
 
 #include "QualityControl/DatabaseInterface.h"
-#include "QualityControl/CcdbApi.h"
+#include "CCDB/CcdbApi.h"
 
 namespace o2 {
 namespace quality_control {
