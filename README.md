@@ -419,3 +419,10 @@ qcInfoServiceDump -c /absolute/path/to/InformationService.json -n information_se
                   --request-task myTask1
 ```
 The last parameter can be omitted to receive information about all tasks.
+
+
+## Code development
+
+### Formatting
+
+See [here](https://github.com/AliceO2Group/AliceO2#formatting).
