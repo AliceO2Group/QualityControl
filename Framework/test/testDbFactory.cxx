@@ -64,9 +64,9 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   ccdb->connect("ccdb-test.cern.ch:8080", "", "", "");
 
   // prepare stuff in the db
-  ccdb->truncateObject("functional_test", "object1");
-  ccdb->truncateObject("functional_test", "object2");
-  ccdb->truncateObject("functional_test", "path/to/object3");
+  ccdb->truncate("functional_test", "object1");
+  ccdb->truncate("functional_test", "object2");
+  ccdb->truncate("functional_test", "path/to/object3");
   auto *h1 = new TH1F("object1", "object1", 100, 0, 99);
   auto *h2 = new TH1F("object2", "object2", 100, 0, 99);
   auto *h3 = new TH1F("object3", "object3", 100, 0, 99);
@@ -79,20 +79,24 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
 
   // test getting list of tasks
   std::vector<std::string> list = ccdb->getListOfTasksWithPublications();
-  for(const auto &item : list) {
-    cout << "task : " << item << endl;
-  }
+//  for(const auto &item : list) {
+//    cout << "task : " << item << endl;
+//  }
   BOOST_CHECK(std::find(list.begin(), list.end(), "functional_test") != list.end());
 
   // test getting objects list from task
   auto objectNames = ccdb->getPublishedObjectNames("functional_test");
-  cout << "objects in task functional_test" << endl;
-  for (auto name : objectNames) {
-    cout << " - object : " << name << endl;
-  }
+//  cout << "objects in task functional_test" << endl;
+//  for (auto name : objectNames) {
+//    cout << " - object : " << name << endl;
+//  }
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "object1") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "object2") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "path/to/object3") != objectNames.end());
+
+  // test retrieve object
+  MonitorObject* mo1_retrieved = ccdb->retrieve("functional_test", "object1");
+  BOOST_CHECK(mo1_retrieved != nullptr);
 
 }
 
