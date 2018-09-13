@@ -12,6 +12,15 @@ FOREACH (p
     ENDIF ()
 endforeach ()
 
+# Download the .clang-format from CodingGuidelines.
+file(DOWNLOAD https://raw.githubusercontent.com/AliceO2Group/CodingGuidelines/master/.clang-format
+     ${CMAKE_SOURCE_DIR}/.clang-format
+     INACTIVITY_TIMEOUT 2
+     TIMEOUT 2 STATUS status SHOW_PROGRESS)
+if(NOT "${status}" EQUAL "0")
+  MESSAGE(WARNING "Problem downloading .clang-format.")
+ENDIF()
+
 enable_testing()
 
 add_subdirectory(Framework)
