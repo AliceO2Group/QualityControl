@@ -224,7 +224,9 @@ file was passed to the `qcSpy` utility.
 
 ## Modules development
 
-Steps to create a new module Abc
+One can either manually create a new module or use a script. 
+
+### Manual steps to create a new module Abc
 
 1. Duplicate the skeleton of module located in QualityControl/Modules/Skeleton.
 2. Call it Abc (i.e. your detector code or name)
@@ -237,6 +239,29 @@ Steps to create a new module Abc
 Fill in the methods in AbcTask.cxx. If you need specific checks you can do it in AbcCheck.cxx.
 
 In case special additional dependencies are needed, create a new bucket in QualityControlModules/cmake/QualityControlModulesDependencies.cmake.
+
+### Automatic modules generation
+
+One can also perform steps 1-6 using script `modulesHelper.sh`. It must be ran from __within QualityControl/Modules__. See the help message below:
+```
+Usage: ./modulesHelper.sh -m MODULE_NAME [OPTION]
+
+Generate template QC module and/or tasks, checks.
+If a module with specified name already exists, new tasks and checks are inserted to the existing one.
+Please follow UpperCamelCase convention for modules', tasks' and checks' names.
+
+Example:
+# create new module and some task
+./modulesHelper.sh -m MyModule -t SuperTask
+# add one task and two checks
+./modulesHelper.sh -m MyModule -t EvenBetterTask -c HistoUniformityCheck -c MeanTest
+
+Options:
+ -h               print this message
+ -m MODULE_NAME   create module named MODULE_NAME or add there some task/checker
+ -t TASK_NAME     create task named TASK_NAME
+ -c CHECK_NAME    create check named CHECK_NAME
+```
 
 ## QC in Data Processing Layer framework
 
