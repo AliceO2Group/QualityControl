@@ -6,9 +6,20 @@ set -u ;# exit when using undeclared variable
 DONOR=SkeletonDPL
 DONOR_LC=skeleton_dpl
 DONOR_TASK=SkeletonTaskDPL
-DONOR_TASK_INCLUDE_GUARD=QC_MODULE_EXAMPLE_EXAMPLETASKDPL_H
+DONOR_TASK_INCLUDE_GUARD=QC_MODULE_`echo ${DONOR} | tr a-z A-Z`_`echo ${DONOR_TASK} | tr a-z A-Z`_H
 DONOR_CHECK=SkeletonCheckDPL
-DONOR_CHECK_INCLUDE_GUARD=QUALITYCONTROL_LIBS_CHECKER_SkeletonCheckDPL_H_
+DONOR_CHECK_INCLUDE_GUARD=QC_MODULE_`echo ${DONOR} | tr a-z A-Z`_`echo ${DONOR_CHECK} | tr a-z A-Z`_H
+
+OS=`uname`
+
+# Checks if current pwd matches the location of this script, exits if it is not
+function check_pwd {
+  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+  if [[ $DIR != $PWD ]] ; then
+    echo 'Please execute this script while being in its directory'
+    exit 1
+  fi
+}
 
 # Create new empty module
 # \param 1 : module_name
@@ -32,7 +43,14 @@ function create_module {
     sed '/#pragma link C++ class o2::quality_control_modules::'${DONOR_LC}'::/ d' ${DONOR}/include/${DONOR}/LinkDef.h > $1/include/$1/LinkDef.h
     # prepare test
     sed 's/.testEmpty/test'$1'/; s/'${DONOR_LC}'/'${MODULE_LC}'/' ${DONOR}/test/.testEmpty.cxx > $1'/test/test'$1'.cxx'
-    sed -i '/set(TEST_SRCS/ a \ \ test/test'$1'.cxx' $1/CMakeLists.txt
+    
+    if [[ $OS == Linux ]] ; then
+      sed -i '/set(TEST_SRCS/ a \ \ test/test'$1'.cxx' $1/CMakeLists.txt
+    else #Darwin/BSD
+      sed -i '' -e '/set(TEST_SRCS/ a\
+\ \ test/test'$1'.cxx
+' $1/CMakeLists.txt
+    fi
 
     # add new module to the project
     echo 'add_subdirectory('$1')' >> CMakeLists.txt
@@ -56,12 +74,27 @@ function create_task {
   
   # add header
   sed 's/'${DONOR_TASK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g; s/'${DONOR_TASK_INCLUDE_GUARD}'/'${INCLUDE_GUARD_NAME}'/g' ${DONOR}'/include/'${DONOR}'/'${DONOR_TASK}'.h' > $1'/include/'$1'/'$2'.h' 
-  sed -i '/#endif/ i #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;' $1/include/$1/LinkDef.h
-  sed -i '/set(HEADERS/ a \ \ include/'$1'/'$2'.h' $1/CMakeLists.txt
+  if [[ $OS == Linux ]] ; then
+    sed -i '/#endif/ i #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;' $1/include/$1/LinkDef.h
+    sed -i '/set(HEADERS/ a \ \ include/'$1'/'$2'.h' $1/CMakeLists.txt
+  else #Darwin/BSD
+    sed -i '' -e '/#endif/ i\
+\#pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;
+' $1/include/$1/LinkDef.h
+    sed -i '' -e '/set(HEADERS/ a\
+\ \ include/'$1'/'$2'.h
+' $1/CMakeLists.txt
+  fi
 
   # add src
-  sed 's/'${DONOR_TASK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g' ${DONOR}'/src/'${DONOR_TASK}'.cxx' > $1'/src/'$2'.cxx' 
-  sed -i '/set(SRCS/ a \ \ src/'$2'.cxx' $1/CMakeLists.txt
+  sed 's/'${DONOR_TASK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g' ${DONOR}'/src/'${DONOR_TASK}'.cxx' > $1'/src/'$2'.cxx'
+  if [[ $OS == Linux ]] ; then
+    sed -i '/set(SRCS/ a \ \ src/'$2'.cxx' $1/CMakeLists.txt
+  else #Darwin/BSD
+    sed -i '' -e '/set(SRCS/ a\
+\ \ src/'$2'.cxx
+' $1/CMakeLists.txt
+  fi
   echo '> Task created.'
 }
 
@@ -81,17 +114,33 @@ function create_check {
   
   # add header
   sed 's/'${DONOR_CHECK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g; s/'${DONOR_CHECK_INCLUDE_GUARD}'/'${INCLUDE_GUARD_NAME}'/g' ${DONOR}'/include/'${DONOR}'/'${DONOR_CHECK}'.h' > $1'/include/'$1'/'$2'.h' 
-  sed -i '/#endif/ i #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;' $1/include/$1/LinkDef.h
-  sed -i '/set(HEADERS/ a \ \ include/'$1'/'$2'.h' $1/CMakeLists.txt
+  if [[ $OS == Linux ]] ; then
+    sed -i '/#endif/ i #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;' $1/include/$1/LinkDef.h
+    sed -i '/set(HEADERS/ a \ \ include/'$1'/'$2'.h' $1/CMakeLists.txt
+  else #Darwin/BSD
+    sed -i '' -e '/#endif/ i\
+#pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;
+' $1/include/$1/LinkDef.h
+    sed -i '' -e '/set(HEADERS/ a\
+\ \ include/'$1'/'$2'.h
+' $1/CMakeLists.txt
+  fi
 
   # add src
   sed 's/'${DONOR_CHECK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g' ${DONOR}'/src/'${DONOR_CHECK}'.cxx' > $1'/src/'$2'.cxx' 
-  sed -i '/set(SRCS/ a \ \ src/'$2'.cxx' $1/CMakeLists.txt
+  if [[ $OS == Linux ]] ; then
+    sed -i '/set(SRCS/ a \ \ src/'$2'.cxx' $1/CMakeLists.txt
+  else #Darwin/BSD
+    sed -i '' -e '/set(SRCS/ a\
+\ \ src/'$2'.cxx
+' $1/CMakeLists.txt
+  fi
+
   echo '> Check created.'
 }
 
 function print_usage {
-  echo "Usage: sh modulesHelper -m MODULE_NAME [OPTION]
+  echo "Usage: ./modulesHelper.sh -m MODULE_NAME [OPTION]
 
 Generate template QC module and/or tasks, checks.
 If a module with specified name already exists, new tasks and checks are inserted to the existing one.
@@ -99,25 +148,27 @@ Please follow UpperCamelCase convention for modules', tasks' and checks' names.
 
 Example:
 # create new module and some task
-sh modulesHelper -m MyModule -t SuperTask
+./modulesHelper.sh -m MyModule -t SuperTask
 # add one task and two checks
-sh modulesHelper -m MyModule -t EvenBetterTask -c HistoUniformityCheck -c MeanTest
+./modulesHelper.sh -m MyModule -t EvenBetterTask -c HistoUniformityCheck -c MeanTest
 
 Options:
  -h               print this message
- -m=MODULE_NAME   create module named MODULE_NAME or add there some task/checker
- -t=TASK_NAME     create task named TASK_NAME
- -c=CHECK_NAME    create check named CHECK_NAME
+ -m MODULE_NAME   create module named MODULE_NAME or add there some task/checker
+ -t TASK_NAME     create task named TASK_NAME
+ -c CHECK_NAME    create check named CHECK_NAME
 "
 }
 
+MODULE=
 while getopts 'hm:t:c:' option; do
   case "${option}" in
     \?) print_usage
        exit 1;;
     h) print_usage
        exit 0;;
-    m) create_module ${OPTARG}
+    m) check_pwd
+       create_module ${OPTARG}
        MODULE=${OPTARG};;
     t) if [ -z ${MODULE} ] ; then
          echo 'Cannot add a task, module name not specified, exiting...'
@@ -132,4 +183,7 @@ while getopts 'hm:t:c:' option; do
   esac
 done
 
-
+# If no options are specified
+if [ ${OPTIND} -eq 1 ]; then
+  print_usage
+fi
