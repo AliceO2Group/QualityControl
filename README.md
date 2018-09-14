@@ -224,7 +224,9 @@ file was passed to the `qcSpy` utility.
 
 ## Modules development
 
-### Steps to create a new module Abc
+On can either manually create a new module or use a script. 
+
+### Manual steps to create a new module Abc
 
 1. Duplicate the skeleton of module located in QualityControl/Modules/Skeleton.
 2. Call it Abc (i.e. your detector code or name)
@@ -240,7 +242,7 @@ In case special additional dependencies are needed, create a new bucket in Quali
 
 ### Automatic modules generation
 
-One can also perform steps 1-6 using script QualityControl/Modules/modulesHelper.sh. See the help message below:
+One can also perform steps 1-6 using script `modulesHelper.sh`. It must be ran from __within QualityControl/Modules__. See the help message below:
 ```
 Usage: ./modulesHelper.sh -m MODULE_NAME [OPTION]
 
