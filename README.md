@@ -224,7 +224,7 @@ file was passed to the `qcSpy` utility.
 
 ## Modules development
 
-On can either manually create a new module or use a script. 
+One can either manually create a new module or use a script. 
 
 ### Manual steps to create a new module Abc
 
