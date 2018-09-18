@@ -88,6 +88,7 @@ set(SRCS
         src/TaskDataProcessorFactory.cxx
         src/TaskInterfaceDPL.cxx
         src/RepositoryBenchmark.cxx
+        src/HistoMerger.cxx
         )
 
 set(HEADERS # needed for the dictionary generation
@@ -101,6 +102,7 @@ set(HEADERS # needed for the dictionary generation
         include/QualityControl/CcdbDatabase.h
         include/QualityControl/TaskDataProcessor.h
         include/QualityControl/TaskDataProcessorFactory.h
+        include/QualityControl/HistoMerger.h
         )
 
 set(SRCS_TOBJECT2JSON
@@ -185,6 +187,13 @@ O2_GENERATE_EXECUTABLE(
 O2_GENERATE_EXECUTABLE(
         EXE_NAME runReadoutChainTemplate
         SOURCES src/runReadoutChainTemplate.cxx
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME ${BUCKET_NAME}
+)
+
+O2_GENERATE_EXECUTABLE(
+        EXE_NAME runMergerTest
+        SOURCES src/runMergerTest.cxx
         MODULE_LIBRARY_NAME ${LIBRARY_NAME}
         BUCKET_NAME ${BUCKET_NAME}
 )
