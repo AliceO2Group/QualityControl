@@ -276,6 +276,6 @@ endif ()
 
 # Install extra scripts
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
-install(FILES example-default.ini example-default.json alfa.json DESTINATION etc)
+install(FILES example-default.ini example-default.json alfa.json dataDump.json DESTINATION etc)
 Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json readoutDataSampling.json
         DESTINATION etc/)

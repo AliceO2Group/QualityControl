@@ -224,7 +224,7 @@ file was passed to the `qcSpy` utility.
 
 ## Modules development
 
-One can either manually create a new module or use a script. 
+One can either manually create a new module or use a script.
 
 ### Manual steps to create a new module Abc
 
@@ -312,6 +312,39 @@ there is an exemplary DPL workflow with QC task. It is compiled to an
 executable `taskDPL`.
 
 # A few more tools and details
+
+## Data Inspector
+
+This is a GUI to inspect the data coming out of the DataSampling, in
+particular the Readout.
+
+### Prerequisite
+
+Install GLFW for your platform. On CC7 install `glfw-devel`.
+
+### Compilation
+
+Build the QualityControl as usual.
+
+### Execution
+
+To monitor the readout, 3 processes have to be started : the Readout,
+the Data Sampling and the Data Inspector. In 3 terminals, do respectively
+
+1. readout.exe file:///absolute/path/to/config.cfg
+2. runReadoutDataSampling --batch
+3. dataDump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static
+
+### Configuration
+
+__Fraction of data__
+The Data Sampling takes 1% of the events by default. Edit $QUALITY_CONTROL/readoutDataSampling.json
+to change it. Look for the parameter `fraction` that is set to 1.
+
+__Port__
+The Data Sampling sends data to the GUI via the port `26525`.
+If this port is not free, edit the config file $QUALITY_CONTROL/readoutDataSampling.json
+and $QUALITY_CONTROL/dataDump.json.
 
 ## TObject2Json
 

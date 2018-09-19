@@ -16,7 +16,7 @@
         "outputDataOrigin": "READOUT",
         "outputDataDescription": "RAWDATA",
         "inputs": "readoutInput",
-        "fraction": "1",
+        "fraction": "0.01",
         "subSpec": "-1",
         "dispatcherType": "FairMQ",
         "channelConfig": "name=fairReadoutRawOut,type=pub,method=bind,address=tcp://127.0.0.1:26525,rateLogging=1"
