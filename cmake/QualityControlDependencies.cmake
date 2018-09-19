@@ -200,7 +200,6 @@ o2_define_bucket(
         headless_bucket
 )
 
-message( "AliceO2_LIBRARIES : ${AliceO2_LIBRARIES}")
 o2_define_bucket(
         NAME
         dumpData_bucket

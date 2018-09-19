@@ -251,8 +251,6 @@ O2_GENERATE_EXECUTABLE(
 )
 
 if (GLFW_FOUND)
-    message(STATUS "GLFW_FOUND ")
-    #    set(MODULE_BUCKET_NAME glfw_bucket)
     set(GUI_BACKEND
             src/imgui/imgui.cpp
             src/imgui/imgui_draw.cpp
@@ -263,18 +261,18 @@ if (GLFW_FOUND)
             src/imgui/BaseGui.cxx
             src/DataDump.cxx
             )
+
+    O2_GENERATE_EXECUTABLE(
+            EXE_NAME dataDump
+            SOURCES src/runDataDump.cxx ${GUI_BACKEND}
+            MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+            BUCKET_NAME "dumpData_bucket"
+    )
 else ()
-    #    set(MODULE_BUCKET_NAME headless_bucket)
-    set(GUI_BACKEND
-            )
+    message(STATUS "GLFW not found, DataDump will not be built")
 endif ()
 
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME dataDump
-        SOURCES src/runDataDump.cxx ${GUI_BACKEND}
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME "dumpData_bucket"
-)
+
 
 # Install extra scripts
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
