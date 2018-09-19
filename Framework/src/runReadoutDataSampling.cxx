@@ -16,6 +16,10 @@
 ///
 /// It uses a config file located at
 /// ${QUALITYCONTROL_ROOT}/etc/readoutDataSampling.json or Framework/readoutDataSampling.json (original one).
+/// The only thing that might have to be changed is the port (default : 26525) on which the data is sent.
+/// \code{.json}
+/// > "channelConfig": "name=fairReadoutRawOut,type=pub,method=bind,address=tcp://127.0.0.1:26525,rateLogging=1"
+/// \endcode
 ///
 /// To launch it, build the project, load the environment and run the executable:
 ///   \code{.sh}
@@ -23,9 +27,11 @@
 ///   > alienv enter QualityControl/latest
 ///   > runReadoutDataSampling
 ///   \endcode
+///
 /// If you have glfw installed, you should see a window with the workflow visualization and sub-windows for each Data
-/// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
+/// Processor where their logs can be seen. The processing will continue until the main window is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
+///
 
 #include <TH1F.h>
 
@@ -44,11 +50,10 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
   WorkflowSpec specs;
 
-  // Exemplary initialization of QC Task:
   const std::string qcConfigurationSource =
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutDataSampling.json";
-
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+
   o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
   return specs;
