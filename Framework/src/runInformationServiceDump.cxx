@@ -11,7 +11,7 @@
 
 ///
 /// \author bvonhall
-/// \file InformationServiceDump.cxx
+/// \file runInformationServiceDump.cxx
 ///
 
 #include "runFairMQDevice.h"

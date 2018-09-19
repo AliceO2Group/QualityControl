@@ -118,6 +118,8 @@ if(MYSQL_FOUND)
     list(APPEND SRCS src/MySqlDatabase.cxx)
 endif()
 
+#add_subdirectory(src/imgui)
+
 # Produce the final Version.h using template Version.h.in and substituting variables.
 # We don't want to polute our source tree with it, thus putting it in binary tree.
 configure_file("include/${MODULE_NAME}/Version.h.in"
@@ -239,6 +241,32 @@ O2_GENERATE_EXECUTABLE(
     SOURCES ${SRCS_TOBJECT2JSON}
     MODULE_LIBRARY_NAME ${LIBRARY_NAME}
     BUCKET_NAME "o2_qc_tobject2json"
+)
+
+if (GLFW_FOUND)
+    message(STATUS "GLFW_FOUND " )
+#    set(MODULE_BUCKET_NAME glfw_bucket)
+    set(GUI_BACKEND
+            src/imgui/imgui.cpp
+            src/imgui/imgui_draw.cpp
+            src/imgui/imgui_impl_glfw_gl3.cpp
+            src/imgui/gl3w.c
+            src/imgui/imgui_widgets.cpp
+            src/imgui/imgui_demo.cpp
+            src/imgui/DebugGUI.cxx
+            src/DataDump.cxx
+            )
+else()
+#    set(MODULE_BUCKET_NAME headless_bucket)
+    set(GUI_BACKEND
+            )
+endif()
+
+O2_GENERATE_EXECUTABLE(
+        EXE_NAME dataDump
+        SOURCES src/runDataDump.cxx ${GUI_BACKEND}
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME "dumpData_bucket"
 )
 
 # Install extra scripts
