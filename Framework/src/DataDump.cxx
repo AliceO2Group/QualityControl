@@ -33,17 +33,14 @@ using namespace std;
 namespace pt = boost::property_tree;
 using namespace o2::framework;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
-{
+namespace o2 {
+namespace quality_control {
+namespace core {
 
 GUIState DataDump::guiState;
 void* DataDump::window = nullptr;
 
-DataDump::DataDump() : counter(0)/*, newDataAvailable(false)*/
+DataDump::DataDump() : counter(0)
 {
 }
 
@@ -65,7 +62,6 @@ vector<string> getBinRepresentation(unsigned char* data, size_t size)
   }
   return result;
 }
-
 
 vector<string> getHexRepresentation(unsigned char* data, size_t size)
 {
@@ -123,27 +119,43 @@ void updateGuiState()
   }
 }
 
-
 void updatePayloadGui()
 {
   if (DataDump::guiState.current_payload.data == nullptr) {
     ImGui::Text("No data loaded yet, click Next.");
   } else { // all the stuff below should go to a method
 
-    static int representation = 0;
+    static int representation = 0, old_representation = 0;
+    old_representation = representation;
     ImGui::RadioButton("hexadecimal", &representation, 0);
     ImGui::SameLine();
     ImGui::RadioButton("binary", &representation, 1);
 
     // scrollable area
     ImGui::SetNextWindowContentSize(ImVec2(ImGui::GetWindowContentRegionWidth(), 0.0f));
-    ImGui::BeginChild("##ScrollingRegion", ImVec2(0, ImGui::GetFontSize() * 25), false,
-                      ImGuiWindowFlags_HorizontalScrollbar);
+    ImGui::BeginChild("##ScrollingRegion", ImVec2(0, ImGui::GetFontSize() * 25), false);
     // table
     ImGui::Columns(5, "payload_display", true);
 
     // header row
     ImGui::Separator();
+    static bool once = false;
+    if(!once || representation != old_representation) {
+      if(representation == 1) { // binary
+        ImGui::SetColumnWidth(0, 40.0f);
+        ImGui::SetColumnWidth(1, 243.0f);
+        ImGui::SetColumnWidth(2, 243.0f);
+        ImGui::SetColumnWidth(3, 243.0f);
+        ImGui::SetColumnWidth(4, 243.0f);
+      } else if (representation == 0) {
+        ImGui::SetColumnWidth(0, 40.0f);
+        ImGui::SetColumnWidth(1, 50.0f);
+        ImGui::SetColumnWidth(2, 50.0f);
+        ImGui::SetColumnWidth(3, 50.0f);
+        ImGui::SetColumnWidth(4, 50.0f);
+      }
+      once = true;
+    }
     ImGui::Text("");
     ImGui::NextColumn();
     ImGui::Text("#1");
@@ -157,10 +169,10 @@ void updatePayloadGui()
     ImGui::Separator();
 
     // print the hex values in the columns and raws of the table
-    vector<string> formattedData = (representation == 0) ? getHexRepresentation(DataDump::guiState.current_payload.data,
-                                                                                DataDump::guiState.current_payload.size)
-                                                         : getBinRepresentation(DataDump::guiState.current_payload.data,
-                                                                                DataDump::guiState.current_payload.size);
+    vector<string> formattedData =
+      (representation == 0)
+        ? getHexRepresentation(DataDump::guiState.current_payload.data, DataDump::guiState.current_payload.size)
+        : getBinRepresentation(DataDump::guiState.current_payload.data, DataDump::guiState.current_payload.size);
     int line = 0;
     static int selected = -1;
     for (unsigned long pos = 0; pos < formattedData.size();) {
@@ -210,7 +222,6 @@ void updateHeaderGui()
     ImGui::Text("serialization : %s", header->serialization.as<string>().c_str());
 
     // TODO add the next headers (how to "discover" what headers is there ? )
-
   }
 }
 
@@ -232,7 +243,6 @@ void redrawGui()
 
   ImGui::ShowTestWindow();
 }
-
 
 bool DataDump::ConditionalRun()
 {
@@ -267,8 +277,6 @@ void DataDump::assignDataToChunk(void* data, size_t size, Chunk& chunk)
   chunk.data = copy;
   chunk.size = size;
 }
-
-
 }
 }
 }
