@@ -14,22 +14,17 @@
 /// \file DataDump.h
 ///
 
-
 #ifndef QC_CORE_DATADUMP_H
 #define QC_CORE_DATADUMP_H
 
 #include "FairMQDevice.h"
 #include <boost/asio.hpp>
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
-{
+namespace o2 {
+namespace quality_control {
+namespace core {
 
-struct Chunk
-{
+struct Chunk {
   size_t size;
   unsigned char* data;
 
@@ -40,8 +35,7 @@ struct Chunk
   }
 };
 
-struct GUIState
-{
+struct GUIState {
   GUIState()
   {
     newDataAvailable = false;
@@ -56,29 +50,27 @@ struct GUIState
   Chunk next_header;
 };
 
-class DataDump : public FairMQDevice
-{
- public:
+class DataDump : public FairMQDevice {
+public:
   DataDump();
   virtual ~DataDump();
 
   static GUIState guiState;
   static void* window;
 
- protected:
+protected:
   void InitTask() override;
   bool ConditionalRun() override;
   bool handleParts(FairMQParts& parts);
 
- private:
+private:
   void assignDataToChunk(void* data, size_t size, Chunk& chunk);
-//  void test();
+  //  void test();
   int counter;
-//  bool newDataAvailable;
+  //  bool newDataAvailable;
 };
-
 }
 }
 }
 
-#endif //QC_CORE_DATADUMP_H
+#endif // QC_CORE_DATADUMP_H

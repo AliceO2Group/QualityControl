@@ -10,10 +10,8 @@ static void error_callback(int error, const char* description)
   fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
-namespace o2
-{
-namespace framework
-{
+namespace o2 {
+namespace framework {
 
 // @return an object of kind GLFWwindow* as void* to avoid having a direct dependency
 void* initGUI(const char* name)

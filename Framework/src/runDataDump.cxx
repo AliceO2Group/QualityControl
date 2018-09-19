@@ -19,12 +19,11 @@
 
 namespace bpo = boost::program_options;
 
-void addCustomOptions(bpo::options_description &options)
+void addCustomOptions(bpo::options_description& options)
 {
 }
 
-FairMQDevicePtr getDevice(const FairMQProgOptions & /*config*/)
+FairMQDevicePtr getDevice(const FairMQProgOptions& /*config*/)
 {
   return new o2::quality_control::core::DataDump();
 }
-

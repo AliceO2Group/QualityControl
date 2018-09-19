@@ -12,13 +12,11 @@
 
 #include <functional>
 
-namespace o2
-{
-namespace framework
-{
+namespace o2 {
+namespace framework {
 
-void *initGUI(const char *name);
-bool pollGUI(void *context, std::function<void(void)> guiCallback);
+void* initGUI(const char* name);
+bool pollGUI(void* context, std::function<void(void)> guiCallback);
 void disposeGUI();
 
 } // namespace framework

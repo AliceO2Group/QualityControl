@@ -1,20 +1,27 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+//
+
+/// \file    runReadoutDataSampling.cxx
+/// \author  Piotr Konopka, Barthelemy von Haller
 ///
-/// \file    runReadoutChainTemplate.cxx
-/// \author  Piotr Konopka
+/// \brief This is a simplistic executable to be able to sample Readout data towards a non-DPL FairMQ device.
 ///
-/// \brief This is an executable showing QC Task's usage in Data Processing Layer with Readout as external data source.
-///
-/// This is an executable showing QC Task's usage with Readout as a data producer. To get the Readout data, a proxy is
-/// used. Its output is dispatched to QC task using Data Sampling infrastructure. QC Task runs exemplary user code
-/// located in SkeletonDPL. The resulting histogram contents are printed by a fake checker.
-/// QC task is instantiated by TaskDataProcessorFactory with preinstalled config file, which can be found in
-/// ${QUALITYCONTROL_ROOT}/etc/readoutChainTemplate.json or Framework/readoutChainTemplate.json (original one).
+/// It uses a config file located at
+/// ${QUALITYCONTROL_ROOT}/etc/readoutDataSampling.json or Framework/readoutDataSampling.json (original one).
 ///
 /// To launch it, build the project, load the environment and run the executable:
 ///   \code{.sh}
 ///   > aliBuild build QualityControl --defaults o2
 ///   > alienv enter QualityControl/latest
-///   > runReadoutChainTemplate
+///   > runReadoutDataSampling
 ///   \endcode
 /// If you have glfw installed, you should see a window with the workflow visualization and sub-windows for each Data
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
@@ -39,7 +46,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   // Exemplary initialization of QC Task:
   const std::string qcConfigurationSource =
-    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutChainTemplate.json";
+    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutDataSampling.json";
 
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
   o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
