@@ -7,6 +7,9 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
+
+// Copied from AliceO2, work of Giulio
+
 #ifndef FRAMEWORK_DEBUGGUI_H
 #define FRAMEWORK_DEBUGGUI_H
 
