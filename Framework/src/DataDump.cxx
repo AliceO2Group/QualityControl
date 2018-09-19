@@ -51,7 +51,7 @@ DataDump::~DataDump()
 {
 }
 
-vector<string> getBinRepresentation(char* data, size_t size)
+vector<string> getBinRepresentation(unsigned char* data, size_t size)
 {
   stringstream ss;
   vector<string> result;
@@ -59,7 +59,7 @@ vector<string> getBinRepresentation(char* data, size_t size)
 
   for (int i = 0; i < size; i++) {
     std::bitset<16> x(data[i]);
-    ss << x;
+    ss << x << " ";
     result.push_back(ss.str());
     ss.str(std::string());
   }
@@ -67,7 +67,7 @@ vector<string> getBinRepresentation(char* data, size_t size)
 }
 
 
-vector<string> getHexRepresentation(char* data, size_t size)
+vector<string> getHexRepresentation(unsigned char* data, size_t size)
 {
   stringstream ss;
   vector<string> result;
@@ -116,10 +116,10 @@ void updateGuiState()
     }
   }
   if (DataDump::guiState.dataAvailableMessage.length() > 0) {
-    ImGui::Text(DataDump::guiState.dataAvailableMessage.c_str());
+    ImGui::TextUnformatted(DataDump::guiState.dataAvailableMessage.c_str());
   }
   if (DataDump::guiState.actionMessage.length() > 0) {
-    ImGui::Text(DataDump::guiState.actionMessage.c_str());
+    ImGui::TextUnformatted(DataDump::guiState.actionMessage.c_str());
   }
 }
 
@@ -163,7 +163,7 @@ void updatePayloadGui()
                                                                                 DataDump::guiState.current_payload.size);
     int line = 0;
     static int selected = -1;
-    for (unsigned long pos = 0; pos < formattedData.size(); pos = pos + 4) {
+    for (unsigned long pos = 0; pos < formattedData.size();) {
       char label[32];
       sprintf(label, "%04d", line * 4);
       if (ImGui::Selectable(label, selected == line, ImGuiSelectableFlags_SpanAllColumns)) {
@@ -178,7 +178,7 @@ void updatePayloadGui()
             pos++;
           }
         }
-        ImGui::Text(temp.c_str());
+        ImGui::TextUnformatted(temp.c_str());
       }
       ImGui::NextColumn();
       line++;
@@ -197,13 +197,13 @@ void updateHeaderGui()
     ImGui::Text("No data loaded yet, click Next.");
   } else { // all the stuff below should go to a method
     auto* header = header::get<header::DataHeader*>(DataDump::guiState.current_header.data);
-    ImGui::Text("sMagicString : %d", header->sMagicString);
-    ImGui::Text("sVersion : %d", header->sVersion);
-    ImGui::Text("sHeaderType : %s", header->sHeaderType.as<string>().c_str());
-    ImGui::Text("sSerializationMethod : %s", header->sSerializationMethod.as<string>().c_str());
+    ImGui::Text("sMagicString : %d", o2::header::DataHeader::sMagicString);
+    ImGui::Text("sVersion : %d", o2::header::DataHeader::sVersion);
+    ImGui::Text("sHeaderType : %s", o2::header::DataHeader::sHeaderType.as<string>().c_str());
+    ImGui::Text("sSerializationMethod : %s", o2::header::DataHeader::sSerializationMethod.as<string>().c_str());
 
     ImGui::Text("Header size : %d", header->headerSize);
-    ImGui::Text("Payload size : %d", header->payloadSize);
+    ImGui::Text("Payload size : %ld", header->payloadSize);
     ImGui::Text("Header version : %d", header->headerVersion);
     ImGui::Text("flagsNextHeader : %d", header->flagsNextHeader);
     ImGui::Text("description : %s", header->description.as<string>().c_str());
@@ -211,10 +211,6 @@ void updateHeaderGui()
 
     // TODO add the next headers (how to "discover" what headers is there ? )
 
-//      ImGui::Text("Data size (from header) : %d", header->dataSize);
-//      ImGui::Text("Data size (from fairmq) : %d", DataDump::guiState.current_payload.size);
-//      ImGui::Text("Link ID : %d", header->linkId);
-//      ImGui::Text("DataBlock ID : %d", header->id);
   }
 }
 
@@ -248,26 +244,15 @@ bool DataDump::ConditionalRun()
     this->handleParts(parts);
   }
 
-  bool guiQuitRequested = (pollGUI(window, redrawGui) == false);
-  if (guiQuitRequested) {
-    return false;
-  }
-
-  return true; // continue running
+  return pollGUI(window, redrawGui);
 }
 
 bool DataDump::handleParts(FairMQParts& parts)
 {
-//  cout << "handle parts : " << parts.Size() << endl;
-//  for (int i = 0; i < parts.Size(); ++i) {
-//    LOG(DEBUG) << " part " << i << " is " << parts.At(i)->GetSize() << " bytes";
-//  }
-  if (parts.Size() % 2) {
+  if (parts.Size() % 2 != 0) {
     cout << "number of parts must be a multiple of 2" << endl;
     return false;
   }
-
-//  cout << "test : " << (reinterpret_cast<o2::header::DataHeader*>(parts.At(0)->GetData()))->payloadSize << endl;
 
   DataDump::guiState.newDataAvailable = true;
   assignDataToChunk(parts.At(0)->GetData(), parts.At(0)->GetSize(), DataDump::guiState.next_header);
@@ -277,12 +262,10 @@ bool DataDump::handleParts(FairMQParts& parts)
 
 void DataDump::assignDataToChunk(void* data, size_t size, Chunk& chunk)
 {
-  char* copy = new char[size];
+  auto* copy = new unsigned char[size];
   memcpy(copy, data, size);
   chunk.data = copy;
   chunk.size = size;
-//  string hex = getHexRepresentation(chunk.data, chunk.size);
-//  cout << "data in ConditionalRun: \n" << hex << endl;
 }
 
 

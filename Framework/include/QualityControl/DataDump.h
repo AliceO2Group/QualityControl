@@ -31,7 +31,7 @@ namespace core
 struct Chunk
 {
   size_t size;
-  char* data;
+  unsigned char* data;
 
   Chunk()
   {
