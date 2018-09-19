@@ -253,7 +253,7 @@ if (GLFW_FOUND)
             src/imgui/gl3w.c
             src/imgui/imgui_widgets.cpp
             src/imgui/imgui_demo.cpp
-            src/imgui/DebugGUI.cxx
+            src/imgui/BaseGui.cxx
             src/DataDump.cxx
             )
 else()

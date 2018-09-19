@@ -25,7 +25,7 @@
 #include <QualityControl/DataDump.h>
 #include "imgui/imgui.h"
 #include <Framework/DebugGUI.h>
-#include "imgui/DebugGUI.h"
+#include "imgui/BaseGui.h"
 #include <Common/DataBlock.h>
 #include <Headers/DataHeader.h>
 
