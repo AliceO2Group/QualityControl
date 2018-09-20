@@ -40,7 +40,7 @@ namespace core {
 GUIState DataDump::guiState;
 void* DataDump::window = nullptr;
 
-DataDump::DataDump() : counter(0)
+DataDump::DataDump()
 {
 }
 
@@ -119,43 +119,47 @@ void updateGuiState()
   }
 }
 
+void resizeColumns(int representation, int old_representation)
+{
+  static bool firstDrawColumns = true;
+  if(firstDrawColumns || representation != old_representation) {
+    if (representation == 0) {
+      ImGui::SetColumnWidth(0, 40.0f);
+      ImGui::SetColumnWidth(1, 50.0f);
+      ImGui::SetColumnWidth(2, 50.0f);
+      ImGui::SetColumnWidth(3, 50.0f);
+      ImGui::SetColumnWidth(4, 50.0f);
+    } else if(representation == 1) { // binary
+      ImGui::SetColumnWidth(0, 40.0f);
+      ImGui::SetColumnWidth(1, 243.0f);
+      ImGui::SetColumnWidth(2, 243.0f);
+      ImGui::SetColumnWidth(3, 243.0f);
+      ImGui::SetColumnWidth(4, 243.0f);
+    }
+  }
+  firstDrawColumns = false;
+}
+
 void updatePayloadGui()
 {
   if (DataDump::guiState.current_payload.data == nullptr) {
     ImGui::Text("No data loaded yet, click Next.");
   } else { // all the stuff below should go to a method
 
-    static int representation = 0, old_representation = 0;
+    static int representation = 0, old_representation = 1;
     old_representation = representation;
     ImGui::RadioButton("hexadecimal", &representation, 0);
     ImGui::SameLine();
     ImGui::RadioButton("binary", &representation, 1);
 
     // scrollable area
-    ImGui::SetNextWindowContentSize(ImVec2(ImGui::GetWindowContentRegionWidth(), 0.0f));
     ImGui::BeginChild("##ScrollingRegion", ImVec2(0, ImGui::GetFontSize() * 25), false);
     // table
     ImGui::Columns(5, "payload_display", true);
 
     // header row
     ImGui::Separator();
-    static bool once = false;
-    if(!once || representation != old_representation) {
-      if(representation == 1) { // binary
-        ImGui::SetColumnWidth(0, 40.0f);
-        ImGui::SetColumnWidth(1, 243.0f);
-        ImGui::SetColumnWidth(2, 243.0f);
-        ImGui::SetColumnWidth(3, 243.0f);
-        ImGui::SetColumnWidth(4, 243.0f);
-      } else if (representation == 0) {
-        ImGui::SetColumnWidth(0, 40.0f);
-        ImGui::SetColumnWidth(1, 50.0f);
-        ImGui::SetColumnWidth(2, 50.0f);
-        ImGui::SetColumnWidth(3, 50.0f);
-        ImGui::SetColumnWidth(4, 50.0f);
-      }
-      once = true;
-    }
+    resizeColumns(representation, old_representation);
     ImGui::Text("");
     ImGui::NextColumn();
     ImGui::Text("#1");
@@ -168,7 +172,7 @@ void updatePayloadGui()
     ImGui::NextColumn();
     ImGui::Separator();
 
-    // print the hex values in the columns and raws of the table
+    // print the hex values in the columns and rows of the table
     vector<string> formattedData =
       (representation == 0)
         ? getHexRepresentation(DataDump::guiState.current_payload.data, DataDump::guiState.current_payload.size)
@@ -227,7 +231,14 @@ void updateHeaderGui()
 
 void redrawGui()
 {
-  ImGui::Begin("DataDump");
+  static bool firstDraw = true;
+
+  if(firstDraw) {
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::SetNextWindowSize(ImVec2(1100,700));
+  }
+
+  ImGui::Begin("DataDump", nullptr, ImGuiWindowFlags_NoTitleBar);
   if (ImGui::CollapsingHeader("Actions", ImGuiTreeNodeFlags_DefaultOpen)) {
     updateGuiState();
   }
@@ -241,7 +252,9 @@ void redrawGui()
   }
   ImGui::End();
 
-  ImGui::ShowTestWindow();
+//  ImGui::ShowTestWindow();
+
+  firstDraw = false;
 }
 
 bool DataDump::ConditionalRun()

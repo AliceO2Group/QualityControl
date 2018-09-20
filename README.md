@@ -338,7 +338,8 @@ the Data Sampling and the Data Inspector. In 3 terminals, do respectively
 ### Configuration
 
 __Fraction of data__
-The Data Sampling takes 1% of the events by default. Edit $QUALITY_CONTROL/readoutDataSampling.json
+The Data Sampling tries to take 100% of the events by default.
+Edit $QUALITY_CONTROL/readoutDataSampling.json
 to change it. Look for the parameter `fraction` that is set to 1.
 
 __Port__

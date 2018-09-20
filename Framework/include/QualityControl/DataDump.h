@@ -10,7 +10,7 @@
 //
 
 ///
-/// \author bvonhall
+/// \author Barthelemy von Haller
 /// \file DataDump.h
 ///
 
@@ -24,6 +24,9 @@ namespace o2 {
 namespace quality_control {
 namespace core {
 
+/**
+ * A chunk of data
+ */
 struct Chunk {
   size_t size;
   unsigned char* data;
@@ -35,6 +38,10 @@ struct Chunk {
   }
 };
 
+/**
+ * Container for the state of the GUI.
+ * As we use Imgui it is stateless and we have to keep the state ourselves.
+ */
 struct GUIState {
   GUIState()
   {
@@ -50,6 +57,9 @@ struct GUIState {
   Chunk next_header;
 };
 
+/**
+ * A GUI to display the header and the payload of events sent by the Data Sampling.
+ */
 class DataDump : public FairMQDevice {
 public:
   DataDump();
@@ -65,9 +75,6 @@ protected:
 
 private:
   void assignDataToChunk(void* data, size_t size, Chunk& chunk);
-  //  void test();
-  int counter;
-  //  bool newDataAvailable;
 };
 }
 }
