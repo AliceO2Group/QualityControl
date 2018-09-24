@@ -13,6 +13,7 @@ find_package(ZeroMQ REQUIRED)
 find_package(nanomsg REQUIRED)
 include_directories(${MS_GSL_INCLUDE_DIR})
 find_package(Arrow REQUIRED)
+find_package(GLFW)
 
 # todo not sure why this is needed
 if (BOOST_FOUND AND NOT Boost_FOUND)
@@ -181,4 +182,29 @@ o2_define_bucket(
         ${FAIRROOT_INCLUDE_DIR}/fairmq
         ${AliceO2_INCLUDE_DIRS}
         ${MS_GSL_INCLUDE_DIR}
+)
+
+o2_define_bucket(
+        NAME
+        glfw_bucket
+
+        DEPENDENCIES
+        ${GLFW_LIBRARIES}
+
+        INCLUDE_DIRECTORIES
+        ${GLFW_INCLUDE_DIR}
+)
+
+o2_define_bucket(
+        NAME
+        headless_bucket
+)
+
+o2_define_bucket(
+        NAME
+        dumpData_bucket
+
+        DEPENDENCIES
+        o2_qualitycontrol_with_fairroot_bucket
+        glfw_bucket
 )

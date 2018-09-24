@@ -1,0 +1,34 @@
+{
+  "qc": {
+    "config": {
+      "DataSampling": {
+        "tasksList": "externalTask",
+        "enableTimePipeliningDispatchers": "0",
+        "enableParallelDispatchers": "0",
+        "enableProxy": "0"
+      }
+    },
+    "tasks_config": {
+      "externalTask": {
+        "taskDefinition": "externalTaskDefinition"
+      },
+      "externalTaskDefinition": {
+        "outputDataOrigin": "READOUT",
+        "outputDataDescription": "RAWDATA",
+        "inputs": "readoutInput",
+        "fraction": "1",
+        "subSpec": "-1",
+        "dispatcherType": "FairMQ",
+        "channelConfig": "name=fairReadoutRawOut,type=pub,method=bind,address=tcp://127.0.0.1:26525,rateLogging=1"
+      },
+      "readoutInput": {
+        "inputName": "readout",
+        "dataOrigin": "R/O",
+        "dataDescription": "RAWDATA",
+        "spawnConverter": "1",
+        "channelConfig" : "type=sub,method=connect,address=ipc:///tmp/readout-pipe-1,rateLogging=1",
+        "converterType" : "dataSamplingReadoutAdapter"
+      }
+    }
+  }
+}

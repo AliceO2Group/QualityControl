@@ -16,12 +16,12 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ROOTSYS}/share/root/cmake/modules)
 include(RootNewMacros)
 
 # Set the default build type to "RelWithDebInfo"
-if(NOT CMAKE_BUILD_TYPE)
+if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "RelWithDebInfo"
             CACHE
             STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel Coverage."
             FORCE)
-endif(NOT CMAKE_BUILD_TYPE)
+endif (NOT CMAKE_BUILD_TYPE)
 
 # Set the version number of your project here (format is MAJOR.MINOR.PATCHLEVEL - e.g. 1.0.0)
 set(VERSION_MAJOR "0")
@@ -32,14 +32,14 @@ set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 # Build targets with install rpath on Mac to dramatically speed up installation
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-if("${isSystemDir}" STREQUAL "-1")
-    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+if ("${isSystemDir}" STREQUAL "-1")
+    if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
         set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
-    endif()
-endif()
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    endif ()
+endif ()
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-endif()
+endif ()
 unset(isSystemDir)
 
 # C++14
@@ -114,9 +114,11 @@ set(SRCS_TOBJECT2JSON
         src/TObject2JsonCcdb.cxx
         )
 
-if(MYSQL_FOUND)
+if (MYSQL_FOUND)
     list(APPEND SRCS src/MySqlDatabase.cxx)
-endif()
+endif ()
+
+#add_subdirectory(src/imgui)
 
 # Produce the final Version.h using template Version.h.in and substituting variables.
 # We don't want to polute our source tree with it, thus putting it in binary tree.
@@ -131,11 +133,11 @@ include_directories(
 
 set(LIBRARY_NAME QualityControl)
 
-if(FAIRROOT_FOUND)
+if (FAIRROOT_FOUND)
     set(BUCKET_NAME o2_qualitycontrol_with_fairroot_bucket)
-else()
+else ()
     set(BUCKET_NAME o2_qualitycontrol_bucket)
-endif()
+endif ()
 
 set(LINKDEF include/QualityControl/LinkDef.h)
 
@@ -199,6 +201,13 @@ O2_GENERATE_EXECUTABLE(
 )
 
 O2_GENERATE_EXECUTABLE(
+        EXE_NAME runReadoutDataSampling
+        SOURCES src/runReadoutDataSampling.cxx
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME ${BUCKET_NAME}
+)
+
+O2_GENERATE_EXECUTABLE(
         EXE_NAME alfaTestReceiver
         SOURCES src/alfaTestReceiver.cxx
         MODULE_LIBRARY_NAME ${LIBRARY_NAME}
@@ -235,13 +244,38 @@ O2_GENERATE_TESTS(
 )
 
 O2_GENERATE_EXECUTABLE(
-    EXE_NAME "tobject2json"
-    SOURCES ${SRCS_TOBJECT2JSON}
-    MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-    BUCKET_NAME "o2_qc_tobject2json"
+        EXE_NAME "tobject2json"
+        SOURCES ${SRCS_TOBJECT2JSON}
+        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+        BUCKET_NAME "o2_qc_tobject2json"
 )
+
+if (GLFW_FOUND)
+    set(GUI_BACKEND
+            src/imgui/imgui.cpp
+            src/imgui/imgui_draw.cpp
+            src/imgui/imgui_impl_glfw_gl3.cpp
+            src/imgui/gl3w.c
+            src/imgui/imgui_widgets.cpp
+            src/imgui/imgui_demo.cpp
+            src/imgui/BaseGui.cxx
+            src/DataDump.cxx
+            )
+
+    O2_GENERATE_EXECUTABLE(
+            EXE_NAME dataDump
+            SOURCES src/runDataDump.cxx ${GUI_BACKEND}
+            MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+            BUCKET_NAME "dumpData_bucket"
+    )
+else ()
+    message(STATUS "GLFW not found, DataDump will not be built")
+endif ()
+
+
 
 # Install extra scripts
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
-install(FILES example-default.ini example-default.json alfa.json DESTINATION etc)
-Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json DESTINATION etc/)
+install(FILES example-default.ini example-default.json alfa.json dataDump.json DESTINATION etc)
+Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json readoutDataSampling.json
+        DESTINATION etc/)
