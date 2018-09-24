@@ -272,8 +272,8 @@ bool DataDump::ConditionalRun()
 
 bool DataDump::handleParts(FairMQParts& parts)
 {
-  if (parts.Size() % 2 != 0) {
-    cout << "number of parts must be a multiple of 2" << endl;
+  if (parts.Size() != 2) {
+    cout << "number of parts must be 2" << endl;
     return false;
   }
 
