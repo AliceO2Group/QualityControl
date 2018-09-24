@@ -194,8 +194,12 @@ void updateHeaderGui()
 {
   if (DataDump::guiState.current_header.data == nullptr) {
     ImGui::Text("No data loaded yet, click Next.");
-  } else { // all the stuff below should go to a method
+  } else {
     auto* header = header::get<header::DataHeader*>(DataDump::guiState.current_header.data);
+    if(header == nullptr) {
+      ImGui::Text("No header available in this data.");
+      return;
+    }
     ImGui::Text("sMagicString : %d", o2::header::DataHeader::sMagicString);
     ImGui::Text("sVersion : %d", o2::header::DataHeader::sVersion);
     ImGui::Text("sHeaderType : %s", o2::header::DataHeader::sHeaderType.as<string>().c_str());
