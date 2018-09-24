@@ -23,7 +23,7 @@
       },
       "readoutInput": {
         "inputName": "readout",
-        "dataOrigin": "READOUT",
+        "dataOrigin": "R/O",
         "dataDescription": "RAWDATA",
         "spawnConverter": "1",
         "channelConfig" : "type=sub,method=connect,address=ipc:///tmp/readout-pipe-1,rateLogging=1",

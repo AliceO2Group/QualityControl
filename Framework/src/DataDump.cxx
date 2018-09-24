@@ -205,7 +205,8 @@ void updateHeaderGui()
     ImGui::Text("Payload size : %ld", header->payloadSize);
     ImGui::Text("Header version : %d", header->headerVersion);
     ImGui::Text("flagsNextHeader : %d", header->flagsNextHeader);
-    ImGui::Text("description : %s", header->description.as<string>().c_str());
+    ImGui::Text("dataDescription : %s", header->dataDescription.str);
+    ImGui::Text("dataOrigin : %s", header->dataOrigin.str);
     ImGui::Text("serialization : %s", header->serialization.as<string>().c_str());
 
     // TODO add the next headers (how to "discover" what headers is there ? )
