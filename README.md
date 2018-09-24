@@ -331,9 +331,15 @@ Build the QualityControl as usual.
 To monitor the readout, 3 processes have to be started : the Readout,
 the Data Sampling and the Data Inspector. In 3 terminals, do respectively
 
-1. readout.exe file:///absolute/path/to/config.cfg
-2. runReadoutDataSampling --batch
-3. dataDump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static
+1. Make sure that the data sampling is enabled in the readout :
+```
+[consumer-data-sampling]
+consumerType=DataSampling
+enabled=1
+```
+1. `readout.exe file:///absolute/path/to/config.cfg`
+2. `runReadoutDataSampling --batch`
+3. `dataDump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static`
 
 ### Configuration
 
