@@ -37,14 +37,8 @@
 
 #include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
-#include "QualityControl/TaskDataProcessorFactory.h"
-#include "QualityControl/TaskDataProcessor.h"
-#include "QualityControl/CheckerDataProcessorFactory.h"
-#include "QualityControl/CheckerDataProcessor.h"
 
 using namespace o2::framework;
-using namespace o2::quality_control::core;
-using namespace o2::quality_control::checker;
 
 WorkflowSpec defineDataProcessing(ConfigContext const&)
 {

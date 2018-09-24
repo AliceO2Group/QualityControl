@@ -16,21 +16,12 @@
 
 #include "QualityControl/DataDump.h"
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
-
-#include "FairMQLogger.h"
-#include <options/FairMQProgOptions.h>
-#include <QualityControl/DataDump.h>
+#include <iomanip>
 #include "imgui/imgui.h"
-#include <Framework/DebugGUI.h>
 #include "imgui/BaseGui.h"
-#include <Common/DataBlock.h>
 #include <Headers/DataHeader.h>
 
 using namespace std;
-namespace pt = boost::property_tree;
 using namespace o2::framework;
 
 namespace o2 {
@@ -39,14 +30,6 @@ namespace core {
 
 GUIState DataDump::guiState;
 void* DataDump::window = nullptr;
-
-DataDump::DataDump()
-{
-}
-
-DataDump::~DataDump()
-{
-}
 
 vector<string> getBinRepresentation(unsigned char* data, size_t size)
 {

@@ -18,7 +18,6 @@
 #define QC_CORE_DATADUMP_H
 
 #include "FairMQDevice.h"
-#include <boost/asio.hpp>
 
 namespace o2 {
 namespace quality_control {
@@ -62,8 +61,8 @@ struct GUIState {
  */
 class DataDump : public FairMQDevice {
 public:
-  DataDump();
-  virtual ~DataDump();
+  DataDump() = default;
+  virtual ~DataDump() = default;
 
   static GUIState guiState;
   static void* window;
