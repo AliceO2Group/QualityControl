@@ -58,14 +58,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # Dependencies
 ####################################
 
-# Load some basic macros which are needed later on
-#include(O2Utils)
-#include(QualityControlDependencies)
-#
-#message(STATUS "ROOT ${ROOT_VERSION} found in '${ROOTSYS}'")
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ROOTSYS}/share/root/cmake/modules)
-#include(RootNewMacros)
-
 find_package(Boost 1.58 COMPONENTS container unit_test_framework program_options system log signals)
 find_package(Git QUIET)
 find_package(Configuration REQUIRED)
@@ -84,6 +76,7 @@ find_package(GLFW)
 find_package(FairRoot REQUIRED)
 find_package(FairMQ REQUIRED)
 find_package(FairLogger REQUIRED)
+find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
 
 # TODO reevaluate this
 if (NOT MYSQL_FOUND)
@@ -91,11 +84,6 @@ if (NOT MYSQL_FOUND)
 else ()
   add_definitions(-D_WITH_MYSQL)
 endif ()
-
-# ROOT mysteries (https://root-forum.cern.ch/t/incostistency-in-building-library-with-cmake-for-root-5-6/19315/2)
-#list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
-find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
-#include(RootNewMacros)
 
 ####################################
 # Files
@@ -176,6 +164,10 @@ get_target_property(monitoring_inc_dir Monitoring::Monitoring INTERFACE_INCLUDE_
 list(APPEND include_dirs "${monitoring_inc_dir}")
 get_target_property(infologger_inc_dir AliceO2::InfoLogger INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${infologger_inc_dir}")
+get_target_property(o2_inc_dir AliceO2::AliceO2 INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${o2_inc_dir}")
+get_target_property(fairlogger_inc_dir FairLogger::FairLogger INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${fairlogger_inc_dir}")
 list(APPEND include_dirs "${FAIRROOT_INCLUDE_DIR}")
 list(APPEND include_dirs "${FairMQ_INCDIR}")
 list(APPEND include_dirs "${FairMQ_INCDIR}/fairmq")
@@ -189,6 +181,7 @@ set_source_files_properties(${dict_src} PROPERTIES GENERATED TRUE)
 
 ROOT_GENERATE_DICTIONARY("${dict}" ${HEADERS}
   LINKDEF include/QualityControl/LinkDef.h)
+
 # TODO review how and what to install for dictionary
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME_CORE}Dict_rdict.pcm
   ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${LIBRARY_NAME_CORE}Dict.rootmap
@@ -343,11 +336,11 @@ foreach (test ${TEST_SRCS})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
 endforeach()
 
+####################################
+# Extra scripts
+####################################
 
-#
-#
-## Install extra scripts
-#install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
-#install(FILES example-default.ini example-default.json alfa.json dataDump.json DESTINATION etc)
-#Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json readoutDataSampling.json
-#        DESTINATION etc/)
+install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
+install(FILES example-default.ini example-default.json alfa.json dataDump.json DESTINATION etc)
+Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json readoutDataSampling.json
+        DESTINATION etc/)
