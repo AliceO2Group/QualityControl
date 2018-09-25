@@ -37,7 +37,16 @@ find_package_handle_standard_args(Monitoring  "Monitoring could not be found. Se
                                   MONITORING_LIBRARY MONITORING_INCLUDE_DIR)
 if(${Monitoring_FOUND})
     set(Monitoring_DEFINITIONS "")
+    mark_as_advanced(MONITORING_INCLUDE_DIR MONITORING_LIBRARY)
     message(STATUS "Monitoring found : ${Monitoring_LIBRARIES}")
+
+    # add target
+    if(NOT TARGET Monitoring::Monitoring)
+        add_library(Monitoring::Monitoring INTERFACE IMPORTED)
+        set_target_properties(Monitoring::Monitoring PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${MONITORING_INCLUDE_DIR}"
+                INTERFACE_LINK_LIBRARIES "${MONITORING_LIBRARY}"
+                )
+    endif()
 endif()
 
-mark_as_advanced(MONITORING_INCLUDE_DIR MONITORING_LIBRARY)

@@ -101,6 +101,14 @@ if (ARROW_FOUND)
       message(STATUS "Found the Arrow library: ${ARROW_LIB_PATH}")
     endif ()
   endif ()
+  # add target
+  if(NOT TARGET Arrow::Arrow)
+    add_library(Arrow::Arrow INTERFACE IMPORTED)
+    set_target_properties(Arrow::Arrow PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${ARROW_INCLUDE_DIR}"
+            INTERFACE_LINK_LIBRARIES "${ARROW_LIB_PATH}"
+            )
+  endif()
 else()
   if (NOT Arrow_FIND_QUIETLY)
     set(ARROW_ERR_MSG "Could not find the Arrow library. Looked for headers")

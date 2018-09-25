@@ -1,19 +1,21 @@
+
 ####################################
-# General project definition
+# Project
 ####################################
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake) # project specific cmake dir
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
+project(QualityControl
+        #        VERSION 1.0   # TODO update this automatically when there are new releases
+        DESCRIPTION "O2 Quality Control"
+        LANGUAGES CXX
+        )
 
-project(QualityControl)
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
+set(INCLUDE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/include")
 
-# Load some basic macros which are needed later on
-include(O2Utils)
-include(QualityControlDependencies)
-
-message(STATUS "ROOT ${ROOT_VERSION} found in '${ROOTSYS}'")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ROOTSYS}/share/root/cmake/modules)
-include(RootNewMacros)
+####################################
+# Compilation flags and build options
+####################################
 
 # Set the default build type to "RelWithDebInfo"
 if (NOT CMAKE_BUILD_TYPE)
@@ -23,13 +25,8 @@ if (NOT CMAKE_BUILD_TYPE)
             FORCE)
 endif (NOT CMAKE_BUILD_TYPE)
 
-# Set the version number of your project here (format is MAJOR.MINOR.PATCHLEVEL - e.g. 1.0.0)
-set(VERSION_MAJOR "0")
-set(VERSION_MINOR "0")
-set(VERSION_PATCH "0")
-set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
-
 # Build targets with install rpath on Mac to dramatically speed up installation
+# TODO reevaluate if this is needed
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
 if ("${isSystemDir}" STREQUAL "-1")
@@ -42,29 +39,69 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 endif ()
 unset(isSystemDir)
 
-# C++14
-IF (CMAKE_VERSION VERSION_LESS 3.1)
-    include(CheckCXXCompilerFlag)
-    CHECK_CXX_COMPILER_FLAG(-std=c++14 COMPILER_SUPPORTS_CXX14)
-    if (COMPILER_SUPPORTS_CXX14)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    else ()
-        message(ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
-    endif ()
-ELSE ()
-    set(CMAKE_CXX_STANDARD 14)  # proper way in CMake >= 3.1
-ENDIF ()
+# C++ standard
+set(CMAKE_CXX_STANDARD 14)
 
-# Add compiler flags for warnings and (more importantly) fPIC and debug symbols
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -fPIC")
+# Add compiler flags for warnings and debug symbols
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
+
+# Set fPIC for all targets
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# TODO check how it was done in flpproto and reenable
+# Add coverage flags to Debug build
+#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage")
+#endif()
 
 ####################################
-# Module, library and executable definition
+# Dependencies
 ####################################
 
-set(MODULE_NAME "QualityControl")
+# Load some basic macros which are needed later on
+#include(O2Utils)
+#include(QualityControlDependencies)
+#
+#message(STATUS "ROOT ${ROOT_VERSION} found in '${ROOTSYS}'")
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ROOTSYS}/share/root/cmake/modules)
+#include(RootNewMacros)
 
-O2_SETUP(NAME ${MODULE_NAME})
+find_package(Boost 1.58 COMPONENTS container unit_test_framework program_options system log signals)
+find_package(Git QUIET)
+find_package(Configuration REQUIRED)
+find_package(Monitoring REQUIRED)
+find_package(MySQL REQUIRED)
+find_package(Common REQUIRED)
+find_package(InfoLogger REQUIRED)
+find_package(DataSampling REQUIRED)
+find_package(AliceO2 REQUIRED)
+find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
+find_package(CURL REQUIRED)
+find_package(ZeroMQ REQUIRED)
+find_package(nanomsg REQUIRED)
+find_package(Arrow REQUIRED)
+find_package(GLFW)
+find_package(FairRoot REQUIRED)
+message("AAAAABBBBB")
+find_package(FairMQ REQUIRED)
+find_package(FairLogger REQUIRED)
+#include_directories(${MS_GSL_INCLUDE_DIR})
+
+# TODO reevaluate this
+if (NOT MYSQL_FOUND)
+    message(WARNING "MySQL not found, the corresponding classes won't be built.")
+else ()
+    add_definitions(-D_WITH_MYSQL)
+endif ()
+
+# ROOT mysteries (https://root-forum.cern.ch/t/incostistency-in-building-library-with-cmake-for-root-5-6/19315/2)
+#list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
+find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
+#include(RootNewMacros)
+
+####################################
+# Library
+####################################
 
 set(SRCS
         src/TaskInterface.cxx
@@ -118,164 +155,192 @@ if (MYSQL_FOUND)
     list(APPEND SRCS src/MySqlDatabase.cxx)
 endif ()
 
-#add_subdirectory(src/imgui)
-
 # Produce the final Version.h using template Version.h.in and substituting variables.
 # We don't want to polute our source tree with it, thus putting it in binary tree.
-configure_file("include/${MODULE_NAME}/Version.h.in"
+configure_file("include/QualityControl/Version.h.in"
         "${CMAKE_CURRENT_BINARY_DIR}/include/${MODULE_NAME}/Version.h"
         @ONLY
         )
 
-include_directories(
-        ${CMAKE_CURRENT_BINARY_DIR}/include
-)
+# ROOT dictionary
+# the following root macros expect include dirs to be set as directory property
+get_directory_property(include_dirs INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}/include")
+get_target_property(config_inc_dir Configuration::Configuration INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${config_inc_dir}")
+get_target_property(arrow_inc_dir Arrow::Arrow INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${arrow_inc_dir}")
+get_target_property(monitoring_inc_dir Monitoring::Monitoring INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${monitoring_inc_dir}")
+list(APPEND include_dirs "${FAIRROOT_INCLUDE_DIR}")
+list(APPEND include_dirs "${FairMQ_INCDIR}")
+list(APPEND include_dirs "${FairMQ_INCDIR}/fairmq")
+list(REMOVE_DUPLICATES include_dirs)
+include_directories(${include_dirs})
 
-set(LIBRARY_NAME QualityControl)
+set(dict "QualityControlDict")
+set(dict_src ${CMAKE_CURRENT_BINARY_DIR}/${dict}.cxx)
+set_source_files_properties(${dict_src} PROPERTIES COMPILE_FLAGS "-Wno-old-style-cast")
+set_source_files_properties(${dict_src} PROPERTIES GENERATED TRUE)
 
-if (FAIRROOT_FOUND)
-    set(BUCKET_NAME o2_qualitycontrol_with_fairroot_bucket)
-else ()
-    set(BUCKET_NAME o2_qualitycontrol_bucket)
-endif ()
+ROOT_GENERATE_DICTIONARY("${dict}" ${HEADERS}
+        LINKDEF include/QualityControl/LinkDef.h)
+# TODO review how and what to install for dictionary
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME_CORE}Dict_rdict.pcm
+        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${LIBRARY_NAME_CORE}Dict.rootmap
+        DESTINATION lib)
 
-set(LINKDEF include/QualityControl/LinkDef.h)
+# Create library
+add_library(QualityControl SHARED ${SRCS} QualityControlDict.cxx )
 
-O2_GENERATE_LIBRARY()
-
-# Task Launcher
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcTaskLauncher
-        SOURCES src/TaskDevice.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcCheckerLauncher
-        SOURCES src/qcCheckerLauncher.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcSpy
-        SOURCES src/qcSpy.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcInfoService
-        SOURCES src/runInformationService.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcInfoServiceDump
-        SOURCES src/runInformationServiceDump.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME taskDPL
-        SOURCES src/runTaskDPL.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME runReadoutChainTemplate
-        SOURCES src/runReadoutChainTemplate.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME runMergerTest
-        SOURCES src/runMergerTest.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME runReadoutDataSampling
-        SOURCES src/runReadoutDataSampling.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME alfaTestReceiver
-        SOURCES src/alfaTestReceiver.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcConsumer
-        SOURCES src/Consumer.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME repositoryBenchmark
-        SOURCES src/runRepositoryBenchmark.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-set(TEST_SRCS
-        test/testDbFactory.cxx
-        test/testMonitorObject.cxx
-        test/testPublisher.cxx
-        test/testQcInfoLogger.cxx
-        test/testQCTask.cxx
-        test/testQuality.cxx
-        )
-
-O2_GENERATE_TESTS(
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-        TEST_SRCS ${TEST_SRCS}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME "tobject2json"
-        SOURCES ${SRCS_TOBJECT2JSON}
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME "o2_qc_tobject2json"
-)
-
-if (GLFW_FOUND)
-    set(GUI_BACKEND
-            src/imgui/imgui.cpp
-            src/imgui/imgui_draw.cpp
-            src/imgui/imgui_impl_glfw_gl3.cpp
-            src/imgui/gl3w.c
-            src/imgui/imgui_widgets.cpp
-            src/imgui/imgui_demo.cpp
-            src/imgui/BaseGui.cxx
-            src/DataDump.cxx
-            )
-
-    O2_GENERATE_EXECUTABLE(
-            EXE_NAME dataDump
-            SOURCES src/runDataDump.cxx ${GUI_BACKEND}
-            MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-            BUCKET_NAME "dumpData_bucket"
+target_include_directories(QualityControl
+    PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
     )
-else ()
-    message(STATUS "GLFW not found, DataDump will not be built")
-endif ()
 
-
-
-# Install extra scripts
-install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
-install(FILES example-default.ini example-default.json alfa.json dataDump.json DESTINATION etc)
-Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json readoutDataSampling.json
-        DESTINATION etc/)
+# Link targets
+target_link_libraries(QualityControl
+        PUBLIC
+        Boost::boost
+        PRIVATE
+        Boost::system
+        )
+#
+## Task Launcher
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME qcTaskLauncher
+#        SOURCES src/TaskDevice.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME qcCheckerLauncher
+#        SOURCES src/qcCheckerLauncher.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME qcSpy
+#        SOURCES src/qcSpy.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME qcInfoService
+#        SOURCES src/runInformationService.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME qcInfoServiceDump
+#        SOURCES src/runInformationServiceDump.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME taskDPL
+#        SOURCES src/runTaskDPL.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME runReadoutChainTemplate
+#        SOURCES src/runReadoutChainTemplate.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME runMergerTest
+#        SOURCES src/runMergerTest.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME runReadoutDataSampling
+#        SOURCES src/runReadoutDataSampling.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME alfaTestReceiver
+#        SOURCES src/alfaTestReceiver.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME qcConsumer
+#        SOURCES src/Consumer.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME repositoryBenchmark
+#        SOURCES src/runRepositoryBenchmark.cxx
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#)
+#
+#set(TEST_SRCS
+#        test/testDbFactory.cxx
+#        test/testMonitorObject.cxx
+#        test/testPublisher.cxx
+#        test/testQcInfoLogger.cxx
+#        test/testQCTask.cxx
+#        test/testQuality.cxx
+#        )
+#
+#O2_GENERATE_TESTS(
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME ${BUCKET_NAME}
+#        TEST_SRCS ${TEST_SRCS}
+#)
+#
+#O2_GENERATE_EXECUTABLE(
+#        EXE_NAME "tobject2json"
+#        SOURCES ${SRCS_TOBJECT2JSON}
+#        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#        BUCKET_NAME "o2_qc_tobject2json"
+#)
+#
+#if (GLFW_FOUND)
+#    set(GUI_BACKEND
+#            src/imgui/imgui.cpp
+#            src/imgui/imgui_draw.cpp
+#            src/imgui/imgui_impl_glfw_gl3.cpp
+#            src/imgui/gl3w.c
+#            src/imgui/imgui_widgets.cpp
+#            src/imgui/imgui_demo.cpp
+#            src/imgui/BaseGui.cxx
+#            src/DataDump.cxx
+#            )
+#
+#    O2_GENERATE_EXECUTABLE(
+#            EXE_NAME dataDump
+#            SOURCES src/runDataDump.cxx ${GUI_BACKEND}
+#            MODULE_LIBRARY_NAME ${LIBRARY_NAME}
+#            BUCKET_NAME "dumpData_bucket"
+#    )
+#else ()
+#    message(STATUS "GLFW not found, DataDump will not be built")
+#endif ()
+#
+#
+## Install extra scripts
+#install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
+#install(FILES example-default.ini example-default.json alfa.json dataDump.json DESTINATION etc)
+#Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json readoutDataSampling.json
+#        DESTINATION etc/)
