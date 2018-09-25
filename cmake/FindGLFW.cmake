@@ -276,3 +276,12 @@ mark_as_advanced(
   GLFW_glfw_LIBRARY
   GLFW_cocoa_LIBRARY
 )
+
+# add target
+if(NOT TARGET GLFW::GLFW)
+    add_library(GLFW::GLFW INTERFACE IMPORTED)
+    set_target_properties(GLFW::GLFW PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES "${GLFW_INCLUDE_DIR}"
+      INTERFACE_LINK_LIBRARIES "${GLFW_LIBRARIES}"
+      )
+endif()

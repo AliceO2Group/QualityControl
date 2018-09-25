@@ -9,7 +9,7 @@
 #include <csignal>
 // O2
 #include "Common/signalUtilities.h"
-#include "QualityControl/Version.h"
+//#include "QualityControl/Version.h"
 // boost
 #include <boost/program_options.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -74,14 +74,14 @@ int main(int argc, char *argv[])
     std::cout << desc << std::endl;
     return EXIT_SUCCESS;
   }
-  if (vm.count("version")) {
-    std::cout << "quality_control version " << o2::quality_control::core::Version::getString() << std::endl;
-    return EXIT_SUCCESS;
-  }
-  if (vm.count("rev")) {
-    std::cout << "SVN revision : " << o2::quality_control::core::Version::getRevision() << std::endl;
-    return EXIT_SUCCESS;
-  }
+//  if (vm.count("version")) {
+//    std::cout << "quality_control version " << o2::quality_control::core::Version::getString() << std::endl;
+//    return EXIT_SUCCESS;
+//  }
+//  if (vm.count("rev")) {
+//    std::cout << "SVN revision : " << o2::quality_control::core::Version::getRevision() << std::endl;
+//    return EXIT_SUCCESS;
+//  }
   string configurationSource;
   if (vm.count("configuration")) {
     configurationSource = vm["configuration"].as<string>();

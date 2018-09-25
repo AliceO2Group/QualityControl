@@ -18,6 +18,7 @@ find_path(AliceO2_INCLUDE_DIR runDataProcessing.h
 # Remove the final "Headers"
 get_filename_component(AliceO2_INCLUDE_DIR ${AliceO2_INCLUDE_DIR} DIRECTORY)
 set(AliceO2_INCLUDE_DIRS ${AliceO2_INCLUDE_DIR})
+list(APPEND AliceO2_INCLUDE_DIRS ${MS_GSL_INCLUDE_DIR})
 
 # find libraries
 find_library(AliceO2_LIBRARY_FRAMEWORK NAMES Framework HINTS ${O2_ROOT}/lib ENV LD_LIBRARY_PATH)
@@ -34,6 +35,16 @@ find_package_handle_standard_args(AliceO2  "AliceO2 could not be found. Install 
 
 if(${AliceO2_FOUND})
     message(STATUS "AliceO2 found, libraries: ${AliceO2_LIBRARIES}")
+
+    mark_as_advanced(AliceO2_INCLUDE_DIRS AliceO2_LIBRARIES)
+
+    # add target
+    if(NOT TARGET AliceO2::AliceO2)
+        add_library(AliceO2::AliceO2 INTERFACE IMPORTED)
+        set_target_properties(AliceO2::AliceO2 PROPERTIES
+          INTERFACE_INCLUDE_DIRECTORIES "${AliceO2_INCLUDE_DIRS}"
+          INTERFACE_LINK_LIBRARIES "${AliceO2_LIBRARIES}"
+          )
+    endif()
 endif()
 
-mark_as_advanced(AliceO2_INCLUDE_DIRS AliceO2_LIBRARIES)

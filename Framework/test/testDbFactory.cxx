@@ -1,5 +1,5 @@
 ///
-/// \file   Publisher_test.cpp
+/// \file   testDbFactory.cxx
 /// \author Barthelemy von Haller
 ///
 

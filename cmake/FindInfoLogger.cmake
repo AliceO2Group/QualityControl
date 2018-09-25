@@ -31,6 +31,15 @@ find_package_handle_standard_args(InfoLogger  "InfoLogger could not be found. In
 
 if(${InfoLogger_FOUND})
     message(STATUS "InfoLogger found : ${InfoLogger_LIBRARIES}")
+    mark_as_advanced(INFOLOGGER_INCLUDE_DIR INFOLOGGER_LIBRARY)
+
+    # add target
+    if(NOT TARGET AliceO2::InfoLogger)
+        add_library(AliceO2::InfoLogger INTERFACE IMPORTED)
+        set_target_properties(AliceO2::InfoLogger PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${INFOLOGGER_INCLUDE_DIR}"
+                INTERFACE_LINK_LIBRARIES "${INFOLOGGER_LIBRARY}"
+                )
+    endif()
 endif()
 
-mark_as_advanced(INFOLOGGER_INCLUDE_DIR INFOLOGGER_LIBRARY)
