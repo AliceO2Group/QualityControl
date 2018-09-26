@@ -47,7 +47,6 @@
          NAMES FairMQ.cmake
          HINTS ${FAIRROOTPATH}/include/cmake
          )
- message("_fairroot_fairmq_cmake : ${_fairroot_fairmq_cmake}" )
  if(_fairroot_fairmq_cmake)
      include(${_fairroot_fairmq_cmake})
  endif()

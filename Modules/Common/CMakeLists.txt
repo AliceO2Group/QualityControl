@@ -29,33 +29,6 @@ configure_file("include/Common/Version.h.in"
 )
 
 ####################################
-# ROOT dictionary
-####################################
-
-# ROOT dictionary
-# the following root macros expect include dirs to be set as directory property
-get_directory_property(include_dirs INCLUDE_DIRECTORIES)
-list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}/include") # this module
-list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}/../../Framework/include") # the framework
-get_target_property(qc_inc_dir QualityControl INTERFACE_INCLUDE_DIRECTORIES)
-list(APPEND include_dirs "${qc_inc_dir}")
-list(REMOVE_DUPLICATES include_dirs)
-include_directories(${include_dirs})
-
-set(dict "${MODULE_NAME}Dict")
-set(dict_src ${CMAKE_CURRENT_BINARY_DIR}/${dict}.cxx)
-set_source_files_properties(${dict_src} PROPERTIES COMPILE_FLAGS "-Wno-old-style-cast")
-set_source_files_properties(${dict_src} PROPERTIES GENERATED TRUE)
-
-ROOT_GENERATE_DICTIONARY("${dict}" ${HEADERS}
-  LINKDEF include/Common/LinkDef.h)
-
-# TODO review how and what to install for dictionary
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_NAME}Dict_rdict.pcm
-  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${MODULE_NAME}Dict.rootmap
-  DESTINATION lib)
-
-####################################
 # Library
 ####################################
 
@@ -77,6 +50,12 @@ target_link_libraries(${MODULE_NAME}
   PRIVATE
     ROOT::Graf
 )
+
+####################################
+# ROOT dictionary
+####################################
+
+GENERATE_ROOT_DICT(MODULE_NAME ${MODULE_NAME} LINKDEF "include/Common/LinkDef.h"  DICT_CLASS "${MODULE_NAME}Dict")
 
 ####################################
 # Tests

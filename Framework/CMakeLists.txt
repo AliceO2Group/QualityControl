@@ -1,35 +1,4 @@
 ####################################
-# Dependencies
-####################################
-
-find_package(Boost 1.58 COMPONENTS container unit_test_framework program_options system log signals)
-find_package(Git QUIET)
-find_package(Configuration REQUIRED)
-find_package(Monitoring REQUIRED)
-find_package(MySQL REQUIRED)
-find_package(Common REQUIRED)
-find_package(InfoLogger REQUIRED)
-find_package(DataSampling REQUIRED)
-find_package(AliceO2 REQUIRED)
-find_package(ROOT 6.14.00 COMPONENTS RHTTP RMySQL Gui REQUIRED)
-find_package(CURL REQUIRED)
-find_package(ZeroMQ REQUIRED)
-find_package(nanomsg REQUIRED)
-find_package(Arrow REQUIRED)
-find_package(GLFW)
-find_package(FairRoot REQUIRED)
-find_package(FairMQ REQUIRED)
-find_package(FairLogger REQUIRED)
-find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
-
-# TODO reevaluate this
-if (NOT MYSQL_FOUND)
-  message(WARNING "MySQL not found, the corresponding classes won't be built.")
-else ()
-  add_definitions(-D_WITH_MYSQL)
-endif ()
-
-####################################
 # Files
 ####################################
 
