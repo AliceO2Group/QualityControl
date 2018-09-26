@@ -84,14 +84,6 @@ find_package(Common REQUIRED)
 find_package(InfoLogger REQUIRED)
 find_package(DataSampling REQUIRED)
 find_package(AliceO2 REQUIRED)
-find_package(
-  ROOT 6.14.00
-  COMPONENTS
-    RHTTP
-    RMySQL
-    Gui
-    REQUIRED
-)
 find_package(CURL REQUIRED)
 find_package(ZeroMQ REQUIRED)
 find_package(Arrow REQUIRED)
@@ -118,4 +110,4 @@ endif()
 
 add_subdirectory(Framework)
 add_subdirectory(Modules)
-# add_subdirectory(doc)
+add_subdirectory(doc)
