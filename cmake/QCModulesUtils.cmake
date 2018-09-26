@@ -48,6 +48,10 @@ function(GENERATE_ROOT_DICT)
   list(APPEND include_dirs "${fairlogger_inc_dir}")
   get_target_property(arrow_inc_dir Arrow::Arrow INTERFACE_INCLUDE_DIRECTORIES)
   list(APPEND include_dirs "${arrow_inc_dir}")
+  get_target_property(common_inc_dir AliceO2::Common INTERFACE_INCLUDE_DIRECTORIES)
+  list(APPEND include_dirs "${common_inc_dir}")
+  get_target_property(boost_inc_dir Boost::container INTERFACE_INCLUDE_DIRECTORIES)
+  list(APPEND include_dirs "${boost_inc_dir}")
   list(REMOVE_DUPLICATES include_dirs)
   include_directories(${include_dirs})
 
@@ -58,8 +62,9 @@ function(GENERATE_ROOT_DICT)
   ROOT_GENERATE_DICTIONARY("${PARSED_ARGS_DICT_CLASS}" ${HEADERS} LINKDEF ${PARSED_ARGS_LINKDEF})
 
   # TODO review how and what to install for dictionary
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PARSED_ARGS_MODULE_NAME}Dict_rdict.pcm
-    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${PARSED_ARGS_MODULE_NAME}Dict.rootmap
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib${PARSED_ARGS_MODULE_NAME}Dict_rdict.pcm
+    ${CMAKE_CURRENT_BINARY_DIR}/lib${PARSED_ARGS_MODULE_NAME}Dict.rootmap
     DESTINATION lib)
+
 endfunction()
 

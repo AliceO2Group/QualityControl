@@ -80,6 +80,10 @@ get_target_property(infologger_inc_dir AliceO2::InfoLogger INTERFACE_INCLUDE_DIR
 list(APPEND include_dirs "${infologger_inc_dir}")
 get_target_property(o2_inc_dir AliceO2::AliceO2 INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${o2_inc_dir}")
+get_target_property(common_inc_dir AliceO2::Common INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${common_inc_dir}")
+get_target_property(boost_inc_dir Boost::container INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${boost_inc_dir}")
 get_target_property(fairlogger_inc_dir FairLogger::FairLogger INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${fairlogger_inc_dir}")
 list(APPEND include_dirs "${FAIRROOT_INCLUDE_DIR}")
@@ -97,8 +101,8 @@ ROOT_GENERATE_DICTIONARY("${dict}" ${HEADERS}
   LINKDEF include/QualityControl/LinkDef.h)
 
 # TODO review how and what to install for dictionary
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${LIBRARY_NAME_CORE}Dict_rdict.pcm
-  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${LIBRARY_NAME_CORE}Dict.rootmap
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib${dict}_rdict.pcm
+  ${CMAKE_CURRENT_BINARY_DIR}/lib${dict}.rootmap
   DESTINATION lib)
 
 ####################################
@@ -296,7 +300,7 @@ install(EXPORT QualityControlTargets
 
 # Configure and install Config files
 configure_package_config_file(
-  ../cmake/QualityControlConfig.cmake.in ../cmake/QualityControlConfig.cmake
+  ../cmake/QualityControlConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfig.cmake
   INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl"
   PATH_VARS CMAKE_INSTALL_PREFIX
 )
