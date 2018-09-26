@@ -1,59 +1,3 @@
-
-####################################
-# Project
-####################################
-
-project(QualityControl
-  #        VERSION 1.0   # TODO update this automatically when there are new releases
-  DESCRIPTION "O2 Quality Control"
-  LANGUAGES CXX
-  )
-
-set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
-set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
-set(INCLUDE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/include")
-
-####################################
-# Compilation flags and build options
-####################################
-
-# Set the default build type to "RelWithDebInfo"
-if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo"
-    CACHE
-    STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel Coverage."
-    FORCE)
-endif (NOT CMAKE_BUILD_TYPE)
-
-# Build targets with install rpath on Mac to dramatically speed up installation
-# TODO reevaluate if this is needed
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-if ("${isSystemDir}" STREQUAL "-1")
-  if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
-  endif ()
-endif ()
-if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-endif ()
-unset(isSystemDir)
-
-# C++ standard
-set(CMAKE_CXX_STANDARD 14)
-
-# Add compiler flags for warnings and debug symbols
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
-
-# Set fPIC for all targets
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-# TODO check how it was done in flpproto and reenable
-# Add coverage flags to Debug build
-#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage")
-#endif()
-
 ####################################
 # Dependencies
 ####################################
@@ -154,6 +98,7 @@ configure_file("include/QualityControl/Version.h.in"
 
 # ROOT dictionary
 # the following root macros expect include dirs to be set as directory property
+# TODO how to generate this automatically ? ? ?
 get_directory_property(include_dirs INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}/include")
 get_target_property(config_inc_dir Configuration::Configuration INTERFACE_INCLUDE_DIRECTORIES)
@@ -222,7 +167,6 @@ target_link_libraries(QualityControl
     MySQL::MySQL
     ROOT::Gui
     ROOT::RMySQL
-    FairMQ::FairMQ
     CURL::CURL
 )
 
@@ -337,10 +281,70 @@ foreach (test ${TEST_SRCS})
 endforeach()
 
 ####################################
+# Install
+####################################
+
+include(GNUInstallDirs)
+
+# Build targets with install rpath on Mac to dramatically speed up installation
+# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+  endif()
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+endif()
+unset(isSystemDir)
+
+# Install library
+install(TARGETS QualityControl
+  EXPORT QualityControlTargets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
+
+# Create version file
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfigVersion.cmake"
+  VERSION ${PACKAGE_VERSION}
+  COMPATIBILITY AnyNewerVersion
+  )
+
+# Install headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/QualityControl DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
+# Export targets
+install(EXPORT QualityControlTargets
+  FILE
+    QualityControlTargets.cmake
+  NAMESPACE
+    QualityControl::
+  DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl
+  )
+
+# Configure and install Config files
+configure_package_config_file(
+  ../cmake/QualityControlConfig.cmake.in ../cmake/QualityControlConfig.cmake
+  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl"
+  PATH_VARS CMAKE_INSTALL_PREFIX
+)
+
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfigVersion.cmake"
+  DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl
+)
+
+####################################
 # Extra scripts
 ####################################
 
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
 install(FILES example-default.ini example-default.json alfa.json dataDump.json DESTINATION etc)
 Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json readoutDataSampling.json
-        DESTINATION etc/)
+        DESTINATION etc)

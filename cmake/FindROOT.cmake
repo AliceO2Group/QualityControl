@@ -17,7 +17,6 @@ find_package_handle_standard_args(ROOT CONFIG_MODE)
 
 # contains upstream ROOT_GENERATE_DICTIONARY and ROOT_LINKER_LIBRARY macros
 include(${ROOT_USE_FILE})
-message("ROOT_USE_FILE : ${ROOT_USE_FILE}")
 
 get_filename_component(ROOTSYS ${ROOT_BINARY_DIR} DIRECTORY)
 
