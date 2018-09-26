@@ -1,6 +1,4 @@
-#
 # ---- Files ----
-#
 
 set(
   SRCS
@@ -44,8 +42,13 @@ set(
 )
 
 set(
-  SRCS_TOBJECT2JSON src/TObject2Json.cxx src/TObject2JsonServer.cxx src/TObject2JsonWorker.cxx src/TObject2JsonMySql.cxx
-  src/TObject2JsonBackendFactory.cxx src/TObject2JsonCcdb.cxx
+  SRCS_TOBJECT2JSON
+  src/TObject2Json.cxx
+  src/TObject2JsonServer.cxx
+  src/TObject2JsonWorker.cxx
+  src/TObject2JsonMySql.cxx
+  src/TObject2JsonBackendFactory.cxx
+  src/TObject2JsonCcdb.cxx
 )
 
 if(MYSQL_FOUND)
@@ -58,9 +61,7 @@ configure_file(
   "include/QualityControl/Version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/${MODULE_NAME}/Version.h" @ONLY
 )
 
-#
-# ---- ROOT dictionary
-#
+# ---- ROOT dictionary ----
 
 # ROOT dictionary the following root macros expect include dirs to be set as directory property TODO how to generate
 # this automatically ? ? ?
@@ -101,11 +102,8 @@ install(
   DESTINATION lib
 )
 
-#
-# ---- Library
-#
+# ---- Library ----
 
-# Create library
 add_library(QualityControl SHARED ${SRCS} QualityControlDict.cxx)
 
 target_include_directories(
@@ -114,7 +112,6 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-# Link targets
 target_link_libraries(
   QualityControl
   PUBLIC
@@ -130,12 +127,15 @@ target_link_libraries(
     ROOT::Net
     AliceO2::AliceO2
     Boost::container
-  PRIVATE Boost::system MySQL::MySQL ROOT::Gui ROOT::RMySQL CURL::CURL
+  PRIVATE
+    Boost::system
+    MySQL::MySQL
+    ROOT::Gui
+    ROOT::RMySQL
+    CURL::CURL
 )
 
-#
-# ---- Executables
-#
+# ---- Executables ----
 
 set(
   EXE_SRCS
@@ -182,14 +182,19 @@ endforeach()
 add_executable(tobject2json ${SRCS_TOBJECT2JSON})
 target_link_libraries(tobject2json PRIVATE QualityControl ZeroMQ::ZeroMQ MySQL::MySQL)
 
-#
-# ---- Gui
-#
+# ---- Gui ----
 
 if(GLFW_FOUND)
   set(
-    GUI_SRCS src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_impl_glfw_gl3.cpp src/imgui/gl3w.c
-    src/imgui/imgui_widgets.cpp src/imgui/imgui_demo.cpp src/imgui/BaseGui.cxx src/DataDump.cxx
+    GUI_SRCS
+    src/imgui/imgui.cpp
+    src/imgui/imgui_draw.cpp
+    src/imgui/imgui_impl_glfw_gl3.cpp
+    src/imgui/gl3w.c
+    src/imgui/imgui_widgets.cpp
+    src/imgui/imgui_demo.cpp
+    src/imgui/BaseGui.cxx
+    src/DataDump.cxx
   )
 
   add_executable(dataDump ${GUI_SRCS})
@@ -199,13 +204,16 @@ else()
   message(STATUS "GLFW not found, DataDump will not be built")
 endif()
 
-#
-# ---- Tests
-#
+# ---- Tests ----
 
 set(
-  TEST_SRCS test/testDbFactory.cxx test/testMonitorObject.cxx test/testPublisher.cxx test/testQcInfoLogger.cxx
-  test/testQCTask.cxx test/testQuality.cxx
+  TEST_SRCS
+  test/testDbFactory.cxx
+  test/testMonitorObject.cxx
+  test/testPublisher.cxx
+  test/testQcInfoLogger.cxx
+  test/testQCTask.cxx
+  test/testQuality.cxx
 )
 
 foreach(test ${TEST_SRCS})
@@ -218,9 +226,7 @@ foreach(test ${TEST_SRCS})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
 endforeach()
 
-#
-# ---- Install
-#
+# ---- Install ----
 
 include(GNUInstallDirs)
 
@@ -265,8 +271,12 @@ install(
 
 # Configure and install Config files
 configure_package_config_file(
-  ../cmake/QualityControlConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfig.cmake
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl" PATH_VARS CMAKE_INSTALL_PREFIX
+  ../cmake/QualityControlConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfig.cmake
+  INSTALL_DESTINATION
+  "${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl"
+  PATH_VARS
+  CMAKE_INSTALL_PREFIX
 )
 
 install(
@@ -276,13 +286,22 @@ install(
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl
 )
 
-#
-# Extra scripts
-#
+# ---- Extra scripts ----
 
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
-install(FILES example-default.ini example-default.json alfa.json dataDump.json DESTINATION etc)
 install(
-  FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json readoutDataSampling.json
+  FILES
+    example-default.ini
+    example-default.json
+    alfa.json
+    dataDump.json
+  DESTINATION etc
+)
+install(
+  FILES
+    qcTaskDplConfig.ini
+    qcTaskDplConfig.json
+    readoutChainTemplate.json
+    readoutDataSampling.json
   DESTINATION etc
 )

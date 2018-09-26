@@ -1,64 +1,40 @@
 set(MODULE_NAME "QcDaq")
 
-####################################
-# Dependencies
-####################################
+# ---- Files ----
 
-find_package(ROOT 6.06.02 COMPONENTS RHTTP RMySQL Gui REQUIRED)
-find_package(Boost 1.58 COMPONENTS unit_test_framework)
-
-####################################
-# Files
-####################################
-
-set(SRCS
+set(
+  SRCS
   src/DaqTask.cxx
   src/EverIncreasingGraph.cxx
-  )
+)
 
-set(HEADERS
+set(
+  HEADERS
   include/Daq/DaqTask.h
   include/Daq/EverIncreasingGraph.h
-  )
+)
 
-####################################
-# Library
-####################################
+# ---- Library ----
 
-# Create library
 add_library(${MODULE_NAME} SHARED ${SRCS} ${MODULE_NAME}Dict.cxx)
 
-target_include_directories(${MODULE_NAME}
-  PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-  )
+target_include_directories(
+  ${MODULE_NAME}
+  PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
-# Link targets
-target_link_libraries(${MODULE_NAME}
-  PUBLIC
-    QualityControl
-  PRIVATE
-    ROOT::Gpad
-  )
+target_link_libraries(${MODULE_NAME} PUBLIC QualityControl PRIVATE ROOT::Gpad)
 
-####################################
-# ROOT dictionary
-####################################
+# ---- ROOT dictionary ----
 
-GENERATE_ROOT_DICT(MODULE_NAME ${MODULE_NAME} LINKDEF "include/Daq/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
+generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/Daq/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
 
-####################################
-# Tests
-####################################
+# ---- Tests ----
 
-set(TEST_SRCS
-  test/testQcDaq.cxx
-  )
+set(TEST_SRCS test/testQcDaq.cxx)
 
-foreach (test ${TEST_SRCS})
+foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)
   string(REGEX REPLACE ".cxx" "" test_name ${test_name})
 

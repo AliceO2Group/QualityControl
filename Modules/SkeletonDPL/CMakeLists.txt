@@ -1,55 +1,40 @@
 set(MODULE_NAME "QcSkeletonDpl")
 
-####################################
-# Files
-####################################
+# ---- Files ----
 
-set(SRCS
+set(
+  SRCS
   src/SkeletonTaskDPL.cxx
   src/SkeletonCheckDPL.cxx
-  )
+)
 
-set(HEADERS
+set(
+  HEADERS
   include/SkeletonDPL/SkeletonTaskDPL.h
   include/SkeletonDPL/SkeletonCheckDPL.h
-  )
+)
 
-####################################
-# Library
-####################################
+# ---- Library ----
 
-# Create library
 add_library(${MODULE_NAME} SHARED ${SRCS} ${MODULE_NAME}Dict.cxx)
 
-target_include_directories(${MODULE_NAME}
-  PUBLIC
-    $<INSTALL_INTERFACE:include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-  )
+target_include_directories(
+  ${MODULE_NAME}
+  PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
-# Link targets
-target_link_libraries(${MODULE_NAME}
-  PUBLIC
-    QualityControl
-  )
+target_link_libraries(${MODULE_NAME} PUBLIC QualityControl)
 
-####################################
-# ROOT dictionary
-####################################
+# ---- ROOT dictionary ----
 
-GENERATE_ROOT_DICT(MODULE_NAME ${MODULE_NAME} LINKDEF "include/SkeletonDPL/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
+generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/SkeletonDPL/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
 
-####################################
-# Tests
-####################################
+# ---- Tests ----
 
-set(TEST_SRCS
-  test/testQcSkeletonDPL.cxx
-  )
+set(TEST_SRCS test/testQcSkeletonDPL.cxx)
 
-foreach (test ${TEST_SRCS})
+foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)
   string(REGEX REPLACE ".cxx" "" test_name ${test_name})
 

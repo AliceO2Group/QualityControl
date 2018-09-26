@@ -1,6 +1,4 @@
-####################################
-# Module directories
-####################################
+# ---- Module directories ----
 
 add_subdirectory(Common)
 add_subdirectory(Daq)
