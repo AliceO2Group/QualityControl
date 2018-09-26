@@ -10,10 +10,10 @@ find_dependency(Boost)
 
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
-if(NOT TARGET QualityControl::QualityControl)
+if(NOT TARGET AliceO2::QualityControl)
   include("${QualityControl_CMAKE_DIR}/QualityControlTargets.cmake")
 endif()
 
-set(QualityControl_LIBRARIES QualityControl::QualityControl)
+set(QualityControl_LIBRARIES AliceO2::QualityControl)
 
 message(STATUS "QualityControl ${QualityControl_VERSION} found")

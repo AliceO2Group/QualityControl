@@ -21,8 +21,6 @@
 #include "TObject2JsonBackend.h"
 #include "zmq.h"
 
-using o2::quality_control::repository::MySqlDatabase;
-
 namespace o2 {
 namespace quality_control {
 namespace tobject_to_json {

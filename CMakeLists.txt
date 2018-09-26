@@ -102,8 +102,6 @@ find_package(
 
 if(NOT MYSQL_FOUND)
   message(WARNING "MySQL not found, the corresponding classes won't be built.")
-else()
-  add_definitions(-D_WITH_MYSQL)
 endif()
 
 # ---- Subdirectories ----

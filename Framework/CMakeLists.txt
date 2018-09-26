@@ -46,13 +46,13 @@ set(
   src/TObject2Json.cxx
   src/TObject2JsonServer.cxx
   src/TObject2JsonWorker.cxx
-  src/TObject2JsonMySql.cxx
   src/TObject2JsonBackendFactory.cxx
   src/TObject2JsonCcdb.cxx
 )
 
 if(MYSQL_FOUND)
   list(APPEND SRCS src/MySqlDatabase.cxx)
+  list(APPEND SRCS_TOBJECT2JSON src/TObject2JsonMySql.cxx)
 endif()
 
 # Produce the final Version.h using template Version.h.in and substituting variables. We don't want to polute our source
@@ -129,10 +129,15 @@ target_link_libraries(
     Boost::container
   PRIVATE
     Boost::system
-    MySQL::MySQL
-    ROOT::Gui
-    ROOT::RMySQL
+    $<$<BOOL:${MYSQL_FOUND}>:MySQL::MySQL>
+    $<$<BOOL:${MYSQL_FOUND}>:ROOT::RMySQL>
     CURL::CURL
+    ROOT::Gui
+)
+
+target_compile_definitions(QualityControl
+  PRIVATE
+  $<$<BOOL:${MYSQL_FOUND}>:_WITH_MYSQL>
 )
 
 # ---- Executables ----
@@ -180,7 +185,7 @@ endforeach()
 
 # tobject2json
 add_executable(tobject2json ${SRCS_TOBJECT2JSON})
-target_link_libraries(tobject2json PRIVATE QualityControl ZeroMQ::ZeroMQ MySQL::MySQL)
+target_link_libraries(tobject2json PRIVATE QualityControl ZeroMQ::ZeroMQ $<$<BOOL:${MYSQL_FOUND}>:MySQL::MySQL>)
 
 # ---- Gui ----
 
@@ -221,7 +226,7 @@ foreach(test ${TEST_SRCS})
   string(REGEX REPLACE ".cxx" "" test_name ${test_name})
 
   add_executable(${test_name} ${test})
-  target_link_libraries(${test_name} PRIVATE QualityControl Boost::unit_test_framework MySQL::MySQL)
+  target_link_libraries(${test_name} PRIVATE QualityControl Boost::unit_test_framework )
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
 endforeach()
