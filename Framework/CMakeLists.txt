@@ -71,7 +71,7 @@ get_target_property(config_inc_dir Configuration::Configuration INTERFACE_INCLUD
 list(APPEND include_dirs "${config_inc_dir}")
 get_target_property(arrow_inc_dir Arrow::Arrow INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${arrow_inc_dir}")
-get_target_property(monitoring_inc_dir Monitoring::Monitoring INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(monitoring_inc_dir AliceO2::Monitoring INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${monitoring_inc_dir}")
 get_target_property(infologger_inc_dir AliceO2::InfoLogger INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${infologger_inc_dir}")
@@ -122,7 +122,7 @@ target_link_libraries(
     ROOT::Hist
     AliceO2::Common
     AliceO2::InfoLogger
-    Monitoring::Monitoring
+    AliceO2::Monitoring
     Configuration::Configuration
     ROOT::Net
     AliceO2::AliceO2
