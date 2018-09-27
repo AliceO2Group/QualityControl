@@ -28,7 +28,6 @@
 #include <Configuration/ConfigurationFactory.h>
 #include "Common/signalUtilities.h"
 #include "QualityControl/Checker.h"
-#include "QualityControl/Version.h"
 
 using namespace std;
 using namespace o2::quality_control::core;
@@ -56,14 +55,14 @@ int main(int argc, char *argv[])
     std::cout << desc << std::endl;
     return EXIT_SUCCESS;
   }
-  if (vm.count("version")) {
-    std::cout << "QualityControl version " << o2::quality_control::core::Version::getString() << std::endl;
-    return EXIT_SUCCESS;
-  }
-  if (vm.count("rev")) {
-    std::cout << "SVN revision : " << o2::quality_control::core::Version::getRevision() << std::endl;
-    return EXIT_SUCCESS;
-  }
+//  if (vm.count("version")) {
+//    std::cout << "QualityControl version " << o2::quality_control::core::Version::getString() << std::endl;
+//    return EXIT_SUCCESS;
+//  }
+//  if (vm.count("rev")) {
+//    std::cout << "SVN revision : " << o2::quality_control::core::Version::getRevision() << std::endl;
+//    return EXIT_SUCCESS;
+//  }
   if (vm.count("name")) {
     checkerName = vm["name"].as<string>();
   } else {

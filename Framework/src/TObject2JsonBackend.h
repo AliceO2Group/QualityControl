@@ -17,10 +17,7 @@
 #ifndef QC_TOBJECT2JSON_BACKEND_H
 #define QC_TOBJECT2JSON_BACKEND_H
 
-// QualityControl
-#include "QualityControl/MySqlDatabase.h"
-
-using o2::quality_control::repository::MySqlDatabase;
+#include <string>
 
 namespace o2 {
 namespace quality_control {

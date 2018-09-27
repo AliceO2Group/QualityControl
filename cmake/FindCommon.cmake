@@ -31,6 +31,16 @@ find_package_handle_standard_args(Common  "Common could not be found. Install pa
 
 if(${COMMON_FOUND})
     message(STATUS "Common found : ${Common_LIBRARIES}")
+
+    # add target
+    if(NOT TARGET AliceO2::Common)
+        add_library(AliceO2::Common INTERFACE IMPORTED)
+        set_target_properties(AliceO2::Common PROPERTIES
+          INTERFACE_INCLUDE_DIRECTORIES "${COMMON_INCLUDE_DIR}"
+          INTERFACE_LINK_LIBRARIES "${COMMON_LIBRARY}"
+          )
+    endif()
+
+    mark_as_advanced(COMMON_INCLUDE_DIR COMMON_LIBRARY)
 endif()
 
-mark_as_advanced(COMMON_INCLUDE_DIR COMMON_LIBRARY)

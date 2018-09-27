@@ -1,281 +1,312 @@
-####################################
-# General project definition
-####################################
+# ---- Files ----
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake) # project specific cmake dir
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
+set(
+  SRCS
+  src/TaskInterface.cxx
+  src/MonitorObject.cxx
+  src/Quality.cxx
+  src/ObjectsManager.cxx
+  src/Checker.cxx
+  src/CheckerDataProcessor.cxx
+  src/CheckerDataProcessorFactory.cxx
+  src/CheckInterface.cxx
+  src/DatabaseFactory.cxx
+  src/ClientDataProvider.cxx
+  src/AlfaReceiverForTests.cxx
+  src/TaskDevice.cxx
+  src/SpyDevice.cxx
+  src/SpyMainFrame.cxx
+  src/CcdbDatabase.cxx
+  src/InformationService.cxx
+  src/InformationServiceDump.cxx
+  src/TaskDataProcessor.cxx
+  src/TaskDataProcessorFactory.cxx
+  src/TaskInterfaceDPL.cxx
+  src/RepositoryBenchmark.cxx
+  src/HistoMerger.cxx
+)
 
-project(QualityControl)
+set(
+  HEADERS # needed for the dictionary generation
+  include/QualityControl/MonitorObject.h
+  include/QualityControl/Quality.h
+  include/QualityControl/CheckInterface.h
+  include/QualityControl/CheckerDataProcessor.h
+  include/QualityControl/CheckerDataProcessorFactory.h
+  include/QualityControl/SpyMainFrame.h
+  include/QualityControl/DatabaseInterface.h
+  include/QualityControl/CcdbDatabase.h
+  include/QualityControl/TaskDataProcessor.h
+  include/QualityControl/TaskDataProcessorFactory.h
+  include/QualityControl/HistoMerger.h
+)
 
-# Load some basic macros which are needed later on
-include(O2Utils)
-include(QualityControlDependencies)
+set(
+  SRCS_TOBJECT2JSON
+  src/TObject2Json.cxx
+  src/TObject2JsonServer.cxx
+  src/TObject2JsonWorker.cxx
+  src/TObject2JsonBackendFactory.cxx
+  src/TObject2JsonCcdb.cxx
+)
 
-message(STATUS "ROOT ${ROOT_VERSION} found in '${ROOTSYS}'")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ROOTSYS}/share/root/cmake/modules)
-include(RootNewMacros)
+if(MYSQL_FOUND)
+  list(APPEND SRCS src/MySqlDatabase.cxx)
+  list(APPEND SRCS_TOBJECT2JSON src/TObject2JsonMySql.cxx)
+endif()
 
-# Set the default build type to "RelWithDebInfo"
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "RelWithDebInfo"
-            CACHE
-            STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel Coverage."
-            FORCE)
-endif (NOT CMAKE_BUILD_TYPE)
+# Produce the final Version.h using template Version.h.in and substituting variables. We don't want to polute our source
+# tree with it, thus putting it in binary tree.
+configure_file(
+  "include/QualityControl/Version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/${MODULE_NAME}/Version.h" @ONLY
+)
 
-# Set the version number of your project here (format is MAJOR.MINOR.PATCHLEVEL - e.g. 1.0.0)
-set(VERSION_MAJOR "0")
-set(VERSION_MINOR "0")
-set(VERSION_PATCH "0")
-set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+# ---- ROOT dictionary ----
+
+# ROOT dictionary the following root macros expect include dirs to be set as directory property TODO how to generate
+# this automatically ? ? ?
+get_directory_property(include_dirs INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}/include")
+get_target_property(config_inc_dir Configuration::Configuration INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${config_inc_dir}")
+get_target_property(arrow_inc_dir Arrow::Arrow INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${arrow_inc_dir}")
+get_target_property(monitoring_inc_dir AliceO2::Monitoring INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${monitoring_inc_dir}")
+get_target_property(infologger_inc_dir AliceO2::InfoLogger INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${infologger_inc_dir}")
+get_target_property(o2_inc_dir AliceO2::AliceO2 INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${o2_inc_dir}")
+get_target_property(common_inc_dir AliceO2::Common INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${common_inc_dir}")
+get_target_property(boost_inc_dir Boost::container INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${boost_inc_dir}")
+get_target_property(fairlogger_inc_dir FairLogger::FairLogger INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${fairlogger_inc_dir}")
+list(APPEND include_dirs "${FAIRROOT_INCLUDE_DIR}")
+list(APPEND include_dirs "${FairMQ_INCDIR}")
+list(APPEND include_dirs "${FairMQ_INCDIR}/fairmq")
+list(REMOVE_DUPLICATES include_dirs)
+include_directories(${include_dirs})
+
+set(dict "QualityControlDict")
+set(dict_src ${CMAKE_CURRENT_BINARY_DIR}/${dict}.cxx)
+set_source_files_properties(${dict_src} PROPERTIES COMPILE_FLAGS "-Wno-old-style-cast")
+set_source_files_properties(${dict_src} PROPERTIES GENERATED TRUE)
+
+root_generate_dictionary("${dict}" ${HEADERS} LINKDEF include/QualityControl/LinkDef.h)
+
+# TODO review how and what to install for dictionary
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/lib${dict}_rdict.pcm ${CMAKE_CURRENT_BINARY_DIR}/lib${dict}.rootmap
+  DESTINATION lib
+)
+
+# ---- Library ----
+
+add_library(QualityControl SHARED ${SRCS} QualityControlDict.cxx)
+
+target_include_directories(
+  QualityControl
+  PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(
+  QualityControl
+  PUBLIC
+    Boost::boost
+    FairLogger::FairLogger
+    DataSampling::DataSampling
+    FairMQ::FairMQ
+    ROOT::Hist
+    AliceO2::Common
+    AliceO2::InfoLogger
+    AliceO2::Monitoring
+    Configuration::Configuration
+    ROOT::Net
+    AliceO2::AliceO2
+    Boost::container
+  PRIVATE
+    Boost::system
+    $<$<BOOL:${MYSQL_FOUND}>:MySQL::MySQL>
+    $<$<BOOL:${MYSQL_FOUND}>:ROOT::RMySQL>
+    CURL::CURL
+    ROOT::Gui
+)
+
+target_compile_definitions(QualityControl
+  PRIVATE
+  $<$<BOOL:${MYSQL_FOUND}>:_WITH_MYSQL>
+)
+
+# ---- Executables ----
+
+set(
+  EXE_SRCS
+  src/TaskDevice.cxx
+  src/qcCheckerLauncher.cxx
+  src/qcSpy.cxx
+  src/runInformationService.cxx
+  src/runInformationServiceDump.cxx
+  src/runTaskDPL.cxx
+  src/runReadoutChainTemplate.cxx
+  src/runMergerTest.cxx
+  src/runReadoutDataSampling.cxx
+  src/alfaTestReceiver.cxx
+  src/Consumer.cxx
+  src/runRepositoryBenchmark.cxx
+)
+
+set(
+  EXE_NAMES
+  qcTaskLauncher
+  qcCheckerLauncher
+  qcSpy
+  qcInfoService
+  qcInfoServiceDump
+  taskDPL
+  runReadoutChainTemplate
+  runMergerTest
+  runReadoutDataSampling
+  alfaTestReceiver
+  qcConsumer
+  repositoryBenchmark
+)
+
+list(LENGTH EXE_SRCS count)
+math(EXPR count "${count}-1")
+foreach(i RANGE ${count})
+  list(GET EXE_SRCS ${i} src)
+  list(GET EXE_NAMES ${i} name)
+  add_executable(${name} ${src})
+  target_link_libraries(${name} PRIVATE QualityControl)
+endforeach()
+
+# tobject2json
+add_executable(tobject2json ${SRCS_TOBJECT2JSON})
+target_link_libraries(tobject2json PRIVATE QualityControl ZeroMQ::ZeroMQ $<$<BOOL:${MYSQL_FOUND}>:MySQL::MySQL>)
+
+# ---- Gui ----
+
+if(GLFW_FOUND)
+  set(
+    GUI_SRCS
+    src/imgui/imgui.cpp
+    src/imgui/imgui_draw.cpp
+    src/imgui/imgui_impl_glfw_gl3.cpp
+    src/imgui/gl3w.c
+    src/imgui/imgui_widgets.cpp
+    src/imgui/imgui_demo.cpp
+    src/imgui/BaseGui.cxx
+    src/DataDump.cxx
+  )
+
+  add_executable(dataDump ${GUI_SRCS})
+
+  target_link_libraries(dataDump PRIVATE QualityControl GLFW::GLFW)
+else()
+  message(STATUS "GLFW not found, DataDump will not be built")
+endif()
+
+# ---- Tests ----
+
+set(
+  TEST_SRCS
+  test/testDbFactory.cxx
+  test/testMonitorObject.cxx
+  test/testPublisher.cxx
+  test/testQcInfoLogger.cxx
+  test/testQCTask.cxx
+  test/testQuality.cxx
+)
+
+foreach(test ${TEST_SRCS})
+  get_filename_component(test_name ${test} NAME)
+  string(REGEX REPLACE ".cxx" "" test_name ${test_name})
+
+  add_executable(${test_name} ${test})
+  target_link_libraries(${test_name} PRIVATE QualityControl Boost::unit_test_framework )
+  add_test(NAME ${test_name} COMMAND ${test_name})
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
+endforeach()
+
+# ---- Install ----
+
+include(GNUInstallDirs)
 
 # Build targets with install rpath on Mac to dramatically speed up installation
+# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-if ("${isSystemDir}" STREQUAL "-1")
-    if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-        set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
-    endif ()
-endif ()
-if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-endif ()
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+  endif()
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+endif()
 unset(isSystemDir)
 
-# C++14
-IF (CMAKE_VERSION VERSION_LESS 3.1)
-    include(CheckCXXCompilerFlag)
-    CHECK_CXX_COMPILER_FLAG(-std=c++14 COMPILER_SUPPORTS_CXX14)
-    if (COMPILER_SUPPORTS_CXX14)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    else ()
-        message(ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++14 support. Please use a different C++ compiler.")
-    endif ()
-ELSE ()
-    set(CMAKE_CXX_STANDARD 14)  # proper way in CMake >= 3.1
-ENDIF ()
-
-# Add compiler flags for warnings and (more importantly) fPIC and debug symbols
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -fPIC")
-
-####################################
-# Module, library and executable definition
-####################################
-
-set(MODULE_NAME "QualityControl")
-
-O2_SETUP(NAME ${MODULE_NAME})
-
-set(SRCS
-        src/TaskInterface.cxx
-        src/MonitorObject.cxx
-        src/Quality.cxx
-        src/ObjectsManager.cxx
-        src/Checker.cxx
-        src/CheckerDataProcessor.cxx
-        src/CheckerDataProcessorFactory.cxx
-        src/CheckInterface.cxx
-        src/DatabaseFactory.cxx
-        src/ClientDataProvider.cxx
-        src/AlfaReceiverForTests.cxx
-        src/TaskDevice.cxx
-        src/SpyDevice.cxx
-        src/SpyMainFrame.cxx
-        src/CcdbDatabase.cxx
-        src/InformationService.cxx
-        src/InformationServiceDump.cxx
-        src/TaskDataProcessor.cxx
-        src/TaskDataProcessorFactory.cxx
-        src/TaskInterfaceDPL.cxx
-        src/RepositoryBenchmark.cxx
-        src/HistoMerger.cxx
-        )
-
-set(HEADERS # needed for the dictionary generation
-        include/QualityControl/MonitorObject.h
-        include/QualityControl/Quality.h
-        include/QualityControl/CheckInterface.h
-        include/QualityControl/CheckerDataProcessor.h
-        include/QualityControl/CheckerDataProcessorFactory.h
-        include/QualityControl/SpyMainFrame.h
-        include/QualityControl/DatabaseInterface.h
-        include/QualityControl/CcdbDatabase.h
-        include/QualityControl/TaskDataProcessor.h
-        include/QualityControl/TaskDataProcessorFactory.h
-        include/QualityControl/HistoMerger.h
-        )
-
-set(SRCS_TOBJECT2JSON
-        src/TObject2Json.cxx
-        src/TObject2JsonServer.cxx
-        src/TObject2JsonWorker.cxx
-        src/TObject2JsonMySql.cxx
-        src/TObject2JsonBackendFactory.cxx
-        src/TObject2JsonCcdb.cxx
-        )
-
-if (MYSQL_FOUND)
-    list(APPEND SRCS src/MySqlDatabase.cxx)
-endif ()
-
-#add_subdirectory(src/imgui)
-
-# Produce the final Version.h using template Version.h.in and substituting variables.
-# We don't want to polute our source tree with it, thus putting it in binary tree.
-configure_file("include/${MODULE_NAME}/Version.h.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/include/${MODULE_NAME}/Version.h"
-        @ONLY
-        )
-
-include_directories(
-        ${CMAKE_CURRENT_BINARY_DIR}/include
+# Install library
+install(
+  TARGETS QualityControl
+  EXPORT QualityControlTargets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
-set(LIBRARY_NAME QualityControl)
-
-if (FAIRROOT_FOUND)
-    set(BUCKET_NAME o2_qualitycontrol_with_fairroot_bucket)
-else ()
-    set(BUCKET_NAME o2_qualitycontrol_bucket)
-endif ()
-
-set(LINKDEF include/QualityControl/LinkDef.h)
-
-O2_GENERATE_LIBRARY()
-
-# Task Launcher
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcTaskLauncher
-        SOURCES src/TaskDevice.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
+# Create version file
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfigVersion.cmake"
+  VERSION ${PACKAGE_VERSION}
+  COMPATIBILITY AnyNewerVersion
 )
 
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcCheckerLauncher
-        SOURCES src/qcCheckerLauncher.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
+# Install headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/QualityControl DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
+# Export targets
+install(
+  EXPORT QualityControlTargets
+  FILE QualityControlTargets.cmake
+  NAMESPACE QualityControl::
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl
 )
 
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcSpy
-        SOURCES src/qcSpy.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
+# Configure and install Config files
+configure_package_config_file(
+  ../cmake/QualityControlConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfig.cmake
+  INSTALL_DESTINATION
+  "${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl"
+  PATH_VARS
+  CMAKE_INSTALL_PREFIX
 )
 
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcInfoService
-        SOURCES src/runInformationService.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfigVersion.cmake"
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl
 )
 
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcInfoServiceDump
-        SOURCES src/runInformationServiceDump.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
+# ---- Extra scripts ----
 
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME taskDPL
-        SOURCES src/runTaskDPL.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME runReadoutChainTemplate
-        SOURCES src/runReadoutChainTemplate.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME runMergerTest
-        SOURCES src/runMergerTest.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME runReadoutDataSampling
-        SOURCES src/runReadoutDataSampling.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME alfaTestReceiver
-        SOURCES src/alfaTestReceiver.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME qcConsumer
-        SOURCES src/Consumer.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME repositoryBenchmark
-        SOURCES src/runRepositoryBenchmark.cxx
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-)
-
-set(TEST_SRCS
-        test/testDbFactory.cxx
-        test/testMonitorObject.cxx
-        test/testPublisher.cxx
-        test/testQcInfoLogger.cxx
-        test/testQCTask.cxx
-        test/testQuality.cxx
-        )
-
-O2_GENERATE_TESTS(
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME ${BUCKET_NAME}
-        TEST_SRCS ${TEST_SRCS}
-)
-
-O2_GENERATE_EXECUTABLE(
-        EXE_NAME "tobject2json"
-        SOURCES ${SRCS_TOBJECT2JSON}
-        MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-        BUCKET_NAME "o2_qc_tobject2json"
-)
-
-if (GLFW_FOUND)
-    set(GUI_BACKEND
-            src/imgui/imgui.cpp
-            src/imgui/imgui_draw.cpp
-            src/imgui/imgui_impl_glfw_gl3.cpp
-            src/imgui/gl3w.c
-            src/imgui/imgui_widgets.cpp
-            src/imgui/imgui_demo.cpp
-            src/imgui/BaseGui.cxx
-            src/DataDump.cxx
-            )
-
-    O2_GENERATE_EXECUTABLE(
-            EXE_NAME dataDump
-            SOURCES src/runDataDump.cxx ${GUI_BACKEND}
-            MODULE_LIBRARY_NAME ${LIBRARY_NAME}
-            BUCKET_NAME "dumpData_bucket"
-    )
-else ()
-    message(STATUS "GLFW not found, DataDump will not be built")
-endif ()
-
-
-
-# Install extra scripts
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
-install(FILES example-default.ini example-default.json alfa.json dataDump.json DESTINATION etc)
-Install(FILES qcTaskDplConfig.ini qcTaskDplConfig.json readoutChainTemplate.json readoutDataSampling.json
-        DESTINATION etc/)
+install(
+  FILES
+    example-default.ini
+    example-default.json
+    alfa.json
+    dataDump.json
+  DESTINATION etc
+)
+install(
+  FILES
+    qcTaskDplConfig.ini
+    qcTaskDplConfig.json
+    readoutChainTemplate.json
+    readoutDataSampling.json
+  DESTINATION etc
+)

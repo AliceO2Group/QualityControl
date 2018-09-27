@@ -16,7 +16,6 @@
 
 // TObject2Json
 #include "TObject2JsonWorker.h"
-#include "TObject2JsonMySql.h"
 #include "QualityControl/QcInfoLogger.h"
 
 // ZMQ

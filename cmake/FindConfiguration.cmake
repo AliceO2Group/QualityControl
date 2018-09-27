@@ -31,6 +31,15 @@ find_package_handle_standard_args(Configuration  "Configuration could not be fou
 
 if(${CONFIGURATION_FOUND})
     message(STATUS "Configuration found : ${Configuration_LIBRARIES}")
+    mark_as_advanced(CONFIGURATION_INCLUDE_DIR CONFIGURATION_LIBRARY)
+
+    # add target
+    if(NOT TARGET Configuration::Configuration)
+        add_library(Configuration::Configuration INTERFACE IMPORTED)
+        set_target_properties(Configuration::Configuration PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${Configuration_INCLUDE_DIRS}"
+                INTERFACE_LINK_LIBRARIES "${Configuration_LIBRARIES}"
+                )
+    endif()
 endif()
 
-mark_as_advanced(CONFIGURATION_INCLUDE_DIR CONFIGURATION_LIBRARY)

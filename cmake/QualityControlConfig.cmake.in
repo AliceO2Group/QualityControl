@@ -1,0 +1,19 @@
+@PACKAGE_INIT@
+
+set(QualityControl_VERSION @PROJECT_VERSION@)
+
+get_filename_component(QualityControl_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+list(APPEND CMAKE_MODULE_PATH ${QualityControl_CMAKE_DIR})
+find_dependency(Boost)
+
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
+if(NOT TARGET AliceO2::QualityControl)
+  include("${QualityControl_CMAKE_DIR}/QualityControlTargets.cmake")
+endif()
+
+set(QualityControl_LIBRARIES AliceO2::QualityControl)
+
+message(STATUS "QualityControl ${QualityControl_VERSION} found")

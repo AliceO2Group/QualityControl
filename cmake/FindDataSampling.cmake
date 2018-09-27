@@ -31,6 +31,15 @@ find_package_handle_standard_args(DataSampling  "DataSampling could not be found
 
 if(${DataSampling_FOUND})
     message(STATUS "DataSampling found : ${DataSampling_LIBRARIES}")
-endif()
 
-mark_as_advanced(DATASAMPLING_INCLUDE_DIR DATASAMPLING_LIBRARY)
+    # add target
+    if(NOT TARGET DataSampling::DataSampling)
+        add_library(DataSampling::DataSampling INTERFACE IMPORTED)
+        set_target_properties(DataSampling::DataSampling PROPERTIES
+          INTERFACE_INCLUDE_DIRECTORIES "${DATASAMPLING_INCLUDE_DIR}"
+          INTERFACE_LINK_LIBRARIES "${DataSampling_LIBRARIES}"
+          )
+    endif()
+
+    mark_as_advanced(DATASAMPLING_INCLUDE_DIR DATASAMPLING_LIBRARY)
+endif()

@@ -15,7 +15,9 @@
 
 #include "TObject2JsonBackendFactory.h"
 #include "TObject2JsonServer.h"
+#ifdef _WITH_MYSQL
 #include "TObject2JsonMySql.h"
+#endif
 #include "TObject2JsonCcdb.h"
 #include "external/UriParser.h"
 
@@ -25,13 +27,14 @@ namespace o2 {
 namespace quality_control {
 namespace tobject_to_json {
 
-
+#ifdef _WITH_MYSQL
 auto getMySql(const http::url& uri) {
   int port = (uri.port == 0) ? 3306 : uri.port;
   std::string database = uri.path;
   database.erase(database.begin(), database.begin() + 1);
   return std::make_unique<backends::MySql>(uri.host, port, database, uri.user, uri.password);
 }
+#endif
 
 auto getCcdb(const http::url& uri) {
   int port = (uri.port == 0) ? 3306 : uri.port;
@@ -43,7 +46,9 @@ auto getCcdb(const http::url& uri) {
 
 std::unique_ptr<Backend> TObject2JsonBackendFactory::Get(std::string url) {
   static const std::map<std::string, std::function<std::unique_ptr<Backend>(const http::url&)>> map = {
+#ifdef _WITH_MYSQL
       {"mysql", getMySql},
+#endif
       {"ccdb", getCcdb}
   };
 

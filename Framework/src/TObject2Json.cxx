@@ -17,6 +17,7 @@
 // TObject2Json
 #include "TObject2JsonServer.h"
 #include <boost/program_options.hpp>
+#include <iostream>
 
 using o2::quality_control::tobject_to_json::TObject2JsonServer;
 

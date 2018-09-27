@@ -125,6 +125,24 @@ if(ZeroMQ_FOUND)
         message(STATUS "Looking for ZeroMQ - Found ${ZeroMQ_INCLUDE_DIR}")
         message(STATUS "Looking for ZeroMQ - Found version ${ZeroMQ_VERSION}")
     endif(NOT ZeroMQ_FIND_QUIETLY)
+
+    mark_as_advanced(
+      ZeroMQ_LIBRARIES
+      ZeroMQ_LIBRARY_SHARED
+      ZeroMQ_LIBRARY_STATIC
+      ZeroMQ_VERSION_MAJOR
+      ZeroMQ_VERSION_MINOR
+      ZeroMQ_VERSION_PATCH
+    )
+
+    # add target
+    if(NOT TARGET ZeroMQ::ZeroMQ)
+        add_library(ZeroMQ::ZeroMQ INTERFACE IMPORTED)
+        set_target_properties(ZeroMQ::ZeroMQ PROPERTIES
+          INTERFACE_INCLUDE_DIRECTORIES "${ZeroMQ_INCLUDE_DIR}"
+          INTERFACE_LINK_LIBRARIES "${ZeroMQ_LIBRARIES}"
+          )
+    endif()
 else()
     if(ZeroMQ_FIND_REQUIRED)
         message(FATAL_ERROR "${ERROR_STRING}")
@@ -138,11 +156,4 @@ endif()
 unset(ERROR_STRING)
 unset(ZEROMQ_ROOT)
 
-mark_as_advanced(
-    ZeroMQ_LIBRARIES
-    ZeroMQ_LIBRARY_SHARED
-    ZeroMQ_LIBRARY_STATIC
-    ZeroMQ_VERSION_MAJOR
-    ZeroMQ_VERSION_MINOR
-    ZeroMQ_VERSION_PATCH
-)
+
