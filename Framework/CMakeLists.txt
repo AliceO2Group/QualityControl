@@ -249,22 +249,23 @@ unset(isSystemDir)
 
 # Install library
 install(
-  TARGETS QualityControl
+  TARGETS QualityControl ${EXE_NAMES} tobject2json
   EXPORT QualityControlTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-
-# Create version file
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfigVersion.cmake"
-  VERSION ${PACKAGE_VERSION}
-  COMPATIBILITY AnyNewerVersion
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 # Install headers
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/QualityControl DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+
+# Create version file
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfigVersion.cmake"
+        VERSION ${PACKAGE_VERSION}
+        COMPATIBILITY AnyNewerVersion
+)
 
 # Export targets
 install(
