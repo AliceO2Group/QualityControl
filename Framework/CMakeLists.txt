@@ -99,7 +99,7 @@ root_generate_dictionary("${dict}" ${HEADERS} LINKDEF include/QualityControl/Lin
 # TODO review how and what to install for dictionary
 install(
   FILES ${CMAKE_CURRENT_BINARY_DIR}/lib${dict}_rdict.pcm ${CMAKE_CURRENT_BINARY_DIR}/lib${dict}.rootmap
-  DESTINATION lib
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 # ---- Library ----
@@ -233,21 +233,19 @@ endforeach()
 
 # ---- Install ----
 
-include(GNUInstallDirs)
-
 # Build targets with install rpath on Mac to dramatically speed up installation
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   if("${isSystemDir}" STREQUAL "-1")
-    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+    set(CMAKE_INSTALL_RPATH "@loader_path/../${CMAKE_INSTALL_LIBDIR}")
   endif()
   set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 endif()
 unset(isSystemDir)
 
-# Install library
+# Install library and header
 install(
   TARGETS QualityControl ${EXE_NAMES} tobject2json
   EXPORT QualityControlTargets

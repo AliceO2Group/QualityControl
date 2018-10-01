@@ -13,7 +13,7 @@
         "password": "qc_user",
         "name": "quality_control",
         "implementation": "CCDB",
-        "host": "localhost:8080"
+        "host": "ccdb-test.cern.ch:8080"
       },
       "Activity": {
         "number": "42",
@@ -30,7 +30,7 @@
         "moduleOfChecks": "QcExample",
         "outputDataOrigin": "ITS",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
+        "maxNumberCycles": "10",
         "outputDataDescription": "HIST_SKLT_TASK",
         "inputs": "readoutInput",
         "fraction": "0.01",
