@@ -64,7 +64,7 @@ function(GENERATE_ROOT_DICT)
   # TODO review how and what to install for dictionary
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lib${PARSED_ARGS_MODULE_NAME}Dict_rdict.pcm
     ${CMAKE_CURRENT_BINARY_DIR}/lib${PARSED_ARGS_MODULE_NAME}Dict.rootmap
-    DESTINATION lib)
+    DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 endfunction()
 

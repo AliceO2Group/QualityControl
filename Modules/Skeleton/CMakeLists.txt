@@ -26,6 +26,13 @@ target_include_directories(
 
 target_link_libraries(${MODULE_NAME} PUBLIC QualityControl)
 
+install(
+        TARGETS ${MODULE_NAME}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
 # ---- ROOT dictionary ----
 
 generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/Skeleton/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
