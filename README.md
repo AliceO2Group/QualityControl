@@ -73,7 +73,7 @@ We will run a basic workflow made of a XZC
 
 TODO schema and say what the task and the checker do.
 
-![alt text](doc/images/basic-schema.png)
+![alt text](doc/images/basic-schema.pdf)
 
 To run it simply do 
 
