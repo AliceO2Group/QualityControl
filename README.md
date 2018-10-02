@@ -71,15 +71,19 @@ To make sure that your system is correctly setup, we are going to run a basic QC
 
 We will run a basic workflow made of a XZC
 
+TODO schema and say what the task and the checker do.
+
 To run it simply do 
 
     qcRunBasic
     
-The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch](https://qcg-test.cern.ch)
-    
-It is a single process that will steer all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped most probably abnormaly. 
+Thanks to the DPL (more details later) it is a single process that steers all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped, probably abnormaly. 
 
-[screenshot]
+![alt text](https://github.com/AliceO2Group/QualityControl/blob/master/doc/images/basic-dpl-gui.png?raw=true)
+    
+The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch](https://qcg-test.cern.ch/?page=layoutShow&layoutId=5bb34a1d18a82bb283a487bd). The link actually brings you to a "layout" that shows the object (a histo titled "example") published by the task. 
+
+![alt text](https://github.com/AliceO2Group/QualityControl/blob/master/doc/images/basic-qcg.png?raw=true)
 
 TODO config file 
 
