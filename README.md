@@ -73,6 +73,8 @@ We will run a basic workflow made of a XZC
 
 TODO schema and say what the task and the checker do.
 
+![alt text](doc/images/basic-schema.png)
+
 To run it simply do 
 
     qcRunBasic
@@ -85,10 +87,9 @@ The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If
 
 ![alt text](doc/images/basic-qcg.png)
 
-TODO config file 
+The devices are configured in the config file named `basic.json`. It is installed in `$QUALITY_CONTROL/etc`. Each time you rebuild the code, `$QUALITY_CONTROL/etc/basic.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/basic.json`).
 
 TODO check what is really needed in the config file
-
 
 ### Readout chain
 
