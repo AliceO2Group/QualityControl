@@ -68,15 +68,23 @@ Whenever you want to work with O2 and QualityControl, do either `alienv enter qc
 To make sure that your system is correctly setup, we are going to run a basic QC workflow. We will use central services for the repository and the GUI. If you want to set them up on your computer or in your lab, please have a look [here](#local-ccdb-setup) and [here](#local-qcg-setup).
 
 ### Basic workflow
-With the default config files provided, we run a qctask that processes
-random data and forwards it to a GUI and a checker that will check and
-store the MonitorObjects.
 
-* TODO : what binary to run ? how to configure it ? do we need actually ? 
-Which task does it run ? 
+We will run a basic workflow made of a XZC
 
-The data is stored in the ccdb-test at CERN. You can see the objects being 
-published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch](https://qcg-test.cern.ch)
+To run it simply do 
+
+    qcRunBasic
+    
+The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch](https://qcg-test.cern.ch)
+    
+It is a single process that will steer all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped most probably abnormaly. 
+
+[screenshot]
+
+TODO config file 
+
+TODO check what is really needed in the config file
+
 
 ### Readout chain
 
@@ -110,11 +118,14 @@ readout.exe file:///absolute/path/to/configDummy.cfg
 ...
 ```
 
+--- 
+
 # Modules development
 
 ## Concepts
 
 * TODO show dataflow. Explain what users can implement (tasks and checkers). 
+* TODO Data Sampling 
 * TODO DPL basics and QC in DPL
 
 Review : 
@@ -215,6 +226,8 @@ Options:
 ## DPL workflow customization
 
 * TODO add / remove checker, or readout, or whatever
+
+---
 
 # Advanced topics
 

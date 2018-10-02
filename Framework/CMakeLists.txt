@@ -149,7 +149,7 @@ set(
   src/qcSpy.cxx
   src/runInformationService.cxx
   src/runInformationServiceDump.cxx
-  src/runTaskDPL.cxx
+  src/runBasic.cxx
   src/runReadoutChainTemplate.cxx
   src/runMergerTest.cxx
   src/runReadoutDataSampling.cxx
@@ -165,7 +165,7 @@ set(
   qcSpy
   qcInfoService
   qcInfoServiceDump
-  taskDPL
+  qcRunBasic
   runReadoutChainTemplate
   runMergerTest
   runReadoutDataSampling
@@ -305,7 +305,7 @@ install(
 install(
   FILES
     qcTaskDplConfig.ini
-    qcTaskDplConfig.json
+    basic.json
     readoutChainTemplate.json
     readoutDataSampling.json
   DESTINATION etc

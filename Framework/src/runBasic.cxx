@@ -1,5 +1,5 @@
 ///
-/// \file    runTaskDPL.cxx
+/// \file    runBasic.cxx
 /// \author  Piotr Konopka
 ///
 /// \brief This is an executable showing QC Task's usage in Data Processing Layer.
@@ -74,7 +74,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   // Exemplary initialization of QC Task:
   const std::string qcTaskName = "skeletonTask";
   const std::string qcConfigurationSource =
-    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.json";
+    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/basic.json";
   TaskDataProcessorFactory taskFactory;
   specs.push_back(taskFactory.create(qcTaskName, qcConfigurationSource));
 

@@ -12,8 +12,8 @@
         "username": "qc_user",
         "password": "qc_user",
         "name": "quality_control",
-        "implementation": "MySql",
-        "host": "localhost:3306"
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080"
       },
       "Activity": {
         "number": "42",
