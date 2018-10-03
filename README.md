@@ -9,7 +9,7 @@
       * [Setup](#setup)
          * [Environment loading](#environment-loading)
       * [Execution](#execution)
-         * [Basic](#basic)
+         * [Basic workflow](#basic-workflow)
          * [Readout chain](#readout-chain)
    * [Modules development](#modules-development)
       * [Concepts](#concepts)
@@ -35,7 +35,7 @@
       * [Configuration files details](#configuration-files-details)
    * [Questions for the refactoring of the README](#questions-for-the-refactoring-of-the-readme)
 
-<!-- Added by: bvonhall, at:  -->
+<!-- Added by: bvonhall, at: 2018-10-03T15:37+0200 -->
 
 <!--te-->
 
@@ -50,10 +50,10 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 2. Install O2
      * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/).
 
-3. Prepare the QualityControl development package 
+3. Prepare the QualityControl development package
     * `aliBuild init QualityControl@master`
 
-4. Build/install the QualityControl and the qcg (GUI) package 
+4. Build/install the QualityControl and the qcg (GUI) package
     * `aliBuild build qcg --default o2`
 
 Note :  you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
@@ -75,15 +75,15 @@ TODO schema and say what the task and the checker do.
 
 ![alt text](doc/images/basic-schema.png)
 
-To run it simply do 
+To run it simply do
 
     qcRunBasic
-    
-Thanks to the DPL (more details later) it is a single process that steers all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped, probably abnormaly. 
+
+Thanks to the DPL (more details later) it is a single process that steers all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped, probably abnormaly.
 
 ![alt text](doc/images/basic-dpl-gui.png)
-    
-The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch](https://qcg-test.cern.ch/?page=layoutShow&layoutId=5bb34a1d18a82bb283a487bd). The link actually brings you to a "layout" that shows the object (a histo titled "example") published by the task. 
+
+The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch](https://qcg-test.cern.ch/?page=layoutShow&layoutId=5bb34a1d18a82bb283a487bd). The link actually brings you to a "layout" that shows the object (a histo titled "example") published by the task.
 
 ![alt text](doc/images/basic-qcg.png)
 
@@ -93,9 +93,44 @@ TODO check what is really needed in the config file
 
 ### Readout chain
 
-* TODO : what does it run ? which exe ? how to configure ? 
+In this second example, we are going to use the Readout as data source.
 
-Review : 
+TODO schema
+
+The _Readout_ has to be configured to send data to the _Data Sampling_. Open the readout config file
+located at `$READOUT_ROOT/etc/readout.cfg` and make sure that the following properties are correct :
+
+```
+# First make sure we never exit
+[readout]
+(...)
+exitTimeout=-1
+(...)
+[consumer-data-sampling]
+consumerType=DataSampling
+enabled=1
+(...)
+```
+
+Start Readout :
+```
+readout.exe file:///absolute/path/to/configDummy.cfg
+```
+
+Start the QC and DS (DataSampling) workflow :
+```
+qcRunReadout
+```
+
+This workflow is a bit different from the basic one. The _Readout_ is not a device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the dispatcher, which then injects data to the task. The data sampling is configured to sample 1% of the data as the readout should run by default at full speed.
+
+# Configuration
+
+The configuration file is in `$QUALITY_CONTROL/readout.json`.
+
+* TODO : what does it run ? which exe ? how to configure ?
+
+Review :
 
 1. Modify the config file of readout (Readout/configDummy.cfg) :
 ```
@@ -123,17 +158,17 @@ readout.exe file:///absolute/path/to/configDummy.cfg
 ...
 ```
 
---- 
+---
 
 # Modules development
 
 ## Concepts
 
-* TODO show dataflow. Explain what users can implement (tasks and checkers). 
-* TODO Data Sampling 
+* TODO show dataflow. Explain what users can implement (tasks and checkers).
+* TODO Data Sampling
 * TODO DPL basics and QC in DPL
 
-Review : 
+Review :
 
 Quality Control has been adapted to be used as Data Processor in
 [O2 framework](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/Core#data-processing-layer-in-o2-framework).
@@ -186,9 +221,9 @@ executable `taskDPL`.
 
 TODO
 * with the script
-* test run 
+* test run
 
-Review : 
+Review :
 
 ### Manual steps to create a new module Abc
 
@@ -238,11 +273,11 @@ Options:
 
 ## Local CCDB setup
 
-TODO 
+TODO
 
 ## Local QCG setup
 
-TODO : point to QCG readme or explain again ? 
+TODO : point to QCG readme or explain again ?
 
 TODO if we reexplain : install qcg, setup, run tobject2json, run qcg
 
@@ -259,7 +294,7 @@ Then open your browser at `localhost:8080`. It will show the objects as they are
 
 ### TObject2Json
 
-TODO review , do we so many details ? 
+TODO review , do we so many details ?
 
 Single binary multi-threaded using QC data-sources (MySQL and CCDB) to expose ROOT objects as JSON over ZeroMQ.
 
@@ -438,22 +473,22 @@ TODO
 - 1. Install the MySQL/MariaDB development package
        * CC7 : `sudo yum install mariadb-server`
        * Mac (or download the dmg from Oracle) : `brew install mysql`
-       
+
  Post installation
-       
+
   Start and populate database :
-       
+
    ```
    sudo systemctl start mariadb # for CC7, check for your specific OS
    alienv enter qcg/latest
    qcDatabaseSetup.sh
    ```
-   
+
 ## Configuration files details
 
 TODO : task, checker, general parameters
 
-TODO review : 
+TODO review :
 
 The QC requires a number of configuration items. An example config file is
 provided in the repo under the name _example-default.json_. Moreover, the
@@ -559,9 +594,9 @@ database connection, the monitoring or the data sampling.
 ---
 
 # Questions for the refactoring of the README
-* do we really want the development package ? why not a fixed version ? 
+* do we really want the development package ? why not a fixed version ?
   --> because people will develop their module
-* Should we split the modules from the framework then ? 
-* Should we install O2 and other dependencies with RPMs ? 
+* Should we split the modules from the framework then ?
+* Should we install O2 and other dependencies with RPMs ?
 
 

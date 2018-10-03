@@ -2,7 +2,6 @@
   "qc": {
     "config": {
       "DataSampling": {
-        "implementation": "MockSampler",
         "tasksList": "skeletonTask",
         "enableTimePipeliningDispatchers": "0",
         "enableParallelDispatchers": "0",

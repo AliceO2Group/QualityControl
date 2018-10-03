@@ -50,7 +50,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   // Exemplary initialization of QC Task:
   const std::string qcTaskName = "skeletonTask";
   const std::string qcConfigurationSource =
-    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutChainTemplate.json";
+    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readout.json";
   TaskDataProcessorFactory qcFactory;
   specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
   CheckerDataProcessorFactory checkerFactory;

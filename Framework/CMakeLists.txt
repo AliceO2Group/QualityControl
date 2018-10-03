@@ -150,7 +150,7 @@ set(
   src/runInformationService.cxx
   src/runInformationServiceDump.cxx
   src/runBasic.cxx
-  src/runReadoutChainTemplate.cxx
+  src/runReadout.cxx
   src/runMergerTest.cxx
   src/runReadoutDataSampling.cxx
   src/alfaTestReceiver.cxx
@@ -166,7 +166,7 @@ set(
   qcInfoService
   qcInfoServiceDump
   qcRunBasic
-  runReadoutChainTemplate
+  qcRunReadout
   runMergerTest
   runReadoutDataSampling
   alfaTestReceiver
