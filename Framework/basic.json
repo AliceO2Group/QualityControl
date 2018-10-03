@@ -2,18 +2,17 @@
   "qc": {
     "config": {
       "DataSampling": {
-        "implementation": "MockSampler",
         "tasksList": "skeletonTask",
         "enableTimePipeliningDispatchers": "0",
         "enableParallelDispatchers": "0",
         "enableProxy": "0"
       },
       "database": {
-        "username": "qc_user",
-        "password": "qc_user",
-        "name": "quality_control",
         "implementation": "CCDB",
-        "host": "ccdb-test.cern.ch:8080"
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
       },
       "Activity": {
         "number": "42",
@@ -36,14 +35,6 @@
         "subSpec": "-1",
         "dispatcherType": "DPL",
         "channelConfig": ""
-      },
-      "readoutInput": {
-        "inputName": "readout",
-        "dataOrigin": "ITS",
-        "dataDescription": "RAWDATA",
-        "spawnConverter": "0",
-        "channelConfig" : "",
-        "converterType" : "incrementalConverter"
       }
     },
     "checkers_config": {
