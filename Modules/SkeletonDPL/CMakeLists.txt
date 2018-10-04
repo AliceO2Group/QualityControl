@@ -1,4 +1,4 @@
-set(MODULE_NAME "QcSkeletonDpl")
+set(MODULE_NAME "QcSkeletonDPL")
 
 # ---- Files ----
 
