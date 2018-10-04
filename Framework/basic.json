@@ -30,16 +30,20 @@
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "outputDataDescription": "HIST_SKLT_TASK",
-        "inputs": "readoutInput",
+        "inputs": "randomInput",
         "fraction": "0.1",
         "subSpec": "-1",
         "dispatcherType": "DPL",
         "channelConfig": ""
+      },
+      "readoutInput": {
+        "inputName": "randomInput",
+        "dataOrigin": "ITS",
+        "dataDescription": "RAWDATA",
+        "spawnConverter": "0",
+        "channelConfig" : "",
+        "converterType" : "incrementalConverter"
       }
-    },
-    "checkers_config": {
-      "checker_0": {},
-      "Checks": {}
     }
   }
 }

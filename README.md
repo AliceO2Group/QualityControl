@@ -96,17 +96,17 @@ __Configuration file__
 
 The devices are configured in the config file named `basic.json`. It is installed in `$QUALITY_CONTROL/etc`. Each time you rebuild the code, `$QUALITY_CONTROL/etc/basic.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/basic.json`).
 
-TODO check what is really needed in the config file
-
 ### Readout chain
 
 In this second example, we are going to use the Readout as data source.
 
-TODO schema
+![alt text](doc/images/readout-schema.png)
+
+This workflow is a bit different from the basic one. The _Readout_ is not a device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the dispatcher, which then injects data to the task. This is handled in the _Readout_ if you enable the corresponding configuration flag. 
+
 TODO make the qc task use the daq code
 
-The _Readout_ has to be configured to send data to the _Data Sampling_. Open the readout config file
-located at `$READOUT_ROOT/etc/readout.cfg` and make sure that the following properties are correct :
+To do so, open the readout config file located at `$READOUT_ROOT/etc/readout.cfg` and make sure that the following properties are correct :
 
 ```
 # First make sure we never exit
@@ -114,6 +114,7 @@ located at `$READOUT_ROOT/etc/readout.cfg` and make sure that the following prop
 (...)
 exitTimeout=-1
 (...)
+# And enable the data sampling
 [consumer-data-sampling]
 consumerType=DataSampling
 enabled=1
@@ -122,7 +123,7 @@ enabled=1
 
 Start Readout :
 ```
-readout.exe file:///absolute/path/to/configDummy.cfg
+readout.exe file:///absolute/path/to/readout.cfg
 ```
 
 Start the QC and DS (DataSampling) workflow :
@@ -130,13 +131,11 @@ Start the QC and DS (DataSampling) workflow :
 qcRunReadout
 ```
 
-This workflow is a bit different from the basic one. The _Readout_ is not a device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the dispatcher, which then injects data to the task. The data sampling is configured to sample 1% of the data as the readout should run by default at full speed.
+The data sampling is configured to sample 1% of the data as the readout should run by default at full speed.
 
 __Configuration file__ 
 
-The configuration file is in `$QUALITY_CONTROL/readout.json`.
-
-* TODO : what does it run ? which exe ? how to configure ?
+The configuration file is in `$QUALITY_CONTROL/readout.json`. It is installed in `$QUALITY_CONTROL/etc`. Each time you rebuild the code, `$QUALITY_CONTROL/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
 
 Review :
 

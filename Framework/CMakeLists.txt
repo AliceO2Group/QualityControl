@@ -306,7 +306,7 @@ install(
   FILES
     qcTaskDplConfig.ini
     basic.json
-    readoutChainTemplate.json
+    readout.json
     readoutDataSampling.json
   DESTINATION etc
 )
