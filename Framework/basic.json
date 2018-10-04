@@ -2,7 +2,7 @@
   "qc": {
     "config": {
       "DataSampling": {
-        "tasksList": "skeletonTask",
+        "tasksList": "QcTask",
         "enableTimePipeliningDispatchers": "0",
         "enableParallelDispatchers": "0",
         "enableProxy": "0"
@@ -20,10 +20,10 @@
       }
     },
     "tasks_config": {
-      "skeletonTask": {
-        "taskDefinition": "skeletonTaskDefinition"
+      "QcTask": {
+        "taskDefinition": "QcTaskDefinition"
       },
-      "skeletonTaskDefinition": {
+      "QcTaskDefinition": {
         "className": "o2::quality_control_modules::skeleton_dpl::SkeletonTaskDPL",
         "moduleName": "QcSkeletonDpl",
         "outputDataOrigin": "ITS",
@@ -36,8 +36,8 @@
         "dispatcherType": "DPL",
         "channelConfig": ""
       },
-      "readoutInput": {
-        "inputName": "randomInput",
+      "randomInput": {
+        "inputName": "random",
         "dataOrigin": "ITS",
         "dataDescription": "RAWDATA",
         "spawnConverter": "0",
