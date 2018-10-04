@@ -251,9 +251,8 @@ cd QualityControl/Modules
 
 ## Test run
 
-Now that there is a module, we can test it.
+Now that there is a module, we can test it. A basic DPL workflow is defined in `runBasic.cxx`.
 
-TODO
 
 ## Code modification
 
