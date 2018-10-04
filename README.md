@@ -212,6 +212,12 @@ executable `taskDPL`.
 
 TODO -> piotr
 
+## Code Organization
+
+The repository QualityControl contains the _Framework_  and the _Modules_ in the respectively named directories.
+
+The Data Sampling code is part of the AliceO2 repository.
+
 ## User-defined modules
 
 The Quality Control uses _plugins_ to load the actual code to be executed by the _Tasks_ and the _Checkers_. A module, or plugin, can contain one or several _Tasks_ and/or one or several _Checks_. They must subclass `TaskInterface.h` and `CheckInterface.h` respectively. We use the Template Method Design Pattern.
@@ -220,7 +226,7 @@ The Quality Control uses _plugins_ to load the actual code to be executed by the
 
 Before starting to develop the code, one should create a new module if it does not exist yet. Typically each detector team should prepare a module.
 
-The script `modulesHelper.sh` is able to prepare a new module or to add a new _Task_ or a new _Check_ to an existing module. It must be run from __within QualityControl/Modules__. See the help message below:
+The script `modulesHelper.sh`, in the directory _Modules_, is able to prepare a new module or to add a new _Task_ or a new _Check_ to an existing module. It must be run from __within QualityControl/Modules__. See the help message below:
 ```
 Usage: ./modulesHelper.sh -m MODULE_NAME [OPTION]
 
@@ -251,18 +257,53 @@ cd QualityControl/Modules
 
 ## Test run
 
-Now that there is a module, we can test it. A basic DPL workflow is defined in `runBasic.cxx`.
+Now that there is a module, we can build it and test it. First let's build it :
+```
+# We are in ~/alice
+# Go to the build directory of QualityControl
+cd sw/slc7_x86-64/BUILD/QualityControl-latest/QualityControl
+make -j8 install
+```
 
+To test whether it works, we are going to run a basic DPL workflow defined in `runBasic.cxx`.
+We need to modify slightly the config file to indicate our freshly created module and classes.
+The config file is called `basic.json` and is located in `$QUALITY_CONTROL/etc/` (after installation, if you want to modify the original one it is in the source directory `Framework`).
+Change the lines as indicated below :
 
-## Code modification
+```
+"QcTaskDefinition": {
+  "className": "o2::quality_control_modules::abc::RawDataQcTask",
+  "moduleName": "QcAbc",
+```
 
-Fill in the methods in AbcTask.cxx. If you need specific checks you can do it in AbcCheck.cxx.
+Now we can run it
 
-In case special additional dependencies are needed, create a new bucket in QualityControlModules/cmake/QualityControlModulesDependencies.cmake.
+```
+qcRunBasic
+```
+
+You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.
+
+## Modification of a Task
+
+Fill in the methods in RawDataQcTask.cxx. For example, make it send a second histogram.
+Once done, recompile it (see section above) and run it. You should see the second object published in the qcg.
+
+TODO give actual steps for dummies
+
+## Addition of a Check
+
+TODO
 
 ## DPL workflow customization
 
-* TODO add / remove checker, or readout, or whatever
+If you want to change the workflow, edit or copy `runBasic.cxx`. For example...
+
+TODO
+
+## Commit Code
+
+TODO Github procedure
 
 ---
 
