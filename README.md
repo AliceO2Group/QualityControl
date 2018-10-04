@@ -144,13 +144,21 @@ To change the fraction of the data being monitored, change the option `fraction`
 
 # Modules development
 
-## Concepts
+Before developing a module, one should have a bare idea of what the QualityControl is and how it is designed.
 
-* TODO show dataflow. Explain what users can implement (tasks and checkers).
-* TODO Data Sampling
-* TODO DPL basics and QC in DPL
+## QC architecture
 
-Review :
+![alt text](doc/images/Architecture.png)
+
+The main data flow is represented in blue. Data samples are selected by the Data Sampling (not represented) and sent to the QC tasks, either on the same machines or on other machines. The tasks produce TObjects, usually histograms, that are merged (if needed) and then checked. The checkers output the received TObject along with a quality flag. The TObject can be modified by the Checker. Finally the TObject and its quality are stored in the repository.
+
+## DPL
+
+TODO -> piotr
+
+<!--
+
+THIS IS OLD STUFF BELOW
 
 Quality Control has been adapted to be used as Data Processor in
 [O2 framework](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/Core#data-processing-layer-in-o2-framework).
@@ -198,32 +206,21 @@ In [Framework/src/runTaskDPL.cxx](https://github.com/AliceO2Group/QualityControl
 there is an exemplary DPL workflow with QC task. It is compiled to an
 executable `taskDPL`.
 
+-->
+
+## Data Sampling
+
+TODO -> piotr
+
+## User-defined modules
+
+The Quality Control uses _plugins_ to load the actual code to be executed by the _Tasks_ and the _Checkers_. A module, or plugin, can contain one or several _Tasks_ and/or one or several _Checks_. They must subclass `TaskInterface.h` and `CheckInterface.h` respectively. We use the Template Method Design Pattern.
 
 ## Module creation
 
-TODO
-* with the script
-* test run
+Before starting to develop the code, one should create a new module if it does not exist yet. Typically each detector team should prepare a module.
 
-Review :
-
-### Manual steps to create a new module Abc
-
-1. Duplicate the skeleton of module located in QualityControl/Modules/Skeleton.
-2. Call it Abc (i.e. your detector code or name)
-3. Use a (smart) editor to find and replace all occurrences of Skeleton by Abc
-4. Make sure to rename the include/Skeleton to include/Abc as well
-5. Rename all files (Skeleton->Abc)
-6. Near the end of the file QualityControl/Modules/CMakeLists.txt add `add_subdirectory(Abc)`
-7. Build it (`aliBuild build --defaults o2 QualityControl`)
-
-Fill in the methods in AbcTask.cxx. If you need specific checks you can do it in AbcCheck.cxx.
-
-In case special additional dependencies are needed, create a new bucket in QualityControlModules/cmake/QualityControlModulesDependencies.cmake.
-
-### Automatic modules generation
-
-One can also perform steps 1-6 using script `modulesHelper.sh`. It must be ran from __within QualityControl/Modules__. See the help message below:
+The script `modulesHelper.sh` is able to prepare a new module or to add a new _Task_ or a new _Check_ to an existing module. It must be run from __within QualityControl/Modules__. See the help message below:
 ```
 Usage: ./modulesHelper.sh -m MODULE_NAME [OPTION]
 
@@ -244,6 +241,25 @@ Options:
  -c CHECK_NAME    create check named CHECK_NAME
 ```
 
+For example, if your detector 3-letter code is ABC you might want to do
+```
+# we are in ~/alice
+cd QualityControl/Modules
+./modulesHelper.sh -m Abc # create the module
+./modulesHelper.sh -t RawDataQcTask # add a task
+```
+
+## Test run
+
+Now that there is a module, we can test it.
+
+TODO
+
+## Code modification
+
+Fill in the methods in AbcTask.cxx. If you need specific checks you can do it in AbcCheck.cxx.
+
+In case special additional dependencies are needed, create a new bucket in QualityControlModules/cmake/QualityControlModulesDependencies.cmake.
 
 ## DPL workflow customization
 
