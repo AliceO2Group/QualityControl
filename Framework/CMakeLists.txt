@@ -189,6 +189,7 @@ target_link_libraries(tobject2json PRIVATE QualityControl ZeroMQ::ZeroMQ $<$<BOO
 
 # ---- Gui ----
 
+set(DATADUMP "")
 if(GLFW_FOUND)
   set(
     GUI_SRCS
@@ -206,6 +207,8 @@ if(GLFW_FOUND)
   add_executable(dataDump ${GUI_SRCS})
 
   target_link_libraries(dataDump PRIVATE QualityControl GLFW::GLFW)
+
+  set(DATADUMP "dataDump")
 else()
   message(STATUS "GLFW not found, DataDump will not be built")
 endif()
@@ -248,7 +251,7 @@ unset(isSystemDir)
 
 # Install library and binaries
 install(
-  TARGETS QualityControl ${EXE_NAMES} tobject2json dataDump
+  TARGETS QualityControl ${EXE_NAMES} tobject2json ${DATADUMP}
   EXPORT QualityControlTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
