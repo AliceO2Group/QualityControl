@@ -2,18 +2,17 @@
   "qc": {
     "config": {
       "DataSampling": {
-        "implementation": "MockSampler",
-        "tasksList": "skeletonTask",
+        "tasksList": "daqTask",
         "enableTimePipeliningDispatchers": "0",
         "enableParallelDispatchers": "0",
         "enableProxy": "0"
       },
       "database": {
-        "username": "qc_user",
-        "password": "qc_user",
-        "name": "quality_control",
-        "implementation": "MySql",
-        "host": "localhost:3306"
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable" 
       },
       "Activity": {
         "number": "42",
@@ -21,18 +20,18 @@
       }
     },
     "tasks_config": {
-      "skeletonTask": {
-        "taskDefinition": "skeletonTaskDefinition"
+      "daqTask": {
+        "taskDefinition": "daqTaskDefinition"
       },
-      "skeletonTaskDefinition": {
+      "daqTaskDefinition": {
         "className": "o2::quality_control_modules::skeleton_dpl::SkeletonTaskDPL",
         "moduleName": "QcSkeletonDpl",
         "outputDataOrigin": "ITS",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
+        "maxNumberCycles": "10",
         "outputDataDescription": "HIST_SKLT_TASK",
         "inputs": "readoutInput",
-        "fraction": "0.1",
+        "fraction": "0.01",
         "subSpec": "-1",
         "dispatcherType": "DPL",
         "channelConfig": ""
@@ -41,14 +40,10 @@
         "inputName": "readout",
         "dataOrigin": "ITS",
         "dataDescription": "RAWDATA",
-        "spawnConverter": "0",
-        "channelConfig" : "",
-        "converterType" : "incrementalConverter"
+        "spawnConverter": "1",
+        "channelConfig" : "type=sub,method=connect,address=ipc:///tmp/readout-pipe-1,rateLogging=1",
+        "converterType" : "dataSamplingReadoutAdapter"
       }
-    },
-    "checkers_config": {
-      "checker_0": {},
-      "Checks": {}
     }
   }
 }

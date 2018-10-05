@@ -6,3 +6,8 @@
 *.jpg
 example.ini
 imgui.ini
+README.md.*
+cmake-build-*
+Framework/src/tobject2json/
+Framework/test/testCcdbApi2.cxx
+local_history.patch

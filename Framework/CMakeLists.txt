@@ -149,10 +149,10 @@ set(
   src/qcSpy.cxx
   src/runInformationService.cxx
   src/runInformationServiceDump.cxx
-  src/runTaskDPL.cxx
-  src/runReadoutChainTemplate.cxx
+  src/runBasic.cxx
+  src/runReadout.cxx
   src/runMergerTest.cxx
-  src/runReadoutDataSampling.cxx
+  src/runReadoutForDataDump.cxx
   src/alfaTestReceiver.cxx
   src/Consumer.cxx
   src/runRepositoryBenchmark.cxx
@@ -165,10 +165,10 @@ set(
   qcSpy
   qcInfoService
   qcInfoServiceDump
-  taskDPL
-  runReadoutChainTemplate
+  qcRunBasic
+  qcRunReadout
   runMergerTest
-  runReadoutDataSampling
+  qcRunReadoutForDataDump
   alfaTestReceiver
   qcConsumer
   repositoryBenchmark
@@ -189,6 +189,7 @@ target_link_libraries(tobject2json PRIVATE QualityControl ZeroMQ::ZeroMQ $<$<BOO
 
 # ---- Gui ----
 
+set(DATADUMP "")
 if(GLFW_FOUND)
   set(
     GUI_SRCS
@@ -206,6 +207,8 @@ if(GLFW_FOUND)
   add_executable(dataDump ${GUI_SRCS})
 
   target_link_libraries(dataDump PRIVATE QualityControl GLFW::GLFW)
+
+  set(DATADUMP "dataDump")
 else()
   message(STATUS "GLFW not found, DataDump will not be built")
 endif()
@@ -248,7 +251,7 @@ unset(isSystemDir)
 
 # Install library and binaries
 install(
-  TARGETS QualityControl ${EXE_NAMES} tobject2json dataDump
+  TARGETS QualityControl ${EXE_NAMES} tobject2json ${DATADUMP}
   EXPORT QualityControlTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -305,8 +308,8 @@ install(
 install(
   FILES
     qcTaskDplConfig.ini
-    qcTaskDplConfig.json
-    readoutChainTemplate.json
-    readoutDataSampling.json
+    basic.json
+    readout.json
+    readoutForDataDump.json
   DESTINATION etc
 )

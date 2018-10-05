@@ -1,0 +1,49 @@
+{
+  "qc": {
+    "config": {
+      "DataSampling": {
+        "tasksList": "QcTask",
+        "enableTimePipeliningDispatchers": "0",
+        "enableParallelDispatchers": "0",
+        "enableProxy": "0"
+      },
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      }
+    },
+    "tasks_config": {
+      "QcTask": {
+        "taskDefinition": "QcTaskDefinition"
+      },
+      "QcTaskDefinition": {
+        "className": "o2::quality_control_modules::skeleton_dpl::SkeletonTaskDPL",
+        "moduleName": "QcSkeletonDpl",
+        "outputDataOrigin": "ITS",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "outputDataDescription": "HIST_SKLT_TASK",
+        "inputs": "randomInput",
+        "fraction": "0.1",
+        "subSpec": "-1",
+        "dispatcherType": "DPL",
+        "channelConfig": ""
+      },
+      "randomInput": {
+        "inputName": "random",
+        "dataOrigin": "ITS",
+        "dataDescription": "RAWDATA",
+        "spawnConverter": "0",
+        "channelConfig" : "",
+        "converterType" : "incrementalConverter"
+      }
+    }
+  }
+}

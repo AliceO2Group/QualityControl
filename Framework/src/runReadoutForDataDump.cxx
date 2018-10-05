@@ -9,13 +9,13 @@
 // or submit itself to any jurisdiction.
 //
 
-/// \file    runReadoutDataSampling.cxx
+/// \file    runReadoutForDataDump.cxx
 /// \author  Piotr Konopka, Barthelemy von Haller
 ///
 /// \brief This is a simplistic executable to be able to sample Readout data towards a non-DPL FairMQ device.
 ///
 /// It uses a config file located at
-/// ${QUALITYCONTROL_ROOT}/etc/readoutDataSampling.json or Framework/readoutDataSampling.json (original one).
+/// ${QUALITYCONTROL_ROOT}/etc/readoutForDataDump.json or Framework/readoutForDataDump.json (original one).
 /// The only thing that might have to be changed is the port (default : 26525) on which the data is sent.
 /// \code{.json}
 /// > "channelConfig": "name=fairReadoutRawOut,type=pub,method=bind,address=tcp://127.0.0.1:26525,rateLogging=1"
@@ -45,7 +45,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   WorkflowSpec specs;
 
   const std::string qcConfigurationSource =
-    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutDataSampling.json";
+    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutForDataDump.json";
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
   o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
