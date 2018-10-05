@@ -57,7 +57,9 @@ endif()
 unset(isSystemDir)
 
 # C++ standard
-set(CMAKE_CXX_STANDARD 14)
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
 
 # Add compiler flags for warnings and (more importantly) fPIC and debug symbols
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
