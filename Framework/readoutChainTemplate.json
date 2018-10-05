@@ -13,7 +13,10 @@
         "password": "qc_user",
         "name": "quality_control",
         "implementation": "CCDB",
-        "host": "ccdb-test.cern.ch:8080"
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
       },
       "Activity": {
         "number": "42",

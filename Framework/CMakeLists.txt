@@ -200,6 +200,7 @@ if(GLFW_FOUND)
     src/imgui/imgui_demo.cpp
     src/imgui/BaseGui.cxx
     src/DataDump.cxx
+    src/runDataDump.cxx
   )
 
   add_executable(dataDump ${GUI_SRCS})
@@ -245,9 +246,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 endif()
 unset(isSystemDir)
 
-# Install library and header
+# Install library and binaries
 install(
-  TARGETS QualityControl ${EXE_NAMES} tobject2json
+  TARGETS QualityControl ${EXE_NAMES} tobject2json dataDump
   EXPORT QualityControlTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
