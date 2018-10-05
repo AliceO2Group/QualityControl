@@ -78,6 +78,7 @@ find_package(
     system
     log
     signals
+    system
 )
 find_package(Git QUIET)
 find_package(Configuration REQUIRED)

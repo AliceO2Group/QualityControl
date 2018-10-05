@@ -152,7 +152,7 @@ set(
   src/runBasic.cxx
   src/runReadout.cxx
   src/runMergerTest.cxx
-  src/runReadoutDataSampling.cxx
+  src/runReadoutForDataDump.cxx
   src/alfaTestReceiver.cxx
   src/Consumer.cxx
   src/runRepositoryBenchmark.cxx
@@ -168,7 +168,7 @@ set(
   qcRunBasic
   qcRunReadout
   runMergerTest
-  runReadoutDataSampling
+  qcRunReadoutForDataDump
   alfaTestReceiver
   qcConsumer
   repositoryBenchmark
@@ -307,6 +307,6 @@ install(
     qcTaskDplConfig.ini
     basic.json
     readout.json
-    readoutDataSampling.json
+    readoutForDataDump.json
   DESTINATION etc
 )

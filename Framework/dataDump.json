@@ -1,25 +1,25 @@
 {
-    "fairMQOptions": {
-        "devices": [
-            {
-                "id": "dataDump",
-                "channels": [
-                    {
-                        "name": "data-in",
-                        "sockets": [
-                            {
-                                "type": "sub",
-                                "method": "connect",
-                                "address": "tcp://localhost:26525",
-                                "sndBufSize": 100,
-                                "rcvBufSize": 100,
-                                "rateLogging": 0
-                            }
-                        ]
-                    }
-                ]
-            }
+  "fairMQOptions": {
+    "devices": [
+      {
+        "id": "dataDump",
+        "channels": [
+          {
+            "name": "data-in",
+            "sockets": [
+              {
+                "type": "sub",
+                "method": "connect",
+                "address": "tcp://localhost:26525",
+                "sndBufSize": 100,
+                "rcvBufSize": 100,
+                "rateLogging": 0
+              }
+            ]
+          }
         ]
-    }
+      }
+    ]
+  }
 }
 

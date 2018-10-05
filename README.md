@@ -12,28 +12,32 @@
          * [Basic workflow](#basic-workflow)
          * [Readout chain](#readout-chain)
    * [Modules development](#modules-development)
-      * [Concepts](#concepts)
+      * [QC architecture](#qc-architecture)
+      * [DPL](#dpl)
+      * [Data Sampling](#data-sampling)
+      * [Code Organization](#code-organization)
+      * [User-defined modules](#user-defined-modules)
       * [Module creation](#module-creation)
-         * [Manual steps to create a new module Abc](#manual-steps-to-create-a-new-module-abc)
-         * [Automatic modules generation](#automatic-modules-generation)
+      * [Test run](#test-run)
+      * [Modification of a Task](#modification-of-a-task)
+      * [Addition of a Check](#addition-of-a-check)
       * [DPL workflow customization](#dpl-workflow-customization)
+      * [Commit Code](#commit-code)
    * [Advanced topics](#advanced-topics)
-      * [Local CCDB setup](#local-ccdb-setup)
-      * [Local QCG setup](#local-qcg-setup)
-         * [TObject2Json](#tobject2json)
-            * [Usage](#usage)
-            * [Protocol](#protocol)
-            * [Architecture](#architecture)
       * [Data Inspector](#data-inspector)
          * [Prerequisite](#prerequisite)
          * [Compilation](#compilation)
          * [Execution](#execution-1)
          * [Configuration](#configuration)
-      * [Information Service](#information-service)
-         * [Usage](#usage-1)
       * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
+      * [Local CCDB setup](#local-ccdb-setup)
+      * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
+            * [tobject2json Usage](#tobject2json-usage)
+            * [Protocol](#protocol)
+            * [Architecture](#architecture)
+      * [Information Service](#information-service)
+         * [Usage](#usage)
       * [Configuration files details](#configuration-files-details)
-   * [Questions for the refactoring of the README](#questions-for-the-refactoring-of-the-readme)
 
 <!-- Added by: bvonhall, at:  -->
 
@@ -288,7 +292,7 @@ You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.
 Fill in the methods in RawDataQcTask.cxx. For example, make it send a second histogram.
 Once done, recompile it (see section above) and run it. You should see the second object published in the qcg.
 
-TODO give actual steps for dummies
+TODO give actual steps
 
 ## Addition of a Check
 
@@ -302,40 +306,106 @@ TODO
 
 ## Commit Code
 
-TODO Github procedure
+To commit your new or modified code, please follow this procedure
+1. Fork the [QualityControl](github.com/AliceO2Group/QualityControl) repo using github webpage or github desktop app.
+1. Clone it : `git clone https://github.com/<yourIdentifier>/QualityControl.git`
+1. Before you start working on your code, create a branch in your fork : `git checkout -b feature-new-stuff`
+2. Push the branch : `git push --set-upstream origin feature-new-stuff`
+2. Add and commit your changes onto this branch : `git add Abc.cxx ; git commit Abc.cxx`
+3. Push your commits : `git push`
+4. Once you are satisfied with your changes, make a _Pull Request_ (PR). Go to your branches on the github webpage, and click "New Pull Request". Explain what you did. 
+5. One of the QC developers will check your code. It will also be automatically tested. 
+6. Once approved the changes will be merged in the main repo. You can delete your branch. 
+
+For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches. 
 
 ---
 
 # Advanced topics
 
+## Data Inspector
+
+This is a GUI to inspect the data coming out of the DataSampling, in
+particular the Readout.
+
+### Prerequisite
+
+Install GLFW for your platform. On CC7 install `glfw-devel`.
+
+### Compilation
+
+Build the QualityControl as usual.
+
+### Execution
+
+To monitor the readout, 3 processes have to be started : the Readout,
+the Data Sampling and the Data Inspector. 
+
+First make sure that the datasampling is enabled in the readout : 
+```
+[consumer-data-sampling]
+consumerType=DataSampling
+enabled=1
+```
+
+In 3 separate terminals, do respectively
+
+1. `readout.exe file:///absolute/path/to/config.cfg`
+2. `qcRunReadoutForDataDump --batch`
+3. `dataDump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static`
+
+### Configuration
+
+__Fraction of data__
+The Data Sampling tries to take 100% of the events by default.
+Edit $QUALITY_CONTROL/readoutForDataDump.json
+to change it. Look for the parameter `fraction` that is set to 1.
+
+__Port__
+The Data Sampling sends data to the GUI via the port `26525`.
+If this port is not free, edit the config file $QUALITY_CONTROL/readoutForDataDump.json
+and $QUALITY_CONTROL/dataDump.json.
+
+## Use MySQL as QC backend
+
+1. Install the MySQL/MariaDB development package
+       * CC7 : `sudo yum install mariadb-server`
+       * Mac (or download the dmg from Oracle) : `brew install mysql`
+
+2. Rebuild the QualityControl (so that the mysql backend classes are compiled)
+
+3. Start and populate database :
+
+   ```
+   sudo systemctl start mariadb # for CC7, check for your specific OS
+   alienv enter qcg/latest
+   qcDatabaseSetup.sh
+   ```
+   
 ## Local CCDB setup
 
-TODO
+Having a central ccdb for test (ccdb-test) is handy but also means that everyone can access, modify or delete the data. If you prefer to have a local instance of the CCDB, for example in your lab or on your development machine, follow these instructions. 
 
-## Local QCG setup
+1. Download the local repository service from http://alimonitor.cern.ch/download/local.jar
 
-TODO : point to QCG readme or explain again ?
+2. The service can simply be run with
+    `java -jar local.jar`
 
-TODO if we reexplain : install qcg, setup, run tobject2json, run qcg
+It will start listening by default on port 8080. This can be changed either with the java parameter “tomcat.port” or with the environment variable “TOMCAT_PORT”. Similarly the default listening address is 127.0.0.1 and it can be changed with the java parameter “tomcat.address” or with the environment variable “TOMCAT_ADDRESS” to something else (for example ‘*’ to listen on all interfaces).
 
-To run (in 2 different terminals) :
-```
-alienv enter qcg/latest-o2
-tobject2json --backend mysql://qc_user:qc_user@localhost/quality_control --zeromq-server tcp://127.0.0.1:7777
-```
-```
-alienv enter qcg/latest-o2
-qcg
-```
-Then open your browser at `localhost:8080`. It will show the objects as they are stored in the the database.
+By default the local repository is located in /tmp/QC (or java.io.tmpdir/QC to be more precise). You can change this location in a similar way by setting the java parameter “file.repository.location” or the environment variable “FILE_REPOSITORY_LOCATION”.
 
-### TObject2Json
+The address of the CCDB will have to be updated in the Tasks config file. 
 
-TODO review , do we so many details ?
+At the moment, the description of the REST api can be found in this document : https://docs.google.com/presentation/d/1PJ0CVW7QHgnFzi0LELc06V82LFGPgmG3vsmmuurPnUg
 
-Single binary multi-threaded using QC data-sources (MySQL and CCDB) to expose ROOT objects as JSON over ZeroMQ.
+## Local QCG (QC GUI) setup
 
-#### Usage
+To install and run the QCG locally, and its fellow process tobject2json, please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#run-qcg-locally
+
+`tobject2json` is in charge of converting the MonitorObjects stored in the repository into JSON for their consumption by the QCG. The code is in the QualityControl repository whereas the code of the QCG is in the WebUI repository. 
+
+#### tobject2json Usage
 
 ```bash
 alienv enter QualityControl/latest
@@ -378,46 +448,6 @@ Response (one of the following):
 |  Worker   |<-->|  Backend  |
 +-----------+1  N+-----------+
 ```
-
-## Data Inspector
-
-This is a GUI to inspect the data coming out of the DataSampling, in
-particular the Readout.
-
-### Prerequisite
-
-Install GLFW for your platform. On CC7 install `glfw-devel`.
-
-### Compilation
-
-Build the QualityControl as usual.
-
-### Execution
-
-To monitor the readout, 3 processes have to be started : the Readout,
-the Data Sampling and the Data Inspector. In 3 terminals, do respectively
-
-1. Make sure that the data sampling is enabled in the readout :
-```
-[consumer-data-sampling]
-consumerType=DataSampling
-enabled=1
-```
-1. `readout.exe file:///absolute/path/to/config.cfg`
-2. `runReadoutDataSampling --batch`
-3. `dataDump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static`
-
-### Configuration
-
-__Fraction of data__
-The Data Sampling tries to take 100% of the events by default.
-Edit $QUALITY_CONTROL/readoutDataSampling.json
-to change it. Look for the parameter `fraction` that is set to 1.
-
-__Port__
-The Data Sampling sends data to the GUI via the port `26525`.
-If this port is not free, edit the config file $QUALITY_CONTROL/readoutDataSampling.json
-and $QUALITY_CONTROL/dataDump.json.
 
 ## Information Service
 
@@ -503,25 +533,9 @@ qcInfoServiceDump -c /absolute/path/to/InformationService.json -n information_se
 ```
 The last parameter can be omitted to receive information about all tasks.
 
-## Use MySQL as QC backend
-
-TODO
-
-- 1. Install the MySQL/MariaDB development package
-       * CC7 : `sudo yum install mariadb-server`
-       * Mac (or download the dmg from Oracle) : `brew install mysql`
-
- Post installation
-
-  Start and populate database :
-
-   ```
-   sudo systemctl start mariadb # for CC7, check for your specific OS
-   alienv enter qcg/latest
-   qcDatabaseSetup.sh
-   ```
-
 ## Configuration files details
+
+TODO : this is to be rewritten once we stabilize the configuration file format.
 
 TODO : task, checker, general parameters
 
@@ -627,13 +641,3 @@ It is needed for the time being because we don't have an information service.
 
 There are configuration items for many other aspects, for example the
 database connection, the monitoring or the data sampling.
-
----
-
-# Questions for the refactoring of the README
-* do we really want the development package ? why not a fixed version ?
-  --> because people will develop their module
-* Should we split the modules from the framework then ?
-* Should we install O2 and other dependencies with RPMs ?
-
-
