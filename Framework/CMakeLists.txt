@@ -12,10 +12,7 @@ set(
   src/CheckInterface.cxx
   src/DatabaseFactory.cxx
   src/ClientDataProvider.cxx
-  src/AlfaReceiverForTests.cxx
   src/TaskDevice.cxx
-  src/SpyDevice.cxx
-  src/SpyMainFrame.cxx
   src/CcdbDatabase.cxx
   src/InformationService.cxx
   src/InformationServiceDump.cxx
@@ -33,7 +30,6 @@ set(
   include/QualityControl/CheckInterface.h
   include/QualityControl/CheckerDataProcessor.h
   include/QualityControl/CheckerDataProcessorFactory.h
-  include/QualityControl/SpyMainFrame.h
   include/QualityControl/DatabaseInterface.h
   include/QualityControl/CcdbDatabase.h
   include/QualityControl/TaskDataProcessor.h
@@ -146,15 +142,12 @@ set(
   EXE_SRCS
   src/TaskDevice.cxx
   src/qcCheckerLauncher.cxx
-  src/qcSpy.cxx
   src/runInformationService.cxx
   src/runInformationServiceDump.cxx
   src/runBasic.cxx
   src/runReadout.cxx
   src/runMergerTest.cxx
   src/runReadoutForDataDump.cxx
-  src/alfaTestReceiver.cxx
-  src/Consumer.cxx
   src/runRepositoryBenchmark.cxx
 )
 
@@ -162,15 +155,12 @@ set(
   EXE_NAMES
   qcTaskLauncher
   qcCheckerLauncher
-  qcSpy
   qcInfoService
   qcInfoServiceDump
   qcRunBasic
   qcRunReadout
   runMergerTest
   qcRunReadoutForDataDump
-  alfaTestReceiver
-  qcConsumer
   repositoryBenchmark
 )
 
