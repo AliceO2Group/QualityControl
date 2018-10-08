@@ -12,7 +12,6 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
-#include <DataSampling/DataBlockProducer.h>
 #include <TH1.h>
 
 using namespace std;
@@ -35,8 +34,8 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   Activity activity;
   task.startOfActivity(activity);
   task.startOfCycle();
-  auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
-  DataSetReference dataSet = producer.getDataSet();
+//  auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
+//  DataSetReference dataSet = producer.getDataSet();
 //  task.monitorDataBlock(dataSet);// TODO
 
   TH1F *histo = (TH1F *) manager->getMonitorObject("payloadSize")->getObject();
