@@ -10,7 +10,7 @@
 //
 
 ///
-/// \author bvonhall
+/// \author Barthelemy von Haller
 /// \file InformationServiceDump.cxx
 ///
 

@@ -2,22 +2,19 @@
 
 set(
   SRCS
-  src/TaskInterface.cxx
   src/MonitorObject.cxx
   src/Quality.cxx
   src/ObjectsManager.cxx
   src/Checker.cxx
-  src/CheckerDataProcessor.cxx
   src/CheckerDataProcessorFactory.cxx
   src/CheckInterface.cxx
   src/DatabaseFactory.cxx
-  src/ClientDataProvider.cxx
   src/CcdbDatabase.cxx
   src/InformationService.cxx
   src/InformationServiceDump.cxx
   src/TaskDataProcessor.cxx
   src/TaskDataProcessorFactory.cxx
-  src/TaskInterfaceDPL.cxx
+  src/TaskInterface.cxx
   src/RepositoryBenchmark.cxx
   src/HistoMerger.cxx
 )
@@ -27,7 +24,7 @@ set(
   include/QualityControl/MonitorObject.h
   include/QualityControl/Quality.h
   include/QualityControl/CheckInterface.h
-  include/QualityControl/CheckerDataProcessor.h
+  include/QualityControl/Checker.h
   include/QualityControl/CheckerDataProcessorFactory.h
   include/QualityControl/DatabaseInterface.h
   include/QualityControl/CcdbDatabase.h
@@ -185,7 +182,7 @@ if(GLFW_FOUND)
     src/imgui/imgui_widgets.cpp
     src/imgui/imgui_demo.cpp
     src/imgui/BaseGui.cxx
-    src/DataDump.cxx
+    src/DataDumpGui.cxx
     src/runDataDump.cxx
   )
 

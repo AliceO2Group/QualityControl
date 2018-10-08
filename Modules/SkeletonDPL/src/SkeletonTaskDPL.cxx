@@ -17,7 +17,7 @@ namespace quality_control_modules {
 namespace skeleton_dpl {
 
 SkeletonTaskDPL::SkeletonTaskDPL()
-  : TaskInterfaceDPL(), mHistogram(nullptr)
+  : TaskInterface(), mHistogram(nullptr)
 {
   mHistogram = nullptr;
 }

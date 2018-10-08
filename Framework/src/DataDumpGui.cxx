@@ -10,11 +10,11 @@
 //
 
 ///
-/// \author bvonhall
-/// \file DataDump.cxx
+/// \author Barthelemy von Haller
+/// \file DataDumpGui.cxx
 ///
 
-#include "QualityControl/DataDump.h"
+#include "QualityControl/DataDumpGui.h"
 
 #include <iomanip>
 #include "imgui/imgui.h"
@@ -28,8 +28,8 @@ namespace o2 {
 namespace quality_control {
 namespace core {
 
-GUIState DataDump::guiState;
-void* DataDump::window = nullptr;
+GUIState DataDumpGui::guiState;
+void* DataDumpGui::window = nullptr;
 
 vector<string> getBinRepresentation(unsigned char* data, size_t size)
 {
@@ -61,7 +61,7 @@ vector<string> getHexRepresentation(unsigned char* data, size_t size)
   return result;
 }
 
-void DataDump::InitTask()
+void DataDumpGui::InitTask()
 {
   window = initGUI("O2 Data Inspector");
 }
@@ -70,35 +70,35 @@ void updateGuiState()
 {
   if (ImGui::Button("Next")) {
     // update view with latest data if any available
-    if (DataDump::guiState.newDataAvailable) {
+    if (DataDumpGui::guiState.newDataAvailable) {
       // do stuff : delete old data if any, move pointer next -> current
-      if (DataDump::guiState.current_payload.data != nullptr) {
-        delete DataDump::guiState.current_payload.data;
-        DataDump::guiState.current_payload.data = nullptr;
-        DataDump::guiState.current_payload.size = 0;
-        DataDump::guiState.current_header.data = nullptr;
-        DataDump::guiState.current_header.size = 0;
+      if (DataDumpGui::guiState.current_payload.data != nullptr) {
+        delete DataDumpGui::guiState.current_payload.data;
+        DataDumpGui::guiState.current_payload.data = nullptr;
+        DataDumpGui::guiState.current_payload.size = 0;
+        DataDumpGui::guiState.current_header.data = nullptr;
+        DataDumpGui::guiState.current_header.size = 0;
       }
-      DataDump::guiState.current_payload.data = DataDump::guiState.next_payload.data;
-      DataDump::guiState.current_payload.size = DataDump::guiState.next_payload.size;
-      DataDump::guiState.current_header.data = DataDump::guiState.next_header.data;
-      DataDump::guiState.current_header.size = DataDump::guiState.next_header.size;
-      DataDump::guiState.actionMessage = "";
+      DataDumpGui::guiState.current_payload.data = DataDumpGui::guiState.next_payload.data;
+      DataDumpGui::guiState.current_payload.size = DataDumpGui::guiState.next_payload.size;
+      DataDumpGui::guiState.current_header.data = DataDumpGui::guiState.next_header.data;
+      DataDumpGui::guiState.current_header.size = DataDumpGui::guiState.next_header.size;
+      DataDumpGui::guiState.actionMessage = "";
     } else {
-      DataDump::guiState.actionMessage = "";
+      DataDumpGui::guiState.actionMessage = "";
     }
   } else {
-    if (DataDump::guiState.newDataAvailable) {
-      DataDump::guiState.dataAvailableMessage = "";
+    if (DataDumpGui::guiState.newDataAvailable) {
+      DataDumpGui::guiState.dataAvailableMessage = "";
     } else {
-      DataDump::guiState.dataAvailableMessage = "No data available.";
+      DataDumpGui::guiState.dataAvailableMessage = "No data available.";
     }
   }
-  if (DataDump::guiState.dataAvailableMessage.length() > 0) {
-    ImGui::TextUnformatted(DataDump::guiState.dataAvailableMessage.c_str());
+  if (DataDumpGui::guiState.dataAvailableMessage.length() > 0) {
+    ImGui::TextUnformatted(DataDumpGui::guiState.dataAvailableMessage.c_str());
   }
-  if (DataDump::guiState.actionMessage.length() > 0) {
-    ImGui::TextUnformatted(DataDump::guiState.actionMessage.c_str());
+  if (DataDumpGui::guiState.actionMessage.length() > 0) {
+    ImGui::TextUnformatted(DataDumpGui::guiState.actionMessage.c_str());
   }
 }
 
@@ -125,7 +125,7 @@ void resizeColumns(int representation, int old_representation)
 
 void updatePayloadGui()
 {
-  if (DataDump::guiState.current_payload.data == nullptr) {
+  if (DataDumpGui::guiState.current_payload.data == nullptr) {
     ImGui::Text("No data loaded yet, click Next.");
   } else { // all the stuff below should go to a method
 
@@ -158,8 +158,8 @@ void updatePayloadGui()
     // print the hex values in the columns and rows of the table
     vector<string> formattedData =
       (representation == 0)
-        ? getHexRepresentation(DataDump::guiState.current_payload.data, DataDump::guiState.current_payload.size)
-        : getBinRepresentation(DataDump::guiState.current_payload.data, DataDump::guiState.current_payload.size);
+        ? getHexRepresentation(DataDumpGui::guiState.current_payload.data, DataDumpGui::guiState.current_payload.size)
+        : getBinRepresentation(DataDumpGui::guiState.current_payload.data, DataDumpGui::guiState.current_payload.size);
     int line = 0;
     static int selected = -1;
     for (unsigned long pos = 0; pos < formattedData.size();) {
@@ -192,10 +192,10 @@ void updatePayloadGui()
 
 void updateHeaderGui()
 {
-  if (DataDump::guiState.current_header.data == nullptr) {
+  if (DataDumpGui::guiState.current_header.data == nullptr) {
     ImGui::Text("No data loaded yet, click Next.");
   } else {
-    auto* header = header::get<header::DataHeader*>(DataDump::guiState.current_header.data);
+    auto* header = header::get<header::DataHeader*>(DataDumpGui::guiState.current_header.data);
     if(header == nullptr) {
       ImGui::Text("No header available in this data.");
       return;
@@ -226,7 +226,7 @@ void redrawGui()
     ImGui::SetNextWindowSize(ImVec2(1100,700));
   }
 
-  ImGui::Begin("DataDump", nullptr, ImGuiWindowFlags_NoTitleBar);
+  ImGui::Begin("DataDumpGui", nullptr, ImGuiWindowFlags_NoTitleBar);
   if (ImGui::CollapsingHeader("Actions", ImGuiTreeNodeFlags_DefaultOpen)) {
     updateGuiState();
   }
@@ -245,7 +245,7 @@ void redrawGui()
   firstDraw = false;
 }
 
-bool DataDump::ConditionalRun()
+bool DataDumpGui::ConditionalRun()
 {
   unique_ptr<FairMQMessage> msg(fTransportFactory->CreateMessage());
 
@@ -258,20 +258,20 @@ bool DataDump::ConditionalRun()
   return pollGUI(window, redrawGui);
 }
 
-bool DataDump::handleParts(FairMQParts& parts)
+bool DataDumpGui::handleParts(FairMQParts& parts)
 {
   if (parts.Size() != 2) {
     cout << "number of parts must be 2" << endl;
     return false;
   }
 
-  DataDump::guiState.newDataAvailable = true;
-  assignDataToChunk(parts.At(0)->GetData(), parts.At(0)->GetSize(), DataDump::guiState.next_header);
-  assignDataToChunk(parts.At(1)->GetData(), parts.At(1)->GetSize(), DataDump::guiState.next_payload);
+  DataDumpGui::guiState.newDataAvailable = true;
+  assignDataToChunk(parts.At(0)->GetData(), parts.At(0)->GetSize(), DataDumpGui::guiState.next_header);
+  assignDataToChunk(parts.At(1)->GetData(), parts.At(1)->GetSize(), DataDumpGui::guiState.next_payload);
   return true;
 }
 
-void DataDump::assignDataToChunk(void* data, size_t size, Chunk& chunk)
+void DataDumpGui::assignDataToChunk(void* data, size_t size, Chunk& chunk)
 {
   auto* copy = new unsigned char[size];
   memcpy(copy, data, size);

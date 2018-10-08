@@ -27,13 +27,11 @@ ExampleTask::ExampleTask()
 ExampleTask::~ExampleTask()
 {
   for (auto &mHisto : mHistos) {
-    if (mHisto) {
-      delete mHisto;
-    }
+    delete mHisto;
   }
 }
 
-void ExampleTask::initialize()
+void ExampleTask::initialize(o2::framework::InitContext& ctx)
 {
   QcInfoLogger::GetInstance() << "initialize ExampleTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -76,9 +74,10 @@ void ExampleTask::startOfCycle()
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void ExampleTask::monitorDataBlock(DataSetReference dataSet)
+void ExampleTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  mHistos[0]->Fill(dataSet->at(0)->getData()->header.dataSize);
+  const auto* header = o2::header::get<header::DataHeader*>(ctx.inputs().getByPos(0).header); // header of first input
+  mHistos[0]->Fill(header->payloadSize);
   for (auto &mHisto : mHistos) {
     if (mHisto) {
       mHisto->FillRandom("gaus", 1);
