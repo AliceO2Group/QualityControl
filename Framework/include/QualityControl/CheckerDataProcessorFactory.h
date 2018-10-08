@@ -14,8 +14,8 @@ namespace checker {
 /// \brief Factory in charge of creating DataProcessorSpec of QC Checker
 class CheckerDataProcessorFactory {
 public:
-  CheckerDataProcessorFactory();
-  virtual ~CheckerDataProcessorFactory();
+  CheckerDataProcessorFactory() = default;
+  virtual ~CheckerDataProcessorFactory() = default;
 
   framework::DataProcessorSpec create(std::string checkerName, std::string taskName, std::string configurationSource);
 };

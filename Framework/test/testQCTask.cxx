@@ -15,10 +15,18 @@
 #include <iostream>
 #include <boost/test/output_test_stream.hpp>
 
+//#include "Framework/DataRefUtils.h"
+//#include "Framework/AlgorithmSpec.h"
+//#include "Framework/ServiceRegistry.h"
+//#include "Framework/runDataProcessing.h"
+//#include <Monitoring/Monitoring.h>
+//#include "FairMQLogger.h"
+
 using boost::test_tools::output_test_stream;
 
 using namespace o2::quality_control;
 using namespace std;
+using namespace o2::framework;
 
 namespace o2 {
 namespace quality_control {
@@ -40,7 +48,7 @@ class TestTask : public TaskInterface
     }
 
     // Definition of the methods for the template method pattern
-    void initialize() override
+    void initialize(o2::framework::InitContext& ctx) override
     {
       cout << "initialize" << endl;
       test = 1;
@@ -57,7 +65,7 @@ class TestTask : public TaskInterface
       cout << "startOfCycle" << endl;
     }
 
-    virtual void monitorDataBlock(DataBlock &block)
+    virtual void monitorData(o2::framework::ProcessingContext& ctx)
     {
       cout << "monitorData" << endl;
     }
@@ -84,15 +92,23 @@ class TestTask : public TaskInterface
 } /* namespace quality_control */
 } /* namespace o2 */
 
-BOOST_AUTO_TEST_CASE(TestInstantiate)
-{
-  TaskConfig config;
+//BOOST_AUTO_TEST_CASE(TestInstantiate)
+//{
+////  o2::framework::InitContext;
+//  TaskConfig taskConfig;
+//  ObjectsManager objectsManager(taskConfig);
 //  Test::TestTask tt(&objectsManager);
 //  BOOST_CHECK_EQUAL(tt.test, 0);
-//  tt.initialize();
+//
+//  // TODO is there a way to test a DPL task ??
+//  std::unique_ptr<ParamRetriever> retriever;
+//  ConfigParamRegistry options(move(retriever));
+//  ServiceRegistry services;
+//  InitContext ctx(options, services);
+//  tt.initialize(ctx); // tt is the TestTask
 //  BOOST_CHECK_EQUAL(tt.test, 1);
 //  Activity act;
 //  tt.startOfActivity(act);
 //  BOOST_CHECK_EQUAL(tt.test, 2);
-}
-
+//}
+//}

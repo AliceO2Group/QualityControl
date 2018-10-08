@@ -43,7 +43,7 @@ DaqTask::~DaqTask()
   delete mSubPayloadSize;
 }
 
-void DaqTask::initialize()
+void DaqTask::initialize(o2::framework::InitContext& ctx)
 {
   QcInfoLogger::GetInstance() << "initialize DaqTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -100,33 +100,34 @@ void DaqTask::startOfCycle()
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void DaqTask::monitorDataBlock(DataSetReference dataSet)
+void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  if (dataSet->empty()) {
-    cout << "Empty vector!" << endl;
-    return;
-  }
+  QcInfoLogger::GetInstance() << "initialize SkeletonTaskDPL" << AliceO2::InfoLogger::InfoLogger::endm;
 
+
+//what does it mean to have several inputs ? is it that we defined several in the config file ?
+// If I am connected to the readout can I ever receive several inputs ?
+// TODO maybe we need a special daq task for the readout because we have to look into the weird data structure.
+
+  // in a loop
   uint32_t totalPayloadSize = 0;
-  for (const auto &b : *dataSet) {
-    uint32_t size = b->getData()->header.dataSize / 8;
+  for (auto && input : ctx.inputs()) {
+    const auto *header = o2::header::get<header::DataHeader *>(input.header);
+    uint32_t size = header->payloadSize;
     mSubPayloadSize->Fill(size);
     totalPayloadSize += size;
   }
 
   mPayloadSize->Fill(totalPayloadSize);
-  mNumberSubblocks->Fill(dataSet->size());
+  mNumberSubblocks->Fill(ctx.inputs().size());
 
-  if (dataSet->at(0) == nullptr) {
-    cout << "Container pointer invalid" << endl;
-    return;
-  }
-  TDatime now;
-  if ((now.Get() - mTimeLastRecord) >= 1) {
-    mIds->SetPoint(mNPoints, now.Convert(), dataSet->at(0)->getData()->header.id);
-    mNPoints++;
-    mTimeLastRecord = now.Get();
-  }
+  // TODO if data has an id (like event id), we should plot it
+//  TDatime now;
+//  if ((now.Get() - mTimeLastRecord) >= 1) {
+//    mIds->SetPoint(mNPoints, now.Convert(), ctx.inputs().begin());
+//    mNPoints++;
+//    mTimeLastRecord = now.Get();
+//  }
 }
 
 void DaqTask::endOfCycle()
@@ -134,7 +135,7 @@ void DaqTask::endOfCycle()
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void DaqTask::endOfActivity(Activity &activity)
+ void DaqTask::endOfActivity(Activity &activity)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }

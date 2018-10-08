@@ -27,7 +27,8 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   TaskConfig config;
   auto manager = make_shared<ObjectsManager>(config);
   task.setObjectsManager(manager);
-  task.initialize();
+//  o2::framework::InitContext ctx;
+//  task.initialize(ctx); // TODO
 
   BOOST_CHECK(manager->getMonitorObject("payloadSize")->getObject() != nullptr);
 
@@ -36,7 +37,7 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   task.startOfCycle();
   auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
   DataSetReference dataSet = producer.getDataSet();
-  task.monitorDataBlock(dataSet);
+//  task.monitorDataBlock(dataSet);// TODO
 
   TH1F *histo = (TH1F *) manager->getMonitorObject("payloadSize")->getObject();
   BOOST_CHECK(histo->GetEntries() == 1);

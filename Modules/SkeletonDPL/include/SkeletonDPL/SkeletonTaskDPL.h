@@ -7,7 +7,7 @@
 #ifndef QC_MODULE_SKELETONDPL_SKELETONTASKDPL_H
 #define QC_MODULE_SKELETONDPL_SKELETONTASKDPL_H
 
-#include "QualityControl/TaskInterfaceDPL.h"
+#include "QualityControl/TaskInterface.h"
 
 class TH1F;
 
@@ -21,7 +21,7 @@ namespace skeleton_dpl {
 /// It is final because there is no reason to derive from it. Just remove it if needed.
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
-class SkeletonTaskDPL /*final*/: public TaskInterfaceDPL // todo add back the "final" when doxygen is fixed
+class SkeletonTaskDPL /*final*/: public TaskInterface // todo add back the "final" when doxygen is fixed
 {
   public:
     /// \brief Constructor
