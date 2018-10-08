@@ -109,7 +109,6 @@ target_link_libraries(
   PUBLIC
     Boost::boost
     FairLogger::FairLogger
-    DataSampling::DataSampling
     FairMQ::FairMQ
     ROOT::Hist
     AliceO2::Common

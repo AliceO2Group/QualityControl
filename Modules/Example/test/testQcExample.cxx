@@ -14,7 +14,6 @@
 #include <boost/test/unit_test.hpp>
 
 #include <TH1.h>
-#include <DataSampling/DataBlockProducer.h>
 
 using namespace std;
 
@@ -36,8 +35,8 @@ BOOST_AUTO_TEST_CASE(insantiate_task)
   Activity activity;
   task.startOfActivity(activity);
   task.startOfCycle();
-  auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
-  DataSetReference dataSet = producer.getDataSet();
+//  auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
+//  DataSetReference dataSet = producer.getDataSet();
 //  task.monitorDataBlock(dataSet);// TODO
 
   BOOST_CHECK(task.getHisto1()->GetEntries() > 0);
