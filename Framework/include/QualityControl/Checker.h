@@ -4,8 +4,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_CHECKER_CHECKERDATAPROCESSOR_H
-#define QC_CHECKER_CHECKERDATAPROCESSOR_H
+#ifndef QC_CHECKER_CHECKER_H
+#define QC_CHECKER_CHECKER_H
 
 // std & boost
 #include <chrono>
@@ -128,4 +128,4 @@ class Checker : public framework::Task
 } /* namespace quality_control */
 } /* namespace o2 */
 
-#endif // QC_CHECKER_CHECKERDATAPROCESSOR_H
+#endif // QC_CHECKER_CHECKER_H
