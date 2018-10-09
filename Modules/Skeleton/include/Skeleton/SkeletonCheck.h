@@ -1,10 +1,10 @@
 ///
-/// \file   SkeletonCheckDPL.h
+/// \file   SkeletonCheck.h
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_MODULE_SKELETONDPL_SKELETONCHECKDPL_H
-#define QC_MODULE_SKELETONDPL_SKELETONCHECKDPL_H
+#ifndef QC_MODULE_SKELETON_SKELETONCHECK_H
+#define QC_MODULE_SKELETON_SKELETONCHECK_H
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -12,18 +12,18 @@
 
 namespace o2 {
 namespace quality_control_modules {
-namespace skeleton_dpl {
+namespace skeleton {
 
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Barthelemy von Haller
-class SkeletonCheckDPL : public o2::quality_control::checker::CheckInterface
+class SkeletonCheck : public o2::quality_control::checker::CheckInterface
 {
   public:
     /// Default constructor
-    SkeletonCheckDPL();
+    SkeletonCheck();
     /// Destructor
-    ~SkeletonCheckDPL() override;
+    ~SkeletonCheck() override;
 
     // Override interface
     void configure(std::string name) override;
@@ -31,11 +31,11 @@ class SkeletonCheckDPL : public o2::quality_control::checker::CheckInterface
     void beautify(MonitorObject *mo, Quality checkResult = Quality::Null) override;
     std::string getAcceptedType() override;
 
-  ClassDefOverride(SkeletonCheckDPL, 1);
+  ClassDefOverride(SkeletonCheck, 1);
 };
 
-} // namespace skeleton_dpl
+} // namespace skeleton
 } // namespace quality_control_modules
 } // namespace o2
 
-#endif // QC_MODULE_SKELETONDPL_SKELETONCHECKDPL_H
+#endif // QC_MODULE_SKELETON_SKELETONCHECK_H

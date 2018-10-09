@@ -1,10 +1,10 @@
 ///
-/// \file   testQcSkeletonDPL.cxx
+/// \file   testQcSkeleton.cxx
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
 ///
 
-#include "SkeletonDPL/SkeletonTaskDPL.h"
+#include "Skeleton/SkeletonTask.h"
 #include "QualityControl/TaskFactory.h"
 #include "Framework/InitContext.h"
 #include <TSystem.h>
@@ -21,11 +21,11 @@ using namespace std;
 
 namespace o2 {
 namespace quality_control_modules {
-namespace skeleton_dpl {
+namespace skeleton {
 
 BOOST_AUTO_TEST_CASE(instantiate_task)
 {
-  SkeletonTaskDPL task;
+  SkeletonTask task;
   TaskConfig config;
   auto manager = make_shared<ObjectsManager>(config);
   task.setObjectsManager(manager);

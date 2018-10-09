@@ -1,17 +1,17 @@
-set(MODULE_NAME "QcSkeletonDPL")
+set(MODULE_NAME "QcSkeleton")
 
 # ---- Files ----
 
 set(
   SRCS
-  src/SkeletonTaskDPL.cxx
-  src/SkeletonCheckDPL.cxx
+  src/SkeletonTask.cxx
+  src/SkeletonCheck.cxx
 )
 
 set(
   HEADERS
-  include/SkeletonDPL/SkeletonTaskDPL.h
-  include/SkeletonDPL/SkeletonCheckDPL.h
+  include/Skeleton/SkeletonTask.h
+  include/Skeleton/SkeletonCheck.h
 )
 
 # ---- Library ----
@@ -35,11 +35,11 @@ install(
 
 # ---- ROOT dictionary ----
 
-generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/SkeletonDPL/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
+generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/Skeleton/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
 
 # ---- Tests ----
 
-set(TEST_SRCS test/testQcSkeletonDPL.cxx)
+set(TEST_SRCS test/testQcSkeleton.cxx)
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

@@ -1,5 +1,5 @@
 ///
-/// \file   SkeletonTaskDPL.cxx
+/// \file   SkeletonTask.cxx
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
 ///
@@ -7,48 +7,48 @@
 #include <TH1.h>
 #include <TCanvas.h>
 
-#include "SkeletonDPL/SkeletonTaskDPL.h"
+#include "Skeleton/SkeletonTask.h"
 #include "QualityControl/QcInfoLogger.h"
 
 using namespace std;
 
 namespace o2 {
 namespace quality_control_modules {
-namespace skeleton_dpl {
+namespace skeleton {
 
-SkeletonTaskDPL::SkeletonTaskDPL()
+SkeletonTask::SkeletonTask()
   : TaskInterface(), mHistogram(nullptr)
 {
   mHistogram = nullptr;
 }
 
-SkeletonTaskDPL::~SkeletonTaskDPL()
+SkeletonTask::~SkeletonTask()
 {
 }
 
-void SkeletonTaskDPL::initialize(o2::framework::InitContext& ctx)
+void SkeletonTask::initialize(o2::framework::InitContext& ctx)
 {
-  QcInfoLogger::GetInstance() << "initialize SkeletonTaskDPL" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "initialize SkeletonTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
   getObjectsManager()->addCheck(mHistogram, "checkFromSkeleton",
-                                "o2::quality_control_modules::skeleton_dpl::SkeletonCheckDPL",
-                                "QcSkeletonDpl");
+                                "o2::quality_control_modules::skeleton::SkeletonCheck",
+                                "QcSkeleton");
 }
 
-void SkeletonTaskDPL::startOfActivity(Activity &activity)
+void SkeletonTask::startOfActivity(Activity &activity)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   mHistogram->Reset();
 }
 
-void SkeletonTaskDPL::startOfCycle()
+void SkeletonTask::startOfCycle()
 {
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void SkeletonTaskDPL::monitorData(o2::framework::ProcessingContext& ctx)
+void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // todo: update API examples or refer to DPL README.md
 
@@ -87,17 +87,17 @@ void SkeletonTaskDPL::monitorData(o2::framework::ProcessingContext& ctx)
   // LOG(INFO) << "String is " << s->GetString().Data();
 }
 
-void SkeletonTaskDPL::endOfCycle()
+void SkeletonTask::endOfCycle()
 {
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void SkeletonTaskDPL::endOfActivity(Activity &activity)
+void SkeletonTask::endOfActivity(Activity &activity)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void SkeletonTaskDPL::reset()
+void SkeletonTask::reset()
 {
   // clean all the monitor objects here
 
@@ -105,6 +105,6 @@ void SkeletonTaskDPL::reset()
   mHistogram->Reset();
 }
 
-} // namespace skeleton_dpl
+} // namespace skeleton
 } // namespace quality_control_modules
 } // namespace o2

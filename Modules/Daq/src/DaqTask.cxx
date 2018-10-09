@@ -102,7 +102,7 @@ void DaqTask::startOfCycle()
 
 void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  QcInfoLogger::GetInstance() << "initialize SkeletonTaskDPL" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "initialize SkeletonTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
 
 //what does it mean to have several inputs ? is it that we defined several in the config file ?

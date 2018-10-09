@@ -1,11 +1,11 @@
 ///
-/// \file   SkeletonTaskDPL.h
+/// \file   SkeletonTask.h
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_MODULE_SKELETONDPL_SKELETONTASKDPL_H
-#define QC_MODULE_SKELETONDPL_SKELETONTASKDPL_H
+#ifndef QC_MODULE_SKELETON_SKELETONTASK_H
+#define QC_MODULE_SKELETON_SKELETONTASK_H
 
 #include "QualityControl/TaskInterface.h"
 
@@ -15,19 +15,19 @@ using namespace o2::quality_control::core;
 
 namespace o2 {
 namespace quality_control_modules {
-namespace skeleton_dpl {
+namespace skeleton {
 
 /// \brief Example Quality Control DPL Task
 /// It is final because there is no reason to derive from it. Just remove it if needed.
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
-class SkeletonTaskDPL /*final*/: public TaskInterface // todo add back the "final" when doxygen is fixed
+class SkeletonTask /*final*/: public TaskInterface // todo add back the "final" when doxygen is fixed
 {
   public:
     /// \brief Constructor
-    SkeletonTaskDPL();
+    SkeletonTask();
     /// Destructor
-    ~SkeletonTaskDPL() override;
+    ~SkeletonTask() override;
 
     // Definition of the methods for the template method pattern
     void initialize(o2::framework::InitContext& ctx) override;
@@ -43,8 +43,8 @@ class SkeletonTaskDPL /*final*/: public TaskInterface // todo add back the "fina
     TH1F *mHistogram;
 };
 
-} // namespace skeleton_dpl
+} // namespace skeleton
 } // namespace quality_control_modules
 } // namespace o2
 
-#endif //QC_MODULE_SKELETONDPL_SKELETONTASKDPL_H
+#endif //QC_MODULE_SKELETON_SKELETONTASK_H

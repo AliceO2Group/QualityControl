@@ -1,9 +1,9 @@
 ///
-/// \file   SkeletonCheckDPL.cxx
+/// \file   SkeletonCheck.cxx
 /// \author Piotr Konopka
 ///
 
-#include "SkeletonDPL/SkeletonCheckDPL.h"
+#include "Skeleton/SkeletonCheck.h"
 
 // ROOT
 #include <TH1.h>
@@ -12,25 +12,25 @@
 
 using namespace std;
 
-ClassImp(o2::quality_control_modules::skeleton_dpl::SkeletonCheckDPL)
+ClassImp(o2::quality_control_modules::skeleton::SkeletonCheck)
 
 namespace o2 {
 namespace quality_control_modules {
-namespace skeleton_dpl {
+namespace skeleton {
 
-SkeletonCheckDPL::SkeletonCheckDPL()
+SkeletonCheck::SkeletonCheck()
 {
 }
 
-SkeletonCheckDPL::~SkeletonCheckDPL()
+SkeletonCheck::~SkeletonCheck()
 {
 }
 
-void SkeletonCheckDPL::configure(std::string)
+void SkeletonCheck::configure(std::string)
 {
 }
 
-Quality SkeletonCheckDPL::check(const MonitorObject *mo)
+Quality SkeletonCheck::check(const MonitorObject *mo)
 {
   Quality result = Quality::Null;
 
@@ -51,12 +51,12 @@ Quality SkeletonCheckDPL::check(const MonitorObject *mo)
   return result;
 }
 
-std::string SkeletonCheckDPL::getAcceptedType()
+std::string SkeletonCheck::getAcceptedType()
 {
   return "TH1";
 }
 
-void SkeletonCheckDPL::beautify(MonitorObject *mo, Quality checkResult)
+void SkeletonCheck::beautify(MonitorObject *mo, Quality checkResult)
 {
   if (mo->getName() == "example") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
@@ -74,7 +74,7 @@ void SkeletonCheckDPL::beautify(MonitorObject *mo, Quality checkResult)
   }
 }
 
-} // namespace skeleton_dpl
+} // namespace skeleton
 } // namespace quality_control_modules
 } // namespace o2
 
