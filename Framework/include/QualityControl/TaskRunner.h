@@ -4,8 +4,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QC_CORE_TASKDATAPROCESSOR_H
-#define QC_CORE_TASKDATAPROCESSOR_H
+#ifndef QC_CORE_TASKRUNNER_H
+#define QC_CORE_TASKRUNNER_H
 
 #include <thread>
 #include <mutex>
@@ -59,10 +59,10 @@ using namespace std::chrono;
 ///
 /// \author Piotr Konopka
 /// \author Barthelemy von Haller
-class TaskDataProcessor {
+class TaskRunner {
  public:
-  TaskDataProcessor(std::string taskName, std::string configurationSource);
-  ~TaskDataProcessor();
+  TaskRunner(std::string taskName, std::string configurationSource);
+  ~TaskRunner();
 
   /// \brief To be invoked during initialization of Data Processor
   void initCallback(InitContext& iCtx);
@@ -118,4 +118,4 @@ class TaskDataProcessor {
 } // namespace quality_control
 } // namespace o2
 
-#endif // QC_CORE_TASKDATAPROCESSOR_H
+#endif // QC_CORE_TASKRUNNER_H

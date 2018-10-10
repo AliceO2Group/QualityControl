@@ -180,7 +180,7 @@ accordingly.
 ...
 
 #include "QualityControl/TaskDataProcessorFactory.h"
-#include "QualityControl/TaskDataProcessor.h"
+#include "QualityControl/TaskRunner.h"
 #include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
 

@@ -12,7 +12,7 @@ set(
   src/CcdbDatabase.cxx
   src/InformationService.cxx
   src/InformationServiceDump.cxx
-  src/TaskDataProcessor.cxx
+  src/TaskRunner.cxx
   src/TaskDataProcessorFactory.cxx
   src/TaskInterface.cxx
   src/RepositoryBenchmark.cxx
@@ -28,7 +28,7 @@ set(
   include/QualityControl/CheckerDataProcessorFactory.h
   include/QualityControl/DatabaseInterface.h
   include/QualityControl/CcdbDatabase.h
-  include/QualityControl/TaskDataProcessor.h
+  include/QualityControl/TaskRunner.h
   include/QualityControl/TaskDataProcessorFactory.h
   include/QualityControl/HistoMerger.h
 )

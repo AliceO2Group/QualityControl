@@ -14,7 +14,7 @@
 ///
 
 #include "QualityControl/TaskDataProcessorFactory.h"
-#include "QualityControl/TaskDataProcessor.h"
+#include "QualityControl/TaskRunner.h"
 
 namespace o2 {
 namespace quality_control {
@@ -32,7 +32,7 @@ TaskDataProcessorFactory::~TaskDataProcessorFactory()
 
 DataProcessorSpec TaskDataProcessorFactory::create(std::string taskName, std::string configurationSource)
 {
-  auto qcTask = std::make_shared<TaskDataProcessor>(taskName, configurationSource);
+  auto qcTask = std::make_shared<TaskRunner>(taskName, configurationSource);
 
   DataProcessorSpec newTask{
     taskName,

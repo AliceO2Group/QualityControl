@@ -24,7 +24,7 @@
 #include "Framework/RawDeviceService.h"
 #include "Monitoring/MonitoringFactory.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/TaskDataProcessor.h"
+#include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskFactory.h"
 
 namespace o2 {
@@ -35,7 +35,7 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace std::chrono;
 
-TaskDataProcessor::TaskDataProcessor(std::string taskName, std::string configurationSource)
+TaskRunner::TaskRunner(std::string taskName, std::string configurationSource)
   : mTaskName(taskName),
     mNumberBlocks(0),
     mTotalNumberObjectsPublished(0),
@@ -60,12 +60,12 @@ TaskDataProcessor::TaskDataProcessor(std::string taskName, std::string configura
   mTask = f.create<TaskInterface>(mTaskConfig, mObjectsManager); // TODO could we use unique_ptr ?
 }
 
-TaskDataProcessor::~TaskDataProcessor()
+TaskRunner::~TaskRunner()
 {
   endOfActivity();
 }
 
-void TaskDataProcessor::initCallback(InitContext& iCtx)
+void TaskRunner::initCallback(InitContext& iCtx)
 {
   QcInfoLogger::GetInstance() << "initialize TaskDevicee" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -84,11 +84,11 @@ void TaskDataProcessor::initCallback(InitContext& iCtx)
 
   // start a timer for finishing cycle and publishing the results
 //  mCycleTimer = std::make_shared<boost::asio::deadline_timer>(io, boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds));
-//  mCycleTimer->async_wait(boost::bind(&TaskDataProcessor::finishCycle, this));
+//  mCycleTimer->async_wait(boost::bind(&TaskRunner::finishCycle, this));
 //  ioThread = std::make_shared<std::thread>([&] { io.run(); });
 }
 
-void TaskDataProcessor::processCallback(ProcessingContext& pCtx)
+void TaskRunner::processCallback(ProcessingContext& pCtx)
 {
   std::lock_guard<std::recursive_mutex> lock(mTaskMutex);
 
@@ -126,25 +126,25 @@ void TaskDataProcessor::processCallback(ProcessingContext& pCtx)
   }
 }
 
-void TaskDataProcessor::timerCallback(ProcessingContext& pCtx)
+void TaskRunner::timerCallback(ProcessingContext& pCtx)
 {
   finishCycle(pCtx.outputs());
 }
 
-void TaskDataProcessor::setResetAfterPublish(bool resetAfterPublish)
+void TaskRunner::setResetAfterPublish(bool resetAfterPublish)
 {
   mResetAfterPublish = resetAfterPublish;
 }
 
 
-o2::header::DataDescription TaskDataProcessor::taskDataDescription(const std::string taskName)
+o2::header::DataDescription TaskRunner::taskDataDescription(const std::string taskName)
 {
   o2::header::DataDescription description;
   description.runtimeInit(std::string(taskName.substr(0,o2::header::DataDescription::size-3) + "-mo").c_str());
   return description;
 }
 
-void TaskDataProcessor::populateConfig(std::string taskName)
+void TaskRunner::populateConfig(std::string taskName)
 {
   try {
     std::string prefix = std::string("qc/tasks_config/");
@@ -192,14 +192,14 @@ void TaskDataProcessor::populateConfig(std::string taskName)
   }
 }
 
-void TaskDataProcessor::startOfActivity()
+void TaskRunner::startOfActivity()
 {
   mTimerTotalDurationActivity.reset();
   Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(), mConfigFile->get<int>("qc/config/Activity/type").value());
   mTask->startOfActivity(activity);
 }
 
-void TaskDataProcessor::endOfActivity()
+void TaskRunner::endOfActivity()
 {
   Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(), mConfigFile->get<int>("qc/config/Activity/type").value());
   mTask->endOfActivity(activity);
@@ -210,7 +210,7 @@ void TaskDataProcessor::endOfActivity()
   mCollector->send({ba::mean(mPMems), "QC_task_Mean_pmem_whole_run"});
 }
 
-void TaskDataProcessor::finishCycle(DataAllocator& outputs)
+void TaskRunner::finishCycle(DataAllocator& outputs)
 {
   {
     std::lock_guard<std::recursive_mutex> lock(mTaskMutex);
@@ -247,11 +247,11 @@ void TaskDataProcessor::finishCycle(DataAllocator& outputs)
     mCycleOn = false;
   }
   // restart timer
-//  mCycleTimer->async_wait(boost::bind(&TaskDataProcessor::finishCycle, this));
+//  mCycleTimer->async_wait(boost::bind(&TaskRunner::finishCycle, this));
 }
 
 
-unsigned long TaskDataProcessor::publish(DataAllocator& outputs)
+unsigned long TaskRunner::publish(DataAllocator& outputs)
 {
   unsigned int sentMessages = 0;
 
@@ -274,7 +274,7 @@ unsigned long TaskDataProcessor::publish(DataAllocator& outputs)
   return sentMessages;
 }
 
-void TaskDataProcessor::CustomCleanupTMessage(void* data, void* object) { delete (TMessage*)object; }
+void TaskRunner::CustomCleanupTMessage(void* data, void* object) { delete (TMessage*)object; }
 
 } // namespace core
 } // namespace quality_control

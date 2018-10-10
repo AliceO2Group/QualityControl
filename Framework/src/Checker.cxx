@@ -16,7 +16,7 @@
 #include <Framework/DataRefUtils.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
-#include "QualityControl/TaskDataProcessor.h"
+#include "QualityControl/TaskRunner.h"
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -37,7 +37,7 @@ Checker::Checker(std::string checkerName, std::string taskName,
                                            std::string configurationSource)
   : mCheckerName(checkerName),
     mConfigurationSource(configurationSource),
-    mInputSpec{ "mo", "QC", TaskDataProcessor::taskDataDescription(taskName), 0 },
+    mInputSpec{ "mo", "QC", TaskRunner::taskDataDescription(taskName), 0 },
     mOutputSpec{ "QC", Checker::checkerDataDescription(taskName), 0 },
     mLogger(QcInfoLogger::GetInstance()),
     startFirstObject{ system_clock::time_point::min() },

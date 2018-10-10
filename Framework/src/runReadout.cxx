@@ -35,7 +35,7 @@
 #include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
 #include "QualityControl/TaskDataProcessorFactory.h"
-#include "QualityControl/TaskDataProcessor.h"
+#include "QualityControl/TaskRunner.h"
 #include "QualityControl/CheckerDataProcessorFactory.h"
 #include "QualityControl/Checker.h"
 
