@@ -15,7 +15,6 @@
 // O2
 #include <Common/Exceptions.h>
 #include "QualityControl/TaskConfig.h"
-#include "QualityControl/TaskDevice.h"
 #include "QualityControl/QcInfoLogger.h"
 
 namespace o2 {
@@ -33,8 +32,8 @@ class ObjectsManager;
 class TaskFactory
 {
  public:
-  TaskFactory() {};
-  virtual ~TaskFactory() {};
+  TaskFactory() = default;
+  virtual ~TaskFactory() = default;
 
   using FatalException = AliceO2::Common::FatalException;
   using errinfo_details = AliceO2::Common::errinfo_details;

@@ -19,7 +19,7 @@
 #include "TObject2JsonMySql.h"
 #endif
 #include "TObject2JsonCcdb.h"
-#include "external/UriParser.h"
+#include "UriParser.h"
 
 #include <functional>
 

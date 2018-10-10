@@ -11,7 +11,7 @@
 
 ///
 /// \author Barthelemy von Haller
-/// \file DataDump.h
+/// \file DataDumpGui.h
 ///
 
 #ifndef QC_CORE_DATADUMP_H
@@ -59,10 +59,10 @@ struct GUIState {
 /**
  * A GUI to display the header and the payload of events sent by the Data Sampling.
  */
-class DataDump : public FairMQDevice {
+class DataDumpGui : public FairMQDevice {
 public:
-  DataDump() = default;
-  virtual ~DataDump() = default;
+  DataDumpGui() = default;
+  virtual ~DataDumpGui() = default;
 
   static GUIState guiState;
   static void* window;

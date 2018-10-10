@@ -1,10 +1,11 @@
 ///
 /// \file   TaskDataProcessor.h
 /// \author Piotr Konopka
+/// \author Barthelemy von Haller
 ///
 
-#ifndef QC_CORE_TASKDATAPROCESSOR_H
-#define QC_CORE_TASKDATAPROCESSOR_H
+#ifndef QC_CORE_TASKRUNNER_H
+#define QC_CORE_TASKRUNNER_H
 
 #include <thread>
 #include <mutex>
@@ -19,7 +20,7 @@
 #include "Framework/DataProcessorSpec.h"
 #include "Monitoring/MonitoringFactory.h"
 // QC
-#include "QualityControl/TaskInterfaceDPL.h"
+#include "QualityControl/TaskInterface.h"
 #include "QualityControl/TaskConfig.h"
 
 namespace ba = boost::accumulators;
@@ -33,7 +34,6 @@ using namespace std::chrono;
 
 /// \brief A class driving the execution of a QC task inside DPL.
 ///
-/// TaskDataProcessor is a port of TaskDevice class, adapted for usage inside Data Processing Layer.
 /// It is responsible for retrieving details about the task via the Configuration system and the Task (indirectly).
 /// It then steers the execution of the task and provides it with O2 Data Model data, provided by framework.
 /// It finally publishes the MonitorObjects owned and filled by the QC task and managed by the ObjectsManager.
@@ -59,10 +59,10 @@ using namespace std::chrono;
 ///
 /// \author Piotr Konopka
 /// \author Barthelemy von Haller
-class TaskDataProcessor {
+class TaskRunner {
  public:
-  TaskDataProcessor(std::string taskName, std::string configurationSource);
-  ~TaskDataProcessor();
+  TaskRunner(std::string taskName, std::string configurationSource);
+  ~TaskRunner();
 
   /// \brief To be invoked during initialization of Data Processor
   void initCallback(InitContext& iCtx);
@@ -92,7 +92,7 @@ class TaskDataProcessor {
   TaskConfig mTaskConfig;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
-  TaskInterfaceDPL* mTask;
+  TaskInterface* mTask;
   bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::recursive_mutex mTaskMutex; // \todo should be plain mutex, when timer callback is implemented in dpl
@@ -118,4 +118,4 @@ class TaskDataProcessor {
 } // namespace quality_control
 } // namespace o2
 
-#endif // QC_CORE_TASKDATAPROCESSOR_H
+#endif // QC_CORE_TASKRUNNER_H

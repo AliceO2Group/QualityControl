@@ -1,6 +1,6 @@
 ///
 /// \file   SkeletonCheck.h
-/// \author Barthelemy von Haller
+/// \author Piotr Konopka
 ///
 
 #ifndef QC_MODULE_SKELETON_SKELETONCHECK_H

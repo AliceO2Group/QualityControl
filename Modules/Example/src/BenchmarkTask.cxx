@@ -25,7 +25,7 @@ BenchmarkTask::~BenchmarkTask()
 {
 }
 
-void BenchmarkTask::initialize()
+void BenchmarkTask::initialize(o2::framework::InitContext& ctx)
 {
   QcInfoLogger::GetInstance() << "initialize benchmarktask \"" << getName() << "\""
                               << AliceO2::InfoLogger::InfoLogger::endm;
@@ -66,7 +66,7 @@ void BenchmarkTask::startOfCycle()
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void BenchmarkTask::monitorDataBlock(DataSetReference dataSet)
+void BenchmarkTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   std::this_thread::sleep_for(std::chrono::milliseconds(100)/*100ms*/);
 }

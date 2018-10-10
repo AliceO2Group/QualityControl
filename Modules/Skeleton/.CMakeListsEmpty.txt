@@ -1,4 +1,4 @@
-set(MODULE_NAME "QcSkeletonDPL")
+set(MODULE_NAME "QcSkeleton")
 
 # ---- Files ----
 
@@ -29,7 +29,7 @@ install(
 
 # ---- ROOT dictionary ----
 
-generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/SkeletonDPL/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
+generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/Skeleton/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
 
 # ---- Tests ----
 

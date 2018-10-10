@@ -3,11 +3,11 @@ set -e ;# exit on error
 set -u ;# exit when using undeclared variable
 #set -x ;# debugging
 
-DONOR=SkeletonDPL
-DONOR_LC=skeleton_dpl
-DONOR_TASK=SkeletonTaskDPL
+DONOR=Skeleton
+DONOR_LC=skeleton
+DONOR_TASK=SkeletonTask
 DONOR_TASK_INCLUDE_GUARD=QC_MODULE_`echo ${DONOR} | tr a-z A-Z`_`echo ${DONOR_TASK} | tr a-z A-Z`_H
-DONOR_CHECK=SkeletonCheckDPL
+DONOR_CHECK=SkeletonCheck
 DONOR_CHECK_INCLUDE_GUARD=QC_MODULE_`echo ${DONOR} | tr a-z A-Z`_`echo ${DONOR_CHECK} | tr a-z A-Z`_H
 
 OS=`uname`
@@ -92,7 +92,7 @@ function create_task {
     sed -i '/set(SRCS/ a \ \ src/'$2'.cxx' $1/CMakeLists.txt
     # Remove the Check
     sed -i 's|getObjectsManager()->addCheck|/*getObjectsManager()->addCheck|' $1/src/$2.cxx
-    sed -i 's|"QcSkeletonDpl");|"QcSkeletonDpl");*/|' $1/src/$2.cxx
+    sed -i 's|"QcSkeleton");|"QcSkeleton");*/|' $1/src/$2.cxx
   else #Darwin/BSD
     sed -i '' -e '/set(SRCS/ a\
 \ \ src/'$2'.cxx

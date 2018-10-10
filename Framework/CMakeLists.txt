@@ -2,23 +2,19 @@
 
 set(
   SRCS
-  src/TaskInterface.cxx
   src/MonitorObject.cxx
   src/Quality.cxx
   src/ObjectsManager.cxx
   src/Checker.cxx
-  src/CheckerDataProcessor.cxx
   src/CheckerDataProcessorFactory.cxx
   src/CheckInterface.cxx
   src/DatabaseFactory.cxx
-  src/ClientDataProvider.cxx
-  src/TaskDevice.cxx
   src/CcdbDatabase.cxx
   src/InformationService.cxx
   src/InformationServiceDump.cxx
-  src/TaskDataProcessor.cxx
+  src/TaskRunner.cxx
   src/TaskDataProcessorFactory.cxx
-  src/TaskInterfaceDPL.cxx
+  src/TaskInterface.cxx
   src/RepositoryBenchmark.cxx
   src/HistoMerger.cxx
 )
@@ -28,27 +24,27 @@ set(
   include/QualityControl/MonitorObject.h
   include/QualityControl/Quality.h
   include/QualityControl/CheckInterface.h
-  include/QualityControl/CheckerDataProcessor.h
+  include/QualityControl/Checker.h
   include/QualityControl/CheckerDataProcessorFactory.h
   include/QualityControl/DatabaseInterface.h
   include/QualityControl/CcdbDatabase.h
-  include/QualityControl/TaskDataProcessor.h
+  include/QualityControl/TaskRunner.h
   include/QualityControl/TaskDataProcessorFactory.h
   include/QualityControl/HistoMerger.h
 )
 
 set(
   SRCS_TOBJECT2JSON
-  src/TObject2Json.cxx
-  src/TObject2JsonServer.cxx
-  src/TObject2JsonWorker.cxx
-  src/TObject2JsonBackendFactory.cxx
-  src/TObject2JsonCcdb.cxx
+  src/tobject2json/TObject2Json.cxx
+  src/tobject2json/TObject2JsonServer.cxx
+  src/tobject2json/TObject2JsonWorker.cxx
+  src/tobject2json/TObject2JsonBackendFactory.cxx
+  src/tobject2json/TObject2JsonCcdb.cxx
 )
 
 if(MYSQL_FOUND)
   list(APPEND SRCS src/MySqlDatabase.cxx)
-  list(APPEND SRCS_TOBJECT2JSON src/TObject2JsonMySql.cxx)
+  list(APPEND SRCS_TOBJECT2JSON src/tobject2json/TObject2JsonMySql.cxx)
 endif()
 
 # Produce the final Version.h using template Version.h.in and substituting variables. We don't want to polute our source
@@ -140,8 +136,6 @@ target_compile_definitions(QualityControl
 
 set(
   EXE_SRCS
-  src/TaskDevice.cxx
-  src/qcCheckerLauncher.cxx
   src/runInformationService.cxx
   src/runInformationServiceDump.cxx
   src/runBasic.cxx
@@ -153,8 +147,6 @@ set(
 
 set(
   EXE_NAMES
-  qcTaskLauncher
-  qcCheckerLauncher
   qcInfoService
   qcInfoServiceDump
   qcRunBasic
@@ -190,7 +182,7 @@ if(GLFW_FOUND)
     src/imgui/imgui_widgets.cpp
     src/imgui/imgui_demo.cpp
     src/imgui/BaseGui.cxx
-    src/DataDump.cxx
+    src/DataDumpGui.cxx
     src/runDataDump.cxx
   )
 

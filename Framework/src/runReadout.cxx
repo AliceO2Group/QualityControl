@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    runReadoutChainTemplate.cxx
+/// \file    runReadout.cxx
 /// \author  Piotr Konopka
 ///
 /// \brief This is an executable showing QC Task's usage in Data Processing Layer with Readout as external data source.
@@ -35,9 +35,9 @@
 #include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
 #include "QualityControl/TaskDataProcessorFactory.h"
-#include "QualityControl/TaskDataProcessor.h"
+#include "QualityControl/TaskRunner.h"
 #include "QualityControl/CheckerDataProcessorFactory.h"
-#include "QualityControl/CheckerDataProcessor.h"
+#include "QualityControl/Checker.h"
 
 using namespace o2::framework;
 using namespace o2::quality_control::core;
@@ -58,7 +58,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "checked-mo", "QC", CheckerDataProcessor::checkerDataDescription(qcTaskName), 0 }
+      { "checked-mo", "QC", Checker::checkerDataDescription(qcTaskName), 0 }
     },
     Outputs{},
     AlgorithmSpec{

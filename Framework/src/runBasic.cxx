@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file    runBasic.cxx
 /// \author  Piotr Konopka
@@ -33,7 +43,7 @@
 
 #include "QualityControl/TaskDataProcessorFactory.h"
 #include "QualityControl/CheckerDataProcessorFactory.h"
-#include "QualityControl/CheckerDataProcessor.h"
+#include "QualityControl/Checker.h"
 
 using namespace o2::framework;
 using namespace o2::quality_control::core;
@@ -86,7 +96,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "checked-mo", "QC", CheckerDataProcessor::checkerDataDescription(qcTaskName), 0 }
+      { "checked-mo", "QC", Checker::checkerDataDescription(qcTaskName), 0 }
     },
     Outputs{},
     AlgorithmSpec{

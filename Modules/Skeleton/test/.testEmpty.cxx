@@ -13,13 +13,13 @@
 
 namespace o2 {
 namespace quality_control_modules {
-namespace skeleton_dpl {
+namespace skeleton {
 
 BOOST_AUTO_TEST_CASE(instantiate_task)
 {
   BOOST_CHECK(true);
 }
 
-} // namespace skeleton_dpl
+} // namespace skeleton
 } // namespace quality_control_modules
 } // namespace o2
