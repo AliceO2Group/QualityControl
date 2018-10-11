@@ -1,17 +1,5 @@
 set(MODULE_NAME "QcCommon")
 
-# ---- Dependencies ----
-
-find_package(
-  ROOT 6.06.02
-  COMPONENTS
-    RHTTP
-    RMySQL
-    Gui
-    REQUIRED
-)
-find_package(Boost 1.58 COMPONENTS unit_test_framework)
-
 # ---- Files ----
 
 set(SRCS src/NonEmpty.cxx src/MeanIsAbove.cxx)
