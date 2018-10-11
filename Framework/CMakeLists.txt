@@ -42,7 +42,7 @@ set(
   src/tobject2json/TObject2JsonCcdb.cxx
 )
 
-if(MYSQL_FOUND)
+if(ENABLE_MYSQL)
   list(APPEND SRCS src/MySqlDatabase.cxx)
   list(APPEND SRCS_TOBJECT2JSON src/tobject2json/TObject2JsonMySql.cxx)
 endif()
@@ -120,15 +120,15 @@ target_link_libraries(
     Boost::container
   PRIVATE
     Boost::system
-    $<$<BOOL:${MYSQL_FOUND}>:MySQL::MySQL>
-    $<$<BOOL:${MYSQL_FOUND}>:ROOT::RMySQL>
+    $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
+    $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL>
     CURL::CURL
     ROOT::Gui
 )
 
 target_compile_definitions(QualityControl
   PRIVATE
-  $<$<BOOL:${MYSQL_FOUND}>:_WITH_MYSQL>
+  $<$<BOOL:${ENABLE_MYSQL}>:_WITH_MYSQL>
 )
 
 # ---- Executables ----
@@ -166,7 +166,7 @@ endforeach()
 
 # tobject2json
 add_executable(tobject2json ${SRCS_TOBJECT2JSON})
-target_link_libraries(tobject2json PRIVATE QualityControl ZeroMQ::ZeroMQ $<$<BOOL:${MYSQL_FOUND}>:MySQL::MySQL>)
+target_link_libraries(tobject2json PRIVATE QualityControl ZeroMQ::ZeroMQ $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>)
 
 # ---- Gui ----
 

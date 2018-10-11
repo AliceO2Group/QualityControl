@@ -83,7 +83,7 @@ find_package(
 find_package(Git QUIET)
 find_package(Configuration REQUIRED)
 find_package(Monitoring REQUIRED)
-find_package(MySQL REQUIRED)
+find_package(MySQL)
 find_package(Common REQUIRED)
 find_package(InfoLogger REQUIRED)
 find_package(AliceO2 REQUIRED)
@@ -98,13 +98,14 @@ find_package(
   ROOT 6.06.02
   COMPONENTS
     RHTTP
-    RMySQL
     Gui
     REQUIRED
 )
 
-if(NOT MYSQL_FOUND)
-  message(WARNING "MySQL not found, the corresponding classes won't be built.")
+set(ENABLE_MYSQL ON)
+if(NOT (MYSQL_FOUND AND TARGET ROOT::RMySQL))
+  set(ENABLE_MYSQL OFF)
+  message(WARNING "MySQL or ROOT::RMySQL not found, the corresponding classes won't be built.")
 endif()
 
 # ---- Subdirectories ----
