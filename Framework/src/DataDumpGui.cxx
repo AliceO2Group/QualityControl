@@ -104,23 +104,23 @@ void updateGuiState()
 
 void resizeColumns(int representation, int old_representation)
 {
-  static bool firstDrawColumns = true;
-  if(firstDrawColumns || representation != old_representation) {
-    if (representation == 0) {
-      ImGui::SetColumnWidth(0, 40.0f);
-      ImGui::SetColumnWidth(1, 50.0f);
-      ImGui::SetColumnWidth(2, 50.0f);
-      ImGui::SetColumnWidth(3, 50.0f);
-      ImGui::SetColumnWidth(4, 50.0f);
-    } else if(representation == 1) { // binary
-      ImGui::SetColumnWidth(0, 40.0f);
-      ImGui::SetColumnWidth(1, 243.0f);
-      ImGui::SetColumnWidth(2, 243.0f);
-      ImGui::SetColumnWidth(3, 243.0f);
-      ImGui::SetColumnWidth(4, 243.0f);
-    }
+  //  static bool firstDrawColumns = true;
+  //  if(firstDrawColumns || representation != old_representation) {
+  if (representation == 0) {
+    ImGui::SetColumnWidth(0, 40.0f);
+    ImGui::SetColumnWidth(1, 50.0f);
+    ImGui::SetColumnWidth(2, 50.0f);
+    ImGui::SetColumnWidth(3, 50.0f);
+    ImGui::SetColumnWidth(4, 50.0f);
+  } else if (representation == 1) { // binary
+    ImGui::SetColumnWidth(0, 40.0f);
+    ImGui::SetColumnWidth(1, 243.0f);
+    ImGui::SetColumnWidth(2, 243.0f);
+    ImGui::SetColumnWidth(3, 243.0f);
+    ImGui::SetColumnWidth(4, 243.0f);
   }
-  firstDrawColumns = false;
+  //  }
+  //  firstDrawColumns = false;
 }
 
 void updatePayloadGui()
@@ -136,7 +136,7 @@ void updatePayloadGui()
     ImGui::RadioButton("binary", &representation, 1);
 
     // scrollable area
-    ImGui::BeginChild("##ScrollingRegion", ImVec2(0, ImGui::GetFontSize() * 25), false);
+    ImGui::BeginChild("##ScrollingRegion", ImVec2(0, 430), false, ImGuiWindowFlags_HorizontalScrollbar);
     // table
     ImGui::Columns(5, "payload_display", true);
 
@@ -155,11 +155,11 @@ void updatePayloadGui()
     ImGui::NextColumn();
     ImGui::Separator();
 
-    // print the hex values in the columns and rows of the table
+    // print the hex/bin values in the columns and rows of the table
     vector<string> formattedData =
       (representation == 0)
-        ? getHexRepresentation(DataDumpGui::guiState.current_payload.data, DataDumpGui::guiState.current_payload.size)
-        : getBinRepresentation(DataDumpGui::guiState.current_payload.data, DataDumpGui::guiState.current_payload.size);
+      ? getHexRepresentation(DataDumpGui::guiState.current_payload.data, DataDumpGui::guiState.current_payload.size)
+      : getBinRepresentation(DataDumpGui::guiState.current_payload.data, DataDumpGui::guiState.current_payload.size);
     int line = 0;
     static int selected = -1;
     for (unsigned long pos = 0; pos < formattedData.size();) {
@@ -196,15 +196,24 @@ void updateHeaderGui()
     ImGui::Text("No data loaded yet, click Next.");
   } else {
     auto* header = header::get<header::DataHeader*>(DataDumpGui::guiState.current_header.data);
-    if(header == nullptr) {
+    if (header == nullptr) {
       ImGui::Text("No header available in this data.");
       return;
     }
+
+    ImGui::BeginChild(
+      "Static", ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, ImGui::GetTextLineHeightWithSpacing() * 4), false);
     ImGui::Text("sMagicString : %d", o2::header::DataHeader::sMagicString);
     ImGui::Text("sVersion : %d", o2::header::DataHeader::sVersion);
     ImGui::Text("sHeaderType : %s", o2::header::DataHeader::sHeaderType.as<string>().c_str());
     ImGui::Text("sSerializationMethod : %s", o2::header::DataHeader::sSerializationMethod.as<string>().c_str());
+    ImGui::EndChild();
 
+    ImGui::SameLine();
+
+    ImGui::BeginChild("Non-static",
+                      ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, ImGui::GetTextLineHeightWithSpacing() * 7),
+                      false);
     ImGui::Text("Header size : %d", header->headerSize);
     ImGui::Text("Payload size : %ld", header->payloadSize);
     ImGui::Text("Header version : %d", header->headerVersion);
@@ -212,7 +221,7 @@ void updateHeaderGui()
     ImGui::Text("dataDescription : %s", header->dataDescription.str);
     ImGui::Text("dataOrigin : %s", header->dataOrigin.str);
     ImGui::Text("serialization : %s", header->serialization.as<string>().c_str());
-
+    ImGui::EndChild();
     // TODO add the next headers (how to "discover" what headers is there ? )
   }
 }
@@ -221,9 +230,9 @@ void redrawGui()
 {
   static bool firstDraw = true;
 
-  if(firstDraw) {
+  if (firstDraw) {
     ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::SetNextWindowSize(ImVec2(1100,700));
+    ImGui::SetNextWindowSize(ImVec2(1100, 700));
   }
 
   ImGui::Begin("DataDumpGui", nullptr, ImGuiWindowFlags_NoTitleBar);
@@ -240,7 +249,7 @@ void redrawGui()
   }
   ImGui::End();
 
-//  ImGui::ShowTestWindow();
+  //  ImGui::ShowTestWindow();
 
   firstDraw = false;
 }
