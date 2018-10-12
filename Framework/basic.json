@@ -24,8 +24,8 @@
         "taskDefinition": "QcTaskDefinition"
       },
       "QcTaskDefinition": {
-        "className": "o2::quality_control_modules::skeleton_dpl::SkeletonTaskDPL",
-        "moduleName": "QcSkeletonDPL",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
         "outputDataOrigin": "ITS",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
