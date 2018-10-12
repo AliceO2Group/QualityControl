@@ -12,7 +12,7 @@
         "host": "ccdb-test.cern.ch:8080",
         "username": "not_applicable",
         "password": "not_applicable",
-        "name": "not_applicable" 
+        "name": "not_applicable"
       },
       "Activity": {
         "number": "42",
@@ -24,8 +24,8 @@
         "taskDefinition": "daqTaskDefinition"
       },
       "daqTaskDefinition": {
-        "className": "o2::quality_control_modules::skeleton_dpl::SkeletonTaskDPL",
-        "moduleName": "QcSkeletonDpl",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
         "outputDataOrigin": "ITS",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "10",
