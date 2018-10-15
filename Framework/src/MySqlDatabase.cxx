@@ -6,10 +6,10 @@
 // std
 #include <sstream>
 // ROOT
-#include "TMySQLResult.h"
-#include "TMySQLStatement.h"
 #include "TMessage.h"
+#include "TMySQLResult.h"
 #include "TMySQLRow.h"
+#include "TMySQLStatement.h"
 // O2
 #include "Common/Exceptions.h"
 // QC
@@ -20,20 +20,16 @@ using namespace AliceO2::Common;
 using namespace std;
 using namespace o2::quality_control::core;
 
-namespace o2 {
-namespace quality_control {
-namespace repository {
-
-MySqlDatabase::MySqlDatabase()
-  : mServer(nullptr), queueSize(0)
+namespace o2
 {
-  lastStorage.reset();
-}
-
-MySqlDatabase::~MySqlDatabase()
+namespace quality_control
 {
-  disconnect();
-}
+namespace repository
+{
+
+MySqlDatabase::MySqlDatabase() : mServer(nullptr), queueSize(0) { lastStorage.reset(); }
+
+MySqlDatabase::~MySqlDatabase() { disconnect(); }
 
 void MySqlDatabase::connect(std::string host, std::string database, std::string username, std::string password)
 {
@@ -46,7 +42,8 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
   }
   stringstream connectionString;
   connectionString << "mysql://" << host << "/" << database;
-  // Important as the agent can be inactive for more than 8 hours and Mysql will drop idle connections older than 8 hours
+  // Important as the agent can be inactive for more than 8 hours and Mysql will drop idle connections older than 8
+  // hours
   connectionString << "?reconnect=1";
   mServer = new TMySQLServer(connectionString.str().c_str(), username.c_str(), password.c_str());
   if (!mServer || mServer->GetErrorCode()) {
@@ -60,7 +57,7 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
   }
 }
 
-void MySqlDatabase::connect(std::unique_ptr<ConfigurationInterface> &config)
+void MySqlDatabase::connect(std::unique_ptr<ConfigurationInterface>& config)
 {
   this->connect(config->get<string>("qc/config/database/host").value(),
                 config->get<string>("qc/config/database/name").value(),
@@ -72,8 +69,7 @@ void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
 {
   // one object per run
   string query;
-  query += "CREATE TABLE IF NOT EXISTS `data_" + taskName
-           +
+  query += "CREATE TABLE IF NOT EXISTS `data_" + taskName +
            "` (object_name CHAR(64), updatetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, data LONGBLOB, size INT, run INT, "
            "fill INT, PRIMARY KEY(object_name, run)) ENGINE=MyISAM";
   if (!execute(query)) {
@@ -99,7 +95,7 @@ void MySqlDatabase::storeQueue()
   QcInfoLogger::GetInstance() << "Database queue will now be processed (" << queueSize << " objects)"
                               << infologger::endm;
 
-  for (auto &kv : mObjectsQueue) {
+  for (auto& kv : mObjectsQueue) {
     storeForTask(kv.first);
   }
   mObjectsQueue.clear();
@@ -109,7 +105,7 @@ void MySqlDatabase::storeQueue()
 
 void MySqlDatabase::storeForTask(std::string taskName)
 {
-  vector<std::shared_ptr<o2::quality_control::core::MonitorObject> > objects = mObjectsQueue[taskName];
+  vector<std::shared_ptr<o2::quality_control::core::MonitorObject>> objects = mObjectsQueue[taskName];
 
   if (objects.size() == 0) {
     return;
@@ -120,21 +116,21 @@ void MySqlDatabase::storeForTask(std::string taskName)
 
   // build statement string
   string query;
-  query += "REPlACE INTO `data_" + taskName
-           + "` (object_name, data, size, run, fill) values (?,?,octet_length(data),?,?)";
+  query +=
+    "REPlACE INTO `data_" + taskName + "` (object_name, data, size, run, fill) values (?,?,octet_length(data),?,?)";
 
   // Prepare statement
-  TMySQLStatement *statement;
+  TMySQLStatement* statement;
   // try to insert if it fails we check whether the table is there or not and create it if needed
-  statement = (TMySQLStatement *) mServer->Statement(query.c_str());
+  statement = (TMySQLStatement*)mServer->Statement(query.c_str());
   if (mServer->IsError() && mServer->GetErrorCode() == 1146) { // table does not exist
     // try to create the table
     prepareTaskDataContainer(taskName);
-    statement = (TMySQLStatement *) mServer->Statement(query.c_str());
+    statement = (TMySQLStatement*)mServer->Statement(query.c_str());
   }
   if (mServer->IsError()) {
-    BOOST_THROW_EXCEPTION(
-      DatabaseException() << errinfo_details("Encountered an error when creating statement in MySqlDatabase")
+    BOOST_THROW_EXCEPTION(DatabaseException()
+                          << errinfo_details("Encountered an error when creating statement in MySqlDatabase")
                           << errinfo_db_message(mServer->GetErrorMsg()) << errinfo_db_errno(mServer->GetErrorCode()));
   }
 
@@ -152,25 +148,25 @@ void MySqlDatabase::storeForTask(std::string taskName)
   statement->Process();
   delete statement;
 
-//  for (auto mo : objects) {
-//    delete mo;
-//  }
+  //  for (auto mo : objects) {
+  //    delete mo;
+  //  }
   objects.clear();
 }
 
-o2::quality_control::core::MonitorObject *MySqlDatabase::retrieve(std::string taskName, std::string objectName)
+o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string taskName, std::string objectName)
 {
   string query;
-  TMySQLStatement *statement = nullptr;
+  TMySQLStatement* statement = nullptr;
 
   query += "SELECT object_name, data, updatetime, run, fill FROM data_" + taskName + " WHERE object_name = ?";
-  statement = (TMySQLStatement *) mServer->Statement(query.c_str());
+  statement = (TMySQLStatement*)mServer->Statement(query.c_str());
   if (mServer->IsError()) {
     if (statement) {
       delete statement;
     }
-    BOOST_THROW_EXCEPTION(
-      DatabaseException() << errinfo_details("Encountered an error when creating statement in MySqlDatabase")
+    BOOST_THROW_EXCEPTION(DatabaseException()
+                          << errinfo_details("Encountered an error when creating statement in MySqlDatabase")
                           << errinfo_db_message(mServer->GetErrorMsg()) << errinfo_db_errno(mServer->GetErrorCode()));
   }
   statement->NextIteration();
@@ -178,16 +174,16 @@ o2::quality_control::core::MonitorObject *MySqlDatabase::retrieve(std::string ta
 
   if (!(statement->Process() && statement->StoreResult())) {
     delete statement;
-    BOOST_THROW_EXCEPTION(
-      DatabaseException()
-        << errinfo_details("Encountered an error when processing and storing results in MySqlDatabase")
-        << errinfo_db_message(mServer->GetErrorMsg()) << errinfo_db_errno(mServer->GetErrorCode()));
+    BOOST_THROW_EXCEPTION(DatabaseException()
+                          << errinfo_details(
+                               "Encountered an error when processing and storing results in MySqlDatabase")
+                          << errinfo_db_message(mServer->GetErrorMsg()) << errinfo_db_errno(mServer->GetErrorCode()));
   }
 
-  o2::quality_control::core::MonitorObject *mo = nullptr;
+  o2::quality_control::core::MonitorObject* mo = nullptr;
   if (statement->NextResultRow()) { // Consider only the first result
     string name = statement->GetString(0);
-    void *blob = nullptr;
+    void* blob = nullptr;
     Long_t blobSize;
     statement->GetBinary(1, blob, blobSize); // retrieve the data
     TDatime updatetime(statement->GetYear(2), statement->GetMonth(2), statement->GetDay(2), statement->GetHour(2),
@@ -200,7 +196,7 @@ o2::quality_control::core::MonitorObject *MySqlDatabase::retrieve(std::string ta
     mess.SetReadMode();
     mess.Reset();
     try {
-      mo = (o2::quality_control::core::MonitorObject *) (mess.ReadObjectAny(mess.GetClass()));
+      mo = (o2::quality_control::core::MonitorObject*)(mess.ReadObjectAny(mess.GetClass()));
     } catch (...) {
       QcInfoLogger::GetInstance() << "Node: unable to parse TObject from MySQL" << infologger::endm;
       throw;
@@ -224,10 +220,10 @@ void MySqlDatabase::disconnect()
   }
 }
 
-TMySQLResult *MySqlDatabase::query(string sql)
+TMySQLResult* MySqlDatabase::query(string sql)
 {
   if (mServer) {
-    return ((TMySQLResult *) mServer->Query(sql.c_str()));
+    return ((TMySQLResult*)mServer->Query(sql.c_str()));
   } else {
     return (nullptr);
   }
@@ -246,7 +242,7 @@ void MySqlDatabase::addIndex(string table, string column)
 {
   std::ostringstream stringStream;
   stringStream << "CREATE INDEX " << table << "_i_" << column << " on " << table << " (" << column << ")";
-  TMySQLResult *res = query(stringStream.str().c_str());
+  TMySQLResult* res = query(stringStream.str().c_str());
   if (res) {
     delete (res);
   } else {
@@ -261,10 +257,10 @@ std::vector<std::string> MySqlDatabase::getPublishedObjectNames(std::string task
   string queryString = "select distinct object_name from ";
   queryString += "data_" + taskName;
 
-  TMySQLResult *mysqlResult = query(queryString);
+  TMySQLResult* mysqlResult = query(queryString);
   if (mysqlResult) { // only if we got a result
-    TMySQLRow *row;
-    while ((row = (TMySQLRow *) mysqlResult->Next())) {
+    TMySQLRow* row;
+    while ((row = (TMySQLRow*)mysqlResult->Next())) {
       result.push_back(row->GetField(0));
       delete row;
     }
@@ -280,10 +276,10 @@ std::vector<std::string> MySqlDatabase::getListOfTasksWithPublications()
 
   string queryString = "select table_name from information_schema.tables where table_schema='quality_control'";
 
-  TMySQLResult *mysqlResult = query(queryString);
+  TMySQLResult* mysqlResult = query(queryString);
   if (mysqlResult) { // only if we got a result
-    TMySQLRow *row;
-    while ((row = (TMySQLRow *) mysqlResult->Next())) {
+    TMySQLRow* row;
+    while ((row = (TMySQLRow*)mysqlResult->Next())) {
       result.push_back(row->GetField(0));
       delete row;
     }

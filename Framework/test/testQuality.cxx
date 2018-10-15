@@ -14,9 +14,12 @@
 
 using namespace std;
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 BOOST_AUTO_TEST_CASE(quality_test)
 {

@@ -16,42 +16,39 @@
 #include "QualityControl/TaskDataProcessorFactory.h"
 #include "QualityControl/TaskRunner.h"
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 using namespace o2::framework;
 
-TaskDataProcessorFactory::TaskDataProcessorFactory()
-{
-}
+TaskDataProcessorFactory::TaskDataProcessorFactory() {}
 
-TaskDataProcessorFactory::~TaskDataProcessorFactory()
-{
-}
+TaskDataProcessorFactory::~TaskDataProcessorFactory() {}
 
 DataProcessorSpec TaskDataProcessorFactory::create(std::string taskName, std::string configurationSource)
 {
   auto qcTask = std::make_shared<TaskRunner>(taskName, configurationSource);
 
   DataProcessorSpec newTask{
-    taskName,
-    qcTask->getInputsSpecs(),
-    Outputs{ qcTask->getOutputSpec() },
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [qcTask = std::move(qcTask)](InitContext& initContext) {
+    taskName, qcTask->getInputsSpecs(), Outputs{ qcTask->getOutputSpec() },
+    AlgorithmSpec{ (AlgorithmSpec::InitCallback)[qcTask = std::move(qcTask)](InitContext & initContext){
 
-        qcTask->initCallback(initContext);
+      qcTask->initCallback(initContext);
 
-        return (AlgorithmSpec::ProcessCallback) [qcTask = std::move(qcTask)] (ProcessingContext &processingContext) {
-          qcTask->processCallback(processingContext);
-        };
-      }
-    }
+  return (AlgorithmSpec::ProcessCallback)[qcTask = std::move(qcTask)](ProcessingContext & processingContext)
+  {
+    qcTask->processCallback(processingContext);
   };
-
-  return std::move(newTask);
 }
+} // namespace core
+}; // namespace quality_control
+
+return std::move(newTask);
+} // namespace o2
 
 } // namespace core
 } // namespace quality_control

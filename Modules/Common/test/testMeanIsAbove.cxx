@@ -9,14 +9,17 @@
 #define BOOST_TEST_MODULE MO test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
-#include <cassert>
 #include <TH1F.h>
 #include <TList.h>
+#include <boost/test/unit_test.hpp>
+#include <cassert>
 
-namespace o2 {
-namespace quality_control_modules {
-namespace common {
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace common
+{
 
 BOOST_AUTO_TEST_CASE(test_checks)
 {
@@ -47,7 +50,6 @@ BOOST_AUTO_TEST_CASE(test_checks)
   check.beautify(&mo);
   // Should update the line, not add one --> TODO THIS FAILS
   //  BOOST_CHECK_EQUAL(numberFunctions, th1f.GetListOfFunctions()->GetEntries()); // no modifications to the plot
-
 }
 
 BOOST_AUTO_TEST_CASE(test_types)

@@ -23,12 +23,16 @@
 
 #include <functional>
 
-namespace o2 {
-namespace quality_control {
-namespace tobject_to_json {
+namespace o2
+{
+namespace quality_control
+{
+namespace tobject_to_json
+{
 
 #ifdef _WITH_MYSQL
-auto getMySql(const http::url& uri) {
+auto getMySql(const http::url& uri)
+{
   int port = (uri.port == 0) ? 3306 : uri.port;
   std::string database = uri.path;
   database.erase(database.begin(), database.begin() + 1);
@@ -36,20 +40,21 @@ auto getMySql(const http::url& uri) {
 }
 #endif
 
-auto getCcdb(const http::url& uri) {
+auto getCcdb(const http::url& uri)
+{
   int port = (uri.port == 0) ? 3306 : uri.port;
   std::string database = uri.path;
   database.erase(database.begin(), database.begin() + 1);
   return std::make_unique<backends::Ccdb>(uri.host, port, database, uri.user, uri.password);
 }
 
-
-std::unique_ptr<Backend> TObject2JsonBackendFactory::Get(std::string url) {
+std::unique_ptr<Backend> TObject2JsonBackendFactory::Get(std::string url)
+{
   static const std::map<std::string, std::function<std::unique_ptr<Backend>(const http::url&)>> map = {
 #ifdef _WITH_MYSQL
-      {"mysql", getMySql},
+    { "mysql", getMySql },
 #endif
-      {"ccdb", getCcdb}
+    { "ccdb", getCcdb }
   };
 
   http::url parsedUrl = http::ParseHttpUrl(url);

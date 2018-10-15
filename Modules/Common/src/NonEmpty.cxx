@@ -12,52 +12,45 @@ using namespace std;
 
 ClassImp(o2::quality_control_modules::common::NonEmpty)
 
-namespace o2 {
-namespace quality_control_modules {
-namespace common {
-
-NonEmpty::NonEmpty()
+  namespace o2
 {
-}
+  namespace quality_control_modules
+  {
+  namespace common
+  {
 
-NonEmpty::~NonEmpty()
-{
-}
+  NonEmpty::NonEmpty() {}
 
-void NonEmpty::configure(std::string name)
-{
-}
+  NonEmpty::~NonEmpty() {}
 
-Quality NonEmpty::check(const MonitorObject *mo)
-{
-  auto result = Quality::Null;
+  void NonEmpty::configure(std::string name) {}
 
-  // The framework guarantees that the encapsulated object is of the accepted type.
-  auto *histo = dynamic_cast<TH1*>(mo->getObject());
+  Quality NonEmpty::check(const MonitorObject* mo)
+  {
+    auto result = Quality::Null;
 
-  // assert(histo != nullptr);
-  if (histo != nullptr) {
-    if (histo->GetEntries() > 0) {
-      result = Quality::Good;
-    } else {
-      result = Quality::Bad;
+    // The framework guarantees that the encapsulated object is of the accepted type.
+    auto* histo = dynamic_cast<TH1*>(mo->getObject());
+
+    // assert(histo != nullptr);
+    if (histo != nullptr) {
+      if (histo->GetEntries() > 0) {
+        result = Quality::Good;
+      } else {
+        result = Quality::Bad;
+      }
     }
+
+    return result;
   }
 
-  return result;
-}
+  std::string NonEmpty::getAcceptedType() { return "TH1"; }
 
-std::string NonEmpty::getAcceptedType()
-{
-  return "TH1";
-}
+  void NonEmpty::beautify(MonitorObject* mo, Quality checkResult)
+  {
+    // NOOP
+  }
 
-void NonEmpty::beautify(MonitorObject *mo, Quality checkResult)
-{
-// NOOP
-}
-
-}  // namespace common
-}  // namespace quality_control_modules
+  } // namespace common
+  } // namespace quality_control_modules
 } // namespace o2
-

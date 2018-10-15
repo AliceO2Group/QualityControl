@@ -6,13 +6,13 @@
 #pragma link C++ namespace o2::quality_control::core;
 #pragma link C++ namespace o2::quality_control::checker;
 
-#pragma link C++ class o2::quality_control::core::MonitorObject+;
-#pragma link C++ class o2::quality_control::core::Quality+;
-#pragma link C++ class o2::quality_control::checker::CheckInterface+;
-#pragma link C++ class o2::quality_control::core::CheckDefinition+;
-#pragma link C++ class o2::quality_control::core::TaskInterface+;
+#pragma link C++ class o2::quality_control::core::MonitorObject + ;
+#pragma link C++ class o2::quality_control::core::Quality + ;
+#pragma link C++ class o2::quality_control::checker::CheckInterface + ;
+#pragma link C++ class o2::quality_control::core::CheckDefinition + ;
+#pragma link C++ class o2::quality_control::core::TaskInterface + ;
 
-#pragma link C++ class std::pair<std::string, o2::quality_control::core::CheckDefinition>;
-#pragma link C++ class std::map<std::string, o2::quality_control::core::CheckDefinition>;
+#pragma link C++ class std::pair < std::string, o2::quality_control::core::CheckDefinition>;
+#pragma link C++ class std::map < std::string, o2::quality_control::core::CheckDefinition>;
 
 #endif

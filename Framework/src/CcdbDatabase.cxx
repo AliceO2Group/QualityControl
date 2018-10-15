@@ -14,27 +14,26 @@
 ///
 
 #include "QualityControl/CcdbDatabase.h"
-#include <chrono>
-#include <boost/algorithm/string.hpp>
 #include "Common/Exceptions.h"
+#include <boost/algorithm/string.hpp>
+#include <chrono>
 #include <sstream>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
 
-namespace o2 {
-namespace quality_control {
-namespace repository {
+namespace o2
+{
+namespace quality_control
+{
+namespace repository
+{
 
 using namespace std;
 
-CcdbDatabase::CcdbDatabase() : mUrl("")
-{}
+CcdbDatabase::CcdbDatabase() : mUrl("") {}
 
-CcdbDatabase::~CcdbDatabase()
-{
-  disconnect();
-}
+CcdbDatabase::~CcdbDatabase() { disconnect(); }
 
 void CcdbDatabase::connect(std::string host, std::string database, std::string username, std::string password)
 {
@@ -42,7 +41,7 @@ void CcdbDatabase::connect(std::string host, std::string database, std::string u
   ccdbApi.init(mUrl);
 }
 
-void CcdbDatabase::connect(std::unique_ptr<ConfigurationInterface> &config)
+void CcdbDatabase::connect(std::unique_ptr<ConfigurationInterface>& config)
 {
   mUrl = config->get<string>("qc/config/database/host").value();
   ccdbApi.init(mUrl);
@@ -50,13 +49,13 @@ void CcdbDatabase::connect(std::unique_ptr<ConfigurationInterface> &config)
 
 void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
 {
-  if(mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
-    BOOST_THROW_EXCEPTION(
-      DatabaseException() << errinfo_details("Object and task names can't be empty. Do not store."));
+  if (mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
+    BOOST_THROW_EXCEPTION(DatabaseException()
+                          << errinfo_details("Object and task names can't be empty. Do not store."));
   }
 
   string path = mo->getTaskName() + "/" + mo->getName();
-  map<string,string> metadata;
+  map<string, string> metadata;
   metadata["quality"] = std::to_string(mo->getQuality().getLevel());
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10); // todo set a proper timestamp for the end
@@ -68,17 +67,16 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
 /**
  * Struct to store the data we will receive from the CCDB with CURL.
  */
-struct MemoryStruct
-{
-    char *memory;
-    unsigned int size;
+struct MemoryStruct {
+  char* memory;
+  unsigned int size;
 };
 
-core::MonitorObject *CcdbDatabase::retrieve(std::string taskName, std::string objectName)
+core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string objectName)
 {
 
   string path = taskName + "/" + objectName;
-  map<string,string> metadata;
+  map<string, string> metadata;
 
   TObject* object = ccdbApi.retrieve(path, metadata, getCurrentTimestamp());
   return dynamic_cast<core::MonitorObject*>(object);
@@ -104,20 +102,16 @@ std::string CcdbDatabase::getListing(std::string path, std::string accept)
 
 /// trim from start (in place)
 /// https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-static inline void ltrim(std::string &s)
+static inline void ltrim(std::string& s)
 {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
-    return !std::isspace(ch);
-  }));
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) { return !std::isspace(ch); }));
 }
 
 /// trim from end (in place)
 /// https://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-static inline void rtrim(std::string &s)
+static inline void rtrim(std::string& s)
 {
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
-    return !std::isspace(ch);
-  }).base(), s.end());
+  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(), s.end());
 }
 
 std::vector<std::string> CcdbDatabase::getListOfTasksWithPublications()
@@ -145,7 +139,7 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
 {
   std::vector<string> result;
 
-  string listing = ccdbApi.list(taskName+"/.*", true, "Application/JSON");
+  string listing = ccdbApi.list(taskName + "/.*", true, "Application/JSON");
 
   // Split the string we received, by line. Also trim it and remove empty lines. Select the lines starting with "path".
   std::stringstream ss(listing);

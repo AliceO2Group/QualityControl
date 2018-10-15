@@ -24,12 +24,15 @@
 #include "Framework/RawDeviceService.h"
 #include "Monitoring/MonitoringFactory.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskFactory.h"
+#include "QualityControl/TaskRunner.h"
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 using namespace o2::configuration;
 using namespace o2::monitoring;
@@ -60,10 +63,7 @@ TaskRunner::TaskRunner(std::string taskName, std::string configurationSource)
   mTask = f.create<TaskInterface>(mTaskConfig, mObjectsManager); // TODO could we use unique_ptr ?
 }
 
-TaskRunner::~TaskRunner()
-{
-  endOfActivity();
-}
+TaskRunner::~TaskRunner() { endOfActivity(); }
 
 void TaskRunner::initCallback(InitContext& iCtx)
 {
@@ -83,9 +83,10 @@ void TaskRunner::initCallback(InitContext& iCtx)
   mCycleOn = true;
 
   // start a timer for finishing cycle and publishing the results
-//  mCycleTimer = std::make_shared<boost::asio::deadline_timer>(io, boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds));
-//  mCycleTimer->async_wait(boost::bind(&TaskRunner::finishCycle, this));
-//  ioThread = std::make_shared<std::thread>([&] { io.run(); });
+  //  mCycleTimer = std::make_shared<boost::asio::deadline_timer>(io,
+  //  boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds));
+  //  mCycleTimer->async_wait(boost::bind(&TaskRunner::finishCycle, this));
+  //  ioThread = std::make_shared<std::thread>([&] { io.run(); });
 }
 
 void TaskRunner::processCallback(ProcessingContext& pCtx)
@@ -115,7 +116,7 @@ void TaskRunner::processCallback(ProcessingContext& pCtx)
     double current = mStatsTimer.getTime();
     int objectsPublished = (mTotalNumberObjectsPublished - mLastNumberObjects);
     mLastNumberObjects = mTotalNumberObjectsPublished;
-    mCollector->send({objectsPublished / current, "QC_task_Rate_objects_published_per_10_seconds"});
+    mCollector->send({ objectsPublished / current, "QC_task_Rate_objects_published_per_10_seconds" });
     mStatsTimer.increment();
 
     // temporarily here, until timer callback is implemented in dpl
@@ -126,21 +127,14 @@ void TaskRunner::processCallback(ProcessingContext& pCtx)
   }
 }
 
-void TaskRunner::timerCallback(ProcessingContext& pCtx)
-{
-  finishCycle(pCtx.outputs());
-}
+void TaskRunner::timerCallback(ProcessingContext& pCtx) { finishCycle(pCtx.outputs()); }
 
-void TaskRunner::setResetAfterPublish(bool resetAfterPublish)
-{
-  mResetAfterPublish = resetAfterPublish;
-}
-
+void TaskRunner::setResetAfterPublish(bool resetAfterPublish) { mResetAfterPublish = resetAfterPublish; }
 
 o2::header::DataDescription TaskRunner::taskDataDescription(const std::string taskName)
 {
   o2::header::DataDescription description;
-  description.runtimeInit(std::string(taskName.substr(0,o2::header::DataDescription::size-3) + "-mo").c_str());
+  description.runtimeInit(std::string(taskName.substr(0, o2::header::DataDescription::size - 3) + "-mo").c_str());
   return description;
 }
 
@@ -153,7 +147,8 @@ void TaskRunner::populateConfig(std::string taskName)
     mTaskConfig.taskName = taskName;
     mTaskConfig.moduleName = mConfigFile->get<std::string>(prefix + taskDefinitionName + "/moduleName").value();
     mTaskConfig.className = mConfigFile->get<std::string>(prefix + taskDefinitionName + "/className").value();
-    mTaskConfig.cycleDurationSeconds = mConfigFile->get<int>(prefix + taskDefinitionName + "/cycleDurationSeconds").value_or(10);
+    mTaskConfig.cycleDurationSeconds =
+      mConfigFile->get<int>(prefix + taskDefinitionName + "/cycleDurationSeconds").value_or(10);
     mTaskConfig.maxNumberCycles = mConfigFile->get<int>(prefix + taskDefinitionName + "/maxNumberCycles").value_or(-1);
 
     // maybe it should be moved somewhere else?
@@ -170,10 +165,9 @@ void TaskRunner::populateConfig(std::string taskName)
       if (len < inputSpec.description.size - 2) {
         inputSpec.description.str[len] = '_';
         inputSpec.description.str[len + 1] = 'S';
-      }
-      else {
+      } else {
         BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(
-          std::string("Too long description name: ") + inputSpec.description.str));
+                                std::string("Too long description name: ") + inputSpec.description.str));
       }
       inputSpec.subSpec = 0;
       mInputSpecs.push_back(inputSpec);
@@ -183,11 +177,11 @@ void TaskRunner::populateConfig(std::string taskName)
     mMonitorObjectsSpec.description = taskDataDescription(taskName);
     mMonitorObjectsSpec.subSpec = 0;
     mMonitorObjectsSpec.lifetime = o2::framework::Lifetime::QA;
-
   } catch (...) { // catch already here the configuration exception and print it
     // because if we are in a constructor, the exception could be lost
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << std::endl;
+    std::cerr << "Unexpected exception, diagnostic information follows:\n"
+              << diagnostic << std::endl;
     throw;
   }
 }
@@ -195,19 +189,21 @@ void TaskRunner::populateConfig(std::string taskName)
 void TaskRunner::startOfActivity()
 {
   mTimerTotalDurationActivity.reset();
-  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(), mConfigFile->get<int>("qc/config/Activity/type").value());
+  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(),
+                    mConfigFile->get<int>("qc/config/Activity/type").value());
   mTask->startOfActivity(activity);
 }
 
 void TaskRunner::endOfActivity()
 {
-  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(), mConfigFile->get<int>("qc/config/Activity/type").value());
+  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(),
+                    mConfigFile->get<int>("qc/config/Activity/type").value());
   mTask->endOfActivity(activity);
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
-  mCollector->send({rate, "QC_task_Rate_objects_published_per_second_whole_run"});
-  mCollector->send({ba::mean(mPCpus), "QC_task_Mean_pcpu_whole_run"});
-  mCollector->send({ba::mean(mPMems), "QC_task_Mean_pmem_whole_run"});
+  mCollector->send({ rate, "QC_task_Rate_objects_published_per_second_whole_run" });
+  mCollector->send({ ba::mean(mPCpus), "QC_task_Mean_pcpu_whole_run" });
+  mCollector->send({ ba::mean(mPMems), "QC_task_Mean_pmem_whole_run" });
 }
 
 void TaskRunner::finishCycle(DataAllocator& outputs)
@@ -217,39 +213,41 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
     mTask->endOfCycle();
 
-    double durationCycle = 0; // (boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds) - mCycleTimer->expires_from_now()).total_nanoseconds() / double(1e9);
-    // mCycleTimer->expires_at(mCycleTimer->expires_at() + boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds));
+    double durationCycle = 0; // (boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds) -
+                              // mCycleTimer->expires_from_now()).total_nanoseconds() / double(1e9);
+    // mCycleTimer->expires_at(mCycleTimer->expires_at() +
+    // boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds));
 
     // publication
     unsigned long numberObjectsPublished = publish(outputs);
 
     // monitoring metrics
-    double durationPublication = 0; // (boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds) - mCycleTimer->expires_from_now()).total_nanoseconds() / double(1e9);
-    mCollector->send({mNumberBlocks, "QC_task_Numberofblocks_in_cycle"});
-    mCollector->send({durationCycle, "QC_task_Module_cycle_duration"});
-    mCollector->send({durationPublication, "QC_task_Publication_duration"});
-    mCollector->send({(int) numberObjectsPublished,
-                     "QC_task_Number_objects_published_in_cycle"}); // cast due to Monitoring accepting only int
+    double durationPublication = 0; // (boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds) -
+                                    // mCycleTimer->expires_from_now()).total_nanoseconds() / double(1e9);
+    mCollector->send({ mNumberBlocks, "QC_task_Numberofblocks_in_cycle" });
+    mCollector->send({ durationCycle, "QC_task_Module_cycle_duration" });
+    mCollector->send({ durationPublication, "QC_task_Publication_duration" });
+    mCollector->send({ (int)numberObjectsPublished,
+                       "QC_task_Number_objects_published_in_cycle" }); // cast due to Monitoring accepting only int
     double rate = numberObjectsPublished / (durationCycle + durationPublication);
-    mCollector->send({rate, "QC_task_Rate_objects_published_per_second"});
+    mCollector->send({ rate, "QC_task_Rate_objects_published_per_second" });
     mTotalNumberObjectsPublished += numberObjectsPublished;
-    //std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
-    //mPCpus(std::stod(pidStatus[3]));
-    //mPMems(std::stod(pidStatus[4]));
+    // std::vector<std::string> pidStatus = mMonitor->getPIDStatus(::getpid());
+    // mPCpus(std::stod(pidStatus[3]));
+    // mPMems(std::stod(pidStatus[4]));
     double whole_run_rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
-    mCollector->send({mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run"});
-    mCollector->send({mTimerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run"});
-    mCollector->send({whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run"});
-//    mCollector->send({std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run"});
-    mCollector->send({ba::mean(mPMems), "QC_task_Mean_pmem_whole_run"});
+    mCollector->send({ mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run" });
+    mCollector->send({ mTimerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run" });
+    mCollector->send({ whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run" });
+    //    mCollector->send({std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run"});
+    mCollector->send({ ba::mean(mPMems), "QC_task_Mean_pmem_whole_run" });
 
     mCycleNumber++;
     mCycleOn = false;
   }
   // restart timer
-//  mCycleTimer->async_wait(boost::bind(&TaskRunner::finishCycle, this));
+  //  mCycleTimer->async_wait(boost::bind(&TaskRunner::finishCycle, this));
 }
-
 
 unsigned long TaskRunner::publish(DataAllocator& outputs)
 {
@@ -258,14 +256,9 @@ unsigned long TaskRunner::publish(DataAllocator& outputs)
   for (auto& pair : *mObjectsManager) {
 
     auto* mo = pair.second;
-    outputs.snapshot<MonitorObject>(
-      Output{
-        mMonitorObjectsSpec.origin,
-        mMonitorObjectsSpec.description,
-        mMonitorObjectsSpec.subSpec,
-        mMonitorObjectsSpec.lifetime
-        },
-      *mo);
+    outputs.snapshot<MonitorObject>(Output{ mMonitorObjectsSpec.origin, mMonitorObjectsSpec.description,
+                                            mMonitorObjectsSpec.subSpec, mMonitorObjectsSpec.lifetime },
+                                    *mo);
 
     QcInfoLogger::GetInstance() << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
     sentMessages++;

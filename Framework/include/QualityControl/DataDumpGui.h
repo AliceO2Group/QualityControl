@@ -19,9 +19,12 @@
 
 #include "FairMQDevice.h"
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 /**
  * A chunk of data
@@ -42,10 +45,7 @@ struct Chunk {
  * As we use Imgui it is stateless and we have to keep the state ourselves.
  */
 struct GUIState {
-  GUIState()
-  {
-    newDataAvailable = false;
-  }
+  GUIState() { newDataAvailable = false; }
 
   bool newDataAvailable;
   std::string actionMessage;
@@ -59,24 +59,25 @@ struct GUIState {
 /**
  * A GUI to display the header and the payload of events sent by the Data Sampling.
  */
-class DataDumpGui : public FairMQDevice {
-public:
+class DataDumpGui : public FairMQDevice
+{
+ public:
   DataDumpGui() = default;
   virtual ~DataDumpGui() = default;
 
   static GUIState guiState;
   static void* window;
 
-protected:
+ protected:
   void InitTask() override;
   bool ConditionalRun() override;
   bool handleParts(FairMQParts& parts);
 
-private:
+ private:
   void assignDataToChunk(void* data, size_t size, Chunk& chunk);
 };
-}
-}
-}
+} // namespace core
+} // namespace quality_control
+} // namespace o2
 
 #endif // QC_CORE_DATADUMP_H

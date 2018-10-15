@@ -33,17 +33,17 @@
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
-#include <random>
-#include <memory>
-#include <TH1F.h>
 #include <FairLogger.h>
+#include <TH1F.h>
+#include <memory>
+#include <random>
 
 #include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
 
-#include "QualityControl/TaskDataProcessorFactory.h"
-#include "QualityControl/CheckerDataProcessorFactory.h"
 #include "QualityControl/Checker.h"
+#include "QualityControl/CheckerDataProcessorFactory.h"
+#include "QualityControl/TaskDataProcessorFactory.h"
 
 using namespace o2::framework;
 using namespace o2::quality_control::core;
@@ -53,75 +53,66 @@ using namespace std::chrono;
 WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
   WorkflowSpec specs;
-  DataProcessorSpec producer{
-    "producer",
-    Inputs{},
-    Outputs{
-      { "ITS", "RAWDATA", 0, Lifetime::Timeframe }
-    },
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [](InitContext&) {
+  DataProcessorSpec producer{ "producer", Inputs{}, Outputs{ { "ITS", "RAWDATA", 0, Lifetime::Timeframe } },
+                              AlgorithmSpec{ (AlgorithmSpec::InitCallback)[](InitContext&){
 
-        std::default_random_engine generator(11);
+                                std::default_random_engine generator(11);
 
-        return (AlgorithmSpec::ProcessCallback) [generator](ProcessingContext& processingContext) mutable {
+  return (AlgorithmSpec::ProcessCallback)[generator](ProcessingContext & processingContext) mutable
+  {
 
-          usleep(100000);
-          size_t length = generator() % 10000;
+    usleep(100000);
+    size_t length = generator() % 10000;
 
-          auto data = processingContext.outputs().make<char>(Output{ "ITS", "RAWDATA", 0, Lifetime::Timeframe },
-                                                               length);
-          for (auto&& item : data) {
-            item = static_cast<char>(generator());
-          }
-        };
-      }
+    auto data = processingContext.outputs().make<char>(Output{ "ITS", "RAWDATA", 0, Lifetime::Timeframe }, length);
+    for (auto&& item : data) {
+      item = static_cast<char>(generator());
     }
   };
+}
+}
+}
+;
 
-  specs.push_back(producer);
+specs.push_back(producer);
 
-  // Exemplary initialization of QC Task:
-  const std::string qcTaskName = "QcTask";
-  const std::string qcConfigurationSource =
-    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/basic.json";
-  TaskDataProcessorFactory taskFactory;
-  specs.push_back(taskFactory.create(qcTaskName, qcConfigurationSource));
+// Exemplary initialization of QC Task:
+const std::string qcTaskName = "QcTask";
+const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/basic.json";
+TaskDataProcessorFactory taskFactory;
+specs.push_back(taskFactory.create(qcTaskName, qcConfigurationSource));
 
-  // Now the QC Checker
-  CheckerDataProcessorFactory checkerFactory;
-  specs.push_back(checkerFactory.create("checker_0", qcTaskName, qcConfigurationSource));
+// Now the QC Checker
+CheckerDataProcessorFactory checkerFactory;
+specs.push_back(checkerFactory.create("checker_0", qcTaskName, qcConfigurationSource));
 
-  // Finally the printer
-  DataProcessorSpec printer{
-    "printer",
-    Inputs{
-      { "checked-mo", "QC", Checker::checkerDataDescription(qcTaskName), 0 }
-    },
-    Outputs{},
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [](InitContext&) {
+// Finally the printer
+DataProcessorSpec printer{ "printer", Inputs{ { "checked-mo", "QC", Checker::checkerDataDescription(qcTaskName), 0 } },
+                           Outputs{},
+                           AlgorithmSpec{ (AlgorithmSpec::InitCallback)[](InitContext&){
 
-        return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
-          LOG(INFO) << "printer invoked";
-          auto mo = processingContext.inputs().get<MonitorObject*>("checked-mo").get();
+                             return (AlgorithmSpec::ProcessCallback)[](ProcessingContext & processingContext) mutable {
+                               LOG(INFO) << "printer invoked";
+auto mo = processingContext.inputs().get<MonitorObject*>("checked-mo").get();
 
-          if (mo->getName() == "example") {
-            auto* g = dynamic_cast<TH1F*>(mo->getObject());
-            std::string bins = "BINS:";
-            for (int i = 0; i < g->GetNbinsX(); i++) {
-              bins += " " + std::to_string((int) g->GetBinContent(i));
-            }
-            LOG(INFO) << bins;
-          }
-        };
-      }
-    }
-  };
-  specs.push_back(printer);
+if (mo->getName() == "example") {
+  auto* g = dynamic_cast<TH1F*>(mo->getObject());
+  std::string bins = "BINS:";
+  for (int i = 0; i < g->GetNbinsX(); i++) {
+    bins += " " + std::to_string((int)g->GetBinContent(i));
+  }
+  LOG(INFO) << bins;
+}
+}
+;
+}
+}
+}
+;
+specs.push_back(printer);
 
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
-  o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
-  return specs;
+return specs;
 }

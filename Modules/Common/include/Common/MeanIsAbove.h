@@ -6,39 +6,41 @@
 #ifndef QC_MODULE_COMMON_MEANISABOVE_H
 #define QC_MODULE_COMMON_MEANISABOVE_H
 
+#include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-#include "QualityControl/CheckInterface.h"
 
 using namespace o2::quality_control::core;
 
-namespace o2 {
-namespace quality_control_modules {
+namespace o2
+{
+namespace quality_control_modules
+{
 
 /// Namespace containing all the common, non detector specific, checks.
-namespace common {
+namespace common
+{
 
 /// \brief  Check whether the mean of the plot is above a certain limit.
 ///
 /// \author Barthelemy von Haller
 class MeanIsAbove : public o2::quality_control::checker::CheckInterface
 {
-  public:
-    /// Default constructor
-    MeanIsAbove();
-    /// Destructor
-    ~MeanIsAbove() override = default;
+ public:
+  /// Default constructor
+  MeanIsAbove();
+  /// Destructor
+  ~MeanIsAbove() override = default;
 
-    void configure(std::string name) override;
-    Quality check(const MonitorObject *mo) override;
-    void beautify(MonitorObject *mo, Quality checkResult = Quality::Null) override;
-    std::string getAcceptedType() override;
+  void configure(std::string name) override;
+  Quality check(const MonitorObject* mo) override;
+  void beautify(MonitorObject* mo, Quality checkResult = Quality::Null) override;
+  std::string getAcceptedType() override;
 
-  private:
+ private:
+  float mThreshold;
 
-    float mThreshold;
-
-    ClassDefOverride(MeanIsAbove, 1)
+  ClassDefOverride(MeanIsAbove, 1)
 };
 
 } /* namespace common */

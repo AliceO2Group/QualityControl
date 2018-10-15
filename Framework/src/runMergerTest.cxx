@@ -14,26 +14,27 @@
 ///
 /// \brief This is DPL workflow to see HistoMerger in action
 
-#include <random>
-#include <memory>
-#include <TH1F.h>
 #include <FairLogger.h>
 #include <Framework/CompletionPolicy.h>
 #include <Framework/CompletionPolicyHelpers.h>
+#include <TH1F.h>
+#include <memory>
+#include <random>
 using namespace o2::framework;
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
-  CompletionPolicy mergerConsumesASAP = CompletionPolicyHelpers::defineByName("merger", CompletionPolicy::CompletionOp::Consume);
+  CompletionPolicy mergerConsumesASAP =
+    CompletionPolicyHelpers::defineByName("merger", CompletionPolicy::CompletionOp::Consume);
   policies.push_back(mergerConsumesASAP);
 }
 
 #include "Framework/runDataProcessing.h"
 
-#include "QualityControl/TaskDataProcessorFactory.h"
-#include "QualityControl/CheckerDataProcessorFactory.h"
 #include "QualityControl/Checker.h"
+#include "QualityControl/CheckerDataProcessorFactory.h"
 #include "QualityControl/HistoMerger.h"
+#include "QualityControl/TaskDataProcessorFactory.h"
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;
@@ -44,71 +45,63 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   WorkflowSpec specs;
 
   size_t producersAmount = 10;
-  for(size_t p = 0; p < producersAmount; p++) {
-    DataProcessorSpec producer{
-      "producer" + std::to_string(p),
-      Inputs{},
-      Outputs{
-        { {"mo"}, "TST", "HISTO", p + 1, Lifetime::Timeframe }
-      },
-      AlgorithmSpec{
-        (AlgorithmSpec::ProcessCallback) [p, producersAmount](ProcessingContext& processingContext) mutable {
+  for (size_t p = 0; p < producersAmount; p++) {
+    DataProcessorSpec producer{ "producer" + std::to_string(p), Inputs{},
+                                Outputs{ { { "mo" }, "TST", "HISTO", p + 1, Lifetime::Timeframe } },
+                                AlgorithmSpec{ (AlgorithmSpec::ProcessCallback)[p, producersAmount](
+                                  ProcessingContext & processingContext) mutable {
 
-          usleep(100000);
+                                  usleep(100000);
 
-          TH1F* histo = new TH1F("gauss", "gauss", producersAmount, 0, 1);
-          histo->Fill(p/(double)producersAmount);
+    TH1F* histo = new TH1F("gauss", "gauss", producersAmount, 0, 1);
+    histo->Fill(p / (double)producersAmount);
 
-          MonitorObject* mo = new MonitorObject("histo", histo, "histo-task");
-          mo->setIsOwner(false);
+    MonitorObject* mo = new MonitorObject("histo", histo, "histo-task");
+    mo->setIsOwner(false);
 
-          processingContext.outputs().snapshot<MonitorObject>(Output{"TST", "HISTO", p + 1}, *mo);
-//        processingContext.outputs().snapshot<MonitorObject>(OutputRef{ "mo", p + 1 }, *mo); // dpl template bug?
-          delete mo;
-          delete histo;
-        }
-      }
-    };
-    specs.push_back(producer);
+    processingContext.outputs().snapshot<MonitorObject>(Output{ "TST", "HISTO", p + 1 }, *mo);
+    //        processingContext.outputs().snapshot<MonitorObject>(OutputRef{ "mo", p + 1 }, *mo); // dpl template bug?
+    delete mo;
+    delete histo;
   }
+}
+}
+;
+specs.push_back(producer);
+}
 
-  HistoMerger merger("merger", 1);
-  merger.configureInputsOutputs("TST", "HISTO", { 1, producersAmount });
-  DataProcessorSpec mergerSpec{
-    merger.getName(),
-    merger.getInputSpecs(),
-    Outputs{merger.getOutputSpec()},
-    adaptFromTask<HistoMerger>(std::move(merger)),
-  };
-  specs.push_back(mergerSpec);
+HistoMerger merger("merger", 1);
+merger.configureInputsOutputs("TST", "HISTO", { 1, producersAmount });
+DataProcessorSpec mergerSpec{
+  merger.getName(),
+  merger.getInputSpecs(),
+  Outputs{ merger.getOutputSpec() },
+  adaptFromTask<HistoMerger>(std::move(merger)),
+};
+specs.push_back(mergerSpec);
 
+DataProcessorSpec printer{ "printer", Inputs{ { "mo", "TST", "HISTO", 0 } }, Outputs{},
+                           AlgorithmSpec{ (AlgorithmSpec::InitCallback)[](InitContext&){
 
-  DataProcessorSpec printer{
-    "printer",
-    Inputs{
-      { "mo", "TST", "HISTO", 0 }
-    },
-    Outputs{},
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [](InitContext&) {
+                             return (AlgorithmSpec::ProcessCallback)[](ProcessingContext & processingContext) mutable {
+                               LOG(INFO) << "printer invoked";
+auto mo = processingContext.inputs().get<MonitorObject*>("mo").get();
 
-        return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
-          LOG(INFO) << "printer invoked";
-          auto mo = processingContext.inputs().get<MonitorObject*>("mo").get();
+if (mo->getName() == "histo") {
+  auto* g = dynamic_cast<TH1F*>(mo->getObject());
+  std::string bins = "BINS:";
+  for (int i = 0; i <= g->GetNbinsX(); i++) {
+    bins += " " + std::to_string((int)g->GetBinContent(i));
+  }
+  LOG(INFO) << bins;
+}
+}
+;
+}
+}
+}
+;
+specs.push_back(printer);
 
-          if (mo->getName() == "histo") {
-            auto* g = dynamic_cast<TH1F*>(mo->getObject());
-            std::string bins = "BINS:";
-            for (int i = 0; i <= g->GetNbinsX(); i++) {
-              bins += " " + std::to_string((int) g->GetBinContent(i));
-            }
-            LOG(INFO) << bins;
-          }
-        };
-      }
-    }
-  };
-  specs.push_back(printer);
-
-  return specs;
+return specs;
 }

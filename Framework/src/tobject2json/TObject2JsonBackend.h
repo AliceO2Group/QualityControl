@@ -19,22 +19,25 @@
 
 #include <string>
 
-namespace o2 {
-namespace quality_control {
-namespace tobject_to_json {
+namespace o2
+{
+namespace quality_control
+{
+namespace tobject_to_json
+{
 
 /// \brief Converts ROOT objects into JSON format which is readable by JSROOT
 class Backend
 {
-  public:
-    /// Default constructor
-    Backend() = default;
-   
-    /// Default destructor
-    virtual ~Backend() = default;
-    
-    /// Gets TObject from database and returns the JSON equivalent
-    virtual std::string getJsonObject(std::string agentName, std::string objectName) = 0;
+ public:
+  /// Default constructor
+  Backend() = default;
+
+  /// Default destructor
+  virtual ~Backend() = default;
+
+  /// Gets TObject from database and returns the JSON equivalent
+  virtual std::string getJsonObject(std::string agentName, std::string objectName) = 0;
 };
 
 } // namespace tobject_to_json

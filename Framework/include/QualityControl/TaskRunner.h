@@ -7,27 +7,30 @@
 #ifndef QC_CORE_TASKRUNNER_H
 #define QC_CORE_TASKRUNNER_H
 
-#include <thread>
 #include <mutex>
+#include <thread>
 // boost (should be first but then it makes errors in fairmq)
-#include <boost/serialization/array_wrapper.hpp>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <boost/asio.hpp>
+#include <boost/serialization/array_wrapper.hpp>
 // O2
 #include "Common/Timer.h"
 #include "Configuration/ConfigurationInterface.h"
 #include "Framework/DataProcessorSpec.h"
 #include "Monitoring/MonitoringFactory.h"
 // QC
-#include "QualityControl/TaskInterface.h"
 #include "QualityControl/TaskConfig.h"
+#include "QualityControl/TaskInterface.h"
 
 namespace ba = boost::accumulators;
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 using namespace o2::framework;
 using namespace std::chrono;
@@ -59,7 +62,8 @@ using namespace std::chrono;
 ///
 /// \author Piotr Konopka
 /// \author Barthelemy von Haller
-class TaskRunner {
+class TaskRunner
+{
  public:
   TaskRunner(std::string taskName, std::string configurationSource);
   ~TaskRunner();

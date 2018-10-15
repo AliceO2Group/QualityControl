@@ -1,6 +1,6 @@
 ///
 /// \file   .testEmpty.cxx
-/// \author 
+/// \author
 ///
 
 #include "QualityControl/TaskFactory.h"
@@ -11,14 +11,14 @@
 
 #include <boost/test/unit_test.hpp>
 
-namespace o2 {
-namespace quality_control_modules {
-namespace skeleton {
-
-BOOST_AUTO_TEST_CASE(instantiate_task)
+namespace o2
 {
-  BOOST_CHECK(true);
-}
+namespace quality_control_modules
+{
+namespace skeleton
+{
+
+BOOST_AUTO_TEST_CASE(instantiate_task) { BOOST_CHECK(true); }
 
 } // namespace skeleton
 } // namespace quality_control_modules

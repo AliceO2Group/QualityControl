@@ -13,9 +13,12 @@
 
 #include <TH1.h>
 
-namespace o2 {
-namespace quality_control_modules {
-namespace common {
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace common
+{
 
 BOOST_AUTO_TEST_CASE(checkable)
 {
@@ -35,7 +38,7 @@ BOOST_AUTO_TEST_CASE(checkable)
 
 BOOST_AUTO_TEST_CASE(beautify)
 {
-  auto *histo = new TH1F("test", "test", 100, 0, 99);
+  auto* histo = new TH1F("test", "test", 100, 0, 99);
   MonitorObject monitorObject("testObject", histo, "task"); // here we are the owner of the histo
   NonEmpty myCheck;
   myCheck.configure("test");
@@ -51,10 +54,9 @@ BOOST_AUTO_TEST_CASE(beautify)
 
   myCheck.beautify(&monitorObject, Quality::Medium);
   BOOST_CHECK_EQUAL(histo->GetFillColor(), kOrange);*/
-
 }
 
-  BOOST_AUTO_TEST_CASE(nonempty)
+BOOST_AUTO_TEST_CASE(nonempty)
 {
   TH1F histo("test", "test", 100, 0, 99);
   MonitorObject monitorObject("testObject", &histo, "task");
@@ -71,8 +73,8 @@ BOOST_AUTO_TEST_CASE(beautify)
   histo.Reset();
   quality = myCheck.check(&monitorObject);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);
-  }
+}
 
-} // namespace Checker
-} // namespace quality_control
+} // namespace common
+} // namespace quality_control_modules
 } // namespace o2

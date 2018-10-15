@@ -4,9 +4,9 @@
 /// \author Piotr Konopka
 ///
 
-#include "Skeleton/SkeletonTask.h"
-#include "QualityControl/TaskFactory.h"
 #include "Framework/InitContext.h"
+#include "QualityControl/TaskFactory.h"
+#include "Skeleton/SkeletonTask.h"
 #include <TSystem.h>
 
 #define BOOST_TEST_MODULE Publisher test
@@ -19,9 +19,12 @@
 
 using namespace std;
 
-namespace o2 {
-namespace quality_control_modules {
-namespace skeleton {
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace skeleton
+{
 
 BOOST_AUTO_TEST_CASE(instantiate_task)
 {
@@ -29,10 +32,10 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   TaskConfig config;
   auto manager = make_shared<ObjectsManager>(config);
   task.setObjectsManager(manager);
-//  o2::framework::InitContext ctx;
-//  task.initialize(ctx);
+  //  o2::framework::InitContext ctx;
+  //  task.initialize(ctx);
 
-//  BOOST_CHECK(manager->getMonitorObject("example")->getObject() != nullptr);
+  //  BOOST_CHECK(manager->getMonitorObject("example")->getObject() != nullptr);
 }
 
 } // namespace skeleton

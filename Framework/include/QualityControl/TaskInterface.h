@@ -16,12 +16,15 @@
 #include "Framework/InitContext.h"
 #include "Framework/ProcessingContext.h"
 // QC
-#include "QualityControl/ObjectsManager.h"
 #include "QualityControl/Activity.h"
+#include "QualityControl/ObjectsManager.h"
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 /// \brief  Skeleton of a QC task.
 ///
@@ -33,8 +36,9 @@ namespace core {
 ///
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
-class TaskInterface {
-public:
+class TaskInterface
+{
+ public:
   /// \brief Constructor
   /// Can't be used when dynamically loading the class with ROOT.
   /// @param name
@@ -69,10 +73,10 @@ public:
   void setName(const std::string& name);
   const std::string& getName() const;
 
-protected:
+ protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
 
-private:
+ private:
   // TODO should we rather have a global/singleton for the objectsManager ?
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::string mName;

@@ -17,30 +17,33 @@
 #ifndef QC_TOBJECT2JSON_BACKENDFACTORY_H
 #define QC_TOBJECT2JSON_BACKENDFACTORY_H
 
-#include "TObject2JsonServer.h"
 #include "TObject2JsonBackend.h"
+#include "TObject2JsonServer.h"
 
-namespace o2 {
-namespace quality_control {
-namespace tobject_to_json {
+namespace o2
+{
+namespace quality_control
+{
+namespace tobject_to_json
+{
 
 /// Creates a backend instance
 class TObject2JsonBackendFactory
 {
-  public:
-    /// Disables copy constructor
-    TObject2JsonBackendFactory & operator=(const TObject2JsonBackendFactory&) = delete;
-    TObject2JsonBackendFactory(const TObject2JsonBackendFactory&) = delete;
+ public:
+  /// Disables copy constructor
+  TObject2JsonBackendFactory& operator=(const TObject2JsonBackendFactory&) = delete;
+  TObject2JsonBackendFactory(const TObject2JsonBackendFactory&) = delete;
 
-    /// Creates an instance of backend depending on the URL passed
-    static std::unique_ptr<Backend> Get(std::string url);
+  /// Creates an instance of backend depending on the URL passed
+  static std::unique_ptr<Backend> Get(std::string url);
 
-  private:
-    /// Private constructor disallows to create instance of Factory
-    TObject2JsonBackendFactory() = default;
+ private:
+  /// Private constructor disallows to create instance of Factory
+  TObject2JsonBackendFactory() = default;
 };
 
-} // namespace tobject_to_json {
+} // namespace tobject_to_json
 } // namespace quality_control
 } // namespace o2
 

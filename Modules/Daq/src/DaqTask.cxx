@@ -5,18 +5,21 @@
 
 #include "Daq/DaqTask.h"
 
-#include <TH1.h>
+#include "QualityControl/QcInfoLogger.h"
 #include <TCanvas.h>
 #include <TDatime.h>
-#include <TStyle.h>
 #include <TGraph.h>
-#include "QualityControl/QcInfoLogger.h"
+#include <TH1.h>
+#include <TStyle.h>
 
 using namespace std;
 
-namespace o2 {
-namespace quality_control_modules {
-namespace daq {
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace daq
+{
 
 DaqTask::DaqTask()
   : TaskInterface(),
@@ -29,7 +32,6 @@ DaqTask::DaqTask()
     mCanvas(nullptr),
     mPaveText(nullptr)
 {
-
 }
 
 DaqTask::~DaqTask()
@@ -85,7 +87,7 @@ void DaqTask::initialize(o2::framework::InitContext& ctx)
   getObjectsManager()->startPublishing(mPaveText);
 }
 
-void DaqTask::startOfActivity(Activity &activity)
+void DaqTask::startOfActivity(Activity& activity)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   mPayloadSize->Reset();
@@ -95,24 +97,20 @@ void DaqTask::startOfActivity(Activity &activity)
   mNPoints = 0;
 }
 
-void DaqTask::startOfCycle()
-{
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-}
+void DaqTask::startOfCycle() { QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm; }
 
 void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   QcInfoLogger::GetInstance() << "initialize SkeletonTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
-
-//what does it mean to have several inputs ? is it that we defined several in the config file ?
-// If I am connected to the readout can I ever receive several inputs ?
-// TODO maybe we need a special daq task for the readout because we have to look into the weird data structure.
+  // what does it mean to have several inputs ? is it that we defined several in the config file ?
+  // If I am connected to the readout can I ever receive several inputs ?
+  // TODO maybe we need a special daq task for the readout because we have to look into the weird data structure.
 
   // in a loop
   uint32_t totalPayloadSize = 0;
-  for (auto && input : ctx.inputs()) {
-    const auto *header = o2::header::get<header::DataHeader *>(input.header);
+  for (auto&& input : ctx.inputs()) {
+    const auto* header = o2::header::get<header::DataHeader*>(input.header);
     uint32_t size = header->payloadSize;
     mSubPayloadSize->Fill(size);
     totalPayloadSize += size;
@@ -122,28 +120,22 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
   mNumberSubblocks->Fill(ctx.inputs().size());
 
   // TODO if data has an id (like event id), we should plot it
-//  TDatime now;
-//  if ((now.Get() - mTimeLastRecord) >= 1) {
-//    mIds->SetPoint(mNPoints, now.Convert(), ctx.inputs().begin());
-//    mNPoints++;
-//    mTimeLastRecord = now.Get();
-//  }
+  //  TDatime now;
+  //  if ((now.Get() - mTimeLastRecord) >= 1) {
+  //    mIds->SetPoint(mNPoints, now.Convert(), ctx.inputs().begin());
+  //    mNPoints++;
+  //    mTimeLastRecord = now.Get();
+  //  }
 }
 
-void DaqTask::endOfCycle()
-{
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-}
+void DaqTask::endOfCycle() { QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm; }
 
- void DaqTask::endOfActivity(Activity &activity)
+void DaqTask::endOfActivity(Activity& activity)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void DaqTask::reset()
-{
-  QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm;
-}
+void DaqTask::reset() { QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm; }
 
 } // namespace daq
 } // namespace quality_control_modules

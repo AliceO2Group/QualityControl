@@ -4,26 +4,24 @@
 ///
 
 #include "Example/BenchmarkTask.h"
-#include <TH1.h>
-#include <TCanvas.h>
 #include "QualityControl/QcInfoLogger.h"
+#include <TCanvas.h>
+#include <TH1.h>
 #include <thread>
 
 using namespace std;
 using namespace o2::configuration;
 
-namespace o2 {
-namespace quality_control_modules {
-namespace example {
-
-BenchmarkTask::BenchmarkTask()
-  : TaskInterface()
+namespace o2
 {
-}
-
-BenchmarkTask::~BenchmarkTask()
+namespace quality_control_modules
 {
-}
+namespace example
+{
+
+BenchmarkTask::BenchmarkTask() : TaskInterface() {}
+
+BenchmarkTask::~BenchmarkTask() {}
 
 void BenchmarkTask::initialize(o2::framework::InitContext& ctx)
 {
@@ -50,13 +48,12 @@ void BenchmarkTask::initialize(o2::framework::InitContext& ctx)
 
     // Add the checks
     for (size_t j = 0; j < mNumberChecks; j++) {
-      getObjectsManager()->addCheck(name.str(), "fakeCheck_" + std::to_string(j),
-                                    mTypeOfChecks, mModuleOfChecks);
+      getObjectsManager()->addCheck(name.str(), "fakeCheck_" + std::to_string(j), mTypeOfChecks, mModuleOfChecks);
     }
   }
 }
 
-void BenchmarkTask::startOfActivity(Activity &activity)
+void BenchmarkTask::startOfActivity(Activity& activity)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
@@ -68,27 +65,24 @@ void BenchmarkTask::startOfCycle()
 
 void BenchmarkTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  std::this_thread::sleep_for(std::chrono::milliseconds(100)/*100ms*/);
+  std::this_thread::sleep_for(std::chrono::milliseconds(100) /*100ms*/);
 }
 
 void BenchmarkTask::endOfCycle()
 {
-  for(auto histo : mHistos) {
+  for (auto histo : mHistos) {
     histo->Reset();
     histo->FillRandom("gaus", 1000);
   }
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void BenchmarkTask::endOfActivity(Activity &activity)
+void BenchmarkTask::endOfActivity(Activity& activity)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void BenchmarkTask::reset()
-{
-  QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm;
-}
+void BenchmarkTask::reset() { QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm; }
 
 } // namespace example
 } // namespace quality_control_modules

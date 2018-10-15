@@ -16,57 +16,60 @@
 #ifndef QC_REPOSITORYBENCHMARK_H
 #define QC_REPOSITORYBENCHMARK_H
 
-#include <FairMQDevice.h>
 #include "QualityControl/CcdbDatabase.h"
-#include <TH1F.h>
+#include <FairMQDevice.h>
 #include <Monitoring/MonitoringFactory.h>
+#include <TH1F.h>
 #include <boost/asio.hpp>
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 class RepositoryBenchmark : public FairMQDevice
 {
-  public:
-    RepositoryBenchmark();
-    virtual ~RepositoryBenchmark()= default;
+ public:
+  RepositoryBenchmark();
+  virtual ~RepositoryBenchmark() = default;
 
-  protected:
-    virtual void InitTask();
-    virtual bool ConditionalRun();
-    void emptyDatabase();
-    void checkTimedOut();
+ protected:
+  virtual void InitTask();
+  virtual bool ConditionalRun();
+  void emptyDatabase();
+  void checkTimedOut();
 
-  private:
-    // user params
-    uint64_t mMaxIterations;
-    uint64_t mNumIterations;
-    uint64_t mNumberObjects;
-    uint64_t mSizeObjects;
-    std::string mTaskName;
-    std::string mObjectName;
-    bool mDeletionMode;
+ private:
+  // user params
+  uint64_t mMaxIterations;
+  uint64_t mNumIterations;
+  uint64_t mNumberObjects;
+  uint64_t mSizeObjects;
+  std::string mTaskName;
+  std::string mObjectName;
+  bool mDeletionMode;
 
-    // monitoring
-    std::unique_ptr<o2::monitoring::Monitoring> mMonitoring;
-    uint64_t mTotalNumberObjects;
-    bool mThreadedMonitoring;
-    uint64_t mThreadedMonitoringInterval;
+  // monitoring
+  std::unique_ptr<o2::monitoring::Monitoring> mMonitoring;
+  uint64_t mTotalNumberObjects;
+  bool mThreadedMonitoring;
+  uint64_t mThreadedMonitoringInterval;
 
-    // internal state
-    std::unique_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-    std::vector<std::shared_ptr<MonitorObject>> mMyObjects;
-    TH1 *mMyHisto;
+  // internal state
+  std::unique_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
+  std::vector<std::shared_ptr<MonitorObject>> mMyObjects;
+  TH1* mMyHisto;
 
-    // variables for the timer
-    boost::asio::deadline_timer *mTimer; /// the asynchronous timer to send monitoring data
-    boost::asio::io_service io;
-    std::thread *th;
+  // variables for the timer
+  boost::asio::deadline_timer* mTimer; /// the asynchronous timer to send monitoring data
+  boost::asio::io_service io;
+  std::thread* th;
 };
 
 } // namespace core
 } // namespace quality_control
 } // namespace o2
 
-#endif //QC_REPOSITORYBENCHMARK_H
+#endif // QC_REPOSITORYBENCHMARK_H

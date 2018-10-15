@@ -4,11 +4,11 @@
 ///
 
 #include "../include/Example/ExampleTask.h"
-#include "QualityControl/TaskFactory.h"
-#include "QualityControl/ObjectsManager.h"
-#include <boost/exception/diagnostic_information.hpp>
-#include <TSystem.h>
 #include "Common/Exceptions.h"
+#include "QualityControl/ObjectsManager.h"
+#include "QualityControl/TaskFactory.h"
+#include <TSystem.h>
+#include <boost/exception/diagnostic_information.hpp>
 
 #define BOOST_TEST_MODULE Publisher test
 #define BOOST_TEST_MAIN
@@ -19,12 +19,15 @@
 
 #include <TH1.h>
 
-//using namespace o2::common;
+// using namespace o2::common;
 using namespace std;
 
-namespace o2 {
-namespace quality_control_modules {
-namespace common {
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace common
+{
 
 BOOST_AUTO_TEST_CASE(Task_Factory)
 {
@@ -42,10 +45,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
   }
 }
 
-bool is_critical(AliceO2::Common::FatalException const &ex)
-{
-  return true;
-}
+bool is_critical(AliceO2::Common::FatalException const& ex) { return true; }
 
 BOOST_AUTO_TEST_CASE(Task_Factory_failures)
 {
@@ -56,9 +56,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures)
   config.taskName = "task";
   config.moduleName = "WRONGNAME";
   config.className = "o2::quality_control_modules::example::ExampleTask";
-  BOOST_CHECK_EXCEPTION(
-    factory.create<TaskInterface>(config, manager),
-    AliceO2::Common::FatalException, is_critical);
+  BOOST_CHECK_EXCEPTION(factory.create<TaskInterface>(config, manager), AliceO2::Common::FatalException, is_critical);
 
   std::string addition = "lib:../../lib:../../../lib:";
   gSystem->Setenv("LD_LIBRARY_PATH", (addition + gSystem->Getenv("LD_LIBRARY_PATH")).c_str());
@@ -66,9 +64,8 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures)
   config.moduleName = "QcCommon";
   config.className = "WRONGCLASS";
   BOOST_CHECK_EXCEPTION(factory.create<TaskInterface>(config, manager), AliceO2::Common::FatalException, is_critical);
-
 }
 
-} // namespace Checker
-} // namespace quality_control
+} // namespace common
+} // namespace quality_control_modules
 } // namespace o2

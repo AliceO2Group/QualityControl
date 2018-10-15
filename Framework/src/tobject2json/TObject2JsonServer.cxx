@@ -16,9 +16,9 @@
 
 // TObject2Json
 #include "TObject2JsonServer.h"
-#include "TObject2JsonWorker.h"
-#include "TObject2JsonBackendFactory.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "TObject2JsonBackendFactory.h"
+#include "TObject2JsonWorker.h"
 
 // ZMQ
 #include "zmq.h"
@@ -33,14 +33,14 @@ using namespace o2::quality_control::core;
 using namespace std::string_literals;
 using o2::quality_control::tobject_to_json::TObject2JsonBackendFactory;
 
-namespace o2 {
-namespace quality_control {
-namespace tobject_to_json {
+namespace o2
+{
+namespace quality_control
+{
+namespace tobject_to_json
+{
 
-TObject2JsonServer::TObject2JsonServer()
-  : mCtx(1),
-    mFrontend(mCtx, ZMQ_ROUTER),
-    mBackend(mCtx, ZMQ_DEALER)
+TObject2JsonServer::TObject2JsonServer() : mCtx(1), mFrontend(mCtx, ZMQ_ROUTER), mBackend(mCtx, ZMQ_DEALER)
 {
   // Make ROOT aware that workers will do calls from threads
   ROOT::EnableThreadSafety();
@@ -77,8 +77,7 @@ void TObject2JsonServer::run()
 {
   try {
     zmq::proxy(mFrontend, mBackend, nullptr);
-  }
-  catch (std::exception &e) {
+  } catch (std::exception& e) {
     QcInfoLogger::GetInstance() << "Closing server/backend proxy: " << e.what() << infologger::endm;
   }
 }

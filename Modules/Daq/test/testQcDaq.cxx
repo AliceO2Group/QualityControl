@@ -11,14 +11,17 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
-#include <boost/test/unit_test.hpp>
 #include <TH1.h>
+#include <boost/test/unit_test.hpp>
 
 using namespace std;
 
-namespace o2 {
-namespace quality_control_modules {
-namespace daq {
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace daq
+{
 
 BOOST_AUTO_TEST_CASE(instantiate_task)
 {
@@ -26,26 +29,24 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   TaskConfig config;
   auto manager = make_shared<ObjectsManager>(config);
   task.setObjectsManager(manager);
-//  o2::framework::InitContext ctx;
-//  task.initialize(ctx); // TODO
+  //  o2::framework::InitContext ctx;
+  //  task.initialize(ctx); // TODO
 
   BOOST_CHECK(manager->getMonitorObject("payloadSize")->getObject() != nullptr);
 
   Activity activity;
   task.startOfActivity(activity);
   task.startOfCycle();
-//  auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
-//  DataSetReference dataSet = producer.getDataSet();
-//  task.monitorDataBlock(dataSet);// TODO
+  //  auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
+  //  DataSetReference dataSet = producer.getDataSet();
+  //  task.monitorDataBlock(dataSet);// TODO
 
-  TH1F *histo = (TH1F *) manager->getMonitorObject("payloadSize")->getObject();
+  TH1F* histo = (TH1F*)manager->getMonitorObject("payloadSize")->getObject();
   BOOST_CHECK(histo->GetEntries() == 1);
 
   task.endOfCycle();
   task.endOfActivity(activity);
 }
-
-
 
 } // namespace daq
 } // namespace quality_control_modules

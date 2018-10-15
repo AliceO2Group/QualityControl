@@ -9,8 +9,8 @@
 
 namespace o2
 {
-using header::DataOrigin;
 using header::DataDescription;
+using header::DataOrigin;
 using SubSpecificationType = header::DataHeader::SubSpecificationType;
 using namespace framework;
 namespace quality_control
@@ -19,18 +19,14 @@ namespace core
 {
 
 HistoMerger::HistoMerger(std::string mergerName, double publicationPeriodSeconds)
-  : mMergerName(mergerName),
-    mOutputSpec{ header::gDataOriginInvalid, header::gDataDescriptionInvalid }
+  : mMergerName(mergerName), mOutputSpec{ header::gDataOriginInvalid, header::gDataDescriptionInvalid }
 {
   mPublicationTimer.reset(static_cast<int>(publicationPeriodSeconds * 1000000));
 }
 
 HistoMerger::~HistoMerger() {}
 
-void HistoMerger::init(framework::InitContext& ctx)
-{
-  mMonitorObject.reset();
-}
+void HistoMerger::init(framework::InitContext& ctx) { mMonitorObject.reset(); }
 
 void HistoMerger::run(framework::ProcessingContext& ctx)
 {

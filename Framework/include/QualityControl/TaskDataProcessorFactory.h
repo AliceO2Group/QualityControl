@@ -8,9 +8,12 @@
 
 #include "Framework/DataProcessorSpec.h"
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 /// \brief Factory in charge of creating DataProcessorSpec of QC task
 class TaskDataProcessorFactory
@@ -26,4 +29,4 @@ class TaskDataProcessorFactory
 } // namespace quality_control
 } // namespace o2
 
-#endif //QC_CORE_TASKDATAPROCESSORFACTORY_H
+#endif // QC_CORE_TASKDATAPROCESSORFACTORY_H
