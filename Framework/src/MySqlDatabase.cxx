@@ -59,10 +59,10 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
 
 void MySqlDatabase::connect(std::unique_ptr<ConfigurationInterface>& config)
 {
-  this->connect(config->get<string>("qc/config/database/host").value(),
-                config->get<string>("qc/config/database/name").value(),
-                config->get<string>("qc/config/database/username").value(),
-                config->get<string>("qc/config/database/password").value());
+  this->connect(config->get<string>("qc/config/database/host"),
+                config->get<string>("qc/config/database/name"),
+                config->get<string>("qc/config/database/username"),
+                config->get<string>("qc/config/database/password"));
 }
 
 void MySqlDatabase::prepareTaskDataContainer(std::string taskName)

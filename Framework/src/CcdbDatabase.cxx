@@ -43,7 +43,7 @@ void CcdbDatabase::connect(std::string host, std::string database, std::string u
 
 void CcdbDatabase::connect(std::unique_ptr<ConfigurationInterface>& config)
 {
-  mUrl = config->get<string>("qc/config/database/host").value();
+  mUrl = config->get<string>("qc/config/database/host");
   ccdbApi.init(mUrl);
 }
 
