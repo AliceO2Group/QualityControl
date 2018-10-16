@@ -12,8 +12,6 @@
 
 using namespace std;
 
-ClassImp(o2::quality_control_modules::skeleton::SkeletonCheck)
-
 namespace o2
 {
 namespace quality_control_modules
