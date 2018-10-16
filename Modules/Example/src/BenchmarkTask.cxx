@@ -30,11 +30,11 @@ void BenchmarkTask::initialize(o2::framework::InitContext& ctx)
 
   mConfigFile = ConfigurationFactory::getConfiguration("file:./example.ini");
   string prefix = "/qc/tasks_config/" + getName();
-  string taskDefinitionName = mConfigFile->get<std::string>(prefix + ".taskDefinition").value();
-  mNumberHistos = mConfigFile->get<int>(taskDefinitionName + ".numberHistos").value();
-  mNumberChecks = mConfigFile->get<int>(taskDefinitionName + ".numberChecks").value();
-  mTypeOfChecks = mConfigFile->get<std::string>(taskDefinitionName + ".typeOfChecks").value();
-  mModuleOfChecks = mConfigFile->get<std::string>(taskDefinitionName + ".moduleOfChecks").value();
+  string taskDefinitionName = mConfigFile->get<std::string>(prefix + ".taskDefinition");
+  mNumberHistos = mConfigFile->get<int>(taskDefinitionName + ".numberHistos");
+  mNumberChecks = mConfigFile->get<int>(taskDefinitionName + ".numberChecks");
+  mTypeOfChecks = mConfigFile->get<std::string>(taskDefinitionName + ".typeOfChecks");
+  mModuleOfChecks = mConfigFile->get<std::string>(taskDefinitionName + ".moduleOfChecks");
 
   mHistos.reserve(mNumberHistos);
 

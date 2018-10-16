@@ -142,25 +142,25 @@ void TaskRunner::populateConfig(std::string taskName)
 {
   try {
     std::string prefix = std::string("qc/tasks_config/");
-    std::string taskDefinitionName = mConfigFile->get<std::string>(prefix + taskName + "/taskDefinition").value();
+    std::string taskDefinitionName = mConfigFile->get<std::string>(prefix + taskName + "/taskDefinition");
 
     mTaskConfig.taskName = taskName;
-    mTaskConfig.moduleName = mConfigFile->get<std::string>(prefix + taskDefinitionName + "/moduleName").value();
-    mTaskConfig.className = mConfigFile->get<std::string>(prefix + taskDefinitionName + "/className").value();
+    mTaskConfig.moduleName = mConfigFile->get<std::string>(prefix + taskDefinitionName + "/moduleName");
+    mTaskConfig.className = mConfigFile->get<std::string>(prefix + taskDefinitionName + "/className");
     mTaskConfig.cycleDurationSeconds =
-      mConfigFile->get<int>(prefix + taskDefinitionName + "/cycleDurationSeconds").value_or(10);
-    mTaskConfig.maxNumberCycles = mConfigFile->get<int>(prefix + taskDefinitionName + "/maxNumberCycles").value_or(-1);
+      mConfigFile->get<int>(prefix + taskDefinitionName + "/cycleDurationSeconds", 10);
+    mTaskConfig.maxNumberCycles = mConfigFile->get<int>(prefix + taskDefinitionName + "/maxNumberCycles", -1);
 
     // maybe it should be moved somewhere else?
-    std::string taskInputsNames = mConfigFile->getString(prefix + taskDefinitionName + "/inputs").value();
+    std::string taskInputsNames = mConfigFile->get<std::string>(prefix + taskDefinitionName + "/inputs");
     std::vector<std::string> taskInputsSplit;
     boost::split(taskInputsSplit, taskInputsNames, boost::is_any_of(","));
 
     for (auto&& input : taskInputsSplit) {
       InputSpec inputSpec;
-      inputSpec.binding = mConfigFile->getString(prefix + input + "/inputName").value();
-      inputSpec.origin.runtimeInit(mConfigFile->getString(prefix + input + "/dataOrigin").value().c_str());
-      inputSpec.description.runtimeInit(mConfigFile->getString(prefix + input + "/dataDescription").value().c_str());
+      inputSpec.binding = mConfigFile->get<std::string>(prefix + input + "/inputName");
+      inputSpec.origin.runtimeInit(mConfigFile->get<std::string>(prefix + input + "/dataOrigin").c_str());
+      inputSpec.description.runtimeInit(mConfigFile->get<std::string>(prefix + input + "/dataDescription").c_str());
       size_t len = strlen(inputSpec.description.str);
       if (len < inputSpec.description.size - 2) {
         inputSpec.description.str[len] = '_';
@@ -189,15 +189,15 @@ void TaskRunner::populateConfig(std::string taskName)
 void TaskRunner::startOfActivity()
 {
   mTimerTotalDurationActivity.reset();
-  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(),
-                    mConfigFile->get<int>("qc/config/Activity/type").value());
+  Activity activity(mConfigFile->get<int>("qc/config/Activity/number"),
+                    mConfigFile->get<int>("qc/config/Activity/type"));
   mTask->startOfActivity(activity);
 }
 
 void TaskRunner::endOfActivity()
 {
-  Activity activity(mConfigFile->get<int>("qc/config/Activity/number").value(),
-                    mConfigFile->get<int>("qc/config/Activity/type").value());
+  Activity activity(mConfigFile->get<int>("qc/config/Activity/number"),
+                    mConfigFile->get<int>("qc/config/Activity/type"));
   mTask->endOfActivity(activity);
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
