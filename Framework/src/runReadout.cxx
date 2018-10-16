@@ -57,29 +57,33 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   specs.push_back(checkerFactory.create("checker_0", qcTaskName, qcConfigurationSource));
 
   DataProcessorSpec printer{
-    "printer", Inputs{ { "checked-mo", "QC", Checker::checkerDataDescription(qcTaskName), 0 } }, Outputs{},
-    AlgorithmSpec{ (AlgorithmSpec::InitCallback)[](InitContext & initContext){
+    "printer",
+    Inputs{
+      { "checked-mo", "QC", Checker::checkerDataDescription(qcTaskName), 0 }
+    },
+    Outputs{},
+    AlgorithmSpec{
+      (AlgorithmSpec::InitCallback) [](InitContext& initContext) {
 
-      return (AlgorithmSpec::ProcessCallback)[](ProcessingContext & processingContext) mutable {
-        auto mo = processingContext.inputs().get<MonitorObject*>("checked-mo").get();
+        return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
+          auto mo = processingContext.inputs().get<MonitorObject*>("checked-mo").get();
 
-  if (mo->getName() == "example") {
-    auto* g = dynamic_cast<TH1F*>(mo->getObject());
-    std::string bins = "BINS:";
-    for (int i = 0; i < g->GetNbinsX() + 2; i++) {
-      bins += " " + std::to_string((int)g->GetBinContent(i));
+          if (mo->getName() == "example") {
+            auto* g = dynamic_cast<TH1F*>(mo->getObject());
+            std::string bins = "BINS:";
+            for (int i = 0; i < g->GetNbinsX() + 2; i++) {
+              bins += " " + std::to_string((int) g->GetBinContent(i));
+            }
+            LOG(INFO) << bins;
+          }
+        };
+      }
     }
-    LOG(INFO) << bins;
-  }
-};
-}
-}
-}
-;
-specs.push_back(printer);
+  };
+  specs.push_back(printer);
 
-LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
-o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
-return specs;
+  return specs;
 }

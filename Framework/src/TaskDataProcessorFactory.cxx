@@ -34,21 +34,23 @@ DataProcessorSpec TaskDataProcessorFactory::create(std::string taskName, std::st
   auto qcTask = std::make_shared<TaskRunner>(taskName, configurationSource);
 
   DataProcessorSpec newTask{
-    taskName, qcTask->getInputsSpecs(), Outputs{ qcTask->getOutputSpec() },
-    AlgorithmSpec{ (AlgorithmSpec::InitCallback)[qcTask = std::move(qcTask)](InitContext & initContext){
+    taskName,
+    qcTask->getInputsSpecs(),
+    Outputs{ qcTask->getOutputSpec() },
+    AlgorithmSpec{
+      (AlgorithmSpec::InitCallback) [qcTask = std::move(qcTask)](InitContext& initContext) {
 
-      qcTask->initCallback(initContext);
+        qcTask->initCallback(initContext);
 
-  return (AlgorithmSpec::ProcessCallback)[qcTask = std::move(qcTask)](ProcessingContext & processingContext)
-  {
-    qcTask->processCallback(processingContext);
+        return (AlgorithmSpec::ProcessCallback) [qcTask = std::move(qcTask)] (ProcessingContext &processingContext) {
+          qcTask->processCallback(processingContext);
+        };
+      }
+    }
   };
-}
-} // namespace core
-}; // namespace quality_control
 
-return std::move(newTask);
-} // namespace o2
+  return std::move(newTask);
+}
 
 } // namespace core
 } // namespace quality_control
