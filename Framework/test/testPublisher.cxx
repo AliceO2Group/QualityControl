@@ -8,18 +8,21 @@
 #define BOOST_TEST_MODULE Publisher test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
-#include <boost/test/unit_test.hpp>
 #include "../include/Common/Exceptions.h"
-#include <iostream>
 #include <TObjString.h>
+#include <boost/test/unit_test.hpp>
+#include <iostream>
 
 using namespace std;
 using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 BOOST_AUTO_TEST_CASE(publisher_test)
 {
@@ -28,7 +31,7 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   ObjectsManager objectsManager(config);
   TObjString s("content");
   objectsManager.startPublishing(&s, "test");
-  TObjString *s2 = (TObjString*)(objectsManager.getObject("test"));
+  TObjString* s2 = (TObjString*)(objectsManager.getObject("test"));
   BOOST_CHECK_EQUAL(s.GetString(), s2->GetString());
   BOOST_CHECK_EQUAL(Quality::Null, objectsManager.getQuality("test"));
   auto mo = objectsManager.getMonitorObject("test");
@@ -45,9 +48,9 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   // that is just for me to see how it looks like
   try {
     objectsManager.getQuality("test2");
-  } catch (ObjectNotFoundError &e) {
+  } catch (ObjectNotFoundError& e) {
     std::cout << e.what() << std::endl;
-    if ( std::string const * extra  = boost::get_error_info<errinfo_object_name>(e) ) {
+    if (std::string const* extra = boost::get_error_info<errinfo_object_name>(e)) {
       std::cout << "object name : " << *extra << std::endl;
     }
   }

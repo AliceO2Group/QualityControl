@@ -14,7 +14,6 @@
 /// \file InformationServiceDump.h
 ///
 
-
 #ifndef QC_INFORMATIONSERVICEDUMP_H
 #define QC_INFORMATIONSERVICEDUMP_H
 
@@ -36,13 +35,13 @@
 ///                         --request-task myTask1
 class InformationServiceDump : public FairMQDevice
 {
-  public:
-    InformationServiceDump();
-    virtual ~InformationServiceDump();
+ public:
+  InformationServiceDump();
+  virtual ~InformationServiceDump();
 
-  protected:
-    /// Callback for data coming from InformationService
-    bool HandleData(FairMQMessagePtr &, int);
+ protected:
+  /// Callback for data coming from InformationService
+  bool HandleData(FairMQMessagePtr&, int);
 };
 
-#endif //QC_INFORMATIONSERVICEDUMP_H
+#endif // QC_INFORMATIONSERVICEDUMP_H

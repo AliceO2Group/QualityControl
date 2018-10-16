@@ -11,9 +11,12 @@
 #include <boost/test/unit_test.hpp>
 #include <cassert>
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 BOOST_AUTO_TEST_CASE(mo)
 {
@@ -41,7 +44,6 @@ BOOST_AUTO_TEST_CASE(mo)
   BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Bad);
   obj.setQualityForCheck("second", Quality::Medium);
   BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Medium);
-
 }
 BOOST_AUTO_TEST_CASE(mo_check)
 {
@@ -53,9 +55,7 @@ BOOST_AUTO_TEST_CASE(mo_check)
   check.className = "test";
   obj.addOrReplaceCheck("test", check);
   BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Null);
-
 }
-
 
 } /* namespace core */
 } /* namespace quality_control */

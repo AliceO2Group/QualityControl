@@ -24,27 +24,31 @@
 
 using o2::quality_control::repository::CcdbDatabase;
 
-namespace o2 {
-namespace quality_control {
-namespace tobject_to_json {
-namespace backends {
+namespace o2
+{
+namespace quality_control
+{
+namespace tobject_to_json
+{
+namespace backends
+{
 
 /// Takes TObject from Ccdb database and returns JSON formatted object
 class Ccdb final : public Backend
 {
-  public:
-    // Connects to MySQL database
-    Ccdb(std::string host, unsigned int port, std::string database, std::string username, std::string password);
+ public:
+  // Connects to MySQL database
+  Ccdb(std::string host, unsigned int port, std::string database, std::string username, std::string password);
 
-    /// Gets TObject from database and returns the JSON equivalent
-    std::string getJsonObject(std::string agentName, std::string objectName) override;
+  /// Gets TObject from database and returns the JSON equivalent
+  std::string getJsonObject(std::string agentName, std::string objectName) override;
 
-  private:
-    /// MySQL client instance
-    std::unique_ptr<CcdbDatabase> mCcdbClient;
+ private:
+  /// MySQL client instance
+  std::unique_ptr<CcdbDatabase> mCcdbClient;
 };
 
-} // namespace backends {
+} // namespace backends
 } // namespace tobject_to_json
 } // namespace quality_control
 } // namespace o2

@@ -4,27 +4,24 @@
 /// \author Piotr Konopka
 ///
 
-#include <TH1.h>
 #include <TCanvas.h>
+#include <TH1.h>
 
-#include "Skeleton/SkeletonTask.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "Skeleton/SkeletonTask.h"
 
 using namespace std;
 
-namespace o2 {
-namespace quality_control_modules {
-namespace skeleton {
-
-SkeletonTask::SkeletonTask()
-  : TaskInterface(), mHistogram(nullptr)
+namespace o2
 {
-  mHistogram = nullptr;
-}
-
-SkeletonTask::~SkeletonTask()
+namespace quality_control_modules
 {
-}
+namespace skeleton
+{
+
+SkeletonTask::SkeletonTask() : TaskInterface(), mHistogram(nullptr) { mHistogram = nullptr; }
+
+SkeletonTask::~SkeletonTask() {}
 
 void SkeletonTask::initialize(o2::framework::InitContext& ctx)
 {
@@ -32,12 +29,11 @@ void SkeletonTask::initialize(o2::framework::InitContext& ctx)
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
-  getObjectsManager()->addCheck(mHistogram, "checkFromSkeleton",
-                                "o2::quality_control_modules::skeleton::SkeletonCheck",
+  getObjectsManager()->addCheck(mHistogram, "checkFromSkeleton", "o2::quality_control_modules::skeleton::SkeletonCheck",
                                 "QcSkeleton");
 }
 
-void SkeletonTask::startOfActivity(Activity &activity)
+void SkeletonTask::startOfActivity(Activity& activity)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   mHistogram->Reset();
@@ -52,7 +48,7 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // todo: update API examples or refer to DPL README.md
 
-//  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
+  //  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // exemplary ways of accessing inputs (incoming data), that were specified in the .ini file - e.g.:
   //  [readoutInput]
@@ -61,7 +57,7 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   //  dataDescription=RAWDATA
 
   // 1. in a loop
-  for (auto && input : ctx.inputs()){
+  for (auto&& input : ctx.inputs()) {
     const auto* header = o2::header::get<header::DataHeader*>(input.header);
     mHistogram->Fill(header->payloadSize);
 
@@ -92,7 +88,7 @@ void SkeletonTask::endOfCycle()
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void SkeletonTask::endOfActivity(Activity &activity)
+void SkeletonTask::endOfActivity(Activity& activity)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }

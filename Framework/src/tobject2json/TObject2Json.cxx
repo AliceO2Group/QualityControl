@@ -21,15 +21,15 @@
 
 using o2::quality_control::tobject_to_json::TObject2JsonServer;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   boost::program_options::variables_map vm;
   boost::program_options::options_description desc("Allowed options");
-  desc.add_options()
-    ("backend", boost::program_options::value<std::string>()->required(), "Backend URL, eg.: mysql://<login>:<password>@<hostname>:<port>/<database>")
-    ("zeromq-server", boost::program_options::value<std::string>()->required(), "ZeroMQ server endpoint, eg.: tcp://<host>:<port>")
-    ("workers", boost::program_options::value<int>(), "Number of worker threads, eg.: 8")
-  ;
+  desc.add_options()("backend", boost::program_options::value<std::string>()->required(),
+                     "Backend URL, eg.: mysql://<login>:<password>@<hostname>:<port>/<database>")(
+    "zeromq-server", boost::program_options::value<std::string>()->required(),
+    "ZeroMQ server endpoint, eg.: tcp://<host>:<port>")("workers", boost::program_options::value<int>(),
+                                                        "Number of worker threads, eg.: 8");
   try {
     boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
     boost::program_options::notify(vm);

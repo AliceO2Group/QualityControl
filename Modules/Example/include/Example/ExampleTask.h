@@ -12,48 +12,45 @@ class TH1F;
 
 using namespace o2::quality_control::core;
 
-namespace o2 {
-namespace quality_control_modules {
-namespace example {
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace example
+{
 
 /// \brief Example Quality Control Task
 /// It is final because there is no reason to derive from it. Just remove it if needed.
 /// \author Barthelemy von Haller
-class ExampleTask /*final*/: public TaskInterface // todo add back the "final" when doxygen is fixed
+class ExampleTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
-  public:
-    /// \brief Constructor
-    ExampleTask();
-    /// Destructor
-    ~ExampleTask() override;
+ public:
+  /// \brief Constructor
+  ExampleTask();
+  /// Destructor
+  ~ExampleTask() override;
 
-    // Definition of the methods for the template method pattern
-    void initialize(o2::framework::InitContext& ctx) override;
-    void startOfActivity(Activity &activity) override;
-    void startOfCycle() override;
-    void monitorData(o2::framework::ProcessingContext& ctx) override;
-    void endOfCycle() override;
-    void endOfActivity(Activity &activity) override;
-    void reset() override;
+  // Definition of the methods for the template method pattern
+  void initialize(o2::framework::InitContext& ctx) override;
+  void startOfActivity(Activity& activity) override;
+  void startOfCycle() override;
+  void monitorData(o2::framework::ProcessingContext& ctx) override;
+  void endOfCycle() override;
+  void endOfActivity(Activity& activity) override;
+  void reset() override;
 
-    // Accessors
-    TH1F*& getHisto1()
-    {
-      return mHistos[0];
-    }
-    TH1F*& getHisto2()
-    {
-      return mHistos[1];
-    }
+  // Accessors
+  TH1F*& getHisto1() { return mHistos[0]; }
+  TH1F*& getHisto2() { return mHistos[1]; }
 
-  private:
-    int mNumberCycles;
-    TH1F *mHistos[25];
-    void publishHisto(int i);
+ private:
+  int mNumberCycles;
+  TH1F* mHistos[25];
+  void publishHisto(int i);
 };
 
 } // namespace example
 } // namespace quality_control_modules
 } // namespace o2
 
-#endif //QC_MODULE_EXAMPLE_EXAMPLETASK_H
+#endif // QC_MODULE_EXAMPLE_EXAMPLETASK_H

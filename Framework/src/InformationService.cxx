@@ -20,7 +20,7 @@
 #include <boost/tokenizer.hpp>
 
 using namespace std;
-typedef boost::tokenizer<boost::char_separator<char> > t_tokenizer;
+typedef boost::tokenizer<boost::char_separator<char>> t_tokenizer;
 using namespace o2::quality_control::core;
 
 int timeOutIntervals = 5; // in seconds
@@ -41,9 +41,7 @@ void InformationService::Init()
   }
 }
 
-InformationService::~InformationService()
-{
-}
+InformationService::~InformationService() {}
 
 void InformationService::checkTimedOut()
 {
@@ -56,12 +54,12 @@ void InformationService::checkTimedOut()
   mTimer->async_wait(boost::bind(&InformationService::checkTimedOut, this));
 }
 
-bool InformationService::handleRequestData(FairMQMessagePtr &request, int /*index*/)
+bool InformationService::handleRequestData(FairMQMessagePtr& request, int /*index*/)
 {
-  string requestParam = string(static_cast<char *>(request->GetData()), request->GetSize());
+  string requestParam = string(static_cast<char*>(request->GetData()), request->GetSize());
   LOG(INFO) << "Received request from client: \"" << requestParam << "\"";
 
-  string *result = nullptr;
+  string* result = nullptr;
   if (requestParam == "all") {
     result = new string(produceJsonAll());
   } else {
@@ -73,20 +71,20 @@ bool InformationService::handleRequestData(FairMQMessagePtr &request, int /*inde
   }
 
   LOG(INFO) << "Sending reply to client.";
-  FairMQMessagePtr reply(NewMessage(const_cast<char *>(result->c_str()), // data
-                                    result->length(), // size
-                                    [](void * /*data*/,
-                                       void *object) { delete static_cast<string *>(object); }, // deletion callback
-                                    result)); // object that manages the data
+  FairMQMessagePtr reply(
+    NewMessage(const_cast<char*>(result->c_str()),                                        // data
+               result->length(),                                                          // size
+               [](void* /*data*/, void* object) { delete static_cast<string*>(object); }, // deletion callback
+               result));                                                                  // object that manages the data
   if (Send(reply, "request_data") <= 0) {
     LOG(ERROR) << "error sending reply";
   }
   return true; // keep running
 }
 
-bool InformationService::handleTaskInputData(FairMQMessagePtr &msg, int /*index*/)
+bool InformationService::handleTaskInputData(FairMQMessagePtr& msg, int /*index*/)
 {
-  string *receivedData = new std::string(static_cast<char *>(msg->GetData()), msg->GetSize());
+  string* receivedData = new std::string(static_cast<char*>(msg->GetData()), msg->GetSize());
   LOG(INFO) << "Received data, processing...";
   LOG(INFO) << "    " << *receivedData;
 
@@ -118,7 +116,7 @@ bool InformationService::handleTaskInputData(std::string receivedData)
   mCacheTasksData[taskName] = objects;
 
   // json
-  string *json = new std::string(produceJson(taskName));
+  string* json = new std::string(produceJson(taskName));
 
   // publish
   sendJson(json);
@@ -128,7 +126,7 @@ void InformationService::readFakeDataFile(std::string fakeDataFile)
 {
   std::string line;
   std::ifstream myfile(fakeDataFile);
-  if (!myfile) //Always test the file open.
+  if (!myfile) // Always test the file open.
   {
     LOG(ERROR) << "Error opening fake data file";
     return;
@@ -144,7 +142,7 @@ void InformationService::readFakeDataFile(std::string fakeDataFile)
   th = new thread([&] { io.run(); });
 }
 
-vector<string> InformationService::getObjects(string *receivedData)
+vector<string> InformationService::getObjects(string* receivedData)
 {
   vector<string> objects;
   std::string objectsString = receivedData->substr(receivedData->find(":") + 1, receivedData->length());
@@ -157,7 +155,7 @@ vector<string> InformationService::getObjects(string *receivedData)
   return objects;
 }
 
-std::string InformationService::getTaskName(std::string *receivedData)
+std::string InformationService::getTaskName(std::string* receivedData)
 {
   return receivedData->substr(0, receivedData->find(":"));
 }
@@ -167,7 +165,7 @@ pt::ptree InformationService::buildTaskNode(std::string taskName)
   pt::ptree task_node;
   task_node.put("name", taskName);
   pt::ptree objects_node;
-  for (auto &object : mCacheTasksData[taskName]) {
+  for (auto& object : mCacheTasksData[taskName]) {
     pt::ptree object_node;
     object_node.put("id", object);
     objects_node.push_back(std::make_pair("", object_node));
@@ -182,8 +180,9 @@ std::string InformationService::produceJson(std::string taskName)
 
   std::stringstream ss;
   pt::json_parser::write_json(ss, taskNode);
-  LOG(DEBUG) << "json : " << endl << ss.str();
-//  QcInfoLogger::GetInstance() << infologger::Debug << "json : \n" << *json << infologger::endm;
+  LOG(DEBUG) << "json : " << endl
+             << ss.str();
+  //  QcInfoLogger::GetInstance() << infologger::Debug << "json : \n" << *json << infologger::endm;
   return ss.str();
 }
 
@@ -193,7 +192,7 @@ std::string InformationService::produceJsonAll()
   pt::ptree main_node;
 
   pt::ptree tasksListNode;
-  for (const auto &taskTuple : mCacheTasksData) {
+  for (const auto& taskTuple : mCacheTasksData) {
     pt::ptree taskNode = buildTaskNode(taskTuple.first);
     tasksListNode.push_back(std::make_pair("", taskNode));
   }
@@ -201,16 +200,15 @@ std::string InformationService::produceJsonAll()
 
   std::stringstream ss;
   pt::json_parser::write_json(ss, main_node);
-  LOG(DEBUG) << "json : " << endl << ss.str();
+  LOG(DEBUG) << "json : " << endl
+             << ss.str();
   return ss.str();
 }
 
-void InformationService::sendJson(std::string *json)
+void InformationService::sendJson(std::string* json)
 {
-  FairMQMessagePtr msg2(NewMessage(const_cast<char *>(json->c_str()),
-                                   json->length(),
-                                   [](void * /*data*/, void *object) { delete static_cast<string *>(object); },
-                                   json));
+  FairMQMessagePtr msg2(NewMessage(const_cast<char*>(json->c_str()), json->length(),
+                                   [](void* /*data*/, void* object) { delete static_cast<string*>(object); }, json));
   int ret = Send(msg2, "updates_output");
   if (ret < 0) {
     LOG(ERROR) << "Error sending update";

@@ -33,17 +33,17 @@
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
-#include <random>
-#include <memory>
-#include <TH1F.h>
 #include <FairLogger.h>
+#include <TH1F.h>
+#include <memory>
+#include <random>
 
 #include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
 
-#include "QualityControl/TaskDataProcessorFactory.h"
-#include "QualityControl/CheckerDataProcessorFactory.h"
 #include "QualityControl/Checker.h"
+#include "QualityControl/CheckerDataProcessorFactory.h"
+#include "QualityControl/TaskDataProcessorFactory.h"
 
 using namespace o2::framework;
 using namespace o2::quality_control::core;
@@ -61,16 +61,12 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     },
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback) [](InitContext&) {
-
         std::default_random_engine generator(11);
-
         return (AlgorithmSpec::ProcessCallback) [generator](ProcessingContext& processingContext) mutable {
-
           usleep(100000);
           size_t length = generator() % 10000;
-
           auto data = processingContext.outputs().make<char>(Output{ "ITS", "RAWDATA", 0, Lifetime::Timeframe },
-                                                               length);
+                                                             length);
           for (auto&& item : data) {
             item = static_cast<char>(generator());
           }
@@ -83,8 +79,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   // Exemplary initialization of QC Task:
   const std::string qcTaskName = "QcTask";
-  const std::string qcConfigurationSource =
-    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/basic.json";
+  const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/basic.json";
   TaskDataProcessorFactory taskFactory;
   specs.push_back(taskFactory.create(qcTaskName, qcConfigurationSource));
 

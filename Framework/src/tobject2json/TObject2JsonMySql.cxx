@@ -16,21 +16,25 @@
 
 #include "TObject2JsonMySql.h"
 // QualityControl
-#include "QualityControl/MySqlDatabase.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/MySqlDatabase.h"
 #include "QualityControl/QcInfoLogger.h"
 
 // ROOT
 #include "TBufferJSON.h"
 
-using o2::quality_control::repository::MySqlDatabase;
 using o2::quality_control::core::MonitorObject;
 using o2::quality_control::core::QcInfoLogger;
+using o2::quality_control::repository::MySqlDatabase;
 
-namespace o2 {
-namespace quality_control {
-namespace tobject_to_json {
-namespace backends {
+namespace o2
+{
+namespace quality_control
+{
+namespace tobject_to_json
+{
+namespace backends
+{
 
 MySql::MySql(std::string host, unsigned int port, std::string database, std::string username, std::string password)
 {

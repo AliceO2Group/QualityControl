@@ -16,39 +16,27 @@
 
 #include "QualityControl/TaskInterface.h"
 
-namespace o2 {
-namespace quality_control {
-namespace core {
-
-TaskInterface::TaskInterface(ObjectsManager *objectsManager) :
-  mObjectsManager(objectsManager)
+namespace o2
 {
-}
-
-TaskInterface::TaskInterface() :
-  mObjectsManager(nullptr)
+namespace quality_control
 {
-}
-
-const std::string &TaskInterface::getName() const
+namespace core
 {
-  return mName;
-}
 
-void TaskInterface::setName(const std::string &name)
-{
-  mName = name;
-}
+TaskInterface::TaskInterface(ObjectsManager* objectsManager) : mObjectsManager(objectsManager) {}
+
+TaskInterface::TaskInterface() : mObjectsManager(nullptr) {}
+
+const std::string& TaskInterface::getName() const { return mName; }
+
+void TaskInterface::setName(const std::string& name) { mName = name; }
 
 void TaskInterface::setObjectsManager(std::shared_ptr<ObjectsManager> objectsManager)
 {
   mObjectsManager = objectsManager;
 }
 
-std::shared_ptr<ObjectsManager> TaskInterface::getObjectsManager()
-{
-  return mObjectsManager;
-}
+std::shared_ptr<ObjectsManager> TaskInterface::getObjectsManager() { return mObjectsManager; }
 
 } // namespace core
 } // namespace quality_control

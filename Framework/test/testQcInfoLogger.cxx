@@ -14,14 +14,17 @@
 
 using namespace std;
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 BOOST_AUTO_TEST_CASE(qc_info_logger)
 {
-  QcInfoLogger &qc1 = QcInfoLogger::GetInstance();
-  QcInfoLogger &qc2 = QcInfoLogger::GetInstance();
+  QcInfoLogger& qc1 = QcInfoLogger::GetInstance();
+  QcInfoLogger& qc2 = QcInfoLogger::GetInstance();
   BOOST_CHECK_EQUAL(&qc1, &qc2);
   qc1 << "test" << AliceO2::InfoLogger::InfoLogger::endm;
 }

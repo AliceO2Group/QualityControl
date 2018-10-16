@@ -14,28 +14,30 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
+#include "curl/curl.h"
 #include <boost/test/unit_test.hpp>
 #include <cassert>
 #include <iostream>
-#include "curl/curl.h"
 
-#include <stdio.h>
-#include <curl/curl.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/MonitorObject.h>
 #include <TH1F.h>
+#include <curl/curl.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <sys/stat.h>
 
 using namespace std;
 using namespace o2::quality_control::core;
 
-namespace o2 {
-namespace quality_control {
-namespace repository {
+namespace o2
+{
+namespace quality_control
+{
+namespace repository
+{
 
-bool do_nothing(AliceO2::Common::FatalException const &ex)
-{ return true; }
+bool do_nothing(AliceO2::Common::FatalException const& ex) { return true; }
 
 BOOST_AUTO_TEST_CASE(db_factory_test)
 {
@@ -46,7 +48,7 @@ BOOST_AUTO_TEST_CASE(db_factory_test)
 #endif
 
   std::unique_ptr<DatabaseInterface> database2 = nullptr;
-  BOOST_CHECK_EXCEPTION(database2 = DatabaseFactory::create("asf"), AliceO2::Common::FatalException, do_nothing );
+  BOOST_CHECK_EXCEPTION(database2 = DatabaseFactory::create("asf"), AliceO2::Common::FatalException, do_nothing);
   BOOST_CHECK(!database2);
 
   std::unique_ptr<DatabaseInterface> database3 = DatabaseFactory::create("CCDB");
@@ -58,7 +60,7 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
 {
   std::unique_ptr<DatabaseInterface> database3 = DatabaseFactory::create("CCDB");
   BOOST_CHECK(database3);
-  auto *ccdb = dynamic_cast<CcdbDatabase*>(database3.get());
+  auto* ccdb = dynamic_cast<CcdbDatabase*>(database3.get());
   BOOST_CHECK(ccdb);
 
   ccdb->connect("ccdb-test.cern.ch:8080", "", "", "");
@@ -67,9 +69,9 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   ccdb->truncate("functional_test", "object1");
   ccdb->truncate("functional_test", "object2");
   ccdb->truncate("functional_test", "path/to/object3");
-  auto *h1 = new TH1F("object1", "object1", 100, 0, 99);
-  auto *h2 = new TH1F("object2", "object2", 100, 0, 99);
-  auto *h3 = new TH1F("object3", "object3", 100, 0, 99);
+  auto* h1 = new TH1F("object1", "object1", 100, 0, 99);
+  auto* h2 = new TH1F("object2", "object2", 100, 0, 99);
+  auto* h3 = new TH1F("object3", "object3", 100, 0, 99);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>("object1", h1, "functional_test");
   shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>("object2", h2, "functional_test");
   shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>("path/to/object3", h3, "functional_test");
@@ -79,17 +81,17 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
 
   // test getting list of tasks
   std::vector<std::string> list = ccdb->getListOfTasksWithPublications();
-//  for(const auto &item : list) {
-//    cout << "task : " << item << endl;
-//  }
+  //  for(const auto &item : list) {
+  //    cout << "task : " << item << endl;
+  //  }
   BOOST_CHECK(std::find(list.begin(), list.end(), "functional_test") != list.end());
 
   // test getting objects list from task
   auto objectNames = ccdb->getPublishedObjectNames("functional_test");
-//  cout << "objects in task functional_test" << endl;
-//  for (auto name : objectNames) {
-//    cout << " - object : " << name << endl;
-//  }
+  //  cout << "objects in task functional_test" << endl;
+  //  for (auto name : objectNames) {
+  //    cout << " - object : " << name << endl;
+  //  }
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "object1") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "object2") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "path/to/object3") != objectNames.end());
@@ -97,7 +99,6 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   // test retrieve object
   MonitorObject* mo1_retrieved = ccdb->retrieve("functional_test", "object1");
   BOOST_CHECK(mo1_retrieved != nullptr);
-
 }
 
 /*
@@ -146,20 +147,24 @@ BOOST_AUTO_TEST_CASE(test_libcurlsimple)
   curl = curl_easy_init();
   if(curl) {
     curl_easy_setopt(curl, CURLOPT_URL, "localhost:8080");
-    *//* example.com is redirected, so we tell libcurl to follow redirection *//*
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    */
+/* example.com is redirected, so we tell libcurl to follow redirection */ /*
+curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-    *//* Perform the request, res will get the return code *//*
-    res = curl_easy_perform(curl);
-    *//* Check for errors *//*
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
-
-    *//* always cleanup *//*
-    curl_easy_cleanup(curl);
-  }
-}*/
+*/
+/* Perform the request, res will get the return code */                   /*
+                 res = curl_easy_perform(curl);
+                 */
+/* Check for errors */                                                    /*
+                                                  if(res != CURLE_OK)
+                                                    fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                                                            curl_easy_strerror(res));
+                                                   
+                                                  */
+/* always cleanup */                                                      /*
+                                                    curl_easy_cleanup(curl);
+                                                  }
+                                                }*/
 /*
 BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 {
@@ -174,24 +179,29 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
     curl_easy_setopt(curl, CURLOPT_URL, fullUrl.c_str());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postthis);
 
-    *//* if we don't provide POSTFIELDSIZE, libcurl will strlen() by
-       itself *//*
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(postthis));
+    */
+/* if we don't provide POSTFIELDSIZE, libcurl will strlen() by
+ itself */
+/*
+curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(postthis));
 
-    *//* Perform the request, res will get the return code *//*
-    res = curl_easy_perform(curl);
-    *//* Check for errors *//*
-    if(res != CURLE_OK) {
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
-    }
-
-    *//* always cleanup *//*
-    curl_easy_cleanup(curl);
-  }
-}*/
+*/
+/* Perform the request, res will get the return code */ /*
+res = curl_easy_perform(curl);
+*/
+/* Check for errors */                                  /*
+                                if(res != CURLE_OK) {
+                                  fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                                          curl_easy_strerror(res));
+                                }
+                                 
+                                */
+/* always cleanup */                                    /*
+                                  curl_easy_cleanup(curl);
+                                }
+                              }*/
 //
-//BOOST_AUTO_TEST_CASE(test_upload)
+// BOOST_AUTO_TEST_CASE(test_upload)
 //{
 //  CURL *curl;
 //  CURLcode res;
@@ -255,7 +265,7 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 
 //
 ///* silly test data to POST */
-//static const char data[]="Lorem ipsum dolor sit amet, consectetur adipiscing "
+// static const char data[]="Lorem ipsum dolor sit amet, consectetur adipiscing "
 //  "elit. Sed vel urna neque. Ut quis leo metus. Quisque eleifend, ex at "
 //  "laoreet rhoncus, odio ipsum semper metus, at tempus ante urna in mauris. "
 //  "Suspendisse ornare tempor venenatis. Ut dui neque, pellentesque a varius "
@@ -263,12 +273,12 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 //  "sollicitudin semper. Praesent sit amet tellus varius, posuere nulla non, "
 //  "rhoncus ipsum.";
 //
-//struct WriteThis {
+// struct WriteThis {
 //    const char *readptr;
 //    size_t sizeleft;
 //};
 //
-//static size_t read_callback(void *dest, size_t size, size_t nmemb, void *userp)
+// static size_t read_callback(void *dest, size_t size, size_t nmemb, void *userp)
 //{
 //  struct WriteThis *wt = (struct WriteThis *)userp;
 //  size_t buffer_size = size*nmemb;
@@ -288,7 +298,7 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 //  return 0; /* no more data left to deliver */
 //}
 //
-//BOOST_AUTO_TEST_CASE(test_curl_case){
+// BOOST_AUTO_TEST_CASE(test_curl_case){
 //  CURL *curl;
 //  CURLcode res;
 //
@@ -333,7 +343,7 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 //  curl_global_cleanup();
 //}
 //
-//static const char data[]="Lorem ipsum dolor sit amet, consectetur adipiscing "
+// static const char data[]="Lorem ipsum dolor sit amet, consectetur adipiscing "
 //  "elit. Sed vel urna neque. Ut quis leo metus. Quisque eleifend, ex at "
 //  "laoreet rhoncus, odio ipsum semper metus, at tempus ante urna in mauris. "
 //  "Suspendisse ornare tempor venenatis. Ut dui neque, pellentesque a varius "
@@ -341,7 +351,7 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 //  "sollicitudin semper. Praesent sit amet tellus varius, posuere nulla non, "
 //  "rhoncus ipsum.";
 //
-//BOOST_AUTO_TEST_CASE(test_curl_multiform)
+// BOOST_AUTO_TEST_CASE(test_curl_multiform)
 //{
 //
 //  CURL *curl;
@@ -486,13 +496,13 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 //  }
 //}
 //
-//struct MemoryStruct {
+// struct MemoryStruct {
 //  char *memory;
 //  size_t size;
 //};
 //
-//static size_t
-//WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
+// static size_t
+// WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 //{
 //  size_t realsize = size * nmemb;
 //  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
@@ -511,7 +521,7 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 //  return realsize;
 //}
 //
-//BOOST_AUTO_TEST_CASE(curl_test_get)
+// BOOST_AUTO_TEST_CASE(curl_test_get)
 //{
 //  CURL *curl_handle;
 //  CURLcode res;
@@ -567,7 +577,7 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 //  curl_global_cleanup();
 //}
 //
-//BOOST_AUTO_TEST_CASE(test_curl_get_reloc)
+// BOOST_AUTO_TEST_CASE(test_curl_get_reloc)
 //{
 //  CURL *curl;
 //  CURLcode res;
@@ -608,9 +618,6 @@ BOOST_AUTO_TEST_CASE(test_libculrsimplepost)
 //    curl_easy_cleanup(curl);
 //  }
 //}
-
-
-
 
 } /* namespace repository */
 } /* namespace quality_control */

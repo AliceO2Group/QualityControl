@@ -22,14 +22,18 @@
 // ROOT
 #include "TBufferJSON.h"
 
-using o2::quality_control::repository::CcdbDatabase;
 using o2::quality_control::core::MonitorObject;
 using o2::quality_control::core::QcInfoLogger;
+using o2::quality_control::repository::CcdbDatabase;
 
-namespace o2 {
-namespace quality_control {
-namespace tobject_to_json {
-namespace backends {
+namespace o2
+{
+namespace quality_control
+{
+namespace tobject_to_json
+{
+namespace backends
+{
 
 Ccdb::Ccdb(std::string host, unsigned int port, std::string database, std::string username, std::string password)
 {

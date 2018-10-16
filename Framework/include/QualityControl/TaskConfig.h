@@ -8,23 +8,25 @@
 
 #include <string>
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 /// \brief  Container for the configuration of a Task
 ///
 /// \author Barthelemy von Haller
-struct TaskConfig
-{
-    std::string taskName;
-    std::string moduleName;
-    std::string className;
-//    int numberHistos;
-//    int numberChecks;
-//    std::string typeOfChecks;
-    int cycleDurationSeconds;
-    int maxNumberCycles;
+struct TaskConfig {
+  std::string taskName;
+  std::string moduleName;
+  std::string className;
+  //    int numberHistos;
+  //    int numberChecks;
+  //    std::string typeOfChecks;
+  int cycleDurationSeconds;
+  int maxNumberCycles;
 };
 
 } // namespace core

@@ -21,37 +21,40 @@ using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
 using namespace std;
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
-ObjectsManager::ObjectsManager(TaskConfig &taskConfig) : mTaskName(taskConfig.taskName)
+ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskName(taskConfig.taskName)
 {
   startPublishing(&mObjectsList, MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST);
 }
 
 ObjectsManager::~ObjectsManager()
 {
-  for (auto &mMonitorObject : mMonitorObjects) {
+  for (auto& mMonitorObject : mMonitorObjects) {
     delete mMonitorObject.second;
   }
   mMonitorObjects.clear();
 }
 
-void ObjectsManager::startPublishing(TObject *object, std::string objectName)
+void ObjectsManager::startPublishing(TObject* object, std::string objectName)
 {
   std::string nonEmptyName = objectName.empty() ? object->GetName() : objectName;
-  auto *newObject = new MonitorObject(nonEmptyName, object, mTaskName);
+  auto* newObject = new MonitorObject(nonEmptyName, object, mTaskName);
   newObject->setIsOwner(false);
   mMonitorObjects[nonEmptyName] = newObject;
 
-  //update index
+  // update index
   if (objectName != MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST) {
     UpdateIndex(nonEmptyName);
   }
 }
 
-void ObjectsManager::UpdateIndex(const string &nonEmptyName)
+void ObjectsManager::UpdateIndex(const string& nonEmptyName)
 {
   string newString = this->mObjectsList.GetString().Data();
   newString += nonEmptyName;
@@ -61,21 +64,21 @@ void ObjectsManager::UpdateIndex(const string &nonEmptyName)
 
 Quality ObjectsManager::getQuality(std::string objectName)
 {
-  MonitorObject *mo = getMonitorObject(objectName);
+  MonitorObject* mo = getMonitorObject(objectName);
   return mo->getQuality();
 }
 // fixme: keep user informed, that giving the same names for their objects is a bad idea
-void ObjectsManager::addCheck(const std::string &objectName, const std::string &checkName,
-                              const std::string &checkClassName, const std::string &checkLibraryName)
+void ObjectsManager::addCheck(const std::string& objectName, const std::string& checkName,
+                              const std::string& checkClassName, const std::string& checkLibraryName)
 {
-  MonitorObject *mo = getMonitorObject(objectName);
+  MonitorObject* mo = getMonitorObject(objectName);
   mo->addCheck(checkName, checkClassName, checkLibraryName);
 
   QcInfoLogger::GetInstance() << "Added check : " << objectName << " , " << checkName << " , " << checkClassName
                               << " , " << checkLibraryName << infologger::endm;
 }
 
-MonitorObject *ObjectsManager::getMonitorObject(std::string objectName)
+MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
 {
   if (mMonitorObjects.count(objectName) > 0) {
     return mMonitorObjects[objectName];
@@ -84,14 +87,14 @@ MonitorObject *ObjectsManager::getMonitorObject(std::string objectName)
   }
 }
 
-TObject *ObjectsManager::getObject(std::string objectName)
+TObject* ObjectsManager::getObject(std::string objectName)
 {
-  MonitorObject *mo = getMonitorObject(objectName);
+  MonitorObject* mo = getMonitorObject(objectName);
   return mo->getObject();
 }
 
-void ObjectsManager::addCheck(const TObject *object, const std::string &checkName, const std::string &checkClassName,
-                              const std::string &checkLibraryName)
+void ObjectsManager::addCheck(const TObject* object, const std::string& checkName, const std::string& checkClassName,
+                              const std::string& checkLibraryName)
 {
   addCheck(object->GetName(), checkName, checkClassName, checkLibraryName);
 }

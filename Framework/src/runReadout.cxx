@@ -34,10 +34,10 @@
 
 #include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
+#include "QualityControl/Checker.h"
+#include "QualityControl/CheckerDataProcessorFactory.h"
 #include "QualityControl/TaskDataProcessorFactory.h"
 #include "QualityControl/TaskRunner.h"
-#include "QualityControl/CheckerDataProcessorFactory.h"
-#include "QualityControl/Checker.h"
 
 using namespace o2::framework;
 using namespace o2::quality_control::core;
@@ -49,7 +49,8 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   // Exemplary initialization of QC Task:
   const std::string qcTaskName = "daqTask";
-  const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readout.json";
+  const std::string qcConfigurationSource =
+    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readout.json";
   TaskDataProcessorFactory qcFactory;
   specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
   CheckerDataProcessorFactory checkerFactory;

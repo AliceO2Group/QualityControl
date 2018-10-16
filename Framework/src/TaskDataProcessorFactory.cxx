@@ -16,19 +16,18 @@
 #include "QualityControl/TaskDataProcessorFactory.h"
 #include "QualityControl/TaskRunner.h"
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 using namespace o2::framework;
 
-TaskDataProcessorFactory::TaskDataProcessorFactory()
-{
-}
+TaskDataProcessorFactory::TaskDataProcessorFactory() {}
 
-TaskDataProcessorFactory::~TaskDataProcessorFactory()
-{
-}
+TaskDataProcessorFactory::~TaskDataProcessorFactory() {}
 
 DataProcessorSpec TaskDataProcessorFactory::create(std::string taskName, std::string configurationSource)
 {

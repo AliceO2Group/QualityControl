@@ -9,34 +9,34 @@
 
 ClassImp(o2::quality_control::checker::CheckInterface)
 
-using namespace std;
+  using namespace std;
 
-namespace o2 {
-namespace quality_control {
-namespace checker {
+namespace o2
+{
+namespace quality_control
+{
+namespace checker
+{
 
-//CheckInterface::CheckInterface()
+// CheckInterface::CheckInterface()
 ////    : mName("")
 //{
 //}
 //
-//CheckInterface::~CheckInterface()
+// CheckInterface::~CheckInterface()
 //{
 //}
 
-//void CheckInterface::configure(std::string name)
+// void CheckInterface::configure(std::string name)
 //{
 //  mName = name;
 //}
 
-std::string CheckInterface::getAcceptedType()
-{
-  return "TObject";
-}
+std::string CheckInterface::getAcceptedType() { return "TObject"; }
 
-bool CheckInterface::isObjectCheckable(const MonitorObject *mo)
+bool CheckInterface::isObjectCheckable(const MonitorObject* mo)
 {
-  TObject *encapsulated = mo->getObject();
+  TObject* encapsulated = mo->getObject();
 
   if (encapsulated->IsA()->InheritsFrom(getAcceptedType().c_str())) {
     return true;
@@ -48,4 +48,3 @@ bool CheckInterface::isObjectCheckable(const MonitorObject *mo)
 } /* namespace checker */
 } /* namespace quality_control */
 } /* namespace o2 */
-

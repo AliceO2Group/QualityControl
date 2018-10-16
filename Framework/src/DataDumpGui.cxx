@@ -16,17 +16,20 @@
 
 #include "QualityControl/DataDumpGui.h"
 
-#include <iomanip>
-#include "imgui/imgui.h"
 #include "imgui/BaseGui.h"
+#include "imgui/imgui.h"
 #include <Headers/DataHeader.h>
+#include <iomanip>
 
 using namespace std;
 using namespace o2::framework;
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 GUIState DataDumpGui::guiState;
 void* DataDumpGui::window = nullptr;
@@ -61,10 +64,7 @@ vector<string> getHexRepresentation(unsigned char* data, size_t size)
   return result;
 }
 
-void DataDumpGui::InitTask()
-{
-  window = initGUI("O2 Data Inspector");
-}
+void DataDumpGui::InitTask() { window = initGUI("O2 Data Inspector"); }
 
 void updateGuiState()
 {
@@ -158,8 +158,8 @@ void updatePayloadGui()
     // print the hex/bin values in the columns and rows of the table
     vector<string> formattedData =
       (representation == 0)
-      ? getHexRepresentation(DataDumpGui::guiState.current_payload.data, DataDumpGui::guiState.current_payload.size)
-      : getBinRepresentation(DataDumpGui::guiState.current_payload.data, DataDumpGui::guiState.current_payload.size);
+        ? getHexRepresentation(DataDumpGui::guiState.current_payload.data, DataDumpGui::guiState.current_payload.size)
+        : getBinRepresentation(DataDumpGui::guiState.current_payload.data, DataDumpGui::guiState.current_payload.size);
     int line = 0;
     static int selected = -1;
     for (unsigned long pos = 0; pos < formattedData.size();) {
@@ -287,6 +287,6 @@ void DataDumpGui::assignDataToChunk(void* data, size_t size, Chunk& chunk)
   chunk.data = copy;
   chunk.size = size;
 }
-}
-}
-}
+} // namespace core
+} // namespace quality_control
+} // namespace o2

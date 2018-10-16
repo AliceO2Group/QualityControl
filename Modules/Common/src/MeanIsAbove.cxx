@@ -8,46 +8,43 @@
 // ROOT
 #include <TClass.h>
 #include <TH1.h>
-#include <TList.h>
 #include <TLine.h>
+#include <TList.h>
 // O2
 #include "Configuration/ConfigurationFactory.h"
 
 ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 
-using namespace std;
+  using namespace std;
 using namespace o2::configuration;
 
-namespace o2 {
-namespace quality_control_modules {
-namespace common {
-
-MeanIsAbove::MeanIsAbove()
-    : mThreshold(0.0)
+namespace o2
 {
-}
+namespace quality_control_modules
+{
+namespace common
+{
+
+MeanIsAbove::MeanIsAbove() : mThreshold(0.0) {}
 
 void MeanIsAbove::configure(std::string name)
 {
   // TODO use the configuration system to set the params
-//  try {
-//    auto configFile = ConfigurationFactory::getConfiguration("file:../example.ini"); // not ok...
-//  } catch (string &exception) {
-//    cout << "error getting config file in MeanIsAbove : " << exception << endl;
-//    mThreshold = 1.0f;
-//    return;
-//  }
-  mThreshold = 1.0f;//std::stof(configFile.getValue<string>("Checks.checkMeanIsAbove/threshold"));
+  //  try {
+  //    auto configFile = ConfigurationFactory::getConfiguration("file:../example.ini"); // not ok...
+  //  } catch (string &exception) {
+  //    cout << "error getting config file in MeanIsAbove : " << exception << endl;
+  //    mThreshold = 1.0f;
+  //    return;
+  //  }
+  mThreshold = 1.0f; // std::stof(configFile.getValue<string>("Checks.checkMeanIsAbove/threshold"));
 }
 
-std::string MeanIsAbove::getAcceptedType()
-{
-  return "TH1";
-}
+std::string MeanIsAbove::getAcceptedType() { return "TH1"; }
 
-Quality MeanIsAbove::check(const MonitorObject *mo)
+Quality MeanIsAbove::check(const MonitorObject* mo)
 {
-  auto *th1 = dynamic_cast<TH1*>(mo->getObject());
+  auto* th1 = dynamic_cast<TH1*>(mo->getObject());
   if (!th1) {
     // TODO
     return Quality::Null;
@@ -58,7 +55,7 @@ Quality MeanIsAbove::check(const MonitorObject *mo)
   return Quality::Bad;
 }
 
-void MeanIsAbove::beautify(MonitorObject *mo, Quality checkResult)
+void MeanIsAbove::beautify(MonitorObject* mo, Quality checkResult)
 {
   // A line is drawn at the level of the threshold.
   // Its colour depends on the quality.
@@ -68,7 +65,7 @@ void MeanIsAbove::beautify(MonitorObject *mo, Quality checkResult)
     return;
   }
 
-  auto * th1 = dynamic_cast<TH1*>(mo->getObject());
+  auto* th1 = dynamic_cast<TH1*>(mo->getObject());
 
   Double_t xMin = th1->GetXaxis()->GetXmin();
   Double_t xMax = th1->GetXaxis()->GetXmax();
@@ -90,4 +87,3 @@ void MeanIsAbove::beautify(MonitorObject *mo, Quality checkResult)
 } /* namespace common */
 } /* namespace quality_control_modules */
 } /* namespace o2 */
-

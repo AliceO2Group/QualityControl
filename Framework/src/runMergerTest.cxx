@@ -14,26 +14,27 @@
 ///
 /// \brief This is DPL workflow to see HistoMerger in action
 
-#include <random>
-#include <memory>
-#include <TH1F.h>
 #include <FairLogger.h>
 #include <Framework/CompletionPolicy.h>
 #include <Framework/CompletionPolicyHelpers.h>
+#include <TH1F.h>
+#include <memory>
+#include <random>
 using namespace o2::framework;
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
-  CompletionPolicy mergerConsumesASAP = CompletionPolicyHelpers::defineByName("merger", CompletionPolicy::CompletionOp::Consume);
+  CompletionPolicy mergerConsumesASAP =
+    CompletionPolicyHelpers::defineByName("merger", CompletionPolicy::CompletionOp::Consume);
   policies.push_back(mergerConsumesASAP);
 }
 
 #include "Framework/runDataProcessing.h"
 
-#include "QualityControl/TaskDataProcessorFactory.h"
-#include "QualityControl/CheckerDataProcessorFactory.h"
 #include "QualityControl/Checker.h"
+#include "QualityControl/CheckerDataProcessorFactory.h"
 #include "QualityControl/HistoMerger.h"
+#include "QualityControl/TaskDataProcessorFactory.h"
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;

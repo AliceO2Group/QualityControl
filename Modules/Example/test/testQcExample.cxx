@@ -17,9 +17,12 @@
 
 using namespace std;
 
-namespace o2 {
-namespace quality_control_modules {
-namespace example {
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace example
+{
 
 BOOST_AUTO_TEST_CASE(insantiate_task)
 {
@@ -27,7 +30,7 @@ BOOST_AUTO_TEST_CASE(insantiate_task)
   TaskConfig config;
   auto manager = make_shared<ObjectsManager>(config);
   task.setObjectsManager(manager);
-//  task.initialize();// TODO
+  //  task.initialize();// TODO
 
   BOOST_CHECK(task.getHisto1() != nullptr);
   BOOST_CHECK(task.getHisto2() != nullptr);
@@ -35,9 +38,9 @@ BOOST_AUTO_TEST_CASE(insantiate_task)
   Activity activity;
   task.startOfActivity(activity);
   task.startOfCycle();
-//  auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
-//  DataSetReference dataSet = producer.getDataSet();
-//  task.monitorDataBlock(dataSet);// TODO
+  //  auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
+  //  DataSetReference dataSet = producer.getDataSet();
+  //  task.monitorDataBlock(dataSet);// TODO
 
   BOOST_CHECK(task.getHisto1()->GetEntries() > 0);
 
@@ -48,7 +51,6 @@ BOOST_AUTO_TEST_CASE(insantiate_task)
   BOOST_CHECK(task.getHisto1()->GetEntries() == 0);
 
   task.endOfActivity(activity);
-
 }
 
 } // namespace example

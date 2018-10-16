@@ -10,20 +10,22 @@
 
 // Copied from AliceO2, work of Giulio
 
+#include "GL/gl3w.h" // This example is using gl3w to access OpenGL functions (because it is small). You may use glew/glad/glLoadGen/etc. whatever already works for you.
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
-#include "GL/gl3w.h" // This example is using gl3w to access OpenGL functions (because it is small). You may use glew/glad/glLoadGen/etc. whatever already works for you.
 #include <GLFW/glfw3.h>
-#include <stdio.h>
 #include <functional>
+#include <stdio.h>
 
 static void error_callback(int error, const char* description)
 {
   fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
-namespace o2 {
-namespace framework {
+namespace o2
+{
+namespace framework
+{
 
 // @return an object of kind GLFWwindow* as void* to avoid having a direct dependency
 void* initGUI(const char* name)

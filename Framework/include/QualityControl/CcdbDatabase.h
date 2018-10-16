@@ -16,12 +16,15 @@
 #ifndef QC_REPOSITORY_CCDBDATABASE_H
 #define QC_REPOSITORY_CCDBDATABASE_H
 
-#include "QualityControl/DatabaseInterface.h"
 #include "CCDB/CcdbApi.h"
+#include "QualityControl/DatabaseInterface.h"
 
-namespace o2 {
-namespace quality_control {
-namespace repository {
+namespace o2
+{
+namespace quality_control
+{
+namespace repository
+{
 
 /*
  * Notes
@@ -33,7 +36,8 @@ namespace repository {
  *    --> epoch milliseconds as long values
  * - how to know the real time at which the object was stored ?
  *    --> new api should allow for it. To be confirmed.
- * - we rather have a task_name/X/Y/Z/object_name/.../time where X/Y/Z are actually part of object_name but happen to have slashes, to build a hierarchy of objects
+ * - we rather have a task_name/X/Y/Z/object_name/.../time where X/Y/Z are actually part of object_name but happen to
+ * have slashes, to build a hierarchy of objects
  *    --> we can.
  * - we need to have a way to query for all objects in a certain path, e.g. in "task_name/X/Y" or in "task_name"
  *    --> the new api should allow it. To be tested.
@@ -42,8 +46,8 @@ namespace repository {
  * - initial tests show that it seems pretty slow.
  *    --> ok on their server with the new metadata database (postgresql)
  * - We need getListOfTasksWithPublications() and getPublishedObjectNames()
- * - Current path to objects : .../task/object with object possibly a slash separated subpath (up to 6 levels). Also consider having a task name such as
- *   "TPC/Task1" such as to build a tree of tasks with subsystems prefix.
+ * - Current path to objects : .../task/object with object possibly a slash separated subpath (up to 6 levels). Also
+ * consider having a task name such as "TPC/Task1" such as to build a tree of tasks with subsystems prefix.
  *
  */
 
@@ -54,9 +58,9 @@ class CcdbDatabase : public DatabaseInterface
   virtual ~CcdbDatabase();
 
   void connect(std::string host, std::string database, std::string username, std::string password) override;
-  void connect(std::unique_ptr<ConfigurationInterface> &config) override;
+  void connect(std::unique_ptr<ConfigurationInterface>& config) override;
   void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
-  core::MonitorObject *retrieve(std::string taskName, std::string objectName) override;
+  core::MonitorObject* retrieve(std::string taskName, std::string objectName) override;
   void disconnect() override;
   void prepareTaskDataContainer(std::string taskName) override;
   std::vector<std::string> getListOfTasksWithPublications() override;
@@ -78,8 +82,8 @@ class CcdbDatabase : public DatabaseInterface
   std::string mUrl;
 };
 
-}
-}
-}
+} // namespace repository
+} // namespace quality_control
+} // namespace o2
 
-#endif //QC_REPOSITORY_CCDBDATABASE_H
+#endif // QC_REPOSITORY_CCDBDATABASE_H

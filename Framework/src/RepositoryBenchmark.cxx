@@ -15,18 +15,18 @@
 
 #include "RepositoryBenchmark.h"
 
-#include <thread> // this_thread::sleep_for
 #include <chrono>
+#include <thread> // this_thread::sleep_for
 
-#include <TH2F.h>
 #include <QualityControl/CcdbDatabase.h>
+#include <TH2F.h>
 
 #include <FairMQLogger.h>
 #include <options/FairMQProgOptions.h> // device->fConfig
 
-#include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/DatabaseFactory.h"
 #include "Common/Exceptions.h"
+#include "QualityControl/DatabaseFactory.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -34,12 +34,19 @@ using namespace AliceO2::Common;
 using namespace o2::quality_control::repository;
 using namespace o2::monitoring;
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 RepositoryBenchmark::RepositoryBenchmark()
-  : mMaxIterations(0), mNumIterations(0), mNumberObjects(1), mSizeObjects(1), mThreadedMonitoring(true),
+  : mMaxIterations(0),
+    mNumIterations(0),
+    mNumberObjects(1),
+    mSizeObjects(1),
+    mThreadedMonitoring(true),
     mTotalNumberObjects(0)
 {
 }
@@ -52,14 +59,13 @@ void RepositoryBenchmark::InitTask()
   mTaskName = fConfig->GetValue<string>("task-name");
   try {
     mDatabase = o2::quality_control::repository::DatabaseFactory::create(dbBackend);
-    mDatabase->connect(fConfig->GetValue<string>("database-url"),
-                       fConfig->GetValue<string>("database-name"),
-                       fConfig->GetValue<string>("database-username"),
-                       fConfig->GetValue<string>("database-password"));
+    mDatabase->connect(fConfig->GetValue<string>("database-url"), fConfig->GetValue<string>("database-name"),
+                       fConfig->GetValue<string>("database-username"), fConfig->GetValue<string>("database-password"));
     mDatabase->prepareTaskDataContainer(mTaskName);
-  } catch (boost::exception &exc) {
+  } catch (boost::exception& exc) {
     string diagnostic = boost::current_exception_diagnostic_information();
-    std::cerr << "Unexpected exception, diagnostic information follows:\n" << diagnostic << endl;
+    std::cerr << "Unexpected exception, diagnostic information follows:\n"
+              << diagnostic << endl;
     if (diagnostic == "No diagnostic information available.") {
       throw;
     }
@@ -82,9 +88,9 @@ void RepositoryBenchmark::InitTask()
   mMonitoring->addGlobalTag("numberObject", to_string(mNumberObjects));
   mMonitoring->addGlobalTag("sizeObject", to_string(mSizeObjects));
   if (mTaskName == "benchmarkTask_0") { // send these parameters to monitoring only once per benchmark run
-    mMonitoring->sendGrouped("ccdb-benchmark-parameters", {{mNumberObjects, "number-objects"},
-                                                            {mSizeObjects*1000,   "size-objects"},
-                                                            {numberTasks,    "number-tasks"}});
+    mMonitoring->sendGrouped("ccdb-benchmark-parameters", { { mNumberObjects, "number-objects" },
+                                                            { mSizeObjects * 1000, "size-objects" },
+                                                            { numberTasks, "number-tasks" } });
   }
 
   if (mDeletionMode) {
@@ -117,18 +123,19 @@ void RepositoryBenchmark::InitTask()
       break;
     default:
       BOOST_THROW_EXCEPTION(
-        FatalException() << errinfo_details("size of histo must be 1, 10, 100, 500, 1000, 2500 or 5000 (was: " + to_string(mSizeObjects) + ")"));
+        FatalException() << errinfo_details(
+          "size of histo must be 1, 10, 100, 500, 1000, 2500 or 5000 (was: " + to_string(mSizeObjects) + ")"));
   }
 
   // prepare objects
-  for(uint64_t i = 0 ; i < mNumberObjects ; i++) {
-    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(mObjectName+to_string(i), mMyHisto, mTaskName);
+  for (uint64_t i = 0; i < mNumberObjects; i++) {
+    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(mObjectName + to_string(i), mMyHisto, mTaskName);
     mo->setIsOwner(false);
     mMyObjects.push_back(mo);
   }
 
   // start a timer in a thread to send monitoring metrics, if needed
-  if(mThreadedMonitoring) {
+  if (mThreadedMonitoring) {
     mTimer = new boost::asio::deadline_timer(io, boost::posix_time::seconds(mThreadedMonitoringInterval));
     mTimer->async_wait(boost::bind(&RepositoryBenchmark::checkTimedOut, this));
     th = new thread([&] { io.run(); });
@@ -137,7 +144,7 @@ void RepositoryBenchmark::InitTask()
 
 void RepositoryBenchmark::checkTimedOut()
 {
-  mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
+  mMonitoring->send({ mTotalNumberObjects, "objectsSent" }, DerivedMetricMode::RATE);
 
   // restart timer
   mTimer->expires_at(mTimer->expires_at() + boost::posix_time::seconds(mThreadedMonitoringInterval));
@@ -146,7 +153,7 @@ void RepositoryBenchmark::checkTimedOut()
 
 bool RepositoryBenchmark::ConditionalRun()
 {
-  if (mDeletionMode) { //the only way to not run is to return false from here.
+  if (mDeletionMode) { // the only way to not run is to return false from here.
     return false;
   }
 
@@ -157,18 +164,18 @@ bool RepositoryBenchmark::ConditionalRun()
     mDatabase->store(mMyObjects[i]);
     mTotalNumberObjects++;
   }
-  if(!mThreadedMonitoring) {
-    mMonitoring->send({mTotalNumberObjects, "objectsSent"}, DerivedMetricMode::RATE);
+  if (!mThreadedMonitoring) {
+    mMonitoring->send({ mTotalNumberObjects, "objectsSent" }, DerivedMetricMode::RATE);
   }
 
   high_resolution_clock::time_point t2 = high_resolution_clock::now();
   long duration = duration_cast<milliseconds>(t2 - t1).count();
-  mMonitoring->send({duration / mNumberObjects, "storeDurationForOneObject_ms"}, DerivedMetricMode::NONE);
+  mMonitoring->send({ duration / mNumberObjects, "storeDurationForOneObject_ms" }, DerivedMetricMode::NONE);
 
   // determine how long we should wait till next iteration in order to have 1 sec between storage
   auto duration2 = duration_cast<microseconds>(t2 - t1);
   auto remaining = duration_cast<microseconds>(std::chrono::seconds(1) - duration2);
-//  QcInfoLogger::GetInstance() << "Remaining duration : " << remaining.count() << " us" << infologger::endm;
+  //  QcInfoLogger::GetInstance() << "Remaining duration : " << remaining.count() << " us" << infologger::endm;
   if (remaining.count() < 0) {
     QcInfoLogger::GetInstance() << "Remaining duration is negative, we don't sleep " << infologger::endm;
   } else {
@@ -187,7 +194,7 @@ bool RepositoryBenchmark::ConditionalRun()
 void RepositoryBenchmark::emptyDatabase()
 {
   mDatabase->truncate(mTaskName, mObjectName);
-  for(uint64_t i = 0 ; i < mNumberObjects ; i++) {
+  for (uint64_t i = 0; i < mNumberObjects; i++) {
     mDatabase->truncate(mTaskName, mObjectName + to_string(i));
   }
 }

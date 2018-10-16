@@ -28,16 +28,20 @@ using namespace std;
 using namespace o2::quality_control::core;
 using namespace std::string_literals;
 
-namespace o2 {
-namespace quality_control {
-namespace tobject_to_json {
+namespace o2
+{
+namespace quality_control
+{
+namespace tobject_to_json
+{
 
-TObject2JsonWorker::TObject2JsonWorker(zmq::context_t &ctx, std::unique_ptr<Backend> backend)
+TObject2JsonWorker::TObject2JsonWorker(zmq::context_t& ctx, std::unique_ptr<Backend> backend)
   : mBackend(std::move(backend)),
     mCtx(ctx),
     mWorkerSocket(mCtx, ZMQ_DEALER),
     mThread(std::bind(&TObject2JsonWorker::start, this))
-{}
+{
+}
 
 TObject2JsonWorker::~TObject2JsonWorker()
 {
@@ -71,8 +75,7 @@ void TObject2JsonWorker::start()
       // always success to send because of inproc communication
       socketSend(identity, response);
     }
-  }
-  catch (std::exception &e) {
+  } catch (std::exception& e) {
     // Context was terminated
     QcInfoLogger::GetInstance() << "Closing worker" << infologger::endm;
   }
@@ -107,13 +110,10 @@ std::string TObject2JsonWorker::handleRequest(std::string request)
 std::string TObject2JsonWorker::response200(std::string request, std::string payload)
 {
   std::stringstream response;
-  QcInfoLogger::GetInstance()
-    << "Successful request: '" << request << "'"
-    << infologger::endm;
+  QcInfoLogger::GetInstance() << "Successful request: '" << request << "'" << infologger::endm;
 
-  response
-    << "{\"request\": \"" << request << "\", "
-    << "\"payload\": " << payload << "}";
+  response << "{\"request\": \"" << request << "\", "
+           << "\"payload\": " << payload << "}";
 
   return response.str();
 }
@@ -127,16 +127,14 @@ std::string TObject2JsonWorker::responseError(int code, std::string request, std
   if (code == 404) {
     error = "The requested object was not found";
   }
-    
-  std::stringstream response;
-  QcInfoLogger::GetInstance()
-    << "ERROR: (" + std::to_string(code) +  ") " << error << " FROM REQUEST " << request
-    << infologger::endm;
 
-  response
-    << "{\"request\": \"" << request << "\", "
-    << "\"error\": " << code << ", "
-    << "\"why\": \"" << error << "\"}";
+  std::stringstream response;
+  QcInfoLogger::GetInstance() << "ERROR: (" + std::to_string(code) + ") " << error << " FROM REQUEST " << request
+                              << infologger::endm;
+
+  response << "{\"request\": \"" << request << "\", "
+           << "\"error\": " << code << ", "
+           << "\"why\": \"" << error << "\"}";
 
   return response.str();
 }
@@ -154,7 +152,7 @@ std::string TObject2JsonWorker::socketReceive()
 }
 
 //  Sends string as 0MQ string, as multipart non-terminal
-bool TObject2JsonWorker::socketSend(const std::string & identity, const std::string & payload)
+bool TObject2JsonWorker::socketSend(const std::string& identity, const std::string& payload)
 {
   zmq::message_t identityMessage(identity.size());
   memcpy(identityMessage.data(), identity.data(), identity.size());

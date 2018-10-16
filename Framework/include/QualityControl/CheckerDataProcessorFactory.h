@@ -7,13 +7,17 @@
 
 #include "Framework/DataProcessorSpec.h"
 
-namespace o2 {
-namespace quality_control {
-namespace checker {
+namespace o2
+{
+namespace quality_control
+{
+namespace checker
+{
 
 /// \brief Factory in charge of creating DataProcessorSpec of QC Checker
-class CheckerDataProcessorFactory {
-public:
+class CheckerDataProcessorFactory
+{
+ public:
   CheckerDataProcessorFactory() = default;
   virtual ~CheckerDataProcessorFactory() = default;
 

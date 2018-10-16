@@ -6,31 +6,28 @@
 #include "Skeleton/SkeletonCheck.h"
 
 // ROOT
+#include <FairLogger.h>
 #include <TH1.h>
 #include <TPaveText.h>
-#include <FairLogger.h>
 
 using namespace std;
 
 ClassImp(o2::quality_control_modules::skeleton::SkeletonCheck)
 
-namespace o2 {
-namespace quality_control_modules {
-namespace skeleton {
-
-SkeletonCheck::SkeletonCheck()
+namespace o2
 {
-}
-
-SkeletonCheck::~SkeletonCheck()
+namespace quality_control_modules
 {
-}
-
-void SkeletonCheck::configure(std::string)
+namespace skeleton
 {
-}
 
-Quality SkeletonCheck::check(const MonitorObject *mo)
+SkeletonCheck::SkeletonCheck() {}
+
+SkeletonCheck::~SkeletonCheck() {}
+
+void SkeletonCheck::configure(std::string) {}
+
+Quality SkeletonCheck::check(const MonitorObject* mo)
 {
   Quality result = Quality::Null;
 
@@ -51,12 +48,9 @@ Quality SkeletonCheck::check(const MonitorObject *mo)
   return result;
 }
 
-std::string SkeletonCheck::getAcceptedType()
-{
-  return "TH1";
-}
+std::string SkeletonCheck::getAcceptedType() { return "TH1"; }
 
-void SkeletonCheck::beautify(MonitorObject *mo, Quality checkResult)
+void SkeletonCheck::beautify(MonitorObject* mo, Quality checkResult)
 {
   if (mo->getName() == "example") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
@@ -77,4 +71,3 @@ void SkeletonCheck::beautify(MonitorObject *mo, Quality checkResult)
 } // namespace skeleton
 } // namespace quality_control_modules
 } // namespace o2
-

@@ -9,17 +9,20 @@
 #include <iostream>
 #include <memory>
 // ROOT
-#include <TSystem.h>
 #include <TClass.h>
 #include <TROOT.h>
+#include <TSystem.h>
 // O2
-#include <Common/Exceptions.h>
-#include "QualityControl/TaskConfig.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/TaskConfig.h"
+#include <Common/Exceptions.h>
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2
+{
+namespace quality_control
+{
+namespace core
+{
 
 class TaskInterface;
 
@@ -43,7 +46,7 @@ class TaskFactory
   /// \todo make it static ?
   /// \author Barthelemy von Haller
   template <class T>
-  T* create(TaskConfig& taskConfig, std::shared_ptr <ObjectsManager> objectsManager)
+  T* create(TaskConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
   {
     T* result = nullptr;
     QcInfoLogger& logger = QcInfoLogger::GetInstance();

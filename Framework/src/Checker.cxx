@@ -24,17 +24,19 @@ using namespace AliceO2::InfoLogger;
 using namespace o2::configuration;
 using namespace o2::monitoring;
 
-namespace o2 {
-namespace quality_control {
+namespace o2
+{
+namespace quality_control
+{
 using namespace core;
 using namespace repository;
-namespace checker {
+namespace checker
+{
 
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
 // TODO maybe we could use the CheckerDataProcessorFactory
 
-Checker::Checker(std::string checkerName, std::string taskName,
-                                           std::string configurationSource)
+Checker::Checker(std::string checkerName, std::string taskName, std::string configurationSource)
   : mCheckerName(checkerName),
     mConfigurationSource(configurationSource),
     mInputSpec{ "mo", "QC", TaskRunner::taskDataDescription(taskName), 0 },
@@ -66,25 +68,24 @@ void Checker::init(framework::InitContext&)
     // configuration of the database
     mDatabase = DatabaseFactory::create(config->get<std::string>("qc/config/database/implementation").value());
     mDatabase->connect(config);
-  }
-  catch (
+  } catch (
     std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
     LOG(ERROR) << "exception : " << e;
     throw;
-  }
-  catch (...) {
+  } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n" << diagnostic;
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic;
     throw;
   }
 
   // monitoring
   try {
     mCollector = MonitoringFactory::Get("infologger://");
-  }
-  catch (...) {
+  } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n" << diagnostic;
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic;
     throw;
   }
   startFirstObject = system_clock::time_point::min();
@@ -110,8 +111,7 @@ void Checker::run(framework::ProcessingContext& ctx)
       store(mo);
       send(mo, ctx.outputs());
       mTotalNumberHistosReceived++;
-    }
-    else {
+    } else {
       mLogger << "the mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
     }
   }
@@ -165,8 +165,7 @@ void Checker::store(std::shared_ptr<MonitorObject> mo)
   mLogger << "Storing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
   try {
     mDatabase->store(mo);
-  }
-  catch (boost::exception& e) {
+  } catch (boost::exception& e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
@@ -194,8 +193,7 @@ void Checker::loadLibrary(const std::string libraryName)
     int libLoaded = gSystem->Load(library.c_str(), "", true);
     if (libLoaded == 1) {
       mLogger << "Already loaded before" << AliceO2::InfoLogger::InfoLogger::endm;
-    }
-    else if (libLoaded < 0 || libLoaded > 1) {
+    } else if (libLoaded < 0 || libLoaded > 1) {
       BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
     }
     mLibrariesLoaded.push_back(library);
@@ -220,8 +218,7 @@ CheckInterface* Checker::getCheck(std::string checkName, std::string className)
       BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
     }
     mClassesLoaded[className] = cl;
-  }
-  else {
+  } else {
     cl = mClassesLoaded[className];
   }
 
@@ -236,8 +233,7 @@ CheckInterface* Checker::getCheck(std::string checkName, std::string className)
     }
     result->configure(checkName);
     mChecksLoaded[checkName] = result;
-  }
-  else {
+  } else {
     result = mChecksLoaded[checkName];
   }
 

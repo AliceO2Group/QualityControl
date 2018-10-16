@@ -14,19 +14,15 @@
 /// \file runInformationServiceDump.cxx
 ///
 
-#include "runFairMQDevice.h"
 #include "InformationServiceDump.h"
+#include "runFairMQDevice.h"
 
 namespace bpo = boost::program_options;
 
-void addCustomOptions(bpo::options_description &options)
+void addCustomOptions(bpo::options_description& options)
 {
-  options.add_options()
-    ("request-task", bpo::value<std::string>()->default_value("all"),
-     "The name of the task it will request (default: all)");
+  options.add_options()("request-task", bpo::value<std::string>()->default_value("all"),
+                        "The name of the task it will request (default: all)");
 }
 
-FairMQDevicePtr getDevice(const FairMQProgOptions & /*config*/)
-{
-  return new InformationServiceDump();
-}
+FairMQDevicePtr getDevice(const FairMQProgOptions& /*config*/) { return new InformationServiceDump(); }

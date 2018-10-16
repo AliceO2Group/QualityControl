@@ -12,40 +12,33 @@ using namespace std;
 
 ClassImp(o2::quality_control_modules::example::FakeCheck)
 
-namespace o2 {
-namespace quality_control_modules {
-namespace example {
-
-FakeCheck::FakeCheck()
+  namespace o2
 {
-}
+  namespace quality_control_modules
+  {
+  namespace example
+  {
 
-FakeCheck::~FakeCheck()
-{
-}
+  FakeCheck::FakeCheck() {}
 
-void FakeCheck::configure(std::string name)
-{
-}
+  FakeCheck::~FakeCheck() {}
 
-Quality FakeCheck::check(const MonitorObject *mo)
-{
-  Quality result = Quality::Null;
+  void FakeCheck::configure(std::string name) {}
 
-  return result;
-}
+  Quality FakeCheck::check(const MonitorObject* mo)
+  {
+    Quality result = Quality::Null;
 
-std::string FakeCheck::getAcceptedType()
-{
-  return "TH1";
-}
+    return result;
+  }
 
-void FakeCheck::beautify(MonitorObject *mo, Quality checkResult)
-{
-// NOOP
-}
+  std::string FakeCheck::getAcceptedType() { return "TH1"; }
 
-} // namespace example
-} // namespace quality_control_modules
+  void FakeCheck::beautify(MonitorObject* mo, Quality checkResult)
+  {
+    // NOOP
+  }
+
+  } // namespace example
+  } // namespace quality_control_modules
 } // namespace o2
-

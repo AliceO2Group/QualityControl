@@ -3,6 +3,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class o2::quality_control_modules::common::NonEmpty+;
-#pragma link C++ class o2::quality_control_modules::common::MeanIsAbove+;
+#pragma link C++ class o2::quality_control_modules::common::NonEmpty + ;
+#pragma link C++ class o2::quality_control_modules::common::MeanIsAbove + ;
 #endif
