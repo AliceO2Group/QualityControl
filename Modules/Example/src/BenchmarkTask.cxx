@@ -29,12 +29,13 @@ void BenchmarkTask::initialize(o2::framework::InitContext& ctx)
                               << AliceO2::InfoLogger::InfoLogger::endm;
 
   mConfigFile = ConfigurationFactory::getConfiguration("file:./example.ini");
-  string prefix = "/qc/tasks_config/" + getName();
+  string prefix = "qc.tasks_config." + getName();
   string taskDefinitionName = mConfigFile->get<std::string>(prefix + ".taskDefinition");
-  mNumberHistos = mConfigFile->get<int>(taskDefinitionName + ".numberHistos");
-  mNumberChecks = mConfigFile->get<int>(taskDefinitionName + ".numberChecks");
-  mTypeOfChecks = mConfigFile->get<std::string>(taskDefinitionName + ".typeOfChecks");
-  mModuleOfChecks = mConfigFile->get<std::string>(taskDefinitionName + ".moduleOfChecks");
+  auto taskConfigTree = mConfigFile->getRecursive(taskDefinitionName);
+  mNumberHistos = taskConfigTree.get<int>(taskDefinitionName + ".numberHistos");
+  mNumberChecks = taskConfigTree.get<int>(taskDefinitionName + ".numberChecks");
+  mTypeOfChecks = taskConfigTree.get<std::string>(taskDefinitionName + ".typeOfChecks");
+  mModuleOfChecks = taskConfigTree.get<std::string>(taskDefinitionName + ".moduleOfChecks");
 
   mHistos.reserve(mNumberHistos);
 
