@@ -145,14 +145,15 @@ void TaskRunner::populateConfig(std::string taskName)
     std::string taskDefinitionName = mConfigFile->get<std::string>(prefix + taskName + ".taskDefinition");
 
     mTaskConfig.taskName = taskName;
-    mTaskConfig.moduleName = mConfigFile->get<std::string>(prefix + taskDefinitionName + ".moduleName");
-    mTaskConfig.className = mConfigFile->get<std::string>(prefix + taskDefinitionName + ".className");
+    auto taskConfigTree = mConfigFile->getRecursive(prefix + taskDefinitionName);
+    mTaskConfig.moduleName = taskConfigTree.get<std::string>("moduleName");
+    mTaskConfig.className = taskConfigTree.get<std::string>("className");
     mTaskConfig.cycleDurationSeconds =
-      mConfigFile->get<int>(prefix + taskDefinitionName + ".cycleDurationSeconds", 10);
-    mTaskConfig.maxNumberCycles = mConfigFile->get<int>(prefix + taskDefinitionName + ".maxNumberCycles", -1);
+      taskConfigTree.get<int>("cycleDurationSeconds", 10);
+    mTaskConfig.maxNumberCycles = taskConfigTree.get<int>("maxNumberCycles", -1);
 
     // maybe it should be moved somewhere else?
-    std::string taskInputsNames = mConfigFile->get<std::string>(prefix + taskDefinitionName + ".inputs");
+    std::string taskInputsNames = taskConfigTree.get<std::string>("inputs");
     std::vector<std::string> taskInputsSplit;
     boost::split(taskInputsSplit, taskInputsNames, boost::is_any_of(","));
 
