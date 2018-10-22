@@ -101,8 +101,6 @@ void DaqTask::startOfCycle() { QcInfoLogger::GetInstance() << "startOfCycle" << 
 
 void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  QcInfoLogger::GetInstance() << "initialize SkeletonTask" << AliceO2::InfoLogger::InfoLogger::endm;
-
   // what does it mean to have several inputs ? is it that we defined several in the config file ?
   // If I am connected to the readout can I ever receive several inputs ?
   // TODO maybe we need a special daq task for the readout because we have to look into the weird data structure.
