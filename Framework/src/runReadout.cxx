@@ -30,9 +30,21 @@
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
+#include "Framework/DataSampling.h"
+
+using namespace o2::framework;
+void customize(std::vector<CompletionPolicy>& policies)
+{
+  DataSampling::CustomizeInfrastructure(policies);
+}
+void customize(std::vector<ChannelConfigurationPolicy>& policies)
+{
+  DataSampling::CustomizeInfrastructure(policies);
+}
+
 #include <TH1F.h>
 
-#include "Framework/DataSampling.h"
+#include "Framework/DataSamplingReadoutAdapter.h"
 #include "Framework/runDataProcessing.h"
 #include "QualityControl/Checker.h"
 #include "QualityControl/CheckerDataProcessorFactory.h"
@@ -45,12 +57,19 @@ using namespace o2::quality_control::checker;
 
 WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
-  WorkflowSpec specs;
+  WorkflowSpec specs{
+    specifyExternalFairMQDeviceProxy(
+      "readout-proxy",
+      Outputs{ { "ITS", "RAWDATA" } },
+      "type=sub,method=connect,address=ipc:///tmp/readout-pipe-1,rateLogging=1",
+      dataSamplingReadoutAdapter({ "ITS", "RAWDATA" }))
+  };
+
 
   // Exemplary initialization of QC Task:
   const std::string qcTaskName = "daqTask";
   const std::string qcConfigurationSource =
-    std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readout.json";
+    std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/etc/readout.json";
   TaskDataProcessorFactory qcFactory;
   specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
   CheckerDataProcessorFactory checkerFactory;

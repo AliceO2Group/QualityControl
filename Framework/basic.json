@@ -1,12 +1,6 @@
 {
   "qc": {
     "config": {
-      "DataSampling": {
-        "tasksList": "QcTask",
-        "enableTimePipeliningDispatchers": "0",
-        "enableParallelDispatchers": "0",
-        "enableProxy": "0"
-      },
       "database": {
         "implementation": "CCDB",
         "host": "ccdb-test.cern.ch:8080",
@@ -30,20 +24,31 @@
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "outputDataDescription": "HIST_SKLT_TASK",
-        "inputs": "randomInput",
-        "fraction": "0.1",
-        "subSpec": "-1",
-        "dispatcherType": "DPL",
-        "channelConfig": ""
-      },
-      "randomInput": {
-        "inputName": "random",
-        "dataOrigin": "ITS",
-        "dataDescription": "RAWDATA",
-        "spawnConverter": "0",
-        "channelConfig" : "",
-        "converterType" : "incrementalConverter"
+        "dataSamplingPolicy": "its-raw"
       }
     }
-  }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "its-raw",
+      "active": "true",
+      "machines": [],
+      "dataHeaders": [
+        {
+          "binding": "random",
+          "dataOrigin": "ITS",
+          "dataDescription": "RAWDATA"
+        }
+      ],
+      "subSpec": "0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
 }

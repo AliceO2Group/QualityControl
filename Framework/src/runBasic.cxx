@@ -33,12 +33,22 @@
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
+#include "Framework/DataSampling.h"
+using namespace o2::framework;
+void customize(std::vector<CompletionPolicy>& policies)
+{
+  DataSampling::CustomizeInfrastructure(policies);
+}
+void customize(std::vector<ChannelConfigurationPolicy>& policies)
+{
+  DataSampling::CustomizeInfrastructure(policies);
+}
+
 #include <FairLogger.h>
 #include <TH1F.h>
 #include <memory>
 #include <random>
 
-#include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
 
 #include "QualityControl/Checker.h"
