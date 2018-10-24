@@ -22,6 +22,7 @@
 #include "Common/Exceptions.h"
 #include "Configuration/ConfigurationFactory.h"
 #include "Framework/RawDeviceService.h"
+#include "Framework/DataSampling.h"
 #include "Monitoring/MonitoringFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -148,37 +149,10 @@ void TaskRunner::populateConfig(std::string taskName)
     auto taskConfigTree = mConfigFile->getRecursive(prefix + taskDefinitionName);
     mTaskConfig.moduleName = taskConfigTree.get<std::string>("moduleName");
     mTaskConfig.className = taskConfigTree.get<std::string>("className");
-    mTaskConfig.cycleDurationSeconds =
-      taskConfigTree.get<int>("cycleDurationSeconds", 10);
+    mTaskConfig.cycleDurationSeconds = taskConfigTree.get<int>("cycleDurationSeconds", 10);
     mTaskConfig.maxNumberCycles = taskConfigTree.get<int>("maxNumberCycles", -1);
 
-    // maybe it should be moved somewhere else?
-    std::string taskInputsNames = taskConfigTree.get<std::string>("inputs");
-    std::vector<std::string> taskInputsSplit;
-    boost::split(taskInputsSplit, taskInputsNames, boost::is_any_of(","));
-
-    for (auto&& input : taskInputsSplit) {
-      std::string binding;
-      header::DataOrigin origin;
-      header::DataDescription description;
-
-      binding = mConfigFile->get<std::string>(prefix + input + ".inputName");
-      std::string originStr = mConfigFile->get<std::string>(prefix + input + ".dataOrigin");
-      std::string descriptionStr = mConfigFile->get<std::string>(prefix + input + ".dataDescription");
-
-      originStr.copy(origin.str, (size_t)origin.size);
-      descriptionStr.copy(description.str, (size_t)description.size);
-
-      size_t len = strlen(description.str);
-      if (len < description.size - 2) {
-        description.str[len] = '_';
-        description.str[len + 1] = 'S';
-      } else {
-        BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(
-                                std::string("Too long description name: ") + description.str));
-      }
-      mInputSpecs.push_back(InputSpec{binding, origin, description, 0 });
-    }
+    mInputSpecs = framework::DataSampling::InputSpecsForPolicy(mConfigFile.get(), taskConfigTree.get<std::string>("dataSamplingPolicy"));
 
     mMonitorObjectsSpec.origin.runtimeInit("QC");
     mMonitorObjectsSpec.description = taskDataDescription(taskName);

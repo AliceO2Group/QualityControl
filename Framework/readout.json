@@ -1,12 +1,6 @@
 {
   "qc": {
     "config": {
-      "DataSampling": {
-        "tasksList": "daqTask",
-        "enableTimePipeliningDispatchers": "0",
-        "enableParallelDispatchers": "0",
-        "enableProxy": "0"
-      },
       "database": {
         "implementation": "CCDB",
         "host": "ccdb-test.cern.ch:8080",
@@ -30,20 +24,31 @@
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "10",
         "outputDataDescription": "HIST_SKLT_TASK",
-        "inputs": "readoutInput",
-        "fraction": "0.01",
-        "subSpec": "-1",
-        "dispatcherType": "DPL",
-        "channelConfig": ""
-      },
-      "readoutInput": {
-        "inputName": "readout",
-        "dataOrigin": "ITS",
-        "dataDescription": "RAWDATA",
-        "spawnConverter": "1",
-        "channelConfig" : "type=sub,method=connect,address=ipc:///tmp/readout-pipe-1,rateLogging=1",
-        "converterType" : "dataSamplingReadoutAdapter"
+        "dataSamplingPolicy": "readout"
       }
     }
-  }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "readout",
+      "active": "true",
+      "machines": [],
+      "dataHeaders": [
+        {
+          "binding": "readout",
+          "dataOrigin": "ITS",
+          "dataDescription": "RAWDATA"
+        }
+      ],
+      "subSpec": "0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1441"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
 }

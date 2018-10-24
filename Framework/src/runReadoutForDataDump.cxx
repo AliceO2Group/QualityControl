@@ -33,16 +33,32 @@
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 ///
 
-#include <TH1F.h>
-
 #include "Framework/DataSampling.h"
+
+using namespace o2::framework;
+void customize(std::vector<CompletionPolicy>& policies)
+{
+  DataSampling::CustomizeInfrastructure(policies);
+}
+void customize(std::vector<ChannelConfigurationPolicy>& policies)
+{
+  DataSampling::CustomizeInfrastructure(policies);
+}
+
+#include "Framework/DataSamplingReadoutAdapter.h"
 #include "Framework/runDataProcessing.h"
 
 using namespace o2::framework;
 
 WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
-  WorkflowSpec specs;
+  WorkflowSpec specs{
+    specifyExternalFairMQDeviceProxy(
+      "readout-proxy",
+      Outputs{ { "R/O", "RAWDATA" } },
+      "type=sub,method=connect,address=ipc:///tmp/readout-pipe-1,rateLogging=1",
+      dataSamplingReadoutAdapter({ "R/O", "RAWDATA" }))
+  };
 
   const std::string qcConfigurationSource =
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutForDataDump.json";
