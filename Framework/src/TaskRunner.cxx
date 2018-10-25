@@ -158,20 +158,26 @@ void TaskRunner::populateConfig(std::string taskName)
     boost::split(taskInputsSplit, taskInputsNames, boost::is_any_of(","));
 
     for (auto&& input : taskInputsSplit) {
-      InputSpec inputSpec;
-      inputSpec.binding = mConfigFile->get<std::string>(prefix + input + ".inputName");
-      inputSpec.origin.runtimeInit(mConfigFile->get<std::string>(prefix + input + ".dataOrigin").c_str());
-      inputSpec.description.runtimeInit(mConfigFile->get<std::string>(prefix + input + ".dataDescription").c_str());
-      size_t len = strlen(inputSpec.description.str);
-      if (len < inputSpec.description.size - 2) {
-        inputSpec.description.str[len] = '_';
-        inputSpec.description.str[len + 1] = 'S';
+      std::string binding;
+      header::DataOrigin origin;
+      header::DataDescription description;
+
+      binding = mConfigFile->get<std::string>(prefix + input + ".inputName");
+      std::string originStr = mConfigFile->get<std::string>(prefix + input + ".dataOrigin");
+      std::string descriptionStr = mConfigFile->get<std::string>(prefix + input + ".dataDescription");
+
+      originStr.copy(origin.str, (size_t)origin.size);
+      descriptionStr.copy(description.str, (size_t)description.size);
+
+      size_t len = strlen(description.str);
+      if (len < description.size - 2) {
+        description.str[len] = '_';
+        description.str[len + 1] = 'S';
       } else {
         BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(
-                                std::string("Too long description name: ") + inputSpec.description.str));
+                                std::string("Too long description name: ") + description.str));
       }
-      inputSpec.subSpec = 0;
-      mInputSpecs.push_back(inputSpec);
+      mInputSpecs.push_back(InputSpec{binding, origin, description, 0 });
     }
 
     mMonitorObjectsSpec.origin.runtimeInit("QC");
