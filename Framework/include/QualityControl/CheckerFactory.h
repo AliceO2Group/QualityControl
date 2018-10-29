@@ -1,9 +1,9 @@
 ///
-/// \file   CheckerDataProcessorFactory.h
+/// \file   CheckerFactory.h
 /// \author Piotr Konopka
 ///
-#ifndef QC_CHECKER_DATAPROCESSORFACTORY_H
-#define QC_CHECKER_DATAPROCESSORFACTORY_H
+#ifndef QC_CHECKERFACTORY_H
+#define QC_CHECKERFACTORY_H
 
 #include "Framework/DataProcessorSpec.h"
 
@@ -15,11 +15,11 @@ namespace checker
 {
 
 /// \brief Factory in charge of creating DataProcessorSpec of QC Checker
-class CheckerDataProcessorFactory
+class CheckerFactory
 {
  public:
-  CheckerDataProcessorFactory() = default;
-  virtual ~CheckerDataProcessorFactory() = default;
+  CheckerFactory() = default;
+  virtual ~CheckerFactory() = default;
 
   framework::DataProcessorSpec create(std::string checkerName, std::string taskName, std::string configurationSource);
 };
@@ -28,4 +28,4 @@ class CheckerDataProcessorFactory
 } // namespace quality_control
 } // namespace o2
 
-#endif // QC_CHECKER_DATAPROCESSORFACTORY_H
+#endif // QC_CHECKERFACTORY_H

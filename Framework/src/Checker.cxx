@@ -34,13 +34,13 @@ namespace checker
 {
 
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
-// TODO maybe we could use the CheckerDataProcessorFactory
+// TODO maybe we could use the CheckerFactory
 
 Checker::Checker(std::string checkerName, std::string taskName, std::string configurationSource)
   : mCheckerName(checkerName),
     mConfigurationSource(configurationSource),
-    mInputSpec{ "mo", "QC", TaskRunner::taskDataDescription(taskName), 0 },
-    mOutputSpec{ "QC", Checker::checkerDataDescription(taskName), 0 },
+    mInputSpec{ "mo", "QC", TaskRunner::createTaskDataDescription(taskName), 0 },
+    mOutputSpec{ "QC", Checker::createCheckerDataDescription(taskName), 0 },
     mLogger(QcInfoLogger::GetInstance()),
     startFirstObject{ system_clock::time_point::min() },
     endLastObject{ system_clock::time_point::min() },
@@ -126,7 +126,7 @@ void Checker::run(framework::ProcessingContext& ctx)
   }
 }
 
-o2::header::DataDescription Checker::checkerDataDescription(const std::string taskName)
+o2::header::DataDescription Checker::createCheckerDataDescription(const std::string taskName)
 {
   o2::header::DataDescription description;
   description.runtimeInit(std::string(taskName.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());

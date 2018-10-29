@@ -179,7 +179,7 @@ accordingly.
 ```
 ...
 
-#include "QualityControl/TaskDataProcessorFactory.h"
+#include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
 #include "Framework/DataSampling.h"
 #include "Framework/runDataProcessing.h"
@@ -195,7 +195,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&) {
   const std::string qcConfigurationSource = std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.json";
   // An entry in config file which describes your QC task
   const std::string qcTaskName = "skeletonTask";
-  o2::quality_control::core::TaskDataProcessorFactory qcFactory;
+  o2::quality_control::core::TaskRunnerFactory qcFactory;
   specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
 
   o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);

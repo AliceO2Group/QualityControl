@@ -57,7 +57,7 @@ class Checker : public framework::Task
   framework::OutputSpec getOutputSpec() { return mOutputSpec; };
 
   /// \brief Unified DataDescription naming scheme for all checkers
-  static o2::header::DataDescription checkerDataDescription(const std::string taskName);
+  static o2::header::DataDescription createCheckerDataDescription(const std::string taskName);
 
  private:
   /**
