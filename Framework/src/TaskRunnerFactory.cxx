@@ -9,11 +9,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TaskDataProcessorFactory.cxx
+/// \file   TaskRunnerFactory.cxx
 /// \author Piotr Konopka
 ///
 
-#include "QualityControl/TaskDataProcessorFactory.h"
+#include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
 
 namespace o2
@@ -25,11 +25,11 @@ namespace core
 
 using namespace o2::framework;
 
-TaskDataProcessorFactory::TaskDataProcessorFactory() {}
+TaskRunnerFactory::TaskRunnerFactory() {}
 
-TaskDataProcessorFactory::~TaskDataProcessorFactory() {}
+TaskRunnerFactory::~TaskRunnerFactory() {}
 
-DataProcessorSpec TaskDataProcessorFactory::create(std::string taskName, std::string configurationSource)
+DataProcessorSpec TaskRunnerFactory::create(std::string taskName, std::string configurationSource)
 {
   auto qcTask = std::make_shared<TaskRunner>(taskName, configurationSource);
 

@@ -132,7 +132,7 @@ void TaskRunner::timerCallback(ProcessingContext& pCtx) { finishCycle(pCtx.outpu
 
 void TaskRunner::setResetAfterPublish(bool resetAfterPublish) { mResetAfterPublish = resetAfterPublish; }
 
-o2::header::DataDescription TaskRunner::taskDataDescription(const std::string taskName)
+o2::header::DataDescription TaskRunner::createTaskDataDescription(const std::string taskName)
 {
   o2::header::DataDescription description;
   description.runtimeInit(std::string(taskName.substr(0, o2::header::DataDescription::size - 3) + "-mo").c_str());
@@ -155,7 +155,7 @@ void TaskRunner::populateConfig(std::string taskName)
     mInputSpecs = framework::DataSampling::InputSpecsForPolicy(mConfigFile.get(), taskConfigTree.get<std::string>("dataSamplingPolicy"));
 
     mMonitorObjectsSpec.origin.runtimeInit("QC");
-    mMonitorObjectsSpec.description = taskDataDescription(taskName);
+    mMonitorObjectsSpec.description = createTaskDataDescription(taskName);
     mMonitorObjectsSpec.subSpec = 0;
     mMonitorObjectsSpec.lifetime = o2::framework::Lifetime::QA;
   } catch (...) { // catch already here the configuration exception and print it

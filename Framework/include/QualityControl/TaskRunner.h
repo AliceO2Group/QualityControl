@@ -81,7 +81,7 @@ class TaskRunner
   void setResetAfterPublish(bool);
 
   /// \brief Unified DataDescription naming scheme for all tasks
-  static o2::header::DataDescription taskDataDescription(const std::string taskName);
+  static o2::header::DataDescription createTaskDataDescription(const std::string taskName);
 
  private:
   void populateConfig(std::string taskName);

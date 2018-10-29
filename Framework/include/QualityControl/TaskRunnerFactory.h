@@ -1,10 +1,10 @@
 ///
-/// \file   TaskDataProcessorFactory.h
+/// \file   TaskRunnerFactory.h
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_CORE_TASKDATAPROCESSORFACTORY_H
-#define QC_CORE_TASKDATAPROCESSORFACTORY_H
+#ifndef QC_CORE_TASKFACTORY_H
+#define QC_CORE_TASKFACTORY_H
 
 #include "Framework/DataProcessorSpec.h"
 
@@ -16,11 +16,11 @@ namespace core
 {
 
 /// \brief Factory in charge of creating DataProcessorSpec of QC task
-class TaskDataProcessorFactory
+class TaskRunnerFactory
 {
  public:
-  TaskDataProcessorFactory();
-  virtual ~TaskDataProcessorFactory();
+  TaskRunnerFactory();
+  virtual ~TaskRunnerFactory();
 
   o2::framework::DataProcessorSpec create(std::string taskName, std::string configurationSource);
 };
@@ -29,4 +29,4 @@ class TaskDataProcessorFactory
 } // namespace quality_control
 } // namespace o2
 
-#endif // QC_CORE_TASKDATAPROCESSORFACTORY_H
+#endif // QC_CORE_TASKFACTORY_H

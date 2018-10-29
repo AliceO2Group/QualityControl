@@ -32,9 +32,9 @@ void customize(std::vector<CompletionPolicy>& policies)
 #include "Framework/runDataProcessing.h"
 
 #include "QualityControl/Checker.h"
-#include "QualityControl/CheckerDataProcessorFactory.h"
+#include "QualityControl/CheckerFactory.h"
 #include "QualityControl/HistoMerger.h"
-#include "QualityControl/TaskDataProcessorFactory.h"
+#include "QualityControl/TaskRunnerFactory.h"
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;

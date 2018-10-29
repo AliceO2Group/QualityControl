@@ -6,14 +6,14 @@ set(
   src/Quality.cxx
   src/ObjectsManager.cxx
   src/Checker.cxx
-  src/CheckerDataProcessorFactory.cxx
+  src/CheckerFactory.cxx
   src/CheckInterface.cxx
   src/DatabaseFactory.cxx
   src/CcdbDatabase.cxx
   src/InformationService.cxx
   src/InformationServiceDump.cxx
   src/TaskRunner.cxx
-  src/TaskDataProcessorFactory.cxx
+  src/TaskRunnerFactory.cxx
   src/TaskInterface.cxx
   src/RepositoryBenchmark.cxx
   src/HistoMerger.cxx
@@ -25,11 +25,11 @@ set(
   include/QualityControl/Quality.h
   include/QualityControl/CheckInterface.h
   include/QualityControl/Checker.h
-  include/QualityControl/CheckerDataProcessorFactory.h
+  include/QualityControl/CheckerFactory.h
   include/QualityControl/DatabaseInterface.h
   include/QualityControl/CcdbDatabase.h
   include/QualityControl/TaskRunner.h
-  include/QualityControl/TaskDataProcessorFactory.h
+  include/QualityControl/TaskRunnerFactory.h
   include/QualityControl/HistoMerger.h
 )
 

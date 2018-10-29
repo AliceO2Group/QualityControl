@@ -52,8 +52,8 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include "Framework/runDataProcessing.h"
 
 #include "QualityControl/Checker.h"
-#include "QualityControl/CheckerDataProcessorFactory.h"
-#include "QualityControl/TaskDataProcessorFactory.h"
+#include "QualityControl/CheckerFactory.h"
+#include "QualityControl/TaskRunnerFactory.h"
 
 using namespace o2::framework;
 using namespace o2::quality_control::core;
@@ -90,18 +90,18 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   // Exemplary initialization of QC Task:
   const std::string qcTaskName = "QcTask";
   const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/basic.json";
-  TaskDataProcessorFactory taskFactory;
+  TaskRunnerFactory taskFactory;
   specs.push_back(taskFactory.create(qcTaskName, qcConfigurationSource));
 
   // Now the QC Checker
-  CheckerDataProcessorFactory checkerFactory;
+  CheckerFactory checkerFactory;
   specs.push_back(checkerFactory.create("checker_0", qcTaskName, qcConfigurationSource));
 
   // Finally the printer
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "checked-mo", "QC", Checker::checkerDataDescription(qcTaskName), 0 }
+      { "checked-mo", "QC", Checker::createCheckerDataDescription(qcTaskName), 0 }
     },
     Outputs{},
     AlgorithmSpec{

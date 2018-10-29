@@ -1,12 +1,12 @@
 ///
-/// \file   CheckerDataProcessorFactory.cxx
+/// \file   CheckerFactory.cxx
 /// \author Piotr Konopka
 ///
 
 #include <Framework/DataProcessorSpec.h>
 
 #include "QualityControl/Checker.h"
-#include "QualityControl/CheckerDataProcessorFactory.h"
+#include "QualityControl/CheckerFactory.h"
 
 namespace o2
 {
@@ -18,8 +18,7 @@ namespace checker
 using namespace o2::framework;
 using namespace o2::quality_control::checker;
 
-DataProcessorSpec CheckerDataProcessorFactory::create(std::string checkerName, std::string taskName,
-                                                      std::string configurationSource)
+DataProcessorSpec CheckerFactory::create(std::string checkerName, std::string taskName, std::string configurationSource)
 {
   Checker qcChecker{ checkerName, taskName, configurationSource };
 
