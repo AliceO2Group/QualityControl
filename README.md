@@ -157,7 +157,7 @@ The main data flow is represented in blue. Data samples are selected by the Data
 
 ## DPL
 
-TODO -> piotr
+[Data Processing Layer](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) is a software framework developed as a part of O2 project. It structurizes the computing into units called _Data Processors_ - processes that communicate with each other via messages. DPL takes care of generating and running the processing topology out of user declaration code, serializing and deserializing messages, providing the data processors with all the anticipated messages for a given timestamp and much more. Each piece of data is characterized by its `DataHeader`, which consists (among others) of `dataOrigin`, `dataDescription` and `SubSpecification` - for example `{"MFT", "TRACKS", 0}`.
 
 <!--
 
@@ -213,7 +213,48 @@ executable `taskDPL`.
 
 ## Data Sampling
 
-TODO -> piotr
+The Data Sampling provides the possibility to sample data in DPL workflows, based on certain conditions ( 5% randomly, when payload is greater than 4234 bytes, etc.). The job of passing the right data is done by a data processor called `Dispatcher`. A desired data stream is specified in form of Data Sampling Policies, configured by JSON structures. Please refer to the main [Data Sampling readme](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#data-sampling) for more detailed information.
+
+Data Sampling is used by Quality Control to feed tasks with data. Below, an exemplary usage in configuration file is presented. It instructs Data Sampling to provide a QC task with 10% randomly selected data that has the header `{"ITS", "RAWDATA", 0}`. The data will be accessible inside the QC task by the binding `"raw"`.
+```json
+{
+  "qc": {
+    ...
+    "tasks_config": {
+      "QcTask": {
+        "taskDefinition": "QcTaskDefinition"
+      },
+      "QcTaskDefinition": {
+        ...
+        "dataSamplingPolicy": "its-raw"
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "its-raw",
+      "active": "true",
+      "machines": [],
+      "dataHeaders": [
+        {
+          "binding": "raw",
+          "dataOrigin": "ITS",
+          "dataDescription": "RAWDATA"
+        }
+      ],
+      "subSpec": "0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
+}
+```
 
 ## Code Organization
 
