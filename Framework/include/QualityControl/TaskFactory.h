@@ -55,7 +55,7 @@ class TaskFactory
     std::string library = "lib" + taskConfig.moduleName;
     logger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
     int libLoaded = gSystem->Load(library.c_str(), "", true);
-    if (libLoaded) {
+    if (libLoaded < 0) {
       BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
     }
 
