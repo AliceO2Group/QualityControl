@@ -46,6 +46,8 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 
 #include "Framework/DataSamplingReadoutAdapter.h"
 #include "Framework/runDataProcessing.h"
+#include "QualityControl/InfrastructureGenerator.h"
+
 #include "QualityControl/Checker.h"
 #include "QualityControl/CheckerFactory.h"
 #include "QualityControl/TaskRunnerFactory.h"
@@ -57,6 +59,7 @@ using namespace o2::quality_control::checker;
 
 WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
+  // Creating the Readout proxy
   WorkflowSpec specs{
     specifyExternalFairMQDeviceProxy(
       "readout-proxy",
@@ -65,20 +68,15 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
       dataSamplingReadoutAdapter({ "ITS", "RAWDATA" }))
   };
 
-
-  // Exemplary initialization of QC Task:
-  const std::string qcTaskName = "daqTask";
-  const std::string qcConfigurationSource =
-    std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/etc/readout.json";
-  TaskRunnerFactory qcFactory;
-  specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
-  CheckerFactory checkerFactory;
-  specs.push_back(checkerFactory.create("checker_0", qcTaskName, qcConfigurationSource));
+  // Generation of the QC topology
+  const std::string qcConfigurationSource = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/etc/readout.json";
+  auto qcInfrastructure = InfrastructureGenerator::generateRemoteInfrastructure(qcConfigurationSource);
+  specs.insert(std::end(specs), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "checked-mo", "QC", Checker::createCheckerDataDescription(qcTaskName), 0 }
+      { "checked-mo", "QC", Checker::createCheckerDataDescription("daqTask"), 0 }
     },
     Outputs{},
     AlgorithmSpec{

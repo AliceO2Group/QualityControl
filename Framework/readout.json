@@ -13,18 +13,15 @@
         "type": "2"
       }
     },
-    "tasks_config": {
+    "tasks": {
       "daqTask": {
-        "taskDefinition": "daqTaskDefinition"
-      },
-      "daqTaskDefinition": {
+        "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
-        "outputDataOrigin": "ITS",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "10",
-        "outputDataDescription": "HIST_SKLT_TASK",
-        "dataSamplingPolicy": "readout"
+        "maxNumberCycles": "-1",
+        "dataSamplingPolicy": "readout",
+        "location": "remote"
       }
     }
   },

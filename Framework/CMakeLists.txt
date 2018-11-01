@@ -17,6 +17,7 @@ set(
   src/TaskInterface.cxx
   src/RepositoryBenchmark.cxx
   src/HistoMerger.cxx
+  src/InfrastructureGenerator.cxx
 )
 
 set(
@@ -31,6 +32,7 @@ set(
   include/QualityControl/TaskRunner.h
   include/QualityControl/TaskRunnerFactory.h
   include/QualityControl/HistoMerger.h
+  include/QualityControl/InfrastructureGenerator.h
 )
 
 set(
@@ -202,6 +204,7 @@ set(
   test/testMonitorObject.cxx
   test/testPublisher.cxx
   test/testQcInfoLogger.cxx
+  test/testInfrastructureGenerator.cxx
   test/testQCTask.cxx
   test/testQuality.cxx
 )
@@ -215,6 +218,12 @@ foreach(test ${TEST_SRCS})
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
 endforeach()
+
+install(
+  FILES
+  test/testQCFactory.json
+  DESTINATION test
+)
 
 # ---- Install ----
 
@@ -280,7 +289,6 @@ install(
 install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
 install(
   FILES
-    example-default.ini
     example-default.json
     alfa.json
     dataDump.json
@@ -288,7 +296,6 @@ install(
 )
 install(
   FILES
-    qcTaskDplConfig.ini
     basic.json
     readout.json
     readoutForDataDump.json

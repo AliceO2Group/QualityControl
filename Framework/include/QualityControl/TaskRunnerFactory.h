@@ -22,7 +22,7 @@ class TaskRunnerFactory
   TaskRunnerFactory();
   virtual ~TaskRunnerFactory();
 
-  o2::framework::DataProcessorSpec create(std::string taskName, std::string configurationSource);
+  o2::framework::DataProcessorSpec create(std::string taskName, std::string configurationSource, size_t id = 0);
 };
 
 } // namespace core

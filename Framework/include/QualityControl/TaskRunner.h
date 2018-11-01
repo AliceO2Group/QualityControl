@@ -65,7 +65,12 @@ using namespace std::chrono;
 class TaskRunner
 {
  public:
-  TaskRunner(std::string taskName, std::string configurationSource);
+  /// \brief Constructor
+  ///
+  /// \param taskName - name of the task, which exists in tasks list in the configuration file
+  /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
+  /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
+  TaskRunner(std::string taskName, std::string configurationSource, size_t id = 0);
   ~TaskRunner();
 
   /// \brief To be invoked during initialization of Data Processor
@@ -80,8 +85,10 @@ class TaskRunner
 
   void setResetAfterPublish(bool);
 
+  /// \brief Unified DataOrigin for Quality Control tasks
+  static header::DataOrigin createTaskDataOrigin();
   /// \brief Unified DataDescription naming scheme for all tasks
-  static o2::header::DataDescription createTaskDataDescription(const std::string taskName);
+  static header::DataDescription createTaskDataDescription(const std::string& taskName);
 
  private:
   void populateConfig(std::string taskName);
@@ -94,8 +101,8 @@ class TaskRunner
  private:
   std::string mTaskName;
   TaskConfig mTaskConfig;
-  std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile; // used in init only
-  std::shared_ptr<o2::monitoring::Monitoring> mCollector;
+  std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
+  std::shared_ptr<monitoring::Monitoring> mCollector;
   TaskInterface* mTask;
   bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;

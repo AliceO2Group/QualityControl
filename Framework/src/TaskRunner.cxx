@@ -39,20 +39,21 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace std::chrono;
 
-TaskRunner::TaskRunner(std::string taskName, std::string configurationSource)
+TaskRunner::TaskRunner(std::string taskName, std::string configurationSource, size_t id)
   : mTaskName(taskName),
     mNumberBlocks(0),
     mTotalNumberObjectsPublished(0),
     mLastNumberObjects(0),
     mCycleOn(false),
     mCycleNumber(0),
-    mMonitorObjectsSpec("", "", 0),
+    mMonitorObjectsSpec(createTaskDataOrigin(), createTaskDataDescription(taskName), id),
     mResetAfterPublish(false)
 {
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   populateConfig(mTaskName);
 
+  // todo: consider moving everything below to init
   // setup monitoring
   mCollector = MonitoringFactory::Get("infologger://");
 
@@ -132,32 +133,40 @@ void TaskRunner::timerCallback(ProcessingContext& pCtx) { finishCycle(pCtx.outpu
 
 void TaskRunner::setResetAfterPublish(bool resetAfterPublish) { mResetAfterPublish = resetAfterPublish; }
 
-o2::header::DataDescription TaskRunner::createTaskDataDescription(const std::string taskName)
+header::DataOrigin TaskRunner::createTaskDataOrigin()
+{
+  return header::DataOrigin{ "QC" };
+}
+
+header::DataDescription TaskRunner::createTaskDataDescription(const std::string& taskName)
 {
   o2::header::DataDescription description;
-  description.runtimeInit(std::string(taskName.substr(0, o2::header::DataDescription::size - 3) + "-mo").c_str());
+  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size - 3) + "-mo").c_str());
   return description;
 }
 
 void TaskRunner::populateConfig(std::string taskName)
 {
   try {
-    std::string prefix = std::string("qc.tasks_config.");
-    std::string taskDefinitionName = mConfigFile->get<std::string>(prefix + taskName + ".taskDefinition");
+    auto tasksConfigList = mConfigFile->getRecursive("qc.tasks");
+    auto taskConfigTree = tasksConfigList.find(taskName);
+    if (taskConfigTree == tasksConfigList.not_found()) {
+      throw;
+    }
 
     mTaskConfig.taskName = taskName;
-    auto taskConfigTree = mConfigFile->getRecursive(prefix + taskDefinitionName);
-    mTaskConfig.moduleName = taskConfigTree.get<std::string>("moduleName");
-    mTaskConfig.className = taskConfigTree.get<std::string>("className");
-    mTaskConfig.cycleDurationSeconds = taskConfigTree.get<int>("cycleDurationSeconds", 10);
-    mTaskConfig.maxNumberCycles = taskConfigTree.get<int>("maxNumberCycles", -1);
+    mTaskConfig.moduleName = taskConfigTree->second.get<std::string>("moduleName");
+    mTaskConfig.className = taskConfigTree->second.get<std::string>("className");
+    mTaskConfig.cycleDurationSeconds = taskConfigTree->second.get<int>("cycleDurationSeconds", 10);
+    mTaskConfig.maxNumberCycles = taskConfigTree->second.get<int>("maxNumberCycles", -1);
 
-    mInputSpecs = framework::DataSampling::InputSpecsForPolicy(mConfigFile.get(), taskConfigTree.get<std::string>("dataSamplingPolicy"));
+    std::string policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
+    if (policiesFilePath.empty()) {
+      mInputSpecs = framework::DataSampling::InputSpecsForPolicy(mConfigFile.get(), taskConfigTree->second.get<std::string>("dataSamplingPolicy"));
+    } else {
+      mInputSpecs = framework::DataSampling::InputSpecsForPolicy(policiesFilePath, taskConfigTree->second.get<std::string>("dataSamplingPolicy"));
+    }
 
-    mMonitorObjectsSpec.origin.runtimeInit("QC");
-    mMonitorObjectsSpec.description = createTaskDataDescription(taskName);
-    mMonitorObjectsSpec.subSpec = 0;
-    mMonitorObjectsSpec.lifetime = o2::framework::Lifetime::QA;
   } catch (...) { // catch already here the configuration exception and print it
     // because if we are in a constructor, the exception could be lost
     std::string diagnostic = boost::current_exception_diagnostic_information();

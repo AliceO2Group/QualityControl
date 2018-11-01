@@ -52,8 +52,7 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include "Framework/runDataProcessing.h"
 
 #include "QualityControl/Checker.h"
-#include "QualityControl/CheckerFactory.h"
-#include "QualityControl/TaskRunnerFactory.h"
+#include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2::framework;
 using namespace o2::quality_control::core;
@@ -63,6 +62,7 @@ using namespace std::chrono;
 WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
   WorkflowSpec specs;
+  // The producer to generate some data in the workflow
   DataProcessorSpec producer{
     "producer",
     Inputs{},
@@ -87,21 +87,21 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   specs.push_back(producer);
 
-  // Exemplary initialization of QC Task:
-  const std::string qcTaskName = "QcTask";
   const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/basic.json";
-  TaskRunnerFactory taskFactory;
-  specs.push_back(taskFactory.create(qcTaskName, qcConfigurationSource));
+  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
-  // Now the QC Checker
-  CheckerFactory checkerFactory;
-  specs.push_back(checkerFactory.create("checker_0", qcTaskName, qcConfigurationSource));
+  // Generation of Data Sampling infrastructure
+  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+
+  // Generation of the QC topology (one task, one checker in this case)
+  auto qcInfrastructure = InfrastructureGenerator::generateRemoteInfrastructure(qcConfigurationSource);
+  specs.insert(std::end(specs), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 
   // Finally the printer
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "checked-mo", "QC", Checker::createCheckerDataDescription(qcTaskName), 0 }
+      { "checked-mo", "QC", Checker::createCheckerDataDescription("QcTask"), 0 }
     },
     Outputs{},
     AlgorithmSpec{
@@ -124,9 +124,6 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     }
   };
   specs.push_back(printer);
-
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
-  o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
   return specs;
 }
