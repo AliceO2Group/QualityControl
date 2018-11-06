@@ -31,7 +31,8 @@ void HistoMerger::init(framework::InitContext& ctx) { mMonitorObject.reset(); }
 void HistoMerger::run(framework::ProcessingContext& ctx)
 {
   for (const auto& input : ctx.inputs()) {
-    if (input.header != nullptr && input.spec != nullptr) {
+    if (input.header != nullptr && input.spec != nullptr &&
+        std::strstr(DataRefUtils::as<MonitorObject>(input)->getObject()->ClassName(), "TH1") != nullptr) {
 
       if (!mMonitorObject) {
         mMonitorObject.reset(DataRefUtils::as<MonitorObject>(input).release());

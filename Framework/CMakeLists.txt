@@ -140,6 +140,7 @@ set(
   src/runInformationService.cxx
   src/runInformationServiceDump.cxx
   src/runBasic.cxx
+  src/runAdvanced.cxx
   src/runReadout.cxx
   src/runMergerTest.cxx
   src/runReadoutForDataDump.cxx
@@ -151,6 +152,7 @@ set(
   qcInfoService
   qcInfoServiceDump
   qcRunBasic
+  qcRunAdvanced
   qcRunReadout
   runMergerTest
   qcRunReadoutForDataDump
@@ -297,6 +299,7 @@ install(
 install(
   FILES
     basic.json
+    advanced.json
     readout.json
     readoutForDataDump.json
   DESTINATION etc

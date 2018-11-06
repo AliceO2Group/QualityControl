@@ -29,9 +29,11 @@ TaskRunnerFactory::TaskRunnerFactory() {}
 
 TaskRunnerFactory::~TaskRunnerFactory() {}
 
-o2::framework::DataProcessorSpec TaskRunnerFactory::create(std::string taskName, std::string configurationSource, size_t id)
+o2::framework::DataProcessorSpec
+TaskRunnerFactory::create(std::string taskName, std::string configurationSource, size_t id, bool resetAfterPublish)
 {
   auto qcTask = std::make_shared<TaskRunner>(taskName, configurationSource, id);
+  qcTask->setResetAfterPublish(resetAfterPublish);
 
   DataProcessorSpec newTask{
     taskName,

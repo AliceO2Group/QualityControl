@@ -39,7 +39,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
 
         if (machine.second.get<std::string>("") == host) {
           // todo: optimize it by using the same ptree?
-          workflow.emplace_back(taskRunnerFactory.create(task.first, configurationSource, id));
+          workflow.emplace_back(taskRunnerFactory.create(task.first, configurationSource, id, true));
           break;
         }
         id++;
