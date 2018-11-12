@@ -39,7 +39,7 @@ namespace checker
 Checker::Checker(std::string checkerName, std::string taskName, std::string configurationSource)
   : mCheckerName(checkerName),
     mConfigurationSource(configurationSource),
-    mInputSpec{ "mo", "QC", TaskRunner::createTaskDataDescription(taskName), 0 },
+    mInputSpec{ "mo", TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), 0 },
     mOutputSpec{ "QC", Checker::createCheckerDataDescription(taskName), 0 },
     mLogger(QcInfoLogger::GetInstance()),
     startFirstObject{ system_clock::time_point::min() },
@@ -102,7 +102,6 @@ void Checker::run(framework::ProcessingContext& ctx)
   }
 
   for (auto&& input : ctx.inputs()) {
-
     // will that work properly with shmem?
     std::shared_ptr<MonitorObject> mo{ std::move(framework::DataRefUtils::as<MonitorObject>(input)) };
 

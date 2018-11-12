@@ -13,18 +13,18 @@
         "type": "2"
       }
     },
-    "tasks_config": {
+    "tasks": {
       "QcTask": {
-        "taskDefinition": "QcTaskDefinition"
-      },
-      "QcTaskDefinition": {
+        "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
-        "outputDataOrigin": "ITS",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "outputDataDescription": "HIST_SKLT_TASK",
-        "dataSamplingPolicy": "its-raw"
+        "dataSamplingPolicy": "its-raw",
+        "taskParameters": {
+          "nothing": "rien"
+        },
+        "location": "remote"
       }
     }
   },

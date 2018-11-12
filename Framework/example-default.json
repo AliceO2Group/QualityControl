@@ -1,9 +1,6 @@
 {
   "qc": {
     "config": {
-      "DataSampling": {
-        "implementation": "MockSampler"
-      },
       "database": {
         "username": "qc_user",
         "password": "qc_user",
@@ -16,53 +13,71 @@
         "type": "2"
       }
     },
-    "tasks_config": {
+    "tasks": {
       "myTask_1": {
-        "taskDefinition": "taskDefinition_1"
-      },
-      "myTask_2": {
-        "taskDefinition": "taskDefinition_1"
-      },
-      "taskDefinition_1": {
         "className": "o2::quality_control_modules::example::ExampleTask",
         "moduleName": "QcExample",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1"
+        "maxNumberCycles": "-1",
+        "dataSamplingPolicy": "ex1",
+        "location": "remote"
       },
       "daqTask": {
-        "taskDefinition": "daqTaskDefinition"
-      },
-      "daqTaskDefinition": {
         "className": "o2::quality_control_modules::daq::DaqTask",
         "moduleName": "QcDaq",
         "maxNumberCycles": "-1",
-        "cycleDurationSeconds": "10"
+        "cycleDurationSeconds": "10",
+        "dataSamplingPolicy": "mftclusters",
+        "location": "remote"
       },
       "benchmarkTask_0": {
-        "taskDefinition": "benchmark"
-      },
-      "benchmark": {
         "className": "o2::quality_control_modules::example::BenchmarkTask",
         "moduleName": "QcExample",
-        "numberHistos": "1",
-        "numberChecks": "1",
-        "typeOfChecks": "o2::quality_control_modules::example::FakeCheck",
-        "moduleOfChecks": "QcExample",
-        "cycleDurationSeconds": "1"
-      }
-    },
-    "checkers_config": {
-      "numberCheckers": "1",
-      "numberTasks": "1",
-      "tasksAddresses": "tcp://localhost:5556,tcp://localhost:5557,tcp://localhost:5558,tcp://localhost:5559",
-      "checker_0": {
-        "broadcast": "0",
-        "broadcastAddress": "tcp://*:5600",
-        "id": "0"
-      },
-      "Checks": {
-        "checkMeanIsAbove/threshold": "1"
+        "cycleDurationSeconds": "1",
+        "dataSamplingPolicy": "ex1",
+        "location": "local",
+        "machines": [
+          "o2flp1",
+          "o2flp2"
+        ]
       }
     }
-  }
+  },
+  "dataSamplingPoliciesFile_comment": "In case that policies are stored in different file, specify its path below. When both dataSamplingPolicies and dataSamplingPoliciesFile are specified, the latter has higher priority",
+  "dataSamplingPoliciesFile": "json:///home/genghiskhan/alice/QualityControl/dataSamplingConfig.json",
+  "dataSamplingPolicies_comment": "this is ignored when dataSamplingPoliciesFile is specified",
+  "dataSamplingPolicies": [
+    {
+      "id": "ex1",
+      "active": "true",
+      "dataHeaders": [
+        {
+          "binding": "data",
+          "dataOrigin": "TST",
+          "dataDescription": "DATA"
+        }
+      ],
+      "subSpec": "0",
+      "samplingConditions": []
+    },
+    {
+      "id": "mftclusters",
+      "active": "true",
+      "dataHeaders": [
+        {
+          "binding": "mft-clusters",
+          "dataOrigin": "MFT",
+          "dataDescription": "CLUSTERS"
+        }
+      ],
+      "subSpec": "0",
+      "samplingConditions": [
+        {
+          "condition": "payloadSize",
+          "upperLimit": "5000",
+          "lowerLimit": "1000"
+        }
+      ]
+    }
+  ]
 }

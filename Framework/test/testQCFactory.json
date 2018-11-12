@@ -1,0 +1,75 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "username": "qc_user",
+        "password": "qc_user",
+        "name": "quality_control",
+        "implementation": "MySql",
+        "host": "localhost:3306"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      }
+    },
+    "tasks": {
+      "skeletonTask": {
+        "active": true,
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "dataSamplingPolicy": "tpcclust",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "taskParameters": {
+          "parameter1": 100001,
+          "parameter2": "qu'est-ce que c'est que ce truc la"
+        },
+        "location": "local",
+        "machines": [
+          "o2flp1",
+          "o2flp2"
+        ]
+      },
+      "abcTask": {
+        "active": true,
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "dataSamplingPolicy": "tpcclust",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "taskParameters": {
+          "parameter1": 100002,
+          "parameter2": "c'est quoi"
+        },
+        "location": "remote"
+      },
+      "defTask": {
+        "active": false
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "tpcclust",
+      "active": "true",
+      "machines": [],
+      "dataHeaders": [
+        {
+          "binding": "clusters",
+          "dataOrigin": "TPC",
+          "dataDescription": "CLUSTERS"
+        }
+      ],
+      "subSpec": "0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
+}

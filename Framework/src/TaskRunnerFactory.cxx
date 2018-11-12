@@ -29,9 +29,9 @@ TaskRunnerFactory::TaskRunnerFactory() {}
 
 TaskRunnerFactory::~TaskRunnerFactory() {}
 
-DataProcessorSpec TaskRunnerFactory::create(std::string taskName, std::string configurationSource)
+o2::framework::DataProcessorSpec TaskRunnerFactory::create(std::string taskName, std::string configurationSource, size_t id)
 {
-  auto qcTask = std::make_shared<TaskRunner>(taskName, configurationSource);
+  auto qcTask = std::make_shared<TaskRunner>(taskName, configurationSource, id);
 
   DataProcessorSpec newTask{
     taskName,
