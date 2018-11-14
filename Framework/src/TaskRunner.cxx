@@ -23,6 +23,7 @@
 #include "Configuration/ConfigurationFactory.h"
 #include "Framework/RawDeviceService.h"
 #include "Framework/DataSampling.h"
+#include "Framework/ControlService.h"
 #include "Monitoring/MonitoringFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -105,6 +106,9 @@ void TaskRunner::processCallback(ProcessingContext& pCtx)
 
       mNumberBlocks = 0;
       mCycleOn = true;
+    } else {
+      // when number of cycles reaches the max => quit
+      pCtx.services().get<framework::ControlService>().readyToQuit(true);
     }
   }
   if (mCycleOn) {
