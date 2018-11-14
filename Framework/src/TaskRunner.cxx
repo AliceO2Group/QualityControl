@@ -23,6 +23,7 @@
 #include "Configuration/ConfigurationFactory.h"
 #include "Framework/RawDeviceService.h"
 #include "Framework/DataSampling.h"
+#include "Framework/CallbackService.h"
 #include "Monitoring/MonitoringFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -47,48 +48,39 @@ TaskRunner::TaskRunner(std::string taskName, std::string configurationSource, si
     mCycleOn(false),
     mCycleNumber(0),
     mMonitorObjectsSpec(createTaskDataOrigin(), createTaskDataDescription(taskName), id),
-    mResetAfterPublish(false)
+    mResetAfterPublish(false),
+    mTask(nullptr)
 {
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   populateConfig(mTaskName);
+}
 
-  // todo: consider moving everything below to init
+TaskRunner::~TaskRunner()
+{
+}
+
+void TaskRunner::initCallback(InitContext& iCtx)
+{
+  QcInfoLogger::GetInstance() << "initializing TaskRunner" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  // registering state machine callbacks
+  iCtx.services().get<framework::CallbackService>().set(framework::CallbackService::Id::Start, [this]() { start(); });
+  iCtx.services().get<framework::CallbackService>().set(framework::CallbackService::Id::Stop, [this]() { stop(); });
+  iCtx.services().get<framework::CallbackService>().set(framework::CallbackService::Id::Reset, [this]() { reset(); });
+
   // setup monitoring
   mCollector = MonitoringFactory::Get("infologger://");
 
   // setup publisher
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig);
 
-  // setup task
+  // setup user's task
   TaskFactory f;
   mTask.reset(f.create<TaskInterface>(mTaskConfig, mObjectsManager));
-}
-
-TaskRunner::~TaskRunner() { endOfActivity(); }
-
-void TaskRunner::initCallback(InitContext& iCtx)
-{
-  QcInfoLogger::GetInstance() << "initialize TaskDevicee" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // init user's task
   mTask->initialize(iCtx);
-
-  // in the future the start of an activity/run will come from the control
-  startOfActivity();
-
-  mStatsTimer.reset(10000000); // 10 s.
-  mLastNumberObjects = 0;
-
-  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << AliceO2::InfoLogger::InfoLogger::endm;
-  mNumberBlocks = 0;
-  mCycleOn = true;
-
-  // start a timer for finishing cycle and publishing the results
-  //  mCycleTimer = std::make_shared<boost::asio::deadline_timer>(io,
-  //  boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds));
-  //  mCycleTimer->async_wait(boost::bind(&TaskRunner::finishCycle, this));
-  //  ioThread = std::make_shared<std::thread>([&] { io.run(); });
 }
 
 void TaskRunner::processCallback(ProcessingContext& pCtx)
@@ -143,6 +135,36 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
   o2::header::DataDescription description;
   description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size - 3) + "-mo").c_str());
   return description;
+}
+
+void TaskRunner::start()
+{
+  startOfActivity();
+
+  mStatsTimer.reset(10000000); // 10 s.
+  mLastNumberObjects = 0;
+
+  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << AliceO2::InfoLogger::InfoLogger::endm;
+  mNumberBlocks = 0;
+  mCycleOn = true;
+}
+
+void TaskRunner::stop()
+{
+  if (mCycleOn) {
+    mTask->endOfCycle();
+    mCycleNumber++;
+    mCycleOn = false;
+  }
+  endOfActivity();
+  mTask->reset();
+}
+
+void TaskRunner::reset()
+{
+  mTask.reset();
+  mCollector.reset();
+  mObjectsManager.reset();
 }
 
 void TaskRunner::populateConfig(std::string taskName)
