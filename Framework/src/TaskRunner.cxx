@@ -62,7 +62,7 @@ TaskRunner::TaskRunner(std::string taskName, std::string configurationSource, si
 
   // setup task
   TaskFactory f;
-  mTask = f.create<TaskInterface>(mTaskConfig, mObjectsManager); // TODO could we use unique_ptr ?
+  mTask.reset(f.create<TaskInterface>(mTaskConfig, mObjectsManager));
 }
 
 TaskRunner::~TaskRunner() { endOfActivity(); }
