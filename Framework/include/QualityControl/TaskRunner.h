@@ -103,7 +103,7 @@ class TaskRunner
   TaskConfig mTaskConfig;
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<monitoring::Monitoring> mCollector;
-  TaskInterface* mTask;
+  std::unique_ptr<TaskInterface> mTask;
   bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::recursive_mutex mTaskMutex; // \todo should be plain mutex, when timer callback is implemented in dpl
