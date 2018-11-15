@@ -22,7 +22,14 @@ class TaskRunnerFactory
   TaskRunnerFactory();
   virtual ~TaskRunnerFactory();
 
-  o2::framework::DataProcessorSpec create(std::string taskName, std::string configurationSource, size_t id = 0);
+  /// \brief Creator of tasks
+  ///
+  /// \param taskName - name of the task, which exists in tasks list in the configuration file
+  /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
+  /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
+  /// \param resetAfterPublish - should taskRunner reset the user's task after each MO publication
+  o2::framework::DataProcessorSpec
+  create(std::string taskName, std::string configurationSource, size_t id = 0, bool resetAfterPublish = false);
 };
 
 } // namespace core
