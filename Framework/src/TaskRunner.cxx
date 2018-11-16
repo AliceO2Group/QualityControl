@@ -47,7 +47,7 @@ TaskRunner::TaskRunner(std::string taskName, std::string configurationSource, si
     mLastNumberObjects(0),
     mCycleOn(false),
     mCycleNumber(0),
-    mMonitorObjectsSpec(createTaskDataOrigin(), createTaskDataDescription(taskName), id),
+    mMonitorObjectsSpec({"mo"}, createTaskDataOrigin(), createTaskDataDescription(taskName), id),
     mResetAfterPublish(false),
     mTask(nullptr)
 {
@@ -269,20 +269,15 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
 unsigned long TaskRunner::publish(DataAllocator& outputs)
 {
-  unsigned int sentMessages = 0;
+  outputs.adopt(
+    Output{ mMonitorObjectsSpec.origin,
+            mMonitorObjectsSpec.description,
+            mMonitorObjectsSpec.subSpec,
+            mMonitorObjectsSpec.lifetime },
+    dynamic_cast<TObject*>(mObjectsManager->getNonOwningArray())
+  );
 
-  for (auto& pair : *mObjectsManager) {
-
-    auto* mo = pair.second;
-    outputs.snapshot<MonitorObject>(Output{ mMonitorObjectsSpec.origin, mMonitorObjectsSpec.description,
-                                            mMonitorObjectsSpec.subSpec, mMonitorObjectsSpec.lifetime },
-                                    *mo);
-
-    QcInfoLogger::GetInstance() << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
-    sentMessages++;
-  }
-
-  return sentMessages;
+  return 1;
 }
 
 void TaskRunner::CustomCleanupTMessage(void* data, void* object) { delete (TMessage*)object; }

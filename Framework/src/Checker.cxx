@@ -14,6 +14,7 @@
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataRefUtils.h>
+#include <TMap.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/TaskRunner.h"
@@ -101,10 +102,12 @@ void Checker::run(framework::ProcessingContext& ctx)
     startFirstObject = system_clock::now();
   }
 
-  for (auto&& input : ctx.inputs()) {
-    // will that work properly with shmem?
-    std::shared_ptr<MonitorObject> mo{ std::move(framework::DataRefUtils::as<MonitorObject>(input)) };
+  std::shared_ptr<TObjArray> moArray{ std::move(framework::DataRefUtils::as<TObjArray>(*ctx.inputs().begin())) };
+  moArray->SetOwner(false);
 
+  for (const auto& to : *moArray) {
+    std::shared_ptr<MonitorObject> mo{dynamic_cast<MonitorObject*>(to)};
+    moArray->RemoveFirst();
     if (mo) {
       check(mo);
       store(mo);

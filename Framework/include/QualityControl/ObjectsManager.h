@@ -9,6 +9,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/TaskConfig.h"
+#include <TObjArray.h>
 #include <TObjString.h>
 #include <boost/concept_check.hpp>
 #include <string>
@@ -53,14 +54,7 @@ class ObjectsManager
 
   TObject* getObject(std::string objectName);
 
-  typedef typename std::map<std::string, quality_control::core::MonitorObject*>::iterator iterator;
-  typedef typename std::map<std::string, quality_control::core::MonitorObject*>::const_iterator const_iterator;
-
-  const_iterator begin() const { return mMonitorObjects.begin(); }
-  const_iterator end() const { return mMonitorObjects.end(); }
-
-  iterator begin() { return mMonitorObjects.begin(); }
-  iterator end() { return mMonitorObjects.end(); }
+  TObjArray* getNonOwningArray() const { return new TObjArray(mMonitorObjects); };
 
   std::string getObjectsListString() { return mObjectsList.GetString().Data(); }
 
@@ -68,7 +62,7 @@ class ObjectsManager
   void UpdateIndex(const std::string& nonEmptyName);
 
  private:
-  std::map<std::string /*object name*/, quality_control::core::MonitorObject* /* object */> mMonitorObjects;
+  TObjArray mMonitorObjects;
   std::string mTaskName;
   // todo make it a vector of string when support added
   TObjString mObjectsList; // the list of objects we publish. (comma separated)

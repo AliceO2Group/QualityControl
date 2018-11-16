@@ -61,12 +61,13 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
           histo->Fill(p/(double)producersAmount);
 
           MonitorObject* mo = new MonitorObject("histo", histo, "histo-task");
-          mo->setIsOwner(false);
+          mo->setIsOwner(true);
 
-          processingContext.outputs().snapshot<MonitorObject>(Output{"TST", "HISTO", p + 1}, *mo);
-//        processingContext.outputs().snapshot<MonitorObject>(OutputRef{ "mo", p + 1 }, *mo); // dpl template bug?
-          delete mo;
-          delete histo;
+          TObjArray* array = new TObjArray;
+          array->SetOwner(true);
+          array->Add(mo);
+
+          processingContext.outputs().adopt(Output{"TST", "HISTO", p + 1}, array);
         }
       }
     };
@@ -87,15 +88,15 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "mo", "TST", "HISTO", 0 }
+      { "moarray", "TST", "HISTO", 0 }
     },
     Outputs{},
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback) [](InitContext&) {
-
         return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
           LOG(INFO) << "printer invoked";
-          auto mo = processingContext.inputs().get<MonitorObject*>("mo").get();
+          auto moArray = processingContext.inputs().get<TObjArray*>("moarray");
+          auto mo = dynamic_cast<MonitorObject*>(moArray->First());
 
           if (mo->getName() == "histo") {
             auto* g = dynamic_cast<TH1F*>(mo->getObject());

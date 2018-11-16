@@ -56,7 +56,7 @@ class HistoMerger : public framework::Task
  private:
   // General state
   std::string mMergerName;
-  std::shared_ptr<MonitorObject> mMonitorObject;
+  TObjArray mMergedArray;
   AliceO2::Common::Timer mPublicationTimer;
 
   // DPL

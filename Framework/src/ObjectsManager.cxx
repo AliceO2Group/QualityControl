@@ -31,14 +31,11 @@ namespace core
 ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskName(taskConfig.taskName)
 {
   startPublishing(&mObjectsList, MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST);
+  mMonitorObjects.SetOwner(true);
 }
 
 ObjectsManager::~ObjectsManager()
 {
-  for (auto& mMonitorObject : mMonitorObjects) {
-    delete mMonitorObject.second;
-  }
-  mMonitorObjects.clear();
 }
 
 void ObjectsManager::startPublishing(TObject* object, std::string objectName)
@@ -46,7 +43,7 @@ void ObjectsManager::startPublishing(TObject* object, std::string objectName)
   std::string nonEmptyName = objectName.empty() ? object->GetName() : objectName;
   auto* newObject = new MonitorObject(nonEmptyName, object, mTaskName);
   newObject->setIsOwner(false);
-  mMonitorObjects[nonEmptyName] = newObject;
+  mMonitorObjects.Add(newObject);
 
   // update index
   if (objectName != MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST) {
@@ -80,8 +77,10 @@ void ObjectsManager::addCheck(const std::string& objectName, const std::string& 
 
 MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
 {
-  if (mMonitorObjects.count(objectName) > 0) {
-    return mMonitorObjects[objectName];
+  TObject* mo = mMonitorObjects.FindObject(objectName.c_str());
+
+  if (mo) {
+    return dynamic_cast<MonitorObject*>(mo);
   } else {
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
   }
