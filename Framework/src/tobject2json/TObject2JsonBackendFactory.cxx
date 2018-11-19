@@ -43,9 +43,7 @@ auto getMySql(const http::url& uri)
 auto getCcdb(const http::url& uri)
 {
   int port = (uri.port == 0) ? 3306 : uri.port;
-  std::string database = uri.path;
-  database.erase(database.begin(), database.begin() + 1);
-  return std::make_unique<backends::Ccdb>(uri.host, port, database, uri.user, uri.password);
+  return std::make_unique<backends::Ccdb>(uri.host, port, "", uri.user, uri.password);
 }
 
 std::unique_ptr<Backend> TObject2JsonBackendFactory::Get(std::string url)
