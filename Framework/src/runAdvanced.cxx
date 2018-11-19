@@ -78,7 +78,7 @@ WorkflowSpec processingTopology(SubSpecificationType subspec)
             { "TST", "PARAM", subspec }},
     AlgorithmSpec{
       (AlgorithmSpec::ProcessCallback)
-        [generator = std::default_random_engine{ time(nullptr) }, subspec](ProcessingContext & ctx) mutable {
+        [generator = std::default_random_engine{ static_cast<unsigned int>(time(nullptr)) }, subspec](ProcessingContext & ctx) mutable {
           usleep(200000);
           auto data = ctx.outputs().make<int>(Output{ "TST", "DATA", subspec }, generator() % 10000);
           for (auto&& item : data) {
