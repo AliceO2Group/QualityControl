@@ -91,6 +91,13 @@ class TaskRunner
   static header::DataDescription createTaskDataDescription(const std::string& taskName);
 
  private:
+  /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
+  void start();
+  /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
+  void stop();
+  /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
+  void reset();
+
   void populateConfig(std::string taskName);
   void startOfActivity();
   void endOfActivity();
