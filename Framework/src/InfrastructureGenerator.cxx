@@ -49,6 +49,13 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   return workflow;
 }
 
+void InfrastructureGenerator::generateLocalInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string host)
+{
+  auto qcInfrastructure = InfrastructureGenerator::generateLocalInfrastructure(configurationSource, host);
+  workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
+}
+
+
 o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructure(std::string configurationSource)
 {
   WorkflowSpec workflow;
@@ -91,6 +98,13 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   }
   return workflow;
 }
+
+void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource)
+{
+  auto qcInfrastructure = InfrastructureGenerator::generateRemoteInfrastructure(configurationSource);
+  workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
+}
+
 }
 }
 }

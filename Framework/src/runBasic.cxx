@@ -54,8 +54,8 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"
 
+using namespace o2;
 using namespace o2::framework;
-using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
 
@@ -94,8 +94,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
   // Generation of the QC topology (one task, one checker in this case)
-  auto qcInfrastructure = InfrastructureGenerator::generateRemoteInfrastructure(qcConfigurationSource);
-  specs.insert(std::end(specs), std::begin(qcInfrastructure), std::end(qcInfrastructure));
+  quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
   // Finally the printer
   DataProcessorSpec printer{
