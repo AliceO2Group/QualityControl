@@ -64,8 +64,8 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include <Framework/runDataProcessing.h>
 #include <random>
 
+using namespace o2;
 using namespace o2::header;
-using namespace o2::quality_control::core;
 using SubSpecificationType = o2::header::DataHeader::SubSpecificationType;
 
 // clang-format off
@@ -137,19 +137,17 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     localTopology.back().name += std::to_string(i);
 
     std::string host = "o2flptst" + std::to_string(i);
-    auto qcInfrastructure = InfrastructureGenerator::generateLocalInfrastructure(qcConfigurationSource, host);
+    quality_control::generateLocalInfrastructure(localTopology, qcConfigurationSource, host);
     // a fix to make the topologies work when merged together
-    qcInfrastructure.back().name += std::to_string(i);
+    localTopology.back().name += std::to_string(i);
     // temporary fix, which shouldn't be necessary when data sampling uses matchers
-    qcInfrastructure.back().inputs[0].subSpec = i;
-    localTopology.insert(localTopology.end(), qcInfrastructure.begin(), qcInfrastructure.end());
+    localTopology.back().inputs[0].subSpec = i;
 
     specs.insert(std::end(specs), std::begin(localTopology), std::end(localTopology));
   }
 
   // Generation of the remote QC topology (for the QC servers)
-  auto qcInfrastructure = InfrastructureGenerator::generateRemoteInfrastructure(qcConfigurationSource);
-  specs.insert(std::end(specs), std::begin(qcInfrastructure), std::end(qcInfrastructure));
+  quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
   return specs;
 }
