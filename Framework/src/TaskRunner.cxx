@@ -87,17 +87,18 @@ void TaskRunner::processCallback(ProcessingContext& pCtx)
 {
   std::lock_guard<std::recursive_mutex> lock(mTaskMutex);
 
+  if (mTaskConfig.maxNumberCycles >= 0 && mCycleNumber >= mTaskConfig.maxNumberCycles) {
+    LOG(INFO) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached.";
+    return;
+  }
+
   if (!mCycleOn) {
-    if (/*CheckCurrentState(RUNNING) &&*/ (mTaskConfig.maxNumberCycles < 0 ||
-                                           mCycleNumber < mTaskConfig.maxNumberCycles)) {
+    QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << AliceO2::InfoLogger::InfoLogger::endm;
 
-      QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << AliceO2::InfoLogger::InfoLogger::endm;
+    mTask->startOfCycle();
 
-      mTask->startOfCycle();
-
-      mNumberBlocks = 0;
-      mCycleOn = true;
-    }
+    mNumberBlocks = 0;
+    mCycleOn = true;
   }
   if (mCycleOn) {
 
@@ -256,6 +257,11 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
     mCycleNumber++;
     mCycleOn = false;
+
+    if (mTaskConfig.maxNumberCycles == mCycleNumber) {
+      LOG(INFO) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
+                << " The task will not do anything from now on.";
+    }
   }
   // restart timer
   //  mCycleTimer->async_wait(boost::bind(&TaskRunner::finishCycle, this));
