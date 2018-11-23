@@ -61,7 +61,7 @@ configure_file(
 # this automatically ? ? ?
 get_directory_property(include_dirs INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}/include")
-get_target_property(config_inc_dir Configuration::Configuration INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(config_inc_dir AliceO2::Configuration INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${config_inc_dir}")
 get_target_property(arrow_inc_dir Arrow::Arrow INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${arrow_inc_dir}")
@@ -116,7 +116,7 @@ target_link_libraries(
     AliceO2::Common
     AliceO2::InfoLogger
     AliceO2::Monitoring
-    Configuration::Configuration
+    AliceO2::Configuration
     ROOT::Net
     AliceO2::AliceO2
     Boost::container
