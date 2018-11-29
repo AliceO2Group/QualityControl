@@ -64,7 +64,7 @@ Note :  you can also use the alibuild "defaults" called `o2-dataflow` to avoid b
 
 ### Environment loading
 
-Whenever you want to work with O2 and QualityControl, do either `alienv enter qcg/latest` or `alienv load qcg/latest`.
+Whenever you want to work with O2 and QualityControl, do either `alienv enter flpproto/latest` or `alienv load flpproto/latest`.
 
 ## Execution
 
