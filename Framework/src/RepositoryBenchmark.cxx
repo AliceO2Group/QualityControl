@@ -127,9 +127,11 @@ void RepositoryBenchmark::InitTask()
           "size of histo must be 1, 10, 100, 500, 1000, 2500 or 5000 (was: " + to_string(mSizeObjects) + ")"));
   }
 
+  // TODO : CREATE MANY HISTOGRAMS, ONE FOR EACH MO
+
   // prepare objects
   for (uint64_t i = 0; i < mNumberObjects; i++) {
-    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(mObjectName + to_string(i), mMyHisto, mTaskName);
+    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(mMyHisto, mTaskName);
     mo->setIsOwner(false);
     mMyObjects.push_back(mo);
   }

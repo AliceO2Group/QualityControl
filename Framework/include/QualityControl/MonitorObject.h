@@ -39,7 +39,7 @@ class MonitorObject : public TObject
  public:
   /// Default constructor
   MonitorObject();
-  MonitorObject(const std::string& name, TObject* object, const std::string& taskName);
+  MonitorObject(TObject* object, const std::string& taskName);
 
   /// Destructor
   ~MonitorObject() override;
@@ -53,13 +53,13 @@ class MonitorObject : public TObject
   /// Move assignment operator
   MonitorObject& operator=(MonitorObject&& other) /*noexcept*/ = default;
 
-  const std::string& getName() const { return mName; }
+  /// \brief Return the name of the encapsulated object (if any).
+  /// @return The name of the encapsulated object or "" if there is no object.
+  const std::string getName() const;
 
   /// \brief Overwrite the TObject's method just to avoid confusion.
   ///        One should rather use getName().
   const char* GetName() const override { return getName().c_str(); }
-
-  void setName(const std::string& name) { mName = name; }
 
   const std::string& getTaskName() const { return mTaskName; }
 
@@ -119,12 +119,13 @@ class MonitorObject : public TObject
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
 
+
+
   // Names of special objects published by the framework for each task, behind the scene.
  public:
   static constexpr char SYSTEM_OBJECT_PUBLICATION_LIST[] = "objectsList"; // list of objects published by the task
 
  private:
-  std::string mName;
   TObject* mObject;
   std::map<std::string /*checkName*/, CheckDefinition> mChecks;
   std::string mTaskName;
