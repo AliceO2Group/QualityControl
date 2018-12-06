@@ -24,7 +24,6 @@ namespace common
 BOOST_AUTO_TEST_CASE(test_checks)
 {
   o2::quality_control::core::MonitorObject mo;
-  mo.setName("test");
   mo.addCheck("test", "test", "test");
   mo.setQualityForCheck("test", Quality::Null);
   TH1F th1f("h1", "h1", 10, 0, 9);
@@ -55,7 +54,6 @@ BOOST_AUTO_TEST_CASE(test_checks)
 BOOST_AUTO_TEST_CASE(test_types)
 {
   o2::quality_control::core::MonitorObject mo;
-  mo.setName("test");
   mo.addCheck("test", "test", "test");
   mo.setQualityForCheck("test", Quality::Null);
   TObject obj;

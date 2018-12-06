@@ -119,8 +119,6 @@ class MonitorObject : public TObject
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
 
-
-
   // Names of special objects published by the framework for each task, behind the scene.
  public:
   static constexpr char SYSTEM_OBJECT_PUBLICATION_LIST[] = "objectsList"; // list of objects published by the task

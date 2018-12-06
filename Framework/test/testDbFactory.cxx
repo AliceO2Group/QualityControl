@@ -71,10 +71,10 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   ccdb->truncate("functional_test", "path/to/object3");
   auto* h1 = new TH1F("object1", "object1", 100, 0, 99);
   auto* h2 = new TH1F("object2", "object2", 100, 0, 99);
-  auto* h3 = new TH1F("object3", "object3", 100, 0, 99);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>("object1", h1, "functional_test");
-  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>("object2", h2, "functional_test");
-  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>("path/to/object3", h3, "functional_test");
+  auto* h3 = new TH1F("path/to/object3", "object3", 100, 0, 99);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "functional_test");
+  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "functional_test");
+  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, "functional_test");
   ccdb->store(mo1);
   ccdb->store(mo2);
   ccdb->store(mo3);
@@ -159,7 +159,7 @@ curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
                                                   if(res != CURLE_OK)
                                                     fprintf(stderr, "curl_easy_perform() failed: %s\n",
                                                             curl_easy_strerror(res));
-                                                   
+
                                                   */
 /* always cleanup */                                                      /*
                                                     curl_easy_cleanup(curl);
@@ -194,7 +194,7 @@ res = curl_easy_perform(curl);
                                   fprintf(stderr, "curl_easy_perform() failed: %s\n",
                                           curl_easy_strerror(res));
                                 }
-                                 
+
                                 */
 /* always cleanup */                                    /*
                                   curl_easy_cleanup(curl);

@@ -22,8 +22,6 @@ BOOST_AUTO_TEST_CASE(mo)
 {
   o2::quality_control::core::MonitorObject obj;
   BOOST_CHECK_EQUAL(obj.getName(), "");
-  obj.setName("test");
-  BOOST_CHECK_EQUAL(obj.getName(), "test");
 
   obj.addCheck("first", "class1", "lib1");
   obj.addCheck("second", "class1", "lib1");

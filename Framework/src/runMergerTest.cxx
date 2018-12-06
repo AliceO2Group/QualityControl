@@ -60,7 +60,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
           TH1F* histo = new TH1F("gauss", "gauss", producersAmount, 0, 1);
           histo->Fill(p/(double)producersAmount);
 
-          MonitorObject* mo = new MonitorObject("histo", histo, "histo-task");
+          MonitorObject* mo = new MonitorObject(histo, "histo-task");
           mo->setIsOwner(true);
 
           TObjArray* array = new TObjArray;
@@ -98,7 +98,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
           auto moArray = processingContext.inputs().get<TObjArray*>("moarray");
           auto mo = dynamic_cast<MonitorObject*>(moArray->First());
 
-          if (mo->getName() == "histo") {
+          if (mo->getName() == "gauss") {
             auto* g = dynamic_cast<TH1F*>(mo->getObject());
             std::string bins = "BINS:";
             for (int i = 0; i <= g->GetNbinsX(); i++) {

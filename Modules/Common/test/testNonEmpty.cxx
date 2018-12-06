@@ -22,8 +22,8 @@ namespace common
 
 BOOST_AUTO_TEST_CASE(checkable)
 {
-  TH1F histo("test", "test", 100, 0, 99);
-  MonitorObject monitorObject("testObject", &histo, "task");
+  TH1F histo("testObject", "test", 100, 0, 99);
+  MonitorObject monitorObject(&histo, "task");
   monitorObject.setIsOwner(false);
   NonEmpty myCheck;
   myCheck.configure("test");
@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_CASE(checkable)
 
 BOOST_AUTO_TEST_CASE(beautify)
 {
-  auto* histo = new TH1F("test", "test", 100, 0, 99);
-  MonitorObject monitorObject("testObject", histo, "task"); // here we are the owner of the histo
+  auto* histo = new TH1F("testObject", "test", 100, 0, 99);
+  MonitorObject monitorObject(histo, "task"); // here we are the owner of the histo
   NonEmpty myCheck;
   myCheck.configure("test");
 
@@ -58,8 +58,8 @@ BOOST_AUTO_TEST_CASE(beautify)
 
 BOOST_AUTO_TEST_CASE(nonempty)
 {
-  TH1F histo("test", "test", 100, 0, 99);
-  MonitorObject monitorObject("testObject", &histo, "task");
+  TH1F histo("testObject", "test", 100, 0, 99);
+  MonitorObject monitorObject(&histo, "task");
   monitorObject.setIsOwner(false);
   NonEmpty myCheck;
 
