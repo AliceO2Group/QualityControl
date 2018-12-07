@@ -133,7 +133,7 @@ class MonitorObject : public TObject
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 2);
+  ClassDefOverride(MonitorObject, 3);
 };
 
 } // namespace core
