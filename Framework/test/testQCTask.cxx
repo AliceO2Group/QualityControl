@@ -74,8 +74,8 @@ class TestTask : public TaskInterface
 } /* namespace quality_control */
 } /* namespace o2 */
 
-// BOOST_AUTO_TEST_CASE(TestInstantiate)
-//{
+ BOOST_AUTO_TEST_CASE(TestInstantiate)
+{
 ////  o2::framework::InitContext;
 //  TaskConfig taskConfig;
 //  ObjectsManager objectsManager(taskConfig);
@@ -93,4 +93,4 @@ class TestTask : public TaskInterface
 //  tt.startOfActivity(act);
 //  BOOST_CHECK_EQUAL(tt.test, 2);
 //}
-//}
+}
