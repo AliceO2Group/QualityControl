@@ -64,6 +64,9 @@ void ObjectsManager::UpdateIndex(const string& nonEmptyName)
 
 Quality ObjectsManager::getQuality(std::string objectName)
 {
+  if (mMonitorObjects.count(objectName) == 0) {
+    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
+  }
   MonitorObject* mo = getMonitorObject(objectName);
   return mo->getQuality();
 }
