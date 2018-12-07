@@ -19,7 +19,7 @@
 /// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The checker performes a simple check of
 /// the histogram shape and colorizes it. The resulting histogram contents are shown in logs by printer.
 ///
-/// QC task and Checker are instantiated by accordingly TaskDataProcessorFactory and CheckerDataProcessorFactory,
+/// QC task and Checker are instantiated by respectively TaskFactory and CheckerFactory,
 /// which use preinstalled config file, that can be found in
 /// ${QUALITYCONTROL_ROOT}/etc/qcTaskDplConfig.json or Framework/qcTaskDplConfig.json (original one).
 ///

@@ -33,8 +33,23 @@ class ObjectsManager
  public:
   ObjectsManager(TaskConfig& taskConfig);
   virtual ~ObjectsManager();
+
+  /**
+   * Start publishing the object obj, i.e. it will be pushed forward in the workflow at regular intervals.
+   * The ownership remains to the caller.
+   * In most cases, objectName parameter can be ignored.
+   * @param obj The object to publish.
+   * @param objectName Optional, to publish something under a different name.
+   */
   void startPublishing(TObject* obj, std::string objectName = "");
   // todo stoppublishing
+
+  /**
+   * Return the quality of the object whose name is contained in objectName.
+   * @param objectName
+   * @return The quality of the object if was found.
+   * @throw ObjectNotFoundError if object is not found.
+   */
   Quality getQuality(std::string objectName);
 
   /// \brief Add a check to the object defined by objectName.
