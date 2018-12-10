@@ -51,6 +51,41 @@ RepositoryBenchmark::RepositoryBenchmark()
 {
 }
 
+TH1* RepositoryBenchmark::createHisto(uint64_t sizeObjects, string name)
+{
+  TH1* myHisto;
+
+  // Prepare objects (and clean up existing ones)
+  switch (sizeObjects) {
+    case 1:
+      myHisto = new TH1F(name.c_str(), "h", 100, 0, 99); // 1kB
+      break;
+    case 10:
+      myHisto = new TH1F(name.c_str(), "h", 2400, 0, 99); // 10kB
+      break;
+    case 100:
+      myHisto = new TH2F(name.c_str(), "h", 260, 0, 99, 100, 0, 99); // 100kB
+      break;
+    case 500:
+      myHisto = new TH2F(name.c_str(), "h", 1250, 0, 99, 100, 0, 99); // 500kB
+      break;
+    case 1000:
+      myHisto = new TH2F(name.c_str(), "h", 2500, 0, 99, 100, 0, 99); // 1MB
+      break;
+    case 2500:
+      myHisto = new TH2F(name.c_str(), "h", 6250, 0, 99, 100, 0, 99); // 2.5MB
+      break;
+    case 5000:
+      myHisto = new TH2F(name.c_str(), "h", 12500, 0, 99, 100, 0, 99); // 5MB
+      break;
+    default:
+      BOOST_THROW_EXCEPTION(
+        FatalException() << errinfo_details(
+          "size of histo must be 1, 10, 100, 500, 1000, 2500 or 5000 (was: " + to_string(mSizeObjects) + ")"));
+  }
+  return myHisto;
+}
+
 void RepositoryBenchmark::InitTask()
 {
   // parse arguments database
@@ -98,41 +133,11 @@ void RepositoryBenchmark::InitTask()
     emptyDatabase();
   }
 
-  // Prepare objects (and clean up existing ones)
-  switch (mSizeObjects) {
-    case 1:
-      mMyHisto = new TH1F("h", "h", 100, 0, 99); // 1kB
-      break;
-    case 10:
-      mMyHisto = new TH1F("h", "h", 2400, 0, 99); // 10kB
-      break;
-    case 100:
-      mMyHisto = new TH2F("h", "h", 260, 0, 99, 100, 0, 99); // 100kB
-      break;
-    case 500:
-      mMyHisto = new TH2F("h", "h", 1250, 0, 99, 100, 0, 99); // 500kB
-      break;
-    case 1000:
-      mMyHisto = new TH2F("h", "h", 2500, 0, 99, 100, 0, 99); // 1MB
-      break;
-    case 2500:
-      mMyHisto = new TH2F("h", "h", 6250, 0, 99, 100, 0, 99); // 2.5MB
-      break;
-    case 5000:
-      mMyHisto = new TH2F("h", "h", 12500, 0, 99, 100, 0, 99); // 5MB
-      break;
-    default:
-      BOOST_THROW_EXCEPTION(
-        FatalException() << errinfo_details(
-          "size of histo must be 1, 10, 100, 500, 1000, 2500 or 5000 (was: " + to_string(mSizeObjects) + ")"));
-  }
-
-  // TODO : CREATE MANY HISTOGRAMS, ONE FOR EACH MO
-
   // prepare objects
   for (uint64_t i = 0; i < mNumberObjects; i++) {
-    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(mMyHisto, mTaskName);
-    mo->setIsOwner(false);
+    TH1* histo = createHisto(mSizeObjects, mObjectName + to_string(i));
+    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(histo, mTaskName);
+    mo->setIsOwner(true);
     mMyObjects.push_back(mo);
   }
 
