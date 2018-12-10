@@ -108,15 +108,19 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
         return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
           LOG(INFO) << "printer invoked";
-          auto mo = processingContext.inputs().get<MonitorObject*>("checked-mo").get();
+          std::shared_ptr<TObjArray> moArray{ std::move(DataRefUtils::as<TObjArray>(*processingContext.inputs().begin())) };
 
-          if (mo->getName() == "example") {
-            auto* g = dynamic_cast<TH1F*>(mo->getObject());
-            std::string bins = "BINS:";
-            for (int i = 0; i < g->GetNbinsX(); i++) {
-              bins += " " + std::to_string((int) g->GetBinContent(i));
+          for (const auto& to : *moArray) {
+            MonitorObject* mo = dynamic_cast<MonitorObject*>(to);
+
+            if (mo->getName() == "example") {
+              auto* g = dynamic_cast<TH1F*>(mo->getObject());
+              std::string bins = "BINS:";
+              for (int i = 0; i < g->GetNbinsX(); i++) {
+                bins += " " + std::to_string((int) g->GetBinContent(i));
+              }
+              LOG(INFO) << bins;
             }
-            LOG(INFO) << bins;
           }
         };
       }

@@ -14,6 +14,7 @@
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataRefUtils.h>
+#include <TMap.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/TaskRunner.h"
@@ -101,19 +102,25 @@ void Checker::run(framework::ProcessingContext& ctx)
     startFirstObject = system_clock::now();
   }
 
-  for (auto&& input : ctx.inputs()) {
-    // will that work properly with shmem?
-    std::shared_ptr<MonitorObject> mo{ std::move(framework::DataRefUtils::as<MonitorObject>(input)) };
+  std::shared_ptr<TObjArray> moArray{ std::move(framework::DataRefUtils::as<TObjArray>(*ctx.inputs().begin())) };
+  moArray->SetOwner(false);
+  auto checkedMoArray = std::make_unique<TObjArray>();
+  checkedMoArray->SetOwner();
 
+  for (const auto& to : *moArray) {
+    std::shared_ptr<MonitorObject> mo{dynamic_cast<MonitorObject*>(to)};
+    moArray->RemoveFirst();
     if (mo) {
       check(mo);
       store(mo);
-      send(mo, ctx.outputs());
       mTotalNumberHistosReceived++;
+      checkedMoArray->Add(new MonitorObject(*mo));
     } else {
       mLogger << "the mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
     }
   }
+
+  send(checkedMoArray, ctx.outputs());
 
   // monitoring
   endLastObject = system_clock::now();
@@ -169,13 +176,12 @@ void Checker::store(std::shared_ptr<MonitorObject> mo)
   }
 }
 
-void Checker::send(std::shared_ptr<MonitorObject> mo, framework::DataAllocator& allocator)
+void Checker::send(std::unique_ptr<TObjArray>& moArray, framework::DataAllocator& allocator)
 {
-  mLogger << "Sending \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
-
-  // todo: consider adopting
-  allocator.snapshot<MonitorObject>(
-    framework::Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec, mOutputSpec.lifetime }, *mo);
+  mLogger << "Sending Monitor Object array with " << moArray->GetEntries() << " objects inside." << AliceO2::InfoLogger::InfoLogger::endm;
+  
+  allocator.adopt(
+    framework::Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec, mOutputSpec.lifetime }, moArray.release());
 }
 
 void Checker::loadLibrary(const std::string libraryName)

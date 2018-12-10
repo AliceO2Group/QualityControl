@@ -6,6 +6,7 @@
 #include "QualityControl/HistoMerger.h"
 
 #include <Framework/DataRefUtils.h>
+#include <TObjArray.h>
 
 namespace o2
 {
@@ -22,33 +23,42 @@ HistoMerger::HistoMerger(std::string mergerName, double publicationPeriodSeconds
   : mMergerName(mergerName), mOutputSpec{ header::gDataOriginInvalid, header::gDataDescriptionInvalid }
 {
   mPublicationTimer.reset(static_cast<int>(publicationPeriodSeconds * 1000000));
+  mMergedArray.SetOwner(true);
 }
 
 HistoMerger::~HistoMerger() {}
 
-void HistoMerger::init(framework::InitContext& ctx) { mMonitorObject.reset(); }
+void HistoMerger::init(framework::InitContext&) { mMergedArray.Clear(); }
 
 void HistoMerger::run(framework::ProcessingContext& ctx)
 {
   for (const auto& input : ctx.inputs()) {
-    if (input.header != nullptr && input.spec != nullptr &&
-        std::strstr(DataRefUtils::as<MonitorObject>(input)->getObject()->ClassName(), "TH1") != nullptr) {
+    if (input.header != nullptr && input.spec != nullptr) {
+      std::unique_ptr<TObjArray> moArray = DataRefUtils::as<TObjArray>(input);
 
-      if (!mMonitorObject) {
-        mMonitorObject.reset(DataRefUtils::as<MonitorObject>(input).release());
+      if (mMergedArray.IsEmpty()) {
+        mMergedArray = *moArray.release();
       } else {
-        TH1* h = dynamic_cast<TH1*>(mMonitorObject->getObject());
-        const TH1* hUpdate = dynamic_cast<TH1*>(DataRefUtils::as<MonitorObject>(input)->getObject());
-        h->Add(hUpdate);
+        if (mMergedArray.GetSize() != moArray->GetSize()) {
+          LOG(ERROR) << "array don't match in size, " << mMergedArray.GetSize() << " vs " << moArray->GetSize();
+          return;
+        }
+
+        for (int i = 0; i < mMergedArray.GetEntries(); i++) {
+          MonitorObject* mo = dynamic_cast<MonitorObject*>((*moArray)[i]);
+          if (mo && std::strstr(mo->getObject()->ClassName(), "TH1") != nullptr) {
+            TH1* h = dynamic_cast<TH1*>(dynamic_cast<MonitorObject*>(mMergedArray[i])->getObject());
+            const TH1* hUpdate = dynamic_cast<TH1*>(mo->getObject());
+            h->Add(hUpdate);
+          }
+        }
       }
     }
   }
   if (mPublicationTimer.isTimeout()) {
-    if (mMonitorObject) {
-      ctx.outputs().snapshot<MonitorObject>(Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec },
-                                            *mMonitorObject);
+    if (!mMergedArray.IsEmpty()) {
+      ctx.outputs().snapshot(Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec }, mMergedArray);
     }
-
     // avoid publishing mo many times consecutively because of too long initial waiting time
     do {
       mPublicationTimer.increment();

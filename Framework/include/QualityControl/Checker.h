@@ -82,7 +82,7 @@ class Checker : public framework::Task
   /**
    * \brief Send the MonitorObject on FairMQ to whoever is listening.
    */
-  void send(std::shared_ptr<MonitorObject> mo, framework::DataAllocator& allocator);
+  void send(std::unique_ptr<TObjArray>& mo, framework::DataAllocator& allocator);
 
   /**
    * \brief Load a library.
