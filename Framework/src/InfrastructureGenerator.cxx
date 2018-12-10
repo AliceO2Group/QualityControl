@@ -29,17 +29,17 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   TaskRunnerFactory taskRunnerFactory;
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
 
-  for (const auto& task : config->getRecursive("qc.tasks")) {
-    if (task.second.get<bool>("active") && task.second.get<std::string>("location") == "local") {
+  for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
+    if (taskConfig.get<bool>("active") && taskConfig.get<std::string>("location") == "local") {
       // ids are assigned to local tasks in order to distinguish monitor objects outputs from each other and be able to
       // merge them. If there is no need to merge (only one qc task), it gets subspec 0.
       // todo: use matcher for subspec when available in DPL
-      size_t id = task.second.get_child("machines").size() > 1 ? 1 : 0;
-      for (const auto& machine : task.second.get_child("machines")) {
+      size_t id = taskConfig.get_child("machines").size() > 1 ? 1 : 0;
+      for (const auto& machine : taskConfig.get_child("machines")) {
 
         if (machine.second.get<std::string>("") == host) {
           // todo: optimize it by using the same ptree?
-          workflow.emplace_back(taskRunnerFactory.create(task.first, configurationSource, id, true));
+          workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, id, true));
           break;
         }
         id++;
@@ -63,20 +63,20 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
   TaskRunnerFactory taskRunnerFactory;
   CheckerFactory checkerFactory;
-  for (const auto& task : config->getRecursive("qc.tasks")) {
+  for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     // todo sanitize somehow this if-frenzy
-    if (task.second.get<bool>("active", true)) {
-      if (task.second.get<std::string>("location") == "local") {
+    if (taskConfig.get<bool>("active", true)) {
+      if (taskConfig.get<std::string>("location") == "local") {
         // if tasks are LOCAL, generate mergers + checkers
 
         //todo use real mergers when they are done
 
         // generate merger only, when there is a need to merge something
-        if (task.second.get_child("machines").size() > 1) {
-          HistoMerger merger(task.first + "-merger", 1);
+        if (taskConfig.get_child("machines").size() > 1) {
+          HistoMerger merger(taskName + "-merger", 1);
           merger.configureInputsOutputs(TaskRunner::createTaskDataOrigin(),
-                                        TaskRunner::createTaskDataDescription(task.first),
-                                        { 1, task.second.get_child("machines").size() });
+                                        TaskRunner::createTaskDataDescription(taskName),
+                                        { 1, taskConfig.get_child("machines").size() });
           DataProcessorSpec mergerSpec{
             merger.getName(),
             merger.getInputSpecs(),
@@ -87,13 +87,13 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
           workflow.emplace_back(mergerSpec);
         }
 
-      } else if (task.second.get<std::string>("location") == "remote") {
+      } else if (taskConfig.get<std::string>("location") == "remote") {
         // -- if tasks are REMOTE, generate tasks + mergers + checkers
 
-        workflow.emplace_back(taskRunnerFactory.create(task.first, configurationSource, 0));
+        workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
       }
 
-      workflow.emplace_back(checkerFactory.create(task.first + "-checker", task.first, configurationSource));
+      workflow.emplace_back(checkerFactory.create(taskName + "-checker", taskName, configurationSource));
     }
   }
   return workflow;

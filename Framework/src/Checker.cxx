@@ -148,18 +148,18 @@ void Checker::check(std::shared_ptr<MonitorObject> mo)
   // Get the Checks
 
   // Loop over the Checks and execute them followed by the beautification
-  for (const auto& check : checks) {
-    mLogger << "        check name : " << check.second.name << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << "        check className : " << check.second.className << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << "        check libraryName : " << check.second.libraryName << AliceO2::InfoLogger::InfoLogger::endm;
+  for (const auto& [checkName, check] : checks) {
+    mLogger << "        check name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << "        check className : " << check.className << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << "        check libraryName : " << check.libraryName << AliceO2::InfoLogger::InfoLogger::endm;
 
     // load module, instantiate, use check
     // TODO : preload modules and pre-instantiate, or keep a cache
-    loadLibrary(check.second.libraryName);
-    CheckInterface* checkInstance = getCheck(check.second.name, check.second.className);
+    loadLibrary(check.libraryName);
+    CheckInterface* checkInstance = getCheck(checkName, check.className);
     Quality q = checkInstance->check(mo.get());
 
-    mLogger << "  result of the check " << check.second.name << ": " << q.getName()
+    mLogger << "  result of the check " << checkName << ": " << q.getName()
             << AliceO2::InfoLogger::InfoLogger::endm;
 
     checkInstance->beautify(mo.get(), q);
