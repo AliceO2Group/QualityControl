@@ -40,14 +40,13 @@ ObjectsManager::~ObjectsManager()
 
 void ObjectsManager::startPublishing(TObject* object, std::string objectName)
 {
-  std::string nonEmptyName = objectName.empty() ? object->GetName() : objectName;
-  auto* newObject = new MonitorObject(nonEmptyName, object, mTaskName);
+  auto* newObject = new MonitorObject(object, mTaskName);
   newObject->setIsOwner(false);
   mMonitorObjects.Add(newObject);
 
   // update index
   if (objectName != MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST) {
-    UpdateIndex(nonEmptyName);
+    UpdateIndex(object->GetName());
   }
 }
 

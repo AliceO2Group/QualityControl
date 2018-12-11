@@ -13,21 +13,24 @@
 /// \author Barthelemy von Haller
 ///
 
+#include <iostream>
 #include "QualityControl/MonitorObject.h"
 #include "Common/Exceptions.h"
 
 ClassImp(o2::quality_control::core::MonitorObject)
 
-  namespace o2
+using namespace std;
+
+namespace o2
 {
-  namespace quality_control
-  {
-  namespace core
-  {
+namespace quality_control
+{
+namespace core
+{
 
   constexpr char MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST[];
 
-  MonitorObject::MonitorObject() : TObject(), mName(""), mObject(nullptr), mTaskName(""), mIsOwner(true) {}
+  MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mIsOwner(true) {}
 
   MonitorObject::~MonitorObject()
   {
@@ -36,8 +39,8 @@ ClassImp(o2::quality_control::core::MonitorObject)
     }
   }
 
-  MonitorObject::MonitorObject(const std::string& name, TObject* object, const std::string& taskName)
-    : TObject(), mName(name), mObject(object), mTaskName(taskName), mIsOwner(true)
+  MonitorObject::MonitorObject(TObject* object, const std::string& taskName)
+    : TObject(), mObject(object), mTaskName(taskName), mIsOwner(true)
   {
   }
 
@@ -46,10 +49,18 @@ ClassImp(o2::quality_control::core::MonitorObject)
   TObject* MonitorObject::DrawClone(Option_t* option) const
   {
     auto* clone = new MonitorObject();
-    clone->setName(this->getName());
     clone->setTaskName(this->getTaskName());
     clone->setObject(mObject->DrawClone(option));
     return clone;
+  }
+
+  const std::string MonitorObject::getName() const
+  {
+    if(mObject == nullptr) {
+      cerr << "MonitorObject::getName() : No object in this MonitorObject, returning empty string";
+      return "";
+    }
+    return mObject->GetName();
   }
 
   void MonitorObject::setQualityForCheck(std::string checkName, Quality quality)
