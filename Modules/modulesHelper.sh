@@ -90,9 +90,6 @@ function create_task {
   sed 's/'${DONOR_TASK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g' ${DONOR}'/src/'${DONOR_TASK}'.cxx' > $1'/src/'$2'.cxx'
   if [[ $OS == Linux ]] ; then
     sed -i '/set(SRCS/ a \ \ src/'$2'.cxx' $1/CMakeLists.txt
-    # Remove the Check
-    sed -i 's|getObjectsManager()->addCheck|/*getObjectsManager()->addCheck|' $1/src/$2.cxx
-    sed -i 's|"QcSkeleton");|"QcSkeleton");*/|' $1/src/$2.cxx
   else #Darwin/BSD
     sed -i '' -e '/set(SRCS/ a\
 \ \ src/'$2'.cxx
