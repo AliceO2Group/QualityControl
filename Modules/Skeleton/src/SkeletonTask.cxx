@@ -10,8 +10,6 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "Skeleton/SkeletonTask.h"
 
-using namespace std;
-
 namespace o2
 {
 namespace quality_control_modules
@@ -21,7 +19,11 @@ namespace skeleton
 
 SkeletonTask::SkeletonTask() : TaskInterface(), mHistogram(nullptr) { mHistogram = nullptr; }
 
-SkeletonTask::~SkeletonTask() {}
+SkeletonTask::~SkeletonTask() {
+  if (mHistogram) {
+    delete mHistogram;
+  }
+}
 
 void SkeletonTask::initialize(o2::framework::InitContext& ctx)
 {
@@ -46,41 +48,49 @@ void SkeletonTask::startOfCycle()
 
 void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // todo: update API examples or refer to DPL README.md
+  // In this function you can access data inputs specified in the JSON config file, for example:
+  //  {
+  //    "binding": "random",
+  //    "dataOrigin": "ITS",
+  //    "dataDescription": "RAWDATA"
+  //  }
 
-  //  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
+  // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
+  // One can find additional examples at:
+  // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
 
-  // exemplary ways of accessing inputs (incoming data), that were specified in the .ini file - e.g.:
-  //  [readoutInput]
-  //  inputName=readout
-  //  dataOrigin=ITS
-  //  dataDescription=RAWDATA
+  // Some examples:
 
-  // 1. in a loop
+  // 1. In a loop
   for (auto&& input : ctx.inputs()) {
-    const auto* header = o2::header::get<header::DataHeader*>(input.header);
-    mHistogram->Fill(header->payloadSize);
+    // get message header
+    const auto* header = header::get<header::DataHeader*>(input.header);
+    // get payload of a specific input, which is a char array.
+//    const char* payload = input.payload;
 
-    // const char* payload = input.payload;
+    // for the sake of an example, let's fill the histogram with payload sizes
+    mHistogram->Fill(header->payloadSize);
   }
 
-  // 2. get payload of a specific input, which is a char array. Change <inputName> to the previously specified binding
-  // (e.g. readout).
-  // auto payload = ctx.inputs().get("<inputName>").payload;
-  //
-  // 3. get payload of a specific input, which is a structure array:
-  // const auto* header = o2::header::get<DataHeader*>(ctx.inputs().get("<inputName>").header);
-  // auto structures = reinterpret_cast<StructureType*>(ctx.inputs().get("<inputName>").payload);
-  // for (int j = 0; j < header->payloadSize / sizeof(StructureType); ++j) {
-  //   someProcessing(structures[j].someField);
-  // }
+  // 2. Using get("<binding>")
 
-  // 4. get payload of a specific input, which is a root object
-  // auto h = ctx.inputs().get<TH1F>("histos");
-  // Double_t stats[4];
-  // h->GetStats(stats);
-  // auto s = ctx.inputs().get<TObjString>("string");
-  // LOG(INFO) << "String is " << s->GetString().Data();
+  // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
+//   auto payload = ctx.inputs().get("random").payload;
+
+  // get payload of a specific input, which is a structure array:
+//  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("random").header);
+//  struct s {int a; double b;};
+//  auto array = ctx.inputs().get<s*>("random");
+//  for (int j = 0; j < header->payloadSize / sizeof(s); ++j) {
+//    int i = array.get()[j].a;
+//  }
+
+  // get payload of a specific input, which is a root object
+//   auto h = ctx.inputs().get<TH1F*>("histos");
+//   Double_t stats[4];
+//   h->GetStats(stats);
+//   auto s = ctx.inputs().get<TObjString*>("string");
+//   LOG(INFO) << "String is " << s->GetString().Data();
 }
 
 void SkeletonTask::endOfCycle()
@@ -97,7 +107,7 @@ void SkeletonTask::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   mHistogram->Reset();
 }
 

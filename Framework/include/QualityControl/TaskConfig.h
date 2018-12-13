@@ -22,9 +22,6 @@ struct TaskConfig {
   std::string taskName;
   std::string moduleName;
   std::string className;
-  //    int numberHistos;
-  //    int numberChecks;
-  //    std::string typeOfChecks;
   int cycleDurationSeconds;
   int maxNumberCycles;
 };
