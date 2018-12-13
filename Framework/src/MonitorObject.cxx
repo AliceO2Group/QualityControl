@@ -28,89 +28,89 @@ namespace quality_control
 namespace core
 {
 
-  constexpr char MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST[];
+constexpr char MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST[];
 
-  MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mIsOwner(true) {}
+MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mIsOwner(true) {}
 
-  MonitorObject::~MonitorObject()
-  {
-    if (mIsOwner && mObject != nullptr) {
-      delete mObject;
-    }
+MonitorObject::~MonitorObject()
+{
+  if (mIsOwner && mObject != nullptr) {
+    delete mObject;
   }
+}
 
-  MonitorObject::MonitorObject(TObject* object, const std::string& taskName)
-    : TObject(), mObject(object), mTaskName(taskName), mIsOwner(true)
-  {
+MonitorObject::MonitorObject(TObject* object, const std::string& taskName)
+  : TObject(), mObject(object), mTaskName(taskName), mIsOwner(true)
+{
+}
+
+void MonitorObject::Draw(Option_t* option) { mObject->Draw(option); }
+
+TObject* MonitorObject::DrawClone(Option_t* option) const
+{
+  auto* clone = new MonitorObject();
+  clone->setTaskName(this->getTaskName());
+  clone->setObject(mObject->DrawClone(option));
+  return clone;
+}
+
+const std::string MonitorObject::getName() const
+{
+  if (mObject == nullptr) {
+    cerr << "MonitorObject::getName() : No object in this MonitorObject, returning empty string";
+    return "";
   }
+  return mObject->GetName();
+}
 
-  void MonitorObject::Draw(Option_t* option) { mObject->Draw(option); }
-
-  TObject* MonitorObject::DrawClone(Option_t* option) const
-  {
-    auto* clone = new MonitorObject();
-    clone->setTaskName(this->getTaskName());
-    clone->setObject(mObject->DrawClone(option));
-    return clone;
+void MonitorObject::setQualityForCheck(std::string checkName, Quality quality)
+{
+  auto check = mChecks.find(checkName);
+  if (check != mChecks.end()) {
+    check->second.result = quality;
+    mChecks[checkName] = check->second;
+  } else {
+    throw AliceO2::Common::ObjectNotFoundError();
   }
+}
 
-  const std::string MonitorObject::getName() const
-  {
-    if(mObject == nullptr) {
-      cerr << "MonitorObject::getName() : No object in this MonitorObject, returning empty string";
-      return "";
-    }
-    return mObject->GetName();
+CheckDefinition MonitorObject::getCheck(std::string checkName) const
+{
+  if (mChecks.find(checkName) != mChecks.end()) {
+    return mChecks.at(checkName);
+  } else {
+    throw AliceO2::Common::ObjectNotFoundError();
   }
+}
 
-  void MonitorObject::setQualityForCheck(std::string checkName, Quality quality)
-  {
-    auto check = mChecks.find(checkName);
-    if (check != mChecks.end()) {
-      check->second.result = quality;
-      mChecks[checkName] = check->second;
-    } else {
-      throw AliceO2::Common::ObjectNotFoundError();
-    }
-  }
+void MonitorObject::addCheck(const std::string name, const std::string checkClassName,
+                             const std::string checkLibraryName)
+{
+  CheckDefinition check;
+  check.name = name;
+  check.libraryName = checkLibraryName;
+  check.className = checkClassName;
+  mChecks[name] = check;
+}
 
-  CheckDefinition MonitorObject::getCheck(std::string checkName) const
-  {
-    if (mChecks.find(checkName) != mChecks.end()) {
-      return mChecks.at(checkName);
-    } else {
-      throw AliceO2::Common::ObjectNotFoundError();
-    }
-  }
+void MonitorObject::addOrReplaceCheck(std::string checkName, CheckDefinition check) { mChecks[checkName] = check; }
 
-  void MonitorObject::addCheck(const std::string name, const std::string checkClassName,
-                               const std::string checkLibraryName)
-  {
-    CheckDefinition check;
-    check.name = name;
-    check.libraryName = checkLibraryName;
-    check.className = checkClassName;
-    mChecks[name] = check;
-  }
+Quality MonitorObject::getQuality() const
+{
+  Quality global = Quality::Null;
 
-  void MonitorObject::addOrReplaceCheck(std::string checkName, CheckDefinition check) { mChecks[checkName] = check; }
-
-  Quality MonitorObject::getQuality() const
-  {
-    Quality global = Quality::Null;
-
-    for (const auto& checkPair : getChecks()) {
-      const CheckDefinition& checkDef = checkPair.second;
-      if (checkDef.result != Quality::Null) {
-        if (checkDef.result.isWorstThan(global) || global == Quality::Null) {
-          global = checkDef.result;
-        }
+  for (const auto& checkPair : getChecks()) {
+    const CheckDefinition& checkDef = checkPair.second;
+    if (checkDef.result != Quality::Null) {
+      if (checkDef.result.isWorstThan(global) || global == Quality::Null) {
+        global = checkDef.result;
       }
     }
-
-    return global;
   }
 
-  } // namespace core
-  } // namespace quality_control
+  return global;
+}
+
+} // namespace core
+} // namespace quality_control
 } // namespace o2

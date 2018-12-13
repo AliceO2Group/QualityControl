@@ -7,8 +7,6 @@
 #ifndef QC_CORE_TASKRUNNER_H
 #define QC_CORE_TASKRUNNER_H
 
-#include <mutex>
-#include <thread>
 // boost (should be first but then it makes errors in fairmq)
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
@@ -103,7 +101,6 @@ class TaskRunner
   void endOfActivity();
   void finishCycle(DataAllocator& outputs);
   unsigned long publish(DataAllocator& outputs);
-  static void CustomCleanupTMessage(void* data, void* object);
 
  private:
   std::string mTaskName;
@@ -113,7 +110,6 @@ class TaskRunner
   std::unique_ptr<TaskInterface> mTask;
   bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;
-  std::recursive_mutex mTaskMutex; // \todo should be plain mutex, when timer callback is implemented in dpl
 
   // consider moving these two to TaskConfig
   Inputs mInputSpecs;
