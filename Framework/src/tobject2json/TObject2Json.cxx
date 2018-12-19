@@ -11,46 +11,61 @@
 ///
 /// \file   TObject2Json.cxx
 /// \author Adam Wegrzynek
-/// \author Vladimir Kosmala
 ///
 
-// TObject2Json
-#include "TObject2JsonServer.h"
-#include <boost/program_options.hpp>
-#include <iostream>
+#include "QualityControl/TObject2Json.h"
+#ifdef _WITH_MYSQL
+#include "TObject2JsonMySql.h"
+#endif
+#include "TObject2JsonCcdb.h"
+#include "UriParser.h"
 
-using o2::quality_control::tobject_to_json::TObject2JsonServer;
+#include <functional>
 
-int main(int argc, char* argv[])
+namespace o2
 {
-  boost::program_options::variables_map vm;
-  boost::program_options::options_description desc("Allowed options");
-  desc.add_options()("backend", boost::program_options::value<std::string>()->required(),
-                     "Backend URL, eg.: mysql://<login>:<password>@<hostname>:<port>/<database>")(
-    "zeromq-server", boost::program_options::value<std::string>()->required(),
-    "ZeroMQ server endpoint, eg.: tcp://<host>:<port>")("workers", boost::program_options::value<int>(),
-                                                        "Number of worker threads, eg.: 8");
-  try {
-    boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
-    boost::program_options::notify(vm);
-  } catch (...) {
-    std::cout << desc << std::endl;
-    return 1;
-  }
-  std::string backend = vm["backend"].as<std::string>();
-  std::string zeromq = vm["zeromq-server"].as<std::string>();
-  int workers = 8;
-  if (vm.count("workers")) {
-    workers = vm["workers"].as<int>();
-  }
+namespace quality_control
+{
+namespace tobject_to_json
+{
 
-  TObject2JsonServer server;
-  try {
-    server.start(backend, zeromq, workers);
-  } catch (const std::exception& error) {
-    std::cout << error.what() << std::endl;
-    return 2;
-  }
-
-  return 0;
+#ifdef _WITH_MYSQL
+auto getMySql(const http::url& uri)
+{
+  int port = (uri.port == 0) ? 3306 : uri.port;
+  std::string database = uri.path;
+  database.erase(database.begin(), database.begin() + 1);
+  return std::make_unique<backends::MySql>(uri.host, port, database, uri.user, uri.password);
 }
+#endif
+
+auto getCcdb(const http::url& uri)
+{
+  int port = (uri.port == 0) ? 3306 : uri.port;
+  return std::make_unique<backends::Ccdb>(uri.host, port, "", uri.user, uri.password);
+}
+
+std::unique_ptr<Backend> TObject2Json::Get(std::string url)
+{
+  static const std::map<std::string, std::function<std::unique_ptr<Backend>(const http::url&)>> map = {
+#ifdef _WITH_MYSQL
+    { "mysql", getMySql },
+#endif
+    { "ccdb", getCcdb }
+  };
+
+  http::url parsedUrl = http::ParseHttpUrl(url);
+  if (parsedUrl.protocol.empty()) {
+    throw std::runtime_error("Ill-formed URI");
+  }
+  auto iterator = map.find(parsedUrl.protocol);
+  if (iterator != map.end()) {
+    return iterator->second(parsedUrl);
+  } else {
+    throw std::runtime_error("Unrecognized backend " + parsedUrl.protocol);
+  }
+}
+
+} // namespace tobject_to_json
+} // namespace quality_control
+} // namespace o2

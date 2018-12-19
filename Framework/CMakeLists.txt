@@ -38,9 +38,6 @@ set(
 set(
   SRCS_TOBJECT2JSON
   src/tobject2json/TObject2Json.cxx
-  src/tobject2json/TObject2JsonServer.cxx
-  src/tobject2json/TObject2JsonWorker.cxx
-  src/tobject2json/TObject2JsonBackendFactory.cxx
   src/tobject2json/TObject2JsonCcdb.cxx
 )
 
@@ -169,8 +166,8 @@ foreach(i RANGE ${count})
 endforeach()
 
 # tobject2json
-add_executable(tobject2json ${SRCS_TOBJECT2JSON})
-target_link_libraries(tobject2json PRIVATE QualityControl ZeroMQ::ZeroMQ $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>)
+add_library(tobject2json SHARED ${SRCS_TOBJECT2JSON})
+target_link_libraries(tobject2json PRIVATE QualityControl $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>)
 
 # ---- Gui ----
 

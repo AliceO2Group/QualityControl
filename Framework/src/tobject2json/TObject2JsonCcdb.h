@@ -17,7 +17,7 @@
 #ifndef QC_TOBJECT2JSON_CCDB_H
 #define QC_TOBJECT2JSON_CCDB_H
 
-#include "TObject2JsonBackend.h"
+#include "QualityControl/TObject2JsonBackend.h"
 
 // QualityControl
 #include "QualityControl/CcdbDatabase.h"
