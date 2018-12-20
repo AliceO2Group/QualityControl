@@ -14,7 +14,7 @@
 include(FindPackageHandleStandardArgs)
 
 # find includes
-find_path(INFOLOGGER_INCLUDE_DIR InfoLogger.h
+find_path(INFOLOGGER_INCLUDE_DIR InfoLogger.hxx
         HINTS ${InfoLogger_ROOT}/include ENV LD_LIBRARY_PATH PATH_SUFFIXES "../include/InfoLogger" "../../include/InfoLogger" )
 # Remove the final "InfoLogger"
 get_filename_component(INFOLOGGER_INCLUDE_DIR ${INFOLOGGER_INCLUDE_DIR} DIRECTORY)
