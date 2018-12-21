@@ -32,9 +32,6 @@
       * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
       * [Local CCDB setup](#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
-            * [tobject2json Usage](#tobject2json-usage)
-            * [Protocol](#protocol)
-            * [Architecture](#architecture)
       * [Information Service](#information-service)
          * [Usage](#usage)
       * [Configuration files details](#configuration-files-details)
@@ -445,52 +442,6 @@ At the moment, the description of the REST api can be found in this document : h
 ## Local QCG (QC GUI) setup
 
 To install and run the QCG locally, and its fellow process tobject2json, please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#run-qcg-locally
-
-`tobject2json` is in charge of converting the MonitorObjects stored in the repository into JSON for their consumption by the QCG. The code is in the QualityControl repository whereas the code of the QCG is in the WebUI repository. 
-
-#### tobject2json Usage
-
-```bash
-alienv enter QualityControl/latest
-tobject2json --backend mysql://qc_user:qc_user@localhost/quality_control --zeromq-server tcp://127.0.0.1:7777 --workers 4
-```
-
-#### Protocol
-
-Request:
-
-```
-<agent>/<objectName>
-```
-
-Response (one of the following):
-
-```
-{"request": "<agent>/<objectName>", "payload": "<object requested in json>"}
-{"request": "<agent>/<objectName>", "error": 400, "message": "Wrong request", "why": "because..."}
-{"request": "<agent>/<objectName>", "error": 404, "message": "Object not found"}
-{"request": "<agent>/<objectName>", "error": 500, "message": "Internal error", "why": "because..."}
-```
-
-#### Architecture
-
-```
-+-----------+
-|   main    |
-+-----------+
-      |
-      |
-      v
-+-----------+    +-----------+
-|  Server   |--->|  Factory  |
-+-----------+    +-----------+
-      ^ 1
-      |
-      v N
-+-----------+    +-----------+
-|  Worker   |<-->|  Backend  |
-+-----------+1  N+-----------+
-```
 
 ## Information Service
 
