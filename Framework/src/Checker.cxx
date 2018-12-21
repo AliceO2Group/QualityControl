@@ -68,7 +68,7 @@ void Checker::init(framework::InitContext&)
     std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
     // configuration of the database
     mDatabase = DatabaseFactory::create(config->get<std::string>("qc.config.database.implementation"));
-    mDatabase->connect(config);
+    mDatabase->connect(config->getRecursiveMap("qc.config.database"));
   } catch (
     std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
     LOG(ERROR) << "exception : " << e;

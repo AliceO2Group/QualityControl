@@ -41,9 +41,9 @@ void CcdbDatabase::connect(std::string host, std::string database, std::string u
   ccdbApi.init(mUrl);
 }
 
-void CcdbDatabase::connect(std::unique_ptr<ConfigurationInterface>& config)
+void CcdbDatabase::connect(const std::unordered_map<std::string, std::string>& config)
 {
-  mUrl = config->get<string>("qc.config.database.host");
+  mUrl = config.at("host");
   ccdbApi.init(mUrl);
 }
 

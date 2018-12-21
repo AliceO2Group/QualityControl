@@ -58,7 +58,7 @@ class CcdbDatabase : public DatabaseInterface
   virtual ~CcdbDatabase();
 
   void connect(std::string host, std::string database, std::string username, std::string password) override;
-  void connect(std::unique_ptr<ConfigurationInterface>& config) override;
+  void connect(const std::unordered_map<std::string, std::string>& config) override;
   void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
   core::MonitorObject* retrieve(std::string taskName, std::string objectName) override;
   void disconnect() override;
