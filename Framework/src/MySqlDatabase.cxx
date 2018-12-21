@@ -10,6 +10,7 @@
 #include "TMySQLResult.h"
 #include "TMySQLRow.h"
 #include "TMySQLStatement.h"
+#include "TBufferJSON.h"
 // O2
 #include "Common/Exceptions.h"
 // QC
@@ -205,6 +206,18 @@ o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string ta
   delete statement;
 
   return mo;
+}
+
+std::string MySqlDatabase::retrieveJson(std::string taskName, std::string objectName)
+{
+  std::unique_ptr<o2::quality_control::core::MonitorObject> monitor(retrieve(taskName, objectName));
+  if (monitor == nullptr) {
+    return std::string();
+  }
+  std::unique_ptr<TObject> obj(monitor->getObject());
+  monitor->setIsOwner(false);
+  TString json = TBufferJSON::ConvertToJSON(obj.get());
+  return json.Data();
 }
 
 void MySqlDatabase::disconnect()

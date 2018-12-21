@@ -34,6 +34,7 @@ class MySqlDatabase : public DatabaseInterface
   void connect(std::unique_ptr<ConfigurationInterface>& config) override;
   void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
   o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName) override;
+  std::string retrieveJson(std::string taskName, std::string objectName) override;
   void disconnect() override;
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
   std::vector<std::string> getListOfTasksWithPublications() override;
