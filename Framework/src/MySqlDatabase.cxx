@@ -57,12 +57,12 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
   }
 }
 
-void MySqlDatabase::connect(std::unique_ptr<ConfigurationInterface>& config)
+void MySqlDatabase::connect(const std::unordered_map<std::string, std::string>& config)
 {
-  this->connect(config->get<string>("qc.config.database.host"),
-                config->get<string>("qc.config.database.name"),
-                config->get<string>("qc.config.database.username"),
-                config->get<string>("qc.config.database.password"));
+  this->connect(config.at("host"),
+                config.at("name"),
+                config.at("username"),
+                config.at("password"));
 }
 
 void MySqlDatabase::prepareTaskDataContainer(std::string taskName)

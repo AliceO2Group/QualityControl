@@ -7,8 +7,8 @@
 #define QC_REPOSITORY_DATABASEINTERFACE_H
 
 #include "QualityControl/MonitorObject.h"
-#include <Configuration/ConfigurationInterface.h>
 #include <memory>
+#include <unordered_map>
 //#include <bits/unique_ptr.h>
 
 namespace o2
@@ -17,8 +17,6 @@ namespace quality_control
 {
 namespace repository
 {
-
-using namespace o2::configuration;
 
 /// \brief The interface to the MonitorObject's repository.
 ///
@@ -44,9 +42,9 @@ class DatabaseInterface
   /**
    * Connects to the database.
    * For some implementations, this is a noop.
-   * @param config Configuration where the connection parameters are stored.
+   * @param config map of values coming from configuration library.
    */
-  virtual void connect(std::unique_ptr<ConfigurationInterface>& config) = 0;
+  virtual void connect(const std::unordered_map<std::string, std::string>& config) = 0;
 
   /**
    * Stores the serialized MonitorObject in the database.
