@@ -12,6 +12,8 @@
 
 #include "QualityControl/InfrastructureGenerator.h"
 
+#include <Framework/DataSpecUtils.h>
+
 using namespace o2::quality_control::core;
 using namespace o2::framework;
 
@@ -60,8 +62,10 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto mergerSkeletonTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
+      auto concreteInput0 = DataSpecUtils::asConcreteDataMatcher(d.inputs[0]);
+      auto concreteInput1 = DataSpecUtils::asConcreteDataMatcher(d.inputs[1]);
       return d.name == "skeletonTask-merger" &&
-             d.inputs.size() == 2 && d.inputs[0].subSpec == 1 && d.inputs[1].subSpec == 2 &&
+             d.inputs.size() == 2 && concreteInput0.subSpec == 1 && concreteInput1.subSpec == 2 &&
              d.outputs.size() == 1 && d.outputs[0].subSpec == 0;
     });
   BOOST_CHECK(mergerSkeletonTask != workflow.end());

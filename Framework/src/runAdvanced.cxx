@@ -33,6 +33,7 @@
 
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DataSampling.h>
+#include <Framework/DataSpecUtils.h>
 
 using namespace o2::framework;
 
@@ -141,7 +142,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     // a fix to make the topologies work when merged together
     localTopology.back().name += std::to_string(i);
     // temporary fix, which shouldn't be necessary when data sampling uses matchers
-    localTopology.back().inputs[0].subSpec = i;
+    DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs[0], i);
 
     specs.insert(std::end(specs), std::begin(localTopology), std::end(localTopology));
   }
