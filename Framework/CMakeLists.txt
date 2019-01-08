@@ -35,18 +35,8 @@ set(
   include/QualityControl/InfrastructureGenerator.h
 )
 
-set(
-  SRCS_TOBJECT2JSON
-  src/tobject2json/TObject2Json.cxx
-  src/tobject2json/TObject2JsonServer.cxx
-  src/tobject2json/TObject2JsonWorker.cxx
-  src/tobject2json/TObject2JsonBackendFactory.cxx
-  src/tobject2json/TObject2JsonCcdb.cxx
-)
-
 if(ENABLE_MYSQL)
   list(APPEND SRCS src/MySqlDatabase.cxx)
-  list(APPEND SRCS_TOBJECT2JSON src/tobject2json/TObject2JsonMySql.cxx)
 endif()
 
 # Produce the final Version.h using template Version.h.in and substituting variables. We don't want to polute our source
@@ -168,10 +158,6 @@ foreach(i RANGE ${count})
   target_link_libraries(${name} PRIVATE QualityControl)
 endforeach()
 
-# tobject2json
-add_executable(tobject2json ${SRCS_TOBJECT2JSON})
-target_link_libraries(tobject2json PRIVATE QualityControl ZeroMQ::ZeroMQ $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>)
-
 # ---- Gui ----
 
 set(DATADUMP "")
@@ -243,7 +229,7 @@ unset(isSystemDir)
 
 # Install library and binaries
 install(
-  TARGETS QualityControl ${EXE_NAMES} tobject2json ${DATADUMP}
+  TARGETS QualityControl ${EXE_NAMES} ${DATADUMP}
   EXPORT QualityControlTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

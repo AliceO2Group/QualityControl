@@ -18,6 +18,7 @@
 #include <boost/algorithm/string.hpp>
 #include <chrono>
 #include <sstream>
+#include "TBufferJSON.h"
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -80,6 +81,18 @@ core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string ob
 
   TObject* object = ccdbApi.retrieve(path, metadata, getCurrentTimestamp());
   return dynamic_cast<core::MonitorObject*>(object);
+}
+
+std::string CcdbDatabase::retrieveJson(std::string taskName, std::string objectName)
+{
+  std::unique_ptr<core::MonitorObject> monitor(retrieve(taskName, objectName));
+  if (monitor == nullptr) {
+    return std::string();
+  }
+  std::unique_ptr<TObject> obj(monitor->getObject());
+  monitor->setIsOwner(false);
+  TString json = TBufferJSON::ConvertToJSON(obj.get());
+  return json.Data();
 }
 
 void CcdbDatabase::disconnect()

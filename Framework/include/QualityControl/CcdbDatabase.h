@@ -61,6 +61,7 @@ class CcdbDatabase : public DatabaseInterface
   void connect(const std::unordered_map<std::string, std::string>& config) override;
   void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
   core::MonitorObject* retrieve(std::string taskName, std::string objectName) override;
+  std::string retrieveJson(std::string taskName, std::string objectName) override;
   void disconnect() override;
   void prepareTaskDataContainer(std::string taskName) override;
   std::vector<std::string> getListOfTasksWithPublications() override;
