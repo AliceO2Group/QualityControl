@@ -106,7 +106,7 @@ void MySqlDatabase::storeQueue()
 
 void MySqlDatabase::storeForTask(std::string taskName)
 {
-  vector<std::shared_ptr<o2::quality_control::core::MonitorObject>> objects = mObjectsQueue[taskName];
+  std::vector<std::shared_ptr<o2::quality_control::core::MonitorObject>> objects = mObjectsQueue[taskName];
 
   if (objects.size() == 0) {
     return;
