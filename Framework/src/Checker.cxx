@@ -69,9 +69,9 @@ void Checker::init(framework::InitContext&)
     // configuration of the database
     mDatabase = DatabaseFactory::create(config->get<std::string>("qc.config.database.implementation"));
     mDatabase->connect(config->getRecursiveMap("qc.config.database"));
-    std::cout << "Database that is going to be used : " << std::endl;
-    std::cout << ">> Implementation : " << config->get<std::string>("qc.config.database.implementation") << std::endl;
-    std::cout << ">> Host : " << config->get<std::string>("qc.config.database.host") << std::endl;
+    LOG(INFO) << "Database that is going to be used : ";
+    LOG(INFO) << ">> Implementation : " << config->get<std::string>("qc.config.database.implementation");
+    LOG(INFO) << ">> Host : " << config->get<std::string>("qc.config.database.host");
   } catch (
     std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
     LOG(ERROR) << "exception : " << e;
@@ -88,8 +88,7 @@ void Checker::init(framework::InitContext&)
     mCollector = MonitoringFactory::Get("infologger://");
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n" << diagnostic;
     throw;
   }
   startFirstObject = system_clock::time_point::min();
