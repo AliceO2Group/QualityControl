@@ -71,8 +71,7 @@ void TaskRunner::initCallback(InitContext& iCtx)
   iCtx.services().get<framework::CallbackService>().set(framework::CallbackService::Id::Reset, [this]() { reset(); });
 
   // setup monitoring
-//  mCollector = MonitoringFactory::Get("stdout:///debug");
-  mCollector = MonitoringFactory::Get("influxdb-udp://aido2mon-gpn.cern.ch:8087");
+  mCollector = MonitoringFactory::Get("stdout:///debug");
   mCollector->enableProcessMonitoring();
 
   // setup publisher
