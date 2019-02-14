@@ -57,6 +57,9 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 4. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `flpproto`.
     * `aliBuild build flpproto --default o2`
 
+5. Install GLFW to have GUIs in the DPL (optional). On CC7 install `glfw-devel` from epel repository:
+    * `sudo yum install glfw-devel --enablerepo=epel`
+
 Note :  you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
 
 ### Environment loading
@@ -351,11 +354,11 @@ To commit your new or modified code, please follow this procedure
 2. Push the branch : `git push --set-upstream origin feature-new-stuff`
 2. Add and commit your changes onto this branch : `git add Abc.cxx ; git commit Abc.cxx`
 3. Push your commits : `git push`
-4. Once you are satisfied with your changes, make a _Pull Request_ (PR). Go to your branches on the github webpage, and click "New Pull Request". Explain what you did. 
-5. One of the QC developers will check your code. It will also be automatically tested. 
-6. Once approved the changes will be merged in the main repo. You can delete your branch. 
+4. Once you are satisfied with your changes, make a _Pull Request_ (PR). Go to your branches on the github webpage, and click "New Pull Request". Explain what you did.
+5. One of the QC developers will check your code. It will also be automatically tested.
+6. Once approved the changes will be merged in the main repo. You can delete your branch.
 
-For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches. 
+For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
 
 ---
 
@@ -370,7 +373,7 @@ particular the Readout.
 
 ### Prerequisite
 
-Install GLFW for your platform. On CC7 install `glfw-devel`.
+If not already done, install GLFW for your platform. On CC7 install `glfw-devel` from epel repository : `sudo yum install glfw-devel --enablerepo=epel`
 
 ### Compilation
 
@@ -379,9 +382,9 @@ Build the QualityControl as usual.
 ### Execution
 
 To monitor the readout, 3 processes have to be started : the Readout,
-the Data Sampling and the Data Inspector. 
+the Data Sampling and the Data Inspector.
 
-First make sure that the datasampling is enabled in the readout : 
+First make sure that the datasampling is enabled in the readout :
 ```
 [consumer-data-sampling]
 consumerType=DataSampling
@@ -421,10 +424,10 @@ and $QUALITY_CONTROL/dataDump.json.
    alienv enter qcg/latest
    qcDatabaseSetup.sh
    ```
-   
+
 ## Local CCDB setup
 
-Having a central ccdb for test (ccdb-test) is handy but also means that everyone can access, modify or delete the data. If you prefer to have a local instance of the CCDB, for example in your lab or on your development machine, follow these instructions. 
+Having a central ccdb for test (ccdb-test) is handy but also means that everyone can access, modify or delete the data. If you prefer to have a local instance of the CCDB, for example in your lab or on your development machine, follow these instructions.
 
 1. Download the local repository service from http://alimonitor.cern.ch/download/local.jar
 
@@ -435,7 +438,7 @@ It will start listening by default on port 8080. This can be changed either with
 
 By default the local repository is located in /tmp/QC (or java.io.tmpdir/QC to be more precise). You can change this location in a similar way by setting the java parameter “file.repository.location” or the environment variable “FILE_REPOSITORY_LOCATION”.
 
-The address of the CCDB will have to be updated in the Tasks config file. 
+The address of the CCDB will have to be updated in the Tasks config file.
 
 At the moment, the description of the REST api can be found in this document : https://docs.google.com/presentation/d/1PJ0CVW7QHgnFzi0LELc06V82LFGPgmG3vsmmuurPnUg
 
