@@ -15,6 +15,7 @@
 ///
 
 #include <memory>
+#include <iostream>
 
 #include <fairmq/FairMQDevice.h>
 
@@ -70,7 +71,9 @@ void TaskRunner::initCallback(InitContext& iCtx)
   iCtx.services().get<framework::CallbackService>().set(framework::CallbackService::Id::Reset, [this]() { reset(); });
 
   // setup monitoring
-  mCollector = MonitoringFactory::Get("infologger://");
+//  mCollector = MonitoringFactory::Get("stdout:///debug");
+  mCollector = MonitoringFactory::Get("influxdb-udp://aido2mon-gpn.cern.ch:8087");
+  mCollector->enableProcessMonitoring();
 
   // setup publisher
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig);
@@ -193,6 +196,11 @@ void TaskRunner::populateConfig(std::string taskName)
               << diagnostic << std::endl;
     throw;
   }
+  std::cout << "Configuration loaded : " << std::endl;
+  std::cout << ">> Task name : " << mTaskConfig.taskName << std::endl;
+  std::cout << ">> Module name : " << mTaskConfig.moduleName << std::endl;
+  std::cout << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << std::endl;
+  std::cout << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << std::endl;
 }
 
 void TaskRunner::startOfActivity()
