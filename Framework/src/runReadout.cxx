@@ -125,10 +125,10 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
 
 std::string getConfigPath(const ConfigContext& config)
 {
-  std::__cxx11::string userConfigPath = config.options().get<std::__cxx11::string>("config-path");
-  std::__cxx11::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ?
-                                           std::__cxx11::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/readout.json" : "$QUALITYCONTROL_ROOT undefined";
-  std::__cxx11::string path = userConfigPath == "" ? defaultConfigPath : userConfigPath;
-  const std::__cxx11::string qcConfigurationSource = std::__cxx11::string("json:/") + path;
+  std::string userConfigPath = config.options().get<std::string>("config-path");
+  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ?
+                                           std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/readout.json" : "$QUALITYCONTROL_ROOT undefined";
+  std::string path = userConfigPath == "" ? defaultConfigPath : userConfigPath;
+  const std::string qcConfigurationSource = std::string("json:/") + path;
   return qcConfigurationSource;
 }
