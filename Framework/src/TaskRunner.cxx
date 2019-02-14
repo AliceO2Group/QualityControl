@@ -15,6 +15,7 @@
 ///
 
 #include <memory>
+#include <iostream>
 
 #include <fairmq/FairMQDevice.h>
 
@@ -195,6 +196,11 @@ void TaskRunner::populateConfig(std::string taskName)
               << diagnostic << std::endl;
     throw;
   }
+  std::cout << "Configuration loaded : " << std::endl;
+  std::cout << ">> Task name : " << mTaskConfig.taskName << std::endl;
+  std::cout << ">> Module name : " << mTaskConfig.moduleName << std::endl;
+  std::cout << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << std::endl;
+  std::cout << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << std::endl;
 }
 
 void TaskRunner::startOfActivity()

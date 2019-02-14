@@ -69,6 +69,9 @@ void Checker::init(framework::InitContext&)
     // configuration of the database
     mDatabase = DatabaseFactory::create(config->get<std::string>("qc.config.database.implementation"));
     mDatabase->connect(config->getRecursiveMap("qc.config.database"));
+    std::cout << "Database that is going to be used : " << std::endl;
+    std::cout << ">> Implementation : " << config->get<std::string>("qc.config.database.implementation") << std::endl;
+    std::cout << ">> Host : " << config->get<std::string>("qc.config.database.host") << std::endl;
   } catch (
     std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
     LOG(ERROR) << "exception : " << e;
@@ -179,7 +182,7 @@ void Checker::store(std::shared_ptr<MonitorObject> mo)
 void Checker::send(std::unique_ptr<TObjArray>& moArray, framework::DataAllocator& allocator)
 {
   mLogger << "Sending Monitor Object array with " << moArray->GetEntries() << " objects inside." << AliceO2::InfoLogger::InfoLogger::endm;
-  
+
   allocator.adopt(
     framework::Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec, mOutputSpec.lifetime }, moArray.release());
 }

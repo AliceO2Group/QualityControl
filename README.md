@@ -57,6 +57,9 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 4. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `flpproto`.
     * `aliBuild build flpproto --default o2`
 
+5. Install GLFW to have GUIs in the DPL (optional). On CC7 install `glfw-devel` from epel repository:
+    * `sudo yum install glfw-devel --enablerepo=epel`
+
 Note :  you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
 
 ### Environment loading
@@ -371,7 +374,7 @@ particular the Readout.
 
 ### Prerequisite
 
-Install GLFW for your platform. On CC7 install `glfw-devel`.
+If not already done, install GLFW for your platform. On CC7 install `glfw-devel` from epel repository : `sudo yum install glfw-devel --enablerepo=epel`
 
 ### Compilation
 
