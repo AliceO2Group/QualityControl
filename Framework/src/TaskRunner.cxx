@@ -71,7 +71,7 @@ void TaskRunner::initCallback(InitContext& iCtx)
   iCtx.services().get<framework::CallbackService>().set(framework::CallbackService::Id::Reset, [this]() { reset(); });
 
   // setup monitoring
-  mCollector = MonitoringFactory::Get("stdout:///debug");
+  mCollector = MonitoringFactory::Get("infologger:///debug?qc");
   mCollector->enableProcessMonitoring();
 
   // setup publisher
