@@ -53,6 +53,9 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
 
+#include <iostream>
+#include <string>
+
 using namespace o2;
 using namespace o2::quality_control::checker;
 
@@ -68,7 +71,10 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   };
 
   // Generation of the QC topology
-  const std::string qcConfigurationSource = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/etc/readout.json";
+  const std::string qcConfigurationUserPath =
+    getenv("QUALITYCONTROL_CONFIG_PATH") != nullptr ? getenv("QUALITYCONTROL_CONFIG_PATH") :
+    std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/readout.json";
+  const std::string qcConfigurationSource = std::string("json:/") + qcConfigurationUserPath ;
   quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
   DataProcessorSpec printer{
