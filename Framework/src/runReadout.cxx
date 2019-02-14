@@ -33,13 +33,21 @@
 #include "Framework/DataSampling.h"
 
 using namespace o2::framework;
+
 void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
 }
+
 void customize(std::vector<ChannelConfigurationPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
+}
+
+void customize(std::vector<ConfigParamSpec>& workflowOptions)
+{
+  workflowOptions.push_back(
+    ConfigParamSpec{"config-path", VariantType::String, "", {"Path to the config file."}});
 }
 
 #include <TH1F.h>
@@ -53,35 +61,43 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
 
+#include <iostream>
+#include <string>
+
+std::string getConfigPath(const ConfigContext& config);
 using namespace o2;
 using namespace o2::quality_control::checker;
 
-WorkflowSpec defineDataProcessing(ConfigContext const&)
+WorkflowSpec defineDataProcessing(ConfigContext const& config)
 {
   // Creating the Readout proxy
   WorkflowSpec specs{
     specifyExternalFairMQDeviceProxy(
       "readout-proxy",
-      Outputs{ { "ITS", "RAWDATA" } },
+      Outputs{{"ITS", "RAWDATA"}},
       "type=sub,method=connect,address=ipc:///tmp/readout-pipe-1,rateLogging=1",
-      dataSamplingReadoutAdapter({ "ITS", "RAWDATA" }))
+      dataSamplingReadoutAdapter({"ITS", "RAWDATA"}))
   };
 
+  // Path to the config file
+  std::string qcConfigurationSource = getConfigPath(config);
+
   // Generation of the QC topology
-  const std::string qcConfigurationSource = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/etc/readout.json";
   quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "checked-mo", "QC", Checker::createCheckerDataDescription("daqTask"), 0 }
+      {"checked-mo", "QC", Checker::createCheckerDataDescription("daqTask"), 0}
     },
     Outputs{},
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback) [](InitContext& initContext) {
 
         return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
-          std::shared_ptr<TObjArray> moArray{ std::move(DataRefUtils::as<TObjArray>(*processingContext.inputs().begin())) };
+          std::shared_ptr<TObjArray> moArray{
+            std::move(DataRefUtils::as<TObjArray>(*processingContext.inputs().begin()))
+          };
 
           for (const auto& to : *moArray) {
             MonitorObject* mo = dynamic_cast<MonitorObject*>(to);
@@ -105,4 +121,14 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
   return specs;
+}
+
+std::string getConfigPath(const ConfigContext& config)
+{
+  std::string userConfigPath = config.options().get<std::string>("config-path");
+  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ?
+                                           std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/readout.json" : "$QUALITYCONTROL_ROOT undefined";
+  std::string path = userConfigPath == "" ? defaultConfigPath : userConfigPath;
+  const std::string qcConfigurationSource = std::string("json:/") + path;
+  return qcConfigurationSource;
 }

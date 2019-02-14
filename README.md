@@ -138,6 +138,7 @@ The data sampling is configured to sample 1% of the data as the readout should r
 __Configuration file__
 
 The configuration file is in `$QUALITY_CONTROL/readout.json`. It is installed in `$QUALITY_CONTROL/etc`. Each time you rebuild the code, `$QUALITY_CONTROL/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
+To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config-path` when launch `qcRunReadout`.
 
 To change the fraction of the data being monitored, change the option `fraction`.
 

@@ -72,6 +72,7 @@ void TaskRunner::initCallback(InitContext& iCtx)
 
   // setup monitoring
   mCollector = MonitoringFactory::Get("infologger:///debug?qc");
+  //  mCollector = MonitoringFactory::Get("influxdb-udp://aido2mon-gpn.cern.ch:8087");
   mCollector->enableProcessMonitoring();
 
   // setup publisher
