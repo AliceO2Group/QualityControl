@@ -192,15 +192,14 @@ void TaskRunner::populateConfig(std::string taskName)
   } catch (...) { // catch already here the configuration exception and print it
     // because if we are in a constructor, the exception could be lost
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    std::cerr << "Unexpected exception, diagnostic information follows:\n"
-              << diagnostic << std::endl;
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n" << diagnostic;
     throw;
   }
-  std::cout << "Configuration loaded : " << std::endl;
-  std::cout << ">> Task name : " << mTaskConfig.taskName << std::endl;
-  std::cout << ">> Module name : " << mTaskConfig.moduleName << std::endl;
-  std::cout << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << std::endl;
-  std::cout << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << std::endl;
+  LOG(INFO) << "Configuration loaded : ";
+  LOG(INFO) << ">> Task name : " << mTaskConfig.taskName;
+  LOG(INFO) << ">> Module name : " << mTaskConfig.moduleName;
+  LOG(INFO) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds;
+  LOG(INFO) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles;
 }
 
 void TaskRunner::startOfActivity()
