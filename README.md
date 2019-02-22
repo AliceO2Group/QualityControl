@@ -96,7 +96,7 @@ TODO add a link to the user documentation of the QCG
 
 __Configuration file__
 
-The devices are configured in the config file named `basic.json`. It is installed in `$QUALITY_CONTROL/etc`. Each time you rebuild the code, `$QUALITY_CONTROL/etc/basic.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/basic.json`).
+The devices are configured in the config file named `basic.json`. It is installed in `QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `QUALITYCONTROL_ROOT/etc/basic.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/basic.json`).
 
 ### Readout chain
 
@@ -137,7 +137,7 @@ The data sampling is configured to sample 1% of the data as the readout should r
 
 __Configuration file__
 
-The configuration file is in `$QUALITY_CONTROL/readout.json`. It is installed in `$QUALITY_CONTROL/etc`. Each time you rebuild the code, `$QUALITY_CONTROL/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
+The configuration file is in `QUALITYCONTROL_ROOT/readout.json`. It is installed in `QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `QUALITYCONTROL_ROOT/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
 To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config-path` when launch `qcRunReadout`.
 
 To change the fraction of the data being monitored, change the option `fraction`.
@@ -316,7 +316,7 @@ make -j8 install
 
 To test whether it works, we are going to run a basic DPL workflow defined in `runBasic.cxx`.
 We need to modify slightly the config file to indicate our freshly created module and classes.
-The config file is called `basic.json` and is located in `$QUALITY_CONTROL/etc/` (after installation, if you want to modify the original one it is in the source directory `Framework`).
+The config file is called `basic.json` and is located in `QUALITYCONTROL_ROOT/etc/` (after installation, if you want to modify the original one it is in the source directory `Framework`).
 Change the lines as indicated below :
 
 ```
@@ -333,6 +333,10 @@ qcRunBasic
 
 You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.
 
+#### Note on the data format
+
+The header is a O2 header populated with data from the header built by the Readout. The payload received in the QC is a CRU data page. 
+
 ## Modification of a Task
 
 Fill in the methods in RawDataQcTask.cxx. For example, make it send a second histogram.
@@ -340,13 +344,15 @@ Once done, recompile it (see section above) and run it. You should see the secon
 
 TODO give actual steps
 
+TODO Rename the task in teh config file and see in QCG that it appears under a different name.
+
 ## Addition of a Check
 
 TODO
 
 ## DPL workflow customization
 
-If you want to change the workflow, edit or copy `runBasic.cxx`. For example...
+If you want to change the workflow, edit or copy `runBasic.cxx` or `runReadout.cxx`. For example...
 
 TODO
 
@@ -406,13 +412,13 @@ In 3 separate terminals, do respectively
 
 __Fraction of data__
 The Data Sampling tries to take 100% of the events by default.
-Edit $QUALITY_CONTROL/readoutForDataDump.json
+Edit QUALITYCONTROL_ROOT/readoutForDataDump.json
 to change it. Look for the parameter `fraction` that is set to 1.
 
 __Port__
 The Data Sampling sends data to the GUI via the port `26525`.
-If this port is not free, edit the config file $QUALITY_CONTROL/readoutForDataDump.json
-and $QUALITY_CONTROL/dataDump.json.
+If this port is not free, edit the config file QUALITYCONTROL_ROOT/readoutForDataDump.json
+and QUALITYCONTROL_ROOT/dataDump.json.
 
 ## Use MySQL as QC backend
 
