@@ -57,8 +57,9 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 4. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `flpproto`.
     * `aliBuild build flpproto --default o2`
 
-5. Install GLFW to have GUIs in the DPL (optional). On CC7 install `glfw-devel` from epel repository:
-    * `sudo yum install glfw-devel --enablerepo=epel`
+5. Install GLFW to have GUIs in the DPL (optional, DPL GUIs do not work in containers).
+    * On CC7 : `sudo yum install glfw-devel --enablerepo=epel`
+    * On Mac : `brew install glfw`
 
 Note :  you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
 
@@ -223,13 +224,11 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
 {
   "qc": {
     ...
-    "tasks_config": {
+    "tasks": {
       "QcTask": {
-        "taskDefinition": "QcTaskDefinition"
-      },
-      "QcTaskDefinition": {
         ...
-        "dataSamplingPolicy": "its-raw"
+        "dataSamplingPolicy": "its-raw",
+        ...
       }
     }
   },
@@ -311,7 +310,7 @@ Now that there is a module, we can build it and test it. First let's build it :
 # We are in ~/alice
 # Go to the build directory of QualityControl
 cd sw/slc7_x86-64/BUILD/QualityControl-latest/QualityControl
-make -j8 install
+make -j8 install # replace 8 by the number of cores on your machine
 ```
 
 To test whether it works, we are going to run a basic DPL workflow defined in `runBasic.cxx`.
@@ -320,7 +319,7 @@ The config file is called `basic.json` and is located in `$QUALITY_CONTROL/etc/`
 Change the lines as indicated below :
 
 ```
-"QcTaskDefinition": {
+"QcTask": {
   "className": "o2::quality_control_modules::abc::RawDataQcTask",
   "moduleName": "QcAbc",
 ```
@@ -347,6 +346,10 @@ TODO
 ## DPL workflow customization
 
 If you want to change the workflow, edit or copy `runBasic.cxx`. For example...
+
+TODO
+
+## Plugging an existing DPL workflow into the Data Sampling and QC
 
 TODO
 
