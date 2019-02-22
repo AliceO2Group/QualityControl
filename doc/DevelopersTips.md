@@ -24,3 +24,16 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
     5. `select count(*) from cpuUsedPercentage` <-- use the correct metrics name
     6. Repeat the last command and see if the number increases. If it increases it denotes that the metrics is stored correctly in the database. If it is the case, the problem lies in your grafana.
 
+### QCG 
+
+#### Generalities
+
+The QCG server for qcg-test.cern.ch is hosted on qcg@barth-qcg. The config file is `/home/qcg/QualityControlGui/config.js`.
+
+#### Access rights
+
+Any one in alice-member has access. We use the egroup alice-o2-qcg-access to grant access or not and this egroup contains alice-member plus a few extra. This allows for non ALICE members to access the QCG. 
+
+#### Start and stop
+
+`systemctl restart qcg`
