@@ -97,7 +97,7 @@ TODO add a link to the user documentation of the QCG
 
 __Configuration file__
 
-The devices are configured in the config file named `basic.json`. It is installed in `QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `QUALITYCONTROL_ROOT/etc/basic.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/basic.json`).
+The devices are configured in the config file named `basic.json`. It is installed in `$QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `$QUALITYCONTROL_ROOT/etc/basic.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/basic.json`).
 
 ### Readout chain
 
@@ -138,7 +138,7 @@ The data sampling is configured to sample 1% of the data as the readout should r
 
 __Configuration file__
 
-The configuration file is in `QUALITYCONTROL_ROOT/readout.json`. It is installed in `QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `QUALITYCONTROL_ROOT/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
+The configuration file is installed in `$QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `$QUALITYCONTROL_ROOT/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
 To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config-path` when launch `qcRunReadout`.
 
 To change the fraction of the data being monitored, change the option `fraction`.
@@ -315,7 +315,7 @@ make -j8 install # replace 8 by the number of cores on your machine
 
 To test whether it works, we are going to run a basic DPL workflow defined in `runBasic.cxx`.
 We need to modify slightly the config file to indicate our freshly created module and classes.
-The config file is called `basic.json` and is located in `QUALITYCONTROL_ROOT/etc/` (after installation, if you want to modify the original one it is in the source directory `Framework`).
+The config file is called `basic.json` and is located in `$QUALITYCONTROL_ROOT/etc/` (after installation, if you want to modify the original one it is in the source directory `Framework`).
 Change the lines as indicated below :
 
 ```
@@ -415,13 +415,13 @@ In 3 separate terminals, do respectively
 
 __Fraction of data__
 The Data Sampling tries to take 100% of the events by default.
-Edit QUALITYCONTROL_ROOT/readoutForDataDump.json
+Edit `$QUALITYCONTROL_ROOT/etc/readoutForDataDump.json`
 to change it. Look for the parameter `fraction` that is set to 1.
 
 __Port__
 The Data Sampling sends data to the GUI via the port `26525`.
-If this port is not free, edit the config file QUALITYCONTROL_ROOT/readoutForDataDump.json
-and QUALITYCONTROL_ROOT/dataDump.json.
+If this port is not free, edit the config file `$QUALITYCONTROL_ROOT/etc/readoutForDataDump.json`
+and `$QUALITYCONTROL_ROOT/etc/dataDump.json`.
 
 ## Use MySQL as QC backend
 
