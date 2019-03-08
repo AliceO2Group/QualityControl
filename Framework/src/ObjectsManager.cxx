@@ -30,7 +30,6 @@ namespace core
 
 ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskName(taskConfig.taskName)
 {
-//  startPublishing(&mObjectsList, MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST);
   mMonitorObjects.SetOwner(true);
 }
 
