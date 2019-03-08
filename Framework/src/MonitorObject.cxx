@@ -28,8 +28,6 @@ namespace quality_control
 namespace core
 {
 
-constexpr char MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST[];
-
 MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mIsOwner(true) {}
 
 MonitorObject::~MonitorObject()

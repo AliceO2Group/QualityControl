@@ -71,17 +71,9 @@ class ObjectsManager
 
   TObjArray* getNonOwningArray() const { return new TObjArray(mMonitorObjects); };
 
-  std::string getObjectsListString() { return mObjectsList.GetString().Data(); }
-
- private:
-  void UpdateIndex(const std::string& nonEmptyName);
-
  private:
   TObjArray mMonitorObjects;
   std::string mTaskName;
-  // todo make it a vector of string when support added
-  TObjString mObjectsList; // the list of objects we publish. (comma separated)
-                           // Possibly needed on the client side to know what was there at a given time.
 };
 
 } // namespace core
