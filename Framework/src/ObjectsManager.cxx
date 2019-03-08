@@ -30,7 +30,7 @@ namespace core
 
 ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskName(taskConfig.taskName)
 {
-  startPublishing(&mObjectsList, MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST);
+//  startPublishing(&mObjectsList, MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST);
   mMonitorObjects.SetOwner(true);
 }
 
@@ -43,19 +43,6 @@ void ObjectsManager::startPublishing(TObject* object, std::string objectName)
   auto* newObject = new MonitorObject(object, mTaskName);
   newObject->setIsOwner(false);
   mMonitorObjects.Add(newObject);
-
-  // update index
-  if (objectName != MonitorObject::SYSTEM_OBJECT_PUBLICATION_LIST) {
-    UpdateIndex(object->GetName());
-  }
-}
-
-void ObjectsManager::UpdateIndex(const string& nonEmptyName)
-{
-  string newString = this->mObjectsList.GetString().Data();
-  newString += nonEmptyName;
-  newString += ",";
-  this->mObjectsList.SetString(newString.c_str());
 }
 
 Quality ObjectsManager::getQuality(std::string objectName)
