@@ -128,7 +128,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
 	//std::string	detStrL = "its";
 	// Generation of the QC topology (one task, one checker in this case)
-	quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+	//quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
 	LOG(INFO) << "START PRINTING PROCESS NOW ";
 	// Finally the printer
