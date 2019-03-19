@@ -50,3 +50,4 @@ class SkeletonTask /*final*/ : public TaskInterface // todo add back the "final"
 } // namespace o2
 
 #endif // QC_MODULE_SKELETON_SKELETONTASK_H
+

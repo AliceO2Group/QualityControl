@@ -90,6 +90,10 @@ install(
 
 add_library(QualityControl SHARED ${SRCS} QualityControlDict.cxx)
 
+add_library( libDetectorsBase SHARED IMPORTED )
+set_target_properties( libDetectorsBase  PROPERTIES IMPORTED_LOCATION /data/zhaozhong/alice/sw/slc7_x86-64/O2/1.0.0-1/lib/libDetectorsBase.so )
+
+
 target_include_directories(
   QualityControl
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -107,6 +111,7 @@ target_link_libraries(
     AliceO2::InfoLogger
     AliceO2::Monitoring
     AliceO2::Configuration
+    libDetectorsBase
     ROOT::Net
     AliceO2::AliceO2
     Boost::container
@@ -130,6 +135,10 @@ set(
   src/runInformationService.cxx
   src/runInformationServiceDump.cxx
   src/runBasic.cxx
+  src/runPrint.cxx
+  src/runITSDPL.cxx
+  src/runDummy.cxx
+  src/runDummiest.cxx
   src/runAdvanced.cxx
   src/runReadout.cxx
   src/runMergerTest.cxx
@@ -142,6 +151,10 @@ set(
   qcInfoService
   qcInfoServiceDump
   qcRunBasic
+  qcRunPrint
+  qcRunDPL
+  qcRunDummy
+  qcRunDummiest
   qcRunAdvanced
   qcRunReadout
   runMergerTest

@@ -64,7 +64,9 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   // 1. In a loop
   for (auto&& input : ctx.inputs()) {
     // get message header
-    const auto* header = header::get<header::DataHeader*>(input.header);
+	 QcInfoLogger::GetInstance() << "BEEN HERE BRO" << AliceO2::InfoLogger::InfoLogger::endm;
+
+	  const auto* header = header::get<header::DataHeader*>(input.header);
     // get payload of a specific input, which is a char array.
 //    const char* payload = input.payload;
 
@@ -114,3 +116,4 @@ void SkeletonTask::reset()
 } // namespace skeleton
 } // namespace quality_control_modules
 } // namespace o2
+  

@@ -95,7 +95,7 @@ find_package(FairRoot REQUIRED)
 find_package(FairMQ REQUIRED)
 find_package(FairLogger REQUIRED)
 find_package(
-  ROOT 6.06.02
+  ROOT 6.14.04
   COMPONENTS
     RHTTP
     Gui
