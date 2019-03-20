@@ -67,9 +67,9 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include "Framework/DeviceSpec.h"
 #include "DetectorsCommonDataFormats/DetID.h"
 #include "Framework/runDataProcessing.h"
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/DigitReaderSpec.h"
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/RecoWorkflow.h"
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/workflow/src/DigitReaderSpec.cxx"
+#include "../../../O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/DigitReaderSpec.h"
+#include "../../../O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/RecoWorkflow.h"
+#include "../../../O2/Detectors/ITSMFT/ITS/workflow/src/DigitReaderSpec.cxx"
 
 
 

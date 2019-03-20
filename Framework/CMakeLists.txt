@@ -136,9 +136,9 @@ set(
   src/runInformationServiceDump.cxx
   src/runBasic.cxx
   src/runPrint.cxx
-  src/runITSDPL.cxx
-  src/runDummy.cxx
-  src/runDummiest.cxx
+#  src/runITSDPL.cxx
+#  src/runDummy.cxx
+#  src/runDummiest.cxx
   src/runAdvanced.cxx
   src/runReadout.cxx
   src/runMergerTest.cxx
@@ -152,9 +152,9 @@ set(
   qcInfoServiceDump
   qcRunBasic
   qcRunPrint
-  qcRunDPL
-  qcRunDummy
-  qcRunDummiest
+#  qcRunDPL
+#  qcRunDummy
+#  qcRunDummiest
   qcRunAdvanced
   qcRunReadout
   runMergerTest

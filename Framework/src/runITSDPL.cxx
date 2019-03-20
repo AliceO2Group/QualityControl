@@ -101,7 +101,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 	LOG(INFO) << "START READER";
 
 
-	specs.emplace_back(o2::ITS::getDigitReaderSpec());
+	//specs.emplace_back(o2::ITS::getDigitReaderSpec());
 	//specs.emplace_back(o2::ITS::getDummySpec());
 
 	LOG(INFO) << "DONE READER";
@@ -119,7 +119,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
 	//std::string	detStrL = "its";
 	// Generation of the QC topology (one task, one checker in this case)
-//	quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+	quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
 	LOG(INFO) << "START PRINTING PROCESS NOW ";
 	// Finally the printer

@@ -44,7 +44,6 @@ using namespace o2::ITS;
 
 
 
-
 namespace o2
 {
 	namespace quality_control_modules
@@ -58,7 +57,7 @@ namespace o2
 				gStyle->SetOptFit (0);
 				gStyle->SetOptStat (0);
 				o2::Base::GeometryManager::loadGeometry ();
-				gStyle->SetPadRightMargin(0.25);
+				gStyle->SetPadRightMargin(0.10);
 				for(int i = 0; i < NLayer; i++){
 
 					NChipLay[i] = ChipBoundary[i + 1] - ChipBoundary[i];
@@ -80,11 +79,31 @@ namespace o2
 					LayEtaPhi[i]->GetZaxis()->SetTitleOffset(0.07);
 					LayEtaPhi[i]->SetTitle(Form("Number of Hits for Layer %d #eta and #phi Distribution",i));
 
+
+					NStaveChip[i] = NChipLay[i]/NStaves[i];
+
+					LayChipStave[i] = new TH2D(Form("LayChipStave%d",i),Form("LayChipStave%d",i),NStaveChip[i],0,NStaveChip[i],NStaves[i],0,NStaves[i]);
+					LayChipStave[i]->GetXaxis()->SetTitle("Chip Number");
+					LayChipStave[i]->GetYaxis()->SetTitle("Stave Number");
+					LayChipStave[i]->GetZaxis()->SetTitle("Number of Hits");
+					LayChipStave[i]->GetZaxis()->SetTitleOffset(0.0);
+					LayChipStave[i]->SetTitle(Form("Number of Hits for Layer %d Chip Number and Stave Number Distribution",i));
+
+
+
 				}
 
 
+				for(int i = 0; i < NError; i++){
+					Error[i] = 12 - i;
+					ErrorPlots[i] = new TH1D(Form("ErrorPlot%d",i),Form("ErrorPlot%d",i),NError,0,NError);
+					ErrorPlots[i]->GetXaxis()->SetTitle("Error Type");
+					ErrorPlots[i]->GetYaxis()->SetTitle("Counts");
+					ErrorPlots[i]->SetTitle("Error Checked During Decoding");
+					ErrorPlots[i]->SetMaximum(35);
+				}
 
-				for(int j = 0; j < NStaves; j++){
+				for(int j = 0; j < 1; j++){
 					for(int i = 0; i < NStaveChip[j]; i++){
 						HIGMAP[i]	= new TH2D("HIGMAP","HIGMAP",100,0,NColHis,100,0,NRowHis);
 						HIGMAP[i]->GetXaxis()->SetTitle("Column");
@@ -95,18 +114,18 @@ namespace o2
 
 				cout << "Clear " << endl;
 				/*
-				for(int i = 0 ; i < 24120; i++){	
-				gm->getChipId (i, lay, sta, ssta, mod, chip);
-				gm->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::L2G));
-				const Point3D<float> loc(0., 0.,0.); 
-				auto glo = gm->getMatrixL2G(i)(loc);
-				eta = glo.eta();
-				phi = glo.phi();
-				cout << "CHip ID = " << i << "   Layer = " << lay  << "  Stave = " << sta << "  eta = " << eta << "   phi = " << phi << endl;
+				   for(int i = 0 ; i < 24120; i++){	
+				   gm->getChipId (i, lay, sta, ssta, mod, chip);
+				   gm->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::L2G));
+				   const Point3D<float> loc(0., 0.,0.); 
+				   auto glo = gm->getMatrixL2G(i)(loc);
+				   eta = glo.eta();
+				   phi = glo.phi();
+				   cout << "CHip ID = " << i << "   Layer = " << lay  << "  Stave = " << sta << "  eta = " << eta << "   phi = " << phi << endl;
 
-				}
-				*/
-			
+				   }
+				   */
+
 			}
 
 			ITSDPLQCTask::~ITSDPLQCTask() {
@@ -122,16 +141,16 @@ namespace o2
 				bool mRawDataMode = 1;
 				if (mRawDataMode)
 				{
-					mReaderRaw = std::make_unique<o2::ITSMFT::RawPixelReader<o2::ITSMFT::ChipMappingITS>>();
-					mReader = mReaderRaw.get();
-					//	int a = 1;
+					//mReaderRaw = std::make_unique<o2::ITSMFT::RawPixelReader<o2::ITSMFT::ChipMappingITS>>();
+
+					//mReader = mReaderRaw.get();
+					int a = 1;
 				}
 				else
 				{				// clusterizer of digits needs input from the FairRootManager (at the moment)
 					mReaderMC = std::make_unique < o2::ITSMFT::DigitPixelReader > ();
 					mReader = mReaderMC.get ();
 				}
-
 
 				LOG (INFO) << "It WORK, PASS 1";
 
@@ -141,10 +160,20 @@ namespace o2
 				cout << "numOfChips = " << numOfChips << endl;
 				setNChips (numOfChips);
 				cout << "START LOOPING BRO" << endl;
-				mReaderRaw->openInput (inpName);
-				mReaderRaw->setPadding128(true);
-				mReaderRaw->setVerbosity(0);
-				process (*mReader);
+				mReaderRaw.openInput (inpName);
+				mReaderRaw.setPadding128(true);
+				mReaderRaw.setVerbosity(0);
+
+				/*
+				   const auto* ruInfo = mReaderRaw.getRUDecodeData().ruInfo;
+				   if (ruInfo) {
+				   const auto& statRU =  mReaderRaw.getRUDecodingStatSW( ruInfo.idSW ); 
+				   printf("ErrorCount: %d\n", (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrPageCounterDiscontinuity] );
+				   }
+				   */
+				process (mReaderRaw);
+
+
 
 				/*
 				   int IndexNow = 0;
@@ -196,9 +225,16 @@ namespace o2
 					cout << "Eta Phi Total = " << 	LayEtaPhi[j]->Integral() << endl;
 					c->SaveAs(Form("EtaPhiLay%d.png",j));
 				}
+
+				for(int j = 0; j < NLayer; j++){ 
+					LayChipStave[j]->Draw("COLZ");
+					cout << "LayChipStave Total = " << 	LayChipStave[j]->Integral() << endl;
+					c->SaveAs(Form("LayChipStave%d.png",j));
+				}
+
 				TCanvas *c1 = new TCanvas ("c1", "c1", 600, 600);
 
-				for(int j = 0; j < NStaves; j++){
+				for(int j = 0; j < 1; j++){
 					c1->Divide(3,3);
 					for(int i = 0; i < NStaveChip[j]; i++){
 						c1->cd(i+1);
@@ -207,12 +243,30 @@ namespace o2
 					c1->SaveAs(Form("HIGMAPStave%d.png",j+1));
 				}
 
-				for(int i = 0; i < NLayer; i++){
-				getObjectsManager()->startPublishing(ChipStave[i]);
-				//getObjectsManager()->addCheck(ChipStave, "checkFromITSDPLQCTask", "o2::quality_control_modules::itsdplqctask::ITSDPLQCTaskCheck",	"QcITSDPLQCTask");
+				TCanvas * c2 = new TCanvas("c2","c2",600,600);
+				c2->cd();
 
-				getObjectsManager()->startPublishing(ChipProj[i]);
-				getObjectsManager()->startPublishing(LayEtaPhi[i]);
+				TLegend* l = new TLegend(0.15,0.50,0.90,0.90);
+				for(int i =0; i< NError;i++){
+					cout << "i = " << i << "  Error Number = " << Error[i] << endl;
+					ErrorPlots[i]->SetBinContent(i,Error[i]);
+					ErrorPlots[i]->SetLineColor(i+1);
+					ErrorPlots[i]->SetFillColor(i+1);
+					if(i == 0) 	{
+							ErrorPlots[i]->Draw();
+					}
+					if(i > 0) 	ErrorPlots[i]->Draw("SAME");
+					l->AddEntry(ErrorPlots[i],ErrorType[i].Data());	
+				}
+				l->Draw("SAME");
+				c2->SaveAs("ErrorChecker.png");
+
+
+				for(int i = 0; i < NLayer; i++){
+					getObjectsManager()->startPublishing(ChipStave[i]);
+					//getObjectsManager()->addCheck(ChipStave, "checkFromITSDPLQCTask", "o2::quality_control_modules::itsdplqctask::ITSDPLQCTaskCheck",	"QcITSDPLQCTask");
+					getObjectsManager()->startPublishing(ChipProj[i]);
+					getObjectsManager()->startPublishing(LayEtaPhi[i]);
 				}
 
 				mHistogram = new TH1F("example", "example", 20, 0, 30000);
@@ -278,7 +332,7 @@ namespace o2
 				//  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("random").header);
 				//  struct s {int a; double b;};
 				//  auto array = ctx.inputs().get<s*>("random");
-				//  for (int j = 0; j < header->payloadSize / sizeof(s); ++j) {
+				//  for (int j = 0; j < header->payloadSize / sizeof(s); ++j) LayChipStave{
 				//    int i = array.get()[j].a;
 				//  }
 
@@ -298,6 +352,7 @@ namespace o2
 
 
 
+
 				for (int i = 0; i < 24120; i++)
 				{
 					Occupancy[i] = 0;
@@ -307,24 +362,44 @@ namespace o2
 				{
 					//      cout << "ChipID Before = " << ChipID << endl; 
 					ChipID = mChipData->getChipID ();
+					mReaderRaw.getMapping().getChipInfoSW( ChipID, chipInfo );
+					const auto& statRU =  mReaderRaw.getRUDecodingStatSW( chipInfo.ru );
+					//printf("ErrorCount: %d\n", (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrPageCounterDiscontinuity] );
+
+					Error[0] = Error[0]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrGarbageAfterPayload];
+					Error[1] = Error[1]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrPageCounterDiscontinuity];
+					Error[2] = Error[2]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrRDHvsGBTHPageCnt];
+					Error[3] = Error[3]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrMissingGBTHeader];
+					Error[4] = Error[4]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrMissingGBTTrailer];
+					Error[5] = Error[5]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrNonZeroPageAfterStop];
+					Error[6] = Error[6]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrUnstoppedLanes];
+					Error[7] = Error[7]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrDataForStoppedLane];
+					Error[8] = Error[8]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrNoDataForActiveLane];
+					Error[9] = Error[9]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrIBChipLaneMismatch];
+					Error[10] = Error[10]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrCableDataHeadWrong];
+					
+
+
 					gm->getChipId (ChipID, lay, sta, ssta, mod, chip);
 					gm->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::L2G));
 					const Point3D<float> loc(0., 0.,0.); 
 					auto glo = gm->getMatrixL2G(ChipID)(loc);
-					
-					if (lay < 1) cout << "ChipID = " << ChipID << endl;
 
 					if (lay < 7)
 					{
 						//cout << "lay = " <<  lay << endl;
 						//cout << "ChipID = " << ChipID << endl;
+
+						int ChipNumber = (ChipID - ChipBoundary[lay])- sta*	NStaveChip[lay];
 						ActPix = mChipData->getData().size();
 
+						//cout << "ChipNumber = " << ChipNumber << endl;
 						eta = glo.eta();
 						phi = glo.phi();
 						Occupancy[ChipID] = Occupancy[ChipID] + ActPix;
-						LayEtaPhi[lay]->Fill(eta,phi,ActPix);
 
+						LayEtaPhi[lay]->Fill(eta,phi,ActPix);
+						LayChipStave[lay]->Fill(ChipNumber,sta,ActPix);
 						if(sta == 0 && ChipID < NLay1){
 							//cout << "ChipID in Stave 0 = " << ChipID << endl; 
 							for(int ip = 0; ip < ActPix; ip++){
@@ -339,14 +414,14 @@ namespace o2
 				}
 				cout << "Start Filling" << endl;
 
-				for(int j = 0; j < NLayer; j++){ 
-					for (int i = ChipBoundary[j]; i < ChipBoundary[j+1]; i++)
-					{
-						int XBin = ChipStave[j]->GetXaxis()->FindBin(i);
-						//AveOcc = Occupancy[i]/NPixels;
-						ChipStave[j]->Fill(XBin, Occupancy[i]);
+					for(int j = 0; j < NLayer; j++){ 
+						for (int i = ChipBoundary[j]; i < ChipBoundary[j+1]; i++)
+						{
+							int XBin = ChipStave[j]->GetXaxis()->FindBin(i);
+							//AveOcc = Occupancy[i]/NPixels;
+							ChipStave[j]->Fill(XBin, Occupancy[i]);
+						}
 					}
-				}
 
 			}
 

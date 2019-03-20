@@ -88,7 +88,9 @@ namespace o2
 					std::vector<ChipPixelData> mChipsOld;
 					o2::ITSMFT::PixelReader* mReader = nullptr; 
 					std::unique_ptr<o2::ITSMFT::DigitPixelReader> mReaderMC;    
-					std::unique_ptr<o2::ITSMFT::RawPixelReader<o2::ITSMFT::ChipMappingITS>> mReaderRaw; 
+					//std::unique_ptr<o2::ITSMFT::RawPixelReader<o2::ITSMFT::ChipMappingITS>> mReaderRaw; 
+				    o2::ITSMFT::RawPixelReader<o2::ITSMFT::ChipMappingITS> mReaderRaw;		
+					o2::ITSMFT::ChipInfo chipInfo;
 					UInt_t mCurrROF = o2::ITSMFT::PixelData::DummyROF; 
 					int* mCurr; // pointer on the 1st row of currently processed mColumnsX
 					int* mPrev; // pointer on the 1st row of previously processed mColumnsX
@@ -96,9 +98,7 @@ namespace o2
 					static constexpr int   NRows = 512;
 					const int NColHis = 1024;
 					const int NRowHis = 512;
-					const int NStaves = 1;
-					int NStaveChip[1] = {9};
-
+	
 					static constexpr int   NPixels = NRows*NCols;
 					const int NLay1 = 108;
 					const int NEventMax = 20;
@@ -111,9 +111,10 @@ namespace o2
 					TH2D * ChipStave[NLayer]; 
 					TH1D * ChipProj[NLayer];
 					TH2D * LayEtaPhi[NLayer]; 
-					TH2D * LayChipStave[NLayer]; 					
+					TH2D * LayChipStave[NLayer]; 
 
-
+					const int NStaves[NLayer] = {12,16,20,24,30,42,48};
+					int NStaveChip[NLayer];
 					TH2D * HIGMAP[9];
 					void swapColumnBuffers()
 					{
@@ -145,7 +146,10 @@ namespace o2
 					const int NSta1 = NLay1/NChipsSta;
 					double eta;
 					double phi;
-
+					static constexpr int  NError = 11;
+					int Error[NError];
+					TH1D * ErrorPlots[NError];
+					TString ErrorType[NError] ={"ErrGarbageAfterPayload","ErrPageCounterDiscontinuity","ErrRDHvsGBTHPageCnt","ErrMissingGBTHeader","ErrMissingGBTTrailer","ErrNonZeroPageAfterStop","ErrUnstoppedLanes","ErrDataForStoppedLane","ErrNoDataForActiveLane","ErrIBChipLaneMismatch","ErrCableDataHeadWrong"};
 			};
 
 
