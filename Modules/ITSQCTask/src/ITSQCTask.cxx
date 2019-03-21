@@ -14,11 +14,7 @@
 #include "FairRuntimeDb.h"
 #include "FairParRootFileIo.h"
 #include "FairSystemInfo.h"
-//#include "../../../O2/Detectors/ITSMFT/ITS/QCWorkFlow/include/ITSQCWorkflow/HisAnalyzerSpec.h"
-//#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/common/base/include/ITSMFTBase/GeometryTGeo.h"
 
-//#include "ITSSimulation/DigitizerTask.h"
-//#include "../include/ITSQCWorkflow/HisAnalyzerSpec.h"
 
 
 #include "../../../O2/Detectors/ITSMFT/common/reconstruction/include/ITSMFTReconstruction/DigitPixelReader.h"

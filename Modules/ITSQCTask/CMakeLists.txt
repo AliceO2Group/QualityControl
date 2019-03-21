@@ -4,12 +4,12 @@ set(MODULE_NAME "QcITSQCTask")
 
 set(SRCS
   src/ITSQCTask.cxx
-  src/ITSQCCheck.cxx
+#  src/ITSQCCheck.cxx
 )
 
 set(HEADERS
   include/ITSQCTask/ITSQCTask.h
-  include/ITSQCTask/ITSQCCheck.h
+#  include/ITSQCTask/ITSQCCheck.h
 )
 
 # ---- Library ----

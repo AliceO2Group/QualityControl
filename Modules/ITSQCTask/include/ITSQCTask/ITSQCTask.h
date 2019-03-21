@@ -18,7 +18,7 @@
 
 
 
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/common/reconstruction/include/ITSMFTReconstruction/DigitPixelReader.h"
+#include "ITSMFTReconstruction/DigitPixelReader.h"
 
 
 #include "DataFormatsITSMFT/ROFRecord.h"
@@ -31,12 +31,12 @@
 #include "ITSMFTReconstruction/Clusterer.h"
 #include "uti.h"
 
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/base/include/ITSBase/GeometryTGeo.h"
+#include "ITSBase/GeometryTGeo.h"
 #include "DetectorsBase/GeometryManager.h"
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/common/base/include/ITSMFTBase/GeometryTGeo.h"
+//#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/common/base/include/ITSMFTBase/GeometryTGeo.h"
 
 #include "ITSMFTReconstruction/DigitPixelReader.h"
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/QCWorkFlow/include/ITSQCWorkflow/HisAnalyzerSpec.h"
+//#include "../../../O2/Detectors/ITSMFT/ITS/QCWorkFlow/include/ITSQCWorkflow/HisAnalyzerSpec.h"
 
 
 
