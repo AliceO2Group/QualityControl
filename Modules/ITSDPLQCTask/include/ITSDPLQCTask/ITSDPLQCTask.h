@@ -101,7 +101,7 @@ namespace o2
 	
 					static constexpr int   NPixels = NRows*NCols;
 					const int NLay1 = 108;
-					const int NEventMax = 20;
+					const int NEventMax = 40;
 					double Occupancy[24120];
 					static constexpr int NLayer = 7;
 					int ChipBoundary[NLayer + 1] ={0,108,252,432,3120,6480,14712,24120}; 

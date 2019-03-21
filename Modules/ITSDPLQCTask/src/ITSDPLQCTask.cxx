@@ -96,7 +96,7 @@ namespace o2
 
 				for(int i = 0; i < NError; i++){
 					Error[i] = 12 - i;
-					ErrorPlots[i] = new TH1D(Form("ErrorPlot%d",i),Form("ErrorPlot%d",i),NError,0,NError);
+					ErrorPlots[i] = new TH1D(Form("ErrorPlot%d",i),Form("ErrorPlot%d",i),NError+1,0,NError);
 					ErrorPlots[i]->GetXaxis()->SetTitle("Error Type");
 					ErrorPlots[i]->GetYaxis()->SetTitle("Counts");
 					ErrorPlots[i]->SetTitle("Error Checked During Decoding");
@@ -105,7 +105,7 @@ namespace o2
 
 				for(int j = 0; j < 1; j++){
 					for(int i = 0; i < NStaveChip[j]; i++){
-						HIGMAP[i]	= new TH2D("HIGMAP","HIGMAP",100,0,NColHis,100,0,NRowHis);
+						HIGMAP[i]	= new TH2D(Form("HIGMAP%d%d",i,j),Form("HIGMAP%d%d",i,j),100,0,NColHis,100,0,NRowHis);
 						HIGMAP[i]->GetXaxis()->SetTitle("Column");
 						HIGMAP[i]->GetYaxis()->SetTitle("Row");
 						HIGMAP[i]->SetTitle(Form("Hits on Pixel of Stave 1 for Chip Number % d",i));
@@ -189,6 +189,8 @@ namespace o2
 				c->cd ();
 
 				for(int j = 0; j < NLayer; j++){ 
+					ChipStave[j]->SetMarkerSize(1.2);
+					ChipStave[j]->SetMarkerStyle(24);
 					ChipStave[j]->Draw();
 					cout << "j = " << j << "   Number of ChipStave = " << ChipStave[j]->GetEntries() << endl;
 					c->SaveAs (Form("Occupancy%d.png",j));
@@ -239,6 +241,7 @@ namespace o2
 					for(int i = 0; i < NStaveChip[j]; i++){
 						c1->cd(i+1);
 						HIGMAP[i]->Draw("COLZ");
+						getObjectsManager()->startPublishing(HIGMAP[i]);
 					}
 					c1->SaveAs(Form("HIGMAPStave%d.png",j+1));
 				}
@@ -257,20 +260,25 @@ namespace o2
 					}
 					if(i > 0) 	ErrorPlots[i]->Draw("SAME");
 					l->AddEntry(ErrorPlots[i],ErrorType[i].Data());	
+					getObjectsManager()->startPublishing(ErrorPlots[i]);	
 				}
 				l->Draw("SAME");
 				c2->SaveAs("ErrorChecker.png");
 
 
 				for(int i = 0; i < NLayer; i++){
-					getObjectsManager()->startPublishing(ChipStave[i]);
-					//getObjectsManager()->addCheck(ChipStave, "checkFromITSDPLQCTask", "o2::quality_control_modules::itsdplqctask::ITSDPLQCTaskCheck",	"QcITSDPLQCTask");
-					getObjectsManager()->startPublishing(ChipProj[i]);
-					getObjectsManager()->startPublishing(LayEtaPhi[i]);
-				}
 
+					getObjectsManager()->startPublishing(ChipProj[i]);
+				}
+				getObjectsManager()->startPublishing(ChipStave[4]);	
+				getObjectsManager()->startPublishing(LayEtaPhi[4]);
+				getObjectsManager()->startPublishing(LayChipStave[4]);
+
+			
 				mHistogram = new TH1F("example", "example", 20, 0, 30000);
 				//	getObjectsManager()->addCheck(mHistogram, "checkFromITSDPLQCTask", "o2::quality_control_modules::itsdplqctask::ITSDPLQCTaskCheck",	"QcITSDPLQCTask");
+			//getObjectsManager()->addCheck(ChipStave, "checkFromITSDPLQCTask", "o2::quality_control_modules::itsdplqctask::ITSDPLQCTaskCheck",	"QcITSDPLQCTask");
+
 			}
 
 			void ITSDPLQCTask::startOfActivity(Activity& activity)
@@ -417,9 +425,10 @@ namespace o2
 					for(int j = 0; j < NLayer; j++){ 
 						for (int i = ChipBoundary[j]; i < ChipBoundary[j+1]; i++)
 						{
-							int XBin = ChipStave[j]->GetXaxis()->FindBin(i);
+							//int XBin = ChipStave[j]->GetXaxis()->FindBin(i);
 							//AveOcc = Occupancy[i]/NPixels;
-							ChipStave[j]->Fill(XBin, Occupancy[i]);
+							//cout << "i = " << i << "   Occupancy = " << Occupancy[i] << endl;
+							ChipStave[j]->Fill(i, Occupancy[i]);
 						}
 					}
 

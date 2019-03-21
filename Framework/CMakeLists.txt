@@ -134,7 +134,7 @@ set(
   EXE_SRCS
   src/runInformationService.cxx
   src/runInformationServiceDump.cxx
-  src/runBasic.cxx
+#  src/runBasic.cxx
   src/runPrint.cxx
 #  src/runITSDPL.cxx
 #  src/runDummy.cxx
@@ -150,7 +150,7 @@ set(
   EXE_NAMES
   qcInfoService
   qcInfoServiceDump
-  qcRunBasic
+#  qcRunBasic
   qcRunPrint
 #  qcRunDPL
 #  qcRunDummy
