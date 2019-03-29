@@ -114,7 +114,6 @@ target_link_libraries(
     Boost::system
     $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
     $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL>
-    CURL::CURL
     ROOT::Gui
 )
 

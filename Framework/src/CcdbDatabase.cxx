@@ -102,8 +102,7 @@ std::string CcdbDatabase::retrieveJson(std::string taskName, std::string objectN
 
 void CcdbDatabase::disconnect()
 {
-  /* we're done with libcurl, so clean it up */
-  curl_global_cleanup();
+  // NOOP for CCDB
 }
 
 void CcdbDatabase::prepareTaskDataContainer(std::string taskName)
