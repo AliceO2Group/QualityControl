@@ -27,11 +27,11 @@ namespace repository
 {
 
 /*
- * Notes
+ * Notes (also concerning the underlying CcdbApi)
  * - having 1 file per object per version server-side might lead to a tremendous number of files.
  *    --> they are aware of it
  * - how to add a new filter ? such as expert/shifter flag
- * - we really need a C++ interface hiding the curl complexity.
+ *    --> new metadata
  * - what are those time intervals ? what does it mean for us ?
  *    --> epoch milliseconds as long values
  * - how to know the real time at which the object was stored ?
@@ -45,7 +45,6 @@ namespace repository
  *    --> doc has been udpated.
  * - initial tests show that it seems pretty slow.
  *    --> ok on their server with the new metadata database (postgresql)
- * - We need getListOfTasksWithPublications() and getPublishedObjectNames()
  * - Current path to objects : .../task/object with object possibly a slash separated subpath (up to 6 levels). Also
  * consider having a task name such as "TPC/Task1" such as to build a tree of tasks with subsystems prefix.
  *

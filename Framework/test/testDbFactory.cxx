@@ -14,7 +14,6 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
-#include "curl/curl.h"
 #include <boost/test/unit_test.hpp>
 #include <cassert>
 #include <iostream>
@@ -22,7 +21,6 @@
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/MonitorObject.h>
 #include <TH1F.h>
-#include <curl/curl.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/stat.h>
