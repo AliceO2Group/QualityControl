@@ -67,20 +67,10 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include "Framework/DeviceSpec.h"
 #include "DetectorsCommonDataFormats/DetID.h"
 #include "Framework/runDataProcessing.h"
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/DigitReaderSpec.h"
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/RecoWorkflow.h"
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/workflow/src/DigitReaderSpec.cxx"
-//#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/QCWorkFlow/include/ITSQCWorkflow/HisAnalyzerSpec.h"
-//#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/QCWorkFlow/src/HisAnalyzerSpec.cxx"
+#include "../../../O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/DigitReaderSpec.h"
+#include "../../../O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/RecoWorkflow.h"
+#include "../../../O2/Detectors/ITSMFT/ITS/workflow/src/DigitReaderSpec.cxx"
 
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/workflow/src/DummySpec.cxx"
-//#include "ITSDIGIRECOWorkflow/HisAnalyzerSpec.h"
-/*
-#include "/data/zhaozhong/alice/O2/Steer/DigitizerWorkflow/src/ITSMFTDigitizerSpec.h"
-#include "/data/zhaozhong/alice/O2/Steer/DigitizerWorkflow/src/ITSMFTDigitWriterSpec.h"
-#include "/data/zhaozhong/alice/O2/Steer/DigitizerWorkflow/src/ITSMFTDigitWriterSpec.cxx"
-#include "/data/zhaozhong/alice/O2/Steer/DigitizerWorkflow/src/ITSMFTDigitizerSpec.cxx"
-*/
 #include "DetectorsBase/GeometryManager.h"
 #include "ITSBase/GeometryTGeo.h"
 

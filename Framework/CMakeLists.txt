@@ -136,7 +136,7 @@ set(
   src/runInformationServiceDump.cxx
 #  src/runBasic.cxx
   src/runPrint.cxx
-#  src/runITSDPL.cxx
+  src/runITSDPL.cxx
 #  src/runDummy.cxx
 #  src/runDummiest.cxx
   src/runAdvanced.cxx
@@ -152,7 +152,7 @@ set(
   qcInfoServiceDump
 #  qcRunBasic
   qcRunPrint
-#  qcRunDPL
+  qcRunDPL
 #  qcRunDummy
 #  qcRunDummiest
   qcRunAdvanced

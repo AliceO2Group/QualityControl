@@ -8,7 +8,7 @@
 #include <TH1.h>
 
 #include "QualityControl/QcInfoLogger.h"
-#include "/data/zhaozhong/alice/QualityControl/Modules/ITSDPLQCTask/include/ITSDPLQCTask/ITSDPLQCTask.h"
+#include "ITSDPLQCTask/ITSDPLQCTask.h"
 
 #include <sstream>
 
@@ -20,14 +20,14 @@
 #include "FairRuntimeDb.h"
 #include "FairParRootFileIo.h"
 #include "FairSystemInfo.h"
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/ITS/QCWorkFlow/include/ITSQCWorkflow/HisAnalyzerSpec.h"
+//#include "ITSQCWorkflow/HisAnalyzerSpec.h"
 //#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/common/base/include/ITSMFTBase/GeometryTGeo.h"
 
 //#include "ITSSimulation/DigitizerTask.h"
 //#include "../include/ITSQCWorkflow/HisAnalyzerSpec.h"
 
 
-#include "/data/zhaozhong/alice/O2/Detectors/ITSMFT/common/reconstruction/include/ITSMFTReconstruction/DigitPixelReader.h"
+#include "ITSMFTReconstruction/DigitPixelReader.h"
 #include "DetectorsBase/GeometryManager.h"
 //#include "ITSBase/GeometryTGeo.h"
 #include <TCanvas.h>
@@ -35,7 +35,7 @@
 
 
 using o2::ITSMFT::Digit;
-using Segmentation = o2::ITSMFT::SegmentationAlpide;
+
 
 
 using namespace std;
@@ -62,7 +62,7 @@ namespace o2
 
 					NChipLay[i] = ChipBoundary[i + 1] - ChipBoundary[i];
 
-					ChipStave[i] = new TH2D(Form("ChipStaveLayer%d",i),Form("ChipStaveLayer%d",i),NChipLay[i],ChipBoundary[i],ChipBoundary[i+1],NEventMax,0,NEventMax);
+					ChipStave[i] = new TH2D(Form("ChipStaveLayer%d",i),Form("ChipStaveLayer%d",i),NChipLay[i],ChipBoundary[i],ChipBoundary[i+1],NEventMax[i],0,NEventMax[i]);
 					ChipStave[i]->GetXaxis ()->SetTitle ("Chip ID");
 					ChipStave[i]->GetYaxis ()->SetTitle ("Number of Hits");
 					ChipStave[i]->SetTitle (Form("Occupancy for ITS Layer %d",i));
@@ -96,7 +96,7 @@ namespace o2
 
 				for(int i = 0; i < NError; i++){
 					Error[i] = 12 - i;
-					ErrorPlots[i] = new TH1D(Form("ErrorPlot%d",i),Form("ErrorPlot%d",i),NError+1,0,NError);
+					ErrorPlots[i] = new TH1D(Form("ErrorPlot%d",i),Form("ErrorPlot%d",i),NError,0,NError);
 					ErrorPlots[i]->GetXaxis()->SetTitle("Error Type");
 					ErrorPlots[i]->GetYaxis()->SetTitle("Counts");
 					ErrorPlots[i]->SetTitle("Error Checked During Decoding");
@@ -112,6 +112,8 @@ namespace o2
 					}
 				}
 
+				HIGMAP[6]->SetMaximum(2);	
+				HIGMAP[6]->SetMinimum(0);	
 				cout << "Clear " << endl;
 				/*
 				   for(int i = 0 ; i < 24120; i++){	
@@ -183,6 +185,23 @@ namespace o2
 				   IndexNow = IndexNow + 1;
 				   }
 				   */
+				TCanvas * c2 = new TCanvas("c2","c2",600,600);
+				c2->cd();
+				TLegend* l = new TLegend(0.15,0.50,0.90,0.90);
+				for(int i =0; i< NError;i++){
+					cout << "i = " << i << "  Error Number = " << Error[i] << endl;
+					ErrorPlots[i]->SetBinContent(i+1,Error[i]);
+					ErrorPlots[i]->SetLineColor(i+1);
+					ErrorPlots[i]->SetFillColor(i+1);
+					if(i == 0) 	{
+						ErrorPlots[i]->Draw();
+					}
+					if(i > 0) 	ErrorPlots[i]->Draw("SAME");
+					l->AddEntry(ErrorPlots[i],ErrorType[i].Data());	
+					//getObjectsManager()->startPublishing(ErrorPlots[i]);	
+				}
+				l->Draw("SAME");
+				c2->SaveAs("ErrorChecker.png");
 
 
 				TCanvas *c = new TCanvas ("c", "c", 600, 600);
@@ -197,21 +216,22 @@ namespace o2
 				}
 				cout << "Plot Draw" << endl;
 
-				TH1D *Proj = new TH1D ("Proj", "CProj", NEventMax, 0, NEventMax);
-
+		
 				for(int j = 0; j < NLayer; j++){ 
 					for (int i = ChipBoundary[j]; i < ChipBoundary[j+1]; i++)
 					{
+						TH1D *Proj = new TH1D ("Proj", "CProj", NEventMax[j], 0, NEventMax[j]);
+
 						int XBin = ChipStave[j]->GetXaxis ()->FindBin (i);
-						ChipStave[j]->ProjectionY ("Proj", i, i);
+						ChipStave[j]->ProjectionY ("Proj", XBin, XBin);
 						//			cout << "Mean = " << Proj->GetMean () << endl;
 						//			cout << "RMS = " << Proj->GetRMS () << endl;
-						ChipProj[j]->SetBinContent (i, Proj->GetMean ());
-						ChipProj[j]->SetBinError (i, Proj->GetRMS () / Proj->Integral ());
+						ChipProj[j]->Fill (i, Proj->GetMean());
+						ChipProj[j]->SetBinError (XBin, Proj->GetRMS () / Proj->Integral ());
 					}
 					ChipProj[j]->SetMarkerStyle (22);
 					ChipProj[j]->SetMarkerSize (1.5);
-					ChipProj[j]->Draw ("ep");
+					ChipProj[j]->Draw ("p");
 					c->SaveAs(Form("OccupancyProj%d.png",j));
 				}
 				fout = new TFile("Hist.root","RECREATE");
@@ -246,38 +266,22 @@ namespace o2
 					c1->SaveAs(Form("HIGMAPStave%d.png",j+1));
 				}
 
-				TCanvas * c2 = new TCanvas("c2","c2",600,600);
-				c2->cd();
-
-				TLegend* l = new TLegend(0.15,0.50,0.90,0.90);
-				for(int i =0; i< NError;i++){
-					cout << "i = " << i << "  Error Number = " << Error[i] << endl;
-					ErrorPlots[i]->SetBinContent(i,Error[i]);
-					ErrorPlots[i]->SetLineColor(i+1);
-					ErrorPlots[i]->SetFillColor(i+1);
-					if(i == 0) 	{
-							ErrorPlots[i]->Draw();
-					}
-					if(i > 0) 	ErrorPlots[i]->Draw("SAME");
-					l->AddEntry(ErrorPlots[i],ErrorType[i].Data());	
-					getObjectsManager()->startPublishing(ErrorPlots[i]);	
-				}
-				l->Draw("SAME");
-				c2->SaveAs("ErrorChecker.png");
+	
 
 
-				for(int i = 0; i < NLayer; i++){
+				for(int i = 2; i < 3; i++){
 
 					getObjectsManager()->startPublishing(ChipProj[i]);
-				}
-				getObjectsManager()->startPublishing(ChipStave[4]);	
-				getObjectsManager()->startPublishing(LayEtaPhi[4]);
-				getObjectsManager()->startPublishing(LayChipStave[4]);
+					getObjectsManager()->startPublishing(ChipStave[i]);	
+					getObjectsManager()->startPublishing(LayEtaPhi[i]);
+					getObjectsManager()->startPublishing(LayChipStave[i]);
 
-			
+
+				}
+
 				mHistogram = new TH1F("example", "example", 20, 0, 30000);
 				//	getObjectsManager()->addCheck(mHistogram, "checkFromITSDPLQCTask", "o2::quality_control_modules::itsdplqctask::ITSDPLQCTaskCheck",	"QcITSDPLQCTask");
-			//getObjectsManager()->addCheck(ChipStave, "checkFromITSDPLQCTask", "o2::quality_control_modules::itsdplqctask::ITSDPLQCTaskCheck",	"QcITSDPLQCTask");
+				//getObjectsManager()->addCheck(ChipStave, "checkFromITSDPLQCTask", "o2::quality_control_modules::itsdplqctask::ITSDPLQCTaskCheck",	"QcITSDPLQCTask");
 
 			}
 
@@ -385,7 +389,7 @@ namespace o2
 					Error[8] = Error[8]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrNoDataForActiveLane];
 					Error[9] = Error[9]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrIBChipLaneMismatch];
 					Error[10] = Error[10]  + (int)statRU.errorCounts[o2::ITSMFT::RUDecodingStat::ErrCableDataHeadWrong];
-					
+
 
 
 					gm->getChipId (ChipID, lay, sta, ssta, mod, chip);
@@ -405,6 +409,7 @@ namespace o2
 						eta = glo.eta();
 						phi = glo.phi();
 						Occupancy[ChipID] = Occupancy[ChipID] + ActPix;
+						ChipStave[lay]->Fill(ChipID, ActPix);
 
 						LayEtaPhi[lay]->Fill(eta,phi,ActPix);
 						LayChipStave[lay]->Fill(ChipNumber,sta,ActPix);
@@ -422,18 +427,20 @@ namespace o2
 				}
 				cout << "Start Filling" << endl;
 
-					for(int j = 0; j < NLayer; j++){ 
-						for (int i = ChipBoundary[j]; i < ChipBoundary[j+1]; i++)
-						{
-							//int XBin = ChipStave[j]->GetXaxis()->FindBin(i);
-							//AveOcc = Occupancy[i]/NPixels;
-							//cout << "i = " << i << "   Occupancy = " << Occupancy[i] << endl;
-							ChipStave[j]->Fill(i, Occupancy[i]);
-						}
+				/*
+				for(int j = 0; j < NLayer; j++){ 
+					for (int i = ChipBoundary[j]; i < ChipBoundary[j+1]; i++)
+					{
+						//int XBin = ChipStave[j]->GetXaxis()->FindBin(i);
+						//AveOcc = Occupancy[i]/NPixels;
+						cout << "i = " << i << "   Occupancy = " << Occupancy[i] << endl;
+											ChipStave[lay]->Fill(i, Occupancy[i]);
+
 					}
-
+				}
+				*/
 			}
-
+		
 
 			void ITSDPLQCTask::endOfCycle()
 			{
