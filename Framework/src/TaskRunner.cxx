@@ -25,6 +25,7 @@
 #include "Framework/RawDeviceService.h"
 #include "Framework/DataSampling.h"
 #include "Framework/CallbackService.h"
+#include "Framework/DataSamplingPolicy.h"
 #include "Monitoring/MonitoringFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -41,25 +42,23 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace std::chrono;
 
-TaskRunner::TaskRunner(std::string taskName, std::string configurationSource, size_t id)
+TaskRunner::TaskRunner(const std::string &taskName, const std::string &configurationSource, size_t id)
   : mTaskName(taskName),
+    mMonitorObjectsSpec({"mo"}, createTaskDataOrigin(), createTaskDataDescription(taskName), id),
+    mTask(nullptr),
     mNumberBlocks(0),
-    mTotalNumberObjectsPublished(0),
+    mResetAfterPublish(false),
     mLastNumberObjects(0),
     mCycleOn(false),
     mCycleNumber(0),
-    mMonitorObjectsSpec({"mo"}, createTaskDataOrigin(), createTaskDataDescription(taskName), id),
-    mResetAfterPublish(false),
-    mTask(nullptr)
+    mTotalNumberObjectsPublished(0)
 {
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   populateConfig(mTaskName);
 }
 
-TaskRunner::~TaskRunner()
-{
-}
+TaskRunner::~TaskRunner() = default;
 
 void TaskRunner::initCallback(InitContext& iCtx)
 {
@@ -182,11 +181,38 @@ void TaskRunner::populateConfig(std::string taskName)
     mTaskConfig.cycleDurationSeconds = taskConfigTree->second.get<int>("cycleDurationSeconds", 10);
     mTaskConfig.maxNumberCycles = taskConfigTree->second.get<int>("maxNumberCycles", -1);
 
-    std::string policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
-    if (policiesFilePath.empty()) {
-      mInputSpecs = framework::DataSampling::InputSpecsForPolicy(mConfigFile.get(), taskConfigTree->second.get<std::string>("dataSamplingPolicy"));
+    auto policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
+    ConfigurationInterface* config = policiesFilePath.empty() ? mConfigFile.get() : ConfigurationFactory::getConfiguration(policiesFilePath).get();
+    auto policiesTree = config->getRecursive("dataSamplingPolicies");
+    auto dataSourceTree = taskConfigTree->second.get_child("dataSource");
+    std::string type = dataSourceTree.get<std::string>("type");
+
+    if(type == "dataSamplingPolicy") {
+      auto policyName = dataSourceTree.get<std::string>("name");
+      LOG(INFO) << "policyName : " << policyName;
+      mInputSpecs = framework::DataSampling::InputSpecsForPolicy(config, policyName);
+    } else if (type == "direct") {
+
+      auto subSpecString = dataSourceTree.get<std::string>("subSpec");
+      LOG(INFO) << "subSpecString : " << subSpecString;
+      auto subSpec = std::strtoull(subSpecString.c_str(), nullptr, 10);
+
+      header::DataOrigin origin;
+      header::DataDescription description;
+      origin.runtimeInit(dataSourceTree.get<std::string>("dataOrigin").c_str());
+      description.runtimeInit(dataSourceTree.get<std::string>("dataDescription").c_str());
+
+      mInputSpecs.push_back(
+        InputSpec{
+          dataSourceTree.get<std::string>("binding"),
+          origin,
+          description,
+          subSpec
+        });
+
     } else {
-      mInputSpecs = framework::DataSampling::InputSpecsForPolicy(policiesFilePath, taskConfigTree->second.get<std::string>("dataSamplingPolicy"));
+      std::string message = std::string("Configuration error : dataSource type unknown : ")+type; // TODO pass this message to the exception
+      throw AliceO2::Common::FatalException();
     }
 
   } catch (...) { // catch already here the configuration exception and print it

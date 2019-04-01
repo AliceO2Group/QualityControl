@@ -20,7 +20,14 @@
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "dataSamplingPolicy": "its-raw",
+        "dataSource": {
+          "type": "direct",
+          "binding": "its-rawdata",
+          "dataOrigin": "ITS",
+          "dataDescription": "RAWDATA",
+          "subSpec": "0",
+          "name": "its-raw"
+        },
         "taskParameters": {
           "nothing": "rien"
         },
