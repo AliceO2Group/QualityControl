@@ -15,7 +15,7 @@
 #include "Rtypes.h"		// for Digitizer::Class, Double_t, ClassDef, etc
 #include "TObject.h"		// for TObject
 #include "FairTask.h"
-
+#include "TPaveText.h"
 
 
 
@@ -105,20 +105,25 @@ namespace o2
 				const int NLay1 = 108;
 				double Occupancy[24120];
 				static constexpr int NLayer = 7;
-				const int NEventMax[NLayer] = {50,50,50,100,100,150,150};
+				const int NEventMax[NLayer] = {150,150,150,150,150,150,150};
 
 				int ChipBoundary[NLayer + 1] ={0,108,252,432,3120,6480,14712,24120}; 
 				int NChipLay[NLayer];
-
+				int NColStave[NLayer];
+				UShort_t row;
+				UShort_t col; 
 				int lay, sta, ssta, mod, chip;
-				TH2D * ChipStave[NLayer]; 
-				TH1D * ChipProj[NLayer];
+			//	TH2D * ChipStave[NLayer]; 
+				TH1D * OccupancyPlot[NLayer];
 				TH2D * LayEtaPhi[NLayer]; 
 				TH2D * LayChipStave[NLayer]; 
-
 				const int NStaves[NLayer] = {12,16,20,24,30,42,48};
 				int NStaveChip[NLayer];
 				TH2D * HIGMAP[9];
+				TH2D * Lay1HIG[12];
+				TH2D * HIGMAP6[18];
+				int ChipIndex6;
+				
 				void swapColumnBuffers()
 				{
 					int* tmp = mCurr;
@@ -132,7 +137,8 @@ namespace o2
 
 				}
 				Int_t mIdx = 0;
-				const std::string inpName = "rawits.bin";
+				//const std::string inpName = "rawits.bin";
+				const std::string inpName = "thrscan3_nchips8_ninj25_chrange0-50_rows512.raw";
 
 				o2::ITS::GeometryTGeo * gm = o2::ITS::GeometryTGeo::Instance();
 				double AveOcc;
@@ -149,12 +155,16 @@ namespace o2
 				const int NSta1 = NLay1/NChipsSta;
 				double eta;
 				double phi;
-				static constexpr int  NError = 11;
-				int Error[NError];
-				TH1D * ErrorPlots[NError];
-				TString ErrorType[NError] ={"ErrGarbageAfterPayload","ErrPageCounterDiscontinuity","ErrRDHvsGBTHPageCnt","ErrMissingGBTHeader","ErrMissingGBTTrailer","ErrNonZeroPageAfterStop","ErrUnstoppedLanes","ErrDataForStoppedLane","ErrNoDataForActiveLane","ErrIBChipLaneMismatch","ErrCableDataHeadWrong"};
+				static constexpr int  NError = 10;
+				unsigned int Error[NError];
+				double ErrorMax;
+				TPaveText *pt[NError];
+				TH1D * ErrorPlots = new TH1D("ErrorPlots","ErrorPlots",NError,0,NError);
+				//			TString ErrorType[NError] ={"ErrGarbageAfterPayload","ErrPageCounterDiscontinuity","ErrRDHvsGBTHPageCnt","ErrMissingGBTHeader","ErrMissingGBTTrailer","ErrNonZeroPageAfterStop","ErrUnstoppedLanes","ErrDataForStoppedLane","ErrNoDataForActiveLane","ErrIBChipLaneMismatch","ErrCableDataHeadWrong"};
+				TString ErrorType[NError] ={"Error ID 1: ErrPageCounterDiscontinuity","Error ID 1: ErrRDHvsGBTHPageCnt","Error ID 2: ErrMissingGBTHeader","Error ID 3: ErrMissingGBTTrailer","Error ID 4: ErrNonZeroPageAfterStop","Error ID 5: ErrUnstoppedLanes","Error ID 6: ErrDataForStoppedLane","Error ID 7: ErrNoDataForActiveLane","Error ID 8: ErrIBChipLaneMismatch","Error ID 9: ErrCableDataHeadWrong"};
+				TH2D * ChipStave = new TH2D("ChipStaveCheck","ChipStaveCheck",9,0,9,100,0,1500);
 			};
-
+				
 
 		} // namespace itsdplqctask
 	} // namespace quality_control_modules
