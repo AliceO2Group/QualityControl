@@ -95,13 +95,12 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   specs.push_back(producer);
 
-  const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/basic.json";
+  std::string filename = !noDS ? "basic.json" : "basic-no-sampling.json";
+  const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/" + filename;
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
   // Generation of Data Sampling infrastructure
-  if(!noDS) {
-    DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
-  }
+  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
   // Generation of the QC topology (one task, one checker in this case)
   quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);

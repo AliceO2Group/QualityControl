@@ -21,8 +21,11 @@
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "its-raw"
+          "type": "direct",
+          "binding": "its-rawdata",
+          "dataOrigin": "ITS",
+          "dataDescription": "RAWDATA",
+          "subSpec": "0"
         },
         "taskParameters": {
           "nothing": "rien"
@@ -32,26 +35,6 @@
     }
   },
   "dataSamplingPolicies": [
-    {
-      "id": "its-raw",
-      "active": "true",
-      "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "random",
-          "dataOrigin": "ITS",
-          "dataDescription": "RAWDATA"
-        }
-      ],
-      "subSpec": "0",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "0.1",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    }
+
   ]
 }
