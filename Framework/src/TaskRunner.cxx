@@ -42,9 +42,9 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace std::chrono;
 
-TaskRunner::TaskRunner(const std::string &taskName, const std::string &configurationSource, size_t id)
+TaskRunner::TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id)
   : mTaskName(taskName),
-    mMonitorObjectsSpec({"mo"}, createTaskDataOrigin(), createTaskDataDescription(taskName), id),
+    mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id),
     mTask(nullptr),
     mNumberBlocks(0),
     mResetAfterPublish(false),
@@ -187,7 +187,7 @@ void TaskRunner::populateConfig(std::string taskName)
     auto dataSourceTree = taskConfigTree->second.get_child("dataSource");
     std::string type = dataSourceTree.get<std::string>("type");
 
-    if(type == "dataSamplingPolicy") {
+    if (type == "dataSamplingPolicy") {
       auto policyName = dataSourceTree.get<std::string>("name");
       LOG(INFO) << "policyName : " << policyName;
       mInputSpecs = framework::DataSampling::InputSpecsForPolicy(config, policyName);
@@ -207,11 +207,10 @@ void TaskRunner::populateConfig(std::string taskName)
           dataSourceTree.get<std::string>("binding"),
           origin,
           description,
-          subSpec
-        });
+          subSpec });
 
     } else {
-      std::string message = std::string("Configuration error : dataSource type unknown : ")+type; // TODO pass this message to the exception
+      std::string message = std::string("Configuration error : dataSource type unknown : ") + type; // TODO pass this message to the exception
       throw AliceO2::Common::FatalException();
     }
 

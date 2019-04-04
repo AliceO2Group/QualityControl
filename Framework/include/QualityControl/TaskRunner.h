@@ -68,7 +68,7 @@ class TaskRunner
   /// \param taskName - name of the task, which exists in tasks list in the configuration file
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
   /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
-  TaskRunner(const std::string &taskName, const std::string &configurationSource, size_t id = 0);
+  TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id = 0);
   ~TaskRunner();
 
   /// \brief To be invoked during initialization of Data Processor
