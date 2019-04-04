@@ -91,7 +91,7 @@ install(
 add_library(QualityControl SHARED ${SRCS} QualityControlDict.cxx)
 
 add_library( libDetectorsBase SHARED IMPORTED )
-set_target_properties( libDetectorsBase  PROPERTIES IMPORTED_LOCATION /data/zhaozhong/alice/sw/slc7_x86-64/O2/1.0.0-1/lib/libDetectorsBase.so )
+set_target_properties( libDetectorsBase  PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../sw/slc7_x86-64/O2/1.0.0-1/lib/libDetectorsBase.so )
 
 
 target_include_directories(

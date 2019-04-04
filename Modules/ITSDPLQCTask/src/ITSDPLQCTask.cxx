@@ -100,7 +100,8 @@ namespace o2
 
 				for(int j = 0; j < 1; j++){
 					for(int i = 0; i< NStaves[j]; i++){
-						Lay1HIG[i] = new TH2D(Form("HICMAPLay%dStave%d",j,i),Form("HICMAPLay%dStave%d",j,i),100,0,NColHis*NStaveChip[i] ,100,0,NRowHis);
+				//		Lay1HIG[i] = new TH2D(Form("HICMAPLay%dStave%d",j,i),Form("HICMAPLay%dStave%d",j,i),NColHis*NStaveChip[j],0,NColHis*NStaveChip[j],NRowHis,0,NRowHis);
+						Lay1HIG[i] = new TH2D(Form("HICMAPLay%dStave%d",j,i),Form("HICMAPLay%dStave%d",j,i),100,0,NColHis*NStaveChip[j],100,0,NRowHis);
 						Lay1HIG[i]->GetXaxis()->SetTitle("Column");
 						Lay1HIG[i]->GetYaxis()->SetTitle("Row");
 						Lay1HIG[i]->GetYaxis()->SetTitleOffset(1.10);
@@ -113,10 +114,11 @@ namespace o2
 				ErrorPlots->GetYaxis()->SetTitle("Counts");
 				ErrorPlots->SetTitle("Error Checked During Decoding");
 				ErrorPlots->SetMinimum(0);
-
+				cout << "DONE 1" << endl;
 				for(int j = 0; j < 1; j++){
 					for(int i = 0; i < NStaveChip[j]; i++){
-						HIGMAP[i]	= new TH2D(Form("HIGMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),100,0,NColHis,100,0,NRowHis);
+				//		HIGMAP[i]	= new TH2D(Form("HIGMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),NColHis,0,NColHis,NRowHis,0,NRowHis);
+						HIGMAP[i]	= new TH2D(Form("HIGMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),NColHis,0,NColHis,NRowHis,0,NRowHis);
 						HIGMAP[i]->GetXaxis()->SetTitle("Column");
 						HIGMAP[i]->GetYaxis()->SetTitle("Row");
 						HIGMAP[i]->GetYaxis()->SetTitleOffset(1.10);
@@ -124,9 +126,11 @@ namespace o2
 						HIGMAP[i]->SetTitle(Form("Hits on Pixel of Stave 1 for Chip Number % d on Layer %d",i,j));
 					}
 				}
+				cout << "DONE 2" << endl;
 
 				for(int j = 6; j < 7; j++){
 					for(int i = 0; i < 18; i++){
+				//		HIGMAP6[i]	= new TH2D(Form("HIGMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),NColHis*11,0,NColHis*11,NRowHis,0,NRowHis);
 						HIGMAP6[i]	= new TH2D(Form("HIGMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),100,0,NColHis*11,100,0,NRowHis);
 						HIGMAP6[i]->GetXaxis()->SetTitle("Column");
 						HIGMAP6[i]->GetYaxis()->SetTitle("Row");
@@ -135,6 +139,7 @@ namespace o2
 						HIGMAP6[i]->SetTitle(Form("Hits on Pixel of Stave 1 for Chip Sector Number % d on Layer %d",i,j));
 					}
 				}
+				cout << "DONE 3" << endl;
 
 				HIGMAP[6]->SetMaximum(2);	
 				HIGMAP[6]->SetMinimum(0);	
@@ -171,7 +176,7 @@ namespace o2
 				const Int_t numOfChips = geom->getNumberOfChips ();
 				cout << "numOfChips = " << numOfChips << endl;
 				setNChips (numOfChips);
-				cout << "START LOOPING BR	getObjectsManager()->startPublishingO" << endl;
+				cout << "START LOOPING BR getObjectsManager()->startPublishingO" << endl;
 				mReaderRaw.openInput (inpName);
 				mReaderRaw.setPadding128(true);
 				mReaderRaw.setVerbosity(0);
@@ -220,8 +225,8 @@ namespace o2
 				c2->SaveAs("ErrorChecker.png");
 				getObjectsManager()->startPublishing(ErrorPlots);
 
-				
-				TCanvas *c = new TCanvas ("c", "c", 600, 600);
+
+				TCanvas *c = new TCanvas ("c", "c", 600, 600);				
 				c->cd ();
 
 				/*
@@ -253,7 +258,7 @@ namespace o2
 				c->SaveAs(Form("OccupancyProj%d.png",j));
 				}
 				*/
-				c->SetLogy();	
+				//c->SetLogy();	
 				for(int j = 0; j < NLayer; j++){ 
 					OccupancyPlot[j]->SetMarkerStyle (22);
 					OccupancyPlot[j]->SetMarkerSize (1.5);
@@ -290,7 +295,9 @@ namespace o2
 					for(int i = 0; i < NStaveChip[j]; i++){
 						c1->cd(i+1);
 						HIGMAP[i]->GetZaxis()->SetTitle("Number of Hits");
+						HIGMAP[i]->GetXaxis()->SetNdivisions(-32);
 						HIGMAP[i]->Draw("COLZ");
+						ReverseYAxis(HIGMAP[i]);
 						getObjectsManager()->startPublishing(HIGMAP[i]);
 					}
 					c1->SaveAs(Form("HIGMAPStave%d.png",j+1));
@@ -298,12 +305,21 @@ namespace o2
 
 				TCanvas *c6 = new TCanvas ("c6", "c6", 600, 600);
 
+				HIGMAP[0]->GetXaxis()->SetNdivisions(-32);
+				HIGMAP[0]->Draw("COLZ");
+				ReverseYAxis(HIGMAP[0]);
+				c6->SaveAs("HIGCheck1.png");
+
+				
 				for(int j = 0; j < 1; j++){
 					c6->Divide(3,4);
 					for(int i = 0; i < NStaves[j]; i++){
 						c6->cd(i+1);
 						Lay1HIG[i]->GetZaxis()->SetTitle("Number of Hits");
+						Lay1HIG[i]->GetXaxis()->SetNdivisions(-32);
+
 						Lay1HIG[i]->Draw("COLZ");
+						ReverseYAxis(Lay1HIG[i]);
 						getObjectsManager()->startPublishing(Lay1HIG[i]);
 					}
 					c6->SaveAs(Form("HIGMAPLay%d.png",j+1));
@@ -315,12 +331,16 @@ namespace o2
 				TCanvas *c3 = new TCanvas ("c3", "c3", 3600, 7200);
 
 
+
 				for(int j = 6; j < 7; j++){
 					c3->Divide(3,6);
 					for(int i = 0; i < 18; i++){
 						c3->cd(i+1);
 						HIGMAP6[i]->GetZaxis()->SetTitle("Number of Hits");
+						HIGMAP6[i]->GetXaxis()->SetNdivisions(-32);
+				
 						HIGMAP6[i]->Draw("COLZ");
+						ReverseYAxis(HIGMAP6[i]);	
 						getObjectsManager()->startPublishing(HIGMAP6[i]);
 					}
 					c3->SaveAs(Form("HIGMAPStave%d.png",j+1));
@@ -423,11 +443,13 @@ namespace o2
 
 				cout << "START PROCESSING" << endl;
 
-
+				int Index = 0;
+				int IndexMax = -1;
 
 				cout << "START MCHIPDATA" << endl;
 				while ((mChipData = reader.getNextChipData (mChips)))
 				{
+					if(Index < IndexMax) break;
 					//      cout << "ChipID Before = " << ChipID << endl; 
 					ChipID = mChipData->getChipID ();
 					mReaderRaw.getMapping().getChipInfoSW( ChipID, chipInfo );
@@ -476,7 +498,7 @@ namespace o2
 								row = pix.getRow();
 								col = pix.getCol();
 								if(row > 0 && col > 0) HIGMAP[ChipID]->Fill(col,row);
-						
+
 							}	
 						}
 
@@ -487,7 +509,7 @@ namespace o2
 								row = pix.getRow();
 								col = pix.getCol() + NColHis * ChipNumber;
 								if(row > 0 && col > 0) Lay1HIG[sta]->Fill(col,row);
-						
+
 							}	
 						}
 
@@ -508,7 +530,7 @@ namespace o2
 						}
 
 					}
-
+					Index = Index + 1;
 				}
 				cout << "Start Filling" << endl;
 
@@ -525,6 +547,46 @@ namespace o2
 				}
 				*/
 			}
+
+			void ITSDPLQCTask::ReverseXAxis(TH1 *h)
+			{
+				// Remove the current axis
+				h->GetXaxis()->SetLabelOffset(999);
+				h->GetXaxis()->SetTickLength(0);
+				// Redraw the new axis
+				gPad->Update();
+				TGaxis *newaxis = new TGaxis(gPad->GetUxmax(),
+						gPad->GetUymin(),
+						gPad->GetUxmin(),
+						gPad->GetUymin(),
+						h->GetXaxis()->GetXmin(),
+						h->GetXaxis()->GetXmax(),
+						510,"-");
+				newaxis->SetLabelOffset(-0.03);
+				newaxis->Draw();
+			}
+			void ITSDPLQCTask::ReverseYAxis(TH1 *h)
+			{
+				// Remove the current axis
+				h->GetYaxis()->SetLabelOffset(999);
+				h->GetYaxis()->SetTickLength(0);
+
+				// Redraw the new axis
+				gPad->Update();
+				TGaxis *newaxis = new TGaxis(gPad->GetUxmin(),
+						gPad->GetUymax(),
+						gPad->GetUxmin()-0.001,
+						gPad->GetUymin(),
+						h->GetYaxis()->GetXmin(),
+						h->GetYaxis()->GetXmax(),
+						16,"N");
+
+				newaxis->SetLabelOffset(-0.03);
+				newaxis->Draw();
+			
+			}
+
+
 
 
 			void ITSDPLQCTask::endOfCycle()

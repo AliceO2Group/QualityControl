@@ -16,7 +16,7 @@
 #include "TObject.h"		// for TObject
 #include "FairTask.h"
 #include "TPaveText.h"
-
+#include "TGaxis.h"
 
 
 
@@ -80,6 +80,8 @@ namespace o2
 					mChips.resize(n);
 					mChipsOld.resize(n);
 				}
+				void ReverseXAxis(TH1 *h);
+				void ReverseYAxis(TH1 *h);
 
 
 
