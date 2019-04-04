@@ -20,7 +20,10 @@
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "dataSamplingPolicy": "tst2",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst2"
+        },
         "location": "local",
         "machines": [
           "o2flptst1",
@@ -34,7 +37,10 @@
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "dataSamplingPolicy": "tst1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst1"
+        },
         "location": "remote"
       }
     }

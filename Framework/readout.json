@@ -20,7 +20,10 @@
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "dataSamplingPolicy": "readout",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "readout"
+        },
         "location": "remote"
       }
     }
