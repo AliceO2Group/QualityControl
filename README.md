@@ -227,7 +227,10 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
     "tasks": {
       "QcTask": {
         ...
-        "dataSamplingPolicy": "its-raw",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "its-raw"
+        },
         ...
       }
     }
@@ -259,6 +262,35 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
 ```
 
 An example of using the data sampling in a DPL workflow is visible in [runAdvanced.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/runAdvanced.cxx).
+
+### Bypassing the Data Sampling
+
+In case one needs to sample at a very high rate, or even monitor 100% of the data, the Data Sampling can be omitted altogether. As a result the task is connected directly to the the Device producing the data to be monitored. To do so, change the _dataSource's_ type in the config file from `dataSamplingPolicy` to `direct`. In addition, add the information about the type of data that is expected (dataOrigin, binding, etc...) and remove the dataSamplingPolicies :  
+
+```json
+{
+  "qc": {
+    ...
+    "tasks": {
+      "QcTask": {
+        ...
+        "dataSource": {
+          "type": "direct",
+          "binding": "its-rawdata",
+          "dataOrigin": "ITS",
+          "dataDescription": "RAWDATA",
+          "subSpec": "0"
+        },
+        ...
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+  ]
+}
+```
+
+The file `basic-no-sampling.json` is provided as an example. To test it, you can run `qcRunBasic` with the option `--no-data-sampling` (it makes it use this config file instead of `basic.json`).
 
 ## Code Organization
 
