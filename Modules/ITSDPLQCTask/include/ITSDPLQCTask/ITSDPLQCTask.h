@@ -80,7 +80,7 @@ namespace o2
 					mChips.resize(n);
 					mChipsOld.resize(n);
 				}
-				void ReverseXAxis(TH1 *h);
+				void ConfirmXAxis(TH1 *h);
 				void ReverseYAxis(TH1 *h);
 
 
@@ -102,7 +102,12 @@ namespace o2
 				static constexpr int   NRows = 512;
 				const int NColHis = 1024;
 				const int NRowHis = 512;
+				int XTicks;
+				int YTicks;
 
+				int DivisionXStep = 16;
+
+				int DivisionYStep = 32;
 				static constexpr int   NPixels = NRows*NCols;
 				const int NLay1 = 108;
 				double Occupancy[24120];

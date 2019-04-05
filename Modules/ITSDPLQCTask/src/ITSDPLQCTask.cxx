@@ -118,7 +118,7 @@ namespace o2
 				for(int j = 0; j < 1; j++){
 					for(int i = 0; i < NStaveChip[j]; i++){
 				//		HIGMAP[i]	= new TH2D(Form("HIGMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),NColHis,0,NColHis,NRowHis,0,NRowHis);
-						HIGMAP[i]	= new TH2D(Form("HIGMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),NColHis,0,NColHis,NRowHis,0,NRowHis);
+						HIGMAP[i]	= new TH2D(Form("HIGMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),100,0,NColHis,100,0,NRowHis);
 						HIGMAP[i]->GetXaxis()->SetTitle("Column");
 						HIGMAP[i]->GetYaxis()->SetTitle("Row");
 						HIGMAP[i]->GetYaxis()->SetTitleOffset(1.10);
@@ -296,7 +296,11 @@ namespace o2
 						c1->cd(i+1);
 						HIGMAP[i]->GetZaxis()->SetTitle("Number of Hits");
 						HIGMAP[i]->GetXaxis()->SetNdivisions(-32);
+					    TAxis* a = HIGMAP[i]->GetXaxis();
+						a->SetNdivisions(-32);
+						HIGMAP[i]->GetListOfFunctions()->Add(a);
 						HIGMAP[i]->Draw("COLZ");
+						ConfirmXAxis(HIGMAP[i]);
 						ReverseYAxis(HIGMAP[i]);
 						getObjectsManager()->startPublishing(HIGMAP[i]);
 					}
@@ -309,16 +313,18 @@ namespace o2
 				HIGMAP[0]->Draw("COLZ");
 				ReverseYAxis(HIGMAP[0]);
 				c6->SaveAs("HIGCheck1.png");
-
-				
+			
 				for(int j = 0; j < 1; j++){
 					c6->Divide(3,4);
 					for(int i = 0; i < NStaves[j]; i++){
 						c6->cd(i+1);
 						Lay1HIG[i]->GetZaxis()->SetTitle("Number of Hits");
 						Lay1HIG[i]->GetXaxis()->SetNdivisions(-32);
-
+						TAxis* a = Lay1HIG[i]->GetXaxis();
+						a->SetNdivisions(-32);
+						Lay1HIG[i]->GetListOfFunctions()->Add(a);
 						Lay1HIG[i]->Draw("COLZ");
+						ConfirmXAxis(Lay1HIG[i]);
 						ReverseYAxis(Lay1HIG[i]);
 						getObjectsManager()->startPublishing(Lay1HIG[i]);
 					}
@@ -338,8 +344,11 @@ namespace o2
 						c3->cd(i+1);
 						HIGMAP6[i]->GetZaxis()->SetTitle("Number of Hits");
 						HIGMAP6[i]->GetXaxis()->SetNdivisions(-32);
-				
+						TAxis* a = HIGMAP6[i]->GetXaxis();
+						a->SetNdivisions(-32);
+						HIGMAP6[i]->GetListOfFunctions()->Add(a);	
 						HIGMAP6[i]->Draw("COLZ");
+						ConfirmXAxis(HIGMAP6[i]);
 						ReverseYAxis(HIGMAP6[i]);	
 						getObjectsManager()->startPublishing(HIGMAP6[i]);
 					}
@@ -444,12 +453,12 @@ namespace o2
 				cout << "START PROCESSING" << endl;
 
 				int Index = 0;
-				int IndexMax = -1;
+				int IndexMax = 100000;
 
 				cout << "START MCHIPDATA" << endl;
 				while ((mChipData = reader.getNextChipData (mChips)))
 				{
-					if(Index < IndexMax) break;
+					if(Index > IndexMax) break;
 					//      cout << "ChipID Before = " << ChipID << endl; 
 					ChipID = mChipData->getChipID ();
 					mReaderRaw.getMapping().getChipInfoSW( ChipID, chipInfo );
@@ -492,7 +501,7 @@ namespace o2
 						LayEtaPhi[lay]->Fill(eta,phi,ActPix);
 						LayChipStave[lay]->Fill(ChipNumber,sta,ActPix);
 						if(sta == 0  && ChipID < NLay1){
-							//cout << "ChipID in Stave 0 = " << ChipID << endl; 
+							//cout << "ChipID in Stave 0/data/zhaozhong/aliceTest/sw/BUILD/QualityControl-latest/QualityControl = " << ChipID << endl; 
 							for(int ip = 0; ip < ActPix; ip++){
 								const auto pix = mChipData->getData()[ip];
 								row = pix.getRow();
@@ -548,22 +557,25 @@ namespace o2
 				*/
 			}
 
-			void ITSDPLQCTask::ReverseXAxis(TH1 *h)
+			void ITSDPLQCTask::ConfirmXAxis(TH1 *h)
 			{
 				// Remove the current axis
 				h->GetXaxis()->SetLabelOffset(999);
 				h->GetXaxis()->SetTickLength(0);
 				// Redraw the new axis
 				gPad->Update();
-				TGaxis *newaxis = new TGaxis(gPad->GetUxmax(),
+				XTicks = (h->GetYaxis()->GetXmax()-h->GetYaxis()->GetXmin())/DivisionXStep;
+				
+				TGaxis *newaxis = new TGaxis(gPad->GetUxmin(),
 						gPad->GetUymin(),
-						gPad->GetUxmin(),
+						gPad->GetUxmax(),
 						gPad->GetUymin(),
 						h->GetXaxis()->GetXmin(),
 						h->GetXaxis()->GetXmax(),
-						510,"-");
-				newaxis->SetLabelOffset(-0.03);
+						XTicks,"N");
+				newaxis->SetLabelOffset(0.0);
 				newaxis->Draw();
+				h->GetListOfFunctions()->Add(newaxis);	
 			}
 			void ITSDPLQCTask::ReverseYAxis(TH1 *h)
 			{
@@ -573,16 +585,19 @@ namespace o2
 
 				// Redraw the new axis
 				gPad->Update();
+
+				YTicks = (h->GetYaxis()->GetXmax()-h->GetYaxis()->GetXmin())/DivisionYStep;
 				TGaxis *newaxis = new TGaxis(gPad->GetUxmin(),
 						gPad->GetUymax(),
 						gPad->GetUxmin()-0.001,
 						gPad->GetUymin(),
 						h->GetYaxis()->GetXmin(),
 						h->GetYaxis()->GetXmax(),
-						16,"N");
+						YTicks,"N");
 
-				newaxis->SetLabelOffset(-0.03);
+				newaxis->SetLabelOffset(0);
 				newaxis->Draw();
+				h->GetListOfFunctions()->Add(newaxis);
 			
 			}
 
