@@ -194,7 +194,6 @@ void TaskRunner::populateConfig(std::string taskName)
     } else if (type == "direct") {
 
       auto subSpecString = dataSourceTree.get<std::string>("subSpec");
-      LOG(INFO) << "subSpecString : " << subSpecString;
       auto subSpec = std::strtoull(subSpecString.c_str(), nullptr, 10);
 
       header::DataOrigin origin;
@@ -211,7 +210,7 @@ void TaskRunner::populateConfig(std::string taskName)
 
     } else {
       std::string message = std::string("Configuration error : dataSource type unknown : ") + type; // TODO pass this message to the exception
-      throw AliceO2::Common::FatalException();
+      BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
     }
 
   } catch (...) { // catch already here the configuration exception and print it
