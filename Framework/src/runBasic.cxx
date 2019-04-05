@@ -35,6 +35,7 @@
 
 #include "Framework/DataSampling.h"
 using namespace o2::framework;
+
 void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
@@ -42,6 +43,11 @@ void customize(std::vector<CompletionPolicy>& policies)
 void customize(std::vector<ChannelConfigurationPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
+}
+void customize(std::vector<ConfigParamSpec>& workflowOptions)
+{
+  workflowOptions.push_back(
+    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
 #include <FairLogger.h>
@@ -59,9 +65,11 @@ using namespace o2::framework;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
 
-WorkflowSpec defineDataProcessing(ConfigContext const&)
+WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
+  bool noDS = config.options().get<bool>("no-data-sampling");
+
   // The producer to generate some data in the workflow
   DataProcessorSpec producer{
     "producer",
@@ -87,7 +95,8 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   specs.push_back(producer);
 
-  const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/basic.json";
+  std::string filename = !noDS ? "basic.json" : "basic-no-sampling.json";
+  const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/" + filename;
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
   // Generation of Data Sampling infrastructure

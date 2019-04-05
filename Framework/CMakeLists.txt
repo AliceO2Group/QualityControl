@@ -284,6 +284,7 @@ install(
 install(
   FILES
     basic.json
+    basic-no-sampling.json
     advanced.json
     readout.json
     readoutForDataDump.json

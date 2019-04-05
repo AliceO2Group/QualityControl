@@ -19,7 +19,10 @@
         "moduleName": "QcExample",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "dataSamplingPolicy": "ex1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "ex1"
+        },
         "location": "remote"
       },
       "daqTask": {
@@ -27,14 +30,20 @@
         "moduleName": "QcDaq",
         "maxNumberCycles": "-1",
         "cycleDurationSeconds": "10",
-        "dataSamplingPolicy": "mftclusters",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "mftclusters"
+        },
         "location": "remote"
       },
       "benchmarkTask_0": {
         "className": "o2::quality_control_modules::example::BenchmarkTask",
         "moduleName": "QcExample",
         "cycleDurationSeconds": "1",
-        "dataSamplingPolicy": "ex1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "ex1"
+        },
         "location": "local",
         "machines": [
           "o2flp1",
