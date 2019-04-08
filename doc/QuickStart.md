@@ -49,7 +49,7 @@ To make sure that your system is correctly setup, we are going to run a basic QC
 
 We will run a basic workflow described in the following schema.
 
-![alt text](doc/images/basic-schema.png)
+![alt text](images/basic-schema.png)
 
 The _Producer_ is a random data generator. In a more realistic setup it would be a processing device or the _Readout_. The _Data Sampling_ is the system in charge of dispatching data samples from the main data flow to the _QC tasks_. It can be configured to dispatch different proportion or different types of data. The _Checker_ is in charge of evaluating the _MonitorObjects_ produced by the _QC tasks_, for example by checking that the mean is above a certain limit. It can also modify the aspect of the histogram, e.g. by changing the background color or adding a PaveText. Finally the _Checker_ is also in charge of storing the resulting _MonitorObject_ into the repository where it will be accessible by the web GUI. It also pushes it to a _Printer_ for the sake of this tutorial.
 
@@ -59,7 +59,7 @@ To run it simply do
 
 Thanks to the Data Processing Layer (DPL, more details later) it is a single process that steers all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped, probably abnormaly.
 
-![alt text](doc/images/basic-dpl-gui.png)
+![alt text](images/basic-dpl-gui.png)
 
 __Repository and GUI__
 
@@ -67,7 +67,7 @@ The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If
 
 TODO add a link to the user documentation of the QCG
 
-![alt text](doc/images/basic-qcg.png)
+![alt text](images/basic-qcg.png)
 
 __Configuration file__
 
@@ -77,7 +77,7 @@ The devices are configured in the config file named `basic.json`. It is installe
 
 In this second example, we are going to use the Readout as data source.
 
-![alt text](doc/images/readout-schema.png)
+![alt text](images/readout-schema.png)
 
 This workflow is a bit different from the basic one. The _Readout_ is not a device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the dispatcher, which then injects data to the task. This is handled in the _Readout_ if you enable the corresponding configuration flag.
 
