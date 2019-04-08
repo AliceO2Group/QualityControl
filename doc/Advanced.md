@@ -21,7 +21,7 @@
 
 <!--te-->
 
-([Go back to the main README](../README.md))
+[Go back to the main README](../README.md)
 
 ## Data Inspector
 
