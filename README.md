@@ -139,7 +139,7 @@ The data sampling is configured to sample 1% of the data as the readout should r
 #### Readout data received by the Task
 
 The header is a O2 header populated with data from the header built by the Readout. 
-The payload received is a 2MB data page made of CRU pages (8kB). 
+The payload received is a 2MB (configurable) data page made of CRU pages (8kB).
 
 __Configuration file__
 
