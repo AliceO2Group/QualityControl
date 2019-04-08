@@ -4,33 +4,38 @@
 <!--./gh-md-toc --insert /path/to/README.md-->
 <!--ts-->
    * [Modules development](#modules-development)
-      * [QC architecture](#qc-architecture)
-      * [DPL](#dpl)
-      * [Data Sampling](#data-sampling)
-         * [Bypassing the Data Sampling](#bypassing-the-data-sampling)
-      * [Code Organization](#code-organization)
-      * [User-defined modules](#user-defined-modules)
+      * [Context](#context)
+         * [QC architecture](#qc-architecture)
+         * [DPL](#dpl)
+         * [Data Sampling](#data-sampling)
+            * [Bypassing the Data Sampling](#bypassing-the-data-sampling)
+         * [Code Organization](#code-organization)
+         * [User-defined modules](#user-defined-modules)
       * [Module creation](#module-creation)
       * [Test run](#test-run)
       * [Modification of a Task](#modification-of-a-task)
       * [Addition of a Check](#addition-of-a-check)
-      * [DPL workflow customization](#dpl-workflow-customization)
-      * [Plugging an existing DPL workflow into the Data Sampling and QC](#plugging-an-existing-dpl-workflow-into-the-data-sampling-and-qc)
       * [Commit Code](#commit-code)
+      * [DPL workflow customization](#dpl-workflow-customization)
+      * [Usage of DS and QC in an existing DPL workflow](#usage-of-ds-and-qc-in-an-existing-dpl-workflow)
 
 <!-- Added by: bvonhall, at:  -->
 
 <!--te-->
 
-Before developing a module, one should have a bare idea of what the QualityControl is and how it is designed.
+([Go back to the main README](../README.md))
 
-## QC architecture
+## Context
 
-![alt text](doc/images/Architecture.png)
+Before developing a module, one should have a bare idea of what the QualityControl is and how it is designed. The following sections explore these aspects.
+
+### QC architecture
+
+![alt text](images/Architecture.png)
 
 The main data flow is represented in blue. Data samples are selected by the Data Sampling (not represented) and sent to the QC tasks, either on the same machines or on other machines. The tasks produce TObjects, usually histograms, that are merged (if needed) and then checked. The checkers output the received TObject along with a quality flag. The TObject can be modified by the Checker. Finally the TObject and its quality are stored in the repository.
 
-## DPL
+### DPL
 
 [Data Processing Layer](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) is a software framework developed as a part of O2 project. It structurizes the computing into units called _Data Processors_ - processes that communicate with each other via messages. DPL takes care of generating and running the processing topology out of user declaration code, serializing and deserializing messages, providing the data processors with all the anticipated messages for a given timestamp and much more. Each piece of data is characterized by its `DataHeader`, which consists (among others) of `dataOrigin`, `dataDescription` and `SubSpecification` - for example `{"MFT", "TRACKS", 0}`.
 
@@ -88,7 +93,7 @@ executable `taskDPL`.
 
 -->
 
-## Data Sampling
+### Data Sampling
 
 The Data Sampling provides the possibility to sample data in DPL workflows, based on certain conditions ( 5% randomly, when payload is greater than 4234 bytes, etc.). The job of passing the right data is done by a data processor called `Dispatcher`. A desired data stream is specified in the form of Data Sampling Policies, defined in the QC JSON configuration file. Please refer to the main [Data Sampling readme](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#data-sampling) for more details.
 
@@ -136,7 +141,7 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
 
 An example of using the data sampling in a DPL workflow is visible in [runAdvanced.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/runAdvanced.cxx).
 
-### Bypassing the Data Sampling
+#### Bypassing the Data Sampling
 
 In case one needs to sample at a very high rate, or even monitor 100% of the data, the Data Sampling can be omitted altogether. As a result the task is connected directly to the the Device producing the data to be monitored. To do so, change the _dataSource's_ type in the config file from `dataSamplingPolicy` to `direct`. In addition, add the information about the type of data that is expected (dataOrigin, binding, etc...) and remove the dataSamplingPolicies :  
 
@@ -165,13 +170,13 @@ In case one needs to sample at a very high rate, or even monitor 100% of the dat
 
 The file `basic-no-sampling.json` is provided as an example. To test it, you can run `qcRunBasic` with the option `--no-data-sampling` (it makes it use this config file instead of `basic.json`).
 
-## Code Organization
+### Code Organization
 
 The repository QualityControl contains the _Framework_  and the _Modules_ in the respectively named directories.
 
 The Data Sampling code is part of the AliceO2 repository.
 
-## User-defined modules
+### User-defined modules
 
 The Quality Control uses _plugins_ to load the actual code to be executed by the _Tasks_ and the _Checkers_. A module, or plugin, can contain one or several _Tasks_ and/or one or several _Checks_. They must subclass `TaskInterface.h` and `CheckInterface.h` respectively. We use the Template Method Design Pattern.
 
@@ -250,16 +255,6 @@ TODO Rename the task in teh config file and see in QCG that it appears under a d
 
 TODO
 
-## DPL workflow customization
-
-If you want to change the workflow, edit or copy `runBasic.cxx` or `runReadout.cxx`. For example...
-
-TODO
-
-## Plugging an existing DPL workflow into the Data Sampling and QC
-
-TODO
-
 ## Commit Code
 
 To commit your new or modified code, please follow this procedure
@@ -274,5 +269,17 @@ To commit your new or modified code, please follow this procedure
 6. Once approved the changes will be merged in the main repo. You can delete your branch.
 
 For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
+
+General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
+
+## DPL workflow customization
+
+If you want to change the workflow, edit or copy `runBasic.cxx` or `runReadout.cxx`. For example...
+
+TODO
+
+## Usage of DS and QC in an existing DPL workflow 
+
+TODO
 
 ---

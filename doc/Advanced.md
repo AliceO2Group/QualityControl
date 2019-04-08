@@ -21,6 +21,8 @@
 
 <!--te-->
 
+([Go back to the main README](../README.md))
+
 ## Data Inspector
 
 This is a GUI to inspect the data coming out of the DataSampling, in
