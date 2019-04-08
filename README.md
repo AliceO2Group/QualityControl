@@ -136,6 +136,11 @@ qcRunReadout
 
 The data sampling is configured to sample 1% of the data as the readout should run by default at full speed.
 
+#### Readout data received by the Task
+
+The header is a O2 header populated with data from the header built by the Readout. 
+The payload received is a 2MB data page made of CRU pages (8kB). 
+
 __Configuration file__
 
 The configuration file is installed in `$QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `$QUALITYCONTROL_ROOT/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
@@ -363,10 +368,6 @@ qcRunBasic
 ```
 
 You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.
-
-#### Note on the data format
-
-The header is a O2 header populated with data from the header built by the Readout. The payload received in the QC is a CRU data page. 
 
 ## Modification of a Task
 
