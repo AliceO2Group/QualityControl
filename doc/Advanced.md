@@ -21,7 +21,8 @@
 
 <!--te-->
 
-[Go back to the main README](../README.md)
+
+[← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) 
 
 ## Data Inspector
 
@@ -297,3 +298,7 @@ It is needed for the time being because we don't have an information service.
 
 There are configuration items for many other aspects, for example the
 database connection, the monitoring or the data sampling.
+
+---
+
+[← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) 

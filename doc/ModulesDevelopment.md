@@ -23,7 +23,7 @@
 
 <!--te-->
 
-[Go back to the main README](../README.md)
+[← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Advanced Topics →](ModulesDevelopment.md)
 
 ## Context
 
@@ -283,3 +283,5 @@ TODO
 TODO
 
 ---
+
+[← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Advanced Topics →](ModulesDevelopment.md)

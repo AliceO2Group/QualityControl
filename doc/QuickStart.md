@@ -14,8 +14,8 @@
 <!-- Added by: bvonhall, at:  -->
 
 <!--te-->
-[Go back to the main README](../README.md)
 
+[↑ Go to the Table of Content ↑](../README.md) | [Continue to Modules Development →](ModulesDevelopment.md)
 
 ## Requirements
 
@@ -127,3 +127,6 @@ To change the fraction of the data being monitored, change the option `fraction`
 "fraction": "0.01",
 ```
 
+---
+
+[↑ Go to the Table of Content ↑](../README.md) | [Continue to Modules Development →](ModulesDevelopment.md)
