@@ -24,11 +24,7 @@ using namespace std;
 using namespace AliceO2::Common;
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 std::unique_ptr<DatabaseInterface> DatabaseFactory::create(std::string name)
@@ -51,6 +47,4 @@ std::unique_ptr<DatabaseInterface> DatabaseFactory::create(std::string name)
   return nullptr;
 }
 
-} // namespace repository
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::repository

@@ -11,11 +11,7 @@ ClassImp(o2::quality_control::checker::CheckInterface)
 
   using namespace std;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace checker
+namespace o2::quality_control::checker
 {
 
 // CheckInterface::CheckInterface()
@@ -45,6 +41,4 @@ bool CheckInterface::isObjectCheckable(const MonitorObject* mo)
   return false;
 }
 
-} /* namespace checker */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::checker

@@ -14,11 +14,7 @@
 
 using namespace std;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 BOOST_AUTO_TEST_CASE(quality_test)
@@ -50,6 +46,4 @@ BOOST_AUTO_TEST_CASE(quality_test)
   BOOST_CHECK(!Quality::Good.isBetterThan(Quality::Good));
 }
 
-} /* namespace core */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // o2::quality_control::core

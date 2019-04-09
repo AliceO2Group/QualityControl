@@ -24,14 +24,10 @@ using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
 using namespace o2::configuration;
 using namespace o2::monitoring;
+using namespace o2::quality_control::core;
+using namespace o2::quality_control::repository;
 
-namespace o2
-{
-namespace quality_control
-{
-using namespace core;
-using namespace repository;
-namespace checker
+namespace o2::quality_control::checker
 {
 
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
@@ -247,6 +243,4 @@ CheckInterface* Checker::getCheck(std::string checkName, std::string className)
   return result;
 }
 
-} /* namespace checker */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::checker

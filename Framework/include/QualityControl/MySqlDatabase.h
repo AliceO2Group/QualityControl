@@ -12,11 +12,7 @@
 
 class TMySQLResult;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 /// \brief Implementation of the DatabaseInterface for MySQL
@@ -73,8 +69,6 @@ class MySqlDatabase : public DatabaseInterface
   AliceO2::Common::Timer lastStorage;
 };
 
-} // namespace repository
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::repository
 
 #endif // QC_REPOSITORY_MYSQLDATABASE_H

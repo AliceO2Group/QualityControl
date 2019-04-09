@@ -10,11 +10,7 @@
 #include <ostream>
 #include <string>
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 /// \brief  Class representing the quality of a MonitorObject.
@@ -71,8 +67,6 @@ class Quality
   ClassDef(Quality, 1);
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_QUALITY_H

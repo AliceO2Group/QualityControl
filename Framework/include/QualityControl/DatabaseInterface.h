@@ -11,11 +11,7 @@
 #include <unordered_map>
 //#include <bits/unique_ptr.h>
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 /// \brief The interface to the MonitorObject's repository.
@@ -81,8 +77,6 @@ class DatabaseInterface
   virtual void truncate(std::string taskName, std::string objectName) = 0;
 };
 
-} /* namespace repository */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::repository
 
 #endif /* QC_REPOSITORY_DATABASEINTERFACE_H */

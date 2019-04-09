@@ -6,11 +6,7 @@
 #ifndef QC_CORE_ACTIVITY_H
 #define QC_CORE_ACTIVITY_H
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 /// \brief Dummy class that should be removed when there is the official one.
@@ -36,8 +32,6 @@ class Activity
   int mType{ 0 };
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_ACTIVITY_H

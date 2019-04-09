@@ -8,11 +8,7 @@
 
 #include "Framework/DataProcessorSpec.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 /// \brief Factory in charge of creating DataProcessorSpec of QC task
@@ -32,8 +28,6 @@ class TaskRunnerFactory
   create(std::string taskName, std::string configurationSource, size_t id = 0, bool resetAfterPublish = false);
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_TASKFACTORY_H

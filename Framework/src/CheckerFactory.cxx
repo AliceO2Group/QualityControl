@@ -8,11 +8,7 @@
 #include "QualityControl/Checker.h"
 #include "QualityControl/CheckerFactory.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace checker
+namespace o2::quality_control::checker
 {
 
 using namespace o2::framework;
@@ -33,6 +29,4 @@ DataProcessorSpec CheckerFactory::create(std::string checkerName, std::string ta
   return std::move(newChecker);
 }
 
-} // namespace checker
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::checker

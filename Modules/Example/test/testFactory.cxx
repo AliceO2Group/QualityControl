@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
   }
 }
 
-bool is_critical(AliceO2::Common::FatalException const& ex) { return true; }
+bool is_critical(AliceO2::Common::FatalException const& ) { return true; }
 
 BOOST_AUTO_TEST_CASE(Task_Factory_failures)
 {

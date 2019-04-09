@@ -19,11 +19,7 @@
 #include "CCDB/CcdbApi.h"
 #include "QualityControl/DatabaseInterface.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 /*
@@ -82,8 +78,6 @@ class CcdbDatabase : public DatabaseInterface
   std::string mUrl;
 };
 
-} // namespace repository
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::repository
 
 #endif // QC_REPOSITORY_CCDBDATABASE_H

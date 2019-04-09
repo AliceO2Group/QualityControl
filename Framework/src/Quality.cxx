@@ -7,12 +7,8 @@
 
 ClassImp(o2::quality_control::core::Quality)
 
-  namespace o2
+  namespace o2::quality_control::core
 {
-  namespace quality_control
-  {
-  namespace core
-  {
 
   const unsigned int Quality::NullLevel =
     10; // could be changed if needed but I don't see why we would need more than 10 levels
@@ -30,6 +26,4 @@ ClassImp(o2::quality_control::core::Quality)
 
   const std::string& Quality::getName() const { return mName; }
 
-  } // namespace core
-  } // namespace quality_control
-} // namespace o2
+  } // namespace o2::quality_control::core

@@ -21,11 +21,7 @@ using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
 using namespace std;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskName(taskConfig.taskName)
@@ -86,6 +82,4 @@ void ObjectsManager::addCheck(const TObject* object, const std::string& checkNam
   addCheck(object->GetName(), checkName, checkClassName, checkLibraryName);
 }
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core

@@ -14,11 +14,7 @@
 
 using namespace std;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 BOOST_AUTO_TEST_CASE(qc_info_logger)
@@ -29,6 +25,5 @@ BOOST_AUTO_TEST_CASE(qc_info_logger)
   qc1 << "test" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-} /* namespace core */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // o2::quality_control::core
+

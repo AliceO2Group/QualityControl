@@ -11,11 +11,7 @@
 
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace checker
+namespace o2::quality_control::checker
 {
 
 /// \brief  Skeleton of a check.
@@ -77,8 +73,6 @@ class CheckInterface
   ClassDef(CheckInterface, 1)
 };
 
-} /* namespace checker */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::checker
 
 #endif /* QC_CHECKER_CHECKINTERFACE_H */
