@@ -12,7 +12,7 @@ using namespace std;
 
 ClassImp(o2::quality_control_modules::common::NonEmpty)
 
-namespace o2::quality_control_modules::common
+  namespace o2::quality_control_modules::common
 {
 
   NonEmpty::NonEmpty() {}

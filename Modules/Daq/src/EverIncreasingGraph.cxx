@@ -72,4 +72,4 @@ ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
     g->GetListOfFunctions()->AddLast(paveText);
   }
 
-  } // namespace daq::quality_control_modules::daq
+} // namespace daq::quality_control_modules::daq

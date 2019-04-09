@@ -62,4 +62,4 @@ void SkeletonCheck::beautify(MonitorObject* mo, Quality checkResult)
   }
 }
 
-} // namespace daq::quality_control_modules::skeleton
+} // namespace o2::quality_control_modules::skeleton

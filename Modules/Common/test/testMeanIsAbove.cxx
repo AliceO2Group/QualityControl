@@ -64,4 +64,4 @@ BOOST_AUTO_TEST_CASE(test_types)
   BOOST_CHECK_EQUAL(quality, Quality::Null);
 }
 
-} // namespace daq::quality_control_modules::common
+} // namespace o2::quality_control_modules::common

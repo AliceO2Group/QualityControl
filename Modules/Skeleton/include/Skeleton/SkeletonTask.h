@@ -41,6 +41,6 @@ class SkeletonTask /*final*/ : public TaskInterface // todo add back the "final"
   TH1F* mHistogram;
 };
 
-} // namespace daq::quality_control_modules::skeleton
+} // namespace o2::quality_control_modules::skeleton
 
 #endif // QC_MODULE_SKELETON_SKELETONTASK_H

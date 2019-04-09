@@ -61,4 +61,4 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures)
   BOOST_CHECK_EXCEPTION(factory.create<TaskInterface>(config, manager), AliceO2::Common::FatalException, is_critical);
 }
 
-} // o2::quality_control_modules::example
+} // namespace o2::quality_control_modules::example

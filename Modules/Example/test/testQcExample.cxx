@@ -49,4 +49,4 @@ BOOST_AUTO_TEST_CASE(insantiate_task)
   task.endOfActivity(activity);
 }
 
-} // namespace daq::quality_control_modules::example
+} // namespace o2::quality_control_modules::example

@@ -32,6 +32,6 @@ class FakeCheck : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(FakeCheck, 1);
 };
 
-} // namespace daq::quality_control_modules::example
+} // namespace o2::quality_control_modules::example
 
 #endif // QC_MODULE_EXAMPLE_FAKECHECK_H

@@ -12,7 +12,7 @@ using namespace std;
 
 ClassImp(o2::quality_control_modules::example::FakeCheck)
 
-namespace o2::quality_control_modules::example
+  namespace o2::quality_control_modules::example
 {
 
   FakeCheck::FakeCheck() {}
@@ -35,4 +35,4 @@ namespace o2::quality_control_modules::example
     // NOOP
   }
 
-  } // namespace daq::quality_control_modules::example
+} // namespace daq::quality_control_modules::example

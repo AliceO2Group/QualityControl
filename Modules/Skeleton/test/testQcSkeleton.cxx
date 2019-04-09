@@ -34,4 +34,4 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   //  BOOST_CHECK(manager->getMonitorObject("example")->getObject() != nullptr);
 }
 
-} // namespace daq::quality_control_modules::skeleton
+} // namespace o2::quality_control_modules::skeleton

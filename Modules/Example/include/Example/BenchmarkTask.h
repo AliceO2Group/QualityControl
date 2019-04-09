@@ -51,6 +51,6 @@ class BenchmarkTask : public TaskInterface
   //    ClassDef(BenchmarkTask,1);
 };
 
-} // namespace daq::quality_control_modules::example
+} // namespace o2::quality_control_modules::example
 
 #endif // QC_MODULE_EXAMPLE_BENCHMARKTASK_H

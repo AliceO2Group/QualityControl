@@ -50,6 +50,6 @@ class DaqTask /*final*/ : public TaskInterface // todo add back the "final" when
   TPaveText* mPaveText;
 };
 
-} // namespace daq::quality_control_modules::daq
+} // namespace o2::quality_control_modules::daq
 
 #endif // QC_MODULE_DAQ_DAQTASK_H

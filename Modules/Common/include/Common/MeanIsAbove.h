@@ -37,6 +37,6 @@ class MeanIsAbove : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(MeanIsAbove, 1)
 };
 
-} // namespace daq::quality_control_modules::common
+} // namespace o2::quality_control_modules::common
 
 #endif /* QC_MODULE_COMMON_MEANISABOVE_H */

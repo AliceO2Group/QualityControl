@@ -16,4 +16,4 @@ namespace o2::quality_control_modules::skeleton
 
 BOOST_AUTO_TEST_CASE(instantiate_task) { BOOST_CHECK(true); }
 
-} // namespace daq::quality_control_modules::skeleton
+} // namespace o2::quality_control_modules::skeleton

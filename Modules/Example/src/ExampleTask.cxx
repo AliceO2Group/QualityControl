@@ -101,4 +101,4 @@ void ExampleTask::endOfActivity(Activity& activity)
 
 void ExampleTask::reset() { QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm; }
 
-} // namespace daq::quality_control_modules::example
+} // namespace o2::quality_control_modules::example

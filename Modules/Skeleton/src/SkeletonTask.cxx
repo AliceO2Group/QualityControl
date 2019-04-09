@@ -107,4 +107,4 @@ void SkeletonTask::reset()
   mHistogram->Reset();
 }
 
-} // namespace daq::quality_control_modules::skeleton
+} // namespace o2::quality_control_modules::skeleton

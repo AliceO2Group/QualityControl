@@ -33,6 +33,6 @@ class SkeletonCheck : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(SkeletonCheck, 1);
 };
 
-} // namespace daq::quality_control_modules::skeleton
+} // namespace o2::quality_control_modules::skeleton
 
 #endif // QC_MODULE_SKELETON_SKELETONCHECK_H
