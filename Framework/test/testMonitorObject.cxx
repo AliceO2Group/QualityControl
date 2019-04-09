@@ -51,4 +51,4 @@ BOOST_AUTO_TEST_CASE(mo_check)
   BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Null);
 }
 
-} // o2::quality_control::core
+} // namespace o2::quality_control::core

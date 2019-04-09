@@ -15,12 +15,8 @@ using namespace std;
 
 ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
 
-  namespace o2
+  namespace o2::quality_control_modules::daq
 {
-  namespace quality_control_modules
-  {
-  namespace daq
-  {
 
   EverIncreasingGraph::EverIncreasingGraph() {}
 
@@ -76,6 +72,4 @@ ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
     g->GetListOfFunctions()->AddLast(paveText);
   }
 
-  } // namespace daq
-  } // namespace quality_control_modules
-} // namespace o2
+  } // namespace daq::quality_control_modules::daq

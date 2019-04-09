@@ -46,4 +46,4 @@ BOOST_AUTO_TEST_CASE(quality_test)
   BOOST_CHECK(!Quality::Good.isBetterThan(Quality::Good));
 }
 
-} // o2::quality_control::core
+} // namespace o2::quality_control::core

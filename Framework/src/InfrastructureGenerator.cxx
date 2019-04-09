@@ -101,4 +101,4 @@ void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSp
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-} // o2::quality_control::core
+} // namespace o2::quality_control::core

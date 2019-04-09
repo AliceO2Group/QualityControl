@@ -12,11 +12,7 @@
 
 using namespace std;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace skeleton
+namespace o2::quality_control_modules::skeleton
 {
 
 SkeletonCheck::SkeletonCheck() {}
@@ -66,6 +62,4 @@ void SkeletonCheck::beautify(MonitorObject* mo, Quality checkResult)
   }
 }
 
-} // namespace skeleton
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace daq::quality_control_modules::skeleton

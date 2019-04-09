@@ -10,11 +10,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "Skeleton/SkeletonTask.h"
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace skeleton
+namespace o2::quality_control_modules::skeleton
 {
 
 SkeletonTask::SkeletonTask() : TaskInterface(), mHistogram(nullptr) { mHistogram = nullptr; }
@@ -111,6 +107,4 @@ void SkeletonTask::reset()
   mHistogram->Reset();
 }
 
-} // namespace skeleton
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace daq::quality_control_modules::skeleton

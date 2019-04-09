@@ -12,12 +12,8 @@ using namespace std;
 
 ClassImp(o2::quality_control_modules::common::NonEmpty)
 
-  namespace o2
+namespace o2::quality_control_modules::common
 {
-  namespace quality_control_modules
-  {
-  namespace common
-  {
 
   NonEmpty::NonEmpty() {}
 
@@ -51,6 +47,4 @@ ClassImp(o2::quality_control_modules::common::NonEmpty)
     // NOOP
   }
 
-  } // namespace common
-  } // namespace quality_control_modules
-} // namespace o2
+} // namespace daq::quality_control_modules::common

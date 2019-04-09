@@ -19,11 +19,7 @@
 
 using namespace std;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace skeleton
+namespace o2::quality_control_modules::skeleton
 {
 
 BOOST_AUTO_TEST_CASE(instantiate_task)
@@ -38,6 +34,4 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   //  BOOST_CHECK(manager->getMonitorObject("example")->getObject() != nullptr);
 }
 
-} // namespace skeleton
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace daq::quality_control_modules::skeleton

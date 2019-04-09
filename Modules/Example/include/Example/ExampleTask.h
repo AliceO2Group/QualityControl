@@ -12,11 +12,7 @@ class TH1F;
 
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace example
+namespace o2::quality_control_modules::example
 {
 
 /// \brief Example Quality Control Task
@@ -49,8 +45,6 @@ class ExampleTask /*final*/ : public TaskInterface // todo add back the "final" 
   void publishHisto(int i);
 };
 
-} // namespace example
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace daq::quality_control_modules::example
 
 #endif // QC_MODULE_EXAMPLE_EXAMPLETASK_H

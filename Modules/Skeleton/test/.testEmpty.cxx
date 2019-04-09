@@ -11,15 +11,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace skeleton
+namespace o2::quality_control_modules::skeleton
 {
 
 BOOST_AUTO_TEST_CASE(instantiate_task) { BOOST_CHECK(true); }
 
-} // namespace skeleton
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace daq::quality_control_modules::skeleton

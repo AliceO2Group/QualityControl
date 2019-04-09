@@ -7,7 +7,7 @@
 
 ClassImp(o2::quality_control::core::Quality)
 
-  namespace o2::quality_control::core
+namespace o2::quality_control::core
 {
 
   const unsigned int Quality::NullLevel =
@@ -26,4 +26,4 @@ ClassImp(o2::quality_control::core::Quality)
 
   const std::string& Quality::getName() const { return mName; }
 
-  } // namespace o2::quality_control::core
+} // namespace o2::quality_control::core

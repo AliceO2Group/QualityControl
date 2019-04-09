@@ -12,13 +12,7 @@
 
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-
-/// Namespace containing all the common, non detector specific, checks.
-namespace common
+namespace o2::quality_control_modules::common
 {
 
 /// \brief  Check whether the mean of the plot is above a certain limit.
@@ -43,8 +37,6 @@ class MeanIsAbove : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(MeanIsAbove, 1)
 };
 
-} /* namespace common */
-} /* namespace quality_control_modules */
-} /* namespace o2 */
+} // namespace daq::quality_control_modules::common
 
 #endif /* QC_MODULE_COMMON_MEANISABOVE_H */

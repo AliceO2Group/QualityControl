@@ -52,5 +52,4 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   }
 }
 
-} // o2::quality_control::core
-
+} // namespace o2::quality_control::core

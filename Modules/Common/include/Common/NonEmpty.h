@@ -10,11 +10,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace common
+namespace o2::quality_control_modules::common
 {
 
 /// \brief  Check whether a plot is empty or not.
@@ -36,8 +32,6 @@ class NonEmpty : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(NonEmpty, 1);
 };
 
-} // namespace common
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::common
 
 #endif // QC_MODULE_COMMON_NONEMPTY_H
