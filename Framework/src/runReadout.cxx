@@ -47,7 +47,7 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
-    ConfigParamSpec{"config-path", VariantType::String, "", {"Path to the config file."}});
+    ConfigParamSpec{"config-path", VariantType::String, "", {"Path to the config file. Overwrite the default paths. Do not use with no-data-sampling."}});
   workflowOptions.push_back(
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
