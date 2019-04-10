@@ -83,7 +83,6 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
-  std::cout << "qcConfigurationSource : " << qcConfigurationSource << std::endl;
 
   // Generation of the QC topology
   quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
