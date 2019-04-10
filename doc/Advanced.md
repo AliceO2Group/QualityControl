@@ -22,7 +22,7 @@
 <!--te-->
 
 
-[← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) 
+[← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
 
 ## Data Inspector
 
@@ -301,4 +301,4 @@ database connection, the monitoring or the data sampling.
 
 ---
 
-[← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) 
+[← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
