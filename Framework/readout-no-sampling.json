@@ -21,34 +21,16 @@
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "readout"
+          "type": "direct",
+          "binding": "readout",
+          "dataOrigin": "ITS",
+          "dataDescription": "RAWDATA",
+          "subSpec": "0"
         },
         "location": "remote"
       }
     }
   },
   "dataSamplingPolicies": [
-    {
-      "id": "readout",
-      "active": "true",
-      "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "readout",
-          "dataOrigin": "ITS",
-          "dataDescription": "RAWDATA"
-        }
-      ],
-      "subSpec": "0",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "0.1",
-          "seed": "1441"
-        }
-      ],
-      "blocking": "false"
-    }
   ]
 }

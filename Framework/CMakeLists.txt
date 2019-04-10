@@ -287,6 +287,7 @@ install(
     basic-no-sampling.json
     advanced.json
     readout.json
+    readout-no-sampling.json
     readoutForDataDump.json
   DESTINATION etc
 )
