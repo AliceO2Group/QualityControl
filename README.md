@@ -34,6 +34,7 @@ This is the repository of the data quality control (QC) software for the ALICE O
       * [Local QCG (QC GUI) setup](doc/Advanced.md#local-qcg-qc-gui-setup)
       * [Information Service](doc/Advanced.md#information-service)
       * [Configuration files details](doc/Advanced.md#configuration-files-details)
+   * [Frequently Asked Questions](doc/FAQ.md)
 <!-- Added by: bvonhall, at:  -->
 
 <!--te-->
