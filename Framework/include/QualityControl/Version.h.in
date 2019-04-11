@@ -10,9 +10,9 @@
 #include <string>
 #include <sstream>
 
-namespace o2 {
-namespace quality_control {
-namespace core {
+namespace o2::quality_control::core
+{
+
 /// The current major version.
 #define QUALITYCONTROL_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
 
@@ -90,8 +90,6 @@ public:
   }
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_VERSION_H

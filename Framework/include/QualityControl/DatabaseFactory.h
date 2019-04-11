@@ -12,11 +12,7 @@
 // QC
 #include "QualityControl/DatabaseInterface.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 /// \brief Factory to get a database accessor
@@ -31,8 +27,6 @@ class DatabaseFactory
   static std::unique_ptr<DatabaseInterface> create(std::string name);
 };
 
-} // namespace repository
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::repository
 
 #endif // QC_REPOSITORY_DATABASEFACTORY_H

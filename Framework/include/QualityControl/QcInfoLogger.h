@@ -12,11 +12,7 @@
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time -> log::endm
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 /// \brief  Singleton class that any class in the QC can use to log.
@@ -52,8 +48,6 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
   QcInfoLogger(const QcInfoLogger&) = delete;
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_QCINFOLOGGER_H

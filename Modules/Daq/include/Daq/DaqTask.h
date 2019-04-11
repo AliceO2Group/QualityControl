@@ -15,11 +15,7 @@ class TGraph;
 
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace daq
+namespace o2::quality_control_modules::daq
 {
 
 /// \brief Example Quality Control Task
@@ -54,8 +50,6 @@ class DaqTask /*final*/ : public TaskInterface // todo add back the "final" when
   TPaveText* mPaveText;
 };
 
-} // namespace daq
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::daq
 
 #endif // QC_MODULE_DAQ_DAQTASK_H

@@ -28,11 +28,7 @@
 using namespace std;
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 bool do_nothing(AliceO2::Common::FatalException const& ex) { return true; }
@@ -617,6 +613,4 @@ res = curl_easy_perform(curl);
 //  }
 //}
 
-} /* namespace repository */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::repository

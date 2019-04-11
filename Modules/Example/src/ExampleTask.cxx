@@ -11,11 +11,7 @@
 
 using namespace std;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace example
+namespace o2::quality_control_modules::example
 {
 
 ExampleTask::ExampleTask() : TaskInterface()
@@ -105,6 +101,4 @@ void ExampleTask::endOfActivity(Activity& activity)
 
 void ExampleTask::reset() { QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm; }
 
-} // namespace example
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::example

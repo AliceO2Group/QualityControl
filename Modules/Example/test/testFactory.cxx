@@ -19,14 +19,9 @@
 
 #include <TH1.h>
 
-// using namespace o2::common;
 using namespace std;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace common
+namespace o2::quality_control_modules::example
 {
 
 BOOST_AUTO_TEST_CASE(Task_Factory)
@@ -45,7 +40,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
   }
 }
 
-bool is_critical(AliceO2::Common::FatalException const& ex) { return true; }
+bool is_critical(AliceO2::Common::FatalException const&) { return true; }
 
 BOOST_AUTO_TEST_CASE(Task_Factory_failures)
 {
@@ -66,6 +61,4 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures)
   BOOST_CHECK_EXCEPTION(factory.create<TaskInterface>(config, manager), AliceO2::Common::FatalException, is_critical);
 }
 
-} // namespace common
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::example

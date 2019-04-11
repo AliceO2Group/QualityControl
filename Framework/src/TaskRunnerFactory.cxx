@@ -16,11 +16,7 @@
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 using namespace o2::framework;
@@ -54,6 +50,4 @@ TaskRunnerFactory::create(std::string taskName, std::string configurationSource,
   return std::move(newTask);
 }
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core

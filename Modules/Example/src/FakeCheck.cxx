@@ -12,12 +12,8 @@ using namespace std;
 
 ClassImp(o2::quality_control_modules::example::FakeCheck)
 
-  namespace o2
+  namespace o2::quality_control_modules::example
 {
-  namespace quality_control_modules
-  {
-  namespace example
-  {
 
   FakeCheck::FakeCheck() {}
 
@@ -39,6 +35,4 @@ ClassImp(o2::quality_control_modules::example::FakeCheck)
     // NOOP
   }
 
-  } // namespace example
-  } // namespace quality_control_modules
-} // namespace o2
+} // namespace daq::quality_control_modules::example

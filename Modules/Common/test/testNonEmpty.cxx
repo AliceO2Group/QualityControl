@@ -13,11 +13,7 @@
 
 #include <TH1.h>
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace common
+namespace o2::quality_control_modules::common
 {
 
 BOOST_AUTO_TEST_CASE(checkable)
@@ -75,6 +71,4 @@ BOOST_AUTO_TEST_CASE(nonempty)
   BOOST_CHECK_EQUAL(quality, Quality::Bad);
 }
 
-} // namespace common
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::common

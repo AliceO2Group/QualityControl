@@ -31,11 +31,7 @@
 #include "QualityControl/TaskFactory.h"
 #include "QualityControl/TaskRunner.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 using namespace o2::configuration;
@@ -301,6 +297,4 @@ unsigned long TaskRunner::publish(DataAllocator& outputs)
   return 1;
 }
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core

@@ -14,11 +14,7 @@
 #include <boost/test/unit_test.hpp>
 #include <cassert>
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace common
+namespace o2::quality_control_modules::common
 {
 
 BOOST_AUTO_TEST_CASE(test_checks)
@@ -68,6 +64,4 @@ BOOST_AUTO_TEST_CASE(test_types)
   BOOST_CHECK_EQUAL(quality, Quality::Null);
 }
 
-} /* namespace common */
-} /* namespace quality_control_modules */
-} /* namespace o2 */
+} // namespace o2::quality_control_modules::common

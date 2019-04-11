@@ -28,9 +28,7 @@ using namespace o2::quality_control;
 using namespace std;
 using namespace o2::framework;
 
-namespace o2
-{
-namespace quality_control
+namespace o2::quality_control
 {
 
 using namespace core;
@@ -71,8 +69,7 @@ class TestTask : public TaskInterface
 };
 
 } /* namespace Test */
-} /* namespace quality_control */
-} /* namespace o2 */
+} /* namespace o2::quality_control */
 
  BOOST_AUTO_TEST_CASE(TestInstantiate)
 {

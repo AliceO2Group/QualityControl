@@ -24,11 +24,7 @@
 using namespace std;
 using namespace o2::framework;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 GUIState DataDumpGui::guiState;
@@ -287,6 +283,4 @@ void DataDumpGui::assignDataToChunk(void* data, size_t size, Chunk& chunk)
   chunk.data = copy;
   chunk.size = size;
 }
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core

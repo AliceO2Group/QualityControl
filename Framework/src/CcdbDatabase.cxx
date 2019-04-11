@@ -23,11 +23,7 @@
 using namespace std::chrono;
 using namespace AliceO2::Common;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 using namespace std;
@@ -200,6 +196,4 @@ void CcdbDatabase::truncate(std::string taskName, std::string objectName)
   ccdbApi.truncate(taskName + "/" + objectName);
 }
 
-} // namespace repository
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::repository

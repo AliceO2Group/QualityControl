@@ -9,9 +9,7 @@
 #include <string>
 #include <Framework/WorkflowSpec.h>
 
-namespace o2
-{
-namespace quality_control
+namespace o2::quality_control
 {
 namespace core
 {
@@ -96,7 +94,6 @@ inline void generateRemoteInfrastructure(framework::WorkflowSpec& workflow, std:
   core::InfrastructureGenerator::generateRemoteInfrastructure(workflow, configurationSource);
 }
 
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control
 
 #endif //QC_CORE_INFRASTRUCTUREGENERATOR_H

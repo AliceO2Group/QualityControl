@@ -16,11 +16,7 @@
 
 #include "QualityControl/MonitorObject.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 /// \brief A crude histogram merger for development purposes.
@@ -64,8 +60,6 @@ class HistoMerger : public framework::Task
   o2::framework::OutputSpec mOutputSpec;
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_HISTOMERGER_H

@@ -10,11 +10,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace skeleton
+namespace o2::quality_control_modules::skeleton
 {
 
 /// \brief  Check whether a plot is empty or not.
@@ -37,8 +33,6 @@ class SkeletonCheck : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(SkeletonCheck, 1);
 };
 
-} // namespace skeleton
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::skeleton
 
 #endif // QC_MODULE_SKELETON_SKELETONCHECK_H

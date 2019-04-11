@@ -13,11 +13,7 @@ class TH1F;
 
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace skeleton
+namespace o2::quality_control_modules::skeleton
 {
 
 /// \brief Example Quality Control DPL Task
@@ -45,8 +41,6 @@ class SkeletonTask /*final*/ : public TaskInterface // todo add back the "final"
   TH1F* mHistogram;
 };
 
-} // namespace skeleton
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::skeleton
 
 #endif // QC_MODULE_SKELETON_SKELETONTASK_H

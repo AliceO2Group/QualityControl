@@ -21,11 +21,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace checker
+namespace o2::quality_control::checker
 {
 
 /// \brief The class in charge of running the checks on a MonitorObject.
@@ -125,8 +121,6 @@ class Checker : public framework::Task
   AliceO2::Common::Timer timer;
 };
 
-} /* namespace checker */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::checker
 
 #endif // QC_CHECKER_CHECKER_H

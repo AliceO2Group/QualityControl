@@ -18,11 +18,7 @@ ClassImp(o2::quality_control_modules::common::MeanIsAbove)
   using namespace std;
 using namespace o2::configuration;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace common
+namespace o2::quality_control_modules::common
 {
 
 MeanIsAbove::MeanIsAbove() : mThreshold(0.0) {}
@@ -84,6 +80,4 @@ void MeanIsAbove::beautify(MonitorObject* mo, Quality checkResult)
     lineMin->SetLineColor(kWhite);
   }
 }
-} /* namespace common */
-} /* namespace quality_control_modules */
-} /* namespace o2 */
+} // namespace o2::quality_control_modules::common

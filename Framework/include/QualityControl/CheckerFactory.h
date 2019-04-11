@@ -7,11 +7,7 @@
 
 #include "Framework/DataProcessorSpec.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace checker
+namespace o2::quality_control::checker
 {
 
 /// \brief Factory in charge of creating DataProcessorSpec of QC Checker
@@ -24,8 +20,6 @@ class CheckerFactory
   framework::DataProcessorSpec create(std::string checkerName, std::string taskName, std::string configurationSource);
 };
 
-} // namespace checker
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::checker
 
 #endif // QC_CHECKERFACTORY_H

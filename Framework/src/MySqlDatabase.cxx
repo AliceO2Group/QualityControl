@@ -21,11 +21,7 @@ using namespace AliceO2::Common;
 using namespace std;
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 MySqlDatabase::MySqlDatabase() : mServer(nullptr), queueSize(0) { lastStorage.reset(); }
@@ -314,6 +310,4 @@ void MySqlDatabase::truncate(std::string taskName, std::string objectName)
   }
 }
 
-} // namespace repository
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::repository

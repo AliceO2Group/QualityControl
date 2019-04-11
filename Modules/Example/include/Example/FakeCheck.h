@@ -10,11 +10,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace example
+namespace o2::quality_control_modules::example
 {
 
 /// \brief  Check whether a plot is empty or not.
@@ -36,8 +32,6 @@ class FakeCheck : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(FakeCheck, 1);
 };
 
-} // namespace example
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::example
 
 #endif // QC_MODULE_EXAMPLE_FAKECHECK_H

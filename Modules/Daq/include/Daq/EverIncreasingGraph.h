@@ -12,11 +12,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace daq
+namespace o2::quality_control_modules::daq
 {
 
 /// \brief  Check whether a plot is empty or not.
@@ -41,8 +37,6 @@ class EverIncreasingGraph : public o2::quality_control::checker::CheckInterface
   ClassDefOverride(EverIncreasingGraph, 1);
 };
 
-} // namespace daq
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::daq
 
 #endif // QC_MODULE_DAQ_EVERINCREASINGRAPH_H

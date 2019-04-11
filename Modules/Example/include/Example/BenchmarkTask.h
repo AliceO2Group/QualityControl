@@ -15,11 +15,7 @@ class TH1F;
 
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace example
+namespace o2::quality_control_modules::example
 {
 
 /// \brief Quality Control Task for benchmarking
@@ -55,8 +51,6 @@ class BenchmarkTask : public TaskInterface
   //    ClassDef(BenchmarkTask,1);
 };
 
-} // namespace example
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::example
 
 #endif // QC_MODULE_EXAMPLE_BENCHMARKTASK_H

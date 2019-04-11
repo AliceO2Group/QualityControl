@@ -8,15 +8,12 @@
 #include <Framework/DataRefUtils.h>
 #include <TObjArray.h>
 
-namespace o2
-{
-using header::DataDescription;
-using header::DataOrigin;
-using SubSpecificationType = header::DataHeader::SubSpecificationType;
-using namespace framework;
-namespace quality_control
-{
-namespace core
+using o2::header::DataDescription;
+using o2::header::DataOrigin;
+using SubSpecificationType = o2::header::DataHeader::SubSpecificationType;
+using namespace o2::framework;
+
+namespace o2::quality_control::core
 {
 
 HistoMerger::HistoMerger(std::string mergerName, double publicationPeriodSeconds)
@@ -77,6 +74,4 @@ void HistoMerger::configureInputsOutputs(DataOrigin origin, DataDescription desc
   mOutputSpec = OutputSpec{ origin, description, 0 };
 }
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core

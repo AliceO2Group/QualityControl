@@ -16,11 +16,7 @@
 
 using namespace std;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace daq
+namespace o2::quality_control_modules::daq
 {
 
 BOOST_AUTO_TEST_CASE(instantiate_task)
@@ -48,6 +44,4 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
 //  task.endOfActivity(activity);
 }
 
-} // namespace daq
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::daq

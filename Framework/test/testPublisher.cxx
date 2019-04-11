@@ -17,11 +17,7 @@ using namespace std;
 using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 BOOST_AUTO_TEST_CASE(publisher_test)
@@ -56,6 +52,4 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   }
 }
 
-} /* namespace core */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::core

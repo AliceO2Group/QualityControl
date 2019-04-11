@@ -23,11 +23,7 @@
 
 namespace ba = boost::accumulators;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 using namespace o2::framework;
@@ -128,8 +124,6 @@ class TaskRunner
   ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_TASKRUNNER_H
