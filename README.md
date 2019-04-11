@@ -26,7 +26,7 @@ This is the repository of the data quality control (QC) software for the ALICE O
       * [Addition of a Check](doc/ModulesDevelopment.md#addition-of-a-check)
       * [Commit Code](doc/ModulesDevelopment.md#commit-code)
       * [DPL workflow customization](doc/ModulesDevelopment.md#dpl-workflow-customization)
-      * [Plugging Data Sampling and QC into an existing DPL workflow](doc/ModulesDevelopment.md#plugging-data-sampling-and-qc-into-an-existing-dpl-workflow)
+      * [Plugging Data Sampling and QC into an existing DPL workflow](doc/ModulesDevelopment.md#usage-of-ds-and-qc-in-an-existing-dpl-workflow)
    * [Advanced topics](doc/Advanced.md)
       * [Data Inspector](doc/Advanced.md#data-inspector)
       * [Use MySQL as QC backend](doc/Advanced.md#use-mysql-as-qc-backend)
