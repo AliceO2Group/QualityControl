@@ -47,7 +47,9 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
-    ConfigParamSpec{"config-path", VariantType::String, "", {"Path to the config file."}});
+    ConfigParamSpec{ "config-path", VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
 #include <TH1F.h>
@@ -125,10 +127,11 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
 
 std::string getConfigPath(const ConfigContext& config)
 {
-  std::string userConfigPath = config.options().get<std::string>("config-path");
-  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ?
-                                           std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/readout.json" : "$QUALITYCONTROL_ROOT undefined";
-  std::string path = userConfigPath == "" ? defaultConfigPath : userConfigPath;
+  bool noDS = config.options().get<bool>("no-data-sampling");
+  std::string filename = !noDS ? "readout.json" : "readout-no-sampling.json";
+  auto userConfigPath = config.options().get<std::string>("config-path");
+  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ? std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/" + filename : "$QUALITYCONTROL_ROOT undefined";
+  std::string path = userConfigPath.empty() ? defaultConfigPath : userConfigPath;
   const std::string qcConfigurationSource = std::string("json:/") + path;
   return qcConfigurationSource;
 }
