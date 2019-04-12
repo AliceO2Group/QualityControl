@@ -21,17 +21,30 @@ set(AliceO2_INCLUDE_DIRS ${AliceO2_INCLUDE_DIR})
 list(APPEND AliceO2_INCLUDE_DIRS ${MS_GSL_INCLUDE_DIR})
 
 # find libraries
-find_library(AliceO2_LIBRARY_FRAMEWORK NAMES Framework HINTS ${O2_ROOT}/lib ENV LD_LIBRARY_PATH)
-find_library(AliceO2_LIBRARY_HEADERS NAMES Headers HINTS ${O2_ROOT}/lib ENV LD_LIBRARY_PATH)
-find_library(AliceO2_LIBRARY_CCDB NAMES CCDB HINTS ${O2_ROOT}/lib ENV LD_LIBRARY_PATH)
-find_library(AliceO2_LIBRARY_DebugGUI NAMES DebugGUI HINTS ${O2_ROOT}/lib ENV LD_LIBRARY_PATH)
-
-set(AliceO2_LIBRARIES ${AliceO2_LIBRARY_FRAMEWORK} ${AliceO2_LIBRARY_HEADERS} ${AliceO2_LIBRARY_CCDB} ${AliceO2_LIBRARY_DebugGUI})
 # TODO SEARCH *ALL* LIBRARIES --> AliceO2 should ideally provide the list !!!
+set(O2_LIBRARIES_NAMES
+        Framework
+        Headers
+        CCDB
+        DebugGUI
+        DetectorsBase
+        ITSBase
+        ITSSimulation
+        ITSReconstruction
+        ITSWorkflow
+        ITSMFTReconstruction
+        ITSMFTBase
+        DetectorsCommonDataFormats
+        )
+foreach(lib_name ${O2_LIBRARIES_NAMES})
+    find_library(AliceO2_LIBRARY_${lib_name} NAMES ${lib_name} HINTS ${O2_ROOT}/lib ENV LD_LIBRARY_PATH)
+    list(APPEND AliceO2_LIBRARIES_VAR_NAMES AliceO2_LIBRARY_${lib_name})
+    list(APPEND AliceO2_LIBRARIES ${AliceO2_LIBRARY_${lib_name}})
+endforeach()
 
 # handle the QUIETLY and REQUIRED arguments and set AliceO2_FOUND to TRUE
 # if all listed variables are TRUE
-find_package_handle_standard_args(AliceO2  "AliceO2 could not be found. Install package AliceO2." AliceO2_LIBRARY_FRAMEWORK AliceO2_LIBRARY_HEADERS AliceO2_INCLUDE_DIR)
+find_package_handle_standard_args(AliceO2  "AliceO2 could not be found. Install package AliceO2." ${AliceO2_LIBRARIES_VAR_NAMES} AliceO2_INCLUDE_DIR)
 
 if(${AliceO2_FOUND})
     message(STATUS "AliceO2 found, libraries: ${AliceO2_LIBRARIES}")
@@ -42,9 +55,9 @@ if(${AliceO2_FOUND})
     if(NOT TARGET AliceO2::AliceO2)
         add_library(AliceO2::AliceO2 INTERFACE IMPORTED)
         set_target_properties(AliceO2::AliceO2 PROPERTIES
-          INTERFACE_INCLUDE_DIRECTORIES "${AliceO2_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${AliceO2_LIBRARIES}"
-          )
+                INTERFACE_INCLUDE_DIRECTORIES "${AliceO2_INCLUDE_DIRS}"
+                INTERFACE_LINK_LIBRARIES "${AliceO2_LIBRARIES}"
+                )
     endif()
 endif()
 
