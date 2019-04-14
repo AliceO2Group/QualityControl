@@ -1,15 +1,14 @@
-set(MODULE_NAME "QcITSDPLQCTask")
+set(MODULE_NAME "QcITSQCCluster")
 
 # ---- Files ----
 
 set(SRCS
-  src/ITSDPLQCTask.cxx
+  src/ITSQCCluster.cxx
 )
 
 set(HEADERS
-  include/ITSDPLQCTask/ITSDPLQCTask.h
+  include/ITSQCCluster/ITSQCCluster.h
 )
-
 
 # ---- Library ----
 
@@ -18,10 +17,9 @@ add_library(${MODULE_NAME} SHARED ${SRCS} ${MODULE_NAME}Dict.cxx)
 target_include_directories(
   ${MODULE_NAME}
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
- # PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+#  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${O2_ROOT}/include/AliTPCCommon
 )
-
 
 add_library( libITSBase SHARED IMPORTED )
 add_library( libITSSimulation SHARED IMPORTED )
@@ -55,7 +53,6 @@ set_target_properties( libPyROOT PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SO
 #target_link_libraries(${MODULE_NAME} PUBLIC QualityControl)
 target_link_libraries(${MODULE_NAME} PUBLIC QualityControl libJupyROOT libROOTDataFrame libROOTVecOps libPyROOT libITSBase libITSSimulation libITSReconstruction libITSWorkflow libITSMFTReconstruction libITSMFTBase libDetectorsCommonDataFormats)
 
-
 install(
         TARGETS ${MODULE_NAME}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -65,7 +62,7 @@ install(
 
 # ---- ROOT dictionary ----
 
-generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/ITSDPLQCTask/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
+generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/ITSQCCluster/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
 
 # ---- Tests ----
 
