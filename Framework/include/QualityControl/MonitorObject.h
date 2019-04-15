@@ -98,8 +98,8 @@ class MonitorObject : public TObject
   /// @param check The check to add or replace.
   void addOrReplaceCheck(std::string checkName, CheckDefinition check);
 
-  /// \brief Set the given quality to the check called \ref checkName.
-  /// If no check exists with this name, it throws a \ref AliceO2::Common::ObjectNotFoundError.
+  /// \brief Set the given quality to the check called checkName.
+  /// If no check exists with this name, it throws a AliceO2::Common::ObjectNotFoundError.
   /// @param checkName The name of the check
   /// @param quality The new quality of the check.
   /// \throw AliceO2::Common::ObjectNotFoundError
