@@ -37,7 +37,6 @@ class TaskInterface
  public:
   /// \brief Constructor
   /// Can't be used when dynamically loading the class with ROOT.
-  /// @param name
   /// @param objectsManager
   explicit TaskInterface(ObjectsManager* objectsManager);
 

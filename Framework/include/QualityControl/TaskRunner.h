@@ -1,5 +1,5 @@
 ///
-/// \file   TaskDataProcessor.h
+/// \file   TaskRunner.h
 /// \author Piotr Konopka
 /// \author Barthelemy von Haller
 ///

@@ -1,32 +1,37 @@
 # @author  Barthélémy von Haller
 
-include(FindDoxygen)
+find_package(Doxygen OPTIONAL_COMPONENTS dot)
 
-if(NOT DOXYGEN_DOT_FOUND)
-  message(
-    WARNING
-      "Graphviz doesn't seem to be installed. Doxygen will not be able to generate graphs. Consider installing this package."
-  )
-endif(NOT DOXYGEN_DOT_FOUND)
+if (DOXYGEN_FOUND)
 
-if(DOXYGEN_FOUND)
   # Configure the doxygen config file with current settings
-  set("DOC_OUTPUT_DIR" "${CMAKE_CURRENT_BINARY_DIR}")
-  configure_file(doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/documentation-config.doxygen @ONLY)
+  set(DOXYGEN_EXCLUDE "${CMAKE_SOURCE_DIR}/Framework/src/imgui")
+  set(DOXYGEN_USE_MDFILE_AS_MAINPAGE "README.md")
+  set(DOXYGEN_MARKDOWN_SUPPORT "YES")
+  set(DOXYGEN_PROJECT_LOGO "${CMAKE_SOURCE_DIR}/doc/images/o2_logo.png")
+  set(DOXYGEN_GENERATE_TREEVIEW YES)
+  set(DOXYGEN_HIDE_UNDOC_RELATIONS NO)
+  set(DOXYGEN_HAVE_DOT YES)
+  set(DOXYGEN_DOT_NUM_THREADS 4)
+  set(DOXYGEN_UML_LOOK YES)
+  set(DOXYGEN_UML_LIMIT_NUM_FIELDS 50)
+  set(DOXYGEN_TEMPLATE_RELATIONS YES)
+  set(DOXYGEN_DOT_IMAGE_FORMAT svg)
+  set(DOXYGEN_INTERACTIVE_SVG YES)
+  set(DOXYGEN_DOT_GRAPH_MAX_NODES 100)
+  set(DOXYGEN_DOT_TRANSPARENT YES)
+  set(DOXYGEN_INPUT_FILTER "${CMAKE_SOURCE_DIR}/doc/scripts/filter_for_doxygen.sh")
+  set(DOXYGEN_FILTER_PATTERNS "*.md")
 
-  # target doc
-  add_custom_target(
-    doc ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/documentation-config.doxygen
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Generating API documentation using doxygen for ${PROJECT_NAME}
-                     \n  Output will be available in ${DOC_OUTPUT_DIR}/html"
-    VERBATIM
+  # add target "doc"
+  doxygen_add_docs(doc
+          ${CMAKE_SOURCE_DIR}/README.md
+          ${CMAKE_SOURCE_DIR}/Framework
+          ${CMAKE_SOURCE_DIR}/Modules/
+          ${CMAKE_SOURCE_DIR}/Framework/include
+          ${CMAKE_SOURCE_DIR}/doc
+          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+          COMMENT "Generating doxygen documentation for ${PROJECT_NAME}"
   )
 
-  # installation
-  option(DOC_INSTALL "Install the documentation when calling \"make install\"" OFF)
-  if(DOC_INSTALL)
-    message(STATUS "Documentation will be installed but you *must* run `make doc`")
-    install(DIRECTORY ${DOC_OUTPUT_DIR}/html DESTINATION share/doc/${PROJECT_NAME} COMPONENT doc)
-  endif(DOC_INSTALL)
 endif(DOXYGEN_FOUND)
