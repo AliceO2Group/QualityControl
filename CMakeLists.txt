@@ -22,7 +22,7 @@ include(GNUInstallDirs)
 project(
   QualityControl
   VERSION
-    0.6.2 # TODO update this automatically when there are new releases
+    0.12.0 # TODO update this automatically when there are new releases
     DESCRIPTION
     "O2 Quality Control"
   LANGUAGES CXX

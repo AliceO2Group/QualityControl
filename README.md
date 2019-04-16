@@ -1,5 +1,7 @@
+<!--  \cond EXCLUDE_FOR_DOXYGEN -->
 [![aliBuild](https://img.shields.io/badge/aliBuild-dashboard-lightgrey.svg)](https://alisw.cern.ch/dashboard/d/000000001/main-dashboard?orgId=1&var-storagename=All&var-reponame=All&var-checkname=build%2FQualityControl%2Fo2-dataflow%2F0&var-upthreshold=30m&var-minuptime=30)
 [![JIRA](https://img.shields.io/badge/JIRA-Report%20issue-blue.svg)](https://alice.its.cern.ch/jira/secure/CreateIssue.jspa?pid=11201&issuetype=1)
+<!--  \endcond  -->
 
 This is the repository of the data quality control (QC) software for the ALICE O<sup>2</sup> system. 
 
