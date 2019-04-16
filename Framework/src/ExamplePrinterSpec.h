@@ -17,11 +17,10 @@ namespace o2::quality_control::core
 class ExamplePrinterSpec : public framework::Task
 {
  public:
-
   void run(ProcessingContext& processingContext) final
   {
     LOG(INFO) << "Received data";
-    std::shared_ptr<TObjArray> moArray{std::move(DataRefUtils::as<TObjArray>(*processingContext.inputs().begin()))};
+    std::shared_ptr<TObjArray> moArray{ std::move(DataRefUtils::as<TObjArray>(*processingContext.inputs().begin())) };
 
     if (moArray->IsEmpty()) {
       LOG(INFO) << "Array is empty";
@@ -42,13 +41,12 @@ class ExamplePrinterSpec : public framework::Task
 
     std::string bins = "BINS:";
     for (int i = 0; i < histo->GetNbinsX(); i++) {
-      bins += " " + std::to_string((int) histo->GetBinContent(i));
+      bins += " " + std::to_string((int)histo->GetBinContent(i));
     }
     LOG(INFO) << bins;
   }
-
 };
 
-} // o2::quality_control::core
+} // namespace o2::quality_control::core
 
 #endif //QUALITYCONTROL_EXAMPLEPRINTERSPEC_H

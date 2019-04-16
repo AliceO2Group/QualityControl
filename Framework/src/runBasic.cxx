@@ -40,14 +40,17 @@ void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
 }
+
 void customize(std::vector<ChannelConfigurationPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
 }
+
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
-    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
+    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, 
+                     { "Skips data sampling, connects directly the task to the producer." } });
 }
 
 #include <FairLogger.h>
@@ -110,10 +113,10 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      {"checked-mo", "QC", Checker::createCheckerDataDescription("QcTask"), 0}
-    },
+      { "checked-mo", "QC", Checker::createCheckerDataDescription("QcTask"), 0 } },
     Outputs{},
-    adaptFromTask<ExamplePrinterSpec>() };
+    adaptFromTask<ExamplePrinterSpec>()
+  };
   specs.push_back(printer);
 
   return specs;
