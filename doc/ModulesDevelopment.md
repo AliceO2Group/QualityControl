@@ -249,7 +249,9 @@ Once done, recompile it (see section above) and run it. You should see the secon
 
 TODO give actual steps
 
-TODO Rename the task in teh config file and see in QCG that it appears under a different name.
+You can rename the task by simply changing its name in the config file. Change the name from 
+`QcTask` to whatever you like and run it again (no need to recompile). You should see the new name
+appear in the QCG.  
 
 ## Addition of a Check
 

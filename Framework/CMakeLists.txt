@@ -18,6 +18,7 @@ set(
   src/RepositoryBenchmark.cxx
   src/HistoMerger.cxx
   src/InfrastructureGenerator.cxx
+  src/runnerUtils.h
 )
 
 set(
