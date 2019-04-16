@@ -7,7 +7,7 @@
 
 ClassImp(o2::quality_control::core::Quality)
 
-  namespace o2::quality_control::core
+namespace o2::quality_control::core
 {
 
   const unsigned int Quality::NullLevel =
