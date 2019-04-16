@@ -65,8 +65,10 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 
 #include <iostream>
 #include <string>
+#include <Configuration/ConfigurationFactory.h>
 
 std::string getConfigPath(const ConfigContext& config);
+std::string getTaskName(std::string configurationSource);
 using namespace o2;
 using namespace o2::quality_control::checker;
 
@@ -90,7 +92,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      {"checked-mo", "QC", Checker::createCheckerDataDescription("daqTask"), 0}
+      {"checked-mo", "QC", Checker::createCheckerDataDescription(getTaskName(qcConfigurationSource)), 0}
     },
     Outputs{},
     AlgorithmSpec{
@@ -134,4 +136,23 @@ std::string getConfigPath(const ConfigContext& config)
   std::string path = userConfigPath.empty() ? defaultConfigPath : userConfigPath;
   const std::string qcConfigurationSource = std::string("json:/") + path;
   return qcConfigurationSource;
+}
+
+/**
+ * Returns the name of the first task encountered in the config file.
+ * Ad-hoc solution to avoid hard-coding the task when we create the printer (he needs it to know the data description
+ * of the data coming out of the checker).
+ * @param config
+ * @return The name of the first task in the config file.
+ */
+std::string getTaskName(std::string configurationSource)
+{
+  auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
+
+  for (const auto&[taskName, taskConfig] : config->getRecursive("qc.tasks")) {
+    std::cout << "Name : " << taskName << std::endl;
+    return taskName;
+  }
+
+  throw;
 }
