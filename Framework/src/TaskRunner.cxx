@@ -66,9 +66,8 @@ void TaskRunner::initCallback(InitContext& iCtx)
   iCtx.services().get<framework::CallbackService>().set(framework::CallbackService::Id::Reset, [this]() { reset(); });
 
   // setup monitoring
-  std::string monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url");
+  std::string monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
   mCollector = MonitoringFactory::Get(monitoringUrl);
-  //  mCollector = MonitoringFactory::Get("influxdb-udp://aido2mon-gpn.cern.ch:8087");
   mCollector->enableProcessMonitoring();
 
   // setup publisher
