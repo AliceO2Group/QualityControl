@@ -18,6 +18,7 @@
       * [Commit Code](#commit-code)
       * [DPL workflow customization](#dpl-workflow-customization)
       * [Usage of DS and QC in an existing DPL workflow](#usage-of-ds-and-qc-in-an-existing-dpl-workflow)
+      * [Addition of parameters to a task](#addition-of-parameters-to-a-task)
 
 <!-- Added by: bvonhall, at:  -->
 
@@ -281,6 +282,22 @@ TODO
 ## Usage of DS and QC in an existing DPL workflow 
 
 TODO
+
+## Addition of parameters to a task
+
+One can tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
+
+For example, to add two parameters of different types do : 
+```
+void customize(std::vector<ConfigParamSpec>& workflowOptions)
+{
+  workflowOptions.push_back(
+    ConfigParamSpec{ "config-path", VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
+}
+```
+
 
 ---
 
