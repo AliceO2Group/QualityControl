@@ -11,6 +11,9 @@
       "Activity": {
         "number": "42",
         "type": "2"
+      },
+      "monitoring": {
+	"url": "influxdb-udp://aido2mon-gpn.cern.ch:8087"
       }
     },
     "tasks": {
