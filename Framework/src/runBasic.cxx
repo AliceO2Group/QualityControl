@@ -49,8 +49,7 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
-    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, 
-                     { "Skips data sampling, connects directly the task to the producer." } });
+    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
 #include <FairLogger.h>
