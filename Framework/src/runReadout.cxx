@@ -98,7 +98,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
     Inputs{
       { "checked-mo", "QC", Checker::createCheckerDataDescription("daqTask"), 0 } },
     Outputs{},
-    adaptFromTask<ExamplePrinterSpec>()
+    adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
   };
   specs.push_back(printer);
 
