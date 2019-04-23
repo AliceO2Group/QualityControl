@@ -11,6 +11,9 @@
       "Activity": {
         "number": "42",
         "type": "2"
+      },
+      "monitoring": {
+	"url": "infologger:///debug?qc"
       }
     },
     "tasks": {
