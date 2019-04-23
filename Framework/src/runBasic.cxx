@@ -40,10 +40,12 @@ void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
 }
+
 void customize(std::vector<ChannelConfigurationPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
 }
+
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
@@ -59,6 +61,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"
+#include "ExamplePrinterSpec.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -109,31 +112,9 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "checked-mo", "QC", Checker::createCheckerDataDescription("QcTask"), 0 }
-    },
+      { "checked-mo", "QC", Checker::createCheckerDataDescription("QcTask"), 0 } },
     Outputs{},
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [](InitContext&) {
-
-        return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
-          LOG(INFO) << "printer invoked";
-          std::shared_ptr<TObjArray> moArray{ std::move(DataRefUtils::as<TObjArray>(*processingContext.inputs().begin())) };
-
-          for (const auto& to : *moArray) {
-            MonitorObject* mo = dynamic_cast<MonitorObject*>(to);
-
-            if (mo->getName() == "example") {
-              auto* g = dynamic_cast<TH1F*>(mo->getObject());
-              std::string bins = "BINS:";
-              for (int i = 0; i < g->GetNbinsX(); i++) {
-                bins += " " + std::to_string((int) g->GetBinContent(i));
-              }
-              LOG(INFO) << bins;
-            }
-          }
-        };
-      }
-    }
+    adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
   };
   specs.push_back(printer);
 

@@ -62,6 +62,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include "QualityControl/CheckerFactory.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
+#include "ExamplePrinterSpec.h"
 
 #include <iostream>
 #include <string>
@@ -83,55 +84,36 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
+  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
-  // Generation of the QC topology
+  // Generation of Data Sampling infrastructure
+  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+
+  // Generation of the QC topology (one task, one checker in this case)
   quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
+  // Finally the printer
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      {"checked-mo", "QC", Checker::createCheckerDataDescription("daqTask"), 0}
-    },
+      { "checked-mo", "QC", Checker::createCheckerDataDescription("daqTask"), 0 } },
     Outputs{},
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [](InitContext& initContext) {
-
-        return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
-          std::shared_ptr<TObjArray> moArray{
-            std::move(DataRefUtils::as<TObjArray>(*processingContext.inputs().begin()))
-          };
-
-          for (const auto& to : *moArray) {
-            MonitorObject* mo = dynamic_cast<MonitorObject*>(to);
-
-            if (mo->getName() == "example") {
-              auto* g = dynamic_cast<TH1F*>(mo->getObject());
-              std::string bins = "BINS:";
-              for (int i = 0; i < g->GetNbinsX(); i++) {
-                bins += " " + std::to_string((int) g->GetBinContent(i));
-              }
-              LOG(INFO) << bins;
-            }
-          }
-        };
-      }
-    }
+    adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
   };
   specs.push_back(printer);
-
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
-  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
   return specs;
 }
 
 std::string getConfigPath(const ConfigContext& config)
 {
+  // Determine the default config file path and name (based on option no-data-sampling and the QC_ROOT path)
   bool noDS = config.options().get<bool>("no-data-sampling");
   std::string filename = !noDS ? "readout.json" : "readout-no-sampling.json";
-  auto userConfigPath = config.options().get<std::string>("config-path");
   std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ? std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/" + filename : "$QUALITYCONTROL_ROOT undefined";
-  std::string path = userConfigPath.empty() ? defaultConfigPath : userConfigPath;
-  const std::string qcConfigurationSource = std::string("json:/") + path;
-  return qcConfigurationSource;
+  // The the optional one by the user
+  auto userConfigPath = config.options().get<std::string>("config-path");
+  // Finally build the config path based on the default or the user-base one
+  std::string path = std::string("json:/") + (userConfigPath.empty() ? defaultConfigPath : userConfigPath);
+  return path;
 }
