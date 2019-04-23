@@ -28,7 +28,7 @@
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query" : "its-rawdata:ITS/RAWDATA/0"
+          "query" : "tst-rawdata:TST/RAWDATA/0"
         },
         "taskParameters": {
           "nothing": "rien"

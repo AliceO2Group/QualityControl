@@ -76,37 +76,50 @@ add_root_dictionary(QualityControl
 
 # ---- Executables ----
 
-set(EXE_SRCS
-    src/runInformationService.cxx
-    src/runInformationServiceDump.cxx
-    src/runBasic.cxx
-    src/runAdvanced.cxx
-    src/runReadout.cxx
-    src/runMergerTest.cxx
-    src/runReadoutForDataDump.cxx
-    src/runRepositoryBenchmark.cxx)
+set(
+  EXE_SRCS
+  src/runInformationService.cxx
+  src/runInformationServiceDump.cxx
+  src/runDataProducer.cxx
+  src/runBasic.cxx
+  src/runAdvanced.cxx
+  src/runReadout.cxx
+  src/runMergerTest.cxx
+  src/runReadoutForDataDump.cxx
+  src/runRepositoryBenchmark.cxx
+  src/runQC.cxx
+)
 
-set(EXE_NAMES
-    o2-qc-info-service
-    o2-qc-info-service-dump
-    o2-qc-run-basic
-    o2-qc-run-advanced
-    o2-qc-run-readout
-    o2-qc-run-merger-test
-    o2-qc-run-readout-for-data-dump
-    o2-qc-repository-benchmark)
+set(
+  EXE_NAMES
+  o2-qc-info-service
+  o2-qc-info-service-dump
+  o2-qc-run-producer
+  o2-qc-run-basic
+  o2-qc-run-advanced
+  o2-qc-run-readout
+  o2-qc-run-merger-test
+  o2-qc-run-readout-for-data-dump
+  o2-qc-repository-benchmark
+  o2-qc-run-qc
+)
 
-# These were the original names before the convention changed. We will get rid
-# of them but for the time being we want to create symlinks to avoid confusion.
-set(EXE_OLD_NAMES
-    qcInfoService
-    qcInfoServiceDump
-    qcRunBasic
-    qcRunAdvanced
-    qcRunReadout
-    runMergerTest
-    qcRunReadoutForDataDump
-    repositoryBenchmark)
+# These were the original names before the convention changed.
+# We will get rid of them but for the time being we want to create symlinks to avoid confusion.
+set(
+  EXE_OLD_NAMES
+  qcInfoService
+  qcInfoServiceDump
+  qcRunProducer
+  qcRunBasic
+  qcRunAdvanced
+  qcRunReadout
+  runMergerTest
+  qcRunReadoutForDataDump
+  repositoryBenchmark
+  qcRunQC
+)
+
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)

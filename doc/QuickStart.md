@@ -46,23 +46,29 @@ Whenever you want to work with O2 and QualityControl, do either `alienv enter O2
 
 ## Execution
 
-To make sure that your system is correctly setup, we are going to run a basic QC workflow. We will use central services for the repository and the GUI. If you want to set them up on your computer or in your lab, please have a look [here](#local-ccdb-setup) and [here](#local-qcg-setup).
+To make sure that your system is correctly setup, we are going to run a basic QC workflow attached to a simple data producer. We will use central services for the repository and the GUI. If you want to set them up on your computer or in your lab, please have a look [here](#local-ccdb-setup) and [here](#local-qcg-setup).
 
 ### Basic workflow
 
-We will run a basic workflow described in the following schema.
+We will run a basic workflow with attached QC described in the following schema.
 
 ![alt text](images/basic-schema.png)
 
 The _Producer_ is a random data generator. In a more realistic setup it would be a processing device or the _Readout_. The _Data Sampling_ is the system in charge of dispatching data samples from the main data flow to the _QC tasks_. It can be configured to dispatch different proportion or different types of data. The _Checker_ is in charge of evaluating the _MonitorObjects_ produced by the _QC tasks_, for example by checking that the mean is above a certain limit. It can also modify the aspect of the histogram, e.g. by changing the background color or adding a PaveText. Finally the _Checker_ is also in charge of storing the resulting _MonitorObject_ into the repository where it will be accessible by the web GUI. It also pushes it to a _Printer_ for the sake of this tutorial.
 
-To run it simply do
+To run it simply do:
 
     o2-qc-run-basic
 
-Thanks to the Data Processing Layer (DPL, more details later) it is a single process that steers all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped, probably abnormaly.
+Thanks to the Data Processing Layer (DPL, more details later) it is a single process that steers all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped, probably abnormally.
 
 ![alt text](images/basic-dpl-gui.png)
+
+The presented example consists of one DPL workflow which has both the main processing and QC infrastructure declared inside. In the real case, we would usually prefer to attach the QC without modifying the original topology. It can be done by merging two (or more) workflows, as below:
+
+    o2-qc-run-producer | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+ 
+This command uses two executables. The first one contains the _Producer, which represents a main data flow. The second executable generates the QC infrastructure based on given configuration file. These two workflows are joined together using the pipe | character. This example illustrates how to add QC to any DPL workflow by using `o2-qc-run-qc` and passing it a configuration file. 
 
 __Repository and GUI__
 
@@ -84,7 +90,7 @@ In this second example, we are going to use the Readout as data source.
 
 ![alt text](images/readout-schema.png)
 
-This workflow is a bit different from the basic one. The _Readout_ is not a device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the dispatcher, which then injects data to the task. This is handled in the _Readout_ if you enable the corresponding configuration flag.
+This workflow is a bit different from the basic one. The _Readout_ is not a device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the _Dispatcher_, which then injects data to the task. This is handled in the _Readout_ if you enable the corresponding configuration flag.
 
 TODO make the qc task use the daq code
 
@@ -108,9 +114,9 @@ Start Readout :
 readout.exe file://$READOUT_ROOT/etc/readout.cfg
 ```
 
-Start the QC and DS (DataSampling) workflow :
+Start the proxy, DS (DataSampling) and QC workflows :
 ```
-o2-qc-run-readout
+o2-qc-run-readout | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
 ```
 
 The data sampling is configured to sample 1% of the data as the readout should run by default at full speed.
@@ -123,7 +129,7 @@ The payload received is a 2MB (configurable) data page made of CRU pages (8kB).
 __Configuration file__
 
 The configuration file is installed in `$QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `$QUALITYCONTROL_ROOT/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
-To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config-path` when launch `o2-qc-run-readout`.
+To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config-path` when launch `o2-qc-run-qc`.
 
 To change the fraction of the data being monitored, change the option `fraction`.
 
