@@ -27,11 +27,12 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
      * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/).
 
 3. Prepare the QualityControl development package
-    * `aliBuild init QualityControl@master`
+    * `aliBuild init QualityControl@master --defaults o2`
 
 4. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `flpproto`.
-    * `aliBuild build flpproto --default o2`
+    * `aliBuild build flpproto --defaults o2`
 
+   At this point you might encounter a message about missing system requirements. Run `aliDoctor flpproto` to get a full information about what is missing and how to install it.
 5. Install GLFW to have GUIs in the DPL (optional, DPL GUIs do not work in containers).
     * On CC7 : `sudo yum install glfw-devel --enablerepo=epel`
     * On Mac : `brew install glfw`
