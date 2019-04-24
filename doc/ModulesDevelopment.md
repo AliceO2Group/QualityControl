@@ -252,7 +252,7 @@ TODO give actual steps
 
 You can rename the task by simply changing its name in the config file. Change the name from 
 `QcTask` to whatever you like and run it again (no need to recompile). You should see the new name
-appear in the QCG.
+appear in the QCG. 
 
 ## Addition of a Check
 
