@@ -62,12 +62,14 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include "QualityControl/CheckerFactory.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
+#include "runnerUtils.h"
 #include "ExamplePrinterSpec.h"
 
 #include <iostream>
 #include <string>
 
 std::string getConfigPath(const ConfigContext& config);
+
 using namespace o2;
 using namespace o2::quality_control::checker;
 
@@ -96,7 +98,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "checked-mo", "QC", Checker::createCheckerDataDescription("daqTask"), 0 } },
+      { "checked-mo", "QC", Checker::createCheckerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
     Outputs{},
     adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
   };

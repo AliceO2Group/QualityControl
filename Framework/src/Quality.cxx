@@ -7,9 +7,10 @@
 
 ClassImp(o2::quality_control::core::Quality)
 
-  namespace o2::quality_control::core
+  // clang-format off
+namespace o2::quality_control::core
 {
-
+  // clang-format on
   const unsigned int Quality::NullLevel =
     10; // could be changed if needed but I don't see why we would need more than 10 levels
 
