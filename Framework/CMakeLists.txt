@@ -19,6 +19,7 @@ set(
   src/HistoMerger.cxx
   src/InfrastructureGenerator.cxx
   src/runnerUtils.h
+  src/ServiceDiscovery.cxx
 )
 
 set(
@@ -135,6 +136,7 @@ set(
   src/runMergerTest.cxx
   src/runReadoutForDataDump.cxx
   src/runRepositoryBenchmark.cxx
+  src/ServiceDiscovery.cxx
 )
 
 set(
@@ -147,6 +149,7 @@ set(
   runMergerTest
   qcRunReadoutForDataDump
   repositoryBenchmark
+  serviceDiscovery
 )
 
 list(LENGTH EXE_SRCS count)
@@ -155,7 +158,7 @@ foreach(i RANGE ${count})
   list(GET EXE_SRCS ${i} src)
   list(GET EXE_NAMES ${i} name)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE QualityControl)
+  target_link_libraries(${name} PRIVATE QualityControl CURL::CURL)
 endforeach()
 
 # ---- Gui ----
