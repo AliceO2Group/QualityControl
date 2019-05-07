@@ -41,7 +41,7 @@ class ServiceDiscovery
     const std::string id; ///< Instance (service) ID
     std::thread healthThread; ///< Health check thread
     std::atomic<bool> mThreadRunning; ///< Health check thread running flag
-    CURL* initCurl(); ///< Initilizes CURL
+    CURL* initCurl(); ///< Initializes CURL
 
     /// Sends PUT request
     void send(const std::string &path, std::string&& request);
