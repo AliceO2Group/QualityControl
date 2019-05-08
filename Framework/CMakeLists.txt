@@ -31,6 +31,7 @@ set(
   include/QualityControl/CheckerFactory.h
   include/QualityControl/DatabaseInterface.h
   include/QualityControl/CcdbDatabase.h
+  include/QualityControl/ServiceDiscovery.h
   include/QualityControl/TaskRunner.h
   include/QualityControl/TaskRunnerFactory.h
   include/QualityControl/HistoMerger.h
