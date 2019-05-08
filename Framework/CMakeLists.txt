@@ -117,6 +117,7 @@ target_link_libraries(
     $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
     $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL>
     ROOT::Gui
+    CURL::CURL
 )
 
 target_compile_definitions(QualityControl
@@ -136,7 +137,6 @@ set(
   src/runMergerTest.cxx
   src/runReadoutForDataDump.cxx
   src/runRepositoryBenchmark.cxx
-  src/ServiceDiscovery.cxx
 )
 
 set(
@@ -149,7 +149,6 @@ set(
   runMergerTest
   qcRunReadoutForDataDump
   repositoryBenchmark
-  serviceDiscovery
 )
 
 list(LENGTH EXE_SRCS count)
