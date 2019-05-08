@@ -136,7 +136,6 @@ set(
   src/runMergerTest.cxx
   src/runReadoutForDataDump.cxx
   src/runRepositoryBenchmark.cxx
-  src/ServiceDiscovery.cxx
 )
 
 set(
@@ -149,7 +148,6 @@ set(
   runMergerTest
   qcRunReadoutForDataDump
   repositoryBenchmark
-  serviceDiscovery
 )
 
 list(LENGTH EXE_SRCS count)
