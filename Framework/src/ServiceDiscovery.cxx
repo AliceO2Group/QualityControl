@@ -12,18 +12,25 @@
 #include <boost/algorithm/string/split.hpp>       
 #include <boost/algorithm/string.hpp> 
 
+static inline std::string GetDefaultUrl()
+{
+  return boost::asio::ip::host_name() + ":" + std::to_string(7777);
+}
+
 namespace o2::quality_control::core
 {
 
-ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& id) :
-  curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), consulUrl(url), id(id)
+ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& id, const std::string& healthEndpoint = GetDefaultUrl()) :
+  curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mId(id), mHealthEndpoint(healthEndpoint)
 {
+ mHealthThread =  std::thread([=] { runHealthServer(std::stoi(mHealthEndpoint.substr(mHealthEndpoint.find(":") + 1))); });
+  _register("");
 }
 
 ServiceDiscovery::~ServiceDiscovery()
 {
   mThreadRunning = false;
-  healthThread.join();
+  mHealthThread.join();
   deregister();
 }
 
@@ -44,45 +51,40 @@ CURL* ServiceDiscovery::initCurl()
   return curl;
 }
 
-static inline std::string GetDefaultUrl()
+void ServiceDiscovery::_register(const std::string& objects)
 {
-  return boost::asio::ip::host_name() + ":" + std::to_string(7777);
-}
-
-void ServiceDiscovery::_register(const std::string& objects, const std::string& healthUrl = GetDefaultUrl())
-{
-   std::vector<std::string> objectsVec;
-   boost::split(objectsVec, objects, boost::is_any_of(","), boost::token_compress_on);
-   boost::property_tree::ptree tag, tags;
-   for (auto& object : objectsVec) {
-     tag.put("", object);
-     tags.push_back(std::make_pair("", tag));
+   boost::property_tree::ptree pt;
+   if (!objects.empty()) {
+     std::vector<std::string> objectsVec;
+     boost::split(objectsVec, objects, boost::is_any_of(","), boost::token_compress_on);
+     boost::property_tree::ptree tag, tags;
+     for (auto& object : objectsVec) {
+       tag.put("", object);
+       tags.push_back(std::make_pair("", tag));
+     }
+     pt.add_child("Tags", tags);
    }
 
    boost::property_tree::ptree checks, check;
-   check.put("Id", id);
-   check.put("Name", "Health check " + id);
-   check.put("Interval", "30s");
-   check.put("TCP", healthUrl);
+   check.put("Id", mId);
+   check.put("Name", "Health check " + mId);
+   check.put("Interval", "5s");
+   check.put("TCP", mHealthEndpoint);
    checks.push_back(std::make_pair("", check));
 
-   boost::property_tree::ptree pt;
-   pt.put("Name", id);
-   pt.put("ID", id);
-   pt.add_child("Tags", tags);   
+   pt.put("Name", mId);
+   pt.put("ID", mId);
    pt.add_child("Checks", checks);  
    
    std::stringstream ss;
    boost::property_tree::json_parser::write_json(ss, pt);
-   
-   healthThread =  std::thread([=] { runHealthServer(std::stoi(healthUrl.substr(healthUrl.find(":") + 1))); });
    
    send("/v1/agent/service/register", ss.str());
 }
 
 void ServiceDiscovery::deregister()
 {
-  send("/v1/agent/service/deregister/" + id, "");
+  send("/v1/agent/service/deregister/" + mId, "");
 }
 
 void ServiceDiscovery::runHealthServer(unsigned int port)
@@ -113,7 +115,7 @@ void ServiceDiscovery::deleteCurl(CURL * curl)
 
 void ServiceDiscovery::send(const std::string& path, std::string&& post)
 {
-  std::string uri = consulUrl + path;
+  std::string uri = mConsulUrl + path;
   CURLcode response;
   long responseCode;
   CURL *curl = curlHandle.get();
