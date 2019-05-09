@@ -52,6 +52,10 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   populateConfig(mTaskName);
+
+  // register with the discovery service
+  mServiceDiscovery = std::make_unique<ServiceDiscovery>("http://consul-test.cern.ch:8500", mTaskConfig.taskName, "");
+  mServiceDiscovery->_register("obj1,obj2,obj3");
 }
 
 TaskRunner::~TaskRunner() = default;
