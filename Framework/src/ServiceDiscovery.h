@@ -15,20 +15,27 @@ namespace o2::quality_control::core
 {
 
 /// \brief Information service for QC
+///
+/// Register a endpoint to Consul which then performs health checks it
+/// Allow to publish list of online objects
 class ServiceDiscovery
 {
   public:
-    /// Sets up CURL
+    /// Sets up CURL and health check
+    /// \param url 		Consul URL
+    /// \param id 		Unique instance ID
+    /// \param healthEndpoint	Local endpoint that is then used for health checks
+    ///				(default value it set to  <hostname>:7777)
     ServiceDiscovery(const std::string& url, const std::string& id, const std::string& healthEndpoint);
 
     /// Stops the health thread and deregisteres from Consul health checks
     ~ServiceDiscovery();
 
-    /// Registeres service and health check by sending HTTP PUT request to Consul server
-    /// Provides list of published tasks as Consul tags
+    /// Registeres list of online objects by sending HTTP PUT request to Consul server
+    /// \param objects 		List of comma separated tasks
     void _register(const std::string& objects);
 
-    /// Deregisters service
+    /// Deregisteres service
     void deregister();
   private:
     /// Custom deleter of CURL object
