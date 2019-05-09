@@ -55,6 +55,10 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   populateConfig(taskName);
+
+  // register with the discovery service
+  mServiceDiscovery = std::make_unique<ServiceDiscovery>("http://consul-test.cern.ch:8500", mTaskConfig.taskName, "");
+  mServiceDiscovery->_register("obj1,obj2,obj3");
 }
 
 TaskRunner::~TaskRunner() = default;
@@ -306,6 +310,7 @@ void TaskRunner::startOfActivity()
   Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->startOfActivity(activity);
+//  mObjectsManager->
 }
 
 void TaskRunner::endOfActivity()
