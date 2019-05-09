@@ -32,7 +32,7 @@ class ServiceDiscovery
     ~ServiceDiscovery();
 
     /// Registeres list of online objects by sending HTTP PUT request to Consul server
-    /// \param objects 		List of comma separated tasks
+    /// \param objects 		List of comma separated objects
     void _register(const std::string& objects);
 
     /// Deregisteres service
