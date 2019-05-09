@@ -124,12 +124,9 @@ void ServiceDiscovery::send(const std::string& path, std::string&& post)
   CURLcode response;
   long responseCode;
   CURL *curl = curlHandle.get();
-  struct curl_slist* headers = curl_slist_append(headers, "Content-Type: application/json");
-  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(curl, CURLOPT_URL, uri.c_str());
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post.c_str());
   response = curl_easy_perform(curl);
-  curl_slist_free_all(headers);
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
   if (response != CURLE_OK) {
     std::cerr << curl_easy_strerror(response) << std::endl;
