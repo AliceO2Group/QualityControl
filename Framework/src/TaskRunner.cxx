@@ -52,10 +52,6 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   populateConfig(mTaskName);
-
-  // register with the discovery service
-  mServiceDiscovery = std::make_unique<ServiceDiscovery>("http://consul-test.cern.ch:8500", mTaskConfig.taskName, "");
-  mServiceDiscovery->_register("obj1,obj2,obj3");
 }
 
 TaskRunner::~TaskRunner() = default;
@@ -73,6 +69,9 @@ void TaskRunner::initCallback(InitContext& iCtx)
   std::string monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc"); // "influxdb-udp://aido2mon-gpn.cern.ch:8087"
   mCollector = MonitoringFactory::Get(monitoringUrl);
   mCollector->enableProcessMonitoring();
+
+  mServiceDiscovery = std::make_unique<ServiceDiscovery>("http://consul-test.cern.ch:8500", mTaskConfig.taskName, "");
+  mServiceDiscovery->_register("obj1,obj2,obj3");
 
   // setup publisher
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig);

@@ -99,11 +99,10 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
   try {
     boost::asio::io_service io_service;
     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
-    for (;;) {
-      if (!mThreadRunning) break;
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    while (mThreadRunning) {
       tcp::socket socket(io_service);
       acceptor.accept(socket);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
   catch (std::exception& e)
