@@ -2,15 +2,15 @@
 /// \author Adam Wegrzynek <adam.wegrzynek@cern.ch>
 ///
 
-#include "ServiceDiscovery.h"
+#include "QualityControl/ServiceDiscovery.h"
 #include <iostream>
 #include <string>
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/asio/ip/host_name.hpp>
-#include <boost/algorithm/string/split.hpp>       
-#include <boost/algorithm/string.hpp> 
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string.hpp>
 
 static inline std::string GetDefaultUrl()
 {
@@ -23,7 +23,12 @@ namespace o2::quality_control::core
 ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& id, const std::string& healthEndpoint = GetDefaultUrl()) :
   curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mId(id), mHealthEndpoint(healthEndpoint)
 {
- mHealthThread =  std::thread([=] { runHealthServer(std::stoi(mHealthEndpoint.substr(mHealthEndpoint.find(":") + 1))); });
+  // parameter check
+  if(mHealthEndpoint.find(':') == std::string::npos) {
+    mHealthEndpoint = GetDefaultUrl();
+  }
+
+  mHealthThread =  std::thread([=] { runHealthServer(std::stoi(mHealthEndpoint.substr(mHealthEndpoint.find(":") + 1))); });
   _register("");
 }
 
@@ -74,11 +79,11 @@ void ServiceDiscovery::_register(const std::string& objects)
 
    pt.put("Name", mId);
    pt.put("ID", mId);
-   pt.add_child("Checks", checks);  
-   
+   pt.add_child("Checks", checks);
+
    std::stringstream ss;
    boost::property_tree::json_parser::write_json(ss, pt);
-   
+
    send("/v1/agent/service/register", ss.str());
 }
 

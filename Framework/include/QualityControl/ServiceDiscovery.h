@@ -46,7 +46,7 @@ class ServiceDiscovery
 
     const std::string mConsulUrl; ///< Consul URL
     const std::string mId; ///< Instance (service) ID
-    const std::string mHealthEndpoint; ///< hostname and port of health check endpoint
+    std::string mHealthEndpoint; ///< hostname and port of health check endpoint
     std::thread mHealthThread; ///< Health check thread
     std::atomic<bool> mThreadRunning; ///< Health check thread running flag
     CURL* initCurl(); ///< Initializes CURL
