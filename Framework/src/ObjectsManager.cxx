@@ -63,7 +63,7 @@ MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
 {
   TObject* mo = mMonitorObjects.FindObject(objectName.c_str());
 
-  if (mo) {
+  if (mo != nullptr) {
     return dynamic_cast<MonitorObject*>(mo);
   } else {
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
@@ -81,5 +81,13 @@ void ObjectsManager::addCheck(const TObject* object, const std::string& checkNam
 {
   addCheck(object->GetName(), checkName, checkClassName, checkLibraryName);
 }
+
+void ObjectsManager::addMetadata(const std::string& objectName, const std::string& key, const std::string& value)
+{
+  MonitorObject* mo = getMonitorObject(objectName);
+  mo->addMetadata(key, value);
+  QcInfoLogger::GetInstance() << "Added metadata on " << objectName << " : " << key << " -> " << value << infologger::endm;
+}
+
 
 } // namespace o2::quality_control::core

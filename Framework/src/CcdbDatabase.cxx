@@ -56,13 +56,25 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
                             << errinfo_details("Object and task names can't contain white spaces. Do not store."));
   }
 
-  string path = mo->getTaskName() + "/" + mo->getName();
+  // metadata
   map<string, string> metadata;
   metadata["quality"] = std::to_string(mo->getQuality().getLevel());
+  cout << "metadata of " << mo->getName() << "(" << mo->getMetadataMap().size() << ")" << endl;
+  map<string, string> userMetadata = mo->getMetadataMap();
+  for(auto& kv : userMetadata) {
+    cout << "   - " << kv.first << " : " << kv.second << endl;
+  }
+  if(!userMetadata.empty()) {
+    cout << "adding elements " << endl;
+    metadata.insert(userMetadata.begin(), userMetadata.end());
+    cout << "   after : " << metadata.size() << endl;
+  }
+
+  // other attributes
+  string path = mo->getTaskName() + "/" + mo->getName();
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10); // todo set a proper timestamp for the end
 
-  cout << "storing : " << path << endl;
   ccdbApi.store(mo.get(), path, metadata, from, to);
 }
 

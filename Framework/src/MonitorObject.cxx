@@ -105,4 +105,14 @@ Quality MonitorObject::getQuality() const
   return global;
 }
 
+void MonitorObject::addMetadata(std::string key, std::string value)
+{
+  mUserMetadata[key] = value;
+}
+
+std::map<std::string, std::string> MonitorObject::getMetadataMap() const
+{
+  return mUserMetadata;
+}
+
 } // namespace o2::quality_control::core

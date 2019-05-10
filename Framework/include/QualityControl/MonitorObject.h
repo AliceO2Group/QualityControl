@@ -112,6 +112,13 @@ class MonitorObject : public TObject
   /// \throw AliceO2::Common::ObjectNotFoundError
   CheckDefinition getCheck(std::string checkName) const;
 
+  /// \brief Add key value pair that will end up in the database
+  /// Add a metadata (key value pair) to the MonitorObject. It will be stored in the database.
+  /// If the key already exists the value will be updated.
+  void addMetadata(std::string key, std::string value);
+
+  std::map<std::string, std::string> getMetadataMap() const;
+
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
 
@@ -119,6 +126,7 @@ class MonitorObject : public TObject
   TObject* mObject;
   std::map<std::string /*checkName*/, CheckDefinition> mChecks;
   std::string mTaskName;
+  std::map<std::string, std::string> mUserMetadata;
 
   // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the
   // object.
