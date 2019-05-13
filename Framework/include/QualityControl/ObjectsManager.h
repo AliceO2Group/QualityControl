@@ -67,6 +67,8 @@ class ObjectsManager
 
   TObjArray* getNonOwningArray() const { return new TObjArray(mMonitorObjects); };
 
+  void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
+
  private:
   TObjArray mMonitorObjects;
   std::string mTaskName;

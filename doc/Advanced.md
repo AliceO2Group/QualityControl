@@ -13,6 +13,7 @@
       * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
       * [Local CCDB setup](#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
+      * [Custom QC object metadata](#custom-qc-object-metadata)
       * [Information Service](#information-service)
          * [Usage](#usage)
       * [Configuration files details](#configuration-files-details)
@@ -105,6 +106,16 @@ At the moment, the description of the REST api can be found in this document : h
 ## Local QCG (QC GUI) setup
 
 To install and run the QCG locally, and its fellow process tobject2json, please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#run-qcg-locally
+
+## Custom QC object metadata
+
+One can add custom metadata on the QC objects produced in a QC task. 
+Simply call `ObjectsManager::addMetadata(...)`, like in 
+```
+  // add a metadata on histogram mHistogram, key is "custom" and value "34"
+  getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
+```
+This metadata will end up in the CCDB.
 
 ## Information Service
 
