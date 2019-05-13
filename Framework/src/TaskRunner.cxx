@@ -56,7 +56,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
 
 TaskRunner::~TaskRunner() = default;
 
-void TaskRunner::initCallback(InitContext& iCtx)
+void TaskRunner::init(InitContext& iCtx)
 {
   QcInfoLogger::GetInstance() << "initializing TaskRunner" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -81,7 +81,7 @@ void TaskRunner::initCallback(InitContext& iCtx)
   mTask->initialize(iCtx);
 }
 
-void TaskRunner::processCallback(ProcessingContext& pCtx)
+void TaskRunner::run(ProcessingContext& pCtx)
 {
   if (mTaskConfig.maxNumberCycles >= 0 && mCycleNumber >= mTaskConfig.maxNumberCycles) {
     LOG(INFO) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached.";
