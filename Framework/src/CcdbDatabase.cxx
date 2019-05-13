@@ -60,7 +60,7 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
   map<string, string> metadata;
   metadata["quality"] = std::to_string(mo->getQuality().getLevel());
   map<string, string> userMetadata = mo->getMetadataMap();
-  if(!userMetadata.empty()) {
+  if (!userMetadata.empty()) {
     metadata.insert(userMetadata.begin(), userMetadata.end());
   }
 

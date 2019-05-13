@@ -72,7 +72,6 @@ class ObjectsManager
  private:
   TObjArray mMonitorObjects;
   std::string mTaskName;
-
 };
 
 } // namespace o2::quality_control::core

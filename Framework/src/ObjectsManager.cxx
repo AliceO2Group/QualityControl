@@ -89,5 +89,4 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
   QcInfoLogger::GetInstance() << "Added metadata on " << objectName << " : " << key << " -> " << value << infologger::endm;
 }
 
-
 } // namespace o2::quality_control::core
