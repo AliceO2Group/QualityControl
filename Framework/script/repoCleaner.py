@@ -2,19 +2,8 @@
 
 import argparse
 import yaml
-import requests
 import re
-
-
-def getListCcdbObjects():
-    url = 'http://ccdb-test.cern.ch:8080/latest/.*'
-    headers = {'Accept':'application/json'}
-    r = requests.get(url, headers=headers)
-    json = r.json()
-    paths = []
-    for item in json['objects']:
-        paths.append(item['path'])
-    return paths
+from Ccdb import Ccdb
 
 class Rule:
     def __init__(self, object_path=None, delay=None, policy=None):
@@ -24,7 +13,7 @@ class Rule:
 
     def __repr__(self):
         return 'Rule(object_path={.object_path}, delay={.delay}, policy={.policy})'.format(self, self, self)
-    
+
 def parseArgs():
     print("parseArgs")
     parser = argparse.ArgumentParser(description='Clean the QC database.')
@@ -41,12 +30,16 @@ def parseConfig(args):
         except yaml.YAMLError as exc:
             print(exc)
             pass
-        
+
     rules=[]
     for rule_yaml in config_content["Rules"]:
         rule = Rule(rule_yaml["object_path"], rule_yaml["delay"], rule_yaml["policy"])
         rules.append(rule)
-    return rules
+
+    ccdb_url = config_content["Ccdb"]["Url"]
+    print(f"ccdb : {ccdb_url}")
+
+    return {'rules': rules, 'ccdb_url': ccdb_url}
 
 # return the first matching rule for the given path
 def findMatchingRule(rules, object_path):
@@ -64,12 +57,15 @@ args = parseArgs()
 print(args.config)
 
 # Read configuration
-rules = parseConfig(args)
+config = parseConfig(args)
+rules = config['rules']
+ccdb_url = config['ccdb_url']
         
 # Get list of objects from CCDB
-paths = getListCcdbObjects()
+ccdb = Ccdb(ccdb_url)
+paths = ccdb.getObjectsList()
 
-# For each object
+# For each object call the first matching rule
 for object_path in paths:
     # Take the first matching rule, if any
     rule = findMatchingRule(rules, object_path);
@@ -81,6 +77,6 @@ for object_path in paths:
         
     # Apply rule on object (find the plug-in script and apply)
     module = __import__(rule.policy)
-    module.process(object_path)
+    module.process(ccdb, object_path)
 
 print("done")

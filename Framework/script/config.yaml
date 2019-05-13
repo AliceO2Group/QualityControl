@@ -6,3 +6,5 @@ Rules:
     delay: 120
     policy: 1_per_hour
     
+Ccdb:
+   Url: http://ccdb-test.cern.ch:8080
