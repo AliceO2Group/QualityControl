@@ -12,8 +12,8 @@ import argparse
 import yaml
 import re
 from Ccdb import Ccdb
+import logging
 from typing import List
-
 
 class Rule:
     """A class to hold information about a "rule" defined in the config file."""
@@ -34,17 +34,24 @@ class Rule:
 
 
 def parseArgs():
-    print("parseArgs")
+    """Parse the arguments passed to the script."""
+    logging.info("Parsing arguments")
     parser = argparse.ArgumentParser(description='Clean the QC database.')
     parser.add_argument('--config', dest='config', action='store', default="config.yaml",
                         help='Path to the config file')
-    
+    parser.add_argument('--log-level', dest='log_level', action='store', default="20",
+                        help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     args = parser.parse_args()
+    logging.debug(args)
     return args
 
 
-def parseConfig(args):
-    with open(args.config, 'r') as stream:
+def parseConfig(config_file_path):
+    """Read the config file and prepare a list of rules. 
+    Return a dictionary containing the list of rules and other config elements from the file. """
+    
+    logging.info(f"Parsing config file {config_file_path}")
+    with open(config_file_path, 'r') as stream:
         try:
             config_content = yaml.safe_load(stream)
         except yaml.YAMLError as exc:
@@ -52,51 +59,61 @@ def parseConfig(args):
             pass
 
     rules = []
+    logging.debug("Rules found in the config file:")
     for rule_yaml in config_content["Rules"]:
         rule = Rule(rule_yaml["object_path"], rule_yaml["delay"], rule_yaml["policy"])
         rules.append(rule)
+        logging.debug(f"   * {rule}")
 
     ccdb_url = config_content["Ccdb"]["Url"]
-    print(f"ccdb : {ccdb_url}")
 
     return {'rules': rules, 'ccdb_url': ccdb_url}
 
 
-# return the first matching rule for the given path
 def findMatchingRule(rules, object_path):
+    """Return the first matching rule for the given path or None if none is found."""
+    
+    logging.debug(f"findMatchingRule for {object_path}")
     for rule in rules:
         pattern = re.compile(rule.object_path)
         result = pattern.match(object_path)
         if result != None:
+            logging.debug(f"   Found! {rule}")
             return rule
+    logging.debug("   No rule found, skipping.")
     return None
 
-    
+
+# ****************
+# We start here !
+# ****************
+
+# Logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+
 # Parse arguments 
 args = parseArgs()
-print(args.config)
+logging.getLogger().setLevel(int(args.log_level))
 
 # Read configuration
-config = parseConfig(args)
+config = parseConfig(args.config)
 rules: List[Rule] = config['rules']
 ccdb_url = config['ccdb_url']
-        
+
 # Get list of objects from CCDB
 ccdb = Ccdb(ccdb_url)
 paths = ccdb.getObjectsList()
 
 # For each object call the first matching rule
+logging.info("Loop through the objects and apply first matching rule.")
 for object_path in paths:
     # Take the first matching rule, if any
     rule = findMatchingRule(rules, object_path);
     if rule == None:
-        print(f"Did not find a rule matching {object_path}")
         continue
-    else: 
-        print(f"Rule matching {object_path} : {rule}")
-        
+         
     # Apply rule on object (find the plug-in script and apply)
     module = __import__(rule.policy)
     module.process(ccdb, object_path, int(rule.delay))
 
-print("done")
+logging.info("done")

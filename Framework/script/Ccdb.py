@@ -1,6 +1,7 @@
 import requests
 from typing import List
 import datetime
+import logging
 
 
 class ObjectVersion:
@@ -18,10 +19,12 @@ class ObjectVersion:
 class Ccdb:
 
     def __init__(self, url):
+        logging.info(f"Instantiate CCDB at {url}")
         self.url = url
 
     def getObjectsList(self) -> List[str]:
         url_for_all_obj = self.url + '/latest/.*'
+        logging.debug(f"Ccdb::getObjectsList -> {url_for_all_obj}")
         headers = {'Accept':'application/json'}
         r = requests.get(url_for_all_obj, headers=headers)
         json = r.json()
@@ -36,7 +39,6 @@ class Ccdb:
         headers = {'Accept':'application/json'}
         r = requests.get(url_browse_all_versions, headers=headers)
         json = r.json()
-        print(f"{json}")
         versions = []
         for item in json['objects']:
             version = ObjectVersion(path=item['path'], uuid=item['id'], validFrom=item['validFrom'])
@@ -44,7 +46,9 @@ class Ccdb:
         return versions
 
     def deleteVersion(self, version: ObjectVersion):
-        url_delete = self.url + '/' + version.uuid
+        logging.debug(version)
+        url_delete = self.url + '/' + version.path + '/' + version.validFromTimestamp + '/' + version.uuid
+        logging.info(f"Delete version at url {url_delete}")
         requests.delete(url_delete)
 
     def updateValidity(self, version: ObjectVersion, validFrom: str, validTo: str):    
@@ -52,6 +56,10 @@ class Ccdb:
         requests.put(url_update_validity)
         
     
-ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
-objectsList = ccdb.getObjectsList()
-print(f"{objectsList}")
+def main():
+    ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
+    objectsList = ccdb.getObjectsList()
+    print(f"{objectsList}")
+
+if __name__== "__main__": # to be able to run the test code above when not imported.
+    main()
