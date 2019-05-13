@@ -1,8 +1,10 @@
 from Ccdb import Ccdb, ObjectVersion
 from datetime import timedelta
+from datetime import datetime
 
 
-def process(ccdb: Ccdb, object_path: str):
+def process(ccdb: Ccdb, object_path: str, delay: int):
+    
     print(f"1_per_hour : {object_path}")
 
     # take the first record, delete everything for the next hour, find the next one, extend validity of the previous record to match the next one, loop.
@@ -20,7 +22,9 @@ def process(ccdb: Ccdb, object_path: str):
             preservation_list.append(v)
         else:
             deletion_list.append(v)
-            # todo ccdb.deleteVersion(v.uuid)
+            if v.validFrom < datetime.now() - timedelta(minutes=delay):
+                print("not in the grace period, we delete")
+                # todo ccdb.deleteVersion(v.uuid)
 
     print("to be deleted : ")
     for v in deletion_list:
