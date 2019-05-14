@@ -8,16 +8,29 @@ import requests
 
 
 class ObjectVersion:
+    '''
+    A version of an object in the CCDB. 
+    
+    In the CCDB an object can have many versions with different validity intervals. 
+    This class represents a single version. 
+    '''
 
     def __init__(self, path, uuid, validFrom, validTo):
+        '''
+        Construct an ObjectVersion.
+        :param path: path to the object
+        :param uuid: unique id of the object
+        :param validFromAsDatetime: validity range smaller limit (in ms)
+        :param validTo: validity range bigger limit (in ms)
+        '''
         self.path = path
         self.uuid = uuid
-        self.validFrom = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
-        self.validFromTimestamp = validFrom
-        self.validToTimestamp = validTo
+        self.validFromAsDatetime = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
+        self.validFrom = validFrom
+        self.validTo = validTo
         
     def __repr__(self):
-        return f"Version of object {self.path} valid from {self.validFrom} (uuid {self.uuid}, ts {self.validFromTimestamp})"
+        return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, ts {self.validFrom})"
 
 
 class Ccdb:
@@ -53,7 +66,7 @@ class Ccdb:
     @dryable.Dryable()
     def deleteVersion(self, version: ObjectVersion):
         logging.debug(version)
-        url_delete = self.url + '/' + version.path + '/' + version.validFromTimestamp + '/' + version.uuid
+        url_delete = self.url + '/' + version.path + '/' + version.validFrom + '/' + version.uuid
         logging.info(f"Delete version at url {url_delete}")
         try:
             r = requests.delete(url_delete)
@@ -64,11 +77,11 @@ class Ccdb:
         
     @dryable.Dryable()
     def updateValidity(self, version: ObjectVersion, validFrom: str, validTo: str):    
-        if version.validToTimestamp == validTo:
+        if version.validTo == validTo:
             logging.debug("The new timestamp for validTo is identical to the existing one. Skipping.")
             return
         url_update_validity = self.url + '/' + version.path + '/' + validFrom + '/' + validTo
-        logging.info(f"Update end limit validity of {version.path} from {version.validToTimestamp} to {validTo}")
+        logging.info(f"Update end limit validity of {version.path} from {version.validTo} to {validTo}")
         try:
             r = requests.put(url_update_validity)
             r.raise_for_status()
