@@ -24,10 +24,11 @@
 #include <boost/serialization/array_wrapper.hpp>
 // O2
 #include <Common/Timer.h>
-#include <Configuration/ConfigurationInterface.h>
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
+#include <Framework/CompletionPolicy.h>
 #include <Monitoring/MonitoringFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 // QC
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/TaskInterface.h"
@@ -36,9 +37,6 @@ namespace ba = boost::accumulators;
 
 namespace o2::quality_control::core
 {
-
-using namespace o2::framework;
-using namespace std::chrono;
 
 /// \brief A class driving the execution of a QC task inside DPL.
 ///
@@ -52,8 +50,11 @@ using namespace std::chrono;
 ///   taskName,
 ///   qcTask.getInputsSpecs(),
 ///   Outputs{ qcTask.getOutputSpec() },
-///   adaptFromTask<TaskRunner>(std::move(qcTask)),
+///   AlgorithmSpec{},
+///   qcTask.getOptions()
 /// };
+/// // this needs to be moved at the end
+/// newTask.algorithm = adaptFromTask<TaskRunner>(std::move(qcTask));
 /// \endcode
 ///
 /// \author Piotr Konopka
@@ -70,17 +71,21 @@ class TaskRunner : public framework::Task
   ~TaskRunner() override;
 
   /// \brief TaskRunner's init callback
-  void init(InitContext& iCtx) override;
+  void init(framework::InitContext& iCtx) override;
   /// \brief TaskRunner's process callback
-  void run(ProcessingContext& pCtx) override;
-  /// \brief To be invoked inside Data Processor's TimerCallback
-  void timerCallback(ProcessingContext& pCtx);
+  void run(framework::ProcessingContext& pCtx) override;
 
-  const Inputs& getInputsSpecs() { return mInputSpecs; };
-  const OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
+  /// \brief TaskRunner's completion policy callback
+  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(gsl::span<framework::PartRef const> const& inputs);
+
+  std::string getDeviceName() { return mDeviceName; };
+  const framework::Inputs& getInputsSpecs() { return mInputSpecs; };
+  const framework::OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
+  const framework::Options getOptions() { return mOptions; };
 
   void setResetAfterPublish(bool);
 
+  static std::string createTaskRunnerIdString();
   /// \brief Unified DataOrigin for Quality Control tasks
   static header::DataOrigin createTaskDataOrigin();
   /// \brief Unified DataDescription naming scheme for all tasks
@@ -94,14 +99,16 @@ class TaskRunner : public framework::Task
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
 
+  std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
   void populateConfig(std::string taskName);
   void startOfActivity();
   void endOfActivity();
-  void finishCycle(DataAllocator& outputs);
-  unsigned long publish(DataAllocator& outputs);
+  void startCycle();
+  void finishCycle(framework::DataAllocator& outputs);
+  unsigned long publish(framework::DataAllocator& outputs);
 
  private:
-  std::string mTaskName;
+  std::string mDeviceName;
   TaskConfig mTaskConfig;
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<monitoring::Monitoring> mCollector;
@@ -109,14 +116,16 @@ class TaskRunner : public framework::Task
   bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;
 
-  // consider moving these two to TaskConfig
-  Inputs mInputSpecs;
-  OutputSpec mMonitorObjectsSpec;
+  // consider moving these to TaskConfig
+  framework::Inputs mInputSpecs;
+  framework::OutputSpec mMonitorObjectsSpec;
+  framework::Options mOptions;
 
   int mNumberBlocks;
   int mLastNumberObjects;
   bool mCycleOn;
   int mCycleNumber;
+  std::chrono::steady_clock::time_point mCycleStartTime;
 
   // stats
   AliceO2::Common::Timer mStatsTimer;

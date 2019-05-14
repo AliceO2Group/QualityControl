@@ -16,7 +16,8 @@
 #ifndef QC_CORE_TASKFACTORY_H
 #define QC_CORE_TASKFACTORY_H
 
-#include "Framework/DataProcessorSpec.h"
+#include <Framework/CompletionPolicy.h>
+#include <Framework/DataProcessorSpec.h>
 
 namespace o2::quality_control::core
 {
@@ -36,6 +37,13 @@ class TaskRunnerFactory
   /// \param resetAfterPublish - should taskRunner reset the user's task after each MO publication
   o2::framework::DataProcessorSpec
   create(std::string taskName, std::string configurationSource, size_t id = 0, bool resetAfterPublish = false);
+
+  /// \brief Provides necessary customization of the TaskRunners.
+  ///
+  /// Provides necessary customization of the Completion Policies of the TaskRunners. This is necessary to make
+  /// them work. Put it inside customize() function before including <Framework/runDataProcessing.cxx>.
+  /// \param policies - completion policies vector
+  static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };
 
 } // namespace o2::quality_control::core

@@ -114,10 +114,12 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
   // in a loop
   uint32_t totalPayloadSize = 0;
   for (auto&& input : ctx.inputs()) {
-    const auto* header = o2::header::get<header::DataHeader*>(input.header);
-    uint32_t size = header->payloadSize;
-    mSubPayloadSize->Fill(size);
-    totalPayloadSize += size;
+    if (input.header != nullptr && input.payload != nullptr) {
+      const auto* header = o2::header::get<header::DataHeader*>(input.header);
+      uint32_t size = header->payloadSize;
+      mSubPayloadSize->Fill(size);
+      totalPayloadSize += size;
+    }
   }
 
   mPayloadSize->Fill(totalPayloadSize);

@@ -84,11 +84,16 @@ void ExampleTask::startOfCycle()
 
 void ExampleTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  const auto* header = o2::header::get<header::DataHeader*>(ctx.inputs().getByPos(0).header); // header of first input
-  mHistos[0]->Fill(header->payloadSize);
-  for (auto& mHisto : mHistos) {
-    if (mHisto) {
-      mHisto->FillRandom("gaus", 1);
+  for (auto& input : ctx.inputs()) {
+    if (input.header != nullptr) {
+      const auto* header = o2::header::get<header::DataHeader*>(input.header); // header of first valid input
+      mHistos[0]->Fill(header->payloadSize);
+      for (auto& mHisto : mHistos) {
+        if (mHisto) {
+          mHisto->FillRandom("gaus", 1);
+        }
+      }
+      break;
     }
   }
 }
