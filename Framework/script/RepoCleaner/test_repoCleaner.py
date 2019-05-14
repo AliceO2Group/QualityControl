@@ -1,7 +1,7 @@
 import unittest
 import yaml
-from ..repoCleaner import *
 import logging
+from RepoCleaner.repoCleaner import parseConfig, Rule, findMatchingRule
 
 class TestRepoCleaner(unittest.TestCase):
     
