@@ -60,17 +60,21 @@ def parseArgs():
 
 
 def parseConfig(config_file_path):
-    """Read the config file and prepare a list of rules. 
-    Return a dictionary containing the list of rules and other config elements from the file. """
+    """
+    Read the config file and prepare a list of rules. 
+    
+    Return a dictionary containing the list of rules and other config elements from the file. 
+    
+    :param config_file_path: Path to the config file
+    :raises yaml.YAMLError If the config file does not contain a valid yaml.
+    """
     
     logging.info(f"Parsing config file {config_file_path}")
     with open(config_file_path, 'r') as stream:
-        try:
-            config_content = yaml.safe_load(stream)
-        except yaml.YAMLError as exc:
-            print(exc)
-            pass
+        config_content = yaml.safe_load(stream)
 
+#     if 'Rules' not in config_content:
+#         raise KeyError('Element Rules is mandatory')
     rules = []
     logging.debug("Rules found in the config file:")
     for rule_yaml in config_content["Rules"]:
@@ -100,33 +104,36 @@ def findMatchingRule(rules, object_path):
 # We start here !
 # ****************
 
+def main():
+    # Logging (you can use funcName in the template)
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+    
+    # Parse arguments 
+    args = parseArgs()
+    logging.getLogger().setLevel(int(args.log_level))
+    
+    # Read configuration
+    config = parseConfig(args.config)
+    rules: List[Rule] = config['rules']
+    ccdb_url = config['ccdb_url']
+    
+    # Get list of objects from CCDB
+    ccdb = Ccdb(ccdb_url)
+    paths = ccdb.getObjectsList()
+    
+    # For each object call the first matching rule
+    logging.info("Loop through the objects and apply first matching rule.")
+    for object_path in paths:
+        # Take the first matching rule, if any
+        rule = findMatchingRule(rules, object_path);
+        if rule == None:
+            continue
+             
+        # Apply rule on object (find the plug-in script and apply)
+        module = __import__(rule.policy)
+        module.process(ccdb, object_path, int(rule.delay))
+    
+    logging.info("done")
 
-# Logging (you can use funcName in the template)
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-
-# Parse arguments 
-args = parseArgs()
-logging.getLogger().setLevel(int(args.log_level))
-
-# Read configuration
-config = parseConfig(args.config)
-rules: List[Rule] = config['rules']
-ccdb_url = config['ccdb_url']
-
-# Get list of objects from CCDB
-ccdb = Ccdb(ccdb_url)
-paths = ccdb.getObjectsList()
-
-# For each object call the first matching rule
-logging.info("Loop through the objects and apply first matching rule.")
-for object_path in paths:
-    # Take the first matching rule, if any
-    rule = findMatchingRule(rules, object_path);
-    if rule == None:
-        continue
-         
-    # Apply rule on object (find the plug-in script and apply)
-    module = __import__(rule.policy)
-    module.process(ccdb, object_path, int(rule.delay))
-
-logging.info("done")
+if __name__ == "__main__":  # to be able to run the test code above when not imported.
+    main()
