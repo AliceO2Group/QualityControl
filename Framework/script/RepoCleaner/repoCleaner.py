@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# This is the script driving the clean up process of the CCDB backup of the QC. 
+# This is the script driving the clean up process of the CCDB backend of the QC. 
 # It should ideally be ran as a cron on a machine. It uses plugins to implement 
 # the actual actions defined in the config file config.yaml. Each item in the 
 # config file describes which plugin (by name of the file) should be used for 
@@ -8,7 +8,7 @@
 # The plugins should have a function "process()" that takes two arguments : 
 # ccdb: Ccdb, object_path: str and delay: int
 #
-# We depend on requests, yaml, dryable
+# We depend on requests, yaml, dryable, responses (to mock and test with requests)
 #
 # Usage
 #         # run with debug logs and don't actually touch the database
@@ -73,8 +73,6 @@ def parseConfig(config_file_path):
     with open(config_file_path, 'r') as stream:
         config_content = yaml.safe_load(stream)
 
-#     if 'Rules' not in config_content:
-#         raise KeyError('Element Rules is mandatory')
     rules = []
     logging.debug("Rules found in the config file:")
     for rule_yaml in config_content["Rules"]:
@@ -133,7 +131,7 @@ def main():
         module = __import__(rule.policy)
         module.process(ccdb, object_path, int(rule.delay))
     
-    logging.info("done")
+    logging.info(f"done (deleted: {ccdb.counter_deleted}, updated: {ccdb.counter_validity_updated})")
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.
     main()

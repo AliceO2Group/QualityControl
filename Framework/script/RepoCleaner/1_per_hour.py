@@ -4,7 +4,6 @@ import logging
 
 from Ccdb import Ccdb, ObjectVersion
 
-
 def process(ccdb: Ccdb, object_path: str, delay: int):
     '''
     Process this deletion rule on the object. We use the CCDB passed by argument.

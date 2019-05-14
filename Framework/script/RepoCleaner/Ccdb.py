@@ -37,6 +37,10 @@ class Ccdb:
     '''
     Class to interact with the CCDB.
     '''
+    
+    counter_deleted: int = 0
+    counter_validity_updated: int = 0
+    counter_preserved: int = 0
 
     def __init__(self, url):
         logging.info(f"Instantiate CCDB at {url}")
@@ -89,6 +93,7 @@ class Ccdb:
         try:
             r = requests.delete(url_delete)
             r.raise_for_status()
+            self.counter_deleted += 1
         except requests.exceptions.RequestException as e:  
             print(e)
             sys.exit(1)  # really ? 
@@ -109,6 +114,7 @@ class Ccdb:
         try:
             r = requests.put(url_update_validity)
             r.raise_for_status()
+            self.counter_validity_updated += 1
         except requests.exceptions.RequestException as e:  
             print(e)
             sys.exit(1)  # really ? 

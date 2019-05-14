@@ -1,7 +1,10 @@
+import logging
 import unittest
 import yaml
-import logging
-from RepoCleaner.repoCleaner import parseConfig, Rule, findMatchingRule
+
+import repoCleaner
+from repoCleaner import parseConfig, Rule, findMatchingRule
+
 
 class TestRepoCleaner(unittest.TestCase):
     
@@ -48,6 +51,7 @@ class TestRepoCleaner(unittest.TestCase):
         self.assertEqual(findMatchingRule(rules, 'task2/obj1/obj1').policy, 'policy3')
         rules.append(Rule('.*', '0', 'policyAll'))
         self.assertEqual(findMatchingRule(rules, 'task3/obj1').policy, 'policyAll')
+
 
 if __name__ == '__main__':
     unittest.main()
