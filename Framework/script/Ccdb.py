@@ -34,38 +34,56 @@ class ObjectVersion:
 
 
 class Ccdb:
+    '''
+    Class to interact with the CCDB.
+    '''
 
     def __init__(self, url):
         logging.info(f"Instantiate CCDB at {url}")
         self.url = url
 
     def getObjectsList(self) -> List[str]:
+        '''
+        Get the full list of objects in the CCDB. 
+        
+        :return A list of strings, each containing a path to an object in the CCDB.
+        '''
         url_for_all_obj = self.url + '/latest/.*'
         logging.debug(f"Ccdb::getObjectsList -> {url_for_all_obj}")
         headers = {'Accept':'application/json'}
         r = requests.get(url_for_all_obj, headers=headers)
+        r.raise_for_status()
         json = r.json()
         paths = []
         for item in json['objects']:
             paths.append(item['path'])
         return paths
 
-    def getVersionsList(self, item: str) -> List[ObjectVersion]:
-        """Get the list of all versions for the given object"""
-        url_browse_all_versions = self.url + '/browse/' + item
+    def getVersionsList(self, object_path: str) -> List[ObjectVersion]:
+        '''
+        Get the list of all versions for a given object.
+        :param object_path: Path to the object for which we want the list of versions.
+        :return A list of ObjectVersion.
+        '''
+        url_browse_all_versions = self.url + '/browse/' + object_path
         logging.debug(f"Ccdb::getVersionsList -> {url_browse_all_versions}")
         headers = {'Accept':'application/json'}
         r = requests.get(url_browse_all_versions, headers=headers)
+        r.raise_for_status()
         json = r.json()
         versions = []
-        for item in json['objects']:
-            version = ObjectVersion(path=item['path'], uuid=item['id'], validFrom=item['validFrom'], validTo=item['validUntil'])
+        for object_path in json['objects']:
+            version = ObjectVersion(path=object_path['path'], uuid=object_path['id'], validFrom=object_path['validFrom'], validTo=object_path['validUntil'])
             versions.insert(0, version)
         return versions
 
     @dryable.Dryable()
     def deleteVersion(self, version: ObjectVersion):
-        logging.debug(version)
+        '''
+        Delete the specified version of an object. 
+        :param version: The version of the object to delete, as an instance of ObjectVersion.
+        '''
+        logging.debug(f"Delete version: {version}")
         url_delete = self.url + '/' + version.path + '/' + version.validFrom + '/' + version.uuid
         logging.info(f"Delete version at url {url_delete}")
         try:
@@ -73,10 +91,16 @@ class Ccdb:
             r.raise_for_status()
         except requests.exceptions.RequestException as e:  
             print(e)
-            sys.exit(1) # really ? 
+            sys.exit(1)  # really ? 
         
     @dryable.Dryable()
     def updateValidity(self, version: ObjectVersion, validFrom: str, validTo: str):    
+        '''
+        Update the validity range of the specified version of an object.
+        :param version: The ObjectVersion to update.
+        :param validFrom: The new "from" validity.
+        :param validTo: The new "to" validity.
+        '''
         if version.validTo == validTo:
             logging.debug("The new timestamp for validTo is identical to the existing one. Skipping.")
             return
@@ -87,7 +111,7 @@ class Ccdb:
             r.raise_for_status()
         except requests.exceptions.RequestException as e:  
             print(e)
-            sys.exit(1) # really ? 
+            sys.exit(1)  # really ? 
         
     
 def main():
@@ -95,5 +119,6 @@ def main():
     objectsList = ccdb.getObjectsList()
     print(f"{objectsList}")
 
-if __name__== "__main__": # to be able to run the test code above when not imported.
+
+if __name__ == "__main__":  # to be able to run the test code above when not imported.
     main()
