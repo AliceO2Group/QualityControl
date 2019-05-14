@@ -9,15 +9,21 @@
 # ccdb: Ccdb, object_path: str and delay: int
 #
 # We depend on requests, yaml, dryable
+#
+# Usage
+#         # run with debug logs and don't actually touch the database
+#         ./repoCleaner --dry-run --log-level 10 
 
 import argparse
-import yaml
-import re
-from Ccdb import Ccdb
 import logging
+import re
 from typing import List
+
 import dryable
-import sys
+import yaml
+
+from Ccdb import Ccdb
+
 
 class Rule:
     """A class to hold information about a "rule" defined in the config file."""
@@ -45,10 +51,9 @@ def parseArgs():
                         help='Path to the config file')
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
-    parser.add_argument('--dry-run', action='store_true', 
+    parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
     args = parser.parse_args()
-    print(args)
     dryable.set(args.dry_run)
     logging.debug(args)
     return args
@@ -91,10 +96,10 @@ def findMatchingRule(rules, object_path):
     logging.debug("   No rule found, skipping.")
     return None
 
-
 # ****************
 # We start here !
 # ****************
+
 
 # Logging (you can use funcName in the template)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')

@@ -1,7 +1,8 @@
-from Ccdb import Ccdb, ObjectVersion
-from datetime import timedelta
 from datetime import datetime
+from datetime import timedelta
 import logging
+
+from Ccdb import Ccdb, ObjectVersion
 
 
 def process(ccdb: Ccdb, object_path: str, delay: int):

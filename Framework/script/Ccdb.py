@@ -1,9 +1,10 @@
-import requests
-from typing import List
 import datetime
 import logging
 import sys
+from typing import List
+
 import dryable
+import requests
 
 
 class ObjectVersion:
