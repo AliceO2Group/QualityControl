@@ -40,10 +40,10 @@ using namespace std::chrono;
 
 TaskRunner::TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id)
   : mTaskName(taskName),
-    mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id),
     mTask(nullptr),
-    mNumberBlocks(0),
     mResetAfterPublish(false),
+    mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id),
+    mNumberBlocks(0),
     mLastNumberObjects(0),
     mCycleOn(false),
     mCycleNumber(0),

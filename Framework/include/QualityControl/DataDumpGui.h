@@ -70,7 +70,7 @@ class DataDumpGui : public FairMQDevice
   bool handleParts(FairMQParts& parts);
 
  private:
-  void assignDataToChunk(void* data, size_t size, Chunk& chunk);
+  static void assignDataToChunk(void* data, size_t size, Chunk& chunk);
 };
 } // namespace o2::quality_control::core
 

@@ -14,20 +14,6 @@ ClassImp(o2::quality_control::checker::CheckInterface)
 namespace o2::quality_control::checker
 {
 
-// CheckInterface::CheckInterface()
-////    : mName("")
-//{
-//}
-//
-// CheckInterface::~CheckInterface()
-//{
-//}
-
-// void CheckInterface::configure(std::string name)
-//{
-//  mName = name;
-//}
-
 std::string CheckInterface::getAcceptedType() { return "TObject"; }
 
 bool CheckInterface::isObjectCheckable(const MonitorObject* mo)

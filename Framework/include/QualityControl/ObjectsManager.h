@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   ObjectsManager.h
 /// \author Barthelemy von Haller
@@ -6,12 +16,16 @@
 #ifndef QC_CORE_OBJECTMANAGER_H
 #define QC_CORE_OBJECTMANAGER_H
 
+// QC
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/TaskConfig.h"
+// ROOT
 #include <TObjArray.h>
 #include <TObjString.h>
+// boost
 #include <boost/concept_check.hpp>
+// stl
 #include <string>
 
 namespace o2::quality_control::core
@@ -28,7 +42,7 @@ class ObjectsManager
   friend class TaskControl; // TaskControl must be able to call "publish()" whenever needed. Nobody else can.
 
  public:
-  ObjectsManager(TaskConfig& taskConfig);
+  explicit ObjectsManager(TaskConfig& taskConfig);
   virtual ~ObjectsManager();
 
   /**
