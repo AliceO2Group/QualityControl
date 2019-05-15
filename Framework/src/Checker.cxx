@@ -46,9 +46,9 @@ namespace o2::quality_control::checker
 Checker::Checker(std::string checkerName, std::string taskName, std::string configurationSource)
   : mCheckerName(checkerName),
     mConfigurationSource(configurationSource),
+    mLogger(QcInfoLogger::GetInstance()),
     mInputSpec{ "mo", TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), 0 },
     mOutputSpec{ "QC", Checker::createCheckerDataDescription(taskName), 0 },
-    mLogger(QcInfoLogger::GetInstance()),
     startFirstObject{ system_clock::time_point::min() },
     endLastObject{ system_clock::time_point::min() },
     mTotalNumberHistosReceived(0)

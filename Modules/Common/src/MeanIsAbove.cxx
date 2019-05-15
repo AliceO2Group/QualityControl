@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   MeanIsAbove.cxx
 /// \author Barthelemy von Haller
@@ -15,7 +25,7 @@
 
 ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 
-  using namespace std;
+using namespace std;
 using namespace o2::configuration;
 
 namespace o2::quality_control_modules::common
@@ -23,7 +33,7 @@ namespace o2::quality_control_modules::common
 
 MeanIsAbove::MeanIsAbove() : mThreshold(0.0) {}
 
-void MeanIsAbove::configure(std::string name)
+void MeanIsAbove::configure(std::string /*name*/)
 {
   // TODO use the configuration system to set the params
   //  try {

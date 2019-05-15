@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   config.taskName = "test";
   ObjectsManager objectsManager(config);
   TObjString s("content");
-  objectsManager.startPublishing(&s, "test");
+  objectsManager.startPublishing(&s);
   TObjString* s2 = (TObjString*)(objectsManager.getObject("test"));
   BOOST_CHECK_EQUAL(s.GetString(), s2->GetString());
   BOOST_CHECK_EQUAL(Quality::Null, objectsManager.getQuality("test"));

@@ -33,7 +33,7 @@ ObjectsManager::~ObjectsManager()
 {
 }
 
-void ObjectsManager::startPublishing(TObject* object, std::string objectName)
+void ObjectsManager::startPublishing(TObject* object)
 {
   auto* newObject = new MonitorObject(object, mTaskName);
   newObject->setIsOwner(false);

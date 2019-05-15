@@ -50,9 +50,8 @@ class ObjectsManager
    * The ownership remains to the caller.
    * In most cases, objectName parameter can be ignored.
    * @param obj The object to publish.
-   * @param objectName Optional, to publish something under a different name.
    */
-  void startPublishing(TObject* obj, std::string objectName = "");
+  void startPublishing(TObject* obj);
   // todo stoppublishing
 
   /**

@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   DaqTask.cxx
 /// \author Barthelemy von Haller
@@ -41,7 +51,7 @@ DaqTask::~DaqTask()
   delete mSubPayloadSize;
 }
 
-void DaqTask::initialize(o2::framework::InitContext& ctx)
+void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize DaqTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -83,7 +93,7 @@ void DaqTask::initialize(o2::framework::InitContext& ctx)
   getObjectsManager()->startPublishing(mPaveText);
 }
 
-void DaqTask::startOfActivity(Activity& activity)
+void DaqTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   mPayloadSize->Reset();
@@ -124,7 +134,7 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DaqTask::endOfCycle() { QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm; }
 
-void DaqTask::endOfActivity(Activity& activity)
+void DaqTask::endOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
