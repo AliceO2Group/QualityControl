@@ -25,8 +25,8 @@ namespace o2::quality_control::core
 class TaskRunnerFactory
 {
  public:
-  TaskRunnerFactory();
-  virtual ~TaskRunnerFactory();
+  TaskRunnerFactory() = default;
+  virtual ~TaskRunnerFactory() = default;
 
   /// \brief Creator of tasks
   ///

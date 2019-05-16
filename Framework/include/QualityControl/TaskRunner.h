@@ -23,10 +23,11 @@
 #include <boost/asio.hpp>
 #include <boost/serialization/array_wrapper.hpp>
 // O2
-#include "Common/Timer.h"
-#include "Configuration/ConfigurationInterface.h"
-#include "Framework/DataProcessorSpec.h"
-#include "Monitoring/MonitoringFactory.h"
+#include <Common/Timer.h>
+#include <Configuration/ConfigurationInterface.h>
+#include <Framework/Task.h>
+#include <Framework/DataProcessorSpec.h>
+#include <Monitoring/MonitoringFactory.h>
 // QC
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/TaskInterface.h"
@@ -46,27 +47,18 @@ using namespace std::chrono;
 /// It finally publishes the MonitorObjects owned and filled by the QC task and managed by the ObjectsManager.
 /// Usage:
 /// \code{.cxx}
-/// auto qcTask = std::make_shared<TaskDataProcessor>(taskName, configurationSource);
+/// TaskRunner qcTask{taskName, configurationSource, id};
 /// DataProcessorSpec newTask{
 ///   taskName,
-///   qcTask->getInputsSpecs(),
-///   Outputs{ qcTask->getOutputSpec() },
-///   AlgorithmSpec{
-///     (AlgorithmSpec::InitCallback) [qcTask = std::move(qcTask)](InitContext& initContext) {
-///
-///       qcTask->initCallback(initContext);
-///
-///       return (AlgorithmSpec::ProcessCallback) [qcTask = std::move(qcTask)] (ProcessingContext &processingContext) {
-///         qcTask->processCallback(processingContext);
-///       };
-///     }
-///   }
+///   qcTask.getInputsSpecs(),
+///   Outputs{ qcTask.getOutputSpec() },
+///   adaptFromTask<TaskRunner>(std::move(qcTask)),
 /// };
 /// \endcode
 ///
 /// \author Piotr Konopka
 /// \author Barthelemy von Haller
-class TaskRunner
+class TaskRunner : public framework::Task
 {
  public:
   /// \brief Constructor
@@ -75,12 +67,12 @@ class TaskRunner
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
   /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
   TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id = 0);
-  ~TaskRunner();
+  ~TaskRunner() override;
 
-  /// \brief To be invoked during initialization of Data Processor
-  void initCallback(InitContext& iCtx);
-  /// \brief To be invoked inside Data Processor's main ProcessCallback
-  void processCallback(ProcessingContext& pCtx);
+  /// \brief TaskRunner's init callback
+  void init(InitContext& iCtx) override;
+  /// \brief TaskRunner's process callback
+  void run(ProcessingContext& pCtx) override;
   /// \brief To be invoked inside Data Processor's TimerCallback
   void timerCallback(ProcessingContext& pCtx);
 
@@ -113,7 +105,7 @@ class TaskRunner
   TaskConfig mTaskConfig;
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<monitoring::Monitoring> mCollector;
-  std::unique_ptr<TaskInterface> mTask;
+  std::shared_ptr<TaskInterface> mTask;
   bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;
 
