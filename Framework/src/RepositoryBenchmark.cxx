@@ -42,8 +42,8 @@ RepositoryBenchmark::RepositoryBenchmark()
     mNumIterations(0),
     mNumberObjects(1),
     mSizeObjects(1),
-    mThreadedMonitoring(true),
-    mTotalNumberObjects(0)
+    mTotalNumberObjects(0),
+    mThreadedMonitoring(true)
 {
 }
 

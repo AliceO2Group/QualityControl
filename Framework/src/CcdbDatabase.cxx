@@ -15,10 +15,14 @@
 
 #include "QualityControl/CcdbDatabase.h"
 #include "Common/Exceptions.h"
+// ROOT
+#include "TBufferJSON.h"
+// boost
 #include <boost/algorithm/string.hpp>
+// std
 #include <chrono>
 #include <sstream>
-#include "TBufferJSON.h"
+#include <utility>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -32,7 +36,7 @@ CcdbDatabase::CcdbDatabase() : mUrl("") {}
 
 CcdbDatabase::~CcdbDatabase() { disconnect(); }
 
-void CcdbDatabase::connect(std::string host, std::string database, std::string username, std::string password)
+void CcdbDatabase::connect(std::string host, std::string /*database*/, std::string /*username*/, std::string /*password*/)
 {
   mUrl = host;
   ccdbApi.init(mUrl);
@@ -67,18 +71,10 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
   // other attributes
   string path = mo->getTaskName() + "/" + mo->getName();
   long from = getCurrentTimestamp();
-  long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10); // todo set a proper timestamp for the end
+  long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
   ccdbApi.store(mo.get(), path, metadata, from, to);
 }
-
-/**
- * Struct to store the data we will receive from the CCDB with CURL.
- */
-struct MemoryStruct {
-  char* memory;
-  unsigned int size;
-};
 
 core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string objectName)
 {
@@ -107,7 +103,7 @@ void CcdbDatabase::disconnect()
   // NOOP for CCDB
 }
 
-void CcdbDatabase::prepareTaskDataContainer(std::string taskName)
+void CcdbDatabase::prepareTaskDataContainer(std::string /*taskName*/)
 {
   // NOOP for CCDB
 }
