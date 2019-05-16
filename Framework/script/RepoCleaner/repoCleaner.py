@@ -1,11 +1,16 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-# This is the script driving the clean up process of the CCDB backend of the QC. 
+# This script drives the clean up process of the CCDB backend of the QC. 
+#
 # It should ideally be ran as a cron on a machine. It uses plugins to implement 
 # the actual actions defined in the config file config.yaml. Each item in the 
 # config file describes which plugin (by name of the file) should be used for 
 # a certain path in the CCDB. 
-# The plugins should have a function "process()" that takes two arguments : 
+# 
+# If several rules apply to an object, we pick the first one. Thus, mind carefully
+# the order of the rules !
+#
+# The plugins should have a function "process()" that takes 3 arguments : 
 # ccdb: Ccdb, object_path: str and delay: int
 #
 # We depend on requests, yaml, dryable, responses (to mock and test with requests)

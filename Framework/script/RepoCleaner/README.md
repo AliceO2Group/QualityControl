@@ -5,7 +5,7 @@ It is `repoCleaner.py`. See the long comment at the beginning.
 
 ## Usage
 ```
-./repoCleaner [--dry-run] [--log-level 10]
+./repoCleaner [--dry-run] [--log-level 10] [--config config.yaml]
 ```
 
 ## Config
