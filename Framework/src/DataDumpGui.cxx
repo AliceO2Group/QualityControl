@@ -98,7 +98,7 @@ void updateGuiState()
   }
 }
 
-void resizeColumns(int representation/*, int old_representation*/)
+void resizeColumns(int representation /*, int old_representation*/)
 {
   //  static bool firstDrawColumns = true;
   //  if(firstDrawColumns || representation != old_representation) {
@@ -125,8 +125,8 @@ void updatePayloadGui()
     ImGui::Text("No data loaded yet, click Next.");
   } else { // all the stuff below should go to a method
 
-    static int representation = 0/*, old_representation = 1*/;
-//    old_representation = representation;
+    static int representation = 0 /*, old_representation = 1*/;
+    //    old_representation = representation;
     ImGui::RadioButton("hexadecimal", &representation, 0);
     ImGui::SameLine();
     ImGui::RadioButton("binary", &representation, 1);
@@ -138,7 +138,7 @@ void updatePayloadGui()
 
     // header row
     ImGui::Separator();
-    resizeColumns(representation/*, old_representation*/);
+    resizeColumns(representation /*, old_representation*/);
     ImGui::Text("");
     ImGui::NextColumn();
     ImGui::Text("#1");

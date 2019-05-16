@@ -193,10 +193,10 @@ o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string ta
     void* blob = nullptr;
     Long_t blobSize = 0;
     statement->GetBinary(1, blob, blobSize); // retrieve the data
-//    TDatime updatetime(statement->GetYear(2), statement->GetMonth(2), statement->GetDay(2), statement->GetHour(2),
-//                       statement->GetMinute(2), statement->GetSecond(2));
-//    int run = statement->IsNull(3) ? -1 : statement->GetInt(3);
-//    int fill = statement->IsNull(4) ? -1 : statement->GetInt(4);
+                                             //    TDatime updatetime(statement->GetYear(2), statement->GetMonth(2), statement->GetDay(2), statement->GetHour(2),
+                                             //                       statement->GetMinute(2), statement->GetSecond(2));
+                                             //    int run = statement->IsNull(3) ? -1 : statement->GetInt(3);
+                                             //    int fill = statement->IsNull(4) ? -1 : statement->GetInt(4);
 
     TMessage mess(kMESS_OBJECT);
     mess.SetBuffer(blob, blobSize, kFALSE);

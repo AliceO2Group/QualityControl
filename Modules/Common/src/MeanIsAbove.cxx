@@ -25,7 +25,7 @@
 
 ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 
-using namespace std;
+  using namespace std;
 using namespace o2::configuration;
 
 namespace o2::quality_control_modules::common
