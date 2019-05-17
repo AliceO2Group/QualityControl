@@ -1,0 +1,39 @@
+{
+  "objects": [
+    {
+      "id": "0c576bb0-7304-11e9-8d02-200114580202",
+      "validFrom": "1557479683554",
+      "validUntil": "1872839683554",
+      "initialValidity": "1872839683554",
+      "createTime": "1557479683563",
+      "lastModified": "1557479683563",
+      "MD5": "2c04ab14a46eda0a51d803577e3d6f61",
+      "fileName": "example_1557479683554.root",
+      "contentType": "application/octet-stream",
+      "size": "907",
+      "path": "asdfasdf/example",
+      "partName": "send",
+      "custom": "34",
+      "quality": "10",
+      "replica0": "http://alissandra01.cern.ch:8080/download/0c576bb0-7304-11e9-8d02-200114580202"
+    },
+    {
+      "id": "06fb1e80-72f7-11e9-8d02-200114580202",
+      "validFrom": "1557474091106",
+      "validUntil": "1557479683553",
+      "initialValidity": "1872834091106",
+      "createTime": "1557474091112",
+      "lastModified": "1557474091112",
+      "MD5": "a1ae90a7a0a2d60fc38f498c9bb13596",
+      "fileName": "example_1557474091106.root",
+      "contentType": "application/octet-stream",
+      "size": "887",
+      "path": "asdfasdf/example",
+      "UpdatedFrom": "2001:1458:202:32:0:0:101:cd6b",
+      "partName": "send",
+      "quality": "10",
+      "replica0": "http://alissandra01.cern.ch:8080/download/06fb1e80-72f7-11e9-8d02-200114580202"
+    }
+  ],
+  "subfolders": []
+}
