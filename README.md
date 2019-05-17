@@ -5,6 +5,8 @@
 
 This is the repository of the data quality control (QC) software for the ALICE O<sup>2</sup> system. 
 
+For a general overview of our software, organization and processes, please see this [page](https://aliceo2group.github.io/).
+
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert /path/to/README.md-->
 <!--ts-->
