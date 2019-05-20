@@ -21,30 +21,17 @@ namespace o2::quality_control::core
 
 using namespace o2::framework;
 
-TaskRunnerFactory::TaskRunnerFactory() {}
-
-TaskRunnerFactory::~TaskRunnerFactory() {}
-
 o2::framework::DataProcessorSpec
 TaskRunnerFactory::create(std::string taskName, std::string configurationSource, size_t id, bool resetAfterPublish)
 {
-  auto qcTask = std::make_shared<TaskRunner>(taskName, configurationSource, id);
-  qcTask->setResetAfterPublish(resetAfterPublish);
+  TaskRunner qcTask{ taskName, configurationSource, id };
+  qcTask.setResetAfterPublish(resetAfterPublish);
 
   DataProcessorSpec newTask{
     taskName,
-    qcTask->getInputsSpecs(),
-    Outputs{ qcTask->getOutputSpec() },
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [qcTask = std::move(qcTask)](InitContext& initContext) {
-
-        qcTask->initCallback(initContext);
-
-        return (AlgorithmSpec::ProcessCallback) [qcTask = std::move(qcTask)] (ProcessingContext &processingContext) {
-          qcTask->processCallback(processingContext);
-        };
-      }
-    }
+    qcTask.getInputsSpecs(),
+    Outputs{ qcTask.getOutputSpec() },
+    adaptFromTask<TaskRunner>(std::move(qcTask))
   };
 
   return std::move(newTask);

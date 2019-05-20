@@ -64,9 +64,9 @@ class CcdbDatabase : public DatabaseInterface
   void truncate(std::string taskName, std::string objectName) override;
 
  private:
-  long getCurrentTimestamp();
+  static long getCurrentTimestamp();
   std::string getTimestampString(long timestamp);
-  long getFutureTimestamp(int secondsInFuture);
+  static long getFutureTimestamp(int secondsInFuture);
   /**
    * Return the listing of folder and/or objects in the subpath.
    * @param subpath The folder we want to list the children of.

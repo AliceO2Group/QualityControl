@@ -1,0 +1,51 @@
+{
+  "objects": [
+    {
+      "id": "a4ed3fa0-764a-11e9-8fb5-898a20055566",
+      "validFrom": "1557839857812",
+      "validUntil": "1589375857812",
+      "initialValidity": "1589375857812",
+      "createTime": "1557839857818",
+      "lastModified": "1557839857818",
+      "MD5": "4203f25c8a48368e6328d83171b479f9",
+      "fileName": "object1_1557839857812.root",
+      "contentType": "application/octet-stream",
+      "size": "967",
+      "path": "Test",
+      "partName": "send",
+      "replica0": "http://alissandra01.cern.ch:8080/download/a4ed3fa0-764a-11e9-8fb5-898a20055566"
+    },
+    {
+      "id": "93699a50-7198-11e9-8d02-200114580202",
+      "validFrom": "1557323573256",
+      "validUntil": "1872683573256",
+      "initialValidity": "1872683573256",
+      "createTime": "1557323573365",
+      "lastModified": "1557323573365",
+      "MD5": "68165ce7dbf446afb97a373fd6bb9ac8",
+      "fileName": "ChipStav",
+      "contentType": "application/octet-stream",
+      "size": "9734",
+      "path": "ITSQcTask/ChipStaveCheck",
+      "partName": "send",
+      "quality": "10&",
+      "replica0": "http://alissandra01.cern.ch:8080/download/93699a50-7198-11e9-8d02-200114580202"
+    },
+    {
+      "id": "936b20f0-7198-11e9-8d02-200114580202",
+      "validFrom": "1557323573366",
+      "validUntil": "1872683573366",
+      "initialValidity": "1872683573366",
+      "createTime": "1557323573375",
+      "lastModified": "1557323573375",
+      "MD5": "73675bd66738c2ec362cd05739b30ce6",
+      "fileName": "ErrorPlo",
+      "contentType": "application/octet-stream",
+      "size": "4404",
+      "path": "ITSQcTask/ErrorPlots",
+      "partName": "send",
+      "quality": "10&",
+      "replica0": "http://alissandra01.cern.ch:8080/download/936b20f0-7198-11e9-8d02-200114580202"
+    }
+    ]
+  }

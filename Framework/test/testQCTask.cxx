@@ -43,13 +43,13 @@ class TestTask : public TaskInterface
   ~TestTask() override {}
 
   // Definition of the methods for the template method pattern
-  void initialize(o2::framework::InitContext& ctx) override
+  void initialize(o2::framework::InitContext& /*ctx*/) override
   {
     cout << "initialize" << endl;
     test = 1;
   }
 
-  void startOfActivity(Activity& activity) override
+  void startOfActivity(Activity& /*activity*/) override
   {
     cout << "startOfActivity" << endl;
     test = 2;
@@ -57,11 +57,11 @@ class TestTask : public TaskInterface
 
   void startOfCycle() override { cout << "startOfCycle" << endl; }
 
-  virtual void monitorData(o2::framework::ProcessingContext& ctx) { cout << "monitorData" << endl; }
+  void monitorData(o2::framework::ProcessingContext& /*ctx*/) override { cout << "monitorData" << endl; }
 
   void endOfCycle() override { cout << "endOfCycle" << endl; }
 
-  void endOfActivity(Activity& activity) override { cout << "endOfActivity" << endl; }
+  void endOfActivity(Activity& /*activity*/) override { cout << "endOfActivity" << endl; }
 
   void reset() override { cout << "reset" << endl; }
 

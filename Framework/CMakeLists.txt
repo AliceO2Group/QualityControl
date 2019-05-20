@@ -295,3 +295,17 @@ install(
     readoutForDataDump.json
   DESTINATION etc
 )
+install(
+  PROGRAMS
+    script/RepoCleaner/1_per_hour.py
+    script/RepoCleaner/Ccdb.py
+    script/RepoCleaner/repoCleaner.py
+  DESTINATION
+    bin
+)
+install(
+  FILES
+    script/RepoCleaner/config.yaml
+  DESTINATION
+    etc
+)

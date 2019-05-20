@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   MySqlDatabase.cxx
 /// \author Barthelemy von Haller
@@ -181,12 +191,12 @@ o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string ta
   if (statement->NextResultRow()) { // Consider only the first result
     string name = statement->GetString(0);
     void* blob = nullptr;
-    Long_t blobSize;
+    Long_t blobSize = 0;
     statement->GetBinary(1, blob, blobSize); // retrieve the data
-    TDatime updatetime(statement->GetYear(2), statement->GetMonth(2), statement->GetDay(2), statement->GetHour(2),
-                       statement->GetMinute(2), statement->GetSecond(2));
-    int run = statement->IsNull(3) ? -1 : statement->GetInt(3);
-    int fill = statement->IsNull(4) ? -1 : statement->GetInt(4);
+                                             //    TDatime updatetime(statement->GetYear(2), statement->GetMonth(2), statement->GetDay(2), statement->GetHour(2),
+                                             //                       statement->GetMinute(2), statement->GetSecond(2));
+                                             //    int run = statement->IsNull(3) ? -1 : statement->GetInt(3);
+                                             //    int fill = statement->IsNull(4) ? -1 : statement->GetInt(4);
 
     TMessage mess(kMESS_OBJECT);
     mess.SetBuffer(blob, blobSize, kFALSE);

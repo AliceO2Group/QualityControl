@@ -49,7 +49,7 @@ void customize(std::vector<CompletionPolicy>& policies)
     [](DeviceSpec const& device) {
       return device.name.find("merger") != std::string::npos;
     },
-    [](gsl::span<PartRef const> const& inputs) {
+    [](gsl::span<PartRef const> const& /*inputs*/) {
       return CompletionPolicy::CompletionOp::Consume;
     }
   };
@@ -96,7 +96,6 @@ WorkflowSpec processingTopology(SubSpecificationType subspec)
     Outputs{{ "TST", "SUM", subspec }},
     AlgorithmSpec{
       (AlgorithmSpec::ProcessCallback)[subspec](ProcessingContext & ctx) {
-        const auto* header = get<DataHeader*>(ctx.inputs().get("data").header);
         auto data = DataRefUtils::as<int>(ctx.inputs().get("data"));
         long long sum = 0;
         for (auto d : data) { sum += d; }

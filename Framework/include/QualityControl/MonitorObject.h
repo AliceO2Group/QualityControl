@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   MonitorObject.h
 /// \author Barthelemy von Haller
@@ -112,6 +122,13 @@ class MonitorObject : public TObject
   /// \throw AliceO2::Common::ObjectNotFoundError
   CheckDefinition getCheck(std::string checkName) const;
 
+  /// \brief Add key value pair that will end up in the database
+  /// Add a metadata (key value pair) to the MonitorObject. It will be stored in the database.
+  /// If the key already exists the value will be updated.
+  void addMetadata(std::string key, std::string value);
+
+  std::map<std::string, std::string> getMetadataMap() const;
+
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
 
@@ -119,6 +136,7 @@ class MonitorObject : public TObject
   TObject* mObject;
   std::map<std::string /*checkName*/, CheckDefinition> mChecks;
   std::string mTaskName;
+  std::map<std::string, std::string> mUserMetadata;
 
   // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the
   // object.

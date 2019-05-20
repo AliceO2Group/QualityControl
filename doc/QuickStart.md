@@ -29,13 +29,14 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 3. Prepare the QualityControl development package
     * `aliBuild init QualityControl@master --defaults o2`
 
-4. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `flpproto`.
+4. Install GLFW to have GUIs in the DPL (optional, DPL GUIs do not work in containers).
+    * On CC7 : `sudo yum install glfw-devel --enablerepo=epel`
+    * On Mac : `brew install glfw`
+
+5. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `flpproto`.
     * `aliBuild build flpproto --defaults o2`
 
    At this point you might encounter a message about missing system requirements. Run `aliDoctor flpproto` to get a full information about what is missing and how to install it.
-5. Install GLFW to have GUIs in the DPL (optional, DPL GUIs do not work in containers).
-    * On CC7 : `sudo yum install glfw-devel --enablerepo=epel`
-    * On Mac : `brew install glfw`
 
 Note :  you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
 
@@ -65,7 +66,8 @@ Thanks to the Data Processing Layer (DPL, more details later) it is a single pro
 
 __Repository and GUI__
 
-The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch](https://qcg-test.cern.ch/?page=layoutShow&layoutId=5bb34a1d18a82bb283a487bd). The link actually brings you to a "layout" that shows the object (a histo titled "example") published by the task.
+The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch](https://qcg-test.cern.ch/?page=objectTree). The link brings you to the hierarchy of objects. Open "QcTask" (the task you are running) and click on "example" which is the name of your histogram. The plot should be displayed on the right. If you wait a bit and hit "REFRESH NOW" in the far left menu you should see it changing from time to time. 
+Please note that anyone running qcRunBasic publishes the same object and you might see the one published by someone else. 
 
 TODO add a link to the user documentation of the QCG
 
