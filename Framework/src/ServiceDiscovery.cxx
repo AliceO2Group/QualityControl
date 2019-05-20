@@ -12,15 +12,16 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
-static inline std::string GetDefaultUrl()
+namespace o2::quality_control::core
+{
+
+std::string ServiceDiscovery::GetDefaultUrl()
 {
   return boost::asio::ip::host_name() + ":" + std::to_string(7777);
 }
 
-namespace o2::quality_control::core
-{
 
-ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& id, const std::string& healthEndpoint = GetDefaultUrl()) :
+ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& id, const std::string& healthEndpoint) :
   curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mId(id), mHealthEndpoint(healthEndpoint)
 {
   // parameter check

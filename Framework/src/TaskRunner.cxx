@@ -70,7 +70,7 @@ void TaskRunner::initCallback(InitContext& iCtx)
   mCollector = MonitoringFactory::Get(monitoringUrl);
   mCollector->enableProcessMonitoring();
 
-  mServiceDiscovery = std::make_unique<ServiceDiscovery>("http://consul-test.cern.ch:8500", mTaskConfig.taskName, "");
+  mServiceDiscovery = std::make_unique<ServiceDiscovery>("http://consul-test.cern.ch:8500", mTaskConfig.taskName);
   mServiceDiscovery->_register("obj1,obj2,obj3");
 
   // setup publisher
