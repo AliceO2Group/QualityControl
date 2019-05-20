@@ -20,7 +20,6 @@
 // QC
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/TaskInterface.h"
-#include "QualityControl/ServiceDiscovery.h"
 
 namespace ba = boost::accumulators;
 
@@ -107,7 +106,6 @@ class TaskRunner
   std::unique_ptr<TaskInterface> mTask;
   bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;
-  std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
 
   // consider moving these two to TaskConfig
   Inputs mInputSpecs;

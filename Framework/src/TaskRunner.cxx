@@ -42,8 +42,8 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   : mTaskName(taskName),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id),
     mTask(nullptr),
-    mResetAfterPublish(false),
     mNumberBlocks(0),
+    mResetAfterPublish(false),
     mLastNumberObjects(0),
     mCycleOn(false),
     mCycleNumber(0),
@@ -69,9 +69,6 @@ void TaskRunner::initCallback(InitContext& iCtx)
   std::string monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc"); // "influxdb-udp://aido2mon-gpn.cern.ch:8087"
   mCollector = MonitoringFactory::Get(monitoringUrl);
   mCollector->enableProcessMonitoring();
-
-  mServiceDiscovery = std::make_unique<ServiceDiscovery>("http://consul-test.cern.ch:8500", mTaskConfig.taskName);
-  mServiceDiscovery->_register("obj1,obj2,obj3");
 
   // setup publisher
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig);
@@ -231,7 +228,6 @@ void TaskRunner::startOfActivity()
   Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->startOfActivity(activity);
-//  mObjectsManager->
 }
 
 void TaskRunner::endOfActivity()
