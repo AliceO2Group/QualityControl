@@ -185,9 +185,9 @@ The Quality Control uses _plugins_ to load the actual code to be executed by the
 
 Before starting to develop the code, one should create a new module if it does not exist yet. Typically each detector team should prepare a module.
 
-The script `modulesHelper.sh`, in the directory _Modules_, is able to prepare a new module or to add a new _Task_ or a new _Check_ to an existing module. It must be run from __within QualityControl/Modules__. See the help message below:
+The script `o2-qc-module-configurator.sh`, in the directory _Modules_, is able to prepare a new module or to add a new _Task_ or a new _Check_ to an existing module. It must be run from __within QualityControl/Modules__. See the help message below:
 ```
-Usage: ./modulesHelper.sh -m MODULE_NAME [OPTION]
+Usage: ./o2-qc-module-configurator.sh -m MODULE_NAME [OPTION]
 
 Generate template QC module and/or tasks, checks.
 If a module with specified name already exists, new tasks and checks are inserted to the existing one.
@@ -195,9 +195,9 @@ Please follow UpperCamelCase convention for modules', tasks' and checks' names.
 
 Example:
 # create new module and some task
-./modulesHelper.sh -m MyModule -t SuperTask
+./o2-qc-module-configurator.sh -m MyModule -t SuperTask
 # add one task and two checks
-./modulesHelper.sh -m MyModule -t EvenBetterTask -c HistoUniformityCheck -c MeanTest
+./o2-qc-module-configurator.sh -m MyModule -t EvenBetterTask -c HistoUniformityCheck -c MeanTest
 
 Options:
  -h               print this message
@@ -210,8 +210,8 @@ For example, if your detector 3-letter code is ABC you might want to do
 ```
 # we are in ~/alice
 cd QualityControl/Modules
-./modulesHelper.sh -m Abc # create the module
-./modulesHelper.sh -t RawDataQcTask # add a task
+./o2-qc-module-configurator.sh -m Abc # create the module
+./o2-qc-module-configurator.sh -t RawDataQcTask # add a task
 ```
 
 ## Test run
