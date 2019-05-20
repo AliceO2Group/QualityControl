@@ -42,14 +42,14 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   BOOST_CHECK_THROW(objectsManager.getQuality("test2"), ObjectNotFoundError);
 
   // that is just for me to see how it looks like
-//  try {
-//    objectsManager.getQuality("test2");
-//  } catch (ObjectNotFoundError& e) {
-//    std::cout << e.what() << std::endl;
-//    if (std::string const* extra = boost::get_error_info<errinfo_object_name>(e)) {
-//      std::cout << "object name : " << *extra << std::endl;
-//    }
-//  }
+  //  try {
+  //    objectsManager.getQuality("test2");
+  //  } catch (ObjectNotFoundError& e) {
+  //    std::cout << e.what() << std::endl;
+  //    if (std::string const* extra = boost::get_error_info<errinfo_object_name>(e)) {
+  //      std::cout << "object name : " << *extra << std::endl;
+  //    }
+  //  }
 }
 
 } // namespace o2::quality_control::core
