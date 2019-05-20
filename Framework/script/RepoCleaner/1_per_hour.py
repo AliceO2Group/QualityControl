@@ -4,6 +4,7 @@ import logging
 
 from Ccdb import Ccdb, ObjectVersion
 
+
 def process(ccdb: Ccdb, object_path: str, delay: int):
     '''
     Process this deletion rule on the object. We use the CCDB passed by argument.
@@ -15,6 +16,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int):
     :param ccdb: the ccdb in which objects are cleaned up.
     :param object_path: path to the object, or pattern, to which a rule will apply.
     :param delay: the grace period during which a new object is never deleted.
+    :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
     '''
     
     logging.debug(f"Plugin 1_per_hour processing {object_path}")
@@ -24,11 +26,13 @@ def process(ccdb: Ccdb, object_path: str, delay: int):
     last_preserved: ObjectVersion = None
     preservation_list: List[ObjectVersion] = []
     deletion_list: List[ObjectVersion] = []
+    update_list: List[ObjectVersion] = []
     for v in versions:
         if last_preserved == None or last_preserved.validFromAsDatetime < v.validFromAsDatetime - timedelta(hours=1):
             # first extend validity of the previous preserved (should we take into account the run ?)
             if last_preserved != None:
                 ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1))
+                update_list.append(last_preserved)
             last_preserved = v
             preservation_list.append(v)
         else:
@@ -45,9 +49,17 @@ def process(ccdb: Ccdb, object_path: str, delay: int):
     for v in preservation_list:
         logging.debug(f"   {v}")
 
+    logging.debug("updated : ")
+    for v in update_list:
+        logging.debug(f"   {v}")
+
+    return {"deleted" : len(deletion_list), "preserved": len(preservation_list), "updated" : len(update_list)}
+
+
 def main():
     ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
     process(ccdb, "asdfasdf/example", 60)
 
-if __name__== "__main__": # to be able to run the test code above when not imported.
+
+if __name__ == "__main__":  # to be able to run the test code above when not imported.
     main()
