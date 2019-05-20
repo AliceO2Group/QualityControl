@@ -66,7 +66,7 @@ Thanks to the Data Processing Layer (DPL, more details later) it is a single pro
 
 __Repository and GUI__
 
-The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch](https://qcg-test.cern.ch/?page=objectTree). The link brings you to the hierarchy of objects. Open "QcTask" (the task you are running) and click on "example" which is the name of your histogram. The plot should be displayed on the right. If you wait a bit and hit "REFRESH NOW" in the far left menu you should see it changing from time to time. 
+The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch/?page=objectTree](https://qcg-test.cern.ch/?page=objectTree). The link brings you to the hierarchy of objects (see screenshot below). Open "QcTask" (the task you are running) and click on "example" which is the name of your histogram. The plot should be displayed on the right. If you wait a bit and hit "REFRESH NOW" in the far left menu you should see it changing from time to time (see second screenshot below). 
 Please note that anyone running o2-qc-run-basic publishes the same object and you might see the one published by someone else. 
 
 ![alt text](images/basic-qcg1.png)
