@@ -19,6 +19,7 @@ set(
   src/HistoMerger.cxx
   src/InfrastructureGenerator.cxx
   src/runnerUtils.h
+  src/ServiceDiscovery.cxx
 )
 
 set(
@@ -30,6 +31,7 @@ set(
   include/QualityControl/CheckerFactory.h
   include/QualityControl/DatabaseInterface.h
   include/QualityControl/CcdbDatabase.h
+  include/QualityControl/ServiceDiscovery.h
   include/QualityControl/TaskRunner.h
   include/QualityControl/TaskRunnerFactory.h
   include/QualityControl/HistoMerger.h
@@ -116,6 +118,7 @@ target_link_libraries(
     $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
     $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL>
     ROOT::Gui
+    CURL::CURL
 )
 
 target_compile_definitions(QualityControl
@@ -155,7 +158,7 @@ foreach(i RANGE ${count})
   list(GET EXE_SRCS ${i} src)
   list(GET EXE_NAMES ${i} name)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE QualityControl)
+  target_link_libraries(${name} PRIVATE QualityControl CURL::CURL)
 endforeach()
 
 # ---- Gui ----
