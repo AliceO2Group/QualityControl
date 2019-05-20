@@ -45,6 +45,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   : mDeviceName(createTaskRunnerIdString() + "-" + taskName),
     mTask(nullptr),
     mResetAfterPublish(false),
+    mServiceDiscovery(std::make_shared<ServiceDiscovery>("http://consul-test.cern.ch:8500", taskName, "")),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id),
     mNumberBlocks(0),
     mLastNumberObjects(0),
@@ -78,7 +79,7 @@ void TaskRunner::init(InitContext& iCtx)
   mCollector->enableProcessMonitoring();
 
   // setup publisher
-  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig);
+  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig, mServiceDiscovery);
 
   // setup user's task
   TaskFactory f;
@@ -310,7 +311,6 @@ void TaskRunner::startOfActivity()
   Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->startOfActivity(activity);
-//  mObjectsManager->
 }
 
 void TaskRunner::endOfActivity()
@@ -344,6 +344,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
   // publication
   unsigned long numberObjectsPublished = publish(outputs);
+  mObjectsManager->updateServiceDiscovery();
 
   // monitoring metrics
   double durationPublication = 0; // (boost::posix_time::seconds(mTaskConfig.cycleDurationSeconds) -

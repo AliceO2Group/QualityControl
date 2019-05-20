@@ -117,7 +117,7 @@ class TaskRunner : public framework::Task
   std::shared_ptr<TaskInterface> mTask;
   bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;
-  std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
+  std::shared_ptr<ServiceDiscovery> mServiceDiscovery;
 
   // consider moving these to TaskConfig
   framework::Inputs mInputSpecs;

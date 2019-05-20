@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/TaskConfig.h"
+#include "ServiceDiscovery.h"
 // ROOT
 #include <TObjArray.h>
 #include <TObjString.h>
@@ -42,7 +43,7 @@ class ObjectsManager
   friend class TaskControl; // TaskControl must be able to call "publish()" whenever needed. Nobody else can.
 
  public:
-  explicit ObjectsManager(TaskConfig& taskConfig);
+  ObjectsManager(TaskConfig& taskConfig, std::shared_ptr<ServiceDiscovery> serviceDiscovery = nullptr);
   virtual ~ObjectsManager();
 
   /**
@@ -104,9 +105,13 @@ class ObjectsManager
    */
   int getNumberPublishedObjects();
 
+  void updateServiceDiscovery();
+
  private:
   TObjArray mMonitorObjects;
   std::string mTaskName;
+  std::shared_ptr<ServiceDiscovery> mServiceDiscovery;
+  bool mUpdateServiceDiscovery;
 };
 
 } // namespace o2::quality_control::core

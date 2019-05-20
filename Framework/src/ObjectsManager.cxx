@@ -24,7 +24,8 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
-ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskName(taskConfig.taskName)
+ObjectsManager::ObjectsManager(TaskConfig& taskConfig, std::shared_ptr<ServiceDiscovery> serviceDiscovery) :
+  mTaskName(taskConfig.taskName), mServiceDiscovery(serviceDiscovery), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects.SetOwner(true);
 }
@@ -43,6 +44,22 @@ void ObjectsManager::startPublishing(TObject* object)
   auto* newObject = new MonitorObject(object, mTaskName);
   newObject->setIsOwner(false);
   mMonitorObjects.Add(newObject);
+  mUpdateServiceDiscovery = true;
+}
+
+void ObjectsManager::updateServiceDiscovery()
+{
+  if(!mUpdateServiceDiscovery || mServiceDiscovery == nullptr) {
+    return;
+  }
+  // prepare the string of comma separated objects and publish it
+  string objects;
+  for(auto mo : mMonitorObjects) {
+    objects+=string(mo->GetName())+",";
+  }
+  objects.pop_back();
+  mServiceDiscovery->_register(objects);
+  mUpdateServiceDiscovery = false;
 }
 
 void ObjectsManager::stopPublishing(TObject* object)
@@ -61,9 +78,6 @@ void ObjectsManager::stopPublishing(const string& name)
 
 Quality ObjectsManager::getQuality(std::string objectName)
 {
-  if (mMonitorObjects.FindObject(objectName.c_str())) {
-    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
-  }
   MonitorObject* mo = getMonitorObject(objectName);
   return mo->getQuality();
 }
