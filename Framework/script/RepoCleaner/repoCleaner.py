@@ -127,6 +127,7 @@ def main():
     # For each object call the first matching rule
     logging.info("Loop through the objects and apply first matching rule.")
     for object_path in paths:
+        logging.info(f"Processing {object_path}")
         # Take the first matching rule, if any
         rule = findMatchingRule(rules, object_path);
         if rule == None:
@@ -134,9 +135,10 @@ def main():
              
         # Apply rule on object (find the plug-in script and apply)
         module = __import__(rule.policy)
-        module.process(ccdb, object_path, int(rule.delay))
+        stats = module.process(ccdb, object_path, int(rule.delay))
+        logging.info(f"{rule.policy} applied on {object_path}: {stats}")
     
-    logging.info(f"done (deleted: {ccdb.counter_deleted}, updated: {ccdb.counter_validity_updated})")
+    logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.
     main()
