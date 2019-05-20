@@ -152,15 +152,15 @@ set(
 # These were the original names before the convention changed.
 # We will get rid of them but for the time being we want to create symlinks to avoid confusion.
 set(
-        EXE_OLD_NAMES
-        qcInfoService
-        qcInfoServiceDump
-        qcRunBasic
-        qcRunAdvanced
-        qcRunReadout
-        runMergerTest
-        qcRunReadoutForDataDump
-        repositoryBenchmark
+  EXE_OLD_NAMES
+  qcInfoService
+  qcInfoServiceDump
+  qcRunBasic
+  qcRunAdvanced
+  qcRunReadout
+  runMergerTest
+  qcRunReadoutForDataDump
+  repositoryBenchmark
 )
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
