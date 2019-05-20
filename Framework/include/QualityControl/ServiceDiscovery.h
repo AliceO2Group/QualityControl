@@ -20,45 +20,46 @@ namespace o2::quality_control::core
 /// Allow to publish list of online objects
 class ServiceDiscovery
 {
-  public:
-    /// Sets up CURL and health check
-    /// \param url 		Consul URL
-    /// \param id 		Unique instance ID
-    /// \param healthEndpoint	Local endpoint that is then used for health checks
-    ///				(default value it set to  <hostname>:7777)
-    ServiceDiscovery(const std::string& url, const std::string& id, const std::string& healthEndpoint = GetDefaultUrl());
+ public:
+  /// Sets up CURL and health check
+  /// \param url 		Consul URL
+  /// \param id 		Unique instance ID
+  /// \param healthEndpoint	Local endpoint that is then used for health checks
+  ///				(default value it set to  <hostname>:7777)
+  ServiceDiscovery(const std::string& url, const std::string& id, const std::string& healthEndpoint = GetDefaultUrl());
 
-    /// Stops the health thread and deregisteres from Consul health checks
-    ~ServiceDiscovery();
+  /// Stops the health thread and deregisteres from Consul health checks
+  ~ServiceDiscovery();
 
-    /// Registeres list of online objects by sending HTTP PUT request to Consul server
-    /// \param objects 		List of comma separated objects
-    void _register(const std::string& objects);
+  /// Registeres list of online objects by sending HTTP PUT request to Consul server
+  /// \param objects 		List of comma separated objects
+  void _register(const std::string& objects);
 
-    /// Deregisteres service
-    void deregister();
-  private:
-    /// Custom deleter of CURL object
-    static void deleteCurl(CURL * curl);
+  /// Deregisteres service
+  void deregister();
 
-    /// CURL instance
-    std::unique_ptr<CURL, decltype(&ServiceDiscovery::deleteCurl)> curlHandle;
+ private:
+  /// Custom deleter of CURL object
+  static void deleteCurl(CURL* curl);
 
-    const std::string mConsulUrl; ///< Consul URL
-    const std::string mId; ///< Instance (service) ID
-    std::string mHealthEndpoint; ///< hostname and port of health check endpoint
-    std::thread mHealthThread; ///< Health check thread
-    std::atomic<bool> mThreadRunning; ///< Health check thread running flag
-    CURL* initCurl(); ///< Initializes CURL
+  /// CURL instance
+  std::unique_ptr<CURL, decltype(&ServiceDiscovery::deleteCurl)> curlHandle;
 
-    /// Sends PUT request
-    void send(const std::string &path, std::string&& request);
+  const std::string mConsulUrl;     ///< Consul URL
+  const std::string mId;            ///< Instance (service) ID
+  std::string mHealthEndpoint;      ///< hostname and port of health check endpoint
+  std::thread mHealthThread;        ///< Health check thread
+  std::atomic<bool> mThreadRunning; ///< Health check thread running flag
+  CURL* initCurl();                 ///< Initializes CURL
 
-    /// Health check thread loop
-    void runHealthServer(unsigned int port);
+  /// Sends PUT request
+  void send(const std::string& path, std::string&& request);
 
-    static inline std::string GetDefaultUrl(); ///< Provides default health check URL
+  /// Health check thread loop
+  void runHealthServer(unsigned int port);
+
+  static inline std::string GetDefaultUrl(); ///< Provides default health check URL
 };
 
-}
+} // namespace o2::quality_control::core
 #endif // QC_SERVICEDISCOVERY_H
