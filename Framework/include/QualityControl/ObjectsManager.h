@@ -48,8 +48,8 @@ class ObjectsManager
   /**
    * Start publishing the object obj, i.e. it will be pushed forward in the workflow at regular intervals.
    * The ownership remains to the caller.
-   * In most cases, objectName parameter can be ignored.
    * @param obj The object to publish.
+   * @throws DuplicateObjectError
    */
   void startPublishing(TObject* obj);
   // todo stoppublishing
