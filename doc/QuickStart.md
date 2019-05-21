@@ -58,7 +58,7 @@ The _Producer_ is a random data generator. In a more realistic setup it would be
 
 To run it simply do
 
-    qcRunBasic
+    o2-qc-run-basic
 
 Thanks to the Data Processing Layer (DPL, more details later) it is a single process that steers all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped, probably abnormaly.
 
@@ -67,7 +67,7 @@ Thanks to the Data Processing Layer (DPL, more details later) it is a single pro
 __Repository and GUI__
 
 The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch/?page=objectTree](https://qcg-test.cern.ch/?page=objectTree). The link brings you to the hierarchy of objects (see screenshot below). Open "QcTask" (the task you are running) and click on "example" which is the name of your histogram. The plot should be displayed on the right. If you wait a bit and hit "REFRESH NOW" in the far left menu you should see it changing from time to time (see second screenshot below). 
-Please note that anyone running qcRunBasic publishes the same object and you might see the one published by someone else. 
+Please note that anyone running o2-qc-run-basic publishes the same object and you might see the one published by someone else. 
 
 ![alt text](images/basic-qcg1.png)
 ![alt text](images/basic-qcg2.png)
@@ -110,7 +110,7 @@ readout.exe file://$READOUT_ROOT/etc/readout.cfg
 
 Start the QC and DS (DataSampling) workflow :
 ```
-qcRunReadout
+o2-qc-run-readout
 ```
 
 The data sampling is configured to sample 1% of the data as the readout should run by default at full speed.
@@ -123,7 +123,7 @@ The payload received is a 2MB (configurable) data page made of CRU pages (8kB).
 __Configuration file__
 
 The configuration file is installed in `$QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `$QUALITYCONTROL_ROOT/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
-To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config-path` when launch `qcRunReadout`.
+To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config-path` when launch `o2-qc-run-readout`.
 
 To change the fraction of the data being monitored, change the option `fraction`.
 
