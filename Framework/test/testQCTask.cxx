@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    TestQCTask.cxx
+/// \file    testQCTask.cxx
 /// \author  Barthelemy von Haller
 ///
 

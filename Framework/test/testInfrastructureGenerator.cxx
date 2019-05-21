@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    testQCFactory.cxx
+/// \file    testInfrastructureGenerator.cxx
 /// \author  Piotr Konopka
 ///
 

@@ -40,4 +40,22 @@ BOOST_AUTO_TEST_CASE(duplicate_object_test)
   BOOST_CHECK_THROW(objectsManager.startPublishing(&s), o2::quality_control::core::DuplicateObjectError);
 }
 
+BOOST_AUTO_TEST_CASE(unpublish_test)
+{
+  TaskConfig config;
+  config.taskName = "test";
+  ObjectsManager objectsManager(config);
+  TObjString s("content");
+  objectsManager.startPublishing(&s);
+  BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
+  objectsManager.stopPublishing(&s);
+  BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
+  objectsManager.startPublishing(&s);
+  BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
+  objectsManager.stopPublishing("content");
+  BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
+  BOOST_CHECK_THROW(objectsManager.stopPublishing("content"), ObjectNotFoundError);
+  BOOST_CHECK_THROW(objectsManager.stopPublishing("asdf"), ObjectNotFoundError);
+}
+
 } // namespace o2::quality_control::core

@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   Publisher_test.cpp
+/// \file   testPublisher.cxx
 /// \author Barthelemy von Haller
 ///
 
