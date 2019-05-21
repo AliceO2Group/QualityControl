@@ -53,7 +53,7 @@ void ObjectsManager::stopPublishing(TObject* object)
 void ObjectsManager::stopPublishing(const string& name)
 {
   auto* mo = dynamic_cast<MonitorObject*>(mMonitorObjects.FindObject(name.data()));
-  if(mo == nullptr) {
+  if (mo == nullptr) {
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(name));
   }
   mMonitorObjects.Remove(mo);
@@ -110,7 +110,7 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
 
 int ObjectsManager::getNumberPublishedObjects()
 {
-  return mMonitorObjects.GetLast()+1;// GetLast returns the index
+  return mMonitorObjects.GetLast() + 1; // GetLast returns the index
 }
 
 } // namespace o2::quality_control::core

@@ -92,7 +92,9 @@ class ObjectsManager
   TObject* getObject(std::string objectName);
 
   TObjArray* getNonOwningArray() const
-  { return new TObjArray(mMonitorObjects); };
+  {
+    return new TObjArray(mMonitorObjects);
+  };
 
   void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
 
