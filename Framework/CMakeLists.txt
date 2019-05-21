@@ -220,6 +220,7 @@ set(
   test/testInfrastructureGenerator.cxx
   test/testQCTask.cxx
   test/testQuality.cxx
+  test/testObjectsManager.cxx
 )
 
 foreach(test ${TEST_SRCS})

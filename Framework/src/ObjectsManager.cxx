@@ -35,6 +35,11 @@ ObjectsManager::~ObjectsManager()
 
 void ObjectsManager::startPublishing(TObject* object)
 {
+  if (mMonitorObjects.FindObject(object->GetName()) != 0) {
+    QcInfoLogger::GetInstance() << "Object already being published (" << object->GetName() << ")"
+                                << infologger::endm;
+    BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
+  }
   auto* newObject = new MonitorObject(object, mTaskName);
   newObject->setIsOwner(false);
   mMonitorObjects.Add(newObject);
