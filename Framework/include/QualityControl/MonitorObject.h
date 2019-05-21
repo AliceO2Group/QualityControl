@@ -39,9 +39,8 @@ struct CheckDefinition {
   Quality result;
 };
 
-struct DuplicateObjectError : virtual AliceO2::Common::ExceptionBase
-{
-  const char *what() const noexcept override
+struct DuplicateObjectError : virtual AliceO2::Common::ExceptionBase {
+  const char* what() const noexcept override
   {
     return "Duplicate object error";
   }

@@ -35,7 +35,7 @@ ObjectsManager::~ObjectsManager()
 
 void ObjectsManager::startPublishing(TObject* object)
 {
-  if(mMonitorObjects.FindObject(object->GetName()) != 0) {
+  if (mMonitorObjects.FindObject(object->GetName()) != 0) {
     QcInfoLogger::GetInstance() << "Object already published (" << object->GetName() << "), we won't republish"
                                 << infologger::endm;
     BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
