@@ -45,6 +45,20 @@ void ObjectsManager::startPublishing(TObject* object)
   mMonitorObjects.Add(newObject);
 }
 
+void ObjectsManager::stopPublishing(TObject* object)
+{
+  stopPublishing(object->GetName());
+}
+
+void ObjectsManager::stopPublishing(const string& name)
+{
+  auto* mo = dynamic_cast<MonitorObject*>(mMonitorObjects.FindObject(name.data()));
+  if(mo == nullptr) {
+    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(name));
+  }
+  mMonitorObjects.Remove(mo);
+}
+
 Quality ObjectsManager::getQuality(std::string objectName)
 {
   if (mMonitorObjects.FindObject(objectName.c_str())) {
@@ -92,6 +106,11 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
   MonitorObject* mo = getMonitorObject(objectName);
   mo->addMetadata(key, value);
   QcInfoLogger::GetInstance() << "Added metadata on " << objectName << " : " << key << " -> " << value << infologger::endm;
+}
+
+int ObjectsManager::getNumberPublishedObjects()
+{
+  return mMonitorObjects.GetLast()+1;// GetLast returns the index
 }
 
 } // namespace o2::quality_control::core
