@@ -168,6 +168,7 @@ set(
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)
+  install(DIRECTORY DESTINATION bin) # just in case it is not there yet
   install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})")
   install(CODE "message(\"-- Created symlink: ${sympath} -> ${filepath}\")")
 endmacro(install_symlink)
@@ -180,7 +181,7 @@ foreach(i RANGE ${count})
   list(GET EXE_OLD_NAMES ${i} oldname)
   add_executable(${name} ${src})
   target_link_libraries(${name} PRIVATE QualityControl CURL::CURL)
-  install_symlink(${CMAKE_INSTALL_FULL_BINDIR}/${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
+  install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
 
 # ---- Gui ----
