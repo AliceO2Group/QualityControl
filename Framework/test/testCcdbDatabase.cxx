@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(ccdb_getobjects)
   for (auto& task : tasks) {
     auto objects = BackendInstance->getPublishedObjectNames(task);
     for (auto& object : objects) {
-      Objects.insert({task, object});
+      Objects.insert({ task, object });
     }
   }
 }
@@ -87,5 +87,5 @@ BOOST_AUTO_TEST_CASE(Dummy)
   BOOST_CHECK(true);
 }
 
-} // namespace anonymous
+} // namespace
 } // namespace o2::quality_control::core
