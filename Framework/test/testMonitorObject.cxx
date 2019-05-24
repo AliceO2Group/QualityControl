@@ -67,35 +67,50 @@ namespace o2::quality_control::core
 
 BOOST_AUTO_TEST_CASE(mo_save)
 {
-  TH1F h("asdf", "asdf", 100, 0, 99);
+  string objectName = "asdf";
+  TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
   o2::quality_control::core::MonitorObject obj(&h, "task");
   cout << "getName : '" << obj.getName() << "'" <<endl;
   cout << "GetName : '" << obj.GetName() << "'" << endl;
   cout << "title : '" << obj.GetTitle() << "'" << endl;
   obj.setIsOwner(false);
+  string libName = "libraryName";
+  obj.addCheck("name", "className", libName);
+  string libName2 = "libraryName2";
+  obj.addCheck("name2", "className2", libName2);
+  obj.setQualityForCheck("name", Quality::Good);
+  cout << "quality : " << obj.getQuality() << endl;
+  cout << "check numbers : " << obj.getChecks().size() << endl;
+  CheckDefinition c = obj.getCheck("name2");
+  cout << "check2 libraryName : " << c.libraryName << endl;
   TFile file("/tmp/test.root", "RECREATE");
   obj.Write(obj.getName().data());
 //  h.Write();
   file.Close();
-}
 
-BOOST_AUTO_TEST_CASE(mo_read)
-{
+
+
   cout << "***" << endl;
-  TFile file("/tmp/test.root");
+  TFile file2("/tmp/test.root");
 //  file.Print();
 //  file.Map();
 //  file.ShowStreamerInfo();
 //  TH1F* mo = dynamic_cast<TH1F*>(file.Get("asdf"));
-  o2::quality_control::core::MonitorObject *mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(file.Get("asdf"));
+  o2::quality_control::core::MonitorObject *mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(file2.Get(objectName.data()));
+  BOOST_CHECK_NE(mo, nullptr);
   cout << "mo : " << mo << endl;
+  BOOST_CHECK_EQUAL(mo->GetName(), objectName);
+  BOOST_CHECK_EQUAL(mo->getName(), objectName);
   cout << "name : " << mo->GetName() << endl;
   cout << "name : " << mo->getName() << endl;
-
-//  TH1F h("asdf", "asdf", 100, 0, 99);
-//  o2::quality_control::core::MonitorObject obj(&h, "taskname");
-//  obj.setIsOwner(false);
-//  obj.SaveAs("/tmp/test.root");
+  BOOST_CHECK_EQUAL(mo->getQuality(), Quality::Good);
+  cout << "quality : " << mo->getQuality() << endl;
+  BOOST_CHECK_EQUAL(mo->getChecks().size(), 2);
+  cout << "check numbers : " << mo->getChecks().size() << endl;
+  CheckDefinition c2 = mo->getCheck("name2");
+  cout << "check2 libraryName : " << c2.libraryName << endl;
+  BOOST_CHECK_EQUAL(c2.libraryName, libName2);
 }
+
 
 } // namespace o2::quality_control::core
