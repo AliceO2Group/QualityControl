@@ -33,11 +33,11 @@ namespace
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 
-const std::string CCDB_ENDPOINT = "127.0.0.1:8080";
+const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
 std::unique_ptr<DatabaseInterface> BackendInstance;
 std::unordered_map<std::string, std::string> Objects;
 
-BOOST_AUTO_TEST_SUITE(optionalTest, *boost::unit_test::disabled())
+BOOST_AUTO_TEST_SUITE(optionalTest/*, *boost::unit_test::disabled()*/)
 
 BOOST_AUTO_TEST_CASE(ccdb_create)
 {
@@ -69,6 +69,10 @@ BOOST_AUTO_TEST_CASE(ccdb_retrievejson)
   for (auto const& [task, object] : Objects) {
     std::cout << "[JSON RETRIEVE]: " << task << "/" << object << std::endl;
     auto json = BackendInstance->retrieveJson(task, object);
+    if (json.empty()) {
+      std::cout << "skipping empty object..." << std::endl;
+      continue;
+    }
     std::stringstream ss;
     ss << json;
     boost::property_tree::ptree pt;
