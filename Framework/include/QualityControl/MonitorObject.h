@@ -40,7 +40,7 @@ struct CheckDefinition {
   std::string libraryName;
   Quality result;
 
-  ClassDef(CheckDefinition, 0);
+  ClassDef(CheckDefinition, 1);
 };
 
 struct DuplicateObjectError : virtual AliceO2::Common::ExceptionBase {
