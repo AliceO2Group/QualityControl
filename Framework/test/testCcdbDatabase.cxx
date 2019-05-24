@@ -37,7 +37,7 @@ const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
 std::unique_ptr<DatabaseInterface> BackendInstance;
 std::unordered_map<std::string, std::string> Objects;
 
-BOOST_AUTO_TEST_SUITE(optionalTest/*, *boost::unit_test::disabled()*/)
+BOOST_AUTO_TEST_SUITE(optionalTest, *boost::unit_test::disabled())
 
 BOOST_AUTO_TEST_CASE(ccdb_create)
 {
