@@ -50,7 +50,7 @@ TObject* MonitorObject::DrawClone(Option_t* option) const
 
 const std::string MonitorObject::getName() const
 {
-  return string(mObject->GetName());
+  return string(GetName());
 }
 
 const char* MonitorObject::GetName() const
