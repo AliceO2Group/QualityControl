@@ -63,7 +63,6 @@ class ServiceDiscovery
   {
     return boost::asio::ip::host_name() + ":" + std::to_string(7777);
   }
-
 };
 
 } // namespace o2::quality_control::core
