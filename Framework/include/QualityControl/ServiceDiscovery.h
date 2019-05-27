@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include <boost/asio/ip/host_name.hpp>
 
 namespace o2::quality_control::core
 {
@@ -58,7 +59,11 @@ class ServiceDiscovery
   /// Health check thread loop
   void runHealthServer(unsigned int port);
 
-  static inline std::string GetDefaultUrl(); ///< Provides default health check URL
+  static inline std::string GetDefaultUrl() ///< Provides default health check URL
+  {
+    return boost::asio::ip::host_name() + ":" + std::to_string(7777);
+  }
+
 };
 
 } // namespace o2::quality_control::core
