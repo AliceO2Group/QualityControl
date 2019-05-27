@@ -11,6 +11,26 @@ matrix:
           packages:
             - clang-format-7
       compiler: clang
+    - os: linux
+      if: branch = master
+      dist: xenial
+      env: TOOL=docs
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - doxygen
+            - doxygen-doc
+            - doxygen-latex
+            - doxygen-gui
+            - graphviz
+      deploy:
+        provider: pages
+        skip_cleanup: true
+        github_token: $GITHUB_API_TOKEN
+        local_dir: build/doc/html
 script:
   - if [[ $TOOL == "clang-format" ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
       cd $TRAVIS_BUILD_DIR;
