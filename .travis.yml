@@ -31,8 +31,8 @@ matrix:
         skip_cleanup: true
         github_token: $GITHUB_API_TOKEN
         local_dir: build/doc/html
-before_script:
-  - cd $TRAVIS_BUILD_DIR; mkdir build; cd build
+#before_script:
+#  - cd $TRAVIS_BUILD_DIR; mkdir build; cd build
 script:
   - if [[ $TOOL == "clang-format" ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
       cd $TRAVIS_BUILD_DIR;
@@ -46,6 +46,13 @@ script:
         exit 1;
       fi
     fi
-  - if [[ $TOOL == "docs" ]]; then cmake .. -DCMAKE_BUILD_TYPE=Debug; make doc; fi
+#  - if [[ $TOOL == "docs" ]]; then cmake .. -DCMAKE_BUILD_TYPE=Debug; make doc; fi
+  - if [[ $TOOL == "docs" ]]; then
+      cat > CMakeLists.txt <<\EOF
+      add_subdirectory(doc)
+      EOF
+      cmake .
+      make doc
+  fi
 notifications:
   email: false
