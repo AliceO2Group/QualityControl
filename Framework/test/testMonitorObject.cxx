@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(mo_save)
   string objectName = "asdf";
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
   o2::quality_control::core::MonitorObject obj(&h, "task");
-  cout << "getName : '" << obj.getName() << "'" <<endl;
+  cout << "getName : '" << obj.getName() << "'" << endl;
   cout << "GetName : '" << obj.GetName() << "'" << endl;
   cout << "title : '" << obj.GetTitle() << "'" << endl;
   BOOST_CHECK_EQUAL(obj.getName(), "asdf");
@@ -93,11 +93,9 @@ BOOST_AUTO_TEST_CASE(mo_save)
   obj.Write(obj.getName().data());
   file.Close();
 
-
-
   cout << "***" << endl;
   TFile file2("/tmp/test.root");
-  o2::quality_control::core::MonitorObject *mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(file2.Get(objectName.data()));
+  o2::quality_control::core::MonitorObject* mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(file2.Get(objectName.data()));
   BOOST_CHECK_NE(mo, nullptr);
   cout << "mo : " << mo << endl;
   BOOST_CHECK_EQUAL(mo->GetName(), objectName);

@@ -78,7 +78,7 @@ class MonitorObject : public TObject
 
   /// \brief Overwrite the TObject's method just to avoid confusion.
   /// @return The name of the encapsulated object or "" if there is no object.
-  const char* GetName() const override ;
+  const char* GetName() const override;
 
   const std::string& getTaskName() const { return mTaskName; }
 
