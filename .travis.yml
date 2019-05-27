@@ -44,5 +44,7 @@ script:
         exit 1;
       fi
     fi
+  - if [[ $TOOL == "docs" ]]; then cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=/usr/bin/gcc-7 -DCMAKE_CXX_COMPILER=/usr/bin/g++-7; fi
+  - if [[ $TOOL == "docs" ]]; then make doc; fi
 notifications:
   email: false
