@@ -51,7 +51,9 @@ script:
       cat > CMakeLists.txt <<\EOF
       add_subdirectory(doc)
       EOF
-      cmake .
+      mkdir build
+      cd build
+      cmake ..
       make doc
   fi
 notifications:
