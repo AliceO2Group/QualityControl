@@ -222,6 +222,7 @@ set(
   test/testQCTask.cxx
   test/testQuality.cxx
   test/testObjectsManager.cxx
+  test/testCcdbDatabase.cxx
 )
 
 foreach(test ${TEST_SRCS})
