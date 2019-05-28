@@ -46,7 +46,6 @@ script:
         exit 1;
       fi
     fi
-#  - if [[ $TOOL == "docs" ]]; then cmake .. -DCMAKE_BUILD_TYPE=Debug; make doc; fi
   - if [[ $TOOL == "docs" ]]; then
       cat > CMakeLists.txt <<\EOF
       add_subdirectory(doc)
