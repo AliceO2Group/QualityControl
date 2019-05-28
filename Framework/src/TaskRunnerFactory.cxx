@@ -38,7 +38,7 @@ TaskRunnerFactory::create(std::string taskName, std::string configurationSource,
   // this needs to be moved at the end
   newTask.algorithm = adaptFromTask<TaskRunner>(std::move(qcTask));
 
-  return std::move(newTask);
+  return newTask;
 }
 
 void TaskRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
