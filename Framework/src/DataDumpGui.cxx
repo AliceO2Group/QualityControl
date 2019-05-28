@@ -139,7 +139,6 @@ void updatePayloadGui()
     // header row
     ImGui::Separator();
     resizeColumns(representation /*, old_representation*/);
-    ImGui::Text("");
     ImGui::NextColumn();
     ImGui::Text("#1");
     ImGui::NextColumn();
@@ -211,7 +210,7 @@ void updateHeaderGui()
                       ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, ImGui::GetTextLineHeightWithSpacing() * 7),
                       false);
     ImGui::Text("Header size : %d", header->headerSize);
-    ImGui::Text("Payload size : %llu", header->payloadSize);
+    ImGui::Text("Payload size : %llu", static_cast<unsigned long long int>(header->payloadSize));
     ImGui::Text("Header version : %d", header->headerVersion);
     ImGui::Text("flagsNextHeader : %d", header->flagsNextHeader);
     ImGui::Text("dataDescription : %s", header->dataDescription.str);

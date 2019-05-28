@@ -31,7 +31,7 @@ SkeletonTask::~SkeletonTask() {
   }
 }
 
-void SkeletonTask::initialize(o2::framework::InitContext& ctx)
+void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize SkeletonTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
