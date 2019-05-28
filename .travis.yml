@@ -33,16 +33,25 @@ matrix:
         local_dir: build/doc/html
 script:
   - if [[ $TOOL == "clang-format" ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      cd $TRAVIS_BUILD_DIR;
-      BASE_COMMIT=$(git rev-parse $TRAVIS_BRANCH);
-      COMMIT_FILES=$(git diff --name-only $BASE_COMMIT | grep -i -v LinkDef);
-      RESULT_OUTPUT="$(git-clang-format-7 --commit $BASE_COMMIT --diff --binary `which clang-format-7` $COMMIT_FILES)";
-      if [ "$RESULT_OUTPUT" == "no modified files to format" ] || [ "$RESULT_OUTPUT" == "clang-format did not modify any files" ] ; then
-        exit 0;
-      else
-        echo "$RESULT_OUTPUT";
-        exit 1;
-      fi
+    cd $TRAVIS_BUILD_DIR;
+    BASE_COMMIT=$(git rev-parse $TRAVIS_BRANCH);
+    COMMIT_FILES=$(git diff --name-only $BASE_COMMIT | grep -i -v LinkDef);
+    RESULT_OUTPUT="$(git-clang-format-7 --commit $BASE_COMMIT --diff --binary `which clang-format-7` $COMMIT_FILES)";
+    if [ "$RESULT_OUTPUT" == "no modified files to format" ] || [ "$RESULT_OUTPUT" == "clang-format did not modify any files" ] ; then
+    exit 0;
+    else
+    echo "$RESULT_OUTPUT";
+    exit 1;
     fi
+    fi
+  - if [[ $TOOL == "docs" ]]; then
+    cat > CMakeLists.txt <<\EOF
+    add_subdirectory(doc)
+    EOF
+    mkdir build
+    cd build
+    cmake ..
+    make doc
+  fi
 notifications:
   email: false
