@@ -32,6 +32,9 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 set(INCLUDE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/include")
 
+# ---- End Project ----
+# The line above is necessary for the generation of doxygen by travis
+
 # ---- Compilation flags and build options ----
 
 # Set the default build type to "RelWithDebInfo"

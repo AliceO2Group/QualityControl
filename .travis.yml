@@ -45,7 +45,8 @@ script:
     fi
     fi
   - if [[ $TOOL == "docs" ]]; then
-      echo "add_subdirectory(doc)" > CMakeLists.txt;
+      cat CMakeLists.txt | awk '/# ---- Project ----/,/# ---- End Project ----/' > CMakeLists.txt
+      echo "add_subdirectory(doc)" >> CMakeLists.txt;
       mkdir build;
       cd build;
       cmake ..;
