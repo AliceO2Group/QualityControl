@@ -140,7 +140,7 @@ function create_check {
 }
 
 function print_usage {
-  echo "Usage: ./modulesHelper.sh -m MODULE_NAME [OPTION]
+  echo "Usage: ./o2-qc-module-configurator.sh -m MODULE_NAME [OPTION]
 
 Generate template QC module and/or tasks, checks.
 If a module with specified name already exists, new tasks and checks are inserted to the existing one.
@@ -148,9 +148,9 @@ Please follow UpperCamelCase convention for modules', tasks' and checks' names.
 
 Example:
 # create new module and some task
-./modulesHelper.sh -m MyModule -t SuperTask
+./o2-qc-module-configurator.sh -m MyModule -t SuperTask
 # add one task and two checks
-./modulesHelper.sh -m MyModule -t EvenBetterTask -c HistoUniformityCheck -c MeanTest
+./o2-qc-module-configurator.sh -m MyModule -t EvenBetterTask -c HistoUniformityCheck -c MeanTest
 
 Options:
  -h               print this message

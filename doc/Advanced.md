@@ -55,8 +55,8 @@ enabled=1
 In 3 separate terminals, do respectively
 
 1. `readout.exe file:///absolute/path/to/config.cfg`
-2. `qcRunReadoutForDataDump --batch`
-3. `dataDump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static`
+2. `o2-qc-run-readout-for-data-dump --batch`
+3. `o2-qc-data-dump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static`
 
 ### Configuration
 
@@ -83,7 +83,7 @@ and `$QUALITYCONTROL_ROOT/etc/dataDump.json`.
    ```
    sudo systemctl start mariadb # for CC7, check for your specific OS
    alienv enter qcg/latest
-   qcDatabaseSetup.sh
+   o2-qc-database-setup.sh
    ```
 
 ## Local CCDB setup
@@ -183,11 +183,11 @@ The JSON for all tasks looks like :
 ```
 ### Usage
 ```
-qcInfoService -c /absolute/path/to/InformationService.json -n information_service \
+o2-qc-info-service -c /absolute/path/to/InformationService.json -n information_service \
               --id information_service --mq-config /absolute/path/to/InformationService.json
 ```
 
-The `qcInfoService` can provide fake data from a file. This is useful
+The `o2-qc-info-service` can provide fake data from a file. This is useful
 to test the clients. Use the option `--fake-data-file` and provide the
 absolute path to the file. The file `infoServiceFake.json` is provided
 as an example.
@@ -195,7 +195,7 @@ as an example.
 To check what is being output by the Information Service, one can
 run the InformationServiceDump :
 ```
-qcInfoServiceDump -c /absolute/path/to/InformationService.json -n information_service_dump \
+o2-qc-info-service-dump -c /absolute/path/to/InformationService.json -n information_service_dump \
                   --id information_service_dump --mq-config /absolute/path/to/InformationService.json
                   --request-task myTask1
 ```

@@ -19,6 +19,7 @@ set(
   src/HistoMerger.cxx
   src/InfrastructureGenerator.cxx
   src/runnerUtils.h
+  src/ServiceDiscovery.cxx
 )
 
 set(
@@ -30,6 +31,7 @@ set(
   include/QualityControl/CheckerFactory.h
   include/QualityControl/DatabaseInterface.h
   include/QualityControl/CcdbDatabase.h
+  include/QualityControl/ServiceDiscovery.h
   include/QualityControl/TaskRunner.h
   include/QualityControl/TaskRunnerFactory.h
   include/QualityControl/HistoMerger.h
@@ -116,6 +118,7 @@ target_link_libraries(
     $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
     $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL>
     ROOT::Gui
+    CURL::CURL
 )
 
 target_compile_definitions(QualityControl
@@ -139,6 +142,20 @@ set(
 
 set(
   EXE_NAMES
+  o2-qc-info-service
+  o2-qc-info-service-dump
+  o2-qc-run-basic
+  o2-qc-run-advanced
+  o2-qc-run-readout
+  o2-qc-run-merger-test
+  o2-qc-run-readout-for-data-dump
+  o2-qc-repository-benchmark
+)
+
+# These were the original names before the convention changed.
+# We will get rid of them but for the time being we want to create symlinks to avoid confusion.
+set(
+  EXE_OLD_NAMES
   qcInfoService
   qcInfoServiceDump
   qcRunBasic
@@ -149,19 +166,30 @@ set(
   repositoryBenchmark
 )
 
+# As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
+macro(install_symlink filepath sympath)
+  install(DIRECTORY DESTINATION bin) # just in case it is not there yet
+  install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})")
+  install(CODE "message(\"-- Created symlink: ${sympath} -> ${filepath}\")")
+endmacro(install_symlink)
+
 list(LENGTH EXE_SRCS count)
 math(EXPR count "${count}-1")
 foreach(i RANGE ${count})
   list(GET EXE_SRCS ${i} src)
   list(GET EXE_NAMES ${i} name)
+  list(GET EXE_OLD_NAMES ${i} oldname)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE QualityControl)
+  target_link_libraries(${name} PRIVATE QualityControl CURL::CURL)
+  install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
 
 # ---- Gui ----
 
 set(DATADUMP "")
 if(GLFW_FOUND)
+  set(DATADUMP "o2-qc-data-dump")
+
   set(
     GUI_SRCS
     src/imgui/imgui.cpp
@@ -175,13 +203,11 @@ if(GLFW_FOUND)
     src/runDataDump.cxx
   )
 
-  add_executable(dataDump ${GUI_SRCS})
+  add_executable(${DATADUMP} ${GUI_SRCS})
 
-  target_link_libraries(dataDump PRIVATE QualityControl GLFW::GLFW)
-
-  set(DATADUMP "dataDump")
+  target_link_libraries(${DATADUMP} PRIVATE QualityControl GLFW::GLFW)
 else()
-  message(STATUS "GLFW not found, DataDump will not be built")
+  message(STATUS "GLFW not found, ${DATADUMP} will not be built")
 endif()
 
 # ---- Tests ----
@@ -195,6 +221,8 @@ set(
   test/testInfrastructureGenerator.cxx
   test/testQCTask.cxx
   test/testQuality.cxx
+  test/testObjectsManager.cxx
+  test/testCcdbDatabase.cxx
 )
 
 foreach(test ${TEST_SRCS})
@@ -274,7 +302,7 @@ install(
 
 # ---- Extra scripts ----
 
-install(PROGRAMS script/qcDatabaseSetup.sh DESTINATION bin)
+install(PROGRAMS script/o2-qc-database-setup.sh DESTINATION bin)
 install(
   FILES
     example-default.json

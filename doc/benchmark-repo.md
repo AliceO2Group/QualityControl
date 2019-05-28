@@ -11,7 +11,7 @@ Executable is called `repositoryBenchmark`.
 
 _Example execution :_
 ```
-repositoryBenchmark --max-iterations 30
+o2-qc-repo-benchmark --max-iterations 30
                     --id benchmarkTask_0
                     --mq-config ~/alice/QualityControl/Framework/alfa.json
                     --number-tasks 1

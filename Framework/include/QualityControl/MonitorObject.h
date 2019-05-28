@@ -21,6 +21,8 @@
 #include <map>
 // ROOT
 #include <TObject.h>
+// O2
+#include <Common/Exceptions.h>
 // QC
 #include "QualityControl/Quality.h"
 
@@ -35,6 +37,13 @@ struct CheckDefinition {
   std::string className;
   std::string libraryName;
   Quality result;
+};
+
+struct DuplicateObjectError : virtual AliceO2::Common::ExceptionBase {
+  const char* what() const noexcept override
+  {
+    return "Duplicate object error";
+  }
 };
 
 /// \brief  This class keeps the metadata about one published object.

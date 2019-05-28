@@ -48,11 +48,24 @@ class ObjectsManager
   /**
    * Start publishing the object obj, i.e. it will be pushed forward in the workflow at regular intervals.
    * The ownership remains to the caller.
-   * In most cases, objectName parameter can be ignored.
    * @param obj The object to publish.
+   * @throws DuplicateObjectError
    */
   void startPublishing(TObject* obj);
-  // todo stoppublishing
+
+  /**
+   * Stop publishing this object
+   * @param obj
+   * @throw ObjectNotFoundError if object is not found.
+   */
+  void stopPublishing(TObject* obj);
+
+  /**
+   * Stop publishing this object
+   * @param obj
+   * @throw ObjectNotFoundError if object is not found.
+   */
+  void stopPublishing(const std::string& name);
 
   /**
    * Return the quality of the object whose name is contained in objectName.
@@ -78,9 +91,18 @@ class ObjectsManager
 
   TObject* getObject(std::string objectName);
 
-  TObjArray* getNonOwningArray() const { return new TObjArray(mMonitorObjects); };
+  TObjArray* getNonOwningArray() const
+  {
+    return new TObjArray(mMonitorObjects);
+  };
 
   void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
+
+  /**
+   * Get the number of objects that have been published.
+   * @return an int with the number of objects.
+   */
+  int getNumberPublishedObjects();
 
  private:
   TObjArray mMonitorObjects;

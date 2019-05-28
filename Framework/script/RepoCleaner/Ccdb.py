@@ -74,9 +74,13 @@ class Ccdb:
         headers = {'Accept':'application/json'}
         r = requests.get(url_browse_all_versions, headers=headers)
         r.raise_for_status()
-        json = r.json()
+        try:
+            json_result = r.json(strict=False) # to survive bad characters in the strings of the json
+        except ValueError as e:
+            print(f"Error while reading json for object {object_path} from CCDB: {e}")
+            exit(1)
         versions = []
-        for object_path in json['objects']:
+        for object_path in json_result['objects']:
             version = ObjectVersion(path=object_path['path'], uuid=object_path['id'], validFrom=object_path['validFrom'], validTo=object_path['validUntil'])
             versions.insert(0, version)
         return versions
@@ -87,9 +91,8 @@ class Ccdb:
         Delete the specified version of an object. 
         :param version: The version of the object to delete, as an instance of ObjectVersion.
         '''
-        logging.debug(f"Delete version: {version}")
         url_delete = self.url + '/' + version.path + '/' + version.validFrom + '/' + version.uuid
-        logging.info(f"Delete version at url {url_delete}")
+        logging.debug(f"Delete version at url {url_delete}")
         try:
             r = requests.delete(url_delete)
             r.raise_for_status()
@@ -110,7 +113,7 @@ class Ccdb:
             logging.debug("The new timestamp for validTo is identical to the existing one. Skipping.")
             return
         url_update_validity = self.url + '/' + version.path + '/' + validFrom + '/' + validTo
-        logging.info(f"Update end limit validity of {version.path} from {version.validTo} to {validTo}")
+        logging.debug(f"Update end limit validity of {version.path} from {version.validTo} to {validTo}")
         try:
             r = requests.put(url_update_validity)
             r.raise_for_status()

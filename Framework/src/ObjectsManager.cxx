@@ -35,9 +35,28 @@ ObjectsManager::~ObjectsManager()
 
 void ObjectsManager::startPublishing(TObject* object)
 {
+  if (mMonitorObjects.FindObject(object->GetName()) != 0) {
+    QcInfoLogger::GetInstance() << "Object already being published (" << object->GetName() << ")"
+                                << infologger::endm;
+    BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
+  }
   auto* newObject = new MonitorObject(object, mTaskName);
   newObject->setIsOwner(false);
   mMonitorObjects.Add(newObject);
+}
+
+void ObjectsManager::stopPublishing(TObject* object)
+{
+  stopPublishing(object->GetName());
+}
+
+void ObjectsManager::stopPublishing(const string& name)
+{
+  auto* mo = dynamic_cast<MonitorObject*>(mMonitorObjects.FindObject(name.data()));
+  if (mo == nullptr) {
+    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(name));
+  }
+  mMonitorObjects.Remove(mo);
 }
 
 Quality ObjectsManager::getQuality(std::string objectName)
@@ -87,6 +106,11 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
   MonitorObject* mo = getMonitorObject(objectName);
   mo->addMetadata(key, value);
   QcInfoLogger::GetInstance() << "Added metadata on " << objectName << " : " << key << " -> " << value << infologger::endm;
+}
+
+int ObjectsManager::getNumberPublishedObjects()
+{
+  return mMonitorObjects.GetLast() + 1; // GetLast returns the index
 }
 
 } // namespace o2::quality_control::core
