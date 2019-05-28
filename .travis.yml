@@ -45,13 +45,11 @@ script:
     fi
     fi
   - if [[ $TOOL == "docs" ]]; then
-    cat > CMakeLists.txt <<\EOF
-    add_subdirectory(doc)
-    EOF
-    mkdir build
-    cd build
-    cmake ..
-    make doc
+      echo "add_subdirectory(doc)" > CMakeLists.txt;
+      mkdir build;
+      cd build;
+      cmake ..;
+      make doc;
     fi
 notifications:
   email: false
