@@ -112,8 +112,8 @@ WorkflowSpec processingTopology(SubSpecificationType subspec)
     Outputs{},
     AlgorithmSpec{
       (AlgorithmSpec::ProcessCallback)[](ProcessingContext & ctx) {
-//        LOG(INFO) << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0];
-//        LOG(INFO) << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0];
+        LOG(INFO) << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0];
+        LOG(INFO) << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0];
       }
     }
   };

@@ -53,7 +53,7 @@ namespace o2::quality_control::core
 ///   AlgorithmSpec{},
 ///   qcTask.getOptions()
 /// };
-/// // this needs to be moved at the end
+/// // this needs to be at the end
 /// newTask.algorithm = adaptFromTask<TaskRunner>(std::move(qcTask));
 /// \endcode
 ///
@@ -85,6 +85,7 @@ class TaskRunner : public framework::Task
 
   void setResetAfterPublish(bool);
 
+  /// \brief ID string for all TaskRunner devices
   static std::string createTaskRunnerIdString();
   /// \brief Unified DataOrigin for Quality Control tasks
   static header::DataOrigin createTaskDataOrigin();
