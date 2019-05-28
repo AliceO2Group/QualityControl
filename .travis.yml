@@ -11,18 +11,47 @@ matrix:
           packages:
             - clang-format-7
       compiler: clang
+    - os: linux
+      if: branch = master
+      dist: xenial
+      env: TOOL=docs
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - cmake
+            - doxygen
+            - doxygen-doc
+            - doxygen-latex
+            - doxygen-gui
+            - graphviz
+      deploy:
+        provider: pages
+        skip_cleanup: true
+        github_token: $GITHUB_API_TOKEN
+        local_dir: build/doc/html
+        on:
+          branch: master
 script:
   - if [[ $TOOL == "clang-format" ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
-      cd $TRAVIS_BUILD_DIR;
-      BASE_COMMIT=$(git rev-parse $TRAVIS_BRANCH);
-      COMMIT_FILES=$(git diff --name-only $BASE_COMMIT | grep -i -v LinkDef);
-      RESULT_OUTPUT="$(git-clang-format-7 --commit $BASE_COMMIT --diff --binary `which clang-format-7` $COMMIT_FILES)";
-      if [ "$RESULT_OUTPUT" == "no modified files to format" ] || [ "$RESULT_OUTPUT" == "clang-format did not modify any files" ] ; then
-        exit 0;
-      else
-        echo "$RESULT_OUTPUT";
-        exit 1;
-      fi
+    cd $TRAVIS_BUILD_DIR;
+    BASE_COMMIT=$(git rev-parse $TRAVIS_BRANCH);
+    COMMIT_FILES=$(git diff --name-only $BASE_COMMIT | grep -i -v LinkDef);
+    RESULT_OUTPUT="$(git-clang-format-7 --commit $BASE_COMMIT --diff --binary `which clang-format-7` $COMMIT_FILES)";
+    if [ "$RESULT_OUTPUT" == "no modified files to format" ] || [ "$RESULT_OUTPUT" == "clang-format did not modify any files" ] ; then
+    exit 0;
+    else
+    echo "$RESULT_OUTPUT";
+    exit 1;
+    fi
+    fi
+  - if [[ $TOOL == "docs" ]]; then
+      echo "add_subdirectory(doc)" > CMakeLists.txt;
+      mkdir build;
+      cd build;
+      cmake ..;
+      make doc;
     fi
 notifications:
   email: false
