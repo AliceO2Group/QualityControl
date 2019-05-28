@@ -34,6 +34,7 @@
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
 #include "Framework/DataSampling.h"
+
 using namespace o2::framework;
 
 void customize(std::vector<CompletionPolicy>& policies)

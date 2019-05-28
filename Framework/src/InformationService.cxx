@@ -119,6 +119,8 @@ bool InformationService::handleTaskInputData(std::string receivedData)
 
   // publish
   sendJson(json);
+
+  return true;
 }
 
 void InformationService::readFakeDataFile(std::string fakeDataFile)

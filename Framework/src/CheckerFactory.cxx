@@ -36,7 +36,7 @@ DataProcessorSpec CheckerFactory::create(std::string checkerName, std::string ta
                                 std::vector<std::string>{},
                                 std::vector<DataProcessorLabel>{} };
 
-  return std::move(newChecker);
+  return newChecker;
 }
 
 } // namespace o2::quality_control::checker

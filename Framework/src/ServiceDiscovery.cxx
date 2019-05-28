@@ -8,17 +8,11 @@
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/asio/ip/host_name.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace o2::quality_control::core
 {
-
-std::string ServiceDiscovery::GetDefaultUrl()
-{
-  return boost::asio::ip::host_name() + ":" + std::to_string(7777);
-}
 
 ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& id, const std::string& healthEndpoint) : curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mId(id), mHealthEndpoint(healthEndpoint)
 {
