@@ -31,8 +31,6 @@ matrix:
         skip_cleanup: true
         github_token: $GITHUB_API_TOKEN
         local_dir: build/doc/html
-        on:
-          branch: master
 script:
   - if [[ $TOOL == "clang-format" ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     cd $TRAVIS_BUILD_DIR;
