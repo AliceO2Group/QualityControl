@@ -38,7 +38,7 @@ namespace pt = boost::property_tree;
 /// See runInformationService.cxx for the steering code.
 ///
 /// Example usage :
-///      qcInfoService -c /absolute/path/to/InformationService.json -n information_service \\
+///      qcInfoService -c /absolute/path/to/InformationService.json -n information_service
 ///                    --id information_service --mq-config /absolute/path/to/InformationService.json
 ///
 /// Format of the string coming from the tasks :
