@@ -34,7 +34,7 @@ TaskRunnerFactory::create(std::string taskName, std::string configurationSource,
     adaptFromTask<TaskRunner>(std::move(qcTask))
   };
 
-  return std::move(newTask);
+  return newTask;
 }
 
 } // namespace o2::quality_control::core
