@@ -94,7 +94,8 @@ void Checker::init(framework::InitContext&)
     mCollector = MonitoringFactory::Get("infologger://");
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n" << diagnostic;
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic;
     throw;
   }
   startFirstObject = system_clock::time_point::min();
@@ -110,13 +111,13 @@ void Checker::run(framework::ProcessingContext& ctx)
     startFirstObject = system_clock::now();
   }
 
-  std::shared_ptr<TObjArray> moArray{ std::move(framework::DataRefUtils::as<TObjArray>(*ctx.inputs().begin())) };
+  std::shared_ptr<TObjArray> moArray{ framework::DataRefUtils::as<TObjArray>(*ctx.inputs().begin()) };
   moArray->SetOwner(false);
   auto checkedMoArray = std::make_unique<TObjArray>();
   checkedMoArray->SetOwner();
 
   for (const auto& to : *moArray) {
-    std::shared_ptr<MonitorObject> mo{dynamic_cast<MonitorObject*>(to)};
+    std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(to) };
     moArray->RemoveFirst();
     if (mo) {
       check(mo);
