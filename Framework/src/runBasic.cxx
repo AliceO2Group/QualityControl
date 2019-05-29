@@ -34,12 +34,15 @@
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
 #include "Framework/DataSampling.h"
+#include "QualityControl/InfrastructureGenerator.h"
 
+using namespace o2;
 using namespace o2::framework;
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
+  quality_control::customizeInfrastructure(policies);
 }
 
 void customize(std::vector<ChannelConfigurationPolicy>& policies)
@@ -65,7 +68,6 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include "runnerUtils.h"
 #include "ExamplePrinterSpec.h"
 
-using namespace o2;
 using namespace o2::framework;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;

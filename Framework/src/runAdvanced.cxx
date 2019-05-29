@@ -34,7 +34,9 @@
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DataSampling.h>
 #include <Framework/DataSpecUtils.h>
+#include "QualityControl/InfrastructureGenerator.h"
 
+using namespace o2;
 using namespace o2::framework;
 
 // Additional configuration of the topology, which is done by implementing `customize` functions and placing them
@@ -43,7 +45,7 @@ using namespace o2::framework;
 void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
-
+  quality_control::customizeInfrastructure(policies);
   CompletionPolicy mergerConsumesASAP{
     "mergers-always-consume",
     [](DeviceSpec const& device) {
@@ -61,7 +63,6 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
   DataSampling::CustomizeInfrastructure(policies);
 }
 
-#include "QualityControl/InfrastructureGenerator.h"
 #include <Framework/runDataProcessing.h>
 #include <random>
 
@@ -142,6 +143,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     localTopology.back().name += std::to_string(i);
     // temporary fix, which shouldn't be necessary when data sampling uses matchers
     DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs[0], i);
+    DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs[1], i);
+
+    LOG(INFO) << localTopology.back().name << " " << localTopology.back().inputs.size() << " " << localTopology.back().inputs[0].binding << " " << localTopology.back().inputs[1].binding;
 
     specs.insert(std::end(specs), std::begin(localTopology), std::end(localTopology));
   }

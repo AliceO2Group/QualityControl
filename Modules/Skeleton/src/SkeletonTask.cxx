@@ -71,12 +71,14 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   // 1. In a loop
   for (auto&& input : ctx.inputs()) {
     // get message header
-    const auto* header = header::get<header::DataHeader*>(input.header);
-    // get payload of a specific input, which is a char array.
-//    const char* payload = input.payload;
+    if (input.header != nullptr && input.payload != nullptr) {
+      const auto* header = header::get<header::DataHeader*>(input.header);
+      // get payload of a specific input, which is a char array.
+      // const char* payload = input.payload;
 
-    // for the sake of an example, let's fill the histogram with payload sizes
-    mHistogram->Fill(header->payloadSize);
+      // for the sake of an example, let's fill the histogram with payload sizes
+      mHistogram->Fill(header->payloadSize);
+    }
   }
 
   // 2. Using get("<binding>")
