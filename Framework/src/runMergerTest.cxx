@@ -50,24 +50,23 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
       "producer" + std::to_string(p),
       Inputs{},
       Outputs{
-        { {"mo"}, "TST", "HISTO", p + 1, Lifetime::Timeframe }
-      },
+        { { "mo" }, "TST", "HISTO", static_cast<o2::framework::DataAllocator::SubSpecificationType>(p + 1), Lifetime::Timeframe } },
       AlgorithmSpec{
-        (AlgorithmSpec::ProcessCallback) [p, producersAmount](ProcessingContext& processingContext) mutable {
+        (AlgorithmSpec::ProcessCallback)[p, producersAmount](ProcessingContext & processingContext) mutable {
 
           usleep(100000);
 
-          TH1F* histo = new TH1F("gauss", "gauss", producersAmount, 0, 1);
-          histo->Fill(p/(double)producersAmount);
+    TH1F* histo = new TH1F("gauss", "gauss", producersAmount, 0, 1);
+    histo->Fill(p / (double)producersAmount);
 
-          MonitorObject* mo = new MonitorObject(histo, "histo-task");
-          mo->setIsOwner(true);
+    MonitorObject* mo = new MonitorObject(histo, "histo-task");
+    mo->setIsOwner(true);
 
-          TObjArray* array = new TObjArray;
-          array->SetOwner(true);
-          array->Add(mo);
+    TObjArray* array = new TObjArray;
+    array->SetOwner(true);
+    array->Add(mo);
 
-          processingContext.outputs().adopt(Output{"TST", "HISTO", p + 1}, array);
+    processingContext.outputs().adopt(Output{ "TST", "HISTO", static_cast<o2::framework::DataAllocator::SubSpecificationType>(p + 1) }, array);
         }
       }
     };

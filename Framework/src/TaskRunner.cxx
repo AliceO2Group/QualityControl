@@ -202,7 +202,7 @@ void TaskRunner::populateConfig(std::string taskName)
           dataSourceTree.get<std::string>("binding"),
           origin,
           description,
-          subSpec });
+          static_cast<framework::DataAllocator::SubSpecificationType>(subSpec) });
 
     } else {
       std::string message = std::string("Configuration error : dataSource type unknown : ") + type; // TODO pass this message to the exception
