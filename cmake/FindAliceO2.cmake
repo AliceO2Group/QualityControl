@@ -23,6 +23,7 @@ list(APPEND AliceO2_INCLUDE_DIRS ${MS_GSL_INCLUDE_DIR})
 # find libraries
 # TODO SEARCH *ALL* LIBRARIES --> AliceO2 should ideally provide the list !!!
 set(O2_LIBRARIES_NAMES
+        FrameworkFoundation
         Framework
         Headers
         CCDB
