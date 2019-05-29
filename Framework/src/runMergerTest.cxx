@@ -40,6 +40,7 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
 
+// clang-format off
 WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
   WorkflowSpec specs;
@@ -56,17 +57,17 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
           usleep(100000);
 
-    TH1F* histo = new TH1F("gauss", "gauss", producersAmount, 0, 1);
-    histo->Fill(p / (double)producersAmount);
+          TH1F* histo = new TH1F("gauss", "gauss", producersAmount, 0, 1);
+          histo->Fill(p / (double)producersAmount);
 
-    MonitorObject* mo = new MonitorObject(histo, "histo-task");
-    mo->setIsOwner(true);
+          MonitorObject* mo = new MonitorObject(histo, "histo-task");
+          mo->setIsOwner(true);
 
-    TObjArray* array = new TObjArray;
-    array->SetOwner(true);
-    array->Add(mo);
+          TObjArray* array = new TObjArray;
+          array->SetOwner(true);
+          array->Add(mo);
 
-    processingContext.outputs().adopt(Output{ "TST", "HISTO", static_cast<o2::framework::DataAllocator::SubSpecificationType>(p + 1) }, array);
+          processingContext.outputs().adopt(Output{ "TST", "HISTO", static_cast<o2::framework::DataAllocator::SubSpecificationType>(p + 1) }, array);
         }
       }
     };
@@ -82,7 +83,6 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     adaptFromTask<HistoMerger>(std::move(merger)),
   };
   specs.push_back(mergerSpec);
-
 
   DataProcessorSpec printer{
     "printer",
@@ -113,3 +113,4 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   return specs;
 }
+// clang-format on
