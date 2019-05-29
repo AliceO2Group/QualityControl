@@ -30,7 +30,7 @@
 This is a GUI to inspect the data coming out of the DataSampling, in
 particular the Readout.
 
-![alt text](doc/images/dataDump.png)
+![alt text](images/dataDump.png)
 
 ### Prerequisite
 

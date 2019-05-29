@@ -31,7 +31,7 @@ class ExamplePrinterSpec : public framework::Task
   void run(ProcessingContext& processingContext) final
   {
     LOG(INFO) << "Received data";
-    std::shared_ptr<TObjArray> moArray{ std::move(DataRefUtils::as<TObjArray>(*processingContext.inputs().begin())) };
+    std::shared_ptr<TObjArray> moArray{ DataRefUtils::as<TObjArray>(*processingContext.inputs().begin()) };
 
     if (moArray->IsEmpty()) {
       LOG(INFO) << "Array is empty";
