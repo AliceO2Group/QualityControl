@@ -45,11 +45,17 @@ script:
     fi
     fi
   - if [[ $TOOL == "docs" ]]; then
-      echo "add_subdirectory(doc)" > CMakeLists.txt;
-      mkdir build;
-      cd build;
-      cmake ..;
-      make doc;
+    echo "cmake_minimum_required(VERSION 3.12)" > CMakeLists.txt-new;
+    echo "cmake_policy(VERSION 3.12)" >> CMakeLists.txt-new;
+    cat CMakeLists.txt | awk '/# ---- Project ----/,/# ---- End Project ----/';
+    cat CMakeLists.txt | awk '/# ---- Project ----/,/# ---- End Project ----/' >> CMakeLists.txt-new;
+    echo "add_subdirectory(doc)" >> CMakeLists.txt-new;
+    cat CMakeLists.txt-new;
+    mv CMakeLists.txt-new CMakeLists.txt;
+    mkdir build;
+    cd build;
+    cmake ..;
+    make doc;
     fi
 notifications:
   email: false
