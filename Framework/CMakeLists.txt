@@ -200,7 +200,7 @@ if(GLFW_FOUND)
     src/imgui/imgui_demo.cpp
     src/imgui/BaseGui.cxx
   )
-  set(${IMGUI_SRCS} PROPERTIES COMPILE_FLAGS -w)
+  set_source_files_properties(${IMGUI_SRCS} PROPERTIES COMPILE_FLAGS -w)
 
   set(
     GUI_SRCS
