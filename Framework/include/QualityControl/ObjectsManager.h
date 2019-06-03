@@ -97,6 +97,13 @@ class ObjectsManager
     return new TObjArray(mMonitorObjects);
   };
 
+  /**
+   * \brief Add metadata to a MonitorObject.
+   * Add a metadata pair to a MonitorObject. This is propagated to the database.
+   * @param objectName Name of the MonitorObject.
+   * @param key Key of the metadata.
+   * @param value Value of the metadata.
+   */
   void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
 
   /**
@@ -105,6 +112,10 @@ class ObjectsManager
    */
   int getNumberPublishedObjects();
 
+  /**
+   * \brief Update the list of objects stored in the Service Discovery.
+   * Update the list of objects stored in the Service Discovery.
+   */
   void updateServiceDiscovery();
 
  private:
