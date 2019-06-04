@@ -89,7 +89,7 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mPaveText = new TPaveText(0.1, 0.1, 0.9, 0.9);
   mPaveText->AddText("hello");
-  mPaveText->SetName("");
+  mPaveText->SetName("hello_pavetext"); // Remember to always set a name to objects that we publish
   getObjectsManager()->startPublishing(mPaveText);
 }
 
