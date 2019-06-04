@@ -104,9 +104,23 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
         workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
       }
 
-      workflow.emplace_back(checkerFactory.create(taskName + "-checker", taskName, configurationSource));
+      //workflow.emplace_back(checkerFactory.create(taskName + "-checker", taskName, configurationSource));
     }
   }
+  for (const auto& [checkName, checkConfig] : config->getRecursive("qc.check")) {
+    // todo sanitize somehow this if-frenzy
+    if (checkConfig.get<bool>("active", true)) {
+      if (checkConfig.get<std::string>("location") == "local") {
+        // TODO
+      } else if (checkConfig.get<std::string>("location") == "remote") {
+        // -- if tasks are REMOTE, generate tasks + mergers + checkers
+
+        workflow.emplace_back(checkerFactory.create(checkName, configurationSource));
+      }
+    }
+  }
+
+
   return workflow;
 }
 

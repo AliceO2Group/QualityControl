@@ -47,15 +47,16 @@ namespace o2::quality_control::checker
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
 // TODO maybe we could use the CheckerFactory
 
-Checker::Checker(std::string checkerName, std::string taskName, std::string configurationSource)
+Checker::Checker(std::string checkerName, std::string configurationSource)
   : mCheckerName(checkerName),
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
-    mInputSpec{ "mo", TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), 0 },
+    mInputs{Checker::createInputSpec(checkerName, configurationSource)},
     mOutputSpec{ "QC", Checker::createCheckerDataDescription(taskName), 0 },
     startFirstObject{ system_clock::time_point::min() },
     endLastObject{ system_clock::time_point::min() },
-    mTotalNumberHistosReceived(0)
+    mTotalNumberHistosReceived(0),
+    mChecks{}
 {
 }
 
@@ -73,39 +74,22 @@ Checker::~Checker()
 
 void Checker::init(framework::InitContext&)
 {
-  // configuration
+  loadDatabase();
+  loadMonitoring();
+  // Init checks
   try {
-    std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-    // configuration of the database
-    mDatabase = DatabaseFactory::create(config->get<std::string>("qc.config.database.implementation"));
-    mDatabase->connect(config->getRecursiveMap("qc.config.database"));
-    LOG(INFO) << "Database that is going to be used : ";
-    LOG(INFO) << ">> Implementation : " << config->get<std::string>("qc.config.database.implementation");
-    LOG(INFO) << ">> Host : " << config->get<std::string>("qc.config.database.host");
-  } catch (
-    std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
-    LOG(ERROR) << "exception : " << e;
-    throw;
-  } catch (...) {
-    std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
-    throw;
-  }
+      std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
+      for(const auto& libraryName: config.get("qc.check."+mCheckName+."") )
+      loadLibrary(check.libraryName);
+      mChecks.put(checkName, getCheck(checkName, check.className));
 
-  // monitoring
-  try {
-    mCollector = MonitoringFactory::Get("infologger://");
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
                << diagnostic;
     throw;
   }
-  startFirstObject = system_clock::time_point::min();
-  timer.reset(1000000); // 10 s.
 }
-
 void Checker::run(framework::ProcessingContext& ctx)
 {
   mLogger << "Receiving " << ctx.inputs().size() << " MonitorObjects" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -115,33 +99,44 @@ void Checker::run(framework::ProcessingContext& ctx)
     startFirstObject = system_clock::now();
   }
 
+
+
+
   std::shared_ptr<TObjArray> moArray{ framework::DataRefUtils::as<TObjArray>(*ctx.inputs().begin()) };
   moArray->SetOwner(false);
-  auto checkedMoArray = std::make_unique<TObjArray>();
-  checkedMoArray->SetOwner();
+  //auto checkedMoArray = std::make_unique<TObjArray>();
+  //checkedMoArray->SetOwner();
 
   for (const auto& to : *moArray) {
     std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(to) };
     moArray->RemoveFirst();
+
     if (mo) {
-      check(mo);
-      store(mo);
+      update(mo);
       mTotalNumberHistosReceived++;
-      checkedMoArray->Add(new MonitorObject(*mo));
     } else {
       mLogger << "the mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
     }
   }
 
-  send(checkedMoArray, ctx.outputs());
+  //send(checkedMoArray, ctx.outputs());
 
   // monitoring
   endLastObject = system_clock::now();
-
-  // if 10 seconds elapsed publish stats
   if (timer.isTimeout()) {
     timer.reset(1000000); // 10 s.
     mCollector->send({ mTotalNumberHistosReceived, "objects" }, o2::monitoring::DerivedMetricMode::RATE);
+  }
+}
+
+void Checker::update(std::shared_ptr<MonitorObject> mo){
+  moMap[mo->getTaskName()] = mo;
+  policy->update(mo->getTaskName());
+  
+  if (policy->isReady()){
+    auto result = check(moMap);
+    //store(result);
+    //checkedMoArray->Add(new MonitorObject(*mo));
   }
 }
 
@@ -155,31 +150,46 @@ o2::header::DataDescription Checker::createCheckerDataDescription(const std::str
   return description;
 }
 
-void Checker::check(std::shared_ptr<MonitorObject> mo)
+o2::framework::Inputs createInputSpec(const std::string checkName, const std::string configSource);
 {
-  std::map<std::string /*checkName*/, CheckDefinition> checks = mo->getChecks();
+  std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
+  o2::framework::Inputs inputs;
+  for(auto& sourceConf: config->get<std::vector<std::map<std::string,std::string>>>("qc.check."+checkName+".dataSource")){
+    if(sourceConf->get<std::string>("type") == "Task"){
+      o2::header::DataDescription description;
+      description.runtimeInit(std::string(sourceConf->get<std::string>("name").substr(0, header::DataDescription::size - 3) + "-mo").c_str());
+      o2::framework::InputSpec input{"mo", o2::header::DataOrigin{"QC"},  description};
+      inputs.push_back(input);
+    }
+  }
+
+  return inputs;
+}
+
+void Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
+{
 
   mLogger << "Running " << checks.size() << " checks for \"" << mo->getName() << "\""
           << AliceO2::InfoLogger::InfoLogger::endm;
   // Get the Checks
 
   // Loop over the Checks and execute them followed by the beautification
-  for (const auto& [checkName, check] : checks) {
-    mLogger << "        check name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << "        check className : " << check.className << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << "        check libraryName : " << check.libraryName << AliceO2::InfoLogger::InfoLogger::endm;
+  for (const auto& [checkName, checkInstance] : mChecks) {
+      mLogger << "        check name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
 
-    // load module, instantiate, use check
-    // TODO : preload modules and pre-instantiate, or keep a cache
-    loadLibrary(check.libraryName);
-    CheckInterface* checkInstance = getCheck(checkName, check.className);
-    Quality q = checkInstance->check(mo.get());
+      // load module, instantiate, use check
+      // TODO : preload modules and pre-instantiate, or keep a cache
+      Quality q = checkInstance->check(moMap);
 
-    mLogger << "  result of the check " << checkName << ": " << q.getName()
-            << AliceO2::InfoLogger::InfoLogger::endm;
+      mLogger << "  result of the check " << checkName << ": " << q.getName()
+              << AliceO2::InfoLogger::InfoLogger::endm;
 
-    checkInstance->beautify(mo.get(), q);
+      if (moMap.size() == 1){
+        //checkInstance->beautify(mo.get(), q);
+        //TODO: Pass only object
+      }
   }
+  
 }
 
 void Checker::store(std::shared_ptr<MonitorObject> mo)
@@ -261,4 +271,43 @@ CheckInterface* Checker::getCheck(std::string checkName, std::string className)
   return result;
 }
 
-} // namespace o2::quality_control::checker
+
+
+void Checker::loadDatabase(){
+  // configuration
+  try {
+    std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
+    // configuration of the database
+    mDatabase = DatabaseFactory::create(config->get<std::string>("qc.config.database.implementation"));
+    mDatabase->connect(config->getRecursiveMap("qc.config.database"));
+    LOG(INFO) << "Database that is going to be used : ";
+    LOG(INFO) << ">> Implementation : " << config->get<std::string>("qc.config.database.implementation");
+    LOG(INFO) << ">> Host : " << config->get<std::string>("qc.config.database.host");
+  } catch (
+    std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
+    LOG(ERROR) << "exception : " << e;
+    throw;
+  } catch (...) {
+    std::string diagnostic = boost::current_exception_diagnostic_information();
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic;
+    throw;
+  }
+}
+
+void Checker::loadMonitoring(){
+  // monitoring
+  try {
+    mCollector = MonitoringFactory::Get("infologger://");
+  } catch (...) {
+    std::string diagnostic = boost::current_exception_diagnostic_information();
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic;
+    throw;
+  }
+  startFirstObject = system_clock::time_point::min();
+  timer.reset(1000000); // 10 s.
+}
+
+
+// namespace o2::quality_control::checker

@@ -33,7 +33,7 @@ class CheckerFactory
   CheckerFactory() = default;
   virtual ~CheckerFactory() = default;
 
-  framework::DataProcessorSpec create(std::string checkerName, std::string taskName, std::string configurationSource);
+  framework::DataProcessorSpec create(std::string checkerName, std::string configurationSource);
 };
 
 } // namespace o2::quality_control::checker

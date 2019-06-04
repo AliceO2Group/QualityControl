@@ -40,6 +40,22 @@
         },
         "location": "remote"
       }
+    },
+    "check": {
+      "QcCheck": {
+        "active": "true",
+        "classNames": [
+          "o2::quality_control_modules::skeleton::SkeletonCheck"
+         ],
+        "moduleName": "QcSkeleton",
+        "cycleDurationSeconds": "10",
+        "policy": "onAllUpdate",
+        "dataSource": {
+          "type": "Task",
+          "name": "QcTask"
+        },
+        "location": "remote"
+      }
     }
   },
   "dataSamplingPolicies": [

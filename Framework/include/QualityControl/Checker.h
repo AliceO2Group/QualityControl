@@ -32,6 +32,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/MonitorObjectPolicy.h"
 
 namespace o2::framework
 {
@@ -63,7 +64,7 @@ class Checker : public framework::Task
 {
  public:
   /// Constructor
-  Checker(std::string checkerName, std::string taskName, std::string configurationSource);
+  Checker(std::string checkerName, std::string configurationSource);
 
   /// Destructor
   ~Checker() override;
@@ -74,12 +75,13 @@ class Checker : public framework::Task
   /// \brief Checker process callback
   void run(framework::ProcessingContext& ctx) override;
 
-  framework::InputSpec getInputSpec() { return mInputSpec; };
+  framework::InputSpec getInputs() { return mInputs; };
 
   framework::OutputSpec getOutputSpec() { return mOutputSpec; };
 
   /// \brief Unified DataDescription naming scheme for all checkers
   static o2::header::DataDescription createCheckerDataDescription(const std::string taskName);
+  static o2::framework::Inputs createInputSpec(const std::string checkName, const std::string configSource);
 
  private:
   /**
@@ -92,7 +94,7 @@ class Checker : public framework::Task
    * @param mo The MonitorObject to evaluate and whose quality will be set according
    *        to the worse quality encountered while running the Check's.
    */
-  void check(std::shared_ptr<MonitorObject> mo);
+  void check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
 
   /**
    * \brief Store the MonitorObject in the database.
@@ -113,6 +115,10 @@ class Checker : public framework::Task
    */
   void loadLibrary(const std::string libraryName);
 
+  void update(std::shared_ptr<MonitorObject> mo);
+  inline void initDatabase();
+  inline void initMonitoring();
+
   /**
    * Get the check specified by its name and class.
    * If it has never been asked for before it is instantiated and cached. There can be several copies
@@ -129,15 +135,19 @@ class Checker : public framework::Task
   std::string mConfigurationSource;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
+  MonitorObjectPolicy mPolicy;
 
   // DPL
-  o2::framework::InputSpec mInputSpec;
+  o2::framework::Inputs mInputs;
   o2::framework::OutputSpec mOutputSpec;
 
   // Checks cache
+  std::vector<std::string> mCheckList;
   std::vector<std::string> mLibrariesLoaded;
   std::map<std::string, CheckInterface*> mChecksLoaded;
   std::map<std::string, TClass*> mClassesLoaded;
+  std::map<std::string, MonitorObject> mMoniorObjects;
+  std::map<std::string, CheckInterface*> mChecks; 
 
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
