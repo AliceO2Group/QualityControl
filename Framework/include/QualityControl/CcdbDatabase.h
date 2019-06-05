@@ -62,11 +62,20 @@ class CcdbDatabase : public DatabaseInterface
   std::vector<std::string> getListOfTasksWithPublications() override;
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
   void truncate(std::string taskName, std::string objectName) override;
+  void storeStreamerInfosToFile(std::string filename);
 
  private:
   static long getCurrentTimestamp();
-  std::string getTimestampString(long timestamp);
   static long getFutureTimestamp(int secondsInFuture);
+  /**
+   * \brief Load StreamerInfos from a ROOT file.
+   * When we were not saving TFiles in the CCDB, we streamed ROOT objects without their StreamerInfos.
+   * As a result we can't read them back. The only way is to load them from a file. This is what we do
+   * here.
+   */
+  static void loadDeprecatedStreamerInfos();
+  void init();
+
   /**
    * Return the listing of folder and/or objects in the subpath.
    * @param subpath The folder we want to list the children of.

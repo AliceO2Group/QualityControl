@@ -302,22 +302,19 @@ install(
 
 # ---- Extra scripts ----
 
-install(PROGRAMS script/o2-qc-database-setup.sh DESTINATION bin)
 install(
   FILES
     example-default.json
     alfa.json
     dataDump.json
-  DESTINATION etc
-)
-install(
-  FILES
     basic.json
     basic-no-sampling.json
     advanced.json
     readout.json
     readout-no-sampling.json
     readoutForDataDump.json
+    script/RepoCleaner/config.yaml
+    streamerinfos.root
   DESTINATION etc
 )
 install(
@@ -325,12 +322,7 @@ install(
     script/RepoCleaner/1_per_hour.py
     script/RepoCleaner/Ccdb.py
     script/RepoCleaner/repoCleaner.py
+    script/o2-qc-database-setup.sh
   DESTINATION
     bin
-)
-install(
-  FILES
-    script/RepoCleaner/config.yaml
-  DESTINATION
-    etc
 )
