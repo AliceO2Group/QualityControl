@@ -3,6 +3,17 @@
 This is a resource meant for the developers of the QC. Whenever we learn something useful we put it
 here. It is not sanitized or organized. Just a brain dump.
 
+### Trick used to load old data
+Until version 3 of the class MonitorObject, objects were stored in the repository directly. They are now stored within TFiles. The issue with the former way is that the StreamerInfo are lost. To be able to load old data, the StreamerInfos have been saved in a root file "streamerinfos.root". The CcdbDatabase access class loads this file and the StreamerInfos upon creation which allows for a smooth reading of the old objects. The day we are certain nobody will add objects in the old format and that the old objects have been removed from the database, we can delete this file and remove the loading from CcdbDatabase. Moreover, the following lines can be removed : 
+```
+// We could not open a TFile we should now try to open an object directly serialized
+object = ccdbApi.retrieve(path, metadata, getCurrentTimestamp());
+cout << "We could retrieve the object " << path << " as a streamed object." << endl;
+if(object == nullptr) {
+  return nullptr;
+}
+```
+
 ### Monitoring debug
 
 When we don't see the monitoring data in grafana, here is what to do to pinpoint the source of the problem.
