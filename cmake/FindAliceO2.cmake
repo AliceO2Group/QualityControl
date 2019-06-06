@@ -26,7 +26,7 @@ set(O2_LIBRARIES_NAMES
         O2FrameworkFoundation
         O2Framework
         O2Headers
-        CCDB
+        O2CCDB
         O2DebugGUI
         O2DetectorsBase
         O2ITSBase
