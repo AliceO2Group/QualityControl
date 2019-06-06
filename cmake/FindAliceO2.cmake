@@ -23,19 +23,19 @@ list(APPEND AliceO2_INCLUDE_DIRS ${MS_GSL_INCLUDE_DIR})
 # find libraries
 # TODO SEARCH *ALL* LIBRARIES --> AliceO2 should ideally provide the list !!!
 set(O2_LIBRARIES_NAMES
-        FrameworkFoundation
-        Framework
-        Headers
+        O2FrameworkFoundation
+        O2Framework
+        O2Headers
         CCDB
-        DebugGUI
-        DetectorsBase
-        ITSBase
-        ITSSimulation
-        ITSReconstruction
-        ITSWorkflow
-        ITSMFTReconstruction
-        ITSMFTBase
-        DetectorsCommonDataFormats
+        O2DebugGUI
+        O2DetectorsBase
+        O2ITSBase
+        O2ITSSimulation
+        O2ITSReconstruction
+        O2ITSWorkflow
+        O2ITSMFTReconstruction
+        O2ITSMFTBase
+        O2DetectorsCommonDataFormats
         )
 foreach(lib_name ${O2_LIBRARIES_NAMES})
     find_library(AliceO2_LIBRARY_${lib_name} NAMES ${lib_name} HINTS ${O2_ROOT}/lib ENV LD_LIBRARY_PATH)
