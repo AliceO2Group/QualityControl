@@ -23,6 +23,8 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <TH1F.h>
+#include <TFile.h>
 
 namespace o2::quality_control::core
 {
@@ -32,43 +34,85 @@ namespace
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
+using namespace std;
 
 const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
-std::unique_ptr<DatabaseInterface> BackendInstance;
 std::unordered_map<std::string, std::string> Objects;
 
-BOOST_AUTO_TEST_SUITE(optionalTest, *boost::unit_test::disabled())
+/**
+ * Fixture for the tests, i.e. code is ran in every test that uses it, i.e. it is like a setup and teardown for tests.
+ */
+struct test_fixture {
+  test_fixture()
+  {
+    backend = DatabaseFactory::create("CCDB");
+    backend->connect(CCDB_ENDPOINT, "", "", "");
+    std::cout << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << std::endl;
+  }
+
+  ~test_fixture() = default;
+
+  std::unique_ptr<DatabaseInterface> backend;
+  map<string, string> metadata;
+};
 
 BOOST_AUTO_TEST_CASE(ccdb_create)
 {
-  BackendInstance = DatabaseFactory::create("CCDB");
-  BackendInstance->connect(CCDB_ENDPOINT, "", "", "");
+  test_fixture f;
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_getobjects)
+BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
 {
-  auto tasks = BackendInstance->getListOfTasksWithPublications();
+  test_fixture f;
+
+  auto tasks = f.backend->getListOfTasksWithPublications();
   for (auto& task : tasks) {
-    auto objects = BackendInstance->getPublishedObjectNames(task);
+    auto objects = f.backend->getPublishedObjectNames(task);
     for (auto& object : objects) {
       Objects.insert({ task, object });
     }
   }
 }
 
+BOOST_AUTO_TEST_CASE(ccdb_store)
+{
+  test_fixture f;
+  TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10000);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  f.backend->store(mo1);
+}
+
 BOOST_AUTO_TEST_CASE(ccdb_retrieve)
 {
+  test_fixture f;
+  MonitorObject* mo = f.backend->retrieve("my/task", "asdf/asdf");
+  BOOST_CHECK_NE(mo, nullptr);
+  TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
+  BOOST_CHECK_NE(h1, nullptr);
+  BOOST_CHECK_EQUAL(h1->GetEntries(), 10000);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
+{
+  test_fixture f;
   for (auto const& [task, object] : Objects) {
-    std::cout << "[RETRIEVE]: " << task << "/" << object << std::endl;
-    BackendInstance->retrieve(task, object);
+    std::cout << "[RETRIEVE]: " << task << object << std::endl;
+    auto mo = f.backend->retrieve(task, object);
+    if (mo == nullptr) {
+      std::cout << "No object found (" << task << object << ")" << std::endl;
+      continue;
+    }
+    cout << "name of encapsulated object : " << mo->getObject()->GetName() << endl; // just to test it
   }
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrievejson)
 {
+  test_fixture f;
   for (auto const& [task, object] : Objects) {
     std::cout << "[JSON RETRIEVE]: " << task << "/" << object << std::endl;
-    auto json = BackendInstance->retrieveJson(task, object);
+    auto json = f.backend->retrieveJson(task, object);
     if (json.empty()) {
       std::cout << "skipping empty object..." << std::endl;
       continue;
@@ -78,13 +122,6 @@ BOOST_AUTO_TEST_CASE(ccdb_retrievejson)
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(ss, pt);
   }
-}
-
-BOOST_AUTO_TEST_SUITE_END()
-
-BOOST_AUTO_TEST_CASE(Dummy)
-{
-  BOOST_CHECK(true);
 }
 
 } // namespace

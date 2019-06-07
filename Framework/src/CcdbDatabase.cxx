@@ -14,38 +14,76 @@
 ///
 
 #include "QualityControl/CcdbDatabase.h"
+#include "QualityControl/MonitorObject.h"
 #include "Common/Exceptions.h"
 // ROOT
-#include "TBufferJSON.h"
+#include <TBufferJSON.h>
+#include <TH1F.h>
+#include <TFile.h>
+#include <TList.h>
+#include <TROOT.h>
+#include <TFile.h>
+#include <TKey.h>
+#include <TStreamerInfo.h>
 // boost
 #include <boost/algorithm/string.hpp>
 // std
 #include <chrono>
 #include <sstream>
 #include <utility>
+#include <FairLogger.h>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
+using namespace o2::quality_control::core;
+using namespace std;
 
 namespace o2::quality_control::repository
 {
 
-using namespace std;
-
-CcdbDatabase::CcdbDatabase() : mUrl("") {}
+CcdbDatabase::CcdbDatabase() : mUrl("")
+{
+}
 
 CcdbDatabase::~CcdbDatabase() { disconnect(); }
+
+void CcdbDatabase::loadDeprecatedStreamerInfos()
+{
+  string path = getenv("QUALITYCONTROL_ROOT") ? string(getenv("QUALITYCONTROL_ROOT")) + "/etc/" : "";
+  path += "streamerinfos.root";
+  TFile file(path.data(), "READ");
+  if (file.IsZombie()) {
+    string s = string("Cannot find ") + path;
+    BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
+  }
+  TIter next(file.GetListOfKeys());
+  TKey* key;
+  while ((key = (TKey*)next())) {
+    TClass* cl = gROOT->GetClass(key->GetClassName());
+    if (!cl->InheritsFrom("TStreamerInfo"))
+      continue;
+    auto* si = (TStreamerInfo*)key->ReadObj();
+    LOG(DEBUG) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName();
+    si->BuildCheck();
+  }
+}
 
 void CcdbDatabase::connect(std::string host, std::string /*database*/, std::string /*username*/, std::string /*password*/)
 {
   mUrl = host;
-  ccdbApi.init(mUrl);
+  init();
 }
 
 void CcdbDatabase::connect(const std::unordered_map<std::string, std::string>& config)
 {
   mUrl = config.at("host");
+  init();
+}
+
+void CcdbDatabase::init()
+{
   ccdbApi.init(mUrl);
+  loadDeprecatedStreamerInfos();
 }
 
 void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
@@ -78,12 +116,24 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
 
 core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string objectName)
 {
-
   string path = taskName + "/" + objectName;
   map<string, string> metadata;
 
-  TObject* object = ccdbApi.retrieve(path, metadata, getCurrentTimestamp());
-  return dynamic_cast<core::MonitorObject*>(object);
+  // we try first to load a TFile
+  TObject* object = ccdbApi.retrieveFromTFile(path, metadata, getCurrentTimestamp());
+  if (object == nullptr) {
+    // We could not open a TFile we should now try to open an object directly serialized
+    object = ccdbApi.retrieve(path, metadata, getCurrentTimestamp());
+    LOG(INFO) << "We could retrieve the object " << path << " as a streamed object.";
+    if (object == nullptr) {
+      return nullptr;
+    }
+  }
+  auto* mo = dynamic_cast<core::MonitorObject*>(object);
+  if (mo == nullptr) {
+    LOG(ERROR) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject";
+  }
+  return mo;
 }
 
 std::string CcdbDatabase::retrieveJson(std::string taskName, std::string objectName)
@@ -193,9 +243,23 @@ long CcdbDatabase::getCurrentTimestamp()
 
 void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 {
-  cout << "truncating data for " << taskName << "/" << objectName << endl;
+  LOG(INFO) << "truncating data for " << taskName << "/" << objectName;
 
   ccdbApi.truncate(taskName + "/" + objectName);
+}
+
+void CcdbDatabase::storeStreamerInfosToFile(std::string filename)
+{
+  TH1F* h1 = new TH1F("asdf", "asdf", 100, 0, 99);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake");
+  TMessage message(kMESS_OBJECT);
+  message.Reset();
+  message.EnableSchemaEvolution(true);
+  message.WriteObjectAny(mo1.get(), mo1->IsA());
+  TList* infos = message.GetStreamerInfos();
+  TFile f(filename.data(), "recreate");
+  infos->Write();
+  f.Close();
 }
 
 } // namespace o2::quality_control::repository
