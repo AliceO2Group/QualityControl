@@ -20,7 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/TaskConfig.h"
-#include "ServiceDiscovery.h"
+#include "QualityControl/ServiceDiscovery.h"
 // ROOT
 #include <TObjArray.h>
 #include <TObjString.h>
