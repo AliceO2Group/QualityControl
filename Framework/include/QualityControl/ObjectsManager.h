@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/TaskConfig.h"
+#include "QualityControl/ServiceDiscovery.h"
 // ROOT
 #include <TObjArray.h>
 #include <TObjString.h>
@@ -42,7 +43,7 @@ class ObjectsManager
   friend class TaskControl; // TaskControl must be able to call "publish()" whenever needed. Nobody else can.
 
  public:
-  explicit ObjectsManager(TaskConfig& taskConfig);
+  ObjectsManager(TaskConfig& taskConfig, std::shared_ptr<ServiceDiscovery> serviceDiscovery = nullptr);
   virtual ~ObjectsManager();
 
   /**
@@ -96,6 +97,13 @@ class ObjectsManager
     return new TObjArray(mMonitorObjects);
   };
 
+  /**
+   * \brief Add metadata to a MonitorObject.
+   * Add a metadata pair to a MonitorObject. This is propagated to the database.
+   * @param objectName Name of the MonitorObject.
+   * @param key Key of the metadata.
+   * @param value Value of the metadata.
+   */
   void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
 
   /**
@@ -104,9 +112,17 @@ class ObjectsManager
    */
   int getNumberPublishedObjects();
 
+  /**
+   * \brief Update the list of objects stored in the Service Discovery.
+   * Update the list of objects stored in the Service Discovery.
+   */
+  void updateServiceDiscovery();
+
  private:
   TObjArray mMonitorObjects;
   std::string mTaskName;
+  std::shared_ptr<ServiceDiscovery> mServiceDiscovery;
+  bool mUpdateServiceDiscovery;
 };
 
 } // namespace o2::quality_control::core
