@@ -17,7 +17,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "Common/Exceptions.h"
 // ROOT
-#include "TBufferJSON.h"
+#include <TBufferJSON.h>
 #include <TH1F.h>
 #include <TFile.h>
 #include <TList.h>
@@ -31,6 +31,7 @@
 #include <chrono>
 #include <sstream>
 #include <utility>
+#include <FairLogger.h>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -38,8 +39,6 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control::repository
 {
-
-using namespace std;
 
 CcdbDatabase::CcdbDatabase() : mUrl("")
 {
@@ -63,8 +62,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
     if (!cl->InheritsFrom("TStreamerInfo"))
       continue;
     auto* si = (TStreamerInfo*)key->ReadObj();
-    //    Int_t siVersion = si->GetClassVersion();
-    //    cout << "importing streamer info version " << siVersion << " for '" << si->GetName() << endl;
+    LOG(DEBUG) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName();
     si->BuildCheck();
   }
 }
@@ -125,14 +123,14 @@ core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string ob
   if (object == nullptr) {
     // We could not open a TFile we should now try to open an object directly serialized
     object = ccdbApi.retrieve(path, metadata, getCurrentTimestamp());
-    cout << "We could retrieve the object " << path << " as a streamed object." << endl;
+    LOG(INFO) << "We could retrieve the object " << path << " as a streamed object.";
     if (object == nullptr) {
       return nullptr;
     }
   }
   auto* mo = dynamic_cast<core::MonitorObject*>(object);
   if (mo == nullptr) {
-    cerr << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << endl;
+    LOG(ERROR) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject";
   }
   return mo;
 }
@@ -244,7 +242,7 @@ long CcdbDatabase::getCurrentTimestamp()
 
 void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 {
-  cout << "truncating data for " << taskName << "/" << objectName << endl;
+  LOG(INFO) << "truncating data for " << taskName << "/" << objectName;
 
   ccdbApi.truncate(taskName + "/" + objectName);
 }
