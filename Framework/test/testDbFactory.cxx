@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "path/to/object3") != objectNames.end());
 
   // store list of streamer infos
-//  ccdb->storeStreamerInfosToFile("streamerinfos.root");
+  //  ccdb->storeStreamerInfosToFile("streamerinfos.root");
 }
 
 /*
