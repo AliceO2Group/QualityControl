@@ -111,4 +111,9 @@ void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSp
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
+void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
+{
+  TaskRunnerFactory::customizeInfrastructure(policies);
+}
+
 } // namespace o2::quality_control::core

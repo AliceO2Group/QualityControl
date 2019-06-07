@@ -13,6 +13,7 @@
 /// \author Piotr Konopka
 ///
 
+#include <Framework/DeviceSpec.h>
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
 
@@ -28,13 +29,27 @@ TaskRunnerFactory::create(std::string taskName, std::string configurationSource,
   qcTask.setResetAfterPublish(resetAfterPublish);
 
   DataProcessorSpec newTask{
-    taskName,
+    qcTask.getDeviceName(),
     qcTask.getInputsSpecs(),
     Outputs{ qcTask.getOutputSpec() },
-    adaptFromTask<TaskRunner>(std::move(qcTask))
+    AlgorithmSpec{},
+    qcTask.getOptions()
   };
+  // this needs to be moved at the end
+  newTask.algorithm = adaptFromTask<TaskRunner>(std::move(qcTask));
 
-  return std::move(newTask);
+  return newTask;
+}
+
+void TaskRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
+{
+  auto matcher = [](framework::DeviceSpec const& device) {
+    return device.name.find(TaskRunner::createTaskRunnerIdString()) != std::string::npos;
+  };
+  auto callback = TaskRunner::completionPolicyCallback;
+
+  framework::CompletionPolicy taskRunnerCompletionPolicy{ "taskRunnerCompletionPolicy", matcher, callback };
+  policies.push_back(taskRunnerCompletionPolicy);
 }
 
 } // namespace o2::quality_control::core

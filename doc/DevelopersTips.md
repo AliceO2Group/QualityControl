@@ -14,6 +14,11 @@ if(object == nullptr) {
 }
 ```
 
+### Doxygen generation
+
+To generate locally the doxygen doc, do `cd sw/BUILD/QualityControl-latest/QualityControl; make doc`.
+It will be available in doc/html, thus to open it quickly do `[xdg-]open doc/html/index.html`.
+
 ### Monitoring debug
 
 When we don't see the monitoring data in grafana, here is what to do to pinpoint the source of the problem.

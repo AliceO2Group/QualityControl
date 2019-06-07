@@ -1,11 +1,14 @@
 <!--  \cond EXCLUDE_FOR_DOXYGEN -->
 [![aliBuild](https://img.shields.io/badge/aliBuild-dashboard-lightgrey.svg)](https://alisw.cern.ch/dashboard/d/000000001/main-dashboard?orgId=1&var-storagename=All&var-reponame=All&var-checkname=build%2FQualityControl%2Fo2-dataflow%2F0&var-upthreshold=30m&var-minuptime=30)
 [![JIRA](https://img.shields.io/badge/JIRA-Report%20issue-blue.svg)](https://alice.its.cern.ch/jira/secure/CreateIssue.jspa?pid=11201&issuetype=1)
+[![doxygen](https://img.shields.io/badge/doxygen-documentation-blue.svg)](https://aliceo2group.github.io/QualityControl/)
+[![Discourse](https://img.shields.io/badge/discourse-Get%20help-blue.svg)](https://alice-talk.web.cern.ch/)
+
 <!--  \endcond  -->
 
 This is the repository of the data quality control (QC) software for the ALICE O<sup>2</sup> system. 
 
-For a general overview of our software, organization and processes, please see this [page](https://aliceo2group.github.io/).
+For a general overview of our (O2) software, organization and processes, please see this [page](https://aliceo2group.github.io/).
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert /path/to/README.md-->
@@ -42,3 +45,11 @@ For a general overview of our software, organization and processes, please see t
 <!-- Added by: bvonhall, at:  -->
 
 <!--te-->
+
+### Where to get help
+
+* CERN Mailing lists: alice-o2-wp7 and alice-o2-qc-contact
+* Discourse: https://alice-talk.web.cern.ch/
+* JIRA: https://alice.its.cern.ch
+* O2 development newcomers' guide: https://aliceo2group.github.io/quickstart
+* Doxygen: https://aliceo2group.github.io/QualityControl/

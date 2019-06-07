@@ -191,7 +191,7 @@ if(GLFW_FOUND)
   set(DATADUMP "o2-qc-data-dump")
 
   set(
-    GUI_SRCS
+    IMGUI_SRCS
     src/imgui/imgui.cpp
     src/imgui/imgui_draw.cpp
     src/imgui/imgui_impl_glfw_gl3.cpp
@@ -199,11 +199,16 @@ if(GLFW_FOUND)
     src/imgui/imgui_widgets.cpp
     src/imgui/imgui_demo.cpp
     src/imgui/BaseGui.cxx
+  )
+  set_source_files_properties(${IMGUI_SRCS} PROPERTIES COMPILE_FLAGS -w)
+
+  set(
+    GUI_SRCS
     src/DataDumpGui.cxx
     src/runDataDump.cxx
   )
 
-  add_executable(${DATADUMP} ${GUI_SRCS})
+  add_executable(${DATADUMP} ${GUI_SRCS} ${IMGUI_SRCS})
 
   target_link_libraries(${DATADUMP} PRIVATE QualityControl GLFW::GLFW)
 else()

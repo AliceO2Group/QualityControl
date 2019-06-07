@@ -18,6 +18,7 @@
 
 #include <string>
 #include <Framework/WorkflowSpec.h>
+#include <Framework/CompletionPolicy.h>
 
 namespace o2::quality_control
 {
@@ -78,6 +79,19 @@ class InfrastructureGenerator
   /// \param configurationSource - full path to configuration file, preceded with the backend (f.e. "json://")
   /// \return generated remote QC workflow
   static void generateRemoteInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource);
+
+  /// \brief Provides necessary customization of the QC infrastructure.
+  ///
+  /// Provides necessary customization of the Completion Policies of the QC infrastructure. This is necessary to make
+  /// the QC workflow work. Put it inside the following customize() function, before including <Framework/runDataProcessing.cxx>:
+  /// \code{.cxx}
+  /// void customize(std::vector<CompletionPolicy>& policies)
+  /// {
+  ///   quality_control::customizeInfrastructure(policies);
+  /// }
+  /// \endcode
+  /// \param policies - completion policies vector
+  static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };
 
 } // namespace core
@@ -102,6 +116,11 @@ inline framework::WorkflowSpec generateRemoteInfrastructure(std::string configur
 inline void generateRemoteInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource)
 {
   core::InfrastructureGenerator::generateRemoteInfrastructure(workflow, configurationSource);
+}
+
+inline void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
+{
+  core::InfrastructureGenerator::customizeInfrastructure(policies);
 }
 
 } // namespace o2::quality_control

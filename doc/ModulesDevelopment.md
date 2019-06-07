@@ -42,58 +42,6 @@ The main data flow is represented in blue. Data samples are selected by the Data
 
 An example of a workflow definition which describes the processing steps (_Data Processors_), their inputs and their outputs can be seen in [runBasic.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/runBasic.cxx). In the QC we define the workflows in files whose names are prefixed with `run`.
 
-<!--
-
-THIS IS OLD STUFF BELOW
-
-Quality Control has been adapted to be used as Data Processor in
-[O2 framework](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/Core#data-processing-layer-in-o2-framework).
-Keep in mind, that checkers are not available at this moment.
-To add a QC task into workflow:
-
-1. Create your module using SkeletonDPL as a base. Refer to the steps mentioned
-in the chapter [Modules development](https://github.com/AliceO2Group/QualityControl#modules-development),
-they are the same.
-2. Define input data and parameters of your QC Task in .json config file. Use
-[Framework/qcTaskDplConfig.json](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/qcTaskDplConfig.json)
-as a reference - just update the variables in the section 'Tasks'.
-3. Insert following lines in your workflow declaration code. Change the names
-accordingly.
-```
-...
-
-#include "QualityControl/TaskRunnerFactory.h"
-#include "QualityControl/TaskRunner.h"
-#include "Framework/DataSampling.h"
-#include "Framework/runDataProcessing.h"
-
-...
-
-WorkflowSpec defineDataProcessing(ConfigContext const&) {
-
-  std::vector<DataProcessorSpec> specs;
-  ...
-
-  // A path to your config .json file. In this case, it is a file installed during compilation.
-  const std::string qcConfigurationSource = std::string("file://") + getenv("QUALITYCONTROL_ROOT") + "/etc/qcTaskDplConfig.json";
-  // An entry in config file which describes your QC task
-  const std::string qcTaskName = "skeletonTask";
-  o2::quality_control::core::TaskRunnerFactory qcFactory;
-  specs.push_back(qcFactory.create(qcTaskName, qcConfigurationSource));
-
-  o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
-
-  return specs;
-}
-```
-4. Compile & run.
-
-In [Framework/src/runTaskDPL.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/runTaskDPL.cxx)
-there is an exemplary DPL workflow with QC task. It is compiled to an
-executable `taskDPL`.
-
--->
-
 ### Data Sampling
 
 The Data Sampling provides the possibility to sample data in DPL workflows, based on certain conditions ( 5% randomly, when payload is greater than 4234 bytes, etc.). The job of passing the right data is done by a data processor called `Dispatcher`. A desired data stream is specified in the form of Data Sampling Policies, defined in the QC JSON configuration file. Please refer to the main [Data Sampling readme](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#data-sampling) for more details.
@@ -245,7 +193,7 @@ You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.
 
 ## Modification of a Task
 
-Fill in the methods in RawDataQcTask.cxx. For example, make it send a second histogram.
+Fill in the methods in RawDataQcTask.cxx. For example, make it publish a second histogram. Objects must be published only once and they will then be updated automatically every cycle (10 seconds for our example, 1 minute in general). 
 Once done, recompile it (see section above) and run it. You should see the second object published in the qcg.
 
 TODO give actual steps

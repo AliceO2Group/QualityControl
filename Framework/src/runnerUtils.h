@@ -32,8 +32,8 @@ std::string getFirstTaskName(std::string configurationSource)
 {
   auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
 
-  for (const auto&[taskName, taskConfig] : config->getRecursive("qc.tasks")) {
-    return taskName;
+  for (const auto& task : config->getRecursive("qc.tasks")) {
+    return task.first; // task name;
   }
 
   throw;

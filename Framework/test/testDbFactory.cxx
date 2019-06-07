@@ -41,7 +41,7 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control::repository
 {
 
-bool do_nothing(AliceO2::Common::FatalException const& ex) { return true; }
+bool do_nothing(AliceO2::Common::FatalException const&) { return true; }
 
 BOOST_AUTO_TEST_CASE(db_factory_test)
 {
