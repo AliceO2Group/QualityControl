@@ -36,6 +36,7 @@
 using namespace std::chrono;
 using namespace AliceO2::Common;
 using namespace o2::quality_control::core;
+using namespace std;
 
 namespace o2::quality_control::repository
 {
