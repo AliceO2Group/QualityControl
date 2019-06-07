@@ -31,12 +31,16 @@ namespace o2::quality_control::core
 
 /// \brief Container for the definition of a check
 struct CheckDefinition {
+ public:
   CheckDefinition() : result(Quality::Null) {}
+  virtual ~CheckDefinition() = default;
 
   std::string name;
   std::string className;
   std::string libraryName;
   Quality result;
+
+  ClassDef(CheckDefinition, 1);
 };
 
 struct DuplicateObjectError : virtual AliceO2::Common::ExceptionBase {
@@ -73,8 +77,8 @@ class MonitorObject : public TObject
   const std::string getName() const;
 
   /// \brief Overwrite the TObject's method just to avoid confusion.
-  ///        One should rather use getName().
-  const char* GetName() const override { return getName().c_str(); }
+  /// @return The name of the encapsulated object or "" if there is no object.
+  const char* GetName() const override;
 
   const std::string& getTaskName() const { return mTaskName; }
 
@@ -152,7 +156,7 @@ class MonitorObject : public TObject
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 3);
+  ClassDefOverride(MonitorObject, 4);
 };
 
 } // namespace o2::quality_control::core
