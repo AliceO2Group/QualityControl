@@ -14,16 +14,10 @@
 ///
 
 #include "QualityControl/CcdbDatabase.h"
+#include "QualityControl/MonitorObject.h"
 #include "Common/Exceptions.h"
 // ROOT
 #include "TBufferJSON.h"
-// boost
-#include <boost/algorithm/string.hpp>
-// std
-#include <chrono>
-#include <sstream>
-#include <utility>
-#include <QualityControl/MonitorObject.h>
 #include <TH1F.h>
 #include <TFile.h>
 #include <TList.h>
@@ -31,6 +25,12 @@
 #include <TFile.h>
 #include <TKey.h>
 #include <TStreamerInfo.h>
+// boost
+#include <boost/algorithm/string.hpp>
+// std
+#include <chrono>
+#include <sstream>
+#include <utility>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
