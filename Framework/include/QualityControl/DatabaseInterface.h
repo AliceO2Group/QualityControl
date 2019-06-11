@@ -65,7 +65,7 @@ class DatabaseInterface
    * templates)
    * TODO evaluate whether we should have a method to retrieve a list of objects (optimization)
    */
-  virtual o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName) = 0;
+  virtual o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName, long timestamp = 0) = 0;
 
   /**
    * Returns JSON encoded object

@@ -114,16 +114,17 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
   ccdbApi.store(mo.get(), path, metadata, from, to);
 }
 
-core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string objectName)
+core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string objectName, long timestamp)
 {
   string path = taskName + "/" + objectName;
   map<string, string> metadata;
+  long when = timestamp == 0 ?  getCurrentTimestamp() : timestamp;
 
   // we try first to load a TFile
-  TObject* object = ccdbApi.retrieveFromTFile(path, metadata, getCurrentTimestamp());
+  TObject* object = ccdbApi.retrieveFromTFile(path, metadata, when);
   if (object == nullptr) {
     // We could not open a TFile we should now try to open an object directly serialized
-    object = ccdbApi.retrieve(path, metadata, getCurrentTimestamp());
+    object = ccdbApi.retrieve(path, metadata, when);
     LOG(INFO) << "We could retrieve the object " << path << " as a streamed object.";
     if (object == nullptr) {
       return nullptr;
