@@ -276,7 +276,7 @@ void TaskRunner::populateConfig(std::string taskName)
       mInputSpecs = DataSampling::InputSpecsForPolicy(config, policyName);
     } else if (type == "direct") {
       auto inputsQuery = dataSourceTree.get<std::string>("query");
-      mInputSpecs = framework::DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
+      mInputSpecs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
     } else {
       std::string message = std::string("Configuration error : dataSource type unknown : ") + type; // TODO pass this message to the exception
       BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
