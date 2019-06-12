@@ -43,14 +43,7 @@
       "id": "its-raw",
       "active": "true",
       "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "random",
-          "dataOrigin": "ITS",
-          "dataDescription": "RAWDATA"
-        }
-      ],
-      "subSpec": "0",
+      "query" : "random:ITS/RAWDATA/0",
       "samplingConditions": [
         {
           "condition": "random",

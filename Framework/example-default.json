@@ -65,14 +65,8 @@
     {
       "id": "ex1",
       "active": "true",
-      "dataHeaders": [
-        {
-          "binding": "data",
-          "dataOrigin": "TST",
-          "dataDescription": "DATA"
-        }
-      ],
-      "subSpec": "0",
+      "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1;binding2:origin2/description2/subSpec2;...",
+      "query" : "data:TST/DATA/0",
       "samplingConditions": [
         {
           "condition": "custom",
@@ -85,14 +79,7 @@
     {
       "id": "mftclusters",
       "active": "true",
-      "dataHeaders": [
-        {
-          "binding": "mft-clusters",
-          "dataOrigin": "MFT",
-          "dataDescription": "CLUSTERS"
-        }
-      ],
-      "subSpec": "0",
+      "query" : "mft-clusters:MFT/CLUSTERS/0",
       "samplingConditions": [
         {
           "condition": "payloadSize",
