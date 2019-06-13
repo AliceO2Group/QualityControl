@@ -24,6 +24,31 @@ alibuild/aliBuild build O2 --defaults o2
 
 alibuild/aliBuild build QualityControl --default o2
 
+## Entering the QC environment and rebuilding the QC after make changes:
+
+To enter the QC environment, simply do:
+
+alienv enter QualityControl/latest
+
+(Note that this is in the folder before the QualityControl/ folder)
+
+After entering the QC environment, you can rebuild the QC by
+
+cd sw/BUILD/QualityControl-latest/QualityControl/
+
+make -j12 install
+
+## Start Running the QC General Task
+
+To start running the QC general task, first go to the working folder:
+
+cd  /home/its/QCGeneral/workdir/
+
+Then start running the General QC with the command:
+
+qcRunGeneral
+
+The QC should start looping and searching for new files in the working folder named "infiles"
 
 ## Using QC to display data files
 
@@ -31,12 +56,7 @@ In principle, QC is always running at FLP01 and you do not need to start the QC.
 
 ### Step 1: Login to FLP01, go to the QC directory, and setup the QC enviornment
 
-
-To work on the FLP, login in as follow
-
-ssh -Y its@flpits1
-
-Go to the work folder:
+Open another terminal and go to the work folder:
 
 cd  /home/its/QCGeneral/workdir/
 
@@ -47,7 +67,7 @@ source run_ITS_QC.sh run000184
 Wait for about 1 minutes, you should be able to see the histogram of that run uploaded to the database: http://ccdb-test.cern.ch:8080/browse/ITSRAWDS
 And can be found on the GUI: https://qcg-test.cern.ch/?page=layoutList
  
-Some test data are already available in the /home/its/zshi/workdir/infiles/. To have them processed again, it is enough to copy the run folder our of the infiles directory and copy it back again after > 1 min.
+Some test data are already available in the /home/its/QCGeneral/workdir/infiles/. To have them processed again, it is enough to copy the run folder our of the infiles directory and copy it back again after > 1 min.
  
 In case that the GUI does not update, some troubleshooting can be done:
 
@@ -105,7 +125,7 @@ lz4 -d -c -f data-link2.lz4 > data-link2
  
 Now you should see your terminal is hanging there.
 
-Now start a new terminal go to the directory /home/its/zshi/workdir/ 
+Now start a new terminal go to the directory /home/its/QCGeneral/workdir/ 
 
 Now you can move the file data-link2 to the checking folder infiles/Run1
 
