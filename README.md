@@ -13,10 +13,15 @@ The ITS Quality Control during the commissioning at B167 reads raw data files, p
 The commands to install QC with Alibuild is shown as follows. You can make it into a shell script and run it:
 
 git clone https://github.com/alisw/alidist.git alidist
+
 git clone https://github.com/alisw/alibuild.git alibuild
+
 git clone -b DataSampling https://github.com/MYOMAO/AliceO2.git O2
+
 git clone https://github.com/MYOMAO/QualityControl.git QualityControl
+
 alibuild/aliBuild build O2 --defaults o2
+
 alibuild/aliBuild build QualityControl --default o2
 
 
