@@ -79,7 +79,9 @@ https://qcg-test.cern.ch/?page=layoutShow&layoutId=5cf76c9a13e837a4dd3fd841&layo
 
 If you see the QC Task light is green, that mean QC is running and processing a file.
 
-If you see the QC Task is red, that means QC is waiting for a new file. At this point, the shifters should record decoding error and the 2D Hit maps.
+If you see the QC Task light is yellow, that means QC has process some files in the run but there are still more files to process in order to finish the run. 
+
+If you see the QC Task light is red, that means QC is waiting for a new file. At this point, the shifters should record decoding error and the 2D Hit maps.
 
 When the QC Task is red and if you inject a new file and it it still red, that mean QC is not running and shifters will need to run the trouble shooting as below.
 
