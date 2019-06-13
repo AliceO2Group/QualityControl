@@ -55,7 +55,7 @@ class CcdbDatabase : public DatabaseInterface
   void connect(std::string host, std::string database, std::string username, std::string password) override;
   void connect(const std::unordered_map<std::string, std::string>& config) override;
   void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
-  core::MonitorObject* retrieve(std::string taskName, std::string objectName) override;
+  core::MonitorObject* retrieve(std::string taskName, std::string objectName, long timestamp = 0) override;
   std::string retrieveJson(std::string taskName, std::string objectName) override;
   void disconnect() override;
   void prepareTaskDataContainer(std::string taskName) override;
@@ -63,10 +63,10 @@ class CcdbDatabase : public DatabaseInterface
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
   void truncate(std::string taskName, std::string objectName) override;
   void storeStreamerInfosToFile(std::string filename);
-
- private:
   static long getCurrentTimestamp();
   static long getFutureTimestamp(int secondsInFuture);
+
+ private:
   /**
    * \brief Load StreamerInfos from a ROOT file.
    * When we were not saving TFiles in the CCDB, we streamed ROOT objects without their StreamerInfos.

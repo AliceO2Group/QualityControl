@@ -11,10 +11,12 @@
 ///
 /// \file   testCcdbDatabase.cxx
 /// \author Adam Wegrzynek
+/// \author Bartheley von Haller
 ///
 
 #include <QualityControl/DatabaseFactory.h>
 #include <unordered_map>
+#include <QualityControl/CcdbDatabase.h>
 
 #define BOOST_TEST_MODULE CcdbDatabase test
 #define BOOST_TEST_MAIN
@@ -25,6 +27,8 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <TH1F.h>
 #include <TFile.h>
+
+namespace utf = boost::unit_test;
 
 namespace o2::quality_control::core
 {
@@ -83,7 +87,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   f.backend->store(mo1);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve)
+BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
   MonitorObject* mo = f.backend->retrieve("my/task", "asdf/asdf");
@@ -122,6 +126,38 @@ BOOST_AUTO_TEST_CASE(ccdb_retrievejson)
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(ss, pt);
   }
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store"))
+{
+  // store a new object
+  long initialTimestamp = CcdbDatabase::getCurrentTimestamp();
+  test_fixture f;
+  TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10001);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  f.backend->store(mo1);
+
+  // Retrieve old object stored at timestampStorage
+  MonitorObject* mo = f.backend->retrieve("my/task", "asdf/asdf", initialTimestamp);
+  BOOST_CHECK_NE(mo, nullptr);
+  TH1F* old = dynamic_cast<TH1F*>(mo->getObject());
+  BOOST_CHECK_NE(old, nullptr);
+  BOOST_CHECK_EQUAL(old->GetEntries(), 10000);
+
+  // Retrieve latest object with timestamp
+  MonitorObject* mo2 = f.backend->retrieve("my/task", "asdf/asdf", CcdbDatabase::getCurrentTimestamp());
+  BOOST_CHECK_NE(mo2, nullptr);
+  TH1F* latest = dynamic_cast<TH1F*>(mo2->getObject());
+  BOOST_CHECK_NE(latest, nullptr);
+  BOOST_CHECK_EQUAL(latest->GetEntries(), 10001);
+
+  // Retrieve latest object without timetsamp
+  MonitorObject* mo3 = f.backend->retrieve("my/task", "asdf/asdf");
+  BOOST_CHECK_NE(mo3, nullptr);
+  TH1F* latest2 = dynamic_cast<TH1F*>(mo3->getObject());
+  BOOST_CHECK_NE(latest2, nullptr);
+  BOOST_CHECK_EQUAL(latest2->GetEntries(), 10001);
 }
 
 } // namespace
