@@ -24,6 +24,7 @@
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataRefUtils.h>
+#include <Framework/DataSpecUtils.h>
 #include <TMap.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
@@ -188,9 +189,9 @@ void Checker::store(std::shared_ptr<MonitorObject> mo)
 void Checker::send(std::unique_ptr<TObjArray>& moArray, framework::DataAllocator& allocator)
 {
   mLogger << "Sending Monitor Object array with " << moArray->GetEntries() << " objects inside." << AliceO2::InfoLogger::InfoLogger::endm;
-
+  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mOutputSpec);
   allocator.adopt(
-    framework::Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec, mOutputSpec.lifetime }, moArray.release());
+    framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, mOutputSpec.lifetime }, moArray.release());
 }
 
 void Checker::loadLibrary(const std::string libraryName)

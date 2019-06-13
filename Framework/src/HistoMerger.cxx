@@ -14,7 +14,7 @@
 ///
 
 #include "QualityControl/HistoMerger.h"
-
+#include <Framework/DataSpecUtils.h>
 #include <Framework/DataRefUtils.h>
 #include <TObjArray.h>
 
@@ -64,7 +64,8 @@ void HistoMerger::run(framework::ProcessingContext& ctx)
   }
   if (mPublicationTimer.isTimeout()) {
     if (!mMergedArray.IsEmpty()) {
-      ctx.outputs().snapshot(Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec }, mMergedArray);
+      auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mOutputSpec);
+      ctx.outputs().snapshot(Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec }, mMergedArray);
     }
     // avoid publishing mo many times consecutively because of too long initial waiting time
     do {
