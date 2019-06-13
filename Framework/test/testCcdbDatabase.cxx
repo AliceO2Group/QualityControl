@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   f.backend->store(mo1);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve, * utf::depends_on("ccdb_store"))
+BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
   MonitorObject* mo = f.backend->retrieve("my/task", "asdf/asdf");
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrievejson)
   }
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, * utf::depends_on("ccdb_store"))
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store"))
 {
   // store a new object
   long initialTimestamp = CcdbDatabase::getCurrentTimestamp();

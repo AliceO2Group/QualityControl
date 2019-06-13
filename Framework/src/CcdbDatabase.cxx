@@ -118,7 +118,7 @@ core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string ob
 {
   string path = taskName + "/" + objectName;
   map<string, string> metadata;
-  long when = timestamp == 0 ?  getCurrentTimestamp() : timestamp;
+  long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
   // we try first to load a TFile
   TObject* object = ccdbApi.retrieveFromTFile(path, metadata, when);
