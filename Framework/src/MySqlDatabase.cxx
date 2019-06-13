@@ -161,7 +161,7 @@ void MySqlDatabase::storeForTask(std::string taskName)
   objects.clear();
 }
 
-o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string taskName, std::string objectName, long timestamp)
+o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string taskName, std::string objectName, long /*timestamp*/)
 {
   // TODO use the timestamp
 
