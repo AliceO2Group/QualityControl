@@ -19,7 +19,7 @@
 #include "TGaxis.h"
 
 
-
+/*
 #include "DataFormatsITSMFT/ROFRecord.h"
 #include "SimulationDataFormat/MCCompLabel.h"
 #include <fstream>
@@ -29,12 +29,29 @@
 #include "../../../../O2/Detectors/ITSMFT/common/reconstruction/include/ITSMFTReconstruction/RawPixelReader.h"
 
 
-
 #include "ITSBase/GeometryTGeo.h"
 #include "DetectorsBase/GeometryManager.h"
 #include "ITSMFTBase/GeometryTGeo.h"
 
 #include "uti.h"
+*/
+
+#include "ITSMFTReconstruction/RawPixelReader.h"
+
+
+#include "DataFormatsITSMFT/ROFRecord.h"
+#include "SimulationDataFormat/MCCompLabel.h"
+#include <fstream>
+#include "Framework/DataProcessorSpec.h"
+#include "Framework/Task.h"
+#include "ITSMFTReconstruction/Clusterer.h"
+#include "uti.h"
+
+#include "ITSBase/GeometryTGeo.h"
+#include "DetectorsBase/GeometryManager.h"
+
+#include "ITSMFTReconstruction/DigitPixelReader.h"
+
 
 class TH1F;
 
@@ -105,9 +122,9 @@ namespace o2
 				int XTicks;
 				int YTicks;
 
-				int DivisionXStep = 16;
 
-				int DivisionYStep = 32;
+
+				int DivisionStep = 32;
 				static constexpr int   NPixels = NRows*NCols;
 				const int NLay1 = 108;
 				double Occupancy[24120];
@@ -145,7 +162,7 @@ namespace o2
 				}
 				Int_t mIdx = 0;
 				//const std::string inpName = "rawits.bin";
-				const std::string inpName = "thrscan3_nchips8_ninj25_chrange0-50_rows512.raw";
+				const std::string inpName = "Split9.bin";
 
 				o2::ITS::GeometryTGeo * gm = o2::ITS::GeometryTGeo::Instance();
 				double AveOcc;
@@ -162,13 +179,14 @@ namespace o2
 				const int NSta1 = NLay1/NChipsSta;
 				double eta;
 				double phi;
-				static constexpr int  NError = 10;
+				static constexpr int  NError = 11;
 				unsigned int Error[NError];
 				double ErrorMax;
 				TPaveText *pt[NError];
-				TH1D * ErrorPlots = new TH1D("ErrorPlots","ErrorPlots",NError,0,NError);
-				//			TString ErrorType[NError] ={"ErrGarbageAfterPayload","ErrPageCounterDiscontinuity","ErrRDHvsGBTHPageCnt","ErrMissingGBTHeader","ErrMissingGBTTrailer","ErrNonZeroPageAfterStop","ErrUnstoppedLanes","ErrDataForStoppedLane","ErrNoDataForActiveLane","ErrIBChipLaneMismatch","ErrCableDataHeadWrong"};
-				TString ErrorType[NError] ={"Error ID 1: ErrPageCounterDiscontinuity","Error ID 1: ErrRDHvsGBTHPageCnt","Error ID 2: ErrMissingGBTHeader","Error ID 3: ErrMissingGBTTrailer","Error ID 4: ErrNonZeroPageAfterStop","Error ID 5: ErrUnstoppedLanes","Error ID 6: ErrDataForStoppedLane","Error ID 7: ErrNoDataForActiveLane","Error ID 8: ErrIBChipLaneMismatch","Error ID 9: ErrCableDataHeadWrong"};
+			//	TH1D * ErrorPlots = new TH1D("ErrorPlots","ErrorPlots",NError,0,NError);
+				TH1D * ErrorPlots = new TH1D("ErrorPlots","ErrorPlots",NError+1,-0.5,NError+0.5);			
+	//			TString ErrorType[NError] ={"ErrGarbageAfterPayload","ErrPageCounterDiscontinuity","ErrRDHvsGBTHPageCnt","ErrMissingGBTHeader","ErrMissingGBTTrailer","ErrNonZeroPageAfterStop","ErrUnstoppedLanes","ErrDataForStoppedLane","ErrNoDataForActiveLane","ErrIBChipLaneMismatch","ErrCableDataHeadWrong"};
+				TString ErrorType[NError] ={"Error ID 1: ErrPageCounterDiscontinuity","Error ID 2: ErrRDHvsGBTHPageCnt","Error ID 3: ErrMissingGBTHeader","Error ID 4: ErrMissingGBTTrailer","Error ID 5: ErrNonZeroPageAfterStop","Error ID 6: ErrUnstoppedLanes","Error ID 7: ErrDataForStoppedLane","Error ID 8: ErrNoDataForActiveLane","Error ID 9: ErrIBChipLaneMismatch","Error ID 10: ErrCableDataHeadWrong","Error ID 11: Jump in RDH_packetCounter"};
 				TH2D * ChipStave = new TH2D("ChipStaveCheck","ChipStaveCheck",9,0,9,100,0,1500);
 			};
 				

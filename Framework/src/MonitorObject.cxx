@@ -21,11 +21,7 @@ ClassImp(o2::quality_control::core::MonitorObject)
 
 using namespace std;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mIsOwner(true) {}
@@ -109,6 +105,14 @@ Quality MonitorObject::getQuality() const
   return global;
 }
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+void MonitorObject::addMetadata(std::string key, std::string value)
+{
+  mUserMetadata[key] = value;
+}
+
+std::map<std::string, std::string> MonitorObject::getMetadataMap() const
+{
+  return mUserMetadata;
+}
+
+} // namespace o2::quality_control::core

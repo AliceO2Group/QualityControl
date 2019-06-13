@@ -4,12 +4,12 @@ set(MODULE_NAME "QcITSQCTask")
 
 set(SRCS
   src/ITSQCTask.cxx
-#  src/ITSQCCheck.cxx
+  src/ITSQCCheck.cxx
 )
 
 set(HEADERS
   include/ITSQCTask/ITSQCTask.h
-#  include/ITSQCTask/ITSQCCheck.h
+  include/ITSQCTask/ITSQCCheck.h
 )
 
 # ---- Library ----
@@ -19,40 +19,11 @@ add_library(${MODULE_NAME} SHARED ${SRCS} ${MODULE_NAME}Dict.cxx)
 target_include_directories(
   ${MODULE_NAME}
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  # PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${O2_ROOT}/include/AliTPCCommon
 )
 
-add_library( libITSBase SHARED IMPORTED )
-add_library( libITSSimulation SHARED IMPORTED )
-add_library( libITSReconstruction SHARED IMPORTED )
-add_library( libITSWorkflow SHARED IMPORTED )
-add_library( libITSMFTReconstruction SHARED IMPORTED )
-add_library( libITSMFTBase SHARED IMPORTED )
-add_library( libDetectorsCommonDataFormats SHARED IMPORTED )
-add_library( libJupyROOT SHARED IMPORTED )
-add_library( libROOTDataFrame SHARED IMPORTED )
-add_library( libROOTVecOps SHARED IMPORTED )
-add_library( libPyROOT SHARED IMPORTED )
 
-
-
-set_target_properties( libITSBase PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/O2/1.0.0-1/lib/libITSBase.so )
-set_target_properties( libITSSimulation PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/O2/1.0.0-1/lib/libITSSimulation.so )
-set_target_properties( libITSReconstruction PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/O2/1.0.0-1/lib/libITSReconstruction.so )
-set_target_properties( libITSWorkflow PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/O2/1.0.0-1/lib/libITSWorkflow.so )
-set_target_properties( libITSMFTReconstruction PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/O2/1.0.0-1/lib/libITSMFTReconstruction.so )
-set_target_properties( libITSMFTBase PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/O2/1.0.0-1/lib/libITSMFTBase.so )
-set_target_properties( libDetectorsCommonDataFormats PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/O2/1.0.0-1/lib/libDetectorsCommonDataFormats.so )
-set_target_properties( libJupyROOT PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/ROOT/latest-o2/lib/libJupyROOT.so )
-set_target_properties( libROOTDataFrame PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/ROOT/latest-o2/lib/libROOTDataFrame.so )
-set_target_properties( libROOTVecOps PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/ROOT/latest-o2/lib/libROOTVecOps.so )
-set_target_properties( libPyROOT PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../../sw/slc7_x86-64/ROOT/latest-o2/lib/libPyROOT.so )
-
-
-
-#target_link_libraries(${MODULE_NAME} PUBLIC QualityControl libITSBase libITSSimulation libITSReconstruction libITSWorkflow libITSMFTReconstruction libITSMFTBase)
-target_link_libraries(${MODULE_NAME} PUBLIC QualityControl libJupyROOT libROOTDataFrame libROOTVecOps libPyROOT libITSBase libITSSimulation libITSReconstruction libITSWorkflow libITSMFTReconstruction libITSMFTBase libDetectorsCommonDataFormats)
+target_link_libraries(${MODULE_NAME} PUBLIC QualityControl JupyROOT ROOTDataFrame ROOTVecOps PyROOT AliceO2::AliceO2)
 
 
 install(

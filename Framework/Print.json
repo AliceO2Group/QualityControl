@@ -19,7 +19,7 @@
         "className": "o2::quality_control_modules::itsqctask::ITSQCTask",
         "moduleName": "QcITSQCTask",
         "cycleDurationSeconds": "10",
-        "maxNumberCycles": "1",
+        "maxNumberCycles": "-1",
         "dataSamplingPolicy": "its-digits",
         "taskParameters": {
           "nothing": "rien"

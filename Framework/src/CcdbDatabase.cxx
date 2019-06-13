@@ -23,11 +23,7 @@
 using namespace std::chrono;
 using namespace AliceO2::Common;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 using namespace std;
@@ -60,13 +56,19 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
                             << errinfo_details("Object and task names can't contain white spaces. Do not store."));
   }
 
-  string path = mo->getTaskName() + "/" + mo->getName();
+  // metadata
   map<string, string> metadata;
   metadata["quality"] = std::to_string(mo->getQuality().getLevel());
+  map<string, string> userMetadata = mo->getMetadataMap();
+  if(!userMetadata.empty()) {
+    metadata.insert(userMetadata.begin(), userMetadata.end());
+  }
+
+  // other attributes
+  string path = mo->getTaskName() + "/" + mo->getName();
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10); // todo set a proper timestamp for the end
 
-  cout << "storing : " << path << endl;
   ccdbApi.store(mo.get(), path, metadata, from, to);
 }
 
@@ -102,8 +104,7 @@ std::string CcdbDatabase::retrieveJson(std::string taskName, std::string objectN
 
 void CcdbDatabase::disconnect()
 {
-  /* we're done with libcurl, so clean it up */
-  curl_global_cleanup();
+  // NOOP for CCDB
 }
 
 void CcdbDatabase::prepareTaskDataContainer(std::string taskName)
@@ -201,6 +202,4 @@ void CcdbDatabase::truncate(std::string taskName, std::string objectName)
   ccdbApi.truncate(taskName + "/" + objectName);
 }
 
-} // namespace repository
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::repository

@@ -29,6 +29,9 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
 #include "QualityControl/TaskRunner.h"
+#include "QualityControl/FileFinish.h"
+
+
 
 namespace o2
 {
@@ -105,8 +108,11 @@ void TaskRunner::processCallback(ProcessingContext& pCtx)
   mTask->monitorData(pCtx);
   mNumberBlocks++;
 
+  QcInfoLogger::GetInstance() << "FileFinish IN Task " << FileFinish << AliceO2::InfoLogger::InfoLogger::endm;
+
+
   // if 10 s we publish stats
-  if (mStatsTimer.isTimeout()) {
+  if (mStatsTimer.isTimeout() || FileFinish == 1) {
     double current = mStatsTimer.getTime();
     int objectsPublished = (mTotalNumberObjectsPublished - mLastNumberObjects);
     mLastNumberObjects = mTotalNumberObjectsPublished;
@@ -141,7 +147,7 @@ void TaskRunner::start()
 {
   startOfActivity();
 
-  mStatsTimer.reset(10000000); // 10 s.
+  mStatsTimer.reset(60000000); // 60 s.
   mLastNumberObjects = 0;
 
   QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << AliceO2::InfoLogger::InfoLogger::endm;

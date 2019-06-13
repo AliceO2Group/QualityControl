@@ -14,11 +14,7 @@
 #include <boost/concept_check.hpp>
 #include <string>
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 /// \brief  Keeps the list of encapsulated objects to publish and does the actual publication.
@@ -71,13 +67,14 @@ class ObjectsManager
 
   TObjArray* getNonOwningArray() const { return new TObjArray(mMonitorObjects); };
 
+  void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
+
  private:
   TObjArray mMonitorObjects;
   std::string mTaskName;
+
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_OBJECTMANAGER_H

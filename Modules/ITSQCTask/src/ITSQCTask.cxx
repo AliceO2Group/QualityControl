@@ -17,7 +17,8 @@
 
 
 
-#include "../../../O2/Detectors/ITSMFT/common/reconstruction/include/ITSMFTReconstruction/DigitPixelReader.h"
+//#include "../../../O2/Detectors/ITSMFT/common/reconstruction/include/ITSMFTReconstruction/DigitPixelReader.h"
+#include "ITSMFTReconstruction/DigitPixelReader.h"
 #include "DetectorsBase/GeometryManager.h"
 //#include "ITSBase/GeometryTGeo.h"
 #include <TCanvas.h>
@@ -48,11 +49,11 @@ namespace o2
 
 			//		o2::Base::GeometryManager::loadGeometry();
 
-			ITSQCTask::ITSQCTask() : TaskInterface(), mHistogram(nullptr) { 
+			ITSQCTask::ITSQCTask() : TaskInterface(), mHistogram(nullptr) {
 				mHistogram = nullptr;
-				gSystem->Load("/data/zhaozhong/alice/sw/slc7_x86-64/O2/1.0.0-1/lib/libITSBase.so");
-				gSystem->Load("/data/zhaozhong/alice/sw/slc7_x86-64/O2/1.0.0-1/lib/libITSSimulation.so");
-				o2::Base::GeometryManager::loadGeometry();
+				//				gSystem->Load("/data/zhaozhong/alice/sw/slc7_x86-64/O2/1.0.0-1/lib/libITSBase.so");
+				//				gSystem->Load("/data/zhaozhong/alice/sw/slc7_x86-64/O2/1.0.0-1/lib/libITSSimulation.so");
+				o2::base::GeometryManager::loadGeometry();
 				ChipStave->GetXaxis ()->SetTitle ("Chip ID");
 				ChipStave->GetYaxis ()->SetTitle ("Number of Hits");
 				ChipStave->SetTitle ("Occupancy for ITS Layer 1");
@@ -83,19 +84,19 @@ namespace o2
 
 				QcInfoLogger::GetInstance() << "initialize ITSQCTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
-				//auto filename = ctx.options().get < std::string > ("itsdigits.root");
-				auto filename = ctx.options().get<std::string>("its-digits");
+				//				std::string filename = "itsdigits.root";
+				//				auto filename = ctx.options().get<std::string>("its-digits");
 				//std::unique_ptr<TFile> mFile = nullptr;
 				//mFile = std::make_unique<TFile>(filename.c_str(), "OLD");
 
-				QcInfoLogger::GetInstance() << "Input File Name is " << filename.c_str () <<  AliceO2::InfoLogger::InfoLogger::endm;
-				QcInfoLogger::GetInstance() << "It WORK, we start plotting histograms" <<  AliceO2::InfoLogger::InfoLogger::endm;
+				//				QcInfoLogger::GetInstance() << "Input File Name is " << filename.c_str () <<  AliceO2::InfoLogger::InfoLogger::endm;
+				//				QcInfoLogger::GetInstance() << "It WORK, we start plotting histograms" <<  AliceO2::InfoLogger::InfoLogger::endm;
 
 				/*
 				   std::vector<ChipPixelData> mChips;
 				   std::vector<ChipPixelData> mChipsOld;
-				   o2::ITSMFT::PixelReader* mReader = nullptr; 
-				   std::unique_ptr<o2::ITSMFT::DigitPixelReader> mReaderMC;   
+				   o2::ITSMFT::PixelReader* mReader = nullptr;
+				   std::unique_ptr<o2::ITSMFT::DigitPixelReader> mReaderMC;
 				   const std::string inpName = "itsdigits.root";
 				   */
 				bool mRawDataMode = 0;
@@ -106,13 +107,13 @@ namespace o2
 					int a = 1;
 				}
 				else
-				{				
+				{
 					mReaderMC = std::make_unique < o2::ITSMFT::DigitPixelReader > ();
 					mReader = mReaderMC.get ();
 				}
 
 				o2::ITS::GeometryTGeo * geom = o2::ITS::GeometryTGeo::Instance ();
-				geom->fillMatrixCache (o2::utils::bit2Mask (o2::TransformType::L2G));	
+				geom->fillMatrixCache (o2::utils::bit2Mask (o2::TransformType::L2G));
 
 				QcInfoLogger::GetInstance() << "It WORK, PASS 3" <<  AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -189,16 +190,16 @@ namespace o2
 				//cout << "START MCHIPDATA" << endl;
 				while ((mChipData = reader.getNextChipData (mChips)))
 				{
-					//	cout << "ChipID Before = " << ChipID << endl; 
+					//	cout << "ChipID Before = " << ChipID << endl;
 					ChipID = mChipData->getChipID ();
 
 					gm->getChipId (ChipID, lay, sta, ssta, mod, chip);
 					// lay =  gm->GetLayer(ChipID);
 					// sta =  gm->getStave(ChipID);
 					gm->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::L2G));
-					const Point3D<float> loc(0., 0.,0.); 
+					const Point3D<float> loc(0., 0.,0.);
 					auto glo = gm->getMatrixL2G(ChipID)(loc);
-			
+
 					if (lay < 1)
 					{
 
@@ -237,6 +238,7 @@ namespace o2
 
 			void ITSQCTask::monitorData(o2::framework::ProcessingContext& ctx)
 			{
+
 				// In this function you can access data inputs specified in the JSON config file, for example:
 				//  {
 				//    "binding": "random",
@@ -251,19 +253,22 @@ namespace o2
 				// Some examples:
 
 				// 1. In a loop
-	/*
 
-				cout << "START Here" << endl;
+
+				QcInfoLogger::GetInstance()  << "START Here My ORBS"<< AliceO2::InfoLogger::InfoLogger::endm;
 				auto digits = ctx.inputs().get<const std::vector<o2::ITSMFT::Digit>>("digits");
-				auto labels = ctx.inputs().get<const o2::dataformats::MCTruthContainer<o2::MCCompLabel>*>("labels");
-				auto rofs = ctx.inputs().get<const std::vector<o2::ITSMFT::ROFRecord>>("ROframes");
-				auto mc2rofs = ctx.inputs().get<const std::vector<o2::ITSMFT::MC2ROFRecord>>("MC2ROframes");
+				QcInfoLogger::GetInstance()  << "ITSClusterer pulled"<< AliceO2::InfoLogger::InfoLogger::endm;
+				QcInfoLogger::GetInstance()  << "Finally FUCKING WORKED" <<  AliceO2::InfoLogger::InfoLogger::endm;	
+				/*
+				   auto labels = ctx.inputs().get<const o2::dataformats::MCTruthContainer<o2::MCCompLabel>*>("labels");
+				   auto rofs = ctx.inputs().get<const std::vector<o2::ITSMFT::ROFRecord>>("ROframes");
+				   auto mc2rofs = ctx.inputs().get<const std::vector<o2::ITSMFT::MC2ROFRecord>>("MC2ROframes");
 
-				LOG(INFO) << "ITSClusterer pulled " << digits.size() << " digits, "
-					<< labels->getIndexedSize() << " MC label objects, in "
-					<< rofs.size() << " RO frames and "
-					<< mc2rofs.size() << " MC events";
-	*/
+				   LOG(INFO) << "ITSClusterer pulled " << digits.size() << " digits, "
+				   << labels->getIndexedSize() << " MC label objects, in "
+				   << rofs.size() << " RO frames and "
+				   << mc2rofs.size() << " MC events";
+				   */
 				for (auto&& input : ctx.inputs()) {
 					// get message header
 					const auto* header = header::get<header::DataHeader*>(input.header);

@@ -90,10 +90,6 @@ install(
 
 add_library(QualityControl SHARED ${SRCS} QualityControlDict.cxx)
 
-add_library( libDetectorsBase SHARED IMPORTED )
-set_target_properties( libDetectorsBase  PROPERTIES IMPORTED_LOCATION ${CMAKE_CURRENT_SOURCE_DIR}/../../sw/slc7_x86-64/O2/1.0.0-1/lib/libDetectorsBase.so )
-
-
 target_include_directories(
   QualityControl
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -111,7 +107,6 @@ target_link_libraries(
     AliceO2::InfoLogger
     AliceO2::Monitoring
     AliceO2::Configuration
-    libDetectorsBase
     ROOT::Net
     AliceO2::AliceO2
     Boost::container
@@ -132,34 +127,12 @@ target_compile_definitions(QualityControl
 
 set(
   EXE_SRCS
-  src/runInformationService.cxx
-  src/runInformationServiceDump.cxx
-#  src/runBasic.cxx
-  src/runPrint.cxx
-  src/runITSDPL.cxx
-#  src/runDummy.cxx
-#  src/runDummiest.cxx
-  src/runAdvanced.cxx
-  src/runReadout.cxx
-  src/runMergerTest.cxx
-  src/runReadoutForDataDump.cxx
-  src/runRepositoryBenchmark.cxx
+  src/runQCGeneral.cxx
 )
 
 set(
   EXE_NAMES
-  qcInfoService
-  qcInfoServiceDump
-#  qcRunBasic
-  qcRunPrint
-  qcRunDPL
-#  qcRunDummy
-#  qcRunDummiest
-  qcRunAdvanced
-  qcRunReadout
-  runMergerTest
-  qcRunReadoutForDataDump
-  repositoryBenchmark
+  qcRunGeneral
 )
 
 list(LENGTH EXE_SRCS count)
@@ -170,6 +143,14 @@ foreach(i RANGE ${count})
   add_executable(${name} ${src})
   target_link_libraries(${name} PRIVATE QualityControl)
 endforeach()
+
+
+add_executable(qcRunGeneral src/runQCGeneral.cxx)
+target_link_libraries(qcRunGeneral PRIVATE QualityControl)
+target_include_directories(qcRunGeneral PRIVATE ${O2_ROOT}/include/AliTPCCommon)
+target_include_directories(qcRunGeneral PRIVATE /data/zhaozhong/aliceInstall/O2/Detectors/ITSMFT/ITS/RawPixelReaderWorkflow/include)
+
+
 
 # ---- Gui ----
 
@@ -242,7 +223,7 @@ unset(isSystemDir)
 
 # Install library and binaries
 install(
-  TARGETS QualityControl ${EXE_NAMES} ${DATADUMP}
+  TARGETS QualityControl ${EXE_NAMES} ${DATADUMP} qcRunDPL qcRunDS qcRunSimple qcRunSimTest
   EXPORT QualityControlTargets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -297,9 +278,6 @@ install(
 )
 install(
   FILES
-    basic.json
-    advanced.json
-    readout.json
-    readoutForDataDump.json
+	QCGeneral.json
   DESTINATION etc
 )

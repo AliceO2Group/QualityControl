@@ -60,16 +60,18 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"
-#include "DetectorsBase/Propagator.h"
+//#include "DetectorsBase/Propagator.h"
 #include "Framework/WorkflowSpec.h"
 #include "Framework/ConfigParamSpec.h"
 #include "Framework/CompletionPolicy.h"
 #include "Framework/DeviceSpec.h"
 #include "DetectorsCommonDataFormats/DetID.h"
 #include "Framework/runDataProcessing.h"
-#include "../../../O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/DigitReaderSpec.h"
-#include "../../../O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/RecoWorkflow.h"
-#include "../../../O2/Detectors/ITSMFT/ITS/workflow/src/DigitReaderSpec.cxx"
+#include "ITSWorkflow/DigitReaderSpec.h"
+#include "ITSWorkflow/RecoWorkflow.h"
+//#include "../../../O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/DigitReaderSpec.h"
+//#include "../../../O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/RecoWorkflow.h"
+//#include "../../../O2/Detectors/ITSMFT/ITS/workflow/src/DigitReaderSpec.cxx"
 
 #include "DetectorsBase/GeometryManager.h"
 #include "ITSBase/GeometryTGeo.h"
@@ -86,7 +88,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
 
 	const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/PrintTest.json";
-	o2::Base::GeometryManager::loadGeometry();
+	o2::base::GeometryManager::loadGeometry();
 
 	LOG(INFO) << "START READER";
 

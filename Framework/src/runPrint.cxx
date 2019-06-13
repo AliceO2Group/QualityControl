@@ -57,7 +57,6 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include <random>
 
 #include "Framework/runDataProcessing.h"
-
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "DetectorsBase/Propagator.h"
@@ -71,15 +70,6 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 #include "../../../O2/Detectors/ITSMFT/ITS/workflow/include/ITSWorkflow/RecoWorkflow.h"
 #include "../../../O2/Detectors/ITSMFT/ITS/workflow/src/DigitReaderSpec.cxx"
 
-
-
-//#include "ITSDIGIRECOWorkflow/HisAnalyzerSpec.h"
-/*
-#include "/data/zhaozhong/alice/O2/Steer/DigitizerWorkflow/src/ITSMFTDigitizerSpec.h"
-#include "/data/zhaozhong/alice/O2/Steer/DigitizerWorkflow/src/ITSMFTDigitWriterSpec.h"
-#include "/data/zhaozhong/alice/O2/Steer/DigitizerWorkflow/src/ITSMFTDigitWriterSpec.cxx"
-#include "/data/zhaozhong/alice/O2/Steer/DigitizerWorkflow/src/ITSMFTDigitizerSpec.cxx"
-*/
 #include "DetectorsBase/GeometryManager.h"
 #include "ITSBase/GeometryTGeo.h"
 
@@ -97,7 +87,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 	const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/Print.json";
 /*
 	int fanoutsize = 0;
-	
+
 	std::vector<o2::detectors::DetID> detList;
 	detList.emplace_back(o2::detectors::DetID::ITS);
 	// connect the ITS digitization
@@ -106,7 +96,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 	specs.emplace_back(o2::ITSMFT::getITSDigitWriterSpec());
 */
 
-	o2::Base::GeometryManager::loadGeometry();
+	o2::base::GeometryManager::loadGeometry();
 
 	LOG(INFO) << "START READER";
 
@@ -128,7 +118,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
 	//std::string	detStrL = "its";
 	// Generation of the QC topology (one task, one checker in this case)
-	//quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+	quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
 	LOG(INFO) << "START PRINTING PROCESS NOW ";
 	// Finally the printer

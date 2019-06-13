@@ -1,0 +1,79 @@
+{
+	"qc": {
+		"config": {
+			"database": {
+				"implementation": "CCDB",
+				"host": "ccdb-test.cern.ch:8080",
+				"username": "not_applicable",
+				"password": "not_applicable",
+				"name": "not_applicable"
+			},
+			"Activity": {
+				"number": "42",
+				"type": "2"
+			}
+		},
+		"tasks": {
+			"ITSQCGeneral": {
+				"active": "true",
+				"className": "o2::quality_control_modules::qcgeneral::QCGeneralTask",
+				"moduleName": "QcQCGeneralTask",
+				"cycleDurationSeconds": "60",
+				"maxNumberCycles": "-1",
+				"dataSamplingPolicy": "its-raw",
+				"taskParameters": {
+					"nothing": "rien"
+				},
+				"location": "remote"
+			}
+		}
+	},
+	"dataSamplingPolicies": [
+	{
+		"id": "its-raw",
+		"active": "true",
+		"machines": [],
+		"dataHeaders": [
+		{
+			"binding": "digits",
+			"dataOrigin": "ITS",
+			"dataDescription": "DIGITS"
+		},
+		{
+			"binding": "in",
+			"dataOrigin": "TST",
+			"dataDescription": "TEST"
+		},
+		{
+			"binding": "Error",
+			"dataOrigin": "TST",
+			"dataDescription": "Error"
+		},
+		{
+			"binding": "Run",
+			"dataOrigin": "TST",
+			"dataDescription": "Run"
+		},
+		{
+			"binding": "File",
+			"dataOrigin": "TST",
+			"dataDescription": "File"
+		},
+		{
+			"binding": "Finish",
+			"dataOrigin": "TST",
+			"dataDescription": "Finish"
+		}
+		],
+			"subSpec": "0",
+			"samplingConditions": [
+			{
+				"condition": "random",
+				"fraction": "1.0",
+				"seed": "1234"
+			}
+		],
+			"blocking": "false"
+	}
+	]
+}

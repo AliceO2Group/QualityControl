@@ -14,11 +14,7 @@
 // QC
 #include "QualityControl/Quality.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 /// \brief Container for the definition of a check
@@ -102,8 +98,8 @@ class MonitorObject : public TObject
   /// @param check The check to add or replace.
   void addOrReplaceCheck(std::string checkName, CheckDefinition check);
 
-  /// \brief Set the given quality to the check called \ref checkName.
-  /// If no check exists with this name, it throws a \ref AliceO2::Common::ObjectNotFoundError.
+  /// \brief Set the given quality to the check called checkName.
+  /// If no check exists with this name, it throws a AliceO2::Common::ObjectNotFoundError.
   /// @param checkName The name of the check
   /// @param quality The new quality of the check.
   /// \throw AliceO2::Common::ObjectNotFoundError
@@ -116,6 +112,13 @@ class MonitorObject : public TObject
   /// \throw AliceO2::Common::ObjectNotFoundError
   CheckDefinition getCheck(std::string checkName) const;
 
+  /// \brief Add key value pair that will end up in the database
+  /// Add a metadata (key value pair) to the MonitorObject. It will be stored in the database.
+  /// If the key already exists the value will be updated.
+  void addMetadata(std::string key, std::string value);
+
+  std::map<std::string, std::string> getMetadataMap() const;
+
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
 
@@ -123,6 +126,7 @@ class MonitorObject : public TObject
   TObject* mObject;
   std::map<std::string /*checkName*/, CheckDefinition> mChecks;
   std::string mTaskName;
+  std::map<std::string, std::string> mUserMetadata;
 
   // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the
   // object.
@@ -132,8 +136,6 @@ class MonitorObject : public TObject
   ClassDefOverride(MonitorObject, 3);
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_MONITOROBJECT_H
