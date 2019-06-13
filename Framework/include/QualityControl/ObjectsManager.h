@@ -43,7 +43,7 @@ class ObjectsManager
   friend class TaskControl; // TaskControl must be able to call "publish()" whenever needed. Nobody else can.
 
  public:
-  ObjectsManager(TaskConfig& taskConfig, std::shared_ptr<ServiceDiscovery> serviceDiscovery = nullptr);
+  ObjectsManager(TaskConfig& taskConfig);
   virtual ~ObjectsManager();
 
   /**
@@ -121,7 +121,7 @@ class ObjectsManager
  private:
   TObjArray mMonitorObjects;
   std::string mTaskName;
-  std::shared_ptr<ServiceDiscovery> mServiceDiscovery;
+  std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;
 };
 

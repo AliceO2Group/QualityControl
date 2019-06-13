@@ -24,9 +24,12 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
-ObjectsManager::ObjectsManager(TaskConfig& taskConfig, std::shared_ptr<ServiceDiscovery> serviceDiscovery) : mTaskName(taskConfig.taskName), mServiceDiscovery(serviceDiscovery), mUpdateServiceDiscovery(false)
+ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskName(taskConfig.taskName), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects.SetOwner(true);
+
+  // register with the discovery service
+  mServiceDiscovery = std::make_unique<ServiceDiscovery>("http://consul-test.cern.ch:8500", mTaskName);
 }
 
 ObjectsManager::~ObjectsManager()
