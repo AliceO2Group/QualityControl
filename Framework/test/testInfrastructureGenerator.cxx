@@ -29,6 +29,7 @@ using namespace o2::framework;
 
 BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 {
+  BOOST_REQUIRE_NE(getenv("QUALITYCONTROL_ROOT"), nullptr);
   std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/test/testQCFactory.json";
 
   {

@@ -22,14 +22,13 @@ namespace o2::quality_control::core
 {
 
 /// \brief  Container for the configuration of a Task
-///
-/// \author Barthelemy von Haller
 struct TaskConfig {
   std::string taskName;
   std::string moduleName;
   std::string className;
   int cycleDurationSeconds;
   int maxNumberCycles;
+  std::string consulUrl;
 };
 
 } // namespace o2::quality_control::core

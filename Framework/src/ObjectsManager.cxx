@@ -24,12 +24,12 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
-ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskName(taskConfig.taskName), mUpdateServiceDiscovery(false)
+ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects.SetOwner(true);
 
   // register with the discovery service
-  mServiceDiscovery = std::make_unique<ServiceDiscovery>("http://consul-test.cern.ch:8500", mTaskName);
+  mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName);
 }
 
 ObjectsManager::~ObjectsManager()
@@ -43,7 +43,7 @@ void ObjectsManager::startPublishing(TObject* object)
                                 << infologger::endm;
     BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
   }
-  auto* newObject = new MonitorObject(object, mTaskName);
+  auto* newObject = new MonitorObject(object, mTaskConfig.taskName);
   newObject->setIsOwner(false);
   mMonitorObjects.Add(newObject);
   mUpdateServiceDiscovery = true;

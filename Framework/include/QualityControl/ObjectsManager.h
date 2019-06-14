@@ -120,7 +120,7 @@ class ObjectsManager
 
  private:
   TObjArray mMonitorObjects;
-  std::string mTaskName;
+  TaskConfig& mTaskConfig;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;
 };

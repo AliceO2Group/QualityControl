@@ -129,7 +129,7 @@ void ServiceDiscovery::send(const std::string& path, std::string&& post)
   response = curl_easy_perform(curl);
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
   if (response != CURLE_OK) {
-    std::cerr << "ServiceDiscovery: " << curl_easy_strerror(response) << std::endl;
+    std::cerr << "ServiceDiscovery: " << curl_easy_strerror(response) << ": " << uri << std::endl;
   }
   if (responseCode < 200 || responseCode > 206) {
     std::cerr << "ServiceDiscovery: Response code: " << responseCode << std::endl;
