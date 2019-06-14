@@ -62,7 +62,7 @@ cd  /home/its/QCGeneral/workdir/
 
 Run the QC on the run you desire to analyze. For example, run000184:
 
-source run_ITS_QC.sh run000184
+source shift_run_QC.sh run000184
 
 Wait for about 1 minutes, you should be able to see the histogram of that run uploaded to the database: http://ccdb-test.cern.ch:8080/browse/ITSRAWDS
 And can be found on the GUI: https://qcg-test.cern.ch/?page=layoutList
