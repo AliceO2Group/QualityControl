@@ -20,8 +20,10 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <cassert>
+#include <chrono>
 #include <TH1F.h>
 #include <TFile.h>
+#include <TSystem.h>
 
 using namespace std;
 
@@ -89,12 +91,14 @@ BOOST_AUTO_TEST_CASE(mo_save)
   cout << "check numbers : " << obj.getChecks().size() << endl;
   CheckDefinition c = obj.getCheck("name2");
   cout << "check2 libraryName : " << c.libraryName << endl;
-  TFile file("/tmp/test.root", "RECREATE");
+  std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
+  std::string filename = string("/tmp/test") + std::to_string(ns.count()) + ".root";
+  TFile file(filename.data(), "RECREATE");
   obj.Write(obj.getName().data());
   file.Close();
 
   cout << "***" << endl;
-  TFile file2("/tmp/test.root");
+  TFile file2(filename.data());
   o2::quality_control::core::MonitorObject* mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(file2.Get(objectName.data()));
   BOOST_CHECK_NE(mo, nullptr);
   cout << "mo : " << mo << endl;
@@ -109,6 +113,7 @@ BOOST_AUTO_TEST_CASE(mo_save)
   CheckDefinition c2 = mo->getCheck("name2");
   cout << "check2 libraryName : " << c2.libraryName << endl;
   BOOST_CHECK_EQUAL(c2.libraryName, libName2);
+  gSystem->Unlink(filename.data());
 }
 
 } // namespace o2::quality_control::core
