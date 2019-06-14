@@ -91,8 +91,7 @@ BOOST_AUTO_TEST_CASE(mo_save)
   cout << "check numbers : " << obj.getChecks().size() << endl;
   CheckDefinition c = obj.getCheck("name2");
   cout << "check2 libraryName : " << c.libraryName << endl;
-  std::chrono::nanoseconds ns = std::chrono::duration_cast< std::chrono::nanoseconds >(std::chrono::system_clock::now().time_since_epoch());
-  std::string filename = string("/tmp/test") + std::to_string(ns.count()) + ".root";
+std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());  std::string filename = string("/tmp/test") + std::to_string(ns.count()) + ".root";
   TFile file(filename.data(), "RECREATE");
   obj.Write(obj.getName().data());
   file.Close();
