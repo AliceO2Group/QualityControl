@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
     BOOST_CHECK_EQUAL(workflow[0].name, "skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 1);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
-    BOOST_CHECK_EQUAL(workflow[0].outputs[0].subSpec, 1);
+    BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 1);
   }
 
   {
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
     BOOST_CHECK_EQUAL(workflow[0].name, "skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 1);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
-    BOOST_CHECK_EQUAL(workflow[0].outputs[0].subSpec, 2);
+    BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 2);
   }
 
   {
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
       auto concreteInput1 = DataSpecUtils::asConcreteDataMatcher(d.inputs[1]);
       return d.name == "skeletonTask-merger" &&
              d.inputs.size() == 2 && concreteInput0.subSpec == 1 && concreteInput1.subSpec == 2 &&
-             d.outputs.size() == 1 && d.outputs[0].subSpec == 0;
+             d.outputs.size() == 1 && DataSpecUtils::getOptionalSubSpec(d.outputs[0]).value_or(-1) == 0;
     });
   BOOST_CHECK(mergerSkeletonTask != workflow.end());
 
