@@ -17,7 +17,7 @@
 			"ITSQCGeneral": {
 				"active": "true",
 				"className": "o2::quality_control_modules::qcgeneral::QCGeneralTask",
-				"moduleName": "QcQCGeneralTask",
+				"moduleName": "QcQCGeneral",
 				"cycleDurationSeconds": "60",
 				"maxNumberCycles": "-1",
 				"dataSamplingPolicy": "its-raw",

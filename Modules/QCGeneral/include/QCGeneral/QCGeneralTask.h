@@ -68,15 +68,22 @@ namespace o2
 
 				private:
 					TH1D * InfoCanvas = new TH1D("InfoCanvas","InfoCanvas",3,-0.5,2.5);
+					TEllipse *bulb = new TEllipse(0.2,0.75,0.30,0.20);	
 					TPaveText * ptFileName;
 					TPaveText * ptNFile;
 					TPaveText * ptNEvent;
 					TPaveText * bulbGreen;
 					TPaveText * bulbRed;
 					TPaveText * bulbYellow;
-
-
+					UShort_t ChipID; 
+					UShort_t row;
+					UShort_t col; 
 					int NEvent;
+					int RunIDPre;
+					int FileIDPre;	
+					int NEventPre;
+					int FileRest;
+					int TotalFileDone;	
 			};
 
 		} // namespace qcgeneral

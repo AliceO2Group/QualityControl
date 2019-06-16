@@ -17,10 +17,12 @@ add_library(${MODULE_NAME} SHARED ${SRCS} ${MODULE_NAME}Dict.cxx)
 target_include_directories(
   ${MODULE_NAME}
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${O2_ROOT}/include/AliTPCCommon
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC QualityControl)
+
+target_link_libraries(${MODULE_NAME} PUBLIC QualityControl JupyROOT ROOTDataFrame ROOTVecOps PyROOT AliceO2::AliceO2 )
+
 
 install(
         TARGETS ${MODULE_NAME}
@@ -28,6 +30,7 @@ install(
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
 
 # ---- ROOT dictionary ----
 
