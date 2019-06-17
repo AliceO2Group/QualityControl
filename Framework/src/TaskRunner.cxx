@@ -26,6 +26,7 @@
 #include <Framework/DataSamplingPolicy.h>
 #include <Framework/CallbackService.h>
 #include <Framework/TimesliceIndex.h>
+#include <Framework/DataSpecUtils.h>
 #include <Headers/DataHeader.h>
 #include <Monitoring/MonitoringFactory.h>
 #include "QualityControl/QcInfoLogger.h"
@@ -374,10 +375,11 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
 unsigned long TaskRunner::publish(DataAllocator& outputs)
 {
+  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);
   outputs.adopt(
-    Output{ mMonitorObjectsSpec.origin,
-            mMonitorObjectsSpec.description,
-            mMonitorObjectsSpec.subSpec,
+    Output{ concreteOutput.origin,
+            concreteOutput.description,
+            concreteOutput.subSpec,
             mMonitorObjectsSpec.lifetime },
     dynamic_cast<TObject*>(mObjectsManager->getNonOwningArray()));
 
