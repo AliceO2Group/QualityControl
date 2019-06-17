@@ -29,14 +29,14 @@ using namespace o2::framework;
 
 BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 {
-  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/test/testQCFactory.json";
+  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testQCFactory.json";
 
   {
     auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configFilePath, "o2flp1");
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 1);
 
-    BOOST_CHECK_EQUAL(workflow[0].name, "skeletonTask");
+    BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 1);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 1);
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 1);
 
-    BOOST_CHECK_EQUAL(workflow[0].name, "skeletonTask");
+    BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 1);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 2);
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 
 BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
 {
-  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/test/testQCFactory.json";
+  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testQCFactory.json";
   auto workflow = InfrastructureGenerator::generateRemoteInfrastructure(configFilePath);
 
   // the infrastructure should consist of a merger and checker for the 'skeletonTask' (its taskRunner is declared to be

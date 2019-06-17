@@ -15,12 +15,15 @@
     },
     "tasks": {
       "skeletonTask": {
-        "active": true,
+        "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
-        "dataSamplingPolicy": "tpcclust",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tpcclust"
+        },
         "taskParameters": {
           "parameter1": 100001,
           "parameter2": "qu'est-ce que c'est que ce truc la"
@@ -35,7 +38,10 @@
         "active": true,
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
-        "dataSamplingPolicy": "tpcclust",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tpcclust"
+        },
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "taskParameters": {
@@ -45,7 +51,7 @@
         "location": "remote"
       },
       "defTask": {
-        "active": false
+        "active": "false"
       }
     }
   },
