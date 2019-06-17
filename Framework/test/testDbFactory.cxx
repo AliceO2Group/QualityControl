@@ -92,10 +92,10 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
 
   // test getting objects list from task
   auto objectNames = ccdb->getPublishedObjectNames("functional_test");
-//    cout << "objects in task functional_test" << endl;
-//    for (auto name : objectNames) {
-//      cout << " - object : " << name << endl;
-//    }
+  //    cout << "objects in task functional_test" << endl;
+  //    for (auto name : objectNames) {
+  //      cout << " - object : " << name << endl;
+  //    }
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object1") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object2") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/path\\/to\\/object3") != objectNames.end());
