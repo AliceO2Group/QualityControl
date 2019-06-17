@@ -29,7 +29,7 @@ using namespace o2::framework;
 
 BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 {
-  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/test/testQCFactory.json";
+  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testQCFactory.json";
 
   {
     auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configFilePath, "o2flp1");
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 
 BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
 {
-  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/test/testQCFactory.json";
+  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testQCFactory.json";
   auto workflow = InfrastructureGenerator::generateRemoteInfrastructure(configFilePath);
 
   // the infrastructure should consist of a merger and checker for the 'skeletonTask' (its taskRunner is declared to be
