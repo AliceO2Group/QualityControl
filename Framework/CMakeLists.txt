@@ -237,14 +237,9 @@ foreach(test ${TEST_SRCS})
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name} PRIVATE QualityControl Boost::unit_test_framework )
   add_test(NAME ${test_name} COMMAND ${test_name})
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
+  install(TARGETS ${test_name} DESTINATION tests)
 endforeach()
-
-install(
-  FILES
-  test/testQCFactory.json
-  DESTINATION test
-)
 
 # ---- Install ----
 
@@ -322,6 +317,7 @@ install(
     streamerinfos.root
   DESTINATION etc
 )
+
 install(
   PROGRAMS
     script/RepoCleaner/1_per_hour.py
@@ -330,4 +326,10 @@ install(
     script/o2-qc-database-setup.sh
   DESTINATION
     bin
+)
+
+install(
+  FILES
+  test/testQCFactory.json
+  DESTINATION tests
 )

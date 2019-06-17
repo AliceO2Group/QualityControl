@@ -108,7 +108,7 @@ find_package(
 set(ENABLE_MYSQL ON)
 if(NOT (MYSQL_FOUND AND TARGET ROOT::RMySQL))
   set(ENABLE_MYSQL OFF)
-  message(WARNING "MySQL or ROOT::RMySQL not found, the corresponding classes won't be built.")
+  message(STATUS "MySQL or ROOT::RMySQL not found, the corresponding classes won't be built.")
 endif()
 
 # ---- Subdirectories ----
