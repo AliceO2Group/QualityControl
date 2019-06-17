@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 1);
 
-    BOOST_CHECK_EQUAL(workflow[0].name, "skeletonTask");
+    BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 1);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 1);
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 1);
 
-    BOOST_CHECK_EQUAL(workflow[0].name, "skeletonTask");
+    BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 1);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 2);
