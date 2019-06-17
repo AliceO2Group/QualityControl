@@ -30,10 +30,19 @@ using namespace AliceO2::Common;
 namespace o2::quality_control::core
 {
 
+BOOST_AUTO_TEST_CASE(invalid_url_test)
+{
+  TaskConfig config;
+  config.taskName = "test";
+  config.consulUrl = "bad-url:1234";
+  ObjectsManager objectsManager(config);
+}
+
 BOOST_AUTO_TEST_CASE(duplicate_object_test)
 {
   TaskConfig config;
   config.taskName = "test";
+  config.consulUrl = "http://consul-test.cern.ch:8500";
   ObjectsManager objectsManager(config);
   TObjString s("content");
   objectsManager.startPublishing(&s);

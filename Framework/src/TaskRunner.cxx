@@ -46,7 +46,6 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   : mDeviceName(createTaskRunnerIdString() + "-" + taskName),
     mTask(nullptr),
     mResetAfterPublish(false),
-    mServiceDiscovery(std::make_shared<ServiceDiscovery>("http://consul-test.cern.ch:8500", taskName, "")),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id),
     mNumberBlocks(0),
     mLastNumberObjects(0),
@@ -57,10 +56,6 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   populateConfig(taskName);
-
-  // register with the discovery service
-  mServiceDiscovery = std::make_unique<ServiceDiscovery>("http://consul-test.cern.ch:8500", mTaskConfig.taskName, "");
-  mServiceDiscovery->_register("obj1,obj2,obj3");
 }
 
 TaskRunner::~TaskRunner() = default;
@@ -80,7 +75,7 @@ void TaskRunner::init(InitContext& iCtx)
   mCollector->enableProcessMonitoring();
 
   // setup publisher
-  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig, mServiceDiscovery);
+  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig);
 
   // setup user's task
   TaskFactory f;
@@ -257,6 +252,7 @@ void TaskRunner::populateConfig(std::string taskName)
     mTaskConfig.className = taskConfigTree->second.get<std::string>("className");
     mTaskConfig.cycleDurationSeconds = taskConfigTree->second.get<int>("cycleDurationSeconds", 10);
     mTaskConfig.maxNumberCycles = taskConfigTree->second.get<int>("maxNumberCycles", -1);
+    mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
 
     auto policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
     ConfigurationInterface* config = policiesFilePath.empty() ? mConfigFile.get() : ConfigurationFactory::getConfiguration(policiesFilePath).get();

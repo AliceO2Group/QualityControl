@@ -38,7 +38,9 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& id
 ServiceDiscovery::~ServiceDiscovery()
 {
   mThreadRunning = false;
-  mHealthThread.join();
+  if (mHealthThread.joinable()) {
+    mHealthThread.join();
+  }
   deregister();
 }
 
@@ -102,12 +104,23 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
   try {
     boost::asio::io_service io_service;
     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
+    boost::asio::deadline_timer timer(io_service);
     while (mThreadRunning) {
+      io_service.reset();
+      timer.expires_from_now(boost::posix_time::seconds(1));
+      timer.async_wait([&](boost::system::error_code ec) {
+        if (!ec)
+          acceptor.cancel();
+      });
       tcp::socket socket(io_service);
-      acceptor.accept(socket);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      acceptor.async_accept(socket, [&](boost::system::error_code ec) {
+        if (!ec)
+          timer.cancel();
+      });
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   } catch (std::exception& e) {
+    mThreadRunning = false;
     std::cerr << e.what() << std::endl;
   }
 }
@@ -129,10 +142,10 @@ void ServiceDiscovery::send(const std::string& path, std::string&& post)
   response = curl_easy_perform(curl);
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
   if (response != CURLE_OK) {
-    std::cerr << curl_easy_strerror(response) << std::endl;
+    std::cerr << "ServiceDiscovery: " << curl_easy_strerror(response) << ": " << uri << std::endl;
   }
   if (responseCode < 200 || responseCode > 206) {
-    std::cerr << "Response code : " << responseCode << std::endl;
+    std::cerr << "ServiceDiscovery: Response code: " << responseCode << std::endl;
   }
 }
 } // namespace o2::quality_control::core
