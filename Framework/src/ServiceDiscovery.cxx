@@ -38,7 +38,9 @@ ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& id
 ServiceDiscovery::~ServiceDiscovery()
 {
   mThreadRunning = false;
-  mHealthThread.join();
+  if (mHealthThread.joinable()) {
+    mHealthThread.join();
+  }
   deregister();
 }
 
@@ -102,12 +104,21 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
   try {
     boost::asio::io_service io_service;
     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
+    boost::asio::deadline_timer timer(io_service);
     while (mThreadRunning) {
+      io_service.reset();
+      timer.expires_from_now(boost::posix_time::seconds(1));
+      timer.async_wait([&] (boost::system::error_code ec) {
+        if (!ec) acceptor.cancel();
+      });
       tcp::socket socket(io_service);
-      acceptor.accept(socket);
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      acceptor.async_accept(socket, [&] (boost::system::error_code ec) {
+        if (!ec) timer.cancel();
+      });
+      std::this_thread::sleep_for(std::chrono::seconds(1));
     }
   } catch (std::exception& e) {
+    mThreadRunning = false;
     std::cerr << e.what() << std::endl;
   }
 }
