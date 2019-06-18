@@ -228,6 +228,7 @@ set(
   test/testQuality.cxx
   test/testObjectsManager.cxx
   test/testCcdbDatabase.cxx
+  test/testWorkflow.cxx
 )
 
 foreach(test ${TEST_SRCS})
@@ -331,5 +332,6 @@ install(
 install(
   FILES
     test/testInfrastructureGenerator.json
+    test/testWorkflow.json
   DESTINATION tests
 )
