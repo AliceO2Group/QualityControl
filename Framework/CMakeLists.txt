@@ -224,7 +224,7 @@ set(
   test/testPublisher.cxx
   test/testQcInfoLogger.cxx
   test/testInfrastructureGenerator.cxx
-  test/testQCTask.cxx
+  test/testTaskInterface.cxx
   test/testQuality.cxx
   test/testObjectsManager.cxx
   test/testCcdbDatabase.cxx
