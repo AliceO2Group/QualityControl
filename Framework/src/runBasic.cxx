@@ -53,6 +53,8 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
+    ConfigParamSpec{ "config-path", VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
+  workflowOptions.push_back(
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
@@ -68,6 +70,8 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include "runnerUtils.h"
 #include "ExamplePrinterSpec.h"
 
+std::string getConfigPath(const ConfigContext& config);
+
 using namespace o2::framework;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
@@ -75,7 +79,6 @@ using namespace std::chrono;
 WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
-  bool noDS = config.options().get<bool>("no-data-sampling");
 
   // The producer to generate some data in the workflow
   DataProcessorSpec producer{
@@ -102,8 +105,8 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   specs.push_back(producer);
 
-  std::string filename = !noDS ? "basic.json" : "basic-no-sampling.json";
-  const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/" + filename;
+  // Path to the config file
+  std::string qcConfigurationSource = getConfigPath(config);
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
   // Generation of Data Sampling infrastructure
@@ -123,4 +126,18 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   specs.push_back(printer);
 
   return specs;
+}
+
+// TODO merge this with the one from runReadout.cxx
+std::string getConfigPath(const ConfigContext& config)
+{
+  // Determine the default config file path and name (based on option no-data-sampling and the QC_ROOT path)
+  bool noDS = config.options().get<bool>("no-data-sampling");
+  std::string filename = !noDS ? "basic.json" : "basic-no-sampling.json";
+  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ? std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/" + filename : "$QUALITYCONTROL_ROOT undefined";
+  // The the optional one by the user
+  auto userConfigPath = config.options().get<std::string>("config-path");
+  // Finally build the config path based on the default or the user-base one
+  std::string path = std::string("json:/") + (userConfigPath.empty() ? defaultConfigPath : userConfigPath);
+  return path;
 }
