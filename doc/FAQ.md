@@ -4,6 +4,11 @@
 <!--./gh-md-toc --insert /path/to/README.md-->
 <!--ts-->
    * [Frequently asked questions](#frequently-asked-questions)
+      * [Git](#git)
+         * [Are there instructions how to use Git ?](#are-there-instructions-how-to-use-git-)
+      * [Coding Guidelines](#coding-guidelines)
+         * [Where are the Coding Guidelines ?](#where-are-the-coding-guidelines-)
+         * [How do I check my code or apply the guidelines ?](#how-do-i-check-my-code-or-apply-the-guidelines-)
       * [Build](#build)
          * [How do I add a dependency to my module ?](#how-do-i-add-a-dependency-to-my-module-)
          * [How do I make my module depend on library XXX from AliceO2 ?](#how-do-i-make-my-module-depend-on-library-xxx-from-aliceo2-)
@@ -16,6 +21,22 @@
 <!--te-->
 
 [← Go back to Advanced Topics](Advanced.md) | [↑ Go to the Table of Content ↑](../README.md) 
+
+## Git
+
+### Are there instructions how to use Git ? 
+
+See [here](https://alisw.github.io/git-tutorial/).
+
+## Coding Guidelines 
+
+### Where are the Coding Guidelines ? 
+
+They are [here](https://github.com/AliceO2Group/CodingGuidelines). 
+
+### How do I check my code or apply the guidelines ? 
+
+See [here](https://github.com/AliceO2Group/CodingGuidelines#formatting-tool). 
 
 ## Build 
 
