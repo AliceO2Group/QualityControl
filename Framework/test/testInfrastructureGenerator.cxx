@@ -13,7 +13,7 @@
 /// \author  Piotr Konopka
 ///
 
-#define BOOST_TEST_MODULE QCFactory test
+#define BOOST_TEST_MODULE InfrastructureGenerator test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 

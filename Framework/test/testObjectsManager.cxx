@@ -15,7 +15,7 @@
 
 #include "QualityControl/ObjectsManager.h"
 
-#define BOOST_TEST_MODULE Publisher test
+#define BOOST_TEST_MODULE ObjectManager test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include "../include/Common/Exceptions.h"

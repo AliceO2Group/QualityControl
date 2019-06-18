@@ -16,14 +16,13 @@
 #include "QualityControl/TaskFactory.h"
 #include "QualityControl/TaskInterface.h"
 
-#define BOOST_TEST_MODULE QC test
+#define BOOST_TEST_MODULE TaskInterface test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/output_test_stream.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
-
 
 using boost::test_tools::output_test_stream;
 
