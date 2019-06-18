@@ -225,6 +225,7 @@ set(
   test/testQcInfoLogger.cxx
   test/testInfrastructureGenerator.cxx
   test/testTaskInterface.cxx
+  test/testCheckInterface.cxx
   test/testQuality.cxx
   test/testObjectsManager.cxx
   test/testCcdbDatabase.cxx
