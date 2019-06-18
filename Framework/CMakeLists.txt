@@ -330,6 +330,6 @@ install(
 
 install(
   FILES
-  test/testQCFactory.json
+    test/testInfrastructureGenerator.json
   DESTINATION tests
 )
