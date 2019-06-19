@@ -19,6 +19,7 @@
 #include <Framework/runDataProcessing.h>
 #include <Framework/ControlService.h>
 #include <Framework/DataSampling.h>
+#include <TH1F.h>
 
 using namespace o2;
 using namespace o2::framework;
@@ -60,8 +61,39 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     Outputs{},
     AlgorithmSpec{
       [](ProcessingContext& pctx) {
-        // If a message reaches this point, the QC workflow works, at least in a basic level.
-        // We ask to shut the topology down, returning 0.
+        // If any message reaches this point, the QC workflow should work at least on a basic level.
+
+        std::shared_ptr<TObjArray> moArray{ DataRefUtils::as<TObjArray>(*pctx.inputs().begin()) };
+        if (!moArray) {
+          LOG(ERROR) << "No array present at the first input.";
+          pctx.services().get<ControlService>().readyToQuit(true);
+          return;
+        }
+
+        if (moArray->IsEmpty()) {
+          LOG(ERROR) << "The array is empty";
+          pctx.services().get<ControlService>().readyToQuit(true);
+          return;
+        }
+
+        auto* mo = dynamic_cast<MonitorObject*>(moArray->At(0));
+        if (mo == nullptr) {
+          LOG(ERROR) << "First element is not a MonitorObject";
+          pctx.services().get<ControlService>().readyToQuit(true);
+          return;
+        }
+        auto* histo = dynamic_cast<TH1F*>(mo->getObject());
+        if (histo == nullptr) {
+          LOG(ERROR) << "MonitorObject does not contain a TH1F";
+          pctx.services().get<ControlService>().readyToQuit(true);
+          return;
+        }
+
+        // we don't check if TH1 contains any meaningful data, because we (probably) cannot guarantee, that the QC Task
+        // has sent the MO after receiving already some data. F.e. on an overloaded CI build machine it could end the
+        // first cycle before the producer was up and running.
+
+        // We ask to shut the topology down, returning 0 if there were no ERROR logs.
         pctx.services().get<ControlService>().readyToQuit(true);
       } }
   };
