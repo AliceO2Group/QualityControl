@@ -1,6 +1,7 @@
 /build/
 .cproject
 .project
+.vscode
 *~
 .idea
 *.jpg
