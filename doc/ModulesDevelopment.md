@@ -174,11 +174,11 @@ make -j8 install # replace 8 by the number of cores on your machine
 
 To test whether it works, we are going to run a basic DPL workflow defined in `runBasic.cxx`.
 We need to modify slightly the config file to indicate our freshly created module and classes.
-The config file is called `basic.json` and is located in `$QUALITYCONTROL_ROOT/etc/` (after installation, if you want to modify the original one it is in the source directory `Framework`).
+The config file is called `basic.json` and is located in `$QUALITYCONTROL_ROOT/etc/`. After installation, if you want to modify the original one, it is in the source directory `Framework`. In case you need it updated in the installation directory, you have to `make install` the project again.
 Change the lines as indicated below :
 
 ```
-"QcTask": {
+"MyRawDataQcTask": {
   "className": "o2::quality_control_modules::abc::RawDataQcTask",
   "moduleName": "QcAbc",
 ```
