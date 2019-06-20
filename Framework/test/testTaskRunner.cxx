@@ -18,7 +18,7 @@
 #include <Framework/DataSampling.h>
 #include <Framework/DataSpecUtils.h>
 
-#define BOOST_TEST_MODULE TaskInterface test
+#define BOOST_TEST_MODULE TaskRunner test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
