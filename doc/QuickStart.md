@@ -38,7 +38,7 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 
    At this point you might encounter a message about missing system requirements. Run `aliDoctor flpproto` to get a full information about what is missing and how to install it.
 
-Note :  you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
+Note : on non-CC7 systems, you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
 
 ### Environment loading
 
