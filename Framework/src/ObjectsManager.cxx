@@ -57,7 +57,7 @@ void ObjectsManager::updateServiceDiscovery()
   // prepare the string of comma separated objects and publish it
   string objects;
   for (auto mo : mMonitorObjects) {
-    objects += string(mo->GetName()) + ",";
+    objects += mTaskConfig.taskName + "/" + mo->GetName() + ",";
   }
   objects.pop_back();
   mServiceDiscovery->_register(objects);
