@@ -83,6 +83,7 @@ class TaskFactory
     }
     result->setName(taskConfig.taskName);
     result->setObjectsManager(objectsManager);
+    result->setCustomParameters(taskConfig.customParameters);
     logger << "QualityControl Module " << taskConfig.moduleName << " loaded " << AliceO2::InfoLogger::InfoLogger::endm;
 
     return result;

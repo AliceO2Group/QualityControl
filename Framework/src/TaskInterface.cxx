@@ -32,6 +32,11 @@ void TaskInterface::setObjectsManager(std::shared_ptr<ObjectsManager> objectsMan
   mObjectsManager = objectsManager;
 }
 
+void TaskInterface::setCustomParameters(const o2::configuration::KeyValueMap& parameters)
+{
+  mCustomParameters = parameters;
+}
+
 std::shared_ptr<ObjectsManager> TaskInterface::getObjectsManager() { return mObjectsManager; }
 
 } // namespace o2::quality_control::core

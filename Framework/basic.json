@@ -32,7 +32,7 @@
           "name": "its-raw"
         },
         "taskParameters": {
-          "nothing": "rien"
+          "myOwnKey": "myOwnValue"
         },
         "location": "remote"
       }
