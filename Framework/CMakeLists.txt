@@ -49,6 +49,7 @@ target_link_libraries(QualityControl
                              Boost::container
                              O2::Framework
                              O2::CCDB
+                             ms_gsl::ms_gsl
                       PRIVATE Boost::system
                               $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
                               $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL> ROOT::Gui

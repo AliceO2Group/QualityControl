@@ -58,7 +58,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
-#include <FairLogger.h>
+#include <fairlogger/Logger.h>
 #include <TH1F.h>
 #include <memory>
 #include <random>
@@ -85,47 +85,48 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     "producer",
     Inputs{},
     Outputs{
-      { "ITS", "RAWDATA", 0, Lifetime::Timeframe }
-    },
+      { "ITS", "RAWDATA", 0, Lifetime::Timeframe } },
     AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [](InitContext&) {
+      (AlgorithmSpec::InitCallback)[](InitContext&){
         std::default_random_engine generator(11);
-        return (AlgorithmSpec::ProcessCallback) [generator](ProcessingContext& processingContext) mutable {
-          usleep(100000);
-          size_t length = generator() % 10000;
-          auto data = processingContext.outputs().make<char>(Output{ "ITS", "RAWDATA", 0, Lifetime::Timeframe },
-                                                             length);
-          for (auto&& item : data) {
-            item = static_cast<char>(generator());
-          }
-        };
-      }
+  return (AlgorithmSpec::ProcessCallback)[generator](ProcessingContext & processingContext) mutable
+  {
+    usleep(100000);
+    size_t length = generator() % 10000;
+    auto data = processingContext.outputs().make<char>(Output{ "ITS", "RAWDATA", 0, Lifetime::Timeframe },
+                                                       length);
+    for (auto&& item : data) {
+      item = static_cast<char>(generator());
     }
   };
+}
+}
+}
+;
 
-  specs.push_back(producer);
+specs.push_back(producer);
 
-  // Path to the config file
-  std::string qcConfigurationSource = getConfigPath(config);
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+// Path to the config file
+std::string qcConfigurationSource = getConfigPath(config);
+LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
-  // Generation of Data Sampling infrastructure
-  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+// Generation of Data Sampling infrastructure
+DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
-  // Generation of the QC topology (one task, one checker in this case)
-  quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+// Generation of the QC topology (one task, one checker in this case)
+quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
-  // Finally the printer
-  DataProcessorSpec printer{
-    "printer",
-    Inputs{
-      { "checked-mo", "QC", Checker::createCheckerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
-    Outputs{},
-    adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
-  };
-  specs.push_back(printer);
+// Finally the printer
+DataProcessorSpec printer{
+  "printer",
+  Inputs{
+    { "checked-mo", "QC", Checker::createCheckerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
+  Outputs{},
+  adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
+};
+specs.push_back(printer);
 
-  return specs;
+return specs;
 }
 
 // TODO merge this with the one from runReadout.cxx

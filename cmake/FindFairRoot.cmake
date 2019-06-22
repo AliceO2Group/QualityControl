@@ -1,69 +1,79 @@
- ################################################################################
- #    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    #
- #                                                                              #
- #              This software is distributed under the terms of the             #
- #              GNU Lesser General Public Licence (LGPL) version 3,             #
- #                  copied verbatim in the file "LICENSE"                       #
- ################################################################################
- # Find FairRoot installation
- # Check the environment variable "FAIRROOTPATH"
+# TODO: remove this file once FairRoot correctly exports its cmake config
 
- if(TARGET FairRoot::Base)
-         return()
- endif()
+find_path(FairRoot_INC FairDetector.h ${FairRoot_ROOT})
 
- if(FairRoot_DIR)
-     set(FAIRROOTPATH ${FairRoot_DIR})
- else()
-     if(NOT DEFINED ENV{FAIRROOTPATH})
-         set(user_message "You did not define the environment variable FAIRROOTPATH which is needed to find FairRoot.\
-         Please set this variable and execute cmake again." )
-         if(FairRoot_FIND_REQUIRED)
-             MESSAGE(FATAL_ERROR ${user_message})
-         else(FairRoot_FIND_REQUIRED)
-             MESSAGE(WARNING ${user_message})
-             return()
-         endif(FairRoot_FIND_REQUIRED)
-     endif(NOT DEFINED ENV{FAIRROOTPATH})
+if(NOT EXISTS ${FairRoot_INC})
+  return()
+endif()
 
-     set(FAIRROOTPATH $ENV{FAIRROOTPATH})
- endif()
+get_filename_component(FairRoot_DIR "${FairRoot_INC}/.." ABSOLUTE)
 
- MESSAGE(STATUS "Setting FairRoot environment…")
+find_library(FairRoot_Tools FairTools ${FairRoot_ROOT})
+find_library(FairRoot_ParBase ParBase ${FairRoot_ROOT})
+find_library(FairRoot_GeoBase GeoBase ${FairRoot_ROOT})
+find_library(FairRoot_Base Base ${FairRoot_ROOT})
+find_library(FairRoot_ParMQ ParMQ ${FairRoot_ROOT})
+find_library(FairRoot_Gen Gen ${FairRoot_ROOT})
 
- FIND_PATH(FAIRROOT_INCLUDE_DIR NAMES FairRun.h PATHS
-         ${FAIRROOTPATH}/include
-         NO_DEFAULT_PATH
-         )
+if(NOT TARGET FairRoot::Tools)
+  add_library(FairRoot::Tools IMPORTED INTERFACE)
+  set_target_properties(FairRoot::Tools
+                        PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${FairRoot_INC}
+                                   INTERFACE_LINK_LIBRARIES ${FairRoot_Tools})
+  target_link_libraries(FairRoot::Tools INTERFACE FairLogger::FairLogger)
+endif()
 
- FIND_PATH(FAIRROOT_LIBRARY_DIR NAMES libBase.so libBase.dylib PATHS
-         ${FAIRROOTPATH}/lib
-         NO_DEFAULT_PATH
-         )
+if(NOT TARGET FairRoot::ParBase)
+  add_library(FairRoot::ParBase IMPORTED INTERFACE)
+  set_target_properties(FairRoot::ParBase
+                        PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${FairRoot_INC}
+                                   INTERFACE_LINK_LIBRARIES ${FairRoot_ParBase})
+  target_link_libraries(FairRoot::ParBase INTERFACE FairRoot::Tools)
+endif()
 
- FIND_PATH(FAIRROOT_CMAKEMOD_DIR NAMES CMakeLists.txt  PATHS
-         ${FAIRROOTPATH}/share/fairbase/cmake
-         NO_DEFAULT_PATH
-         )
+if(NOT TARGET FairRoot::GeoBase)
+  add_library(FairRoot::GeoBase IMPORTED INTERFACE)
+  set_target_properties(FairRoot::GeoBase
+                        PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${FairRoot_INC}
+                                   INTERFACE_LINK_LIBRARIES ${FairRoot_GeoBase})
+endif()
 
- # look for exported FairMQ targets and include them
- find_file(_fairroot_fairmq_cmake
-         NAMES FairMQ.cmake
-         HINTS ${FAIRROOTPATH}/include/cmake
-         )
- if(_fairroot_fairmq_cmake)
-     include(${_fairroot_fairmq_cmake})
- endif()
+if(NOT TARGET FairRoot::Base)
+  add_library(FairRoot::Base IMPORTED INTERFACE)
+  set_target_properties(FairRoot::Base
+                        PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${FairRoot_INC}
+                                   INTERFACE_LINK_LIBRARIES ${FairRoot_Base})
+  target_link_libraries(FairRoot::Base
+                        INTERFACE FairRoot::Tools FairRoot::ParBase
+                                  FairRoot::GeoBase ROOT::ROOTDataFrame)
+  if(TARGET arrow_shared)
+    # FIXME: this dependency (coming from ROOTDataFrame) should be handled in
+    # ROOT itself
+    target_link_libraries(FairRoot::Base INTERFACE arrow_shared)
+  endif()
+  message(STATUS "FairRoot::Base defined")
+endif()
 
- if(FAIRROOT_INCLUDE_DIR AND FAIRROOT_LIBRARY_DIR)
-     set(FAIRROOT_FOUND TRUE)
-     MESSAGE(STATUS "FairRoot ... - found ${FAIRROOTPATH}")
-     MESSAGE(STATUS "FairRoot Library directory  :     ${FAIRROOT_LIBRARY_DIR}")
-     MESSAGE(STATUS "FairRoot Include path…      :     ${FAIRROOT_INCLUDE_DIR}")
-     MESSAGE(STATUS "FairRoot Cmake Modules      :     ${FAIRROOT_CMAKEMOD_DIR}")
+if(NOT TARGET FairRoot::ParMQ)
+  add_library(FairRoot::ParMQ IMPORTED INTERFACE)
+  set_target_properties(FairRoot::ParMQ
+                        PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${FairRoot_INC}
+                                   INTERFACE_LINK_LIBRARIES ${FairRoot_ParMQ})
+  target_link_libraries(FairRoot::ParMQ
+                        INTERFACE FairRoot::ParBase FairMQ::FairMQ)
+  if(TARGET arrow_shared)
+    # FIXME: this dependency (coming from ROOTDataFrame) should be handled in
+    # ROOT itself
+    target_link_libraries(FairRoot::ParMQ INTERFACE arrow_shared)
+  endif()
+endif()
 
- else(FAIRROOT_INCLUDE_DIR AND FAIRROOT_LIBRARY_DIR)
-     set(FAIRROOT_FOUND FALSE)
-     MESSAGE(FATAL_ERROR "FairRoot installation not found")
- endif (FAIRROOT_INCLUDE_DIR AND FAIRROOT_LIBRARY_DIR)
-
+if(NOT TARGET FairRoot::Gen)
+  add_library(FairRoot::Gen IMPORTED INTERFACE)
+  set_target_properties(FairRoot::Gen
+                        PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${FairRoot_INC}
+                                   INTERFACE_LINK_LIBRARIES ${FairRoot_Gen})
+  target_link_libraries(FairRoot::Gen
+                        INTERFACE FairRoot::ParBase FairRoot::Base
+                                  FairRoot::ParBase)
+endif()

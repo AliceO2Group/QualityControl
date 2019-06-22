@@ -31,7 +31,7 @@
 #include <chrono>
 #include <sstream>
 #include <utility>
-#include <FairLogger.h>
+#include <fairlogger/Logger.h>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -95,7 +95,7 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
 
   if (mo->getName().find_first_of("\t\n ") != string::npos || mo->getTaskName().find_first_of("\t\n ") != string::npos) {
     BOOST_THROW_EXCEPTION(DatabaseException()
-                            << errinfo_details("Object and task names can't contain white spaces. Do not store."));
+                          << errinfo_details("Object and task names can't contain white spaces. Do not store."));
   }
 
   // metadata
