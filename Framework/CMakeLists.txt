@@ -7,7 +7,7 @@ configure_file("include/QualityControl/Version.h.in"
 
 # ---- Library ----
 
-add_library(QualityControl SHARED
+add_library(QualityControl 
             src/MonitorObject.cxx
             src/Quality.cxx
             src/ObjectsManager.cxx
@@ -149,7 +149,7 @@ if(GLFW_FOUND)
 
   add_executable(${DATADUMP} ${GUI_SRCS} ${IMGUI_SRCS})
 
-  target_link_libraries(${DATADUMP} PRIVATE QualityControl GLFW::GLFW)
+  target_link_libraries(${DATADUMP} PRIVATE QualityControl glfw)
 else()
   message(STATUS "GLFW not found, ${DATADUMP} will not be built")
 endif()

@@ -1,8 +1,9 @@
 # ---- CMake options ----
 
-cmake_minimum_required(VERSION 3.5.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
 
-# Set cmake policy by version: https://cmake.org/cmake/help/latest/manual/cmake-policies.7.html
+# Set cmake policy by version: https://cmake.org/cmake/help/latest/manual/cmake-
+# policies.7.html
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
   cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 else()
@@ -18,14 +19,11 @@ include(GNUInstallDirs)
 
 # ---- Project ----
 
-project(
-  QualityControl
-  VERSION
-    0.13.0 # TODO update this automatically when there are new releases
-    DESCRIPTION
-    "O2 Data Quality Control Framework"
-  LANGUAGES CXX
-)
+project(QualityControl
+        VERSION 0.13.0 # TODO update this automatically when there are new
+                       # releases
+        DESCRIPTION "O2 Data Quality Control Framework"
+        LANGUAGES CXX C)
 
 set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
@@ -39,15 +37,20 @@ set(INCLUDE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/include")
 # Set the default build type to "RelWithDebInfo"
 if(NOT CMAKE_BUILD_TYPE)
   set(
-    CMAKE_BUILD_TYPE "RelWithDebInfo"
-    CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel Coverage."
-    FORCE
-  )
+    CMAKE_BUILD_TYPE
+    "RelWithDebInfo"
+    CACHE
+      STRING
+      "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel Coverage."
+      FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
+
+option(BUILD_SHARED_LIBS "Build shared libs" ON)
 
 # Build targets with install rpath on Mac to dramatically speed up installation
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib"
+          isSystemDir)
 if("${isSystemDir}" STREQUAL "-1")
   if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
@@ -71,17 +74,14 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # ---- Dependencies ----
 
-find_package(
-  Boost 1.58
-  COMPONENTS
-    container
-    unit_test_framework
-    program_options
-    system
-    log
-    signals
-    system
-)
+find_package(Boost 1.58
+             COMPONENTS container
+                        unit_test_framework
+                        program_options
+                        system
+                        log
+                        signals
+                        system)
 find_package(Git QUIET)
 find_package(Configuration REQUIRED)
 find_package(Monitoring REQUIRED)
@@ -94,18 +94,15 @@ find_package(CURL REQUIRED)
 find_package(GLFW NAMES glfw3 CONFIG)
 find_package(FairMQ REQUIRED)
 find_package(FairLogger REQUIRED)
-find_package(
-  ROOT 6.06.02
-  COMPONENTS
-    RHTTP
-    Gui
-    REQUIRED
-)
+find_package(ROOT 6.06.02 COMPONENTS RHTTP Gui REQUIRED)
 
 set(ENABLE_MYSQL ON)
 if(NOT (MYSQL_FOUND AND TARGET ROOT::RMySQL))
   set(ENABLE_MYSQL OFF)
-  message(STATUS "MySQL or ROOT::RMySQL not found, the corresponding classes won't be built.")
+  message(
+    STATUS
+      "MySQL or ROOT::RMySQL not found, the corresponding classes won't be built."
+    )
 endif()
 
 # ---- Subdirectories ----

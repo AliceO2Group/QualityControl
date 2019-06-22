@@ -16,7 +16,7 @@ set(
 
 # ---- Library ----
 
-add_library(${MODULE_NAME} SHARED ${SRCS} ${MODULE_NAME}Dict.cxx)
+add_library(${MODULE_NAME} ${SRCS} ${MODULE_NAME}Dict.cxx)
 
 target_include_directories(
   ${MODULE_NAME}
