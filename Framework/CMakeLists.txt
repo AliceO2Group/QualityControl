@@ -27,7 +27,7 @@ add_library(QualityControl
             src/ServiceDiscovery.cxx)
 
 if(ENABLE_MYSQL)
-  target_sources(QualityControl src/MySqlDatabase.cxx)
+  target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
 endif()
 
 target_include_directories(
