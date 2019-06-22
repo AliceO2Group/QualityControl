@@ -8,6 +8,10 @@
  # Find FairRoot installation
  # Check the environment variable "FAIRROOTPATH"
 
+ if(TARGET FairRoot::Base)
+         return()
+ endif()
+
  if(FairRoot_DIR)
      set(FAIRROOTPATH ${FairRoot_DIR})
  else()

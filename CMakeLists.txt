@@ -14,7 +14,6 @@ enable_testing()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 include(CMakeParseArguments)
-include(QCModulesUtils)
 include(GNUInstallDirs)
 
 # ---- Project ----
@@ -72,6 +71,26 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # ---- Dependencies ----
 
+find_package(AliceO2 REQUIRED)
+
+find_package(MySQL)
+find_package(CURL REQUIRED)
+
+find_package(Git QUIET)
+
+# find_package(Configuration REQUIRED)
+# find_package(Monitoring REQUIRED)
+# find_package(Common REQUIRED)
+# find_package(InfoLogger REQUIRED)
+
+find_package(GLFW)
+
+# find_package(ZeroMQ REQUIRED)
+# find_package(Arrow REQUIRED)
+# find_package(FairRoot REQUIRED)
+# find_package(FairMQ REQUIRED)
+# find_package(FairLogger REQUIRED)
+
 find_package(
   Boost 1.58
   COMPONENTS
@@ -83,20 +102,7 @@ find_package(
     signals
     system
 )
-find_package(Git QUIET)
-find_package(Configuration REQUIRED)
-find_package(Monitoring REQUIRED)
-find_package(MySQL)
-find_package(Common REQUIRED)
-find_package(InfoLogger REQUIRED)
-find_package(AliceO2 REQUIRED)
-find_package(CURL REQUIRED)
-find_package(ZeroMQ REQUIRED)
-find_package(Arrow REQUIRED)
-find_package(GLFW)
-find_package(FairRoot REQUIRED)
-find_package(FairMQ REQUIRED)
-find_package(FairLogger REQUIRED)
+
 find_package(
   ROOT 6.06.02
   COMPONENTS

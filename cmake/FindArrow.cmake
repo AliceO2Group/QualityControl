@@ -22,6 +22,9 @@
 #  ARROW_SHARED_LIB, path to libarrow's shared library
 #  ARROW_FOUND, whether arrow has been found
 
+if(TARGET arrow_shared)
+        return()
+endif()
 if (DEFINED ENV{ARROW_HOME})
   set(ARROW_HOME "$ENV{ARROW_HOME}")
 endif()
