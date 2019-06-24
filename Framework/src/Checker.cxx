@@ -18,6 +18,9 @@
 
 // Boost
 #include <boost/filesystem/path.hpp>
+
+#include <utility>
+#include <memory>
 // ROOT
 #include <TClass.h>
 #include <TSystem.h>
@@ -39,6 +42,7 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
+using namespace o2::quality_control::monitor;
 namespace bfs = boost::filesystem;
 
 namespace o2::quality_control::checker
@@ -51,13 +55,12 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
   : mCheckerName(checkerName),
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
-    mInputs{Checker::createInputSpec(checkerName, configurationSource)},
-    mOutputSpec{ "QC", Checker::createCheckerDataDescription(taskName), 0 },
+    mInputs(Checker::createInputSpec(checkerName, configurationSource)),
+    mOutputSpec{ "QC", Checker::createCheckerDataDescription(checkerName), 0 },
     startFirstObject{ system_clock::time_point::min() },
-    endLastObject{ system_clock::time_point::min() },
-    mTotalNumberHistosReceived(0),
-    mChecks{}
+    endLastObject{ system_clock::time_point::min() }
 {
+  mTotalNumberHistosReceived = 0;
 }
 
 Checker::~Checker()
@@ -74,15 +77,18 @@ Checker::~Checker()
 
 void Checker::init(framework::InitContext&)
 {
-  loadDatabase();
-  loadMonitoring();
+  initDatabase();
+  initMonitoring();
+  initPolicy();
   // Init checks
   try {
       std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-      for(const auto& libraryName: config.get("qc.check."+mCheckName+."") )
-      loadLibrary(check.libraryName);
-      mChecks.put(checkName, getCheck(checkName, check.className));
-
+      const auto& conf = config->getRecursive("qc.check."+mCheckerName);
+      for(const auto& [key, libraryNameMap]: conf.get_child("classNames")){
+        const std::string& libraryName = libraryNameMap.get<std::string>("className");
+        loadLibrary(libraryName);
+        mChecks.insert(std::pair<std::string, CheckInterface*>(mCheckerName, getCheck(mCheckerName, libraryName)));
+      }
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
@@ -90,6 +96,26 @@ void Checker::init(framework::InitContext&)
     throw;
   }
 }
+
+void Checker::initPolicy(){
+  try {
+      std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
+      std::vector<std::string> inputs;
+      const auto& conf = config->getRecursive("qc.check."+mCheckerName);
+      //const auto& conf = config->getRecursive("qc.check."+mCheckerName);
+      for(const auto& [_key, dataSource]: conf.get_child("dataSource") )
+        if (dataSource.get<std::string>("type") == "Task")
+          inputs.push_back(dataSource.get<std::string>("name"));
+      mPolicy = std::shared_ptr<MonitorObjectPolicy>(new MonitorObjectPolicy(config->get<std::string>("qc.check."+mCheckerName+".policy"), inputs));
+  } catch (...) {
+    std::string diagnostic = boost::current_exception_diagnostic_information();
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic;
+    throw;
+  }
+
+}
+
 void Checker::run(framework::ProcessingContext& ctx)
 {
   mLogger << "Receiving " << ctx.inputs().size() << " MonitorObjects" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -130,11 +156,11 @@ void Checker::run(framework::ProcessingContext& ctx)
 }
 
 void Checker::update(std::shared_ptr<MonitorObject> mo){
-  moMap[mo->getTaskName()] = mo;
-  policy->update(mo->getTaskName());
+  mMoniorObjects[mo->getTaskName()] = mo;
+  mPolicy->update(mo->getTaskName());
   
-  if (policy->isReady()){
-    auto result = check(moMap);
+  if (mPolicy->isReady()){
+    check(mMoniorObjects);
     //store(result);
     //checkedMoArray->Add(new MonitorObject(*mo));
   }
@@ -150,14 +176,14 @@ o2::header::DataDescription Checker::createCheckerDataDescription(const std::str
   return description;
 }
 
-o2::framework::Inputs createInputSpec(const std::string checkName, const std::string configSource);
+o2::framework::Inputs Checker::createInputSpec(const std::string checkName, const std::string configSource)
 {
-  std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
+  std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configSource);
   o2::framework::Inputs inputs;
-  for(auto& sourceConf: config->get<std::vector<std::map<std::string,std::string>>>("qc.check."+checkName+".dataSource")){
-    if(sourceConf->get<std::string>("type") == "Task"){
+  for(auto& [key, sourceConf]: config->getRecursive("qc.check."+checkName+".dataSource")){
+    if(sourceConf.get<std::string>("type") == "Task"){
       o2::header::DataDescription description;
-      description.runtimeInit(std::string(sourceConf->get<std::string>("name").substr(0, header::DataDescription::size - 3) + "-mo").c_str());
+      description.runtimeInit(std::string(sourceConf.get<std::string>("name").substr(0, header::DataDescription::size - 3) + "-mo").c_str());
       o2::framework::InputSpec input{"mo", o2::header::DataOrigin{"QC"},  description};
       inputs.push_back(input);
     }
@@ -169,7 +195,7 @@ o2::framework::Inputs createInputSpec(const std::string checkName, const std::st
 void Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 {
 
-  mLogger << "Running " << checks.size() << " checks for \"" << mo->getName() << "\""
+  mLogger << "Running " << mChecks.size() << " checks for \"" << moMap.size() << "\""
           << AliceO2::InfoLogger::InfoLogger::endm;
   // Get the Checks
 
@@ -179,7 +205,7 @@ void Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 
       // load module, instantiate, use check
       // TODO : preload modules and pre-instantiate, or keep a cache
-      Quality q = checkInstance->check(moMap);
+      Quality q = checkInstance->check(&moMap);
 
       mLogger << "  result of the check " << checkName << ": " << q.getName()
               << AliceO2::InfoLogger::InfoLogger::endm;
@@ -273,7 +299,7 @@ CheckInterface* Checker::getCheck(std::string checkName, std::string className)
 
 
 
-void Checker::loadDatabase(){
+void Checker::initDatabase(){
   // configuration
   try {
     std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
@@ -295,7 +321,7 @@ void Checker::loadDatabase(){
   }
 }
 
-void Checker::loadMonitoring(){
+void Checker::initMonitoring(){
   // monitoring
   try {
     mCollector = MonitoringFactory::Get("infologger://");
@@ -309,5 +335,5 @@ void Checker::loadMonitoring(){
   timer.reset(1000000); // 10 s.
 }
 
-
+}
 // namespace o2::quality_control::checker

@@ -27,6 +27,8 @@
 #include <Common/Timer.h>
 #include <Framework/Task.h>
 #include <Headers/DataHeader.h>
+#include <Monitoring/MonitoringFactory.h>
+#include <Framework/DataProcessorSpec.h>
 // QC
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/DatabaseInterface.h"
@@ -75,7 +77,7 @@ class Checker : public framework::Task
   /// \brief Checker process callback
   void run(framework::ProcessingContext& ctx) override;
 
-  framework::InputSpec getInputs() { return mInputs; };
+  framework::Inputs getInputs() { return mInputs; };
 
   framework::OutputSpec getOutputSpec() { return mOutputSpec; };
 
@@ -118,6 +120,7 @@ class Checker : public framework::Task
   void update(std::shared_ptr<MonitorObject> mo);
   inline void initDatabase();
   inline void initMonitoring();
+  inline void initPolicy();
 
   /**
    * Get the check specified by its name and class.
@@ -135,7 +138,7 @@ class Checker : public framework::Task
   std::string mConfigurationSource;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-  MonitorObjectPolicy mPolicy;
+  std::shared_ptr<o2::quality_control::monitor::MonitorObjectPolicy> mPolicy;
 
   // DPL
   o2::framework::Inputs mInputs;
@@ -146,7 +149,7 @@ class Checker : public framework::Task
   std::vector<std::string> mLibrariesLoaded;
   std::map<std::string, CheckInterface*> mChecksLoaded;
   std::map<std::string, TClass*> mClassesLoaded;
-  std::map<std::string, MonitorObject> mMoniorObjects;
+  std::map<std::string, std::shared_ptr<MonitorObject>> mMoniorObjects;
   std::map<std::string, CheckInterface*> mChecks; 
 
   // monitoring

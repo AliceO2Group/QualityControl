@@ -45,15 +45,15 @@
       "QcCheck": {
         "active": "true",
         "classNames": [
-          "o2::quality_control_modules::skeleton::SkeletonCheck"
+          { "className": "o2::quality_control_modules::skeleton::SkeletonCheck"}
          ],
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "10",
-        "policy": "onAllUpdate",
-        "dataSource": {
+        "policy": "all",
+        "dataSource": [{
           "type": "Task",
           "name": "QcTask"
-        },
+        }],
         "location": "remote"
       }
     }

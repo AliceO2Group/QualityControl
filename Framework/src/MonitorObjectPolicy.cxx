@@ -1,6 +1,6 @@
 #include "QualityControl/MonitorObjectPolicy.h"
 
-namespace o2::quality_control::core
+namespace o2::quality_control::monitor
 {
 
 MonitorObjectPolicy::MonitorObjectPolicy(std::string type, std::vector<std::string> moNames): 
@@ -11,7 +11,7 @@ MonitorObjectPolicy::MonitorObjectPolicy(std::string type, std::vector<std::stri
     size(moNames.size())
 {
   if (type == "all"){
-    mPolicy = [&mRevisionList, &mLastRevision](){
+    mPolicy = [=](){
       for (auto &rev : mRevisionList) {
         if (mLastRevision > rev) {
           return false;
@@ -20,7 +20,7 @@ MonitorObjectPolicy::MonitorObjectPolicy(std::string type, std::vector<std::stri
       return true;
     };
   } else if (type == "anyNonZero") {
-    mPolicy = [&mRevisionList, &mLastRevision, &mRevision](){
+    mPolicy = [=](){
       for (auto &rev : mRevisionList) {
         if (rev <= 0) {
           return false;
@@ -29,7 +29,7 @@ MonitorObjectPolicy::MonitorObjectPolicy(std::string type, std::vector<std::stri
       return mRevision > mLastRevision; //return true
     };
   } else /* any (default) */ {
-    mPolicy = [&mRevision, &mLastRevision](){
+    mPolicy = [=](){
       return mRevision > mLastRevision; //return true
     };
   }

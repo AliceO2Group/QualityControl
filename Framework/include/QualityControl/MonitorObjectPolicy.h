@@ -1,14 +1,17 @@
+#ifndef QC_CORE_MONITOROBJECTPOLICY_H
+#define QC_CORE_MONITOROBJECTPOLICY_H
+
 #include <vector>
 #include <algorithm>
 #include <string>
 #include <functional>
 
-namespace o2::quality_control::core
+namespace o2::quality_control::monitor
 {
 
-class MoniorObjectPolicy {
+class MonitorObjectPolicy {
   public:
-    MoniorObjectPolicy(std::string type, std::vector<std::string> moNames);
+    MonitorObjectPolicy(std::string type, std::vector<std::string> moNames);
     void update(std::string moName); 
     bool isReady();
   private:
@@ -19,5 +22,6 @@ class MoniorObjectPolicy {
     std::vector<std::string> mMoNames;
     std::function<bool()> mPolicy;
 };
-
 }
+
+#endif
