@@ -33,7 +33,7 @@ using namespace o2::header;
 BOOST_AUTO_TEST_CASE(test_factory)
 {
   std::string configFilePath =
-    std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testInfrastructureGenerator.json";
+    std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testSharedConfig.json";
 
   TaskRunnerFactory taskRunnerFactory;
   DataProcessorSpec taskRunner = taskRunnerFactory.create("abcTask", configFilePath, 123);
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(test_task_runner_static)
 BOOST_AUTO_TEST_CASE(test_task_runner)
 {
   std::string configFilePath =
-    std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testInfrastructureGenerator.json";
+    std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testSharedConfig.json";
 
   TaskRunner qcTask{ "abcTask", configFilePath, 0 };
 

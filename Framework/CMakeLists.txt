@@ -343,7 +343,7 @@ install(
 
 install(
   FILES
-    test/testInfrastructureGenerator.json
+    test/testSharedConfig.json
     test/testWorkflow.json
   DESTINATION tests
 )
