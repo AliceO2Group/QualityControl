@@ -67,5 +67,5 @@ BOOST_AUTO_TEST_CASE(test_checker)
   BOOST_CHECK_EQUAL(checker.getOutputSpec(), (OutputSpec{ "QC", "abcTask-chk", 0 }));
 
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
-  // When it is possible, we should try calling run() and init()
+  // TODO: When it is possible, we should try calling run() and init()
 }

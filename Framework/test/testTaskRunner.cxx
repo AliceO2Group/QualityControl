@@ -81,5 +81,5 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
   BOOST_CHECK_EQUAL(qcTask.getOptions()[0].name, "period-timer-cycle");
 
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
-  // When it is possible, we should try calling run() and init()
+  // TODO: When it is possible, we should try calling run() and init()
 }
