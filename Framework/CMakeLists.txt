@@ -236,7 +236,7 @@ set(
 
 set(
   TEST_ARGS
-  "" "" "" "" "" "" "" "" "" "" "" "" "-b"
+  "" "" "" "" "" "" "" "" "" "" "" "" "-b --run"
 )
 
 list(LENGTH TEST_SRCS count)
@@ -246,6 +246,7 @@ foreach(i RANGE ${count})
   list(GET TEST_ARGS ${i} arg)
   get_filename_component(test_name ${test} NAME)
   string(REGEX REPLACE ".cxx" "" test_name ${test_name})
+  string(REPLACE " " ";" arg "${arg}") # make list of string (arguments) out of one string
 
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name} PRIVATE QualityControl Boost::unit_test_framework )
