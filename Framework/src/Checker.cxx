@@ -144,6 +144,9 @@ void Checker::run(framework::ProcessingContext& ctx)
 
 o2::header::DataDescription Checker::createCheckerDataDescription(const std::string taskName)
 {
+  if (taskName.empty()) {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for checker's data description"));
+  }
   o2::header::DataDescription description;
   description.runtimeInit(std::string(taskName.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
   return description;

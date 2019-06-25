@@ -15,11 +15,12 @@
 
 #include "QualityControl/ObjectsManager.h"
 
-#define BOOST_TEST_MODULE Publisher test
+#define BOOST_TEST_MODULE ObjectManager test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include "../include/Common/Exceptions.h"
 #include <TObjString.h>
+#include <TH1F.h>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
@@ -65,6 +66,55 @@ BOOST_AUTO_TEST_CASE(unpublish_test)
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 0);
   BOOST_CHECK_THROW(objectsManager.stopPublishing("content"), ObjectNotFoundError);
   BOOST_CHECK_THROW(objectsManager.stopPublishing("asdf"), ObjectNotFoundError);
+}
+
+BOOST_AUTO_TEST_CASE(getters_test)
+{
+  TaskConfig config;
+  config.taskName = "test";
+  config.consulUrl = "http://consul-test.cern.ch:8500";
+  ObjectsManager objectsManager(config);
+
+  TObjString s("content");
+  TH1F h("histo", "h", 100, 0, 99);
+
+  objectsManager.startPublishing(&s);
+  objectsManager.startPublishing(&h);
+
+  // basic gets
+  BOOST_CHECK_NO_THROW(objectsManager.getMonitorObject("content"));
+  BOOST_CHECK_NO_THROW(objectsManager.getMonitorObject("histo"));
+  BOOST_CHECK_THROW(objectsManager.getMonitorObject("unexisting object"), ObjectNotFoundError);
+  BOOST_CHECK_NO_THROW(objectsManager.getObject("content"));
+  BOOST_CHECK_NO_THROW(objectsManager.getObject("histo"));
+  BOOST_CHECK_THROW(objectsManager.getObject("unexisting object"), ObjectNotFoundError);
+
+  // non owning array
+  TObjArray* array = objectsManager.getNonOwningArray();
+  BOOST_CHECK_EQUAL(array->GetEntries(), 2);
+  BOOST_CHECK(array->FindObject("content") != nullptr);
+  BOOST_CHECK(array->FindObject("histo") != nullptr);
+
+  // we confirm that deleting the array does not delete objects
+  delete array;
+  BOOST_CHECK_NO_THROW(objectsManager.getMonitorObject("content"));
+  BOOST_CHECK_NO_THROW(objectsManager.getMonitorObject("histo"));
+}
+
+BOOST_AUTO_TEST_CASE(metadata_test)
+{
+  TaskConfig config;
+  config.taskName = "test";
+  config.consulUrl = "http://consul-test.cern.ch:8500";
+  ObjectsManager objectsManager(config);
+
+  TObjString s("content");
+  TH1F h("histo", "h", 100, 0, 99);
+  objectsManager.startPublishing(&s);
+  objectsManager.startPublishing(&h);
+
+  objectsManager.addMetadata("content", "aaa", "bbb");
+  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("content")->getMetadataMap()["aaa"], "bbb");
 }
 
 } // namespace o2::quality_control::core

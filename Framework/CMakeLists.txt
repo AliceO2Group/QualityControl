@@ -224,19 +224,33 @@ set(
   test/testPublisher.cxx
   test/testQcInfoLogger.cxx
   test/testInfrastructureGenerator.cxx
-  test/testQCTask.cxx
+  test/testTaskInterface.cxx
+  test/testTaskRunner.cxx
+  test/testCheckInterface.cxx
+  test/testChecker.cxx
   test/testQuality.cxx
   test/testObjectsManager.cxx
   test/testCcdbDatabase.cxx
+  test/testWorkflow.cxx
 )
 
-foreach(test ${TEST_SRCS})
+set(
+  TEST_ARGS
+  "" "" "" "" "" "" "" "" "" "" "" "" "-b --run"
+)
+
+list(LENGTH TEST_SRCS count)
+math(EXPR count "${count}-1")
+foreach(i RANGE ${count})
+  list(GET TEST_SRCS ${i} test)
+  list(GET TEST_ARGS ${i} arg)
   get_filename_component(test_name ${test} NAME)
   string(REGEX REPLACE ".cxx" "" test_name ${test_name})
+  string(REPLACE " " ";" arg "${arg}") # make list of string (arguments) out of one string
 
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name} PRIVATE QualityControl Boost::unit_test_framework )
-  add_test(NAME ${test_name} COMMAND ${test_name})
+  add_test(NAME ${test_name} COMMAND ${test_name} ${arg})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
   install(TARGETS ${test_name} DESTINATION tests)
 endforeach()
@@ -330,6 +344,7 @@ install(
 
 install(
   FILES
-  test/testQCFactory.json
+    test/testSharedConfig.json
+    test/testWorkflow.json
   DESTINATION tests
 )

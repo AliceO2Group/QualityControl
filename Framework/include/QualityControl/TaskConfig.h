@@ -30,7 +30,7 @@ struct TaskConfig {
   int cycleDurationSeconds;
   int maxNumberCycles;
   std::string consulUrl;
-  o2::configuration::KeyValueMap customParameters;
+  o2::configuration::KeyValueMap customParameters = {};
 };
 
 } // namespace o2::quality_control::core

@@ -20,7 +20,7 @@
 #include "QualityControl/MySqlDatabase.h"
 
 #endif
-#define BOOST_TEST_MODULE Quality test
+#define BOOST_TEST_MODULE DbFactory test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 

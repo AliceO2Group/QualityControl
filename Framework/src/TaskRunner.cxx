@@ -41,6 +41,7 @@ using namespace o2::header;
 using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace std::chrono;
+using namespace AliceO2::Common;
 
 TaskRunner::TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id)
   : mDeviceName(createTaskRunnerIdString() + "-" + taskName),
@@ -177,6 +178,9 @@ header::DataOrigin TaskRunner::createTaskDataOrigin()
 
 header::DataDescription TaskRunner::createTaskDataDescription(const std::string& taskName)
 {
+  if (taskName.empty()) {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
+  }
   o2::header::DataDescription description;
   description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size - 3) + "-mo").c_str());
   return description;

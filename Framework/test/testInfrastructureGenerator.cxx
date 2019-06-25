@@ -13,7 +13,7 @@
 /// \author  Piotr Konopka
 ///
 
-#define BOOST_TEST_MODULE QCFactory test
+#define BOOST_TEST_MODULE InfrastructureGenerator test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
@@ -30,7 +30,7 @@ using namespace o2::framework;
 BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 {
   BOOST_REQUIRE_NE(getenv("QUALITYCONTROL_ROOT"), nullptr);
-  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testQCFactory.json";
+  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testSharedConfig.json";
 
   {
     auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configFilePath, "o2flp1");
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
     BOOST_REQUIRE_EQUAL(workflow.size(), 1);
 
     BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
-    BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 1);
+    BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 2);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 1);
   }
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
     BOOST_REQUIRE_EQUAL(workflow.size(), 1);
 
     BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
-    BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 1);
+    BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 2);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 2);
   }
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 
 BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
 {
-  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testQCFactory.json";
+  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testSharedConfig.json";
   auto workflow = InfrastructureGenerator::generateRemoteInfrastructure(configFilePath);
 
   // the infrastructure should consist of a merger and checker for the 'skeletonTask' (its taskRunner is declared to be
@@ -93,8 +93,8 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto taskRunnerAbcTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "abcTask" &&
-             d.inputs.size() == 1 &&
+      return d.name == "QC-TASK-RUNNER-abcTask" &&
+             d.inputs.size() == 2 &&
              d.outputs.size() == 1;
     });
   BOOST_CHECK(taskRunnerAbcTask != workflow.end());

@@ -1,0 +1,50 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      }
+    },
+    "tasks": {
+      "skeletonTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "cycleDurationSeconds": "5",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "test-policy"
+        },
+        "taskParameters": {},
+        "location": "remote",
+        "machines": []
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "test-policy",
+      "active": "true",
+      "machines": [],
+      "dataHeaders": [
+        {
+          "binding": "tst-data",
+          "dataOrigin": "TST",
+          "dataDescription": "DATA"
+        }
+      ],
+      "subSpec": "0",
+      "samplingConditions": [],
+      "blocking": "false"
+    }
+  ]
+}
