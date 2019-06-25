@@ -31,6 +31,17 @@ matrix:
         skip_cleanup: true
         github_token: $GITHUB_API_TOKEN
         local_dir: build/doc/html
+    - os: linux
+      env: TOOL=coverage
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - lcov
+      branches:
+        only:
+          - master
 script:
   - if [[ $TOOL == "clang-format" ]] && [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     cd $TRAVIS_BUILD_DIR;
@@ -57,5 +68,15 @@ script:
     cmake ..;
     make doc;
     fi
+  - if [[ $TOOL != "coverage" ]]; then cmake .. -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/installed;
+    else cmake .. -DCMAKE_BUILD_TYPE=Debug; fi
+  - if [[ $TOOL == "test" ]] || [[ $TOOL == "coverage" ]]; then make -j; fi
+  - if [[ $TOOL == "test" ]] || [[ $TOOL == "coverage" ]]; then make test; fi
+after_success:
+  - if [[ $TOOL == "coverage" ]]; then cd ${TRAVIS_BUILD_DIR}/build; fi
+  - if [[ $TOOL == "coverage" ]]; then lcov --directory . --capture --output-file coverage.info; fi
+  - if [[ $TOOL == "coverage" ]]; then lcov --remove coverage.info '/opt/*' '/usr/*' --output-file coverage.info; fi
+  - if [[ $TOOL == "coverage" ]]; then lcov --list coverage.info; fi
+  - if [[ $TOOL == "coverage" ]]; then bash <(curl -s https://codecov.io/bash) || echo "No coverage reports"; fi
 notifications:
   email: false

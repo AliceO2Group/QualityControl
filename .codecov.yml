@@ -1,0 +1,20 @@
+codecov:
+  notify:
+    after_n_builds: 1
+
+coverage:
+  precision: 2
+  round: nearest
+  range: 60...90
+  status:
+    project: true
+    patch: true
+    changes: false
+
+ignore:
+  - doc/*
+#  - test/*
+  - src/imgui/*
+  - cmake/*
+
+comment: false

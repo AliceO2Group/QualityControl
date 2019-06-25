@@ -11,7 +11,7 @@
 ///
 /// \file   testCcdbDatabase.cxx
 /// \author Adam Wegrzynek
-/// \author Bartheley von Haller
+/// \author Barthelemy von Haller
 ///
 
 #include <QualityControl/DatabaseFactory.h>
@@ -40,7 +40,8 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
 
-const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
+const std::string CCDB_ENDPOINT = "http://barth-ansible-test4.cern.ch:8083";
+//const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
 std::unordered_map<std::string, std::string> Objects;
 
 /**
@@ -82,6 +83,60 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 {
   test_fixture f;
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10000);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  f.backend->store(mo1);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_store2)
+{
+  test_fixture f;
+  TH1F *h1 = new TH1F("alfa", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10000);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  f.backend->store(mo1);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_store3)
+{
+  test_fixture f;
+  TH1F *h1 = new TH1F("beta", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10000);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  f.backend->store(mo1);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_store4)
+{
+  test_fixture f;
+  TH1F *h1 = new TH1F("gamma", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10000);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  f.backend->store(mo1);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_store5)
+{
+  test_fixture f;
+  TH1F *h1 = new TH1F("123picaboo", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10000);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  f.backend->store(mo1);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_store6)
+{
+  test_fixture f;
+  TH1F *h1 = new TH1F("zaza", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10000);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  f.backend->store(mo1);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_store7)
+{
+  test_fixture f;
+  TH1F *h1 = new TH1F("zbzb", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
   f.backend->store(mo1);
