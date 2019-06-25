@@ -3,12 +3,10 @@ set(MODULE_NAME "QcTOF")
 # ---- Files ----
 
 set(SRCS
-  src/TOFCheck.cxx
   src/TOFTask.cxx
 )
 
 set(HEADERS
-  include/TOF/TOFCheck.h
   include/TOF/TOFTask.h
 )
 
