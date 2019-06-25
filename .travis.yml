@@ -72,7 +72,11 @@ script:
     mkdir -p build;
     cd build;
     cmake .. -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/installed;
-    else cmake .. -DCMAKE_BUILD_TYPE=Debug; fi
+    else
+    mkdir -p build;
+    cd build;
+    cmake .. -DCMAKE_BUILD_TYPE=Debug;
+    fi
   - if [[ $TOOL == "test" ]] || [[ $TOOL == "coverage" ]]; then mkdir -p build; cd build; make -j; fi
   - if [[ $TOOL == "test" ]] || [[ $TOOL == "coverage" ]]; then mkdir -p build; cd build; make test; fi
 after_success:
