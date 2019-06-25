@@ -33,16 +33,16 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
     * On CC7 : `sudo yum install glfw-devel --enablerepo=epel`
     * On Mac : `brew install glfw`
 
-5. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `flpproto`.
-    * `aliBuild build flpproto --defaults o2`
+5. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `O2Suite`.
+    * `aliBuild build O2Suite --defaults o2`
 
-   At this point you might encounter a message about missing system requirements. Run `aliDoctor flpproto` to get a full information about what is missing and how to install it.
+   At this point you might encounter a message about missing system requirements. Run `aliDoctor O2Suite` to get a full information about what is missing and how to install it.
 
 Note : on non-CC7 systems, you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
 
 ### Environment loading
 
-Whenever you want to work with O2 and QualityControl, do either `alienv enter flpproto/latest` or `alienv load flpproto/latest`.
+Whenever you want to work with O2 and QualityControl, do either `alienv enter O2Suite/latest` or `alienv load O2Suite/latest`.
 
 ## Execution
 
