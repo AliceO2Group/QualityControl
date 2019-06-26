@@ -154,7 +154,7 @@ std::string TOFCheckRawsMulti::getAcceptedType() { return "TH1"; }
 void TOFCheckRawsMulti::beautify(MonitorObject* mo, Quality checkResult)
 {
   if (mo->getName().find("TOFRawsMulti") != std::string::npos) {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    auto* h = dynamic_cast<TH1I*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->getName()));
