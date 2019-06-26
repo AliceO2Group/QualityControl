@@ -1,6 +1,8 @@
 # ---- Library ----
 
-add_library(QcSkeleton src/SkeletonTask.cxx src/SkeletonCheck.cxx)
+add_library(QcSkeleton)
+
+target_sources(QcSkeleton PRIVATE src/SkeletonTask.cxx src/SkeletonCheck.cxx)
 
 target_include_directories(
   QcSkeleton

@@ -1,21 +1,25 @@
 #!/usr/bin/env bash
-set -e ;# exit on error
-set -u ;# exit when using undeclared variable
+set -e # exit on error
+set -u # exit when using undeclared variable
 #set -x ;# debugging
 
 DONOR=Skeleton
 DONOR_LC=skeleton
 DONOR_TASK=SkeletonTask
-DONOR_TASK_INCLUDE_GUARD=QC_MODULE_`echo ${DONOR} | tr a-z A-Z`_`echo ${DONOR_TASK} | tr a-z A-Z`_H
+DONOR_TASK_INCLUDE_GUARD=QC_MODULE_$(echo ${DONOR} | tr a-z A-Z)_$(echo ${DONOR_TASK} | tr a-z A-Z)_H
 DONOR_CHECK=SkeletonCheck
-DONOR_CHECK_INCLUDE_GUARD=QC_MODULE_`echo ${DONOR} | tr a-z A-Z`_`echo ${DONOR_CHECK} | tr a-z A-Z`_H
+DONOR_CHECK_INCLUDE_GUARD=QC_MODULE_$(echo ${DONOR} | tr a-z A-Z)_$(echo ${DONOR_CHECK} | tr a-z A-Z)_H
 
-OS=`uname`
+OS=$(uname)
+
+function inplace_sed() {
+  sed -ibck $1 $2 && rm $2bck
+}
 
 # Checks if current pwd matches the location of this script, exits if it is not
-function check_pwd {
-  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
-  if [[ $DIR != $PWD ]] ; then
+function check_pwd() {
+  DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+  if [[ $DIR != $PWD ]]; then
     echo 'Please execute this script while being in its directory'
     exit 1
   fi
@@ -23,37 +27,33 @@ function check_pwd {
 
 # Create new empty module
 # \param 1 : module_name
-function create_module {
-  if [ -d $1 ] ; then
+function create_module() {
+  if [ -d $1 ]; then
     echo 'Module '$1' already exists.'
   else
     echo 'Module '$1' does not exist, generating...'
-    if [ ! -d ${DONOR} ] ; then
+    if [ ! -d ${DONOR} ]; then
       echo '> Donor template '${DONOR}' does not exist, exiting...'
       exit 1
     fi
 
-    MODULE_LC=`echo $1 | tr A-Z a-z`
+    MODULE_LC=$(echo $1 | tr A-Z a-z)
     # prepare folder structure
     mkdir $1 $1/src $1/include/ $1/include/$1 $1/test
 
     # prepare CMakeLists.txt
-    sed 's/'${DONOR}'/'$1'/' ${DONOR}/.CMakeListsEmpty.txt > $1/CMakeLists.txt
+    sed 's/'${DONOR}'/'$1'/' ${DONOR}/.CMakeListsEmpty.txt >$1/CMakeLists.txt
     # prepare LinkDef.h
-    sed '/#pragma link C++ class o2::quality_control_modules::'${DONOR_LC}'::/ d' ${DONOR}/include/${DONOR}/LinkDef.h > $1/include/$1/LinkDef.h
+    sed '/#pragma link C++ class o2::quality_control_modules::'${DONOR_LC}'::/ d' ${DONOR}/include/${DONOR}/LinkDef.h >$1/include/$1/LinkDef.h
     # prepare test
-    sed 's/.testEmpty/test'$1'/; s/'${DONOR_LC}'/'${MODULE_LC}'/' ${DONOR}/test/.testEmpty.cxx > $1'/test/test'$1'.cxx'
+    sed 's/.testEmpty/test'$1'/; s/'${DONOR_LC}'/'${MODULE_LC}'/' ${DONOR}/test/.testEmpty.cxx >$1'/test/test'$1'.cxx'
 
-    if [[ $OS == Linux ]] ; then
-      sed -i '/set(TEST_SRCS/ a \ \ test/test'$1'.cxx' $1/CMakeLists.txt
-    else #Darwin/BSD
-      sed -i '' -e '/set(TEST_SRCS/ a\
-\ \ test/test'$1'.cxx
-' $1/CMakeLists.txt
-    fi
+    inplace_sed '/testQcSkeleton/s/Skeleton/'$1'/g' $1/CMakeLists.txt
 
     # add new module to the project
-    echo 'add_subdirectory('$1')' >> CMakeLists.txt
+    if ! grep -c $1 CMakeLists.txt; then
+      echo 'add_subdirectory('$1')' >>CMakeLists.txt
+    fi
 
     echo '> Module created.'
   fi
@@ -62,84 +62,54 @@ function create_module {
 # Create new task in specified module
 # \param 1 : module_name
 # \param 2 : task_name
-function create_task {
+function create_task() {
   echo 'Creating task '$2' in module '$1'.'
-  if [ -f $1'/include/'$1'/'$2'.h' ] ; then
+  if [ -f $1'/include/'$1'/'$2'.h' ]; then
     echo '> Task '$2' already exists, returning...'
     return
   fi
 
-  MODULE_LC=`echo $1 | tr A-Z a-z`
-  INCLUDE_GUARD_NAME=QC_MODULE_`echo $1 | tr a-z A-Z`_`echo $2 | tr a-z A-Z`_H
+  MODULE_LC=$(echo $1 | tr A-Z a-z)
+  INCLUDE_GUARD_NAME=QC_MODULE_$(echo $1 | tr a-z A-Z)_$(echo $2 | tr a-z A-Z)_H
 
   # add header
-  sed 's/'${DONOR_TASK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g; s/'${DONOR_TASK_INCLUDE_GUARD}'/'${INCLUDE_GUARD_NAME}'/g' ${DONOR}'/include/'${DONOR}'/'${DONOR_TASK}'.h' > $1'/include/'$1'/'$2'.h'
-  if [[ $OS == Linux ]] ; then
-    sed -i '/#endif/ i #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;' $1/include/$1/LinkDef.h
-    sed -i '/set(HEADERS/ a \ \ include/'$1'/'$2'.h' $1/CMakeLists.txt
-  else #Darwin/BSD
-    sed -i '' -e '/#endif/ i\
-\#pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;
-' $1/include/$1/LinkDef.h
-    sed -i '' -e '/set(HEADERS/ a\
-\ \ include/'$1'/'$2'.h
-' $1/CMakeLists.txt
-  fi
+  sed 's/'${DONOR_TASK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g; s/'${DONOR_TASK_INCLUDE_GUARD}'/'${INCLUDE_GUARD_NAME}'/g' ${DONOR}'/include/'${DONOR}'/'${DONOR_TASK}'.h' >$1'/include/'$1'/'$2'.h'
+  inplace_sed '/#endif/ i #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;' $1/include/$1/LinkDef.h
+  inplace_sed '/set(HEADERS/ a \ \ include/'$1'/'$2'.h' $1/CMakeLists.txt
 
   # add src
-  sed 's/'${DONOR_TASK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g' ${DONOR}'/src/'${DONOR_TASK}'.cxx' > $1'/src/'$2'.cxx'
-  if [[ $OS == Linux ]] ; then
-    sed -i '/set(SRCS/ a \ \ src/'$2'.cxx' $1/CMakeLists.txt
-  else #Darwin/BSD
-    sed -i '' -e '/set(SRCS/ a\
-\ \ src/'$2'.cxx
-' $1/CMakeLists.txt
-  fi
+  sed 's/'${DONOR_TASK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g' ${DONOR}'/src/'${DONOR_TASK}'.cxx' >$1'/src/'$2'.cxx'
+  inplace_sed '/set(SRCS/ a \ \ src/'$2'.cxx' $1/CMakeLists.txt
   echo '> Task created.'
 }
 
 # Create new check in specified module
 # \param 1 : module_name
 # \param 2 : check_name
-function create_check {
+function create_check() {
   echo 'Creating check '$2' in module '$1'.'
 
-  if [ -f $1'/include/'$1'/'$2'.h' ] ; then
+  if [ -f $1'/include/'$1'/'$2'.h' ]; then
     echo '> Check '$2' already exists, returning...'
     return
   fi
 
-  MODULE_LC=`echo $1 | tr A-Z a-z`
-  INCLUDE_GUARD_NAME=QC_MODULE_`echo $1 | tr a-z A-Z`_`echo $2 | tr a-z A-Z`_H
+  MODULE_LC=$(echo $1 | tr A-Z a-z)
+  INCLUDE_GUARD_NAME=QC_MODULE_$(echo $1 | tr a-z A-Z)_$(echo $2 | tr a-z A-Z)_H
 
   # add header
-  sed 's/'${DONOR_CHECK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g; s/'${DONOR_CHECK_INCLUDE_GUARD}'/'${INCLUDE_GUARD_NAME}'/g' ${DONOR}'/include/'${DONOR}'/'${DONOR_CHECK}'.h' > $1'/include/'$1'/'$2'.h'
-  if [[ $OS == Linux ]] ; then
-    sed -i '/#endif/ i #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;' $1/include/$1/LinkDef.h
-    sed -i '/set(HEADERS/ a \ \ include/'$1'/'$2'.h' $1/CMakeLists.txt
-  else #Darwin/BSD
-    sed -i '' -e '/#endif/ i\
-#pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;
-' $1/include/$1/LinkDef.h
-    sed -i '' -e '/set(HEADERS/ a\
-\ \ include/'$1'/'$2'.h
-' $1/CMakeLists.txt
-  fi
+  sed 's/'${DONOR_CHECK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g; s/'${DONOR_CHECK_INCLUDE_GUARD}'/'${INCLUDE_GUARD_NAME}'/g' ${DONOR}'/include/'${DONOR}'/'${DONOR_CHECK}'.h' >$1'/include/'$1'/'$2'.h'
+  inplace_sed '/#endif/ i #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$2'+;' $1/include/$1/LinkDef.h
+  inplace_sed '/set(HEADERS/ a \ \ include/'$1'/'$2'.h' $1/CMakeLists.txt
 
   # add src
-  sed 's/'${DONOR_CHECK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g' ${DONOR}'/src/'${DONOR_CHECK}'.cxx' > $1'/src/'$2'.cxx'
-  if [[ $OS == Linux ]] ; then
-    sed -i '/set(SRCS/ a \ \ src/'$2'.cxx' $1/CMakeLists.txt
-  else #Darwin/BSD
-    sed -i '' -e '/set(SRCS/ a\
-\ \ src/'$2'.cxx
-' $1/CMakeLists.txt
-  fi
+  sed 's/'${DONOR_CHECK}'/'$2'/g; s/'${DONOR_LC}'/'${MODULE_LC}'/g; s/'${DONOR}'/'${MODULE}'/g' ${DONOR}'/src/'${DONOR_CHECK}'.cxx' >$1'/src/'$2'.cxx'
+  inplace_sed '/set(SRCS/ a \ \ src/'$2'.cxx' $1/CMakeLists.txt
 
   echo '> Check created.'
 }
 
-function print_usage {
+function print_usage() {
   echo "Usage: ./o2-qc-module-configurator.sh -m MODULE_NAME [OPTION]
 
 Generate template QC module and/or tasks, checks.
@@ -163,23 +133,33 @@ Options:
 MODULE=
 while getopts 'hm:t:c:' option; do
   case "${option}" in
-    \?) print_usage
-       exit 1;;
-    h) print_usage
-       exit 0;;
-    m) check_pwd
-       create_module ${OPTARG}
-       MODULE=${OPTARG};;
-    t) if [ -z ${MODULE} ] ; then
-         echo 'Cannot add a task, module name not specified, exiting...'
-         exit 1
-       fi
-       create_task ${MODULE} ${OPTARG};;
-    c) if [ -z ${MODULE} ] ; then
-         echo 'Cannot add a check, module name not specified, exiting...'
-         exit 1
-       fi
-       create_check ${MODULE} ${OPTARG};;
+  \?)
+    print_usage
+    exit 1
+    ;;
+  h)
+    print_usage
+    exit 0
+    ;;
+  m)
+    check_pwd
+    create_module ${OPTARG}
+    MODULE=${OPTARG}
+    ;;
+  t)
+    if [ -z ${MODULE} ]; then
+      echo 'Cannot add a task, module name not specified, exiting...'
+      exit 1
+    fi
+    create_task ${MODULE} ${OPTARG}
+    ;;
+  c)
+    if [ -z ${MODULE} ]; then
+      echo 'Cannot add a check, module name not specified, exiting...'
+      exit 1
+    fi
+    create_check ${MODULE} ${OPTARG}
+    ;;
   esac
 done
 
