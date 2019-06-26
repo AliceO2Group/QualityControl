@@ -4,11 +4,13 @@ set(MODULE_NAME "QcTOF")
 
 set(SRCS
   src/TOFCheckRawsToT.cxx
+  src/TOFCheckRawsMulti.cxx
   src/TOFTask.cxx
 )
 
 set(HEADERS
   include/TOF/TOFCheckRawsToT.h
+  include/TOF/TOFCheckRawsMulti.h
   include/TOF/TOFTask.h
 )
 
