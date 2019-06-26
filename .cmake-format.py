@@ -36,86 +36,11 @@ keyword_case = 'upper'
 # * = ZERO_OR_MORE
 # + = ONE_OR_MORE
 additional_commands = {
-    "o2_add_executable": {
-        "flags": ["IS_TEST", "IS_BENCHMARK", "NO_INSTALL"],
-        "kwargs": {
-            "SOURCES": '+',
-            "PUBLIC_LINK_LIBRARIES": '*',
-            "COMPONENT_NAME": '*',
-            "EXEVARNAME": '*'
-        }
-    },
-    "o2_add_header_only_library": {
-        "kwargs": {
-            "INCLUDE_DIRECTORIES": '*',
-            "INTERFACE_LINK_LIBRARIES": '*',
-        }
-    },
-    "o2_add_library": {
-        "kwargs": {
-            "SOURCES": '+',
-            "PUBLIC_INCLUDE_DIRECTORIES": '*',
-            "PUBLIC_LINK_LIBRARIES": '*',
-            "PRIVATE_INCLUDE_DIRECTORIES": '*',
-            "TARGETVARNAME": '*',
-        }
-    },
-    "o2_target_root_dictionary": {
-        "kwargs": {
-            "LINKDEF": '+',
-            "HEADERS": '*',
-        }
-    },
     "add_root_dictionary": {
         "kwargs": {
             "LINKDEF": '+',
             "HEADERS": '*',
             "BASENAME": '*',
-        }
-    },
-    "o2_data_file": {
-        "kwargs": {
-            "COPY": '+',
-            "DESTINATION": '*',
-        }
-    },
-    "o2_add_test_wrapper": {
-        "flags": ["DONT_FAIL_ON_TIMEOUT", "NON_FATAL"],
-        "kwargs": {
-            "COMMAND": '*',
-            "NO_BOOST_TEST": '*',
-            "MAX_ATTEMPTS": '*',
-            "TIMEOUT": '*',
-            "NAME": '*',
-            "WORKING_DIRECTORY": '*',
-            "CONFIGURATIONS": '*',
-            "COMMAND_LINE_ARGS": '*',
-            "LABELS": '*',
-            "ENVIRONMENT": '*',
-        }
-    },
-    "o2_add_test": {
-        "kwargs": {
-            "INSTALL": '*',
-            "NO_BOOST_TEST": '*',
-            "NON_FATAL": '*',
-            "COMPONENT_NAME": '*',
-            "MAX_ATTEMPTS": '*',
-            "TIMEOUT": '*',
-            "WORKING_DIRECTORY": '*',
-            "SOURCES": '*',
-            "PUBLIC_LINK_LIBRARIES": '*',
-            "COMMAND_LINE_ARGS": '*',
-            "LABELS": '*',
-            "ENVIRONMENT": '*',
-        }
-    },
-    "o2_add_test_root_macro": {
-        "flags": ["NON_FATAL", "LOAD_ONLY"],
-        "kwargs": {
-            "ENVIRONMENT": '*',
-            "PUBLIC_LINK_LIBRARIES": '*',
-            "LABELS": '*',
         }
     },
     "find_package_handle_standard_args": {
