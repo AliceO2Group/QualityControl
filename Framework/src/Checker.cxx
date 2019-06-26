@@ -61,6 +61,20 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
     endLastObject{ system_clock::time_point::min() }
 {
   mTotalNumberHistosReceived = 0;
+
+
+
+  std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configurationSource);
+  for(auto& [key, sourceConf]: config->getRecursive("qc.check."+checkerName+".dataSource")){
+    if(sourceConf.get<std::string>("type") == "Task"){
+      mLogger << "QcCheck " << checkerName << " input: " << sourceConf.get<std::string>("name") << AliceO2::InfoLogger::InfoLogger::endm; 
+      o2::header::DataDescription description;
+      description.runtimeInit(std::string(sourceConf.get<std::string>("name").substr(0, header::DataDescription::size - 3) + "-mo").c_str());
+      o2::framework::InputSpec input{"mo", o2::header::DataOrigin{"QC"},  description};
+    }
+  }
+
+
 }
 
 Checker::~Checker()
@@ -84,10 +98,11 @@ void Checker::init(framework::InitContext&)
   try {
       std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
       const auto& conf = config->getRecursive("qc.check."+mCheckerName);
-      for(const auto& [key, libraryNameMap]: conf.get_child("classNames")){
-        const std::string& libraryName = libraryNameMap.get<std::string>("className");
-        loadLibrary(libraryName);
-        mChecks.insert(std::pair<std::string, CheckInterface*>(mCheckerName, getCheck(mCheckerName, libraryName)));
+      const auto& moduleName = config->get<std::string>("qc.check."+mCheckerName+".moduleName");
+      loadLibrary(moduleName);
+      for(const auto& [key, classNameMap]: conf.get_child("classNames")){
+        const std::string& className = classNameMap.get<std::string>("className");
+        mChecks.insert(std::pair<std::string, CheckInterface*>(mCheckerName, getCheck(mCheckerName, className)));
       }
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
@@ -156,6 +171,7 @@ void Checker::run(framework::ProcessingContext& ctx)
 }
 
 void Checker::update(std::shared_ptr<MonitorObject> mo){
+  mLogger << "moMap key: " << mo->getTaskName() << AliceO2::InfoLogger::InfoLogger::endm;
   mMoniorObjects[mo->getTaskName()] = mo;
   mPolicy->update(mo->getTaskName());
   
@@ -172,7 +188,7 @@ o2::header::DataDescription Checker::createCheckerDataDescription(const std::str
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for checker's data description"));
   }
   o2::header::DataDescription description;
-  description.runtimeInit(std::string(taskName.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
+  description.runtimeInit(std::string(taskName.substr(0, o2::header::DataDescription::size - 4) + "-mo").c_str());
   return description;
 }
 
@@ -182,9 +198,8 @@ o2::framework::Inputs Checker::createInputSpec(const std::string checkName, cons
   o2::framework::Inputs inputs;
   for(auto& [key, sourceConf]: config->getRecursive("qc.check."+checkName+".dataSource")){
     if(sourceConf.get<std::string>("type") == "Task"){
-      o2::header::DataDescription description;
-      description.runtimeInit(std::string(sourceConf.get<std::string>("name").substr(0, header::DataDescription::size - 3) + "-mo").c_str());
-      o2::framework::InputSpec input{"mo", o2::header::DataOrigin{"QC"},  description};
+      const std::string& taskName = sourceConf.get<std::string>("name"); 
+      o2::framework::InputSpec input{taskName, TaskRunner::createTaskDataOrigin(),  TaskRunner::createTaskDataDescription(taskName)};
       inputs.push_back(input);
     }
   }

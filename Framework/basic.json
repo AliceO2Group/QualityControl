@@ -39,7 +39,24 @@
           "myOwnKey": "myOwnValue"
         },
         "location": "remote"
+      },
+      "Task2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tpc-raw"
+        },
+        "taskParameters": {
+          "myOwnKey": "myOwnValue"
+        },
+        "location": "remote"
       }
+
     },
     "check": {
       "QcCheck": {
@@ -54,6 +71,38 @@
           "type": "Task",
           "name": "QcTask"
         }],
+        "location": "remote"
+      },
+      "QcCheck2": {
+        "active": "true",
+        "classNames": [
+          { "className": "o2::quality_control_modules::skeleton::SkeletonCheck"}
+         ],
+        "moduleName": "QcSkeleton",
+        "cycleDurationSeconds": "10",
+        "policy": "all",
+        "dataSource": [{
+          "type": "Task",
+          "name": "QcTask"
+        },
+        {
+          "type": "Task",
+          "name": "Task2"
+        } ],
+        "location": "remote"
+      },
+      "QcCheck3": {
+        "active": "true",
+        "classNames": [
+          { "className": "o2::quality_control_modules::skeleton::SkeletonCheck"}
+         ],
+        "moduleName": "QcSkeleton",
+        "cycleDurationSeconds": "10",
+        "policy": "all",
+        "dataSource": [{
+          "type": "Task",
+          "name": "Task2"
+        } ],
         "location": "remote"
       }
     }
@@ -72,6 +121,28 @@
         }
       ],
       "blocking": "false"
+    },
+    {
+      "id": "tpc-raw",
+      "active": "true",
+      "machines": [],
+      "dataHeaders": [
+        {
+          "binding": "random",
+          "dataOrigin": "ITS",
+          "dataDescription": "RAWDATA"
+        }
+      ],
+      "subSpec": "0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
     }
+
   ]
 }
