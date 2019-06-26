@@ -75,151 +75,118 @@ TOFTask::TOFTask() : TaskInterface(),
 
 TOFTask::~TOFTask()
 {
-  if (mTOFRawsMulti)
-    delete mTOFRawsMulti;
-  if (mTOFRawsMultiIA)
-    delete mTOFRawsMultiIA;
-  if (mTOFRawsMultiOA)
-    delete mTOFRawsMultiOA;
-  if (mTOFRawsMultiIC)
-    delete mTOFRawsMultiIC;
-  if (mTOFRawsMultiOC)
-    delete mTOFRawsMultiOC;
-  if (mTOFRawsTime)
-    delete mTOFRawsTime;
-  if (mTOFRawsTimeIA)
-    delete mTOFRawsTimeIA;
-  if (mTOFRawsTimeOA)
-    delete mTOFRawsTimeOA;
-  if (mTOFRawsTimeIC)
-    delete mTOFRawsTimeIC;
-  if (mTOFRawsTimeOC)
-    delete mTOFRawsTimeOC;
-  if (mTOFRawsToT)
-    delete mTOFRawsToT;
-  if (mTOFRawsToTIA)
-    delete mTOFRawsToTIA;
-  if (mTOFRawsToTOA)
-    delete mTOFRawsToTOA;
-  if (mTOFRawsToTIC)
-    delete mTOFRawsToTIC;
-  if (mTOFRawsToTOC)
-    delete mTOFRawsToTOC;
-  if (mTOFRawsLTMHits)
-    delete mTOFRawsLTMHits;
-  if (mTOFrefMap)
-    delete mTOFrefMap;
-  if (mTOFRawHitMap)
-    delete mTOFRawHitMap;
-  if (mTOFDecodingErrors)
-    delete mTOFDecodingErrors;
-  if (mTOFOrphansTime)
-    delete mTOFOrphansTime;
-  if (mTOFRawTimeVsTRM035)
-    delete mTOFRawTimeVsTRM035;
-  if (mTOFRawTimeVsTRM3671)
-    delete mTOFRawTimeVsTRM3671;
-  if (mTOFTimeVsStrip)
-    delete mTOFTimeVsStrip;
-  if (mTOFtimeVsBCID)
-    delete mTOFtimeVsBCID;
-  if (mTOFchannelEfficiencyMap)
-    delete mTOFchannelEfficiencyMap;
-  if (mTOFhitsCTTM)
-    delete mTOFhitsCTTM;
-  if (mTOFmacropadCTTM)
-    delete mTOFmacropadCTTM;
-  if (mTOFmacropadDeltaPhiTime)
-    delete mTOFmacropadDeltaPhiTime;
-  if (mBXVsCttmBit)
-    delete mBXVsCttmBit;
-  if (mTimeVsCttmBit)
-    delete mTimeVsCttmBit;
-  if (mTOFRawHitMap24)
-    delete mTOFRawHitMap24;
-  if (mHitMultiVsDDL)
-    delete mHitMultiVsDDL;
-  if (mNfiredMacropad)
-    delete mNfiredMacropad;
+  mTOFRawsMulti.reset();
+  mTOFRawsMultiIA.reset();
+  mTOFRawsMultiOA.reset();
+  mTOFRawsMultiIC.reset();
+  mTOFRawsMultiOC.reset();
+  mTOFRawsTime.reset();
+  mTOFRawsTimeIA.reset();
+  mTOFRawsTimeOA.reset();
+  mTOFRawsTimeIC.reset();
+  mTOFRawsTimeOC.reset();
+  mTOFRawsToT.reset();
+  mTOFRawsToTIA.reset();
+  mTOFRawsToTOA.reset();
+  mTOFRawsToTIC.reset();
+  mTOFRawsToTOC.reset();
+  mTOFRawsLTMHits.reset();
+  mTOFrefMap.reset();
+  mTOFRawHitMap.reset();
+  mTOFDecodingErrors.reset();
+  mTOFOrphansTime.reset();
+  mTOFRawTimeVsTRM035.reset();
+  mTOFRawTimeVsTRM3671.reset();
+  mTOFTimeVsStrip.reset();
+  mTOFtimeVsBCID.reset();
+  mTOFchannelEfficiencyMap.reset();
+  mTOFhitsCTTM.reset();
+  mTOFmacropadCTTM.reset();
+  mTOFmacropadDeltaPhiTime.reset();
+  mBXVsCttmBit.reset();
+  mTimeVsCttmBit.reset();
+  mTOFRawHitMap24.reset();
+  mHitMultiVsDDL.reset();
+  mNfiredMacropad.reset();
 }
 
 void TOFTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize TOFTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mTOFRawsMulti = new TH1I("TOFRawsMulti", "TOF raw hit multiplicity; TOF raw hits number; Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
-  getObjectsManager()->startPublishing(mTOFRawsMulti);
-  getObjectsManager()->addCheck(mTOFRawsMulti, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFRawsMulti.reset(new TH1I("TOFRawsMulti", "TOF raw hit multiplicity; TOF raw hits number; Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity));
+  getObjectsManager()->startPublishing(mTOFRawsMulti.get());
+  getObjectsManager()->addCheck(mTOFRawsMulti.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFRawsMultiIA = new TH1I("TOFRawsMultiIA", "TOF raw hit multiplicity - I/A side; TOF raw hits number;Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
-  getObjectsManager()->startPublishing(mTOFRawsMultiIA);
-  getObjectsManager()->addCheck(mTOFRawsMultiIA, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFRawsMultiIA.reset(new TH1I("TOFRawsMultiIA", "TOF raw hit multiplicity - I/A side; TOF raw hits number;Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity));
+  getObjectsManager()->startPublishing(mTOFRawsMultiIA.get());
+  getObjectsManager()->addCheck(mTOFRawsMultiIA.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFRawsMultiOA = new TH1I("TOFRawsMultiOA", "TOF raw hit multiplicity - O/A side; TOF raw hits number;Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
-  getObjectsManager()->startPublishing(mTOFRawsMultiOA);
-  getObjectsManager()->addCheck(mTOFRawsMultiOA, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFRawsMultiOA.reset(new TH1I("TOFRawsMultiOA", "TOF raw hit multiplicity - O/A side; TOF raw hits number;Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity));
+  getObjectsManager()->startPublishing(mTOFRawsMultiOA.get());
+  getObjectsManager()->addCheck(mTOFRawsMultiOA.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFRawsMultiIC = new TH1I("TOFRawsMultiIC", "TOF raw hit multiplicity - I/C side; TOF raw hits number;Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
-  getObjectsManager()->startPublishing(mTOFRawsMultiIC);
-  getObjectsManager()->addCheck(mTOFRawsMultiIC, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFRawsMultiIC.reset(new TH1I("TOFRawsMultiIC", "TOF raw hit multiplicity - I/C side; TOF raw hits number;Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity));
+  getObjectsManager()->startPublishing(mTOFRawsMultiIC.get());
+  getObjectsManager()->addCheck(mTOFRawsMultiIC.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFRawsMultiOC = new TH1I("TOFRawsMultiOC", "TOF raw hit multiplicity - O/C side; TOF raw hits number;Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity);
-  getObjectsManager()->startPublishing(mTOFRawsMultiOC);
-  getObjectsManager()->addCheck(mTOFRawsMultiOC, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFRawsMultiOC.reset(new TH1I("TOFRawsMultiOC", "TOF raw hit multiplicity - O/C side; TOF raw hits number;Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity));
+  getObjectsManager()->startPublishing(mTOFRawsMultiOC.get());
+  getObjectsManager()->addCheck(mTOFRawsMultiOC.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFRawsTime = new TH1F("TOFRawsTime", "TOF Raws - Hit time (ns);Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTOFRawsTime);
-  getObjectsManager()->addCheck(mTOFRawsTime, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsTime", "QcTOF");
+  mTOFRawsTime.reset(new TH1F("TOFRawsTime", "TOF Raws - Hit time (ns);Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTOFRawsTime.get());
+  getObjectsManager()->addCheck(mTOFRawsTime.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsTime", "QcTOF");
 
-  mTOFRawsTimeIA = new TH1F("TOFRawsTimeIA", "TOF Raws - Hit time (ns) - I/A side;Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTOFRawsTimeIA);
-  getObjectsManager()->addCheck(mTOFRawsTimeIA, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsTime", "QcTOF");
+  mTOFRawsTimeIA.reset(new TH1F("TOFRawsTimeIA", "TOF Raws - Hit time (ns) - I/A side;Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTOFRawsTimeIA.get());
+  getObjectsManager()->addCheck(mTOFRawsTimeIA.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsTime", "QcTOF");
 
-  mTOFRawsTimeOA = new TH1F("TOFRawsTimeOA", "TOF Raws - Hit time (ns) - O/A side;Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTOFRawsTimeOA);
-  getObjectsManager()->addCheck(mTOFRawsTimeOA, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsTime", "QcTOF");
+  mTOFRawsTimeOA.reset(new TH1F("TOFRawsTimeOA", "TOF Raws - Hit time (ns) - O/A side;Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTOFRawsTimeOA.get());
+  getObjectsManager()->addCheck(mTOFRawsTimeOA.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsTime", "QcTOF");
 
-  mTOFRawsTimeIC = new TH1F("TOFRawsTimeIC", "TOF Raws - Hit time (ns) - I/C side;Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTOFRawsTimeIC);
-  getObjectsManager()->addCheck(mTOFRawsTimeIC, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsTime", "QcTOF");
+  mTOFRawsTimeIC.reset(new TH1F("TOFRawsTimeIC", "TOF Raws - Hit time (ns) - I/C side;Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTOFRawsTimeIC.get());
+  getObjectsManager()->addCheck(mTOFRawsTimeIC.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsTime", "QcTOF");
 
-  mTOFRawsTimeOC = new TH1F("TOFRawsTimeOC", "TOF Raws - Hit time (ns) - O/C side;Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTOFRawsTimeOC);
-  getObjectsManager()->addCheck(mTOFRawsTimeOC, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsTime", "QcTOF");
+  mTOFRawsTimeOC.reset(new TH1F("TOFRawsTimeOC", "TOF Raws - Hit time (ns) - O/C side;Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTOFRawsTimeOC.get());
+  getObjectsManager()->addCheck(mTOFRawsTimeOC.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsTime", "QcTOF");
 
-  mTOFRawsToT = new TH1F("TOFRawsToT", "TOF Raws - Hit ToT (ns);Measured Hit ToT (ns);Hits", 100, 0., 48.8);
-  getObjectsManager()->startPublishing(mTOFRawsToT);
-  getObjectsManager()->addCheck(mTOFRawsToT, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsToT", "QcTOF");
+  mTOFRawsToT.reset(new TH1F("TOFRawsToT", "TOF Raws - Hit ToT (ns);Measured Hit ToT (ns);Hits", 100, 0., 48.8));
+  getObjectsManager()->startPublishing(mTOFRawsToT.get());
+  getObjectsManager()->addCheck(mTOFRawsToT.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsToT", "QcTOF");
 
-  mTOFRawsToTIA = new TH1F("TOFRawsToTIA", "TOF Raws - Hit ToT (ns) - I/A side;Measured Hit ToT (ns);Hits", 100, 0., 48.8);
-  getObjectsManager()->startPublishing(mTOFRawsToTIA);
-  getObjectsManager()->addCheck(mTOFRawsToTIA, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsToT", "QcTOF");
+  mTOFRawsToTIA.reset(new TH1F("TOFRawsToTIA", "TOF Raws - Hit ToT (ns) - I/A side;Measured Hit ToT (ns);Hits", 100, 0., 48.8));
+  getObjectsManager()->startPublishing(mTOFRawsToTIA.get());
+  getObjectsManager()->addCheck(mTOFRawsToTIA.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsToT", "QcTOF");
 
-  mTOFRawsToTOA = new TH1F("TOFRawsToTOA", "TOF Raws - Hit ToT (ns) - O/A side;Measured Hit ToT (ns);Hits", 100, 0., 48.8);
-  getObjectsManager()->startPublishing(mTOFRawsToTOA);
-  getObjectsManager()->addCheck(mTOFRawsToTOA, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsToT", "QcTOF");
+  mTOFRawsToTOA.reset(new TH1F("TOFRawsToTOA", "TOF Raws - Hit ToT (ns) - O/A side;Measured Hit ToT (ns);Hits", 100, 0., 48.8));
+  getObjectsManager()->startPublishing(mTOFRawsToTOA.get());
+  getObjectsManager()->addCheck(mTOFRawsToTOA.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsToT", "QcTOF");
 
-  mTOFRawsToTIC = new TH1F("TOFRawsToTIC", "TOF Raws - Hit ToT (ns) - I/C side;Measured Hit ToT (ns);Hits", 100, 0., 48.8);
-  getObjectsManager()->startPublishing(mTOFRawsToTIC);
-  getObjectsManager()->addCheck(mTOFRawsToTIC, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsToT", "QcTOF");
+  mTOFRawsToTIC.reset(new TH1F("TOFRawsToTIC", "TOF Raws - Hit ToT (ns) - I/C side;Measured Hit ToT (ns);Hits", 100, 0., 48.8));
+  getObjectsManager()->startPublishing(mTOFRawsToTIC.get());
+  getObjectsManager()->addCheck(mTOFRawsToTIC.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsToT", "QcTOF");
 
-  mTOFRawsToTOC = new TH1F("TOFRawsToTOC", "TOF Raws - Hit ToT (ns) - O/C side;Measured Hit ToT (ns);Hits", 100, 0., 48.8);
-  getObjectsManager()->startPublishing(mTOFRawsToTOC);
-  getObjectsManager()->addCheck(mTOFRawsToTOC, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsToT", "QcTOF");
+  mTOFRawsToTOC.reset(new TH1F("TOFRawsToTOC", "TOF Raws - Hit ToT (ns) - O/C side;Measured Hit ToT (ns);Hits", 100, 0., 48.8));
+  getObjectsManager()->startPublishing(mTOFRawsToTOC.get());
+  getObjectsManager()->addCheck(mTOFRawsToTOC.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsToT", "QcTOF");
 
-  mTOFRawsLTMHits = new TH1F("TOFRawsLTMHits", "LTMs OR signals; Crate; Counts", 72, 0., 72.);
-  getObjectsManager()->startPublishing(mTOFRawsLTMHits);
-  getObjectsManager()->addCheck(mTOFRawsLTMHits, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFRawsLTMHits.reset(new TH1F("TOFRawsLTMHits", "LTMs OR signals; Crate; Counts", 72, 0., 72.));
+  getObjectsManager()->startPublishing(mTOFRawsLTMHits.get());
+  getObjectsManager()->addCheck(mTOFRawsLTMHits.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFrefMap = new TH2F("TOFrefMap", "TOF enabled channel reference map;sector;strip", 72, 0., 18., 91, 0., 91.);
-  getObjectsManager()->startPublishing(mTOFrefMap);
-  getObjectsManager()->addCheck(mTOFrefMap, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFrefMap.reset(new TH2F("TOFrefMap", "TOF enabled channel reference map;sector;strip", 72, 0., 18., 91, 0., 91.));
+  getObjectsManager()->startPublishing(mTOFrefMap.get());
+  getObjectsManager()->addCheck(mTOFrefMap.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFRawHitMap = new TH2F("TOFRawHitMap", "TOF raw hit map (1 bin = 1 FEA = 24 channels);sector;strip", 72, 0., 18., 91, 0., 91.);
-  getObjectsManager()->startPublishing(mTOFRawHitMap);
-  getObjectsManager()->addCheck(mTOFRawHitMap, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFRawHitMap.reset(new TH2F("TOFRawHitMap", "TOF raw hit map (1 bin = 1 FEA = 24 channels);sector;strip", 72, 0., 18., 91, 0., 91.));
+  getObjectsManager()->startPublishing(mTOFRawHitMap.get());
+  getObjectsManager()->addCheck(mTOFRawHitMap.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFDecodingErrors = new TH2I("TOFDecodingErrors", "Decoding error monitoring; DDL; Error ", 72, 0, 72, 13, 1, 14);
+  mTOFDecodingErrors.reset(new TH2I("TOFDecodingErrors", "Decoding error monitoring; DDL; Error ", 72, 0, 72, 13, 1, 14));
   mTOFDecodingErrors->GetYaxis()->SetBinLabel(1, "DRM ");
   mTOFDecodingErrors->GetYaxis()->SetBinLabel(2, "LTM ");
   mTOFDecodingErrors->GetYaxis()->SetBinLabel(3, "TRM 3 ");
@@ -233,64 +200,64 @@ void TOFTask::initialize(o2::framework::InitContext& /*ctx*/)
   mTOFDecodingErrors->GetYaxis()->SetBinLabel(11, "TRM 11");
   mTOFDecodingErrors->GetYaxis()->SetBinLabel(12, "TRM 12");
   mTOFDecodingErrors->GetYaxis()->SetBinLabel(13, "recovered");
-  getObjectsManager()->startPublishing(mTOFDecodingErrors);
-  getObjectsManager()->addCheck(mTOFDecodingErrors, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  getObjectsManager()->startPublishing(mTOFDecodingErrors.get());
+  getObjectsManager()->addCheck(mTOFDecodingErrors.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFOrphansTime = new TH1F("TOFOrphansTime", "TOF Raws - Orphans time (ns);Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTOFOrphansTime);
-  getObjectsManager()->addCheck(mTOFOrphansTime, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFOrphansTime.reset(new TH1F("TOFOrphansTime", "TOF Raws - Orphans time (ns);Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTOFOrphansTime.get());
+  getObjectsManager()->addCheck(mTOFOrphansTime.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFRawTimeVsTRM035 = new TH2F("TOFRawTimeVsTRM035", "TOF raws - Hit time vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF raw time [ns]", 361, 0., 361., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTOFRawTimeVsTRM035);
-  getObjectsManager()->addCheck(mTOFRawTimeVsTRM035, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFRawTimeVsTRM035.reset(new TH2F("TOFRawTimeVsTRM035", "TOF raws - Hit time vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF raw time [ns]", 361, 0., 361., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTOFRawTimeVsTRM035.get());
+  getObjectsManager()->addCheck(mTOFRawTimeVsTRM035.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFRawTimeVsTRM3671 = new TH2F("TOFRawTimeVsTRM3671", "TOF raws - Hit time vs TRM - crates 36 to 72; TRM index = DDL**10+TRM(0-9);TOF raw time [ns]", 361, 360., 721., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTOFRawTimeVsTRM3671);
-  getObjectsManager()->addCheck(mTOFRawTimeVsTRM3671, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFRawTimeVsTRM3671.reset(new TH2F("TOFRawTimeVsTRM3671", "TOF raws - Hit time vs TRM - crates 36 to 72; TRM index = DDL**10+TRM(0-9);TOF raw time [ns]", 361, 360., 721., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTOFRawTimeVsTRM3671.get());
+  getObjectsManager()->addCheck(mTOFRawTimeVsTRM3671.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFTimeVsStrip = new TH2F("TOFTimeVsStrip", "TOF raw hit time vs. MRPC (along z axis); MRPC index along z axis; Raws TOF time (ns) ", 91, 0., 91, fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTOFTimeVsStrip);
-  getObjectsManager()->addCheck(mTOFTimeVsStrip, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFTimeVsStrip.reset(new TH2F("TOFTimeVsStrip", "TOF raw hit time vs. MRPC (along z axis); MRPC index along z axis; Raws TOF time (ns) ", 91, 0., 91, fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTOFTimeVsStrip.get());
+  getObjectsManager()->addCheck(mTOFTimeVsStrip.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFtimeVsBCID = new TH2F("TOFtimeVsBCID", "TOF time vs BCID; BCID; time (ns) ", 3564, 0., 3564., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTOFtimeVsBCID);
-  getObjectsManager()->addCheck(mTOFtimeVsBCID, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFtimeVsBCID.reset(new TH2F("TOFtimeVsBCID", "TOF time vs BCID; BCID; time (ns) ", 3564, 0., 3564., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTOFtimeVsBCID.get());
+  getObjectsManager()->addCheck(mTOFtimeVsBCID.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFchannelEfficiencyMap = new TH2F("TOFchannelEfficiencyMap", "TOF channels (HWok && efficient && !noisy && !problematic);sector;strip", 72, 0., 18., 91, 0., 91.);
-  getObjectsManager()->startPublishing(mTOFchannelEfficiencyMap);
-  getObjectsManager()->addCheck(mTOFchannelEfficiencyMap, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFchannelEfficiencyMap.reset(new TH2F("TOFchannelEfficiencyMap", "TOF channels (HWok && efficient && !noisy && !problematic);sector;strip", 72, 0., 18., 91, 0., 91.));
+  getObjectsManager()->startPublishing(mTOFchannelEfficiencyMap.get());
+  getObjectsManager()->addCheck(mTOFchannelEfficiencyMap.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFhitsCTTM = new TH2F("TOFhitsCTTM", "Map of hit pads according to CTTM numbering;LTM index;bit index", 72, 0., 72., 23, 0., 23.);
-  getObjectsManager()->startPublishing(mTOFhitsCTTM);
-  getObjectsManager()->addCheck(mTOFhitsCTTM, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFhitsCTTM.reset(new TH2F("TOFhitsCTTM", "Map of hit pads according to CTTM numbering;LTM index;bit index", 72, 0., 72., 23, 0., 23.));
+  getObjectsManager()->startPublishing(mTOFhitsCTTM.get());
+  getObjectsManager()->addCheck(mTOFhitsCTTM.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFmacropadCTTM = new TH2F("TOFmacropadCTTM", "Map of hit macropads according to CTTM numbering;LTM index; bit index", 72, 0., 72., 23, 0., 23.);
-  getObjectsManager()->startPublishing(mTOFmacropadCTTM);
-  getObjectsManager()->addCheck(mTOFmacropadCTTM, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFmacropadCTTM.reset(new TH2F("TOFmacropadCTTM", "Map of hit macropads according to CTTM numbering;LTM index; bit index", 72, 0., 72., 23, 0., 23.));
+  getObjectsManager()->startPublishing(mTOFmacropadCTTM.get());
+  getObjectsManager()->addCheck(mTOFmacropadCTTM.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFmacropadDeltaPhiTime = new TH2F("TOFmacropadDeltaPhiTime", "#Deltat vs #Delta#Phi of hit macropads;#Delta#Phi (degrees);#DeltaBX", 18, 0., 180., 20, 0., 20.0);
-  getObjectsManager()->startPublishing(mTOFmacropadDeltaPhiTime);
-  getObjectsManager()->addCheck(mTOFmacropadDeltaPhiTime, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFmacropadDeltaPhiTime.reset(new TH2F("TOFmacropadDeltaPhiTime", "#Deltat vs #Delta#Phi of hit macropads;#Delta#Phi (degrees);#DeltaBX", 18, 0., 180., 20, 0., 20.0));
+  getObjectsManager()->startPublishing(mTOFmacropadDeltaPhiTime.get());
+  getObjectsManager()->addCheck(mTOFmacropadDeltaPhiTime.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mBXVsCttmBit = new TH2I("BXVsCttmBit", "BX ID in TOF matching window vs trg channel; trg channel; BX", 1728, 0, 1728, 24, 0, 24);
-  getObjectsManager()->startPublishing(mBXVsCttmBit);
-  getObjectsManager()->addCheck(mBXVsCttmBit, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mBXVsCttmBit.reset(new TH2I("BXVsCttmBit", "BX ID in TOF matching window vs trg channel; trg channel; BX", 1728, 0, 1728, 24, 0, 24));
+  getObjectsManager()->startPublishing(mBXVsCttmBit.get());
+  getObjectsManager()->addCheck(mBXVsCttmBit.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTimeVsCttmBit = new TH2F("TimeVsCttmBit", "TOF raw time vs trg channel; trg channel; raw time (ns)", 1728, 0., 1728., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
-  getObjectsManager()->startPublishing(mTimeVsCttmBit);
-  getObjectsManager()->addCheck(mTimeVsCttmBit, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTimeVsCttmBit.reset(new TH2F("TimeVsCttmBit", "TOF raw time vs trg channel; trg channel; raw time (ns)", 1728, 0., 1728., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  getObjectsManager()->startPublishing(mTimeVsCttmBit.get());
+  getObjectsManager()->addCheck(mTimeVsCttmBit.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mTOFRawHitMap24 = new TH2F("TOFRawHitMap24", "TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels);sector;strip", 72, 0., 18., 91, 0., 91.);
-  getObjectsManager()->startPublishing(mTOFRawHitMap24);
-  getObjectsManager()->addCheck(mTOFRawHitMap24, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mTOFRawHitMap24.reset(new TH2F("TOFRawHitMap24", "TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels);sector;strip", 72, 0., 18., 91, 0., 91.));
+  getObjectsManager()->startPublishing(mTOFRawHitMap24.get());
+  getObjectsManager()->addCheck(mTOFRawHitMap24.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mHitMultiVsDDL = new TH2I("itMultiVsDDL", "TOF raw hit multiplicity per event vs DDL ; DDL; TOF raw hits number; Events ", 72, 0., 72., 500, 0, 500);
-  getObjectsManager()->startPublishing(mHitMultiVsDDL);
-  getObjectsManager()->addCheck(mHitMultiVsDDL, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mHitMultiVsDDL.reset(new TH2I("itMultiVsDDL", "TOF raw hit multiplicity per event vs DDL ; DDL; TOF raw hits number; Events ", 72, 0., 72., 500, 0, 500));
+  getObjectsManager()->startPublishing(mHitMultiVsDDL.get());
+  getObjectsManager()->addCheck(mHitMultiVsDDL.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 
-  mNfiredMacropad = new TH1I("NfiredMacropad", "Number of fired TOF macropads per event; number of fired macropads; Events ", 50, 0, 50);
-  getObjectsManager()->startPublishing(mNfiredMacropad);
-  getObjectsManager()->addCheck(mNfiredMacropad, "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
+  mNfiredMacropad.reset(new TH1I("NfiredMacropad", "Number of fired TOF macropads per event; number of fired macropads; Events ", 50, 0, 50));
+  getObjectsManager()->startPublishing(mNfiredMacropad.get());
+  getObjectsManager()->addCheck(mNfiredMacropad.get(), "checkFromTOF", "o2::quality_control_modules::tof::TOFCheckRawsMulti", "QcTOF");
 }
 
 void TOFTask::startOfActivity(Activity& /*activity*/)
