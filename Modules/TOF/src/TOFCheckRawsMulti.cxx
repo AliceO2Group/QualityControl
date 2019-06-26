@@ -157,7 +157,7 @@ void TOFCheckRawsMulti::beautify(MonitorObject* mo, Quality checkResult)
     auto* h = dynamic_cast<TH1I*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
-    msg->SetName(Form("%s_msg", mo->getName()));
+    msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
       msg->Clear();
