@@ -1,5 +1,15 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
-/// \file    TestQCTask.cxx
+/// \file    testQCTask.cxx
 /// \author  Barthelemy von Haller
 ///
 
@@ -28,9 +38,7 @@ using namespace o2::quality_control;
 using namespace std;
 using namespace o2::framework;
 
-namespace o2
-{
-namespace quality_control
+namespace o2::quality_control
 {
 
 using namespace core;
@@ -45,13 +53,13 @@ class TestTask : public TaskInterface
   ~TestTask() override {}
 
   // Definition of the methods for the template method pattern
-  void initialize(o2::framework::InitContext& ctx) override
+  void initialize(o2::framework::InitContext& /*ctx*/) override
   {
     cout << "initialize" << endl;
     test = 1;
   }
 
-  void startOfActivity(Activity& activity) override
+  void startOfActivity(Activity& /*activity*/) override
   {
     cout << "startOfActivity" << endl;
     test = 2;
@@ -59,11 +67,11 @@ class TestTask : public TaskInterface
 
   void startOfCycle() override { cout << "startOfCycle" << endl; }
 
-  virtual void monitorData(o2::framework::ProcessingContext& ctx) { cout << "monitorData" << endl; }
+  void monitorData(o2::framework::ProcessingContext& /*ctx*/) override { cout << "monitorData" << endl; }
 
   void endOfCycle() override { cout << "endOfCycle" << endl; }
 
-  void endOfActivity(Activity& activity) override { cout << "endOfActivity" << endl; }
+  void endOfActivity(Activity& /*activity*/) override { cout << "endOfActivity" << endl; }
 
   void reset() override { cout << "reset" << endl; }
 
@@ -71,8 +79,7 @@ class TestTask : public TaskInterface
 };
 
 } /* namespace Test */
-} /* namespace quality_control */
-} /* namespace o2 */
+} /* namespace o2::quality_control */
 
  BOOST_AUTO_TEST_CASE(TestInstantiate)
 {

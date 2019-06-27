@@ -19,11 +19,7 @@
 
 #include "FairMQDevice.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 /**
@@ -74,10 +70,8 @@ class DataDumpGui : public FairMQDevice
   bool handleParts(FairMQParts& parts);
 
  private:
-  void assignDataToChunk(void* data, size_t size, Chunk& chunk);
+  static void assignDataToChunk(void* data, size_t size, Chunk& chunk);
 };
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_DATADUMP_H

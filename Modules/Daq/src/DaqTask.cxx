@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   DaqTask.cxx
 /// \author Barthelemy von Haller
@@ -14,11 +24,7 @@
 
 using namespace std;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace daq
+namespace o2::quality_control_modules::daq
 {
 
 DaqTask::DaqTask()
@@ -45,7 +51,7 @@ DaqTask::~DaqTask()
   delete mSubPayloadSize;
 }
 
-void DaqTask::initialize(o2::framework::InitContext& ctx)
+void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize DaqTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -83,11 +89,11 @@ void DaqTask::initialize(o2::framework::InitContext& ctx)
 
   mPaveText = new TPaveText(0.1, 0.1, 0.9, 0.9);
   mPaveText->AddText("hello");
-  mPaveText->SetName("");
+  mPaveText->SetName("hello_pavetext"); // Remember to always set a name to objects that we publish
   getObjectsManager()->startPublishing(mPaveText);
 }
 
-void DaqTask::startOfActivity(Activity& activity)
+void DaqTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   mPayloadSize->Reset();
@@ -108,10 +114,12 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
   // in a loop
   uint32_t totalPayloadSize = 0;
   for (auto&& input : ctx.inputs()) {
-    const auto* header = o2::header::get<header::DataHeader*>(input.header);
-    uint32_t size = header->payloadSize;
-    mSubPayloadSize->Fill(size);
-    totalPayloadSize += size;
+    if (input.header != nullptr && input.payload != nullptr) {
+      const auto* header = o2::header::get<header::DataHeader*>(input.header);
+      uint32_t size = header->payloadSize;
+      mSubPayloadSize->Fill(size);
+      totalPayloadSize += size;
+    }
   }
 
   mPayloadSize->Fill(totalPayloadSize);
@@ -128,13 +136,11 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DaqTask::endOfCycle() { QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm; }
 
-void DaqTask::endOfActivity(Activity& activity)
+void DaqTask::endOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void DaqTask::reset() { QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm; }
 
-} // namespace daq
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::daq

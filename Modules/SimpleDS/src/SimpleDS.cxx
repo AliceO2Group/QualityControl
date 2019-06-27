@@ -34,7 +34,7 @@ using o2::itsmft::Digit;
 
 using namespace std;
 using namespace o2::itsmft;
-using namespace o2::ITS;
+using namespace o2::its;
 
 
 
@@ -65,14 +65,21 @@ namespace o2
 
 					NChipLay[i] = ChipBoundary[i + 1] - ChipBoundary[i];
 
-					OccupancyPlot[i]	= new TH1D(Form("Layer%dOccupancy",i),Form("Layer%dOccupancy",i),NEventMax[i],0,NEventMax[i]); 
+					OccupancyPlot[i] = new TH1D(Form("ITSQC/Occupancy/Layer%dOccupancy",i),Form("Layer%dOccupancy",i),NEventMax[i],0,NEventMax[i]); 
 					OccupancyPlot[i]->GetXaxis()->SetTitle ("Occupancy");
 					OccupancyPlot[i]->GetYaxis()->SetTitle ("Counts");
 					OccupancyPlot[i]->GetYaxis()->SetTitleOffset(2.2);	
 					OccupancyPlot[i]->SetTitle(Form("Occupancy Distribution for ITS Layer %d",i));
 					//		OccupancyPlot[i]->SetStats(false);
 
-					LayEtaPhi[i] = new TH2S(Form("Layer%dEtaPhi",i),Form("Layer%dEtaPhi",i),NEta,EtaMin,EtaMax,NPhi,PhiMin,PhiMax);
+
+					OccupancyPlotNoisy[i] = new TH1D(Form("ITSQC/Occupancy/Layer%dOccupancyNoisy",i),Form("Layer%dOccupancyNoisy",i),NEventMax[i],0,NEventMax[i]); 
+					OccupancyPlotNoisy[i]->GetXaxis()->SetTitle ("Noisy Pixel Occupancy");
+					OccupancyPlotNoisy[i]->GetYaxis()->SetTitle ("Counts");
+					OccupancyPlotNoisy[i]->GetYaxis()->SetTitleOffset(2.2);	
+					OccupancyPlotNoisy[i]->SetTitle(Form("Noisy Pixel Occupancy Distribution for ITS Layer %d",i));
+
+					LayEtaPhi[i] = new TH2S(Form("ITSQC/Occupancy/Layer%d/Layer%dEtaPhi",i,i),Form("Layer%dEtaPhi",i),NEta,EtaMin,EtaMax,NPhi,PhiMin,PhiMax);
 					LayEtaPhi[i]->GetXaxis()->SetTitle("#eta");
 					LayEtaPhi[i]->GetYaxis()->SetTitle("#phi");
 					LayEtaPhi[i]->GetZaxis()->SetTitle("Number of Hits");
@@ -85,7 +92,7 @@ namespace o2
 					NStaveChip[i] = NChipLay[i]/NStaves[i];
 					NColStave[i] = NStaveChip[i] * NColHis;
 
-					LayChipStave[i] = new TH2S(Form("Layer%dChipStave",i),Form("Layer%dChipStave",i),NStaveChip[i],0,NStaveChip[i],NStaves[i],0,NStaves[i]);
+					LayChipStave[i] = new TH2S(Form("ITSQC/Occupancy/Layer%d/Layer%dChipStave",i,i),Form("Layer%dChipStave",i),NStaveChip[i],0,NStaveChip[i],NStaves[i],0,NStaves[i]);
 					LayChipStave[i]->GetXaxis()->SetTitle("Chip Number");
 					LayChipStave[i]->GetYaxis()->SetTitle("Stave Number");
 					LayChipStave[i]->GetZaxis()->SetTitle("Number of Hits");
@@ -104,20 +111,44 @@ namespace o2
 					ErrorPerFile[i] = 0;
 				}
 
+				for(int i = 0; i < Lay0Chip; i++){
+					DoubleColOccupancyPlot[i] = new TH1D(Form("ITSQC/Occupancy/Layer%d/DoubleCol/Layer%dChip%dDoubleColumnOcc",0,0,i),Form("ITSQC/Occupancy/Layer%d/Layer%dChip%dDoubleColumnOcc",0,0,i),NColHis/2,0,NColHis/2);
+					DoubleColOccupancyPlot[i]->GetXaxis()->SetTitle("Double Column Number (Column/2)");
+					DoubleColOccupancyPlot[i]->GetYaxis()->SetTitle("Hits");
+					DoubleColOccupancyPlot[i]->SetTitle(Form("Double Column Number Occupancy for Layer 1 Chip %d ",i));
+					DoubleColOccupancyPlot[i]->GetYaxis()->SetTitleOffset(2.2);
+				}
+
 
 				for(int j = 0; j < 1; j++){
 					for(int i = 0; i< NStaves[j]; i++){
-						Lay1HIT[i] = new TH2S(Form("Layer%dStave%dHITMAP",j,i),Form("Layer%dStave%dHITMAP",j,i),NColHis*NStaveChip[j]/SizeReduce,0,NColHis*NStaveChip[j]/SizeReduce,NRowHis,0,NRowHis);
-						//		Lay1HIT[i] = new TH2D(Form("HICMAPLay%dStave%d",j,i),Form("HICMAPLay%dStave%d",j,i),100,0,NColHis*NStaveChip[j],100,0,NRowHis);
-						Lay1HIT[i]->GetXaxis()->SetTitle("Column");
-						Lay1HIT[i]->GetYaxis()->SetTitle("Row");
-						Lay1HIT[i]->GetYaxis()->SetTitleOffset(1.10);
-						Lay1HIT[i]->GetZaxis()->SetTitleOffset(1.50);
-						Lay1HIT[i]->SetTitle(Form("Hits Map on Layer %d Stave %d",j,i));
-						//			Lay1HIT[i]->SetStats(false);
+						LayHIT[i] = new TH2S(Form("ITSQC/Occupancy/Layer%d/Layer%dStave%dHITMAP",j,j,i),Form("Layer%dStave%dHITMAP",j,i),NColHis*NStaveChip[j]/SizeReduce,0,NColHis*NStaveChip[j],NRowHis/SizeReduce,0,NRowHis);
+						//		LayHIT[i] = new TH2D(Form("HICMAPLay%dStave%d",j,i),Form("HICMAPLay%dStave%d",j,i),100,0,NColHis*NStaveChip[j],100,0,NRowHis);
+						LayHIT[i]->GetXaxis()->SetTitle("Column");
+						LayHIT[i]->GetYaxis()->SetTitle("Row");
+						LayHIT[i]->GetYaxis()->SetTitleOffset(1.10);
+						LayHIT[i]->GetZaxis()->SetTitleOffset(1.50);
+						LayHIT[i]->SetTitle(Form("Hits Map on Layer %d Stave %d",j,i));
+						//			LayHIT[i]->SetStats(false);
 
 					}
 				}
+
+
+
+				for(int j = 0; j < 1; j++){
+					for(int i = 0; i< NChipLay[j]; i++){
+						LayHITNoisy[i] = new TH1D(Form("ITSQC/Occupancy/Layer%d/ChipOcc/Layer%dStave%dNoisyHITMAP",j,j,i),Form("Layer%dStave%dNoisyHITMAP",j,i),NOccBin,HitMin,HitMax);
+						//		LayHIT[i] = new TH2D(Form("HICMAPLay%dStave%d",j,i),Form("HICMAPLay%dStave%d",j,i),100,0,NColHis*NStaveChip[j],100,0,NRowHis);
+						LayHITNoisy[i]->GetXaxis()->SetTitle("Number Hits/Event");
+						LayHITNoisy[i]->GetYaxis()->SetTitle("Counts");
+						LayHITNoisy[i]->GetYaxis()->SetTitleOffset(1.10);
+						LayHITNoisy[i]->SetTitle(Form("Pixel Occupancy Distribution for ITS Layer %d Stave %d",j,i));
+						//			LayHIT[i]->SetStats(false);
+					}
+				}
+
+
 
 				ErrorPlots->GetXaxis()->SetTitle("Error ID");
 				ErrorPlots->GetYaxis()->SetTitle("Counts");
@@ -138,26 +169,42 @@ namespace o2
 				ErrorFile->SetMinimum(0);
 				ErrorFile->SetStats(false);
 
+				/*
+				   for(int j = 0; j < 1; j++){
+				   for(int i = 0; i < NStaveChip[j]; i++){
+				   HITMAP[i]	= new TH2S(Form("ITSQC/Occupancy/Layer%d/Stave0/Layer%dChip%dHITMAP",j,j,i),Form("Layer%dChip%dHITMAP",j,i),NColHis,0,NColHis,NRowHis,0,NRowHis);
+				//		HITMAP[i]	= new TH2D(Form("HITMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),100,0,NColHis,100,0,NRowHis);
+				HITMAP[i]->GetXaxis()->SetTitle("Column");
+				HITMAP[i]->GetYaxis()->SetTitle("Row");
+				HITMAP[i]->GetYaxis()->SetTitleOffset(1.10);
+				HITMAP[i]->GetZaxis()->SetTitleOffset(1.50);
+				HITMAP[i]->SetTitle(Form("Hits on Pixel of Stave 0 for Chip Number % d on Layer %d",i,j));
+				//	HITMAP[i]->SetStats(false);
+
+				}
+				}
+				*/
 				for(int j = 0; j < 1; j++){
-					for(int i = 0; i < NStaveChip[j]; i++){
-						HITMAP[i]	= new TH2S(Form("Layer%dChip%dHITMAP",j,i),Form("Layer%dChip%dHITMAP",j,i),NColHis,0,NColHis,NRowHis,0,NRowHis);
+					for(int i = 0; i < NChipLay[j]; i++){
+						HITMAP[i]	= new TH2S(Form("ITSQC/Occupancy/Layer%d/ChipHITMAP/Layer%dChip%dHITMAP",j,j,i),Form("Layer%dChip%dHITMAP",j,i),NColHis,0,NColHis,NRowHis,0,NRowHis);
 						//		HITMAP[i]	= new TH2D(Form("HITMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),100,0,NColHis,100,0,NRowHis);
 						HITMAP[i]->GetXaxis()->SetTitle("Column");
 						HITMAP[i]->GetYaxis()->SetTitle("Row");
 						HITMAP[i]->GetYaxis()->SetTitleOffset(1.10);
 						HITMAP[i]->GetZaxis()->SetTitleOffset(1.50);
-						HITMAP[i]->SetTitle(Form("Hits on Pixel of Stave 1 for Chip Number % d on Layer %d",i,j));
+						HITMAP[i]->SetTitle(Form("Hits on Pixel Chip Number %d on Layer %d",i,j));
 						//	HITMAP[i]->SetStats(false);
-
 					}
 				}
+
+
 
 
 				cout << "DONE 2" << endl;
 
 				for(int j = 6; j < 7; j++){
 					for(int i = 0; i < 18; i++){
-						HITMAP6[i]	= new TH2S(Form("Layer%dStave%dHITMAP",j,i),Form("Layer%dStave%dHITMAP",j,i),NColHis*11,0,NColHis*11,NRowHis,0,NRowHis);
+						HITMAP6[i]	= new TH2S(Form("ITSQC/Occupancy/Layer%d/Layer%dStave%dHITMAP",j,j,i),Form("Layer%dStave%dHITMAP",j,i),NColHis*11,0,NColHis*11,NRowHis,0,NRowHis);
 						//		HITMAP6[i]	= new TH2D(Form("HITMAP%dLay%d",i,j),Form("HIGMAP%dLay%d",i,j),100,0,NColHis*11,100,0,NRowHis);
 						HITMAP6[i]->GetXaxis()->SetTitle("Column");
 						HITMAP6[i]->GetYaxis()->SetTitle("Row");
@@ -169,8 +216,8 @@ namespace o2
 				}
 				cout << "DONE 3" << endl;
 
-				HITMAP[6]->SetMaximum(2);	
-				HITMAP[6]->SetMinimum(0);	
+				//		HITMAP[6]->SetMaximum(2);	
+				//		HITMAP[6]->SetMinimum(0);	
 				cout << "Clear " << endl;
 				FileNameInfo->GetXaxis()->SetTitle("InputFile");
 				FileNameInfo->GetYaxis()->SetTitle("Total Files Proccessed");
@@ -187,7 +234,11 @@ namespace o2
 			{
 				QcInfoLogger::GetInstance() << "initialize SimpleDS" << AliceO2::InfoLogger::InfoLogger::endm;
 
-				o2::ITS::GeometryTGeo * geom = o2::ITS::GeometryTGeo::Instance ();
+				RunID = 0;
+				FileID = 0;
+
+
+				o2::its::GeometryTGeo * geom = o2::its::GeometryTGeo::Instance ();
 				geom->fillMatrixCache (o2::utils::bit2Mask (o2::TransformType::L2G));	
 				numOfChips = geom->getNumberOfChips ();
 				cout << "numOfChips = " << numOfChips << endl;
@@ -202,7 +253,9 @@ namespace o2
 				getObjectsManager()->startPublishing(FileNameInfo);
 
 
-				ChipStave->SetMinimum(1);
+
+				ChipStave->SetMinimum(1);	
+
 				getObjectsManager()->startPublishing(ChipStave);
 
 				for(int i =0; i< NError;i++){
@@ -219,15 +272,21 @@ namespace o2
 				//TLegend* l = new TLegend(0.15,0.50,0.90,0.90);
 				ErrorMax = ErrorPlots->GetMaximum();
 
+
 				//cout << "ErrorMax = " << ErrorMax << endl;
 
 				//ErrorPlots->SetMaximum(ErrorMax * 4.1+1000);
 				//	ErrorPlots->SetName(Form("%s-%s",ErrorPlots->GetName(),HisRunID.Data()));
 				//	cout << "ErrorPlot Name = " << ErrorPlots->GetName() << endl;
 				getObjectsManager()->startPublishing(ErrorPlots);
-				getObjectsManager()->addMetadata(ErrorPlots->GetName(), "custom", "34");
-				getObjectsManager()->startPublishing(ErrorFile);
+				cout << "Before Error Plot MetaData" << endl;
+				//		getObjectsManager()->addMetadata(ErrorPlots->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+				cout << "After Error Plot MetaData" << endl;
 
+				//cout << "Before MetaData" << endl;
+				//getObjectsManager()->addMetadata(ErrorPlots->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+				getObjectsManager()->startPublishing(ErrorFile);
+				//		getObjectsManager()->addMetadata(ErrorFile->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
 
 				ptFileName = new TPaveText(0.20,0.40,0.85,0.50,"NDC");
 				ptFileName->SetTextSize(0.04);
@@ -275,8 +334,6 @@ namespace o2
 
 
 
-
-
 				InfoCanvas->SetTitle("QC Process Information Canvas");
 				InfoCanvas->GetListOfFunctions()->Add(ptFileName);
 				InfoCanvas->GetListOfFunctions()->Add(ptNFile);
@@ -291,19 +348,38 @@ namespace o2
 				getObjectsManager()->startPublishing(InfoCanvas);
 
 
+				/*
+				   for(int j = 0; j < 1; j++){
+				   for(int i = 0; i < NStaveChip[j]; i++){
+				   HITMAP[i]->GetZaxis()->SetTitle("Number of Hits");
+				   HITMAP[i]->GetXaxis()->SetNdivisions(-32);
+				   HITMAP[i]->Draw("COLZ");
+				   ConfirmXAxis(HITMAP[i]);
+				   ReverseYAxis(HITMAP[i]);
+				   getObjectsManager()->startPublishing(HITMAP[i]);
+
+				   }
+				   }
+				   */
 
 				for(int j = 0; j < 1; j++){
-					for(int i = 0; i < NStaveChip[j]; i++){
+					for(int i = 0; i < NChipLay[j]; i++){
 						HITMAP[i]->GetZaxis()->SetTitle("Number of Hits");
 						HITMAP[i]->GetXaxis()->SetNdivisions(-32);
 						HITMAP[i]->Draw("COLZ");
 						ConfirmXAxis(HITMAP[i]);
 						ReverseYAxis(HITMAP[i]);
 						getObjectsManager()->startPublishing(HITMAP[i]);
+						//	getObjectsManager()->addMetadata(HITMAP[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
 
 					}
 				}
 
+
+
+				for(int i = 0; i < Lay0Chip; i++){
+					getObjectsManager()->startPublishing(DoubleColOccupancyPlot[i]);
+				}
 
 				ReverseYAxis(HITMAP[0]);
 
@@ -311,16 +387,26 @@ namespace o2
 				for(int j = 0; j < 1; j++){
 					for(int i = 0; i < NStaves[j]; i++){
 
-						Lay1HIT[i]->GetZaxis()->SetTitle("Number of Hits");
-						Lay1HIT[i]->GetXaxis()->SetNdivisions(-32);
-						Lay1HIT[i]->Draw("COLZ");
-						ConfirmXAxis(Lay1HIT[i]);
-						ReverseYAxis(Lay1HIT[i]);
-						getObjectsManager()->startPublishing(Lay1HIT[i]);
+						LayHIT[i]->GetZaxis()->SetTitle("Number of Hits");
+						LayHIT[i]->GetXaxis()->SetNdivisions(-32);
+						LayHIT[i]->Draw("COLZ");
+						ConfirmXAxis(LayHIT[i]);
+						ReverseYAxis(LayHIT[i]);
+						getObjectsManager()->startPublishing(LayHIT[i]);
+						///		getObjectsManager()->addMetadata(LayHIT[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+
 					}
 				}
 
 
+
+				for(int j = 0; j < 1; j++){
+					for(int i = 0; i < NChipLay[j]; i++){
+						getObjectsManager()->startPublishing(LayHITNoisy[i]);
+						//		getObjectsManager()->addMetadata(LayHITNoisy[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+
+					}
+				}
 
 
 
@@ -331,7 +417,7 @@ namespace o2
 						HITMAP6[i]->Draw("COLZ");
 						ConfirmXAxis(HITMAP6[i]);
 						ReverseYAxis(HITMAP6[i]);	
-						getObjectsManager()->startPublishing(HITMAP6[i]);
+						//		getObjectsManager()->startPublishing(HITMAP6[i]);
 					}
 				}
 
@@ -339,11 +425,17 @@ namespace o2
 
 
 				for(int i = 0; i < NLayer; i++){
-
 					getObjectsManager()->startPublishing(LayEtaPhi[i]);
-					getObjectsManager()->startPublishing(LayChipStave[i]);
-					getObjectsManager()->startPublishing(OccupancyPlot[i]);
+					//		getObjectsManager()->addMetadata(LayEtaPhi[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
 
+					getObjectsManager()->startPublishing(LayChipStave[i]);
+					//	getObjectsManager()->addMetadata(LayChipStave[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+
+					getObjectsManager()->startPublishing(OccupancyPlot[i]);
+					//getObjectsManager()->addMetadata(OccupancyPlot[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+
+					getObjectsManager()->startPublishing(OccupancyPlotNoisy[i]);
+					//	getObjectsManager()->addMetadata(OccupancyPlotNoisy[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
 				}
 
 				cout << "DONE Inititing Publication = " << endl;
@@ -353,8 +445,8 @@ namespace o2
 				FileIDPre = 0;
 				bulb->SetFillColor(kRed);
 				TotalFileDone = 0;
-
-
+				TotalHisTime = 0;
+				int Counted = 0;
 
 			}
 
@@ -372,8 +464,11 @@ namespace o2
 			void SimpleDS::monitorData(o2::framework::ProcessingContext& ctx)
 			{
 
+				start = std::chrono::high_resolution_clock::now();
 
+				ofstream timefout("HisTimeGlobal.dat", ios::app);
 
+				ofstream timefout2("HisTimeLoop.dat", ios::app);
 
 				QcInfoLogger::GetInstance() << "BEEN HERE BRO" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -397,8 +492,8 @@ namespace o2
 
 				//For The Moment//
 
-				int RunID = ctx.inputs().get<int>("Run");
-				int FileID = ctx.inputs().get<int>("File");
+				RunID = ctx.inputs().get<int>("Run");
+				FileID = ctx.inputs().get<int>("File");
 				//QcInfoLogger::GetInstance() << "RunID IN QC = "  << runID;
 
 
@@ -427,7 +522,12 @@ namespace o2
 				QcInfoLogger::GetInstance() << "Reset Histogram Decision = " << ResetDecision << AliceO2::InfoLogger::InfoLogger::endm;
 				if(ResetDecision == 1) reset();
 
+
+				auto digits = ctx.inputs().get<const std::vector<o2::itsmft::Digit>>("digits");
+				LOG(INFO) << "Digit Size Getting For This TimeFrame (Event) = " <<  digits.size();
+
 				Errors = ctx.inputs().get<const std::array<unsigned int,NError>>("Error");
+
 
 
 				for(int i = 0; i < NError; i++){ 
@@ -450,18 +550,29 @@ namespace o2
 
 
 
-				auto digits = ctx.inputs().get<const std::vector<o2::itsmft::Digit>>("digits");
-				LOG(INFO) << "Digit Size Getting For This TimeFrame (Event) = " <<  digits.size();
+
+				end = std::chrono::high_resolution_clock::now();
+				difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+				//	QcInfoLogger::GetInstance() << "Before Loop = " << difference/1000.0 << "s" <<  AliceO2::InfoLogger::InfoLogger::endm;
+				timefout << "Before Loop  = " << difference/1000.0 << "s" << std::endl;
 
 
 				for (auto&& pixeldata : digits) {
-
-
+					startLoop = std::chrono::high_resolution_clock::now();
 
 					ChipID = pixeldata.getChipIndex();
 					col = pixeldata.getColumn();
 					row = pixeldata.getRow();
 					NEvent = pixeldata.getROFrame();
+
+
+
+					if(Counted < TotalCounted){
+						end = std::chrono::high_resolution_clock::now();
+						difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
+						//	QcInfoLogger::GetInstance() << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+						timefout2 << "Getting Value Time  = " << difference << "ns" << std::endl;
+					}
 
 
 
@@ -474,12 +585,28 @@ namespace o2
 						ptNEvent->AddText(Form("Event Being Processed: %d",NEvent));
 					}
 
+
+					if(Counted < TotalCounted){
+						end = std::chrono::high_resolution_clock::now();
+						difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
+						//	QcInfoLogger::GetInstance() << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+						timefout2 << "Before Geo  = " << difference << "ns" << std::endl;
+					}
+
+
+
 					gm->getChipId (ChipID, lay, sta, ssta, mod, chip);
 					gm->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::L2G));
 					const Point3D<float> loc(0., 0.,0.); 
 					auto glo = gm->getMatrixL2G(ChipID)(loc);
 
 
+					if(Counted < TotalCounted){
+						end = std::chrono::high_resolution_clock::now();
+						difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
+						//	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+						timefout2 << "After Geo =  " << difference << "ns" << std::endl;
+					}
 
 					if(ChipID != ChipIDPre){
 						OccupancyPlot[lay]->Fill(OccupancyCounter);
@@ -488,7 +615,16 @@ namespace o2
 					OccupancyCounter  = OccupancyCounter + 1;
 
 
-					if (lay < 7)
+					if(Counted < TotalCounted){
+						end = std::chrono::high_resolution_clock::now();
+						difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
+						//	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+						timefout2 << "Fill Occ =  " << difference << "ns" << std::endl;
+					}
+
+
+
+					if (lay < 6)
 					{
 						//cout << "lay = " <<  lay << endl;
 						//cout << "ChipID = " << ChipID << endl;
@@ -498,24 +634,66 @@ namespace o2
 
 						int ChipNumber = (ChipID - ChipBoundary[lay])- sta*	NStaveChip[lay];
 
-						LayEtaPhi[lay]->Fill(eta,phi);
+
 						LayChipStave[lay]->Fill(ChipNumber,sta);
 
 
-						if(sta == 0  && ChipID < NLay1){
+						if(lay==0){
 							if(row > 0 && col > 0) HITMAP[ChipID]->Fill(col,row);
 						}
 
+						if(Counted < TotalCounted){
+							end = std::chrono::high_resolution_clock::now();
+							difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
+							//	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+							timefout2 << "Fill Lay1 HitMap =  " << difference << "ns" << std::endl;
+						}
+
+
+
+
+						if(lay==0) 		DoubleColOccupancyPlot[ChipID]->Fill(col/2);
+
+
+						if(Counted < TotalCounted){
+							end = std::chrono::high_resolution_clock::now();
+							difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
+							//	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+							timefout2 << "Before glo etaphi =  " << difference << "ns" << std::endl;
+						}
 
 
 						eta = glo.eta();
 						phi = glo.phi();
+						LayEtaPhi[lay]->Fill(eta,phi);
+
+
+						if(Counted < TotalCounted){
+							end = std::chrono::high_resolution_clock::now();
+							difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
+							//	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+							timefout2 << "After glo etaphi =  " << difference << "ns" << std::endl;
+						}
+
+
 						if(lay == 0){
 							rowCS = row;
 							colCS = col + NColHis * ChipNumber;
 							//	cout << "ChipID in Stave 0 = " << ChipID << "  colCS = " << colCS <<  "  ChipNumber = " << ChipNumber<< endl; 
-							if(row > 0 && col > 0) Lay1HIT[sta]->Fill(colCS,rowCS);
+							if(row > 0 && col > 0) LayHIT[sta]->Fill(colCS,rowCS);
+
 						}
+
+						if(Counted < TotalCounted){
+							end = std::chrono::high_resolution_clock::now();
+							difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
+							//	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+							timefout2 << "Fill Lay1 Stave HitMap =  " << difference << "ns" << std::endl;
+						}
+
+
+
+
 
 						if(sta == 0 && lay == 6){
 							ChipIndex6 = ChipNumber/11; 
@@ -526,13 +704,38 @@ namespace o2
 							if(row > 0 && col > 0) HITMAP6[ChipIndex6]->Fill(colLay6,rowLay6);	
 						}
 
+
+						if(Counted < TotalCounted){
+							end = std::chrono::high_resolution_clock::now();
+							difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
+							//	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+							timefout2 << "Fill Lay 6 Stave HitMap =  " << difference << "ns" << std::endl;
+						}
+
+
 					}
 
 					NEventPre = NEvent;
 					ChipIDPre = ChipID;
-				}
-				/*
 
+					if(Counted < TotalCounted){
+						end = std::chrono::high_resolution_clock::now();
+						difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - startLoop).count();
+						//	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+						timefout2 << "End of Vec " << difference << "ns" << std::endl;
+						Counted = Counted + 1;
+					}
+
+				}
+
+				end = std::chrono::high_resolution_clock::now();
+				difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+				QcInfoLogger::GetInstance() << "Time After Loop = " << difference/1000.0 << "s" <<  AliceO2::InfoLogger::InfoLogger::endm;
+				timefout << "Time After Loop = " << difference/1000.0 << "s" << std::endl;
+
+
+
+				/*
 				   for(int i = 0; i < NEvent; i++){
 				   for(int j = 0; j < numOfChips; i++){
 				   gm->getChipId (j, lay, sta, ssta, mod, chip);
@@ -541,6 +744,60 @@ namespace o2
 
 				   }
 				   */
+
+
+				cout << "NEventDone = " << NEvent << endl;
+				cout << "START Noisy Pixel Hist" << endl;
+				if(NEvent > 0 && ChipID > 0 && row > 0 && col > 0 ){
+					for(int j = 0; j < 1; j++){
+						for(int i = 0; i< NChipLay[j]; i++){
+							LayHITNoisy[i]->Reset();
+							for(int k = 1; k < NColHis + 1; k++){
+								for(int l = 1; l < NRowHis + 1; l++){
+									TotalHits = HITMAP[i]->GetBinContent(k,l);	
+									PixelOcc = double(TotalHits)/double(NEvent);
+									//if(TotalHits > 0) cout << "i = " << i << "   TotalHits = " << TotalHits << "  PixelOcc = " << PixelOcc << endl;
+									LayHITNoisy[i]->Fill(PixelOcc);
+								}
+							}
+						}
+					}
+
+					cout << "Done Noisy Pixel Hist" << endl;
+
+
+					//MetaData Updating//
+					getObjectsManager()->addMetadata(ChipStave->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+					getObjectsManager()->addMetadata(ErrorPlots->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+					getObjectsManager()->addMetadata(ErrorFile->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+					for(int j = 0; j < 1; j++){
+						for(int i = 0; i < NChipLay[j]; i++){
+							getObjectsManager()->addMetadata(HITMAP[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+							getObjectsManager()->addMetadata(LayHITNoisy[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+						}
+					}
+
+					for(int j = 0; j < 1; j++){
+						for(int i = 0; i < NStaves[j]; i++){
+							getObjectsManager()->addMetadata(LayHIT[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");	
+						}
+					}
+
+					for(int j = 6; j < 7; j++){
+						for(int i = 0; i < 18; i++){
+							//getObjectsManager()->startPublishing(HITMAP6[i]);
+						}
+					}
+
+					for(int i = 0; i < NLayer; i++){
+						getObjectsManager()->addMetadata(LayEtaPhi[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+						getObjectsManager()->addMetadata(LayChipStave[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+						getObjectsManager()->addMetadata(OccupancyPlot[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+						getObjectsManager()->addMetadata(OccupancyPlotNoisy[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+					}
+				}
+
+				//MetaData Updating DONE//
 
 				digits.clear();
 
@@ -561,7 +818,7 @@ namespace o2
 
 
 				if(TotalDigits%1000==0) 	LOG(INFO) << "TotalDigits = " << TotalDigits  << "   ChipID = " << ChipID;
-
+				FileFinish
 				int ChipNumber = (ChipID - ChipBoundary[lay])- sta*	NStaveChip[lay];
 				if(sta == 0  && ChipID < NLay1){
 				HIGMAP[ChipID]->Fill(col,row);
@@ -603,12 +860,22 @@ namespace o2
 				foutLayCheck->cd();
 				for(int j = 0; j < 1; j++){
 				for(int i = 0; i< NStaves[j]; i++){
-				Lay1HIT[i]->Write();
+				LayHIT[i]->Write();
 				}
 				}
 
 				foutLayCheck->Close();
 				*/
+
+
+				end = std::chrono::high_resolution_clock::now();
+				difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+				TotalHisTime = TotalHisTime + difference;
+				QcInfoLogger::GetInstance() << "Time in Histogram = " << difference/1000.0 << "s" <<  AliceO2::InfoLogger::InfoLogger::endm;
+				timefout << "Time in Histogram = " << difference/1000.0 << "s" << std::endl;
+
+				if(NEvent == 0  && ChipID ==0 && row ==0 && col == 0 ) bulb->SetFillColor(kGreen);
+
 
 			}
 
@@ -678,21 +945,38 @@ namespace o2
 				ChipStave->Reset();
 				for(int i = 0; i < NLayer; i++){
 					OccupancyPlot[i]->Reset();
+					OccupancyPlotNoisy[i]->Reset();	
 					LayEtaPhi[i]->Reset();
 					LayChipStave[i]->Reset();
 				}
 
 				for(int j = 0; j < 1; j++){
 					for(int i = 0; i< NStaves[j]; i++){
-						Lay1HIT[i]->Reset();
+						LayHIT[i]->Reset();
+
 					}
 				}
 
+				for(int i = 0; i < Lay0Chip; i++){
+					DoubleColOccupancyPlot[i]->Reset();
+				}
+
+				/*
+				   for(int j = 0; j < 1; j++){
+				   for(int i = 0; i < NStaveChip[j]; i++){
+				   HITMAP[i]->Reset();
+				   }
+				   }
+				   */
+
+
 				for(int j = 0; j < 1; j++){
-					for(int i = 0; i < NStaveChip[j]; i++){
+					for(int i = 0; i < NChipLay[j]; i++){
 						HITMAP[i]->Reset();
+						LayHITNoisy[i]->Reset();
 					}
 				}
+
 
 				for(int j = 6; j < 7; j++){
 					for(int i = 0; i < 18; i++){

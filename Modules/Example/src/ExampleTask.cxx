@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   ExampleTask.cxx
 /// \author Barthelemy von Haller
@@ -11,11 +21,7 @@
 
 using namespace std;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace example
+namespace o2::quality_control_modules::example
 {
 
 ExampleTask::ExampleTask() : TaskInterface()
@@ -33,7 +39,7 @@ ExampleTask::~ExampleTask()
   }
 }
 
-void ExampleTask::initialize(o2::framework::InitContext& ctx)
+void ExampleTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize ExampleTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -58,10 +64,10 @@ void ExampleTask::publishHisto(int i)
   stringstream name;
   name << "array-" << i;
   mHistos[i] = new TH1F(name.str().c_str(), name.str().c_str(), 100, 0, 99);
-  getObjectsManager()->startPublishing(mHistos[i], name.str());
+  getObjectsManager()->startPublishing(mHistos[i]);
 }
 
-void ExampleTask::startOfActivity(Activity& activity)
+void ExampleTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   for (auto& mHisto : mHistos) {
@@ -78,11 +84,16 @@ void ExampleTask::startOfCycle()
 
 void ExampleTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  const auto* header = o2::header::get<header::DataHeader*>(ctx.inputs().getByPos(0).header); // header of first input
-  mHistos[0]->Fill(header->payloadSize);
-  for (auto& mHisto : mHistos) {
-    if (mHisto) {
-      mHisto->FillRandom("gaus", 1);
+  for (auto& input : ctx.inputs()) {
+    if (input.header != nullptr) {
+      const auto* header = o2::header::get<header::DataHeader*>(input.header); // header of first valid input
+      mHistos[0]->Fill(header->payloadSize);
+      for (auto& mHisto : mHistos) {
+        if (mHisto) {
+          mHisto->FillRandom("gaus", 1);
+        }
+      }
+      break;
     }
   }
 }
@@ -98,13 +109,11 @@ void ExampleTask::endOfCycle()
   }
 }
 
-void ExampleTask::endOfActivity(Activity& activity)
+void ExampleTask::endOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ExampleTask::reset() { QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm; }
 
-} // namespace example
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::example

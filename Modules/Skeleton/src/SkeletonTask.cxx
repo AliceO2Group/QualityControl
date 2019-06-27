@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   SkeletonTask.cxx
 /// \author Barthelemy von Haller
@@ -10,11 +20,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "Skeleton/SkeletonTask.h"
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace skeleton
+namespace o2::quality_control_modules::skeleton
 {
 
 SkeletonTask::SkeletonTask() : TaskInterface(), mHistogram(nullptr) { mHistogram = nullptr; }
@@ -25,17 +31,18 @@ SkeletonTask::~SkeletonTask() {
   }
 }
 
-void SkeletonTask::initialize(o2::framework::InitContext& ctx)
+void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize SkeletonTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
+  getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
   getObjectsManager()->addCheck(mHistogram, "checkFromSkeleton", "o2::quality_control_modules::skeleton::SkeletonCheck",
                                 "QcSkeleton");
 }
 
-void SkeletonTask::startOfActivity(Activity& activity)
+void SkeletonTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   mHistogram->Reset();
@@ -64,14 +71,14 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   // 1. In a loop
   for (auto&& input : ctx.inputs()) {
     // get message header
-	 QcInfoLogger::GetInstance() << "BEEN HERE BRO" << AliceO2::InfoLogger::InfoLogger::endm;
+    if (input.header != nullptr && input.payload != nullptr) {
+      const auto* header = header::get<header::DataHeader*>(input.header);
+      // get payload of a specific input, which is a char array.
+      // const char* payload = input.payload;
 
-	  const auto* header = header::get<header::DataHeader*>(input.header);
-    // get payload of a specific input, which is a char array.
-//    const char* payload = input.payload;
-
-    // for the sake of an example, let's fill the histogram with payload sizes
-    mHistogram->Fill(header->payloadSize);
+      // for the sake of an example, let's fill the histogram with payload sizes
+      mHistogram->Fill(header->payloadSize);
+    }
   }
 
   // 2. Using get("<binding>")
@@ -100,7 +107,7 @@ void SkeletonTask::endOfCycle()
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void SkeletonTask::endOfActivity(Activity& activity)
+void SkeletonTask::endOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
@@ -113,7 +120,4 @@ void SkeletonTask::reset()
   mHistogram->Reset();
 }
 
-} // namespace skeleton
-} // namespace quality_control_modules
-} // namespace o2
-  
+} // namespace o2::quality_control_modules::skeleton

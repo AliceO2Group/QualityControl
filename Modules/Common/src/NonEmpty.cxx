@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   NonEmpty.cxx
 /// \author Barthelemy von Haller
@@ -12,18 +22,14 @@ using namespace std;
 
 ClassImp(o2::quality_control_modules::common::NonEmpty)
 
-  namespace o2
+  namespace o2::quality_control_modules::common
 {
-  namespace quality_control_modules
-  {
-  namespace common
-  {
 
   NonEmpty::NonEmpty() {}
 
   NonEmpty::~NonEmpty() {}
 
-  void NonEmpty::configure(std::string name) {}
+  void NonEmpty::configure(std::string /*name*/) {}
 
   Quality NonEmpty::check(const MonitorObject* mo)
   {
@@ -46,11 +52,9 @@ ClassImp(o2::quality_control_modules::common::NonEmpty)
 
   std::string NonEmpty::getAcceptedType() { return "TH1"; }
 
-  void NonEmpty::beautify(MonitorObject* mo, Quality checkResult)
+  void NonEmpty::beautify(MonitorObject* /*mo*/, Quality /*checkResult*/)
   {
     // NOOP
   }
 
-  } // namespace common
-  } // namespace quality_control_modules
-} // namespace o2
+} // namespace daq::quality_control_modules::common

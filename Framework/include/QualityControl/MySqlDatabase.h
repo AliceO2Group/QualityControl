@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   MySqlDatabase.h
 /// \author Barthelemy von Haller
@@ -12,11 +22,7 @@
 
 class TMySQLResult;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 /// \brief Implementation of the DatabaseInterface for MySQL
@@ -33,7 +39,7 @@ class MySqlDatabase : public DatabaseInterface
   void connect(std::string host, std::string database, std::string username, std::string password) override;
   void connect(const std::unordered_map<std::string, std::string>& config) override;
   void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
-  o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName) override;
+  o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName, long timestamp = 0) override;
   std::string retrieveJson(std::string taskName, std::string objectName) override;
   void disconnect() override;
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
@@ -49,13 +55,13 @@ class MySqlDatabase : public DatabaseInterface
 
   /**
    * \brief Execute a query that doesn't return results;
-   * Return true if successful.
+   * @return true if successful.
    */
   bool execute(std::string sql);
 
   /**
    * \brief Create a new index on table 'table'.
-   * The name of the index is <table>_i_<column>.
+   * The name of the index is \<table\>_i_\<column\>.
    */
   void addIndex(std::string table, std::string column);
 
@@ -73,8 +79,6 @@ class MySqlDatabase : public DatabaseInterface
   AliceO2::Common::Timer lastStorage;
 };
 
-} // namespace repository
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::repository
 
 #endif // QC_REPOSITORY_MYSQLDATABASE_H

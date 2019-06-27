@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   MonitorObject.h
 /// \author Barthelemy von Haller
@@ -11,6 +21,8 @@
 #include <map>
 // ROOT
 #include <TObject.h>
+// O2
+#include <Common/Exceptions.h>
 // QC
 #include "QualityControl/Quality.h"
 
@@ -19,12 +31,23 @@ namespace o2::quality_control::core
 
 /// \brief Container for the definition of a check
 struct CheckDefinition {
+ public:
   CheckDefinition() : result(Quality::Null) {}
+  virtual ~CheckDefinition() = default;
 
   std::string name;
   std::string className;
   std::string libraryName;
   Quality result;
+
+  ClassDef(CheckDefinition, 1);
+};
+
+struct DuplicateObjectError : virtual AliceO2::Common::ExceptionBase {
+  const char* what() const noexcept override
+  {
+    return "Duplicate object error";
+  }
 };
 
 /// \brief  This class keeps the metadata about one published object.
@@ -54,8 +77,8 @@ class MonitorObject : public TObject
   const std::string getName() const;
 
   /// \brief Overwrite the TObject's method just to avoid confusion.
-  ///        One should rather use getName().
-  const char* GetName() const override { return getName().c_str(); }
+  /// @return The name of the encapsulated object or "" if there is no object.
+  const char* GetName() const override;
 
   const std::string& getTaskName() const { return mTaskName; }
 
@@ -133,7 +156,7 @@ class MonitorObject : public TObject
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 3);
+  ClassDefOverride(MonitorObject, 4);
 };
 
 } // namespace o2::quality_control::core

@@ -1,5 +1,15 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
-/// \file   TaskDataProcessor.h
+/// \file   TaskRunner.h
 /// \author Piotr Konopka
 /// \author Barthelemy von Haller
 ///
@@ -13,25 +23,21 @@
 #include <boost/asio.hpp>
 #include <boost/serialization/array_wrapper.hpp>
 // O2
-#include "Common/Timer.h"
-#include "Configuration/ConfigurationInterface.h"
-#include "Framework/DataProcessorSpec.h"
-#include "Monitoring/MonitoringFactory.h"
+#include <Common/Timer.h>
+#include <Framework/Task.h>
+#include <Framework/DataProcessorSpec.h>
+#include <Framework/CompletionPolicy.h>
+#include <Monitoring/MonitoringFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 // QC
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/TaskInterface.h"
+#include "QualityControl/ServiceDiscovery.h"
 
 namespace ba = boost::accumulators;
 
-namespace o2
+namespace o2::quality_control::core
 {
-namespace quality_control
-{
-namespace core
-{
-
-using namespace o2::framework;
-using namespace std::chrono;
 
 /// \brief A class driving the execution of a QC task inside DPL.
 ///
@@ -40,27 +46,21 @@ using namespace std::chrono;
 /// It finally publishes the MonitorObjects owned and filled by the QC task and managed by the ObjectsManager.
 /// Usage:
 /// \code{.cxx}
-/// auto qcTask = std::make_shared<TaskDataProcessor>(taskName, configurationSource);
+/// TaskRunner qcTask{taskName, configurationSource, id};
 /// DataProcessorSpec newTask{
 ///   taskName,
-///   qcTask->getInputsSpecs(),
-///   Outputs{ qcTask->getOutputSpec() },
-///   AlgorithmSpec{
-///     (AlgorithmSpec::InitCallback) [qcTask = std::move(qcTask)](InitContext& initContext) {
-///
-///       qcTask->initCallback(initContext);
-///
-///       return (AlgorithmSpec::ProcessCallback) [qcTask = std::move(qcTask)] (ProcessingContext &processingContext) {
-///         qcTask->processCallback(processingContext);
-///       };
-///     }
-///   }
+///   qcTask.getInputsSpecs(),
+///   Outputs{ qcTask.getOutputSpec() },
+///   AlgorithmSpec{},
+///   qcTask.getOptions()
 /// };
+/// // this needs to be at the end
+/// newTask.algorithm = adaptFromTask<TaskRunner>(std::move(qcTask));
 /// \endcode
 ///
 /// \author Piotr Konopka
 /// \author Barthelemy von Haller
-class TaskRunner
+class TaskRunner : public framework::Task
 {
  public:
   /// \brief Constructor
@@ -68,21 +68,27 @@ class TaskRunner
   /// \param taskName - name of the task, which exists in tasks list in the configuration file
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
   /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
-  TaskRunner(std::string taskName, std::string configurationSource, size_t id = 0);
-  ~TaskRunner();
+  TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id = 0);
+  ~TaskRunner() override;
 
-  /// \brief To be invoked during initialization of Data Processor
-  void initCallback(InitContext& iCtx);
-  /// \brief To be invoked inside Data Processor's main ProcessCallback
-  void processCallback(ProcessingContext& pCtx);
-  /// \brief To be invoked inside Data Processor's TimerCallback
-  void timerCallback(ProcessingContext& pCtx);
+  /// \brief TaskRunner's init callback
+  void init(framework::InitContext& iCtx) override;
+  /// \brief TaskRunner's process callback
+  void run(framework::ProcessingContext& pCtx) override;
 
-  const Inputs& getInputsSpecs() { return mInputSpecs; };
-  const OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
+  /// \brief TaskRunner's completion policy callback
+  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(gsl::span<framework::PartRef const> const& inputs);
+
+  std::string getDeviceName() { return mDeviceName; };
+  const framework::Inputs& getInputsSpecs() { return mInputSpecs; };
+  const framework::OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
+  const framework::Options getOptions() { return mOptions; };
 
   void setResetAfterPublish(bool);
 
+
+  /// \brief ID string for all TaskRunner devices
+  static std::string createTaskRunnerIdString();
   /// \brief Unified DataOrigin for Quality Control tasks
   static header::DataOrigin createTaskDataOrigin();
   /// \brief Unified DataDescription naming scheme for all tasks
@@ -96,29 +102,33 @@ class TaskRunner
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
 
+  std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
   void populateConfig(std::string taskName);
   void startOfActivity();
   void endOfActivity();
-  void finishCycle(DataAllocator& outputs);
-  unsigned long publish(DataAllocator& outputs);
+  void startCycle();
+  void finishCycle(framework::DataAllocator& outputs);
+  unsigned long publish(framework::DataAllocator& outputs);
 
  private:
-  std::string mTaskName;
+  std::string mDeviceName;
   TaskConfig mTaskConfig;
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<monitoring::Monitoring> mCollector;
-  std::unique_ptr<TaskInterface> mTask;
+  std::shared_ptr<TaskInterface> mTask;
   bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;
 
-  // consider moving these two to TaskConfig
-  Inputs mInputSpecs;
-  OutputSpec mMonitorObjectsSpec;
+  // consider moving these to TaskConfig
+  framework::Inputs mInputSpecs;
+  framework::OutputSpec mMonitorObjectsSpec;
+  framework::Options mOptions;
 
   int mNumberBlocks;
   int mLastNumberObjects;
   bool mCycleOn;
   int mCycleNumber;
+  std::chrono::steady_clock::time_point mCycleStartTime;
 
   // stats
   AliceO2::Common::Timer mStatsTimer;
@@ -128,8 +138,6 @@ class TaskRunner
   ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_TASKRUNNER_H

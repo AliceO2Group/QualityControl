@@ -22,15 +22,18 @@ include(GNUInstallDirs)
 project(
   QualityControl
   VERSION
-    0.6.2 # TODO update this automatically when there are new releases
+    0.13.0 # TODO update this automatically when there are new releases
     DESCRIPTION
-    "O2 Quality Control"
+    "O2 Data Quality Control Framework"
   LANGUAGES CXX
 )
 
 set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
 set(INCLUDE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/include")
+
+# ---- End Project ----
+# The line above is necessary for the generation of doxygen by travis
 
 # ---- Compilation flags and build options ----
 
@@ -95,7 +98,7 @@ find_package(FairRoot REQUIRED)
 find_package(FairMQ REQUIRED)
 find_package(FairLogger REQUIRED)
 find_package(
-  ROOT 6.14.04
+  ROOT 6.06.02
   COMPONENTS
     RHTTP
     Gui
@@ -105,7 +108,7 @@ find_package(
 set(ENABLE_MYSQL ON)
 if(NOT (MYSQL_FOUND AND TARGET ROOT::RMySQL))
   set(ENABLE_MYSQL OFF)
-  message(WARNING "MySQL or ROOT::RMySQL not found, the corresponding classes won't be built.")
+  message(STATUS "MySQL or ROOT::RMySQL not found, the corresponding classes won't be built.")
 endif()
 
 # ---- Subdirectories ----

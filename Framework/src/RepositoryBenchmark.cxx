@@ -34,11 +34,7 @@ using namespace AliceO2::Common;
 using namespace o2::quality_control::repository;
 using namespace o2::monitoring;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 RepositoryBenchmark::RepositoryBenchmark()
@@ -46,8 +42,8 @@ RepositoryBenchmark::RepositoryBenchmark()
     mNumIterations(0),
     mNumberObjects(1),
     mSizeObjects(1),
-    mThreadedMonitoring(true),
-    mTotalNumberObjects(0)
+    mTotalNumberObjects(0),
+    mThreadedMonitoring(true)
 {
 }
 
@@ -206,6 +202,4 @@ void RepositoryBenchmark::emptyDatabase()
   }
 }
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core

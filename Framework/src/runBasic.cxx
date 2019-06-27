@@ -34,14 +34,28 @@
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
 #include "Framework/DataSampling.h"
+#include "QualityControl/InfrastructureGenerator.h"
+
+using namespace o2;
 using namespace o2::framework;
+
 void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
+  quality_control::customizeInfrastructure(policies);
 }
+
 void customize(std::vector<ChannelConfigurationPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
+}
+
+void customize(std::vector<ConfigParamSpec>& workflowOptions)
+{
+  workflowOptions.push_back(
+    ConfigParamSpec{ "config-path", VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
 #include <FairLogger.h>
@@ -53,15 +67,19 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"
+#include "runnerUtils.h"
+#include "ExamplePrinterSpec.h"
 
-using namespace o2;
+std::string getConfigPath(const ConfigContext& config);
+
 using namespace o2::framework;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
 
-WorkflowSpec defineDataProcessing(ConfigContext const&)
+WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
+
   // The producer to generate some data in the workflow
   DataProcessorSpec producer{
     "producer",
@@ -87,7 +105,8 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   specs.push_back(producer);
 
-  const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/basic.json";
+  // Path to the config file
+  std::string qcConfigurationSource = getConfigPath(config);
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
   // Generation of Data Sampling infrastructure
@@ -100,34 +119,25 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "checked-mo", "QC", Checker::createCheckerDataDescription("QcTask"), 0 }
-    },
+      { "checked-mo", "QC", Checker::createCheckerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
     Outputs{},
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [](InitContext&) {
-
-        return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
-          LOG(INFO) << "printer invoked";
-          std::shared_ptr<TObjArray> moArray{ std::move(DataRefUtils::as<TObjArray>(*processingContext.inputs().begin())) };
-
-          for (const auto& to : *moArray) {
-            MonitorObject* mo = dynamic_cast<MonitorObject*>(to);
-
-            if (mo->getName() == "example") {
-              auto* g = dynamic_cast<TH1F*>(mo->getObject());
-              std::string bins = "BINS:";
-              for (int i = 0; i < g->GetNbinsX(); i++) {
-                bins += " " + std::to_string((int) g->GetBinContent(i));
-              }
-              LOG(INFO) << bins;
-            }
-          }
-        };
-      }
-    }
+    adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
   };
   specs.push_back(printer);
 
   return specs;
 }
 
+// TODO merge this with the one from runReadout.cxx
+std::string getConfigPath(const ConfigContext& config)
+{
+  // Determine the default config file path and name (based on option no-data-sampling and the QC_ROOT path)
+  bool noDS = config.options().get<bool>("no-data-sampling");
+  std::string filename = !noDS ? "basic.json" : "basic-no-sampling.json";
+  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ? std::string(getenv("QUALITYCONTROL_ROOT")) + "/etc/" + filename : "$QUALITYCONTROL_ROOT undefined";
+  // The the optional one by the user
+  auto userConfigPath = config.options().get<std::string>("config-path");
+  // Finally build the config path based on the default or the user-base one
+  std::string path = std::string("json:/") + (userConfigPath.empty() ? defaultConfigPath : userConfigPath);
+  return path;
+}

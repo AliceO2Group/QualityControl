@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// @file    QcInfoLogger.h
 /// @author  Barthelemy von Haller
@@ -12,11 +22,7 @@
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time -> log::endm
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 /// \brief  Singleton class that any class in the QC can use to log.
@@ -52,8 +58,6 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
   QcInfoLogger(const QcInfoLogger&) = delete;
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_CORE_QCINFOLOGGER_H

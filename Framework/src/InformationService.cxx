@@ -7,7 +7,6 @@
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
-//
 
 ///
 /// \author Barthelemy von Haller
@@ -25,7 +24,7 @@ using namespace o2::quality_control::core;
 
 int timeOutIntervals = 5; // in seconds
 
-InformationService::InformationService() : th(nullptr), mFakeDataIndex(0)
+InformationService::InformationService() : mFakeDataIndex(0), th(nullptr)
 {
   OnData("tasks_input", &InformationService::handleTaskInputData);
   OnData("request_data", &InformationService::handleRequestData);
@@ -120,6 +119,8 @@ bool InformationService::handleTaskInputData(std::string receivedData)
 
   // publish
   sendJson(json);
+
+  return true;
 }
 
 void InformationService::readFakeDataFile(std::string fakeDataFile)

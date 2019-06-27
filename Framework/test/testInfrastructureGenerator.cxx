@@ -1,5 +1,15 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
-/// \file    testQCFactory.cxx
+/// \file    testInfrastructureGenerator.cxx
 /// \author  Piotr Konopka
 ///
 
@@ -19,17 +29,18 @@ using namespace o2::framework;
 
 BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 {
-  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/test/testQCFactory.json";
+  BOOST_REQUIRE_NE(getenv("QUALITYCONTROL_ROOT"), nullptr);
+  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testQCFactory.json";
 
   {
     auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configFilePath, "o2flp1");
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 1);
 
-    BOOST_CHECK_EQUAL(workflow[0].name, "skeletonTask");
+    BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 1);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
-    BOOST_CHECK_EQUAL(workflow[0].outputs[0].subSpec, 1);
+    BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 1);
   }
 
   {
@@ -37,10 +48,10 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 1);
 
-    BOOST_CHECK_EQUAL(workflow[0].name, "skeletonTask");
+    BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 1);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
-    BOOST_CHECK_EQUAL(workflow[0].outputs[0].subSpec, 2);
+    BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 2);
   }
 
   {
@@ -52,7 +63,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 
 BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
 {
-  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/test/testQCFactory.json";
+  std::string configFilePath = std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testQCFactory.json";
   auto workflow = InfrastructureGenerator::generateRemoteInfrastructure(configFilePath);
 
   // the infrastructure should consist of a merger and checker for the 'skeletonTask' (its taskRunner is declared to be
@@ -66,7 +77,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
       auto concreteInput1 = DataSpecUtils::asConcreteDataMatcher(d.inputs[1]);
       return d.name == "skeletonTask-merger" &&
              d.inputs.size() == 2 && concreteInput0.subSpec == 1 && concreteInput1.subSpec == 2 &&
-             d.outputs.size() == 1 && d.outputs[0].subSpec == 0;
+             d.outputs.size() == 1 && DataSpecUtils::getOptionalSubSpec(d.outputs[0]).value_or(-1) == 0;
     });
   BOOST_CHECK(mergerSkeletonTask != workflow.end());
 

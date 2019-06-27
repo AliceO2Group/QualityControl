@@ -22,11 +22,7 @@
 #include <TH1F.h>
 #include <boost/asio.hpp>
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 class RepositoryBenchmark : public FairMQDevice
@@ -69,8 +65,6 @@ class RepositoryBenchmark : public FairMQDevice
   std::thread* th;
 };
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core
 
 #endif // QC_REPOSITORYBENCHMARK_H

@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   Checker.cxx
 /// \author Barthelemy von Haller
@@ -14,6 +24,7 @@
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataRefUtils.h>
+#include <Framework/DataSpecUtils.h>
 #include <TMap.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
@@ -24,14 +35,10 @@ using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
 using namespace o2::configuration;
 using namespace o2::monitoring;
+using namespace o2::quality_control::core;
+using namespace o2::quality_control::repository;
 
-namespace o2
-{
-namespace quality_control
-{
-using namespace core;
-using namespace repository;
-namespace checker
+namespace o2::quality_control::checker
 {
 
 // TODO do we need a CheckFactory ? here it is embedded in the Checker
@@ -40,9 +47,9 @@ namespace checker
 Checker::Checker(std::string checkerName, std::string taskName, std::string configurationSource)
   : mCheckerName(checkerName),
     mConfigurationSource(configurationSource),
+    mLogger(QcInfoLogger::GetInstance()),
     mInputSpec{ "mo", TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), 0 },
     mOutputSpec{ "QC", Checker::createCheckerDataDescription(taskName), 0 },
-    mLogger(QcInfoLogger::GetInstance()),
     startFirstObject{ system_clock::time_point::min() },
     endLastObject{ system_clock::time_point::min() },
     mTotalNumberHistosReceived(0)
@@ -88,7 +95,8 @@ void Checker::init(framework::InitContext&)
     mCollector = MonitoringFactory::Get("infologger://");
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n" << diagnostic;
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic;
     throw;
   }
   startFirstObject = system_clock::time_point::min();
@@ -104,13 +112,13 @@ void Checker::run(framework::ProcessingContext& ctx)
     startFirstObject = system_clock::now();
   }
 
-  std::shared_ptr<TObjArray> moArray{ std::move(framework::DataRefUtils::as<TObjArray>(*ctx.inputs().begin())) };
+  std::shared_ptr<TObjArray> moArray{ framework::DataRefUtils::as<TObjArray>(*ctx.inputs().begin()) };
   moArray->SetOwner(false);
   auto checkedMoArray = std::make_unique<TObjArray>();
   checkedMoArray->SetOwner();
 
   for (const auto& to : *moArray) {
-    std::shared_ptr<MonitorObject> mo{dynamic_cast<MonitorObject*>(to)};
+    std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(to) };
     moArray->RemoveFirst();
     if (mo) {
       check(mo);
@@ -181,9 +189,9 @@ void Checker::store(std::shared_ptr<MonitorObject> mo)
 void Checker::send(std::unique_ptr<TObjArray>& moArray, framework::DataAllocator& allocator)
 {
   mLogger << "Sending Monitor Object array with " << moArray->GetEntries() << " objects inside." << AliceO2::InfoLogger::InfoLogger::endm;
-
+  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mOutputSpec);
   allocator.adopt(
-    framework::Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec, mOutputSpec.lifetime }, moArray.release());
+    framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, mOutputSpec.lifetime }, moArray.release());
 }
 
 void Checker::loadLibrary(const std::string libraryName)
@@ -247,6 +255,4 @@ CheckInterface* Checker::getCheck(std::string checkName, std::string className)
   return result;
 }
 
-} /* namespace checker */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::checker

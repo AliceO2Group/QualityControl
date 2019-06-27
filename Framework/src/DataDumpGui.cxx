@@ -24,11 +24,7 @@
 using namespace std;
 using namespace o2::framework;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 GUIState DataDumpGui::guiState;
@@ -40,7 +36,7 @@ vector<string> getBinRepresentation(unsigned char* data, size_t size)
   vector<string> result;
   result.reserve(size);
 
-  for (int i = 0; i < size; i++) {
+  for (size_t i = 0; i < size; i++) {
     std::bitset<16> x(data[i]);
     ss << x << " ";
     result.push_back(ss.str());
@@ -56,7 +52,7 @@ vector<string> getHexRepresentation(unsigned char* data, size_t size)
   result.reserve(size);
   ss << std::hex << std::setfill('0');
 
-  for (int i = 0; i < size; i++) {
+  for (size_t i = 0; i < size; i++) {
     ss << std::setw(2) << static_cast<unsigned>(data[i]) << " ";
     result.push_back(ss.str());
     ss.str(std::string());
@@ -102,7 +98,7 @@ void updateGuiState()
   }
 }
 
-void resizeColumns(int representation, int old_representation)
+void resizeColumns(int representation /*, int old_representation*/)
 {
   //  static bool firstDrawColumns = true;
   //  if(firstDrawColumns || representation != old_representation) {
@@ -129,8 +125,8 @@ void updatePayloadGui()
     ImGui::Text("No data loaded yet, click Next.");
   } else { // all the stuff below should go to a method
 
-    static int representation = 0, old_representation = 1;
-    old_representation = representation;
+    static int representation = 0 /*, old_representation = 1*/;
+    //    old_representation = representation;
     ImGui::RadioButton("hexadecimal", &representation, 0);
     ImGui::SameLine();
     ImGui::RadioButton("binary", &representation, 1);
@@ -142,8 +138,7 @@ void updatePayloadGui()
 
     // header row
     ImGui::Separator();
-    resizeColumns(representation, old_representation);
-    ImGui::Text("");
+    resizeColumns(representation /*, old_representation*/);
     ImGui::NextColumn();
     ImGui::Text("#1");
     ImGui::NextColumn();
@@ -215,7 +210,7 @@ void updateHeaderGui()
                       ImVec2(ImGui::GetWindowContentRegionWidth() * 0.5f, ImGui::GetTextLineHeightWithSpacing() * 7),
                       false);
     ImGui::Text("Header size : %d", header->headerSize);
-    ImGui::Text("Payload size : %ld", header->payloadSize);
+    ImGui::Text("Payload size : %llu", static_cast<unsigned long long int>(header->payloadSize));
     ImGui::Text("Header version : %d", header->headerVersion);
     ImGui::Text("flagsNextHeader : %d", header->flagsNextHeader);
     ImGui::Text("dataDescription : %s", header->dataDescription.str);
@@ -259,7 +254,7 @@ bool DataDumpGui::ConditionalRun()
   unique_ptr<FairMQMessage> msg(fTransportFactory->CreateMessage());
 
   FairMQParts parts;
-  auto result = fChannels.at("data-in").at(0).ReceiveAsync(parts);
+  auto result = fChannels.at("data-in").at(0).Receive(parts, 0);
   if (result > 0) {
     this->handleParts(parts);
   }
@@ -287,6 +282,4 @@ void DataDumpGui::assignDataToChunk(void* data, size_t size, Chunk& chunk)
   chunk.data = copy;
   chunk.size = size;
 }
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core

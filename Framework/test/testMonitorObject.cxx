@@ -1,5 +1,15 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
-/// \file   Publisher_test.cpp
+/// \file   testMonitorObject.cxx
 /// \author Barthelemy von Haller
 ///
 
@@ -10,18 +20,21 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <cassert>
+#include <chrono>
+#include <TH1F.h>
+#include <TFile.h>
+#include <TSystem.h>
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+using namespace std;
+
+namespace o2::quality_control::core
 {
 
 BOOST_AUTO_TEST_CASE(mo)
 {
   o2::quality_control::core::MonitorObject obj;
   BOOST_CHECK_EQUAL(obj.getName(), "");
+  BOOST_CHECK_EQUAL(obj.GetName(), "");
 
   obj.addCheck("first", "class1", "lib1");
   obj.addCheck("second", "class1", "lib1");
@@ -43,6 +56,7 @@ BOOST_AUTO_TEST_CASE(mo)
   obj.setQualityForCheck("second", Quality::Medium);
   BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Medium);
 }
+
 BOOST_AUTO_TEST_CASE(mo_check)
 {
   o2::quality_control::core::MonitorObject obj;
@@ -55,6 +69,51 @@ BOOST_AUTO_TEST_CASE(mo_check)
   BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Null);
 }
 
-} /* namespace core */
-} /* namespace quality_control */
-} /* namespace o2 */
+BOOST_AUTO_TEST_CASE(mo_save)
+{
+  string objectName = "asdf";
+  TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
+  o2::quality_control::core::MonitorObject obj(&h, "task");
+  cout << "getName : '" << obj.getName() << "'" << endl;
+  cout << "GetName : '" << obj.GetName() << "'" << endl;
+  cout << "title : '" << obj.GetTitle() << "'" << endl;
+  BOOST_CHECK_EQUAL(obj.getName(), "asdf");
+  BOOST_CHECK_EQUAL(obj.GetName(), "asdf");
+  BOOST_CHECK_EQUAL(obj.GetTitle(), "");
+  obj.setIsOwner(false);
+  string libName = "libraryName";
+  obj.addCheck("name", "className", libName);
+  string libName2 = "libraryName2";
+  obj.addCheck("name2", "className2", libName2);
+  obj.setQualityForCheck("name", Quality::Good);
+  BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Good);
+  cout << "quality : " << obj.getQuality() << endl;
+  cout << "check numbers : " << obj.getChecks().size() << endl;
+  CheckDefinition c = obj.getCheck("name2");
+  cout << "check2 libraryName : " << c.libraryName << endl;
+  std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
+  std::string filename = string("/tmp/test") + std::to_string(ns.count()) + ".root";
+  TFile file(filename.data(), "RECREATE");
+  obj.Write(obj.getName().data());
+  file.Close();
+
+  cout << "***" << endl;
+  TFile file2(filename.data());
+  o2::quality_control::core::MonitorObject* mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(file2.Get(objectName.data()));
+  BOOST_CHECK_NE(mo, nullptr);
+  cout << "mo : " << mo << endl;
+  BOOST_CHECK_EQUAL(mo->GetName(), objectName);
+  BOOST_CHECK_EQUAL(mo->getName(), objectName);
+  cout << "name : " << mo->GetName() << endl;
+  cout << "name : " << mo->getName() << endl;
+  BOOST_CHECK_EQUAL(mo->getQuality(), Quality::Good);
+  cout << "quality : " << mo->getQuality() << endl;
+  BOOST_CHECK_EQUAL(mo->getChecks().size(), 2);
+  cout << "check numbers : " << mo->getChecks().size() << endl;
+  CheckDefinition c2 = mo->getCheck("name2");
+  cout << "check2 libraryName : " << c2.libraryName << endl;
+  BOOST_CHECK_EQUAL(c2.libraryName, libName2);
+  gSystem->Unlink(filename.data());
+}
+
+} // namespace o2::quality_control::core

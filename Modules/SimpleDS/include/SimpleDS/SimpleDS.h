@@ -111,7 +111,7 @@ namespace o2
 				static constexpr int NLayer = 7;
 				const int NEventMax[NLayer] = {150,150,150,150,150,150,150};
 
-				int ChipBoundary[NLayer + 1] ={0,108,252,432,3120,6480,14712,24120}; 
+				const int ChipBoundary[NLayer + 1] ={0,108,252,432,3120,6480,14712,24120}; 
 				int NChipLay[NLayer];
 				int NColStave[NLayer];
 				UShort_t row;
@@ -121,15 +121,28 @@ namespace o2
 				UShort_t rowLay6;
 				UShort_t colLay6; 
 
+				const int NOccBin = 1000;
+				double HitMin = -0.01;
+				double HitMax = 1;
+
 				int lay, sta, ssta, mod, chip;
 				//	TH2D * ChipStave[NLayer]; 
 				TH1D * OccupancyPlot[NLayer];
+				TH1D * OccupancyPlotNoisy[NLayer];
+
+			
+				const int Lay0Chip = ChipBoundary[1];
+				TH1D * DoubleColOccupancyPlot[108];
+
+
 				TH2S * LayEtaPhi[NLayer]; 
 				TH2S * LayChipStave[NLayer]; 
 				const int NStaves[NLayer] = {12,16,20,24,30,42,48};
 				int NStaveChip[NLayer];
-				TH2S * HITMAP[9];
-				TH2S * Lay1HIT[12];
+				//TH2S * HITMAP[9];
+				TH2S * HITMAP[108];
+				TH2S * LayHIT[12];
+				TH1D * LayHITNoisy[108];	
 				TH2S * HITMAP6[18];
 				int ChipIndex6;
 
@@ -150,7 +163,7 @@ namespace o2
 				//const std::string inpName = "thrscan3_nchips8_ninj25_chrange0-50_rows512.raw";
 				std::string inpName = "Split9.bin";
 
-				o2::ITS::GeometryTGeo * gm = o2::ITS::GeometryTGeo::Instance();
+				o2::its::GeometryTGeo * gm = o2::its::GeometryTGeo::Instance();
 				double AveOcc;
 				UShort_t ChipID; 
 
@@ -167,11 +180,13 @@ namespace o2
 				int numOfChips;
 				double eta;
 				double phi;
+				double PixelOcc;
+			
 				static constexpr int  NError = 11;
 				std::array<unsigned int,NError> Errors;
 				std::array<unsigned int,NError> ErrorPre;
 				std::array<unsigned int,NError> ErrorPerFile;
-	
+
 				//unsigned int Error[NError];
 				double ErrorMax;
 				TPaveText *pt[NError];
@@ -183,17 +198,17 @@ namespace o2
 				TPaveText * bulbYellow;
 
 
-				TH1D * ErrorPlots = new TH1D("ErrorPlots","ErrorPlots",NError,0.5,NError+0.5);
-				TH1D * FileNameInfo = new TH1D("FileNameInfo","FileNameInfo",5,0,1);
+				TH1D * ErrorPlots = new TH1D("ITSQC/General/ErrorPlots","ErrorPlots",NError,0.5,NError+0.5);
+				TH1D * FileNameInfo = new TH1D("ITSQC/General/FileNameInfo","FileNameInfo",5,0,1);
 				TString ErrorType[NError] ={"Error ID 1: ErrPageCounterDiscontinuity","Error ID 2: ErrRDHvsGBTHPageCnt","Error ID 3: ErrMissingGBTHeader","Error ID 4: ErrMissingGBTTrailer","Error ID 5: ErrNonZeroPageAfterStop","Error ID 6: ErrUnstoppedLanes","Error ID 7: ErrDataForStoppedLane","Error ID 8: ErrNoDataForActiveLane","Error ID 9: ErrIBChipLaneMismatch","Error ID 10: ErrCableDataHeadWrong","Error ID 11: Jump in RDH_packetCounter"};
 				TH2S * ChipStave = new TH2S("ChipStaveCheck","ChipStaveCheck",9,0,9,100,0,1500);
 				const int NFiles = 6;
-				TH2I * ErrorFile = new TH2I("ErrorFile","ErrorFile",NFiles+1,-0.5,NFiles+0.5,NError,0.5,NError+0.5);
-				TH1D * InfoCanvas = new TH1D("InfoCanvas","InfoCanvas",3,-0.5,2.5);
+				TH2D * ErrorFile = new TH2D("ITSQC/General/ErrorFile","ErrorFile",NFiles+1,-0.5,NFiles+0.5,NError,0.5,NError+0.5);
+				TH1D * InfoCanvas = new TH1D("ITSQC/General/InfoCanvas","InfoCanvas",3,-0.5,2.5);
 				TEllipse *bulb = new TEllipse(0.2,0.75,0.30,0.20);
 				TGaxis *newXaxis;
 				TGaxis *newYaxis;
-	
+
 
 				int TotalDigits = 0;
 				int NEvent;
@@ -206,7 +221,21 @@ namespace o2
 				int FileIDPre;
 				int TotalFileDone;
 				int FileRest;
+				std::chrono::time_point<std::chrono::high_resolution_clock> start;
+				std::chrono::time_point<std::chrono::high_resolution_clock> startLoop;
+				std::chrono::time_point<std::chrono::high_resolution_clock> end;
+				int difference;
+				int RunID;
+				int FileID;
 
+				/*
+				std::chrono::time_point<std::chrono::high_resolution_clock> startDS;
+				std::chrono::time_point<std::chrono::high_resolution_clock> endDS;
+				int differenceDS;
+				*/
+				int TotalHits;
+				int Counted;
+				int TotalCounted = 10000;
 			};
 
 		} // namespace simpleds

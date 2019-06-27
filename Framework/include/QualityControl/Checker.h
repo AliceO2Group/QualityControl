@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   Checker.h
 /// \author Barthelemy von Haller
@@ -21,11 +31,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace checker
+namespace o2::quality_control::checker
 {
 
 /// \brief The class in charge of running the checks on a MonitorObject.
@@ -125,8 +131,6 @@ class Checker : public framework::Task
   AliceO2::Common::Timer timer;
 };
 
-} /* namespace checker */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::checker
 
 #endif // QC_CHECKER_CHECKER_H

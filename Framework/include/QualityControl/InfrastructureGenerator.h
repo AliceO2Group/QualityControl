@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   InfrastructureGenerator.h
 /// \author Piotr Konopka
@@ -8,10 +18,9 @@
 
 #include <string>
 #include <Framework/WorkflowSpec.h>
+#include <Framework/CompletionPolicy.h>
 
-namespace o2
-{
-namespace quality_control
+namespace o2::quality_control
 {
 namespace core
 {
@@ -70,6 +79,19 @@ class InfrastructureGenerator
   /// \param configurationSource - full path to configuration file, preceded with the backend (f.e. "json://")
   /// \return generated remote QC workflow
   static void generateRemoteInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource);
+
+  /// \brief Provides necessary customization of the QC infrastructure.
+  ///
+  /// Provides necessary customization of the Completion Policies of the QC infrastructure. This is necessary to make
+  /// the QC workflow work. Put it inside the following customize() function, before including <Framework/runDataProcessing.cxx>:
+  /// \code{.cxx}
+  /// void customize(std::vector<CompletionPolicy>& policies)
+  /// {
+  ///   quality_control::customizeInfrastructure(policies);
+  /// }
+  /// \endcode
+  /// \param policies - completion policies vector
+  static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };
 
 } // namespace core
@@ -96,7 +118,11 @@ inline void generateRemoteInfrastructure(framework::WorkflowSpec& workflow, std:
   core::InfrastructureGenerator::generateRemoteInfrastructure(workflow, configurationSource);
 }
 
-} // namespace quality_control
-} // namespace o2
+inline void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
+{
+  core::InfrastructureGenerator::customizeInfrastructure(policies);
+}
+
+} // namespace o2::quality_control
 
 #endif //QC_CORE_INFRASTRUCTUREGENERATOR_H

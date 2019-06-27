@@ -24,27 +24,62 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
-ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskName(taskConfig.taskName)
+ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects.SetOwner(true);
+
+  // register with the discovery service
+  mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName);
 }
 
 ObjectsManager::~ObjectsManager()
 {
 }
 
-void ObjectsManager::startPublishing(TObject* object, std::string objectName)
+void ObjectsManager::startPublishing(TObject* object)
 {
-  auto* newObject = new MonitorObject(object, mTaskName);
+  if (mMonitorObjects.FindObject(object->GetName()) != 0) {
+    QcInfoLogger::GetInstance() << "Object already being published (" << object->GetName() << ")"
+                                << infologger::endm;
+    BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
+  }
+  auto* newObject = new MonitorObject(object, mTaskConfig.taskName);
   newObject->setIsOwner(false);
   mMonitorObjects.Add(newObject);
+  mUpdateServiceDiscovery = true;
+}
+
+void ObjectsManager::updateServiceDiscovery()
+{
+  if (!mUpdateServiceDiscovery || mServiceDiscovery == nullptr) {
+    return;
+  }
+  // prepare the string of comma separated objects and publish it
+  string objects;
+  for (auto mo : mMonitorObjects) {
+    objects += mTaskConfig.taskName + "/" + mo->GetName() + ",";
+  }
+  objects.pop_back();
+  mServiceDiscovery->_register(objects);
+  mUpdateServiceDiscovery = false;
+}
+
+void ObjectsManager::stopPublishing(TObject* object)
+{
+  stopPublishing(object->GetName());
+}
+
+void ObjectsManager::stopPublishing(const string& name)
+{
+  auto* mo = dynamic_cast<MonitorObject*>(mMonitorObjects.FindObject(name.data()));
+  if (mo == nullptr) {
+    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(name));
+  }
+  mMonitorObjects.Remove(mo);
 }
 
 Quality ObjectsManager::getQuality(std::string objectName)
 {
-  if (mMonitorObjects.FindObject(objectName.c_str())) {
-    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
-  }
   MonitorObject* mo = getMonitorObject(objectName);
   return mo->getQuality();
 }
@@ -89,5 +124,9 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
   QcInfoLogger::GetInstance() << "Added metadata on " << objectName << " : " << key << " -> " << value << infologger::endm;
 }
 
+int ObjectsManager::getNumberPublishedObjects()
+{
+  return mMonitorObjects.GetLast() + 1; // GetLast returns the index
+}
 
 } // namespace o2::quality_control::core

@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   DatabaseInterface.h
 /// \author Barthelemy von Haller
@@ -11,11 +21,7 @@
 #include <unordered_map>
 //#include <bits/unique_ptr.h>
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 /// \brief The interface to the MonitorObject's repository.
@@ -59,7 +65,7 @@ class DatabaseInterface
    * templates)
    * TODO evaluate whether we should have a method to retrieve a list of objects (optimization)
    */
-  virtual o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName) = 0;
+  virtual o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName, long timestamp = 0) = 0;
 
   /**
    * Returns JSON encoded object
@@ -81,8 +87,6 @@ class DatabaseInterface
   virtual void truncate(std::string taskName, std::string objectName) = 0;
 };
 
-} /* namespace repository */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::repository
 
 #endif /* QC_REPOSITORY_DATABASEINTERFACE_H */

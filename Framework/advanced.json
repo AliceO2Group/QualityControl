@@ -11,6 +11,12 @@
       "Activity": {
         "number": "42",
         "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
       }
     },
     "tasks": {
@@ -20,7 +26,10 @@
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "dataSamplingPolicy": "tst2",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst2"
+        },
         "location": "local",
         "machines": [
           "o2flptst1",
@@ -34,7 +43,10 @@
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "dataSamplingPolicy": "tst1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst1"
+        },
         "location": "remote"
       }
     }

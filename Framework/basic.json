@@ -11,6 +11,12 @@
       "Activity": {
         "number": "42",
         "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
       }
     },
     "tasks": {
@@ -20,7 +26,11 @@
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "dataSamplingPolicy": "its-raw",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "its-raw"
+        },
         "taskParameters": {
           "nothing": "rien"
         },

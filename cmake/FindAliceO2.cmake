@@ -23,25 +23,25 @@ list(APPEND AliceO2_INCLUDE_DIRS ${MS_GSL_INCLUDE_DIR})
 # find libraries
 # TODO SEARCH *ALL* LIBRARIES --> AliceO2 should ideally provide the list !!!
 set(O2_LIBRARIES_NAMES
-        Framework
-        Headers
-        CCDB
-        DebugGUI
-        DetectorsBase
-        ITSBase
-        ITSSimulation
-        ITSReconstruction
-        ITSWorkflow
- 	RawPixelWorkFlow
-        ITSMFTReconstruction
-        ITSMFTBase
-        DetectorsCommonDataFormats
-	)
+        O2FrameworkFoundation
+        O2Framework
+        O2Headers
+        O2CCDB
+        O2DebugGUI
+        O2DetectorsBase
+        O2ITSBase
+        O2ITSSimulation
+        O2ITSReconstruction
+        O2ITSWorkflow
+        O2ITSMFTReconstruction
+       	O2RawPixelWorkFlow
+	O2ITSMFTBase
+        O2DetectorsCommonDataFormats
+        )
 foreach(lib_name ${O2_LIBRARIES_NAMES})
     find_library(AliceO2_LIBRARY_${lib_name} NAMES ${lib_name} HINTS ${O2_ROOT}/lib ENV LD_LIBRARY_PATH)
     list(APPEND AliceO2_LIBRARIES_VAR_NAMES AliceO2_LIBRARY_${lib_name})
     list(APPEND AliceO2_LIBRARIES ${AliceO2_LIBRARY_${lib_name}})
-    message("${lib_name} : AliceO2_LIBRARY_${lib_name} : ${AliceO2_LIBRARY_${lib_name}}")
 endforeach()
 
 # handle the QUIETLY and REQUIRED arguments and set AliceO2_FOUND to TRUE
@@ -57,9 +57,9 @@ if(${AliceO2_FOUND})
     if(NOT TARGET AliceO2::AliceO2)
         add_library(AliceO2::AliceO2 INTERFACE IMPORTED)
         set_target_properties(AliceO2::AliceO2 PROPERTIES
-          INTERFACE_INCLUDE_DIRECTORIES "${AliceO2_INCLUDE_DIRS}"
-          INTERFACE_LINK_LIBRARIES "${AliceO2_LIBRARIES}"
-          )
+                INTERFACE_INCLUDE_DIRECTORIES "${AliceO2_INCLUDE_DIRS}"
+                INTERFACE_LINK_LIBRARIES "${AliceO2_LIBRARIES}"
+                )
     endif()
 endif()
 

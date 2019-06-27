@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   testNonEmpty.cxx
 /// \author Barthelemy von Haller
@@ -13,11 +23,7 @@
 
 #include <TH1.h>
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace common
+namespace o2::quality_control_modules::common
 {
 
 BOOST_AUTO_TEST_CASE(checkable)
@@ -75,6 +81,4 @@ BOOST_AUTO_TEST_CASE(nonempty)
   BOOST_CHECK_EQUAL(quality, Quality::Bad);
 }
 
-} // namespace common
-} // namespace quality_control_modules
-} // namespace o2
+} // namespace o2::quality_control_modules::common

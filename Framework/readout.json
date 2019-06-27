@@ -11,16 +11,25 @@
       "Activity": {
         "number": "42",
         "type": "2"
+      },
+      "monitoring": {
+	    "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
       }
     },
     "tasks": {
       "daqTask": {
         "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
-        "moduleName": "QcSkeleton",
+        "className": "o2::quality_control_modules::daq::DaqTask",
+        "moduleName": "QcDaq",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "dataSamplingPolicy": "readout",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "readout"
+        },
         "location": "remote"
       }
     }

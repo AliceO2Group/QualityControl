@@ -17,7 +17,7 @@ add_library(${MODULE_NAME} SHARED ${SRCS} ${MODULE_NAME}Dict.cxx)
 target_include_directories(
   ${MODULE_NAME}
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${O2_ROOT}/include/AliTPCCommon
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${O2_ROOT}/include/AliTPCCommon  ${O2_ROOT}/include/GPU	   	
 )
 
 

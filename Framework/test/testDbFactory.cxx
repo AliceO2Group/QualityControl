@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   testDbFactory.cxx
 /// \author Barthelemy von Haller
@@ -14,7 +24,6 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
-#include "curl/curl.h"
 #include <boost/test/unit_test.hpp>
 #include <cassert>
 #include <iostream>
@@ -22,7 +31,6 @@
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/MonitorObject.h>
 #include <TH1F.h>
-#include <curl/curl.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/stat.h>
@@ -30,14 +38,10 @@
 using namespace std;
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
-bool do_nothing(AliceO2::Common::FatalException const& ex) { return true; }
+bool do_nothing(AliceO2::Common::FatalException const&) { return true; }
 
 BOOST_AUTO_TEST_CASE(db_factory_test)
 {
@@ -88,17 +92,16 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
 
   // test getting objects list from task
   auto objectNames = ccdb->getPublishedObjectNames("functional_test");
-  //  cout << "objects in task functional_test" << endl;
-  //  for (auto name : objectNames) {
-  //    cout << " - object : " << name << endl;
-  //  }
-  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "object1") != objectNames.end());
-  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "object2") != objectNames.end());
-  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "path/to/object3") != objectNames.end());
+  //    cout << "objects in task functional_test" << endl;
+  //    for (auto name : objectNames) {
+  //      cout << " - object : " << name << endl;
+  //    }
+  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object1") != objectNames.end());
+  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object2") != objectNames.end());
+  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/path\\/to\\/object3") != objectNames.end());
 
-  // test retrieve object
-  MonitorObject* mo1_retrieved = ccdb->retrieve("functional_test", "object1");
-  BOOST_CHECK(mo1_retrieved != nullptr);
+  // store list of streamer infos
+  //  ccdb->storeStreamerInfosToFile("streamerinfos.root");
 }
 
 /*
@@ -619,6 +622,4 @@ res = curl_easy_perform(curl);
 //  }
 //}
 
-} /* namespace repository */
-} /* namespace quality_control */
-} /* namespace o2 */
+} // namespace o2::quality_control::repository

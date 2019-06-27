@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   ObjectsManager.h
 /// \author Barthelemy von Haller
@@ -6,12 +16,17 @@
 #ifndef QC_CORE_OBJECTMANAGER_H
 #define QC_CORE_OBJECTMANAGER_H
 
+// QC
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/TaskConfig.h"
+#include "QualityControl/ServiceDiscovery.h"
+// ROOT
 #include <TObjArray.h>
 #include <TObjString.h>
+// boost
 #include <boost/concept_check.hpp>
+// stl
 #include <string>
 
 namespace o2::quality_control::core
@@ -34,12 +49,24 @@ class ObjectsManager
   /**
    * Start publishing the object obj, i.e. it will be pushed forward in the workflow at regular intervals.
    * The ownership remains to the caller.
-   * In most cases, objectName parameter can be ignored.
    * @param obj The object to publish.
-   * @param objectName Optional, to publish something under a different name.
+   * @throws DuplicateObjectError
    */
-  void startPublishing(TObject* obj, std::string objectName = "");
-  // todo stoppublishing
+  void startPublishing(TObject* obj);
+
+  /**
+   * Stop publishing this object
+   * @param obj
+   * @throw ObjectNotFoundError if object is not found.
+   */
+  void stopPublishing(TObject* obj);
+
+  /**
+   * Stop publishing this object
+   * @param obj
+   * @throw ObjectNotFoundError if object is not found.
+   */
+  void stopPublishing(const std::string& name);
 
   /**
    * Return the quality of the object whose name is contained in objectName.
@@ -65,14 +92,37 @@ class ObjectsManager
 
   TObject* getObject(std::string objectName);
 
-  TObjArray* getNonOwningArray() const { return new TObjArray(mMonitorObjects); };
+  TObjArray* getNonOwningArray() const
+  {
+    return new TObjArray(mMonitorObjects);
+  };
 
+  /**
+   * \brief Add metadata to a MonitorObject.
+   * Add a metadata pair to a MonitorObject. This is propagated to the database.
+   * @param objectName Name of the MonitorObject.
+   * @param key Key of the metadata.
+   * @param value Value of the metadata.
+   */
   void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
+
+  /**
+   * Get the number of objects that have been published.
+   * @return an int with the number of objects.
+   */
+  int getNumberPublishedObjects();
+
+  /**
+   * \brief Update the list of objects stored in the Service Discovery.
+   * Update the list of objects stored in the Service Discovery.
+   */
+  void updateServiceDiscovery();
 
  private:
   TObjArray mMonitorObjects;
-  std::string mTaskName;
-
+  TaskConfig& mTaskConfig;
+  std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
+  bool mUpdateServiceDiscovery;
 };
 
 } // namespace o2::quality_control::core

@@ -13,47 +13,43 @@
 /// \author Piotr Konopka
 ///
 
+#include <Framework/DeviceSpec.h>
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace core
+namespace o2::quality_control::core
 {
 
 using namespace o2::framework;
 
-TaskRunnerFactory::TaskRunnerFactory() {}
-
-TaskRunnerFactory::~TaskRunnerFactory() {}
-
 o2::framework::DataProcessorSpec
 TaskRunnerFactory::create(std::string taskName, std::string configurationSource, size_t id, bool resetAfterPublish)
 {
-  auto qcTask = std::make_shared<TaskRunner>(taskName, configurationSource, id);
-  qcTask->setResetAfterPublish(resetAfterPublish);
+  TaskRunner qcTask{ taskName, configurationSource, id };
+  qcTask.setResetAfterPublish(resetAfterPublish);
 
   DataProcessorSpec newTask{
-    taskName,
-    qcTask->getInputsSpecs(),
-    Outputs{ qcTask->getOutputSpec() },
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback) [qcTask = std::move(qcTask)](InitContext& initContext) {
-
-        qcTask->initCallback(initContext);
-
-        return (AlgorithmSpec::ProcessCallback) [qcTask = std::move(qcTask)] (ProcessingContext &processingContext) {
-          qcTask->processCallback(processingContext);
-        };
-      }
-    }
+    qcTask.getDeviceName(),
+    qcTask.getInputsSpecs(),
+    Outputs{ qcTask.getOutputSpec() },
+    AlgorithmSpec{},
+    qcTask.getOptions()
   };
+  // this needs to be moved at the end
+  newTask.algorithm = adaptFromTask<TaskRunner>(std::move(qcTask));
 
-  return std::move(newTask);
+  return newTask;
 }
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+void TaskRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
+{
+  auto matcher = [](framework::DeviceSpec const& device) {
+    return device.name.find(TaskRunner::createTaskRunnerIdString()) != std::string::npos;
+  };
+  auto callback = TaskRunner::completionPolicyCallback;
+
+  framework::CompletionPolicy taskRunnerCompletionPolicy{ "taskRunnerCompletionPolicy", matcher, callback };
+  policies.push_back(taskRunnerCompletionPolicy);
+}
+
+} // namespace o2::quality_control::core

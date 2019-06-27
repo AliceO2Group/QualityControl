@@ -1,22 +1,29 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   HistoMerger.cxx
 /// \author Piotr Konopka
 ///
 
 #include "QualityControl/HistoMerger.h"
-
+#include <Framework/DataSpecUtils.h>
 #include <Framework/DataRefUtils.h>
 #include <TObjArray.h>
 
-namespace o2
-{
-using header::DataDescription;
-using header::DataOrigin;
-using SubSpecificationType = header::DataHeader::SubSpecificationType;
-using namespace framework;
-namespace quality_control
-{
-namespace core
+using o2::header::DataDescription;
+using o2::header::DataOrigin;
+using SubSpecificationType = o2::header::DataHeader::SubSpecificationType;
+using namespace o2::framework;
+
+namespace o2::quality_control::core
 {
 
 HistoMerger::HistoMerger(std::string mergerName, double publicationPeriodSeconds)
@@ -57,7 +64,8 @@ void HistoMerger::run(framework::ProcessingContext& ctx)
   }
   if (mPublicationTimer.isTimeout()) {
     if (!mMergedArray.IsEmpty()) {
-      ctx.outputs().snapshot(Output{ mOutputSpec.origin, mOutputSpec.description, mOutputSpec.subSpec }, mMergedArray);
+      auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mOutputSpec);
+      ctx.outputs().snapshot(Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec }, mMergedArray);
     }
     // avoid publishing mo many times consecutively because of too long initial waiting time
     do {
@@ -77,6 +85,4 @@ void HistoMerger::configureInputsOutputs(DataOrigin origin, DataDescription desc
   mOutputSpec = OutputSpec{ origin, description, 0 };
 }
 
-} // namespace core
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::core

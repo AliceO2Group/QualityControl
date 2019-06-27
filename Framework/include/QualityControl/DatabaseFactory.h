@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   DatabaseFactory.h
 /// \author Barthelemy von Haller
@@ -12,11 +22,7 @@
 // QC
 #include "QualityControl/DatabaseInterface.h"
 
-namespace o2
-{
-namespace quality_control
-{
-namespace repository
+namespace o2::quality_control::repository
 {
 
 /// \brief Factory to get a database accessor
@@ -31,8 +37,6 @@ class DatabaseFactory
   static std::unique_ptr<DatabaseInterface> create(std::string name);
 };
 
-} // namespace repository
-} // namespace quality_control
-} // namespace o2
+} // namespace o2::quality_control::repository
 
 #endif // QC_REPOSITORY_DATABASEFACTORY_H
