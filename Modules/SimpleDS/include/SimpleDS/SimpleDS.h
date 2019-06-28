@@ -220,7 +220,7 @@ namespace o2
 				int RunIDPre;
 				int FileIDPre;
 				int TotalFileDone;
-				int FileRest;
+			//	int FileRest;
 				std::chrono::time_point<std::chrono::high_resolution_clock> start;
 				std::chrono::time_point<std::chrono::high_resolution_clock> startLoop;
 				std::chrono::time_point<std::chrono::high_resolution_clock> end;

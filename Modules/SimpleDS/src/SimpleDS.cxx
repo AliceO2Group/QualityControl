@@ -511,6 +511,58 @@ namespace o2
 					ptNFile->Clear();
 					ptFileName->AddText(Form("File Being Proccessed: %s",FileName.Data()));
 					ptNFile->AddText(Form("File Processed: %d ",TotalFileDone));
+
+
+					//MetaData Updating//
+					//	getObjectsManager()->addMetadata(ChipStave->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+
+					getObjectsManager()->addMetadata(ErrorPlots->GetName(),"Run", Form("%d",RunID));
+					getObjectsManager()->addMetadata(ErrorPlots->GetName(),"File", Form("%d",FileID));
+
+					getObjectsManager()->addMetadata(ErrorFile->GetName(),"Run", Form("%d",RunID));
+					getObjectsManager()->addMetadata(ErrorFile->GetName(),"File", Form("%d",FileID));
+
+					for(int j = 0; j < 1; j++){
+						for(int i = 0; i < NChipLay[j]; i++){
+
+							getObjectsManager()->addMetadata(HITMAP[i]->GetName(),"Run", Form("%d",RunID));
+							getObjectsManager()->addMetadata(HITMAP[i]->GetName(),"File", Form("%d",FileID));
+							getObjectsManager()->addMetadata(LayHITNoisy[i]->GetName(),"Run", Form("%d",RunID));
+							getObjectsManager()->addMetadata(LayHITNoisy[i]->GetName(),"File", Form("%d",FileID));
+
+						}
+					}
+
+					for(int j = 0; j < 1; j++){
+						for(int i = 0; i < NStaves[j]; i++){
+							getObjectsManager()->addMetadata(LayHIT[i]->GetName(),"Run", Form("%d",RunID));
+							getObjectsManager()->addMetadata(LayHIT[i]->GetName(),"File", Form("%d",FileID));
+						}
+					}
+
+					for(int j = 6; j < 7; j++){
+						for(int i = 0; i < 18; i++){
+							//getObjectsManager()->startPublishing(HITMAP6[i]);
+						}
+					}
+
+					for(int i = 0; i < NLayer; i++){
+
+						getObjectsManager()->addMetadata(LayEtaPhi[i]->GetName(),"Run", Form("%d",RunID));
+						getObjectsManager()->addMetadata(LayEtaPhi[i]->GetName(),"File", Form("%d",FileID));
+						getObjectsManager()->addMetadata(LayChipStave[i]->GetName(),"Run", Form("%d",RunID));
+						getObjectsManager()->addMetadata(LayChipStave[i]->GetName(),"File", Form("%d",FileID));
+						getObjectsManager()->addMetadata(OccupancyPlot[i]->GetName(),"Run", Form("%d",RunID));
+						getObjectsManager()->addMetadata(OccupancyPlot[i]->GetName(),"File", Form("%d",FileID));
+						getObjectsManager()->addMetadata(OccupancyPlotNoisy[i]->GetName(),"Run", Form("%d",RunID));
+						getObjectsManager()->addMetadata(OccupancyPlotNoisy[i]->GetName(),"File", Form("%d",FileID));
+
+					}
+
+					//MetaData Updating DONE//
+
+
+
 				}
 				RunIDPre = RunID;
 				FileIDPre = FileID;
@@ -765,36 +817,6 @@ namespace o2
 
 					cout << "Done Noisy Pixel Hist" << endl;
 
-
-					//MetaData Updating//
-					getObjectsManager()->addMetadata(ChipStave->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
-					getObjectsManager()->addMetadata(ErrorPlots->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
-					getObjectsManager()->addMetadata(ErrorFile->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
-					for(int j = 0; j < 1; j++){
-						for(int i = 0; i < NChipLay[j]; i++){
-							getObjectsManager()->addMetadata(HITMAP[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
-							getObjectsManager()->addMetadata(LayHITNoisy[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
-						}
-					}
-
-					for(int j = 0; j < 1; j++){
-						for(int i = 0; i < NStaves[j]; i++){
-							getObjectsManager()->addMetadata(LayHIT[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");	
-						}
-					}
-
-					for(int j = 6; j < 7; j++){
-						for(int i = 0; i < 18; i++){
-							//getObjectsManager()->startPublishing(HITMAP6[i]);
-						}
-					}
-
-					for(int i = 0; i < NLayer; i++){
-						getObjectsManager()->addMetadata(LayEtaPhi[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
-						getObjectsManager()->addMetadata(LayChipStave[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
-						getObjectsManager()->addMetadata(OccupancyPlot[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
-						getObjectsManager()->addMetadata(OccupancyPlotNoisy[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
-					}
 				}
 
 				//MetaData Updating DONE//
@@ -987,6 +1009,17 @@ namespace o2
 				NEventInRun = 0;
 				ErrorFile->Reset();	
 				TotalFileDone = 0;
+
+				for(int j = 0; j < 1; j++){
+					for(int i = 0; i < NStaves[j]; i++){
+						LayHIT[i]->GetXaxis()->SetNdivisions(-32);
+						ConfirmXAxis(LayHIT[i]);
+						ReverseYAxis(LayHIT[i]);
+						///		getObjectsManager()->addMetadata(LayHIT[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
+					}
+				}
+
+
 
 				QcInfoLogger::GetInstance() << "DONE the histogram Resetting" << AliceO2::InfoLogger::InfoLogger::endm;
 
