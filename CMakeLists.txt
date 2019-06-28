@@ -80,7 +80,6 @@ find_package(
     program_options
     system
     log
-    signals
     system
 )
 find_package(Git QUIET)
@@ -97,6 +96,7 @@ find_package(GLFW)
 find_package(FairRoot REQUIRED)
 find_package(FairMQ REQUIRED)
 find_package(FairLogger REQUIRED)
+#find_package(ZeroMQ REQUIRED)
 find_package(
   ROOT 6.06.02
   COMPONENTS

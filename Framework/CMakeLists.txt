@@ -52,6 +52,7 @@ configure_file(
 # ROOT dictionary the following root macros expect include dirs to be set as directory property TODO how to generate
 # this automatically ? ? ?
 get_directory_property(include_dirs INCLUDE_DIRECTORIES)
+list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}")
 list(APPEND include_dirs "${CMAKE_CURRENT_SOURCE_DIR}/include")
 get_target_property(config_inc_dir AliceO2::Configuration INTERFACE_INCLUDE_DIRECTORIES)
 list(APPEND include_dirs "${config_inc_dir}")
