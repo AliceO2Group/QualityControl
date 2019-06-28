@@ -15,7 +15,7 @@
 
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"
-#include "../src/runnerUtils.h"
+#include "QualityControl/runnerUtils.h"
 #include <Framework/runDataProcessing.h>
 #include <Framework/ControlService.h>
 #include <Framework/DataSampling.h>
