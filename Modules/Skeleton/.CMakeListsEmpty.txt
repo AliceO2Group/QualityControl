@@ -24,7 +24,7 @@ add_root_dictionary(QcSkeleton
 
 # ---- Test(s) ----
 
-add_executable(testQcSkeleton testQcSkeleton.cxx)
+add_executable(testQcSkeleton test/testQcSkeleton.cxx)
 target_link_libraries(testQcSkeleton
                       PRIVATE QcSkeleton Boost::unit_test_framework)
 add_test(NAME testQcSkeleton COMMAND testQcSkeleton)
