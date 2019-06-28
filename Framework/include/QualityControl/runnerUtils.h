@@ -39,6 +39,6 @@ std::string getFirstTaskName(std::string configurationSource)
   throw;
 }
 
-} // o2::quality_control::core
+} // namespace o2::quality_control::core
 
 #endif //QUALITYCONTROL_RUNNERUTILS_H

@@ -61,8 +61,8 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include "Framework/runDataProcessing.h"
 
 #include "QualityControl/Checker.h"
-#include "runnerUtils.h"
-#include "ExamplePrinterSpec.h"
+#include "QualityControl/runnerUtils.h"
+#include "QualityControl/ExamplePrinterSpec.h"
 
 #include <iostream>
 #include <string>
