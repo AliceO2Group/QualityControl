@@ -97,10 +97,6 @@ function(add_root_dictionary)
     set(LD_LIBRARY_PATH "${LD_LIBRARY_PATH}:$ENV{GCC_TOOLCHAIN_ROOT}/lib64")
   endif()
 
-  if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-  endif()
-
   # add a custom command to generate the dictionary using rootcling
   # cmake-format: off
   add_custom_command(

@@ -17,9 +17,23 @@ project(QualityControl
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES CXX C)
 
-set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
-set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
-set(INCLUDE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/include")
+# Set CMAKE_INSTALL_LIBDIR explicitly to lib (to avoid lib64 on CC7)
+set(CMAKE_INSTALL_LIBDIR lib)
+
+include(GNUInstallDirs)
+
+if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY
+      ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+endif()
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY
+      ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+endif()
+if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
+      ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+endif()
 
 # ---- End Project ----
 # The line above is necessary for the generation of doxygen by travis
