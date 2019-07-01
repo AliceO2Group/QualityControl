@@ -7,7 +7,7 @@ configure_file("include/QualityControl/Version.h.in"
 
 # ---- Library ----
 
-add_library(QualityControl 
+add_library(QualityControl
             src/MonitorObject.cxx
             src/Quality.cxx
             src/ObjectsManager.cxx
@@ -204,6 +204,32 @@ foreach(i RANGE ${count})
   install(TARGETS ${test_name} DESTINATION tests)
 endforeach()
 
+list(APPEND needQualityControlRoot
+            testDbFactory
+            testInfrastructureGenerator
+            testCcdbDatabase
+            testChecker
+            testTaskRunner
+            testObjectsManager
+            testWorkflow)
+foreach(t IN LISTS needQualityControlRoot)
+  set_tests_properties(${t}
+                       PROPERTIES ENVIRONMENT
+                                  QUALITYCONTROL_ROOT=${CMAKE_BINARY_DIR})
+endforeach()
+
+list(APPEND needLD_LIBRARY_PATH testTaskInterface)
+foreach(t IN LISTS needLD_LIBRARY_PATH)
+  set_tests_properties(
+    ${t}
+    PROPERTIES
+      ENVIRONMENT
+      "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib;DYLD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
+    )
+endforeach()
+
+set_property(TEST testTaskInterface PROPERTY LABELS slow)
+
 # ---- Install ----
 
 # Build targets with install rpath on Mac to dramatically speed up installation
@@ -277,5 +303,7 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
                  script/o2-qc-database-setup.sh
         DESTINATION bin)
 
-install(FILES test/testSharedConfig.json test/testWorkflow.json
-        DESTINATION tests)
+file(COPY test/testSharedConfig.json test/testWorkflow.json
+     DESTINATION ${CMAKE_BINARY_DIR}/tests/)
+
+file(COPY streamerinfos.root DESTINATION ${CMAKE_BINARY_DIR}/etc/)

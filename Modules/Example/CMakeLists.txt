@@ -36,3 +36,10 @@ foreach(test ${TEST_SRCS})
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
 endforeach()
+
+set_property(
+  TEST testFactory
+  PROPERTY
+    ENVIRONMENT
+    "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib;DYLD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
+  )
