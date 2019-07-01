@@ -819,6 +819,10 @@ namespace o2
 
 				}
 
+				colTask = col;
+				rowTask = row;
+				ChipIDTask = ChipID;
+
 				//MetaData Updating DONE//
 
 				digits.clear();

@@ -106,6 +106,7 @@ namespace o2::quality_control::core
 			mNumberBlocks++;
 		}
 		QcInfoLogger::GetInstance() << "FileFinish IN Task " << FileFinish << "  FileRest  " << FileRest << " ReallyDONE = " << ReallyDONE << AliceO2::InfoLogger::InfoLogger::endm;
+		QcInfoLogger::GetInstance() << "colTask " << colTask << "  rowTask  " << rowTask << " ChipIDTask = " << ChipIDTask << AliceO2::InfoLogger::InfoLogger::endm;
 
 		if(FileRest > 1){
 			ReallyDONE = 0;
@@ -116,7 +117,7 @@ namespace o2::quality_control::core
 
 
 
-		if(ReallyDONE == 0){
+		if(ReallyDONE == 0 && colTask + rowTask + ChipIDTask > 0){
 			if (timerReady ||FileFinish == 1 ) {
 
 				finishCycle(pCtx.outputs());
@@ -146,7 +147,11 @@ namespace o2::quality_control::core
 		if(FileRest == 1 && FileFinish == 1){
 			ReallyDONE = 1;
 		}
-	
+		
+		if(colTask + rowTask + ChipIDTask ==0){
+			ReallyDONE = 1;
+		}
+
 
 	}
 
