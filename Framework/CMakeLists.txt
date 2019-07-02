@@ -169,9 +169,11 @@ set(TEST_SRCS
     test/testQuality.cxx
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
+    test/testCcdbDatabaseExtra.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""
@@ -217,6 +219,7 @@ set_property(TEST testWorkflow PROPERTY TIMEOUT 120)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 120)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
+set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
 
 # ---- Install ----
 
