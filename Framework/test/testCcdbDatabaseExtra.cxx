@@ -47,26 +47,25 @@ std::unordered_map<std::string, std::string> Objects;
  * Fixture for the tests, i.e. code is ran in every test that uses it, i.e. it is like a setup and teardown for tests.
  */
 struct test_fixture {
-    test_fixture()
-    {
-      backend = DatabaseFactory::create("CCDB");
-      backend->connect(CCDB_ENDPOINT, "", "", "");
-      std::cout << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << std::endl;
-    }
+  test_fixture()
+  {
+    backend = DatabaseFactory::create("CCDB");
+    backend->connect(CCDB_ENDPOINT, "", "", "");
+    std::cout << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << std::endl;
+  }
 
-    ~test_fixture() = default;
+  ~test_fixture() = default;
 
-    std::unique_ptr<DatabaseInterface> backend;
-    map<string, string> metadata;
+  std::unique_ptr<DatabaseInterface> backend;
+  map<string, string> metadata;
 };
-
 
 // These tests should not be executed automatically, too much error prone.
 // It depends on what is in the database.
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
-  {
-    test_fixture f;
+{
+  test_fixture f;
   for (auto const& [task, object] : Objects) {
     std::cout << "[RETRIEVE]: " << task << object << std::endl;
     auto mo = f.backend->retrieve(task, object);
@@ -76,13 +75,13 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
     }
     cout << "name of encapsulated object : " << mo->getObject()->GetName() << endl; // just to test it
   }
-  }
+}
 
 // TODO this should not be executed automatically, too much error prone.
 // It depends on what is in the database.
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
-  {
-    test_fixture f;
+{
+  test_fixture f;
   for (auto const& [task, object] : Objects) {
     std::cout << "[JSON RETRIEVE]: " << task << "/" << object << std::endl;
     auto json = f.backend->retrieveJson(task, object);
@@ -95,6 +94,6 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
     boost::property_tree::ptree pt;
     boost::property_tree::read_json(ss, pt);
   }
-  }
+}
 } // namespace
 } // namespace o2::quality_control::core
