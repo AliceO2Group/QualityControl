@@ -14,7 +14,7 @@
 ///
 /// \brief This is DPL workflow to see HistoMerger in action
 
-#include <FairLogger.h>
+#include <fairlogger/Logger.h>
 #include <Framework/CompletionPolicy.h>
 #include <Framework/CompletionPolicyHelpers.h>
 #include <TH1F.h>
