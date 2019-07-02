@@ -197,35 +197,19 @@ foreach(i RANGE ${count})
                                        # one string
 
   add_executable(${test_name} ${test})
+  set_property(TARGET ${test_name}
+               PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
   target_link_libraries(${test_name}
                         PRIVATE QualityControl Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name} ${arg})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
 
-list(APPEND needQualityControlRoot
-            testDbFactory
-            testInfrastructureGenerator
-            testCcdbDatabase
-            testChecker
-            testTaskRunner
-            testObjectsManager
-            testWorkflow)
-foreach(t IN LISTS needQualityControlRoot)
-  set_property(TEST ${t}
-               APPEND
-               PROPERTY ENVIRONMENT QUALITYCONTROL_ROOT=${CMAKE_BINARY_DIR})
-endforeach()
-
-list(APPEND needLD_LIBRARY_PATH testTaskInterface testWorkflow)
-foreach(t IN LISTS needLD_LIBRARY_PATH)
-  set_property(
-    TEST ${t}
-    APPEND
-    PROPERTY
-      ENVIRONMENT
-      "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib;DYLD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/lib"
-    )
+foreach(t testTaskInterface testWorkflow testTaskRunner
+        testInfrastructureGenerator)
+  target_sources(${t} PRIVATE
+                 ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
+  target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
 endforeach()
 
 set_property(TEST testTaskInterface PROPERTY LABELS slow)

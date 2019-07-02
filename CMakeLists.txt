@@ -111,6 +111,8 @@ if(NOT (MYSQL_FOUND AND TARGET ROOT::RMySQL))
     )
 endif()
 
+configure_file(getTestDataDirectory.cxx.in getTestDataDirectory.cxx)
+
 # ---- Subdirectories ----
 
 add_subdirectory(Framework)

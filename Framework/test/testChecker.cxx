@@ -32,8 +32,7 @@ using namespace o2::header;
 
 BOOST_AUTO_TEST_CASE(test_checker_factory)
 {
-  std::string configFilePath =
-    std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testSharedConfig.json";
+  std::string configFilePath{ "json://tests/testSharedConfig.json" };
 
   CheckerFactory checkerFactory;
   DataProcessorSpec checker = checkerFactory.create("abcChecker", "abcTask", configFilePath);
@@ -58,8 +57,7 @@ BOOST_AUTO_TEST_CASE(test_checker_static)
 
 BOOST_AUTO_TEST_CASE(test_checker)
 {
-  std::string configFilePath =
-    std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testSharedConfig.json";
+  std::string configFilePath = { "json://tests/testSharedConfig.json" };
 
   Checker checker{ "abcChecker", "abcTask", configFilePath };
 

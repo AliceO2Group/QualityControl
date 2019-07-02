@@ -13,6 +13,7 @@
 /// \author  Piotr Konopka
 ///
 
+#include "getTestDataDirectory.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
 #include <Framework/DataSampling.h>
@@ -32,8 +33,7 @@ using namespace o2::header;
 
 BOOST_AUTO_TEST_CASE(test_factory)
 {
-  std::string configFilePath =
-    std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testSharedConfig.json";
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   TaskRunnerFactory taskRunnerFactory;
   DataProcessorSpec taskRunner = taskRunnerFactory.create("abcTask", configFilePath, 123);
@@ -64,8 +64,7 @@ BOOST_AUTO_TEST_CASE(test_task_runner_static)
 
 BOOST_AUTO_TEST_CASE(test_task_runner)
 {
-  std::string configFilePath =
-    std::string("json:/") + getenv("QUALITYCONTROL_ROOT") + "/tests/testSharedConfig.json";
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   TaskRunner qcTask{ "abcTask", configFilePath, 0 };
 

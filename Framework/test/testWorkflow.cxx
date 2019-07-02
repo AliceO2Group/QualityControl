@@ -13,6 +13,7 @@
 /// \author  Piotr Konopka
 ///
 
+#include "getTestDataDirectory.h"
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/runnerUtils.h"
@@ -44,7 +45,8 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   };
   specs.push_back(producer);
 
-  const std::string qcConfigurationSource = std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/tests/testWorkflow.json";
+  const std::string qcConfigurationSource = std::string("json://") + getTestDataDirectory() + "testWorkflow.json";
+
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
   // Generation of Data Sampling infrastructure

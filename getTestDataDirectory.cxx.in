@@ -1,0 +1,6 @@
+#include "getTestDataDirectory.h"
+
+const char* getTestDataDirectory()
+{
+  return "@CMAKE_BINARY_DIR@/tests/";
+}
