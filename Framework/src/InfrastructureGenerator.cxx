@@ -23,6 +23,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <Configuration/ConfigurationFactory.h>
 
+#include <algorithm>
+
 using namespace o2::framework;
 using namespace o2::configuration;
 using namespace o2::quality_control::checker;
@@ -107,19 +109,27 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       //workflow.emplace_back(checkerFactory.create(taskName + "-checker", taskName, configurationSource));
     }
   }
-  for (const auto& [checkName, checkConfig] : config->getRecursive("qc.check")) {
-    // todo sanitize somehow this if-frenzy
-    if (checkConfig.get<bool>("active", true)) {
-      if (checkConfig.get<std::string>("location") == "local") {
-        // TODO
-      } else if (checkConfig.get<std::string>("location") == "remote") {
-        // -- if tasks are REMOTE, generate tasks + mergers + checkers
 
-        workflow.emplace_back(checkerFactory.create(checkName, configurationSource));
+  typedef std::vector<std::string> InputNames; //TODO: Uniqe triple: origin, descripion, subspec
+  typedef std::vector<std::string> CheckerNames;
+  std::map<InputNames, CheckerNames> checkerMap;
+  for (const auto& [checkerName, checkerConfig] : config->getRecursive("qc.check")) {
+    InputNames inputNames;
+    if (checkerConfig.get<bool>("active", true)) {
+      for (const auto& [inputName, inputConfig]: checkerConfig.get_child("dataSource")) {
+        inputNames.push_back(std::string(inputConfig.get_value<std::string>("name")));
+      }
+      std::sort(inputNames.begin(), inputNames.end());
+      if (checkerMap.find(inputNames) != checkerMap.end()){
+        checkerMap.insert(std::pair<InputNames, CheckerNames>(inputNames, {std::string(checkerName)}));
+      } else {
+        checkerMap[inputNames].push_back(std::string(checkerName));
       }
     }
   }
-
+  for(const auto& [inputNames, checkerNames]: checkerMap){ 
+    workflow.emplace_back(checkerFactory.create(checkerNames, configurationSource));
+  }
 
   return workflow;
 }

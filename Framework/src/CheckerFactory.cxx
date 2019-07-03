@@ -39,4 +39,20 @@ DataProcessorSpec CheckerFactory::create(std::string checkerName, std::string co
   return newChecker;
 }
 
+DataProcessorSpec CheckerFactory::create(std::vector<std::string> checkerNames, std::string configurationSource)
+{
+  Checker qcChecker{ checkerNames, configurationSource };
+
+  DataProcessorSpec newChecker{ checkerNames.front(), //TODO: Change the name
+                                qcChecker.getInputs(),
+                                Outputs{ qcChecker.getOutputSpec() },
+                                adaptFromTask<Checker>(std::move(qcChecker)),
+                                Options{},
+                                std::vector<std::string>{},
+                                std::vector<DataProcessorLabel>{} };
+
+  return newChecker;
+}
+
+
 } // namespace o2::quality_control::checker
