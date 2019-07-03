@@ -66,6 +66,7 @@ namespace o2::quality_control::core
 	{
 		QcInfoLogger::GetInstance() << "initializing TaskRunner" << AliceO2::InfoLogger::InfoLogger::endm;
 		ReallyDONE = 0;
+		FileFinishPre = 0;
 		// registering state machine callbacks
 		iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this]() { start(); });
 		iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
@@ -106,8 +107,10 @@ namespace o2::quality_control::core
 			mNumberBlocks++;
 		}
 		QcInfoLogger::GetInstance() << "FileFinish IN Task " << FileFinish << "  FileRest  " << FileRest << " ReallyDONE = " << ReallyDONE << AliceO2::InfoLogger::InfoLogger::endm;
-		QcInfoLogger::GetInstance() << "colTask " << colTask << "  rowTask  " << rowTask << " ChipIDTask = " << ChipIDTask << AliceO2::InfoLogger::InfoLogger::endm;
+		QcInfoLogger::GetInstance() << "FileFinishPre " << FileFinishPre << "   colTask " << colTask << "  rowTask  " << rowTask << " ChipIDTask = " << ChipIDTask << AliceO2::InfoLogger::InfoLogger::endm;
 
+		
+	
 		if(FileRest > 1){
 			ReallyDONE = 0;
 		}
@@ -115,7 +118,7 @@ namespace o2::quality_control::core
 			ReallyDONE = 0;
 		}
 
-
+		if(FileFinishPre == 1 && FileFinish == 1) ReallyDONE = 1; 
 
 		if(ReallyDONE == 0){
 			if (timerReady ||FileFinish == 1 ) {
@@ -147,10 +150,13 @@ namespace o2::quality_control::core
 		if(FileRest == 1 && FileFinish == 1){
 			ReallyDONE = 1;
 		}
-		
+
+		/*
 		if(colTask + rowTask + ChipIDTask ==0){
 			ReallyDONE = 1;
 		}
+		*/
+		FileFinishPre = FileFinish;
 
 
 	}

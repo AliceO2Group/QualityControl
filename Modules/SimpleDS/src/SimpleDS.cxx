@@ -490,6 +490,8 @@ namespace o2
 				if(FileFinish == 1 && FileRest == 1) bulb->SetFillColor(kRed);
 
 
+
+
 				//For The Moment//
 
 				RunID = ctx.inputs().get<int>("Run");
@@ -899,11 +901,15 @@ namespace o2
 				TotalHisTime = TotalHisTime + difference;
 				QcInfoLogger::GetInstance() << "Time in Histogram = " << difference/1000.0 << "s" <<  AliceO2::InfoLogger::InfoLogger::endm;
 				timefout << "Time in Histogram = " << difference/1000.0 << "s" << std::endl;
+				
+
+
 
 				if(NEvent == 0  && ChipID ==0 && row ==0 && col == 0 && Yellowed == 0) {
 					bulb->SetFillColor(kYellow);
 					Yellowed = 1;
 				}
+
 
 			}
 
