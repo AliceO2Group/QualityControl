@@ -51,7 +51,12 @@ CcdbDatabase::~CcdbDatabase() { disconnect(); }
 
 void CcdbDatabase::loadDeprecatedStreamerInfos()
 {
-  string path = getenv("QUALITYCONTROL_ROOT") ? string(getenv("QUALITYCONTROL_ROOT")) + "/etc/" : "";
+  if(getenv("QUALITYCONTROL_ROOT") == nullptr) {
+    LOG(WARNING) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
+                 << "Consequently, old data might not be readable.";
+    return;
+  }
+  string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
   path += "streamerinfos.root";
   TFile file(path.data(), "READ");
   if (file.IsZombie()) {
