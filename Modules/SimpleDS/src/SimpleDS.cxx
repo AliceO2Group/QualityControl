@@ -446,8 +446,8 @@ namespace o2
 				bulb->SetFillColor(kRed);
 				TotalFileDone = 0;
 				TotalHisTime = 0;
-				int Counted = 0;
-
+			    Counted = 0;
+				Yellowed = 0;
 			}
 
 			void SimpleDS::startOfActivity(Activity& activity)
@@ -900,8 +900,10 @@ namespace o2
 				QcInfoLogger::GetInstance() << "Time in Histogram = " << difference/1000.0 << "s" <<  AliceO2::InfoLogger::InfoLogger::endm;
 				timefout << "Time in Histogram = " << difference/1000.0 << "s" << std::endl;
 
-				if(NEvent == 0  && ChipID ==0 && row ==0 && col == 0 ) bulb->SetFillColor(kGreen);
-
+				if(NEvent == 0  && ChipID ==0 && row ==0 && col == 0 && Yellowed == 0) {
+					bulb->SetFillColor(kYellow);
+					Yellowed = 1;
+				}
 
 			}
 
@@ -1013,7 +1015,7 @@ namespace o2
 				NEventInRun = 0;
 				ErrorFile->Reset();	
 				TotalFileDone = 0;
-
+				Yellowed = 0; 
 				for(int j = 0; j < 1; j++){
 					for(int i = 0; i < NStaves[j]; i++){
 						LayHIT[i]->GetXaxis()->SetNdivisions(-32);

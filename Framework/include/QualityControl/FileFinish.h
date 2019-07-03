@@ -1,4 +1,5 @@
 int FileFinish;
+int FileFinishPre;
 double TotalHisTime;
 int FileRest;
 int ReallyDONE;

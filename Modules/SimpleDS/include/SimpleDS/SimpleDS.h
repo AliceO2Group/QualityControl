@@ -236,6 +236,7 @@ namespace o2
 				int TotalHits;
 				int Counted;
 				int TotalCounted = 10000;
+				int Yellowed;
 			};
 
 		} // namespace simpleds
