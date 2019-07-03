@@ -117,7 +117,7 @@ namespace o2::quality_control::core
 
 
 
-		if(ReallyDONE == 0 && colTask + rowTask + ChipIDTask > 0){
+		if(ReallyDONE == 0){
 			if (timerReady ||FileFinish == 1 ) {
 
 				finishCycle(pCtx.outputs());
