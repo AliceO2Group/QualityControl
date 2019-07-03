@@ -97,37 +97,6 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(h1->GetEntries(), 10000);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
-{
-  test_fixture f;
-  for (auto const& [task, object] : Objects) {
-    std::cout << "[RETRIEVE]: " << task << object << std::endl;
-    auto mo = f.backend->retrieve(task, object);
-    if (mo == nullptr) {
-      std::cout << "No object found (" << task << object << ")" << std::endl;
-      continue;
-    }
-    cout << "name of encapsulated object : " << mo->getObject()->GetName() << endl; // just to test it
-  }
-}
-
-BOOST_AUTO_TEST_CASE(ccdb_retrievejson)
-{
-  test_fixture f;
-  for (auto const& [task, object] : Objects) {
-    std::cout << "[JSON RETRIEVE]: " << task << "/" << object << std::endl;
-    auto json = f.backend->retrieveJson(task, object);
-    if (json.empty()) {
-      std::cout << "skipping empty object..." << std::endl;
-      continue;
-    }
-    std::stringstream ss;
-    ss << json;
-    boost::property_tree::ptree pt;
-    boost::property_tree::read_json(ss, pt);
-  }
-}
-
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store"))
 {
   // store a new object

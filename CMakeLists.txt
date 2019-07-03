@@ -86,7 +86,6 @@ find_package(Boost 1.58
                         program_options
                         system
                         log
-                        signals
                         system)
 find_package(Git QUIET)
 find_package(Configuration REQUIRED)

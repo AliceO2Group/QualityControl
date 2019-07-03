@@ -33,6 +33,8 @@
 #include <utility>
 #include <fairlogger/Logger.h>
 
+#include <TSystem.h>
+
 using namespace std::chrono;
 using namespace AliceO2::Common;
 using namespace o2::quality_control::core;
@@ -54,6 +56,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
   TFile file(path.data(), "READ");
   if (file.IsZombie()) {
     string s = string("Cannot find ") + path;
+    LOG(ERROR) << s;
     BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
   }
   TIter next(file.GetListOfKeys());
