@@ -133,7 +133,7 @@ core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string ob
   if (object == nullptr) {
     // We could not open a TFile we should now try to open an object directly serialized
     object = ccdbApi.retrieve(path, metadata, when);
-    LOG(INFO) << "We could retrieve the object " << path << " as a streamed object.";
+    LOG(DEBUG) << "We could retrieve the object " << path << " as a streamed object.";
     if (object == nullptr) {
       return nullptr;
     }
