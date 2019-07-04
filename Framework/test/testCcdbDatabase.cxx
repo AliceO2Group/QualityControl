@@ -63,6 +63,9 @@ struct test_fixture {
 BOOST_AUTO_TEST_CASE(ccdb_create)
 {
   test_fixture f;
+
+  f.backend->truncate("my/task", "*");
+
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
@@ -78,12 +81,15 @@ BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
   }
 }
 
+long oldTimestamp;
+
 BOOST_AUTO_TEST_CASE(ccdb_store)
 {
   test_fixture f;
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->store(mo1);
 }
 
@@ -100,7 +106,6 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store"))
 {
   // store a new object
-  long initialTimestamp = CcdbDatabase::getCurrentTimestamp();
   test_fixture f;
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10001);
@@ -108,7 +113,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store
   f.backend->store(mo1);
 
   // Retrieve old object stored at timestampStorage
-  MonitorObject* mo = f.backend->retrieve("my/task", "asdf/asdf", initialTimestamp);
+  MonitorObject* mo = f.backend->retrieve("my/task", "asdf/asdf", oldTimestamp);
   BOOST_CHECK_NE(mo, nullptr);
   TH1F* old = dynamic_cast<TH1F*>(mo->getObject());
   BOOST_CHECK_NE(old, nullptr);

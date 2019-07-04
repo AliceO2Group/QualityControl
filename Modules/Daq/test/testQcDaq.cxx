@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
 
 //  BOOST_CHECK(manager->getMonitorObject("payloadSize")->getObject() != nullptr);
 
-  Activity activity;
+//  Activity activity;
 //  task.startOfActivity(activity);
 //  task.startOfCycle();
   //  auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
