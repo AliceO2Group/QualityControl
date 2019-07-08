@@ -67,8 +67,8 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"
-#include "runnerUtils.h"
-#include "ExamplePrinterSpec.h"
+#include "QualityControl/runnerUtils.h"
+#include "QualityControl/ExamplePrinterSpec.h"
 
 std::string getConfigPath(const ConfigContext& config);
 
