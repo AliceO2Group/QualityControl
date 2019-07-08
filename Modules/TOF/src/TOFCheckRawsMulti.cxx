@@ -16,7 +16,7 @@
 #include "TOF/TOFCheckRawsMulti.h"
 
 // ROOT
-#include <FairLogger.h>
+#include <fairlogger/Logger.h>
 #include <TH1.h>
 #include <TList.h>
 #include <TPaveText.h>

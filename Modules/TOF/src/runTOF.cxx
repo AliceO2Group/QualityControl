@@ -58,7 +58,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
-#include <FairLogger.h>
+#include <fairlogger/Logger.h>
 #include <TH1F.h>
 #include <memory>
 #include <random>
