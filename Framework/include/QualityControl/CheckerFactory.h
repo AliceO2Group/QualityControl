@@ -18,6 +18,9 @@
 
 #include <string>
 
+#include "Framework/DataProcessorSpec.h"
+#include <Framework/CompletionPolicy.h>
+
 namespace o2::framework
 {
 struct DataProcessorSpec;
@@ -35,6 +38,8 @@ class CheckerFactory
 
   framework::DataProcessorSpec create(std::string checkerName, std::string configurationSource);
   framework::DataProcessorSpec create(std::vector<std::string> checkerNames, std::string configurationSource);
+
+  static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };
 
 } // namespace o2::quality_control::checker

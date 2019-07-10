@@ -118,6 +118,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
 
   // if 10 s we publish stats
   if (mStatsTimer.isTimeout()) {
+    QcInfoLogger::GetInstance() << ">> Task name : " << mTaskConfig.taskName << " - blocks: " << mNumberBlocks << AliceO2::InfoLogger::InfoLogger::endm;
     double current = mStatsTimer.getTime();
     int objectsPublished = (mTotalNumberObjectsPublished - mLastNumberObjects);
     mLastNumberObjects = mTotalNumberObjectsPublished;
@@ -350,7 +351,7 @@ void TaskRunner::endOfActivity()
 
 void TaskRunner::startCycle()
 {
-  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << " in " << mTaskConfig.taskName << AliceO2::InfoLogger::InfoLogger::endm;
   mTask->startOfCycle();
   mNumberBlocks = 0;
   mCycleOn = true;
@@ -401,6 +402,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
 unsigned long TaskRunner::publish(DataAllocator& outputs)
 {
+  QcInfoLogger::GetInstance() << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << AliceO2::InfoLogger::InfoLogger::endm;
   auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);
   outputs.adopt(
     Output{ concreteOutput.origin,

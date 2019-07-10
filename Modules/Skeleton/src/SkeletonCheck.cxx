@@ -56,7 +56,7 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
 std::string SkeletonCheck::getAcceptedType() { return "TH1"; }
 
-void SkeletonCheck::beautify(MonitorObject* mo, Quality checkResult)
+void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "example") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());

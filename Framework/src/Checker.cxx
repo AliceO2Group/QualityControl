@@ -52,7 +52,8 @@ namespace o2::quality_control::checker
 // TODO maybe we could use the CheckerFactory
 
 Checker::Checker(std::string checkerName, std::string configurationSource)
-  : mCheckerNames{checkerName},
+  : mDeviceName(createCheckerIdString() + "-" + checkerName),
+    mCheckerNames{checkerName},
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
     mInputs(Checker::createInputSpec(checkerName, configurationSource)),
@@ -64,7 +65,8 @@ Checker::Checker(std::string checkerName, std::string configurationSource)
 }
 
 Checker::Checker(std::vector<std::string> checkerNames, std::string configurationSource)
-  : mCheckerNames{checkerNames},
+  : mDeviceName(createCheckerIdString() + "-" + checkerNames.front()),
+    mCheckerNames{checkerNames},
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
     mInputs(Checker::createInputSpec(checkerNames.front(), configurationSource)),
@@ -115,6 +117,10 @@ void Checker::populateConfig(){
   }
 }
 
+std::string Checker::createCheckerIdString(){
+  return std::string("QC-CHECKER");
+};
+
 void Checker::initPolicy(){
   try {
       const auto& checkerName = mCheckerNames.front();
@@ -137,32 +143,30 @@ void Checker::initPolicy(){
 
 void Checker::run(framework::ProcessingContext& ctx)
 {
-  mLogger << "Receiving " << ctx.inputs().size() << " MonitorObjects" << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckerNames.front() <<" Receiving " << ctx.inputs().size() << " MonitorObjects" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // Save time of first object
   if (startFirstObject == std::chrono::system_clock::time_point::min()) {
     startFirstObject = system_clock::now();
   }
 
-  std::shared_ptr<TObjArray> moArray{ framework::DataRefUtils::as<TObjArray>(*ctx.inputs().begin()) };
-  moArray->SetOwner(false);
-  //auto checkedMoArray = std::make_unique<TObjArray>();
-  //checkedMoArray->SetOwner();
 
-  for (const auto& to : *moArray) {
-    std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(to) };
-    moArray->RemoveFirst();
+  for (const auto& input: mInputs){
+    auto dataRef = ctx.inputs().get(input.binding.c_str());
+    if(dataRef.header != nullptr && dataRef.payload != nullptr){
+      auto moArray = ctx.inputs().get<TObjArray*>(input.binding.c_str());
+      for (const auto& to : *moArray) {
+        std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(to) };
 
-    if (mo) {
-      mLogger << "!!!!! the mo is not null" << AliceO2::InfoLogger::InfoLogger::endm;
-      update(mo);
-      mTotalNumberHistosReceived++;
-    } else {
-      mLogger << "!!!!!! the mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
+        if (mo) {
+          update(mo);
+          mTotalNumberHistosReceived++;
+        } else {
+          mLogger << "The mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
+        }
+      }
     }
   }
-
-  //send(checkedMoArray, ctx.outputs());
 
   // monitoring
   endLastObject = system_clock::now();
@@ -176,11 +180,14 @@ void Checker::update(std::shared_ptr<MonitorObject> mo){
   mLogger << mCheckerNames.front() << " - moMap key: " << mo->getTaskName() << AliceO2::InfoLogger::InfoLogger::endm;
   mMoniorObjects[mo->getTaskName()] = mo;
   mPolicy->update(mo->getTaskName());
-  
+}
+
+void Checker::trigger(){
   if (mPolicy->isReady()){
-    check(mMoniorObjects);
-    //store(result);
+    CheckResult resultMap = check(mMoniorObjects);
+    //store(resultMap);
     //checkedMoArray->Add(new MonitorObject(*mo));
+    //send(checkedMoArray, ctx.outputs());
   }
 }
 
@@ -210,12 +217,12 @@ o2::framework::Inputs Checker::createInputSpec(const std::string checkName, cons
   return inputs;
 }
 
-void Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
+CheckResult Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 {
+  CheckResult checkResult;
 
   mLogger << "Running " << mChecks.size() << " checks for \"" << moMap.size() << "\""
           << AliceO2::InfoLogger::InfoLogger::endm;
-  // Get the Checks
 
   // Loop over the Checks and execute them followed by the beautification
   for (const auto& [checkName, checkInstance] : mChecks) {
@@ -229,18 +236,20 @@ void Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
               << AliceO2::InfoLogger::InfoLogger::endm;
 
       if (moMap.size() == 1){
-        //checkInstance->beautify(mo.get(), q);
-        //TODO: Pass only object
+        auto& mo = moMap.begin()->second;
+        checkInstance->beautify(mo, q);
       }
+
+      checkResult.insert(std::pair<std::string, Quality>(std::string(checkName), q));
   }
-  
+  return checkResult;
 }
 
-void Checker::store(std::shared_ptr<MonitorObject> mo)
+void Checker::store(CheckResult checkResult)
 {
-  mLogger << "Storing \"" << mo->getName() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << "Storing \"" << checkResult.size() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
   try {
-    mDatabase->store(mo);
+    //mDatabase->store(checkResult);
   } catch (boost::exception& e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
   }

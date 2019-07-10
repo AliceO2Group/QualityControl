@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "QcTask": {
+      "XYZ": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
@@ -40,70 +40,68 @@
         },
         "location": "remote"
       },
-      "Task2": {
+      "TPC": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "5",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "tpc-raw"
+          "name": "its-raw"
         },
         "taskParameters": {
-          "myOwnKey": "myOwnValue"
+          "myOwnKey": "param2"
         },
         "location": "remote"
       }
 
     },
     "check": {
-      "QcCheck": {
-        "active": "true",
-        "classNames": [
-          { "className": "o2::quality_control_modules::skeleton::SkeletonCheck"}
-         ],
-        "moduleName": "QcSkeleton",
-        "cycleDurationSeconds": "10",
-        "policy": "all",
-        "dataSource": [{
-          "type": "Task",
-          "name": "QcTask"
-        }],
-        "location": "remote"
-      },
-      "QcCheck2": {
-        "active": "true",
-        "classNames": [
-          { "className": "o2::quality_control_modules::skeleton::SkeletonCheck"}
-         ],
-        "moduleName": "QcSkeleton",
-        "cycleDurationSeconds": "10",
-        "policy": "all",
-        "dataSource": [{
-          "type": "Task",
-          "name": "QcTask"
-        },
-        {
-          "type": "Task",
-          "name": "Task2"
-        } ],
-        "location": "remote"
-      },
       "QcCheck3": {
         "active": "true",
-        "classNames": [
-          { "className": "o2::quality_control_modules::skeleton::SkeletonCheck"}
-         ],
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
-        "cycleDurationSeconds": "10",
         "policy": "all",
         "dataSource": [{
           "type": "Task",
-          "name": "Task2"
-        } ],
-        "location": "remote"
+          "name": "TPC"
+        } ]
+      },
+
+     "QcCheck2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "all",
+        "dataSource": [{
+          "type": "Task",
+          "name": "TPC"
+        },{
+          "type": "Task",
+          "name": "XYZ"
+        }]
+      },
+      "QcCheck1": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "all",
+        "dataSource": [{
+          "type": "Task",
+          "name": "XYZ"
+        } ]
+      },
+      "QcCheck4": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "all",
+        "dataSource": [{
+          "type": "Task",
+          "name": "TPC"
+        } ]
       }
     }
   },
@@ -121,28 +119,5 @@
         }
       ],
       "blocking": "false"
-    },
-    {
-      "id": "tpc-raw",
-      "active": "true",
-      "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "random",
-          "dataOrigin": "ITS",
-          "dataDescription": "RAWDATA"
-        }
-      ],
-      "subSpec": "0",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "0.1",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    }
-
-  ]
+    }  ]
 }
