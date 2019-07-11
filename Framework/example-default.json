@@ -73,7 +73,14 @@
         }
       ],
       "subSpec": "0",
-      "samplingConditions": []
+      "samplingConditions": [
+        {
+          "condition": "custom",
+          "moduleName": "QcExample",
+          "className": "o2::quality_control_modules::example::ExampleCondition",
+          "threshold": "120"
+        }
+      ]
     },
     {
       "id": "mftclusters",
