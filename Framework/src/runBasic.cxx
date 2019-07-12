@@ -76,6 +76,7 @@ using namespace o2::framework;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
 
+// clang-format off
 WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
@@ -89,45 +90,43 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback)[](InitContext&){
         std::default_random_engine generator(11);
-  return (AlgorithmSpec::ProcessCallback)[generator](ProcessingContext & processingContext) mutable
-  {
-    usleep(100000);
-    size_t length = generator() % 10000;
-    auto data = processingContext.outputs().make<char>(Output{ "ITS", "RAWDATA", 0, Lifetime::Timeframe },
-                                                       length);
-    for (auto&& item : data) {
-      item = static_cast<char>(generator());
+        return (AlgorithmSpec::ProcessCallback)[generator](ProcessingContext& processingContext) mutable {
+          usleep(100000);
+          size_t length = generator() % 10000;
+          auto data = processingContext.outputs().make<char>(Output{ "ITS", "RAWDATA", 0, Lifetime::Timeframe }, length);
+          for (auto&& item : data) {
+            item = static_cast<char>(generator());
+          }
+        };
+      }
     }
   };
+
+  specs.push_back(producer);
+
+  // Path to the config file
+  std::string qcConfigurationSource = getConfigPath(config);
+  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+
+  // Generation of Data Sampling infrastructure
+  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+
+  // Generation of the QC topology (one task, one checker in this case)
+  quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+
+  // Finally the printer
+  DataProcessorSpec printer{
+    "printer",
+    Inputs{
+      { "checked-mo", "QC", Checker::createCheckerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
+    Outputs{},
+    adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
+  };
+  specs.push_back(printer);
+
+  return specs;
 }
-}
-}
-;
-
-specs.push_back(producer);
-
-// Path to the config file
-std::string qcConfigurationSource = getConfigPath(config);
-LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
-
-// Generation of Data Sampling infrastructure
-DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
-
-// Generation of the QC topology (one task, one checker in this case)
-quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
-
-// Finally the printer
-DataProcessorSpec printer{
-  "printer",
-  Inputs{
-    { "checked-mo", "QC", Checker::createCheckerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
-  Outputs{},
-  adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
-};
-specs.push_back(printer);
-
-return specs;
-}
+// clang-format on
 
 // TODO merge this with the one from runReadout.cxx
 std::string getConfigPath(const ConfigContext& config)
