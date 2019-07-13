@@ -501,6 +501,7 @@ namespace o2
 
 				TString RunName = Form("Run%d",RunID);
 				TString FileName = Form("infiles/run000%d/data-link%d",RunID,FileID);
+				
 
 				if(RunIDPre != RunID || FileIDPre != FileID){
 					QcInfoLogger::GetInstance() << "For the Moment: RunID = "  << RunID << "  FileID = " << FileID << AliceO2::InfoLogger::InfoLogger::endm;
@@ -1021,6 +1022,8 @@ namespace o2
 				NEventInRun = 0;
 				ErrorFile->Reset();	
 				TotalFileDone = 0;
+				ptNFile->Clear();
+				ptNFile->AddText(Form("File Processed: %d ",TotalFileDone));
 				Yellowed = 0; 
 				for(int j = 0; j < 1; j++){
 					for(int i = 0; i < NStaves[j]; i++){
@@ -1030,6 +1033,8 @@ namespace o2
 						///		getObjectsManager()->addMetadata(LayHIT[i]->GetName(), Form("Run%d-File%d",RunID,FileID), "34");
 					}
 				}
+
+
 
 
 
