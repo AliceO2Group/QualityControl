@@ -35,13 +35,7 @@
       "id": "test-policy",
       "active": "true",
       "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "tst-data",
-          "dataOrigin": "TST",
-          "dataDescription": "DATA"
-        }
-      ],
+      "query": "tst-data:TST/DATA/0",
       "subSpec": "0",
       "samplingConditions": [],
       "blocking": "false"

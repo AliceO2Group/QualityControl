@@ -61,11 +61,8 @@ void SkeletonTask::startOfCycle()
 void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // In this function you can access data inputs specified in the JSON config file, for example:
-  //  {
-  //    "binding": "random",
-  //    "dataOrigin": "ITS",
-  //    "dataDescription": "RAWDATA"
-  //  }
+  //   "query": "random:ITS/RAWDATA/0"
+  // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
 
   // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
   // One can find additional examples at:
