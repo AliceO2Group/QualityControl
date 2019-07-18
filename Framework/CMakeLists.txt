@@ -51,6 +51,7 @@ add_library(QualityControl
             src/HistoMerger.cxx
             src/InfrastructureGenerator.cxx
             src/MonitorObjectPolicy.cxx
+            src/QualityObject.cxx
             src/ServiceDiscovery.cxx)
 
 if(ENABLE_MYSQL)

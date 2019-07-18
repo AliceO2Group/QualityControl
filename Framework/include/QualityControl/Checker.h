@@ -53,8 +53,6 @@ class TClass;
 namespace o2::quality_control::checker
 {
 
-typedef std::map<std::string, Quality> CheckResult;
-
 /// \brief The class in charge of running the checks on a MonitorObject.
 ///
 /// A Checker is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
@@ -101,14 +99,14 @@ class Checker : public framework::Task
    * @param mo The MonitorObject to evaluate and whose quality will be set according
    *        to the worse quality encountered while running the Check's.
    */
-  CheckResult check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
+  std::vector<QualityObject> check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
 
   /**
    * \brief Store the MonitorObject in the database.
    *
    * @param mo The MonitorObject to be stored in the database.
    */
-  void store(CheckResult result);
+  void store(std::vector<QualityObject> checkResult);
 
   /**
    * \brief Send the MonitorObject on FairMQ to whoever is listening.

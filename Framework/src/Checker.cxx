@@ -184,7 +184,7 @@ void Checker::update(std::shared_ptr<MonitorObject> mo){
 
 void Checker::trigger(){
   if (mPolicy->isReady()){
-    CheckResult resultMap = check(mMoniorObjects);
+    auto resultMap = check(mMoniorObjects);
     //store(resultMap);
     //checkedMoArray->Add(new MonitorObject(*mo));
     //send(checkedMoArray, ctx.outputs());
@@ -217,12 +217,13 @@ o2::framework::Inputs Checker::createInputSpec(const std::string checkName, cons
   return inputs;
 }
 
-CheckResult Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
+std::vector<QualityObject> Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 {
-  CheckResult checkResult;
 
   mLogger << "Running " << mChecks.size() << " checks for \"" << moMap.size() << "\""
           << AliceO2::InfoLogger::InfoLogger::endm;
+  
+  std::vector<QualityObject> qualityVector;
 
   // Loop over the Checks and execute them followed by the beautification
   for (const auto& [checkName, checkInstance] : mChecks) {
@@ -239,13 +240,15 @@ CheckResult Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         auto& mo = moMap.begin()->second;
         checkInstance->beautify(mo, q);
       }
-
-      checkResult.insert(std::pair<std::string, Quality>(std::string(checkName), q));
+      
+      QualityObject qo(checkName, mInputs);
+      qo.updateQuality(q);
+      qualityVector.push_back(qo);
   }
-  return checkResult;
+  return qualityVector;
 }
 
-void Checker::store(CheckResult checkResult)
+void Checker::store(std::vector<QualityObject> checkResult)
 {
   mLogger << "Storing \"" << checkResult.size() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
   try {

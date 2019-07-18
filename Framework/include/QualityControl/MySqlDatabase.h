@@ -39,9 +39,9 @@ class MySqlDatabase : public DatabaseInterface
 
   void connect(std::string host, std::string database, std::string username, std::string password) override;
   void connect(const std::unordered_map<std::string, std::string>& config) override;
-  void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) override;
-  o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName, long timestamp = 0) override;
-  std::string retrieveJson(std::string taskName, std::string objectName) override;
+  void store(std::shared_ptr<o2::quality_control::core::QualityObject> q) override;
+  std::shared_ptr<o2::quality_control::core::QualityObject> retrieve(std::string checkName, long timestamp = 0) override;
+  std::string retrieveJson(std::string checkName) override;
   void disconnect() override;
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
   std::vector<std::string> getListOfTasksWithPublications();
@@ -75,7 +75,7 @@ class MySqlDatabase : public DatabaseInterface
 
   // Queue
   // name of tasks -> vector of mo
-  std::map<std::string, std::vector<std::shared_ptr<o2::quality_control::core::MonitorObject>>> mObjectsQueue;
+  std::map<std::string, std::vector<std::shared_ptr<o2::quality_control::core::QualityObject>>> mObjectsQueue;
   size_t queueSize;
   AliceO2::Common::Timer lastStorage;
 };

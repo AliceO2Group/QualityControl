@@ -154,7 +154,7 @@ bool RepositoryBenchmark::ConditionalRun()
 
   // Store the object
   for (unsigned int i = 0; i < mNumberObjects; i++) {
-    mDatabase->store(mMyObjects[i]);
+    //mDatabase->store(mMyObjects[i]);
     mTotalNumberObjects++;
   }
   if (!mThreadedMonitoring) {

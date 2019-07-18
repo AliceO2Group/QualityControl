@@ -87,11 +87,12 @@ void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
   }
 }
 
-void MySqlDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
+void MySqlDatabase::store(std::shared_ptr<o2::quality_control::core::QualityObject> qo)
+//void MySqlDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
 {
   // TODO we take ownership here to delete later -> clearly to be improved
   // we execute grouped insertions. Here we just register that we should keep this mo in memory.
-  mObjectsQueue[mo->getTaskName()].push_back(mo);
+  mObjectsQueue[qo->getName()].push_back(qo);
   queueSize++;
   if (queueSize > 4 || lastStorage.getTime() > 10 /*sec*/) { // TODO use a configuration to set the max limits
     storeQueue();
@@ -111,21 +112,21 @@ void MySqlDatabase::storeQueue()
   lastStorage.reset();
 }
 
-void MySqlDatabase::storeForTask(std::string taskName)
+void MySqlDatabase::storeForTask(std::string checkName)
 {
-  std::vector<std::shared_ptr<o2::quality_control::core::MonitorObject>> objects = mObjectsQueue[taskName];
+  std::vector<std::shared_ptr<o2::quality_control::core::QualityObject>> objects = mObjectsQueue[checkName];
 
   if (objects.size() == 0) {
     return;
   }
 
-  cout << "** Store for task " << taskName << endl;
+  cout << "** Store for task " << checkName << endl;
   cout << "        # objects : " << objects.size() << endl;
 
   // build statement string
   string query;
   query +=
-    "REPlACE INTO `data_" + taskName + "` (object_name, data, size, run, fill) values (?,?,octet_length(data),?,?)";
+    "REPlACE INTO `data_" + checkName + "` (object_name, data, size, run, fill) values (?,?,octet_length(data),?,?)";
 
   // Prepare statement
   TMySQLStatement* statement;
@@ -133,7 +134,7 @@ void MySqlDatabase::storeForTask(std::string taskName)
   statement = (TMySQLStatement*)mServer->Statement(query.c_str());
   if (mServer->IsError() && mServer->GetErrorCode() == 1146) { // table does not exist
     // try to create the table
-    prepareTaskDataContainer(taskName);
+    prepareTaskDataContainer(checkName);
     statement = (TMySQLStatement*)mServer->Statement(query.c_str());
   }
   if (mServer->IsError()) {
@@ -144,11 +145,11 @@ void MySqlDatabase::storeForTask(std::string taskName)
 
   // Assign data
   TMessage message(kMESS_OBJECT);
-  for (auto mo : objects) {
+  for (auto qo : objects) {
     message.Reset();
-    message.WriteObjectAny(mo.get(), mo->IsA());
+    message.WriteObjectAny(qo.get(), qo->IsA());
     statement->NextIteration();
-    statement->SetString(0, mo->getName().c_str());
+    statement->SetString(0, qo->getName().c_str());
     statement->SetBinary(1, message.Buffer(), message.Length(), message.Length());
     statement->SetInt(2, 0);
     statement->SetInt(3, 0);
@@ -162,14 +163,15 @@ void MySqlDatabase::storeForTask(std::string taskName)
   objects.clear();
 }
 
-o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string taskName, std::string objectName, long /*timestamp*/)
+std::shared_ptr<o2::quality_control::core::QualityObject> MySqlDatabase::retrieve(std::string checkName, long /*timestamp*/)
+//o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string taskName, std::string objectName, long /*timestamp*/)
 {
   // TODO use the timestamp
 
   string query;
   TMySQLStatement* statement = nullptr;
 
-  query += "SELECT object_name, data, updatetime, run, fill FROM data_" + taskName + " WHERE object_name = ?";
+  query += "SELECT object_name, data, updatetime, run, fill FROM data_" + checkName + " WHERE object_name = ?";
   statement = (TMySQLStatement*)mServer->Statement(query.c_str());
   if (mServer->IsError()) {
     if (statement) {
@@ -180,7 +182,7 @@ o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string ta
                           << errinfo_db_message(mServer->GetErrorMsg()) << errinfo_db_errno(mServer->GetErrorCode()));
   }
   statement->NextIteration();
-  statement->SetString(0, objectName.c_str());
+  statement->SetString(0, checkName.c_str());
 
   if (!(statement->Process() && statement->StoreResult())) {
     delete statement;
@@ -190,7 +192,7 @@ o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string ta
                           << errinfo_db_message(mServer->GetErrorMsg()) << errinfo_db_errno(mServer->GetErrorCode()));
   }
 
-  o2::quality_control::core::MonitorObject* mo = nullptr;
+  std::shared_ptr<o2::quality_control::core::QualityObject> qo = nullptr;
   if (statement->NextResultRow()) { // Consider only the first result
     string name = statement->GetString(0);
     void* blob = nullptr;
@@ -206,7 +208,7 @@ o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string ta
     mess.SetReadMode();
     mess.Reset();
     try {
-      mo = (o2::quality_control::core::MonitorObject*)(mess.ReadObjectAny(mess.GetClass()));
+      qo = std::shared_ptr<QualityObject>((o2::quality_control::core::QualityObject*)(mess.ReadObjectAny(mess.GetClass())));
     } catch (...) {
       QcInfoLogger::GetInstance() << "Node: unable to parse TObject from MySQL" << infologger::endm;
       throw;
@@ -214,18 +216,16 @@ o2::quality_control::core::MonitorObject* MySqlDatabase::retrieve(std::string ta
   }
   delete statement;
 
-  return mo;
+  return qo;
 }
 
-std::string MySqlDatabase::retrieveJson(std::string taskName, std::string objectName)
+std::string MySqlDatabase::retrieveJson(std::string checkName)
 {
-  std::unique_ptr<o2::quality_control::core::MonitorObject> monitor(retrieve(taskName, objectName));
-  if (monitor == nullptr) {
+  auto qualityObject = retrieve(checkName);
+  if (qualityObject == nullptr) {
     return std::string();
   }
-  std::unique_ptr<TObject> obj(monitor->getObject());
-  monitor->setIsOwner(false);
-  TString json = TBufferJSON::ConvertToJSON(obj.get());
+  TString json = TBufferJSON::ConvertToJSON(qualityObject.get());
   return json.Data();
 }
 

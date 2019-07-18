@@ -115,9 +115,9 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
   ccdbApi.storeAsTFile(mo.get(), path, metadata, from, to);
 }
 
-core::MonitorObject* CcdbDatabase::retrieve(std::string path, std::string objectName, long timestamp)
+std::shared_ptr<QualityObject> CcdbDatabase::retrieve(std::string checkerName, long timestamp)
 {
-  string fullPath = path + "/" + objectName;
+  string path = checkerName;
   map<string, string> metadata;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
@@ -131,22 +131,20 @@ core::MonitorObject* CcdbDatabase::retrieve(std::string path, std::string object
       return nullptr;
     }
   }
-  auto* mo = dynamic_cast<core::MonitorObject*>(object);
-  if (mo == nullptr) {
-    LOG(ERROR) << "Could not cast the object " << fullPath << " to MonitorObject";
+  std::shared_ptr<QualityObject> qo (dynamic_cast<QualityObject*>(object));
+  if (qo == nullptr) {
+    LOG(ERROR) << "Could not cast the object " << checkerName << " to QualityObject";
   }
-  return mo;
+  return qo;
 }
 
-std::string CcdbDatabase::retrieveJson(std::string path, std::string objectName)
+std::string CcdbDatabase::retrieveJson(std::string checkName)
 {
-  std::unique_ptr<core::MonitorObject> monitor(retrieve(path, objectName));
-  if (monitor == nullptr) {
+  auto qualityObject = retrieve(checkName);
+  if (qualityObject == nullptr) {
     return std::string();
   }
-  std::unique_ptr<TObject> obj(monitor->getObject());
-  monitor->setIsOwner(false);
-  TString json = TBufferJSON::ConvertToJSON(obj.get());
+  TString json = TBufferJSON::ConvertToJSON(qualityObject.get());
   return json.Data();
 }
 
