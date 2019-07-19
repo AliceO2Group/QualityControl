@@ -1,0 +1,46 @@
+{
+    "qc": {
+      "config": {
+        "database": {
+          "implementation": "CCDB",
+          "host": "emcccdb-test.cern.ch:8080",
+          "username": "not_applicable",
+          "password": "not_applicable",
+          "name": "not_applicable"
+        },
+        "Activity": {
+          "number": "42",
+          "type": "2"
+        },
+        "monitoring": {
+          "url": "infologger:///debug?qc"
+        },
+        "consul": {
+          "url": "http://consul-test.cern.ch:8500"
+        }
+      },
+      "tasks": {
+        "QcTask": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitsQcTask",
+          "moduleName": "QcEMCAL",
+          "cycleDurationSeconds": "10",
+          "maxNumberCycles": "-1",
+          "dataSource": {
+            "type": "direct",
+            "binding": "emcal-digits",
+            "dataOrigin": "EMC",
+            "dataDescription": "DIGITS",
+            "subSpec": "0"
+          },
+          "taskParameters": {
+            "nothing": "rien"
+          },
+          "location": "remote"
+        }
+      }
+    },
+    "dataSamplingPolicies": [
+  
+    ]
+  }
