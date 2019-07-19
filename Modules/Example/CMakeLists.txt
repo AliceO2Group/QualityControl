@@ -1,7 +1,7 @@
 # ---- Library ----
 
 add_library(QcExample src/BenchmarkTask.cxx src/ExampleTask.cxx
-                      src/FakeCheck.cxx)
+                      src/FakeCheck.cxx src/ExampleCondition.cxx)
 
 target_include_directories(
   QcExample
@@ -15,6 +15,7 @@ add_root_dictionary(QcExample
                     HEADERS include/Example/BenchmarkTask.h
                             include/Example/ExampleTask.h
                             include/Example/FakeCheck.h
+                            include/Example/ExampleCondition.h
                     LINKDEF include/Example/LinkDef.h
                     BASENAME QcExample)
 
