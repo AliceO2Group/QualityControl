@@ -28,7 +28,7 @@
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query" : "readout:ITS/RAWDATA/0"
+          "query" : "readout:ROUT/RAWDATA"
         },
         "location": "remote"
       }

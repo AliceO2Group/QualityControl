@@ -78,9 +78,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
   WorkflowSpec specs{
     specifyExternalFairMQDeviceProxy(
       "readout-proxy",
-      Outputs{{"ITS", "RAWDATA"}},
+      Outputs{ { { "readout" }, { "ROUT", "RAWDATA" } } },
       "type=sub,method=connect,address=ipc:///tmp/readout-pipe-1,rateLogging=1",
-      dataSamplingReadoutAdapter({"ITS", "RAWDATA"}))
+      dataSamplingReadoutAdapter({ { "readout" }, { "ROUT", "RAWDATA" } }))
   };
 
   // Path to the config file

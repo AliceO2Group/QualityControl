@@ -39,7 +39,7 @@
       "id": "readout",
       "active": "true",
       "machines": [],
-      "query" : "readout:ITS/RAWDATA/0",
+      "query" : "readout:ROUT/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",
