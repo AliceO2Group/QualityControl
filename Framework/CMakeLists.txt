@@ -245,8 +245,8 @@ foreach(i RANGE ${count})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
 
-foreach(t testTaskInterface testWorkflow testTaskRunner
-        testInfrastructureGenerator)
+foreach(t testTaskInterface testWorkflow testTaskRunner)
+  #        testInfrastructureGenerator)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
@@ -258,7 +258,6 @@ set_property(TEST testObjectsManager PROPERTY TIMEOUT 60)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
 set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
-
 # ---- Install ----
 
 # Build targets with install rpath on Mac to dramatically speed up installation
