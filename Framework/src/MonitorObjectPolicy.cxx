@@ -1,48 +1,61 @@
 #include "QualityControl/MonitorObjectPolicy.h"
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::monitor
 {
 
+using namespace o2::quality_control::core;
+
 MonitorObjectPolicy::MonitorObjectPolicy(std::string type, std::vector<std::string> moNames): 
-    mMoNames{moNames}, 
-    mRevisionList(moNames.size(), 0),
+    mRevisionMap(),
     mLastRevision(0), 
     mRevision(0),
-    size(moNames.size())
+    mSize(moNames.size())
 {
-  if (type == "all"){
+  QcInfoLogger::GetInstance() << "Policy type: " << type << AliceO2::InfoLogger::InfoLogger::endm;
+  if (type == "all" && moNames.size() > 1){
+    QcInfoLogger::GetInstance() << "Policy type initiate: ALL" << AliceO2::InfoLogger::InfoLogger::endm;
     mPolicy = [=](){
-      for (auto &rev : mRevisionList) {
-        if (mLastRevision > rev) {
+      if (mSize != mRevisionMap.size()){
+        return false;
+      }
+      for (auto &rev : mRevisionMap) {
+        if (mLastRevision > rev.second) {
           return false;
         }
       }
       return true;
     };
-  } else if (type == "anyNonZero") {
+  } else if (type == "anyNonZero" && moNames.size() > 1) {
+    QcInfoLogger::GetInstance() << "Policy type initiate: ANYNONZERO" << AliceO2::InfoLogger::InfoLogger::endm;
     mPolicy = [=](){
-      for (auto &rev : mRevisionList) {
-        if (rev <= 0) {
+      for (auto &rev : mRevisionMap) {
+        if (rev.second <= 0) {
           return false;
         }
       }
       return mRevision > mLastRevision; //return true
     };
   } else /* any (default) */ {
+    QcInfoLogger::GetInstance() << "Policy type initiate: ANY (default)" << AliceO2::InfoLogger::InfoLogger::endm;
     mPolicy = [=](){
-      return mRevision > mLastRevision; //return true
+      return (mSize == 1 || mSize == mRevisionMap.size()) && mRevision > mLastRevision; //return true
     };
   }
 }
 
 void MonitorObjectPolicy::update(std::string moName){
-  if (size == 1){
-
+  if (mSize > 1){
+    if (mRevisionMap.count(moName)){
+      ++mRevision;
+      mRevisionMap[moName] = mRevision;
+      //TODO: Potencial bug if revision number > int(max)
+    } else {
+      ++mRevision;
+      mRevisionMap[moName] = mRevision;
+    }
   } else {
-    auto pos = find(mMoNames.begin(), mMoNames.end(), moName) - mMoNames.begin();
     ++mRevision;
-    mRevisionList[pos] = mRevision;
-    //TODO: Potencial bug if revision number > int(max)
   }
 }
 

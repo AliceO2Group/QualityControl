@@ -26,7 +26,7 @@ class QualityObject : public TObject
   QualityObject();
 
   /// Destructor
-  ~QualityObject() = default;
+  ~QualityObject() override;
 
   /// Copy constructor
   QualityObject(const QualityObject& other) = default;
@@ -56,8 +56,8 @@ class QualityObject : public TObject
   void updateQuality(Quality quality);
   Quality getQuality();
 
-  void setInputs(framework::Inputs inputs) {mInputs = inputs;}
-  framework::Inputs getInputs() {return mInputs;}
+  void setInputs(framework::Inputs inputs);
+  std::vector<std::string> getInputs() {return mInputs;}
 
   /// \brief Add key value pair that will end up in the database
   /// Add a metadata (key value pair) to the QualityObject. It will be stored in the database.
@@ -67,14 +67,17 @@ class QualityObject : public TObject
   std::map<std::string, std::string> getMetadataMap();
 
  private:
-  Quality mQuality;
+  //Quality
+  unsigned int mQualityLevel;
+  std::string mQualityName;
+
   std::string mCheckName;
-  framework::Inputs mInputs;
+  std::vector<std::string> mInputs;
   std::map<std::string, std::string> mUserMetadata;
 
   ClassDef(QualityObject, 1);
 };
 
-};
+}
 
 #endif

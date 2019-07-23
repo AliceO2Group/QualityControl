@@ -202,7 +202,7 @@ set(TEST_SRCS
     #  test/testInfrastructureGenerator.cxx
     test/testTaskInterface.cxx
     test/testTaskRunner.cxx
-    test/testCheckInterface.cxx
+    #  test/testCheckInterface.cxx
     #  test/testChecker.cxx
     test/testQuality.cxx
     test/testObjectsManager.cxx

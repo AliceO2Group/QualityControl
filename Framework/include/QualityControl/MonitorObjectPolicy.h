@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <string>
 #include <functional>
+#include <map>
 
 namespace o2::quality_control::monitor
 {
@@ -15,11 +16,10 @@ class MonitorObjectPolicy {
     void update(std::string moName); 
     bool isReady();
   private:
-    int size;
+    int mSize;
     int mLastRevision;
     int mRevision;
-    std::vector<int> mRevisionList;
-    std::vector<std::string> mMoNames;
+    std::map<std::string, int> mRevisionMap;
     std::function<bool()> mPolicy;
 };
 }

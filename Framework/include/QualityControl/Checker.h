@@ -99,14 +99,14 @@ class Checker : public framework::Task
    * @param mo The MonitorObject to evaluate and whose quality will be set according
    *        to the worse quality encountered while running the Check's.
    */
-  std::vector<QualityObject> check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
+  std::vector<std::shared_ptr<QualityObject>> check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
 
   /**
    * \brief Store the MonitorObject in the database.
    *
    * @param mo The MonitorObject to be stored in the database.
    */
-  void store(std::vector<QualityObject> checkResult);
+  void store(std::vector<std::shared_ptr<QualityObject>> checkResult);
 
   /**
    * \brief Send the MonitorObject on FairMQ to whoever is listening.
@@ -156,7 +156,8 @@ class Checker : public framework::Task
   std::vector<std::string> mLibrariesLoaded;
   std::map<std::string, CheckInterface*> mChecksLoaded;
   std::map<std::string, TClass*> mClassesLoaded;
-  std::map<std::string, std::shared_ptr<MonitorObject>> mMoniorObjects;
+  std::map<std::string, std::shared_ptr<MonitorObject>> mMonitorObjects;
+  std::map<std::string, std::shared_ptr<QualityObject>> mQualityObjects;
   std::map<std::string, CheckInterface*> mChecks; 
 
   // monitoring
