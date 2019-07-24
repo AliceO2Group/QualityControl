@@ -67,6 +67,7 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
       "id": "its-raw",
       "active": "true",
       "machines": [],
+      "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1[;binding2:...]",
       "query": "raw:ITS/RAWDATA/0",
       "samplingConditions": [
         {
