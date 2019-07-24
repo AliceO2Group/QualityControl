@@ -28,10 +28,7 @@
           "maxNumberCycles": "-1",
           "dataSource": {
             "type": "direct",
-            "binding": "emcal-digits",
-            "dataOrigin": "EMC",
-            "dataDescription": "DIGITS",
-            "subSpec": "0"
+            "query": "emcal-digits:EMC/DIGITS/0"
           },
           "taskParameters": {
             "nothing": "rien"

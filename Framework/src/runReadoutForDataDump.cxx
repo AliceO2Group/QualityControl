@@ -55,9 +55,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   WorkflowSpec specs{
     specifyExternalFairMQDeviceProxy(
       "readout-proxy",
-      Outputs{ { "R/O", "RAWDATA" } },
+      Outputs{ { "RO", "RAWDATA" } },
       "type=sub,method=connect,address=ipc:///tmp/readout-pipe-1,rateLogging=1",
-      dataSamplingReadoutAdapter({ "R/O", "RAWDATA" }))
+      dataSamplingReadoutAdapter({ "RO", "RAWDATA" }))
   };
 
   const std::string qcConfigurationSource =

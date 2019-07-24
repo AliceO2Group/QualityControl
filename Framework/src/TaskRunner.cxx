@@ -27,6 +27,7 @@
 #include <Framework/CallbackService.h>
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
+#include <Framework/DataDescriptorQueryBuilder.h>
 #include <Headers/DataHeader.h>
 #include <Monitoring/MonitoringFactory.h>
 #include "QualityControl/QcInfoLogger.h"
@@ -274,22 +275,8 @@ void TaskRunner::populateConfig(std::string taskName)
       LOG(INFO) << "policyName : " << policyName;
       mInputSpecs = DataSampling::InputSpecsForPolicy(config, policyName);
     } else if (type == "direct") {
-
-      auto subSpecString = dataSourceTree.get<std::string>("subSpec");
-      auto subSpec = std::strtoull(subSpecString.c_str(), nullptr, 10);
-
-      header::DataOrigin origin;
-      header::DataDescription description;
-      origin.runtimeInit(dataSourceTree.get<std::string>("dataOrigin").c_str());
-      description.runtimeInit(dataSourceTree.get<std::string>("dataDescription").c_str());
-
-      mInputSpecs.push_back(
-        InputSpec{
-          dataSourceTree.get<std::string>("binding"),
-          origin,
-          description,
-          static_cast<framework::DataAllocator::SubSpecificationType>(subSpec) });
-
+      auto inputsQuery = dataSourceTree.get<std::string>("query");
+      mInputSpecs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
     } else {
       std::string message = std::string("Configuration error : dataSource type unknown : ") + type; // TODO pass this message to the exception
       BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));

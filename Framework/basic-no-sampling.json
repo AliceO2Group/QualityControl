@@ -28,10 +28,7 @@
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "binding": "its-rawdata",
-          "dataOrigin": "ITS",
-          "dataDescription": "RAWDATA",
-          "subSpec": "0"
+          "query" : "its-rawdata:ITS/RAWDATA/0"
         },
         "taskParameters": {
           "nothing": "rien"

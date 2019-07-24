@@ -136,12 +136,17 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     DataSampling::GenerateInfrastructure(localTopology, qcConfigurationSource);
     // a fix to make the topologies work when merged together
     localTopology.back().name += std::to_string(i);
+    if (i != 2) {
+      localTopology.back().inputs = { localTopology.back().inputs.back() };
+      localTopology.back().outputs = { localTopology.back().outputs.back() };
+    }
+    DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs.back(), i);
+    DataSpecUtils::updateMatchingSubspec(localTopology.back().outputs.back(), i);
 
     std::string host = "o2flptst" + std::to_string(i);
     quality_control::generateLocalInfrastructure(localTopology, qcConfigurationSource, host);
     // a fix to make the topologies work when merged together
     localTopology.back().name += std::to_string(i);
-    // temporary fix, which shouldn't be necessary when data sampling uses matchers
     DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs[0], i);
     DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs[1], i);
 

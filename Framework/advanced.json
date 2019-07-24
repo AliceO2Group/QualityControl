@@ -56,19 +56,7 @@
       "id": "tst1",
       "active": "true",
       "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "sum",
-          "dataOrigin": "TST",
-          "dataDescription": "SUM"
-        },
-        {
-          "binding": "param",
-          "dataOrigin": "TST",
-          "dataDescription": "PARAM"
-        }
-      ],
-      "subSpec": "2",
+      "query" : "sum:TST/SUM/2;param:TST/PARAM/2",
       "samplingConditions": [
         {
           "condition": "random",
@@ -82,14 +70,7 @@
       "id": "tst2",
       "active": "true",
       "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "data",
-          "dataOrigin": "TST",
-          "dataDescription": "DATA"
-        }
-      ],
-      "subSpec": "*",
+      "query" : "data:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "payloadSize",

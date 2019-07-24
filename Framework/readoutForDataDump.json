@@ -4,14 +4,7 @@
       "id": "readout",
       "active": "true",
       "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "readout",
-          "dataOrigin": "R/O",
-          "dataDescription": "RAWDATA"
-        }
-      ],
-      "subSpec": "0",
+      "query" : "readout:RO/RAWDATA/0",
       "samplingConditions": [],
       "blocking": "false",
       "fairMQOutput": "name=fairReadoutRawOut,type=pub,method=bind,address=tcp://127.0.0.1:26525,rateLogging=1"

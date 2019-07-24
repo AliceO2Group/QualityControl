@@ -67,14 +67,8 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
       "id": "its-raw",
       "active": "true",
       "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "raw",
-          "dataOrigin": "ITS",
-          "dataDescription": "RAWDATA"
-        }
-      ],
-      "subSpec": "0",
+      "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1[;binding2:...]",
+      "query": "raw:ITS/RAWDATA/0",
       "samplingConditions": [
         {
           "condition": "random",
@@ -109,10 +103,8 @@ In case one needs to sample at a very high rate, or even monitor 100% of the dat
         ...
         "dataSource": {
           "type": "direct",
-          "binding": "its-rawdata",
-          "dataOrigin": "ITS",
-          "dataDescription": "RAWDATA",
-          "subSpec": "0"
+          "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1[;binding2:...]",
+          "query" : "its-raw-data:ITS/RAWDATA/0"
         },
         ...
       }
