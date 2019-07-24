@@ -57,7 +57,7 @@ class RepositoryBenchmark : public FairMQDevice
   // internal state
   std::unique_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::vector<std::shared_ptr<MonitorObject>> mMyObjects;
-//  TH1* mMyHisto;
+  //  TH1* mMyHisto;
 
   // variables for the timer
   boost::asio::deadline_timer* mTimer; /// the asynchronous timer to send monitoring data
