@@ -35,8 +35,6 @@ add_root_dictionary(QualityControlTypes
 # ---- Library ----
 
 add_library(QualityControl
-#            src/MonitorObject.cxx
-#            src/Quality.cxx
             src/ObjectsManager.cxx
             src/Checker.cxx
             src/CheckerFactory.cxx
