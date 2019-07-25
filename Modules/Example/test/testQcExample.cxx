@@ -28,23 +28,23 @@ BOOST_AUTO_TEST_CASE(insantiate_task)
   task.setObjectsManager(manager);
   //  task.initialize();// TODO
 
-//  BOOST_CHECK(task.getHisto1() != nullptr);
-//  BOOST_CHECK(task.getHisto2() != nullptr);
+  //  BOOST_CHECK(task.getHisto1() != nullptr);
+  //  BOOST_CHECK(task.getHisto2() != nullptr);
 
   Activity activity;
   task.startOfActivity(activity);
-//  task.startOfCycle();
+  //  task.startOfCycle();
   //  auto producer = AliceO2::DataSampling::DataBlockProducer(false, 1024);
   //  DataSetReference dataSet = producer.getDataSet();
   //  task.monitorDataBlock(dataSet);// TODO
 
-//  BOOST_CHECK(task.getHisto1()->GetEntries() > 0);
+  //  BOOST_CHECK(task.getHisto1()->GetEntries() > 0);
 
-//  task.endOfCycle();
+  //  task.endOfCycle();
   task.endOfActivity(activity);
   task.startOfActivity(activity);
 
-//  BOOST_CHECK(task.getHisto1()->GetEntries() == 0);
+  //  BOOST_CHECK(task.getHisto1()->GetEntries() == 0);
 
   task.endOfActivity(activity);
 }

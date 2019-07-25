@@ -65,7 +65,6 @@ BOOST_AUTO_TEST_CASE(ccdb_create)
   test_fixture f;
 
   f.backend->truncate("my/task", "*");
-
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)

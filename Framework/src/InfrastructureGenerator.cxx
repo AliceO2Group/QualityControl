@@ -61,7 +61,6 @@ void InfrastructureGenerator::generateLocalInfrastructure(framework::WorkflowSpe
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
-
 o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructure(std::string configurationSource)
 {
   WorkflowSpec workflow;

@@ -39,10 +39,11 @@ bool InformationServiceDump::HandleData(FairMQMessagePtr& msg, int /*index*/)
   string* text = new string(fConfig->GetValue<string>("request-task"));
   LOG(INFO) << "Preparing request for \"" << *text << "\"";
   FairMQMessagePtr request(
-    NewMessage(const_cast<char*>(text->c_str()),                                          // data
-               text->length(),                                                            // size
-               [](void* /*data*/, void* object) { delete static_cast<string*>(object); }, // deletion callback
-               text));                                                                    // object that manages the data
+    NewMessage(
+      const_cast<char*>(text->c_str()),                                          // data
+      text->length(),                                                            // size
+      [](void* /*data*/, void* object) { delete static_cast<string*>(object); }, // deletion callback
+      text));                                                                    // object that manages the data
   LOG(INFO) << "Sending request ";
   if (Send(request, "send_request") > 0) {
     FairMQMessagePtr reply(NewMessage());

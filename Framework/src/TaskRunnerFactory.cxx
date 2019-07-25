@@ -23,7 +23,7 @@ namespace o2::quality_control::core
 using namespace o2::framework;
 
 o2::framework::DataProcessorSpec
-TaskRunnerFactory::create(std::string taskName, std::string configurationSource, size_t id, bool resetAfterPublish)
+  TaskRunnerFactory::create(std::string taskName, std::string configurationSource, size_t id, bool resetAfterPublish)
 {
   TaskRunner qcTask{ taskName, configurationSource, id };
   qcTask.setResetAfterPublish(resetAfterPublish);
