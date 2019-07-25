@@ -129,7 +129,7 @@ The payload received is a 2MB (configurable) data page made of CRU pages (8kB).
 __Configuration file__
 
 The configuration file is installed in `$QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `$QUALITYCONTROL_ROOT/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
-To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config-path` when launch `o2-qc-run-qc`.
+To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config` when launch `o2-qc-run-qc`.
 
 To change the fraction of the data being monitored, change the option `fraction`.
 
