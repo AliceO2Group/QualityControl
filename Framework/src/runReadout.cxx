@@ -34,7 +34,7 @@
 using namespace o2;
 using namespace o2::framework;
 
-WorkflowSpec defineDataProcessing(ConfigContext const& config)
+WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
   // Creating the Readout proxy
   WorkflowSpec specs{
