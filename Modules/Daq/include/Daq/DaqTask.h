@@ -22,6 +22,7 @@
 
 class TH1F;
 class TGraph;
+class TObjString;
 
 using namespace o2::quality_control::core;
 

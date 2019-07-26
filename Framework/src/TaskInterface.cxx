@@ -32,7 +32,7 @@ void TaskInterface::setObjectsManager(std::shared_ptr<ObjectsManager> objectsMan
   mObjectsManager = objectsManager;
 }
 
-void TaskInterface::setCustomParameters(const o2::configuration::KeyValueMap& parameters)
+void TaskInterface::setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
 {
   mCustomParameters = parameters;
 }

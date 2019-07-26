@@ -15,6 +15,9 @@
 
 #include "QualityControl/HistoMerger.h"
 
+#include <TH1.h>
+#include <TObjArray.h>
+
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataRefUtils.h>
 

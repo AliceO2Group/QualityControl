@@ -19,8 +19,11 @@
 #include <string>
 #include <vector>
 
-#include <Framework/CompletionPolicy.h>
 #include <Framework/DataProcessorSpec.h>
+
+namespace o2::framework {
+struct CompletionPolicy;
+}
 
 namespace o2::quality_control::core
 {

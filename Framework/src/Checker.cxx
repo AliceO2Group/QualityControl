@@ -18,14 +18,14 @@
 
 // ROOT
 #include <TClass.h>
-#include <TMessage.h>
 #include <TSystem.h>
-#include <TMap.h>
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataRefUtils.h>
 #include <Framework/DataSpecUtils.h>
+#include <Monitoring/MonitoringFactory.h>
+#include <Monitoring/Monitoring.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/TaskRunner.h"

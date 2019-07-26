@@ -16,7 +16,9 @@
 #include "QualityControl/ObjectsManager.h"
 
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/ServiceDiscovery.h"
 #include <Common/Exceptions.h>
+#include <TObjArray.h>
 
 using namespace o2::quality_control::core;
 using namespace AliceO2::Common;
@@ -110,6 +112,11 @@ TObject* ObjectsManager::getObject(std::string objectName)
 {
   MonitorObject* mo = getMonitorObject(objectName);
   return mo->getObject();
+}
+
+TObjArray* ObjectsManager::getNonOwningArray() const
+{
+  return new TObjArray(mMonitorObjects);
 }
 
 void ObjectsManager::addCheck(const TObject* object, const std::string& checkName, const std::string& checkClassName,

@@ -17,7 +17,6 @@
 #ifndef QC_CORE_TASKRUNNER_H
 #define QC_CORE_TASKRUNNER_H
 
-// boost (should be first but then it makes errors in fairmq)
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 // O2
@@ -26,14 +25,19 @@
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
 #include <Headers/DataHeader.h>
-#include <Monitoring/MonitoringFactory.h>
-#include <Configuration/ConfigurationInterface.h>
 // QC
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/TaskInterface.h"
-#include "QualityControl/ServiceDiscovery.h"
 
 namespace ba = boost::accumulators;
+
+namespace o2::configuration {
+class ConfigurationInterface;
+}
+
+namespace o2::monitoring {
+class Monitoring;
+}
 
 namespace o2::quality_control::core
 {

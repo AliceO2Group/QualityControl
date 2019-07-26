@@ -20,16 +20,18 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/TaskConfig.h"
-#include "QualityControl/ServiceDiscovery.h"
 // ROOT
-#include <TObject.h>
 #include <TObjArray.h>
 // stl
 #include <string>
 #include <memory>
 
+class TObject;
+
 namespace o2::quality_control::core
 {
+
+class ServiceDiscovery;
 
 /// \brief  Keeps the list of encapsulated objects to publish and does the actual publication.
 ///
@@ -91,10 +93,7 @@ class ObjectsManager
 
   TObject* getObject(std::string objectName);
 
-  TObjArray* getNonOwningArray() const
-  {
-    return new TObjArray(mMonitorObjects);
-  };
+  TObjArray* getNonOwningArray() const;
 
   /**
    * \brief Add metadata to a MonitorObject.

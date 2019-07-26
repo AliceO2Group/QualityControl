@@ -45,7 +45,7 @@ Build the QualityControl as usual.
 To monitor the readout, 3 processes have to be started : the Readout,
 the Data Sampling and the Data Inspector.
 
-First make sure that the datasampling is enabled in the readout :
+First make sure that the Data Sampling is enabled in the readout :
 ```
 [consumer-data-sampling]
 consumerType=DataSampling

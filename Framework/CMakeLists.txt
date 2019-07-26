@@ -18,6 +18,7 @@ add_library(QualityControl
             src/CcdbDatabase.cxx
             src/InformationService.cxx
             src/InformationServiceDump.cxx
+            src/TaskFactory.cxx
             src/TaskRunner.cxx
             src/TaskRunnerFactory.cxx
             src/TaskInterface.cxx

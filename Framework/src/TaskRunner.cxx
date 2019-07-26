@@ -22,6 +22,7 @@
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
+#include <Monitoring/MonitoringFactory.h>
 #include <Framework/DataSampling.h>
 #include <Framework/CallbackService.h>
 #include <Framework/TimesliceIndex.h>
@@ -78,7 +79,7 @@ void TaskRunner::init(InitContext& iCtx)
 
   // setup user's task
   TaskFactory f;
-  mTask.reset(f.create<TaskInterface>(mTaskConfig, mObjectsManager));
+  mTask.reset(f.create(mTaskConfig, mObjectsManager));
 
   // init user's task
   mTask->initialize(iCtx);

@@ -14,6 +14,7 @@
 ///
 
 #include "QualityControl/Quality.h"
+#include <ostream>
 
 ClassImp(o2::quality_control::core::Quality)
 
@@ -21,8 +22,9 @@ ClassImp(o2::quality_control::core::Quality)
 namespace o2::quality_control::core
 {
   // clang-format on
-  const unsigned int Quality::NullLevel =
-    10; // could be changed if needed but I don't see why we would need more than 10 levels
+
+// could be changed if needed but I don't see why we would need more than 10 levels
+  const unsigned int Quality::NullLevel = 10;
 
   const Quality Quality::Good(1, "Good");
   const Quality Quality::Medium(2, "Medium");
@@ -36,5 +38,11 @@ namespace o2::quality_control::core
   unsigned int Quality::getLevel() const { return mLevel; }
 
   const std::string& Quality::getName() const { return mName; }
+
+  std::ostream& operator<<(std::ostream& out, const Quality& q) // output
+  {
+    out << "Quality: " << q.getName() << " (level " << q.getLevel() << ")\n";
+    return out;
+  }
 
 } // namespace o2::quality_control::core

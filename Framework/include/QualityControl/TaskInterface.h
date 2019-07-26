@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 // fixes problem of ''assert' not declared in this scope' in Framework/InitContext.h.
 // Maybe ROOT does some #undef assert?
 #include <cassert>
@@ -26,8 +27,6 @@
 // O2
 #include <Framework/InitContext.h>
 #include <Framework/ProcessingContext.h>
-// Configuration
-#include <Configuration/ConfigurationInterface.h>
 // QC
 #include "QualityControl/Activity.h"
 #include "QualityControl/ObjectsManager.h"
@@ -79,12 +78,12 @@ class TaskInterface
   // Setters and getters
   void setObjectsManager(std::shared_ptr<ObjectsManager> objectsManager);
   void setName(const std::string& name);
-  void setCustomParameters(const o2::configuration::KeyValueMap& parameters);
+  void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters);
   const std::string& getName() const;
 
  protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
-  o2::configuration::KeyValueMap mCustomParameters;
+  std::unordered_map<std::string, std::string> mCustomParameters;
 
  private:
   // TODO should we rather have a global/singleton for the objectsManager ?
