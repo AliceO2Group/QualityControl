@@ -12,6 +12,18 @@
 /// \file    runQC.cxx
 /// \author  Piotr Konopka
 ///
+/// \brief This is an executable which generates a QC topology given a configuration file.
+///
+/// This is an executable which generates a QC topology given a configuration file. It can be attached to any other
+/// topology which can provide data to Data Sampling and QC. This also means that cannot work on its own, as it would
+/// lack input data. A typical usage would be:
+/// \code{.sh}
+/// o2-qc-run-producer | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+/// \endcode
+/// Please refer to Framework/example-default.json and Framework/basic.json to see how to configure a QC topology.
+/// To generate only the local part of the topology (which would run on main processing servers) use the '--local' flag.
+/// Similarly, to generate only the remote part (running on QC servers) add '--remote'. By default, the executable
+/// generates both local and remote topologies, as it is the usual use-case for local development.
 
 #include "Framework/DataSampling.h"
 using namespace o2::framework;
