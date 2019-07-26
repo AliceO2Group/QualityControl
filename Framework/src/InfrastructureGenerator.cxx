@@ -40,15 +40,19 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
       // ids are assigned to local tasks in order to distinguish monitor objects outputs from each other and be able to
       // merge them. If there is no need to merge (only one qc task), it gets subspec 0.
       // todo: use matcher for subspec when available in DPL
-      size_t id = taskConfig.get_child("machines").size() > 1 ? 1 : 0;
-      for (const auto& machine : taskConfig.get_child("machines")) {
+      if (host.empty()) {
+        workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0, false));
+      } else {
+        size_t id = taskConfig.get_child("machines").size() > 1 ? 1 : 0;
+        for (const auto& machine : taskConfig.get_child("machines")) {
 
-        if (machine.second.get<std::string>("") == host) {
-          // todo: optimize it by using the same ptree?
-          workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, id, true));
-          break;
+          if (machine.second.get<std::string>("") == host) {
+            // todo: optimize it by using the same ptree?
+            workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, id, true));
+            break;
+          }
+          id++;
         }
-        id++;
       }
     }
   }

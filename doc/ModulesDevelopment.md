@@ -8,6 +8,7 @@
          * [QC architecture](#qc-architecture)
          * [DPL](#dpl)
          * [Data Sampling](#data-sampling)
+            * [Custom Data Sampling Condition](#custom-data-sampling-condition)
             * [Bypassing the Data Sampling](#bypassing-the-data-sampling)
          * [Code Organization](#code-organization)
          * [User-defined modules](#user-defined-modules)
@@ -115,7 +116,7 @@ In case one needs to sample at a very high rate, or even monitor 100% of the dat
 }
 ```
 
-The file `basic-no-sampling.json` is provided as an example. To test it, you can run `o2-qc-run-basic` with the option `--no-data-sampling` (it makes it use this config file instead of `basic.json`).
+The file `basic-no-sampling.json` is provided as an example. To test it, you can run `o2-qc-run-qc` with that configuration file instead of `basic.json`.
 
 ### Code Organization
 
@@ -184,7 +185,7 @@ Change the lines as indicated below :
 Now we can run it
 
 ```
-o2-qc-run-basic
+o2-qc-run-basic | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
 ```
 
 You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.
@@ -220,16 +221,6 @@ To commit your new or modified code, please follow this procedure
 For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
-
-## DPL workflow customization
-
-If you want to change the workflow, edit or copy `runBasic.cxx` or `runReadout.cxx`. For example...
-
-TODO
-
-## Usage of DS and QC in an existing DPL workflow 
-
-TODO
 
 ## Addition of parameters to a task
 

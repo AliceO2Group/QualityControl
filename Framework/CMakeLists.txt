@@ -79,6 +79,8 @@ add_root_dictionary(QualityControl
 set(EXE_SRCS
     src/runInformationService.cxx
     src/runInformationServiceDump.cxx
+    src/runDataProducer.cxx
+    src/runQC.cxx
     src/runBasic.cxx
     src/runAdvanced.cxx
     src/runReadout.cxx
@@ -89,6 +91,8 @@ set(EXE_SRCS
 set(EXE_NAMES
     o2-qc-info-service
     o2-qc-info-service-dump
+    o2-qc-run-producer
+    o2-qc-run-qc
     o2-qc-run-basic
     o2-qc-run-advanced
     o2-qc-run-readout
@@ -101,6 +105,8 @@ set(EXE_NAMES
 set(EXE_OLD_NAMES
     qcInfoService
     qcInfoServiceDump
+    qcRunProducer
+    qcRunQC
     qcRunBasic
     qcRunAdvanced
     qcRunReadout

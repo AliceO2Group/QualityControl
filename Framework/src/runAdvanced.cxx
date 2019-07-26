@@ -25,7 +25,7 @@
 ///   \code{.sh}
 ///   > aliBuild build QualityControl --defaults o2
 ///   > alienv enter QualityControl/latest
-///   > qcRunAdvanced
+///   > o2-qc-run-advanced
 ///   \endcode
 /// If you have glfw installed, you should see a window with the workflow visualization and sub-windows for each Data
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
@@ -137,8 +137,8 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     // a fix to make the topologies work when merged together
     localTopology.back().name += std::to_string(i);
     if (i != 2) {
-      localTopology.back().inputs = { localTopology.back().inputs.back() };
-      localTopology.back().outputs = { localTopology.back().outputs.back() };
+      localTopology.back().inputs.erase(localTopology.back().inputs.begin(), localTopology.back().inputs.end() - 1);
+      localTopology.back().outputs.erase(localTopology.back().outputs.begin(), localTopology.back().outputs.end() - 1);
     }
     DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs.back(), i);
     DataSpecUtils::updateMatchingSubspec(localTopology.back().outputs.back(), i);
