@@ -25,7 +25,10 @@
 /// Similarly, to generate only the remote part (running on QC servers) add '--remote'. By default, the executable
 /// generates both local and remote topologies, as it is the usual use-case for local development.
 
-#include "Framework/DataSampling.h"
+#include <Framework/DataSampling.h>
+#include "QualityControl/InfrastructureGenerator.h"
+
+using namespace o2;
 using namespace o2::framework;
 
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
@@ -43,18 +46,25 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
     ConfigParamSpec{ "remote", VariantType::Bool, false, { "Creates only the remote part of the QC topology." } });
 }
 
+void customize(std::vector<CompletionPolicy>& policies)
+{
+  DataSampling::CustomizeInfrastructure(policies);
+  quality_control::customizeInfrastructure(policies);
+}
+
+void customize(std::vector<ChannelConfigurationPolicy>& policies)
+{
+  DataSampling::CustomizeInfrastructure(policies);
+}
+
 #include <FairLogger.h>
-#include <TH1F.h>
 #include <memory>
 #include <random>
 
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
 
 #include "QualityControl/Checker.h"
-#include "QualityControl/InfrastructureGenerator.h"
 
-using namespace o2;
-using namespace o2::framework;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
 
