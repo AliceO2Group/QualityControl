@@ -14,7 +14,7 @@
 ///
 
 #include "RepositoryBenchmark.h"
-#include "runFairMQDevice.h"
+#include <fairmq/runFairMQDevice.h>
 
 namespace bpo = boost::program_options;
 

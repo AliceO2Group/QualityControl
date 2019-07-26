@@ -16,13 +16,18 @@
 #ifndef QC_CORE_HISTOMERGER_H
 #define QC_CORE_HISTOMERGER_H
 
+#include <string>
 #include <memory>
 #include <vector>
 
-#include "Common/Timer.h"
-#include <Framework/Task.h>
-#include <Headers/DataHeader.h>
 #include <TH1.h>
+#include <TObjArray.h>
+
+#include <Common/Timer.h>
+#include <Framework/Task.h>
+#include <Framework/InputSpec.h>
+#include <Framework/OutputSpec.h>
+#include <Headers/DataHeader.h>
 
 #include "QualityControl/MonitorObject.h"
 

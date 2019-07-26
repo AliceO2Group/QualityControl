@@ -16,6 +16,17 @@
 #ifndef QUALITYCONTROL_EXAMPLEPRINTERSPEC_H
 #define QUALITYCONTROL_EXAMPLEPRINTERSPEC_H
 
+#include <string>
+#include <memory>
+
+#include <TH1F.h>
+#include <TObjArray.h>
+
+#include <Framework/Task.h>
+#include <Framework/DataRefUtils.h>
+
+#include "QualityControl/MonitorObject.h"
+
 namespace o2::quality_control::example
 {
 

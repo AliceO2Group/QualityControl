@@ -15,6 +15,7 @@
 
 #include "Daq/EverIncreasingGraph.h"
 
+#include <iostream>
 // ROOT
 #include <TGraph.h>
 #include <TH1.h>

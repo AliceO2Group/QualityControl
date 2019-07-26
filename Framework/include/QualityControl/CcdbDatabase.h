@@ -16,7 +16,8 @@
 #ifndef QC_REPOSITORY_CCDBDATABASE_H
 #define QC_REPOSITORY_CCDBDATABASE_H
 
-#include "CCDB/CcdbApi.h"
+#include <CCDB/CcdbApi.h>
+
 #include "QualityControl/DatabaseInterface.h"
 
 namespace o2::quality_control::repository

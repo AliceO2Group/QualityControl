@@ -4,8 +4,8 @@
 ///
 
 #include "QualityControl/CheckInterface.h"
-#include "TClass.h"
-#include <iostream>
+
+#include <TClass.h>
 
 ClassImp(o2::quality_control::checker::CheckInterface)
 

@@ -20,13 +20,12 @@
 // boost (should be first but then it makes errors in fairmq)
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
-#include <boost/asio.hpp>
-#include <boost/serialization/array_wrapper.hpp>
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
+#include <Headers/DataHeader.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Configuration/ConfigurationInterface.h>
 // QC

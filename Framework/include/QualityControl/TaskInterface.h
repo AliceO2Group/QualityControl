@@ -18,6 +18,7 @@
 #define QC_CORE_TASKINTERFACE_H
 
 #include <memory>
+#include <string>
 // fixes problem of ''assert' not declared in this scope' in Framework/InitContext.h.
 // Maybe ROOT does some #undef assert?
 #include <cassert>

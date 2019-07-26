@@ -15,6 +15,7 @@
 
 #include "Common/MeanIsAbove.h"
 
+#include <iostream>
 // ROOT
 #include <TClass.h>
 #include <TH1.h>

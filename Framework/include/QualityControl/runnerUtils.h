@@ -16,6 +16,7 @@
 #ifndef QUALITYCONTROL_RUNNERUTILS_H
 #define QUALITYCONTROL_RUNNERUTILS_H
 
+#include <string>
 #include <Configuration/ConfigurationFactory.h>
 
 namespace o2::quality_control::core

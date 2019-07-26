@@ -17,9 +17,10 @@
 #define QC_CORE_MONITOROBJECT_H
 
 // std
-#include <iostream>
+#include <string>
 #include <map>
 // ROOT
+#include <Rtypes.h>
 #include <TObject.h>
 // O2
 #include <Common/Exceptions.h>

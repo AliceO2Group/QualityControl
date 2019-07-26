@@ -25,7 +25,8 @@
 /// Similarly, to generate only the remote part (running on QC servers) add '--remote'. By default, the executable
 /// generates both local and remote topologies, as it is the usual use-case for local development.
 
-#include "Framework/DataSampling.h"
+#include <Framework/DataSampling.h>
+
 using namespace o2::framework;
 
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
@@ -44,7 +45,6 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 }
 
 #include <FairLogger.h>
-#include <TH1F.h>
 #include <memory>
 #include <random>
 

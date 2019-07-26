@@ -29,7 +29,6 @@
 
 using namespace o2;
 using namespace o2::framework;
-using namespace std::chrono;
 
 // clang-format off
 WorkflowSpec defineDataProcessing(const ConfigContext&)

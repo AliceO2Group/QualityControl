@@ -18,13 +18,14 @@
 #include <chrono>
 #include <thread> // this_thread::sleep_for
 
-#include <QualityControl/CcdbDatabase.h>
 #include <TH2F.h>
 
-#include <FairMQLogger.h>
+#include <fairmq/FairMQLogger.h>
 #include <options/FairMQProgOptions.h> // device->fConfig
 
-#include "Common/Exceptions.h"
+#include <Common/Exceptions.h>
+
+#include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 

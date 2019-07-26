@@ -22,15 +22,11 @@
 #include <TFile.h>
 #include <TList.h>
 #include <TROOT.h>
-#include <TFile.h>
 #include <TKey.h>
 #include <TStreamerInfo.h>
-// boost
-#include <boost/algorithm/string.hpp>
 // std
 #include <chrono>
 #include <sstream>
-#include <utility>
 #include <fairlogger/Logger.h>
 
 #include <TSystem.h>

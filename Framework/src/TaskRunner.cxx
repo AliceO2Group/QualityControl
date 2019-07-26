@@ -14,25 +14,22 @@
 /// \author Piotr Konopka
 ///
 
+#include "QualityControl/TaskRunner.h"
+
 #include <memory>
-#include <iostream>
 
 #include <fairmq/FairMQDevice.h>
-
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataSampling.h>
-#include <Framework/DataSamplingPolicy.h>
 #include <Framework/CallbackService.h>
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
-#include <Headers/DataHeader.h>
-#include <Monitoring/MonitoringFactory.h>
+
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
-#include "QualityControl/TaskRunner.h"
 
 namespace o2::quality_control::core
 {

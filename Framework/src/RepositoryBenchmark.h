@@ -16,11 +16,13 @@
 #ifndef QC_REPOSITORYBENCHMARK_H
 #define QC_REPOSITORYBENCHMARK_H
 
-#include "QualityControl/CcdbDatabase.h"
-#include <FairMQDevice.h>
+#include "QualityControl/DatabaseInterface.h"
+#include <fairmq/FairMQDevice.h>
+#include <TH1.h>
 #include <Monitoring/MonitoringFactory.h>
-#include <TH1F.h>
 #include <boost/asio.hpp>
+#include <thread>
+#include <string>
 
 namespace o2::quality_control::core
 {

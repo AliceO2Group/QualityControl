@@ -16,6 +16,7 @@
 #ifndef QC_CORE_INFRASTRUCTUREGENERATOR_H
 #define QC_CORE_INFRASTRUCTUREGENERATOR_H
 
+#include <vector>
 #include <string>
 #include <Framework/WorkflowSpec.h>
 #include <Framework/CompletionPolicy.h>

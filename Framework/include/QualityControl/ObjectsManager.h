@@ -22,12 +22,11 @@
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/ServiceDiscovery.h"
 // ROOT
+#include <TObject.h>
 #include <TObjArray.h>
-#include <TObjString.h>
-// boost
-#include <boost/concept_check.hpp>
 // stl
 #include <string>
+#include <memory>
 
 namespace o2::quality_control::core
 {

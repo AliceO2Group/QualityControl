@@ -16,6 +16,9 @@
 #ifndef QC_CORE_TASKFACTORY_H
 #define QC_CORE_TASKFACTORY_H
 
+#include <string>
+#include <vector>
+
 #include <Framework/CompletionPolicy.h>
 #include <Framework/DataProcessorSpec.h>
 

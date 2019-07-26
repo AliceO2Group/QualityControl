@@ -28,9 +28,6 @@
 #include "Framework/DataSamplingReadoutAdapter.h"
 #include "Framework/runDataProcessing.h"
 
-#include <iostream>
-#include <string>
-
 using namespace o2;
 using namespace o2::framework;
 

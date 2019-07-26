@@ -29,12 +29,10 @@ void customize(std::vector<CompletionPolicy>& policies)
   policies.push_back(mergerConsumesASAP);
 }
 
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
 
-#include "QualityControl/Checker.h"
 #include "QualityControl/CheckerFactory.h"
 #include "QualityControl/HistoMerger.h"
-#include "QualityControl/TaskRunnerFactory.h"
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;

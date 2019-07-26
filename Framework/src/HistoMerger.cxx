@@ -14,9 +14,9 @@
 ///
 
 #include "QualityControl/HistoMerger.h"
+
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataRefUtils.h>
-#include <TObjArray.h>
 
 using o2::header::DataDescription;
 using o2::header::DataOrigin;

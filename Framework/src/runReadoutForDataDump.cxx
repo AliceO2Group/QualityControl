@@ -33,7 +33,7 @@
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 ///
 
-#include "Framework/DataSampling.h"
+#include <Framework/DataSampling.h>
 
 using namespace o2::framework;
 void customize(std::vector<CompletionPolicy>& policies)
@@ -45,8 +45,10 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
   DataSampling::CustomizeInfrastructure(policies);
 }
 
-#include "Framework/DataSamplingReadoutAdapter.h"
-#include "Framework/runDataProcessing.h"
+#include <Framework/DataSamplingReadoutAdapter.h>
+#include <Framework/runDataProcessing.h>
+
+#include <string>
 
 using namespace o2::framework;
 
@@ -64,7 +66,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutForDataDump.json";
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
-  o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
   return specs;
 }

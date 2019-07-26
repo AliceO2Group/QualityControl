@@ -16,9 +16,10 @@
 #ifndef QC_REPOSITORY_MYSQLDATABASE_H
 #define QC_REPOSITORY_MYSQLDATABASE_H
 
-#include "Common/Timer.h"
+#include <TMySQLServer.h>
+#include <Common/Timer.h>
+
 #include "QualityControl/DatabaseInterface.h"
-#include "TMySQLServer.h"
 
 class TMySQLResult;
 

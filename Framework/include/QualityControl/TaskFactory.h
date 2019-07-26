@@ -16,16 +16,17 @@
 #ifndef QC_CORE_TASKFACTORY_H
 #define QC_CORE_TASKFACTORY_H
 
-#include <iostream>
+// STL
 #include <memory>
 // ROOT
 #include <TClass.h>
 #include <TROOT.h>
 #include <TSystem.h>
 // O2
+#include <Common/Exceptions.h>
+// QC
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskConfig.h"
-#include <Common/Exceptions.h>
 
 namespace o2::quality_control::core
 {

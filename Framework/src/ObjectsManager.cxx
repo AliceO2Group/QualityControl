@@ -14,8 +14,9 @@
 ///
 
 #include "QualityControl/ObjectsManager.h"
-#include "Common/Exceptions.h"
+
 #include "QualityControl/QcInfoLogger.h"
+#include <Common/Exceptions.h>
 
 using namespace o2::quality_control::core;
 using namespace AliceO2::Common;

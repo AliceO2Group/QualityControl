@@ -17,7 +17,12 @@
 #ifndef QC_INFORMATIONSERVICE_H
 #define QC_INFORMATIONSERVICE_H
 
-#include "FairMQDevice.h"
+#include <map>
+#include <vector>
+#include <string>
+#include <thread>
+
+#include <fairmq/FairMQDevice.h>
 #include <InfoLogger/InfoLogger.hxx>
 
 #include <boost/asio.hpp>

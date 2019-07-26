@@ -16,9 +16,8 @@
 #ifndef QC_CORE_QCINFOLOGGER_H
 #define QC_CORE_QCINFOLOGGER_H
 
-#include "TaskInterface.h"
 #include <InfoLogger/InfoLogger.hxx>
-#include <iostream>
+#include "QualityControl/TaskInterface.h"
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time -> log::endm
 

@@ -16,10 +16,12 @@
 #ifndef QC_REPOSITORY_DATABASEINTERFACE_H
 #define QC_REPOSITORY_DATABASEINTERFACE_H
 
-#include "QualityControl/MonitorObject.h"
+#include <string>
 #include <memory>
+#include <vector>
 #include <unordered_map>
-//#include <bits/unique_ptr.h>
+
+#include "QualityControl/MonitorObject.h"
 
 namespace o2::quality_control::repository
 {

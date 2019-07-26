@@ -20,10 +20,18 @@
 // std & boost
 #include <chrono>
 #include <memory>
+#include <string>
+#include <map>
+// ROOT
+#include <TClass.h>
 // O2
 #include <Common/Timer.h>
 #include <Configuration/ConfigurationInterface.h>
 #include <Framework/Task.h>
+#include <Framework/InputSpec.h>
+#include <Framework/OutputSpec.h>
+#include <Framework/DataAllocator.h>
+#include <Headers/DataHeader.h>
 #include <Monitoring/MonitoringFactory.h>
 // QC
 #include "QualityControl/CheckInterface.h"
