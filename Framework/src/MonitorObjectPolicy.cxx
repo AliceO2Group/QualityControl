@@ -44,7 +44,7 @@ MonitorObjectPolicy::MonitorObjectPolicy(std::string type, std::vector<std::stri
   }
 }
 
-void MonitorObjectPolicy::update(std::string moName){
+void MonitorObjectPolicy::updateMO(std::string moName){
   ++mRevision;
   if (mSize > 1){
     if (mRevisionMap.count(moName)){
@@ -59,10 +59,12 @@ void MonitorObjectPolicy::update(std::string moName){
   }
 }
 
-bool MonitorObjectPolicy::isReady() {
-  bool ready = mPolicy(); 
+void MonitorObjectPolicy::updateRevision(){
   mLastRevision = mRevision;
-  return ready;
+}
+
+bool MonitorObjectPolicy::isReady() {
+  return mPolicy();
 }
 
 }

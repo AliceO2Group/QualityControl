@@ -198,6 +198,7 @@ void Checker::run(framework::ProcessingContext& ctx)
 
   // Check if compliant with policy
   if (mPolicy->isReady()){
+    mPolicy->updateRevision();
     auto qualityVector = check(mMonitorObjects);
     store(qualityVector);
     //send(checkedMoArray, ctx.outputs());
@@ -214,7 +215,7 @@ void Checker::run(framework::ProcessingContext& ctx)
 void Checker::update(std::shared_ptr<MonitorObject> mo){
   mLogger << mCheckerNames.front() << " - moMap key: " << mo->getTaskName() << AliceO2::InfoLogger::InfoLogger::endm;
   mMonitorObjects[mo->getTaskName()] = mo;
-  mPolicy->update(mo->getTaskName());
+  mPolicy->updateMO(mo->getTaskName());
 }
 
 std::vector<std::shared_ptr<QualityObject>> Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)

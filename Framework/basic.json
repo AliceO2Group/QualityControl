@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "XYZ": {
+      "QcTask": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
@@ -39,69 +39,18 @@
           "myOwnKey": "myOwnValue"
         },
         "location": "remote"
-      },
-      "TPC": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
-        "moduleName": "QcSkeleton",
-        "cycleDurationSeconds": "5",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "its-raw"
-        },
-        "taskParameters": {
-          "myOwnKey": "param2"
-        },
-        "location": "remote"
       }
-
     },
     "checks": {
-      "QcCheck3": {
+      "QcCheck": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
         "policy": "all",
         "dataSource": [{
           "type": "Task",
-          "name": "TPC"
-        } ]
-      },
-
-     "QcCheck2": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "all",
-        "dataSource": [{
-          "type": "Task",
-          "name": "TPC"
-        },{
-          "type": "Task",
-          "name": "XYZ"
+          "name": "QcTask"
         }]
-      },
-      "QcCheck1": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "all",
-        "dataSource": [{
-          "type": "Task",
-          "name": "XYZ"
-        } ]
-      },
-      "QcCheck4": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "all",
-        "dataSource": [{
-          "type": "Task",
-          "name": "TPC"
-        } ]
       }
     }
   },
@@ -119,5 +68,6 @@
         }
       ],
       "blocking": "false"
-    }  ]
+    }
+  ]
 }

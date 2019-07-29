@@ -13,7 +13,8 @@ namespace o2::quality_control::monitor
 class MonitorObjectPolicy {
   public:
     MonitorObjectPolicy(std::string type, std::vector<std::string> moNames);
-    void update(std::string moName); 
+    void updateMO(std::string moName);
+    void updateRevision();
     bool isReady();
   private:
     unsigned int mSize;
