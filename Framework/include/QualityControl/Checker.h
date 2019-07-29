@@ -121,7 +121,6 @@ class Checker : public framework::Task
   void loadLibrary(const std::string libraryName);
 
   void update(std::shared_ptr<MonitorObject> mo);
-  void trigger();
   inline void initDatabase();
   inline void initMonitoring();
   inline void initPolicy();

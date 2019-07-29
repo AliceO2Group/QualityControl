@@ -58,7 +58,7 @@
       }
 
     },
-    "check": {
+    "checks": {
       "QcCheck3": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",

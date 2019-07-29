@@ -44,7 +44,7 @@ std::string getFirstCheckerName(std::string configurationSource)
 {
   auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
 
-  for (const auto& task : config->getRecursive("qc.check")) {
+  for (const auto& task : config->getRecursive("qc.checks")) {
     return task.first; // task name;
   }
 

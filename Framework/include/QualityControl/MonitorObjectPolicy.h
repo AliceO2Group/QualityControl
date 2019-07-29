@@ -16,10 +16,10 @@ class MonitorObjectPolicy {
     void update(std::string moName); 
     bool isReady();
   private:
-    int mSize;
-    int mLastRevision;
-    int mRevision;
-    std::map<std::string, int> mRevisionMap;
+    unsigned int mSize;
+    unsigned int mLastRevision;
+    unsigned int mRevision;
+    std::map<std::string, unsigned int> mRevisionMap;
     std::function<bool()> mPolicy;
 };
 }

@@ -63,7 +63,7 @@ o2::framework::Inputs Checker::createInputSpec(const std::string checkName, cons
 {
   std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configSource);
   o2::framework::Inputs inputs;
-  for(auto& [key, sourceConf]: config->getRecursive("qc.check."+checkName+".dataSource")){
+  for(auto& [key, sourceConf]: config->getRecursive("qc.checks."+checkName+".dataSource")){
     (void)key;
     if(sourceConf.get<std::string>("type") == "Task"){
       const std::string& taskName = sourceConf.get<std::string>("name"); 
@@ -135,9 +135,9 @@ void Checker::populateConfig(){
     // Init Checker Interface
       std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
       for (const auto& checkerName: mCheckerNames){
-        const auto& moduleName = config->get<std::string>("qc.check."+checkerName+".moduleName");
+        const auto& moduleName = config->get<std::string>("qc.checks."+checkerName+".moduleName");
         loadLibrary(moduleName);
-        const std::string& className = config->get<std::string>("qc.check." + checkerName + ".className");
+        const std::string& className = config->get<std::string>("qc.checks." + checkerName + ".className");
         mChecks.insert(std::pair<std::string, CheckInterface*>(checkerName, getCheck(checkerName, className)));
       }
   } catch (...) {
@@ -152,15 +152,15 @@ void Checker::initPolicy(){
       const auto& checkerName = mCheckerNames.front();
       std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
       std::vector<std::string> inputs;
-      const auto& conf = config->getRecursive("qc.check."+ checkerName);
-      //const auto& conf = config->getRecursive("qc.check."+mCheckerName);
+      const auto& conf = config->getRecursive("qc.checks."+ checkerName);
+      //const auto& conf = config->getRecursive("qc.checks."+mCheckerName);
       for(const auto& [_key, dataSource]: conf.get_child("dataSource")){
         (void)_key;
         if (dataSource.get<std::string>("type") == "Task"){
           inputs.push_back(dataSource.get_value<std::string>("name"));
         }
       }
-      mPolicy = std::shared_ptr<MonitorObjectPolicy>(new MonitorObjectPolicy(config->get<std::string>("qc.check."+checkerName+".policy"), inputs));
+      mPolicy = std::shared_ptr<MonitorObjectPolicy>(new MonitorObjectPolicy(config->get<std::string>("qc.checks."+checkerName+".policy"), inputs));
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"

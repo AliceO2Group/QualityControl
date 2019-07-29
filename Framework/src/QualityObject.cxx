@@ -13,7 +13,7 @@ QualityObject::QualityObject(const std::string& checkerName, o2::framework::Inpu
 {
   setInputs(inputs);
   updateQuality(Quality());
-};
+}
 
 QualityObject::QualityObject(const std::string& checkerName)
   :QualityObject(checkerName, {})

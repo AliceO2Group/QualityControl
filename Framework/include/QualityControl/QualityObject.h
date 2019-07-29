@@ -75,7 +75,7 @@ class QualityObject : public TObject
   std::vector<std::string> mInputs;
   std::map<std::string, std::string> mUserMetadata;
 
-  ClassDef(QualityObject, 1);
+  ClassDefOverride(QualityObject, 1);
 };
 
 }

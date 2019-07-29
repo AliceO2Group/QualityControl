@@ -7,15 +7,15 @@ namespace o2::quality_control::monitor
 using namespace o2::quality_control::core;
 
 MonitorObjectPolicy::MonitorObjectPolicy(std::string type, std::vector<std::string> moNames): 
-    mRevisionMap(),
+    mSize(moNames.size()),
     mLastRevision(0), 
     mRevision(0),
-    mSize(moNames.size())
+    mRevisionMap()
 {
   QcInfoLogger::GetInstance() << "Policy type: " << type << AliceO2::InfoLogger::InfoLogger::endm;
   if (type == "all" && moNames.size() > 1){
     QcInfoLogger::GetInstance() << "Policy type initiate: ALL" << AliceO2::InfoLogger::InfoLogger::endm;
-    mPolicy = [=](){
+    mPolicy = [&](){
       if (mSize != mRevisionMap.size()){
         return false;
       }
@@ -28,7 +28,7 @@ MonitorObjectPolicy::MonitorObjectPolicy(std::string type, std::vector<std::stri
     };
   } else if (type == "anyNonZero" && moNames.size() > 1) {
     QcInfoLogger::GetInstance() << "Policy type initiate: ANYNONZERO" << AliceO2::InfoLogger::InfoLogger::endm;
-    mPolicy = [=](){
+    mPolicy = [&](){
       for (auto &rev : mRevisionMap) {
         if (rev.second <= 0) {
           return false;
@@ -38,24 +38,24 @@ MonitorObjectPolicy::MonitorObjectPolicy(std::string type, std::vector<std::stri
     };
   } else /* any (default) */ {
     QcInfoLogger::GetInstance() << "Policy type initiate: ANY (default)" << AliceO2::InfoLogger::InfoLogger::endm;
-    mPolicy = [=](){
+    mPolicy = [&](){
       return (mSize == 1 || mSize == mRevisionMap.size()) && mRevision > mLastRevision; //return true
     };
   }
 }
 
 void MonitorObjectPolicy::update(std::string moName){
+  ++mRevision;
   if (mSize > 1){
     if (mRevisionMap.count(moName)){
-      ++mRevision;
       mRevisionMap[moName] = mRevision;
-      //TODO: Potencial bug if revision number > int(max)
+      if (mLastRevision > mRevision) {
+        mLastRevision = mRevision;
+        ++mRevision;
+      }
     } else {
-      ++mRevision;
       mRevisionMap[moName] = mRevision;
     }
-  } else {
-    ++mRevision;
   }
 }
 
