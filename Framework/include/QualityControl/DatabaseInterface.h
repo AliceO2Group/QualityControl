@@ -33,9 +33,9 @@ class DatabaseInterface
 {
  public:
   /// Default constructor
-  DatabaseInterface() {}
+  DatabaseInterface() = default;
   /// Destructor
-  virtual ~DatabaseInterface() {}
+  virtual ~DatabaseInterface() = default;
 
   /**
    * Connects to the database.

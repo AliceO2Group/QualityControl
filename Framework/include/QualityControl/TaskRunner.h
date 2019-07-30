@@ -72,7 +72,7 @@ class TaskRunner : public framework::Task
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
   /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
   TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id = 0);
-  ~TaskRunner() override;
+  ~TaskRunner() override = default;
 
   /// \brief TaskRunner's init callback
   void init(framework::InitContext& iCtx) override;

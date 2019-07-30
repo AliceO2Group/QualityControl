@@ -14,9 +14,8 @@
 ///
 
 #include "Example/BenchmarkTask.h"
-#include "QualityControl/QcInfoLogger.h"
-
 #include <Configuration/ConfigurationFactory.h>
+#include "QualityControl/QcInfoLogger.h"
 #include <TCanvas.h>
 #include <TH1.h>
 #include <thread>
@@ -27,9 +26,11 @@ using namespace o2::configuration;
 namespace o2::quality_control_modules::example
 {
 
-BenchmarkTask::BenchmarkTask() : TaskInterface() {}
+// These two cannot be in the header, because ctors and dtors need to know how to construct and destruct
+// ConfigurationInterface, which is only forward-declared in the header.
+BenchmarkTask::BenchmarkTask() = default;
 
-BenchmarkTask::~BenchmarkTask() {}
+BenchmarkTask::~BenchmarkTask() = default;
 
 void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
 {

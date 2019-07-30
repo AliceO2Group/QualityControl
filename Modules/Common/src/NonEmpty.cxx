@@ -26,10 +26,6 @@ ClassImp(o2::quality_control_modules::common::NonEmpty)
   namespace o2::quality_control_modules::common
 {
 
-  NonEmpty::NonEmpty() {}
-
-  NonEmpty::~NonEmpty() {}
-
   void NonEmpty::configure(std::string /*name*/) {}
 
   Quality NonEmpty::check(const MonitorObject* mo)

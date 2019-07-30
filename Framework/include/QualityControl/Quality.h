@@ -32,7 +32,7 @@ class Quality
   /// Not 'explicit', we allow implicit conversion from uint to Quality.
   explicit Quality(unsigned int level = Quality::NullLevel, std::string name = "");
   /// Destructor
-  virtual ~Quality();
+  virtual ~Quality() = default;
 
   unsigned int getLevel() const;
   const std::string& getName() const;

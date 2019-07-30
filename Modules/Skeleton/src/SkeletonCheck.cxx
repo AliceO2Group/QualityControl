@@ -26,10 +26,6 @@ using namespace std;
 namespace o2::quality_control_modules::skeleton
 {
 
-SkeletonCheck::SkeletonCheck() {}
-
-SkeletonCheck::~SkeletonCheck() {}
-
 void SkeletonCheck::configure(std::string) {}
 
 Quality SkeletonCheck::check(const MonitorObject* mo)

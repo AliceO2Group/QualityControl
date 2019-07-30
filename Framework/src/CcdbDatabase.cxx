@@ -39,10 +39,6 @@ using namespace std;
 namespace o2::quality_control::repository
 {
 
-CcdbDatabase::CcdbDatabase() : mUrl("")
-{
-}
-
 CcdbDatabase::~CcdbDatabase() { disconnect(); }
 
 void CcdbDatabase::loadDeprecatedStreamerInfos()

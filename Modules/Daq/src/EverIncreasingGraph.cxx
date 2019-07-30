@@ -32,10 +32,6 @@ ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
   namespace o2::quality_control_modules::daq
 {
 
-  EverIncreasingGraph::EverIncreasingGraph() {}
-
-  EverIncreasingGraph::~EverIncreasingGraph() {}
-
   void EverIncreasingGraph::configure(std::string /*name*/) {}
 
   Quality EverIncreasingGraph::check(const MonitorObject* mo)

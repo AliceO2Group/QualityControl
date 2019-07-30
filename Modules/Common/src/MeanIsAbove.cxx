@@ -32,8 +32,6 @@ ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 namespace o2::quality_control_modules::common
 {
 
-MeanIsAbove::MeanIsAbove() : mThreshold(0.0) {}
-
 void MeanIsAbove::configure(std::string /*name*/)
 {
   // TODO use the configuration system to set the params

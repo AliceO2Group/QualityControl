@@ -31,7 +31,7 @@ class ExampleCondition : public o2::framework::DataSamplingCondition
 {
  public:
   /// \brief Constructor.
-  ExampleCondition() : DataSamplingCondition(){};
+  ExampleCondition() = default;
   /// \brief Default destructor
   ~ExampleCondition() override = default;
 
@@ -41,7 +41,7 @@ class ExampleCondition : public o2::framework::DataSamplingCondition
   bool decide(const o2::framework::DataRef& dataRef) override;
 
  private:
-  uint8_t mThreshold;
+  uint8_t mThreshold = 0;
 };
 
 } // namespace o2::quality_control_modules::example

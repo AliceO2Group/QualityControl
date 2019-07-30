@@ -14,7 +14,7 @@
 
 namespace o2::configuration {
   class ConfigurationInterface;
-};
+}
 
 class TH1F;
 

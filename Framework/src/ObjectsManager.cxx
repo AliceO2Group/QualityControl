@@ -36,9 +36,7 @@ ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskConfig(taskConfig)
   mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName);
 }
 
-ObjectsManager::~ObjectsManager()
-{
-}
+ObjectsManager::~ObjectsManager() = default;
 
 void ObjectsManager::startPublishing(TObject* object)
 {

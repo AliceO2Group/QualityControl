@@ -50,7 +50,7 @@ namespace o2::quality_control::repository
 class CcdbDatabase : public DatabaseInterface
 {
  public:
-  CcdbDatabase();
+  CcdbDatabase() = default;
   virtual ~CcdbDatabase();
 
   void connect(std::string host, std::string database, std::string username, std::string password) override;
@@ -85,7 +85,7 @@ class CcdbDatabase : public DatabaseInterface
    */
   std::string getListing(std::string subpath = "", std::string accept = "text/plain");
   o2::ccdb::CcdbApi ccdbApi;
-  std::string mUrl;
+  std::string mUrl = "";
 };
 
 } // namespace o2::quality_control::repository

@@ -34,7 +34,7 @@ class SkeletonTask /*final*/ : public TaskInterface // todo add back the "final"
 {
  public:
   /// \brief Constructor
-  SkeletonTask();
+  SkeletonTask() = default;
   /// Destructor
   ~SkeletonTask() override;
 
@@ -48,7 +48,7 @@ class SkeletonTask /*final*/ : public TaskInterface // todo add back the "final"
   void reset() override;
 
  private:
-  TH1F* mHistogram;
+  TH1F* mHistogram = nullptr;
 };
 
 } // namespace o2::quality_control_modules::skeleton

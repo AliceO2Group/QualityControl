@@ -33,8 +33,6 @@ namespace o2::quality_control::core
 
   Quality::Quality(unsigned int level, std::string name) : mLevel(level), mName(name) {}
 
-  Quality::~Quality() {}
-
   unsigned int Quality::getLevel() const { return mLevel; }
 
   const std::string& Quality::getName() const { return mName; }

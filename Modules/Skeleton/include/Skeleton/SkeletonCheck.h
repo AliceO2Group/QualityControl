@@ -28,9 +28,9 @@ class SkeletonCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  SkeletonCheck();
+  SkeletonCheck() = default;
   /// Destructor
-  ~SkeletonCheck() override;
+  ~SkeletonCheck() override = default;
 
   // Override interface
   void configure(std::string name) override;

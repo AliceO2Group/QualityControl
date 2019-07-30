@@ -30,7 +30,7 @@ class MeanIsAbove : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  MeanIsAbove();
+  MeanIsAbove() = default;
   /// Destructor
   ~MeanIsAbove() override = default;
 
@@ -40,7 +40,7 @@ class MeanIsAbove : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  float mThreshold;
+  float mThreshold = 0.0f;
 
   ClassDefOverride(MeanIsAbove, 1)
 };

@@ -18,9 +18,9 @@ class FakeCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  FakeCheck();
+  FakeCheck() = default;
   /// Destructor
-  ~FakeCheck() override;
+  ~FakeCheck() override = default;
 
   void configure(std::string name) override;
   Quality check(const MonitorObject* mo) override;

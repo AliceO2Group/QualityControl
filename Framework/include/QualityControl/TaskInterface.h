@@ -49,7 +49,7 @@ class TaskInterface
   explicit TaskInterface(ObjectsManager* objectsManager);
 
   /// \brief Default constructor
-  TaskInterface();
+  TaskInterface() = default;
 
   /// \brief Destructor
   virtual ~TaskInterface() noexcept = default;

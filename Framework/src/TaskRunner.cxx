@@ -57,8 +57,6 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   populateConfig(taskName);
 }
 
-TaskRunner::~TaskRunner() = default;
-
 void TaskRunner::init(InitContext& iCtx)
 {
   QcInfoLogger::GetInstance() << "initializing TaskRunner" << AliceO2::InfoLogger::InfoLogger::endm;

@@ -21,8 +21,6 @@ namespace o2::quality_control::core
 
 TaskInterface::TaskInterface(ObjectsManager* objectsManager) : mObjectsManager(objectsManager) {}
 
-TaskInterface::TaskInterface() : mObjectsManager(nullptr) {}
-
 const std::string& TaskInterface::getName() const { return mName; }
 
 void TaskInterface::setName(const std::string& name) { mName = name; }

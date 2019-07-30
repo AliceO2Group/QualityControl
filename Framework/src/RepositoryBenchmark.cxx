@@ -37,16 +37,6 @@ using namespace o2::monitoring;
 namespace o2::quality_control::core
 {
 
-RepositoryBenchmark::RepositoryBenchmark()
-  : mMaxIterations(0),
-    mNumIterations(0),
-    mNumberObjects(1),
-    mSizeObjects(1),
-    mTotalNumberObjects(0),
-    mThreadedMonitoring(true)
-{
-}
-
 TH1* RepositoryBenchmark::createHisto(uint64_t sizeObjects, string name)
 {
   TH1* myHisto;

@@ -28,9 +28,9 @@ class NonEmpty : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  NonEmpty();
+  NonEmpty() = default;
   /// Destructor
-  ~NonEmpty() override;
+  ~NonEmpty() override = default;
 
   void configure(std::string name) override;
   Quality check(const MonitorObject* mo) override;

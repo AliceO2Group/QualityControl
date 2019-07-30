@@ -50,7 +50,7 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
     *this << "QC infologger initialized" << infologger::endm;
   }
 
-  ~QcInfoLogger() override {}
+  ~QcInfoLogger() override = default;
 
   // Disallow copying
   QcInfoLogger& operator=(const QcInfoLogger&) = delete;

@@ -40,10 +40,8 @@ class ServiceDiscovery;
 /// \author Barthelemy von Haller
 class ObjectsManager
 {
-  friend class TaskControl; // TaskControl must be able to call "publish()" whenever needed. Nobody else can.
-
  public:
-  ObjectsManager(TaskConfig& taskConfig);
+  explicit ObjectsManager(TaskConfig& taskConfig);
   virtual ~ObjectsManager();
 
   /**
