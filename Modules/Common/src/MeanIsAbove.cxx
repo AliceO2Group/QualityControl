@@ -21,13 +21,13 @@
 #include <TH1.h>
 #include <TLine.h>
 #include <TList.h>
-// O2
-#include "Configuration/ConfigurationFactory.h"
+// QC
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 
 ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 
   using namespace std;
-using namespace o2::configuration;
 
 namespace o2::quality_control_modules::common
 {

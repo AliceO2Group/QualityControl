@@ -14,9 +14,8 @@
 ///
 
 #include "Example/FakeCheck.h"
-
-// ROOT
-#include <TH1.h>
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 
 using namespace std;
 

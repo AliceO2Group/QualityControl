@@ -14,7 +14,7 @@
 ///
 
 //#define private public // hack to have access to everything
-#include "../include/Common/MeanIsAbove.h"
+#include "Common/MeanIsAbove.h"
 
 #define BOOST_TEST_MODULE MO test
 #define BOOST_TEST_MAIN
@@ -22,7 +22,6 @@
 #include <TH1F.h>
 #include <TList.h>
 #include <boost/test/unit_test.hpp>
-#include <cassert>
 
 namespace o2::quality_control_modules::common
 {

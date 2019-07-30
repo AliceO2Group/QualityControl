@@ -14,7 +14,8 @@
 ///
 
 #include "Common/NonEmpty.h"
-
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 // ROOT
 #include <TH1.h>
 

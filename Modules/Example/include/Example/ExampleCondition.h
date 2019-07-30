@@ -18,7 +18,6 @@
 
 #include "QualityControl/TaskInterface.h"
 #include <Framework/DataSamplingCondition.h>
-#include <TROOT.h>
 
 namespace o2::quality_control_modules::example
 {

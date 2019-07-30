@@ -7,8 +7,6 @@
 #define QC_MODULE_EXAMPLE_FAKECHECK_H
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::example
 {

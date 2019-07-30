@@ -17,8 +17,6 @@
 #define QC_MODULE_COMMON_MEANISABOVE_H
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
 
 using namespace o2::quality_control::core;
 

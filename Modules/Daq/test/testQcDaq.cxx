@@ -4,14 +4,14 @@
 ///
 
 #include "Daq/DaqTask.h"
-#include "QualityControl/TaskFactory.h"
-#include <TSystem.h>
+//#include "QualityControl/TaskFactory.h"
+//#include <TSystem.h>
 
 #define BOOST_TEST_MODULE Publisher test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
-#include <TH1.h>
+//#include <TH1.h>
 #include <boost/test/unit_test.hpp>
 
 using namespace std;

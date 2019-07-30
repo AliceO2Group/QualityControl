@@ -15,6 +15,9 @@
 
 #include "Daq/EverIncreasingGraph.h"
 
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
+
 #include <iostream>
 // ROOT
 #include <TGraph.h>

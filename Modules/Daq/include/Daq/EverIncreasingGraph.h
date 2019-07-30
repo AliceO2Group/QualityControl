@@ -19,8 +19,6 @@
 #include <Common/DataBlock.h>
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::daq
 {

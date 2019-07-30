@@ -15,6 +15,8 @@
 
 #include "Example/BenchmarkTask.h"
 #include "QualityControl/QcInfoLogger.h"
+
+#include <Configuration/ConfigurationFactory.h>
 #include <TCanvas.h>
 #include <TH1.h>
 #include <thread>
