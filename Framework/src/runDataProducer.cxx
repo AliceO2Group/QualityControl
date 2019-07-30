@@ -25,7 +25,7 @@
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
 #include <random>
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
 
 using namespace o2;
 using namespace o2::framework;

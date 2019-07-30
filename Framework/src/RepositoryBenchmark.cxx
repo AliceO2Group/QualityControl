@@ -25,7 +25,6 @@
 
 #include <Common/Exceptions.h>
 
-#include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 

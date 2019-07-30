@@ -22,6 +22,7 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <vector>
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>

@@ -17,8 +17,8 @@
 #ifndef QC_CORE_TASKRUNNER_H
 #define QC_CORE_TASKRUNNER_H
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics.hpp>
+//#include <boost/accumulators/accumulators.hpp>
+//#include <boost/accumulators/statistics.hpp>
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>
@@ -29,7 +29,7 @@
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/TaskInterface.h"
 
-namespace ba = boost::accumulators;
+//namespace ba = boost::accumulators;
 
 namespace o2::configuration {
 class ConfigurationInterface;
@@ -136,8 +136,8 @@ class TaskRunner : public framework::Task
   AliceO2::Common::Timer mStatsTimer;
   int mTotalNumberObjectsPublished;
   AliceO2::Common::Timer mTimerTotalDurationActivity;
-  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPCpus;
-  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
+//  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPCpus;
+//  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
 };
 
 } // namespace o2::quality_control::core

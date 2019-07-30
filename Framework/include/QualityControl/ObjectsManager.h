@@ -20,13 +20,12 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/TaskConfig.h"
-// ROOT
-#include <TObjArray.h>
 // stl
 #include <string>
 #include <memory>
 
 class TObject;
+class TObjArray;
 
 namespace o2::quality_control::core
 {
@@ -117,7 +116,7 @@ class ObjectsManager
   void updateServiceDiscovery();
 
  private:
-  TObjArray mMonitorObjects;
+  std::unique_ptr<TObjArray> mMonitorObjects;
   TaskConfig& mTaskConfig;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;

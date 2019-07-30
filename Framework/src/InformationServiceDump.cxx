@@ -17,7 +17,6 @@
 #include "InformationServiceDump.h"
 
 #include <fairmq/FairMQLogger.h>
-#include <options/FairMQProgOptions.h>
 
 using namespace std;
 

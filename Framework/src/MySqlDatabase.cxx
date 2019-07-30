@@ -17,6 +17,7 @@
 #include <sstream>
 // ROOT
 #include <TMessage.h>
+#include <TMySQLServer.h>
 #include <TMySQLResult.h>
 #include <TMySQLRow.h>
 #include <TMySQLStatement.h>

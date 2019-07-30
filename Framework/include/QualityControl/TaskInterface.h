@@ -20,10 +20,6 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-// fixes problem of ''assert' not declared in this scope' in Framework/InitContext.h.
-// Maybe ROOT does some #undef assert?
-#include <cassert>
-
 // O2
 #include <Framework/InitContext.h>
 #include <Framework/ProcessingContext.h>

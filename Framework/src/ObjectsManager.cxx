@@ -29,7 +29,8 @@ namespace o2::quality_control::core
 
 ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
 {
-  mMonitorObjects.SetOwner(true);
+  mMonitorObjects = std::make_unique<TObjArray>();
+  mMonitorObjects->SetOwner(true);
 
   // register with the discovery service
   mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName);
@@ -41,14 +42,14 @@ ObjectsManager::~ObjectsManager()
 
 void ObjectsManager::startPublishing(TObject* object)
 {
-  if (mMonitorObjects.FindObject(object->GetName()) != 0) {
+  if (mMonitorObjects->FindObject(object->GetName()) != 0) {
     QcInfoLogger::GetInstance() << "Object already being published (" << object->GetName() << ")"
                                 << infologger::endm;
     BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
   }
   auto* newObject = new MonitorObject(object, mTaskConfig.taskName);
   newObject->setIsOwner(false);
-  mMonitorObjects.Add(newObject);
+  mMonitorObjects->Add(newObject);
   mUpdateServiceDiscovery = true;
 }
 
@@ -59,7 +60,7 @@ void ObjectsManager::updateServiceDiscovery()
   }
   // prepare the string of comma separated objects and publish it
   string objects;
-  for (auto mo : mMonitorObjects) {
+  for (auto mo : *mMonitorObjects) {
     objects += mTaskConfig.taskName + "/" + mo->GetName() + ",";
   }
   objects.pop_back();
@@ -74,11 +75,11 @@ void ObjectsManager::stopPublishing(TObject* object)
 
 void ObjectsManager::stopPublishing(const string& name)
 {
-  auto* mo = dynamic_cast<MonitorObject*>(mMonitorObjects.FindObject(name.data()));
+  auto* mo = dynamic_cast<MonitorObject*>(mMonitorObjects->FindObject(name.data()));
   if (mo == nullptr) {
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(name));
   }
-  mMonitorObjects.Remove(mo);
+  mMonitorObjects->Remove(mo);
 }
 
 Quality ObjectsManager::getQuality(std::string objectName)
@@ -99,7 +100,7 @@ void ObjectsManager::addCheck(const std::string& objectName, const std::string& 
 
 MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
 {
-  TObject* mo = mMonitorObjects.FindObject(objectName.c_str());
+  TObject* mo = mMonitorObjects->FindObject(objectName.c_str());
 
   if (mo != nullptr) {
     return dynamic_cast<MonitorObject*>(mo);
@@ -116,7 +117,7 @@ TObject* ObjectsManager::getObject(std::string objectName)
 
 TObjArray* ObjectsManager::getNonOwningArray() const
 {
-  return new TObjArray(mMonitorObjects);
+  return new TObjArray(*mMonitorObjects);
 }
 
 void ObjectsManager::addCheck(const TObject* object, const std::string& checkName, const std::string& checkClassName,
@@ -134,7 +135,7 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
 
 int ObjectsManager::getNumberPublishedObjects()
 {
-  return mMonitorObjects.GetLast() + 1; // GetLast returns the index
+  return mMonitorObjects->GetLast() + 1; // GetLast returns the index
 }
 
 } // namespace o2::quality_control::core

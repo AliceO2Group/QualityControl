@@ -24,12 +24,12 @@
 #include <TROOT.h>
 #include <TKey.h>
 #include <TStreamerInfo.h>
+#include <TSystem.h>
 // std
 #include <chrono>
 #include <sstream>
-#include <fairlogger/Logger.h>
 
-#include <TSystem.h>
+#include <fairlogger/Logger.h>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;

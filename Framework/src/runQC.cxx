@@ -44,11 +44,10 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
     ConfigParamSpec{ "remote", VariantType::Bool, false, { "Creates only the remote part of the QC topology." } });
 }
 
-#include <FairLogger.h>
 #include <memory>
-#include <random>
+#include <fairlogger/Logger.h>
 
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
 
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"

@@ -18,11 +18,10 @@
 #define BOOST_TEST_MODULE ObjectManager test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
-#include "../include/Common/Exceptions.h"
 #include <TObjString.h>
+#include <TObjArray.h>
 #include <TH1F.h>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
 using namespace std;
 using namespace o2::quality_control::core;

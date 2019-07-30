@@ -16,12 +16,12 @@
 #ifndef QC_REPOSITORY_MYSQLDATABASE_H
 #define QC_REPOSITORY_MYSQLDATABASE_H
 
-#include <TMySQLServer.h>
 #include <Common/Timer.h>
 
 #include "QualityControl/DatabaseInterface.h"
 
 class TMySQLResult;
+class TMySQLServer;
 
 namespace o2::quality_control::repository
 {

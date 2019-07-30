@@ -21,11 +21,8 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <Framework/InitContext.h>
-#include <boost/test/output_test_stream.hpp>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
-
-using boost::test_tools::output_test_stream;
 
 using namespace o2::quality_control;
 using namespace std;
