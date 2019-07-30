@@ -217,9 +217,9 @@ void Checker::run(framework::ProcessingContext& ctx)
 }
 
 void Checker::update(std::shared_ptr<MonitorObject> mo){
-  mLogger << mCheckNames.front() << " - moMap key: " << mo->getTaskName() << AliceO2::InfoLogger::InfoLogger::endm;
-  mMonitorObjects[mo->getTaskName()] = mo;
-  mPolicy->updateMO(mo->getTaskName());
+  mLogger << mCheckNames.front() << " - moMap key: " << mo->getFullName() << AliceO2::InfoLogger::InfoLogger::endm;
+  mMonitorObjects[mo->getFullName()] = mo;
+  mPolicy->updateMO(mo->getFullName());
 }
 
 std::vector<std::shared_ptr<QualityObject>> Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
