@@ -56,8 +56,7 @@ namespace o2::quality_control::checker
 /// \brief The class in charge of running the checks on a MonitorObject.
 ///
 /// A Checker is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
-/// and to run them on the MonitorObject in order to generate a quality. At the moment, a checker also stores the MO
-/// and its quality in the repository.
+/// and to run them on the MonitorObject in order to generate a quality. At the moment, a checker also stores quality in the repository.
 ///
 /// TODO Evaluate whether we should have a dedicated device to store in the database.
 ///
@@ -66,8 +65,19 @@ class Checker : public framework::Task
 {
  public:
   /// Constructor
-  Checker(std::string checkerName, std::string configurationSource);
-  Checker(std::vector<std::string> checkerNames, std::string configurationSource);
+  /**
+   * \brief Checker constructor
+   *
+   * Create Checker device that will perform check operation with defineds checks.
+   * Depending on the constructor, it can be a single check device or a group check device.
+   * Group check assumes that the input of the checks is the same!
+   *
+   * @param checkName Check name from the configuration
+   * @param checkNames List of check names, that operate on the same inputs.
+   * @param configurationSource Path to configuration
+   */
+  Checker(std::string checkName, std::string configurationSource);
+  Checker(std::vector<std::string> checkNames, std::string configurationSource);
 
   /// Destructor
   ~Checker() override;
@@ -120,7 +130,13 @@ class Checker : public framework::Task
    */
   void loadLibrary(const std::string libraryName);
 
+  /**
+   * \brief Update cached monitor object with new one.
+   *
+   * \param mo The MonitorObject to be updated
+   */
   void update(std::shared_ptr<MonitorObject> mo);
+
   inline void initDatabase();
   inline void initMonitoring();
   inline void initPolicy();
@@ -140,7 +156,7 @@ class Checker : public framework::Task
 
   // General state
   std::string mDeviceName;
-  std::vector<std::string> mCheckerNames;
+  std::vector<std::string> mCheckNames;
   std::string mConfigurationSource;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;

@@ -87,26 +87,26 @@ std::string Checker::createCheckerIdString(){
 // TODO maybe we could use the CheckerFactory
 
 
-Checker::Checker(std::vector<std::string> checkerNames, std::string configurationSource)
-  : mDeviceName(createCheckerIdString() + "-" + checkerNames.front()),
-    mCheckerNames{checkerNames},
+Checker::Checker(std::vector<std::string> checkNames, std::string configurationSource)
+  : mDeviceName(createCheckerIdString() + "-" + checkNames.front()),
+    mCheckNames{checkNames},
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
-    mInputs(Checker::createInputSpec(checkerNames.front(), configurationSource)),
-    mOutputSpec{ "QC", Checker::createCheckerDataDescription(checkerNames.front()), 0 },
+    mInputs(Checker::createInputSpec(checkNames.front(), configurationSource)),
+    mOutputSpec{ "QC", Checker::createCheckerDataDescription(checkNames.front()), 0 },
     startFirstObject{ system_clock::time_point::min() },
     endLastObject{ system_clock::time_point::min() }
 {
   mTotalNumberHistosReceived = 0;
-  for (auto& checkerName: checkerNames){
-    std::shared_ptr<QualityObject> qo(new QualityObject(checkerName));
+  for (auto& checkName: checkNames){
+    std::shared_ptr<QualityObject> qo(new QualityObject(checkName));
     qo->setInputs(mInputs);
-    mQualityObjects.insert(std::pair(checkerName, qo));
+    mQualityObjects.insert(std::pair(checkName, qo));
   }
 }
 
-Checker::Checker(std::string checkerName, std::string configurationSource)
-  : Checker(std::vector{checkerName}, configurationSource)
+Checker::Checker(std::string checkName, std::string configurationSource)
+  : Checker(std::vector{checkName}, configurationSource)
 {
 }
 
@@ -134,11 +134,11 @@ void Checker::populateConfig(){
   try {
     // Init Checker Interface
       std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-      for (const auto& checkerName: mCheckerNames){
-        const auto& moduleName = config->get<std::string>("qc.checks."+checkerName+".moduleName");
+      for (const auto& checkName: mCheckNames){
+        const auto& moduleName = config->get<std::string>("qc.checks."+checkName+".moduleName");
         loadLibrary(moduleName);
-        const std::string& className = config->get<std::string>("qc.checks." + checkerName + ".className");
-        mChecks.insert(std::pair<std::string, CheckInterface*>(checkerName, getCheck(checkerName, className)));
+        const std::string& className = config->get<std::string>("qc.checks." + checkName + ".className");
+        mChecks.insert(std::pair<std::string, CheckInterface*>(checkName, getCheck(checkName, className)));
       }
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
@@ -149,10 +149,10 @@ void Checker::populateConfig(){
 }
 void Checker::initPolicy(){
   try {
-      const auto& checkerName = mCheckerNames.front();
+      const auto& checkName = mCheckNames.front();
       std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
       std::vector<std::string> inputs;
-      const auto& conf = config->getRecursive("qc.checks."+ checkerName);
+      const auto& conf = config->getRecursive("qc.checks."+ checkName);
       //const auto& conf = config->getRecursive("qc.checks."+mCheckerName);
       for(const auto& [_key, dataSource]: conf.get_child("dataSource")){
         (void)_key;
@@ -160,7 +160,7 @@ void Checker::initPolicy(){
           inputs.push_back(dataSource.get_value<std::string>("name"));
         }
       }
-      mPolicy = std::shared_ptr<MonitorObjectPolicy>(new MonitorObjectPolicy(config->get<std::string>("qc.checks."+checkerName+".policy"), inputs));
+      mPolicy = std::shared_ptr<MonitorObjectPolicy>(new MonitorObjectPolicy(config->get<std::string>("qc.checks."+checkName+".policy"), inputs));
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
@@ -172,7 +172,6 @@ void Checker::initPolicy(){
 
 void Checker::run(framework::ProcessingContext& ctx)
 {
-  mLogger << mCheckerNames.front() <<" Receiving " << ctx.inputs().size() << " MonitorObjects" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // Save time of first object
   if (startFirstObject == std::chrono::system_clock::time_point::min()) {
@@ -183,6 +182,11 @@ void Checker::run(framework::ProcessingContext& ctx)
     auto dataRef = ctx.inputs().get(input.binding.c_str());
     if(dataRef.header != nullptr && dataRef.payload != nullptr){
       auto moArray = ctx.inputs().get<TObjArray*>(input.binding.c_str());
+      mLogger << "Device " << mDeviceName
+              << " received " << moArray->GetSize()
+              << " MonitorObjects from " << input.binding
+              << AliceO2::InfoLogger::InfoLogger::endm;
+
       for (const auto& to : *moArray) {
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(to) };
 
@@ -213,7 +217,7 @@ void Checker::run(framework::ProcessingContext& ctx)
 }
 
 void Checker::update(std::shared_ptr<MonitorObject> mo){
-  mLogger << mCheckerNames.front() << " - moMap key: " << mo->getTaskName() << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckNames.front() << " - moMap key: " << mo->getTaskName() << AliceO2::InfoLogger::InfoLogger::endm;
   mMonitorObjects[mo->getTaskName()] = mo;
   mPolicy->updateMO(mo->getTaskName());
 }
