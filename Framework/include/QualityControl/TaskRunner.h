@@ -31,11 +31,13 @@
 
 //namespace ba = boost::accumulators;
 
-namespace o2::configuration {
+namespace o2::configuration
+{
 class ConfigurationInterface;
 }
 
-namespace o2::monitoring {
+namespace o2::monitoring
+{
 class Monitoring;
 }
 
@@ -136,8 +138,8 @@ class TaskRunner : public framework::Task
   AliceO2::Common::Timer mStatsTimer;
   int mTotalNumberObjectsPublished;
   AliceO2::Common::Timer mTimerTotalDurationActivity;
-//  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPCpus;
-//  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
+  //  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPCpus;
+  //  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
 };
 
 } // namespace o2::quality_control::core

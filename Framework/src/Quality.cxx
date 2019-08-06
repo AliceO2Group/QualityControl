@@ -23,7 +23,7 @@ namespace o2::quality_control::core
 {
   // clang-format on
 
-// could be changed if needed but I don't see why we would need more than 10 levels
+  // could be changed if needed but I don't see why we would need more than 10 levels
   const unsigned int Quality::NullLevel = 10;
 
   const Quality Quality::Good(1, "Good");

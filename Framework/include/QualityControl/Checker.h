@@ -33,13 +33,15 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 
-namespace o2::framework {
+namespace o2::framework
+{
 struct InputSpec;
 struct OutputSpec;
 class DataAllocator;
-}
+} // namespace o2::framework
 
-namespace o2::monitoring {
+namespace o2::monitoring
+{
 class Monitoring;
 }
 

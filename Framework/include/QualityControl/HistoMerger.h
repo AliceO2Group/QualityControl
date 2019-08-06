@@ -23,10 +23,11 @@
 #include <Framework/Task.h>
 #include <Headers/DataHeader.h>
 
-namespace o2::framework {
+namespace o2::framework
+{
 struct InputSpec;
 struct OutputSpec;
-}
+} // namespace o2::framework
 
 class TH1;
 class TObjArray;

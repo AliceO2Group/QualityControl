@@ -12,8 +12,9 @@
 #include <memory>
 #include <string>
 
-namespace o2::configuration {
-  class ConfigurationInterface;
+namespace o2::configuration
+{
+class ConfigurationInterface;
 }
 
 class TH1F;

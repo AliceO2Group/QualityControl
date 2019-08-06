@@ -19,7 +19,8 @@
 #include <vector>
 #include <string>
 
-namespace o2::framework {
+namespace o2::framework
+{
 struct CompletionPolicy;
 }
 #include <Framework/WorkflowSpec.h>

@@ -21,7 +21,8 @@
 
 #include <Framework/DataProcessorSpec.h>
 
-namespace o2::framework {
+namespace o2::framework
+{
 struct CompletionPolicy;
 }
 
