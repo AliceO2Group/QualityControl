@@ -25,9 +25,10 @@
 #include <fairmq/FairMQDevice.h>
 #include <InfoLogger/InfoLogger.hxx>
 
-#include <boost/asio.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ptree_fwd.hpp>
 
 namespace pt = boost::property_tree;
 

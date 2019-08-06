@@ -3,10 +3,10 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../include/Example/ExampleTask.h"
-#include "Common/Exceptions.h"
+#include "Example/ExampleTask.h"
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/TaskFactory.h"
+#include <Common/Exceptions.h>
 #include <TSystem.h>
 #include <boost/exception/diagnostic_information.hpp>
 
@@ -15,9 +15,6 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
-#include <cassert>
-
-#include <TH1.h>
 
 using namespace std;
 
