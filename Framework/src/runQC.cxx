@@ -57,15 +57,9 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
   DataSampling::CustomizeInfrastructure(policies);
 }
 
-#include <FairLogger.h>
-#include <memory>
-#include <random>
-
+#include <fairlogger/Logger.h>
 #include <Framework/runDataProcessing.h>
 
-#include "QualityControl/Checker.h"
-
-using namespace o2::quality_control::checker;
 using namespace std::chrono;
 
 WorkflowSpec defineDataProcessing(const ConfigContext& config)

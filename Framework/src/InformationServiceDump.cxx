@@ -16,15 +16,9 @@
 
 #include "InformationServiceDump.h"
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
-
-#include "FairMQLogger.h"
-#include <options/FairMQProgOptions.h>
+#include <fairmq/FairMQLogger.h>
 
 using namespace std;
-namespace pt = boost::property_tree;
 
 InformationServiceDump::InformationServiceDump() { OnData("info_service_input", &InformationServiceDump::HandleData); }
 

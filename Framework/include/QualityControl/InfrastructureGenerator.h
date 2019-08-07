@@ -16,9 +16,14 @@
 #ifndef QC_CORE_INFRASTRUCTUREGENERATOR_H
 #define QC_CORE_INFRASTRUCTUREGENERATOR_H
 
+#include <vector>
 #include <string>
+
+namespace o2::framework
+{
+struct CompletionPolicy;
+}
 #include <Framework/WorkflowSpec.h>
-#include <Framework/CompletionPolicy.h>
 
 namespace o2::quality_control
 {

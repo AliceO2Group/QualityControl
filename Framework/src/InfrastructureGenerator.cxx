@@ -13,13 +13,15 @@
 /// \author Piotr Konopka
 ///
 
-#include <Configuration/ConfigurationFactory.h>
 #include "QualityControl/InfrastructureGenerator.h"
-#include "QualityControl/TaskRunnerFactory.h"
+
 #include "QualityControl/CheckerFactory.h"
+#include "QualityControl/HistoMerger.h"
+#include "QualityControl/TaskRunner.h"
+#include "QualityControl/TaskRunnerFactory.h"
+
 #include <boost/property_tree/ptree.hpp>
-#include <QualityControl/HistoMerger.h>
-#include <QualityControl/TaskRunner.h>
+#include <Configuration/ConfigurationFactory.h>
 
 using namespace o2::framework;
 using namespace o2::configuration;

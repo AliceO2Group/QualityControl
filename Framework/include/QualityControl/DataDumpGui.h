@@ -17,7 +17,9 @@
 #ifndef QC_CORE_DATADUMP_H
 #define QC_CORE_DATADUMP_H
 
-#include "FairMQDevice.h"
+#include <string>
+
+#include <fairmq/FairMQDevice.h>
 
 namespace o2::quality_control::core
 {

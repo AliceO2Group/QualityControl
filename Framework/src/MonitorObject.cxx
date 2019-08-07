@@ -13,9 +13,10 @@
 /// \author Barthelemy von Haller
 ///
 
-#include <iostream>
 #include "QualityControl/MonitorObject.h"
-#include "Common/Exceptions.h"
+
+#include <iostream>
+#include <Common/Exceptions.h>
 
 ClassImp(o2::quality_control::core::MonitorObject)
 

@@ -17,6 +17,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <boost/token_functions.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/asio.hpp>
 
 using namespace std;
 typedef boost::tokenizer<boost::char_separator<char>> t_tokenizer;

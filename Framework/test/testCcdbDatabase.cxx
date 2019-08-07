@@ -14,19 +14,16 @@
 /// \author Bartheley von Haller
 ///
 
-#include <QualityControl/DatabaseFactory.h>
+#include "QualityControl/DatabaseFactory.h"
 #include <unordered_map>
-#include <QualityControl/CcdbDatabase.h>
+#include "QualityControl/CcdbDatabase.h"
 
 #define BOOST_TEST_MODULE CcdbDatabase test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <TH1F.h>
-#include <TFile.h>
 
 namespace utf = boost::unit_test;
 

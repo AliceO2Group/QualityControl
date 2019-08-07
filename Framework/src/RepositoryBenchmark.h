@@ -16,11 +16,13 @@
 #ifndef QC_REPOSITORYBENCHMARK_H
 #define QC_REPOSITORYBENCHMARK_H
 
-#include "QualityControl/CcdbDatabase.h"
-#include <FairMQDevice.h>
+#include "QualityControl/DatabaseInterface.h"
+#include <fairmq/FairMQDevice.h>
+#include <TH1.h>
 #include <Monitoring/MonitoringFactory.h>
-#include <TH1F.h>
 #include <boost/asio.hpp>
+#include <thread>
+#include <string>
 
 namespace o2::quality_control::core
 {
@@ -28,7 +30,7 @@ namespace o2::quality_control::core
 class RepositoryBenchmark : public FairMQDevice
 {
  public:
-  RepositoryBenchmark();
+  RepositoryBenchmark() = default;
   virtual ~RepositoryBenchmark() = default;
 
  protected:
@@ -40,19 +42,19 @@ class RepositoryBenchmark : public FairMQDevice
 
  private:
   // user params
-  uint64_t mMaxIterations;
-  uint64_t mNumIterations;
-  uint64_t mNumberObjects;
-  uint64_t mSizeObjects;
+  uint64_t mMaxIterations = 0;
+  uint64_t mNumIterations = 0;
+  uint64_t mNumberObjects = 1;
+  uint64_t mSizeObjects = 1;
   std::string mTaskName;
   std::string mObjectName;
-  bool mDeletionMode;
+  bool mDeletionMode = false; // todo: is false ok as default?
 
   // monitoring
   std::unique_ptr<o2::monitoring::Monitoring> mMonitoring;
-  uint64_t mTotalNumberObjects;
-  bool mThreadedMonitoring;
-  uint64_t mThreadedMonitoringInterval;
+  uint64_t mTotalNumberObjects = 0;
+  bool mThreadedMonitoring = true;
+  uint64_t mThreadedMonitoringInterval = 10;
 
   // internal state
   std::unique_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;

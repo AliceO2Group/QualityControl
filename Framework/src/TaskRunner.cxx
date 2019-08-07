@@ -14,25 +14,22 @@
 /// \author Piotr Konopka
 ///
 
-#include <memory>
-#include <iostream>
+#include "QualityControl/TaskRunner.h"
 
-#include <fairmq/FairMQDevice.h>
+#include <memory>
 
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
+#include <Monitoring/MonitoringFactory.h>
 #include <Framework/DataSampling.h>
-#include <Framework/DataSamplingPolicy.h>
 #include <Framework/CallbackService.h>
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
-#include <Headers/DataHeader.h>
-#include <Monitoring/MonitoringFactory.h>
+
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
-#include "QualityControl/TaskRunner.h"
 
 namespace o2::quality_control::core
 {
@@ -60,8 +57,6 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   populateConfig(taskName);
 }
 
-TaskRunner::~TaskRunner() = default;
-
 void TaskRunner::init(InitContext& iCtx)
 {
   QcInfoLogger::GetInstance() << "initializing TaskRunner" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -81,7 +76,7 @@ void TaskRunner::init(InitContext& iCtx)
 
   // setup user's task
   TaskFactory f;
-  mTask.reset(f.create<TaskInterface>(mTaskConfig, mObjectsManager));
+  mTask.reset(f.create(mTaskConfig, mObjectsManager));
 
   // init user's task
   mTask->initialize(iCtx);
@@ -314,8 +309,8 @@ void TaskRunner::endOfActivity()
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
   mCollector->send({ rate, "QC_task_Rate_objects_published_per_second_whole_run" });
-  mCollector->send({ ba::mean(mPCpus), "QC_task_Mean_pcpu_whole_run" });
-  mCollector->send({ ba::mean(mPMems), "QC_task_Mean_pmem_whole_run" });
+  //  mCollector->send({ ba::mean(mPCpus), "QC_task_Mean_pcpu_whole_run" });
+  //  mCollector->send({ ba::mean(mPMems), "QC_task_Mean_pmem_whole_run" });
 }
 
 void TaskRunner::startCycle()
@@ -358,7 +353,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   mCollector->send({ mTimerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run" });
   mCollector->send({ whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run" });
   //    mCollector->send({std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run"});
-  mCollector->send({ ba::mean(mPMems), "QC_task_Mean_pmem_whole_run" });
+  //  mCollector->send({ ba::mean(mPMems), "QC_task_Mean_pmem_whole_run" });
 
   mCycleNumber++;
   mCycleOn = false;

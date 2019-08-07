@@ -14,20 +14,17 @@
 ///
 
 #include "Skeleton/SkeletonCheck.h"
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 
-// ROOT
 #include <fairlogger/Logger.h>
+// ROOT
 #include <TH1.h>
-#include <TPaveText.h>
 
 using namespace std;
 
 namespace o2::quality_control_modules::skeleton
 {
-
-SkeletonCheck::SkeletonCheck() {}
-
-SkeletonCheck::~SkeletonCheck() {}
 
 void SkeletonCheck::configure(std::string) {}
 

@@ -17,8 +17,6 @@
 #define QC_MODULE_COMMON_NONEMPTY_H
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::common
 {
@@ -30,9 +28,9 @@ class NonEmpty : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  NonEmpty();
+  NonEmpty() = default;
   /// Destructor
-  ~NonEmpty() override;
+  ~NonEmpty() override = default;
 
   void configure(std::string name) override;
   Quality check(const MonitorObject* mo) override;

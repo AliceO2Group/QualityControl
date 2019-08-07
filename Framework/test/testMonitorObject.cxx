@@ -13,14 +13,14 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../include/QualityControl/MonitorObject.h"
+#include "QualityControl/MonitorObject.h"
 
 #define BOOST_TEST_MODULE MO test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include <cassert>
 #include <chrono>
+#include <iostream>
 #include <TH1F.h>
 #include <TFile.h>
 #include <TSystem.h>

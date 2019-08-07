@@ -6,10 +6,10 @@
 #include <TCanvas.h>
 #include <TH2.h>
 
+#include <DataFormatsEMCAL/EMCALBlockHeader.h>
+#include <DataFormatsEMCAL/Digit.h>
 #include "QualityControl/QcInfoLogger.h"
-#include "DataFormatsEMCAL/EMCALBlockHeader.h"
 #include "EMCAL/DigitsQcTask.h"
-#include "DataFormatsEMCAL/Digit.h"
 
 namespace o2
 {

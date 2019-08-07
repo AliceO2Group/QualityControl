@@ -17,7 +17,7 @@
 #define QC_CORE_TASKCONFIG_H
 
 #include <string>
-#include <Configuration/ConfigurationInterface.h>
+#include <unordered_map>
 
 namespace o2::quality_control::core
 {
@@ -30,7 +30,7 @@ struct TaskConfig {
   int cycleDurationSeconds;
   int maxNumberCycles;
   std::string consulUrl;
-  o2::configuration::KeyValueMap customParameters = {};
+  std::unordered_map<std::string, std::string> customParameters = {};
 };
 
 } // namespace o2::quality_control::core

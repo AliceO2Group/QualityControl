@@ -8,8 +8,14 @@
 
 #include "QualityControl/TaskInterface.h"
 
-#include "Configuration/ConfigurationFactory.h"
 #include <vector>
+#include <memory>
+#include <string>
+
+namespace o2::configuration
+{
+class ConfigurationInterface;
+}
 
 class TH1F;
 

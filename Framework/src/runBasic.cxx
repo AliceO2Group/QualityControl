@@ -33,7 +33,7 @@
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
-#include "Framework/DataSampling.h"
+#include <Framework/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
@@ -58,12 +58,10 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
-#include <fairlogger/Logger.h>
-#include <TH1F.h>
-#include <memory>
 #include <random>
+#include <string>
 
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
 
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"

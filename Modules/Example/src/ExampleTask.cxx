@@ -15,8 +15,6 @@
 
 #include "Example/ExampleTask.h"
 #include "QualityControl/QcInfoLogger.h"
-#include <Common/DataBlock.h>
-#include <TCanvas.h>
 #include <TH1.h>
 
 using namespace std;

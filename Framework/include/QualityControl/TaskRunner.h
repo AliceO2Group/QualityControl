@@ -17,24 +17,29 @@
 #ifndef QC_CORE_TASKRUNNER_H
 #define QC_CORE_TASKRUNNER_H
 
-// boost (should be first but then it makes errors in fairmq)
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics.hpp>
-#include <boost/asio.hpp>
-#include <boost/serialization/array_wrapper.hpp>
+//#include <boost/accumulators/accumulators.hpp>
+//#include <boost/accumulators/statistics.hpp>
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
-#include <Monitoring/MonitoringFactory.h>
-#include <Configuration/ConfigurationInterface.h>
+#include <Headers/DataHeader.h>
 // QC
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/TaskInterface.h"
-#include "QualityControl/ServiceDiscovery.h"
 
-namespace ba = boost::accumulators;
+//namespace ba = boost::accumulators;
+
+namespace o2::configuration
+{
+class ConfigurationInterface;
+}
+
+namespace o2::monitoring
+{
+class Monitoring;
+}
 
 namespace o2::quality_control::core
 {
@@ -69,7 +74,7 @@ class TaskRunner : public framework::Task
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
   /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
   TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id = 0);
-  ~TaskRunner() override;
+  ~TaskRunner() override = default;
 
   /// \brief TaskRunner's init callback
   void init(framework::InitContext& iCtx) override;
@@ -133,8 +138,8 @@ class TaskRunner : public framework::Task
   AliceO2::Common::Timer mStatsTimer;
   int mTotalNumberObjectsPublished;
   AliceO2::Common::Timer mTimerTotalDurationActivity;
-  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPCpus;
-  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
+  //  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPCpus;
+  //  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
 };
 
 } // namespace o2::quality_control::core

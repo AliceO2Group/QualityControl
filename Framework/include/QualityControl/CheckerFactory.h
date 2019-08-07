@@ -16,7 +16,12 @@
 #ifndef QC_CHECKERFACTORY_H
 #define QC_CHECKERFACTORY_H
 
-#include "Framework/DataProcessorSpec.h"
+#include <string>
+
+namespace o2::framework
+{
+struct DataProcessorSpec;
+}
 
 namespace o2::quality_control::checker
 {

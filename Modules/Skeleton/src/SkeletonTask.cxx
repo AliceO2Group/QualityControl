@@ -23,8 +23,6 @@
 namespace o2::quality_control_modules::skeleton
 {
 
-SkeletonTask::SkeletonTask() : TaskInterface(), mHistogram(nullptr) { mHistogram = nullptr; }
-
 SkeletonTask::~SkeletonTask()
 {
   if (mHistogram) {

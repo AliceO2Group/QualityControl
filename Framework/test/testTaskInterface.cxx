@@ -20,11 +20,9 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
-#include <boost/test/output_test_stream.hpp>
+#include <Framework/InitContext.h>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
-
-using boost::test_tools::output_test_stream;
 
 using namespace o2::quality_control;
 using namespace std;
@@ -143,7 +141,7 @@ BOOST_AUTO_TEST_CASE(test_task_factory)
   auto objectsManager = make_shared<ObjectsManager>(config);
 
   TaskFactory taskFactory;
-  auto task = taskFactory.create<TaskInterface>(config, objectsManager);
+  auto task = taskFactory.create(config, objectsManager);
 
   BOOST_REQUIRE(task != nullptr);
   delete task;

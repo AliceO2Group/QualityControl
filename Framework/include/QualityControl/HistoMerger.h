@@ -16,13 +16,21 @@
 #ifndef QC_CORE_HISTOMERGER_H
 #define QC_CORE_HISTOMERGER_H
 
-#include <memory>
+#include <string>
 #include <vector>
 
-#include "Common/Timer.h"
+#include <Common/Timer.h>
 #include <Framework/Task.h>
 #include <Headers/DataHeader.h>
-#include <TH1.h>
+
+namespace o2::framework
+{
+struct InputSpec;
+struct OutputSpec;
+} // namespace o2::framework
+
+class TH1;
+class TObjArray;
 
 #include "QualityControl/MonitorObject.h"
 
