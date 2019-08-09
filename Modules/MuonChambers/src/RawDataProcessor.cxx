@@ -6,6 +6,7 @@
 
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TH2.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "MuonChambers/RawDataProcessor.h"
@@ -33,7 +34,8 @@ struct CRUheader
   uint16_t memory_size;
   uint8_t link_id;
   uint8_t packet_counter;
-  uint16_t cru_id;
+  uint32_t hb_orbit;
+  //uint16_t cru_id;
   //uint8_t dummy1;
   //uint64_t dummy2;
 };
@@ -301,7 +303,7 @@ void DecodeGBTWord(uint32_t* bufpt, uint32_t* data)
   data[0] =  (((word)>>0)&0x1)<<1;
   data[0] += (((word)>>1)&0x1);
 
-  return;
+  //return;
 
   data[1] =  (((word)>>2)&0x1)<<1;
   data[1] += (((word)>>3)&0x1);
@@ -314,7 +316,7 @@ void DecodeGBTWord(uint32_t* bufpt, uint32_t* data)
   data[4] =  (((word)>>8)&0x1)<<1;
   data[4] += (((word)>>9)&0x1);
 
-  return;
+  //return;
 
   data[5] =  (((word)>>10)&0x1)<<1;
   data[5] += (((word)>>11)&0x1);
@@ -403,7 +405,7 @@ void DecodeGBTWord(uint32_t* bufpt, uint32_t* data)
 decode_state_t Add1BitOfData(uint64_t gbtdata, DualSampa& dsr, DualSampaGroup* dsg)
 {
   decode_state_t result = DECODE_STATE_UNKNOWN;
-  //printf("Add1BitOfData()\n  ds->status=%d\n", dsr.status);
+  if( gPrintLevel >= 2 ) printf("ds->status=%d\n", dsr.status);
   if (!(dsr.status == notSynchronized)) { // data is synchronized => build the data word
     dsr.data += (gbtdata&0x1) * dsr.powerMultiplier;
     dsr.powerMultiplier *= 2;
@@ -416,10 +418,11 @@ decode_state_t Add1BitOfData(uint64_t gbtdata, DualSampa& dsr, DualSampaGroup* d
   case notSynchronized: {
     // Looking for Sync word (2 packets)
     // Look for 10 consecutives 01 (sent 10 from the GBT)
-    if( gPrintLevel >= 2 ) printf("Add1BitOfData()\n  ds[%d]->bit=%d\n  ->powerMultiplier=%llu\n  (gbtdata&0x1)=%llu\n",
+    if( gPrintLevel >= 2 ) printf("  ds[%d]->bit=%d\n  ->powerMultiplier=%llu\n  (gbtdata&0x1)=%llu\n",
         ds->id, ds->bit,ds->powerMultiplier, (int)(gbtdata&0x1));
     if (ds->bit < 50) { // Fill the word
       ds->data += (gbtdata&0x1) * ds->powerMultiplier;
+      //if( gPrintLevel >= 2 ) printf("Add1BitOfData()\n  ds[%d]->data=%llX\n", ds->id, ds->data);
       ds->powerMultiplier *= 2;
       ds->bit++;
     } else {
@@ -427,10 +430,11 @@ decode_state_t Add1BitOfData(uint64_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       ds->data /=2;  // Take out the bit 0
       ds->data &= 0x1FFFFFFFFFFFF;
       ds->data += (gbtdata&0x1) * ds->powerMultiplier;  // Fill bit 49
+      //if( gPrintLevel >= 2 ) printf("Add1BitOfData()\n  ds[%d]->data=%llX\n", ds->data);
       ds->bit++;
     }
 
-    if( gPrintLevel >= 3 ) printf("==> ds[%d]->data: %.16llX\n",ds->id, ds->data);
+    if( gPrintLevel >= 2 ) printf("  ==> ds[%d]->data: %.16llX\n",ds->id, ds->data);
     if (ds->data == 0x1555540f00113 && ds->bit >= 50) {
       //ds->nbHit=0;
       if (gPrintLevel >= 1) fprintf(flog, "SAMPA #%d: Synchronizing... (Sync word found)\n", ds->id); // Next word of 50 bits should be a Sync Word
@@ -447,9 +451,9 @@ decode_state_t Add1BitOfData(uint64_t gbtdata, DualSampa& dsr, DualSampaGroup* d
   case headerToRead: {
     // We are waiting for a Sampa header
     // It can be preceded by an undefined number os Sync words
-    if( gPrintLevel >= 2 ) printf("Add1BitOfData()\n  ds[%d]->bit=%d\n  ->powerMultiplier=%llu\n  (gbtdata&0x1)=%llu\n",
+    if( gPrintLevel >= 2 ) printf("  ds[%d]->bit=%d\n  ->powerMultiplier=%llu\n  (gbtdata&0x1)=%llu\n",
         dsr.id, dsr.bit,dsr.powerMultiplier, (int)(gbtdata&0x1));
-    if( gPrintLevel >= 3 ) printf("==> ds[%d]->data: %.16llX\n",dsr.id, dsr.data);
+    if( gPrintLevel >= 2 ) printf("  ==> ds[%d]->data: %.16llX\n",dsr.id, dsr.data);
     if(dsr.bit < 50) break;
     if (dsr.data == 0x1555540f00113) {
       if( gPrintLevel >= 2 ) printf("SAMPA #%d: Sync word found\n", dsr.id); // Next word of 50 bits should be a Sync Word
@@ -644,9 +648,9 @@ decode_state_t Add1BitOfData(uint64_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       //              currentcluster->fData[(currentcluster->fDataIndex)++] = ds->data;
       if (ds->header.fPkgType == 4) { // Good data
         result = DECODE_STATE_SAMPLE_FOUND;
-        ds->pedestal[ds->header.fChipAddress%2][ds->header.fChannelAddress] += ds->data;
-        ds->noise[ds->header.fChipAddress%2][ds->header.fChannelAddress] += ds->data*ds->data;
-        ds->ndata[ds->header.fChipAddress%2][ds->header.fChannelAddress] += 1;
+        //ds->pedestal[ds->header.fChipAddress%2][ds->header.fChannelAddress] += ds->data;
+        //ds->noise[ds->header.fChipAddress%2][ds->header.fChannelAddress] += ds->data*ds->data;
+        //ds->ndata[ds->header.fChipAddress%2][ds->header.fChannelAddress] += 1;
         ds->sample = ds->data;
 
         if( gPattern > 0 ) {
@@ -722,25 +726,60 @@ void RawDataProcessor::initialize(o2::framework::InitContext& ctx)
 {
   QcInfoLogger::GetInstance() << "initialize RawDataProcessor" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mHistogram = new TH1F("example", "example", 20, 0, 30000);
+  mHistogram = new TH1F("QcMuonChambers_PayloadSize", "QcMuonChambers Payload Size", 20, 0, 1000000000);
   getObjectsManager()->startPublishing(mHistogram);
   /*getObjectsManager()->addCheck(mHistogram, "checkFromMuonChambers", "o2::quality_control_modules::muonchambers::MuonChambersCheck",
     "QcMuonChambers");*/
 
-  for(int i = 0; i < 40; i++) {
-    DualSampaInit( &(ds[i]) );
-    ds[i].id = i;
-    ds[i].nbHit = -1;
-    for(int j=0;j<64;j++) {
-      ds[i].nbHitChan[j]=0;
+  for(int i = 0; i < 24; i++) {
+
+    mHistogramPedestals[i] = new TH2F(TString::Format("QcMuonChambers_Pedestals_%02d", i),
+        TString::Format("QcMuonChambers - Pedestals (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
+    //mHistogramPedestals->SetDrawOption("col");
+    getObjectsManager()->startPublishing(mHistogramPedestals[i]);
+    getObjectsManager()->addCheck(mHistogramPedestals[i], "checkFromMuonChambers",
+        "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
+
+    mHistogramNoise[i] =
+        new TH2F(TString::Format("QcMuonChambers_Noise_%02d", i),
+            TString::Format("QcMuonChambers - Noise (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
+    getObjectsManager()->startPublishing(mHistogramNoise[i]);
+
+    for(int j = 0; j < 8; j++) {
+      mHistogramPedestalsDS[i][j] =
+          new TH1F(TString::Format("QcMuonChambers_Pedestals_%02d_%02d", i, j),
+              TString::Format("QcMuonChambers - Pedestals (%02d-%02d)", i, j), 64*5, 0, 64*5);
+      getObjectsManager()->startPublishing(mHistogramPedestalsDS[i][j]);
+      /*getObjectsManager()->addCheck(mHistogramPedestalsDS[i][j], "checkFromMuonChambers",
+          "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");*/
+
+      mHistogramNoiseDS[i][j] =
+          new TH1F(TString::Format("QcMuonChambers_Noise_%02d_%02d", i, j),
+              TString::Format("QcMuonChambers - Noise (%02d-%02d)", i, j), 64*5, 0, 64*5);
+      getObjectsManager()->startPublishing(mHistogramNoiseDS[i][j]);
+      /*getObjectsManager()->addCheck(mHistogram, "checkFromMuonChambers", "o2::quality_control_modules::muonchambers::MuonChambersCheck",
+    "QcMuonChambers");*/
     }
   }
-  for(int i = 0; i < 8; i++) {
-    DualSampaGroupInit( &(dsg[i]) );
-  }
-  gPrintLevel = 1;
 
-  flog = fopen("/root/qc.log", "w");
+  hb_orbit = -1;
+
+  for(int c = 0; c < 24; c++) {
+    for(int i = 0; i < 40; i++) {
+      DualSampaInit( &(ds[c][i]) );
+      ds[c][i].id = i;
+      ds[c][i].nbHit = -1;
+      for(int j=0;j<64;j++) {
+        ds[c][i].nbHitChan[j]=0;
+      }
+    }
+    for(int i = 0; i < 8; i++) {
+      DualSampaGroupInit( &(dsg[c][i]) );
+    }
+  }
+  gPrintLevel = 0;
+
+  flog = stdout; //fopen("/root/qc.log", "w");
 }
 
 void RawDataProcessor::startOfActivity(Activity& activity)
@@ -758,91 +797,173 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // todo: update API examples or refer to DPL README.md
 
-  //  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // exemplary ways of accessing inputs (incoming data), that were specified in the .ini file - e.g.:
   //  [readoutInput]
   //  inputName=readout
   //  dataOrigin=ITS
   //  dataDescription=RAWDATA
+  const int RDH_BLOCK_SIZE = 8192;
 
   // 1. in a loop
   for (auto&& input : ctx.inputs()) {
     const auto* header = o2::header::get<header::DataHeader*>(input.header);
-    //mHistogram->Fill(header->payloadSize);
-    QcInfoLogger::GetInstance() << "payloadSize: " << header->payloadSize << AliceO2::InfoLogger::InfoLogger::endm;
+    //QcInfoLogger::GetInstance() << "header: " << header << AliceO2::InfoLogger::InfoLogger::endm;
+    //if(gPrintLevel>=1) fprintf(flog, "Header: %p\n", header);
+    if( !header ) continue;
+    //QcInfoLogger::GetInstance() << "payloadSize: " << header->payloadSize << AliceO2::InfoLogger::InfoLogger::endm;
+    if(gPrintLevel>=1) fprintf(flog, "payloadSize: %p\n", (int)header->payloadSize);
+    mHistogram->Fill(header->payloadSize);
     //continue;
 
-    const char* payload = input.payload;
+    const char* rdh = input.payload;
+    const char* payload = rdh + 16;
+    uint32_t payload_offset = 0;
     uint32_t CRUbuf[4*4];
     CRUheader CRUh;
     if( header->payloadSize < sizeof(CRUbuf) ) continue;
 
-    memcpy(CRUbuf,payload,sizeof(CRUbuf));
-    memcpy(&CRUh,CRUbuf,sizeof(CRUheader));
+    while( payload_offset < header->payloadSize ) {
 
-    QcInfoLogger::GetInstance() << "header version: " << (int)CRUh.header_version << AliceO2::InfoLogger::InfoLogger::endm;
-    QcInfoLogger::GetInstance() << "header size: " << (int)CRUh.header_size << AliceO2::InfoLogger::InfoLogger::endm;
-    QcInfoLogger::GetInstance() << "block length: " << CRUh.block_length << AliceO2::InfoLogger::InfoLogger::endm;
+      //rdh = &(input.payload[payload_offset]);
+      //payload = &(input.payload[payload_offset+16]);
+      payload = rdh + 16*4;
+      //QcInfoLogger::GetInstance() << "payload_offset: " << (int)payload_offset << AliceO2::InfoLogger::InfoLogger::endm;
+      //fprintf(flog, "CRU payload_offset: %d\n", (int)payload_offset);
 
-    fprintf(flog, "CRU header version: %d\n", (int)CRUh.header_version);
-    fprintf(flog, "CRU header size: %d\n", (int)CRUh.header_size);
-    if( ((int)CRUh.header_version) != 3 ) {
-      fprintf(flog, "Wrong CRU header version: %d\n", (int)CRUh.header_version);
-      continue;
-    }
-    if( ((int)CRUh.header_size) != 64 ) {
-      fprintf(flog, "Wrong CRU header size: %d\n", (int)CRUh.header_size);
-      continue;
-    }
-    fprintf(flog, "CRU link ID: %d\n", (int)CRUh.link_id);
-    fprintf(flog, "CRU packet counter: %d\n", (int)CRUh.packet_counter);
-    continue;
+      memcpy(CRUbuf,rdh,sizeof(CRUbuf));
+      memcpy(&CRUh,CRUbuf,sizeof(CRUheader));
 
-    uint32_t* payload_buf = (uint32_t*)payload;
-    uint32_t hhvalue,hlvalue,lhvalue,llvalue;
-    int nGBTwords = CRUh.block_length / 16;
-    for( int wi = 0; wi < nGBTwords; wi++) {
-      uint32_t* ptr = payload_buf + wi*4;
-      hhvalue = ptr[3]; hlvalue = ptr[2]; lhvalue = ptr[1]; llvalue = ptr[0];
-      //printf("%d (%d): %.8X %.8X %.8X %.8X\n",n,sizeof(CRUbuf)*8,
-      //    hhvalue, hlvalue, lhvalue, llvalue);
+      rdh += RDH_BLOCK_SIZE;
+      payload_offset += RDH_BLOCK_SIZE;
 
-      uint32_t bufpt[4] = {hhvalue, hlvalue, lhvalue, llvalue};
-      uint32_t data2bits[40];
-      DecodeGBTWord(bufpt, data2bits);
+      CRUh.block_length = CRUh.memory_size - CRUh.header_size;
+      //QcInfoLogger::GetInstance() << "header version: " << (int)CRUh.header_version << AliceO2::InfoLogger::InfoLogger::endm;
+      //QcInfoLogger::GetInstance() << "header size: " << (int)CRUh.header_size << AliceO2::InfoLogger::InfoLogger::endm;
+      //QcInfoLogger::GetInstance() << "block length: " << CRUh.block_length << AliceO2::InfoLogger::InfoLogger::endm;
+      //QcInfoLogger::GetInstance() << "packet number: " << (int)CRUh.packet_counter << AliceO2::InfoLogger::InfoLogger::endm;
+      //QcInfoLogger::GetInstance() << "orbit id: " << (int)CRUh.hb_orbit << AliceO2::InfoLogger::InfoLogger::endm;
+      //QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
 
-      int i = 0;
-      int link = ds[i].id / 5;
-      int bits[2] = {data2bits[i]&0x1, (data2bits[i]>>1)&0x1};
-      for(int k = 0; k < 2; k++) {
-        int n10bitwords2write = 0;
-        uint64_t cur_word = 0;
-        bool send_partial = false;
-        decode_state_t state = Add1BitOfData( bits[k], (ds[i]), &(dsg[link]) );
-        switch(state) {
-        case DECODE_STATE_SYNC_FOUND: send_partial = true; break;
-        case DECODE_STATE_HEADER_FOUND:
-          fprintf(flog,"HEADER: %05lX\n",*(unsigned long*)(&ds[i].header));
-          n10bitwords2write = 5;
-          cur_word = *(uint64_t*)(&ds[i].header);
-          break;
-        case DECODE_STATE_CSIZE_FOUND:
-          fprintf(flog,"CLUSTER SIZE: %d\n",ds[i].csize);
-          n10bitwords2write = 1;
-          cur_word = ds[i].csize;
-          break;
-        case DECODE_STATE_CTIME_FOUND:
-          fprintf(flog,"CLUSTER TIME: %d\n",ds[i].ctime);
-          n10bitwords2write = 1;
-          cur_word = ds[i].ctime;
-          break;
-        case DECODE_STATE_SAMPLE_FOUND:
-          fprintf(flog,"SAMPLE: %lX\n",ds[i].sample);
-          n10bitwords2write = 1;
-          cur_word = ds[i].sample;
-          break;
-        default: break;
+      if( ((int)CRUh.header_version) != 4 ) {
+        fprintf(flog, "Wrong CRU header version: %d\n", (int)CRUh.header_version);
+        continue;
+      }
+      if( ((int)CRUh.header_size) != 64 ) {
+        fprintf(flog, "Wrong CRU header size: %d\n", (int)CRUh.header_size);
+        continue;
+      }
+
+      //fprintf(flog, "CRU header: %08X %08X %08X %08X \n", CRUbuf[0], CRUbuf[1], CRUbuf[2], CRUbuf[3]);
+      //fprintf(flog, "CRU header: %08X %08X %08X %08X \n", CRUbuf[4], CRUbuf[5], CRUbuf[6], CRUbuf[7]);
+      //fprintf(flog, "CRU header: %08X %08X %08X %08X \n", CRUbuf[8], CRUbuf[9], CRUbuf[10], CRUbuf[11]);
+      //fprintf(flog, "CRU header: %08X %08X %08X %08X \n", CRUbuf[12], CRUbuf[13], CRUbuf[14], CRUbuf[15]);
+      //fprintf(flog, "CRU header version: %d\n", (int)CRUh.header_version);
+      //fprintf(flog, "CRU header size: %d\n", (int)CRUh.header_size);
+      //fprintf(flog, "CRU header block length: %d\n", (int)CRUh.block_length);
+      if(gPrintLevel>=1) fprintf(flog, "CRU packet counter: %d\n", (int)CRUh.packet_counter);
+      if(gPrintLevel>=1) fprintf(flog, "CRU orbit id: %d\n", (int)CRUh.hb_orbit);
+      //fprintf(flog, "CRU link ID: %d\n", (int)CRUh.link_id);
+      //fprintf(flog, "\n");
+      //continue;
+
+      int cru_lid = CRUh.link_id;
+      bool orbit_jump = true;
+      int Dorbit1 = CRUh.hb_orbit - hb_orbit;
+      int Dorbit2 = (uint32_t)( ((uint64_t)CRUh.hb_orbit) + 0x100000000 - hb_orbit );
+      if( Dorbit1 >=0 && Dorbit1 <= 1 ) orbit_jump = false;
+      if( Dorbit2 >=0 && Dorbit2 <= 1 ) orbit_jump = false;
+      if( orbit_jump ) {
+        if(gPrintLevel>=1) fprintf(flog, "Resetting decoding FSM: orbit=%d, previous=%d\n", CRUh.hb_orbit, hb_orbit);
+        for(int i = 0; i < 40; i++) {
+          DualSampaReset( &(ds[cru_lid][i]) );
+          ds[cru_lid][i].id = i;
+          ds[cru_lid][i].nbHit = -1;
+          for(int j=0;j<64;j++) {
+            ds[cru_lid][i].nbHitChan[j]=0;
+          }
+        }
+        for(int i = 0; i < 8; i++) {
+          DualSampaGroupReset( &(dsg[cru_lid][i]) );
+        }
+      }
+      hb_orbit = CRUh.hb_orbit;
+
+      uint32_t* payload_buf = (uint32_t*)payload;
+      uint32_t hhvalue,hlvalue,lhvalue,llvalue;
+      int nGBTwords = CRUh.block_length / 16;
+      for( int wi = 0; wi < nGBTwords; wi++) {
+        uint32_t* ptr = payload_buf + wi*4;
+        hhvalue = ptr[3]; hlvalue = ptr[2]; lhvalue = ptr[1]; llvalue = ptr[0];
+        //printf("%.8X %.8X %.8X %.8X\n",
+        //    hhvalue, hlvalue, lhvalue, llvalue);
+        //printf("%.2X\n", (llvalue&0x3));
+
+        uint32_t bufpt[4] = {hhvalue, hlvalue, lhvalue, llvalue};
+        uint32_t data2bits[40] = {0};
+        DecodeGBTWord(bufpt, data2bits);
+
+        for( int i = 0; i < 40; i++ ) {
+          int group = ds[cru_lid][i].id / 5;
+          int bits[2] = {data2bits[i]&0x1, (data2bits[i]>>1)&0x1};
+          for(int k = 0; k < 2; k++) {
+            int n10bitwords2write = 0;
+            uint64_t cur_word = 0;
+            bool send_partial = false;
+            decode_state_t state = Add1BitOfData( bits[k], (ds[cru_lid][i]), &(dsg[cru_lid][group]) );
+            int bch, gch;
+            switch(state) {
+            case DECODE_STATE_SYNC_FOUND: send_partial = true; break;
+            case DECODE_STATE_HEADER_FOUND:
+              if(gPrintLevel>=1) fprintf(flog,"HEADER: %05lX\n",*(unsigned long*)(&ds[cru_lid][i].header));
+              n10bitwords2write = 5;
+              cur_word = *(uint64_t*)(&ds[cru_lid][i].header);
+              break;
+            case DECODE_STATE_CSIZE_FOUND:
+              if(gPrintLevel>=1) fprintf(flog,"CLUSTER SIZE: %d\n",ds[cru_lid][i].csize);
+              n10bitwords2write = 1;
+              cur_word = ds[cru_lid][i].csize;
+              break;
+            case DECODE_STATE_CTIME_FOUND:
+              if(gPrintLevel>=1) fprintf(flog,"CLUSTER TIME: %d\n",ds[cru_lid][i].ctime);
+              n10bitwords2write = 1;
+              cur_word = ds[cru_lid][i].ctime;
+              break;
+            case DECODE_STATE_SAMPLE_FOUND:
+              if(gPrintLevel>=1) fprintf(flog,"SAMPLE: %lX\n",ds[cru_lid][i].sample);
+              n10bitwords2write = 1;
+              cur_word = ds[cru_lid][i].sample;
+              //mHistogramPedestals->Fill(nch, ds[cru_lid][i].sample);
+              {
+                int chip_id = ds[cru_lid][i].header.fChipAddress % 2;
+                int ch_id = ds[cru_lid][i].header.fChannelAddress;
+                int gch = ch_id + 32*(ds[cru_lid][i].header.fChipAddress);
+                int bch = ch_id + 32 * chip_id;
+                //fprintf(flog, "chip=%d  ch=%d  bch=%d  gch=%d\n",
+                //    (int)ds[cru_lid][i].header.fChipAddress,
+                //    (int)ds[cru_lid][i].header.fChannelAddress, bch, gch);
+                double p0 = ds[cru_lid][i].pedestal[chip_id][ch_id];
+                ds[cru_lid][i].ndata[chip_id][ch_id] += 1;
+                int N = ds[cru_lid][i].ndata[chip_id][ch_id];
+                double p = p0 + (ds[cru_lid][i].sample - p0) / N;
+                //fprintf(flog,"p0=%f  sample=%f  N=%d  p=%f\n",
+                //    (float)p0, (float)ds[cru_lid][i].sample, (int)N, (float)p);
+                ds[cru_lid][i].pedestal[chip_id][ch_id] = p;
+                //fprintf(flog,"SetBinContent(%d, %d, %f)\n", (int)ds[cru_lid][i].id, (int)nch, (float)p);
+                mHistogramPedestals[cru_lid]->SetBinContent(ds[cru_lid][i].id+1, bch+1, p);
+                mHistogramPedestalsDS[cru_lid][group]->SetBinContent(gch+1, p);
+
+                double M0 = ds[cru_lid][i].noise[chip_id][ch_id];
+                double M = M0 + (ds[cru_lid][i].sample - p0) * (ds[cru_lid][i].sample - p);
+                mHistogramNoise[cru_lid]->SetBinContent(ds[cru_lid][i].id+1, bch+1, std::sqrt(M/N));
+                mHistogramNoiseDS[cru_lid][group]->SetBinContent(gch+1, std::sqrt(M/N));
+                ds[cru_lid][i].noise[chip_id][ch_id] = M;
+              }
+              break;
+            default: break;
+            }
+          }
         }
       }
     }

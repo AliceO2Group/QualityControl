@@ -4,4 +4,5 @@
 #pragma link off all functions;
 
 #pragma link C++ class o2::quality_control_modules::muonchambers::RawDataProcessor+;
+#pragma link C++ class o2::quality_control_modules::muonchambers::MCHCheckPedestals+;
 #endif

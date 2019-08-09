@@ -11,6 +11,7 @@
 #include "MuonChambers/sampa_header.h"
 
 class TH1F;
+class TH2F;
 
 using namespace o2::quality_control::core;
 
@@ -84,9 +85,14 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
   void reset() override;
 
  private:
-  DualSampa ds[40];
-  DualSampaGroup dsg[8];
+  int hb_orbit;
+  DualSampa ds[24][40];
+  DualSampaGroup dsg[24][8];
   TH1F* mHistogram;
+  TH2F* mHistogramPedestals[24];
+  TH2F* mHistogramNoise[24];
+  TH1F* mHistogramPedestalsDS[24][8];
+  TH1F* mHistogramNoiseDS[24][8];
 };
 
 } // namespace muonchambers

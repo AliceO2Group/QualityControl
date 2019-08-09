@@ -4,15 +4,17 @@ set(MODULE_NAME "QcMuonChambers")
 
 set(SRCS
   src/RawDataProcessor.cxx
+  src/MCHCheckPedestals.cxx
 )
 
 set(HEADERS
   include/MuonChambers/RawDataProcessor.h
+  include/MuonChambers/MCHCheckPedestals.h
 )
 
 # ---- Library ----
 
-add_library(${MODULE_NAME} SHARED ${SRCS} ${MODULE_NAME}Dict.cxx)
+add_library(${MODULE_NAME} SHARED ${SRCS})
 
 target_include_directories(
   ${MODULE_NAME}
@@ -31,7 +33,14 @@ install(
 
 # ---- ROOT dictionary ----
 
-generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/MuonChambers/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
+#generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/MuonChambers/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
+
+add_root_dictionary(${MODULE_NAME}
+                    HEADERS include/MuonChambers/RawDataProcessor.h
+                            include/MuonChambers/MCHCheckPedestals.h
+                            include/MuonChambers/sampa_header.h
+                    LINKDEF include/MuonChambers/LinkDef.h
+                    BASENAME ${MODULE_NAME})
 
 # ---- Tests ----
 
