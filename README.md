@@ -24,6 +24,7 @@ For a general overview of our (O2) software, organization and processes, please 
          * [QC architecture](doc/ModulesDevelopment.md#qc-architecture)
          * [DPL](doc/ModulesDevelopment.md#dpl)
          * [Data Sampling](doc/ModulesDevelopment.md#data-sampling)
+            * [Custom Data Sampling Condition](doc/ModulesDevelopment.md#custom-data-sampling-condition)
             * [Bypassing the Data Sampling](doc/ModulesDevelopment.md#bypassing-the-data-sampling)
          * [Code Organization](doc/ModulesDevelopment.md#code-organization)
          * [User-defined modules](doc/ModulesDevelopment.md#user-defined-modules)

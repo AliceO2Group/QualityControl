@@ -13,14 +13,12 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../include/QualityControl/QcInfoLogger.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE InfoLogger test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include <cassert>
-#include <iostream>
 
 using namespace std;
 

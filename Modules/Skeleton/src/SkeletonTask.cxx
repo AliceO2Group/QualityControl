@@ -23,9 +23,8 @@
 namespace o2::quality_control_modules::skeleton
 {
 
-SkeletonTask::SkeletonTask() : TaskInterface(), mHistogram(nullptr) { mHistogram = nullptr; }
-
-SkeletonTask::~SkeletonTask() {
+SkeletonTask::~SkeletonTask()
+{
   if (mHistogram) {
     delete mHistogram;
   }
@@ -61,11 +60,8 @@ void SkeletonTask::startOfCycle()
 void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // In this function you can access data inputs specified in the JSON config file, for example:
-  //  {
-  //    "binding": "random",
-  //    "dataOrigin": "ITS",
-  //    "dataDescription": "RAWDATA"
-  //  }
+  //   "query": "random:ITS/RAWDATA/0"
+  // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
 
   // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
   // One can find additional examples at:
@@ -89,22 +85,22 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   // 2. Using get("<binding>")
 
   // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
-//   auto payload = ctx.inputs().get("random").payload;
+  //   auto payload = ctx.inputs().get("random").payload;
 
   // get payload of a specific input, which is a structure array:
-//  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("random").header);
-//  struct s {int a; double b;};
-//  auto array = ctx.inputs().get<s*>("random");
-//  for (int j = 0; j < header->payloadSize / sizeof(s); ++j) {
-//    int i = array.get()[j].a;
-//  }
+  //  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("random").header);
+  //  struct s {int a; double b;};
+  //  auto array = ctx.inputs().get<s*>("random");
+  //  for (int j = 0; j < header->payloadSize / sizeof(s); ++j) {
+  //    int i = array.get()[j].a;
+  //  }
 
   // get payload of a specific input, which is a root object
-//   auto h = ctx.inputs().get<TH1F*>("histos");
-//   Double_t stats[4];
-//   h->GetStats(stats);
-//   auto s = ctx.inputs().get<TObjString*>("string");
-//   LOG(INFO) << "String is " << s->GetString().Data();
+  //   auto h = ctx.inputs().get<TH1F*>("histos");
+  //   Double_t stats[4];
+  //   h->GetStats(stats);
+  //   auto s = ctx.inputs().get<TObjString*>("string");
+  //   LOG(INFO) << "String is " << s->GetString().Data();
 }
 
 void SkeletonTask::endOfCycle()

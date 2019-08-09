@@ -17,8 +17,6 @@
 #define QC_REPOSITORY_DATABASEFACTORY_H
 
 #include <memory>
-// O2
-#include "Common/Exceptions.h"
 // QC
 #include "QualityControl/DatabaseInterface.h"
 

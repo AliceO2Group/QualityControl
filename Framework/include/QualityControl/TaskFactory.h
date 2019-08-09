@@ -16,22 +16,17 @@
 #ifndef QC_CORE_TASKFACTORY_H
 #define QC_CORE_TASKFACTORY_H
 
-#include <iostream>
+// STL
 #include <memory>
-// ROOT
-#include <TClass.h>
-#include <TROOT.h>
-#include <TSystem.h>
 // O2
-#include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/TaskConfig.h"
 #include <Common/Exceptions.h>
+// QC
+#include "QualityControl/TaskConfig.h"
 
 namespace o2::quality_control::core
 {
 
 class TaskInterface;
-
 class ObjectsManager;
 
 /// \brief Factory in charge of creating tasks
@@ -51,43 +46,7 @@ class TaskFactory
   /// The TaskInterface actual class is decided based on the parameters passed.
   /// \todo make it static ?
   /// \author Barthelemy von Haller
-  template <class T>
-  T* create(TaskConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
-  {
-    T* result = nullptr;
-    QcInfoLogger& logger = QcInfoLogger::GetInstance();
-
-    // Load the library
-    std::string library = "lib" + taskConfig.moduleName;
-    logger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
-    int libLoaded = gSystem->Load(library.c_str(), "", true);
-    if (libLoaded < 0) {
-      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
-    }
-
-    // Get the class and instantiate
-    logger << "Loading class " << taskConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
-    TClass* cl = TClass::GetClass(taskConfig.className.c_str());
-    std::string tempString("Failed to instantiate Quality Control Module");
-    if (!cl) {
-      tempString += " because no dictionary for class named \"";
-      tempString += taskConfig.className;
-      tempString += "\" could be retrieved";
-      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
-    }
-    logger << "Instantiating class " << taskConfig.className << " (" << cl << ")"
-           << AliceO2::InfoLogger::InfoLogger::endm;
-    result = static_cast<T*>(cl->New());
-    if (!result) {
-      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
-    }
-    result->setName(taskConfig.taskName);
-    result->setObjectsManager(objectsManager);
-    result->setCustomParameters(taskConfig.customParameters);
-    logger << "QualityControl Module " << taskConfig.moduleName << " loaded " << AliceO2::InfoLogger::InfoLogger::endm;
-
-    return result;
-  }
+  TaskInterface* create(TaskConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager);
 };
 
 } // namespace o2::quality_control::core

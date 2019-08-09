@@ -18,10 +18,9 @@
 #define BOOST_TEST_MODULE Publisher test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
-#include "../include/Common/Exceptions.h"
+
 #include <TObjString.h>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
 using namespace std;
 using namespace o2::quality_control::core;

@@ -13,13 +13,12 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../include/QualityControl/Quality.h"
+#include "QualityControl/Quality.h"
 
 #define BOOST_TEST_MODULE Quality test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include <cassert>
 #include <iostream>
 
 using namespace std;

@@ -17,8 +17,7 @@
 #ifndef QC_INFORMATIONSERVICEDUMP_H
 #define QC_INFORMATIONSERVICEDUMP_H
 
-#include "FairMQDevice.h"
-#include <boost/asio.hpp>
+#include <fairmq/FairMQDevice.h>
 
 /// \brief Dump the publications received from the InformationService.
 ///

@@ -13,10 +13,10 @@
 /// \author Piotr Konopka
 ///
 
-#include <Framework/DataProcessorSpec.h>
-
-#include "QualityControl/Checker.h"
 #include "QualityControl/CheckerFactory.h"
+
+#include <Framework/DataProcessorSpec.h>
+#include "QualityControl/Checker.h"
 
 namespace o2::quality_control::checker
 {

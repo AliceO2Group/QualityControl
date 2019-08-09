@@ -13,19 +13,13 @@
 /// \author Barthelemy von Haller
 ///
 
-// std
-#include <sstream>
 // ROOT
 #include <QualityControl/CcdbDatabase.h>
-#include <TClass.h>
-#include <TROOT.h>
-#include <TSystem.h>
 // O2
-#include "Common/Exceptions.h"
+#include <Common/Exceptions.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/TaskInterface.h"
 #ifdef _WITH_MYSQL
 #include "QualityControl/MySqlDatabase.h"
 #endif

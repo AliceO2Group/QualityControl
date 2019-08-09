@@ -60,14 +60,7 @@
       "id": "tpcclust",
       "active": "true",
       "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "clusters",
-          "dataOrigin": "TPC",
-          "dataDescription": "CLUSTERS"
-        }
-      ],
-      "subSpec": "0",
+      "query": "clusters:TPC/CLUSTERS/0",
       "samplingConditions": [
         {
           "condition": "random",

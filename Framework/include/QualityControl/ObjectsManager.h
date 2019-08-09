@@ -20,17 +20,17 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/TaskConfig.h"
-#include "QualityControl/ServiceDiscovery.h"
-// ROOT
-#include <TObjArray.h>
-#include <TObjString.h>
-// boost
-#include <boost/concept_check.hpp>
 // stl
 #include <string>
+#include <memory>
+
+class TObject;
+class TObjArray;
 
 namespace o2::quality_control::core
 {
+
+class ServiceDiscovery;
 
 /// \brief  Keeps the list of encapsulated objects to publish and does the actual publication.
 ///
@@ -40,10 +40,8 @@ namespace o2::quality_control::core
 /// \author Barthelemy von Haller
 class ObjectsManager
 {
-  friend class TaskControl; // TaskControl must be able to call "publish()" whenever needed. Nobody else can.
-
  public:
-  ObjectsManager(TaskConfig& taskConfig);
+  explicit ObjectsManager(TaskConfig& taskConfig);
   virtual ~ObjectsManager();
 
   /**
@@ -92,10 +90,7 @@ class ObjectsManager
 
   TObject* getObject(std::string objectName);
 
-  TObjArray* getNonOwningArray() const
-  {
-    return new TObjArray(mMonitorObjects);
-  };
+  TObjArray* getNonOwningArray() const;
 
   /**
    * \brief Add metadata to a MonitorObject.
@@ -119,7 +114,7 @@ class ObjectsManager
   void updateServiceDiscovery();
 
  private:
-  TObjArray mMonitorObjects;
+  std::unique_ptr<TObjArray> mMonitorObjects;
   TaskConfig& mTaskConfig;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;

@@ -7,8 +7,6 @@
 #define QC_MODULE_EXAMPLE_FAKECHECK_H
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::example
 {
@@ -20,9 +18,9 @@ class FakeCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  FakeCheck();
+  FakeCheck() = default;
   /// Destructor
-  ~FakeCheck() override;
+  ~FakeCheck() override = default;
 
   void configure(std::string name) override;
   Quality check(const MonitorObject* mo) override;

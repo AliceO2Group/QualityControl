@@ -20,16 +20,32 @@
 // std & boost
 #include <chrono>
 #include <memory>
+#include <string>
+#include <map>
+#include <vector>
 // O2
 #include <Common/Timer.h>
-#include <Configuration/ConfigurationInterface.h>
 #include <Framework/Task.h>
-#include <Monitoring/MonitoringFactory.h>
+#include <Headers/DataHeader.h>
 // QC
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
+
+namespace o2::framework
+{
+struct InputSpec;
+struct OutputSpec;
+class DataAllocator;
+} // namespace o2::framework
+
+namespace o2::monitoring
+{
+class Monitoring;
+}
+
+class TClass;
 
 namespace o2::quality_control::checker
 {

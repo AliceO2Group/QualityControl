@@ -1,12 +1,10 @@
 #include <string>
 #include <TH1.h>
 
-#include "Framework/DataSampling.h"
-#include "Framework/DataSamplingReadoutAdapter.h"
-#include "EMCALWorkflow/PublisherSpec.h"
+#include <Framework/DataSampling.h>
+#include <EMCALWorkflow/PublisherSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/Checker.h"
-#include "QualityControl/CheckerFactory.h"
 
 void customize(std::vector<o2::framework::CompletionPolicy>& policies)
 {

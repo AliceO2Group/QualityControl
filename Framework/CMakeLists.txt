@@ -5,11 +5,36 @@ configure_file("include/QualityControl/Version.h.in"
                "${CMAKE_CURRENT_BINARY_DIR}/include/${MODULE_NAME}/Version.h"
                @ONLY)
 
+# ---- Library for the types ----
+
+add_library(QualityControlTypes
+  src/MonitorObject.cxx
+  src/Quality.cxx
+)
+
+target_include_directories(
+  QualityControlTypes
+  PUBLIC $<INSTALL_INTERFACE:include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(QualityControlTypes
+  PUBLIC
+  ROOT::Hist
+  AliceO2::Common
+)
+
+add_root_dictionary(QualityControlTypes
+  HEADERS include/QualityControl/MonitorObject.h
+  include/QualityControl/Quality.h
+  LINKDEF include/QualityControl/TypesLinkDef.h
+  BASENAME QualityControlTypes
+  )
+
 # ---- Library ----
 
 add_library(QualityControl
-            src/MonitorObject.cxx
-            src/Quality.cxx
             src/ObjectsManager.cxx
             src/Checker.cxx
             src/CheckerFactory.cxx
@@ -18,6 +43,7 @@ add_library(QualityControl
             src/CcdbDatabase.cxx
             src/InformationService.cxx
             src/InformationServiceDump.cxx
+            src/TaskFactory.cxx
             src/TaskRunner.cxx
             src/TaskRunnerFactory.cxx
             src/TaskInterface.cxx
@@ -50,6 +76,7 @@ target_link_libraries(QualityControl
                              O2::Framework
                              O2::CCDB
                              ms_gsl::ms_gsl
+                             QualityControlTypes
                       PRIVATE Boost::system
                               $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
                               $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL> ROOT::Gui
@@ -59,8 +86,7 @@ target_compile_definitions(QualityControl PRIVATE
                            $<$<BOOL:${ENABLE_MYSQL}>:_WITH_MYSQL>)
 
 add_root_dictionary(QualityControl
-                    HEADERS include/QualityControl/MonitorObject.h
-                            include/QualityControl/Quality.h
+                    HEADERS
                             include/QualityControl/CheckInterface.h
                             include/QualityControl/Checker.h
                             include/QualityControl/CheckerFactory.h
@@ -79,6 +105,8 @@ add_root_dictionary(QualityControl
 set(EXE_SRCS
     src/runInformationService.cxx
     src/runInformationServiceDump.cxx
+    src/runDataProducer.cxx
+    src/runQC.cxx
     src/runBasic.cxx
     src/runAdvanced.cxx
     src/runReadout.cxx
@@ -89,6 +117,8 @@ set(EXE_SRCS
 set(EXE_NAMES
     o2-qc-info-service
     o2-qc-info-service-dump
+    o2-qc-run-producer
+    o2-qc-run-qc
     o2-qc-run-basic
     o2-qc-run-advanced
     o2-qc-run-readout
@@ -101,6 +131,8 @@ set(EXE_NAMES
 set(EXE_OLD_NAMES
     qcInfoService
     qcInfoServiceDump
+    qcRunProducer
+    qcRunQC
     qcRunBasic
     qcRunAdvanced
     qcRunReadout
@@ -241,7 +273,7 @@ endif()
 unset(isSystemDir)
 
 # Install library and binaries
-install(TARGETS QualityControl ${EXE_NAMES} ${DATADUMP}
+install(TARGETS QualityControl QualityControlTypes ${EXE_NAMES} ${DATADUMP}
         EXPORT QualityControlTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

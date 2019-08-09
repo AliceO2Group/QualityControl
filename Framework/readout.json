@@ -39,14 +39,7 @@
       "id": "readout",
       "active": "true",
       "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "readout",
-          "dataOrigin": "ITS",
-          "dataDescription": "RAWDATA"
-        }
-      ],
-      "subSpec": "0",
+      "query" : "readout:ROUT/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",

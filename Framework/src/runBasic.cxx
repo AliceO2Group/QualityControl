@@ -16,24 +16,24 @@
 ///
 /// This is an executable showing QC Task's usage in Data Processing Layer. The workflow consists of data producer,
 /// which generates arrays of random size and content. Its output is dispatched to QC task using Data Sampling
-/// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The checker performes a simple check of
+/// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The checker performs a simple check of
 /// the histogram shape and colorizes it. The resulting histogram contents are shown in logs by printer.
 ///
 /// QC task and Checker are instantiated by respectively TaskFactory and CheckerFactory,
 /// which use preinstalled config file, that can be found in
-/// ${QUALITYCONTROL_ROOT}/etc/qcTaskDplConfig.json or Framework/qcTaskDplConfig.json (original one).
+/// ${QUALITYCONTROL_ROOT}/etc/basic.json or Framework/basic.json (original one).
 ///
 /// To launch it, build the project, load the environment and run the executable:
 ///   \code{.sh}
 ///   > aliBuild build QualityControl --defaults o2
 ///   > alienv enter QualityControl/latest
-///   > runTaskDPL
+///   > o2-qc-run-basic
 ///   \endcode
 /// If you have glfw installed, you should see a window with the workflow visualization and sub-windows for each Data
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
-#include "Framework/DataSampling.h"
+#include <Framework/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
@@ -58,12 +58,10 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
-#include <fairlogger/Logger.h>
-#include <TH1F.h>
-#include <memory>
 #include <random>
+#include <string>
 
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
 
 #include "QualityControl/Checker.h"
 #include "QualityControl/InfrastructureGenerator.h"
@@ -72,6 +70,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 
 std::string getConfigPath(const ConfigContext& config);
 
+using namespace o2;
 using namespace o2::framework;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
@@ -86,14 +85,20 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     "producer",
     Inputs{},
     Outputs{
-      { "ITS", "RAWDATA", 0, Lifetime::Timeframe } },
+      { "TST", "RAWDATA", 0 } },
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback)[](InitContext&){
+        // this is the initialization code
         std::default_random_engine generator(11);
-        return (AlgorithmSpec::ProcessCallback)[generator](ProcessingContext& processingContext) mutable {
+
+        // after the initialization, we return the processing callback
+        return (AlgorithmSpec::ProcessCallback)[generator](ProcessingContext & processingContext) mutable
+        {
+          // everything inside this lambda function is invoked in a loop, because it this Data Processor has no inputs
           usleep(100000);
+
           size_t length = generator() % 10000;
-          auto data = processingContext.outputs().make<char>(Output{ "ITS", "RAWDATA", 0, Lifetime::Timeframe }, length);
+          auto data = processingContext.outputs().make<char>(Output{ "TST", "RAWDATA" }, length);
           for (auto&& item : data) {
             item = static_cast<char>(generator());
           }

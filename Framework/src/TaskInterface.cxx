@@ -21,8 +21,6 @@ namespace o2::quality_control::core
 
 TaskInterface::TaskInterface(ObjectsManager* objectsManager) : mObjectsManager(objectsManager) {}
 
-TaskInterface::TaskInterface() : mObjectsManager(nullptr) {}
-
 const std::string& TaskInterface::getName() const { return mName; }
 
 void TaskInterface::setName(const std::string& name) { mName = name; }
@@ -32,7 +30,7 @@ void TaskInterface::setObjectsManager(std::shared_ptr<ObjectsManager> objectsMan
   mObjectsManager = objectsManager;
 }
 
-void TaskInterface::setCustomParameters(const o2::configuration::KeyValueMap& parameters)
+void TaskInterface::setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
 {
   mCustomParameters = parameters;
 }

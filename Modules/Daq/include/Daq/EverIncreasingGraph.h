@@ -19,8 +19,6 @@
 #include <Common/DataBlock.h>
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::daq
 {
@@ -32,9 +30,9 @@ class EverIncreasingGraph : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  EverIncreasingGraph();
+  EverIncreasingGraph() = default;
   /// Destructor
-  ~EverIncreasingGraph() override;
+  ~EverIncreasingGraph() override = default;
 
   void configure(std::string name) override;
   Quality check(const MonitorObject* mo) override;

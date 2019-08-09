@@ -28,10 +28,7 @@
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "binding": "readout",
-          "dataOrigin": "ITS",
-          "dataDescription": "RAWDATA",
-          "subSpec": "0"
+          "query" : "readout:ROUT/RAWDATA"
         },
         "location": "remote"
       }

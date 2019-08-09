@@ -17,11 +17,12 @@
 #define QC_MODULE_DAQ_DAQTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include <TCanvas.h>
-#include <TPaveText.h>
 
 class TH1F;
 class TGraph;
+class TObjString;
+class TCanvas;
+class TPaveText;
 
 using namespace o2::quality_control::core;
 

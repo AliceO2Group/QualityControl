@@ -14,9 +14,8 @@
 ///
 
 #include "Example/FakeCheck.h"
-
-// ROOT
-#include <TH1.h>
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 
 using namespace std;
 
@@ -24,10 +23,6 @@ ClassImp(o2::quality_control_modules::example::FakeCheck)
 
   namespace o2::quality_control_modules::example
 {
-
-  FakeCheck::FakeCheck() {}
-
-  FakeCheck::~FakeCheck() {}
 
   void FakeCheck::configure(std::string /*name*/) {}
 

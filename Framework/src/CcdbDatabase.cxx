@@ -22,18 +22,14 @@
 #include <TFile.h>
 #include <TList.h>
 #include <TROOT.h>
-#include <TFile.h>
 #include <TKey.h>
 #include <TStreamerInfo.h>
-// boost
-#include <boost/algorithm/string.hpp>
+#include <TSystem.h>
 // std
 #include <chrono>
 #include <sstream>
-#include <utility>
-#include <fairlogger/Logger.h>
 
-#include <TSystem.h>
+#include <fairlogger/Logger.h>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -42,10 +38,6 @@ using namespace std;
 
 namespace o2::quality_control::repository
 {
-
-CcdbDatabase::CcdbDatabase() : mUrl("")
-{
-}
 
 CcdbDatabase::~CcdbDatabase() { disconnect(); }
 

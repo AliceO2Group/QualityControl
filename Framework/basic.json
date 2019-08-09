@@ -29,7 +29,7 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "its-raw"
+          "name": "tst-raw"
         },
         "taskParameters": {
           "myOwnKey": "myOwnValue"
@@ -40,17 +40,10 @@
   },
   "dataSamplingPolicies": [
     {
-      "id": "its-raw",
+      "id": "tst-raw",
       "active": "true",
       "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "random",
-          "dataOrigin": "ITS",
-          "dataDescription": "RAWDATA"
-        }
-      ],
-      "subSpec": "0",
+      "query" : "random:TST/RAWDATA/0",
       "samplingConditions": [
         {
           "condition": "random",

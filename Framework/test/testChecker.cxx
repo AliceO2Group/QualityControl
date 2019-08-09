@@ -16,14 +16,12 @@
 #include "QualityControl/CheckerFactory.h"
 #include "QualityControl/Checker.h"
 #include <Framework/DataSampling.h>
-#include <Framework/DataSpecUtils.h>
 
 #define BOOST_TEST_MODULE Checker test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
 using namespace o2::quality_control::checker;
 using namespace std;

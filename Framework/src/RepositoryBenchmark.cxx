@@ -18,13 +18,13 @@
 #include <chrono>
 #include <thread> // this_thread::sleep_for
 
-#include <QualityControl/CcdbDatabase.h>
 #include <TH2F.h>
 
-#include <FairMQLogger.h>
+#include <fairmq/FairMQLogger.h>
 #include <options/FairMQProgOptions.h> // device->fConfig
 
-#include "Common/Exceptions.h"
+#include <Common/Exceptions.h>
+
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 
@@ -36,16 +36,6 @@ using namespace o2::monitoring;
 
 namespace o2::quality_control::core
 {
-
-RepositoryBenchmark::RepositoryBenchmark()
-  : mMaxIterations(0),
-    mNumIterations(0),
-    mNumberObjects(1),
-    mSizeObjects(1),
-    mTotalNumberObjects(0),
-    mThreadedMonitoring(true)
-{
-}
 
 TH1* RepositoryBenchmark::createHisto(uint64_t sizeObjects, string name)
 {

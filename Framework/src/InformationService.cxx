@@ -17,6 +17,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <boost/token_functions.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/asio.hpp>
 
 using namespace std;
 typedef boost::tokenizer<boost::char_separator<char>> t_tokenizer;
@@ -71,10 +72,11 @@ bool InformationService::handleRequestData(FairMQMessagePtr& request, int /*inde
 
   LOG(INFO) << "Sending reply to client.";
   FairMQMessagePtr reply(
-    NewMessage(const_cast<char*>(result->c_str()),                                        // data
-               result->length(),                                                          // size
-               [](void* /*data*/, void* object) { delete static_cast<string*>(object); }, // deletion callback
-               result));                                                                  // object that manages the data
+    NewMessage(
+      const_cast<char*>(result->c_str()),                                        // data
+      result->length(),                                                          // size
+      [](void* /*data*/, void* object) { delete static_cast<string*>(object); }, // deletion callback
+      result));                                                                  // object that manages the data
   if (Send(reply, "request_data") <= 0) {
     LOG(ERROR) << "error sending reply";
   }
@@ -208,8 +210,9 @@ std::string InformationService::produceJsonAll()
 
 void InformationService::sendJson(std::string* json)
 {
-  FairMQMessagePtr msg2(NewMessage(const_cast<char*>(json->c_str()), json->length(),
-                                   [](void* /*data*/, void* object) { delete static_cast<string*>(object); }, json));
+  FairMQMessagePtr msg2(NewMessage(
+    const_cast<char*>(json->c_str()), json->length(),
+    [](void* /*data*/, void* object) { delete static_cast<string*>(object); }, json));
   int ret = Send(msg2, "updates_output");
   if (ret < 0) {
     LOG(ERROR) << "Error sending update";

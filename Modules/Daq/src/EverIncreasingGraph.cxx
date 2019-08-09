@@ -15,6 +15,10 @@
 
 #include "Daq/EverIncreasingGraph.h"
 
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
+
+#include <iostream>
 // ROOT
 #include <TGraph.h>
 #include <TH1.h>
@@ -27,10 +31,6 @@ ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
 
   namespace o2::quality_control_modules::daq
 {
-
-  EverIncreasingGraph::EverIncreasingGraph() {}
-
-  EverIncreasingGraph::~EverIncreasingGraph() {}
 
   void EverIncreasingGraph::configure(std::string /*name*/) {}
 

@@ -14,7 +14,8 @@
 ///
 
 #include "Common/NonEmpty.h"
-
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 // ROOT
 #include <TH1.h>
 
@@ -24,10 +25,6 @@ ClassImp(o2::quality_control_modules::common::NonEmpty)
 
   namespace o2::quality_control_modules::common
 {
-
-  NonEmpty::NonEmpty() {}
-
-  NonEmpty::~NonEmpty() {}
 
   void NonEmpty::configure(std::string /*name*/) {}
 

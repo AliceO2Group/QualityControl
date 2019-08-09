@@ -17,8 +17,6 @@
 #define QC_MODULE_SKELETON_SKELETONCHECK_H
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::skeleton
 {
@@ -30,9 +28,9 @@ class SkeletonCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  SkeletonCheck();
+  SkeletonCheck() = default;
   /// Destructor
-  ~SkeletonCheck() override;
+  ~SkeletonCheck() override = default;
 
   // Override interface
   void configure(std::string name) override;

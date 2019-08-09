@@ -16,8 +16,7 @@
 #ifndef QC_CORE_QUALITY_H
 #define QC_CORE_QUALITY_H
 
-#include <TObject.h>
-#include <ostream>
+#include <Rtypes.h>
 #include <string>
 
 namespace o2::quality_control::core
@@ -33,7 +32,7 @@ class Quality
   /// Not 'explicit', we allow implicit conversion from uint to Quality.
   explicit Quality(unsigned int level = Quality::NullLevel, std::string name = "");
   /// Destructor
-  virtual ~Quality();
+  virtual ~Quality() = default;
 
   unsigned int getLevel() const;
   const std::string& getName() const;
@@ -49,11 +48,7 @@ class Quality
     return (lhs.getName() == rhs.getName() && lhs.getLevel() == rhs.getLevel());
   }
   friend bool operator!=(const Quality& lhs, const Quality& rhs) { return !operator==(lhs, rhs); }
-  friend std::ostream& operator<<(std::ostream& out, const Quality& q) // output
-  {
-    out << "Quality: " << q.getName() << " (level " << q.getLevel() << ")\n";
-    return out;
-  }
+  friend std::ostream& operator<<(std::ostream& out, const Quality& q); // output
 
   /**
    * \brief Checks whether this quality object is worst than another one.

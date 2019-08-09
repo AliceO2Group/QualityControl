@@ -14,24 +14,22 @@
 /// \author Piotr Konopka
 ///
 
-#include <memory>
-#include <iostream>
+#include "QualityControl/TaskRunner.h"
 
-#include <fairmq/FairMQDevice.h>
+#include <memory>
 
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
+#include <Monitoring/MonitoringFactory.h>
 #include <Framework/DataSampling.h>
-#include <Framework/DataSamplingPolicy.h>
 #include <Framework/CallbackService.h>
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
-#include <Headers/DataHeader.h>
-#include <Monitoring/MonitoringFactory.h>
+#include <Framework/DataDescriptorQueryBuilder.h>
+
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
-#include "QualityControl/TaskRunner.h"
 
 namespace o2::quality_control::core
 {
@@ -59,8 +57,6 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   populateConfig(taskName);
 }
 
-TaskRunner::~TaskRunner() = default;
-
 void TaskRunner::init(InitContext& iCtx)
 {
   QcInfoLogger::GetInstance() << "initializing TaskRunner" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -80,7 +76,7 @@ void TaskRunner::init(InitContext& iCtx)
 
   // setup user's task
   TaskFactory f;
-  mTask.reset(f.create<TaskInterface>(mTaskConfig, mObjectsManager));
+  mTask.reset(f.create(mTaskConfig, mObjectsManager));
 
   // init user's task
   mTask->initialize(iCtx);
@@ -274,22 +270,8 @@ void TaskRunner::populateConfig(std::string taskName)
       LOG(INFO) << "policyName : " << policyName;
       mInputSpecs = DataSampling::InputSpecsForPolicy(config, policyName);
     } else if (type == "direct") {
-
-      auto subSpecString = dataSourceTree.get<std::string>("subSpec");
-      auto subSpec = std::strtoull(subSpecString.c_str(), nullptr, 10);
-
-      header::DataOrigin origin;
-      header::DataDescription description;
-      origin.runtimeInit(dataSourceTree.get<std::string>("dataOrigin").c_str());
-      description.runtimeInit(dataSourceTree.get<std::string>("dataDescription").c_str());
-
-      mInputSpecs.push_back(
-        InputSpec{
-          dataSourceTree.get<std::string>("binding"),
-          origin,
-          description,
-          static_cast<framework::DataAllocator::SubSpecificationType>(subSpec) });
-
+      auto inputsQuery = dataSourceTree.get<std::string>("query");
+      mInputSpecs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
     } else {
       std::string message = std::string("Configuration error : dataSource type unknown : ") + type; // TODO pass this message to the exception
       BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
@@ -327,8 +309,8 @@ void TaskRunner::endOfActivity()
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
   mCollector->send({ rate, "QC_task_Rate_objects_published_per_second_whole_run" });
-  mCollector->send({ ba::mean(mPCpus), "QC_task_Mean_pcpu_whole_run" });
-  mCollector->send({ ba::mean(mPMems), "QC_task_Mean_pmem_whole_run" });
+  //  mCollector->send({ ba::mean(mPCpus), "QC_task_Mean_pcpu_whole_run" });
+  //  mCollector->send({ ba::mean(mPMems), "QC_task_Mean_pmem_whole_run" });
 }
 
 void TaskRunner::startCycle()
@@ -371,7 +353,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   mCollector->send({ mTimerTotalDurationActivity.getTime(), "QC_task_Total_duration_activity_whole_run" });
   mCollector->send({ whole_run_rate, "QC_task_Rate_objects_published_per_second_whole_run" });
   //    mCollector->send({std::stod(pidStatus[3]), "QC_task_Mean_pcpu_whole_run"});
-  mCollector->send({ ba::mean(mPMems), "QC_task_Mean_pmem_whole_run" });
+  //  mCollector->send({ ba::mean(mPMems), "QC_task_Mean_pmem_whole_run" });
 
   mCycleNumber++;
   mCycleOn = false;
