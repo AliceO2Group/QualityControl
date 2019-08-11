@@ -124,11 +124,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
         inputNames.push_back(inputConfig.get<std::string>("name"));
       }
       std::sort(inputNames.begin(), inputNames.end());
-      if (checkerMap.find(inputNames) == checkerMap.end()){
-        checkerMap.insert({inputNames, {std::string(checkerName)}});
-      } else {
-        checkerMap[inputNames].push_back(std::string(checkerName));
-      }
+      checkerMap[inputNames].push_back(std::string(checkerName));
     }
   }
   for(const auto& [inputNames, checkerNames]: checkerMap){ 

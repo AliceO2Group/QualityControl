@@ -52,6 +52,7 @@ add_library(QualityControl
             src/InfrastructureGenerator.cxx
             src/MonitorObjectPolicy.cxx
             src/QualityObject.cxx
+            src/Check.cxx
             src/ServiceDiscovery.cxx)
 
 if(ENABLE_MYSQL)
@@ -88,7 +89,7 @@ target_compile_definitions(QualityControl PRIVATE
                            $<$<BOOL:${ENABLE_MYSQL}>:_WITH_MYSQL>)
 
 add_root_dictionary(QualityControl
-                    HEADERS
+                    HEADERS include/QualityControl/Check.h
                             include/QualityControl/CheckInterface.h
                             include/QualityControl/Checker.h
                             include/QualityControl/CheckerFactory.h

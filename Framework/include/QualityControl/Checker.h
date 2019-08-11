@@ -161,6 +161,7 @@ class Checker : public framework::Task
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::quality_control::monitor::MonitorObjectPolicy> mPolicy;
+  unsigned int mMonitorObjectRevision;
 
   // DPL
   o2::framework::Inputs mInputs;
