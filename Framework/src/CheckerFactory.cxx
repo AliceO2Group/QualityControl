@@ -26,9 +26,9 @@ namespace o2::quality_control::checker
 using namespace o2::framework;
 using namespace o2::quality_control::checker;
 
-DataProcessorSpec CheckerFactory::create(std::string checkerName, std::string configurationSource)
+DataProcessorSpec CheckerFactory::create(Check check, std::string configurationSource)
 {
-  Checker qcChecker{ checkerName, configurationSource };
+  Checker qcChecker{ check, configurationSource };
 
   DataProcessorSpec newChecker{ qcChecker.getDeviceName(),
                                 qcChecker.getInputs(),
@@ -41,9 +41,9 @@ DataProcessorSpec CheckerFactory::create(std::string checkerName, std::string co
   return newChecker;
 }
 
-DataProcessorSpec CheckerFactory::create(std::vector<std::string> checkerNames, std::string configurationSource)
+DataProcessorSpec CheckerFactory::create(std::vector<Check> checks, std::string configurationSource)
 {
-  Checker qcChecker{ checkerNames, configurationSource };
+  Checker qcChecker{ checks, configurationSource };
 
   DataProcessorSpec newChecker{ qcChecker.getDeviceName(),
                                 qcChecker.getInputs(),

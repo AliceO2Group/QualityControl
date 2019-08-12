@@ -20,6 +20,7 @@
 
 #include "Framework/DataProcessorSpec.h"
 #include <Framework/CompletionPolicy.h>
+#include "QualityControl/Check.h"
 
 namespace o2::framework
 {
@@ -36,8 +37,8 @@ class CheckerFactory
   CheckerFactory() = default;
   virtual ~CheckerFactory() = default;
 
-  framework::DataProcessorSpec create(std::string checkerName, std::string configurationSource);
-  framework::DataProcessorSpec create(std::vector<std::string> checkerNames, std::string configurationSource);
+  framework::DataProcessorSpec create(Check check, std::string configurationSource);
+  framework::DataProcessorSpec create(std::vector<Check> checks, std::string configurationSource);
 
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };

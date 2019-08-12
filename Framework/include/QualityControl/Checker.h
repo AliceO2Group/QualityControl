@@ -34,7 +34,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/MonitorObjectPolicy.h"
+#include "QualityControl/Check.h"
 
 namespace o2::framework
 {
@@ -76,8 +76,8 @@ class Checker : public framework::Task
    * @param checkNames List of check names, that operate on the same inputs.
    * @param configurationSource Path to configuration
    */
-  Checker(std::string checkName, std::string configurationSource);
-  Checker(std::vector<std::string> checkNames, std::string configurationSource);
+  Checker(Check check, std::string configurationSource);
+  Checker(std::vector<Check> checks, std::string configurationSource);
 
   /// Destructor
   ~Checker() override;
@@ -128,7 +128,7 @@ class Checker : public framework::Task
    * Load a library if it is not already in the cache.
    * \param libraryName The name of the library to load.
    */
-  void loadLibrary(const std::string libraryName);
+  //void loadLibrary(const std::string libraryName);
 
   /**
    * \brief Update cached monitor object with new one.
@@ -139,8 +139,10 @@ class Checker : public framework::Task
 
   inline void initDatabase();
   inline void initMonitoring();
-  inline void initPolicy();
-  inline void populateConfig();
+  //inline void initPolicy();
+  //inline void populateConfig();
+  
+  void updateRevision();
 
 
   /**
@@ -152,16 +154,16 @@ class Checker : public framework::Task
    * @param className
    * @return the check object
    */
-  CheckInterface* getCheck(std::string checkName, std::string className);
+  //CheckInterface* getCheck(std::string checkName, std::string className);
 
   // General state
   std::string mDeviceName;
-  std::vector<std::string> mCheckNames;
+  std::vector<Check> mChecks;
   std::string mConfigurationSource;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-  std::shared_ptr<o2::quality_control::monitor::MonitorObjectPolicy> mPolicy;
-  unsigned int mMonitorObjectRevision;
+  std::map<std::string, unsigned int> mMonitorObjectRevision;
+  unsigned int mGlobalRevision;
 
   // DPL
   o2::framework::Inputs mInputs;
@@ -174,7 +176,7 @@ class Checker : public framework::Task
   std::map<std::string, TClass*> mClassesLoaded;
   std::map<std::string, std::shared_ptr<MonitorObject>> mMonitorObjects;
   std::map<std::string, std::shared_ptr<QualityObject>> mQualityObjects;
-  std::map<std::string, CheckInterface*> mChecks; 
+  std::map<std::string, CheckInterface*> mCheckInreface; 
 
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;

@@ -11,6 +11,7 @@
 #include <Framework/DataProcessorSpec.h>
 // QC
 #include "QualityControl/Quality.h"
+#include "QualityControl/QualityObject.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -18,7 +19,8 @@
 namespace o2::quality_control::checker
 {
 
-class Check {
+class Check 
+{
   public:
     Check(std::string checkName, std::string configurationSource);
 
@@ -27,7 +29,7 @@ class Check {
      */
     void init();
     
-    o2::quality_control::core::Quality check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
+    std::shared_ptr<o2::quality_control::core::QualityObject> check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
 
     // Policy 
     /**
@@ -41,19 +43,24 @@ class Check {
      */
     bool isReady(std::map<std::string, unsigned int>& revisionMap);
 
-    o2::framework::OutputSpec getOutputSpec() { return mOutputSpec; }
+    const std::string getName() { return mName; };
+    std::shared_ptr<o2::quality_control::core::QualityObject> getQualityObject() { return mQualityObject; };
+    o2::framework::OutputSpec getOutputSpec() { return mOutputSpec; };
+    o2::framework::Inputs getInputs() { return mInputs; };
+
     //TODO: Unique Input string
     static o2::header::DataDescription createCheckerDataDescription(const std::string taskName);
   private:
     void initConfig();
     void initPolicy();
     void loadLibrary();
+    inline void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);
 
-    std::string mName;
+    const std::string mName;
     std::string mConfigurationSource;
 
     o2::quality_control::core::QcInfoLogger& mLogger;
-    o2::quality_control::core::Quality mLastQuality;
+    std::shared_ptr<o2::quality_control::core::QualityObject> mQualityObject;
     o2::framework::Inputs mInputs;
 
     // Depends - might be a (1) global checker output (more performant) or (2) per checkname output (more flexible)
@@ -61,6 +68,7 @@ class Check {
     o2::framework::OutputSpec mOutputSpec;
     std::vector<std::string> mMonitorObjectNames;
     bool mAllMOs = false;
+    bool mBeautify = true;
 
     // Check module
     std::string mModuleName;

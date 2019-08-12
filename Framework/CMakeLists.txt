@@ -50,7 +50,6 @@ add_library(QualityControl
             src/RepositoryBenchmark.cxx
             src/HistoMerger.cxx
             src/InfrastructureGenerator.cxx
-            src/MonitorObjectPolicy.cxx
             src/QualityObject.cxx
             src/Check.cxx
             src/ServiceDiscovery.cxx)
@@ -100,7 +99,6 @@ add_root_dictionary(QualityControl
                             include/QualityControl/TaskRunnerFactory.h
                             include/QualityControl/HistoMerger.h
                             include/QualityControl/InfrastructureGenerator.h
-                            include/QualityControl/MonitorObjectPolicy.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 

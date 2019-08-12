@@ -87,26 +87,21 @@ std::string Checker::createCheckerIdString(){
 // TODO maybe we could use the CheckerFactory
 
 
-Checker::Checker(std::vector<std::string> checkNames, std::string configurationSource)
-  : mDeviceName(createCheckerIdString() + "-" + checkNames.front()),
-    mCheckNames{checkNames},
+Checker::Checker(std::vector<Check> checks, std::string configurationSource)
+  : mDeviceName(createCheckerIdString() + "-" + checks.front().getName()),
+    mChecks{checks},
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
-    mInputs(Checker::createInputSpec(checkNames.front(), configurationSource)),
-    mOutputSpec{ "QC", Checker::createCheckerDataDescription(checkNames.front()), 0 },
+    mInputs(checks.front().getInputs()),
+    mOutputSpec{ "QC", Checker::createCheckerDataDescription(checks.front().getName()), 0 },
     startFirstObject{ system_clock::time_point::min() },
     endLastObject{ system_clock::time_point::min() }
 {
   mTotalNumberHistosReceived = 0;
-  for (auto& checkName: checkNames){
-    std::shared_ptr<QualityObject> qo(new QualityObject(checkName));
-    qo->setInputs(mInputs);
-    mQualityObjects.insert(std::pair(checkName, qo));
-  }
 }
 
-Checker::Checker(std::string checkName, std::string configurationSource)
-  : Checker(std::vector{checkName}, configurationSource)
+Checker::Checker(Check check, std::string configurationSource)
+  : Checker(std::vector{check}, configurationSource)
 {
 }
 
@@ -126,48 +121,9 @@ void Checker::init(framework::InitContext&)
 {
   initDatabase();
   initMonitoring();
-  initPolicy();
-  populateConfig();
-}
-
-void Checker::populateConfig(){
-  try {
-    // Init Checker Interface
-      std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-      for (const auto& checkName: mCheckNames){
-        const auto& moduleName = config->get<std::string>("qc.checks."+checkName+".moduleName");
-        loadLibrary(moduleName);
-        const std::string& className = config->get<std::string>("qc.checks." + checkName + ".className");
-        mChecks.insert(std::pair<std::string, CheckInterface*>(checkName, getCheck(checkName, className)));
-      }
-  } catch (...) {
-    std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
-    throw;
+  for (auto& check: mChecks){
+    check.init();
   }
-}
-void Checker::initPolicy(){
-  try {
-      const auto& checkName = mCheckNames.front();
-      std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-      std::vector<std::string> inputs;
-      const auto& conf = config->getRecursive("qc.checks."+ checkName);
-      //const auto& conf = config->getRecursive("qc.checks."+mCheckerName);
-      for(const auto& [_key, dataSource]: conf.get_child("dataSource")){
-        (void)_key;
-        if (dataSource.get<std::string>("type") == "Task"){
-          inputs.push_back(dataSource.get_value<std::string>("name"));
-        }
-      }
-      mPolicy = std::shared_ptr<MonitorObjectPolicy>(new MonitorObjectPolicy(config->get<std::string>("qc.checks."+checkName+".policy"), inputs));
-  } catch (...) {
-    std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
-    throw;
-  }
-
 }
 
 void Checker::run(framework::ProcessingContext& ctx)
@@ -201,12 +157,13 @@ void Checker::run(framework::ProcessingContext& ctx)
   }
 
   // Check if compliant with policy
-  if (mPolicy->isReady()){
-    mPolicy->updateRevision();
-    auto qualityVector = check(mMonitorObjects);
-    store(qualityVector);
-    //send(checkedMoArray, ctx.outputs());
-  }
+  auto qualityVector = check(mMonitorObjects);
+  store(qualityVector);
+  //send(checkedMoArray, ctx.outputs());
+  
+
+  // Update global revision number
+  updateRevision();
 
   // monitoring
   endLastObject = system_clock::now();
@@ -217,40 +174,29 @@ void Checker::run(framework::ProcessingContext& ctx)
 }
 
 void Checker::update(std::shared_ptr<MonitorObject> mo){
-  mLogger << mCheckNames.front() << " - moMap key: " << mo->getFullName() << AliceO2::InfoLogger::InfoLogger::endm;
   mMonitorObjects[mo->getFullName()] = mo;
-  mPolicy->updateMO(mo->getFullName());
+  mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
 }
 
 std::vector<std::shared_ptr<QualityObject>> Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 {
-
   mLogger << "Running " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
           << AliceO2::InfoLogger::InfoLogger::endm;
   
   std::vector<std::shared_ptr<QualityObject>> qualityVector;
-
-  // Loop over the Checks and execute them followed by the beautification
-  for (const auto& [checkName, checkInstance] : mChecks) {
-      mLogger << "        check name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
-
-      // load module, instantiate, use check
-      // TODO : preload modules and pre-instantiate, or keep a cache
-      Quality q = checkInstance->check(&moMap);
-
-      mLogger << "  result of the check " << checkName << ": " << q.getName()
-              << AliceO2::InfoLogger::InfoLogger::endm;
-
-      if (mInputs.size() == 1 && moMap.size() == 1){
-        auto& mo = moMap.begin()->second;
-        checkInstance->beautify(mo, q);
-        mLogger << "Beautify " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
+  for (auto& check: mChecks) {
+    if (check.isReady(mMonitorObjectRevision)){  
+      auto qualityObj = check.check(moMap);
+      // Check if shared_ptr != nullptr
+      if (qualityObj){
+        qualityVector.push_back(qualityObj);
       }
 
-      mQualityObjects[checkName]->updateQuality(q);
-      qualityVector.push_back(mQualityObjects[checkName]);
+      // Was checked, update latest revision
+      check.updateRevision(mGlobalRevision);
+    }
   }
-  return std::move(qualityVector);
+  return qualityVector;
 }
 
 void Checker::store(std::vector<std::shared_ptr<QualityObject>> qualityVector)
@@ -273,67 +219,17 @@ void Checker::send(std::unique_ptr<TObjArray>& moArray, framework::DataAllocator
     framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, mOutputSpec.lifetime }, moArray.release());
 }
 
-void Checker::loadLibrary(const std::string libraryName)
-{
-  if (boost::algorithm::trim_copy(libraryName).empty()) {
-    mLogger << "no library name specified" << AliceO2::InfoLogger::InfoLogger::endm;
-    return;
-  }
-
-  std::string library = bfs::path(libraryName).is_absolute() ? libraryName : "lib" + libraryName;
-  // if vector does not contain -> first time we see it
-  if (std::find(mLibrariesLoaded.begin(), mLibrariesLoaded.end(), library) == mLibrariesLoaded.end()) {
-    mLogger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
-    int libLoaded = gSystem->Load(library.c_str(), "", true);
-    if (libLoaded == 1) {
-      mLogger << "Already loaded before" << AliceO2::InfoLogger::InfoLogger::endm;
-    } else if (libLoaded < 0 || libLoaded > 1) {
-      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
+void Checker::updateRevision() {
+  ++mGlobalRevision;
+  if ( mGlobalRevision == 0 ){
+    // mGlobalRevision cannot be 0
+    // 0 means overflow, increment and update all check revisions to 0
+    ++mGlobalRevision;
+    for (auto& check: mChecks){
+      check.updateRevision(0);
     }
-    mLibrariesLoaded.push_back(library);
   }
 }
-
-CheckInterface* Checker::getCheck(std::string checkName, std::string className)
-{
-  CheckInterface* result = nullptr;
-  // Get the class and instantiate
-  TClass* cl;
-  std::string tempString("Failed to instantiate Quality Control Module");
-
-  if (mClassesLoaded.count(className) == 0) {
-    mLogger << "Loading class " << className << AliceO2::InfoLogger::InfoLogger::endm;
-    cl = TClass::GetClass(className.c_str());
-    if (!cl) {
-      tempString += R"( because no dictionary for class named ")";
-      tempString += className;
-      tempString += R"(" could be retrieved)";
-      LOG(ERROR) << tempString;
-      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
-    }
-    mClassesLoaded[className] = cl;
-  } else {
-    cl = mClassesLoaded[className];
-  }
-
-  if (mChecksLoaded.count(checkName) == 0) {
-    mLogger << "Instantiating class " << className << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;
-    result = static_cast<CheckInterface*>(cl->New());
-    if (!result) {
-      tempString += R"( because the class named ")";
-      tempString += className;
-      tempString += R"( because the class named ")";
-      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
-    }
-    result->configure(checkName);
-    mChecksLoaded[checkName] = result;
-  } else {
-    result = mChecksLoaded[checkName];
-  }
-
-  return result;
-}
-
 
 
 void Checker::initDatabase(){
