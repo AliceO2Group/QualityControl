@@ -21,6 +21,7 @@
 #include <boost/test/unit_test.hpp>
 
 using namespace std;
+using namespace AliceO2::InfoLogger;
 
 namespace o2::quality_control::core
 {
@@ -31,6 +32,29 @@ BOOST_AUTO_TEST_CASE(qc_info_logger)
   QcInfoLogger& qc2 = QcInfoLogger::GetInstance();
   BOOST_CHECK_EQUAL(&qc1, &qc2);
   qc1 << "test" << AliceO2::InfoLogger::InfoLogger::endm;
+}
+
+BOOST_AUTO_TEST_CASE(qc_info_logger_2)
+{
+  // Decreasing verbosity of the code
+  QcInfoLogger::GetInstance() << "1. info message" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "2. info message" << InfoLogger::endm;
+  ILOG << "3. info message" << InfoLogger::endm;
+  ILOG << "4. info message" << ENDM;
+
+  // Complexification of the messages
+  ILOG << InfoLogger::Error << "5. error message" << ENDM;
+  ILOG << InfoLogger::Error << "6. error message" << InfoLogger::Info << " - 7. info message" << ENDM;
+  ILOG << InfoLogger::InfoLoggerMessageOption{InfoLogger::Fatal, 1, 1, "asdf", 3}
+       << "8. fatal message with extra fields" << ENDM;
+
+  // Different syntax
+  ILOGD(Warning) << "9. warning message" << InfoLogger::endm;
+
+  // Check how the QC infologger is configured
+  ILOG.logInfo("a. info message");
+  ILOG.logError("b. error message");
+  ILOG.log("c. message");
 }
 
 } // namespace o2::quality_control::core

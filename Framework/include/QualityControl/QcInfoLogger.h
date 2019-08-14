@@ -20,6 +20,7 @@
 #include "QualityControl/TaskInterface.h"
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time -> log::endm
+typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;
 
 namespace o2::quality_control::core
 {
@@ -30,6 +31,8 @@ namespace o2::quality_control::core
 /// and configure its own instance of InfoLogger.
 /// Independent InfoLogger instances can still be created when and if needed.
 /// Usage :   QcInfoLogger::GetInstance() << "blabla" << infologger::endm;
+///           ILOG << "info message";
+///           ILOG(Error) << "error message";
 ///
 /// \author Barthelemy von Haller
 class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
@@ -46,7 +49,9 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
  private:
   QcInfoLogger()
   {
-    // TODO configure the QC infologger, e.g. proper facility
+    infoContext context;
+    context.setField(infoContext::FieldName::Facility, "QC");
+    context.setField(infoContext::FieldName::System, "QC");
     *this << "QC infologger initialized" << infologger::endm;
   }
 
@@ -58,5 +63,9 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
 };
 
 } // namespace o2::quality_control::core
+
+#define ILOGD(severity) o2::quality_control::core::QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Severity::severity
+#define ILOG o2::quality_control::core::QcInfoLogger::GetInstance()
+#define ENDM AliceO2::InfoLogger::InfoLogger::endm;
 
 #endif // QC_CORE_QCINFOLOGGER_H
