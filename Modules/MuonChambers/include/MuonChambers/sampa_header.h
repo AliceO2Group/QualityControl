@@ -49,16 +49,6 @@ struct SampaHeaderStruct {
 //        
 //    };
 
-static void SampaHeaderDump(struct SampaHeaderStruct* sampaHeader)
-{
-    printf("--> SAMPA Header: HCode %d HPar %d PkgType %d 10BitWords %d ChipAdd %d ChAdd %d BX %d PPar %d",
-           sampaHeader->fHammingCode,sampaHeader->fHeaderParity,sampaHeader->fPkgType,
-           sampaHeader->fNbOf10BitWords,sampaHeader->fChipAddress,sampaHeader->fChannelAddress,
-           sampaHeader->fBunchCrossingCounter,sampaHeader->fPayloadParity);
-    printf("\n");
-
-}
-    
     
 }
 

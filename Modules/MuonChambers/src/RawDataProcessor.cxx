@@ -18,9 +18,6 @@ using namespace std;
 
 
 static int gPrintLevel;
-static int gPattern;
-static int gNbErrors;
-static int gNbWarnings;
 
 static FILE* flog = NULL;
 
@@ -65,78 +62,78 @@ RawDataProcessor::RawDataProcessor() : TaskInterface(), mHistogram(nullptr) { mH
 
 RawDataProcessor::~RawDataProcessor() {fclose(flog);}
 
-void RawDataProcessor::initialize(o2::framework::InitContext& ctx)
+void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize RawDataProcessor" << AliceO2::InfoLogger::InfoLogger::endm;
 
   if( true ) {
 
-  for(int c = 0; c < 24; c++) {
-    for(int i = 0; i < 40; i++) {
-      for(int j = 0; j < 64; j++) {
-        nhits[c][i][j] = 0;
-        pedestal[c][i][j] = noise[c][i][j] = 0;
+    for(int c = 0; c < 24; c++) {
+      for(int i = 0; i < 40; i++) {
+        for(int j = 0; j < 64; j++) {
+          nhits[c][i][j] = 0;
+          pedestal[c][i][j] = noise[c][i][j] = 0;
+        }
       }
     }
-  }
 
-  mDecoder.initialize();
+    mDecoder.initialize();
 
-  int de = 819;
-  mMapCRU[0].addDSMapping(0, 0, de, 4);
-  mMapCRU[0].readPadMapping(de, "/home/flp/Mapping/slat330000N.Bending.map",
-      "/home/flp/Mapping/slat330000N.NonBending.map", true);
+    int de = 819;
+    mMapCRU[0].addDSMapping(0, 0, de, 4);
+    mMapCRU[0].readPadMapping(de, "/home/flp/Mapping/slat330000N.Bending.map",
+        "/home/flp/Mapping/slat330000N.NonBending.map", true);
 
 
-  mHistogram = new TH1F("QcMuonChambers_PayloadSize", "QcMuonChambers Payload Size", 20, 0, 1000000000);
-  getObjectsManager()->startPublishing(mHistogram);
-  /*getObjectsManager()->addCheck(mHistogram, "checkFromMuonChambers", "o2::quality_control_modules::muonchambers::MuonChambersCheck",
+    mHistogram = new TH1F("QcMuonChambers_PayloadSize", "QcMuonChambers Payload Size", 20, 0, 1000000000);
+    getObjectsManager()->startPublishing(mHistogram);
+    /*getObjectsManager()->addCheck(mHistogram, "checkFromMuonChambers", "o2::quality_control_modules::muonchambers::MuonChambersCheck",
     "QcMuonChambers");*/
 
-  for(int i = 0; i < 24; i++) {
+    for(int i = 0; i < 24; i++) {
 
-    mHistogramPedestals[i] = new TH2F(TString::Format("QcMuonChambers_Pedestals_%02d", i),
-        TString::Format("QcMuonChambers - Pedestals (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
-    //mHistogramPedestals->SetDrawOption("col");
-    getObjectsManager()->startPublishing(mHistogramPedestals[i]);
-    getObjectsManager()->addCheck(mHistogramPedestals[i], "checkFromMuonChambers",
-        "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
+      mHistogramPedestals[i] = new TH2F(TString::Format("QcMuonChambers_Pedestals_%02d", i),
+          TString::Format("QcMuonChambers - Pedestals (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
+      //mHistogramPedestals->SetDrawOption("col");
+      getObjectsManager()->startPublishing(mHistogramPedestals[i]);
+      getObjectsManager()->addCheck(mHistogramPedestals[i], "checkFromMuonChambers",
+          "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
 
-    mHistogramNoise[i] =
-        new TH2F(TString::Format("QcMuonChambers_Noise_%02d", i),
-            TString::Format("QcMuonChambers - Noise (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
-    getObjectsManager()->startPublishing(mHistogramNoise[i]);
+      mHistogramNoise[i] =
+          new TH2F(TString::Format("QcMuonChambers_Noise_%02d", i),
+              TString::Format("QcMuonChambers - Noise (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
+      getObjectsManager()->startPublishing(mHistogramNoise[i]);
 
-    for(int j = 0; j < 8; j++) {
-      mHistogramPedestalsDS[i][j] =
-          new TH1F(TString::Format("QcMuonChambers_Pedestals_%02d_%02d", i, j),
-              TString::Format("QcMuonChambers - Pedestals (%02d-%02d)", i, j), 64*5, 0, 64*5);
-      //getObjectsManager()->startPublishing(mHistogramPedestalsDS[i][j]);
-      /*getObjectsManager()->addCheck(mHistogramPedestalsDS[i][j], "checkFromMuonChambers",
+      for(int j = 0; j < 8; j++) {
+        mHistogramPedestalsDS[i][j] =
+            new TH1F(TString::Format("QcMuonChambers_Pedestals_%02d_%02d", i, j),
+                TString::Format("QcMuonChambers - Pedestals (%02d-%02d)", i, j), 64*5, 0, 64*5);
+        //getObjectsManager()->startPublishing(mHistogramPedestalsDS[i][j]);
+        /*getObjectsManager()->addCheck(mHistogramPedestalsDS[i][j], "checkFromMuonChambers",
           "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");*/
 
-      mHistogramNoiseDS[i][j] =
-          new TH1F(TString::Format("QcMuonChambers_Noise_%02d_%02d", i, j),
-              TString::Format("QcMuonChambers - Noise (%02d-%02d)", i, j), 64*5, 0, 64*5);
-      //getObjectsManager()->startPublishing(mHistogramNoiseDS[i][j]);
-      /*getObjectsManager()->addCheck(mHistogram, "checkFromMuonChambers", "o2::quality_control_modules::muonchambers::MuonChambersCheck",
+        mHistogramNoiseDS[i][j] =
+            new TH1F(TString::Format("QcMuonChambers_Noise_%02d_%02d", i, j),
+                TString::Format("QcMuonChambers - Noise (%02d-%02d)", i, j), 64*5, 0, 64*5);
+        //getObjectsManager()->startPublishing(mHistogramNoiseDS[i][j]);
+        /*getObjectsManager()->addCheck(mHistogram, "checkFromMuonChambers", "o2::quality_control_modules::muonchambers::MuonChambersCheck",
     "QcMuonChambers");*/
+      }
     }
-  }
 
-  {
-    float Xsize = 40*5;
-    float Ysize = 50;
-    float Ysize2 = Ysize/2;
-    TH2F* hPedDE = new TH2F(TString::Format("QcMuonChambers_Pedestals_DE%03d", de),
-        TString::Format("QcMuonChambers - Pedestals (DE%03d)", de), Xsize*2, 0, Xsize, Ysize*2, -Ysize2, Ysize2);
-    mHistogramPedestalsDE.insert( make_pair(de, hPedDE) );
-    getObjectsManager()->startPublishing(hPedDE);
-    TH2F* hNoiseDE = new TH2F(TString::Format("QcMuonChambers_Noise_DE%03d", de),
-        TString::Format("QcMuonChambers - Noise (DE%03d)", de), Xsize*2, 0, Xsize, Ysize*2, -Ysize2, Ysize2);
-    mHistogramNoiseDE.insert( make_pair(de, hNoiseDE) );
-    getObjectsManager()->startPublishing(hNoiseDE);
-  }
+    {
+      float Xsize = 40*5;
+      float Ysize = 50;
+      float Ysize2 = Ysize/2;
+      TH2F* hPedDE = new TH2F(TString::Format("QcMuonChambers_Pedestals_DE%03d", de),
+          TString::Format("QcMuonChambers - Pedestals (DE%03d)", de), Xsize*2, 0, Xsize, Ysize*2, -Ysize2, Ysize2);
+      mHistogramPedestalsDE.insert( make_pair(de, hPedDE) );
+      getObjectsManager()->startPublishing(hPedDE);
+      TH2F* hNoiseDE = new TH2F(TString::Format("QcMuonChambers_Noise_DE%03d", de),
+          TString::Format("QcMuonChambers - Noise (DE%03d)", de), Xsize*2, 0, Xsize, Ysize*2, -Ysize2, Ysize2);
+      mHistogramNoiseDE.insert( make_pair(de, hNoiseDE) );
+      getObjectsManager()->startPublishing(hNoiseDE);
+    }
   }
 
   gPrintLevel = 0;
@@ -144,7 +141,7 @@ void RawDataProcessor::initialize(o2::framework::InitContext& ctx)
   flog = stdout; //fopen("/root/qc.log", "w");
 }
 
-void RawDataProcessor::startOfActivity(Activity& activity)
+void RawDataProcessor::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   mHistogram->Reset();
@@ -166,7 +163,6 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
   //  inputName=readout
   //  dataOrigin=ITS
   //  dataDescription=RAWDATA
-  const int RDH_BLOCK_SIZE = 8192;
 
   // 1. in a loop
   for (auto&& input : ctx.inputs()) {
@@ -183,15 +179,14 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
     mDecoder.processData( input.payload, header->payloadSize );
 
     std::vector<SampaHit>& hits = mDecoder.getHits();
-    for(int i = 0; i < hits.size(); i++) {
+    for(uint32_t i = 0; i < hits.size(); i++) {
       //continue;
       SampaHit& hit = hits[i];
-      if(hit.link_id>=24 || hit.ds_addr>=40 || hit.chan_addr>=64 ||
-	 hit.link_id<0 || hit.ds_addr<0 || hit.chan_addr<0)
-	fprintf(stdout,"hit[%d]: link_id=%d, ds_addr=%d, chan_addr=%d\n",
-		i, hit.link_id, hit.ds_addr, hit.chan_addr);
-      for(int s = 0; s < hit.samples.size(); s++) {
-	//continue;
+      if(hit.link_id>=24 || hit.ds_addr>=40 || hit.chan_addr>=64 )
+        fprintf(stdout,"hit[%d]: link_id=%d, ds_addr=%d, chan_addr=%d\n",
+            i, hit.link_id, hit.ds_addr, hit.chan_addr);
+      for(uint32_t s = 0; s < hit.samples.size(); s++) {
+        //continue;
         nhits[hit.link_id][hit.ds_addr][hit.chan_addr] += 1;
         uint64_t N = nhits[hit.link_id][hit.ds_addr][hit.chan_addr];
         int sample = hit.samples[s];
@@ -221,7 +216,6 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 
       auto hPedDE = mHistogramPedestalsDE.find(pad.fDE);
       if( (hPedDE != mHistogramPedestalsDE.end()) && (hPedDE->second != NULL) ) {
-        int bin = hPedDE->second->FindBin(pad.fX, pad.fY, 0);
         int binx_min = hPedDE->second->GetXaxis()->FindBin(pad.fX-pad.fSizeX/2+0.1);
         int binx_max = hPedDE->second->GetXaxis()->FindBin(pad.fX+pad.fSizeX/2-0.1);
         int biny_min = hPedDE->second->GetYaxis()->FindBin(pad.fY-pad.fSizeY/2+0.1);
@@ -234,7 +228,6 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       }
       auto hNoiseDE = mHistogramNoiseDE.find(pad.fDE);
       if( (hNoiseDE != mHistogramNoiseDE.end()) && (hNoiseDE->second != NULL) ) {
-        int bin = hNoiseDE->second->FindBin(pad.fX, pad.fY, 0);
         int binx_min = hNoiseDE->second->GetXaxis()->FindBin(pad.fX-pad.fSizeX/2+0.1);
         int binx_max = hNoiseDE->second->GetXaxis()->FindBin(pad.fX+pad.fSizeX/2-0.1);
         int biny_min = hNoiseDE->second->GetYaxis()->FindBin(pad.fY-pad.fSizeY/2+0.1);
@@ -256,7 +249,7 @@ void RawDataProcessor::endOfCycle()
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void RawDataProcessor::endOfActivity(Activity& activity)
+void RawDataProcessor::endOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }

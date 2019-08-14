@@ -67,6 +67,7 @@ bool MapCRU::addDSMapping(uint32_t link_id, uint32_t ds_addr, uint32_t de, uint3
   m.mDE = de;
   m.mIndex = dsid;
   m.mBad = 0;
+  return true;
 }
 
 
@@ -83,7 +84,10 @@ bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMap
   int padx,pady;
   float x,y;
   std::ifstream filebend,filenbend;
-  char dsbfile[256], dsnbfile[256];
+
+  filebend.open(bMapfile);
+  filenbend.open(nbMapfile);
+  if( !filebend || !filenbend ) return false;
 
   if( mPadMap[de] == NULL ) {
     mPadMap[de] = new MapPad[MCH_PAD_ADDR_MAX];
@@ -93,7 +97,6 @@ bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMap
   //    sprintf(dsnbfile,"slat330000N.NonBending.map");
 
   std::cout<<"ReadPadMapping for DE "<<de<<" from file "<<bMapfile<<std::endl;
-  filebend.open(bMapfile);
   if (!filebend)
   {
     std::cerr << "Can't open file "<<bMapfile<<std::endl;
@@ -126,7 +129,6 @@ bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMap
   filebend.close();
 
   std::cout<<"ReadPadMapping for DE "<<de<<" from file "<<nbMapfile<<std::endl;
-  filenbend.open(nbMapfile);
   if (!filenbend)
   {
     std::cerr << "Can't open file "<<nbMapfile<<std::endl;
@@ -165,6 +167,8 @@ bool MapCRU::getPad(uint32_t cru_link, uint32_t dsid, uint32_t dsch, MapPad& pad
   if( mDsMap[cru_link][dsid].mBad == 1 ) return false;
   int32_t de = mDsMap[cru_link][dsid].mDE;
   int32_t dsidx = mDsMap[cru_link][dsid].mIndex;
+
+  if( mPadMap[de] == NULL ) return false;
 
   int32_t address = dsch + (dsidx<<6);
   pad = mPadMap[de][address];
