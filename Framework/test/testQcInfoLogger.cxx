@@ -49,12 +49,15 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
        << "8. fatal message with extra fields" << ENDM;
 
   // Different syntax
-  ILOGD(Warning) << "9. warning message" << InfoLogger::endm;
+  ILOGD(Warning) << "9a. warning message" << InfoLogger::endm;
+  ILOGE << "9b. error message" << ENDM;
+  ILOGF << "9c. fatal message" << ENDM;
+  ILOGW << "9d. warning message" << ENDM;
 
-  // Check how the QC infologger is configured
+  // Using the normal functions
   ILOG.logInfo("a. info message");
   ILOG.logError("b. error message");
-  ILOG.log("c. message");
+  ILOG.log("c. info message");
 }
 
 } // namespace o2::quality_control::core
