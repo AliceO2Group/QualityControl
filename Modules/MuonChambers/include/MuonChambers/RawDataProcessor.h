@@ -2,6 +2,7 @@
 /// \file   RawDataProcessor.h
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
+/// \author Andrea Ferrero
 ///
 
 #ifndef QC_MODULE_MUONCHAMBERS_RAWDATAPROCESSOR_H
@@ -9,6 +10,8 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "MuonChambers/sampa_header.h"
+#include "MuonChambers/MuonChambersMapping.h"
+#include "MuonChambers/MuonChambersDataDecoder.h"
 
 class TH1F;
 class TH2F;
@@ -21,46 +24,6 @@ namespace quality_control_modules
 {
 namespace muonchambers
 {
-
-
-
-enum DualSampaStatus {
-    notSynchronized              = 1,
-    synchronized                 = 2,
-    headerToRead                 = 3,
-    sizeToRead                   = 4,
-    timeToRead                   = 5,
-    dataToRead                   = 6,
-    chargeToRead                 = 7,
-    OK                           = 8   // Data block filled (over a time window)
-};
-
-
-struct DualSampa
-{
-  int id;
-  DualSampaStatus status;            // Status during the data filling
-  uint64_t data;                // curent data
-  int bit;                           // current position
-  uint64_t powerMultiplier;     // power to convert to move bits
-  int nsyn2Bits;                     // Nb of words waiting synchronization
-  Sampa::SampaHeaderStruct header;   // current channel header
-  int64_t bxc[2];
-  uint32_t csize, ctime, cid, sample;
-  int chan_addr[2];
-  uint64_t packetsize;
-  int nbHit; // incremented each time a header packet is received for this card
-  int nbHitChan[64]; // incremented each time a header packet for a given packet is received for this card
-  int ndata[2][32];
-  int nclus[2][32];
-  double pedestal[2][32], noise[2][32];
-};
-
-
-struct DualSampaGroup
-{
-  int64_t bxc;
-};
 
 
 /// \brief Example Quality Control DPL Task
@@ -85,14 +48,19 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
   void reset() override;
 
  private:
-  int hb_orbit;
-  DualSampa ds[24][40];
-  DualSampaGroup dsg[24][8];
+  MuonChambersDataDecoder mDecoder;
+  uint64_t nhits[24][40][64];
+  double pedestal[24][40][64];
+  double noise[24][40][64];
+  MapCRU mMapCRU[MCH_MAX_CRU_IN_FLP];
   TH1F* mHistogram;
   TH2F* mHistogramPedestals[24];
   TH2F* mHistogramNoise[24];
   TH1F* mHistogramPedestalsDS[24][8];
   TH1F* mHistogramNoiseDS[24][8];
+
+  std::map<int, TH2F*> mHistogramPedestalsDE;
+  std::map<int, TH2F*> mHistogramNoiseDE;
 };
 
 } // namespace muonchambers

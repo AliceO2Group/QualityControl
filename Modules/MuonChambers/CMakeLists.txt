@@ -3,11 +3,15 @@ set(MODULE_NAME "QcMuonChambers")
 # ---- Files ----
 
 set(SRCS
+  src/MuonChambersMapping.cxx
+  src/MuonChambersDataDecoder.cxx
   src/RawDataProcessor.cxx
   src/MCHCheckPedestals.cxx
 )
 
 set(HEADERS
+  include/MuonChambers/MuonChambersMapping.h
+  include/MuonChambers/MuonChambersDataDecoder.h
   include/MuonChambers/RawDataProcessor.h
   include/MuonChambers/MCHCheckPedestals.h
 )
@@ -36,7 +40,9 @@ install(
 #generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/MuonChambers/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
 
 add_root_dictionary(${MODULE_NAME}
-                    HEADERS include/MuonChambers/RawDataProcessor.h
+                    HEADERS include/MuonChambers/MuonChambersMapping.h
+                            include/MuonChambers/MuonChambersDataDecoder.h
+                            include/MuonChambers/RawDataProcessor.h
                             include/MuonChambers/MCHCheckPedestals.h
                             include/MuonChambers/sampa_header.h
                     LINKDEF include/MuonChambers/LinkDef.h
