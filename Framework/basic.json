@@ -40,6 +40,35 @@
         },
         "location": "remote"
       }
+    },
+    "correlations": {
+      "ExampleCorrelation": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::CorrelationTask",
+        "moduleName": "QcSkeleton",
+        "dataSource": {
+          "type": "ccdb",
+          "name": "ABC/DBC/ASDF",
+          "maybe" : "query?"
+        },
+        "other init triggers": "SOR, EOR, End of processing, Start of fill, Start of period, Manual",
+        "initTrigger": "EOR",
+        "other update triggers": "None, every x minutes/hours, every run, every fill",
+        "updateTrigger": "none"
+      }
+    },
+    "trending": {
+      "ExampleTrend": {
+        "active": "true",
+        "dataSource": {
+          "type": "ccdb",
+          "name": "AAA/BBB/ccc"
+        },
+        "container": "TTree",
+        "initTrigger": "SOR",
+        "comment": "updateTrigger implies the horizontal axis' unit",
+        "updateTrigger": "5min"
+      }
     }
   },
   "dataSamplingPolicies": [
