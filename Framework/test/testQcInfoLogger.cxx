@@ -39,25 +39,25 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
   // Decreasing verbosity of the code
   QcInfoLogger::GetInstance() << "1. info message" << AliceO2::InfoLogger::InfoLogger::endm;
   QcInfoLogger::GetInstance() << "2. info message" << InfoLogger::endm;
-  ILOG << "3. info message" << InfoLogger::endm;
-  ILOG << "4. info message" << ENDM;
+  ILOG(Info) << "3. info message" << InfoLogger::endm;
+  ILOG(Info) << "4. info message" << ENDM;
 
   // Complexification of the messages
-  ILOG << InfoLogger::Error << "5. error message" << ENDM;
-  ILOG << InfoLogger::Error << "6. error message" << InfoLogger::Info << " - 7. info message" << ENDM;
-  ILOG << InfoLogger::InfoLoggerMessageOption{ InfoLogger::Fatal, 1, 1, "asdf", 3 }
+  ILOG(Error) << "5. error message" << ENDM;
+  ILOG(Error) << "6. error message" << InfoLogger::Info << " - 7. info message" << ENDM;
+  ILOG_INST << InfoLogger::InfoLoggerMessageOption{ InfoLogger::Fatal, 1, 1, "asdf", 3 }
        << "8. fatal message with extra fields" << ENDM;
 
   // Different syntax
-  ILOGD(Warning) << "9a. warning message" << InfoLogger::endm;
   ILOGE << "9b. error message" << ENDM;
   ILOGF << "9c. fatal message" << ENDM;
   ILOGW << "9d. warning message" << ENDM;
+  ILOGI << "9e. info message" << ENDM;
 
   // Using the normal functions
-  ILOG.logInfo("a. info message");
-  ILOG.logError("b. error message");
-  ILOG.log("c. info message");
+  ILOG_INST.logInfo("a. info message");
+  ILOG_INST.logError("b. error message");
+  ILOG_INST.log("c. info message");
 }
 
 } // namespace o2::quality_control::core
