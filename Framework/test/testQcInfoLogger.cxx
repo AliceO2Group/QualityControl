@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
   ILOG(Error) << "5. error message" << ENDM;
   ILOG(Error) << "6. error message" << InfoLogger::Info << " - 7. info message" << ENDM;
   ILOG_INST << InfoLogger::InfoLoggerMessageOption{ InfoLogger::Fatal, 1, 1, "asdf", 3 }
-       << "8. fatal message with extra fields" << ENDM;
+            << "8. fatal message with extra fields" << ENDM;
 
   // Different syntax
   ILOGE << "9b. error message" << ENDM;
