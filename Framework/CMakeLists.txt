@@ -41,6 +41,7 @@ add_library(QualityControl
             src/CheckInterface.cxx
             src/DatabaseFactory.cxx
             src/CcdbDatabase.cxx
+            src/QcInfoLogger.cxx
             src/TaskFactory.cxx
             src/TaskRunner.cxx
             src/TaskRunnerFactory.cxx

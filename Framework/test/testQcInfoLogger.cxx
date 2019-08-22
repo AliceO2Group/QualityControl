@@ -58,6 +58,9 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
   ILOG_INST.logInfo("a. info message");
   ILOG_INST.logError("b. error message");
   ILOG_INST.log("c. info message");
+
+  // Using fairlogger
+  LOG(INFO) << "fair message in infologger";
 }
 
 } // namespace o2::quality_control::core

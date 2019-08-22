@@ -19,7 +19,7 @@
 #include <InfoLogger/InfoLogger.hxx>
 #include "QualityControl/TaskInterface.h"
 
-typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time -> log::endm
+typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time
 typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;
 
 namespace o2::quality_control::core
@@ -31,10 +31,10 @@ namespace o2::quality_control::core
 /// and configure its own instance of InfoLogger.
 /// Independent InfoLogger instances can still be created when and if needed.
 /// Usage :   QcInfoLogger::GetInstance() << "blabla" << infologger::endm;
-///           ILOG(Info) << "4. info message" << ENDM; // short version
-///           ILOGI << "4. info message" << ENDM;      // shorter
+///           ILOG(Info) << "info message" << ENDM; // short version
+///           ILOGI << "info message" << ENDM;      // shorter
 ///           ILOG_INST << InfoLogger::InfoLoggerMessageOption{ InfoLogger::Fatal, 1, 1, "asdf", 3 }
-///                     << "8. fatal message with extra fields" << ENDM; // complex version
+///                     << "fatal message with extra fields" << ENDM; // complex version
 ///
 /// \author Barthelemy von Haller
 class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
@@ -49,14 +49,7 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
   }
 
  private:
-  QcInfoLogger()
-  {
-    infoContext context;
-    context.setField(infoContext::FieldName::Facility, "QC");
-    context.setField(infoContext::FieldName::System, "QC");
-    *this << "QC infologger initialized" << infologger::endm;
-  }
-
+  QcInfoLogger();
   ~QcInfoLogger() override = default;
 
   // Disallow copying
