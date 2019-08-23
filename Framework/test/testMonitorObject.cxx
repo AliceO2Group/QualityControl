@@ -21,7 +21,6 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <chrono>
-#include <iostream>
 #include <TH1F.h>
 #include <TFile.h>
 #include <TSystem.h>

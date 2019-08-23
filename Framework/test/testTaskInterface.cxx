@@ -25,7 +25,6 @@
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/ServiceRegistry.h>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
 using namespace o2::quality_control;
 using namespace std;

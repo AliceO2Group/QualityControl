@@ -25,16 +25,11 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
-//#include <cassert>
-//#include <iostream>
 
 #include <QualityControl/DummyDatabase.h>
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/MonitorObject.h>
 #include <TH1F.h>
-//#include <fcntl.h>
-//#include <stdio.h>
-//#include <sys/stat.h>
 
 using namespace std;
 using namespace o2::quality_control::core;

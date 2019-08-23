@@ -14,7 +14,6 @@
 
 #include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/QcInfoLogger.h"
-#include <iostream>
 #include <string>
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>

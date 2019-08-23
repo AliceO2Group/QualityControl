@@ -32,11 +32,11 @@ SkeletonTask::~SkeletonTask()
 
 void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize SkeletonTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "initialize SkeletonTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    QcInfoLogger::GetInstance() << "Custom parameter - myOwnKey : " << param->second << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info) << "Custom parameter - myOwnKey : " << param->second << ENDM;
   }
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
@@ -48,13 +48,13 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void SkeletonTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "startOfActivity" << ENDM;
   mHistogram->Reset();
 }
 
 void SkeletonTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "startOfCycle" << ENDM;
 }
 
 void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -114,19 +114,19 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void SkeletonTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "endOfCycle" << ENDM;
 }
 
 void SkeletonTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "endOfActivity" << ENDM;
 }
 
 void SkeletonTask::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "Resetting the histogram" << ENDM;
   mHistogram->Reset();
 }
 

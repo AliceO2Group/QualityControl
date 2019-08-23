@@ -26,8 +26,9 @@ QcInfoLogger::QcInfoLogger()
   infoContext context;
   context.setField(infoContext::FieldName::Facility, "QC");
   context.setField(infoContext::FieldName::System, "QC");
-  *this << "QC infologger initialized" << infologger::endm;
+  this->setContext(context);
   setFMQLogsToInfoLogger(this);  // theLog being our singleton of QcInfoLogger
+  *this << "QC infologger initialized" << infologger::endm;
 }
 
 } // namespace o2::quality_control::core
