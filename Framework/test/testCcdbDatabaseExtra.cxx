@@ -17,6 +17,7 @@
 #include "QualityControl/DatabaseFactory.h"
 #include <unordered_map>
 #include "QualityControl/CcdbDatabase.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE CcdbDatabaseExtra test
 #define BOOST_TEST_MAIN
@@ -50,7 +51,7 @@ struct test_fixture {
   {
     backend = DatabaseFactory::create("CCDB");
     backend->connect(CCDB_ENDPOINT, "", "", "");
-    std::cout << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << std::endl;
+    ILOG(Info) << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
   }
 
   ~test_fixture() = default;
@@ -66,13 +67,13 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
 {
   test_fixture f;
   for (auto const& [task, object] : Objects) {
-    std::cout << "[RETRIEVE]: " << task << object << std::endl;
+    ILOG(Info) << "[RETRIEVE]: " << task << object << ENDM;
     auto mo = f.backend->retrieve(task, object);
     if (mo == nullptr) {
-      std::cout << "No object found (" << task << object << ")" << std::endl;
+      ILOG(Info) << "No object found (" << task << object << ")" << ENDM;
       continue;
     }
-    cout << "name of encapsulated object : " << mo->getObject()->GetName() << endl; // just to test it
+    ILOG(Info) << "name of encapsulated object : " << mo->getObject()->GetName() << ENDM; // just to test it
   }
 }
 
@@ -82,10 +83,10 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
 {
   test_fixture f;
   for (auto const& [task, object] : Objects) {
-    std::cout << "[JSON RETRIEVE]: " << task << "/" << object << std::endl;
+    ILOG(Info) << "[JSON RETRIEVE]: " << task << "/" << object << ENDM;
     auto json = f.backend->retrieveJson(task, object);
     if (json.empty()) {
-      std::cout << "skipping empty object..." << std::endl;
+      ILOG(Info) << "skipping empty object..." << ENDM;
       continue;
     }
     std::stringstream ss;

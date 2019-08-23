@@ -21,13 +21,13 @@ namespace o2::quality_control::core
 {
 // clang-format on
 
-  QcInfoLogger::QcInfoLogger()
-  {
-    infoContext context;
-    context.setField(infoContext::FieldName::Facility, "QC");
-    context.setField(infoContext::FieldName::System, "QC");
-    *this << "QC infologger initialized" << infologger::endm;
-    setFMQLogsToInfoLogger(this);  // theLog being our singleton of QcInfoLogger
-  }
+QcInfoLogger::QcInfoLogger()
+{
+  infoContext context;
+  context.setField(infoContext::FieldName::Facility, "QC");
+  context.setField(infoContext::FieldName::System, "QC");
+  *this << "QC infologger initialized" << infologger::endm;
+  setFMQLogsToInfoLogger(this);  // theLog being our singleton of QcInfoLogger
+}
 
 } // namespace o2::quality_control::core

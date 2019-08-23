@@ -14,6 +14,7 @@
 ///
 
 #include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE Quality test
 #define BOOST_TEST_MAIN
@@ -42,7 +43,7 @@ BOOST_AUTO_TEST_CASE(quality_test)
   BOOST_CHECK_EQUAL(myQuality.getLevel(), Quality::NullLevel);
   BOOST_CHECK_EQUAL(myQuality.getName(), "Null");
 
-  cout << "test quality output : " << myQuality << endl;
+  ILOG(Info) << "test quality output : " << myQuality << ENDM;
 
   BOOST_CHECK(Quality::Bad.isWorstThan(Quality::Medium));
   BOOST_CHECK(Quality::Bad.isWorstThan(Quality::Good));

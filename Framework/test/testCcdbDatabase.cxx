@@ -17,6 +17,7 @@
 #include "QualityControl/DatabaseFactory.h"
 #include <unordered_map>
 #include "QualityControl/CcdbDatabase.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE CcdbDatabase test
 #define BOOST_TEST_MAIN
@@ -48,7 +49,7 @@ struct test_fixture {
   {
     backend = DatabaseFactory::create("CCDB");
     backend->connect(CCDB_ENDPOINT, "", "", "");
-    std::cout << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << std::endl;
+    ILOG(Info) << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
   }
 
   ~test_fixture() = default;
