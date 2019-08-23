@@ -27,7 +27,7 @@ QcInfoLogger::QcInfoLogger()
   context.setField(infoContext::FieldName::Facility, "QC");
   context.setField(infoContext::FieldName::System, "QC");
   this->setContext(context);
-  setFMQLogsToInfoLogger(this);  // theLog being our singleton of QcInfoLogger
+  setFMQLogsToInfoLogger(this); // theLog being our singleton of QcInfoLogger
   *this << "QC infologger initialized" << infologger::endm;
 }
 

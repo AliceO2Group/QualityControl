@@ -101,7 +101,7 @@ void MySqlDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObje
 void MySqlDatabase::storeQueue()
 {
   ILOG(Info) << "Database queue will now be processed (" << queueSize << " objects)"
-                              << ENDM;
+             << ENDM;
 
   for (auto& kv : mObjectsQueue) {
     storeForTask(kv.first);
