@@ -108,8 +108,8 @@ function create_class() {
 
   # add LinkDef.h
   inplace_sed '/#endif/ i\ 
-    #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$classname'+;\
-    \
+    #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$classname'+;
+
     ' $modulename/include/$modulename/LinkDef.h
 
   inplace_sed '/LINKDEF include/ i\ 
