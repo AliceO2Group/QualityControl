@@ -35,7 +35,7 @@ BenchmarkTask::~BenchmarkTask() = default;
 void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info) << "initialize benchmarktask \"" << getName() << "\""
-                              << ENDM;
+             << ENDM;
 
   mConfigFile = ConfigurationFactory::getConfiguration("file:./example.ini");
   string prefix = "qc.tasks_config." + getName();
