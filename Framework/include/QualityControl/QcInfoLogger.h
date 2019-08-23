@@ -17,7 +17,6 @@
 #define QC_CORE_QCINFOLOGGER_H
 
 #include <InfoLogger/InfoLogger.hxx>
-#include "QualityControl/TaskInterface.h"
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time
 typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;

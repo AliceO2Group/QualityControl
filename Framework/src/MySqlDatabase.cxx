@@ -268,7 +268,7 @@ void MySqlDatabase::addIndex(string table, string column)
   if (res) {
     delete (res);
   } else {
-    cerr << "Couldn't create the index on table " << table << " on column " << column << endl;
+    ILOG(Error) << "Couldn't create the index on table " << table << " on column " << column << endl;
   }
 }
 

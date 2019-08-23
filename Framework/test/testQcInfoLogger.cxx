@@ -19,6 +19,7 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+#include <FairLogger.h>
 
 using namespace std;
 using namespace AliceO2::InfoLogger;
