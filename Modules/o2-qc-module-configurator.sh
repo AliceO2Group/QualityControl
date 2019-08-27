@@ -6,6 +6,8 @@ set -u # exit when using undeclared variable
 DONOR=Skeleton
 DONOR_LC=skeleton
 
+OS=`uname`
+
 function inplace_sed() {
   sed -ibck "$1" $2 && rm $2bck
 }
@@ -107,14 +109,19 @@ function create_class() {
   ' $DONOR_INCLUDE_FILENAME >$INCLUDE_FILENAME
 
   # add LinkDef.h
-  inplace_sed '/#endif/ i\ 
-    #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$classname'+;
-
-    ' $modulename/include/$modulename/LinkDef.h
-
-  inplace_sed '/LINKDEF include/ i\ 
-    include/'$modulename'/'$classname'.h\
-    ' $modulename/CMakeLists.txt
+  if [[ $OS == Linux ]] ; then
+    sed -i '/#endif/ i #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$classname'+;' \
+      $modulename/include/$modulename/LinkDef.h
+    sed -i '/set(HEADERS/ a \ \ include/'$modulename'/'$classname'.h' $modulename/CMakeLists.txt
+  else #Darwin/BSD
+    inplace_sed '/#endif/ i\
+      #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$classname'+;\
+      \
+      ' $modulename/include/$modulename/LinkDef.h
+    inplace_sed '/LINKDEF include/ i\
+      include/'$modulename'/'$classname'.h\
+      ' $modulename/CMakeLists.txt
+  fi
 
   # add src
   sed '
