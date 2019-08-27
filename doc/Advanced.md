@@ -117,6 +117,32 @@ Simply call `ObjectsManager::addMetadata(...)`, like in
 ```
 This metadata will end up in the CCDB.
 
+## Access conditions from the CCDB
+
+One can access conditions inside a Task by a dedicated method of the TaskInterface, as below:
+```
+TObject* condition = TaskInterface::retrieveCondition("Path/to/condition");
+if (condition) {
+  LOG(INFO) << "Retrieved " << condition->ClassName();
+  delete condition;
+}
+```
+Make sure to declare a valid URL of CCDB in the config file. Keep in
+ mind that it might be different from the CCDB instance used for storing
+ QC objects.
+
+```
+{
+  "qc": {
+    "config": {
+     ...
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    ...
+```
+
 ## Information Service
 
 The information service publishes information about the tasks currently

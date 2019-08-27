@@ -79,6 +79,7 @@ void TaskRunner::init(InitContext& iCtx)
   mTask.reset(f.create(mTaskConfig, mObjectsManager));
 
   // init user's task
+  mTask->initializeBase();
   mTask->initialize(iCtx);
 }
 
@@ -253,6 +254,7 @@ void TaskRunner::populateConfig(std::string taskName)
     mTaskConfig.cycleDurationSeconds = taskConfigTree->second.get<int>("cycleDurationSeconds", 10);
     mTaskConfig.maxNumberCycles = taskConfigTree->second.get<int>("maxNumberCycles", -1);
     mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+    mTaskConfig.conditionUrl = mConfigFile->get<std::string>("qc.config.conditionDB.url", "http://ccdb-test.cern.ch:8080");
     try {
       mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + taskName + ".taskParameters");
     } catch (...) {

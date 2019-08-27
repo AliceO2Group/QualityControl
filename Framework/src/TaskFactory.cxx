@@ -55,6 +55,7 @@ TaskInterface* TaskFactory::create(TaskConfig& taskConfig, std::shared_ptr<Objec
   result->setName(taskConfig.taskName);
   result->setObjectsManager(objectsManager);
   result->setCustomParameters(taskConfig.customParameters);
+  result->setCcdbHost(taskConfig.conditionUrl);
   logger << "QualityControl Module " << taskConfig.moduleName << " loaded " << AliceO2::InfoLogger::InfoLogger::endm;
 
   return result;
