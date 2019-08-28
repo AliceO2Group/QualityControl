@@ -40,6 +40,8 @@ For a general overview of our (O2) software, organization and processes, please 
       * [Use MySQL as QC backend](doc/Advanced.md#use-mysql-as-qc-backend)
       * [Local CCDB setup](doc/Advanced.md#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](doc/Advanced.md#local-qcg-qc-gui-setup)
+      * [Custom QC object metadata](doc/Advanced.md#custom-qc-object-metadata)
+      * [Access conditions from the CCDB](doc/Advanced.md#access-conditions-from-the-ccdb)
       * [Information Service](doc/Advanced.md#information-service)
       * [Configuration files details](doc/Advanced.md#configuration-files-details)
    * [Frequently Asked Questions](doc/FAQ.md)
