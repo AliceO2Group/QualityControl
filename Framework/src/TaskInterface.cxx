@@ -35,7 +35,7 @@ void TaskInterface::setObjectsManager(std::shared_ptr<ObjectsManager> objectsMan
   mObjectsManager = objectsManager;
 }
 
-void TaskInterface::initializeBase()
+void TaskInterface::loadCcdb()
 {
   if (!mCcdbApi) {
     mCcdbApi = std::make_shared<CcdbApi>();

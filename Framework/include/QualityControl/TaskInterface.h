@@ -70,7 +70,7 @@ class TaskInterface
   /// Move assignment operator
   TaskInterface& operator=(TaskInterface&& other) /* noexcept */ = default; // error with gcc if noexcept
 
-  virtual void initializeBase() final;
+  virtual void loadCcdb() final;
 
   // Definition of the methods for the template method pattern
   virtual void initialize(o2::framework::InitContext& ctx) = 0;
