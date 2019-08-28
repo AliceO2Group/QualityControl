@@ -79,7 +79,7 @@ void TaskRunner::init(InitContext& iCtx)
   mTask.reset(f.create(mTaskConfig, mObjectsManager));
 
   // init user's task
-  mTask->loadCcdb();
+  mTask->loadCcdb(mTaskConfig.conditionUrl);
   mTask->initialize(iCtx);
 }
 

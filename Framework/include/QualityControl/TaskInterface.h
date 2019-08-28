@@ -70,7 +70,7 @@ class TaskInterface
   /// Move assignment operator
   TaskInterface& operator=(TaskInterface&& other) /* noexcept */ = default; // error with gcc if noexcept
 
-  virtual void loadCcdb() final;
+  virtual void loadCcdb(std::string url) final;
 
   // Definition of the methods for the template method pattern
   virtual void initialize(o2::framework::InitContext& ctx) = 0;
@@ -84,7 +84,6 @@ class TaskInterface
   // Setters and getters
   void setObjectsManager(std::shared_ptr<ObjectsManager> objectsManager);
   void setName(const std::string& name);
-  void setCcdbHost(const std::string& url);
   void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters);
   const std::string& getName() const;
 
@@ -98,7 +97,6 @@ class TaskInterface
   // TODO should we rather have a global/singleton for the objectsManager ?
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::string mName;
-  std::string mCcdbUrl = "";
   std::shared_ptr<o2::ccdb::CcdbApi> mCcdbApi;
 };
 

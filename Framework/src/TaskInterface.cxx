@@ -35,21 +35,16 @@ void TaskInterface::setObjectsManager(std::shared_ptr<ObjectsManager> objectsMan
   mObjectsManager = objectsManager;
 }
 
-void TaskInterface::loadCcdb()
+void TaskInterface::loadCcdb(std::string url)
 {
   if (!mCcdbApi) {
     mCcdbApi = std::make_shared<CcdbApi>();
   }
 
-  mCcdbApi->init(mCcdbUrl);
+  mCcdbApi->init(url);
   if (!mCcdbApi->isHostReachable()) {
-    LOG(WARN) << "CCDB at URL '" << mCcdbUrl << "' is not reachable.";
+    LOG(WARN) << "CCDB at URL '" << url << "' is not reachable.";
   }
-}
-
-void TaskInterface::setCcdbHost(const std::string& url)
-{
-  mCcdbUrl = url;
 }
 
 void TaskInterface::setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
