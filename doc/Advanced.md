@@ -117,6 +117,27 @@ Simply call `ObjectsManager::addMetadata(...)`, like in
 ```
 This metadata will end up in the CCDB.
 
+## Developing QC modules on a machine with FLP suite
+
+To load a development library in a setup with FLP suite, specify its full
+path in the config (e.g. `/etc/flp.d/qc/readout.json`):
+```
+    "tasks": {
+      "QcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "/home/myuser/alice/sw/BUILD/QualityControl-latest/QualityControl/libQcTstLibrary",
+        ...
+```
+Make sure that:
+- The name "QcTask" stays the same, as changing it might break the 
+workflow specification for AliECS
+- The library is compiled with the same QC version as the one which is installed
+with the FLP suite. Especially, the task and check interfaces have to be identical.
+- If there are checks applied to MonitorObjects, update the library path in
+the addCheck() functions as well. This will not be necessary when checks are
+configured inside config files.
+
 ## Information Service
 
 The information service publishes information about the tasks currently

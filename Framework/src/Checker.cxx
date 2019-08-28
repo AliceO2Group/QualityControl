@@ -16,6 +16,8 @@
 
 #include "QualityControl/Checker.h"
 
+// Boost
+#include <boost/filesystem/path.hpp>
 // ROOT
 #include <TClass.h>
 #include <TSystem.h>
@@ -37,6 +39,7 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
+namespace bfs = boost::filesystem;
 
 namespace o2::quality_control::checker
 {
@@ -204,7 +207,7 @@ void Checker::loadLibrary(const std::string libraryName)
     return;
   }
 
-  std::string library = "lib" + libraryName;
+  std::string library = bfs::path(libraryName).is_absolute() ? libraryName : "lib" + libraryName;
   // if vector does not contain -> first time we see it
   if (std::find(mLibrariesLoaded.begin(), mLibrariesLoaded.end(), library) == mLibrariesLoaded.end()) {
     mLogger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
