@@ -30,6 +30,7 @@ struct TaskConfig {
   int cycleDurationSeconds;
   int maxNumberCycles;
   std::string consulUrl;
+  std::string conditionUrl = "";
   std::unordered_map<std::string, std::string> customParameters = {};
 };
 
