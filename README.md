@@ -41,6 +41,7 @@ For a general overview of our (O2) software, organization and processes, please 
       * [Local CCDB setup](doc/Advanced.md#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](doc/Advanced.md#local-qcg-qc-gui-setup)
       * [Custom QC object metadata](doc/Advanced.md#custom-qc-object-metadata)
+      * [Developing QC modules on a machine with FLP suite](doc/Advanced.md#developing-qc-modules-on-a-machine-with-flp-suite)
       * [Access conditions from the CCDB](doc/Advanced.md#access-conditions-from-the-ccdb)
       * [Information Service](doc/Advanced.md#information-service)
       * [Configuration files details](doc/Advanced.md#configuration-files-details)

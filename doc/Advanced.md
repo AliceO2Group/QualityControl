@@ -14,6 +14,7 @@
       * [Local CCDB setup](#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
       * [Custom QC object metadata](#custom-qc-object-metadata)
+      * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
       * [Access conditions from the CCDB](#access-conditions-from-the-ccdb)
       * [Information Service](#information-service)
          * [Usage](#usage)
