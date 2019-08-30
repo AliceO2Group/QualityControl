@@ -10,6 +10,8 @@
       * [Execution](#execution)
          * [Basic workflow](#basic-workflow)
          * [Readout chain](#readout-chain)
+            * [Getting real data from readout](#getting-real-data-from-readout)
+            * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
 
 <!-- Added by: bvonhall, at:  -->
 
@@ -121,7 +123,20 @@ o2-qc-run-readout | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/read
 
 The data sampling is configured to sample 1% of the data as the readout should run by default at full speed.
 
-#### Readout data received by the Task
+#### Getting real data from readout
+
+The first option is to configure readout.exe to connect to a cru. Please refer to the [Readout documentation](https://github.com/AliceO2Group/Readout/blob/master/doc/README.md). 
+
+A more practical approach is to record a data file with Readout and then replay it on your development setup to develop and test your QC. The configuration options are described [here](https://github.com/AliceO2Group/Readout/blob/master/doc/configurationParameters.md), in particular : 
+
+```
+equipment-player-* 	filePath 	string 	
+	Path of file containing data to be injected in readout.
+equipment-player-* 	preLoad 	int 	1 	If 1, data pages preloaded with file content on startup. If 0, data is copied at runtime.
+equipment-player-* 	fillPage 	int 	1 	If 1, content of data file is copied multiple time in each data page until page is full (or almost full: on the last iteration, there is no partial copy if remaining space is smaller than full file size). If 0, data file is copied exactly once in each data page.
+```
+
+#### Readout data format as received by the Task
 
 The header is a O2 header populated with data from the header built by the Readout. 
 The payload received is a 2MB (configurable) data page made of CRU pages (8kB).
