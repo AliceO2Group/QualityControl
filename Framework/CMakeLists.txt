@@ -118,7 +118,7 @@ set(EXE_NAMES
     o2-qc-info-service
     o2-qc-info-service-dump
     o2-qc-run-producer
-    o2-qc-run-qc
+    o2-qc
     o2-qc-run-basic
     o2-qc-run-advanced
     o2-qc-run-readout
@@ -132,7 +132,7 @@ set(EXE_OLD_NAMES
     qcInfoService
     qcInfoServiceDump
     qcRunProducer
-    qcRunQC
+    o2-qc-run-qc
     qcRunBasic
     qcRunAdvanced
     qcRunReadout
