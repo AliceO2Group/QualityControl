@@ -18,7 +18,7 @@
 /// topology which can provide data to Data Sampling and QC. This also means that cannot work on its own, as it would
 /// lack input data. A typical usage would be:
 /// \code{.sh}
-/// o2-qc-run-producer | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+/// o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
 /// \endcode
 /// Please refer to Framework/example-default.json and Framework/basic.json to see how to configure a QC topology.
 /// To generate only the local part of the topology (which would run on main processing servers) use the '--local' flag.

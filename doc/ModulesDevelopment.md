@@ -113,7 +113,7 @@ In case one needs to sample at a very high rate, or even monitor 100% of the dat
 }
 ```
 
-The file `basic-no-sampling.json` is provided as an example. To test it, you can run `o2-qc-run-qc` with that configuration file instead of `basic.json`.
+The file `basic-no-sampling.json` is provided as an example. To test it, you can run `o2-qc` with that configuration file instead of `basic.json`.
 
 ### Code Organization
 
@@ -182,7 +182,7 @@ Change the lines as indicated below :
 Now we can run it
 
 ```
-o2-qc-run-basic | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+o2-qc-run-basic | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
 ```
 
 You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.

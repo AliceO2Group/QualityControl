@@ -17,7 +17,7 @@
 /// This is an executable with a basic random data producer in Data Processing Layer. It does not serve a real purpose
 /// on its own, but it can be used as a data source for QC development. For example, one can do:
 /// \code{.sh}
-/// o2-qc-run-producer | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+/// o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
 /// \endcode
 ///
 /// If you have glfw installed, you should see a window with the workflow visualization and sub-windows for each Data

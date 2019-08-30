@@ -68,7 +68,7 @@ Thanks to the Data Processing Layer (DPL, more details later) it is a single pro
 
 The example above consists of one DPL workflow which has both the main processing and the QC infrastructure declared inside. In the real case, we would usually prefer to attach the QC without modifying the original topology. It can be done by merging two (or more) workflows, as shown below:
 
-    o2-qc-run-producer | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+    o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
  
 ![basic-schema-2-exe](images/basic-schema-2-exe.png)
 
@@ -131,7 +131,7 @@ readout.exe file://$READOUT_ROOT/etc/readout.cfg
 
 Start the proxy, DataSampling and QC workflows :
 ```
-o2-qc-run-readout | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
+o2-qc-run-readout | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
 ```
 
 The data sampling is configured to sample 1% of the data as the readout should run by default at full speed.
@@ -157,7 +157,7 @@ The payload received is a 2MB (configurable) data page made of CRU pages (8kB).
 __Configuration file__
 
 The configuration file is installed in `$QUALITYCONTROL_ROOT/etc`. Each time you rebuild the code, `$QUALITYCONTROL_ROOT/etc/readout.json` is overwritten by the file in the source directory (`~/alice/QualityControl/Framework/readout.json`).
-To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config` when launch `o2-qc-run-qc`.
+To avoid this behaviour and preserve the changes you do to the configuration, you can copy the file and specify the path to it with the parameter `--config` when launch `o2-qc`.
 
 To change the fraction of the data being monitored, change the option `fraction`.
 
