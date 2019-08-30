@@ -17,7 +17,7 @@
 /// This is an executable showing how to connect to Readout as external data source. It consists only of a proxy,
 /// which can inject the Readout data into DPL. This workflow is intended to be merged with the QC workflow by doing:
 /// \code{.sh}
-/// o2-qc-run-readout | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
+/// o2-qc-run-readout | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
 /// \endcode
 /// If you do not need to sample data, use the readout-no-sampling.json file instead.
 ///
