@@ -173,7 +173,8 @@ The config file is called `basic.json` and is located in `$QUALITYCONTROL_ROOT/e
 Change the lines as indicated below :
 
 ```
-"MyRawDataQcTask": {
+"tasks": {
+  "MyRawDataQcTask": {
     "active": "true",
     "className": "o2::quality_control_modules::abc::RawDataQcTask",
     "moduleName": "QcAbc",
