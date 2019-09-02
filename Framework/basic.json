@@ -17,6 +17,9 @@
       },
       "consul": {
         "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
       }
     },
     "tasks": {
@@ -43,7 +46,7 @@
       "id": "tst-raw",
       "active": "true",
       "machines": [],
-      "query" : "random:TST/RAWDATA/0",
+      "query": "random:TST/RAWDATA/0",
       "samplingConditions": [
         {
           "condition": "random",

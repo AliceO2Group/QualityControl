@@ -17,9 +17,6 @@
       * [Modification of a Task](#modification-of-a-task)
       * [Addition of a Check](#addition-of-a-check)
       * [Commit Code](#commit-code)
-      * [DPL workflow customization](#dpl-workflow-customization)
-      * [Usage of DS and QC in an existing DPL workflow](#usage-of-ds-and-qc-in-an-existing-dpl-workflow)
-      * [Addition of parameters to a task](#addition-of-parameters-to-a-task)
 
 <!-- Added by: bvonhall, at:  -->
 
@@ -116,7 +113,7 @@ In case one needs to sample at a very high rate, or even monitor 100% of the dat
 }
 ```
 
-The file `basic-no-sampling.json` is provided as an example. To test it, you can run `o2-qc-run-qc` with that configuration file instead of `basic.json`.
+The file `basic-no-sampling.json` is provided as an example. To test it, you can run `o2-qc` with that configuration file instead of `basic.json`.
 
 ### Code Organization
 
@@ -165,8 +162,8 @@ cd QualityControl/Modules
 
 Now that there is a module, we can build it and test it. First let's build it :
 ```
-# We are in ~/alice
-# Go to the build directory of QualityControl
+# We are in ~/alice and alienv has been called.
+# Go to the build directory of QualityControl.
 cd sw/slc7_x86-64/BUILD/QualityControl-latest/QualityControl
 make -j8 install # replace 8 by the number of cores on your machine
 ```
@@ -185,7 +182,7 @@ Change the lines as indicated below :
 Now we can run it
 
 ```
-o2-qc-run-basic | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+o2-qc-run-basic | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
 ```
 
 You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.
@@ -221,24 +218,6 @@ To commit your new or modified code, please follow this procedure
 For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
-
-## Addition of parameters to a task
-
-A task can access custom parameters declared in the configuration file at `qc.tasks.<task_name>.taskParameters`. They are stored inside a key-value map named mCustomParameters, which is a protected member of `TaskInterface`.
-
-One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
-
-For example, to add two parameters of different types do : 
-```
-void customize(std::vector<ConfigParamSpec>& workflowOptions)
-{
-  workflowOptions.push_back(
-    ConfigParamSpec{ "config-path", VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
-  workflowOptions.push_back(
-    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
-}
-```
-
 
 ---
 
