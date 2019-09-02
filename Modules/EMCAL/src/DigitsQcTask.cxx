@@ -10,6 +10,7 @@
 #include <DataFormatsEMCAL/Digit.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/DigitsQcTask.h"
+#include "EMCALBase/Geometry.h"
 
 namespace o2
 {
@@ -20,11 +21,11 @@ namespace emcal
 
 DigitsQcTask::~DigitsQcTask()
 {
-  if (mDigitAmplitude) {
-    delete mDigitAmplitude;
+  for (auto h : mDigitAmplitude) {
+    delete h;
   }
-  if (mDigitTime) {
-    delete mDigitTime;
+  for (auto h : mDigitTime) {
+    delete h;
   }
 }
 
@@ -32,19 +33,33 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize DigitsQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mDigitAmplitude = new TH2F("digitAmplitude", "Digit Amplitude", 100, 0, 100, 20000, 0., 20000.);
-  mDigitTime = new TH2F("digitTime", "Digit Time", 1000, 0, 1000, 20000, 0., 20000.);
-  getObjectsManager()->startPublishing(mDigitAmplitude);
-  getObjectsManager()->startPublishing(mDigitTime);
-  //getObjectsManager()->addCheck(mDigitAmplitude, "checkFromEMCAL", "o2::quality_control_modules::emcal::EMCALCheck",
+  mDigitAmplitude[0] = new TH2F("digitAmplitudeHG", "Digit Amplitude (High gain)", 100, 0, 100, 20000, 0., 20000.);
+  mDigitAmplitude[1] = new TH2F("digitAmplitudeLG", "Digit Amplitude (Low gain)", 100, 0, 100, 20000, 0., 20000.);
+  mDigitTime[0] = new TH2F("digitTimeHG", "Digit Time (High gain)", 1000, 0, 1000, 20000, 0., 20000.);
+  mDigitTime[1] = new TH2F("digitTimeLG", "Digit Time (Low gain)", 1000, 0, 1000, 20000, 0., 20000.);
+  // 1D histograms for showing the integrated spectrum
+  mDigitAmplitudeEMCAL = new TH1F("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 100, 0., 100.);
+  mDigitAmplitudeDCAL = new TH1F("digitAmplitudeDCAL", "Digit amplitude in DCAL", 100, 0., 100.);
+  for (auto h : mDigitAmplitude)
+    getObjectsManager()->startPublishing(h);
+  for (auto h : mDigitTime)
+    getObjectsManager()->startPublishing(h);
+  getObjectsManager()->startPublishing(mDigitAmplitudeEMCAL);
+  getObjectsManager()->startPublishing(mDigitAmplitudeDCAL);
+  //getObjectsManager()->addCheck(mDigitAmplitude[0], "checkFromEMCAL", "o2::quality_control_modules::emcal::EMCALCheck",
   //                              "QcEMCAL");
+  //getObjectsManager()->addCheck(mDigitTime[0], "checkFromEMCAL", "o2::quality_control_modules::emcal::EMCALCheck",
+  //                              "QcEMCAL");
+
+  // initialize geometry
+  if (!mGeometry)
+    mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
 }
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
-  mDigitAmplitude->Reset();
-  mDigitTime->Reset();
+  reset();
 }
 
 void DigitsQcTask::startOfCycle()
@@ -68,8 +83,21 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto digitcontainer = ctx.inputs().get<std::vector<o2::emcal::Digit>>("emcal-digits");
   QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << AliceO2::InfoLogger::InfoLogger::endm;
   for (auto digit : digitcontainer) {
-    mDigitAmplitude->Fill(digit.getEnergy(), digit.getTower());
-    mDigitTime->Fill(digit.getTimeStamp(), digit.getTower());
+    int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
+    if (index < 0)
+      continue;
+    mDigitAmplitude[index]->Fill(digit.getEnergy(), digit.getTower());
+    mDigitTime[index]->Fill(digit.getTimeStamp(), digit.getTower());
+    // get the supermodule for filling EMCAL/DCAL spectra
+    try {
+      auto cellindices = mGeometry->GetCellIndex(digit.getTower());
+      if (std::get<0>(cellindices) < 12)
+        mDigitAmplitudeEMCAL->Fill(digit.getEnergy());
+      else
+        mDigitAmplitudeDCAL->Fill(digit.getEnergy());
+    } catch (o2::emcal::InvalidCellIDException& e) {
+      QcInfoLogger::GetInstance() << "Invalid cell ID: " << e.getCellID() << AliceO2::InfoLogger::InfoLogger::endm;
+    };
   }
 }
 
@@ -88,8 +116,10 @@ void DigitsQcTask::reset()
   // clean all the monitor objects here
 
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
-  mDigitAmplitude->Reset();
-  mDigitTime->Reset();
+  for (auto h : mDigitAmplitude)
+    h->Reset();
+  for (auto h : mDigitTime)
+    h->Reset();
 }
 
 } // namespace emcal
