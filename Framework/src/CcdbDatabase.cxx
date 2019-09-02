@@ -111,7 +111,7 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
-  ccdbApi.store(mo.get(), path, metadata, from, to);
+  ccdbApi.storeAsTFile(mo.get(), path, metadata, from, to);
 }
 
 core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string objectName, long timestamp)
