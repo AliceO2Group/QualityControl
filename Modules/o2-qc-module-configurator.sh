@@ -112,7 +112,7 @@ function create_class() {
   if [[ $OS == Linux ]] ; then
     sed -i '/#endif/ i #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$classname'+;' \
       $modulename/include/$modulename/LinkDef.h
-    sed -i '/set(HEADERS/ a \ \ include/'$modulename'/'$classname'.h' $modulename/CMakeLists.txt
+    sed -i '/HEADERS/ a \ \ include/'$modulename'/'$classname'.h' $modulename/CMakeLists.txt
   else #Darwin/BSD
     inplace_sed '/#endif/ i\
       #pragma link C++ class o2::quality_control_modules::'${MODULE_LC}'::'$classname'+;\
