@@ -17,6 +17,8 @@
       * [Modification of a Task](#modification-of-a-task)
       * [Addition of a Check](#addition-of-a-check)
       * [Commit Code](#commit-code)
+      * [Details on data storage](#details-on-data-storage)
+         * [Storage before v0.14 and ROOT 6.18](#storage-before-v014-and-root-618)
 
 <!-- Added by: bvonhall, at:  -->
 
@@ -219,6 +221,19 @@ To commit your new or modified code, please follow this procedure
 For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
+
+## Details on data storage
+
+Each MonitorObject is stored as a TFile in the CCDB (see section [Details on data storage](doc/ModulesDevelopment.md#details-on-data-storage)
+). It is therefore possible to easily open it with root loaded with alienv. It also seamlessly supports class schema evolution. 
+
+The quality is stored as a metadata on the object. 
+
+### Storage before v0.14 and ROOT 6.18
+
+Before September 2019, objects were serialized with TMessage and stored as _blobs_ in the CCDB. The main drawback was the loss of the corresponding streamer infos leading to problems when the class evolved or when accessing the data outside the QC framework. 
+
+The QC framework is nevertheless backward compatible and can handle the old and the new storage system. 
 
 ---
 
