@@ -154,8 +154,7 @@ For example, if your detector 3-letter code is ABC you might want to do
 ```
 # we are in ~/alice
 cd QualityControl/Modules
-./o2-qc-module-configurator.sh -m Abc # create the module
-./o2-qc-module-configurator.sh -t RawDataQcTask # add a task
+./o2-qc-module-configurator.sh -m Abc -t RawDataQcTask # create the module and a task
 ```
 
 ## Test run
@@ -174,9 +173,11 @@ The config file is called `basic.json` and is located in `$QUALITYCONTROL_ROOT/e
 Change the lines as indicated below :
 
 ```
-"MyRawDataQcTask": {
-  "className": "o2::quality_control_modules::abc::RawDataQcTask",
-  "moduleName": "QcAbc",
+"tasks": {
+  "MyRawDataQcTask": {
+    "active": "true",
+    "className": "o2::quality_control_modules::abc::RawDataQcTask",
+    "moduleName": "QcAbc",
 ```
 
 Now we can run it
