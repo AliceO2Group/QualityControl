@@ -57,7 +57,7 @@ function create_module() {
 
 function cmake_format() {
   if command cmake-format >/dev/null 2>&1; then
-    cmake-format -i $1
+    cmake-format -i $1 -c ../.cmake-format.py
   fi
 }
 
