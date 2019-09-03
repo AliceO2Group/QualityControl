@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(test_task_wrong_detector_name)
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   TaskRunner qcTask{ "abcTask", configFilePath, 0 };
-//  cout << "It should print an error message" << endl;
+  //  cout << "It should print an error message" << endl;
 }
 
 BOOST_AUTO_TEST_CASE(test_task_good_detector_name)
@@ -95,5 +95,5 @@ BOOST_AUTO_TEST_CASE(test_task_good_detector_name)
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   TaskRunner qcTask{ "xyzTask", configFilePath, 0 };
-//  cout << "no error message" << endl;
+  //  cout << "no error message" << endl;
 }

@@ -125,7 +125,7 @@ class TaskRunner : public framework::Task
 
   std::string validateDetectorName(std::string name);
 
-    // consider moving these to TaskConfig
+  // consider moving these to TaskConfig
   framework::Inputs mInputSpecs;
   framework::OutputSpec mMonitorObjectsSpec;
   framework::Options mOptions;
