@@ -45,7 +45,7 @@ void ObjectsManager::startPublishing(TObject* object)
                                 << infologger::endm;
     BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
   }
-  auto* newObject = new MonitorObject(object, mTaskConfig.taskName);
+  auto* newObject = new MonitorObject(object, mTaskConfig.taskName, mTaskConfig.detectorName);
   newObject->setIsOwner(false);
   mMonitorObjects->Add(newObject);
   mUpdateServiceDiscovery = true;

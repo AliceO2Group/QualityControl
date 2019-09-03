@@ -249,6 +249,7 @@ void TaskRunner::populateConfig(std::string taskName)
     }
 
     mTaskConfig.taskName = taskName;
+    mTaskConfig.detectorName = taskConfigTree->second.get<std::string>("detectorName", "MISC");
     mTaskConfig.moduleName = taskConfigTree->second.get<std::string>("moduleName");
     mTaskConfig.className = taskConfigTree->second.get<std::string>("className");
     mTaskConfig.cycleDurationSeconds = taskConfigTree->second.get<int>("cycleDurationSeconds", 10);

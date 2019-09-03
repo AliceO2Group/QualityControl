@@ -25,7 +25,7 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
-MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mIsOwner(true) {}
+MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mDetectorName(""), mIsOwner(true) {}
 
 MonitorObject::~MonitorObject()
 {
@@ -34,8 +34,8 @@ MonitorObject::~MonitorObject()
   }
 }
 
-MonitorObject::MonitorObject(TObject* object, const std::string& taskName)
-  : TObject(), mObject(object), mTaskName(taskName), mIsOwner(true)
+MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName)
+  : TObject(), mObject(object), mTaskName(taskName), mDetectorName(detectorName), mIsOwner(true)
 {
 }
 
