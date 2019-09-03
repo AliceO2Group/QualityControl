@@ -59,7 +59,7 @@ class MonitorObject : public TObject
  public:
   /// Default constructor
   MonitorObject();
-  MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName="DET");
+  MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName = "DET");
   /// Destructor
   ~MonitorObject() override;
 
