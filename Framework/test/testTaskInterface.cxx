@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   testTask.startOfCycle();
   BOOST_CHECK_EQUAL(testTask.test, 3);
 
-  // creating a valid ProcessingContex is almost impossible outside of the framework
+  // creating a  valid ProcessingContex is almost impossible outside of the framework
   // testTask.monitorData(pctx);
   // BOOST_CHECK_EQUAL(testTask.test, 4);
 
