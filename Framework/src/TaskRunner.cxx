@@ -27,9 +27,14 @@
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
+//#include <DetectorsCommonDataFormats/DetID.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
+
+#include <string>
+
+using namespace std;
 
 namespace o2::quality_control::core
 {
@@ -249,7 +254,8 @@ void TaskRunner::populateConfig(std::string taskName)
     }
 
     mTaskConfig.taskName = taskName;
-    mTaskConfig.detectorName = taskConfigTree->second.get<std::string>("detectorName", "MISC");
+    string test = taskConfigTree->second.get<std::string>("detectorName", "MISC");
+    mTaskConfig.detectorName = validateDetectorName(taskConfigTree->second.get<std::string>("detectorName", "MISC"));
     mTaskConfig.moduleName = taskConfigTree->second.get<std::string>("moduleName");
     mTaskConfig.className = taskConfigTree->second.get<std::string>("className");
     mTaskConfig.cycleDurationSeconds = taskConfigTree->second.get<int>("cycleDurationSeconds", 10);
@@ -292,8 +298,33 @@ void TaskRunner::populateConfig(std::string taskName)
   LOG(INFO) << "Configuration loaded : ";
   LOG(INFO) << ">> Task name : " << mTaskConfig.taskName;
   LOG(INFO) << ">> Module name : " << mTaskConfig.moduleName;
+  LOG(INFO) << ">> Detector name : " << mTaskConfig.detectorName;
   LOG(INFO) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds;
   LOG(INFO) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles;
+}
+
+std::string TaskRunner::validateDetectorName(std::string name)
+{
+  // name must be a detector code from DetID or one of the few allowed general names
+  int nDetectors = 16;
+  const char* detNames[16] = // once we can use DetID, remove this hard-coded list
+    {"ITS", "TPC", "TRD", "TOF", "PHS", "CPV", "EMC", "HMP", "MFT", "MCH", "MID", "ZDC", "FT0", "FV0", "FDD", "ACO"};
+  vector<string> permitted = {"MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS"};
+  for(auto i = 0 ; i < nDetectors ; i++) {
+    permitted.push_back(detNames[i]);
+//    permitted.push_back(o2::detectors::DetID::getName(i));
+  }
+  auto it = std::find(permitted.begin(), permitted.end(), name);
+
+  if (it == permitted.end()) {
+    std::string permittedString;
+    for (auto i: permitted) permittedString += i + ' ';
+    LOG(ERROR) << "Invalid detector name : " << name << "\n" <<
+                  "    Placeholder 'MISC' will be used instead\n" <<
+                  "    Note: list of permitted detector names :" << permittedString;
+    return "MISC";
+  }
+  return name;
 }
 
 void TaskRunner::startOfActivity()

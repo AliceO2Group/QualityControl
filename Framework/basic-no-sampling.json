@@ -27,6 +27,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "dataSource": {

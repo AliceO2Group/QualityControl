@@ -38,6 +38,7 @@
         "active": true,
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
+        "detectorName": "XXXXXXXXX",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tpcclust"
@@ -48,6 +49,19 @@
           "parameter1": 100002,
           "parameter2": "c'est quoi"
         },
+        "location": "remote"
+      },
+      "xyzTask": {
+        "active": true,
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "ITS",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tpcclust"
+        },
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
         "location": "remote"
       },
       "defTask": {

@@ -81,3 +81,19 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
   // TODO: When it is possible, we should try calling run() and init()
 }
+
+BOOST_AUTO_TEST_CASE(test_task_wrong_detector_name)
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+
+  TaskRunner qcTask{ "abcTask", configFilePath, 0 };
+//  cout << "It should print an error message" << endl;
+}
+
+BOOST_AUTO_TEST_CASE(test_task_good_detector_name)
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+
+  TaskRunner qcTask{ "xyzTask", configFilePath, 0 };
+//  cout << "no error message" << endl;
+}
