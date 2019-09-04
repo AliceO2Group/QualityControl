@@ -24,17 +24,30 @@
 
 using namespace o2::quality_control::postprocessing;
 
-BOOST_AUTO_TEST_CASE(test_Once)
+BOOST_AUTO_TEST_CASE(test_casting_triggers)
+{
+  auto once = triggers::Once();
+
+  // confirm that enum values works
+  BOOST_CHECK_EQUAL(once(), Trigger::Once);
+  BOOST_CHECK_EQUAL(once(), Trigger::No);
+
+  // confirm that casting to booleans works
+  BOOST_CHECK_EQUAL(once(), false);
+  BOOST_CHECK(!once());
+  once = triggers::Once();
+  BOOST_CHECK_EQUAL(once(), true);
+  once = triggers::Once();
+  BOOST_CHECK(once());
+}
+
+BOOST_AUTO_TEST_CASE(test_trigger_once)
 {
   auto once = triggers::Once();
 
   BOOST_CHECK_EQUAL(once(), Trigger::Once);
   BOOST_CHECK_EQUAL(once(), Trigger::No);
-  BOOST_CHECK_EQUAL(once(), false);
-  BOOST_CHECK(!once());
-
-
-  once = triggers::Once();
-  BOOST_CHECK_EQUAL(once(), true);
-
+  BOOST_CHECK_EQUAL(once(), Trigger::No);
+  BOOST_CHECK_EQUAL(once(), Trigger::No);
+  BOOST_CHECK_EQUAL(once(), Trigger::No);
 }
