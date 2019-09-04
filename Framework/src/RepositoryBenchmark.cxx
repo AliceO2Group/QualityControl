@@ -122,7 +122,7 @@ void RepositoryBenchmark::InitTask()
   // prepare objects
   for (uint64_t i = 0; i < mNumberObjects; i++) {
     TH1* histo = createHisto(mSizeObjects, mObjectName + to_string(i));
-    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(histo, mTaskName);
+    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(histo, mTaskName, "BMK");
     mo->setIsOwner(true);
     mMyObjects.push_back(mo);
   }
