@@ -51,6 +51,7 @@
           "name": "ABC/DBC/ASDF",
           "maybe" : "query?"
         },
+        "mode": "asynchronous",
         "other init triggers": "SOR, EOR, End of processing, Start of fill, Start of period, Manual",
         "initTrigger": "EOR",
         "other update triggers": "None, every x minutes/hours, every run, every fill",
@@ -65,6 +66,7 @@
           "name": "AAA/BBB/ccc"
         },
         "container": "TTree",
+        "mode": "synchronous",
         "initTrigger": "SOR",
         "comment": "updateTrigger implies the horizontal axis' unit",
         "updateTrigger": "5min"

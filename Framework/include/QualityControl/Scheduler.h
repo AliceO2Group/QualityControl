@@ -50,7 +50,9 @@ triggerFcn StartOfRun() {
 //  EveryXHour,
 //  HourOfDay, // only if really needed
 //  DayOfMonth, // only if really needed
+//  NewObject,
 //  Manual // click somewhere?
+//  Once, // only triggers first time it is asked
 
 // here we might use the same function with different configuration if needed
 // for example, a periodic trigger with time as minutes or hours.
