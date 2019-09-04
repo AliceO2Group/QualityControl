@@ -50,7 +50,8 @@ add_library(QualityControl
             src/RepositoryBenchmark.cxx
             src/HistoMerger.cxx
             src/InfrastructureGenerator.cxx
-            src/ServiceDiscovery.cxx)
+            src/ServiceDiscovery.cxx
+            src/Triggers.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -205,9 +206,11 @@ set(TEST_SRCS
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
     test/testCcdbDatabaseExtra.cxx
+    test/testTriggers.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""

@@ -49,13 +49,20 @@
         "dataSource": {
           "type": "ccdb",
           "name": "ABC/DBC/ASDF",
-          "maybe" : "query?"
+          "maybe": "query?"
         },
         "mode": "asynchronous",
         "other init triggers": "SOR, EOR, End of processing, Start of fill, Start of period, Manual",
-        "initTrigger": "EOR",
-        "other update triggers": "None, every x minutes/hours, every run, every fill",
-        "updateTrigger": "none"
+        "initTrigger": [
+          "EOR"
+        ],
+        "other update triggers": [
+          "None",
+          "every x minutes/hours",
+          "every run",
+          "every fill"
+        ],
+        "updateTrigger": []
       }
     },
     "trending": {
@@ -67,9 +74,14 @@
         },
         "container": "TTree",
         "mode": "synchronous",
-        "initTrigger": "SOR",
+        "initTrigger": [
+          "SOR"
+        ],
         "comment": "updateTrigger implies the horizontal axis' unit",
-        "updateTrigger": "5min"
+        "updateTrigger": [
+          "5min",
+          "manual"
+        ]
       }
     }
   },

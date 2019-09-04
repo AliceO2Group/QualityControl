@@ -12,10 +12,25 @@
 #define QUALITYCONTROL_POSTPROCESSINGRUNNER_H
 
 // include from OCC
-class RuntimeControlledObject;
+//class RuntimeControlledObject;
 
+namespace o2::quality_control::postprocessing {
 
+class PostProcessingRunner {
+  public:
+  PostProcessingRunner() = default;
+  ~PostProcessingRunner() = default;
 
+  void init();
+  // one iteration over the event loop
+  void run();
+  // other state transitions
+  void stop();
+  void reset();
+  private:
 
+};
+
+// namespace o2::quality_control::postprocessing
 
 #endif //QUALITYCONTROL_POSTPROCESSINGRUNNER_H
