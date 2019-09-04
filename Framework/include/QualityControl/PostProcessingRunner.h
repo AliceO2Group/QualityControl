@@ -25,7 +25,7 @@ class PostProcessingRunner {
   // one iteration over the event loop
   void run();
   // other state transitions
-  void stop();
+  void stop(); //todo can a task request a stop transition in OCC plugin and DPL?
   void reset();
   private:
 

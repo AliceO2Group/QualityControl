@@ -98,6 +98,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/TaskRunnerFactory.h
                             include/QualityControl/HistoMerger.h
                             include/QualityControl/InfrastructureGenerator.h
+                            include/QualityControl/PostProcessingInterface.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 

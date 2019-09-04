@@ -12,16 +12,18 @@
 /// \file   PostProcessingInterface.h
 /// \author Piotr Konopka
 ///
+
 #ifndef QUALITYCONTROL_POSTPROCESSINTERFACE_H
 #define QUALITYCONTROL_POSTPROCESSINTERFACE_H
 
 
 #include <CCDB/CcdbApi.h>
-
+#include "QualityControl/Triggers.h"
 
 namespace o2::quality_control::postprocessing {
 
-class PostProcessingInterface {
+class PostProcessingInterface
+{
   public:
   PostProcessingInterface() = default;
   virtual ~PostProcessingInterface() = default;
@@ -45,6 +47,6 @@ class PostProcessingInterface {
 
 };
 
-// namespace o2::quality_control::postprocessing
+} // namespace o2::quality_control::postprocessing
 
 #endif //QUALITYCONTROL_POSTPROCESSINTERFACE_H
