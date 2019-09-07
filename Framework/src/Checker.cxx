@@ -139,7 +139,7 @@ void Checker::run(framework::ProcessingContext& ctx)
     if(dataRef.header != nullptr && dataRef.payload != nullptr){
       auto moArray = ctx.inputs().get<TObjArray*>(input.binding.c_str());
       mLogger << "Device " << mDeviceName
-              << " received " << moArray->GetSize()
+              << " received " << moArray->GetEntries()
               << " MonitorObjects from " << input.binding
               << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -204,7 +204,7 @@ void Checker::store(std::vector<std::shared_ptr<QualityObject>> qualityVector)
   mLogger << "Storing \"" << qualityVector.size() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
   try {
     for (auto& obj: qualityVector){
-      mDatabase->store(obj);
+      mDatabase->storeQO(obj);
     }
   } catch (boost::exception& e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;

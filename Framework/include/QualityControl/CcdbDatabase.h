@@ -55,9 +55,15 @@ class CcdbDatabase : public DatabaseInterface
 
   void connect(std::string host, std::string database, std::string username, std::string password) override;
   void connect(const std::unordered_map<std::string, std::string>& config) override;
-  void store(std::shared_ptr<o2::quality_control::core::QualityObject> q) override;
-  std::shared_ptr<o2::quality_control::core::QualityObject> retrieve(std::string checkerName, long timestamp = 0) override;
-  std::string retrieveJson(std::string checkName) override;
+  // MonitorObject
+  void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> q) override;
+  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) override;
+  std::string retrieveMOJson(std::string taskName, std::string objectName) override;
+  // QualityObject
+  void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> q) override;
+  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkerName, long timestamp = 0) override;
+  std::string retrieveQOJson(std::string checkName) override;
+
   void disconnect() override;
   void prepareTaskDataContainer(std::string taskName) override;
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;

@@ -79,6 +79,7 @@ class CheckInterface
   /// \author Barthelemy von Haller
   virtual std::string getAcceptedType();
 
+  bool isObjectCheckable(const std::shared_ptr<MonitorObject> mo);
   bool isObjectCheckable(const MonitorObject* mo);
 
   //  private:

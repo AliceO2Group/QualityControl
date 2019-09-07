@@ -67,6 +67,19 @@
       "defTask": {
         "active": "false"
       }
+    },
+    "checks": {
+      "abcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "abcTask",
+          "MOs": ["example"]
+        }]
+      }
     }
   },
   "dataSamplingPolicies": [

@@ -44,11 +44,11 @@ BOOST_AUTO_TEST_CASE(checkable)
 BOOST_AUTO_TEST_CASE(beautify)
 {
   auto* histo = new TH1F("testObject", "test", 100, 0, 99);
-  MonitorObject monitorObject(histo, "task"); // here we are the owner of the histo
+  std::shared_ptr<MonitorObject> monitorObject(new MonitorObject(histo, "task")); // here we are the owner of the histo
   NonEmpty myCheck;
   myCheck.configure("test");
 
-  myCheck.beautify(&monitorObject, Quality::Null);
+  myCheck.beautify(monitorObject, Quality::Null);
   BOOST_CHECK_EQUAL(histo->GetFillColor(), kWhite);
 
   /*myCheck.beautify(&monitorObject, Quality::Bad);
@@ -64,19 +64,21 @@ BOOST_AUTO_TEST_CASE(beautify)
 BOOST_AUTO_TEST_CASE(nonempty)
 {
   TH1F histo("testObject", "test", 100, 0, 99);
-  MonitorObject monitorObject(&histo, "task");
-  monitorObject.setIsOwner(false);
+  std::shared_ptr<MonitorObject> monitorObject(new MonitorObject(&histo, "task")); // here we are the owner of the histo
+  monitorObject->setIsOwner(false);
   NonEmpty myCheck;
 
-  Quality quality = myCheck.check(&monitorObject);
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = {{"test", monitorObject}};
+
+  Quality quality = myCheck.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);
 
   histo.Fill(1);
-  quality = myCheck.check(&monitorObject);
+  quality = myCheck.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Good);
 
   histo.Reset();
-  quality = myCheck.check(&monitorObject);
+  quality = myCheck.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);
 }
 

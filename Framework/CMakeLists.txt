@@ -194,19 +194,19 @@ endif()
 # ---- Tests ----
 
 set(TEST_SRCS
-    #  test/testDbFactory.cxx
+    test/testDbFactory.cxx
     test/testMonitorObject.cxx
     test/testPublisher.cxx
     test/testQcInfoLogger.cxx
     #  test/testInfrastructureGenerator.cxx
     test/testTaskInterface.cxx
     test/testTaskRunner.cxx
-    #  test/testCheckInterface.cxx
-    #  test/testChecker.cxx
+    test/testCheckInterface.cxx
+    test/testChecker.cxx
     test/testQuality.cxx
     test/testObjectsManager.cxx
-    #  test/testCcdbDatabase.cxx
-    #  test/testCcdbDatabaseExtra.cxx
+    test/testCcdbDatabase.cxx
+    test/testCcdbDatabaseExtra.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS

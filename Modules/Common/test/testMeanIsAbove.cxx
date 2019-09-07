@@ -28,48 +28,52 @@ namespace o2::quality_control_modules::common
 
 BOOST_AUTO_TEST_CASE(test_checks)
 {
-  o2::quality_control::core::MonitorObject mo;
-  mo.addCheck("test", "test", "test");
-  mo.setQualityForCheck("test", Quality::Null);
+  std::shared_ptr<MonitorObject> mo(new MonitorObject()); // here we are the owner of the histo
+  mo->addCheck("test", "test", "test");
+  mo->setQualityForCheck("test", Quality::Null);
   TH1F th1f("h1", "h1", 10, 0, 9);
-  mo.setObject(&th1f);
-  mo.setIsOwner(false);
+  mo->setObject(&th1f);
+  mo->setIsOwner(false);
+
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = {{"test", mo}};
 
   MeanIsAbove check;
   check.configure("mytest");
-  Quality quality = check.check(&mo);
+  Quality quality = check.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);
 
   th1f.Fill(1); // the threshold is set to 1 -> bad
-  quality = check.check(&mo);
+  quality = check.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);
 
   th1f.Fill(2); // the threshold is set to 1 -> good
-  quality = check.check(&mo);
+  quality = check.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Good);
 
-  check.beautify(&mo, Quality::Null); // add a line
+  check.beautify(mo, Quality::Null); // add a line
   BOOST_CHECK_EQUAL(1, th1f.GetListOfFunctions()->GetEntries());
 
-  check.beautify(&mo, Quality::Null);
+  check.beautify(mo, Quality::Null);
   // Should update the line, not add one --> TODO THIS FAILS
   //  BOOST_CHECK_EQUAL(numberFunctions, th1f.GetListOfFunctions()->GetEntries()); // no modifications to the plot
 }
 
 BOOST_AUTO_TEST_CASE(test_types)
 {
-  o2::quality_control::core::MonitorObject mo;
-  mo.addCheck("test", "test", "test");
-  mo.setQualityForCheck("test", Quality::Null);
+  std::shared_ptr<MonitorObject> mo(new MonitorObject()); // here we are the owner of the histo
+  mo->addCheck("test", "test", "test");
+  mo->setQualityForCheck("test", Quality::Null);
   TObject obj;
-  mo.setObject(&obj);
-  mo.setIsOwner(false);
+  mo->setObject(&obj);
+  mo->setIsOwner(false);
+
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = {{"test", mo}};
 
   MeanIsAbove check;
   check.configure("mytest");
-  BOOST_TEST(!check.isObjectCheckable(&mo));
+  BOOST_TEST(!check.isObjectCheckable(mo));
 
-  Quality quality = check.check(&mo);
+  Quality quality = check.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Null);
 }
 

@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
   test_fixture f;
   for (auto const& [task, object] : Objects) {
     std::cout << "[RETRIEVE]: " << task << object << std::endl;
-    auto mo = f.backend->retrieve(task, object);
+    auto mo = f.backend->retrieveMO(task, object);
     if (mo == nullptr) {
       std::cout << "No object found (" << task << object << ")" << std::endl;
       continue;
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
   test_fixture f;
   for (auto const& [task, object] : Objects) {
     std::cout << "[JSON RETRIEVE]: " << task << "/" << object << std::endl;
-    auto json = f.backend->retrieveJson(task, object);
+    auto json = f.backend->retrieveMOJson(task, object);
     if (json.empty()) {
       std::cout << "skipping empty object..." << std::endl;
       continue;

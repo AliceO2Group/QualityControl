@@ -23,8 +23,8 @@ class FakeCheck : public o2::quality_control::checker::CheckInterface
   ~FakeCheck() override = default;
 
   void configure(std::string name) override;
-  Quality check(const MonitorObject* mo) override;
-  void beautify(MonitorObject* mo, Quality checkResult = Quality::Null) override;
+  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
   ClassDefOverride(FakeCheck, 1);

@@ -45,8 +45,9 @@ void TOFCheckRawsTime::configure(std::string)
   // }
 }
 
-Quality TOFCheckRawsTime::check(const MonitorObject* mo)
+Quality TOFCheckRawsTime::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  auto mo = moMap->begin()->second;
   Quality result = Quality::Null;
 
   // const Double_t binWidthTOFrawTime = 2.44;
@@ -94,7 +95,7 @@ Quality TOFCheckRawsTime::check(const MonitorObject* mo)
 
 std::string TOFCheckRawsTime::getAcceptedType() { return "TH1"; }
 
-void TOFCheckRawsTime::beautify(MonitorObject* mo, Quality checkResult)
+void TOFCheckRawsTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName().find("RawsTime") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());

@@ -1,3 +1,13 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 #include "QualityControl/Check.h"
 
 #include <memory>
@@ -148,7 +158,7 @@ void Check::initPolicy() {
 
     mPolicy = [](std::map<std::string, unsigned int>& revisionMap) {
       // Expecting check of this policy only if any change
-      (void)revisionMap; // Surpass Unused warning
+      (void)revisionMap; // Supprses Unused warning
       return true;
     };
 
@@ -172,6 +182,11 @@ void Check::initPolicy() {
 
 void Check::init() {
   loadLibrary();
+
+  /** 
+   * The policy needs to be here. If running in constructor, the lambda gets wrong reference
+   * and runs into SegmentationFault.
+   */
   initPolicy();
 }
 

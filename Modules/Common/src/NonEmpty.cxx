@@ -28,8 +28,9 @@ ClassImp(o2::quality_control_modules::common::NonEmpty)
 
   void NonEmpty::configure(std::string /*name*/) {}
 
-  Quality NonEmpty::check(const MonitorObject* mo)
+  Quality NonEmpty::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
   {
+    auto mo = moMap->begin()->second;
     auto result = Quality::Null;
 
     // The framework guarantees that the encapsulated object is of the accepted type.
@@ -49,7 +50,7 @@ ClassImp(o2::quality_control_modules::common::NonEmpty)
 
   std::string NonEmpty::getAcceptedType() { return "TH1"; }
 
-  void NonEmpty::beautify(MonitorObject* /*mo*/, Quality /*checkResult*/)
+  void NonEmpty::beautify(std::shared_ptr<MonitorObject> /*mo*/, Quality /*checkResult*/)
   {
     // NOOP
   }
