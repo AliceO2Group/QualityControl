@@ -14,7 +14,7 @@
 ///
 
 #include "getTestDataDirectory.h"
-#include "QualityControl/Checker.h"
+#include "QualityControl/CheckRunner.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/runnerUtils.h"
 #include <Framework/runDataProcessing.h>
@@ -59,7 +59,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataProcessorSpec receiver{
     "receiver",
     Inputs{
-      { "checked-mo", "QC", Checker::createCheckerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
+      { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
     Outputs{},
     AlgorithmSpec{
       [](ProcessingContext& pctx) {

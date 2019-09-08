@@ -102,7 +102,6 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
 
   // metadata
   map<string, string> metadata;
-  metadata["quality"] = std::to_string(mo->getQuality().getLevel());
   map<string, string> userMetadata = mo->getMetadataMap();
   if (!userMetadata.empty()) {
     metadata.insert(userMetadata.begin(), userMetadata.end());
@@ -158,12 +157,14 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
-  ccdbApi.storeAsTFile(mo.get(), path, metadata, from, to);
+  map<string, string> metadata;
+
+  ccdbApi.storeAsTFile(qo.get(), path, metadata, from, to);
 }
 
 std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName, long timestamp)
 {
-  string path = checkerName;
+  string fullPath = checkerName;
   map<string, string> metadata;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 

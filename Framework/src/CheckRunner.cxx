@@ -9,12 +9,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   Checker.cxx
+/// \file   CheckRunner.cxx
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
 ///
 
-#include "QualityControl/Checker.h"
+#include "QualityControl/CheckRunner.h"
 
 // Boost
 #include <boost/filesystem/path.hpp>
@@ -42,14 +42,13 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
-using namespace o2::quality_control::monitor;
 namespace bfs = boost::filesystem;
 
 namespace o2::quality_control::checker
 {
 
 /// Static functions
-o2::header::DataDescription Checker::createCheckerDataDescription(const std::string taskName)
+o2::header::DataDescription CheckRunner::createCheckRunnerDataDescription(const std::string taskName)
 {
   if (taskName.empty()) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for checker's data description"));
@@ -59,7 +58,7 @@ o2::header::DataDescription Checker::createCheckerDataDescription(const std::str
   return description;
 }
 
-o2::framework::Inputs Checker::createInputSpec(const std::string checkName, const std::string configSource)
+o2::framework::Inputs CheckRunner::createInputSpec(const std::string checkName, const std::string configSource)
 {
   std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configSource);
   o2::framework::Inputs inputs;
@@ -76,36 +75,36 @@ o2::framework::Inputs Checker::createInputSpec(const std::string checkName, cons
   return inputs;
 }
 
-std::string Checker::createCheckerIdString(){
+std::string CheckRunner::createCheckRunnerIdString(){
   return std::string("QC-CHECKER");
 }
 
 
 /// Members 
 
-// TODO do we need a CheckFactory ? here it is embedded in the Checker
-// TODO maybe we could use the CheckerFactory
+// TODO do we need a CheckFactory ? here it is embedded in the CheckRunner
+// TODO maybe we could use the CheckRunnerFactory
 
 
-Checker::Checker(std::vector<Check> checks, std::string configurationSource)
-  : mDeviceName(createCheckerIdString() + "-" + checks.front().getName()),
+CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
+  : mDeviceName(createCheckRunnerIdString() + "-" + checks.front().getName()),
     mChecks{checks},
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
     mInputs(checks.front().getInputs()),
-    mOutputSpec{ "QC", Checker::createCheckerDataDescription(checks.front().getName()), 0 },
+    mOutputSpec{ "QC", CheckRunner::createCheckRunnerDataDescription(checks.front().getName()), 0 },
     startFirstObject{ system_clock::time_point::min() },
     endLastObject{ system_clock::time_point::min() }
 {
   mTotalNumberHistosReceived = 0;
 }
 
-Checker::Checker(Check check, std::string configurationSource)
-  : Checker(std::vector{check}, configurationSource)
+CheckRunner::CheckRunner(Check check, std::string configurationSource)
+  : CheckRunner(std::vector{check}, configurationSource)
 {
 }
 
-Checker::~Checker()
+CheckRunner::~CheckRunner()
 {
   // Monitoring
   if (mCollector) {
@@ -117,7 +116,7 @@ Checker::~Checker()
   }
 }
 
-void Checker::init(framework::InitContext&)
+void CheckRunner::init(framework::InitContext&)
 {
   initDatabase();
   initMonitoring();
@@ -126,7 +125,7 @@ void Checker::init(framework::InitContext&)
   }
 }
 
-void Checker::run(framework::ProcessingContext& ctx)
+void CheckRunner::run(framework::ProcessingContext& ctx)
 {
 
   // Save time of first object
@@ -173,12 +172,12 @@ void Checker::run(framework::ProcessingContext& ctx)
   }
 }
 
-void Checker::update(std::shared_ptr<MonitorObject> mo){
+void CheckRunner::update(std::shared_ptr<MonitorObject> mo){
   mMonitorObjects[mo->getFullName()] = mo;
   mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
 }
 
-std::vector<std::shared_ptr<QualityObject>> Checker::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
+std::vector<std::shared_ptr<QualityObject>> CheckRunner::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 {
   mLogger << "Running " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
           << AliceO2::InfoLogger::InfoLogger::endm;
@@ -199,7 +198,7 @@ std::vector<std::shared_ptr<QualityObject>> Checker::check(std::map<std::string,
   return qualityVector;
 }
 
-void Checker::store(std::vector<std::shared_ptr<QualityObject>> qualityVector)
+void CheckRunner::store(std::vector<std::shared_ptr<QualityObject>> qualityVector)
 {
   mLogger << "Storing \"" << qualityVector.size() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
   try {
@@ -211,7 +210,7 @@ void Checker::store(std::vector<std::shared_ptr<QualityObject>> qualityVector)
   }
 }
 
-void Checker::send(std::unique_ptr<TObjArray>& moArray, framework::DataAllocator& allocator)
+void CheckRunner::send(std::unique_ptr<TObjArray>& moArray, framework::DataAllocator& allocator)
 {
   mLogger << "Sending Monitor Object array with " << moArray->GetEntries() << " objects inside." << AliceO2::InfoLogger::InfoLogger::endm;
   auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mOutputSpec);
@@ -219,7 +218,7 @@ void Checker::send(std::unique_ptr<TObjArray>& moArray, framework::DataAllocator
     framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, mOutputSpec.lifetime }, moArray.release());
 }
 
-void Checker::updateRevision() {
+void CheckRunner::updateRevision() {
   ++mGlobalRevision;
   if ( mGlobalRevision == 0 ){
     // mGlobalRevision cannot be 0
@@ -232,7 +231,7 @@ void Checker::updateRevision() {
 }
 
 
-void Checker::initDatabase(){
+void CheckRunner::initDatabase(){
   // configuration
   try {
     std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
@@ -254,7 +253,7 @@ void Checker::initDatabase(){
   }
 }
 
-void Checker::initMonitoring(){
+void CheckRunner::initMonitoring(){
   // monitoring
   try {
     mCollector = MonitoringFactory::Get("infologger://");

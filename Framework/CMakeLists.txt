@@ -36,8 +36,8 @@ add_root_dictionary(QualityControlTypes
 
 add_library(QualityControl
             src/ObjectsManager.cxx
-            src/Checker.cxx
-            src/CheckerFactory.cxx
+            src/CheckRunner.cxx
+            src/CheckRunnerFactory.cxx
             src/CheckInterface.cxx
             src/DatabaseFactory.cxx
             src/CcdbDatabase.cxx
@@ -90,8 +90,8 @@ target_compile_definitions(QualityControl PRIVATE
 add_root_dictionary(QualityControl
                     HEADERS include/QualityControl/Check.h
                             include/QualityControl/CheckInterface.h
-                            include/QualityControl/Checker.h
-                            include/QualityControl/CheckerFactory.h
+                            include/QualityControl/CheckRunner.h
+                            include/QualityControl/CheckRunnerFactory.h
                             include/QualityControl/DatabaseInterface.h
                             include/QualityControl/CcdbDatabase.h
                             include/QualityControl/ServiceDiscovery.h

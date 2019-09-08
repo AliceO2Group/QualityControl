@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   Checker.h
+/// \file   CheckRunner.h
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
 ///
@@ -55,20 +55,20 @@ namespace o2::quality_control::checker
 
 /// \brief The class in charge of running the checks on a MonitorObject.
 ///
-/// A Checker is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
+/// A CheckRunner is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
 /// and to run them on the MonitorObject in order to generate a quality. At the moment, a checker also stores quality in the repository.
 ///
 /// TODO Evaluate whether we should have a dedicated device to store in the database.
 ///
 /// \author Barthélémy von Haller
-class Checker : public framework::Task
+class CheckRunner : public framework::Task
 {
  public:
   /// Constructor
   /**
-   * \brief Checker constructor
+   * \brief CheckRunner constructor
    *
-   * Create Checker device that will perform check operation with defineds checks.
+   * Create CheckRunner device that will perform check operation with defineds checks.
    * Depending on the constructor, it can be a single check device or a group check device.
    * Group check assumes that the input of the checks is the same!
    *
@@ -76,16 +76,16 @@ class Checker : public framework::Task
    * @param checkNames List of check names, that operate on the same inputs.
    * @param configurationSource Path to configuration
    */
-  Checker(Check check, std::string configurationSource);
-  Checker(std::vector<Check> checks, std::string configurationSource);
+  CheckRunner(Check check, std::string configurationSource);
+  CheckRunner(std::vector<Check> checks, std::string configurationSource);
 
   /// Destructor
-  ~Checker() override;
+  ~CheckRunner() override;
 
-  /// \brief Checker init callback
+  /// \brief CheckRunner init callback
   void init(framework::InitContext& ctx) override;
 
-  /// \brief Checker process callback
+  /// \brief CheckRunner process callback
   void run(framework::ProcessingContext& ctx) override;
 
   framework::Inputs getInputs() { return mInputs; };
@@ -93,11 +93,11 @@ class Checker : public framework::Task
   framework::OutputSpec getOutputSpec() { return mOutputSpec; };
 
   /// \brief Unified DataDescription naming scheme for all checkers
-  static o2::header::DataDescription createCheckerDataDescription(const std::string taskName);
+  static o2::header::DataDescription createCheckRunnerDataDescription(const std::string taskName);
   static o2::framework::Inputs createInputSpec(const std::string checkName, const std::string configSource);
 
   std::string getDeviceName() { return mDeviceName; };
-  static std::string createCheckerIdString();
+  static std::string createCheckRunnerIdString();
  private:
   /**
    * \brief Evaluate the quality of a MonitorObject.

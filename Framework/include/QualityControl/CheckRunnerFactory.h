@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   CheckerFactory.h
+/// \file   CheckRunnerFactory.h
 /// \author Piotr Konopka
 ///
 
@@ -30,12 +30,12 @@ struct DataProcessorSpec;
 namespace o2::quality_control::checker
 {
 
-/// \brief Factory in charge of creating DataProcessorSpec of QC Checker
-class CheckerFactory
+/// \brief Factory in charge of creating DataProcessorSpec of QC CheckRunner
+class CheckRunnerFactory
 {
  public:
-  CheckerFactory() = default;
-  virtual ~CheckerFactory() = default;
+  CheckRunnerFactory() = default;
+  virtual ~CheckRunnerFactory() = default;
 
   framework::DataProcessorSpec create(Check check, std::string configurationSource);
   framework::DataProcessorSpec create(std::vector<Check> checks, std::string configurationSource);

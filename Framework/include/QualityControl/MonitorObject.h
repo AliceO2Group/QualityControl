@@ -84,10 +84,6 @@ class MonitorObject : public TObject
   /// @return The name as "{getTaskName()}/{getName())}.
   const std::string getFullName() const { return getTaskName() + "/" + getName(); }
 
-  const std::string& getTaskName() const { return mTaskName; }
-
-  void setTaskName(const std::string& taskName) { mTaskName = taskName; }
-
   ///
   /// \brief Get the quality of this object.
   ///

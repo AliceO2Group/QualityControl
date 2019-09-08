@@ -12,6 +12,9 @@
 
 #include <memory>
 #include <algorithm>
+// Boost
+#include <boost/filesystem/path.hpp>
+#include <boost/algorithm/string/trim.hpp>
 // ROOT
 #include <TClass.h>
 #include <TMessage.h>

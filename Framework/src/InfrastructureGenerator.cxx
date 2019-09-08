@@ -15,10 +15,11 @@
 
 #include "QualityControl/InfrastructureGenerator.h"
 
-#include "QualityControl/CheckerFactory.h"
 #include "QualityControl/HistoMerger.h"
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskRunnerFactory.h"
+#include "QualityControl/CheckRunner.h"
+#include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 
 #include <boost/property_tree/ptree.hpp>
@@ -80,7 +81,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
 
   TaskRunnerFactory taskRunnerFactory;
-  CheckerFactory checkerFactory;
+  CheckRunnerFactory checkerFactory;
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     // todo sanitize somehow this if-frenzy
     if (taskConfig.get<bool>("active", true)) {
@@ -116,10 +117,10 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   }
 
   typedef std::vector<std::string> InputNames;
-  typedef std::vector<Check> CheckerNames;
-  std::map<InputNames, CheckerNames> checkerMap;
+  typedef std::vector<Check> CheckRunnerNames;
+  std::map<InputNames, CheckRunnerNames> checkerMap;
   for (const auto& [checkName, checkConfig] : config->getRecursive("qc.checks")) {
-    QcInfoLogger::GetInstance() << ">> Checker name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
+    QcInfoLogger::GetInstance() << ">> CheckRunner name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
     if (checkConfig.get<bool>("active", true)) {
       auto check = Check(checkName, configurationSource);
       InputNames inputNames;
@@ -155,7 +156,7 @@ void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSp
 void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
   TaskRunnerFactory::customizeInfrastructure(policies);
-  CheckerFactory::customizeInfrastructure(policies);
+  CheckRunnerFactory::customizeInfrastructure(policies);
 }
 
 } // namespace o2::quality_control::core

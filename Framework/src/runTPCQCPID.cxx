@@ -53,7 +53,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include "DPLUtils/RootTreeReader.h"
 
 // qc includes
-#include "QualityControl/Checker.h"
+#include "QualityControl/CheckRunner.h"
 #include "QualityControl/runnerUtils.h"
 
 WorkflowSpec defineDataProcessing(const ConfigContext& config)

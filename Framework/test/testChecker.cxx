@@ -9,15 +9,15 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    testChecker.cxx
+/// \file    testCheckRunner.cxx
 /// \author  Piotr Konopka
 ///
 
-#include "QualityControl/CheckerFactory.h"
-#include "QualityControl/Checker.h"
+#include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/CheckRunner.h"
 #include <Framework/DataSampling.h>
 
-#define BOOST_TEST_MODULE Checker test
+#define BOOST_TEST_MODULE CheckRunner test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(test_checker_factory)
 {
   std::string configFilePath{ "json://tests/testSharedConfig.json" };
 
-  CheckerFactory checkerFactory;
+  CheckRunnerFactory checkerFactory;
   Check check("abcCheck", configFilePath);
   DataProcessorSpec checker = checkerFactory.create(check, configFilePath);
 
@@ -47,9 +47,9 @@ BOOST_AUTO_TEST_CASE(test_checker_factory)
 
 BOOST_AUTO_TEST_CASE(test_checker_static)
 {
-  BOOST_CHECK(Checker::createCheckerDataDescription("qwertyuiop") == DataDescription("qwertyuiop-chk"));
-  BOOST_CHECK(Checker::createCheckerDataDescription("012345678901234567890") == DataDescription("012345678901-chk"));
-  BOOST_CHECK_THROW(Checker::createCheckerDataDescription(""), AliceO2::Common::FatalException);
+  BOOST_CHECK(CheckRunner::createCheckRunnerDataDescription("qwertyuiop") == DataDescription("qwertyuiop-chk"));
+  BOOST_CHECK(CheckRunner::createCheckRunnerDataDescription("012345678901234567890") == DataDescription("012345678901-chk"));
+  BOOST_CHECK_THROW(CheckRunner::createCheckRunnerDataDescription(""), AliceO2::Common::FatalException);
 }
 
 BOOST_AUTO_TEST_CASE(test_checker)
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(test_checker)
   std::string configFilePath = { "json://tests/testSharedConfig.json" };
 
   Check check("abcCheck", configFilePath);
-  Checker checker{ check, configFilePath };
+  CheckRunner checker{ check, configFilePath };
 
   BOOST_CHECK_EQUAL(checker.getInputs()[0], (InputSpec{ { "mo" }, "QC", "abcTask-mo", 0 }));
   //BOOST_CHECK_EQUAL(checker.getOutputSpec(), (OutputSpec{ "QC", "abcTask-chk", 0 }));
