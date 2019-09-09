@@ -66,8 +66,8 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto workflow = InfrastructureGenerator::generateRemoteInfrastructure(configFilePath);
 
   // the infrastructure should consist of a merger and checker for the 'skeletonTask' (its taskRunner is declared to be
-  // local) and also taskRunner and checker for the 'abcTask'.
-  BOOST_REQUIRE_EQUAL(workflow.size(), 4);
+  // local) and also taskRunner and checker for the 'abcTask' and 'xyzTask'.
+  BOOST_REQUIRE_EQUAL(workflow.size(), 6);
 
   auto mergerSkeletonTask = std::find_if(
     workflow.begin(), workflow.end(),
