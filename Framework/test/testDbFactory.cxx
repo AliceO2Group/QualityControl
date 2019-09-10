@@ -86,23 +86,23 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
 
   // test getting list of tasks
   std::vector<std::string> list = ccdb->getListing(prefixPath);
-//  for (const auto& item : list) {
-//    cout << "task : " << item << endl;
-//  }
+  //  for (const auto& item : list) {
+  //    cout << "task : " << item << endl;
+  //  }
   BOOST_CHECK(std::find(list.begin(), list.end(), prefixPath + "functional_test") != list.end());
 
   // test getting objects list from task
   auto objectNames = ccdb->getPublishedObjectNames(prefixPath + "functional_test");
-//  cout << "objects in task functional_test" << endl;
-//  for (auto name : objectNames) {
-//    cout << " - object : " << name << endl;
-//  }
+  //  cout << "objects in task functional_test" << endl;
+  //  for (auto name : objectNames) {
+  //    cout << " - object : " << name << endl;
+  //  }
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object1") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object2") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/path\\/to\\/object3") != objectNames.end());
 
   // store list of streamer infos
-//    ccdb->storeStreamerInfosToFile("streamerinfos.root");
+  //    ccdb->storeStreamerInfosToFile("streamerinfos.root");
 }
 
 } // namespace o2::quality_control::repository
