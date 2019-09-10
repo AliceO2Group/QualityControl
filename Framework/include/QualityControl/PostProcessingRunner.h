@@ -13,13 +13,21 @@
 
 // include from OCC
 //class RuntimeControlledObject;
+#include <memory>
+//class PostProcessingInterface;
+#include "QualityControl/PostProcessingInterface.h"
+
+namespace o2::configuration {
+class ConfigurationInterface;
+}
 
 namespace o2::quality_control::postprocessing {
 
-class PostProcessingRunner {
+class PostProcessingRunner
+{
   public:
-  PostProcessingRunner() = default;
-  ~PostProcessingRunner() = default;
+  PostProcessingRunner(std::string name, std::string configPath);
+  ~PostProcessingRunner();
 
   void init();
   // one iteration over the event loop
@@ -28,9 +36,10 @@ class PostProcessingRunner {
   void stop(); //todo can a task request a stop transition in OCC plugin and DPL?
   void reset();
   private:
-
+  std::unique_ptr<PostProcessingInterface> mTask;
+  std::shared_ptr<configuration::ConfigurationInterface> mConfigFile;
 };
 
-// namespace o2::quality_control::postprocessing
+} // namespace o2::quality_control::postprocessing
 
 #endif //QUALITYCONTROL_POSTPROCESSINGRUNNER_H

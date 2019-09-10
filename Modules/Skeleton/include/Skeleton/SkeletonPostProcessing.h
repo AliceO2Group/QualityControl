@@ -34,7 +34,7 @@ class SkeletonPostProcessing final : public quality_control::postprocessing::Pos
   ~SkeletonPostProcessing() override;
 
   // user gets to know what triggered the init
-  void init(quality_control::postprocessing::Trigger) override;
+  void initialize(quality_control::postprocessing::Trigger) override;
   // user gets to know what triggered the processing
   void postProcess(quality_control::postprocessing::Trigger) override;
   // user gets to know what triggered the end

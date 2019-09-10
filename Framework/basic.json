@@ -41,6 +41,18 @@
         "location": "remote"
       }
     },
+    "postprocessing": {
+      "ExamplePostprocessing": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
+        "moduleName": "QcSkeleton",
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": ["once"],
+        "stopTrigger": ["once"]
+      }
+    },
     "correlations": {
       "ExampleCorrelation": {
         "active": "true",

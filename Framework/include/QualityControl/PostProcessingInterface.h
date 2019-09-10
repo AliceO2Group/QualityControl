@@ -17,7 +17,7 @@
 #define QUALITYCONTROL_POSTPROCESSINTERFACE_H
 
 
-#include <CCDB/CcdbApi.h>
+//#include <CCDB/CcdbApi.h>
 #include "QualityControl/Triggers.h"
 
 namespace o2::quality_control::postprocessing {
@@ -29,7 +29,7 @@ class PostProcessingInterface
   virtual ~PostProcessingInterface() = default;
 
   // user gets to know what triggered the init
-  virtual void init(Trigger) = 0;
+  virtual void initialize(Trigger) = 0;
   // user gets to know what triggered the processing
   virtual void postProcess(Trigger) = 0;
   // user gets to know what triggered the end

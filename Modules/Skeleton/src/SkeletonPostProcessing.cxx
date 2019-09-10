@@ -25,7 +25,7 @@ SkeletonPostProcessing::~SkeletonPostProcessing()
 
 }
 
-void SkeletonPostProcessing::init(Trigger)
+void SkeletonPostProcessing::initialize(Trigger)
 {
 
 }

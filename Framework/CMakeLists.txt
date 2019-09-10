@@ -51,7 +51,10 @@ add_library(QualityControl
             src/HistoMerger.cxx
             src/InfrastructureGenerator.cxx
             src/ServiceDiscovery.cxx
-            src/Triggers.cxx)
+            src/Triggers.cxx
+            src/PostProcessingRunner.cxx
+            src/PostProcessingFactory.cxx
+            src/PostProcessingConfig.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -208,9 +211,13 @@ set(TEST_SRCS
     test/testCcdbDatabase.cxx
     test/testCcdbDatabaseExtra.cxx
     test/testTriggers.cxx
+    test/testPostProcessingRunner.cxx
+    test/testPostProcessingInterface.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
+    ""
+    ""
     ""
     ""
     ""
