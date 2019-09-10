@@ -68,7 +68,8 @@ BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
 {
   test_fixture f;
 
-  auto tasks = f.backend->getListOfTasksWithPublications();
+  CcdbDatabase* ccdb = static_cast<CcdbDatabase*>(f.backend.get());
+  auto tasks = ccdb->getListing();
   for (auto& task : tasks) {
     auto objects = f.backend->getPublishedObjectNames(task);
     for (auto& object : objects) {
@@ -84,7 +85,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   test_fixture f;
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->store(mo1);
 }
@@ -92,7 +93,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  MonitorObject* mo = f.backend->retrieve("my/task", "asdf/asdf");
+  MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
   BOOST_CHECK_NE(mo, nullptr);
   TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
   BOOST_CHECK_NE(h1, nullptr);
@@ -105,25 +106,25 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store
   test_fixture f;
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10001);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
   f.backend->store(mo1);
 
   // Retrieve old object stored at timestampStorage
-  MonitorObject* mo = f.backend->retrieve("my/task", "asdf/asdf", oldTimestamp);
+  MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf", oldTimestamp);
   BOOST_CHECK_NE(mo, nullptr);
   TH1F* old = dynamic_cast<TH1F*>(mo->getObject());
   BOOST_CHECK_NE(old, nullptr);
   BOOST_CHECK_EQUAL(old->GetEntries(), 10000);
 
   // Retrieve latest object with timestamp
-  MonitorObject* mo2 = f.backend->retrieve("my/task", "asdf/asdf", CcdbDatabase::getCurrentTimestamp());
+  MonitorObject* mo2 = f.backend->retrieve("qc/TST/my/task", "asdf/asdf", CcdbDatabase::getCurrentTimestamp());
   BOOST_CHECK_NE(mo2, nullptr);
   TH1F* latest = dynamic_cast<TH1F*>(mo2->getObject());
   BOOST_CHECK_NE(latest, nullptr);
   BOOST_CHECK_EQUAL(latest->GetEntries(), 10001);
 
   // Retrieve latest object without timetsamp
-  MonitorObject* mo3 = f.backend->retrieve("my/task", "asdf/asdf");
+  MonitorObject* mo3 = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
   BOOST_CHECK_NE(mo3, nullptr);
   TH1F* latest2 = dynamic_cast<TH1F*>(mo3->getObject());
   BOOST_CHECK_NE(latest2, nullptr);

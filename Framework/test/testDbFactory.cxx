@@ -70,32 +70,33 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   ccdb->connect("ccdb-test.cern.ch:8080", "", "", "");
 
   // prepare stuff in the db
-  ccdb->truncate("functional_test", "object1");
-  ccdb->truncate("functional_test", "object2");
-  ccdb->truncate("functional_test", "path/to/object3");
+  string prefixPath = "qc/TST/";
+  ccdb->truncate(prefixPath + "functional_test", "object1");
+  ccdb->truncate(prefixPath + "functional_test", "object2");
+  ccdb->truncate(prefixPath + "functional_test", "path/to/object3");
   auto* h1 = new TH1F("object1", "object1", 100, 0, 99);
   auto* h2 = new TH1F("object2", "object2", 100, 0, 99);
   auto* h3 = new TH1F("path/to/object3", "object3", 100, 0, 99);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "functional_test");
-  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "functional_test");
-  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, "functional_test");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "functional_test", "TST");
+  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "functional_test", "TST");
+  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, "functional_test", "TST");
   ccdb->store(mo1);
   ccdb->store(mo2);
   ccdb->store(mo3);
 
   // test getting list of tasks
-  std::vector<std::string> list = ccdb->getListOfTasksWithPublications();
-  //  for(const auto &item : list) {
-  //    cout << "task : " << item << endl;
-  //  }
-  BOOST_CHECK(std::find(list.begin(), list.end(), "functional_test") != list.end());
+  std::vector<std::string> list = ccdb->getListing(prefixPath );
+    for(const auto &item : list) {
+      cout << "task : " << item << endl;
+    }
+  BOOST_CHECK(std::find(list.begin(), list.end(), prefixPath + "functional_test") != list.end());
 
   // test getting objects list from task
-  auto objectNames = ccdb->getPublishedObjectNames("functional_test");
-  //    cout << "objects in task functional_test" << endl;
-  //    for (auto name : objectNames) {
-  //      cout << " - object : " << name << endl;
-  //    }
+  auto objectNames = ccdb->getPublishedObjectNames(prefixPath + "functional_test");
+      cout << "objects in task functional_test" << endl;
+      for (auto name : objectNames) {
+        cout << " - object : " << name << endl;
+      }
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object1") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object2") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/path\\/to\\/object3") != objectNames.end());
