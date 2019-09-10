@@ -32,6 +32,7 @@ struct TaskConfig {
   std::string consulUrl;
   std::string conditionUrl = "";
   std::unordered_map<std::string, std::string> customParameters = {};
+  std::string detectorName = "MISC"; // intended to be the 3 letters code
 };
 
 } // namespace o2::quality_control::core

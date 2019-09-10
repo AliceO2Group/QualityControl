@@ -17,9 +17,8 @@
       * [Modification of a Task](#modification-of-a-task)
       * [Addition of a Check](#addition-of-a-check)
       * [Commit Code](#commit-code)
-      * [DPL workflow customization](#dpl-workflow-customization)
-      * [Usage of DS and QC in an existing DPL workflow](#usage-of-ds-and-qc-in-an-existing-dpl-workflow)
-      * [Addition of parameters to a task](#addition-of-parameters-to-a-task)
+      * [Details on data storage](#details-on-data-storage)
+         * [Storage before v0.14 and ROOT 6.18](#storage-before-v014-and-root-618)
 
 <!-- Added by: bvonhall, at:  -->
 
@@ -116,7 +115,7 @@ In case one needs to sample at a very high rate, or even monitor 100% of the dat
 }
 ```
 
-The file `basic-no-sampling.json` is provided as an example. To test it, you can run `o2-qc-run-qc` with that configuration file instead of `basic.json`.
+The file `basic-no-sampling.json` is provided as an example. To test it, you can run `o2-qc` with that configuration file instead of `basic.json`.
 
 ### Code Organization
 
@@ -157,16 +156,15 @@ For example, if your detector 3-letter code is ABC you might want to do
 ```
 # we are in ~/alice
 cd QualityControl/Modules
-./o2-qc-module-configurator.sh -m Abc # create the module
-./o2-qc-module-configurator.sh -t RawDataQcTask # add a task
+./o2-qc-module-configurator.sh -m Abc -t RawDataQcTask # create the module and a task
 ```
 
 ## Test run
 
 Now that there is a module, we can build it and test it. First let's build it :
 ```
-# We are in ~/alice
-# Go to the build directory of QualityControl
+# We are in ~/alice and alienv has been called.
+# Go to the build directory of QualityControl.
 cd sw/slc7_x86-64/BUILD/QualityControl-latest/QualityControl
 make -j8 install # replace 8 by the number of cores on your machine
 ```
@@ -177,15 +175,17 @@ The config file is called `basic.json` and is located in `$QUALITYCONTROL_ROOT/e
 Change the lines as indicated below :
 
 ```
-"MyRawDataQcTask": {
-  "className": "o2::quality_control_modules::abc::RawDataQcTask",
-  "moduleName": "QcAbc",
+"tasks": {
+  "MyRawDataQcTask": {
+    "active": "true",
+    "className": "o2::quality_control_modules::abc::RawDataQcTask",
+    "moduleName": "QcAbc",
 ```
 
 Now we can run it
 
 ```
-o2-qc-run-basic | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+o2-qc-run-basic | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
 ```
 
 You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.
@@ -222,23 +222,18 @@ For a new feature, just create a new branch for it and use the same procedure. D
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
 
-## Addition of parameters to a task
+## Details on data storage
 
-A task can access custom parameters declared in the configuration file at `qc.tasks.<task_name>.taskParameters`. They are stored inside a key-value map named mCustomParameters, which is a protected member of `TaskInterface`.
+Each MonitorObject is stored as a TFile in the CCDB (see section [Details on data storage](doc/ModulesDevelopment.md#details-on-data-storage)
+). It is therefore possible to easily open it with root loaded with alienv. It also seamlessly supports class schema evolution. 
 
-One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
+The quality is stored as a metadata on the object. 
 
-For example, to add two parameters of different types do : 
-```
-void customize(std::vector<ConfigParamSpec>& workflowOptions)
-{
-  workflowOptions.push_back(
-    ConfigParamSpec{ "config-path", VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
-  workflowOptions.push_back(
-    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
-}
-```
+### Storage before v0.14 and ROOT 6.18
 
+Before September 2019, objects were serialized with TMessage and stored as _blobs_ in the CCDB. The main drawback was the loss of the corresponding streamer infos leading to problems when the class evolved or when accessing the data outside the QC framework. 
+
+The QC framework is nevertheless backward compatible and can handle the old and the new storage system. 
 
 ---
 

@@ -27,6 +27,7 @@
           "active": "true",
           "className": "o2::quality_control_modules::emcal::DigitsQcTask",
           "moduleName": "QcEMCAL",
+          "detectorName": "EMC",
           "cycleDurationSeconds": "10",
           "maxNumberCycles": "-1",
           "dataSource": {

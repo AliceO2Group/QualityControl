@@ -79,7 +79,6 @@ class DatabaseInterface
    * the given Task. If the container already exists, we do nothing.
    */
   virtual void prepareTaskDataContainer(std::string taskName) = 0;
-  virtual std::vector<std::string> getListOfTasksWithPublications() = 0;
   virtual std::vector<std::string> getPublishedObjectNames(std::string taskName) = 0;
   /**
    * Delete all versions of a given object

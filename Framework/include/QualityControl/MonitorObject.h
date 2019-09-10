@@ -59,8 +59,7 @@ class MonitorObject : public TObject
  public:
   /// Default constructor
   MonitorObject();
-  MonitorObject(TObject* object, const std::string& taskName);
-
+  MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName = "DET");
   /// Destructor
   ~MonitorObject() override;
 
@@ -81,10 +80,6 @@ class MonitorObject : public TObject
   /// @return The name of the encapsulated object or "" if there is no object.
   const char* GetName() const override;
 
-  const std::string& getTaskName() const { return mTaskName; }
-
-  void setTaskName(const std::string& taskName) { mTaskName = taskName; }
-
   ///
   /// \brief Get the quality of this object.
   ///
@@ -104,6 +99,12 @@ class MonitorObject : public TObject
   bool isIsOwner() const { return mIsOwner; }
 
   void setIsOwner(bool isOwner) { mIsOwner = isOwner; }
+
+  const std::string& getTaskName() const { return mTaskName; }
+  void setTaskName(const std::string& taskName) { mTaskName = taskName; }
+
+  const std::string& getDetectorName() const { return mDetectorName; }
+  void setDetectorName(const std::string& detectorName) { mDetectorName = detectorName; }
 
   /// \brief Add a check to be executed on this object when computing the quality.
   /// If a check with the same name already exists it will be replaced by this check.
@@ -150,6 +151,7 @@ class MonitorObject : public TObject
   TObject* mObject;
   std::map<std::string /*checkName*/, CheckDefinition> mChecks;
   std::string mTaskName;
+  std::string mDetectorName;
   std::map<std::string, std::string> mUserMetadata;
 
   // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the
@@ -157,7 +159,7 @@ class MonitorObject : public TObject
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 4);
+  ClassDefOverride(MonitorObject, 5);
 };
 
 } // namespace o2::quality_control::core
