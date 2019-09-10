@@ -16,12 +16,9 @@
       * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
       * [Local CCDB setup](#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
-<<<<<<< HEAD
       * [Custom QC object metadata](#custom-qc-object-metadata)
       * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
       * [Access conditions from the CCDB](#access-conditions-from-the-ccdb)
-=======
->>>>>>> 793528f4d534817998f13fb7725e587b6c4729ab
       * [Information Service](#information-service)
          * [Usage](#usage)
       * [Configuration files details](#configuration-files-details)
