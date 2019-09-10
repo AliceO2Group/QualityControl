@@ -246,16 +246,14 @@ foreach(t testTaskInterface testWorkflow testTaskRunner
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
 endforeach()
 
-set_property(TEST testTaskInterface PROPERTY LABELS slow)
-set_property(TEST testWorkflow PROPERTY TIMEOUT 120)
+set_property(TEST testWorkflow PROPERTY TIMEOUT 10)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
-set_property(TEST testObjectsManager PROPERTY TIMEOUT 120)
+set_property(TEST testObjectsManager PROPERTY TIMEOUT 60)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
+set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
+set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
 # Temporarily disable tests that fail on CI
 set_property(TEST testWorkflow PROPERTY LABELS manual)
-set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
-set_property(TEST testCcdbDatabase PROPERTY LABELS manual)
-set_property(TEST testDbFactory PROPERTY LABELS manual)
 
 # ---- Install ----
 

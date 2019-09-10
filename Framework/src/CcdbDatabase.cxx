@@ -30,6 +30,7 @@
 #include <sstream>
 
 #include <fairlogger/Logger.h>
+#include <boost/algorithm/string.hpp>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -114,32 +115,32 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
   ccdbApi.storeAsTFile(mo.get(), path, metadata, from, to);
 }
 
-core::MonitorObject* CcdbDatabase::retrieve(std::string taskName, std::string objectName, long timestamp)
+core::MonitorObject* CcdbDatabase::retrieve(std::string path, std::string objectName, long timestamp)
 {
-  string path = taskName + "/" + objectName;
+  string fullPath = path + "/" + objectName;
   map<string, string> metadata;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
   // we try first to load a TFile
-  TObject* object = ccdbApi.retrieveFromTFile(path, metadata, when);
+  TObject* object = ccdbApi.retrieveFromTFile(fullPath, metadata, when);
   if (object == nullptr) {
     // We could not open a TFile we should now try to open an object directly serialized
-    object = ccdbApi.retrieve(path, metadata, when);
-    LOG(DEBUG) << "We could retrieve the object " << path << " as a streamed object.";
+    object = ccdbApi.retrieve(fullPath, metadata, when);
+    LOG(DEBUG) << "We could retrieve the object " << fullPath << " as a streamed object.";
     if (object == nullptr) {
       return nullptr;
     }
   }
   auto* mo = dynamic_cast<core::MonitorObject*>(object);
   if (mo == nullptr) {
-    LOG(ERROR) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject";
+    LOG(ERROR) << "Could not cast the object " << fullPath << " to MonitorObject";
   }
   return mo;
 }
 
-std::string CcdbDatabase::retrieveJson(std::string taskName, std::string objectName)
+std::string CcdbDatabase::retrieveJson(std::string path, std::string objectName)
 {
-  std::unique_ptr<core::MonitorObject> monitor(retrieve(taskName, objectName));
+  std::unique_ptr<core::MonitorObject> monitor(retrieve(path, objectName));
   if (monitor == nullptr) {
     return std::string();
   }
@@ -159,9 +160,9 @@ void CcdbDatabase::prepareTaskDataContainer(std::string /*taskName*/)
   // NOOP for CCDB
 }
 
-std::string CcdbDatabase::getListing(std::string path, std::string accept)
+std::string CcdbDatabase::getListingAsString(std::string subpath, std::string accept)
 {
-  std::string tempString = ccdbApi.list(path, false, accept);
+  std::string tempString = ccdbApi.list(subpath, false, accept);
 
   return tempString;
 }
@@ -180,12 +181,12 @@ static inline void rtrim(std::string& s)
   s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(), s.end());
 }
 
-std::vector<std::string> CcdbDatabase::getListOfTasksWithPublications()
+std::vector<std::string> CcdbDatabase::getListing(std::string subpath)
 {
   std::vector<string> result;
 
-  // Get the listing from CCDB
-  string listing = getListing();
+  // Get the listing from CCDB (folder qc)
+  string listing = getListingAsString(subpath);
 
   // Split the string we received, by line. Also trim it and remove empty lines.
   std::stringstream ss(listing);
@@ -210,11 +211,12 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
   // Split the string we received, by line. Also trim it and remove empty lines. Select the lines starting with "path".
   std::stringstream ss(listing);
   std::string line;
+  std::string taskNameEscaped = boost::replace_all_copy(taskName, "/", "\\/");
   while (std::getline(ss, line, '\n')) {
     ltrim(line);
     rtrim(line);
     if (line.length() > 0 && line.find("\"path\"") == 0) {
-      unsigned long objNameStart = 9 + taskName.length();
+      unsigned long objNameStart = 9 + taskNameEscaped.length();
       string path = line.substr(objNameStart, line.length() - 2 /*final 2 char*/ - objNameStart);
       result.push_back(path);
     }
