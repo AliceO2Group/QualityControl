@@ -252,8 +252,6 @@ set_property(TEST testObjectsManager PROPERTY TIMEOUT 60)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
 set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
-# Temporarily disable tests that fail on CI
-set_property(TEST testWorkflow PROPERTY LABELS manual)
 
 # ---- Install ----
 
