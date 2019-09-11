@@ -169,7 +169,7 @@ To install and run the QCG locally, and its fellow process tobject2json, please 
 ## Developing QC modules on a machine with FLP suite
 
 To load a development library in a setup with FLP suite, specify its full
-path in the config (e.g. `/etc/flp.d/qc/readout.json`):
+path in the config file (e.g. `/etc/flp.d/qc/readout.json`):
 ```
     "tasks": {
       "QcTask": {
