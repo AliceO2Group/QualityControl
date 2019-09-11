@@ -40,6 +40,7 @@ For a general overview of our (O2) software, organization and processes, please 
       * [Use MySQL as QC backend](doc/Advanced.md#use-mysql-as-qc-backend)
       * [Local CCDB setup](doc/Advanced.md#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](doc/Advanced.md#local-qcg-qc-gui-setup)
+      * [Developing QC modules on a machine with FLP suite](doc/Advanced.md#developing-qc-modules-on-a-machine-with-flp-suite)
       * [Information Service](doc/Advanced.md#information-service)
       * [Configuration files details](doc/Advanced.md#configuration-files-details)
    * [Frequently Asked Questions](doc/FAQ.md)

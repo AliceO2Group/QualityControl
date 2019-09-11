@@ -16,6 +16,7 @@
       * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
       * [Local CCDB setup](#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
+      * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
       * [Information Service](#information-service)
          * [Usage](#usage)
       * [Configuration files details](#configuration-files-details)
@@ -164,6 +165,28 @@ At the moment, the description of the REST api can be found in this document : h
 ## Local QCG (QC GUI) setup
 
 To install and run the QCG locally, and its fellow process tobject2json, please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#run-qcg-locally
+
+## Developing QC modules on a machine with FLP suite
+
+To load a development library in a setup with FLP suite, specify its full
+path in the config file (e.g. `/etc/flp.d/qc/readout.json`):
+```
+    "tasks": {
+      "QcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "/home/myuser/alice/sw/BUILD/QualityControl-latest/QualityControl/libQcTstLibrary",
+        ...
+```
+Make sure that:
+- The name "QcTask" stays the same, as changing it might break the 
+workflow specification for AliECS
+- The library is compiled with the same QC, O2, ROOT and GCC version as the 
+ones which are installed with the FLP suite. Especially, the task and check
+interfaces have to be identical.
+- If there are checks applied to MonitorObjects, update the library path in
+the addCheck() functions as well. This will not be necessary when checks are
+configured inside config files.
 
 ## Information Service
 
