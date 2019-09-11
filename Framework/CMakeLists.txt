@@ -52,6 +52,7 @@ add_library(QualityControl
             src/InfrastructureGenerator.cxx
             src/ServiceDiscovery.cxx
             src/Triggers.cxx
+            src/TriggerHelpers.cxx
             src/PostProcessingRunner.cxx
             src/PostProcessingFactory.cxx
             src/PostProcessingConfig.cxx)
@@ -213,9 +214,11 @@ set(TEST_SRCS
     test/testTriggers.cxx
     test/testPostProcessingRunner.cxx
     test/testPostProcessingInterface.cxx
+    test/testPostProcessingConfig.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""
@@ -254,7 +257,7 @@ foreach(i RANGE ${count})
 endforeach()
 
 foreach(t testTaskInterface testWorkflow testTaskRunner
-        testInfrastructureGenerator)
+        testInfrastructureGenerator testPostProcessingConfig)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})

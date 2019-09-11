@@ -16,6 +16,8 @@
 #include <memory>
 //class PostProcessingInterface;
 #include "QualityControl/PostProcessingInterface.h"
+#include "QualityControl/PostProcessingConfig.h"
+#include "QualityControl/Triggers.h"
 
 namespace o2::configuration {
 class ConfigurationInterface;
@@ -36,8 +38,23 @@ class PostProcessingRunner
   void stop(); //todo can a task request a stop transition in OCC plugin and DPL?
   void reset();
   private:
+
+
+  enum class TaskState {
+    INVALID,
+    Created, // configured
+    Running,
+    Finished
+  };
+  TaskState mState = TaskState::INVALID;
+  std::vector<TriggerFcn> mInitTriggers;
+  std::vector<TriggerFcn> mUpdateTriggers;
+  std::vector<TriggerFcn> mStopTriggers;
+
   std::unique_ptr<PostProcessingInterface> mTask;
+
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile;
+  PostProcessingConfig mConfig;
 };
 
 } // namespace o2::quality_control::postprocessing

@@ -30,7 +30,7 @@ void SkeletonPostProcessing::initialize(Trigger)
 
 }
 
-void SkeletonPostProcessing::postProcess(Trigger)
+void SkeletonPostProcessing::update(Trigger)
 {
 
 }

@@ -18,6 +18,8 @@
 namespace o2::quality_control::postprocessing
 {
 
+
+
 namespace triggers {
 
 TriggerFcn StartOfRun() {
@@ -55,15 +57,7 @@ TriggerFcn Once() {
   };
 }
 
-TriggerFcn TriggerFactory(std::string trigger) {
-  if (trigger == "SOR" || trigger == "StartOfRun") {
-    return StartOfRun();
-  } else if (trigger == "Once") {
-    return Once();
-  } else {
-    throw std::runtime_error("unknown trigger: " + trigger);
-  }
-}
+
 
 } // namespace triggers
 

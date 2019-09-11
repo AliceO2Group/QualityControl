@@ -67,6 +67,25 @@
       "defTask": {
         "active": "false"
       }
+    },
+    "postprocessing": {
+      "SkeletonPostProcessing": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
+        "moduleName": "QcSkeleton",
+        "initTrigger": [
+          "SOR",
+          "EOR"
+        ],
+        "updateTrigger": [
+          "once"
+        ],
+        "stopTrigger": [
+          "once"
+        ],
+        "customParameters": {
+        }
+      }
     }
   },
   "dataSamplingPolicies": [

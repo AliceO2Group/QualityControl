@@ -51,14 +51,13 @@ enum Trigger {
   INVALID
 };
 
-namespace triggers {
-
 using TriggerFcn = std::function<Trigger()>;
+
+
+namespace triggers {
 
 TriggerFcn StartOfRun();
 TriggerFcn Once();
-
-TriggerFcn TriggerFactory(std::string trigger);
 
 } // namespace triggers
 

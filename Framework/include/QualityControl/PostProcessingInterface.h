@@ -30,8 +30,8 @@ class PostProcessingInterface
 
   // user gets to know what triggered the init
   virtual void initialize(Trigger) = 0;
-  // user gets to know what triggered the processing
-  virtual void postProcess(Trigger) = 0;
+  // user gets to know what triggered the update
+  virtual void update(Trigger) = 0;
   // user gets to know what triggered the end
   virtual void finalize(Trigger) = 0;
   // store your stuff
