@@ -31,6 +31,10 @@
 using namespace o2;
 using namespace o2::framework;
 
+// The customize() functions are used to declare the executable arguments and to specify custom completion and channel
+// configuration policies. They have to be above `#include "Framework/runDataProcessing.h"` - that header checks if
+// these functions are defined by user and if so, it invokes them. It uses a trick with SFINAE expressions to do that.
+
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
