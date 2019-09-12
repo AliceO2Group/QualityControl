@@ -22,6 +22,7 @@ class ConfigurationInterface;
 namespace o2::quality_control::postprocessing {
 
 
+//todo pretty print
 struct PostProcessingConfig {
   PostProcessingConfig() = default;
   PostProcessingConfig(std::string name, configuration::ConfigurationInterface& config);

@@ -18,6 +18,7 @@
 
 
 //#include <CCDB/CcdbApi.h>
+#include <Framework/ServiceRegistry.h>
 #include "QualityControl/Triggers.h"
 
 namespace o2::quality_control::postprocessing {
@@ -29,11 +30,11 @@ class PostProcessingInterface
   virtual ~PostProcessingInterface() = default;
 
   // user gets to know what triggered the init
-  virtual void initialize(Trigger) = 0;
+  virtual void initialize(Trigger, framework::ServiceRegistry&) = 0;
   // user gets to know what triggered the update
-  virtual void update(Trigger) = 0;
+  virtual void update(Trigger, framework::ServiceRegistry&) = 0;
   // user gets to know what triggered the end
-  virtual void finalize(Trigger) = 0;
+  virtual void finalize(Trigger, framework::ServiceRegistry&) = 0;
   // store your stuff
   virtual void store() = 0;
   // reset your stuff. maybe a trigger needed?

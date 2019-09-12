@@ -24,13 +24,13 @@ PostProcessingConfig::PostProcessingConfig(std::string name, configuration::Conf
   } catch (...) {} // no custom parameters
 
   for (const auto& initTrigger : config.getRecursive("qc.postprocessing." + name + ".initTrigger")) {
-    initTriggers.push_back(initTrigger.second.get_value<std::string>()); //todo check if it works
+    initTriggers.push_back(initTrigger.second.get_value<std::string>());
   }
   for (const auto& updateTrigger : config.getRecursive("qc.postprocessing." + name + ".updateTrigger")) {
-    updateTriggers.push_back(updateTrigger.second.get_value<std::string>()); //todo check if it works
+    updateTriggers.push_back(updateTrigger.second.get_value<std::string>());
   }
   for (const auto& stopTrigger : config.getRecursive("qc.postprocessing." + name + ".stopTrigger")) {
-    stopTriggers.push_back(stopTrigger.second.get_value<std::string>()); //todo check if it works
+    stopTriggers.push_back(stopTrigger.second.get_value<std::string>());
   }
 }
 

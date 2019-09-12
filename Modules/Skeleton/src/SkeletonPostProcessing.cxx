@@ -25,17 +25,17 @@ SkeletonPostProcessing::~SkeletonPostProcessing()
 
 }
 
-void SkeletonPostProcessing::initialize(Trigger)
+void SkeletonPostProcessing::initialize(Trigger, framework::ServiceRegistry&)
 {
 
 }
 
-void SkeletonPostProcessing::update(Trigger)
+void SkeletonPostProcessing::update(Trigger, framework::ServiceRegistry&)
 {
 
 }
 
-void SkeletonPostProcessing::finalize(Trigger)
+void SkeletonPostProcessing::finalize(Trigger, framework::ServiceRegistry&)
 {
 
 }

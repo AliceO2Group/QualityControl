@@ -18,6 +18,8 @@
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingConfig.h"
 #include "QualityControl/Triggers.h"
+#include "QualityControl/DatabaseInterface.h"
+#include <Framework/ServiceRegistry.h>
 
 namespace o2::configuration {
 class ConfigurationInterface;
@@ -52,7 +54,9 @@ class PostProcessingRunner
   std::vector<TriggerFcn> mStopTriggers;
 
   std::unique_ptr<PostProcessingInterface> mTask;
+  framework::ServiceRegistry mServices;
 
+  std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile;
   PostProcessingConfig mConfig;
 };

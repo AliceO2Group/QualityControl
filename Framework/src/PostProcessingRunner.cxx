@@ -13,14 +13,16 @@
 #include "QualityControl/PostProcessingFactory.h"
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/TriggerHelpers.h"
+#include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 
 #include <Configuration/ConfigurationFactory.h>
+
 using namespace o2::configuration;
 using namespace o2::quality_control::core;
+using namespace o2::quality_control::repository;
 
-namespace o2::quality_control::postprocessing
-{
+namespace o2::quality_control::postprocessing {
 
 PostProcessingRunner::PostProcessingRunner(std::string name, std::string configPath) //
   : mConfigFile(ConfigurationFactory::getConfiguration(configPath)),
@@ -35,6 +37,26 @@ PostProcessingRunner::~PostProcessingRunner()
 bool PostProcessingRunner::init()
 {
   QcInfoLogger::GetInstance() << "Initializing PostProcessingRunner" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  try {
+    // configuration of the database
+    mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
+    mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
+    LOG(INFO) << "Database that is going to be used : ";
+    LOG(INFO) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation");
+    LOG(INFO) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
+    mServices.registerService<DatabaseInterface>(mDatabase.get());
+  } catch (
+    std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
+    LOG(ERROR) << "exception : " << e;
+    throw;
+  } catch (...) {
+    std::string diagnostic = boost::current_exception_diagnostic_information();
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic;
+    throw;
+  }
+
 
   // setup user's task
   QcInfoLogger::GetInstance() << "Creating a user task: " << mConfig.taskName << AliceO2::InfoLogger::InfoLogger::endm;
@@ -58,36 +80,41 @@ bool PostProcessingRunner::run()
 {
   QcInfoLogger::GetInstance() << "Running PostProcessingRunner" << AliceO2::InfoLogger::InfoLogger::endm;
 
+  // It is intended that the cases in this switch statement can fall through. Thanks to that, the full cycle can
+  // be completed in one run() invocation, if triggers allow it. The [[fallthrough]] attributes suppress the
+  // corresponding warning messages.
   switch (mState) {
     case TaskState::Created: {
       if (Trigger trigger = trigger_helpers::tryTrigger(mInitTriggers); trigger) {
         QcInfoLogger::GetInstance() << "Initializing user task" << AliceO2::InfoLogger::InfoLogger::endm;
 
-        mTask->initialize(trigger);
+        mTask->initialize(trigger, mServices);
 
         mState = TaskState::Running; // maybe the task should monitor its state by itself?
         mUpdateTriggers = trigger_helpers::createTriggers(mConfig.updateTriggers);
         mStopTriggers = trigger_helpers::createTriggers(mConfig.stopTriggers);
       }
+      [[fallthrough]];
     }
     case TaskState::Running: {
 
       if (Trigger trigger = trigger_helpers::tryTrigger(mUpdateTriggers); trigger) {
         QcInfoLogger::GetInstance() << "Updating user task" << AliceO2::InfoLogger::InfoLogger::endm;
-        mTask->update(trigger);
+        mTask->update(trigger, mServices);
       }
       if (Trigger trigger = trigger_helpers::tryTrigger(mStopTriggers); trigger) {
         QcInfoLogger::GetInstance() << "Finalizing user task" << AliceO2::InfoLogger::InfoLogger::endm;
-        mTask->finalize(trigger);
+        mTask->finalize(trigger, mServices);
         mState = TaskState::Finished; // maybe the task should monitor its state by itself?
       }
+      [[fallthrough]];
     }
-    case TaskState::Finished:{
+    case TaskState::Finished: {
       QcInfoLogger::GetInstance() << "User task finished, returning..." << AliceO2::InfoLogger::InfoLogger::endm;
       return false;
     }
 
-    case TaskState::INVALID:{
+    case TaskState::INVALID: {
       QcInfoLogger::GetInstance() << "User task state INVALID, returning..." << AliceO2::InfoLogger::InfoLogger::endm;
       return false;
     }
