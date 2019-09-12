@@ -123,6 +123,8 @@ class TaskRunner : public framework::Task
   bool mResetAfterPublish;
   std::shared_ptr<ObjectsManager> mObjectsManager;
 
+  std::string validateDetectorName(std::string name);
+
   // consider moving these to TaskConfig
   framework::Inputs mInputSpecs;
   framework::OutputSpec mMonitorObjectsSpec;
@@ -138,8 +140,6 @@ class TaskRunner : public framework::Task
   AliceO2::Common::Timer mStatsTimer;
   int mTotalNumberObjectsPublished;
   AliceO2::Common::Timer mTimerTotalDurationActivity;
-  //  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPCpus;
-  //  ba::accumulator_set<double, ba::features<ba::tag::mean, ba::tag::variance>> mPMems;
 };
 
 } // namespace o2::quality_control::core

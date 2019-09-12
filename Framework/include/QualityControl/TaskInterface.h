@@ -17,6 +17,7 @@
 #ifndef QC_CORE_TASKINTERFACE_H
 #define QC_CORE_TASKINTERFACE_H
 
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -26,6 +27,13 @@
 // QC
 #include "QualityControl/Activity.h"
 #include "QualityControl/ObjectsManager.h"
+
+namespace o2::ccdb
+{
+class CcdbApi;
+}
+
+class TObject;
 
 namespace o2::quality_control::core
 {
@@ -62,6 +70,8 @@ class TaskInterface
   /// Move assignment operator
   TaskInterface& operator=(TaskInterface&& other) /* noexcept */ = default; // error with gcc if noexcept
 
+  virtual void loadCcdb(std::string url) final;
+
   // Definition of the methods for the template method pattern
   virtual void initialize(o2::framework::InitContext& ctx) = 0;
   virtual void startOfActivity(Activity& activity) = 0;
@@ -79,12 +89,15 @@ class TaskInterface
 
  protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
+  TObject* retrieveCondition(std::string path, std::map<std::string, std::string> metadata = {}, long timestamp = -1);
+
   std::unordered_map<std::string, std::string> mCustomParameters;
 
  private:
   // TODO should we rather have a global/singleton for the objectsManager ?
   std::shared_ptr<ObjectsManager> mObjectsManager;
   std::string mName;
+  std::shared_ptr<o2::ccdb::CcdbApi> mCcdbApi;
 };
 
 } // namespace o2::quality_control::core

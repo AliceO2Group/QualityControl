@@ -26,7 +26,7 @@
         },
         "taskParameters": {},
         "location": "remote",
-        "machines": []
+        "machines": [] 
       }
     }
   },
@@ -36,7 +36,6 @@
       "active": "true",
       "machines": [],
       "query": "tst-data:TST/DATA/0",
-      "subSpec": "0",
       "samplingConditions": [],
       "blocking": "false"
     }

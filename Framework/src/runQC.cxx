@@ -18,7 +18,7 @@
 /// topology which can provide data to Data Sampling and QC. This also means that cannot work on its own, as it would
 /// lack input data. A typical usage would be:
 /// \code{.sh}
-/// o2-qc-run-producer | o2-qc-run-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+/// o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
 /// \endcode
 /// Please refer to Framework/example-default.json and Framework/basic.json to see how to configure a QC topology.
 /// To generate only the local part of the topology (which would run on main processing servers) use the '--local' flag.
@@ -30,6 +30,10 @@
 
 using namespace o2;
 using namespace o2::framework;
+
+// The customize() functions are used to declare the executable arguments and to specify custom completion and channel
+// configuration policies. They have to be above `#include "Framework/runDataProcessing.h"` - that header checks if
+// these functions are defined by user and if so, it invokes them. It uses a trick with SFINAE expressions to do that.
 
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
