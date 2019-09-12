@@ -14,15 +14,18 @@
 ///
 
 #include "QualityControl/TriggerHelpers.h"
-
+#include <boost/algorithm/string.hpp>
 
 namespace o2::quality_control::postprocessing::trigger_helpers
 {
 
 TriggerFcn TriggerFactory(std::string trigger) {
-  if (trigger == "SOR" || trigger == "StartOfRun") {
+  // todo: should we accept many versions of trigger names?
+  boost::algorithm::to_lower(trigger);
+
+  if (trigger == "sor" || trigger == "startofrun") {
     return triggers::StartOfRun();
-  } else if (trigger == "Once") {
+  } else if (trigger == "once") {
     return triggers::Once();
   } else {
     throw std::runtime_error("unknown trigger: " + trigger);
@@ -43,7 +46,7 @@ Trigger tryTrigger(std::vector<TriggerFcn>& triggerFcns)
 std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNames)
 {
   std::vector<TriggerFcn> triggerFcns;
-  for (const auto& triggerName : triggerNames {
+  for (const auto& triggerName : triggerNames) {
     triggerFcns.push_back(TriggerFactory(triggerName));
   }
   return std::move(triggerFcns);

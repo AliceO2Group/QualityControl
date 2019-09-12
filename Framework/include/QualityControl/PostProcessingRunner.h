@@ -31,9 +31,9 @@ class PostProcessingRunner
   PostProcessingRunner(std::string name, std::string configPath);
   ~PostProcessingRunner();
 
-  void init();
+  bool init();
   // one iteration over the event loop
-  void run();
+  bool run();
   // other state transitions
   void stop(); //todo can a task request a stop transition in OCC plugin and DPL?
   void reset();

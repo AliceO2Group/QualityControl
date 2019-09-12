@@ -58,6 +58,6 @@ PostProcessingInterface* PostProcessingFactory::create(const PostProcessingConfi
 //  result->setObjectsManager(objectsManager);
 //  result->setCustomParameters(taskConfig.customParameters);
   logger << "QualityControl Module " << config.moduleName << " loaded " << AliceO2::InfoLogger::InfoLogger::endm;
-  return nullptr;
+  return result;
 }
 } // namespace o2::quality_control::postprocessing

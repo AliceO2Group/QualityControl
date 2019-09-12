@@ -119,7 +119,8 @@ set(EXE_SRCS
     src/runReadout.cxx
     src/runMergerTest.cxx
     src/runReadoutForDataDump.cxx
-    src/runRepositoryBenchmark.cxx)
+    src/runRepositoryBenchmark.cxx
+    src/runPostProcessing.cxx)
 
 set(EXE_NAMES
     o2-qc-info-service
@@ -132,7 +133,8 @@ set(EXE_NAMES
     o2-qc-run-readout
     o2-qc-run-merger-test
     o2-qc-run-readout-for-data-dump
-    o2-qc-repository-benchmark)
+    o2-qc-repository-benchmark
+    o2-qc-run-postprocessing)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
@@ -147,7 +149,8 @@ set(EXE_OLD_NAMES
     qcRunReadout
     runMergerTest
     qcRunReadoutForDataDump
-    repositoryBenchmark)
+    repositoryBenchmark
+    qcRunPostProcessing)
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)
