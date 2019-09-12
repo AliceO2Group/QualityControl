@@ -23,6 +23,8 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
 {
   DaqTask task;
   TaskConfig config;
+  config.consulUrl = "http://consul-test.cern.ch:8500";
+  config.taskName = "qcDaqTest";
   auto manager = make_shared<ObjectsManager>(config);
   task.setObjectsManager(manager);
   //  o2::framework::InitContext ctx;
