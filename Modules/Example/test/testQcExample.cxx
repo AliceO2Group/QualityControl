@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(insantiate_task)
   TaskConfig config;
   config.consulUrl = "http://consul-test.cern.ch:8500";
   config.taskName = "qcExampleTest";
-  auto manager = make_shared<ObjectsManager>(config);
+  auto manager = make_shared<ObjectsManager>(config, true);
   task.setObjectsManager(manager);
   //  task.initialize();// TODO
 
