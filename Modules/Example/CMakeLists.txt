@@ -37,7 +37,7 @@ foreach(test ${TEST_SRCS})
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_property(TARGET ${test_name}
                PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
 endforeach()
 
 target_sources(testFactory PRIVATE ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)

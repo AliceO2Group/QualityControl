@@ -37,5 +37,7 @@ foreach(test ${TEST_SRCS})
   target_link_libraries(${test_name}
                         PRIVATE QcSkeleton Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name})
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
+  set_property(TARGET ${test_name}
+    PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
 endforeach()
