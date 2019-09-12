@@ -33,7 +33,7 @@ ObjectsManager::ObjectsManager(TaskConfig& taskConfig, bool noDiscovery) : mTask
   mMonitorObjects->SetOwner(true);
 
   // register with the discovery service
-  if(!noDiscovery) {
+  if (!noDiscovery) {
     mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName);
   } else {
     QcInfoLogger::GetInstance() << "Service Discovery disabled" << infologger::endm;
