@@ -55,7 +55,8 @@ add_library(QualityControl
             src/TriggerHelpers.cxx
             src/PostProcessingRunner.cxx
             src/PostProcessingFactory.cxx
-            src/PostProcessingConfig.cxx)
+            src/PostProcessingConfig.cxx
+            src/TrendingTask.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -103,6 +104,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/HistoMerger.h
                             include/QualityControl/InfrastructureGenerator.h
                             include/QualityControl/PostProcessingInterface.h
+                            include/QualityControl/TrendingTask.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 
@@ -218,9 +220,11 @@ set(TEST_SRCS
     test/testPostProcessingRunner.cxx
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
+    test/testTrendingTask.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""
