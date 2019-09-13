@@ -71,7 +71,6 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Some examples:
 
   // 1. In a loop
-
   for (auto&& input : ctx.inputs()) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {

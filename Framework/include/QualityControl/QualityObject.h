@@ -21,7 +21,7 @@ class QualityObject : public TObject
 {
  public:
   /// Default constructor
-  QualityObject(const std::string& checkerName, framework::Inputs inputs);
+  QualityObject(const std::string& checkerName, o2::framework::Inputs inputs);
   QualityObject(const std::string& checkerName);
   QualityObject();
 
@@ -56,7 +56,7 @@ class QualityObject : public TObject
   void updateQuality(Quality quality);
   Quality getQuality();
 
-  void setInputs(framework::Inputs inputs);
+  void setInputs(o2::framework::Inputs inputs);
   std::vector<std::string> getInputs() {return mInputs;}
 
   /// \brief Add key value pair that will end up in the database

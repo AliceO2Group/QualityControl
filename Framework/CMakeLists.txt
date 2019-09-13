@@ -9,6 +9,7 @@ configure_file("include/QualityControl/Version.h.in"
 
 add_library(QualityControlTypes
   src/MonitorObject.cxx
+  src/QualityObject.cxx
   src/Quality.cxx
 )
 
@@ -23,10 +24,13 @@ target_link_libraries(QualityControlTypes
   PUBLIC
   ROOT::Hist
   AliceO2::Common
+  FairMQ::FairMQ
+  O2::Framework
 )
 
 add_root_dictionary(QualityControlTypes
   HEADERS include/QualityControl/MonitorObject.h
+  include/QualityControl/QualityObject.h
   include/QualityControl/Quality.h
   LINKDEF include/QualityControl/TypesLinkDef.h
   BASENAME QualityControlTypes
@@ -50,7 +54,6 @@ add_library(QualityControl
             src/RepositoryBenchmark.cxx
             src/HistoMerger.cxx
             src/InfrastructureGenerator.cxx
-            src/QualityObject.cxx
             src/Check.cxx
             src/ServiceDiscovery.cxx)
 
@@ -198,7 +201,7 @@ set(TEST_SRCS
     test/testMonitorObject.cxx
     test/testPublisher.cxx
     test/testQcInfoLogger.cxx
-    #  test/testInfrastructureGenerator.cxx
+    test/testInfrastructureGenerator.cxx
     test/testTaskInterface.cxx
     test/testTaskRunner.cxx
     test/testCheckInterface.cxx
@@ -244,8 +247,8 @@ foreach(i RANGE ${count})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
 
-foreach(t testTaskInterface testWorkflow testTaskRunner)
-  #        testInfrastructureGenerator)
+foreach(t testTaskInterface testWorkflow testTaskRunner
+        testInfrastructureGenerator)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
