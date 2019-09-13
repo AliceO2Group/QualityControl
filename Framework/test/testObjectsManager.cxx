@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(invalid_url_test)
   TaskConfig config;
   config.taskName = "test";
   config.consulUrl = "bad-url:1234";
-  ObjectsManager objectsManager(config);
+  ObjectsManager objectsManager(config, true);
 }
 
 BOOST_AUTO_TEST_CASE(duplicate_object_test)
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(duplicate_object_test)
   TaskConfig config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
-  ObjectsManager objectsManager(config);
+  ObjectsManager objectsManager(config, true);
   TObjString s("content");
   objectsManager.startPublishing(&s);
   BOOST_CHECK_THROW(objectsManager.startPublishing(&s), o2::quality_control::core::DuplicateObjectError);
@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(unpublish_test)
 {
   TaskConfig config;
   config.taskName = "test";
-  ObjectsManager objectsManager(config);
+  ObjectsManager objectsManager(config, true);
   TObjString s("content");
   objectsManager.startPublishing(&s);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(getters_test)
   TaskConfig config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
-  ObjectsManager objectsManager(config);
+  ObjectsManager objectsManager(config, true);
 
   TObjString s("content");
   TH1F h("histo", "h", 100, 0, 99);
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(metadata_test)
   TaskConfig config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
-  ObjectsManager objectsManager(config);
+  ObjectsManager objectsManager(config, true);
 
   TObjString s("content");
   TH1F h("histo", "h", 100, 0, 99);

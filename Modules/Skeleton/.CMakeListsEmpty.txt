@@ -28,4 +28,6 @@ add_executable(testQcSkeleton test/testQcSkeleton.cxx)
 target_link_libraries(testQcSkeleton
                       PRIVATE QcSkeleton Boost::unit_test_framework)
 add_test(NAME testQcSkeleton COMMAND testQcSkeleton)
-set_tests_properties(testQcSkeleton PROPERTIES TIMEOUT 60)
+set_property(TARGET ${test_name}
+    PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+set_tests_properties(testQcSkeleton PROPERTIES TIMEOUT 20)

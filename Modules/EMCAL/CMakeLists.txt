@@ -46,5 +46,7 @@ foreach(test ${TEST_SRCS})
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name} PRIVATE ${MODULE_NAME} Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name})
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
+  set_property(TARGET ${test_name}
+    PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
 endforeach()
