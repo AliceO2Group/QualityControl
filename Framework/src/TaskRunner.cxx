@@ -27,7 +27,7 @@
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
-//#include <DetectorsCommonDataFormats/DetID.h>
+#include <Framework/Version.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -57,6 +57,9 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     mCycleNumber(0),
     mTotalNumberObjectsPublished(0)
 {
+  // Log the version
+  LOG(INFO) << "QC version " << o2::quality_control::core::Version::getString();
+
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   populateConfig(taskName);

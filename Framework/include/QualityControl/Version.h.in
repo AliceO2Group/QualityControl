@@ -85,19 +85,6 @@ public:
     return version.str();
   }
 
-  /// @return the VCS revision.
-  static std::string getRevision()
-  {
-    return QUALITYCONTROL_VCS_REVISION;
-  }
-
-  /// @return the current QualityControl version plus the VCS revision (MM.mm.pp.rev).
-  static std::string getRevString()
-  {
-    std::ostringstream version;
-    version << getString() << '.' << QUALITYCONTROL_VCS_REVISION;
-    return version.str();
-  }
 };
 
 } // namespace o2::quality_control::core
