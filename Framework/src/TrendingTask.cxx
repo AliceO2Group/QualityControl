@@ -13,30 +13,79 @@
 /// \author  Piotr Konopka
 ///
 
-#include <QualityControl/TrendingTask.h>
+#include "QualityControl/TrendingTask.h"
+#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/DatabaseInterface.h"
+#include "QualityControl/MonitorObject.h"
+#include <TH1.h>
+//#include <TGraph.h>
+#include <TCanvas.h>
+#include <ctime>
+using namespace o2::quality_control;
+using namespace o2::quality_control::core;
+using namespace o2::quality_control::postprocessing;
 
-void o2::quality_control::postprocessing::TrendingTask::initialize(Trigger, framework::ServiceRegistry&)
+const Int_t TrendSizeBase = 10;
+
+void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
+{
+  // todo: react to the configuration: TGraph, TTree, ApacheArrow stuff
+  mTrend = std::make_unique<TGraph>();
+  if (!mTrend) {
+    throw std::runtime_error("Could not create TGraph");
+  }
+  mPoints = 0;
+  mTrend->SetName("MeanTrend");
+  mTrend->Expand(TrendSizeBase);
+
+  mDatabase = &services.get<repository::DatabaseInterface>();
+
+  trend();
+}
+
+void TrendingTask::update(Trigger, framework::ServiceRegistry&)
+{
+  trend();
+  store();
+}
+
+void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
+{
+
+  store();
+}
+
+void TrendingTask::store()
+{
+  QcInfoLogger::GetInstance() << "Storing TGraph" << AliceO2::InfoLogger::InfoLogger::endm;
+  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), "ExampleTrend", "TST");
+  mo->setIsOwner(false);
+  mDatabase->store(mo);
+  TCanvas* c = new TCanvas();
+  mTrend->Draw(); //("trend.png");
+  c->SaveAs("trend.png");
+  delete c;
+}
+
+void TrendingTask::reset()
 {
 
 }
 
-void o2::quality_control::postprocessing::TrendingTask::update(Trigger, framework::ServiceRegistry&)
+void TrendingTask::trend()
 {
+  core::MonitorObject* mo = mDatabase->retrieve("qc/TST/QcTask", "example"); // fixme: use config values
+  TObject* obj = mo ? mo->getObject() : nullptr;
 
-}
+  if (obj && strncmp(obj->ClassName(), "TH1", 3) == 0) {
+    Double_t mean = reinterpret_cast<TH1*>(obj)->GetMean();
+    Double_t x = static_cast<Double_t>(time(nullptr));
+    QcInfoLogger::GetInstance() << "New trend value (" << x << ", " << mean  << ")" << AliceO2::InfoLogger::InfoLogger::endm;
 
-void o2::quality_control::postprocessing::TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
-{
-
-}
-
-void o2::quality_control::postprocessing::TrendingTask::store()
-{
-
-}
-
-void o2::quality_control::postprocessing::TrendingTask::reset()
-{
-
+    mTrend->SetPoint(mPoints++, x, mean);
+    if (mPoints >= mTrend->GetN()) {
+      mTrend->Expand(mTrend->GetN() + TrendSizeBase);
+    }
+  }
 }
 

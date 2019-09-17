@@ -52,7 +52,7 @@ int main(int argc, const char *argv[])
       return 1;
     }
 
-    while (runner.run());
+    while (runner.run()) { sleep(10); };
     return 0;
   }
   catch (const bpo::error &ex)

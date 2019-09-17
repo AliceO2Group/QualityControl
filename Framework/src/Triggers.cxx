@@ -57,6 +57,11 @@ TriggerFcn Once() {
   };
 }
 
+TriggerFcn Always() {
+  return []() mutable -> Trigger {
+    return Trigger::Always;
+  };
+}
 
 
 } // namespace triggers

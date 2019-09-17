@@ -27,6 +27,8 @@ TriggerFcn TriggerFactory(std::string trigger) {
     return triggers::StartOfRun();
   } else if (trigger == "once") {
     return triggers::Once();
+  } else if (trigger == "always") {
+    return triggers::Always();
   } else {
     throw std::runtime_error("unknown trigger: " + trigger);
   }
@@ -36,7 +38,7 @@ TriggerFcn TriggerFactory(std::string trigger) {
 Trigger tryTrigger(std::vector<TriggerFcn>& triggerFcns)
 {
   for(auto& triggerFcn : triggerFcns) {
-    if (Trigger trigger = triggerFcn(); trigger) {
+    if (Trigger trigger = triggerFcn()) {
       return trigger;
     }
   }

@@ -19,8 +19,13 @@
 #include <memory>
 #include <functional>
 #include <TObject.h>
-
+#include <TGraph.h>
 #include "QualityControl/PostProcessingInterface.h"
+
+namespace o2::quality_control::repository {
+class DatabaseInterface;
+}
+//class TGraph;
 
 using ReduceFcn = std::function<std::pair<double, double>(TObject*)>; // value and error returned
 
@@ -40,11 +45,13 @@ class TrendingTask : public PostProcessingInterface {
   private:
   // maybe use merger to do the job?
 //  void trend(TObject* newEntry);
+  void trend();
 
   std::string mStorage = "TGraph";
-  std::unique_ptr<TObject> mTrend;
+  std::unique_ptr<TGraph> mTrend;
+  Int_t mPoints = 0;
   ReduceFcn mReduceFcn;
-
+  repository::DatabaseInterface* mDatabase = nullptr;
 };
 
 } // namespace o2::quality_control::postprocessing

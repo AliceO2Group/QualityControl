@@ -39,15 +39,16 @@ namespace o2::quality_control::postprocessing
 //  Once, // only triggers first time it is asked
 
 enum Trigger {
-  No = 0, // should cast to boolean false
-  Once, // only triggers first time it is asked
-  Always, // always triggers
+  No = 0, // casts to boolean false
+  Once, // triggers only first time it is asked
+  Always, // triggers always
   StartOfRun,
   EndOfRun,
   StartOfFill,
   EndOfFill,
   Periodic,
   NewObject,
+  SIGINT, // or SIGTERM, user wanted to exit
   INVALID
 };
 
@@ -58,6 +59,7 @@ namespace triggers {
 
 TriggerFcn StartOfRun();
 TriggerFcn Once();
+TriggerFcn Always();
 
 } // namespace triggers
 
