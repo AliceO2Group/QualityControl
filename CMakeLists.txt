@@ -12,10 +12,9 @@ include(GNUInstallDirs)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 0.13.0 # TODO update this automatically when there are new
-                       # releases
+        VERSION 0.18.2 # TODO update this automatically when there are new releases
         DESCRIPTION "O2 Data Quality Control Framework"
-        LANGUAGES CXX C)
+        LANGUAGES CXX)
 
 # Set CMAKE_INSTALL_LIBDIR explicitly to lib (to avoid lib64 on CC7)
 set(CMAKE_INSTALL_LIBDIR lib)

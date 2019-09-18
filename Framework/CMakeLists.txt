@@ -2,7 +2,7 @@
 # variables. We don't want to polute our source tree with it, thus putting it in
 # binary tree.
 configure_file("include/QualityControl/Version.h.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/include/${MODULE_NAME}/Version.h"
+               "${CMAKE_CURRENT_BINARY_DIR}/include/QualityControl/Version.h"
                @ONLY)
 
 # ---- Library for the types ----
@@ -60,7 +60,8 @@ target_include_directories(
   QualityControl
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 target_link_libraries(QualityControl
                       PUBLIC Boost::boost
