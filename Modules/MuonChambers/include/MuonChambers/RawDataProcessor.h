@@ -48,6 +48,7 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
   void reset() override;
 
  private:
+  int count;
   MuonChambersDataDecoder mDecoder;
   uint64_t nhits[24][40][64];
   double pedestal[24][40][64];
@@ -61,6 +62,8 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
 
   std::map<int, TH2F*> mHistogramPedestalsDE;
   std::map<int, TH2F*> mHistogramNoiseDE;
+  std::map<int, TH2F*> mHistogramPedestalsXY;
+  std::map<int, TH2F*> mHistogramNoiseXY;
 };
 
 } // namespace muonchambers
