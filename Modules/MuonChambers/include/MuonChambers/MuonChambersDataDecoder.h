@@ -9,6 +9,9 @@
 #include "QualityControl/TaskInterface.h"
 #include "MuonChambers/sampa_header.h"
 
+#define MCH_MAX_CRU_ID 4
+#define MCH_MAX_CRU_IN_FLP 3
+
 using namespace o2::quality_control::core;
 
 namespace o2
@@ -83,14 +86,17 @@ class MuonChambersDataDecoder
   // Definition of the methods for the template method pattern
   void initialize();
   void processData(const char* buf, size_t size);
+  void decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int link_id);
+  void decodeUL(uint32_t* payload_buf, size_t nWords, int cru_id, int dpw_id);
   void clearHits();
   std::vector<SampaHit>& getHits() { return mHits; }
   void reset();
 
  private:
   int hb_orbit;
-  DualSampa ds[24][40];
-  DualSampaGroup dsg[24][8];
+  DualSampa ds[MCH_MAX_CRU_ID][24][40];
+  DualSampaGroup dsg[MCH_MAX_CRU_ID][24][8];
+  int ds_enable[MCH_MAX_CRU_IN_FLP][24][40];
   std::vector<SampaHit> mHits;
   int nFrames;
 };
