@@ -127,7 +127,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
 
 void InfrastructureGenerator::printVersion()
 {
-  // Log the version
+  // Log the version number
   QcInfoLogger::GetInstance() << "QC version " << o2::quality_control::core::Version::getString() << infologger::endm;
 }
 
