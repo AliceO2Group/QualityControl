@@ -50,22 +50,25 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
     return;
   }
   string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
-  path += "streamerinfos.root";
-  TFile file(path.data(), "READ");
-  if (file.IsZombie()) {
-    string s = string("Cannot find ") + path;
-    LOG(ERROR) << s;
-    BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
-  }
-  TIter next(file.GetListOfKeys());
-  TKey* key;
-  while ((key = (TKey*)next())) {
-    TClass* cl = gROOT->GetClass(key->GetClassName());
-    if (!cl->InheritsFrom("TStreamerInfo"))
-      continue;
-    auto* si = (TStreamerInfo*)key->ReadObj();
-    LOG(DEBUG) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName();
-    si->BuildCheck();
+  vector<string> filenames = {"streamerinfos.root", "streamerinfos_v017.root"};
+  for(auto filename : filenames) {
+    string localPath = path + filename;
+    TFile file(path.data(), "READ");
+    if (file.IsZombie()) {
+      string s = string("Cannot find ") + path;
+      LOG(ERROR) << s;
+      BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
+    }
+    TIter next(file.GetListOfKeys());
+    TKey* key;
+    while ((key = (TKey*)next())) {
+      TClass* cl = gROOT->GetClass(key->GetClassName());
+      if (!cl->InheritsFrom("TStreamerInfo"))
+        continue;
+      auto* si = (TStreamerInfo*)key->ReadObj();
+      LOG(DEBUG) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName();
+      si->BuildCheck();
+    }
   }
 }
 

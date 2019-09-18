@@ -323,6 +323,7 @@ install(FILES example-default.json
               readoutForDataDump.json
               script/RepoCleaner/config.yaml
               streamerinfos.root
+              streamerinfos_v017.root
         DESTINATION etc)
 
 install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
@@ -333,4 +334,4 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
 file(COPY test/testSharedConfig.json test/testWorkflow.json
      DESTINATION ${CMAKE_BINARY_DIR}/tests/)
 
-file(COPY streamerinfos.root DESTINATION ${CMAKE_BINARY_DIR}/etc/)
+file(COPY streamerinfos.root streamerinfos_v017.root DESTINATION ${CMAKE_BINARY_DIR}/etc/)
