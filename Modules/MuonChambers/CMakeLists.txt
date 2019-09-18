@@ -6,6 +6,7 @@ set(SRCS
   src/MuonChambersMapping.cxx
   src/MuonChambersDataDecoder.cxx
   src/RawDataProcessor.cxx
+  src/PhysicsDataProcessor.cxx
   src/MCHCheckPedestals.cxx
 )
 
@@ -13,6 +14,7 @@ set(HEADERS
   include/MuonChambers/MuonChambersMapping.h
   include/MuonChambers/MuonChambersDataDecoder.h
   include/MuonChambers/RawDataProcessor.h
+  include/MuonChambers/PhysicsDataProcessor.h
   include/MuonChambers/MCHCheckPedestals.h
 )
 
@@ -26,7 +28,8 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC QualityControl)
+#target_link_libraries(${MODULE_NAME} PUBLIC QualityControl)
+target_link_libraries(${MODULE_NAME} PUBLIC QualityControl O2::MCHMappingImpl3)
 
 install(
         TARGETS ${MODULE_NAME}
@@ -43,6 +46,7 @@ add_root_dictionary(${MODULE_NAME}
                     HEADERS include/MuonChambers/MuonChambersMapping.h
                             include/MuonChambers/MuonChambersDataDecoder.h
                             include/MuonChambers/RawDataProcessor.h
+                            include/MuonChambers/PhysicsDataProcessor.h
                             include/MuonChambers/MCHCheckPedestals.h
                             include/MuonChambers/sampa_header.h
                     LINKDEF include/MuonChambers/LinkDef.h
