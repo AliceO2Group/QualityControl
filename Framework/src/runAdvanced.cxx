@@ -41,7 +41,9 @@ using namespace o2::framework;
 
 // Additional configuration of the topology, which is done by implementing `customize` functions and placing them
 // before `runDataProcessing.h` header. In this case, both Dispatcher and Merger are configured to accept incoming
-// messages without waiting for the rest of inputs.
+// messages without waiting for the rest of inputs. The `customize` functions have to be above
+// `#include "Framework/runDataProcessing.h"` - that header checks if these functions are defined by user and if so, it
+// invokes them. It uses a trick with SFINAE expressions to do that.
 void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);

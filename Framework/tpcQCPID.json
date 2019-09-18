@@ -11,28 +11,22 @@
       "Activity": {
         "number": "42",
         "type": "2"
-      },
-      "monitoring": {
-	    "url": "infologger:///debug?qc"
-      },
-      "consul": {
-        "url": "http://consul-test.cern.ch:8500"
-      },
-      "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
       }
     },
     "tasks": {
-      "daqTask": {
+      "TPCQCPID": {
         "active": "true",
-        "className": "o2::quality_control_modules::daq::DaqTask",
-        "moduleName": "QcDaq",
-        "detectorName": "DAQ",
+        "className": "o2::quality_control_modules::tpc::PID",
+        "moduleName": "QcTPC",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "readout"
+          "name": "tpc-tracks"
+        },
+        "taskParameters": {
+          "nothing": "rien"
         },
         "location": "remote"
       }
@@ -40,15 +34,22 @@
   },
   "dataSamplingPolicies": [
     {
-      "id": "readout",
+      "id": "tpc-tracks",
       "active": "true",
       "machines": [],
-      "query" : "readout:ROUT/RAWDATA",
+      "dataHeaders": [
+        {
+          "binding": "tpc-sampled-tracks",
+          "dataOrigin": "TPC",
+          "dataDescription": "TRACKS"
+        }
+      ],
+      "subSpec": "0",
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "0.1",
-          "seed": "1441"
+          "fraction": "0.9",
+          "seed": "1234"
         }
       ],
       "blocking": "false"

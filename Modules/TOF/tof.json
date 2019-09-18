@@ -17,6 +17,9 @@
       },
       "consul": {
         "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
       }
     },
     "tasks": {
@@ -24,6 +27,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::tof::TOFTask",
         "moduleName": "QcTOF",
+        "detectorName": "TOF",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",

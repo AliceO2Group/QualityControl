@@ -19,6 +19,10 @@
 #include <TClass.h>
 #include <TROOT.h>
 #include <TSystem.h>
+// Boost
+#include <boost/filesystem/path.hpp>
+
+namespace bfs = boost::filesystem;
 
 namespace o2::quality_control::core
 {
@@ -29,7 +33,7 @@ TaskInterface* TaskFactory::create(TaskConfig& taskConfig, std::shared_ptr<Objec
   QcInfoLogger& logger = QcInfoLogger::GetInstance();
 
   // Load the library
-  std::string library = "lib" + taskConfig.moduleName;
+  std::string library = bfs::path(taskConfig.moduleName).is_absolute() ? taskConfig.moduleName : "lib" + taskConfig.moduleName;
   logger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
   int libLoaded = gSystem->Load(library.c_str(), "", true);
   if (libLoaded < 0) {

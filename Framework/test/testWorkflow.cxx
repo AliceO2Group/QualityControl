@@ -38,9 +38,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     Outputs{
       { { "tst-data" }, "TST", "DATA" } },
     AlgorithmSpec{
-      [](ProcessingContext& /*pctx*/) {
+      [](ProcessingContext& pctx) {
         usleep(100000);
-//        auto data = pctx.outputs().make<int>(OutputRef{ "tst-data" }, 1);
+        pctx.outputs().make<int>(OutputRef{ "tst-data" }, 1);
       } }
   };
   specs.push_back(producer);

@@ -17,6 +17,9 @@
         },
         "consul": {
           "url": "http://consul-test.cern.ch:8500"
+        },
+        "conditionDB": {
+          "url": "ccdb-test.cern.ch:8080"
         }
       },
       "tasks": {
@@ -24,6 +27,7 @@
           "active": "true",
           "className": "o2::quality_control_modules::emcal::DigitsQcTask",
           "moduleName": "QcEMCAL",
+          "detectorName": "EMC",
           "cycleDurationSeconds": "10",
           "maxNumberCycles": "-1",
           "dataSource": {

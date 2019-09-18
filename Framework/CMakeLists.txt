@@ -108,6 +108,7 @@ set(EXE_SRCS
     src/runDataProducer.cxx
     src/runQC.cxx
     src/runBasic.cxx
+    src/runTPCQCPID.cxx
     src/runAdvanced.cxx
     src/runReadout.cxx
     src/runMergerTest.cxx
@@ -118,8 +119,9 @@ set(EXE_NAMES
     o2-qc-info-service
     o2-qc-info-service-dump
     o2-qc-run-producer
-    o2-qc-run-qc
+    o2-qc
     o2-qc-run-basic
+    o2-qc-run-tpcpid
     o2-qc-run-advanced
     o2-qc-run-readout
     o2-qc-run-merger-test
@@ -132,8 +134,9 @@ set(EXE_OLD_NAMES
     qcInfoService
     qcInfoServiceDump
     qcRunProducer
-    qcRunQC
+    o2-qc-run-qc
     qcRunBasic
+    qcRunTPCPID
     qcRunAdvanced
     qcRunReadout
     runMergerTest
@@ -157,7 +160,7 @@ foreach(i RANGE ${count})
   list(GET EXE_NAMES ${i} name)
   list(GET EXE_OLD_NAMES ${i} oldname)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE QualityControl CURL::libcurl)
+  target_link_libraries(${name} PRIVATE QualityControl CURL::libcurl ROOT::Tree)
   install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
 
@@ -246,16 +249,12 @@ foreach(t testTaskInterface testWorkflow testTaskRunner
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
 endforeach()
 
-set_property(TEST testTaskInterface PROPERTY LABELS slow)
-set_property(TEST testWorkflow PROPERTY TIMEOUT 120)
+set_property(TEST testWorkflow PROPERTY TIMEOUT 10)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
-set_property(TEST testObjectsManager PROPERTY TIMEOUT 120)
+set_property(TEST testObjectsManager PROPERTY TIMEOUT 60)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
-# Temporarily disable tests that fail on CI
-set_property(TEST testWorkflow PROPERTY LABELS manual)
-set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
-set_property(TEST testCcdbDatabase PROPERTY LABELS manual)
-set_property(TEST testDbFactory PROPERTY LABELS manual)
+set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
+set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
 
 # ---- Install ----
 
@@ -316,6 +315,7 @@ install(FILES example-default.json
               alfa.json
               dataDump.json
               basic.json
+              tpcQCPID.json
               basic-no-sampling.json
               advanced.json
               readout.json
