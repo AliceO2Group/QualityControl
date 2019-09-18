@@ -2,7 +2,7 @@
 # variables. We don't want to polute our source tree with it, thus putting it in
 # binary tree.
 configure_file("include/QualityControl/Version.h.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/include/Framework/Version.h"
+               "${CMAKE_CURRENT_BINARY_DIR}/include/QualityControl/Version.h"
                @ONLY)
 
 # ---- Library for the types ----

@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   QualityControlFactory.cxx
+/// \file   InfrastructureGenerator.cxx
 /// \author Piotr Konopka
 ///
 
@@ -19,6 +19,8 @@
 #include "QualityControl/HistoMerger.h"
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskRunnerFactory.h"
+#include "QualityControl/Version.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <Configuration/ConfigurationFactory.h>
@@ -36,6 +38,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   WorkflowSpec workflow;
   TaskRunnerFactory taskRunnerFactory;
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
+  printVersion();
 
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     if (taskConfig.get<bool>("active") && taskConfig.get<std::string>("location") == "local") {
@@ -71,6 +74,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 {
   WorkflowSpec workflow;
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
+  printVersion();
 
   TaskRunnerFactory taskRunnerFactory;
   CheckerFactory checkerFactory;
@@ -119,6 +123,12 @@ void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSp
 void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
   TaskRunnerFactory::customizeInfrastructure(policies);
+}
+
+void InfrastructureGenerator::printVersion()
+{
+  // Log the version
+  QcInfoLogger::GetInstance() << "QC version " << o2::quality_control::core::Version::getString() << infologger::endm;;
 }
 
 } // namespace o2::quality_control::core
