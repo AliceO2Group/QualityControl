@@ -73,6 +73,28 @@ bool MapCRU::addDSMapping(uint32_t link_id, uint32_t ds_addr, uint32_t de, uint3
 
 
 
+bool MapCRU::readDSMapping(uint32_t cru_id, std::string mapFile)
+{
+  std::ifstream file;
+  file.open(mapFile);
+  if (!file)
+  {
+    std::cerr << "Can't open file "<<mapFile<<std::endl;
+    return false;
+  }
+
+  int cid, link_id, ds_addr, de, ds_id;
+  while(!file.eof())
+  {
+    file >> cid >> link_id >> ds_addr >> de >> ds_id;
+    if(cid != cru_id) continue;
+    mDsMap[link_id][ds_addr].mDE = de;
+    mDsMap[link_id][ds_addr].mIndex = ds_id;
+    mDsMap[link_id][ds_addr].mBad = 0;
+  }
+}
+
+
 bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMapfile, bool newMapping)
 {
   int manu2ds[64]={62,61,63,60,59,55,58,57,56,54,50,46,42,39,37,41,
@@ -157,6 +179,15 @@ bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMap
   }
   filenbend.close();
 
+  return true;
+}
+
+
+bool MapCRU::getDSMapping(uint32_t cru_link, uint32_t ds_addr, uint32_t& de, uint32_t& dsid)
+{
+  if( mDsMap[cru_link][ds_addr].mBad == 1 ) return false;
+  de = mDsMap[cru_link][ds_addr].mDE;
+  dsid = mDsMap[cru_link][ds_addr].mIndex;
   return true;
 }
 
