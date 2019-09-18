@@ -50,12 +50,13 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
     return;
   }
   string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
-  vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
-  for (auto filename : filenames) {
+  vector<string> filenames = {"streamerinfos.root", "streamerinfos_v017.root"};
+  for(auto filename : filenames) {
     string localPath = path + filename;
-    TFile file(path.data(), "READ");
+    LOG(INFO) << "Loading streamerinfos from : " << localPath;
+    TFile file(localPath.data(), "READ");
     if (file.IsZombie()) {
-      string s = string("Cannot find ") + path;
+      string s = string("Cannot find ") + localPath;
       LOG(ERROR) << s;
       BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
     }
