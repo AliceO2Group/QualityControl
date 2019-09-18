@@ -50,8 +50,8 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
     return;
   }
   string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
-  vector<string> filenames = {"streamerinfos.root", "streamerinfos_v017.root"};
-  for(auto filename : filenames) {
+  vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
+  for (auto filename : filenames) {
     string localPath = path + filename;
     TFile file(path.data(), "READ");
     if (file.IsZombie()) {
