@@ -1,6 +1,6 @@
 ///
 /// \file   DigitsQcTask.h
-/// \author Markus Fasel
+/// \author Markus Fasel, Cristina Terrevoli
 ///
 
 #ifndef QC_MODULE_EMCAL_DIGITSQCTASK_H
