@@ -35,10 +35,6 @@ class PostProcessingInterface
   virtual void update(Trigger, framework::ServiceRegistry&) = 0;
   // user gets to know what triggered the end
   virtual void finalize(Trigger, framework::ServiceRegistry&) = 0;
-  // store your stuff
-  virtual void store() = 0;
-  // reset your stuff. maybe a trigger needed?
-  virtual void reset() = 0;
 
   // todo: ccdb api which does not allow to delete?
 

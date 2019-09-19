@@ -40,13 +40,4 @@ void SkeletonPostProcessing::finalize(Trigger, framework::ServiceRegistry&)
 
 }
 
-void SkeletonPostProcessing::store()
-{
-
-}
-
-void SkeletonPostProcessing::reset()
-{
-
-}
 } // namespace o2::quality_control_modules::skeleton

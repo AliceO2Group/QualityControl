@@ -39,13 +39,12 @@ class TrendingTask : public PostProcessingInterface {
   void initialize(Trigger, framework::ServiceRegistry&) override;
   void update(Trigger, framework::ServiceRegistry&) override;
   void finalize(Trigger, framework::ServiceRegistry&) override;
-  void store() override;
-  void reset() override;
 
   private:
   // maybe use merger to do the job?
 //  void trend(TObject* newEntry);
   void trend();
+  void store();
 
   std::string mStorage = "TGraph";
   std::unique_ptr<TGraph> mTrend;

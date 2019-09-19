@@ -39,10 +39,6 @@ class SkeletonPostProcessing final : public quality_control::postprocessing::Pos
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   // user gets to know what triggered the end
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
-  // store your stuff
-  void store() override;
-  // reset your stuff. maybe a trigger needed?
-  void reset() override;
 
   private:
   TH1F* mHistogram = nullptr;

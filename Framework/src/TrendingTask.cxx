@@ -62,14 +62,9 @@ void TrendingTask::store()
   mo->setIsOwner(false);
   mDatabase->store(mo);
   TCanvas* c = new TCanvas();
-  mTrend->Draw(); //("trend.png");
+  mTrend->Draw();
   c->SaveAs("trend.png");
   delete c;
-}
-
-void TrendingTask::reset()
-{
-
 }
 
 void TrendingTask::trend()
