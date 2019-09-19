@@ -73,14 +73,17 @@ class Check
 
   const std::string getName() { return mName; };
   std::shared_ptr<o2::quality_control::core::QualityObject> getQualityObject() { return mQualityObject; };
-  o2::framework::OutputSpec getOutputSpec() { return mOutputSpec; };
-  o2::framework::Inputs getInputs() { return mInputs; };
+  o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
+  o2::framework::Inputs getInputs() const { return mInputs; };
 
   //TODO: Unique Input string
   static o2::header::DataDescription createCheckerDataDescription(const std::string taskName);
+
+  // For testing purpose
+  void setCheckInterface(CheckInterface* checkInterface){ mCheckInterface = checkInterface; };
  private:
-  void initConfig();
-  void initPolicy();
+  inline void initConfig();
+  inline void initPolicy(std::string policyType);
   void loadLibrary();
 
   inline void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);

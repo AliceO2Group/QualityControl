@@ -51,11 +51,17 @@ Check::Check(std::string checkName, std::string configurationSource)
     mLogger(QcInfoLogger::GetInstance()),
     mQualityObject(std::make_shared<QualityObject>(checkName)),
     mInputs{},
-    mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 }
+    mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 },
+    mPolicyType("OnAny")
 {
+  mPolicy = [](std::map<std::string, unsigned int>){
+    // Prevent from using of uninitiated policy
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Policy not initiated: try to run Check::init() first"));
+    return false;
+  };
+
   initConfig();
 }
-
 
 void Check::initConfig() {
   try {
@@ -65,7 +71,10 @@ void Check::initConfig() {
       // Params
 
       // Policy
-      mPolicyType = conf.get<std::string>("policy");
+      if (conf.count("policy")) {
+        mPolicyType = conf.get<std::string>("policy");
+      }
+      
       // Inputs
       for(const auto& [_key, dataSource]: conf.get_child("dataSource")){
         (void)_key;
@@ -74,7 +83,10 @@ void Check::initConfig() {
 
           mInputs.push_back({taskName, TaskRunner::createTaskDataOrigin(),  TaskRunner::createTaskDataDescription(taskName)});
 
-          // If "MOs" not set, consider as "all"
+          /*
+           * Subscribe on predefined MOs.
+           * If "MOs" not set or "MOs" set to "all", the check function will be triggered whenever a new MO appears.
+           */
           if (dataSource.count("MOs") == 0 || dataSource.get<std::string>("MOs") == "all") {
             mPolicyType = "_OnGlobalAny";
             mAllMOs = true;
@@ -87,6 +99,8 @@ void Check::initConfig() {
             }
           }
         }
+
+        // Here can be implemented other sources for the Check then Task if needed
       }
 
       mQualityObject->setInputs(mInputs);
@@ -112,8 +126,8 @@ void Check::initConfig() {
   }
 }
 
-void Check::initPolicy() {
-  if (mPolicyType == "OnAll") {
+void Check::initPolicy(std::string policyType) {
+  if (policyType == "OnAll") {
     /** 
      * Run check if all MOs are updated 
      */
@@ -127,7 +141,7 @@ void Check::initPolicy() {
       }
       return true;
     };
-  } else if (mPolicyType == "OnAnyNonZero") {
+  } else if (policyType == "OnAnyNonZero") {
     /**
      * Return true if any declared MOs were updated
      * Guaranee that all declared MOs are available 
@@ -136,7 +150,7 @@ void Check::initPolicy() {
       if ( !mPolicyHelper ) {
         // Check if all monitor objects are available
         for (const auto& moname: mMonitorObjectNames) {
-          if (revisionMap.count(moname)){
+          if (!revisionMap.count(moname)){
             return false;
           }
         }
@@ -152,7 +166,7 @@ void Check::initPolicy() {
       return false;
     };
 
-  } else if (mPolicyType == "_OnGlobalAny") {
+  } else if (policyType == "_OnGlobalAny") {
     /**
      * Return true if any MOs were updated.
      * Inner policy - used for `"MOs": "all"`
@@ -165,7 +179,7 @@ void Check::initPolicy() {
       return true;
     };
 
-  } else /* if (mPolicyType == "OnAny") */ {
+  } else /* if (policyType == "OnAny") */ {
     /**
      * Default behaviour
      *
@@ -190,7 +204,7 @@ void Check::init() {
    * The policy needs to be here. If running in constructor, the lambda gets wrong reference
    * and runs into SegmentationFault.
    */
-  initPolicy();
+  initPolicy(mPolicyType);
 }
 
 void Check::loadLibrary(){
@@ -247,25 +261,39 @@ void Check::updateRevision(unsigned int revision) {
 }
 
 std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap){
+  // Check if the module with the function is loaded
   if (mCheckInterface != nullptr){
-    std::shared_ptr<Quality> quality; 
+    std::shared_ptr<Quality> quality;
     if (mAllMOs) {
+      /* 
+       * User didn't specify the MOs.
+       * All MOs are passed, no shadowing needed.
+       */
       mQualityObject->updateQuality(mCheckInterface->check(&moMap));
     } else {
-      // Shadow map
+      /* 
+       * Shadow MOs.
+       * Don't pass MOs that weren't specified by user.
+       * The user might safely relay on getting only required MOs inside the map.
+       *
+       * Implementation: Copy to different map only required MOs.
+       */
       std::map<std::string, std::shared_ptr<MonitorObject>> shadowMap;
       for(auto& key: mMonitorObjectNames){
         shadowMap.insert({key, moMap[key]});
       }
 
+      // Trigger loaded check and update quality of the Check.
       mQualityObject->updateQuality(mCheckInterface->check(&shadowMap));
     }
   }
   mLogger << mName << " Quality: " << mQualityObject->getQuality() << AliceO2::InfoLogger::InfoLogger::endm;
+  // Trigger beautification
   beautify(moMap);
 
   return mQualityObject;
 }
+
 
 void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap){
   if (!mBeautify) {

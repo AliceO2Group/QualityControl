@@ -28,39 +28,38 @@ using namespace std;
 using namespace o2::framework;
 using namespace o2::header;
 
-BOOST_AUTO_TEST_CASE(test_checker_factory)
+BOOST_AUTO_TEST_CASE(test_check_runner_factory)
 {
-  std::string configFilePath{ "json://tests/testSharedConfig.json" };
+  std::string configFilePath{ "json:///home/alidock/tests/testSharedConfig.json" };
+  //std::string configFilePath = { "json://tests/testSharedConfig.json" };
 
   CheckRunnerFactory checkerFactory;
-  Check check("abcCheck", configFilePath);
+  Check check("singleCheck", configFilePath);
   DataProcessorSpec checker = checkerFactory.create(check, configFilePath);
 
   BOOST_REQUIRE_EQUAL(checker.inputs.size(), 1);
   BOOST_CHECK_EQUAL(checker.inputs[0], (InputSpec{ { "mo" }, "QC", "abcTask-mo", 0 }));
 
-  //BOOST_REQUIRE_EQUAL(checker.outputs.size(), 1);
-  //BOOST_CHECK_EQUAL(checker.outputs[0], (OutputSpec{ "QC", "abcCheck-chk", 0 }));
-
   BOOST_CHECK(checker.algorithm.onInit != nullptr);
 }
 
-BOOST_AUTO_TEST_CASE(test_checker_static)
+BOOST_AUTO_TEST_CASE(test_check_runner_static)
 {
   BOOST_CHECK(CheckRunner::createCheckRunnerDataDescription("qwertyuiop") == DataDescription("qwertyuiop-chk"));
   BOOST_CHECK(CheckRunner::createCheckRunnerDataDescription("012345678901234567890") == DataDescription("012345678901-chk"));
   BOOST_CHECK_THROW(CheckRunner::createCheckRunnerDataDescription(""), AliceO2::Common::FatalException);
 }
 
-BOOST_AUTO_TEST_CASE(test_checker)
+BOOST_AUTO_TEST_CASE(test_check_runner)
 {
-  std::string configFilePath = { "json://tests/testSharedConfig.json" };
+  std::string configFilePath{ "json:///home/alidock/tests/testSharedConfig.json" };
+  //std::string configFilePath = { "json://tests/testSharedConfig.json" };
 
-  Check check("abcCheck", configFilePath);
+  Check check("singleCheck", configFilePath);
   CheckRunner checker{ check, configFilePath };
 
   BOOST_CHECK_EQUAL(checker.getInputs()[0], (InputSpec{ { "mo" }, "QC", "abcTask-mo", 0 }));
-  //BOOST_CHECK_EQUAL(checker.getOutputSpec(), (OutputSpec{ "QC", "abcTask-chk", 0 }));
+  BOOST_CHECK_EQUAL(checker.getOutputs()[0], (OutputSpec{ "QC", "singleCheck-chk", 0 }));
 
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
   // TODO: When it is possible, we should try calling run() and init()

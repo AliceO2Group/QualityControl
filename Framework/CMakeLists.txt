@@ -205,7 +205,8 @@ set(TEST_SRCS
     test/testTaskInterface.cxx
     test/testTaskRunner.cxx
     test/testCheckInterface.cxx
-    test/testChecker.cxx
+    test/testCheckRunner.cxx
+    test/testCheck.cxx
     test/testQuality.cxx
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
@@ -213,6 +214,7 @@ set(TEST_SRCS
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""

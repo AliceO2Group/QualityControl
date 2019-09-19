@@ -32,7 +32,7 @@ DataProcessorSpec CheckRunnerFactory::create(Check check, std::string configurat
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
                                 qcCheckRunner.getInputs(),
-                                Outputs{ qcCheckRunner.getOutputSpec() },
+                                Outputs{ qcCheckRunner.getOutputs() },
                                 adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
                                 Options{},
                                 std::vector<std::string>{},
@@ -47,7 +47,7 @@ DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::str
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
                                 qcCheckRunner.getInputs(),
-                                Outputs{ qcCheckRunner.getOutputSpec() },
+                                Outputs{ qcCheckRunner.getOutputs() },
                                 adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
                                 Options{},
                                 std::vector<std::string>{},

@@ -69,7 +69,28 @@
       }
     },
     "checks": {
-      "abcCheck": {
+      "singleCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "dataSource": [{
+          "type": "Task",
+          "name": "abcTask",
+          "MOs": ["example"]
+        }]
+      },
+      "checkAll": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "dataSource": [{
+          "type": "Task",
+          "name": "abcTask",
+          "MOs": ["test1", "test2"]
+        }]
+      },
+      "checkAny": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
@@ -77,9 +98,30 @@
         "dataSource": [{
           "type": "Task",
           "name": "abcTask",
-          "MOs": ["example"]
+          "MOs": ["test1", "test2"]
+        }]
+      },
+      "checkAnyNonZero": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAnyNonZero",
+        "dataSource": [{
+          "type": "Task",
+          "name": "abcTask",
+          "MOs": ["test1", "test2"]
+        }]
+      },
+      "checkGlobalAny": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "dataSource": [{
+          "type": "Task",
+          "name": "example"
         }]
       }
+
     }
   },
   "dataSamplingPolicies": [

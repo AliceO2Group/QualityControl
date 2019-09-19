@@ -79,20 +79,27 @@ std::string CheckRunner::createCheckRunnerIdString(){
   return std::string("QC-CHECKER");
 }
 
+o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& checks){
+  o2::framework::Outputs outputs;
+  for(auto& check: checks){
+    outputs.push_back(check.getOutputSpec());
+  }
+  return outputs;
+}
 
 /// Members 
 
 // TODO do we need a CheckFactory ? here it is embedded in the CheckRunner
 // TODO maybe we could use the CheckRunnerFactory
 
-
 CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
   : mDeviceName(createCheckRunnerIdString() + "-" + checks.front().getName()),
     mChecks{checks},
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
+    /* All checks has the same Input */
     mInputs(checks.front().getInputs()),
-    mOutputSpec{ "QC", CheckRunner::createCheckRunnerDataDescription(checks.front().getName()), 0 },
+    mOutputs(CheckRunner::collectOutputs(checks)),
     startFirstObject{ system_clock::time_point::min() },
     endLastObject{ system_clock::time_point::min() }
 {
@@ -156,9 +163,9 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   }
 
   // Check if compliant with policy
-  auto qualityVector = check(mMonitorObjects);
-  store(qualityVector);
-  //send(checkedMoArray, ctx.outputs());
+  auto triggeredChecks = check(mMonitorObjects);
+  store(triggeredChecks);
+  send(triggeredChecks, ctx.outputs());
   
 
   // Update global revision number
@@ -177,45 +184,49 @@ void CheckRunner::update(std::shared_ptr<MonitorObject> mo){
   mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
 }
 
-std::vector<std::shared_ptr<QualityObject>> CheckRunner::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
+std::vector<Check*> CheckRunner::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 {
   mLogger << "Running " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
           << AliceO2::InfoLogger::InfoLogger::endm;
   
-  std::vector<std::shared_ptr<QualityObject>> qualityVector;
+  std::vector<Check*> triggeredChecks;
   for (auto& check: mChecks) {
     if (check.isReady(mMonitorObjectRevision)){  
       auto qualityObj = check.check(moMap);
       // Check if shared_ptr != nullptr
       if (qualityObj){
-        qualityVector.push_back(qualityObj);
+        triggeredChecks.push_back(&check);
       }
 
       // Was checked, update latest revision
       check.updateRevision(mGlobalRevision);
     }
   }
-  return qualityVector;
+  return triggeredChecks;
 }
 
-void CheckRunner::store(std::vector<std::shared_ptr<QualityObject>> qualityVector)
+void CheckRunner::store(std::vector<Check*> &checks)
 {
-  mLogger << "Storing \"" << qualityVector.size() << "\"" << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << "Storing " << checks.size() << " quality objects" << AliceO2::InfoLogger::InfoLogger::endm;
   try {
-    for (auto& obj: qualityVector){
-      mDatabase->storeQO(obj);
+    for (auto check: checks){
+      mDatabase->storeQO(check->getQualityObject());
     }
   } catch (boost::exception& e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
 
-void CheckRunner::send(std::unique_ptr<TObjArray>& moArray, framework::DataAllocator& allocator)
+void CheckRunner::send(std::vector<Check*> &checks, framework::DataAllocator& allocator)
 {
-  mLogger << "Sending Monitor Object array with " << moArray->GetEntries() << " objects inside." << AliceO2::InfoLogger::InfoLogger::endm;
-  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mOutputSpec);
-  allocator.adopt(
-    framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, mOutputSpec.lifetime }, moArray.release());
+  mLogger << "Send  "<< checks.size() << " quality objects" << AliceO2::InfoLogger::InfoLogger::endm;
+  for(auto check: checks){
+    auto outputSpec = check->getOutputSpec();
+    auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
+    TObject* quality = check->getQualityObject()->Clone();
+    allocator.adopt(
+      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, quality);
+  }
 }
 
 void CheckRunner::updateRevision() {

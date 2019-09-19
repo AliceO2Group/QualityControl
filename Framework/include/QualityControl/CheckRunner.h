@@ -89,8 +89,7 @@ class CheckRunner : public framework::Task
   void run(framework::ProcessingContext& ctx) override;
 
   framework::Inputs getInputs() { return mInputs; };
-
-  framework::OutputSpec getOutputSpec() { return mOutputSpec; };
+  framework::Outputs getOutputs() { return mOutputs; };
 
   /// \brief Unified DataDescription naming scheme for all checkers
   static o2::header::DataDescription createCheckRunnerDataDescription(const std::string taskName);
@@ -109,19 +108,19 @@ class CheckRunner : public framework::Task
    * @param mo The MonitorObject to evaluate and whose quality will be set according
    *        to the worse quality encountered while running the Check's.
    */
-  std::vector<std::shared_ptr<QualityObject>> check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
+  std::vector<Check*> check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
 
   /**
    * \brief Store the MonitorObject in the database.
    *
    * @param mo The MonitorObject to be stored in the database.
    */
-  void store(std::vector<std::shared_ptr<QualityObject>> checkResult);
+  void store(std::vector<Check*>& checks);
 
   /**
    * \brief Send the MonitorObject on FairMQ to whoever is listening.
    */
-  void send(std::unique_ptr<TObjArray>& mo, framework::DataAllocator& allocator);
+  void send(std::vector<Check*>& checks, framework::DataAllocator& allocator);
 
   /**
    * \brief Load a library.
@@ -137,10 +136,15 @@ class CheckRunner : public framework::Task
    */
   void update(std::shared_ptr<MonitorObject> mo);
 
+  /**
+   * \brief Collect input specs from Checks
+   *
+   * \param checks List of all checks
+   */
+  static o2::framework::Outputs collectOutputs(const std::vector<Check>& checks);
+
   inline void initDatabase();
   inline void initMonitoring();
-  //inline void initPolicy();
-  //inline void populateConfig();
   
   void updateRevision();
 
@@ -167,7 +171,7 @@ class CheckRunner : public framework::Task
 
   // DPL
   o2::framework::Inputs mInputs;
-  o2::framework::OutputSpec mOutputSpec;
+  o2::framework::Outputs mOutputs;
 
   // Checks cache
   std::vector<std::string> mCheckList;
