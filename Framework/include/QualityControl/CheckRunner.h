@@ -96,7 +96,8 @@ class CheckRunner : public framework::Task
   static o2::framework::Inputs createInputSpec(const std::string checkName, const std::string configSource);
 
   std::string getDeviceName() { return mDeviceName; };
-  static std::string createCheckRunnerIdString();
+  static std::string createCheckRunnerIdString(){ return "QC-CHECK-RUNNER"; };
+  static std::string createCheckRunnerName(std::vector<Check> checks);
  private:
   /**
    * \brief Evaluate the quality of a MonitorObject.

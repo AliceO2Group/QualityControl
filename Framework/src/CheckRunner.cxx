@@ -21,6 +21,7 @@
 
 #include <utility>
 #include <memory>
+#include <random>
 // ROOT
 #include <TClass.h>
 #include <TSystem.h>
@@ -75,8 +76,25 @@ o2::framework::Inputs CheckRunner::createInputSpec(const std::string checkName, 
   return inputs;
 }
 
-std::string CheckRunner::createCheckRunnerIdString(){
-  return std::string("QC-CHECKER");
+std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks){
+  static const std::string alphanumeric= "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+  const int NAME_LEN = 4;
+  std::string name(CheckRunner::createCheckRunnerIdString() + "-");
+
+  if (checks.size() == 1) {
+    // If single check, use the check name
+    name += checks[0].getName();
+  } else {
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distribution(0, alphanumeric.size());
+
+    for(int i=0; i<NAME_LEN; ++i){
+      name += alphanumeric[distribution(generator)];
+    }
+  }
+  return name;
 }
 
 o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& checks){
@@ -93,7 +111,7 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& che
 // TODO maybe we could use the CheckRunnerFactory
 
 CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
-  : mDeviceName(createCheckRunnerIdString() + "-" + checks.front().getName()),
+  : mDeviceName(createCheckRunnerName(checks)),
     mChecks{checks},
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
