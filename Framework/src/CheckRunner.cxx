@@ -241,9 +241,8 @@ void CheckRunner::send(std::vector<Check*> &checks, framework::DataAllocator& al
   for(auto check: checks){
     auto outputSpec = check->getOutputSpec();
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
-    TObject* quality = check->getQualityObject()->Clone();
-    allocator.adopt(
-      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, quality);
+    allocator.snapshot(
+      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *check->getQualityObject());
   }
 }
 

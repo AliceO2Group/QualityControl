@@ -24,8 +24,6 @@ target_link_libraries(QualityControlTypes
   PUBLIC
   ROOT::Hist
   AliceO2::Common
-  FairMQ::FairMQ
-  O2::Framework
 )
 
 add_root_dictionary(QualityControlTypes
@@ -102,6 +100,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/TaskRunnerFactory.h
                             include/QualityControl/HistoMerger.h
                             include/QualityControl/InfrastructureGenerator.h
+                            include/QualityControl/InputUtils.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 

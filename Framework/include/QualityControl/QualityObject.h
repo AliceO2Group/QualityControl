@@ -9,7 +9,6 @@
 #include <TObject.h>
 // O2
 #include <Common/Exceptions.h>
-#include <Framework/DataProcessorSpec.h>
 // QC
 #include "QualityControl/Quality.h"
 
@@ -21,7 +20,7 @@ class QualityObject : public TObject
 {
  public:
   /// Default constructor
-  QualityObject(const std::string& checkerName, o2::framework::Inputs inputs);
+  QualityObject(const std::string& checkerName, std::vector<std::string> inputs);
   QualityObject(const std::string& checkerName);
   QualityObject();
 
@@ -56,7 +55,10 @@ class QualityObject : public TObject
   void updateQuality(Quality quality);
   Quality getQuality();
 
-  void setInputs(o2::framework::Inputs inputs);
+  /**
+   * Use o2::framework::DataSpecUtils::describe(input) to get string
+   */
+  void setInputs(std::vector<std::string> inputs) { mInputs = inputs; }
   std::vector<std::string> getInputs() {return mInputs;}
 
   /// \brief Add key value pair that will end up in the database

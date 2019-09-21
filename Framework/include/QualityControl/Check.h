@@ -82,11 +82,11 @@ class Check
   // For testing purpose
   void setCheckInterface(CheckInterface* checkInterface){ mCheckInterface = checkInterface; };
  private:
-  inline void initConfig();
-  inline void initPolicy(std::string policyType);
+  void initConfig();
+  void initPolicy(std::string policyType);
   void loadLibrary();
 
-  inline void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);
+  void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);
 
   const std::string mName;
 

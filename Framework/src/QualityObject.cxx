@@ -1,4 +1,3 @@
-#include <Framework/DataSpecUtils.h>
 #include "QualityControl/QualityObject.h"
 
 
@@ -6,7 +5,7 @@ ClassImp(o2::quality_control::core::QualityObject)
 
 namespace o2::quality_control::core {
 
-QualityObject::QualityObject(const std::string& checkerName, o2::framework::Inputs inputs)
+QualityObject::QualityObject(const std::string& checkerName, std::vector<std::string> inputs)
   : mCheckName(checkerName),
     mInputs{},
     mUserMetadata{}
@@ -37,12 +36,6 @@ void QualityObject::updateQuality(Quality quality){
 }
 Quality QualityObject::getQuality(){
   return Quality(mQualityLevel, mQualityName);
-}
-
-void QualityObject::setInputs(o2::framework::Inputs inputs){
-  for (auto& input: inputs){
-    mInputs.push_back(o2::framework::DataSpecUtils::describe(input));
-  }
 }
 
 void QualityObject::addMetadata(std::string key, std::string value){

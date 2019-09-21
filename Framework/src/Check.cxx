@@ -24,6 +24,7 @@
 #include <Configuration/ConfigurationFactory.h>
 // QC
 #include "QualityControl/TaskRunner.h"
+#include "QualityControl/InputUtils.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -102,8 +103,8 @@ void Check::initConfig() {
 
         // Here can be implemented other sources for the Check then Task if needed
       }
-
-      mQualityObject->setInputs(mInputs);
+      
+      mQualityObject->setInputs(stringifyInput(mInputs));
 
       // Prepare module loading
       mModuleName = conf.get<std::string>("moduleName");
