@@ -31,12 +31,12 @@ DataProcessorSpec CheckRunnerFactory::create(Check check, std::string configurat
   CheckRunner qcCheckRunner{ check, configurationSource };
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
-                                qcCheckRunner.getInputs(),
-                                Outputs{ qcCheckRunner.getOutputs() },
-                                adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
-                                Options{},
-                                std::vector<std::string>{},
-                                std::vector<DataProcessorLabel>{} };
+                                    qcCheckRunner.getInputs(),
+                                    Outputs{ qcCheckRunner.getOutputs() },
+                                    adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
+                                    Options{},
+                                    std::vector<std::string>{},
+                                    std::vector<DataProcessorLabel>{} };
 
   return newCheckRunner;
 }
@@ -46,12 +46,12 @@ DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::str
   CheckRunner qcCheckRunner{ checks, configurationSource };
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
-                                qcCheckRunner.getInputs(),
-                                Outputs{ qcCheckRunner.getOutputs() },
-                                adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
-                                Options{},
-                                std::vector<std::string>{},
-                                std::vector<DataProcessorLabel>{} };
+                                    qcCheckRunner.getInputs(),
+                                    Outputs{ qcCheckRunner.getOutputs() },
+                                    adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
+                                    Options{},
+                                    std::vector<std::string>{},
+                                    std::vector<DataProcessorLabel>{} };
 
   return newCheckRunner;
 }
@@ -61,7 +61,7 @@ void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::Completi
   auto matcher = [](framework::DeviceSpec const& device) {
     return device.name.find(CheckRunner::createCheckRunnerIdString()) != std::string::npos;
   };
-  auto callback = [](gsl::span<PartRef const> const& inputs){
+  auto callback = [](gsl::span<PartRef const> const& inputs) {
     // TODO: Check if need to check nullptr (done in checker::run)
     for (auto& input : inputs) {
       if (!(input.header == nullptr || input.payload == nullptr)) {
@@ -71,11 +71,8 @@ void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::Completi
     return framework::CompletionPolicy::CompletionOp::Wait;
   };
 
-
   framework::CompletionPolicy checkerCompletionPolicy{ "checkerCompletionPolicy", matcher, callback };
   policies.push_back(checkerCompletionPolicy);
 }
-
-
 
 } // namespace o2::quality_control::checker

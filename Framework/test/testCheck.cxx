@@ -31,7 +31,6 @@ using namespace o2::framework;
 using namespace o2::header;
 using namespace AliceO2::Common;
 
-
 BOOST_AUTO_TEST_CASE(test_check_specs)
 {
   std::string configFilePath{ "json://tests/testSharedConfig.json" };
@@ -51,9 +50,9 @@ BOOST_AUTO_TEST_CASE(test_check_isready)
   Check check("singleCheck", configFilePath);
 
   std::string monitorObjectFullName = "abcTask/example"; /* taskName / monitorObjectName */
-  std::map<std::string, unsigned int> moMap = {{ monitorObjectFullName, 10 }};
+  std::map<std::string, unsigned int> moMap = { { monitorObjectFullName, 10 } };
   check.init();
-  
+
   BOOST_CHECK(check.isReady(moMap));
   check.updateRevision(13);
   BOOST_CHECK(!check.isReady(moMap));
@@ -64,8 +63,8 @@ BOOST_AUTO_TEST_CASE(test_check_policy_not_set)
   std::string configFilePath{ "json://tests/testSharedConfig.json" };
 
   Check check("singleCheck", configFilePath);
-  std::map<std::string, unsigned int> moMap = {{ "any", 10 }};
-  
+  std::map<std::string, unsigned int> moMap = { { "any", 10 } };
+
   BOOST_CHECK_THROW(check.isReady(moMap), FatalException);
 }
 
@@ -81,19 +80,18 @@ BOOST_AUTO_TEST_CASE(test_check_single_mo)
   check.init();
 
   std::string monitorObjectFullName = "abcTask/example"; /* taskName / monitorObjectName */
-  std::map<std::string, unsigned int> moMap1 = {{ monitorObjectFullName, 10 }};
-  
+  std::map<std::string, unsigned int> moMap1 = { { monitorObjectFullName, 10 } };
+
   BOOST_CHECK(check.isReady(moMap1));
   check.updateRevision(10);
   BOOST_CHECK(!check.isReady(moMap1));
 
-  std::map<std::string, unsigned int> moMap2 = {{ monitorObjectFullName, 11 }};
+  std::map<std::string, unsigned int> moMap2 = { { monitorObjectFullName, 11 } };
 
   BOOST_CHECK(check.isReady(moMap2));
   check.updateRevision(11);
   BOOST_CHECK(!check.isReady(moMap2));
 }
-
 
 BOOST_AUTO_TEST_CASE(test_check_policy_all)
 {
@@ -104,15 +102,15 @@ BOOST_AUTO_TEST_CASE(test_check_policy_all)
 
   std::string mo1 = "abcTask/test1"; /* taskName / monitorObjectName */
   std::string mo2 = "abcTask/test2"; /* taskName / monitorObjectName */
-  
-  std::map<std::string, unsigned int> moMap1 = {{ mo1, 10 }};
+
+  std::map<std::string, unsigned int> moMap1 = { { mo1, 10 } };
   // Single MO ready - all required - should fail
   BOOST_CHECK(!check.isReady(moMap1));
 
-  std::map<std::string, unsigned int> moMap2 = {{ mo1, 10 }, {mo2, 13}};
+  std::map<std::string, unsigned int> moMap2 = { { mo1, 10 }, { mo2, 13 } };
   // All ready - should success
   BOOST_CHECK(check.isReady(moMap2));
-  
+
   // Update revision - mo1 is old
   check.updateRevision(10);
   // mo1 is to old, mo2 is ok - should fail
@@ -128,15 +126,15 @@ BOOST_AUTO_TEST_CASE(test_check_policy_any)
 
   std::string mo1 = "abcTask/test1"; /* taskName / monitorObjectName */
   std::string mo2 = "abcTask/test2"; /* taskName / monitorObjectName */
-  
-  std::map<std::string, unsigned int> moMap1 = {{ mo1, 10 }};
+
+  std::map<std::string, unsigned int> moMap1 = { { mo1, 10 } };
   // Single MO ready - should success
   BOOST_CHECK(check.isReady(moMap1));
 
-  std::map<std::string, unsigned int> moMap2 = {{ mo1, 10 }, {mo2, 13}};
+  std::map<std::string, unsigned int> moMap2 = { { mo1, 10 }, { mo2, 13 } };
   // All ready - should success
   BOOST_CHECK(check.isReady(moMap2));
-  
+
   // Update revision - mo1 and mo2 is old
   check.updateRevision(13);
   // mo1 and mo2 is old - should fail
@@ -152,22 +150,21 @@ BOOST_AUTO_TEST_CASE(test_check_policy_anynonzero)
 
   std::string mo1 = "abcTask/test1"; /* taskName / monitorObjectName */
   std::string mo2 = "abcTask/test2"; /* taskName / monitorObjectName */
-  
-  std::map<std::string, unsigned int> moMap1 = {{ mo1, 10 }};
+
+  std::map<std::string, unsigned int> moMap1 = { { mo1, 10 } };
   // Single MO ready - all required - should fail
   BOOST_CHECK(!check.isReady(moMap1));
 
-  std::map<std::string, unsigned int> moMap2 = {{ mo1, 10 }, {mo2, 13}};
+  std::map<std::string, unsigned int> moMap2 = { { mo1, 10 }, { mo2, 13 } };
   // All ready - should success
   BOOST_CHECK(check.isReady(moMap2));
-  
+
   check.updateRevision(10);
   BOOST_CHECK(check.isReady(moMap2));
 
   check.updateRevision(13);
   BOOST_CHECK(!check.isReady(moMap2));
 }
-
 
 BOOST_AUTO_TEST_CASE(test_check_policy_globalany)
 {
@@ -178,41 +175,46 @@ BOOST_AUTO_TEST_CASE(test_check_policy_globalany)
 
   std::string mo1 = "abcTask/test1"; /* taskName / monitorObjectName */
   std::string mo2 = "abcTask/test2"; /* taskName / monitorObjectName */
-  
-  std::map<std::string, unsigned int> moMap1 = {{ mo1, 10 }};
+
+  std::map<std::string, unsigned int> moMap1 = { { mo1, 10 } };
   BOOST_CHECK(check.isReady(moMap1));
 
-  std::map<std::string, unsigned int> moMap2 = {{ mo1, 10 }, {mo2, 13}};
+  std::map<std::string, unsigned int> moMap2 = { { mo1, 10 }, { mo2, 13 } };
   BOOST_CHECK(check.isReady(moMap2));
 }
 
 /*
  * Test check and beautify
  */
-class TestCheck: public CheckInterface {
-  public:
-    TestCheck(){}
-    void configure(std::string name){
-      (void)name;
+class TestCheck : public CheckInterface
+{
+ public:
+  TestCheck() {}
+  void configure(std::string name)
+  {
+    (void)name;
+  }
+  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+  {
+    if (moMap->size()) {
+      mCheck = true;
     }
-    Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap){
-      if(moMap->size()){
-        mCheck = true;
-      }
-      return Quality();
+    return Quality();
+  }
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null)
+  {
+    (void)checkResult;
+    if (mo) {
+      mBeautify = true;
     }
-    void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null){
-      (void) checkResult;
-      if (mo){
-        mBeautify = true;
-      }
-    }
-    std::string getAcceptedType(){ 
-      return "any"; 
-    }
+  }
+  std::string getAcceptedType()
+  {
+    return "any";
+  }
 
-    bool mCheck = false;
-    bool mBeautify = false;
+  bool mCheck = false;
+  bool mBeautify = false;
 };
 
 BOOST_AUTO_TEST_CASE(test_check_invoke_check_beautify)
@@ -225,7 +227,7 @@ BOOST_AUTO_TEST_CASE(test_check_invoke_check_beautify)
   TestCheck testCheck;
   check.setCheckInterface(dynamic_cast<CheckInterface*>(&testCheck));
 
-  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = {{"abcTask/example", std::shared_ptr<MonitorObject>(new MonitorObject()) }};
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "abcTask/example", std::shared_ptr<MonitorObject>(new MonitorObject()) } };
 
   check.check(moMap);
   // Check should run
@@ -233,7 +235,6 @@ BOOST_AUTO_TEST_CASE(test_check_invoke_check_beautify)
   // Beautify should run - single MO declared
   BOOST_CHECK(testCheck.mBeautify);
 }
-
 
 BOOST_AUTO_TEST_CASE(test_check_dont_invoke_beautify)
 {
@@ -245,7 +246,7 @@ BOOST_AUTO_TEST_CASE(test_check_dont_invoke_beautify)
   TestCheck testCheck;
   check.setCheckInterface(dynamic_cast<CheckInterface*>(&testCheck));
 
-  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = {{"abcTask/test1", std::shared_ptr<MonitorObject>() }};
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "abcTask/test1", std::shared_ptr<MonitorObject>() } };
 
   check.check(moMap);
   // Check should run
@@ -253,7 +254,3 @@ BOOST_AUTO_TEST_CASE(test_check_dont_invoke_beautify)
   // Beautify should not run - more than one MO declared
   BOOST_CHECK(!testCheck.mBeautify);
 }
-
-
-
-

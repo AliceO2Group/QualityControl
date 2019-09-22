@@ -63,12 +63,12 @@ o2::framework::Inputs CheckRunner::createInputSpec(const std::string checkName, 
 {
   std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configSource);
   o2::framework::Inputs inputs;
-  for(auto& [key, sourceConf]: config->getRecursive("qc.checks."+checkName+".dataSource")){
+  for (auto& [key, sourceConf] : config->getRecursive("qc.checks." + checkName + ".dataSource")) {
     (void)key;
-    if(sourceConf.get<std::string>("type") == "Task"){
-      const std::string& taskName = sourceConf.get<std::string>("name"); 
+    if (sourceConf.get<std::string>("type") == "Task") {
+      const std::string& taskName = sourceConf.get<std::string>("name");
       QcInfoLogger::GetInstance() << ">>>> Check name : " << checkName << " input task name: " << taskName << " " << TaskRunner::createTaskDataDescription(taskName).as<std::string>() << AliceO2::InfoLogger::InfoLogger::endm;
-      o2::framework::InputSpec input{taskName, TaskRunner::createTaskDataOrigin(),  TaskRunner::createTaskDataDescription(taskName)};
+      o2::framework::InputSpec input{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
       inputs.push_back(std::move(input));
     }
   }
@@ -76,10 +76,12 @@ o2::framework::Inputs CheckRunner::createInputSpec(const std::string checkName, 
   return inputs;
 }
 
-std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks){
-  static const std::string alphanumeric= "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
+std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
+{
+  static const std::string alphanumeric =
+    "0123456789"
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz";
   const int NAME_LEN = 4;
   std::string name(CheckRunner::createCheckRunnerIdString() + "-");
 
@@ -90,29 +92,30 @@ std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks){
     std::default_random_engine generator;
     std::uniform_int_distribution<int> distribution(0, alphanumeric.size());
 
-    for(int i=0; i<NAME_LEN; ++i){
+    for (int i = 0; i < NAME_LEN; ++i) {
       name += alphanumeric[distribution(generator)];
     }
   }
   return name;
 }
 
-o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& checks){
+o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& checks)
+{
   o2::framework::Outputs outputs;
-  for(auto& check: checks){
+  for (auto& check : checks) {
     outputs.push_back(check.getOutputSpec());
   }
   return outputs;
 }
 
-/// Members 
+/// Members
 
 // TODO do we need a CheckFactory ? here it is embedded in the CheckRunner
 // TODO maybe we could use the CheckRunnerFactory
 
 CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
   : mDeviceName(createCheckRunnerName(checks)),
-    mChecks{checks},
+    mChecks{ checks },
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
     /* All checks has the same Input */
@@ -125,7 +128,7 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
 }
 
 CheckRunner::CheckRunner(Check check, std::string configurationSource)
-  : CheckRunner(std::vector{check}, configurationSource)
+  : CheckRunner(std::vector{ check }, configurationSource)
 {
 }
 
@@ -145,7 +148,7 @@ void CheckRunner::init(framework::InitContext&)
 {
   initDatabase();
   initMonitoring();
-  for (auto& check: mChecks){
+  for (auto& check : mChecks) {
     check.init();
   }
 }
@@ -158,9 +161,9 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
     startFirstObject = system_clock::now();
   }
 
-  for (const auto& input: mInputs){
+  for (const auto& input : mInputs) {
     auto dataRef = ctx.inputs().get(input.binding.c_str());
-    if(dataRef.header != nullptr && dataRef.payload != nullptr){
+    if (dataRef.header != nullptr && dataRef.payload != nullptr) {
       auto moArray = ctx.inputs().get<TObjArray*>(input.binding.c_str());
       mLogger << "Device " << mDeviceName
               << " received " << moArray->GetEntries()
@@ -184,7 +187,6 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   auto triggeredChecks = check(mMonitorObjects);
   store(triggeredChecks);
   send(triggeredChecks, ctx.outputs());
-  
 
   // Update global revision number
   updateRevision();
@@ -197,7 +199,8 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   }
 }
 
-void CheckRunner::update(std::shared_ptr<MonitorObject> mo){
+void CheckRunner::update(std::shared_ptr<MonitorObject> mo)
+{
   mMonitorObjects[mo->getFullName()] = mo;
   mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
 }
@@ -206,13 +209,13 @@ std::vector<Check*> CheckRunner::check(std::map<std::string, std::shared_ptr<Mon
 {
   mLogger << "Running " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
           << AliceO2::InfoLogger::InfoLogger::endm;
-  
+
   std::vector<Check*> triggeredChecks;
-  for (auto& check: mChecks) {
-    if (check.isReady(mMonitorObjectRevision)){  
+  for (auto& check : mChecks) {
+    if (check.isReady(mMonitorObjectRevision)) {
       auto qualityObj = check.check(moMap);
       // Check if shared_ptr != nullptr
-      if (qualityObj){
+      if (qualityObj) {
         triggeredChecks.push_back(&check);
       }
 
@@ -223,11 +226,11 @@ std::vector<Check*> CheckRunner::check(std::map<std::string, std::shared_ptr<Mon
   return triggeredChecks;
 }
 
-void CheckRunner::store(std::vector<Check*> &checks)
+void CheckRunner::store(std::vector<Check*>& checks)
 {
   mLogger << "Storing " << checks.size() << " quality objects" << AliceO2::InfoLogger::InfoLogger::endm;
   try {
-    for (auto check: checks){
+    for (auto check : checks) {
       mDatabase->storeQO(check->getQualityObject());
     }
   } catch (boost::exception& e) {
@@ -235,10 +238,10 @@ void CheckRunner::store(std::vector<Check*> &checks)
   }
 }
 
-void CheckRunner::send(std::vector<Check*> &checks, framework::DataAllocator& allocator)
+void CheckRunner::send(std::vector<Check*>& checks, framework::DataAllocator& allocator)
 {
-  mLogger << "Send  "<< checks.size() << " quality objects" << AliceO2::InfoLogger::InfoLogger::endm;
-  for(auto check: checks){
+  mLogger << "Send  " << checks.size() << " quality objects" << AliceO2::InfoLogger::InfoLogger::endm;
+  for (auto check : checks) {
     auto outputSpec = check->getOutputSpec();
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
     allocator.snapshot(
@@ -246,20 +249,21 @@ void CheckRunner::send(std::vector<Check*> &checks, framework::DataAllocator& al
   }
 }
 
-void CheckRunner::updateRevision() {
+void CheckRunner::updateRevision()
+{
   ++mGlobalRevision;
-  if ( mGlobalRevision == 0 ){
+  if (mGlobalRevision == 0) {
     // mGlobalRevision cannot be 0
     // 0 means overflow, increment and update all check revisions to 0
     ++mGlobalRevision;
-    for (auto& check: mChecks){
+    for (auto& check : mChecks) {
       check.updateRevision(0);
     }
   }
 }
 
-
-void CheckRunner::initDatabase(){
+void CheckRunner::initDatabase()
+{
   // configuration
   try {
     std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
@@ -281,7 +285,8 @@ void CheckRunner::initDatabase(){
   }
 }
 
-void CheckRunner::initMonitoring(){
+void CheckRunner::initMonitoring()
+{
   // monitoring
   try {
     mCollector = MonitoringFactory::Get("infologger://");
@@ -295,5 +300,5 @@ void CheckRunner::initMonitoring(){
   timer.reset(1000000); // 10 s.
 }
 
-}
+} // namespace o2::quality_control::checker
 // namespace o2::quality_control::checker

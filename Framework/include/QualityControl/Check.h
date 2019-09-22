@@ -8,7 +8,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-
 #ifndef QC_CHECKER_CHECK_H
 #define QC_CHECKER_CHECK_H
 
@@ -31,11 +30,11 @@ namespace o2::quality_control::checker
 
 /// \brief The class in charge of providing single check for a given map of MonitorObjects.
 ///
-/// A Check is in charge of loading/instantiating the single check from module, configure them and manage the check process: 
+/// A Check is in charge of loading/instantiating the single check from module, configure them and manage the check process:
 /// tell whenever the check policy is fulfilled, shadow not required MonitorObjects, invoke beautify process if needed.
 ///
 /// \author Rafal Pacholek
-class Check 
+class Check
 {
  public:
   /// Constructor
@@ -54,10 +53,10 @@ class Check
    * Expected to run in the init phase of the FairDevice
    */
   void init();
-  
+
   std::shared_ptr<o2::quality_control::core::QualityObject> check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
 
-  // Policy 
+  // Policy
   /**
    * \brief Change the revision.
    *
@@ -65,7 +64,7 @@ class Check
    * Expected to be changed after invoke of `check(moMap)` or revision number overflow.
    */
   void updateRevision(unsigned int revision);
-  
+
   /**
    * \brief Return true if the Monitor Objects were changed accordingly to the policy
    */
@@ -80,7 +79,8 @@ class Check
   static o2::header::DataDescription createCheckerDataDescription(const std::string taskName);
 
   // For testing purpose
-  void setCheckInterface(CheckInterface* checkInterface){ mCheckInterface = checkInterface; };
+  void setCheckInterface(CheckInterface* checkInterface) { mCheckInterface = checkInterface; };
+
  private:
   void initConfig();
   void initPolicy(std::string policyType);
@@ -117,6 +117,6 @@ class Check
   bool mPolicyHelper = false; // Depending on policy, the purpose might change
 };
 
-}
+} // namespace o2::quality_control::checker
 
 #endif

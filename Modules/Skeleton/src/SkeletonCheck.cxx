@@ -32,7 +32,7 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 {
   Quality result = Quality::Null;
 
-  for (auto& [moName, mo]: *moMap) {
+  for (auto& [moName, mo] : *moMap) {
     if (mo->getName() == "example") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
 

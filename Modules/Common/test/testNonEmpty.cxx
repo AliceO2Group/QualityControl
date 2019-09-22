@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(nonempty)
   monitorObject->setIsOwner(false);
   NonEmpty myCheck;
 
-  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = {{"test", monitorObject}};
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "test", monitorObject } };
 
   Quality quality = myCheck.check(&moMap);
   BOOST_CHECK_EQUAL(quality, Quality::Bad);

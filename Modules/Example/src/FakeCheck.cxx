@@ -26,7 +26,7 @@ ClassImp(o2::quality_control_modules::example::FakeCheck)
 
   void FakeCheck::configure(std::string /*name*/) {}
 
-  Quality FakeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* /*moMap*/)
+  Quality FakeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>> * /*moMap*/)
   {
     Quality result = Quality::Null;
 

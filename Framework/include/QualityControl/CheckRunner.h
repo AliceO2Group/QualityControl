@@ -96,8 +96,9 @@ class CheckRunner : public framework::Task
   static o2::framework::Inputs createInputSpec(const std::string checkName, const std::string configSource);
 
   std::string getDeviceName() { return mDeviceName; };
-  static std::string createCheckRunnerIdString(){ return "QC-CHECK-RUNNER"; };
+  static std::string createCheckRunnerIdString() { return "QC-CHECK-RUNNER"; };
   static std::string createCheckRunnerName(std::vector<Check> checks);
+
  private:
   /**
    * \brief Evaluate the quality of a MonitorObject.
@@ -146,9 +147,8 @@ class CheckRunner : public framework::Task
 
   inline void initDatabase();
   inline void initMonitoring();
-  
-  void updateRevision();
 
+  void updateRevision();
 
   /**
    * Get the check specified by its name and class.
@@ -181,7 +181,7 @@ class CheckRunner : public framework::Task
   std::map<std::string, TClass*> mClassesLoaded;
   std::map<std::string, std::shared_ptr<MonitorObject>> mMonitorObjects;
   std::map<std::string, std::shared_ptr<QualityObject>> mQualityObjects;
-  std::map<std::string, CheckInterface*> mCheckInreface; 
+  std::map<std::string, CheckInterface*> mCheckInreface;
 
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
@@ -190,7 +190,6 @@ class CheckRunner : public framework::Task
   int mTotalNumberHistosReceived;
   AliceO2::Common::Timer timer;
 };
-
 
 } // namespace o2::quality_control::checker
 

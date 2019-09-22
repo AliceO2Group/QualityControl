@@ -15,7 +15,6 @@
 namespace o2::quality_control::core
 {
 
-
 class QualityObject : public TObject
 {
  public:
@@ -38,7 +37,7 @@ class QualityObject : public TObject
 
   /// \brief Return the name of the encapsulated object (if any).
   /// @return The name of the encapsulated object or "" if there is no object.
-  const std::string getName() const {return mCheckName;};
+  const std::string getName() const { return mCheckName; };
 
   /// \brief Overwrite the TObject's method just to avoid confusion.
   /// @return The name of the encapsulated object or "" if there is no object.
@@ -59,7 +58,7 @@ class QualityObject : public TObject
    * Use o2::framework::DataSpecUtils::describe(input) to get string
    */
   void setInputs(std::vector<std::string> inputs) { mInputs = inputs; }
-  std::vector<std::string> getInputs() {return mInputs;}
+  std::vector<std::string> getInputs() { return mInputs; }
 
   /// \brief Add key value pair that will end up in the database
   /// Add a metadata (key value pair) to the QualityObject. It will be stored in the database.
@@ -80,6 +79,6 @@ class QualityObject : public TObject
   ClassDefOverride(QualityObject, 1);
 };
 
-}
+} // namespace o2::quality_control::core
 
 #endif

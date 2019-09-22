@@ -28,7 +28,7 @@ ClassImp(o2::quality_control_modules::common::NonEmpty)
 
   void NonEmpty::configure(std::string /*name*/) {}
 
-  Quality NonEmpty::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+  Quality NonEmpty::check(std::map<std::string, std::shared_ptr<MonitorObject>> * moMap)
   {
     auto mo = moMap->begin()->second;
     auto result = Quality::Null;

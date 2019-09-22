@@ -125,21 +125,23 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       auto check = Check(checkName, configurationSource);
       InputNames inputNames;
 
-      for (auto& inputSpec: check.getInputs()){
+      for (auto& inputSpec : check.getInputs()) {
         inputNames.push_back(DataSpecUtils::label(inputSpec));
       }
       std::sort(inputNames.begin(), inputNames.end());
       checkerMap[inputNames].push_back(check);
     }
   }
-  for(auto& [inputNames, checks]: checkerMap){ 
+  for (auto& [inputNames, checks] : checkerMap) {
     //Logging
     QcInfoLogger::GetInstance() << ">> Inputs (" << inputNames.size() << "): ";
-    for (auto& name: inputNames) QcInfoLogger::GetInstance() << name << " ";
-    QcInfoLogger::GetInstance()<< " checks ("<< checks.size()<<"): ";
-    for (auto& check: checks) QcInfoLogger::GetInstance() << check.getName() << " ";
+    for (auto& name : inputNames)
+      QcInfoLogger::GetInstance() << name << " ";
+    QcInfoLogger::GetInstance() << " checks (" << checks.size() << "): ";
+    for (auto& check : checks)
+      QcInfoLogger::GetInstance() << check.getName() << " ";
     QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
-    
+
     //push workflow
     workflow.emplace_back(checkerFactory.create(checks, configurationSource));
   }

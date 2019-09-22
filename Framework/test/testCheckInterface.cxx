@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   test::TestCheck testCheck;
 
   std::shared_ptr<MonitorObject> mo(new MonitorObject(new TObjString("A string"), "str"));
-  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = {{"test", mo}};
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "test", mo } };
 
   BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Null);
 

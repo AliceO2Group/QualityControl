@@ -73,7 +73,8 @@ void MySqlDatabase::connect(const std::unordered_map<std::string, std::string>& 
                 config.at("password"));
 }
 
-void MySqlDatabase::prepareTaskDataContainer(std::string taskName){
+void MySqlDatabase::prepareTaskDataContainer(std::string taskName)
+{
   prepareTable("data_" + taskName);
 }
 
@@ -81,7 +82,7 @@ void MySqlDatabase::prepareTable(std::string table_name)
 {
   // one object per run
   string query;
-  query += "CREATE TABLE IF NOT EXISTS `" + table_name + 
+  query += "CREATE TABLE IF NOT EXISTS `" + table_name +
            "` (object_name CHAR(64), updatetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP, data LONGBLOB, size INT, run INT, "
            "fill INT, PRIMARY KEY(object_name, run)) ENGINE=MyISAM";
   if (!execute(query)) {
@@ -233,7 +234,6 @@ void MySqlDatabase::storeForMonitorObject(std::string name)
   //  }
   objects.clear();
 }
-
 
 std::shared_ptr<o2::quality_control::core::QualityObject> MySqlDatabase::retrieveQO(std::string checkName, long /*timestamp*/)
 {

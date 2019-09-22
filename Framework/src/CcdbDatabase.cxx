@@ -152,7 +152,7 @@ std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objec
 
 //Quality Object
 void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
-{  // other attributes
+{ // other attributes
   string path = qo->getName();
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
@@ -178,7 +178,7 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName,
       return nullptr;
     }
   }
-  std::shared_ptr<QualityObject> qo (dynamic_cast<QualityObject*>(object));
+  std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(object));
   if (qo == nullptr) {
     LOG(ERROR) << "Could not cast the object " << checkerName << " to QualityObject";
   }

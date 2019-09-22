@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(test_checks)
   mo->setObject(&th1f);
   mo->setIsOwner(false);
 
-  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = {{"test", mo}};
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "test", mo } };
 
   MeanIsAbove check;
   check.configure("mytest");
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(test_types)
   mo->setObject(&obj);
   mo->setIsOwner(false);
 
-  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = {{"test", mo}};
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "test", mo } };
 
   MeanIsAbove check;
   check.configure("mytest");
