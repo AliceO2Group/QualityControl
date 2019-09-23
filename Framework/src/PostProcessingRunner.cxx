@@ -67,6 +67,8 @@ bool PostProcessingRunner::init()
     QcInfoLogger::GetInstance() << "The user task '" << mConfig.taskName << "' successfully created" << AliceO2::InfoLogger::InfoLogger::endm;
 
     mState = TaskState::Created;
+    mTask->setName(mConfig.taskName);
+    mTask->configure(mConfig.taskName, *mConfigFile);
 
     mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers);
     return true;
@@ -109,6 +111,7 @@ bool PostProcessingRunner::run()
     return false;
   }
   if (mState == TaskState::INVALID) {
+    // todo maybe exception?
     QcInfoLogger::GetInstance() << "User task state INVALID, returning..." << AliceO2::InfoLogger::InfoLogger::endm;
     return false;
   }
