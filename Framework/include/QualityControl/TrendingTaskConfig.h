@@ -23,7 +23,7 @@ namespace o2::quality_control::postprocessing {
 //todo pretty print
 struct TrendingTaskConfig : PostProcessingConfig {
   TrendingTaskConfig() = default;
-  TrendingTaskConfig(std::string name, configuration::ConfigurationInterface& config);
+  TrendingTaskConfig(std::string name, configuration::ConfigurationInterface& config) {} //todo implement
   ~TrendingTaskConfig() = default;
 
 };
