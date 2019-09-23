@@ -18,35 +18,35 @@
 namespace o2::quality_control::postprocessing
 {
 
+namespace triggers
+{
 
-
-namespace triggers {
-
-TriggerFcn StartOfRun() {
+TriggerFcn StartOfRun()
+{
   // it should trigger only once per start of run
 
   // FIXME: it has to be initialized before the SOR, to actually catch it. Is it a problem?
   bool runStarted = false; // runOngoing();
-  int runNumber = false; // getRunNumber();
+  int runNumber = false;   // getRunNumber();
 
   return [runStarted, runNumber]() mutable -> Trigger {
-
     bool trigger = false;
 
     // trigger if:
     // - previously the run was not started
-//    trigger |= !runStarted && runOngoing();
+    //    trigger |= !runStarted && runOngoing();
     // - previously there was a different run number (we missed a stop and start sequence)
-//    trigger |= runOngoing() && runNumber != getRunNumber();
+    //    trigger |= runOngoing() && runNumber != getRunNumber();
 
-//    runStarted = runOngoing();
-//    runNumber = getRunNumber();
+    //    runStarted = runOngoing();
+    //    runNumber = getRunNumber();
 
     return trigger ? Trigger::StartOfRun : Trigger::No;
   };
 }
 
-TriggerFcn Once() {
+TriggerFcn Once()
+{
   return [hasTriggered = false]() mutable -> Trigger {
     if (hasTriggered) {
       return Trigger::No;
@@ -57,15 +57,13 @@ TriggerFcn Once() {
   };
 }
 
-TriggerFcn Always() {
+TriggerFcn Always()
+{
   return []() mutable -> Trigger {
     return Trigger::Always;
   };
 }
 
-
 } // namespace triggers
-
-
 
 } // namespace o2::quality_control::postprocessing

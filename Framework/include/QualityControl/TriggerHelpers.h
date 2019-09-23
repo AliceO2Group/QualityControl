@@ -20,9 +20,12 @@
 namespace o2::quality_control::postprocessing::trigger_helpers
 {
 
+/// \brief  Creates a trigger function by taking its corresponding name.
 TriggerFcn TriggerFactory(std::string trigger);
-Trigger tryTrigger(std::vector<TriggerFcn>&);
+/// \brief Creates a trigger function vector given trigger names
 std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNames);
+/// \brief Executes a vector of triggers functions and returns the first trigger which is not Trigger::No
+Trigger tryTrigger(std::vector<TriggerFcn>&);
 
 } // namespace o2::quality_control::postprocessing::trigger_helpers
 

@@ -21,23 +21,8 @@
 namespace o2::quality_control::postprocessing
 {
 
-// todo: possible triggers:
-//  INVALID,
-//  StartOfRun,
-//  EndOfRun,
-//  StartOfProcessing,
-//  EndOfProcessing,
-//  StartOfFill,
-//  EndOfFill, // BeamDump?
-//  StartOfPeriod, // same as below?
-//  EveryXMin,
-//  EveryXHour,
-//  HourOfDay, // only if really needed
-//  DayOfMonth, // only if really needed
-//  NewObject,
-//  Manual, // click somewhere?
-//  Once, // only triggers first time it is asked
-
+// todo: implement the rest
+/// \brief Possible triggers
 enum Trigger {
   No = 0, // casts to boolean false
   Once, // triggers only first time it is asked
@@ -57,8 +42,11 @@ using TriggerFcn = std::function<Trigger()>;
 
 namespace triggers {
 
+/// \brief Triggers when it detects a Start Of Run during its uptime (once per each)
 TriggerFcn StartOfRun();
+/// \brief Triggers only first time it is executed
 TriggerFcn Once();
+/// \brief Triggers always
 TriggerFcn Always();
 
 } // namespace triggers
