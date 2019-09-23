@@ -8,6 +8,10 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+///
+/// \file   PostProcessingConfig.h
+/// \author Piotr Konopka
+///
 
 #ifndef QUALITYCONTROL_POSTPROCESSINGCONFIG_H
 #define QUALITYCONTROL_POSTPROCESSINGCONFIG_H
@@ -23,6 +27,8 @@ namespace o2::quality_control::postprocessing {
 
 
 //todo pretty print
+
+/// \brief  Post-processing configuration structure
 struct PostProcessingConfig {
   PostProcessingConfig() = default;
   PostProcessingConfig(std::string name, configuration::ConfigurationInterface& config);

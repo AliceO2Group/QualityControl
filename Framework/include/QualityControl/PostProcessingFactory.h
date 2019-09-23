@@ -26,10 +26,10 @@ namespace o2::quality_control::postprocessing
 
 class PostProcessingInterface;
 
-/// \brief Factory in charge of creating PostProcessingTasks
+/// \brief Factory in charge of creating post-processing tasks
 ///
-/// The factory needs a library name and a class name provided as an object of type TaskConfig.
-/// The class loaded in the library must inherit from TaskInterface.
+/// The factory needs a library name and a class name provided as an object of type PostProcessingConfig.
+/// The class loaded in the library must inherit from PostProcesingInterface
 class PostProcessingFactory
 {
   public:

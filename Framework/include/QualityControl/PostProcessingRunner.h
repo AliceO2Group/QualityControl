@@ -8,6 +8,11 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+///
+/// \file   PostProcessingRunner.h
+/// \author Piotr Konopka
+///
+
 #ifndef QUALITYCONTROL_POSTPROCESSINGRUNNER_H
 #define QUALITYCONTROL_POSTPROCESSINGRUNNER_H
 
@@ -27,6 +32,12 @@ class ConfigurationInterface;
 
 namespace o2::quality_control::postprocessing {
 
+/// \brief A class driving the execution of a post-processing task
+///
+/// It is responsible for setting up a post-processing task and executing its methods corresponding to its state. The
+/// state transitions are determined by triggers defined by user.
+///
+/// \author Piotr Konopka
 class PostProcessingRunner
 {
   public:

@@ -80,9 +80,6 @@ bool PostProcessingRunner::run()
 {
   QcInfoLogger::GetInstance() << "Running PostProcessingRunner" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  // It is intended that the cases in this switch statement can fall through. Thanks to that, the full cycle can
-  // be completed in one run() invocation, if triggers allow it. The [[fallthrough]] attributes suppress the
-  // corresponding warning messages.
   if (mState == TaskState::Created) {
     if (Trigger trigger = trigger_helpers::tryTrigger(mInitTriggers)) {
       QcInfoLogger::GetInstance() << "Initializing user task" << AliceO2::InfoLogger::InfoLogger::endm;

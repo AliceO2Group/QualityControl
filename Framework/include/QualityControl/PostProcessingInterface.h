@@ -16,19 +16,32 @@
 #ifndef QUALITYCONTROL_POSTPROCESSINTERFACE_H
 #define QUALITYCONTROL_POSTPROCESSINTERFACE_H
 
-
-//#include <CCDB/CcdbApi.h>
+#include <string>
+#include <memory>
+//#include <boost/property_tree/ptree_fwd.hpp>
 #include <Framework/ServiceRegistry.h>
+#include <Configuration/ConfigurationInterface.h>
 #include "QualityControl/Triggers.h"
+#include "QualityControl/PostProcessingConfig.h"
+
 
 namespace o2::quality_control::postprocessing {
 
+/// \brief  Skeleton of a post-processing task.
+///
+/// Abstract class defining the skeleton and the common interface of a post-processing task.
+/// It is therefore the parent class of any post-processing task.
+/// It is responsible for retrieving, processing and storing the data, mainly from and to QC repository.
+///
+/// \author Piotr Konopka
 class PostProcessingInterface
 {
   public:
   PostProcessingInterface() = default;
   virtual ~PostProcessingInterface() = default;
 
+  // can be overridden if user wants to retrieve configuration of the task
+  virtual void configure(std::string name, configuration::ConfigurationInterface& config);
   // user gets to know what triggered the init
   virtual void initialize(Trigger, framework::ServiceRegistry&) = 0;
   // user gets to know what triggered the update

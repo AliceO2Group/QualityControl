@@ -8,6 +8,11 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+///
+/// \file   PostProcessingConfig.cxx
+/// \author Piotr Konopka
+///
+
 #include "QualityControl/PostProcessingConfig.h"
 #include <Configuration/ConfigurationInterface.h>
 

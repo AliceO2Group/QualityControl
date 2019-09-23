@@ -25,6 +25,7 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control::postprocessing {
 
+// todo: consider having a common helper for each class which loads tasks like below (QC tasks, checks, pp)
 PostProcessingInterface* PostProcessingFactory::create(const PostProcessingConfig& config)
 {
   PostProcessingInterface* result = nullptr;
@@ -54,9 +55,7 @@ PostProcessingInterface* PostProcessingFactory::create(const PostProcessingConfi
   if (!result) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
   }
-//  result->setName(taskConfig.taskName);
-//  result->setObjectsManager(objectsManager);
-//  result->setCustomParameters(taskConfig.customParameters);
+
   logger << "QualityControl Module " << config.moduleName << " loaded " << AliceO2::InfoLogger::InfoLogger::endm;
   return result;
 }
