@@ -235,6 +235,12 @@ Before September 2019, objects were serialized with TMessage and stored as _blob
 
 The QC framework is nevertheless backward compatible and can handle the old and the new storage system. 
 
+## Tuning the rates to avoid 100% CPU usage
+
+When running `o2-qc` or other qc binaries, the system will show that the processes use 100% of the CPU. This is due to the default rate for data source devices. 
+
+Simply start the DPL driver with `--rate 10000` and it should solve the problem. The rate might have to be adapted to your workflow.
+
 ---
 
 [← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Advanced Topics →](Advanced.md)
