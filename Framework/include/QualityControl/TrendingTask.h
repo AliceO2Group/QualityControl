@@ -21,6 +21,7 @@
 #include <TObject.h>
 #include <TGraph.h>
 #include "QualityControl/PostProcessingInterface.h"
+#include "QualityControl/TrendingTaskConfig.h"
 
 namespace o2::quality_control::repository {
 class DatabaseInterface;
@@ -36,6 +37,7 @@ class TrendingTask : public PostProcessingInterface {
   TrendingTask() = default;
   ~TrendingTask() override = default;
 
+  void configure(std::string name, o2::configuration::ConfigurationInterface& config) override;
   void initialize(Trigger, framework::ServiceRegistry&) override;
   void update(Trigger, framework::ServiceRegistry&) override;
   void finalize(Trigger, framework::ServiceRegistry&) override;
@@ -46,6 +48,7 @@ class TrendingTask : public PostProcessingInterface {
   void trend();
   void store();
 
+  TrendingTaskConfig mConfig;
   std::string mStorage = "TGraph";
   std::unique_ptr<TGraph> mTrend;
   Int_t mPoints = 0;

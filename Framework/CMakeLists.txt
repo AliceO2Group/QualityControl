@@ -56,6 +56,7 @@ add_library(QualityControl
             src/PostProcessingRunner.cxx
             src/PostProcessingFactory.cxx
             src/PostProcessingConfig.cxx
+            src/PostProcessingInterface.cxx
             src/TrendingTask.cxx)
 
 if(ENABLE_MYSQL)

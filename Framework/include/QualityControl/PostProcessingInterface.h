@@ -51,10 +51,11 @@ class PostProcessingInterface
 
   // todo: ccdb api which does not allow to delete?
 
-  protected:
+  void setName(const std::string& name);
+  std::string getName() const;
 
   private:
-
+  std::string mName;
 };
 
 } // namespace o2::quality_control::postprocessing

@@ -46,6 +46,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "initTrigger": [
           "once"
         ],
@@ -54,15 +55,13 @@
         ],
         "stopTrigger": [
           "once"
-        ],
-        "customParameters": {
-          "myKey": "myValue"
-        }
+        ]
       },
       "ExampleTrend": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QualityControl",
+        "detectorName": "TST",
         "dataSource": {
           "type": "repository",
           "name": "qc/TST/QcTask/example",
@@ -70,7 +69,6 @@
           "moduleName": "QcSkeleton"
         },
         "container": "TTree",
-        "mode": "synchronous",
         "initTrigger": [
           "once"
         ],
@@ -114,27 +112,6 @@
       }
     },
     "trending": {
-      "ExampleTrend": {
-        "active": "true",
-        "dataSource": {
-          "type": "repository",
-          "name": "qc/TST/QcTask/example",
-          "reduceFcn": "o2::quality_control_modules::skeleton::ReduceObjectX",
-          "moduleName": "QcSkeleton"
-        },
-        "container": "TTree",
-        "mode": "synchronous",
-        "initTrigger": [
-          "SOR"
-        ],
-        "updateTrigger": [
-          "5min",
-          "manual"
-        ],
-        "stopTrigger": [
-          "EOR"
-        ]
-      }
     }
   },
   "dataSamplingPolicies": [

@@ -17,6 +17,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
+#include <Configuration/ConfigurationInterface.h>
 #include <TH1.h>
 //#include <TGraph.h>
 #include <TCanvas.h>
@@ -26,6 +27,11 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
 const Int_t TrendSizeBase = 10;
+
+void TrendingTask::configure(std::string name, o2::configuration::ConfigurationInterface& config)
+{
+  mConfig = TrendingTaskConfig(name, config);
+}
 
 void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
@@ -58,7 +64,7 @@ void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
 void TrendingTask::store()
 {
   QcInfoLogger::GetInstance() << "Storing TGraph" << AliceO2::InfoLogger::InfoLogger::endm;
-  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), "ExampleTrend", "TST");
+  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), "TST");
   mo->setIsOwner(false);
   mDatabase->store(mo);
   TCanvas* c = new TCanvas();

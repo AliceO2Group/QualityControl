@@ -29,6 +29,7 @@ PostProcessingRunner::PostProcessingRunner(std::string name, std::string configP
   : mConfigFile(ConfigurationFactory::getConfiguration(configPath)),
     mConfig(name, *mConfigFile)
 {
+  mConfigFile->setPrefix(""); // protect from having the prefix changed by PostProcessingConfig
 }
 
 PostProcessingRunner::~PostProcessingRunner()
@@ -48,7 +49,7 @@ bool PostProcessingRunner::init()
     LOG(INFO) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
     mServices.registerService<DatabaseInterface>(mDatabase.get());
   } catch (
-    std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
+    std::string const& e) { // we have to catch here to print the exception because the device will make it disappear todo: is it still the case?
     LOG(ERROR) << "exception : " << e;
     throw;
   } catch (...) {

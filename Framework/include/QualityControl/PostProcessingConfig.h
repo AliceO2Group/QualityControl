@@ -36,7 +36,7 @@ struct PostProcessingConfig {
   std::string taskName = "";
   std::string moduleName = "";
   std::string className = "";
-  std::unordered_map<std::string, std::string> customParameters = {};
+  std::string detectorName = "MISC";
   std::vector<std::string> initTriggers = {};
   std::vector<std::string> updateTriggers = {};
   std::vector<std::string> stopTriggers = {};
