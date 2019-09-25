@@ -176,8 +176,8 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 
   QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  //printf("count: %d\n", count);
-  if( (count % 100) == 0) {
+  printf("count: %d\n", count);
+  if( (count % 10) == 0) {
     TFile f("/home/flp/qc.root","RECREATE");
     for(int i = 0; i < 24; i++) mHistogramNoise[i]->Write();
     f.ls();
@@ -206,6 +206,7 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
     mDecoder.processData( input.payload, header->payloadSize );
 
     std::vector<SampaHit>& hits = mDecoder.getHits();
+    //fprintf(stdout,"hits size: %d\n", hits.size());
     for(uint32_t i = 0; i < hits.size(); i++) {
       //continue;
       SampaHit& hit = hits[i];

@@ -13,6 +13,7 @@
 /// \author Andrea Ferrero
 ///
 
+#include "MCHMappingInterface/Segmentation.h"
 #include "MuonChambers/MCHCheckPedestals.h"
 
 // ROOT
@@ -115,6 +116,22 @@ void MCHCheckPedestals::beautify(MonitorObject* mo, Quality checkResult)
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
+  }
+
+  if (mo->getName().find("QcMuonChambers_Noise") != std::string::npos) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    if( !h ) return;
+    h->SetDrawOption("colz");
+    h->SetMaximum(1.5);
+  }
+
+  if (mo->getName().find("QcMuonChambers_Pedestals_DE801") != std::string::npos) {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    if( !h ) return;
+
+    //o2::mch::mapping::Segmentation segment(801);
+    //const o2::mch::mapping::CathodeSegmentation& csegment = segment.bending();
+    //std::vector<std::vector<o2::mch::contour::Polygon<double>>>poly = o2::mch::mapping::getPadPolygons(csegment);
   }
 }
 

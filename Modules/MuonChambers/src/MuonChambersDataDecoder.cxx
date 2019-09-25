@@ -740,8 +740,8 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
   case notSynchronized:
     dsr.data += data << dsr.bit;
 
-    if( gPrintLevel >= 1 ) fprintf(flog,"notSynchronized: bit=%02d  data=%013lX  %03X %03X %03X %03X %03X\n",
-        dsr.bit, dsr.data,
+    if( gPrintLevel >= 1 ) fprintf(flog,"notSynchronized[%d]: bit=%02d  data=%013lX  %03X %03X %03X %03X %03X\n",
+        dsr.id, dsr.bit, dsr.data,
         (int)((dsr.data>>40) & 0x3FF),
         (int)((dsr.data>>30) & 0x3FF),
         (int)((dsr.data>>20) & 0x3FF),
@@ -758,7 +758,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
         dsr.bit = 0;
         dsr.data = 0;
         dsr.packetsize = 0;
-        if( gPrintLevel >= 1 ) fprintf(flog,"notSynchronized: SYNC word found\n");
+        if( gPrintLevel >= 1 ) fprintf(flog,"notSynchronized[%d]: SYNC word found\n", dsr.id);
       } else {
         dsr.data = dsr.data >> 10;
         dsr.bit -= 10;
@@ -769,8 +769,8 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
   case headerToRead:
     dsr.data += data << dsr.bit;
 
-    if( gPrintLevel >= 1 ) fprintf(flog,"headerToRead: bit=%02d  data=%013lX  %03X %03X %03X %03X %03X\n",
-        dsr.bit, dsr.data,
+    if( gPrintLevel >= 1 ) fprintf(flog,"headerToRead[%d]: bit=%02d  data=%013lX  %03X %03X %03X %03X %03X\n",
+        dsr.id, dsr.bit, dsr.data,
         (int)((dsr.data>>40) & 0x3FF),
         (int)((dsr.data>>30) & 0x3FF),
         (int)((dsr.data>>20) & 0x3FF),
@@ -787,7 +787,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
         dsr.bit = 0;
         dsr.data = 0;
         dsr.packetsize = 0;
-        if( gPrintLevel >= 1 ) fprintf(flog,"headerToRead: SYNC word found\n");
+        if( gPrintLevel >= 1 ) fprintf(flog,"headerToRead[%d]: SYNC word found\n", dsr.id);
       } else {
         result = DECODE_STATE_HEADER_FOUND;
         memcpy(&(dsr.header),&(dsr.data),sizeof(Sampa::SampaHeaderStruct));
@@ -808,7 +808,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
     dsr.csize = data;
     dsr.cid = 0;
     dsr.packetsize += 1;
-    if( gPrintLevel >= 1 ) fprintf(flog,"SAMPA cluster size: %d\n", dsr.csize);
+    if( gPrintLevel >= 1 ) fprintf(flog,"sizeToRead[%d]: SAMPA cluster size: %d\n", dsr.id, dsr.csize);
     if( (dsr.csize+2) > dsr.header.fNbOf10BitWords ) {
       fprintf(flog,"ERROR: cluster size bigger than SAMPA payload\n");
       dsr.status = notSynchronized;
@@ -817,7 +817,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
       dsr.packetsize = 0;
     } else {
       if( dsr.packetsize == dsr.header.fNbOf10BitWords ) {
-        fprintf(flog,"ERROR: end-of-packet found while reading cluster size\n");
+        fprintf(flog,"sizeToRead[%d]: ERROR: end-of-packet found while reading cluster size\n", dsr.id);
         dsr.status = notSynchronized;
         dsr.bit = 0;
         dsr.data = 0;
@@ -833,7 +833,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
     dsr.ctime = data;
     dsr.packetsize += 1;
     if( dsr.packetsize == dsr.header.fNbOf10BitWords ) {
-      fprintf(flog,"ERROR: end-of-packet found while reading cluster time\n");
+      fprintf(flog,"timeToRead[%d]: ERROR: end-of-packet found while reading cluster time\n", dsr.id);
       dsr.status = notSynchronized;
       dsr.bit = 0;
       dsr.data = 0;
@@ -841,7 +841,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
     } else {
       dsr.status = dataToRead;
       result = DECODE_STATE_CTIME_FOUND;
-      if( gPrintLevel >= 1 ) fprintf(flog,"SAMPA cluster time: %d\n", dsr.ctime);
+      if( gPrintLevel >= 1 ) fprintf(flog,"timeToRead[%d]: SAMPA cluster time: %d\n", dsr.id, dsr.ctime);
     }
     break;
 
@@ -854,7 +854,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
     //printf("dataToRead: cid=%d  packetsize=%d  end_of_packet=%d  end_of_cluster=%d\n",
     //    dsr.cid, dsr.packetsize, (int)end_of_packet, (int)end_of_cluster);
     if (end_of_packet && !end_of_cluster) {
-      fprintf(flog,"ERROR: end-of-packet found while reading cluster data\n");
+      fprintf(flog,"dataToRead[%d]: ERROR: end-of-packet found while reading cluster data\n", dsr.id);
       dsr.bit = 0;
       dsr.data = 0;
       dsr.packetsize = 0;
@@ -862,7 +862,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
     } else {
       result = DECODE_STATE_SAMPLE_FOUND;
       dsr.status = dataToRead;
-      if( gPrintLevel >= 1 ) fprintf(flog,"SAMPA sample: %d\n", dsr.sample);
+      if( gPrintLevel >= 1 ) fprintf(flog,"dataToRead[%d]: SAMPA sample: %d\n", dsr.id, dsr.sample);
       if(end_of_cluster) {
         result = DECODE_STATE_END_OF_CLUSTER;
         if (end_of_packet) {
@@ -1027,7 +1027,7 @@ void MuonChambersDataDecoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, 
 
       int link_id = (value >> 59) & 0x1F;
       int ds_id = (value >> 53) & 0x3F;
-      int link_id += 12*dpw_id;
+      link_id += 12*dpw_id;
       //if(ds_id != 0) continue;
       if(gPrintLevel>=1) fprintf(flog,"64 bits: %016lX\n", value);
 
@@ -1194,7 +1194,7 @@ void MuonChambersDataDecoder::processData(const char* buf, size_t size)
     int Dorbit2 = (uint32_t)( ((uint64_t)CRUh.hb_orbit) + 0x100000000 - hb_orbit );
     if( Dorbit1 >=0 && Dorbit1 <= 1 ) orbit_jump = false;
     if( Dorbit2 >=0 && Dorbit2 <= 1 ) orbit_jump = false;
-    if( true && orbit_jump ) {
+    if( false && orbit_jump ) {
       if(gPrintLevel>=1) fprintf(flog, "Resetting decoding FSM: orbit=%d, previous=%d\n", CRUh.hb_orbit, hb_orbit);
       int lid_min = (rdh_lid == 15) ? dpwId*12 : rdh_lid;
       int lid_max = (rdh_lid == 15) ? 11+dpwId*12 : rdh_lid;

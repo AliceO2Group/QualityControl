@@ -146,7 +146,7 @@ bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMap
     mPadMap[de][address].fSizeX = 10;
     mPadMap[de][address].fSizeY = 0.5;
     mPadMap[de][address].fCathode = 'b';
-    //    cout<<"Bend Manu id "<<dsid<<" ch "<<dsch<<endl;
+    cout<<"Bend Manu id "<<dsid<<" ch "<<dsch<<" de "<<de<<"  address "<<address<<endl;
   }
   filebend.close();
 
@@ -175,6 +175,7 @@ bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMap
     mPadMap[de][address].fX = x;
     mPadMap[de][address].fY = y;
     mPadMap[de][address].fCathode = 'n';
+    cout<<"NBend Manu id "<<dsid<<" ch "<<dsch<<" de "<<de<<"  address "<<address<<endl;
     //    cout<<"NB Manu id "<<dsid<<" ch "<<dsch<<endl;
   }
   filenbend.close();
@@ -195,14 +196,17 @@ bool MapCRU::getDSMapping(uint32_t cru_link, uint32_t ds_addr, uint32_t& de, uin
 
 bool MapCRU::getPad(uint32_t cru_link, uint32_t dsid, uint32_t dsch, MapPad& pad)
 {
+  //printf("getPad: link=%d  dsid=%d  bad=%d\n", cru_link, dsid, mDsMap[cru_link][dsid].mBad);
   if( mDsMap[cru_link][dsid].mBad == 1 ) return false;
   int32_t de = mDsMap[cru_link][dsid].mDE;
   int32_t dsidx = mDsMap[cru_link][dsid].mIndex;
+  //printf("getPad: de=%d  dsidx=%d  mPadMap[de]=%p\n", de, dsidx, mPadMap[de]);
 
   if( mPadMap[de] == NULL ) return false;
 
   int32_t address = dsch + (dsidx<<6);
   pad = mPadMap[de][address];
+  //printf("getPad: address=%d  pad.fDE=%d\n", address, pad.fDE);
   return true;
 }
 
