@@ -82,8 +82,8 @@ function create_class() {
   local classname=$2
   local typename=$3
 
-  if [ "$typename" != "Task" ] && [ "$typename" != "Check" ]; then
-    echo "3rd parameter can only be Task or Check"
+  if [ "$typename" != "Task" ] && [ "$typename" != "Check" ] && [ "$typename" != "PostProcessing" ]; then
+    echo "3rd parameter can only be Task, Check or PostProcessing"
     return
   fi
 
@@ -162,14 +162,15 @@ Example:
 
 Options:
  -h               print this message
- -m MODULE_NAME   create module named MODULE_NAME or add there some task/checker
- -t TASK_NAME     create task named TASK_NAME
- -c CHECK_NAME    create check named CHECK_NAME
+ -m MODULE_NAME   create a module named MODULE_NAME or add there some task/checker
+ -t TASK_NAME     create a task named TASK_NAME
+ -c CHECK_NAME    create a check named CHECK_NAME
+ -p PP_NAME       create a postprocessing task named PP_NAME
 "
 }
 
 MODULE=
-while getopts 'hm:t:c:' option; do
+while getopts 'hm:t:c:p:' option; do
   case "${option}" in
   \?)
     print_usage
@@ -197,6 +198,13 @@ while getopts 'hm:t:c:' option; do
       exit 1
     fi
     create_class ${MODULE} ${OPTARG} Check
+    ;;
+  p)
+    if [ -z ${MODULE} ]; then
+      echo 'Cannot add a postprocessing task, module name not specified, exiting...'
+      exit 1
+    fi
+    create_class ${MODULE} ${OPTARG} PostProcessing
     ;;
   esac
 done

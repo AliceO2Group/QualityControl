@@ -147,9 +147,10 @@ Example:
 
 Options:
  -h               print this message
- -m MODULE_NAME   create module named MODULE_NAME or add there some task/checker
- -t TASK_NAME     create task named TASK_NAME
- -c CHECK_NAME    create check named CHECK_NAME
+ -m MODULE_NAME   create a module named MODULE_NAME or add there some task/checker
+ -t TASK_NAME     create a task named TASK_NAME
+ -c CHECK_NAME    create a check named CHECK_NAME
+ -p PP_NAME       create a postprocessing task named PP_NAME
 ```
 
 For example, if your detector 3-letter code is ABC you might want to do
