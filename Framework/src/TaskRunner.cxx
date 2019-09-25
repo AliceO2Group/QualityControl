@@ -27,7 +27,6 @@
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
-//#include <DetectorsCommonDataFormats/DetID.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"

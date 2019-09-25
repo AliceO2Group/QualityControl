@@ -97,6 +97,8 @@ class InfrastructureGenerator
   /// \endcode
   /// \param policies - completion policies vector
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
+
+  static void printVersion();
 };
 
 } // namespace core

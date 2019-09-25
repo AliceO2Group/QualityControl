@@ -2,7 +2,7 @@
 # variables. We don't want to polute our source tree with it, thus putting it in
 # binary tree.
 configure_file("include/QualityControl/Version.h.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/include/${MODULE_NAME}/Version.h"
+               "${CMAKE_CURRENT_BINARY_DIR}/include/QualityControl/Version.h"
                @ONLY)
 
 # ---- Library for the types ----
@@ -60,7 +60,8 @@ target_include_directories(
   QualityControl
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 target_link_libraries(QualityControl
                       PUBLIC Boost::boost
@@ -251,10 +252,11 @@ endforeach()
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 10)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
-set_property(TEST testObjectsManager PROPERTY TIMEOUT 60)
+set_property(TEST testObjectsManager PROPERTY TIMEOUT 20)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
-set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
+set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 15)
 set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
+set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
 
 # ---- Install ----
 
@@ -323,6 +325,7 @@ install(FILES example-default.json
               readoutForDataDump.json
               script/RepoCleaner/config.yaml
               streamerinfos.root
+              streamerinfos_v017.root
         DESTINATION etc)
 
 install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
@@ -333,4 +336,4 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
 file(COPY test/testSharedConfig.json test/testWorkflow.json
      DESTINATION ${CMAKE_BINARY_DIR}/tests/)
 
-file(COPY streamerinfos.root DESTINATION ${CMAKE_BINARY_DIR}/etc/)
+file(COPY streamerinfos.root streamerinfos_v017.root DESTINATION ${CMAKE_BINARY_DIR}/etc/)
