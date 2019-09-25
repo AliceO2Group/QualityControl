@@ -15,7 +15,7 @@
       * [Module creation](#module-creation)
       * [Test run](#test-run)
       * [Modification of a Task](#modification-of-a-task)
-      * [Addition of a Check](#addition-of-a-check)
+      * [Check](#check)
       * [Commit Code](#commit-code)
       * [Details on data storage](#details-on-data-storage)
          * [Storage before v0.14 and ROOT 6.18](#storage-before-v014-and-root-618)
@@ -201,10 +201,68 @@ You can rename the task by simply changing its name in the config file. Change t
 `QcTask` to whatever you like and run it again (no need to recompile). You should see the new name
 appear in the QCG.
 
-## Addition of a Check
+## Check
 
-TODO
+The Check is a function that determines the quality of the Monitor Objects produced in the previous step - Task. It can subscribe to receive multiple Monitor Objects from several Tasks.
 
+## Configuration
+
+```json
+{
+  "qc" : {
+    "config" : { ... },
+    "tasks" : { ... },
+
+    "checks": {
+      "CheckName": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "TaskName",
+          "MOs": "all"
+        },
+        {
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["example", "other"]
+        }]
+      },
+      "QcCheck": {
+         ...
+      }
+   }
+
+}
+```
+
+* __active__ - Boolean value whether the checker is active or not
+* __moduleName__ - The module which implements the check class (like in tasks)
+* __className__ - Class inside the module with the namespace path (like in tasks)
+* __policy__ - Policy for triggering the _check_ function inside the module
+    * _OnAny_ (default) - if any of the declared monitor objects change, might trigger even if not all are ready
+    * _OnAnyNonZero_ - if any of the declared monitor objects change with assurance that there are all MOs
+    * _OnAll_ - if all of the monitor objects updated at least once
+    * if the MOs are not declared or _MO_: "all" in one or more dataSources, the above policy don't apply, the `check` will be triggered whenever a new MonitorObject is received from one of the inputs
+* __dataSource__ - declaration of the `check` input
+    * _type_ - currently only supported is _Task_
+    * _name_ - name of the _Task_
+    * _MOs_ - list of MonitorObjects name or "all"
+
+## Implementation
+After creation of the module described in the above section, every Check functionality requires a separate implementation. The module might implement several Check classes.
+```c++
+Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) {}
+
+void beautify(std::shared_ptr<MonitorObject> mo, Quality = Quality::Null) {}
+
+```
+
+The `check` function is called whenever the _policy_ is satisfied. It gets a map with all declared MonitorObjects. It is expected to return Quality of the given MonitorObjects.
+
+The `beautify` function is called after the `check` function if there is only one declared MonitorObject.
 ## Commit Code
 
 To commit your new or modified code, please follow this procedure
