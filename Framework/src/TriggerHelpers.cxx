@@ -14,10 +14,43 @@
 ///
 
 #include "QualityControl/TriggerHelpers.h"
+#include "QualityControl/QcInfoLogger.h"
 #include <boost/algorithm/string.hpp>
+#include <optional>
+
+using namespace o2::quality_control::core;
 
 namespace o2::quality_control::postprocessing::trigger_helpers
 {
+
+std::optional<double> string2Seconds(std::string str) {
+  constexpr static char secondsStr[] = "sec";
+  constexpr static char minutesStr[] = "min";
+  constexpr static char hoursStr[] = "hour";
+
+  try {
+    if (size_t p = str.find(secondsStr); p != std::string::npos) {
+      return 1.0 * std::stod(str.substr(0, p));
+    } else if (size_t p = str.find(minutesStr); p != std::string::npos) {
+      return 60.0 * std::stod(str.substr(0, p));
+    } else if (size_t p = str.find(hoursStr); p != std::string::npos) {
+      return 3600.0 * std::stod(str.substr(0, p));
+    } else {
+      return {};
+    }
+  } catch(std::invalid_argument& ex) {
+    QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error
+                                << "Unexpected format of string describing time '" << str << "', "
+                                << ex.what()
+                                << AliceO2::InfoLogger::InfoLogger::endm;
+  } catch(std::out_of_range& ex) {
+    QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error
+                                << "Time out of range '" << str << "', "
+                                << ex.what()
+                                << AliceO2::InfoLogger::InfoLogger::endm;
+  }
+  return {};
+}
 
 TriggerFcn TriggerFactory(std::string trigger)
 {
@@ -40,12 +73,8 @@ TriggerFcn TriggerFactory(std::string trigger)
     // todo: extract object path
     //  it might be in a form of "newobject:/qc/ASDF/ZXCV"
     return triggers::NewObject("");
-  } else if (trigger.find("sec") != std::string::npos ||
-             trigger.find("min") != std::string::npos ||
-             trigger.find("hour") != std::string::npos) {
-    // todo: extract time
-    //  it might be in a form of "10sec", "5min", "1hour", etc...
-    return triggers::Periodic(-1.0);
+  } else if (auto seconds = string2Seconds(trigger); seconds.has_value()) {
+    return triggers::Periodic(seconds.value());
   } else {
     throw std::runtime_error("unknown trigger: " + trigger);
   }

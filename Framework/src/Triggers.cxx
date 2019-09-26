@@ -16,6 +16,8 @@
 #include "QualityControl/Triggers.h"
 #include "QualityControl/QcInfoLogger.h"
 
+#include <Common/Timer.h>
+
 using namespace o2::quality_control::core;
 namespace o2::quality_control::postprocessing
 {
@@ -92,9 +94,23 @@ TriggerFcn EndOfFill()
   return NotImplemented("EndOfFill");
 }
 
-TriggerFcn Periodic(double /*seconds*/)
+TriggerFcn Periodic(double seconds)
 {
-  return NotImplemented("Periodic");
+  AliceO2::Common::Timer timer;
+  timer.reset(static_cast<int>(seconds * 1000000));
+
+  return [timer]() mutable -> Trigger {
+    if (timer.isTimeout()) {
+      // increment until it is cleared (in case that more than one cycle has passed)
+      // let's hope there is no bug, which would make us stay in that loop forever
+      while (timer.isTimeout()) {
+        timer.increment();
+      }
+      return Trigger::Periodic;
+    } else {
+      return Trigger::No;
+    }
+  };
 }
 
 TriggerFcn NewObject(std::string /*name*/)
