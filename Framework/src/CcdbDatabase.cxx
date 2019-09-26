@@ -15,6 +15,7 @@
 
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/Version.h"
 #include "Common/Exceptions.h"
 // ROOT
 #include <TBufferJSON.h>
@@ -105,7 +106,10 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
 
   // metadata
   map<string, string> metadata;
-  metadata["quality"] = std::to_string(mo->getQuality().getLevel());
+  // QC metadata (prefix qc_)
+  metadata["quality"] = std::to_string(mo->getQuality().getLevel()); // this is going to disappear
+  metadata["qc_version"] = Version::getString();
+  // user metadata
   map<string, string> userMetadata = mo->getMetadataMap();
   if (!userMetadata.empty()) {
     metadata.insert(userMetadata.begin(), userMetadata.end());
