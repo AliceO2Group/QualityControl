@@ -12,7 +12,7 @@ include(GNUInstallDirs)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 0.18.2 # TODO update this automatically when there are new releases
+        VERSION 0.18.3 # TODO update this automatically when there are new releases
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES CXX)
 
