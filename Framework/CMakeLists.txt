@@ -217,12 +217,14 @@ set(TEST_SRCS
     test/testCcdbDatabase.cxx
     test/testCcdbDatabaseExtra.cxx
     test/testTriggers.cxx
+    test/testTriggerHelpers.cxx
     test/testPostProcessingRunner.cxx
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""

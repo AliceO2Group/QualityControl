@@ -40,19 +40,18 @@ std::optional<double> string2Seconds(std::string str) {
     }
   } catch(std::invalid_argument& ex) {
     QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error
-                                << "Unexpected format of string describing time '" << str << "', "
-                                << ex.what()
+                                << "Unexpected format of string describing time '" << str << "'"
                                 << AliceO2::InfoLogger::InfoLogger::endm;
+    throw ex;
   } catch(std::out_of_range& ex) {
     QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error
-                                << "Time out of range '" << str << "', "
-                                << ex.what()
+                                << "Time out of range '" << str << "'"
                                 << AliceO2::InfoLogger::InfoLogger::endm;
+    throw ex;
   }
-  return {};
 }
 
-TriggerFcn TriggerFactory(std::string trigger)
+TriggerFcn triggerFactory(std::string trigger)
 {
   // todo: should we accept many versions of trigger names?
   boost::algorithm::to_lower(trigger);
@@ -74,9 +73,12 @@ TriggerFcn TriggerFactory(std::string trigger)
     //  it might be in a form of "newobject:/qc/ASDF/ZXCV"
     return triggers::NewObject("");
   } else if (auto seconds = string2Seconds(trigger); seconds.has_value()) {
+    if (seconds.value() < 0) {
+      throw std::invalid_argument("negative number of seconds in trigger '" + trigger + "'");
+    }
     return triggers::Periodic(seconds.value());
   } else {
-    throw std::runtime_error("unknown trigger: " + trigger);
+    throw std::invalid_argument("unknown trigger: " + trigger);
   }
 }
 
@@ -94,9 +96,9 @@ std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNa
 {
   std::vector<TriggerFcn> triggerFcns;
   for (const auto& triggerName : triggerNames) {
-    triggerFcns.push_back(TriggerFactory(triggerName));
+    triggerFcns.push_back(triggerFactory(triggerName));
   }
-  return std::move(triggerFcns);
+  return triggerFcns;
 }
 
 } // namespace o2::quality_control::postprocessing::trigger_helpers
