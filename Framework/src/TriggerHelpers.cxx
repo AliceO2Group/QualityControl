@@ -23,7 +23,8 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control::postprocessing::trigger_helpers
 {
 
-std::optional<double> string2Seconds(std::string str) {
+std::optional<double> string2Seconds(std::string str)
+{
   constexpr static char secondsStr[] = "sec";
   constexpr static char minutesStr[] = "min";
   constexpr static char hoursStr[] = "hour";
@@ -38,12 +39,12 @@ std::optional<double> string2Seconds(std::string str) {
     } else {
       return {};
     }
-  } catch(std::invalid_argument& ex) {
+  } catch (std::invalid_argument& ex) {
     QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error
                                 << "Unexpected format of string describing time '" << str << "'"
                                 << AliceO2::InfoLogger::InfoLogger::endm;
     throw ex;
-  } catch(std::out_of_range& ex) {
+  } catch (std::out_of_range& ex) {
     QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error
                                 << "Time out of range '" << str << "'"
                                 << AliceO2::InfoLogger::InfoLogger::endm;
