@@ -30,14 +30,26 @@ class SkeletonPostProcessing final : public quality_control::postprocessing::Pos
  public:
   /// \brief Constructor
   SkeletonPostProcessing() = default;
-  /// Destructor
+  /// \brief Destructor
   ~SkeletonPostProcessing() override;
 
-  // user gets to know what triggered the init
+  /// \brief Initialization of a post-processing task.
+  /// Initialization of a post-processing task. User receives a Trigger which caused the initialization and a service
+  /// registry with singleton interfaces.
+  /// \param trigger  Trigger which caused the initialization, for example Trigger::SOR
+  /// \param services Interface containing optional interfaces, for example DatabaseInterface
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
-  // user gets to know what triggered the processing
+  /// \brief Update of a post-processing task.
+  /// Update of a post-processing task. User receives a Trigger which caused the update and a service
+  /// registry with singleton interfaces.
+  /// \param trigger  Trigger which caused the initialization, for example Trigger::Period
+  /// \param services Interface containing optional interfaces, for example DatabaseInterface
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
-  // user gets to know what triggered the end
+  /// \brief Finalization of a post-processing task.
+  /// Finalization of a post-processing task. User receives a Trigger which caused the finalization and a service
+  /// registry with singleton interfaces.
+  /// \param trigger  Trigger which caused the initialization, for example Trigger::EOR
+  /// \param services Interface containing optional interfaces, for example DatabaseInterface
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
  private:

@@ -41,14 +41,30 @@ class PostProcessingInterface
   PostProcessingInterface() = default;
   virtual ~PostProcessingInterface() = default;
 
-  // can be overridden if user wants to retrieve configuration of the task
+  /// \brief Configuration of a post-processing task.
+  /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
+  /// \param name     Name of the task
+  /// \param config   ConfigurationInterface with prefix set to ""
   virtual void configure(std::string name, configuration::ConfigurationInterface& config);
-  // user gets to know what triggered the init
-  virtual void initialize(Trigger, framework::ServiceRegistry&) = 0;
-  // user gets to know what triggered the update
-  virtual void update(Trigger, framework::ServiceRegistry&) = 0;
-  // user gets to know what triggered the end
-  virtual void finalize(Trigger, framework::ServiceRegistry&) = 0;
+
+  /// \brief Initialization of a post-processing task.
+  /// Initialization of a post-processing task. User receives a Trigger which caused the initialization and a service
+  /// registry with singleton interfaces.
+  /// \param trigger  Trigger which caused the initialization, for example Trigger::SOR
+  /// \param services Interface containing optional interfaces, for example DatabaseInterface
+  virtual void initialize(Trigger trigger, framework::ServiceRegistry& services) = 0;
+  /// \brief Update of a post-processing task.
+  /// Update of a post-processing task. User receives a Trigger which caused the update and a service
+  /// registry with singleton interfaces.
+  /// \param trigger  Trigger which caused the initialization, for example Trigger::Period
+  /// \param services Interface containing optional interfaces, for example DatabaseInterface
+  virtual void update(Trigger trigger, framework::ServiceRegistry& services) = 0;
+  /// \brief Finalization of a post-processing task.
+  /// Finalization of a post-processing task. User receives a Trigger which caused the finalization and a service
+  /// registry with singleton interfaces.
+  /// \param trigger  Trigger which caused the initialization, for example Trigger::EOR
+  /// \param services Interface containing optional interfaces, for example DatabaseInterface
+  virtual void finalize(Trigger trigger, framework::ServiceRegistry& services) = 0;
 
   // todo: ccdb api which does not allow to delete?
 
