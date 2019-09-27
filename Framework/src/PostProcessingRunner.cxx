@@ -39,7 +39,7 @@ PostProcessingRunner::~PostProcessingRunner()
 
 bool PostProcessingRunner::init()
 {
-  QcInfoLogger::GetInstance() << "Initializing PostProcessingRunner" << AliceO2::InfoLogger::InfoLogger::endm;
+  LOG(INFO) << "Initializing PostProcessingRunner";
 
   try {
     // configuration of the database
@@ -61,11 +61,11 @@ bool PostProcessingRunner::init()
   }
 
   // setup user's task
-  QcInfoLogger::GetInstance() << "Creating a user task '" << mConfig.taskName << "'" << AliceO2::InfoLogger::InfoLogger::endm;
+  LOG(INFO) << "Creating a user task '" << mConfig.taskName << "'";
   PostProcessingFactory f;
   mTask.reset(f.create(mConfig));
   if (mTask) {
-    QcInfoLogger::GetInstance() << "The user task '" << mConfig.taskName << "' successfully created" << AliceO2::InfoLogger::InfoLogger::endm;
+    LOG(INFO) << "The user task '" << mConfig.taskName << "' successfully created";
 
     mState = TaskState::Created;
     mTask->setName(mConfig.taskName);
@@ -74,7 +74,7 @@ bool PostProcessingRunner::init()
     mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers);
     return true;
   } else {
-    QcInfoLogger::GetInstance() << "Failed to create the task '" << mConfig.taskName << "'" << AliceO2::InfoLogger::InfoLogger::endm;
+    LOG(INFO) << "Failed to create the task '" << mConfig.taskName << "'";
     // todo :maybe exceptions instead of return values
     return false;
   }
@@ -82,11 +82,11 @@ bool PostProcessingRunner::init()
 
 bool PostProcessingRunner::run()
 {
-  QcInfoLogger::GetInstance() << "Running PostProcessingRunner" << AliceO2::InfoLogger::InfoLogger::endm;
+  LOG(INFO) << "Running PostProcessingRunner";
 
   if (mState == TaskState::Created) {
     if (Trigger trigger = trigger_helpers::tryTrigger(mInitTriggers)) {
-      QcInfoLogger::GetInstance() << "Initializing user task" << AliceO2::InfoLogger::InfoLogger::endm;
+      LOG(INFO) << "Initializing user task";
 
       mTask->initialize(trigger, mServices);
 
@@ -98,22 +98,22 @@ bool PostProcessingRunner::run()
   if (mState == TaskState::Running) {
 
     if (Trigger trigger = trigger_helpers::tryTrigger(mUpdateTriggers)) {
-      QcInfoLogger::GetInstance() << "Updating user task" << AliceO2::InfoLogger::InfoLogger::endm;
+      LOG(INFO) << "Updating user task";
       mTask->update(trigger, mServices);
     }
     if (Trigger trigger = trigger_helpers::tryTrigger(mStopTriggers)) {
-      QcInfoLogger::GetInstance() << "Finalizing user task" << AliceO2::InfoLogger::InfoLogger::endm;
+      LOG(INFO) << "Finalizing user task";
       mTask->finalize(trigger, mServices);
       mState = TaskState::Finished; // maybe the task should monitor its state by itself?
     }
   }
   if (mState == TaskState::Finished) {
-    QcInfoLogger::GetInstance() << "User task finished, returning..." << AliceO2::InfoLogger::InfoLogger::endm;
+    LOG(INFO) << "User task finished, returning...";
     return false;
   }
   if (mState == TaskState::INVALID) {
     // todo maybe exception?
-    QcInfoLogger::GetInstance() << "User task state INVALID, returning..." << AliceO2::InfoLogger::InfoLogger::endm;
+    LOG(INFO) << "User task state INVALID, returning...";
     return false;
   }
 
