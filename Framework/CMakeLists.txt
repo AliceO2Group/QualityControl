@@ -344,6 +344,7 @@ install(FILES example-default.json
               readout.json
               readout-no-sampling.json
               readoutForDataDump.json
+              postprocessing.json
               script/RepoCleaner/config.yaml
               streamerinfos.root
               streamerinfos_v017.root

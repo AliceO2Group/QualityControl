@@ -40,23 +40,6 @@
         },
         "location": "remote"
       }
-    },
-    "postprocessing": {
-      "ExamplePostprocessing": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
-        "moduleName": "QcSkeleton",
-        "detectorName": "TST",
-        "initTrigger": [
-          "once"
-        ],
-        "updateTrigger": [
-          "once"
-        ],
-        "stopTrigger": [
-          "once"
-        ]
-      }
     }
   },
   "dataSamplingPolicies": [
