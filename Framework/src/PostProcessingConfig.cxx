@@ -25,10 +25,6 @@ PostProcessingConfig::PostProcessingConfig(std::string name, configuration::Conf
     className(config.get<std::string>("qc.postprocessing." + name + ".className")),
     detectorName(config.get<std::string>("qc.postprocessing." + name + ".detectorName", "MISC"))
 {
-  //  try {
-  //    customParameters = config.getRecursiveMap("qc.postprocessing." + name + ".taskParameters");
-  //  } catch (...) {} // no custom parameters
-
   for (const auto& initTrigger : config.getRecursive("qc.postprocessing." + name + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());
   }

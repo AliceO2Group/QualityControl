@@ -16,15 +16,12 @@
 #ifndef QUALITYCONTROL_POSTPROCESSINGRUNNER_H
 #define QUALITYCONTROL_POSTPROCESSINGRUNNER_H
 
-// include from OCC
-//class RuntimeControlledObject;
 #include <memory>
-//class PostProcessingInterface;
+#include <Framework/ServiceRegistry.h>
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingConfig.h"
 #include "QualityControl/Triggers.h"
 #include "QualityControl/DatabaseInterface.h"
-#include <Framework/ServiceRegistry.h>
 
 namespace o2::configuration
 {

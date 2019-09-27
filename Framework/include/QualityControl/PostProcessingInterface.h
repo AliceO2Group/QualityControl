@@ -17,12 +17,13 @@
 #define QUALITYCONTROL_POSTPROCESSINTERFACE_H
 
 #include <string>
-#include <memory>
-//#include <boost/property_tree/ptree_fwd.hpp>
 #include <Framework/ServiceRegistry.h>
-#include <Configuration/ConfigurationInterface.h>
 #include "QualityControl/Triggers.h"
-#include "QualityControl/PostProcessingConfig.h"
+
+namespace o2::configuration
+{
+class ConfigurationInterface;
+}
 
 namespace o2::quality_control::postprocessing
 {
