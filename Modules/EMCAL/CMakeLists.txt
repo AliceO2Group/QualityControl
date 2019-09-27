@@ -1,6 +1,8 @@
 # ---- Library ----
 
-add_library(QcEMCAL src/DigitsQcTask.cxx)
+add_library(QcEMCAL)
+
+target_sources(QcEMCAL PRIVATE src/DigitsQcTask.cxx)
 
 target_include_directories(
   QcEMCAL
