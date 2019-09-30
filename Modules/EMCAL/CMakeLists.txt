@@ -2,7 +2,7 @@
 
 add_library(QcEMCAL)
 
-target_sources(QcEMCAL PRIVATE src/DigitsQcTask.cxx)
+target_sources(QcEMCAL PRIVATE src/DigitsQcTask.cxx src/DigitCheck.cxx)
 
 target_include_directories(
   QcEMCAL
@@ -14,6 +14,7 @@ target_link_libraries(QcEMCAL PUBLIC QualityControl O2::EMCALBase)
 
 add_root_dictionary(QcEMCAL
                     HEADERS include/EMCAL/DigitsQcTask.h
+		    include/EMCAL/DigitCheck.h
                     LINKDEF include/EMCAL/LinkDef.h
                     BASENAME QcEMCAL)
 
