@@ -19,7 +19,7 @@
       * [Commit Code](#commit-code)
       * [Details on data storage](#details-on-data-storage)
          * [Storage before v0.14 and ROOT 6.18](#storage-before-v014-and-root-618)
-      * [Tuning the rates to avoid 100\x CPU usage](#tuning-the-rates-to-avoid-100-cpu-usage)
+      * [Tuning the rates to avoid 100% CPU usage](#tuning-the-rates-to-avoid-100-cpu-usage)
 
 <!-- Added by: bvonhall, at:  -->
 
