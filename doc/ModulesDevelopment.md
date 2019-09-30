@@ -19,6 +19,7 @@
       * [Commit Code](#commit-code)
       * [Details on data storage](#details-on-data-storage)
          * [Storage before v0.14 and ROOT 6.18](#storage-before-v014-and-root-618)
+      * [Tuning the rates to avoid 100\x CPU usage](#tuning-the-rates-to-avoid-100-cpu-usage)
 
 <!-- Added by: bvonhall, at:  -->
 
@@ -226,6 +227,18 @@ General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-
 
 Each MonitorObject is stored as a TFile in the CCDB (see section [Details on data storage](doc/ModulesDevelopment.md#details-on-data-storage)
 ). It is therefore possible to easily open it with root loaded with alienv. It also seamlessly supports class schema evolution. 
+
+The objects are stored in at at path which is enforced by the qc framework : `/qc/<detector name>/<task name>/object/name`
+Note that the name of the object can contain slashes (`/`) in order to build a sub-tree visible in the gui. 
+The detector name and the taskname are set in the config file : 
+```json
+"tasks": {
+  "QcTask": {       <-------- task name
+    "active": "true",
+    "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+    "moduleName": "QcSkeleton",
+    "detectorName": "TST",         <---------- detector name
+```
 
 The quality is stored as a metadata on the object. 
 
