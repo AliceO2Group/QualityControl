@@ -1,6 +1,8 @@
 # ---- Library ----
 
-add_library(QcDaq src/DaqTask.cxx src/EverIncreasingGraph.cxx)
+add_library(QcDaq)
+
+target_sources(QcDaq PRIVATE src/DaqTask.cxx src/EverIncreasingGraph.cxx)
 
 target_include_directories(
   QcDaq
