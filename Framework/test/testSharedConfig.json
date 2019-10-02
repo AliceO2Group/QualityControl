@@ -2,11 +2,11 @@
   "qc": {
     "config": {
       "database": {
-        "username": "qc_user",
-        "password": "qc_user",
-        "name": "quality_control",
-        "implementation": "MySql",
-        "host": "localhost:3306"
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
       },
       "Activity": {
         "number": "42",
@@ -66,6 +66,25 @@
       },
       "defTask": {
         "active": "false"
+      }
+    },
+    "postprocessing": {
+      "SkeletonPostProcessing": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "initTrigger": [
+          "SOR",
+          "EOR",
+          "once"
+        ],
+        "updateTrigger": [
+          "once"
+        ],
+        "stopTrigger": [
+          "once"
+        ]
       }
     }
   },
