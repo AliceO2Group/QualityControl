@@ -59,6 +59,8 @@ add_library(QualityControl
             src/PostProcessingFactory.cxx
             src/PostProcessingConfig.cxx
             src/PostProcessingInterface.cxx
+            src/TTreeTrend.cxx
+            src/TTreeTrendConfig.cxx
             src/DummyDatabase.cxx
             src/DataProducer.cxx
             src/DataProducerExample.cxx)
@@ -111,6 +113,8 @@ add_root_dictionary(QualityControl
                             include/QualityControl/InfrastructureGenerator.h
                             include/QualityControl/InputUtils.h
                             include/QualityControl/PostProcessingInterface.h
+                            include/QualityControl/TTreeTrend.h
+                            include/QualityControl/Reductor.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 
@@ -225,12 +229,14 @@ set(TEST_SRCS
     test/testPostProcessingRunner.cxx
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
+    test/testTrendingTask.cxx
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
     test/testVersion.cxx
   )
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""

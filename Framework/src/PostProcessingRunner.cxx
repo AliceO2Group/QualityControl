@@ -122,10 +122,20 @@ bool PostProcessingRunner::run()
 
 void PostProcessingRunner::stop()
 {
+  if (mState == TaskState::Created || mState == TaskState::Running) {
+    if (Trigger trigger = trigger_helpers::tryTrigger(mStopTriggers)) {
+      ILOG(Info) << "Finalizing user task";
+      mTask->finalize(trigger, mServices);
+      mState = TaskState::Finished; // maybe the task should monitor its state by itself?
+    }
+  }
 }
 
 void PostProcessingRunner::reset()
 {
+  // todo: see where is "reset" in the state machine
+  // stop();
+  // init();
 }
 
 } // namespace o2::quality_control::postprocessing

@@ -27,10 +27,7 @@ namespace triggers
 
 TriggerFcn NotImplemented(std::string triggerName)
 {
-  QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Warning
-                              << "Trigger '" << triggerName
-                              << "' is not implemented yet. It will always return Trigger::No"
-                              << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Warning) << "Trigger '" << triggerName << "' is not implemented yet. It will always return Trigger::No" << ENDM;
   return [triggerName]() mutable -> Trigger {
     return Trigger::No;
   };
