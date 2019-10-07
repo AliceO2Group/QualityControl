@@ -101,6 +101,7 @@ bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMap
       35,36,33,34,32,38,43,40,45,44,47,48,49,52,51,53,
       7, 6, 5, 4, 2, 3, 1, 0, 9,11,13,15,17,19,21,23,
       31,30,29,28,27,26,25,24,22,20,18,16,14,12,10, 8};
+
   int manuch,dsid,dsch;
   int address;
   int padx,pady;
@@ -138,6 +139,7 @@ bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMap
     // NOT USE THE ADDRESS FIELD DIRECTLY
     address = dsch + (dsid<<6);
     mPadMap[de][address].fDE = de;
+    mPadMap[de][address].fDsID = dsid;
     mPadMap[de][address].fAddress = address;
     mPadMap[de][address].fPadx = padx;
     mPadMap[de][address].fPady = pady;
@@ -169,6 +171,7 @@ bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMap
     // NOT USE THE ADDRESS FIELD DIRECTLY
     address = dsch + (dsid<<6);
     mPadMap[de][address].fDE = de;
+    mPadMap[de][address].fDsID = dsid;
     mPadMap[de][address].fAddress = address;
     mPadMap[de][address].fPadx = padx;
     mPadMap[de][address].fPady = pady;

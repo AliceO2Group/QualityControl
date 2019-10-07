@@ -38,6 +38,7 @@ class MapPad
 {
 public:
   int fDE;                  // detector element
+  int fDsID;             // electronic address
   int fAddress;             // electronic address
   int fPadx;                // PadX index
   int fPady;                // PadY index

@@ -177,9 +177,12 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
   QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
 
   printf("count: %d\n", count);
-  if( (count % 10) == 0) {
+  if( (count % 100) == 0) {
     TFile f("/home/flp/qc.root","RECREATE");
-    for(int i = 0; i < 24; i++) mHistogramNoise[i]->Write();
+    for(int i = 0; i < 24; i++) {
+      mHistogramNoise[i]->Write();
+      mHistogramPedestals[i]->Write();
+    }
     f.ls();
     f.Close();
   }
@@ -272,7 +275,7 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
           pedestal[hit.link_id][hit.ds_addr][hit.chan_addr]);
       mHistogramNoiseDS[hit.link_id][ds_group_id]->SetBinContent(ds_chan_addr_in_group+1, rms);
 
-
+/*
       uint32_t de, dsid;
       if( !mMapCRU[0].getDSMapping(hit.link_id, hit.ds_addr, de, dsid) ) continue;
       o2::mch::mapping::Segmentation segment(de);
@@ -286,17 +289,19 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       float padY = segment.padPositionY(padid);
       float padSizeX = segment.padSizeX(padid);
       float padSizeY = segment.padSizeY(padid);
-/*
+*/
+
       MapPad pad;
       if( !mMapCRU[0].getPad(hit.link_id, hit.ds_addr, hit.chan_addr, pad) ) continue;
       //if( hit.ds_addr != 0 || hit.chan_addr != 0 ) continue;
 
       int de = pad.fDE;
+      int dsid = pad.fDsID;
       float padX = pad.fX;
       float padY = pad.fY;
       float padSizeX = pad.fSizeX;
       float padSizeY = pad.fSizeY;
-*/
+
       //fprintf(flog, "mapping: link_id=%d ds_addr=%d chan_addr=%d  ==>  de=%d x=%f y=%f sx=%f sy=%f\n",
       //	      hit.link_id, hit.ds_addr, hit.chan_addr, de, padX, padY, padSizeX, padSizeY);
 

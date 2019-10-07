@@ -962,7 +962,9 @@ void MuonChambersDataDecoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords,
       for(int k = 0; k < 2; k++) {
         decode_state_t state = Add1BitOfData( bits[k], (ds[cru_id][link_id][i]), &(dsg[cru_id][link_id][group]) );
         switch(state) {
-        case DECODE_STATE_SYNC_FOUND: break;
+        case DECODE_STATE_SYNC_FOUND:
+          if(gPrintLevel>=1) fprintf(flog,"SYNC found\n");
+          break;
         case DECODE_STATE_HEADER_FOUND:
           uint64_t _h; memcpy(&_h, &(ds[cru_id][link_id][i].header), sizeof(ds[cru_id][link_id][i].header));
           if(gPrintLevel>=1) fprintf(flog,"HEADER: %05lX\n", _h);
@@ -1019,10 +1021,10 @@ void MuonChambersDataDecoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords,
 void MuonChambersDataDecoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, int cru_id, int dpw_id)
 {
   uint64_t* payload_buf = (uint64_t*)payload_buf_32;
-  for( int wi = 0; wi < nWords; wi+=4) {
+  for( int wi = 0; wi < nWords; wi+=1) {
 
-    for(int k = 0; k < 4; k++) {
-      uint64_t* ptr = payload_buf + wi + k;
+    //for(int k = 0; k < 4; k++) {
+      uint64_t* ptr = payload_buf + wi;
       uint64_t value = *ptr;
 
       int link_id = (value >> 59) & 0x1F;
@@ -1032,6 +1034,7 @@ void MuonChambersDataDecoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, 
       if(gPrintLevel>=1) fprintf(flog,"64 bits: %016lX\n", value);
 
       if( value == 0xFFFFFFFFFFFFFFFF ) continue;
+      if( value == 0xFEEDDEEDFEEDDEED ) continue;
 
       int is_incomplete = (value >> 52) & 0x1;
       int err_code = (value >> 50) & 0x3;
@@ -1115,7 +1118,7 @@ void MuonChambersDataDecoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, 
 
         if(skip) break;
       }
-    }
+    //}
   }
   //printf("=========\n");
 }
@@ -1194,10 +1197,11 @@ void MuonChambersDataDecoder::processData(const char* buf, size_t size)
     int Dorbit2 = (uint32_t)( ((uint64_t)CRUh.hb_orbit) + 0x100000000 - hb_orbit );
     if( Dorbit1 >=0 && Dorbit1 <= 1 ) orbit_jump = false;
     if( Dorbit2 >=0 && Dorbit2 <= 1 ) orbit_jump = false;
-    if( false && orbit_jump ) {
-      if(gPrintLevel>=1) fprintf(flog, "Resetting decoding FSM: orbit=%d, previous=%d\n", CRUh.hb_orbit, hb_orbit);
-      int lid_min = (rdh_lid == 15) ? dpwId*12 : rdh_lid;
-      int lid_max = (rdh_lid == 15) ? 11+dpwId*12 : rdh_lid;
+    if( true && orbit_jump ) {
+      int lid_min = (rdh_lid == 15) ? dpwId*12 : 0;
+      int lid_max = (rdh_lid == 15) ? 11+dpwId*12 : 23;
+      if(gPrintLevel>=1) fprintf(flog, "Resetting decoding FSM: orbit=%d, previous=%d, links=%d-%d\n",
+          CRUh.hb_orbit, hb_orbit, lid_min, lid_max);
       for(int l = lid_min; l <= lid_max; l++) {
         for(int i = 0; i < 40; i++) {
           DualSampaReset( &(ds[cruId][l][i]) );

@@ -85,6 +85,11 @@ void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
           TString::Format("QcMuonChambers - Number of hits (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
       //mHistogramPedestals->SetDrawOption("col");
       getObjectsManager()->startPublishing(mHistogramNhits[i]);
+
+      mHistogramADCamplitude[i] = new TH1F(TString::Format("QcMuonChambers_ADC_Amplitude_%02d", i),
+          TString::Format("QcMuonChambers - ADC amplitude (CRU link %02d)", i), 100, 0, 100);
+      //mHistogramPedestals->SetDrawOption("col");
+      getObjectsManager()->startPublishing(mHistogramADCamplitude[i]);
     }
 
     TH1F* h = new TH1F(TString::Format("QcMuonChambers_ADCamplitude_DE%03d", de),
@@ -172,11 +177,12 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
                   i, hit.link_id, hit.ds_addr, hit.chan_addr);
         continue;
       }
-      if( hit.csum > 500 ) {
-        mHistogramNhits[hit.link_id]->Fill(hit.ds_addr, hit.chan_addr);
-      }
+      //if( hit.csum > 500 ) {
+      mHistogramNhits[hit.link_id]->Fill(hit.ds_addr, hit.chan_addr);
+      mHistogramADCamplitude[hit.link_id]->Fill(hit.csum);
+      //}
 
-      /**/
+      /*
       uint32_t de, dsid;
       if( !mMapCRU[0].getDSMapping(hit.link_id, hit.ds_addr, de, dsid) ) continue;
       o2::mch::mapping::Segmentation segment(de);
@@ -190,8 +196,8 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       float padY = segment.padPositionY(padid);
       float padSizeX = segment.padSizeX(padid);
       float padSizeY = segment.padSizeY(padid);
+      */
       /**/
-      /*
       MapPad pad;
       if( !mMapCRU[0].getPad(hit.link_id, hit.ds_addr, hit.chan_addr, pad) ) continue;
       int de = pad.fDE;
@@ -199,7 +205,7 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       float padY = pad.fY;
       float padSizeX = pad.fSizeX;
       float padSizeY = pad.fSizeY;
-      */
+      /**/
 
       if(gPrintLevel>=1)
         fprintf(flog, "mapping: link_id=%d ds_addr=%d chan_addr=%d  ==>  de=%d x=%f y=%f\n",
