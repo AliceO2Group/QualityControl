@@ -16,9 +16,6 @@
 #ifndef QUALITYCONTROL_POSTPROCESSINGFACTORY_H
 #define QUALITYCONTROL_POSTPROCESSINGFACTORY_H
 
-// O2
-#include <Common/Exceptions.h>
-
 #include "QualityControl/PostProcessingConfig.h"
 
 namespace o2::quality_control::postprocessing
@@ -35,9 +32,6 @@ class PostProcessingFactory
  public:
   PostProcessingFactory() = default;
   virtual ~PostProcessingFactory() = default;
-
-  using FatalException = AliceO2::Common::FatalException;
-  using errinfo_details = AliceO2::Common::errinfo_details;
 
   /// \brief Create a new instance of a PostProcessingInterface.
   /// The PostProcessingInterface actual class is decided based on the parameters passed.
