@@ -11,11 +11,11 @@ set(SRCS
 )
 
 set(HEADERS
-  include/MuonChambers/MuonChambersMapping.h
-  include/MuonChambers/MuonChambersDataDecoder.h
-  include/MuonChambers/RawDataProcessor.h
-  include/MuonChambers/PhysicsDataProcessor.h
-  include/MuonChambers/MCHCheckPedestals.h
+  include/MCH/MuonChambersMapping.h
+  include/MCH/MuonChambersDataDecoder.h
+  include/MCH/RawDataProcessor.h
+  include/MCH/PhysicsDataProcessor.h
+  include/MCH/MCHCheckPedestals.h
 )
 
 # ---- Library ----
@@ -40,16 +40,16 @@ install(
 
 # ---- ROOT dictionary ----
 
-#generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/MuonChambers/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
+#generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/MCH/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
 
 add_root_dictionary(${MODULE_NAME}
-                    HEADERS include/MuonChambers/MuonChambersMapping.h
-                            include/MuonChambers/MuonChambersDataDecoder.h
-                            include/MuonChambers/RawDataProcessor.h
-                            include/MuonChambers/PhysicsDataProcessor.h
-                            include/MuonChambers/MCHCheckPedestals.h
-                            include/MuonChambers/sampa_header.h
-                    LINKDEF include/MuonChambers/LinkDef.h
+                    HEADERS include/MCH/MuonChambersMapping.h
+                            include/MCH/MuonChambersDataDecoder.h
+                            include/MCH/RawDataProcessor.h
+                            include/MCH/PhysicsDataProcessor.h
+                            include/MCH/MCHCheckPedestals.h
+                            include/MCH/sampa_header.h
+                    LINKDEF include/MCH/LinkDef.h
                     BASENAME ${MODULE_NAME})
 
 # ---- Tests ----

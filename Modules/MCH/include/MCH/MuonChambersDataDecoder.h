@@ -7,7 +7,7 @@
 #define QC_MODULE_MUONCHAMBERS_DATA_DECODER_H
 
 #include "QualityControl/TaskInterface.h"
-#include "MuonChambers/sampa_header.h"
+#include "MCH/sampa_header.h"
 
 #define MCH_MAX_CRU_ID 4
 #define MCH_MAX_CRU_IN_FLP 3

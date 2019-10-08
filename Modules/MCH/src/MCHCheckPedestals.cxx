@@ -14,7 +14,7 @@
 ///
 
 #include "MCHMappingInterface/Segmentation.h"
-#include "MuonChambers/MCHCheckPedestals.h"
+#include "MCH/MCHCheckPedestals.h"
 
 // ROOT
 #include <fairlogger/Logger.h>

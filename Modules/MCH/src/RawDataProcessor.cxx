@@ -12,7 +12,7 @@
 
 #include "Headers/RAWDataHeader.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "MuonChambers/RawDataProcessor.h"
+#include "MCH/RawDataProcessor.h"
 
 using namespace std;
 

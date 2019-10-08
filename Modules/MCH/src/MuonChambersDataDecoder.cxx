@@ -11,7 +11,7 @@
 
 #include "Headers/RAWDataHeader.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "MuonChambers/MuonChambersDataDecoder.h"
+#include "MCH/MuonChambersDataDecoder.h"
 
 using namespace std;
 

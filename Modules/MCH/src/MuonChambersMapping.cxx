@@ -4,7 +4,7 @@
 ///
 
 #include "QualityControl/QcInfoLogger.h"
-#include "MuonChambers/MuonChambersMapping.h"
+#include "MCH/MuonChambersMapping.h"
 
 using namespace std;
 
