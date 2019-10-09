@@ -56,7 +56,8 @@ add_library(QualityControl
             src/PostProcessingRunner.cxx
             src/PostProcessingFactory.cxx
             src/PostProcessingConfig.cxx
-            src/PostProcessingInterface.cxx)
+            src/PostProcessingInterface.cxx
+            src/DummyDatabase.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
