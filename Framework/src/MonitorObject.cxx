@@ -124,7 +124,6 @@ std::map<std::string, std::string> MonitorObject::getMetadataMap() const
 std::string MonitorObject::getPath() const
 {
   string path = "qc/" + getDetectorName() + "/" + getTaskName() + "/" + getName();
-  cout << "" << "\n" << "*** " << "PATH: " << path << "\n" << endl;
   return path;
 }
 
