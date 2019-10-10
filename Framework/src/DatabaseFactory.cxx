@@ -18,6 +18,7 @@
 // O2
 #include <Common/Exceptions.h>
 // QC
+#include "QualityControl/DummyDatabase.h"
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #ifdef _WITH_MYSQL
@@ -45,6 +46,9 @@ std::unique_ptr<DatabaseInterface> DatabaseFactory::create(std::string name)
     // TODO check if CCDB installed
     QcInfoLogger::GetInstance() << "CCDB backend selected" << QcInfoLogger::endm;
     return std::make_unique<CcdbDatabase>();
+  } else if (name == "Dummy") {
+    QcInfoLogger::GetInstance() << "Dummy backend selected, MonitorObjects will not be stored nor retrieved" << QcInfoLogger::endm;
+    return std::make_unique<DummyDatabase>();
   } else {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("No database named " + name));
   }
