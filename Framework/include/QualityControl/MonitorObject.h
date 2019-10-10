@@ -147,6 +147,11 @@ class MonitorObject : public TObject
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
 
+  /// \brief Build the path to this object.
+  /// Build the path to this object as it will appear in the GUI.
+  /// \return A string containing the path.
+  std::string getPath() const;
+
  private:
   TObject* mObject;
   std::map<std::string /*checkName*/, CheckDefinition> mChecks;
