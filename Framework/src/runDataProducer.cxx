@@ -19,50 +19,50 @@
 /// \code{.sh}
 /// o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
 /// \endcode
+/// Check out the help message to see how to configure data rate and message size.
 ///
 /// If you have glfw installed, you should see a window with the workflow visualization and sub-windows for each Data
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
-#include <random>
-#include <Framework/runDataProcessing.h>
+#include <vector>
+#include <Framework/ConfigParamSpec.h>
 
 using namespace o2;
 using namespace o2::framework;
 
-// clang-format off
-WorkflowSpec defineDataProcessing(const ConfigContext&)
+void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
+  workflowOptions.push_back(
+    ConfigParamSpec{ "min-size", VariantType::Int, 1, { "Minimum size in bytes of produced messages." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "max-size", VariantType::Int, 10000, { "Maximum size in bytes of produced messages." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "empty", VariantType::Bool, false, { "Don't fill messages with random data." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "message-rate", VariantType::Double, 10.0, { "Rate of messages per second." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "producers", VariantType::Int, 1, { "Number of producers. Each will have unique SubSpec, counting from 0." } });
+}
+
+#include <Framework/runDataProcessing.h>
+#include "QualityControl/DataProducer.h"
+
+using namespace o2::quality_control::core;
+
+// clang-format off
+WorkflowSpec defineDataProcessing(const ConfigContext& config)
+{
+  size_t minSize = config.options().get<int>("min-size");
+  size_t maxSize = config.options().get<int>("max-size");
+  bool fill = !config.options().get<bool>("empty");
+  double rate = config.options().get<double>("message-rate");
+  size_t producers = config.options().get<int>("producers");
+
   WorkflowSpec specs;
-
-  // The producer to generate some data in the workflow
-  DataProcessorSpec producer{
-    "producer",
-    Inputs{},
-    Outputs{
-      { "TST", "RAWDATA", 0 } },
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback)[](InitContext&){
-        // this is the initialization code
-        std::default_random_engine generator(11);
-
-        // after the initialization, we return the processing callback
-        return (AlgorithmSpec::ProcessCallback)[generator](ProcessingContext & processingContext) mutable
-        {
-          // everything inside this lambda function is invoked in a loop, because it this Data Processor has no inputs
-          usleep(100000);
-
-          size_t length = generator() % 10000;
-          auto data = processingContext.outputs().make<char>(Output{ "TST", "RAWDATA" }, length);
-          for (auto&& item : data) {
-            item = static_cast<char>(generator());
-          }
-        };
-      }
-    }
-  };
-  specs.push_back(producer);
-
+  for (size_t i = 0; i < producers; i++) {
+    specs.push_back(getDataProducerSpec(minSize, maxSize, rate, fill, i));
+  }
   return specs;
 }
 // clang-format on

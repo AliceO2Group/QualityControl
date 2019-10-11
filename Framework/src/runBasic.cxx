@@ -71,6 +71,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/ExamplePrinterSpec.h"
+#include "QualityControl/DataProducer.h"
 
 std::string getConfigPath(const ConfigContext& config);
 
@@ -85,32 +86,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   WorkflowSpec specs;
 
   // The producer to generate some data in the workflow
-  DataProcessorSpec producer{
-    "producer",
-    Inputs{},
-    Outputs{
-      { "TST", "RAWDATA", 0 } },
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback)[](InitContext&){
-        // this is the initialization code
-        std::default_random_engine generator(11);
-
-        // after the initialization, we return the processing callback
-        return (AlgorithmSpec::ProcessCallback)[generator](ProcessingContext & processingContext) mutable
-        {
-          // everything inside this lambda function is invoked in a loop, because it this Data Processor has no inputs
-          usleep(100000);
-
-          size_t length = generator() % 10000;
-          auto data = processingContext.outputs().make<char>(Output{ "TST", "RAWDATA" }, length);
-          for (auto&& item : data) {
-            item = static_cast<char>(generator());
-          }
-        };
-      }
-    }
-  };
-
+  DataProcessorSpec producer = getDataProducerSpec(1, 10000, 10);
   specs.push_back(producer);
 
   // Path to the config file
