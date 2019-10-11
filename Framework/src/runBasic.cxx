@@ -129,7 +129,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     Inputs{
       { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckerName(qcConfigurationSource)), 0 } },
     Outputs{},
-    adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
+    adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>()
   };
   specs.push_back(printer);
 

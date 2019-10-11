@@ -22,6 +22,7 @@
 #include <utility>
 #include <memory>
 #include <random>
+#include <set>
 // ROOT
 #include <TClass.h>
 #include <TSystem.h>
@@ -236,6 +237,25 @@ void CheckRunner::store(std::vector<Check*>& checks)
   } catch (boost::exception& e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
   }
+
+  mLogger << "Storing updated monitor objects" << AliceO2::InfoLogger::InfoLogger::endm;
+  try {
+    // Ensure to write only once updated MOs
+    std::set<std::string> moNames;
+    for (auto check : checks) {
+      if (check->isBeautified()) {
+        // If beautified then only one MO
+        auto name = *(check->getMonitorObjectNames().begin());
+        moNames.insert(name);
+      }
+    }
+    for (auto name: moNames) {
+      mDatabase->storeMO(mMonitorObjects[name]);
+    }
+  } catch (boost::exception& e) {
+    mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
+  }
+
 }
 
 void CheckRunner::send(std::vector<Check*>& checks, framework::DataAllocator& allocator)

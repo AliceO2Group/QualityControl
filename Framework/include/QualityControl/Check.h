@@ -74,6 +74,8 @@ class Check
   std::shared_ptr<o2::quality_control::core::QualityObject> getQualityObject() { return mQualityObject; };
   o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
   o2::framework::Inputs getInputs() const { return mInputs; };
+  std::vector<std::string> getMonitorObjectNames() { return mMonitorObjectNames; }
+  bool isBeautified() { return mBeautify; }
 
   //TODO: Unique Input string
   static o2::header::DataDescription createCheckerDataDescription(const std::string taskName);
