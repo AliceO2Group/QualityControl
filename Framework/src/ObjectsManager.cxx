@@ -64,7 +64,7 @@ void ObjectsManager::updateServiceDiscovery()
   // prepare the string of comma separated objects and publish it
   string objects;
   for (auto tobj : *mMonitorObjects) {
-    MonitorObject *mo = dynamic_cast<MonitorObject*>(tobj);
+    MonitorObject* mo = dynamic_cast<MonitorObject*>(tobj);
     objects += mo->getPath() + ",";
   }
   objects.pop_back();
