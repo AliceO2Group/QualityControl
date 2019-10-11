@@ -50,7 +50,6 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 
 using namespace o2::quality_control::core;
 
-// clang-format off
 WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   size_t minSize = config.options().get<int>("min-size");
@@ -65,4 +64,3 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   }
   return specs;
 }
-// clang-format on

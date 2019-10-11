@@ -79,7 +79,6 @@ using namespace o2::framework;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
 
-// clang-format off
 WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
@@ -110,7 +109,6 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   return specs;
 }
-// clang-format on
 
 // TODO merge this with the one from runReadout.cxx
 std::string getConfigPath(const ConfigContext& config)
