@@ -62,7 +62,6 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
-#include <random>
 #include <string>
 
 #include <Framework/runDataProcessing.h>
