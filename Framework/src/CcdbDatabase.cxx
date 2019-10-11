@@ -116,7 +116,7 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
   }
 
   // other attributes
-  string path = "qc/" + mo->getDetectorName() + "/" + mo->getTaskName() + "/" + mo->getName();
+  string path = mo->getPath();
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
