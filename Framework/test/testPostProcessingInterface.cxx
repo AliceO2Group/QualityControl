@@ -34,7 +34,7 @@ class TestTask : public PostProcessingInterface
   TestTask() : test(0){};
   ~TestTask() override = default;
 
-  void configure(std::string, configuration::ConfigurationInterface&)
+  void configure(std::string, configuration::ConfigurationInterface&) override 
   {
     test = 1;
   }
