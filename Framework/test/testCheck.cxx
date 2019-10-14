@@ -16,6 +16,7 @@
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/MonitorObject.h"
+#include "getTestDataDirectory.h"
 #include <Framework/DataSampling.h>
 #include <Common/Exceptions.h>
 
@@ -33,7 +34,7 @@ using namespace AliceO2::Common;
 
 BOOST_AUTO_TEST_CASE(test_check_specs)
 {
-  std::string configFilePath{ "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("singleCheck", configFilePath);
 
@@ -45,7 +46,7 @@ BOOST_AUTO_TEST_CASE(test_check_specs)
 
 BOOST_AUTO_TEST_CASE(test_check_isready)
 {
-  std::string configFilePath{ "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("singleCheck", configFilePath);
 
@@ -60,7 +61,7 @@ BOOST_AUTO_TEST_CASE(test_check_isready)
 
 BOOST_AUTO_TEST_CASE(test_check_policy_not_set)
 {
-  std::string configFilePath{ "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("singleCheck", configFilePath);
   std::map<std::string, unsigned int> moMap = { { "any", 10 } };
@@ -74,7 +75,7 @@ BOOST_AUTO_TEST_CASE(test_check_policy_not_set)
 
 BOOST_AUTO_TEST_CASE(test_check_single_mo)
 {
-  std::string configFilePath = { "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("singleCheck", configFilePath);
   check.init();
@@ -95,7 +96,7 @@ BOOST_AUTO_TEST_CASE(test_check_single_mo)
 
 BOOST_AUTO_TEST_CASE(test_check_policy_all)
 {
-  std::string configFilePath = { "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("checkAll", configFilePath);
   check.init();
@@ -119,7 +120,7 @@ BOOST_AUTO_TEST_CASE(test_check_policy_all)
 
 BOOST_AUTO_TEST_CASE(test_check_policy_any)
 {
-  std::string configFilePath = { "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("checkAny", configFilePath);
   check.init();
@@ -143,7 +144,7 @@ BOOST_AUTO_TEST_CASE(test_check_policy_any)
 
 BOOST_AUTO_TEST_CASE(test_check_policy_anynonzero)
 {
-  std::string configFilePath = { "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("checkAnyNonZero", configFilePath);
   check.init();
@@ -168,7 +169,7 @@ BOOST_AUTO_TEST_CASE(test_check_policy_anynonzero)
 
 BOOST_AUTO_TEST_CASE(test_check_policy_globalany)
 {
-  std::string configFilePath = { "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("checkGlobalAny", configFilePath);
   check.init();
@@ -219,7 +220,7 @@ class TestCheck : public CheckInterface
 
 BOOST_AUTO_TEST_CASE(test_check_invoke_check_beautify)
 {
-  std::string configFilePath = { "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("singleCheck", configFilePath);
   check.init();
@@ -238,7 +239,7 @@ BOOST_AUTO_TEST_CASE(test_check_invoke_check_beautify)
 
 BOOST_AUTO_TEST_CASE(test_check_dont_invoke_beautify)
 {
-  std::string configFilePath = { "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("checkAny", configFilePath);
   check.init();

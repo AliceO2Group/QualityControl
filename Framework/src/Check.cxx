@@ -288,7 +288,10 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
        */
       std::map<std::string, std::shared_ptr<MonitorObject>> shadowMap;
       for (auto& key : mMonitorObjectNames) {
-        shadowMap.insert({ key, moMap[key] });
+        if (moMap.count(key)) { 
+          // don't create empty shared_ptr
+          shadowMap.insert({ key, moMap[key] });
+        }
       }
 
       // Trigger loaded check and update quality of the Check.
@@ -320,3 +323,4 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
   mLogger << mName << " Beautify" << AliceO2::InfoLogger::InfoLogger::endm;
   mCheckInterface->beautify(mo, mQualityObject->getQuality());
 }
+

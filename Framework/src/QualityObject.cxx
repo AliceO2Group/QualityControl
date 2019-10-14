@@ -38,7 +38,7 @@ ClassImp(o2::quality_control::core::QualityObject)
     mQualityLevel = quality.getLevel();
     mQualityName = quality.getName();
   }
-  Quality QualityObject::getQuality()
+  Quality QualityObject::getQuality() const
   {
     return Quality(mQualityLevel, mQualityName);
   }

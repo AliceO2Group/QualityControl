@@ -52,7 +52,7 @@ class QualityObject : public TObject
   /// @return the quality of the object
   ///
   void updateQuality(Quality quality);
-  Quality getQuality();
+  Quality getQuality() const;
 
   /**
    * Use o2::framework::DataSpecUtils::describe(input) to get string

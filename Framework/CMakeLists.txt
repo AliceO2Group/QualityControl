@@ -210,6 +210,7 @@ set(TEST_SRCS
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
     test/testCcdbDatabaseExtra.cxx
+    test/testCheckWorkflow.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
@@ -227,6 +228,7 @@ set(TEST_ARGS
     ""
     ""
     ""
+    "-b --run"
     "-b --run")
 
 list(LENGTH TEST_SRCS count)
@@ -248,8 +250,8 @@ foreach(i RANGE ${count})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
 
-foreach(t testTaskInterface testWorkflow testTaskRunner
-        testInfrastructureGenerator)
+foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
+        testInfrastructureGenerator testCheck)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
@@ -335,7 +337,7 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
                  script/o2-qc-database-setup.sh
         DESTINATION bin)
 
-file(COPY test/testSharedConfig.json test/testWorkflow.json
+file(COPY test/testSharedConfig.json test/testWorkflow.json test/testCheckWorkflow.json
      DESTINATION ${CMAKE_BINARY_DIR}/tests/)
 
 file(COPY streamerinfos.root DESTINATION ${CMAKE_BINARY_DIR}/etc/)
