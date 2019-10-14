@@ -29,7 +29,7 @@ namespace o2::quality_control::core
 /// \param fill     Should it fill messages with random data
 /// \param index    SubSpecification of the data producer (useful when more than one needed)
 /// \return         A random data producer specification
-framework::DataProcessorSpec getDataProducerSpec(size_t minSize, size_t maxSize, double rate, bool fill = true, size_t index = 0);
+framework::DataProcessorSpec getDataProducerSpec(size_t minSize, size_t maxSize, double rate, bool fill = true, size_t index = 0, std::string monitoringUrl = "");
 
 /// \brief Returns an algorithm generating random messages
 ///
@@ -39,7 +39,7 @@ framework::DataProcessorSpec getDataProducerSpec(size_t minSize, size_t maxSize,
 /// \param rate     How much messages to produce in one second
 /// \param fill     Should it fill messages with random data
 /// \return         A random data producer algorithm
-framework::AlgorithmSpec getDataProducerAlgorithm(framework::ConcreteDataMatcher output, size_t minSize, size_t maxSize, double rate, bool fill = true);
+framework::AlgorithmSpec getDataProducerAlgorithm(framework::ConcreteDataMatcher output, size_t minSize, size_t maxSize, double rate, bool fill = true, std::string monitoringUrl = "");
 
 } // namespace o2::quality_control::core
 
