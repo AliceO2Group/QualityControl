@@ -21,7 +21,7 @@
 namespace o2::quality_control::core
 {
 
-/// \brief Returns a random data producer specification
+/// \brief Returns a random data producer specification which publishes on {"TST", "RAWDATA", <index>}
 ///
 /// \param minSize  Minimum size of a message in bytes
 /// \param maxSize  Maximum size of a message in bytes
