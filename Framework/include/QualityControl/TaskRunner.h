@@ -148,7 +148,7 @@ class TaskRunner : public framework::Task
   int mNumberObjectsPublishedInCycle = 0;
   int mTotalNumberObjectsPublished = 0; // over a run
   double mLastPublicationDuration = 0;
-  int mDataReceivedInCycle = 0;
+  uint64_t mDataReceivedInCycle = 0;
   AliceO2::Common::Timer mTimerTotalDurationActivity;
   AliceO2::Common::Timer mTimerDurationCycle;
 };
