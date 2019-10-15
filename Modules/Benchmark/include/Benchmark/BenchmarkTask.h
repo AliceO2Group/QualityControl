@@ -48,7 +48,7 @@ class BenchmarkTask /*final*/ : public TaskInterface // todo add back the "final
   void reset() override;
 
  private:
-  std::vector<std::shared_ptr<TH1F>> mHistograms = nullptr;
+  std::vector<std::shared_ptr<TH1F>> mHistograms;
 };
 
 } // namespace o2::quality_control_modules::benchmark
