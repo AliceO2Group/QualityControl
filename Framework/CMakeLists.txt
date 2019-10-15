@@ -352,7 +352,7 @@ install(FILES example-default.json
               streamerinfos_v017.root
         DESTINATION etc)
 
-install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
+install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/skip.py
                  script/RepoCleaner/repoCleaner.py
                  script/o2-qc-database-setup.sh
         DESTINATION bin)
