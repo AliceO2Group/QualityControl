@@ -1,45 +1,46 @@
 {
-  "qc": {
-    "config": {
-      "database": {
-        "implementation": "Dummy",
-        "host": "not_applicable",
-        "username": "not_applicable",
-        "password": "not_applicable",
-        "name": "not_applicable"
+  "qc" : {
+    "config" : {
+      "database" : {
+        "implementation" : "Dummy",
+        "host" : "not_applicable",
+        "username" : "not_applicable",
+        "password" : "not_applicable",
+        "name" : "not_applicable"
       },
-      "Activity": {
-        "number": "42",
-        "type": "2"
+      "Activity" : {
+        "number" : "42",
+        "type" : "2"
       },
-      "monitoring": {
-        "url": "infologger:///debug?qc"
+      "monitoring" : {
+        "url" : "infologger:///debug?qc"
       },
-      "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+      "consul" : {
+        "url" : "http://consul-test.cern.ch:8500"
       },
-      "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
+      "conditionDB" : {
+        "url" : "ccdb-test.cern.ch:8080"
       }
     },
-    "tasks": {
-      "QcTask": {
-        "active": "true",
-        "className": "o2::quality_control_modules::benchmark::BenchmarkTask",
-        "moduleName": "QcBenchmark",
-        "detectorName": "TST",
-        "cycleDurationSeconds": "[[ CYCLE_SECONDS ]]",
-        "maxNumberCycles": "-1",
-        "dataSource": {
-          "type": "direct",
-          "query": "tst-data:TST/RAWDATA"
+    "tasks" : {
+      "QcTask" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::benchmark::BenchmarkTask",
+        "moduleName" : "QcBenchmark",
+        "detectorName" : "TST",
+        "cycleDurationSeconds" : "[[ CYCLE_SECONDS ]]",
+        "maxNumberCycles" : "-1",
+        "dataSource" : {
+          "type" : "direct",
+          "query" : "tst-data:TST/RAWDATA"
         },
-        "taskParameters": {
-          "histoNumber": "[[ NUMBER_OF_HISTOGRAMS ]]",
-          "binNumber": "[[ NUMBER_OF_BINS ]]"
+        "taskParameters" : {
+          "histoNumber" : "[[ NUMBER_OF_HISTOGRAMS ]]",
+          "binNumber" : "[[ NUMBER_OF_BINS ]]"
         },
-        "location": "remote"
+        "location" : "remote"
       }
     }
-  }
+  },
+  "dataSamplingPolicies" : []
 }
