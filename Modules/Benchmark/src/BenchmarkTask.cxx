@@ -14,11 +14,11 @@
 /// \author Piotr Konopka
 ///
 
-#include <TCanvas.h>
-#include <TH1.h>
-
-#include "QualityControl/QcInfoLogger.h"
 #include "Benchmark/BenchmarkTask.h"
+
+#include <TH1.h>
+#include <Headers/DataHeader.h>
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control_modules::benchmark
 {
@@ -68,7 +68,18 @@ void BenchmarkTask::startOfCycle()
 
 void BenchmarkTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
+  size_t dummySum = 0;
+  for (auto&& input : ctx.inputs()) {
+    if (input.header != nullptr && input.payload != nullptr) {
+      const auto* header = header::get<header::DataHeader*>(input.header);
+      dummySum += header->payloadSize + input.payload[0];
+    }
+  }
 
+  for (auto& histo : mHistograms) {
+    histo->Fill(dummySum++);
+  }
 }
 
 void BenchmarkTask::endOfCycle()
