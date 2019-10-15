@@ -41,7 +41,12 @@ class ServiceDiscovery;
 class ObjectsManager
 {
  public:
-  explicit ObjectsManager(TaskConfig& taskConfig);
+  /**
+   * Constructor
+   * @param taskConfig The configuration of the task for which we are building this object manager
+   * @param noDiscovery If true disables the use of ServiceDiscovery
+   */
+  explicit ObjectsManager(TaskConfig& taskConfig, bool noDiscovery = false);
   virtual ~ObjectsManager();
 
   /**

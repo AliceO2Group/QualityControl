@@ -2,7 +2,7 @@
 # variables. We don't want to polute our source tree with it, thus putting it in
 # binary tree.
 configure_file("include/QualityControl/Version.h.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/include/${MODULE_NAME}/Version.h"
+               "${CMAKE_CURRENT_BINARY_DIR}/include/QualityControl/Version.h"
                @ONLY)
 
 # ---- Library for the types ----
@@ -53,7 +53,14 @@ add_library(QualityControl
             src/HistoMerger.cxx
             src/InfrastructureGenerator.cxx
             src/Check.cxx
-            src/ServiceDiscovery.cxx)
+            src/ServiceDiscovery.cxx
+            src/Triggers.cxx
+            src/TriggerHelpers.cxx
+            src/PostProcessingRunner.cxx
+            src/PostProcessingFactory.cxx
+            src/PostProcessingConfig.cxx
+            src/PostProcessingInterface.cxx
+            src/DummyDatabase.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -63,7 +70,8 @@ target_include_directories(
   QualityControl
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 target_link_libraries(QualityControl
                       PUBLIC Boost::boost
@@ -101,6 +109,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/HistoMerger.h
                             include/QualityControl/InfrastructureGenerator.h
                             include/QualityControl/InputUtils.h
+                            include/QualityControl/PostProcessingInterface.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 
@@ -117,7 +126,8 @@ set(EXE_SRCS
     src/runReadout.cxx
     src/runMergerTest.cxx
     src/runReadoutForDataDump.cxx
-    src/runRepositoryBenchmark.cxx)
+    src/runRepositoryBenchmark.cxx
+    src/runPostProcessing.cxx)
 
 set(EXE_NAMES
     o2-qc-info-service
@@ -130,7 +140,8 @@ set(EXE_NAMES
     o2-qc-run-readout
     o2-qc-run-merger-test
     o2-qc-run-readout-for-data-dump
-    o2-qc-repository-benchmark)
+    o2-qc-repository-benchmark
+    o2-qc-run-postprocessing)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
@@ -145,7 +156,8 @@ set(EXE_OLD_NAMES
     qcRunReadout
     runMergerTest
     qcRunReadoutForDataDump
-    repositoryBenchmark)
+    repositoryBenchmark
+    qcRunPostProcessing)
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)
@@ -210,10 +222,20 @@ set(TEST_SRCS
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
     test/testCcdbDatabaseExtra.cxx
+    test/testTriggers.cxx
+    test/testTriggerHelpers.cxx
+    test/testPostProcessingRunner.cxx
+    test/testPostProcessingInterface.cxx
+    test/testPostProcessingConfig.cxx
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
+    ""
+    ""
+    ""
+    ""
+    ""
     ""
     ""
     ""
@@ -251,7 +273,8 @@ foreach(i RANGE ${count})
 endforeach()
 
 foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
-        testInfrastructureGenerator testCheck)
+        testInfrastructureGenerator testPostProcessingConfig testPostProcessingInterface
+        testPostProcessingRunner testCheck)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
@@ -259,10 +282,12 @@ endforeach()
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 10)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
-set_property(TEST testObjectsManager PROPERTY TIMEOUT 60)
+set_property(TEST testObjectsManager PROPERTY TIMEOUT 20)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
-set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
+set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 15)
 set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
+set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
+
 # ---- Install ----
 
 # Build targets with install rpath on Mac to dramatically speed up installation
@@ -328,8 +353,10 @@ install(FILES example-default.json
               readout.json
               readout-no-sampling.json
               readoutForDataDump.json
+              postprocessing.json
               script/RepoCleaner/config.yaml
               streamerinfos.root
+              streamerinfos_v017.root
         DESTINATION etc)
 
 install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
@@ -340,4 +367,4 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
 file(COPY test/testSharedConfig.json test/testWorkflow.json test/testCheckWorkflow.json
      DESTINATION ${CMAKE_BINARY_DIR}/tests/)
 
-file(COPY streamerinfos.root DESTINATION ${CMAKE_BINARY_DIR}/etc/)
+file(COPY streamerinfos.root streamerinfos_v017.root DESTINATION ${CMAKE_BINARY_DIR}/etc/)

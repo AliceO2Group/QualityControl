@@ -94,5 +94,58 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
     boost::property_tree::read_json(ss, pt);
   }
 }
+
+long oldTimestamp;
+
+BOOST_AUTO_TEST_CASE(ccdb_store)
+{
+  test_fixture f;
+  TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10000);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
+  oldTimestamp = CcdbDatabase::getCurrentTimestamp();
+  f.backend->storeMO(mo1);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
+{
+  test_fixture f;
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
+  BOOST_CHECK(mo);
+  TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
+  BOOST_CHECK_NE(h1, nullptr);
+  BOOST_CHECK_EQUAL(h1->GetEntries(), 10000);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store"))
+{
+  // store a new object
+  test_fixture f;
+  TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10001);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
+  f.backend->storeMO(mo1);
+
+  // Retrieve old object stored at timestampStorage
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf", oldTimestamp);
+  BOOST_CHECK(mo);
+  TH1F* old = dynamic_cast<TH1F*>(mo->getObject());
+  BOOST_CHECK_NE(old, nullptr);
+  BOOST_CHECK_EQUAL(old->GetEntries(), 10000);
+
+  // Retrieve latest object with timestamp
+  std::shared_ptr<MonitorObject> mo2 = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf", CcdbDatabase::getCurrentTimestamp());
+  BOOST_CHECK(mo2);
+  TH1F* latest = dynamic_cast<TH1F*>(mo2->getObject());
+  BOOST_CHECK_NE(latest, nullptr);
+  BOOST_CHECK_EQUAL(latest->GetEntries(), 10001);
+
+  // Retrieve latest object without timetsamp
+  std::shared_ptr<MonitorObject> mo3 = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
+  BOOST_CHECK(mo3);
+  TH1F* latest2 = dynamic_cast<TH1F*>(mo3->getObject());
+  BOOST_CHECK_NE(latest2, nullptr);
+  BOOST_CHECK_EQUAL(latest2->GetEntries(), 10001);
+}
 } // namespace
 } // namespace o2::quality_control::core

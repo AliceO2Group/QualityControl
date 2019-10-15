@@ -52,7 +52,6 @@ class PID /*final*/ : public TaskInterface // todo add back the "final" when dox
 
  private:
   o2::tpc::qc::PID mQCPID{};
-  TH1F* mH{ nullptr };
 };
 
 } // namespace o2::quality_control_modules::tpc

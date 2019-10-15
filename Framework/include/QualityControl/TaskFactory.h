@@ -18,8 +18,6 @@
 
 // STL
 #include <memory>
-// O2
-#include <Common/Exceptions.h>
 // QC
 #include "QualityControl/TaskConfig.h"
 
@@ -38,9 +36,6 @@ class TaskFactory
  public:
   TaskFactory() = default;
   virtual ~TaskFactory() = default;
-
-  using FatalException = AliceO2::Common::FatalException;
-  using errinfo_details = AliceO2::Common::errinfo_details;
 
   /// \brief Create a new instance of a TaskInterface.
   /// The TaskInterface actual class is decided based on the parameters passed.

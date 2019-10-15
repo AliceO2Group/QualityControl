@@ -12,10 +12,9 @@ include(GNUInstallDirs)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 0.13.0 # TODO update this automatically when there are new
-                       # releases
+        VERSION 0.19.2 # TODO update this automatically when there are new releases
         DESCRIPTION "O2 Data Quality Control Framework"
-        LANGUAGES CXX C)
+        LANGUAGES CXX)
 
 # Set CMAKE_INSTALL_LIBDIR explicitly to lib (to avoid lib64 on CC7)
 set(CMAKE_INSTALL_LIBDIR lib)
@@ -93,7 +92,6 @@ find_package(Monitoring REQUIRED)
 find_package(MySQL)
 find_package(Common REQUIRED)
 find_package(InfoLogger REQUIRED)
-find_package(ms_gsl MODULE REQUIRED)
 find_package(O2 CONFIG REQUIRED)
 find_package(CURL REQUIRED)
 find_package(GLFW NAMES glfw3 CONFIG)

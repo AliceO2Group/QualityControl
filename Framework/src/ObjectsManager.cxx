@@ -27,13 +27,18 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
-ObjectsManager::ObjectsManager(TaskConfig& taskConfig) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
+ObjectsManager::ObjectsManager(TaskConfig& taskConfig, bool noDiscovery) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects = std::make_unique<TObjArray>();
   mMonitorObjects->SetOwner(true);
 
   // register with the discovery service
-  mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName);
+  if (!noDiscovery) {
+    mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName);
+  } else {
+    QcInfoLogger::GetInstance() << "Service Discovery disabled" << infologger::endm;
+    mServiceDiscovery = nullptr;
+  }
 }
 
 ObjectsManager::~ObjectsManager() = default;
@@ -58,8 +63,9 @@ void ObjectsManager::updateServiceDiscovery()
   }
   // prepare the string of comma separated objects and publish it
   string objects;
-  for (auto mo : *mMonitorObjects) {
-    objects += mTaskConfig.taskName + "/" + mo->GetName() + ",";
+  for (auto tobj : *mMonitorObjects) {
+    MonitorObject* mo = dynamic_cast<MonitorObject*>(tobj);
+    objects += mo->getPath() + ",";
   }
   objects.pop_back();
   mServiceDiscovery->_register(objects);

@@ -15,6 +15,7 @@
 
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/Version.h"
 #include "Common/Exceptions.h"
 // ROOT
 #include <TBufferJSON.h>
@@ -50,22 +51,26 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
     return;
   }
   string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
-  path += "streamerinfos.root";
-  TFile file(path.data(), "READ");
-  if (file.IsZombie()) {
-    string s = string("Cannot find ") + path;
-    LOG(ERROR) << s;
-    BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
-  }
-  TIter next(file.GetListOfKeys());
-  TKey* key;
-  while ((key = (TKey*)next())) {
-    TClass* cl = gROOT->GetClass(key->GetClassName());
-    if (!cl->InheritsFrom("TStreamerInfo"))
-      continue;
-    auto* si = (TStreamerInfo*)key->ReadObj();
-    LOG(DEBUG) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName();
-    si->BuildCheck();
+  vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
+  for (auto filename : filenames) {
+    string localPath = path + filename;
+    LOG(INFO) << "Loading streamerinfos from : " << localPath;
+    TFile file(localPath.data(), "READ");
+    if (file.IsZombie()) {
+      string s = string("Cannot find ") + localPath;
+      LOG(ERROR) << s;
+      BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
+    }
+    TIter next(file.GetListOfKeys());
+    TKey* key;
+    while ((key = (TKey*)next())) {
+      TClass* cl = gROOT->GetClass(key->GetClassName());
+      if (!cl->InheritsFrom("TStreamerInfo"))
+        continue;
+      auto* si = (TStreamerInfo*)key->ReadObj();
+      LOG(DEBUG) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName();
+      si->BuildCheck();
+    }
   }
 }
 
@@ -102,13 +107,16 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
 
   // metadata
   map<string, string> metadata;
+  // QC metadata (prefix qc_)
+  metadata["qc_version"] = Version::getString();
+  // user metadata
   map<string, string> userMetadata = mo->getMetadataMap();
   if (!userMetadata.empty()) {
     metadata.insert(userMetadata.begin(), userMetadata.end());
   }
 
   // other attributes
-  string path = "qc/" + mo->getDetectorName() + "/" + mo->getTaskName() + "/" + mo->getName();
+  string path = mo->getPath();
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 

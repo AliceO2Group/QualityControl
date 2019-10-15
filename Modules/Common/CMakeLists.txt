@@ -6,7 +6,9 @@ configure_file("include/Common/Version.h.in"
 
 # ---- Library ----
 
-add_library(QcCommon src/NonEmpty.cxx src/MeanIsAbove.cxx)
+add_library(QcCommon)
+
+target_sources(QcCommon PRIVATE src/NonEmpty.cxx src/MeanIsAbove.cxx)
 
 target_include_directories(
   QcCommon
@@ -39,5 +41,7 @@ foreach(test ${TEST_SRCS})
   target_link_libraries(${test_name}
                         PRIVATE QcCommon Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name})
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
+  set_property(TARGET ${test_name}
+    PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
 endforeach()

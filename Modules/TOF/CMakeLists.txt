@@ -1,9 +1,9 @@
 # ---- Library ----
 
-add_library(QcTOF src/TOFTask.cxx src/TOFCheckRawsMulti.cxx
-                  src/TOFCheckRawsTime.cxx src/TOFCheckRawsToT.cxx)
+add_library(QcTOF)
 
-target_sources(QcTOF PRIVATE)
+target_sources(QcTOF PRIVATE src/TOFTask.cxx src/TOFCheckRawsMulti.cxx
+        src/TOFCheckRawsTime.cxx src/TOFCheckRawsToT.cxx)
 
 target_include_directories(
   QcTOF
@@ -33,7 +33,9 @@ add_root_dictionary(QcTOF
 add_executable(testQcTOF test/testTOF.cxx)
 target_link_libraries(testQcTOF PRIVATE QcTOF Boost::unit_test_framework)
 add_test(NAME testQcTOF COMMAND testQcTOF)
-set_tests_properties(testQcTOF PROPERTIES TIMEOUT 60)
+set_property(TARGET ${test_name}
+  PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+set_tests_properties(testQcTOF PROPERTIES TIMEOUT 20)
 
 # ---- Executables ----
 

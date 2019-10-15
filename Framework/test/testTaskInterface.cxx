@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 {
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
   TaskConfig taskConfig;
-  ObjectsManager* objectsManager = new ObjectsManager(taskConfig);
+  ObjectsManager* objectsManager = new ObjectsManager(taskConfig, true);
   test::TestTask testTask(objectsManager);
   BOOST_CHECK_EQUAL(testTask.test, 0);
 
