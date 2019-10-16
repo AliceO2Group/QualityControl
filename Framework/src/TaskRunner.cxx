@@ -132,6 +132,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(gsl::span<Pa
     } else {
       dataInputsPresent++;
     }
+    allInputs++;
   }
 
   LOG(DEBUG) << "Completion policy callback. "
