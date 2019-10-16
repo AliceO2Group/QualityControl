@@ -364,9 +364,11 @@ void TaskRunner::publishCycleStats()
   double rate = mNumberObjectsPublishedInCycle / (cycleDuration + mLastPublicationDuration);
   double wholeRunRate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
   double totalDurationActivity = mTimerTotalDurationActivity.getTime();
+  double blocksRate = mNumberBlocks / cycleDuration;
 
   // monitoring metrics
   mCollector->send({ mNumberBlocks, "QC_task_Numberofblocks_in_cycle" });
+  mCollector->send({ blocksRate, "QC_task_Numberofblocks_per_second_in_cycle" });
   mCollector->send({ cycleDuration, "QC_task_Module_cycle_duration" });
   mCollector->send({ mLastPublicationDuration, "QC_task_Publication_duration" });
   mCollector->send({ mNumberObjectsPublishedInCycle, "QC_task_Number_objects_published_in_cycle" });
