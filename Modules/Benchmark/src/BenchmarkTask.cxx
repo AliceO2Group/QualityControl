@@ -16,7 +16,8 @@
 
 #include "Benchmark/BenchmarkTask.h"
 
-#include <TH1.h>
+#include <TH2F.h>
+#include <fstream>
 #include <Headers/DataHeader.h>
 #include "QualityControl/QcInfoLogger.h"
 
@@ -25,6 +26,13 @@ namespace o2::quality_control_modules::benchmark
 
 BenchmarkTask::~BenchmarkTask()
 {
+}
+
+// https://stackoverflow.com/questions/5840148/how-can-i-get-a-files-size-in-c
+std::ifstream::pos_type filesize(const char* filename)
+{
+  std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
+  return in.tellg();
 }
 
 void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -44,9 +52,14 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
   QcInfoLogger::GetInstance() << "Will create " << histogramsNumber << " histograms." << AliceO2::InfoLogger::InfoLogger::endm;
   QcInfoLogger::GetInstance() << "They will have " << binsNumber << " bins each." << AliceO2::InfoLogger::InfoLogger::endm;
 
+  TH2F test("a", "", binsNumber, 0, 30000, binsNumber, 0, 30000);
+  test.FillRandom("gaus", 100000);
+  test.SaveAs("/tmp/histo-size-test.root");
+  QcInfoLogger::GetInstance() << "They will have " << filesize("/tmp/histo-size-test.root") << " bins each." << AliceO2::InfoLogger::InfoLogger::endm;
+
   for (int i = 0; i < histogramsNumber; i++ ) {
     std::string name = "histo-" + std::to_string(i);
-    mHistograms.push_back(std::make_shared<TH1F>(name.c_str(), name.c_str(), binsNumber, 0, 30000));
+    mHistograms.push_back(std::make_shared<TH2F>(name.c_str(), name.c_str(), binsNumber, 0, 30000, binsNumber, 0, 30000));
     getObjectsManager()->startPublishing(mHistograms.back().get());
     getObjectsManager()->addCheck(mHistograms.back().get(), "bmCheck", "o2::quality_control_modules::benchmark::BenchmarkCheck",
                                   "QcBenchmark");
@@ -78,7 +91,7 @@ void BenchmarkTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   for (auto& histo : mHistograms) {
-    histo->Fill(dummySum++);
+    histo->Fill(dummySum++, dummySum++);
   }
 }
 

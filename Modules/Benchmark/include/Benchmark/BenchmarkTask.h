@@ -19,7 +19,7 @@
 
 #include "QualityControl/TaskInterface.h"
 
-class TH1F;
+class TH2F;
 
 using namespace o2::quality_control::core;
 
@@ -48,7 +48,7 @@ class BenchmarkTask /*final*/ : public TaskInterface // todo add back the "final
   void reset() override;
 
  private:
-  std::vector<std::shared_ptr<TH1F>> mHistograms;
+  std::vector<std::shared_ptr<TH2F>> mHistograms;
 };
 
 } // namespace o2::quality_control_modules::benchmark
