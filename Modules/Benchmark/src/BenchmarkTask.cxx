@@ -81,7 +81,7 @@ void BenchmarkTask::startOfCycle()
 
 void BenchmarkTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
+  //  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
   size_t dummySum = 0;
   for (auto&& input : ctx.inputs()) {
     if (input.header != nullptr && input.payload != nullptr) {
