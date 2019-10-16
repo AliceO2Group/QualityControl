@@ -19,6 +19,7 @@
 #include <TH2F.h>
 #include <fstream>
 #include <Headers/DataHeader.h>
+#include <TRandom.h>
 #include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control_modules::benchmark
@@ -51,11 +52,22 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   QcInfoLogger::GetInstance() << "Will create " << histogramsNumber << " histograms." << AliceO2::InfoLogger::InfoLogger::endm;
   QcInfoLogger::GetInstance() << "They will have " << binsNumber << " bins each." << AliceO2::InfoLogger::InfoLogger::endm;
-
-  TH2F test("a", "", binsNumber, 0, 30000, binsNumber, 0, 30000);
-  test.FillRandom("gaus", 100000);
-  test.SaveAs("/tmp/histo-size-test.root");
-  QcInfoLogger::GetInstance() << "They will have " << filesize("/tmp/histo-size-test.root") << " bins each." << AliceO2::InfoLogger::InfoLogger::endm;
+  {
+    TH2F testHisto("a", "", binsNumber, 0, 30000, binsNumber, 0, 30000);
+    testHisto.SetStats(0);
+    Double_t px, py;
+    for (Int_t i = 0; i < 50000; i++) {
+      gRandom->Rannor(px, py);
+      px *= 5000;
+      py *= 5000;
+      px += 15000;
+      py += 15000;
+      testHisto.Fill(px, py);
+    }
+    testHisto.SaveAs("/tmp/histo-size-test.root");
+    QcInfoLogger::GetInstance() << "Size of each will be " << filesize("/tmp/histo-size-test.root")
+                                << AliceO2::InfoLogger::InfoLogger::endm;
+  }
 
   for (int i = 0; i < histogramsNumber; i++ ) {
     std::string name = "histo-" + std::to_string(i);
