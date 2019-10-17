@@ -118,6 +118,12 @@ class ObjectsManager
    */
   void updateServiceDiscovery();
 
+  /**
+   * \brief Deregister from the ServiceDiscovery.
+   * Deregister from the ServiceDiscovery, i.e. remove all tags from the ServiceDiscovery.
+   */
+  void deregisterServiceDiscovery();
+
  private:
   std::unique_ptr<TObjArray> mMonitorObjects;
   TaskConfig& mTaskConfig;
