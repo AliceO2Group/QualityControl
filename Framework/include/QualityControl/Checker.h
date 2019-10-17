@@ -144,6 +144,7 @@ class Checker : public framework::Task
   std::chrono::system_clock::time_point startFirstObject;
   std::chrono::system_clock::time_point endLastObject;
   int mTotalNumberHistosReceived;
+  int mTotalChecksDone;
   AliceO2::Common::Timer timer;
 };
 

@@ -55,7 +55,8 @@ Checker::Checker(std::string checkerName, std::string taskName, std::string conf
     mOutputSpec{ "QC", Checker::createCheckerDataDescription(taskName), 0 },
     startFirstObject{ system_clock::time_point::min() },
     endLastObject{ system_clock::time_point::min() },
-    mTotalNumberHistosReceived(0)
+    mTotalNumberHistosReceived(0),
+    mTotalChecksDone(0)
 {
 }
 
@@ -95,7 +96,11 @@ void Checker::init(framework::InitContext&)
 
   // monitoring
   try {
-    mCollector = MonitoringFactory::Get("infologger://");
+    // setup monitoring
+    std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
+    std::string monitoringUrl = config->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
+    mCollector = MonitoringFactory::Get(monitoringUrl);
+    mCollector->enableProcessMonitoring();
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
@@ -142,6 +147,7 @@ void Checker::run(framework::ProcessingContext& ctx)
   if (timer.isTimeout()) {
     timer.reset(1000000); // 10 s.
     mCollector->send({ mTotalNumberHistosReceived, "objects" }, o2::monitoring::DerivedMetricMode::RATE);
+    mCollector->send({ mTotalChecksDone, "checks" }, o2::monitoring::DerivedMetricMode::RATE);
   }
 }
 
@@ -177,6 +183,7 @@ void Checker::check(std::shared_ptr<MonitorObject> mo)
 
     mLogger << "  result of the check " << checkName << ": " << q.getName()
             << AliceO2::InfoLogger::InfoLogger::endm;
+    mTotalChecksDone++;
 
     checkInstance->beautify(mo.get(), q);
   }
