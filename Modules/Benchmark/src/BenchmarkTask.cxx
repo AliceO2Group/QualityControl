@@ -50,6 +50,11 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
     binsNumber = stoi(param->second);
   }
 
+  int checksPerHisto = 1;
+  if (auto param = mCustomParameters.find("checksPerHisto"); param != mCustomParameters.end()) {
+    binsNumber = stoi(param->second);
+  }
+
   QcInfoLogger::GetInstance() << "Will create " << histogramsNumber << " histograms." << AliceO2::InfoLogger::InfoLogger::endm;
   QcInfoLogger::GetInstance() << "They will have " << binsNumber << " bins each." << AliceO2::InfoLogger::InfoLogger::endm;
   {
@@ -69,12 +74,14 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
                                 << AliceO2::InfoLogger::InfoLogger::endm;
   }
 
-  for (int i = 0; i < histogramsNumber; i++ ) {
+  for (int i = 0; i < histogramsNumber; i++) {
     std::string name = "histo-" + std::to_string(i);
     mHistograms.push_back(std::make_shared<TH2F>(name.c_str(), name.c_str(), binsNumber, 0, 30000, binsNumber, 0, 30000));
     getObjectsManager()->startPublishing(mHistograms.back().get());
-    getObjectsManager()->addCheck(mHistograms.back().get(), "bmCheck", "o2::quality_control_modules::benchmark::BenchmarkCheck",
-                                  "QcBenchmark");
+    for (int i = 0; i < checksPerHisto; i++) {
+      getObjectsManager()->addCheck(mHistograms.back().get(), "bmCheck-" + std::to_string(i),
+                                    "o2::quality_control_modules::benchmark::BenchmarkCheck", "QcBenchmark");
+    }
   }
 }
 

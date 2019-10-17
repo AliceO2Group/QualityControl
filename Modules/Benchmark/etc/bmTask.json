@@ -36,7 +36,8 @@
         },
         "taskParameters" : {
           "histoNumber" : "[[ NUMBER_OF_HISTOGRAMS ]]",
-          "binNumber" : "[[ NUMBER_OF_BINS ]]"
+          "binNumber" : "[[ NUMBER_OF_BINS ]]",
+          "checksPerHisto" : "[[ CHECKS_PER_HISTOGRAM ]]"
         },
         "location" : "remote"
       }
