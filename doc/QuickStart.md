@@ -25,20 +25,23 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 
 ## Setup
 
-1. Install GLFW to have GUIs in the DPL (optional, DPL GUIs do not work in containers nor over SSH).
-    * On CC7 : `sudo yum install glfw-devel --enablerepo=epel`
-    * On Mac : `brew install glfw`
-
-1. Install O2
-     * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/). We strongly encourage users to follow the instructions for a __manual__ installation.
+1. Setup O2 environment and tools <br>We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/), in particular make sure to follow these steps :
+   1. Install GLFW to have GUIs in the DPL (optional, DPL GUIs do not work in containers nor over SSH).
+        * CC7 : `sudo yum install -y glfw-devel --enablerepo=epel`
+        * Mac : `brew install glfw`
+   2. Prerequisites  
+        * [CC7](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-centos7.html)
+        * [Mac](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-macos.html)
+        * [Ubuntu](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-ubuntu.html)
+   3. [Install aliBuild](https://alice-doc.github.io/alice-analysis-tutorial/building/custom.html#get-or-upgrade-alibuild)
+   4. [Check installation and build O2](https://alice-doc.github.io/alice-analysis-tutorial/building/build.html)
 
 2. Prepare the QualityControl development package
     * `aliBuild init QualityControl@master --defaults o2`
 
 4. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `O2Suite`.
     * `aliBuild build O2Suite --defaults o2`
-
-   At this point you might encounter a message about missing system requirements. Run `aliDoctor O2Suite` to get a full information about what is missing and how to install it.
+    * At this point you might encounter a message about missing system requirements. Run `aliDoctor O2Suite` to get a full information about what is missing and how to install it.
 
 Note : on non-CC7 systems, you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
 
