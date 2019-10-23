@@ -25,17 +25,17 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 
 ## Setup
 
-2. Install O2
-     * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/). We strongly encourage users to follow the instructions for a __manual__ installation.
-
-3. Prepare the QualityControl development package
-    * `aliBuild init QualityControl@master --defaults o2`
-
-4. Install GLFW to have GUIs in the DPL (optional, DPL GUIs do not work in containers nor over SSH).
+1. Install GLFW to have GUIs in the DPL (optional, DPL GUIs do not work in containers nor over SSH).
     * On CC7 : `sudo yum install glfw-devel --enablerepo=epel`
     * On Mac : `brew install glfw`
 
-5. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `O2Suite`.
+1. Install O2
+     * We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/). We strongly encourage users to follow the instructions for a __manual__ installation.
+
+2. Prepare the QualityControl development package
+    * `aliBuild init QualityControl@master --defaults o2`
+
+4. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `O2Suite`.
     * `aliBuild build O2Suite --defaults o2`
 
    At this point you might encounter a message about missing system requirements. Run `aliDoctor O2Suite` to get a full information about what is missing and how to install it.
