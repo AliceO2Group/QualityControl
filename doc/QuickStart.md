@@ -34,7 +34,7 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
         * [Mac](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-macos.html)
         * [Ubuntu](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-ubuntu.html)
    3. [Install aliBuild](https://alice-doc.github.io/alice-analysis-tutorial/building/custom.html#get-or-upgrade-alibuild)
-   4. [Check installation and build O2](https://alice-doc.github.io/alice-analysis-tutorial/building/build.html)
+   4. [Check setup and build O2](https://alice-doc.github.io/alice-analysis-tutorial/building/build.html)
 
 2. Prepare the QualityControl development package
     * `aliBuild init QualityControl@master --defaults o2`
