@@ -38,9 +38,6 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 
 2. Prepare the QualityControl development package
     * `aliBuild init QualityControl@master --defaults o2`
-    
-3. If you don't plan on developing O2, you can delete it
-    * `rm -rf O2`
 
 4. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `O2Suite`.
     * `aliBuild build O2Suite --defaults o2`
