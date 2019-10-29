@@ -13,6 +13,7 @@
 #include "Headers/RAWDataHeader.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "MCH/PhysicsDataProcessor.h"
+#include "MCHPreClustering/PreClusterFinder.h"
 
 using namespace std;
 
@@ -70,13 +71,6 @@ void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder.initialize();
 
   int de = 819;
-  //mMapCRU[0].addDSMapping(1, 0, de, 5);
-  //mMapCRU[0].addDSMapping(1, 2, de, 4);
-  //mMapCRU[0].addDSMapping(1, 4, de, 3);
-  mMapCRU[0].readDSMapping(0, "/home/flp/Mapping/cru.map");
-  mMapCRU[0].readPadMapping(de, "/home/flp/Mapping/slat330000N.Bending.map",
-      "/home/flp/Mapping/slat330000N.NonBending.map", false);
-
 
   {
     for(int i = 0; i < 24; i++) {
@@ -87,13 +81,13 @@ void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(mHistogramNhits[i]);
 
       mHistogramADCamplitude[i] = new TH1F(TString::Format("QcMuonChambers_ADC_Amplitude_%02d", i),
-          TString::Format("QcMuonChambers - ADC amplitude (CRU link %02d)", i), 100, 0, 100);
+          TString::Format("QcMuonChambers - ADC amplitude (CRU link %02d)", i), 5000, 0, 5000);
       //mHistogramPedestals->SetDrawOption("col");
       getObjectsManager()->startPublishing(mHistogramADCamplitude[i]);
     }
 
     TH1F* h = new TH1F(TString::Format("QcMuonChambers_ADCamplitude_DE%03d", de),
-        TString::Format("QcMuonChambers - ADC amplitude (DE%03d)", de), 1000, 0, 10000);
+        TString::Format("QcMuonChambers - ADC amplitude (DE%03d)", de), 5000, 0, 5000);
     mHistogramADCamplitudeDE.insert( make_pair(de, h) );
     getObjectsManager()->startPublishing(h);
 
@@ -105,9 +99,13 @@ void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
         TString::Format("QcMuonChambers - Number of hits (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
     mHistogramNhitsDE.insert( make_pair(de, h2) );
     getObjectsManager()->startPublishing(h2);
+    h2 = new TH2F(TString::Format("QcMuonChambers_Nhits_HighAmpl_DE%03d", de),
+        TString::Format("QcMuonChambers - Number of hits for Csum>500 (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+    mHistogramNhitsHighAmplDE.insert( make_pair(de, h2) );
+    getObjectsManager()->startPublishing(h2);
   }
 
-  gPrintLevel = 0;
+  gPrintLevel = 1;
 
   flog = stdout; //fopen("/root/qc.log", "w");
 }
@@ -127,12 +125,16 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
   // todo: update API examples or refer to DPL README.md
 
   QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
+  fprintf(flog, "\n\n====================\PhysicsDataProcessor::monitorData\n====================\n");
 
   printf("count: %d\n", count);
-  if( (count % 100) == 0) {
+  if( (count % 1) == 0) {
     int de = 819;
     TFile f("/home/flp/qc.root","RECREATE");
-    for(int i = 0; i < 24; i++) mHistogramNhits[i]->Write();
+    for(int i = 0; i < 24; i++) {
+      mHistogramNhits[i]->Write();
+      mHistogramADCamplitude[i]->Write();
+    }
     auto h = mHistogramADCamplitudeDE.find(de);
     if( (h != mHistogramADCamplitudeDE.end()) && (h->second != NULL) ) {
       h->second->Write();
@@ -167,6 +169,7 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
     mDecoder.processData( input.payload, header->payloadSize );
 
     std::vector<SampaHit>& hits = mDecoder.getHits();
+    if(gPrintLevel>=1) fprintf(flog, "hits.size()=%d\n", (int)hits.size());
     for(uint32_t i = 0; i < hits.size(); i++) {
       //continue;
       SampaHit& hit = hits[i];
@@ -182,30 +185,13 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       mHistogramADCamplitude[hit.link_id]->Fill(hit.csum);
       //}
 
-      /*
-      uint32_t de, dsid;
-      if( !mMapCRU[0].getDSMapping(hit.link_id, hit.ds_addr, de, dsid) ) continue;
-      o2::mch::mapping::Segmentation segment(de);
-      int padid = segment.findPadByFEE(dsid, hit.chan_addr);
-      if(padid < 0) {
-        fprintf(flog,"Invalid pad: %d %d\n", dsid, hit.chan_addr);
-        continue;
-      }
+      mch::DigitStruct digit;
 
-      float padX = segment.padPositionX(padid);
-      float padY = segment.padPositionY(padid);
-      float padSizeX = segment.padSizeX(padid);
-      float padSizeY = segment.padSizeY(padid);
-      */
-      /**/
-      MapPad pad;
-      if( !mMapCRU[0].getPad(hit.link_id, hit.ds_addr, hit.chan_addr, pad) ) continue;
-      int de = pad.fDE;
-      float padX = pad.fX;
-      float padY = pad.fY;
-      float padSizeX = pad.fSizeX;
-      float padSizeY = pad.fSizeY;
-      /**/
+      int de = hit.pad.fDE;
+      float padX = hit.pad.fX;
+      float padY = hit.pad.fY;
+      float padSizeX = hit.pad.fSizeX;
+      float padSizeY = hit.pad.fSizeY;
 
       if(gPrintLevel>=1)
         fprintf(flog, "mapping: link_id=%d ds_addr=%d chan_addr=%d  ==>  de=%d x=%f y=%f\n",
@@ -220,10 +206,28 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
         h->second->Fill(hit.csum);
       }
 
-      if( hit.csum > 500 ) {
+      if( hit.csum > 0 ) {
         auto h2 = mHistogramNhitsDE.find(de);
         if(gPrintLevel>=1) fprintf(flog,"monitorData: h2=%p\n", h2->second);
         if( (h2 != mHistogramNhitsDE.end()) && (h2->second != NULL) ) {
+          int binx_min = h2->second->GetXaxis()->FindBin(padX-padSizeX/2+0.1);
+          int binx_max = h2->second->GetXaxis()->FindBin(padX+padSizeX/2-0.1);
+          int biny_min = h2->second->GetYaxis()->FindBin(padY-padSizeY/2+0.1);
+          int biny_max = h2->second->GetYaxis()->FindBin(padY+padSizeY/2-0.1);
+          for(int by = biny_min; by <= biny_max; by++) {
+            float y = h2->second->GetYaxis()->GetBinCenter(by);
+            for(int bx = binx_min; bx <= binx_max; bx++) {
+              float x = h2->second->GetXaxis()->GetBinCenter(bx);
+              if(gPrintLevel>=1) fprintf(flog,"monitorData: added hit to %f, %f\n", x, y);
+              h2->second->Fill(x, y);
+            }
+          }
+        }
+      }
+      if( hit.csum > 500 ) {
+        auto h2 = mHistogramNhitsHighAmplDE.find(de);
+        if(gPrintLevel>=1) fprintf(flog,"monitorData: h2=%p\n", h2->second);
+        if( (h2 != mHistogramNhitsHighAmplDE.end()) && (h2->second != NULL) ) {
           int binx_min = h2->second->GetXaxis()->FindBin(padX-padSizeX/2+0.1);
           int binx_max = h2->second->GetXaxis()->FindBin(padX+padSizeX/2-0.1);
           int biny_min = h2->second->GetYaxis()->FindBin(padY-padSizeY/2+0.1);

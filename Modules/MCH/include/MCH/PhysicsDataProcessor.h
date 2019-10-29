@@ -50,12 +50,12 @@ class PhysicsDataProcessor /*final*/ : public TaskInterface // todo add back the
   int count;
   MuonChambersDataDecoder mDecoder;
   uint64_t nhits[24][40][64];
-  MapCRU mMapCRU[MCH_MAX_CRU_IN_FLP];
 
   TH2F* mHistogramNhits[24];
   TH1F* mHistogramADCamplitude[24];
   std::map<int, TH1F*> mHistogramADCamplitudeDE;
   std::map<int, TH2F*> mHistogramNhitsDE;
+  std::map<int, TH2F*> mHistogramNhitsHighAmplDE;
 };
 
 } // namespace muonchambers
