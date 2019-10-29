@@ -8,6 +8,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "MCH/sampa_header.h"
+#include "MCH/MuonChambersMapping.h"
 
 #define MCH_MAX_CRU_ID 4
 #define MCH_MAX_CRU_IN_FLP 3
@@ -42,6 +43,7 @@ struct SampaHit
   uint32_t size, time;
   std::vector<uint16_t> samples;
   uint64_t csum;
+  MapPad pad;
 };
 
 
@@ -99,6 +101,7 @@ class MuonChambersDataDecoder
   int ds_enable[MCH_MAX_CRU_IN_FLP][24][40];
   std::vector<SampaHit> mHits;
   int nFrames;
+  MapCRU mMapCRU[MCH_MAX_CRU_IN_FLP];
 };
 
 } // namespace muonchambers

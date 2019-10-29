@@ -929,6 +929,15 @@ void MuonChambersDataDecoder::initialize()
     ds_enable[c][l][b] = e;
   }
 
+  int de = 819;
+  //mMapCRU[0].addDSMapping(1, 0, de, 5);
+  //mMapCRU[0].addDSMapping(1, 2, de, 4);
+  //mMapCRU[0].addDSMapping(1, 4, de, 3);
+  mMapCRU[0].readDSMapping(0, "/home/flp/Mapping/cru.map");
+  //mMapCRU[0].readPadMapping(de, "/home/flp/Mapping/slat330000N.Bending.map",
+  //    "/home/flp/Mapping/slat330000N.NonBending.map", false);
+
+
   gPrintLevel = 0;
 
   //if( gPrintLevel > 0 ) flog = fopen("/home/flp/qc.log", "w");
@@ -1226,6 +1235,43 @@ void MuonChambersDataDecoder::processData(const char* buf, size_t size)
 
     if(is_raw) decodeRaw(payload_buf, nGBTwords, cruId, cru_lid);
     else decodeUL(payload_buf, n64bitWords, cruId, dpwId);
+
+    for(int ih = 0; ih < mHits.size(); ih++) {
+      SampaHit& hit = mHits[ih];
+      hit.pad.fDE = -1;
+      hit.pad.fCathode = 0;
+      /*
+      uint32_t de, dsid;
+      if( !mMapCRU[0].getDSMapping(hit.link_id, hit.ds_addr, de, dsid) ) continue;
+      o2::mch::mapping::Segmentation segment(de);
+      int padid = segment.findPadByFEE(dsid, hit.chan_addr);
+      if(padid < 0) {
+        //fprintf(flog,"Invalid pad: %d %d\n", dsid, hit.chan_addr);
+        continue;
+      }
+
+      float padX = segment.padPositionX(padid);
+      float padY = segment.padPositionY(padid);
+      float padSizeX = segment.padSizeX(padid);
+      float padSizeY = segment.padSizeY(padid);
+
+      hit.pad.fDE = de;
+      hit.pad.fDsID = dsid;
+      hit.pad.fAddress = padid;
+      hit.pad.fX = padX;
+      hit.pad.fY = padY;
+      hit.pad.fSizeX = padSizeX;
+      hit.pad.fSizeY = padSizeY;
+      hit.pad.fCathode = segment.isBendingPad(padid) ? 0 : 1;
+      hit.pad.fBad = 0;
+      */
+      /*
+      //MapPad pad;
+      if( !mMapCRU[0].getPad(hit.link_id, hit.ds_addr, hit.chan_addr, hit.pad) ) continue;
+      */
+    }
+
+
 
     /*
     for( int wi = 0; wi < nGBTwords; wi++) {
