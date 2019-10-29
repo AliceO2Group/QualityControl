@@ -61,8 +61,8 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
 
   std::map<int, TH2F*> mHistogramPedestalsDE;
   std::map<int, TH2F*> mHistogramNoiseDE;
-  std::map<int, TH2F*> mHistogramPedestalsXY;
-  std::map<int, TH2F*> mHistogramNoiseXY;
+  std::map<int, TH2F*> mHistogramPedestalsXY[2];
+  std::map<int, TH2F*> mHistogramNoiseXY[2];
 };
 
 } // namespace muonchambers

@@ -85,13 +85,6 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
     mDecoder.initialize();
 
     int de = 819;
-    //mMapCRU[0].addDSMapping(0, 0, de, 111);
-    //mMapCRU[0].addDSMapping(0, 2, de, 112);
-    //mMapCRU[0].addDSMapping(0, 4, de, 113);
-    mMapCRU[0].readDSMapping(0, "/home/flp/Mapping/cru.map");
-    mMapCRU[0].readPadMapping(de, "/home/flp/Mapping/slat330000N.Bending.map",
-        "/home/flp/Mapping/slat330000N.NonBending.map", true);
-
 
     mHistogram = new TH1F("QcMuonChambers_PayloadSize", "QcMuonChambers Payload Size", 20, 0, 1000000000);
     getObjectsManager()->startPublishing(mHistogram);
@@ -143,18 +136,30 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
       float Xsize2 = Xsize/2;
       float Ysize = 50;
       float Ysize2 = Ysize/2;
-      TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XY%03d", de),
-          TString::Format("QcMuonChambers - Pedestals XY (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
-      mHistogramPedestalsXY.insert( make_pair(de, hPedXY) );
-      getObjectsManager()->startPublishing(hPedXY);
-      TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XY%03d", de),
-          TString::Format("QcMuonChambers - Noise XY (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
-      mHistogramNoiseXY.insert( make_pair(de, hNoiseXY) );
-      getObjectsManager()->startPublishing(hNoiseXY);
+      {
+        TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYb_%03d", de),
+            TString::Format("QcMuonChambers - Pedestals XY (DE%03d B)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+        mHistogramPedestalsXY[0].insert( make_pair(de, hPedXY) );
+        getObjectsManager()->startPublishing(hPedXY);
+        TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYb_%03d", de),
+            TString::Format("QcMuonChambers - Noise XY (DE%03d B)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+        mHistogramNoiseXY[0].insert( make_pair(de, hNoiseXY) );
+        getObjectsManager()->startPublishing(hNoiseXY);
+      }
+      {
+        TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYnb_%03d", de),
+            TString::Format("QcMuonChambers - Pedestals XY (DE%03d NB)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+        mHistogramPedestalsXY[1].insert( make_pair(de, hPedXY) );
+        getObjectsManager()->startPublishing(hPedXY);
+        TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYnb_%03d", de),
+            TString::Format("QcMuonChambers - Noise XY (DE%03d NB)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+        mHistogramNoiseXY[1].insert( make_pair(de, hNoiseXY) );
+        getObjectsManager()->startPublishing(hNoiseXY);
+      }
     }
   }
 
-  gPrintLevel = 0;
+  gPrintLevel = 1;
 
   flog = stdout; //fopen("/root/qc.log", "w");
 }
@@ -175,13 +180,28 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
   // todo: update API examples or refer to DPL README.md
 
   QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
+  fprintf(flog, "\n\n====================\nRawDataProcessor::monitorData\n====================\n");
 
   printf("count: %d\n", count);
-  if( (count % 100) == 0) {
+  if( (count % 1) == 0) {
     TFile f("/home/flp/qc.root","RECREATE");
     for(int i = 0; i < 24; i++) {
       mHistogramNoise[i]->Write();
       mHistogramPedestals[i]->Write();
+    }
+    for(int i = 0; i < 2; i++) {
+      auto ih = mHistogramPedestalsXY[i].begin();
+      while( ih != mHistogramPedestalsXY[i].end() ) {
+        ih->second->Write();
+        ih++;
+      }
+    }
+    for(int i = 0; i < 2; i++) {
+      auto ih = mHistogramNoiseXY[i].begin();
+      while( ih != mHistogramNoiseXY[i].end() ) {
+        ih->second->Write();
+        ih++;
+      }
     }
     f.ls();
     f.Close();
@@ -198,7 +218,7 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto&& input : ctx.inputs()) {
     const auto* header = o2::header::get<header::DataHeader*>(input.header);
     //QcInfoLogger::GetInstance() << "header: " << header << AliceO2::InfoLogger::InfoLogger::endm;
-    //if(gPrintLevel>=1) fprintf(flog, "Header: %p\n", header);
+    if(gPrintLevel>=1) fprintf(flog, "Header: %p\n", header);
     if( !header ) continue;
     //QcInfoLogger::GetInstance() << "payloadSize: " << header->payloadSize << AliceO2::InfoLogger::InfoLogger::endm;
     if(gPrintLevel>=1) fprintf(flog, "payloadSize: %d\n", (int)header->payloadSize);
@@ -209,7 +229,7 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
     mDecoder.processData( input.payload, header->payloadSize );
 
     std::vector<SampaHit>& hits = mDecoder.getHits();
-    //fprintf(stdout,"hits size: %d\n", hits.size());
+    fprintf(flog,"hits size: %d\n", hits.size());
     for(uint32_t i = 0; i < hits.size(); i++) {
       //continue;
       SampaHit& hit = hits[i];
@@ -267,43 +287,27 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
           pedestal[hit.link_id][hit.ds_addr][hit.chan_addr]);
       double rms = std::sqrt( noise[hit.link_id][hit.ds_addr][hit.chan_addr] /
           nhits[hit.link_id][hit.ds_addr][hit.chan_addr] );
-      //fprintf(flog,"rms=%f\n",(float)rms);
+      fprintf(flog,"rms=%f\n",(float)rms);
       mHistogramNoise[hit.link_id]->SetBinContent(hit.ds_addr+1, hit.chan_addr+1, rms);
 
-      //fprintf(flog,"ds_group_id=%d  ds_chan_addr_in_group=%d\n",ds_group_id, ds_chan_addr_in_group);
+      fprintf(flog,"ds_group_id=%d  ds_chan_addr_in_group=%d\n",ds_group_id, ds_chan_addr_in_group);
       mHistogramPedestalsDS[hit.link_id][ds_group_id]->SetBinContent(ds_chan_addr_in_group+1,
           pedestal[hit.link_id][hit.ds_addr][hit.chan_addr]);
       mHistogramNoiseDS[hit.link_id][ds_group_id]->SetBinContent(ds_chan_addr_in_group+1, rms);
 
-/*
-      uint32_t de, dsid;
-      if( !mMapCRU[0].getDSMapping(hit.link_id, hit.ds_addr, de, dsid) ) continue;
-      o2::mch::mapping::Segmentation segment(de);
-      int padid = segment.findPadByFEE(dsid, hit.chan_addr);
-      if(padid < 0) {
-        fprintf(flog,"Invalid pad: %d %d\n", dsid, hit.chan_addr);
-        continue;
-      }
-
-      float padX = segment.padPositionX(padid);
-      float padY = segment.padPositionY(padid);
-      float padSizeX = segment.padSizeX(padid);
-      float padSizeY = segment.padSizeY(padid);
-*/
-
-      MapPad pad;
-      if( !mMapCRU[0].getPad(hit.link_id, hit.ds_addr, hit.chan_addr, pad) ) continue;
       //if( hit.ds_addr != 0 || hit.chan_addr != 0 ) continue;
 
-      int de = pad.fDE;
-      int dsid = pad.fDsID;
-      float padX = pad.fX;
-      float padY = pad.fY;
-      float padSizeX = pad.fSizeX;
-      float padSizeY = pad.fSizeY;
+      int de = hit.pad.fDE;
+      int dsid = hit.pad.fDsID;
+      float padX = hit.pad.fX;
+      float padY = hit.pad.fY;
+      float padSizeX = hit.pad.fSizeX;
+      float padSizeY = hit.pad.fSizeY;
 
-      //fprintf(flog, "mapping: link_id=%d ds_addr=%d chan_addr=%d  ==>  de=%d x=%f y=%f sx=%f sy=%f\n",
-      //	      hit.link_id, hit.ds_addr, hit.chan_addr, de, padX, padY, padSizeX, padSizeY);
+      fprintf(flog, "mapping: link_id=%d ds_addr=%d chan_addr=%d  ==>  de=%d x=%f y=%f sx=%f sy=%f\n",
+      	      hit.link_id, hit.ds_addr, hit.chan_addr, de, padX, padY, padSizeX, padSizeY);
+
+      if( hit.pad.fDE < 0 ) continue;
 
       auto hPedDE = mHistogramPedestalsDE.find(de);
       if( (hPedDE != mHistogramPedestalsDE.end()) && (hPedDE->second != NULL) ) {
@@ -314,9 +318,9 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
         hNoiseDE->second->SetBinContent(dsid+1, hit.chan_addr+1, rms);
       }
 
-      auto hPedXY = mHistogramPedestalsXY.find(de);
-      if( (hPedXY != mHistogramPedestalsXY.end()) && (hPedXY->second != NULL) ) {
-        //fprintf(stdout,"Filling histograms for XY %d\n", de);
+      auto hPedXY = mHistogramPedestalsXY[hit.pad.fCathode].find(de);
+      if( (hPedXY != mHistogramPedestalsXY[hit.pad.fCathode].end()) && (hPedXY->second != NULL) ) {
+        fprintf(flog,"Filling histograms for XY %d\n", de);
         int binx_min = hPedXY->second->GetXaxis()->FindBin(padX-padSizeX/2+0.1);
         int binx_max = hPedXY->second->GetXaxis()->FindBin(padX+padSizeX/2-0.1);
         int biny_min = hPedXY->second->GetYaxis()->FindBin(padY-padSizeY/2+0.1);
@@ -327,8 +331,8 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
       }
-      auto hNoiseXY = mHistogramNoiseXY.find(de);
-      if( (hNoiseXY != mHistogramNoiseXY.end()) && (hNoiseXY->second != NULL) ) {
+      auto hNoiseXY = mHistogramNoiseXY[hit.pad.fCathode].find(de);
+      if( (hNoiseXY != mHistogramNoiseXY[hit.pad.fCathode].end()) && (hNoiseXY->second != NULL) ) {
         //fprintf(stdout,"Filling histograms for XY %d\n", de);
         int binx_min = hNoiseXY->second->GetXaxis()->FindBin(padX-padSizeX/2+0.1);
         int binx_max = hNoiseXY->second->GetXaxis()->FindBin(padX+padSizeX/2-0.1);
