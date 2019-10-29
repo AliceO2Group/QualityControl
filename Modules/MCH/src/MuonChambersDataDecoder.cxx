@@ -933,7 +933,7 @@ void MuonChambersDataDecoder::initialize()
   //mMapCRU[0].addDSMapping(1, 0, de, 5);
   //mMapCRU[0].addDSMapping(1, 2, de, 4);
   //mMapCRU[0].addDSMapping(1, 4, de, 3);
-  mMapCRU[0].readDSMapping(0, "/home/flp/Mapping/cru.map");
+  mMapCRU[0].readDSMapping(0, "/tmp/cru.map");
   //mMapCRU[0].readPadMapping(de, "/home/flp/Mapping/slat330000N.Bending.map",
   //    "/home/flp/Mapping/slat330000N.NonBending.map", false);
 

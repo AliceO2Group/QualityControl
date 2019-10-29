@@ -184,7 +184,7 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 
   printf("count: %d\n", count);
   if( (count % 1) == 0) {
-    TFile f("/home/flp/qc.root","RECREATE");
+    TFile f("/tmp/qc.root","RECREATE");
     for(int i = 0; i < 24; i++) {
       mHistogramNoise[i]->Write();
       mHistogramPedestals[i]->Write();

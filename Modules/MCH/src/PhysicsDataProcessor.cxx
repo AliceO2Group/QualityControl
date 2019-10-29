@@ -130,7 +130,7 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
   printf("count: %d\n", count);
   if( (count % 1) == 0) {
     int de = 819;
-    TFile f("/home/flp/qc.root","RECREATE");
+    TFile f("/tmp/qc.root","RECREATE");
     for(int i = 0; i < 24; i++) {
       mHistogramNhits[i]->Write();
       mHistogramADCamplitude[i]->Write();
