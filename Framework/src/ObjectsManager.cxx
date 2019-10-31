@@ -78,6 +78,7 @@ void ObjectsManager::removeAllFromServiceDiscovery()
     return;
   }
   mServiceDiscovery->_register("");
+  mUpdateServiceDiscovery = true;
 }
 
 void ObjectsManager::stopPublishing(TObject* object)
