@@ -119,10 +119,11 @@ class ObjectsManager
   void updateServiceDiscovery();
 
   /**
-   * \brief Deregister from the ServiceDiscovery.
-   * Deregister from the ServiceDiscovery, i.e. remove all tags from the ServiceDiscovery.
+   * \brief Remove all objects from the ServiceDiscovery.
+   * Remove all objects from the ServiceDiscovery even though they still might be published by the task.
+   * This is typically used at End of Activity.
    */
-  void deregisterServiceDiscovery();
+  void removeAllFromServiceDiscovery();
 
  private:
   std::unique_ptr<TObjArray> mMonitorObjects;

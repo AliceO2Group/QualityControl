@@ -322,7 +322,7 @@ void TaskRunner::endOfActivity()
   Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->endOfActivity(activity);
-  mObjectsManager->deregisterServiceDiscovery();
+  mObjectsManager->removeAllFromServiceDiscovery();
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
   mCollector->send({ rate, "QC_task_Rate_objects_published_per_second_whole_run" });
