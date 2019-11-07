@@ -16,6 +16,7 @@
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/CheckRunner.h"
 #include <Framework/DataSampling.h>
+#include "getTestDataDirectory.h"
 
 #define BOOST_TEST_MODULE CheckRunner test
 #define BOOST_TEST_MAIN
@@ -30,8 +31,7 @@ using namespace o2::header;
 
 BOOST_AUTO_TEST_CASE(test_check_runner_factory)
 {
-  std::string configFilePath{ "json:///home/alidock/tests/testSharedConfig.json" };
-  //std::string configFilePath = { "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   CheckRunnerFactory checkerFactory;
   Check check("singleCheck", configFilePath);
@@ -52,8 +52,7 @@ BOOST_AUTO_TEST_CASE(test_check_runner_static)
 
 BOOST_AUTO_TEST_CASE(test_check_runner)
 {
-  std::string configFilePath{ "json:///home/alidock/tests/testSharedConfig.json" };
-  //std::string configFilePath = { "json://tests/testSharedConfig.json" };
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   Check check("singleCheck", configFilePath);
   CheckRunner checker{ check, configFilePath };

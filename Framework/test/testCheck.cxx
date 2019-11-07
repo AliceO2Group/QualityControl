@@ -14,7 +14,6 @@
 ///
 
 #include "QualityControl/CheckRunnerFactory.h"
-#include "QualityControl/CheckRunner.h"
 #include "QualityControl/MonitorObject.h"
 #include "getTestDataDirectory.h"
 #include <Framework/DataSampling.h>
