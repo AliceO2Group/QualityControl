@@ -1,160 +1,157 @@
 {
-  "qc": {
-    "config": {
-      "database": {
-        "implementation": "CCDB",
-        "host": "ccdb-test.cern.ch:8080",
-        "username": "not_applicable",
-        "password": "not_applicable",
-        "name": "not_applicable"
-      },
-      "Activity": {
-        "number": "42",
-        "type": "2"
-      }
-    },
-    "tasks": {
-      "skeletonTask": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
-        "moduleName": "QcSkeleton",
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tpcclust"
-        },
-        "taskParameters": {
-          "parameter1": 100001,
-          "parameter2": "qu'est-ce que c'est que ce truc la"
-        },
-        "location": "local",
-        "machines": [
-          "o2flp1",
-          "o2flp2"
-        ]
-      },
-      "abcTask": {
-        "active": true,
-        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
-        "moduleName": "QcSkeleton",
-        "detectorName": "XXXXXXXXX",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tpcclust"
-        },
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "taskParameters": {
-          "parameter1": 100002,
-          "parameter2": "c'est quoi"
-        },
-        "location": "remote"
-      },
-      "xyzTask": {
-        "active": true,
-        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
-        "moduleName": "QcSkeleton",
-        "detectorName": "ITS",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tpcclust"
-        },
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "location": "remote"
-      },
-      "defTask": {
-        "active": "false"
-      }
-    },
-    "checks": {
-      "singleCheck": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "dataSource": [{
-          "type": "Task",
-          "name": "abcTask",
-          "MOs": ["example"]
-        }]
-      },
-      "checkAll": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "OnAll",
-        "dataSource": [{
-          "type": "Task",
-          "name": "abcTask",
-          "MOs": ["test1", "test2"]
-        }]
-      },
-      "checkAny": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "OnAny",
-        "dataSource": [{
-          "type": "Task",
-          "name": "abcTask",
-          "MOs": ["test1", "test2"]
-        }]
-      },
-      "checkAnyNonZero": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "OnAnyNonZero",
-        "dataSource": [{
-          "type": "Task",
-          "name": "abcTask",
-          "MOs": ["test1", "test2"]
-        }]
-      },
-      "checkGlobalAny": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "dataSource": [{
-          "type": "Task",
-          "name": "example"
-        }]
-      },
-    "postprocessing": {
-      "SkeletonPostProcessing": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
-        "moduleName": "QcSkeleton",
-        "detectorName": "TST",
-        "initTrigger": [
-          "SOR",
-          "EOR",
-          "once"
-        ],
-        "updateTrigger": [
-          "once"
-        ],
-        "stopTrigger": [
-          "once"
-        ]
-      }
-    }
-  },
-  "dataSamplingPolicies": [
-    {
-      "id": "tpcclust",
-      "active": "true",
-      "machines": [],
-      "query": "clusters:TPC/CLUSTERS/0",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "0.1",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    }
-  ]
+	"qc": {
+		"config": {
+			"database": {
+				"implementation": "CCDB",
+				"host": "ccdb-test.cern.ch:8080",
+				"username": "not_applicable",
+				"password": "not_applicable",
+				"name": "not_applicable"
+			},
+			"Activity": {
+				"number": "42",
+				"type": "2"
+			}
+		},
+		"tasks": {
+			"skeletonTask": {
+				"active": "true",
+				"className": "o2::quality_control_modules::skeleton::SkeletonTask",
+				"moduleName": "QcSkeleton",
+				"cycleDurationSeconds": "10",
+				"maxNumberCycles": "-1",
+				"dataSource": {
+					"type": "dataSamplingPolicy",
+					"name": "tpcclust"
+				},
+				"taskParameters": {
+					"parameter1": 100001,
+					"parameter2": "qu'est-ce que c'est que ce truc la"
+				},
+				"location": "local",
+				"machines": [
+					"o2flp1",
+					"o2flp2"
+				]
+			},
+			"abcTask": {
+				"active": true,
+				"className": "o2::quality_control_modules::skeleton::SkeletonTask",
+				"moduleName": "QcSkeleton",
+				"detectorName": "XXXXXXXXX",
+				"dataSource": {
+					"type": "dataSamplingPolicy",
+					"name": "tpcclust"
+				},
+				"cycleDurationSeconds": "10",
+				"maxNumberCycles": "-1",
+				"taskParameters": {
+					"parameter1": 100002,
+					"parameter2": "c'est quoi"
+				},
+				"location": "remote"
+			},
+			"xyzTask": {
+				"active": true,
+				"className": "o2::quality_control_modules::skeleton::SkeletonTask",
+				"moduleName": "QcSkeleton",
+				"detectorName": "ITS",
+				"dataSource": {
+					"type": "dataSamplingPolicy",
+					"name": "tpcclust"
+				},
+				"cycleDurationSeconds": "10",
+				"maxNumberCycles": "-1",
+				"location": "remote"
+			},
+			"defTask": {
+				"active": "false"
+			}
+		},
+		"checks": {
+			"singleCheck": {
+				"active": "true",
+				"className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+				"moduleName": "QcSkeleton",
+				"dataSource": [{
+					"type": "Task",
+					"name": "abcTask",
+					"MOs": ["example"]
+				}]
+			},
+			"checkAll": {
+				"active": "true",
+				"className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+				"moduleName": "QcSkeleton",
+				"policy": "OnAll",
+				"dataSource": [{
+					"type": "Task",
+					"name": "abcTask",
+					"MOs": ["test1", "test2"]
+				}]
+			},
+			"checkAny": {
+				"active": "true",
+				"className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+				"moduleName": "QcSkeleton",
+				"policy": "OnAny",
+				"dataSource": [{
+					"type": "Task",
+					"name": "abcTask",
+					"MOs": ["test1", "test2"]
+				}]
+			},
+			"checkAnyNonZero": {
+				"active": "true",
+				"className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+				"moduleName": "QcSkeleton",
+				"policy": "OnAnyNonZero",
+				"dataSource": [{
+					"type": "Task",
+					"name": "abcTask",
+					"MOs": ["test1", "test2"]
+				}]
+			},
+			"checkGlobalAny": {
+				"active": "true",
+				"className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+				"moduleName": "QcSkeleton",
+				"dataSource": [{
+					"type": "Task",
+					"name": "example"
+				}]
+			},
+			"postprocessing": {
+				"SkeletonPostProcessing": {
+					"active": "true",
+					"className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
+					"moduleName": "QcSkeleton",
+					"detectorName": "TST",
+					"initTrigger": [
+						"SOR",
+						"EOR",
+						"once"
+					],
+					"updateTrigger": [
+						"once"
+					],
+					"stopTrigger": [
+						"once"
+					]
+				}
+			}
+		},
+		"dataSamplingPolicies": [{
+			"id": "tpcclust",
+			"active": "true",
+			"machines": [],
+			"query": "clusters:TPC/CLUSTERS/0",
+			"samplingConditions": [{
+				"condition": "random",
+				"fraction": "0.1",
+				"seed": "1234"
+			}],
+			"blocking": "false"
+		}]
+	}
 }
