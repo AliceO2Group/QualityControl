@@ -131,25 +131,25 @@
 					"type": "Task",
 					"name": "example"
 				}]
-			},
-			"postprocessing": {
-				"SkeletonPostProcessing": {
-					"active": "true",
-					"className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
-					"moduleName": "QcSkeleton",
-					"detectorName": "TST",
-					"initTrigger": [
-						"SOR",
-						"EOR",
-						"once"
-					],
-					"updateTrigger": [
-						"once"
-					],
-					"stopTrigger": [
-						"once"
-					]
-				}
+			}
+		},
+		"postprocessing": {
+			"SkeletonPostProcessing": {
+				"active": "true",
+				"className": "o2::quality_control_modules::skeleton::SkeletonPostProcessing",
+				"moduleName": "QcSkeleton",
+				"detectorName": "TST",
+				"initTrigger": [
+					"SOR",
+					"EOR",
+					"once"
+				],
+				"updateTrigger": [
+					"once"
+				],
+				"stopTrigger": [
+					"once"
+				]
 			}
 		}
 	},
