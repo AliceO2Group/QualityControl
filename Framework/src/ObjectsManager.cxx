@@ -72,6 +72,15 @@ void ObjectsManager::updateServiceDiscovery()
   mUpdateServiceDiscovery = false;
 }
 
+void ObjectsManager::removeAllFromServiceDiscovery()
+{
+  if (mServiceDiscovery == nullptr) {
+    return;
+  }
+  mServiceDiscovery->_register("");
+  mUpdateServiceDiscovery = true;
+}
+
 void ObjectsManager::stopPublishing(TObject* object)
 {
   stopPublishing(object->GetName());

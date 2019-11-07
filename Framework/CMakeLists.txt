@@ -60,7 +60,8 @@ add_library(QualityControl
             src/PostProcessingFactory.cxx
             src/PostProcessingConfig.cxx
             src/PostProcessingInterface.cxx
-            src/DummyDatabase.cxx)
+            src/DummyDatabase.cxx
+            src/DataProducer.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -341,7 +342,7 @@ install(
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfigVersion.cmake"
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl)
 
-# ---- Extra scripts ----
+# ---- Install config files and scripts ----
 
 install(FILES example-default.json
               alfa.json
@@ -359,12 +360,34 @@ install(FILES example-default.json
               streamerinfos_v017.root
         DESTINATION etc)
 
-install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
+install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/skip.py
                  script/RepoCleaner/repoCleaner.py
                  script/o2-qc-database-setup.sh
         DESTINATION bin)
 
-file(COPY test/testSharedConfig.json test/testWorkflow.json test/testCheckWorkflow.json
-     DESTINATION ${CMAKE_BINARY_DIR}/tests/)
+# ---- Copy test files ----
+#
+# Using file(COPY is wrong because cmake will not detect when the files are modified.
+# Using install is also wrong because we don't want to install nor package the test files.
+# The solution is this ugly piece of cmake code.
 
-file(COPY streamerinfos.root streamerinfos_v017.root DESTINATION ${CMAKE_BINARY_DIR}/etc/)
+set(TEST_FILES
+  "testSharedConfig.json"
+  "test/testCheckWorkflow.json"
+  "testWorkflow.json")
+set(TEST_FILES_PREFIXED ${TEST_FILES})
+list(TRANSFORM TEST_FILES_PREFIXED PREPEND ${CMAKE_BINARY_DIR}/tests/)
+
+foreach(test_file ${TEST_FILES})
+  message("**** ${test_file}")
+  add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/tests/${test_file}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/test/${test_file}
+                                     ${CMAKE_BINARY_DIR}/tests/${test_file}
+    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/test/${test_file}
+    COMMENT "Copying ${test_file}")
+endforeach()
+
+add_custom_target(copy_test_files ALL
+  DEPENDS ${TEST_FILES_PREFIXED}
+  )

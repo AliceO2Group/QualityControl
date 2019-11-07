@@ -42,11 +42,11 @@ class ServiceDiscovery
   /// Stops the health thread and deregisteres from Consul health checks
   ~ServiceDiscovery();
 
-  /// Registeres list of online objects by sending HTTP PUT request to Consul server
+  /// Registers list of online objects by sending HTTP PUT request to Consul server
   /// \param objects 		List of comma separated objects
   void _register(const std::string& objects);
 
-  /// Deregisteres service
+  /// Deregisters service
   void deregister();
 
  private:
