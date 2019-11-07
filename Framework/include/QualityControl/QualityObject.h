@@ -67,6 +67,11 @@ class QualityObject : public TObject
 
   std::map<std::string, std::string> getMetadataMap();
 
+  /// \brief Build the path to this object.
+  /// Build the path to this object as it will appear in the GUI.
+  /// \return A string containing the path.
+  std::string getPath() const;
+
  private:
   //Quality
   unsigned int mQualityLevel;

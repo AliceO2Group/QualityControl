@@ -52,4 +52,10 @@ ClassImp(o2::quality_control::core::QualityObject)
   {
     return mUserMetadata;
   }
+
+  std::string QualityObject::getPath() const
+  {
+    std::string path = "qc/checks/" + getName();
+    return path;
+  }
 }

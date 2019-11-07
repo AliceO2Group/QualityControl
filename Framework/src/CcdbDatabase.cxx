@@ -160,12 +160,18 @@ std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objec
 
 //Quality Object
 void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
-{ // other attributes
-  string path = qo->getName();
+{
+  // metadata
+  map<string, string> metadata;
+  // QC metadata (prefix qc_)
+  metadata["qc_version"] = Version::getString();
+  metadata["qc_quality"] = std::to_string(qo->getQuality().getLevel());
+
+  // other attributes
+  string path = qo->getPath();
+  cout << "PATH OF QO : " << path << endl;
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
-
-  map<string, string> metadata;
 
   ccdbApi.storeAsTFile(qo.get(), path, metadata, from, to);
 }
