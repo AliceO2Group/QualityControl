@@ -25,7 +25,7 @@
 					"name": "tpcclust"
 				},
 				"taskParameters": {
-					"parameter1": 100001,
+					"parameter1": "100001",
 					"parameter2": "qu'est-ce que c'est que ce truc la"
 				},
 				"location": "local",
@@ -46,7 +46,7 @@
 				"cycleDurationSeconds": "10",
 				"maxNumberCycles": "-1",
 				"taskParameters": {
-					"parameter1": 100002,
+					"parameter1": "100002",
 					"parameter2": "c'est quoi"
 				},
 				"location": "remote"
@@ -76,7 +76,9 @@
 				"dataSource": [{
 					"type": "Task",
 					"name": "abcTask",
-					"MOs": ["example"]
+					"MOs": [
+						"example"
+					]
 				}]
 			},
 			"checkAll": {
@@ -87,7 +89,10 @@
 				"dataSource": [{
 					"type": "Task",
 					"name": "abcTask",
-					"MOs": ["test1", "test2"]
+					"MOs": [
+						"test1",
+						"test2"
+					]
 				}]
 			},
 			"checkAny": {
@@ -98,7 +103,10 @@
 				"dataSource": [{
 					"type": "Task",
 					"name": "abcTask",
-					"MOs": ["test1", "test2"]
+					"MOs": [
+						"test1",
+						"test2"
+					]
 				}]
 			},
 			"checkAnyNonZero": {
@@ -109,7 +117,10 @@
 				"dataSource": [{
 					"type": "Task",
 					"name": "abcTask",
-					"MOs": ["test1", "test2"]
+					"MOs": [
+						"test1",
+						"test2"
+					]
 				}]
 			},
 			"checkGlobalAny": {
@@ -140,18 +151,18 @@
 					]
 				}
 			}
-		},
-		"dataSamplingPolicies": [{
-			"id": "tpcclust",
-			"active": "true",
-			"machines": [],
-			"query": "clusters:TPC/CLUSTERS/0",
-			"samplingConditions": [{
-				"condition": "random",
-				"fraction": "0.1",
-				"seed": "1234"
-			}],
-			"blocking": "false"
-		}]
-	}
+		}
+	},
+	"dataSamplingPolicies": [{
+		"id": "tpcclust",
+		"active": "true",
+		"machines": [],
+		"query": "clusters:TPC/CLUSTERS/0",
+		"samplingConditions": [{
+			"condition": "random",
+			"fraction": "0.1",
+			"seed": "1234"
+		}],
+		"blocking": "false"
+	}]
 }
