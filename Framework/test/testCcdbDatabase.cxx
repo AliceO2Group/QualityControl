@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
   //MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("my/task", "asdf/asdf");
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
   BOOST_CHECK_NE(mo, nullptr);
   TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
   BOOST_CHECK_NE(h1, nullptr);
