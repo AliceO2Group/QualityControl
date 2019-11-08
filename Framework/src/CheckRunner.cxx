@@ -249,13 +249,12 @@ void CheckRunner::store(std::vector<Check*>& checks)
         moNames.insert(name);
       }
     }
-    for (auto name: moNames) {
+    for (auto name : moNames) {
       mDatabase->storeMO(mMonitorObjects[name]);
     }
   } catch (boost::exception& e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
   }
-
 }
 
 void CheckRunner::send(std::vector<Check*>& checks, framework::DataAllocator& allocator)

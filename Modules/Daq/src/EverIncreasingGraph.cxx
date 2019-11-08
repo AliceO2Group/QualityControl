@@ -34,7 +34,7 @@ ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
 
   void EverIncreasingGraph::configure(std::string /*name*/) {}
 
-  Quality EverIncreasingGraph::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+  Quality EverIncreasingGraph::check(std::map<std::string, std::shared_ptr<MonitorObject>> * moMap)
   {
     auto mo = moMap->begin()->second;
     Quality result = Quality::Good;

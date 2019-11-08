@@ -87,7 +87,6 @@ class ExampleQualityPrinterSpec : public framework::Task
   }
 };
 
-
 } // namespace o2::quality_control::example
 
 #endif //QUALITYCONTROL_EXAMPLEPRINTERSPEC_H

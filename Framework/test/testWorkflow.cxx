@@ -72,7 +72,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
           return;
         }
 
-        LOG(DEBUG) << qo->getName() << " - qualit: "<< qo->getQuality();
+        LOG(DEBUG) << qo->getName() << " - qualit: " << qo->getQuality();
 
         // We ask to shut the topology down, returning 0 if there were no ERROR logs.
         pctx.services().get<ControlService>().readyToQuit(true);
