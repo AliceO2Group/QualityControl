@@ -75,7 +75,7 @@
 				"moduleName": "QcSkeleton",
 				"dataSource": [{
 					"type": "Task",
-					"name": "abcTask",
+					"name": "skeletonTask",
 					"MOs": [
 						"example"
 					]
@@ -129,7 +129,7 @@
 				"moduleName": "QcSkeleton",
 				"dataSource": [{
 					"type": "Task",
-					"name": "example"
+					"name": "xyzTask"
 				}]
 			}
 		},

@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(test_check_runner_factory)
   DataProcessorSpec checker = checkerFactory.create(check, configFilePath);
 
   BOOST_REQUIRE_EQUAL(checker.inputs.size(), 1);
-  BOOST_CHECK_EQUAL(checker.inputs[0], (InputSpec{ { "mo" }, "QC", "abcTask-mo", 0 }));
+  BOOST_CHECK_EQUAL(checker.inputs[0], (InputSpec{ { "mo" }, "QC", "skeletonTask-mo", 0 }));
 
   BOOST_CHECK(checker.algorithm.onInit != nullptr);
 }
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(test_check_runner)
   Check check("singleCheck", configFilePath);
   CheckRunner checker{ check, configFilePath };
 
-  BOOST_CHECK_EQUAL(checker.getInputs()[0], (InputSpec{ { "mo" }, "QC", "abcTask-mo", 0 }));
+  BOOST_CHECK_EQUAL(checker.getInputs()[0], (InputSpec{ { "mo" }, "QC", "skeletonTask-mo", 0 }));
   BOOST_CHECK_EQUAL(checker.getOutputs()[0], (OutputSpec{ "QC", "singleCheck-chk", 0 }));
 
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.

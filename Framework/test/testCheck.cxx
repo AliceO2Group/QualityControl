@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(test_check_specs)
   Check check("singleCheck", configFilePath);
 
   BOOST_REQUIRE_EQUAL(check.getInputs().size(), 1);
-  BOOST_CHECK_EQUAL(check.getInputs()[0], (InputSpec{ { "mo" }, "QC", "abcTask-mo", 0 }));
+  BOOST_CHECK_EQUAL(check.getInputs()[0], (InputSpec{ { "mo" }, "QC", "skeletonTask-mo", 0 }));
 
   BOOST_CHECK_EQUAL(check.getOutputSpec(), (OutputSpec{ "QC", "singleCheck-chk", 0 }));
 }
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(test_check_isready)
 
   Check check("singleCheck", configFilePath);
 
-  std::string monitorObjectFullName = "abcTask/example"; /* taskName / monitorObjectName */
+  std::string monitorObjectFullName = "skeletonTask/example"; /* taskName / monitorObjectName */
   std::map<std::string, unsigned int> moMap = { { monitorObjectFullName, 10 } };
   check.init();
 
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_check_single_mo)
   Check check("singleCheck", configFilePath);
   check.init();
 
-  std::string monitorObjectFullName = "abcTask/example"; /* taskName / monitorObjectName */
+  std::string monitorObjectFullName = "skeletonTask/example"; /* taskName / monitorObjectName */
   std::map<std::string, unsigned int> moMap1 = { { monitorObjectFullName, 10 } };
 
   BOOST_CHECK(check.isReady(moMap1));
@@ -173,8 +173,8 @@ BOOST_AUTO_TEST_CASE(test_check_policy_globalany)
   Check check("checkGlobalAny", configFilePath);
   check.init();
 
-  std::string mo1 = "abcTask/test1"; /* taskName / monitorObjectName */
-  std::string mo2 = "abcTask/test2"; /* taskName / monitorObjectName */
+  std::string mo1 = "xyzTask/test1"; /* taskName / monitorObjectName */
+  std::string mo2 = "xyzTask/test2"; /* taskName / monitorObjectName */
 
   std::map<std::string, unsigned int> moMap1 = { { mo1, 10 } };
   BOOST_CHECK(check.isReady(moMap1));
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(test_check_invoke_check_beautify)
   TestCheck testCheck;
   check.setCheckInterface(dynamic_cast<CheckInterface*>(&testCheck));
 
-  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "abcTask/example", std::shared_ptr<MonitorObject>(new MonitorObject()) } };
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "skeletonTask/example", std::shared_ptr<MonitorObject>(new MonitorObject()) } };
 
   check.check(moMap);
   // Check should run

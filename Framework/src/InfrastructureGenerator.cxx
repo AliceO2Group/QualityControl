@@ -105,7 +105,6 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
             Outputs{ merger.getOutputSpec() },
             adaptFromTask<HistoMerger>(std::move(merger)),
           };
-
           workflow.emplace_back(mergerSpec);
         }
 
@@ -123,7 +122,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   typedef std::vector<Check> CheckRunnerNames;
   std::map<InputNames, CheckRunnerNames> checkerMap;
   for (const auto& [checkName, checkConfig] : config->getRecursive("qc.checks")) {
-    QcInfoLogger::GetInstance() << ">> CheckRunner name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
+    QcInfoLogger::GetInstance() << ">> Check name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
     if (checkConfig.get<bool>("active", true)) {
       auto check = Check(checkName, configurationSource);
       InputNames inputNames;
