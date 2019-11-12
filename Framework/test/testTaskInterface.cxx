@@ -22,6 +22,7 @@
 
 #include <Framework/InitContext.h>
 #include <Framework/ConfigParamRegistry.h>
+#include <Framework/ServiceRegistry.h>
 #include <boost/test/unit_test.hpp>
 #include <iostream>
 
