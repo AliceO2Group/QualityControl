@@ -11,6 +11,9 @@
 #include "QualityControl/TaskInterface.h"
 
 #define MCH_DE_MAX 2000
+#define MCH_MAX_CRU_ID 4
+#define MCH_MAX_CRU_IN_FLP 3
+#define LINKID_MAX 0x7FF
 
 using namespace o2::quality_control::core;
 
@@ -20,6 +23,16 @@ namespace quality_control_modules
 {
 namespace muonchambers
 {
+
+
+class MapSolar
+{
+public:
+  int mLink;                // link ID
+
+  MapSolar();
+  ~MapSolar();
+};
 
 
 class MapDualSampa
@@ -38,7 +51,7 @@ class MapPad
 {
 public:
   int fDE;                  // detector element
-  int fDsID;             // electronic address
+  int fDsID;                // electronic address
   int fAddress;             // electronic address
   int fPadx;                // PadX index
   int fPady;                // PadY index
@@ -57,13 +70,24 @@ public:
 class MapCRU
 {
 
-  MapDualSampa mDsMap[24][40];
-  MapPad* mPadMap[MCH_DE_MAX];
+  MapSolar mSolarMap[MCH_MAX_CRU_IN_FLP][24];
 
 public:
   MapCRU();
-  bool addDSMapping(uint32_t link_id, uint32_t ds_addr, uint32_t de, uint32_t dsid);
-  bool readDSMapping(uint32_t cru_id, std::string mapFile);
+  bool readMapping(std::string mapFile);
+  int32_t getLink(uint32_t c, uint32_t l);
+};
+
+
+class MapFEC
+{
+
+  MapDualSampa mDsMap[LINKID_MAX+1][40];
+  MapPad* mPadMap[MCH_DE_MAX];
+
+public:
+  MapFEC();
+  bool readDSMapping(std::string mapFile);
   bool getDSMapping(uint32_t link_id, uint32_t ds_addr, uint32_t& de, uint32_t& dsid);
   bool readPadMapping(uint32_t de, std::string bMapfile, std::string nbMapfile, bool newMapping);
   bool getPad(uint32_t cru_link, uint32_t dsid, uint32_t dsch, MapPad& pad);

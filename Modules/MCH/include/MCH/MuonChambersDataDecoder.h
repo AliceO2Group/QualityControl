@@ -10,8 +10,6 @@
 #include "MCH/sampa_header.h"
 #include "MCH/MuonChambersMapping.h"
 
-#define MCH_MAX_CRU_ID 4
-#define MCH_MAX_CRU_IN_FLP 3
 
 using namespace o2::quality_control::core;
 
@@ -101,7 +99,8 @@ class MuonChambersDataDecoder
   int ds_enable[MCH_MAX_CRU_IN_FLP][24][40];
   std::vector<SampaHit> mHits;
   int nFrames;
-  MapCRU mMapCRU[MCH_MAX_CRU_IN_FLP];
+  MapCRU mMapCRU;
+  MapFEC mMapFEC;
 };
 
 } // namespace muonchambers

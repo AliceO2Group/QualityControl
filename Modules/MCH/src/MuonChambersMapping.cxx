@@ -21,6 +21,19 @@ namespace muonchambers
 
 
 /*
+ * Solar mapping
+ */
+MapSolar::MapSolar()
+{
+  mLink = -1;
+}
+
+MapSolar::~MapSolar()
+{
+}
+
+
+/*
  * DualSampa mapping
  */
 MapDualSampa::MapDualSampa()
@@ -55,25 +68,12 @@ MapPad::~MapPad()
  */
 MapCRU::MapCRU()
 {
-  for(int i = 0; i < MCH_DE_MAX; i++) {
-    mPadMap[i] = NULL; //new MapPad[MCH_PAD_ADDR_MAX];
-  }
-}
-
-
-bool MapCRU::addDSMapping(uint32_t link_id, uint32_t ds_addr, uint32_t de, uint32_t dsid)
-{
-  MapDualSampa& m = mDsMap[link_id][ds_addr];
-  m.mDE = de;
-  m.mIndex = dsid;
-  m.mBad = 0;
-  return true;
 }
 
 
 
 
-bool MapCRU::readDSMapping(uint32_t cru_id, std::string mapFile)
+bool MapCRU::readMapping(std::string mapFile)
 {
   std::ifstream file;
   file.open(mapFile);
@@ -83,19 +83,69 @@ bool MapCRU::readDSMapping(uint32_t cru_id, std::string mapFile)
     return false;
   }
 
-  int cid, link_id, ds_addr, de, ds_id;
+  int c, l, link_id;
   while(!file.eof())
   {
-    file >> cid >> link_id >> ds_addr >> de >> ds_id;
-    if(cid != cru_id) continue;
-    mDsMap[link_id][ds_addr].mDE = de;
-    mDsMap[link_id][ds_addr].mIndex = ds_id;
-    mDsMap[link_id][ds_addr].mBad = 0;
+    file >> c >> l >> link_id;
+    if( c < 0 || c >= MCH_MAX_CRU_IN_FLP ) continue;
+    if( l < 0 || l >= 24 ) continue;
+    mSolarMap[c][l].mLink = link_id;
   }
 }
 
 
-bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMapfile, bool newMapping)
+int32_t MapCRU::getLink(uint32_t c, uint32_t l)
+{
+  int32_t result = -1;
+  if( c < 0 || c >= MCH_MAX_CRU_IN_FLP ) return result;
+  if( l < 0 || l >= 24 ) return result;
+  return mSolarMap[c][l].mLink;
+}
+
+
+
+/*
+ * CRU mapping
+ */
+MapFEC::MapFEC()
+{
+  for(int i = 0; i < MCH_DE_MAX; i++) {
+    mPadMap[i] = NULL; //new MapPad[MCH_PAD_ADDR_MAX];
+  }
+}
+
+
+
+
+bool MapFEC::readDSMapping(std::string mapFile)
+{
+  std::ifstream file;
+  file.open(mapFile);
+  if (!file)
+  {
+    std::cerr << "Can't open file "<<mapFile<<std::endl;
+    return false;
+  }
+
+  int link_id, group_id, de, ds_id[5];
+  while(!file.eof())
+  {
+    file >> link_id >> group_id >> de >> ds_id[0] >> ds_id[1] >> ds_id[2] >> ds_id[3] >> ds_id[4];
+    if( link_id < 0 || link_id > LINKID_MAX ) continue;
+    for(int i = 0; i < 5; i++) {
+      if(ds_id[i] <= 0) continue;
+      int ds_addr = group_id*5 + i;
+      if( ds_addr < 0 || ds_addr >= 40 ) continue;
+      mDsMap[link_id][ds_addr].mDE = de;
+      mDsMap[link_id][ds_addr].mIndex = ds_id[i];
+      mDsMap[link_id][ds_addr].mBad = 0;
+    }
+  }
+  return true;
+}
+
+
+bool MapFEC::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMapfile, bool newMapping)
 {
   int manu2ds[64]={62,61,63,60,59,55,58,57,56,54,50,46,42,39,37,41,
       35,36,33,34,32,38,43,40,45,44,47,48,49,52,51,53,
@@ -187,17 +237,17 @@ bool MapCRU::readPadMapping(uint32_t de, std::string bMapfile, std::string nbMap
 }
 
 
-bool MapCRU::getDSMapping(uint32_t cru_link, uint32_t ds_addr, uint32_t& de, uint32_t& dsid)
+bool MapFEC::getDSMapping(uint32_t link_id, uint32_t ds_addr, uint32_t& de, uint32_t& dsid)
 {
-  if( mDsMap[cru_link][ds_addr].mBad == 1 ) return false;
-  de = mDsMap[cru_link][ds_addr].mDE;
-  dsid = mDsMap[cru_link][ds_addr].mIndex;
+  if( mDsMap[link_id][ds_addr].mBad == 1 ) return false;
+  de = mDsMap[link_id][ds_addr].mDE;
+  dsid = mDsMap[link_id][ds_addr].mIndex;
   return true;
 }
 
 
 
-bool MapCRU::getPad(uint32_t cru_link, uint32_t dsid, uint32_t dsch, MapPad& pad)
+bool MapFEC::getPad(uint32_t cru_link, uint32_t dsid, uint32_t dsch, MapPad& pad)
 {
   //printf("getPad: link=%d  dsid=%d  bad=%d\n", cru_link, dsid, mDsMap[cru_link][dsid].mBad);
   if( mDsMap[cru_link][dsid].mBad == 1 ) return false;

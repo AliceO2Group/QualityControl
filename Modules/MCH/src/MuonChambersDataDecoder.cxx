@@ -891,6 +891,7 @@ MuonChambersDataDecoder::~MuonChambersDataDecoder() {fclose(flog);}
 void MuonChambersDataDecoder::initialize()
 {
   QcInfoLogger::GetInstance() << "initialize MuonChambersDataDecoder" << AliceO2::InfoLogger::InfoLogger::endm;
+  fprintf(stdout,"initialize MuonChambersDataDecoder\n");
 
   hb_orbit = -1;
   nFrames = 0;
@@ -920,20 +921,21 @@ void MuonChambersDataDecoder::initialize()
   }
   std::ifstream ds_enable_f("/tmp/board_enable.txt");
   while( !ds_enable_f.eof() ) {
-    //std::cout<<"line: "<<tstr<<std::endl;
     int c, l, b, e;
     ds_enable_f >> c >> l >> b >> e;
     if( c < 0 || c >= MCH_MAX_CRU_IN_FLP ) continue;
     if( l < 0 || l >= 24 ) continue;
     if( b < 0 || b >= 40 ) continue;
     ds_enable[c][l][b] = e;
+    fprintf(stdout,"ds_enable[%d][%d][%d]=%d\n", c, l, b, ds_enable[c][l][b]);
   }
 
   int de = 819;
   //mMapCRU[0].addDSMapping(1, 0, de, 5);
   //mMapCRU[0].addDSMapping(1, 2, de, 4);
   //mMapCRU[0].addDSMapping(1, 4, de, 3);
-  mMapCRU[0].readDSMapping(0, "/tmp/cru.map");
+  //mMapCRU.readMapping("/tmp/cru.map");
+  //mMapFEC.readDSMapping("/tmp/fec.map");
   //mMapCRU[0].readPadMapping(de, "/home/flp/Mapping/slat330000N.Bending.map",
   //    "/home/flp/Mapping/slat330000N.NonBending.map", false);
 
@@ -943,6 +945,7 @@ void MuonChambersDataDecoder::initialize()
   //if( gPrintLevel > 0 ) flog = fopen("/home/flp/qc.log", "w");
   //else
     flog = stdout;
+    fprintf(stdout,"MuonChambersDataDecoder initialization finished\n");
 }
 
 void MuonChambersDataDecoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int link_id)
@@ -1240,8 +1243,15 @@ void MuonChambersDataDecoder::processData(const char* buf, size_t size)
       SampaHit& hit = mHits[ih];
       hit.pad.fDE = -1;
       hit.pad.fCathode = 0;
-      /*
+
+      int32_t link_id = mMapCRU.getLink(hit.cru_id, hit.link_id);
+      if( link_id < 0 ) continue;
+
       uint32_t de, dsid;
+      if( !mMapFEC.getDSMapping(link_id, hit.ds_addr, de, dsid) ) continue;
+      hit.pad.fDE = de;
+
+      /*
       if( !mMapCRU[0].getDSMapping(hit.link_id, hit.ds_addr, de, dsid) ) continue;
       o2::mch::mapping::Segmentation segment(de);
       int padid = segment.findPadByFEE(dsid, hit.chan_addr);
