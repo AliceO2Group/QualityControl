@@ -29,7 +29,7 @@ target_include_directories(
 )
 
 #target_link_libraries(${MODULE_NAME} PUBLIC QualityControl)
-target_link_libraries(${MODULE_NAME} PUBLIC QualityControl O2::MCHMappingImpl3)
+target_link_libraries(${MODULE_NAME} PUBLIC QualityControl O2::MCHMappingImpl3 O2::MCHMappingSegContour)
 
 install(
         TARGETS ${MODULE_NAME}
