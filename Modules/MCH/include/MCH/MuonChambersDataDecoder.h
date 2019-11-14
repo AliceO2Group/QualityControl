@@ -92,6 +92,8 @@ class MuonChambersDataDecoder
   std::vector<SampaHit>& getHits() { return mHits; }
   void reset();
 
+  int32_t getMapCRU(int cruid, int linkid) { return mMapCRU.getLink(cruid, linkid); }
+
  private:
   int hb_orbit;
   DualSampa ds[MCH_MAX_CRU_ID][24][40];
