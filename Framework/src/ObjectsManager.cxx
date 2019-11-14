@@ -63,12 +63,22 @@ void ObjectsManager::updateServiceDiscovery()
   }
   // prepare the string of comma separated objects and publish it
   string objects;
-  for (auto mo : *mMonitorObjects) {
-    objects += mTaskConfig.taskName + "/" + mo->GetName() + ",";
+  for (auto tobj : *mMonitorObjects) {
+    MonitorObject* mo = dynamic_cast<MonitorObject*>(tobj);
+    objects += mo->getPath() + ",";
   }
   objects.pop_back();
   mServiceDiscovery->_register(objects);
   mUpdateServiceDiscovery = false;
+}
+
+void ObjectsManager::removeAllFromServiceDiscovery()
+{
+  if (mServiceDiscovery == nullptr) {
+    return;
+  }
+  mServiceDiscovery->_register("");
+  mUpdateServiceDiscovery = true;
 }
 
 void ObjectsManager::stopPublishing(TObject* object)

@@ -112,7 +112,8 @@ class TaskRunner : public framework::Task
   void endOfActivity();
   void startCycle();
   void finishCycle(framework::DataAllocator& outputs);
-  unsigned long publish(framework::DataAllocator& outputs);
+  int publish(framework::DataAllocator& outputs);
+  void publishCycleStats();
 
  private:
   std::string mDeviceName;
@@ -120,7 +121,7 @@ class TaskRunner : public framework::Task
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<monitoring::Monitoring> mCollector;
   std::shared_ptr<TaskInterface> mTask;
-  bool mResetAfterPublish;
+  bool mResetAfterPublish = false;
   std::shared_ptr<ObjectsManager> mObjectsManager;
 
   std::string validateDetectorName(std::string name);
@@ -130,16 +131,16 @@ class TaskRunner : public framework::Task
   framework::OutputSpec mMonitorObjectsSpec;
   framework::Options mOptions;
 
-  int mNumberBlocks;
-  int mLastNumberObjects;
-  bool mCycleOn;
-  int mCycleNumber;
-  std::chrono::steady_clock::time_point mCycleStartTime;
+  bool mCycleOn = false;
+  int mCycleNumber = 0;
 
   // stats
-  AliceO2::Common::Timer mStatsTimer;
-  int mTotalNumberObjectsPublished;
+  int mNumberBlocks = 0;
+  int mNumberObjectsPublishedInCycle = 0;
+  int mTotalNumberObjectsPublished = 0;
+  double mLastPublicationDuration = 0;
   AliceO2::Common::Timer mTimerTotalDurationActivity;
+  AliceO2::Common::Timer mTimerDurationCycle;
 };
 
 } // namespace o2::quality_control::core

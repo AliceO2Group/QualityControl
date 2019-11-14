@@ -2,7 +2,7 @@
 
 add_library(QcSkeleton)
 
-target_sources(QcSkeleton PRIVATE src/SkeletonTask.cxx src/SkeletonCheck.cxx)
+target_sources(QcSkeleton PRIVATE src/SkeletonTask.cxx src/SkeletonCheck.cxx src/SkeletonPostProcessing.cxx)
 
 target_include_directories(
   QcSkeleton
@@ -22,6 +22,7 @@ install(TARGETS QcSkeleton
 add_root_dictionary(QcSkeleton
                     HEADERS include/Skeleton/SkeletonTask.h
                             include/Skeleton/SkeletonCheck.h
+                            include/Skeleton/SkeletonPostProcessing.h
                     LINKDEF "include/Skeleton/LinkDef.h"
                     BASENAME QcSkeleton)
 
