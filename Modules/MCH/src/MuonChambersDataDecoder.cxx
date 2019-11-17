@@ -930,12 +930,12 @@ void MuonChambersDataDecoder::initialize()
     fprintf(stdout,"ds_enable[%d][%d][%d]=%d\n", c, l, b, ds_enable[c][l][b]);
   }
 
-  int de = 819;
+  //int de = 819;
   //mMapCRU[0].addDSMapping(1, 0, de, 5);
   //mMapCRU[0].addDSMapping(1, 2, de, 4);
   //mMapCRU[0].addDSMapping(1, 4, de, 3);
-  //mMapCRU.readMapping("/tmp/cru.map");
-  //mMapFEC.readDSMapping("/tmp/fec.map");
+  mMapCRU.readMapping("/tmp/cru.map");
+  mMapFEC.readDSMapping("/tmp/fec.map");
   //mMapCRU[0].readPadMapping(de, "/home/flp/Mapping/slat330000N.Bending.map",
   //    "/home/flp/Mapping/slat330000N.NonBending.map", false);
 

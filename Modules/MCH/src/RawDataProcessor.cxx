@@ -83,79 +83,90 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
     }
 
     mDecoder.initialize();
+      
+      uint32_t dsid;
+      for(int cruid=0; cruid<3; cruid++){
+          for(int linkid=0; linkid<24; linkid++){
+            int32_t link_id = mDecoder.getMapCRU(cruid,linkid);
+            if(link_id == -1) continue;
+              for(int ds_addr=0; ds_addr<40; ds_addr++){
+                uint32_t de = mDecoder.getMapFEC(link_id, ds_addr, de, dsid);
 
-    int de = 819;
+                //  int de = 819;
 
-    mHistogram = new TH1F("QcMuonChambers_PayloadSize", "QcMuonChambers Payload Size", 20, 0, 1000000000);
-    getObjectsManager()->startPublishing(mHistogram);
-    /*getObjectsManager()->addCheck(mHistogram, "checkFromMuonChambers", "o2::quality_control_modules::muonchambers::MuonChambersCheck",
-    "QcMuonChambers");*/
+                mHistogram = new TH1F("QcMuonChambers_PayloadSize", "QcMuonChambers Payload Size", 20, 0, 1000000000);
+                getObjectsManager()->startPublishing(mHistogram);
+                /*getObjectsManager()->addCheck(mHistogram, "checkFromMuonChambers", "o2::quality_control_modules::muonchambers::MuonChambersCheck",
+                "QcMuonChambers");*/
 
-    for(int i = 0; i < 24; i++) {
+                for(int i = 0; i < 24; i++) {
 
-      mHistogramPedestals[i] = new TH2F(TString::Format("QcMuonChambers_Pedestals_%02d", i),
-          TString::Format("QcMuonChambers - Pedestals (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
-      //mHistogramPedestals->SetDrawOption("col");
-      getObjectsManager()->startPublishing(mHistogramPedestals[i]);
-      getObjectsManager()->addCheck(mHistogramPedestals[i], "checkFromMuonChambers",
-          "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
+                  mHistogramPedestals[i] = new TH2F(TString::Format("QcMuonChambers_Pedestals_%02d", i),
+                      TString::Format("QcMuonChambers - Pedestals (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
+                  //mHistogramPedestals->SetDrawOption("col");
+                  getObjectsManager()->startPublishing(mHistogramPedestals[i]);
+                  getObjectsManager()->addCheck(mHistogramPedestals[i], "checkFromMuonChambers",
+                      "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
 
-      mHistogramNoise[i] =
-          new TH2F(TString::Format("QcMuonChambers_Noise_%02d", i),
-              TString::Format("QcMuonChambers - Noise (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
-      getObjectsManager()->startPublishing(mHistogramNoise[i]);
+                  mHistogramNoise[i] =
+                      new TH2F(TString::Format("QcMuonChambers_Noise_%02d", i),
+                          TString::Format("QcMuonChambers - Noise (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
+                  getObjectsManager()->startPublishing(mHistogramNoise[i]);
 
-      for(int j = 0; j < 8; j++) {
-        mHistogramPedestalsDS[i][j] =
-            new TH1F(TString::Format("QcMuonChambers_Pedestals_%02d_%02d", i, j),
-                TString::Format("QcMuonChambers - Pedestals (%02d-%02d)", i, j), 64*5, 0, 64*5);
-        getObjectsManager()->startPublishing(mHistogramPedestalsDS[i][j]);
-        /*getObjectsManager()->addCheck(mHistogramPedestalsDS[i][j], "checkFromMuonChambers",
-          "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");*/
+                  for(int j = 0; j < 8; j++) {
+                    mHistogramPedestalsDS[i][j] =
+                        new TH1F(TString::Format("QcMuonChambers_Pedestals_%02d_%02d", i, j),
+                            TString::Format("QcMuonChambers - Pedestals (%02d-%02d)", i, j), 64*5, 0, 64*5);
+                    getObjectsManager()->startPublishing(mHistogramPedestalsDS[i][j]);
+                    /*getObjectsManager()->addCheck(mHistogramPedestalsDS[i][j], "checkFromMuonChambers",
+                      "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");*/
 
-        mHistogramNoiseDS[i][j] =
-            new TH1F(TString::Format("QcMuonChambers_Noise_%02d_%02d", i, j),
-                TString::Format("QcMuonChambers - Noise (%02d-%02d)", i, j), 64*5, 0, 64*5);
-        getObjectsManager()->startPublishing(mHistogramNoiseDS[i][j]);
-        /*getObjectsManager()->addCheck(mHistogram, "checkFromMuonChambers", "o2::quality_control_modules::muonchambers::MuonChambersCheck",
-    "QcMuonChambers");*/
-      }
-    }
+                    mHistogramNoiseDS[i][j] =
+                        new TH1F(TString::Format("QcMuonChambers_Noise_%02d_%02d", i, j),
+                            TString::Format("QcMuonChambers - Noise (%02d-%02d)", i, j), 64*5, 0, 64*5);
+                    getObjectsManager()->startPublishing(mHistogramNoiseDS[i][j]);
+                    /*getObjectsManager()->addCheck(mHistogram, "checkFromMuonChambers", "o2::quality_control_modules::muonchambers::MuonChambersCheck",
+                "QcMuonChambers");*/
+                  }
+                }
 
-    {
-      TH2F* hPedDE = new TH2F(TString::Format("QcMuonChambers_Pedestals_DE%03d", de),
-          TString::Format("QcMuonChambers - Pedestals (DE%03d)", de), 1000, 0, 1000, 64, 0, 64);
-      mHistogramPedestalsDE.insert( make_pair(de, hPedDE) );
-      getObjectsManager()->startPublishing(hPedDE);
-      TH2F* hNoiseDE = new TH2F(TString::Format("QcMuonChambers_Noise_DE%03d", de),
-          TString::Format("QcMuonChambers - Noise (DE%03d)", de), 1000, 0, 1000, 64, 0, 64);
-      mHistogramNoiseDE.insert( make_pair(de, hNoiseDE) );
-      getObjectsManager()->startPublishing(hNoiseDE);
+                {
+                  TH2F* hPedDE = new TH2F(TString::Format("QcMuonChambers_Pedestals_DE%03d", de),
+                      TString::Format("QcMuonChambers - Pedestals (DE%03d)", de), 1000, 0, 1000, 64, 0, 64);
+                  mHistogramPedestalsDE.insert( make_pair(de, hPedDE) );
+                  getObjectsManager()->startPublishing(hPedDE);
+                  TH2F* hNoiseDE = new TH2F(TString::Format("QcMuonChambers_Noise_DE%03d", de),
+                      TString::Format("QcMuonChambers - Noise (DE%03d)", de), 1000, 0, 1000, 64, 0, 64);
+                  mHistogramNoiseDE.insert( make_pair(de, hNoiseDE) );
+                  getObjectsManager()->startPublishing(hNoiseDE);
 
-      float Xsize = 50*5;
-      float Xsize2 = Xsize/2;
-      float Ysize = 50;
-      float Ysize2 = Ysize/2;
-      {
-        TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYb_%03d", de),
-            TString::Format("QcMuonChambers - Pedestals XY (DE%03d B)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
-        mHistogramPedestalsXY[0].insert( make_pair(de, hPedXY) );
-        getObjectsManager()->startPublishing(hPedXY);
-        TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYb_%03d", de),
-            TString::Format("QcMuonChambers - Noise XY (DE%03d B)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
-        mHistogramNoiseXY[0].insert( make_pair(de, hNoiseXY) );
-        getObjectsManager()->startPublishing(hNoiseXY);
-      }
-      {
-        TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYnb_%03d", de),
-            TString::Format("QcMuonChambers - Pedestals XY (DE%03d NB)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
-        mHistogramPedestalsXY[1].insert( make_pair(de, hPedXY) );
-        getObjectsManager()->startPublishing(hPedXY);
-        TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYnb_%03d", de),
-            TString::Format("QcMuonChambers - Noise XY (DE%03d NB)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
-        mHistogramNoiseXY[1].insert( make_pair(de, hNoiseXY) );
-        getObjectsManager()->startPublishing(hNoiseXY);
-      }
+                  float Xsize = 50*5;
+                  float Xsize2 = Xsize/2;
+                  float Ysize = 50;
+                  float Ysize2 = Ysize/2;
+                  {
+                    TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYb_%03d", de),
+                        TString::Format("QcMuonChambers - Pedestals XY (DE%03d B)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+                    mHistogramPedestalsXY[0].insert( make_pair(de, hPedXY) );
+                    getObjectsManager()->startPublishing(hPedXY);
+                    TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYb_%03d", de),
+                        TString::Format("QcMuonChambers - Noise XY (DE%03d B)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+                    mHistogramNoiseXY[0].insert( make_pair(de, hNoiseXY) );
+                    getObjectsManager()->startPublishing(hNoiseXY);
+                  }
+                  {
+                    TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYnb_%03d", de),
+                        TString::Format("QcMuonChambers - Pedestals XY (DE%03d NB)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+                    mHistogramPedestalsXY[1].insert( make_pair(de, hPedXY) );
+                    getObjectsManager()->startPublishing(hPedXY);
+                    TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYnb_%03d", de),
+                        TString::Format("QcMuonChambers - Noise XY (DE%03d NB)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+                    mHistogramNoiseXY[1].insert( make_pair(de, hNoiseXY) );
+                    getObjectsManager()->startPublishing(hNoiseXY);
+                  }
+                }
+            }
+        }
     }
   }
 

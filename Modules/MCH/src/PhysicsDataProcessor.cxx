@@ -70,39 +70,51 @@ void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
 
   mDecoder.initialize();
 
-  int de = 819;
+ uint32_t dsid;
+  for(int cruid=0; cruid<3; cruid++){
+      QcInfoLogger::GetInstance() << "JE SUIS ENTRÉ DANS LA BOUCLE CRUID " << cruid << AliceO2::InfoLogger::InfoLogger::endm;
+      for(int linkid=0; linkid<24; linkid++){
+          QcInfoLogger::GetInstance() << "JE SUIS ENTRÉ DANS LA BOUCLE LINKID " << linkid << AliceO2::InfoLogger::InfoLogger::endm;
+        int32_t link_id = mDecoder.getMapCRU(cruid,linkid);
+        if(link_id == -1) continue;
+          for(int ds_addr=0; ds_addr<40; ds_addr++){
+              QcInfoLogger::GetInstance() << "JE SUIS ENTRÉ DANS LA BOUCLE DS_ADDR " << ds_addr << AliceO2::InfoLogger::InfoLogger::endm;
+            uint32_t de = mDecoder.getMapFEC(link_id, ds_addr, de, dsid);
+              QcInfoLogger::GetInstance() << "C'EST LA LIGNE APRÈS LE GETMAPFEC, DE " << de << AliceO2::InfoLogger::InfoLogger::endm;
 
-  {
-    for(int i = 0; i < 24; i++) {
+              {
 
-      mHistogramNhits[i] = new TH2F(TString::Format("QcMuonChambers_NHits_%02d", i),
-          TString::Format("QcMuonChambers - Number of hits (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
-      //mHistogramPedestals->SetDrawOption("col");
-      getObjectsManager()->startPublishing(mHistogramNhits[i]);
+                  mHistogramNhits[linkid] = new TH2F(TString::Format("QcMuonChambers_NHits_%02d", linkid),
+                      TString::Format("QcMuonChambers - Number of hits (CRU link %02d)", linkid), 40, 0, 40, 64, 0, 64);
+                  //mHistogramPedestals->SetDrawOption("col");
+                  getObjectsManager()->startPublishing(mHistogramNhits[linkid]);
 
-      mHistogramADCamplitude[i] = new TH1F(TString::Format("QcMuonChambers_ADC_Amplitude_%02d", i),
-          TString::Format("QcMuonChambers - ADC amplitude (CRU link %02d)", i), 5000, 0, 5000);
-      //mHistogramPedestals->SetDrawOption("col");
-      getObjectsManager()->startPublishing(mHistogramADCamplitude[i]);
-    }
+                  mHistogramADCamplitude[linkid] = new TH1F(TString::Format("QcMuonChambers_ADC_Amplitude_%02d", linkid),
+                      TString::Format("QcMuonChambers - ADC amplitude (CRU link %02d)", linkid), 5000, 0, 5000);
+                  //mHistogramPedestals->SetDrawOption("col");
+                  getObjectsManager()->startPublishing(mHistogramADCamplitude[linkid]);
+                
 
-    TH1F* h = new TH1F(TString::Format("QcMuonChambers_ADCamplitude_DE%03d", de),
-        TString::Format("QcMuonChambers - ADC amplitude (DE%03d)", de), 5000, 0, 5000);
-    mHistogramADCamplitudeDE.insert( make_pair(de, h) );
-    getObjectsManager()->startPublishing(h);
+                TH1F* h = new TH1F(TString::Format("QcMuonChambers_ADCamplitude_DE%03d", de),
+                    TString::Format("QcMuonChambers - ADC amplitude (DE%03d)", de), 5000, 0, 5000);
+                mHistogramADCamplitudeDE.insert( make_pair(de, h) );
+                getObjectsManager()->startPublishing(h);
 
-    float Xsize = 40*5;
-    float Xsize2 = Xsize/2;
-    float Ysize = 50;
-    float Ysize2 = Ysize/2;
-    TH2F* h2 = new TH2F(TString::Format("QcMuonChambers_Nhits_DE%03d", de),
-        TString::Format("QcMuonChambers - Number of hits (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
-    mHistogramNhitsDE.insert( make_pair(de, h2) );
-    getObjectsManager()->startPublishing(h2);
-    h2 = new TH2F(TString::Format("QcMuonChambers_Nhits_HighAmpl_DE%03d", de),
-        TString::Format("QcMuonChambers - Number of hits for Csum>500 (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
-    mHistogramNhitsHighAmplDE.insert( make_pair(de, h2) );
-    getObjectsManager()->startPublishing(h2);
+                float Xsize = 40*5;
+                float Xsize2 = Xsize/2;
+                float Ysize = 50;
+                float Ysize2 = Ysize/2;
+                TH2F* h2 = new TH2F(TString::Format("QcMuonChambers_Nhits_DE%03d", de),
+                    TString::Format("QcMuonChambers - Number of hits (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+                mHistogramNhitsDE.insert( make_pair(de, h2) );
+                getObjectsManager()->startPublishing(h2);
+                h2 = new TH2F(TString::Format("QcMuonChambers_Nhits_HighAmpl_DE%03d", de),
+                    TString::Format("QcMuonChambers - Number of hits for Csum>500 (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+                mHistogramNhitsHighAmplDE.insert( make_pair(de, h2) );
+                getObjectsManager()->startPublishing(h2);
+              }
+          }
+      }
   }
 
   gPrintLevel = 1;
