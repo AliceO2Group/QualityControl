@@ -51,8 +51,10 @@ class PhysicsDataProcessor /*final*/ : public TaskInterface // todo add back the
   MuonChambersDataDecoder mDecoder;
   uint64_t nhits[24][40][64];
 
-  TH2F* mHistogramNhits[24];
-  TH1F* mHistogramADCamplitude[24];
+
+  TH2F* mHistogramNhits[72];
+  TH1F* mHistogramADCamplitude[72];
+  std::vector<int> DEs;
   std::map<int, TH1F*> mHistogramADCamplitudeDE;
   std::map<int, TH2F*> mHistogramNhitsDE;
   std::map<int, TH2F*> mHistogramNhitsHighAmplDE;
