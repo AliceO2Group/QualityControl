@@ -151,21 +151,24 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 
   printf("count: %d\n", count);
   if( (count % 1) == 0) {
-      int nbDEs = DEs.size();
-      for(int elem=0; elem<nbDEs; elem++){
-        int de = DEs[elem];
+    
         TFile f("/tmp/qc.root","RECREATE");
-        for(int i = 0; i < 24; i++) {
+        for(int i = 0; i < 3*24; i++) {
           mHistogramNhits[i]->Write();
           mHistogramADCamplitude[i]->Write();
         }
+      int nbDEs = DEs.size();
+      for(int elem=0; elem<nbDEs; elem++){
+        int de = DEs[elem];
         auto h = mHistogramADCamplitudeDE.find(de);
         if( (h != mHistogramADCamplitudeDE.end()) && (h->second != NULL) ) {
           h->second->Write();
+          QcInfoLogger::GetInstance() << "On vient de write dans h->second ADCAmplitudeDE" << AliceO2::InfoLogger::InfoLogger::endm;
         }
         auto h2 = mHistogramNhitsDE.find(de);
         if( (h2 != mHistogramNhitsDE.end()) && (h2->second != NULL) ) {
           h2->second->Write();
+          QcInfoLogger::GetInstance() << "On vient de write dans h2->second NHitsDE" << AliceO2::InfoLogger::InfoLogger::endm;
         }
 
         f.ls();
