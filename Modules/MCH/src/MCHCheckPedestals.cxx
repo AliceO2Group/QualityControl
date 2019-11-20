@@ -46,6 +46,9 @@ namespace o2::quality_control_modules::muonchambers
 
   Quality MCHCheckPedestals::check(const MonitorObject* mo)
   {
+    //std::cout<<"================================="<<std::endl;
+    //std::cout<<"MCHCheckPedestals::check() called"<<std::endl;
+    //std::cout<<"================================="<<std::endl;
     Quality result = Quality::Null;
 
     // const Double_t binWidthTOFrawTime = 2.44;
@@ -79,6 +82,9 @@ namespace o2::quality_control_modules::muonchambers
 
   void MCHCheckPedestals::beautify(MonitorObject* mo, Quality checkResult)
   {
+    //std::cout<<"===================================="<<std::endl;
+    //std::cout<<"MCHCheckPedestals::beautify() called"<<std::endl;
+    //std::cout<<"===================================="<<std::endl;
     if (mo->getName().find("QcMuonChambers_Pedestals") != std::string::npos) {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
       h->SetDrawOption("colz");
@@ -137,7 +143,7 @@ namespace o2::quality_control_modules::muonchambers
           const o2::mch::mapping::CathodeSegmentation& csegment = segment.bending();
           //std::vector<std::vector<o2::mch::contour::Polygon<double>>>poly = o2::mch::mapping::getPadPolygons(csegment);
           o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
-          std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getSortedVertices();
+          std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
           for(unsigned int vi = 0; vi < vertices.size(); vi++) {
             const o2::mch::contour::Vertex<double> v1 = vertices[vi];
             const o2::mch::contour::Vertex<double> v2 = (vi < (vertices.size()-1)) ? vertices[vi+1] : vertices[0];
@@ -158,12 +164,13 @@ namespace o2::quality_control_modules::muonchambers
           const o2::mch::mapping::CathodeSegmentation& csegment = segment.nonBending();
           //std::vector<std::vector<o2::mch::contour::Polygon<double>>>poly = o2::mch::mapping::getPadPolygons(csegment);
           o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
-          std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getSortedVertices();
+          std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
           for(unsigned int vi = 0; vi < vertices.size(); vi++) {
             const o2::mch::contour::Vertex<double> v1 = vertices[vi];
             const o2::mch::contour::Vertex<double> v2 = (vi < (vertices.size()-1)) ? vertices[vi+1] : vertices[0];
             TLine* line = new TLine(v1.x, v1.y, v2.x, v2.y);
             h->GetListOfFunctions()->Add(line);
+            std::cout<<"v1="<<v1.x<<","<<v1.y<<"  v2="<<v2.x<<","<<v2.y<<std::endl;
           }
         } catch(std::exception& e) {
           return;
@@ -187,7 +194,7 @@ namespace o2::quality_control_modules::muonchambers
           const o2::mch::mapping::CathodeSegmentation& csegment = segment.bending();
           //std::vector<std::vector<o2::mch::contour::Polygon<double>>>poly = o2::mch::mapping::getPadPolygons(csegment);
           o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
-          std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getSortedVertices();
+          std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
           for(unsigned int vi = 0; vi < vertices.size(); vi++) {
             const o2::mch::contour::Vertex<double> v1 = vertices[vi];
             const o2::mch::contour::Vertex<double> v2 = (vi < (vertices.size()-1)) ? vertices[vi+1] : vertices[0];
@@ -208,7 +215,7 @@ namespace o2::quality_control_modules::muonchambers
           const o2::mch::mapping::CathodeSegmentation& csegment = segment.nonBending();
           //std::vector<std::vector<o2::mch::contour::Polygon<double>>>poly = o2::mch::mapping::getPadPolygons(csegment);
           o2::mch::contour::Contour<double> envelop = o2::mch::mapping::getEnvelop(csegment);
-          std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getSortedVertices();
+          std::vector<o2::mch::contour::Vertex<double>> vertices = envelop.getVertices();
           for(unsigned int vi = 0; vi < vertices.size(); vi++) {
             const o2::mch::contour::Vertex<double> v1 = vertices[vi];
             const o2::mch::contour::Vertex<double> v2 = (vi < (vertices.size()-1)) ? vertices[vi+1] : vertices[0];
