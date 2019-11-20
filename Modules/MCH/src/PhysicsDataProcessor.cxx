@@ -67,6 +67,7 @@ PhysicsDataProcessor::~PhysicsDataProcessor() {fclose(flog);}
 void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize PhysicsDataProcessor" << AliceO2::InfoLogger::InfoLogger::endm;
+  fprintf(stdout,"initialize PhysicsDataProcessor\n");
 
   mDecoder.initialize();
 
@@ -105,9 +106,10 @@ void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(h2);
   }
 
-  gPrintLevel = 1;
+  gPrintLevel = 0;
 
   flog = stdout; //fopen("/root/qc.log", "w");
+  fprintf(stdout,"PhysicsDataProcessor initialization finished\n");
 }
 
 void PhysicsDataProcessor::startOfActivity(Activity& /*activity*/)
