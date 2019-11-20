@@ -6,7 +6,9 @@ configure_file("include/Common/Version.h.in"
 
 # ---- Library ----
 
-add_library(QcCommon src/NonEmpty.cxx src/MeanIsAbove.cxx)
+add_library(QcCommon)
+
+target_sources(QcCommon PRIVATE src/NonEmpty.cxx src/MeanIsAbove.cxx)
 
 target_include_directories(
   QcCommon

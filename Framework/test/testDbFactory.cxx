@@ -28,6 +28,7 @@
 //#include <cassert>
 //#include <iostream>
 
+#include <QualityControl/DummyDatabase.h>
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/MonitorObject.h>
 #include <TH1F.h>
@@ -58,6 +59,10 @@ BOOST_AUTO_TEST_CASE(db_factory_test)
   std::unique_ptr<DatabaseInterface> database3 = DatabaseFactory::create("CCDB");
   BOOST_CHECK(database3);
   BOOST_CHECK(dynamic_cast<CcdbDatabase*>(database3.get()));
+
+  std::unique_ptr<DatabaseInterface> database4 = DatabaseFactory::create("Dummy");
+  BOOST_CHECK(database4);
+  BOOST_CHECK(dynamic_cast<DummyDatabase*>(database4.get()));
 }
 
 BOOST_AUTO_TEST_CASE(db_ccdb_listing)

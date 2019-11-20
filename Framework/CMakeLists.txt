@@ -50,7 +50,15 @@ add_library(QualityControl
             src/RepositoryBenchmark.cxx
             src/HistoMerger.cxx
             src/InfrastructureGenerator.cxx
-            src/ServiceDiscovery.cxx)
+            src/ServiceDiscovery.cxx
+            src/Triggers.cxx
+            src/TriggerHelpers.cxx
+            src/PostProcessingRunner.cxx
+            src/PostProcessingFactory.cxx
+            src/PostProcessingConfig.cxx
+            src/PostProcessingInterface.cxx
+            src/DummyDatabase.cxx
+            src/DataProducer.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -98,6 +106,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/TaskRunnerFactory.h
                             include/QualityControl/HistoMerger.h
                             include/QualityControl/InfrastructureGenerator.h
+                            include/QualityControl/PostProcessingInterface.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 
@@ -115,7 +124,8 @@ set(EXE_SRCS
     src/runReadout.cxx
     src/runMergerTest.cxx
     src/runReadoutForDataDump.cxx
-    src/runRepositoryBenchmark.cxx)
+    src/runRepositoryBenchmark.cxx
+    src/runPostProcessing.cxx)
 
 set(EXE_NAMES
     o2-qc-info-service
@@ -129,7 +139,8 @@ set(EXE_NAMES
     o2-qc-run-readout
     o2-qc-run-merger-test
     o2-qc-run-readout-for-data-dump
-    o2-qc-repository-benchmark)
+    o2-qc-repository-benchmark
+    o2-qc-run-postprocessing)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
@@ -145,7 +156,8 @@ set(EXE_OLD_NAMES
     qcRunReadout
     runMergerTest
     qcRunReadoutForDataDump
-    repositoryBenchmark)
+    repositoryBenchmark
+    qcRunPostProcessing)
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)
@@ -209,9 +221,19 @@ set(TEST_SRCS
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
     test/testCcdbDatabaseExtra.cxx
+    test/testTriggers.cxx
+    test/testTriggerHelpers.cxx
+    test/testPostProcessingRunner.cxx
+    test/testPostProcessingInterface.cxx
+    test/testPostProcessingConfig.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
+    ""
+    ""
+    ""
+    ""
+    ""
     ""
     ""
     ""
@@ -247,7 +269,8 @@ foreach(i RANGE ${count})
 endforeach()
 
 foreach(t testTaskInterface testWorkflow testTaskRunner
-        testInfrastructureGenerator)
+        testInfrastructureGenerator testPostProcessingConfig testPostProcessingInterface
+        testPostProcessingRunner)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
@@ -314,7 +337,7 @@ install(
         "${CMAKE_CURRENT_BINARY_DIR}/cmake/QualityControlConfigVersion.cmake"
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/QualityControl)
 
-# ---- Extra scripts ----
+# ---- Install config files and scripts ----
 
 install(FILES example-default.json
               alfa.json
@@ -326,17 +349,39 @@ install(FILES example-default.json
               readout.json
               readout-no-sampling.json
               readoutForDataDump.json
+              postprocessing.json
               script/RepoCleaner/config.yaml
               streamerinfos.root
               streamerinfos_v017.root
         DESTINATION etc)
 
-install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py
+install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/skip.py
                  script/RepoCleaner/repoCleaner.py
                  script/o2-qc-database-setup.sh
         DESTINATION bin)
 
-file(COPY test/testSharedConfig.json test/testWorkflow.json
-     DESTINATION ${CMAKE_BINARY_DIR}/tests/)
+# ---- Copy test files ----
+#
+# Using file(COPY is wrong because cmake will not detect when the files are modified.
+# Using install is also wrong because we don't want to install nor package the test files.
+# The solution is this ugly piece of cmake code.
 
-file(COPY streamerinfos.root streamerinfos_v017.root DESTINATION ${CMAKE_BINARY_DIR}/etc/)
+set(TEST_FILES
+  "testSharedConfig.json"
+  "testWorkflow.json")
+set(TEST_FILES_PREFIXED ${TEST_FILES})
+list(TRANSFORM TEST_FILES_PREFIXED PREPEND ${CMAKE_BINARY_DIR}/tests/)
+
+foreach(test_file ${TEST_FILES})
+  message("**** ${test_file}")
+  add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/tests/${test_file}
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/test/${test_file}
+                                     ${CMAKE_BINARY_DIR}/tests/${test_file}
+    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/test/${test_file}
+    COMMENT "Copying ${test_file}")
+endforeach()
+
+add_custom_target(copy_test_files ALL
+  DEPENDS ${TEST_FILES_PREFIXED}
+  )

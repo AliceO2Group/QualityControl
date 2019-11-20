@@ -1,19 +1,26 @@
 ///
 /// \file   DigitsQcTask.h
-/// \author Markus Fasel
+/// \author Markus Fasel, Cristina Terrevoli
 ///
 
 #ifndef QC_MODULE_EMCAL_DIGITSQCTASK_H
 #define QC_MODULE_EMCAL_DIGITSQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include <array>
 
-class TH2F;
+class TH1;
+class TH2;
 
 using namespace o2::quality_control::core;
 
 namespace o2
 {
+namespace emcal
+{
+class Geometry;
+}
+
 namespace quality_control_modules
 {
 namespace emcal
@@ -44,8 +51,11 @@ class DigitsQcTask /*final*/ : public TaskInterface // todo add back the "final"
   void reset() override;
 
  private:
-  TH2F* mDigitAmplitude; ///< Digit amplitude
-  TH2F* mDigitTime;      ///< Digit time
+  std::array<TH2*, 2> mDigitAmplitude;      ///< Digit amplitude
+  std::array<TH2*, 2> mDigitTime;           ///< Digit time
+  TH1* mDigitAmplitudeEMCAL = nullptr;      ///< Digit amplitude in EMCAL
+  TH1* mDigitAmplitudeDCAL = nullptr;       ///< Digit amplitude in DCAL
+  o2::emcal::Geometry* mGeometry = nullptr; ///< EMCAL geometry
 };
 
 } // namespace emcal

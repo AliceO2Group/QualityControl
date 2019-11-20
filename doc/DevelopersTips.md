@@ -40,6 +40,10 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
     5. `select count(*) from cpuUsedPercentage` <-- use the correct metrics name
     6. Repeat the last command and see if the number increases. If it increases it denotes that the metrics is stored correctly in the database. If it is the case, the problem lies in your grafana.
 
+### Avoid writing QC objects to a repository
+
+In case of a need to avoid writing QC objects to a repository, one can choose the "Dummy" database implementation in the config file. This is might be useful when one expects very large amounts of data that would be stored, but not actually needed (e.g. benchmarks).
+
 ### QCG 
 
 #### Generalities

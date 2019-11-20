@@ -20,6 +20,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::core
 {
@@ -90,11 +91,13 @@ void ServiceDiscovery::_register(const std::string& objects)
   boost::property_tree::json_parser::write_json(ss, pt);
 
   send("/v1/agent/service/register", ss.str());
+  QcInfoLogger::GetInstance() << "Registration to ServiceDiscovery" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ServiceDiscovery::deregister()
 {
   send("/v1/agent/service/deregister/" + mId, "");
+  QcInfoLogger::GetInstance() << "Deregistration from ServiceDiscovery" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ServiceDiscovery::runHealthServer(unsigned int port)

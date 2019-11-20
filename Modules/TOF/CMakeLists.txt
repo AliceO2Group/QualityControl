@@ -1,9 +1,9 @@
 # ---- Library ----
 
-add_library(QcTOF src/TOFTask.cxx src/TOFCheckRawsMulti.cxx
-                  src/TOFCheckRawsTime.cxx src/TOFCheckRawsToT.cxx)
+add_library(QcTOF)
 
-target_sources(QcTOF PRIVATE)
+target_sources(QcTOF PRIVATE src/TOFTask.cxx src/TOFCheckRawsMulti.cxx
+        src/TOFCheckRawsTime.cxx src/TOFCheckRawsToT.cxx)
 
 target_include_directories(
   QcTOF
