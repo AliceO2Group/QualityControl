@@ -146,6 +146,9 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
                     
                     if(!(std::find(DEs.begin(), DEs.end(), de) != DEs.end())){
                         DEs.push_back(de);
+                        mMapFEC.readPadMapping2(de, false);
+                        QcInfoLogger::GetInstance() << "C'EST LA LIGNE APRÈS LE READPADMAPPING2, DE " << de << AliceO2::InfoLogger::InfoLogger::endm;
+                        
                         {
                           TH2F* hPedDE = new TH2F(TString::Format("QcMuonChambers_Pedestals_DE%03d", de),
                               TString::Format("QcMuonChambers - Pedestals (DE%03d)", de), 1000, 0, 1000, 64, 0, 64);

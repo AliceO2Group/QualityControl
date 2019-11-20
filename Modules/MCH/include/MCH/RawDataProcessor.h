@@ -60,6 +60,7 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
   TH1F* mHistogramNoiseDS[3*24][8];
 
   std::vector<int> DEs;
+  MapFEC mMapFEC;
   std::map<int, TH2F*> mHistogramPedestalsDE;
   std::map<int, TH2F*> mHistogramNoiseDE;
   std::map<int, TH2F*> mHistogramPedestalsXY[2];
