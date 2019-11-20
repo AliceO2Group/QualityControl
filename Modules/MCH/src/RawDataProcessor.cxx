@@ -84,7 +84,7 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
 
     mDecoder.initialize();
 
-    int de = 819;
+    int de = 514;
 
     mHistogram = new TH1F("QcMuonChambers_PayloadSize", "QcMuonChambers Payload Size", 20, 0, 1000000000);
     getObjectsManager()->startPublishing(mHistogram);
@@ -141,20 +141,28 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
             TString::Format("QcMuonChambers - Pedestals XY (DE%03d B)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
         mHistogramPedestalsXY[0].insert( make_pair(de, hPedXY) );
         getObjectsManager()->startPublishing(hPedXY);
+        getObjectsManager()->addCheck(hPedXY, "checkFromMuonChambers",
+            "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
         TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYb_%03d", de),
             TString::Format("QcMuonChambers - Noise XY (DE%03d B)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
         mHistogramNoiseXY[0].insert( make_pair(de, hNoiseXY) );
         getObjectsManager()->startPublishing(hNoiseXY);
+        getObjectsManager()->addCheck(hNoiseXY, "checkFromMuonChambers",
+            "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
       }
       {
         TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYnb_%03d", de),
             TString::Format("QcMuonChambers - Pedestals XY (DE%03d NB)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
         mHistogramPedestalsXY[1].insert( make_pair(de, hPedXY) );
         getObjectsManager()->startPublishing(hPedXY);
+        getObjectsManager()->addCheck(hPedXY, "checkFromMuonChambers",
+            "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
         TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYnb_%03d", de),
             TString::Format("QcMuonChambers - Noise XY (DE%03d NB)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
         mHistogramNoiseXY[1].insert( make_pair(de, hNoiseXY) );
         getObjectsManager()->startPublishing(hNoiseXY);
+        getObjectsManager()->addCheck(hNoiseXY, "checkFromMuonChambers",
+            "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
       }
     }
   }
@@ -183,7 +191,7 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
   fprintf(flog, "\n\n====================\nRawDataProcessor::monitorData\n====================\n");
 
   printf("count: %d\n", count);
-  if( (count % 1) == 0) {
+  if( (count % 100) == 0) {
     TFile f("/tmp/qc.root","RECREATE");
     for(int i = 0; i < 24; i++) {
       mHistogramNoise[i]->Write();
@@ -216,6 +224,8 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 
   // 1. in a loop
   for (auto&& input : ctx.inputs()) {
+    QcInfoLogger::GetInstance() << "run RawDataProcessor: input " << input.spec->binding << AliceO2::InfoLogger::InfoLogger::endm;
+
     const auto* header = o2::header::get<header::DataHeader*>(input.header);
     //QcInfoLogger::GetInstance() << "header: " << header << AliceO2::InfoLogger::InfoLogger::endm;
     if(gPrintLevel>=1) fprintf(flog, "Header: %p\n", header);
@@ -320,11 +330,12 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 
       auto hPedXY = mHistogramPedestalsXY[hit.pad.fCathode].find(de);
       if( (hPedXY != mHistogramPedestalsXY[hit.pad.fCathode].end()) && (hPedXY->second != NULL) ) {
-        fprintf(flog,"Filling histograms for XY %d\n", de);
+        fprintf(flog,"Filling histograms for XY %d,%d\n", de, hit.pad.fCathode);
         int binx_min = hPedXY->second->GetXaxis()->FindBin(padX-padSizeX/2+0.1);
         int binx_max = hPedXY->second->GetXaxis()->FindBin(padX+padSizeX/2-0.1);
         int biny_min = hPedXY->second->GetYaxis()->FindBin(padY-padSizeY/2+0.1);
         int biny_max = hPedXY->second->GetYaxis()->FindBin(padY+padSizeY/2-0.1);
+	fprintf(flog, "  binx_min=%f binx_max=%f\n", binx_min, binx_max);
         for(int by = biny_min; by <= biny_max; by++) {
           for(int bx = binx_min; bx <= binx_max; bx++) {
             hPedXY->second->SetBinContent(bx, by, pedestal[hit.link_id][hit.ds_addr][hit.chan_addr]);
