@@ -654,7 +654,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
   }
   case dataToRead: { // Read ADC data words (10 bits)
     if (ds->bit < 10) break;
-    if( gPrintLevel >= 1 ) fprintf(flog,"SAMPA #%d Data word: 0x%lX (%lu)\n",ds->id,ds->data,ds->data);
+    if( gPrintLevel >= 2 ) fprintf(flog,"SAMPA #%d Data word: 0x%lX (%lu)\n",ds->id,ds->data,ds->data);
 
     if (1 /*ds->header.fPkgType == 4*/) {
       //              MuTrkSampaPacket* currentpacket = fSampaPacket[fNPackets-1];
@@ -683,8 +683,8 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       if (end_of_packet && !end_of_cluster) {
         // That's the end of the packet, but the cluster is still being read... that's not normal
         gNbErrors++;
-        fprintf(flog,"===> ERROR SAMPA [%2d]: End-of-packet without End-of-cluster. packet size = %lu, cluster size = %d\n",
-            ds->id, ds->header.fNbOf10BitWords, ds->csize);
+        //fprintf(flog,"===> ERROR SAMPA [%2d]: End-of-packet without End-of-cluster. packet size = %lu, cluster size = %d\n",
+        //    ds->id, ds->header.fNbOf10BitWords, ds->csize);
         ds->status = headerToRead;
       } else if (end_of_cluster) {
         if( gPrintLevel >= 1 ) fprintf(flog,"SAMPA #%d : End of cluster found\n",ds->id);
@@ -810,14 +810,14 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
     dsr.packetsize += 1;
     if( gPrintLevel >= 1 ) fprintf(flog,"sizeToRead[%d]: SAMPA cluster size: %d\n", dsr.id, dsr.csize);
     if( (dsr.csize+2) > dsr.header.fNbOf10BitWords ) {
-      fprintf(flog,"ERROR: cluster size bigger than SAMPA payload\n");
+      //fprintf(flog,"ERROR: cluster size bigger than SAMPA payload\n");
       dsr.status = notSynchronized;
       dsr.bit = 0;
       dsr.data = 0;
       dsr.packetsize = 0;
     } else {
       if( dsr.packetsize == dsr.header.fNbOf10BitWords ) {
-        fprintf(flog,"sizeToRead[%d]: ERROR: end-of-packet found while reading cluster size\n", dsr.id);
+        ///fprintf(flog,"sizeToRead[%d]: ERROR: end-of-packet found while reading cluster size\n", dsr.id);
         dsr.status = notSynchronized;
         dsr.bit = 0;
         dsr.data = 0;
@@ -833,7 +833,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
     dsr.ctime = data;
     dsr.packetsize += 1;
     if( dsr.packetsize == dsr.header.fNbOf10BitWords ) {
-      fprintf(flog,"timeToRead[%d]: ERROR: end-of-packet found while reading cluster time\n", dsr.id);
+      //fprintf(flog,"timeToRead[%d]: ERROR: end-of-packet found while reading cluster time\n", dsr.id);
       dsr.status = notSynchronized;
       dsr.bit = 0;
       dsr.data = 0;
@@ -854,7 +854,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
     //printf("dataToRead: cid=%d  packetsize=%d  end_of_packet=%d  end_of_cluster=%d\n",
     //    dsr.cid, dsr.packetsize, (int)end_of_packet, (int)end_of_cluster);
     if (end_of_packet && !end_of_cluster) {
-      fprintf(flog,"dataToRead[%d]: ERROR: end-of-packet found while reading cluster data\n", dsr.id);
+      //fprintf(flog,"dataToRead[%d]: ERROR: end-of-packet found while reading cluster data\n", dsr.id);
       dsr.bit = 0;
       dsr.data = 0;
       dsr.packetsize = 0;
@@ -915,12 +915,12 @@ void MuonChambersDataDecoder::initialize()
   for(int c = 0; c < MCH_MAX_CRU_IN_FLP; c++) {
     for(int l = 0; l < 24; l++) {
       for(int i = 0; i < 40; i++) {
-        ds_enable[c][l][i] = 0;
+        ds_enable[c][l][i] = 1;
       }
     }
   }
   std::ifstream ds_enable_f("/tmp/board_enable.txt");
-  while( !ds_enable_f.eof() ) {
+  while( !ds_enable_f.fail() ) {
     int c, l, b, e;
     ds_enable_f >> c >> l >> b >> e;
     if( c < 0 || c >= MCH_MAX_CRU_IN_FLP ) continue;
@@ -934,8 +934,8 @@ void MuonChambersDataDecoder::initialize()
   //mMapCRU[0].addDSMapping(1, 0, de, 5);
   //mMapCRU[0].addDSMapping(1, 2, de, 4);
   //mMapCRU[0].addDSMapping(1, 4, de, 3);
-  //mMapCRU.readMapping("/tmp/cru.map");
-  //mMapFEC.readDSMapping("/tmp/fec.map");
+  mMapCRU.readMapping("/tmp/cru.map");
+  mMapFEC.readDSMapping("/tmp/fec.map");
   //mMapCRU[0].readPadMapping(de, "/home/flp/Mapping/slat330000N.Bending.map",
   //    "/home/flp/Mapping/slat330000N.NonBending.map", false);
 
@@ -968,6 +968,7 @@ void MuonChambersDataDecoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords,
     //cru_lid = 0;
     for( int i = 0; i < 40; i++ ) {
       if( ds_enable[cru_id][link_id][i] == 0 ) continue;
+      //fprintf(stdout,"processing board %d %d %d\n", cru_id, link_id, i);
 
       uint32_t group = ds[cru_id][link_id][i].id / 5;
       uint32_t bits[2] = {data2bits[i]&0x1, (data2bits[i]>>1)&0x1};
@@ -979,10 +980,13 @@ void MuonChambersDataDecoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords,
           break;
         case DECODE_STATE_HEADER_FOUND:
           uint64_t _h; memcpy(&_h, &(ds[cru_id][link_id][i].header), sizeof(ds[cru_id][link_id][i].header));
-          if(gPrintLevel>=1) fprintf(flog,"HEADER: %05lX\n", _h);
+          if(gPrintLevel>=1) fprintf(flog,"board %d %d %d -> HEADER: %05lX, %d, %d\n", 
+				     cru_id, link_id, i, _h, 
+				     ds[cru_id][link_id][i].header.fChipAddress, 
+				     ds[cru_id][link_id][i].header.fChannelAddress);
           break;
         case DECODE_STATE_CSIZE_FOUND: {
-          if(gPrintLevel>=1) fprintf(flog,"CLUSTER SIZE: %d\n",ds[cru_id][link_id][i].csize);
+          if(gPrintLevel>=2) fprintf(flog,"CLUSTER SIZE: %d\n",ds[cru_id][link_id][i].csize);
           Sampa::SampaHeaderStruct& header = ds[cru_id][link_id][i].header;
           SampaHit& hit = ds[cru_id][link_id][i].hit;
           hit.cru_id = cru_id;
@@ -998,13 +1002,13 @@ void MuonChambersDataDecoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords,
           break;
         }
         case DECODE_STATE_CTIME_FOUND:
-          if(gPrintLevel>=1) fprintf(flog,"CLUSTER TIME: %d\n",ds[cru_id][link_id][i].ctime);
+          if(gPrintLevel>=2) fprintf(flog,"CLUSTER TIME: %d\n",ds[cru_id][link_id][i].ctime);
           ds[cru_id][link_id][i].hit.time = ds[cru_id][link_id][i].ctime;
           break;
         case DECODE_STATE_SAMPLE_FOUND:
         case DECODE_STATE_END_OF_CLUSTER: {
           SampaHit& hit = ds[cru_id][link_id][i].hit;
-          if(gPrintLevel>=1) fprintf(flog,"SAMPLE: %X\n",ds[cru_id][link_id][i].sample);
+          if(gPrintLevel>=2) fprintf(flog,"SAMPLE: %X\n",ds[cru_id][link_id][i].sample);
           hit.samples.push_back(ds[cru_id][link_id][i].sample);
           hit.csum += ds[cru_id][link_id][i].sample;
 
@@ -1154,7 +1158,7 @@ void MuonChambersDataDecoder::processData(const char* buf, size_t size)
 
   while( payload_offset < size ) {
 
-    //fprintf(flog, "CRU payload_offset: %d\n", (int)payload_offset);
+    if(gPrintLevel>=0) fprintf(flog, "CRU payload_offset: %d, size: %d\n", (int)payload_offset, (int)size);
 
     memcpy(CRUbuf,rdh,sizeof(CRUbuf));
     memcpy(&CRUh,CRUbuf,sizeof(CRUheader));
@@ -1164,7 +1168,7 @@ void MuonChambersDataDecoder::processData(const char* buf, size_t size)
     rdh += RDH_BLOCK_SIZE;
     payload_offset += RDH_BLOCK_SIZE;
 
-    if(gPrintLevel>=1) fprintf(flog,"%d:  header_version: %X, header_size: %d, memory_size: %d, block_length: %d, packet: %d, link_id: %d, orbit: %d\n",
+    if(gPrintLevel>=0) fprintf(flog,"%d:  header_version: %X, header_size: %d, memory_size: %d, block_length: %d, packet: %d, link_id: %d, orbit: %d\n",
         nFrames, (int)CRUh.header_version, (int)CRUh.header_size, (int)CRUh.memory_size, (int)CRUh.block_length,
         (int)CRUh.packet_counter, (int)CRUh.link_id, (int)CRUh.hb_orbit);
 
@@ -1236,9 +1240,11 @@ void MuonChambersDataDecoder::processData(const char* buf, size_t size)
     //fprintf(stdout,"nGBTwords=%d\n",nGBTwords);
     //continue;
 
+    fprintf(flog,"Starting to decode buffer...\n");
     if(is_raw) decodeRaw(payload_buf, nGBTwords, cruId, cru_lid);
     else decodeUL(payload_buf, n64bitWords, cruId, dpwId);
 
+    fprintf(flog,"mHits.size(): %d\n", (int)mHits.size());
     for(int ih = 0; ih < mHits.size(); ih++) {
       SampaHit& hit = mHits[ih];
       hit.pad.fDE = -1;
@@ -1253,12 +1259,14 @@ void MuonChambersDataDecoder::processData(const char* buf, size_t size)
 
       /*
       if( !mMapCRU[0].getDSMapping(hit.link_id, hit.ds_addr, de, dsid) ) continue;
+      */
       o2::mch::mapping::Segmentation segment(de);
       int padid = segment.findPadByFEE(dsid, hit.chan_addr);
       if(padid < 0) {
-        //fprintf(flog,"Invalid pad: %d %d\n", dsid, hit.chan_addr);
+        //fprintf(flog,"Invalid pad: %d %d %d\n", link_id, dsid, hit.chan_addr);
         continue;
       }
+      //fprintf(flog,"Found pad: %d %d %d -> %d %d\n", link_id, dsid, hit.chan_addr, de, dsid);
 
       float padX = segment.padPositionX(padid);
       float padY = segment.padPositionY(padid);
@@ -1274,12 +1282,14 @@ void MuonChambersDataDecoder::processData(const char* buf, size_t size)
       hit.pad.fSizeY = padSizeY;
       hit.pad.fCathode = segment.isBendingPad(padid) ? 0 : 1;
       hit.pad.fBad = 0;
-      */
+      /**/
       /*
       //MapPad pad;
       if( !mMapCRU[0].getPad(hit.link_id, hit.ds_addr, hit.chan_addr, hit.pad) ) continue;
       */
     }
+    fprintf(flog,"Finished processing hits\n");
+    //if( !mHits.empty() ) return;
 
 
 
