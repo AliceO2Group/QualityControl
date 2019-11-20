@@ -107,6 +107,7 @@ set(EXE_SRCS
     src/runInformationService.cxx
     src/runInformationServiceDump.cxx
     src/runDataProducer.cxx
+    src/runFileReader.cxx
     src/runQC.cxx
     src/runBasic.cxx
     src/runTPCQCPID.cxx
@@ -120,6 +121,7 @@ set(EXE_NAMES
     o2-qc-info-service
     o2-qc-info-service-dump
     o2-qc-run-producer
+    o2-qc-run-file-reader
     o2-qc
     o2-qc-run-basic
     o2-qc-run-tpcpid
@@ -135,6 +137,7 @@ set(EXE_OLD_NAMES
     qcInfoService
     qcInfoServiceDump
     qcRunProducer
+    qcRunFileReader
     o2-qc-run-qc
     qcRunBasic
     qcRunTPCPID
