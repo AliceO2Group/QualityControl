@@ -896,6 +896,7 @@ void MuonChambersDataDecoder::initialize()
   hb_orbit = -1;
   nFrames = 0;
 
+  fprintf(stdout,"initialize DS structures\n");
   for(int c = 0; c < MCH_MAX_CRU_ID; c++) {
     for(int l = 0; l < 24; l++) {
       for(int i = 0; i < 40; i++) {
@@ -912,6 +913,7 @@ void MuonChambersDataDecoder::initialize()
     }
   }
 
+  fprintf(stdout,"initialize ds_enable\n");
   for(int c = 0; c < MCH_MAX_CRU_IN_FLP; c++) {
     for(int l = 0; l < 24; l++) {
       for(int i = 0; i < 40; i++) {
@@ -920,6 +922,7 @@ void MuonChambersDataDecoder::initialize()
     }
   }
   std::ifstream ds_enable_f("/tmp/board_enable.txt");
+  fprintf(stdout,"Reading /tmp/board_enable.txt");
   while( !ds_enable_f.fail() ) {
     int c, l, b, e;
     ds_enable_f >> c >> l >> b >> e;
@@ -930,15 +933,12 @@ void MuonChambersDataDecoder::initialize()
     fprintf(stdout,"ds_enable[%d][%d][%d]=%d\n", c, l, b, ds_enable[c][l][b]);
   }
 
-  int de = 819;
+//  int de = 814;
   //mMapCRU[0].addDSMapping(1, 0, de, 5);
   //mMapCRU[0].addDSMapping(1, 2, de, 4);
   //mMapCRU[0].addDSMapping(1, 4, de, 3);
   mMapCRU.readMapping("/tmp/cru.map");
   mMapFEC.readDSMapping("/tmp/fec.map");
-  //mMapCRU[0].readPadMapping(de, "/home/flp/Mapping/slat330000N.Bending.map",
-  //    "/home/flp/Mapping/slat330000N.NonBending.map", false);
-
 
   gPrintLevel = 0;
 

@@ -54,11 +54,13 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
   double noise[24][40][64];
   MapCRU mMapCRU[MCH_MAX_CRU_IN_FLP];
   TH1F* mHistogram;
-  TH2F* mHistogramPedestals[24];
-  TH2F* mHistogramNoise[24];
-  TH1F* mHistogramPedestalsDS[24][8];
-  TH1F* mHistogramNoiseDS[24][8];
+  TH2F* mHistogramPedestals[3*24];
+  TH2F* mHistogramNoise[3*24];
+  TH1F* mHistogramPedestalsDS[3*24][8];
+  TH1F* mHistogramNoiseDS[3*24][8];
 
+  std::vector<int> DEs;
+  MapFEC mMapFEC;
   std::map<int, TH2F*> mHistogramPedestalsDE;
   std::map<int, TH2F*> mHistogramNoiseDE;
   std::map<int, TH2F*> mHistogramPedestalsXY[2];

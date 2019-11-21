@@ -90,6 +90,7 @@ public:
   bool readDSMapping(std::string mapFile);
   bool getDSMapping(uint32_t link_id, uint32_t ds_addr, uint32_t& de, uint32_t& dsid);
   bool readPadMapping(uint32_t de, std::string bMapfile, std::string nbMapfile, bool newMapping);
+  bool readPadMapping2(uint32_t de, bool newMapping);
   bool getPad(uint32_t cru_link, uint32_t dsid, uint32_t dsch, MapPad& pad);
 };
 

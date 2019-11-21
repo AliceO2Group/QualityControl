@@ -9,6 +9,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TFile.h>
+#include <algorithm>
 
 #include "Headers/RAWDataHeader.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -71,39 +72,60 @@ void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
 
   mDecoder.initialize();
 
-  int de = 819;
+ uint32_t dsid;
+ std::vector<int> DEs;
+  for(int cruid=0; cruid<3; cruid++){
+      QcInfoLogger::GetInstance() << "JE SUIS ENTRÉ DANS LA BOUCLE CRUID " << cruid << AliceO2::InfoLogger::InfoLogger::endm;
+      for(int linkid=0; linkid<24; linkid++){
+          QcInfoLogger::GetInstance() << "JE SUIS ENTRÉ DANS LA BOUCLE LINKID " << linkid << AliceO2::InfoLogger::InfoLogger::endm;
+          
+          {
+              int index = 24*cruid+linkid;
+            mHistogramNhits[index] = new TH2F(TString::Format("QcMuonChambers_NHits_CRU%01d_LINK%02d", cruid, linkid),
+                TString::Format("QcMuonChambers - Number of hits (CRU link %02d)", index), 40, 0, 40, 64, 0, 64);
+            //mHistogramPedestals->SetDrawOption("col");
+            getObjectsManager()->startPublishing(mHistogramNhits[index]);
 
-  {
-    for(int i = 0; i < 24; i++) {
+            mHistogramADCamplitude[index] = new TH1F(TString::Format("QcMuonChambers_ADC_Amplitude_CRU%01d_LINK%02d", cruid, linkid),
+                TString::Format("QcMuonChambers - ADC amplitude (CRU link %02d)", index), 5000, 0, 5000);
+            //mHistogramPedestals->SetDrawOption("col");
+            getObjectsManager()->startPublishing(mHistogramADCamplitude[index]);
+              
+          }
+          
+        int32_t link_id = mDecoder.getMapCRU(cruid,linkid);
+        if(link_id == -1) continue;
+          for(int ds_addr=0; ds_addr<40; ds_addr++){
+              QcInfoLogger::GetInstance() << "JE SUIS ENTRÉ DANS LA BOUCLE DS_ADDR " << ds_addr << AliceO2::InfoLogger::InfoLogger::endm;
+            uint32_t de = mDecoder.getMapFEC(link_id, ds_addr, de, dsid);
+              QcInfoLogger::GetInstance() << "C'EST LA LIGNE APRÈS LE GETMAPFEC, DE " << de << AliceO2::InfoLogger::InfoLogger::endm;
+              
+              if(!(std::find(DEs.begin(), DEs.end(), de) != DEs.end())){
+                  DEs.push_back(de);
+                
+                TH1F* h = new TH1F(TString::Format("QcMuonChambers_ADCamplitude_DE%03d", de),
+                    TString::Format("QcMuonChambers - ADC amplitude (DE%03d)", de), 5000, 0, 5000);
+                mHistogramADCamplitudeDE.insert( make_pair(de, h) );
+                getObjectsManager()->startPublishing(h);
 
-      mHistogramNhits[i] = new TH2F(TString::Format("QcMuonChambers_NHits_%02d", i),
-          TString::Format("QcMuonChambers - Number of hits (CRU link %02d)", i), 40, 0, 40, 64, 0, 64);
-      //mHistogramPedestals->SetDrawOption("col");
-      getObjectsManager()->startPublishing(mHistogramNhits[i]);
-
-      mHistogramADCamplitude[i] = new TH1F(TString::Format("QcMuonChambers_ADC_Amplitude_%02d", i),
-          TString::Format("QcMuonChambers - ADC amplitude (CRU link %02d)", i), 5000, 0, 5000);
-      //mHistogramPedestals->SetDrawOption("col");
-      getObjectsManager()->startPublishing(mHistogramADCamplitude[i]);
-    }
-
-    TH1F* h = new TH1F(TString::Format("QcMuonChambers_ADCamplitude_DE%03d", de),
-        TString::Format("QcMuonChambers - ADC amplitude (DE%03d)", de), 5000, 0, 5000);
-    mHistogramADCamplitudeDE.insert( make_pair(de, h) );
-    getObjectsManager()->startPublishing(h);
-
-    float Xsize = 40*5;
-    float Xsize2 = Xsize/2;
-    float Ysize = 50;
-    float Ysize2 = Ysize/2;
-    TH2F* h2 = new TH2F(TString::Format("QcMuonChambers_Nhits_DE%03d", de),
-        TString::Format("QcMuonChambers - Number of hits (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
-    mHistogramNhitsDE.insert( make_pair(de, h2) );
-    getObjectsManager()->startPublishing(h2);
-    h2 = new TH2F(TString::Format("QcMuonChambers_Nhits_HighAmpl_DE%03d", de),
-        TString::Format("QcMuonChambers - Number of hits for Csum>500 (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
-    mHistogramNhitsHighAmplDE.insert( make_pair(de, h2) );
-    getObjectsManager()->startPublishing(h2);
+                float Xsize = 40*5;
+                float Xsize2 = Xsize/2;
+                float Ysize = 50;
+                float Ysize2 = Ysize/2;
+                  
+                TH2F* h2 = new TH2F(TString::Format("QcMuonChambers_Nhits_DE%03d", de),
+                    TString::Format("QcMuonChambers - Number of hits (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+                mHistogramNhitsDE.insert( make_pair(de, h2) );
+                getObjectsManager()->startPublishing(h2);
+                h2 = new TH2F(TString::Format("QcMuonChambers_Nhits_HighAmpl_DE%03d", de),
+                    TString::Format("QcMuonChambers - Number of hits for Csum>500 (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
+                mHistogramNhitsHighAmplDE.insert( make_pair(de, h2) );
+                getObjectsManager()->startPublishing(h2);
+                 
+              }
+              
+          }
+      }
   }
 
   gPrintLevel = 0;
@@ -131,23 +153,29 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 
   printf("count: %d\n", count);
   if( (count % 1) == 0) {
-    int de = 819;
-    TFile f("/tmp/qc.root","RECREATE");
-    for(int i = 0; i < 24; i++) {
-      mHistogramNhits[i]->Write();
-      mHistogramADCamplitude[i]->Write();
-    }
-    auto h = mHistogramADCamplitudeDE.find(de);
-    if( (h != mHistogramADCamplitudeDE.end()) && (h->second != NULL) ) {
-      h->second->Write();
-    }
-    auto h2 = mHistogramNhitsDE.find(de);
-    if( (h2 != mHistogramNhitsDE.end()) && (h2->second != NULL) ) {
-      h2->second->Write();
-    }
+    
+        TFile f("/tmp/qc.root","RECREATE");
+        for(int i = 0; i < 3*24; i++) {
+          mHistogramNhits[i]->Write();
+          mHistogramADCamplitude[i]->Write();
+        }
+      int nbDEs = DEs.size();
+      for(int elem=0; elem<nbDEs; elem++){
+        int de = DEs[elem];
+        auto h = mHistogramADCamplitudeDE.find(de);
+        if( (h != mHistogramADCamplitudeDE.end()) && (h->second != NULL) ) {
+          h->second->Write();
+          QcInfoLogger::GetInstance() << "On vient de write dans h->second ADCAmplitudeDE" << AliceO2::InfoLogger::InfoLogger::endm;
+        }
+        auto h2 = mHistogramNhitsDE.find(de);
+        if( (h2 != mHistogramNhitsDE.end()) && (h2->second != NULL) ) {
+          h2->second->Write();
+          QcInfoLogger::GetInstance() << "On vient de write dans h2->second NHitsDE" << AliceO2::InfoLogger::InfoLogger::endm;
+        }
 
-    f.ls();
-    f.Close();
+        f.ls();
+        f.Close();
+      }
   }
   count += 1;
 
