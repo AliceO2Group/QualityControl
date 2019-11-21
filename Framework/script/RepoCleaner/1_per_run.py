@@ -36,7 +36,6 @@ def process(ccdb: Ccdb, object_path: str, delay: int):
     # Find all the runs and group the versions
     for v in versions:
         logging.debug(f"Processing {v}")
-
         if "Run" in v.metadata:
             runs_dict[v.metadata['Run']].append(v)
 
