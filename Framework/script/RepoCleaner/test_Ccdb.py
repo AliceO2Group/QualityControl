@@ -2,7 +2,7 @@ import logging
 import unittest
 import requests
 import responses
-import yaml
+# import yaml
 
 from Ccdb import Ccdb
 import repoCleaner
@@ -11,10 +11,12 @@ from repoCleaner import parseConfig, Rule, findMatchingRule
 class TestCcdb(unittest.TestCase):
     
     def setUp(self):
-        self.content_objectslist = open('objectsList.json').read()
-        self.content_versionslist = open('versionsList.json').read()
+        with open('objectsList.json') as f:   # will close() when we leave this block
+            self.content_objectslist = f.read()
+        with open('versionsList.json') as f:   # will close() when we leave this block
+            self.content_versionslist = f.read()
         self.ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
-    
+
     @responses.activate
     def test_getObjectsList(self):
         # Prepare mock response
@@ -39,6 +41,7 @@ class TestCcdb(unittest.TestCase):
         self.assertEqual(len(versionsList), 2)
         self.assertEqual(versionsList[0].path, object_path)
         self.assertEqual(versionsList[1].path, object_path)
+        self.assertEqual(versionsList[1].metadata["custom"], "34")
 
 if __name__ == '__main__':
     unittest.main()
