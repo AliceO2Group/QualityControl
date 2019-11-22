@@ -103,7 +103,7 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
 
         int index = 24*cruid + linkid;
         mHistogramPedestals[index] = new TH2F(TString::Format("QcMuonChambers_Pedestals_CRU%01d_LINK%02d", cruid, linkid),
-            TString::Format("QcMuonChambers - Pedestals (CRU link %02d)", index), 40, 0, 40, 64, 0, 64);
+            TString::Format("QcMuonChambers - Pedestals (CRU %01d, link %02d)", cruid, linkid), 40, 0, 40, 64, 0, 64);
         //mHistogramPedestals->SetDrawOption("col");
         getObjectsManager()->startPublishing(mHistogramPedestals[index]);
         getObjectsManager()->addCheck(mHistogramPedestals[index], "checkFromMuonChambers",
@@ -111,7 +111,7 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
 
         mHistogramNoise[index] =
             new TH2F(TString::Format("QcMuonChambers_Noise_CRU%01d_LINK%02d", cruid, linkid),
-                TString::Format("QcMuonChambers - Noise (CRU link %02d)", index), 40, 0, 40, 64, 0, 64);
+                TString::Format("QcMuonChambers - Noise (CRU %01d link %02d)", cruid, linkid), 40, 0, 40, 64, 0, 64);
         getObjectsManager()->startPublishing(mHistogramNoise[index]);
 
 
