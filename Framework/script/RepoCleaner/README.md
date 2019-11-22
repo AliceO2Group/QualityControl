@@ -15,5 +15,7 @@ It also contains the CCDB url.
 ## Test
 `cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
 
+To run just one of the rules, do `python3 1_per_run.py`.
+
 ## Installation
 CMake will install the python scripts in bin and the config file in etc. 
