@@ -169,7 +169,6 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
 
   // other attributes
   string path = qo->getPath();
-  cout << "PATH OF QO : " << path << endl;
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
