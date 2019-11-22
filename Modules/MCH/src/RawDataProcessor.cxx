@@ -145,10 +145,9 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
 
           QcInfoLogger::GetInstance() << "C'EST LA LIGNE APRÈS LE GETMAPFEC, DE " << de << AliceO2::InfoLogger::InfoLogger::endm;
 
-          auto de_check = mHistogramPedestalsDE.find(de);
-          if( de_check == mHistogramPedestalsDE.end() ){
+          if( (std::find(DEs.begin(), DEs.end(), de)) == DEs.end() ){
             DEs.push_back(de);
-            mMapFEC.readPadMapping2(de, false);
+            //mMapFEC.readPadMapping2(de, false);
             QcInfoLogger::GetInstance() << "C'EST LA LIGNE APRÈS LE READPADMAPPING2, DE " << de << AliceO2::InfoLogger::InfoLogger::endm;
 
             {
@@ -326,9 +325,9 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       mHistogramNoise[hit.link_id]->SetBinContent(hit.ds_addr+1, hit.chan_addr+1, rms);
 
       fprintf(flog,"ds_group_id=%d  ds_chan_addr_in_group=%d\n",ds_group_id, ds_chan_addr_in_group);
-      mHistogramPedestalsDS[hit.link_id][ds_group_id]->SetBinContent(ds_chan_addr_in_group+1,
-          pedestal[hit.link_id][hit.ds_addr][hit.chan_addr]);
-      mHistogramNoiseDS[hit.link_id][ds_group_id]->SetBinContent(ds_chan_addr_in_group+1, rms);
+      //mHistogramPedestalsDS[hit.link_id][ds_group_id]->SetBinContent(ds_chan_addr_in_group+1,
+      //    pedestal[hit.link_id][hit.ds_addr][hit.chan_addr]);
+      //mHistogramNoiseDS[hit.link_id][ds_group_id]->SetBinContent(ds_chan_addr_in_group+1, rms);
 
       //if( hit.ds_addr != 0 || hit.chan_addr != 0 ) continue;
 
