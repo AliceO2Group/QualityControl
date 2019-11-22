@@ -78,6 +78,7 @@ bool MapCRU::readMapping(std::string mapFile)
 {
   std::ifstream file;
   file.open(mapFile);
+  printf("[MapCRU::readMapping]: opening \"%s\"\n", mapFile.c_str());
   if (!file)
   {
     std::cerr << "Can't open file "<<mapFile<<std::endl;
@@ -86,12 +87,15 @@ bool MapCRU::readMapping(std::string mapFile)
 
   int c, l, link_id;
   char tstr[500];
-  while( !file.getline(tstr,499) ) {
+  while( file.getline(tstr,499) ) {
     std::string s(tstr);
     std::istringstream line(s);
+    printf("[MapCRU::readMapping]: line: %s\n", tstr);
     line >> link_id >> c >> l;
+    printf("[MapCRU::readMapping]: %d %d -> %d\n", c, l, link_id);
     if( c < 0 || c >= MCH_MAX_CRU_IN_FLP ) continue;
     if( l < 0 || l >= 24 ) continue;
+    printf("[MapCRU::readMapping]: added %d %d -> %d\n", c, l, link_id);
     mSolarMap[c][l].mLink = link_id;
   }
 }
@@ -254,60 +258,60 @@ bool MapFEC::readPadMapping2(uint32_t de, bool newMapping)
   if( mPadMap[de] == NULL ) {
     mPadMap[de] = new MapPad[MCH_PAD_ADDR_MAX];
   }
-    
-    o2::mch::mapping::Segmentation segment(de);
-    for(int pad=0; pad < MCH_PAD_ADDR_MAX; pad++){
-        
-        if(!segment.isValid(pad)) continue;
-            
-        std::cout<<"Il existe un pad "<<pad<<std::endl;
-        
-        dsid = segment.padDualSampaId(pad);
-        dsch = segment.padDualSampaChannel(pad);
-        padx = segment.padSizeX(pad);
-        pady = segment.padSizeY(pad);
-        x = segment.padPositionX(pad);
-        y = segment.padPositionY(pad);
-    
-        if(dsch < 0) continue;
-    
-  //    sprintf(dsbfile,"slat330000N.Bending.map");
-  //    sprintf(dsnbfile,"slat330000N.NonBending.map");
 
-        std::cout<<"Pad "<<pad<<" dsid "<<dsid<<" dsch "<<dsch<<" padx "<<padx<<" pady "<<pady<< " x "<<x<<" y "<<y<<std::endl;
+  o2::mch::mapping::Segmentation segment(de);
+  for(int pad=0; pad < MCH_PAD_ADDR_MAX; pad++){
+
+    if(!segment.isValid(pad)) continue;
+
+    std::cout<<"Il existe un pad "<<pad<<std::endl;
+
+    dsid = segment.padDualSampaId(pad);
+    dsch = segment.padDualSampaChannel(pad);
+    padx = segment.padSizeX(pad);
+    pady = segment.padSizeY(pad);
+    x = segment.padPositionX(pad);
+    y = segment.padPositionY(pad);
+
+    if(dsch < 0) continue;
+
+    //    sprintf(dsbfile,"slat330000N.Bending.map");
+    //    sprintf(dsnbfile,"slat330000N.NonBending.map");
+
+    std::cout<<"Pad "<<pad<<" dsid "<<dsid<<" dsch "<<dsch<<" padx "<<padx<<" pady "<<pady<< " x "<<x<<" y "<<y<<std::endl;
 
     // NOT USE THE ADDRESS FIELD DIRECTLY
-        if(segment.isBendingPad(pad)){
-            address = dsch + (dsid<<6);
-            mPadMap[de][address].fDE = de;
-            mPadMap[de][address].fDsID = dsid;
-            mPadMap[de][address].fAddress = address;
-            mPadMap[de][address].fPadx = padx;
-            mPadMap[de][address].fPady = pady;
-            mPadMap[de][address].fX = x;
-            mPadMap[de][address].fY = y;
-            mPadMap[de][address].fSizeX = 10;
-            mPadMap[de][address].fSizeY = 0.5;
-            mPadMap[de][address].fCathode = 'b';
-            cout<<"Bend Manu id "<<dsid<<" ch "<<dsch<<" de "<<de<<"  address "<<address<<endl;
-            }
+    if(segment.isBendingPad(pad)){
+      address = dsch + (dsid<<6);
+      mPadMap[de][address].fDE = de;
+      mPadMap[de][address].fDsID = dsid;
+      mPadMap[de][address].fAddress = address;
+      mPadMap[de][address].fPadx = padx;
+      mPadMap[de][address].fPady = pady;
+      mPadMap[de][address].fX = x;
+      mPadMap[de][address].fY = y;
+      mPadMap[de][address].fSizeX = 10;
+      mPadMap[de][address].fSizeY = 0.5;
+      mPadMap[de][address].fCathode = 'b';
+      cout<<"Bend Manu id "<<dsid<<" ch "<<dsch<<" de "<<de<<"  address "<<address<<endl;
+    }
 
-            // NOT USE THE ADDRESS FIELD DIRECTLY
-            if(!segment.isBendingPad(pad)){
-            address = dsch + (dsid<<6);
-            mPadMap[de][address].fDE = de;
-            mPadMap[de][address].fDsID = dsid;
-            mPadMap[de][address].fAddress = address;
-            mPadMap[de][address].fPadx = padx;
-            mPadMap[de][address].fPady = pady;
-            mPadMap[de][address].fX = x;
-            mPadMap[de][address].fY = y;
-            mPadMap[de][address].fCathode = 'n';
-            cout<<"NBend Manu id "<<dsid<<" ch "<<dsch<<" de "<<de<<"  address "<<address<<endl;
-            //    cout<<"NB Manu id "<<dsid<<" ch "<<dsch<<endl;
-            }
-        
-        }
+    // NOT USE THE ADDRESS FIELD DIRECTLY
+    if(!segment.isBendingPad(pad)){
+      address = dsch + (dsid<<6);
+      mPadMap[de][address].fDE = de;
+      mPadMap[de][address].fDsID = dsid;
+      mPadMap[de][address].fAddress = address;
+      mPadMap[de][address].fPadx = padx;
+      mPadMap[de][address].fPady = pady;
+      mPadMap[de][address].fX = x;
+      mPadMap[de][address].fY = y;
+      mPadMap[de][address].fCathode = 'n';
+      cout<<"NBend Manu id "<<dsid<<" ch "<<dsch<<" de "<<de<<"  address "<<address<<endl;
+      //    cout<<"NB Manu id "<<dsid<<" ch "<<dsch<<endl;
+    }
+
+  }
   return true;
 }
 
