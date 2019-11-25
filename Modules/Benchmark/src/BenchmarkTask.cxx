@@ -52,7 +52,7 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   int checksPerHisto = 1;
   if (auto param = mCustomParameters.find("checksPerHisto"); param != mCustomParameters.end()) {
-    binsNumber = stoi(param->second);
+    checksPerHisto = stoi(param->second);
   }
 
   QcInfoLogger::GetInstance() << "Will create " << histogramsNumber << " histograms." << AliceO2::InfoLogger::InfoLogger::endm;
