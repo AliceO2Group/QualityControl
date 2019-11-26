@@ -59,6 +59,8 @@ As an example we take the `DataProducerExample` that you can find in the QC repo
   3. The function `getDataProducerAlgorithm` which must return an `AlgorithmSpec` i.e. the actual algorithm that produces the data. 
 * [DataProducerExample.cxx](../Framework/src/DataProducerExample.cxx) : 
   This is just the implementation of the header described just above. You will probably want to modify `getDataProducerSpec` and the inner-most block of `getDataProducerAlgorithm`. You might be taken aback by the look of this function, if you don't know what a _lambda_ is just ignore it and write your code inside the accolades.
+  
+You will probably write it in your detector's O2 directory rather than in the QC repository. 
 
 ## Access conditions from the CCDB
 

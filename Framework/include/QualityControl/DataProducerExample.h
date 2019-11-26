@@ -13,8 +13,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#ifndef QUALITYCONTROL_DATAPRODUCER_H
-#define QUALITYCONTROL_DATAPRODUCER_H
+#ifndef QUALITYCONTROL_DATAPRODUCEREXAMPLE_H
+#define QUALITYCONTROL_DATAPRODUCEREXAMPLE_H
 
 #include <Framework/DataProcessorSpec.h>
 
@@ -36,4 +36,4 @@ framework::AlgorithmSpec getDataProducerAlgorithm(framework::ConcreteDataMatcher
 
 } // namespace o2::quality_control::core
 
-#endif //QUALITYCONTROL_DATAPRODUCER_H
+#endif //QUALITYCONTROL_DATAPRODUCEREXAMPLE_H
