@@ -5,6 +5,8 @@
 <!--./gh-md-toc --insert /path/to/README.md-->
 <!--ts-->
    * [Advanced topics](#advanced-topics)
+      * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
+      * [Writing a DPL data publisher](#writing-a-dpl-data-publisher)
       * [Access conditions from the CCDB](#access-conditions-from-the-ccdb)
       * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
       * [Custom QC object metadata](#custom-qc-object-metadata)
@@ -13,10 +15,12 @@
          * [Compilation](#compilation)
          * [Execution](#execution)
          * [Configuration](#configuration)
-      * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
+      * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
+         * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
       * [Local CCDB setup](#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
       * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
+      * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
       * [Information Service](#information-service)
          * [Usage](#usage)
       * [Configuration files details](#configuration-files-details)
@@ -27,6 +31,21 @@
 
 
 [← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
+
+
+## Plugging the QC to an existing DPL workflow
+
+Your existing DPL workflow can simply be considered a publisher. Therefore, replace `o2-qc-run-producer` with your own workflow. 
+
+For example, if TPC wants to monitor the output of the workflow `o2-qc-run-tpcpid`, modify the config file to point to the correct data and do : 
+```
+o2-qc-run-tpcpid | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/tpcQCPID.json
+```
+
+## Writing a DPL data publisher 
+
+TODO : not per se a QC problem but here is how to do it. We should probably explain the DataPublisher class and also provide a skeleton with step by step to write their own. 
+
 
 ## Access conditions from the CCDB
 
@@ -129,21 +148,30 @@ The Data Sampling sends data to the GUI via the port `26525`.
 If this port is not free, edit the config file `$QUALITYCONTROL_ROOT/etc/readoutForDataDump.json`
 and `$QUALITYCONTROL_ROOT/etc/dataDump.json`.
 
-## Use MySQL as QC backend
+## Details on the data storage format in the CCDB
 
-1. Install the MySQL/MariaDB development package
-       * CC7 : `sudo yum install mariadb-server`
-       * Mac (or download the dmg from Oracle) : `brew install mysql`
+Each MonitorObject is stored as a TFile in the CCDB. 
+It is therefore possible to easily open it with ROOT when loaded with alienv. It also seamlessly supports class schema evolution. 
 
-2. Rebuild the QualityControl (so that the mysql backend classes are compiled)
+The objects are stored at a path which is enforced by the qc framework : `/qc/<detector name>/<task name>/object/name`
+Note that the name of the object can contain slashes (`/`) in order to build a sub-tree visible in the GUI. 
+The detector name and the taskname are set in the config file : 
+```json
+"tasks": {
+  "QcTask": {       <---------- task name
+    "active": "true",
+    "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+    "moduleName": "QcSkeleton",
+    "detectorName": "TST",       <---------- detector name
+```
 
-3. Start and populate database :
+The quality is stored as a CCDB metadata of the object.
 
-   ```
-   sudo systemctl start mariadb # for CC7, check for your specific OS
-   alienv enter qcg/latest
-   o2-qc-database-setup.sh
-   ```
+### Data storage format before v0.14 and ROOT 6.18
+
+Before September 2019, objects were serialized with TMessage and stored as _blobs_ in the CCDB. The main drawback was the loss of the corresponding streamer infos leading to problems when the class evolved or when accessing the data outside the QC framework. 
+
+The QC framework is nevertheless backward compatible and can handle the old and the new storage system. 
 
 ## Local CCDB setup
 
@@ -187,6 +215,22 @@ interfaces have to be identical.
 - If there are checks applied to MonitorObjects, update the library path in
 the addCheck() functions as well. This will not be necessary when checks are
 configured inside config files.
+
+## Use MySQL as QC backend
+
+1. Install the MySQL/MariaDB development package
+       * CC7 : `sudo yum install mariadb-server`
+       * Mac (or download the dmg from Oracle) : `brew install mysql`
+
+2. Rebuild the QualityControl (so that the mysql backend classes are compiled)
+
+3. Start and populate database :
+
+   ```
+   sudo systemctl start mariadb # for CC7, check for your specific OS
+   alienv enter qcg/latest
+   o2-qc-database-setup.sh
+   ```
 
 ## Information Service
 
