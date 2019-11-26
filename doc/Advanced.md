@@ -6,7 +6,7 @@
 <!--ts-->
    * [Advanced topics](#advanced-topics)
       * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
-      * [Writing a DPL data publisher](#writing-a-dpl-data-publisher)
+      * [Writing a DPL data producer](#writing-a-dpl-data-producer)
       * [Access conditions from the CCDB](#access-conditions-from-the-ccdb)
       * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
       * [Custom QC object metadata](#custom-qc-object-metadata)
@@ -42,10 +42,23 @@ For example, if TPC wants to monitor the output of the workflow `o2-qc-run-tpcpi
 o2-qc-run-tpcpid | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/tpcQCPID.json
 ```
 
-## Writing a DPL data publisher 
+## Writing a DPL data producer 
 
-TODO : not per se a QC problem but here is how to do it. We should probably explain the DataPublisher class and also provide a skeleton with step by step to write their own. 
+Although this is not a QC problem, we would like to document how to write a simple data producer in the DPL. 
 
+As an example we take the `DataProducerExample` that you can find in the QC repository. It is produces a number. By default it will be 1s but one can specify with the parameter `my-param` a different number. It is made of 3 files : 
+* [runDataProducerExample.cxx](../Framework/src/runDataProducerExample.cxx) : 
+  This is an executable with a basic data producer in the Data Processing Layer. 
+  There are 2 important functions here :
+  * `customize(...)` to add parameters to the executable. Note that it must be written before the includes for the dataProcessing.
+  * `defineDataProcessing(...)` to define the workflow to be ran, in our case the device(s) publishing the number.
+* [DataProducerExample.h](../Framework/include/QualityControl/DataProducerExample.h) : 
+  The key elements are : 
+  1. The include `#include <Framework/DataProcessorSpec.h>`
+  2. The function `getDataProducerSpec(...)` which must return a `DataProcessorSpec` i.e. the description of a device (name, inputs, outputs, algorithm)
+  3. The function `getDataProducerAlgorithm` which must return an `AlgorithmSpec` i.e. the actual algorithm that produces the data. 
+* [DataProducerExample.cxx](../Framework/src/DataProducerExample.cxx) : 
+  This is just the implementation of the header described just above. You will probably want to modify `getDataProducerSpec` and the inner-most block of `getDataProducerAlgorithm`. You might be taken aback by the look of this function, if you don't know what a _lambda_ is just ignore it and write your code inside the accolades.
 
 ## Access conditions from the CCDB
 

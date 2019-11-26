@@ -1,0 +1,43 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
+///
+/// \file    runDataProducerExample.cxx
+/// \author Barthelemy von Haller
+///
+/// \brief This is just an example of very basic data producer in Data Processing Layer.
+/// It produces a fixed number on TST/RAWDATA/0
+///
+
+#include <vector>
+#include <Framework/ConfigParamSpec.h>
+
+using namespace o2;
+using namespace o2::framework;
+
+void customize(std::vector<ConfigParamSpec>& workflowOptions)
+{
+  workflowOptions.push_back(
+    ConfigParamSpec{ "my-param", VariantType::Int, 1, { "Example parameter." } });
+}
+
+#include <Framework/runDataProcessing.h>
+#include "QualityControl/DataProducerExample.h"
+
+using namespace o2::quality_control::core;
+
+WorkflowSpec defineDataProcessing(const ConfigContext& config)
+{
+  size_t myParam = config.options().get<int>("my-param");
+
+  WorkflowSpec specs;
+  specs.push_back(getDataProducerSpec(myParam));
+  return specs;
+}

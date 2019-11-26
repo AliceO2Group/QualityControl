@@ -33,7 +33,7 @@ For a general overview of our (O2) software, organization and processes, please 
       * [Committing code](doc/ModulesDevelopment.md#committing-code)
    * [Advanced topics](doc/Advanced.md)
       * [Plugging the QC to an existing DPL workflow](doc/Advanced.md#plugging-the-qc-to-an-existing-dpl-workflow)
-      * [Writing a DPL data publisher](doc/Advanced.md#writing-a-dpl-data-publisher)
+      * [Writing a DPL data producer](doc/Advanced.md#writing-a-dpl-data-producer)
       * [Access conditions from the CCDB](doc/Advanced.md#access-conditions-from-the-ccdb)
       * [Definition and access of task-specific configuration](doc/Advanced.md#definition-and-access-of-task-specific-configuration)
       * [Custom QC object metadata](doc/Advanced.md#custom-qc-object-metadata)
