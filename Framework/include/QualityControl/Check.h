@@ -86,6 +86,11 @@ class Check
  private:
   void initConfig();
   void initPolicy(std::string policyType);
+
+  /**
+   * \brief Load a library.
+   * Load a library if it is not already in the cache.
+   */
   void loadLibrary();
 
   void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);

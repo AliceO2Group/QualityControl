@@ -47,7 +47,6 @@ void customize(std::vector<CompletionPolicy>& policies)
 #include "QualityControl/runnerUtils.h"
 #include <Framework/runDataProcessing.h>
 #include <Framework/ControlService.h>
-#include <TH1F.h>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;

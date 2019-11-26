@@ -93,8 +93,8 @@ void Check::initConfig()
           mPolicyType = "_OnGlobalAny";
           mAllMOs = true;
         } else {
-          for (const auto& moname : dataSource.get_child("MOs")) {
-            auto name = std::string(taskName + "/" + moname.second.get_value<std::string>());
+          for (const auto& moName : dataSource.get_child("MOs")) {
+            auto name = std::string(taskName + "/" + moName.second.get_value<std::string>());
             if (std::find(mMonitorObjectNames.begin(), mMonitorObjectNames.end(), name) == mMonitorObjectNames.end()) {
               mMonitorObjectNames.push_back(name);
             }

@@ -125,13 +125,6 @@ class CheckRunner : public framework::Task
   void send(std::vector<Check*>& checks, framework::DataAllocator& allocator);
 
   /**
-   * \brief Load a library.
-   * Load a library if it is not already in the cache.
-   * \param libraryName The name of the library to load.
-   */
-  //void loadLibrary(const std::string libraryName);
-
-  /**
    * \brief Update cached monitor object with new one.
    *
    * \param mo The MonitorObject to be updated
@@ -148,18 +141,14 @@ class CheckRunner : public framework::Task
   inline void initDatabase();
   inline void initMonitoring();
 
-  void updateRevision();
-
   /**
-   * Get the check specified by its name and class.
-   * If it has never been asked for before it is instantiated and cached. There can be several copies
-   * of the same check but with different names in order to have them configured differently.
-   * @todo Pass the name of the task that will use it. It will help with getting the correct configuration.
-   * @param checkName
-   * @param className
-   * @return the check object
+   * \brief Increase the revision number for the Monitor Object.
+   *
+   * The revision number is an timeslot id for the monitor object.
+   * It is assigned to an MO on receiving and is stored in mMonitorObjectRevision.
+   * This function function should be called at the end of the receiving MOs.
    */
-  //CheckInterface* getCheck(std::string checkName, std::string className);
+  void updateRevision();
 
   // General state
   std::string mDeviceName;
