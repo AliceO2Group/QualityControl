@@ -86,8 +86,7 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   // 2. Using get("<binding>")
 
   // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
-  auto payload = ctx.inputs().get<size_t*>("random");
-  std::cout << "payload : " << *payload << std::endl;
+  //   auto payload = ctx.inputs().get("random").payload;
 
   // get payload of a specific input, which is a structure array:
   //  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("random").header);
