@@ -46,7 +46,7 @@ framework::AlgorithmSpec
 
         // generating data (size 1, type size_t)
         auto data = processingContext.outputs().make<size_t>({ output.origin, output.description, output.subSpec },
-                                                          1);
+                                                             1);
         data[0] = myParam; // assigning the data
       };
     }
