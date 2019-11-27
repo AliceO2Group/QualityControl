@@ -44,7 +44,7 @@ o2-qc-run-tpcpid | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/tpcQCPID.jso
 
 ## Writing a DPL data producer 
 
-Although this is not a QC problem, we would like to document how to write a simple data producer in the DPL. 
+For your convenience, and although this is not a QC problem, we would like to document how to write a simple data producer in the DPL. The DPL documentation can be found [here](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) and for questions please head to the [forum](https://alice-talk.web.cern.ch/).
 
 As an example we take the `DataProducerExample` that you can find in the QC repository. It is produces a number. By default it will be 1s but one can specify with the parameter `my-param` a different number. It is made of 3 files : 
 * [runDataProducerExample.cxx](../Framework/src/runDataProducerExample.cxx) : 
