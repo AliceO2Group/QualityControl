@@ -42,7 +42,7 @@ framework::AlgorithmSpec
   return AlgorithmSpec{
     [=](InitContext&) {
       return [=](ProcessingContext& processingContext) mutable {
-        // everything inside this lambda function is invoked in a loop, because it this Data Processor has no inputs
+        // everything inside this lambda function is invoked in a loop, because this Data Processor has no inputs
 
         // generating data (size 1, type size_t)
         auto data = processingContext.outputs().make<size_t>({ output.origin, output.description, output.subSpec },
