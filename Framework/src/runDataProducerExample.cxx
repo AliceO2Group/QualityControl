@@ -22,6 +22,7 @@
 using namespace o2;
 using namespace o2::framework;
 
+// We add custom arguments to the executable by implementing a customize function.
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
@@ -33,6 +34,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 
 using namespace o2::quality_control::core;
 
+// Here we define all Data Processors which should be run by DPL (only the data producer in this case).
 WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   size_t myParam = config.options().get<int>("my-param");
