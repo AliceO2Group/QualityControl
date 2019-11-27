@@ -157,7 +157,7 @@ class CheckRunner : public framework::Task
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::map<std::string, unsigned int> mMonitorObjectRevision;
-  unsigned int mGlobalRevision;
+  unsigned int mGlobalRevision = 1;
 
   // DPL
   o2::framework::Inputs mInputs;
