@@ -222,6 +222,8 @@ std::vector<Check*> CheckRunner::check(std::map<std::string, std::shared_ptr<Mon
 
       // Was checked, update latest revision
       check.updateRevision(mGlobalRevision);
+    } else {
+      mLogger << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << AliceO2::InfoLogger::InfoLogger::endm;
     }
   }
   return triggeredChecks;
