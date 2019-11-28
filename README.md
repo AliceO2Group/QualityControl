@@ -4,7 +4,7 @@
 [![doxygen](https://img.shields.io/badge/doxygen-documentation-blue.svg)](https://aliceo2group.github.io/QualityControl/)
 [![Discourse](https://img.shields.io/badge/discourse-Get%20help-blue.svg)](https://alice-talk.web.cern.ch/)
 
-<!--  \endcond  -->
+<!--  \endcond  --> 
 
 This is the repository of the data quality control (QC) software for the ALICE O<sup>2</sup> system. 
 
