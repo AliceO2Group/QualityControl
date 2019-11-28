@@ -40,6 +40,6 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   size_t myParam = config.options().get<int>("my-param");
 
   WorkflowSpec specs;
-  specs.push_back(getDataProducerSpec(myParam));
+  specs.push_back(getDataProducerExampleSpec(myParam));
   return specs;
 }
