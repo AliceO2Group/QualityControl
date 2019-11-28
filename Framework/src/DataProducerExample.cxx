@@ -25,7 +25,7 @@ using namespace AliceO2::Common;
 namespace o2::quality_control::core
 {
 
-DataProcessorSpec getDataProducerSpec(size_t myParam)
+DataProcessorSpec getDataProducerExampleSpec(size_t myParam)
 {
   return DataProcessorSpec{
     "producer",
@@ -37,7 +37,7 @@ DataProcessorSpec getDataProducerSpec(size_t myParam)
 }
 
 framework::AlgorithmSpec
-  getDataProducerAlgorithm(ConcreteDataMatcher output, size_t myParam)
+  getDataProducerExampleAlgorithm(ConcreteDataMatcher output, size_t myParam)
 {
   return AlgorithmSpec{
     [=](InitContext&) {

@@ -37,14 +37,14 @@
 
 Your existing DPL workflow can simply be considered a publisher. Therefore, replace `o2-qc-run-producer` with your own workflow. 
 
-For example, if TPC wants to monitor the output of the workflow `o2-qc-run-tpcpid`, modify the config file to point to the correct data and do : 
+For example, if TPC wants to monitor the output `{"TPC", "CLUSTERS"}` of the workflow `o2-qc-run-tpcpid`, modify the config file to point to the correct data and do : 
 ```
 o2-qc-run-tpcpid | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/tpcQCPID.json
 ```
 
 ## Writing a DPL data producer 
 
-For your convenience, and although this is not a QC problem, we would like to document how to write a simple data producer in the DPL. The DPL documentation can be found [here](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) and for questions please head to the [forum](https://alice-talk.web.cern.ch/).
+For your convenience, and although it does not lie within the QC scope, we would like to document how to write a simple data producer in the DPL. The DPL documentation can be found [here](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) and for questions please head to the [forum](https://alice-talk.web.cern.ch/).
 
 As an example we take the `DataProducerExample` that you can find in the QC repository. It is produces a number. By default it will be 1s but one can specify with the parameter `my-param` a different number. It is made of 3 files : 
 * [runDataProducerExample.cxx](../Framework/src/runDataProducerExample.cxx) : 
@@ -55,10 +55,10 @@ As an example we take the `DataProducerExample` that you can find in the QC repo
 * [DataProducerExample.h](../Framework/include/QualityControl/DataProducerExample.h) : 
   The key elements are : 
   1. The include `#include <Framework/DataProcessorSpec.h>`
-  2. The function `getDataProducerSpec(...)` which must return a `DataProcessorSpec` i.e. the description of a device (name, inputs, outputs, algorithm)
-  3. The function `getDataProducerAlgorithm` which must return an `AlgorithmSpec` i.e. the actual algorithm that produces the data. 
+  2. The function `getDataProducerExampleSpec(...)` which must return a `DataProcessorSpec` i.e. the description of a device (name, inputs, outputs, algorithm)
+  3. The function `getDataProducerExampleAlgorithm` which must return an `AlgorithmSpec` i.e. the actual algorithm that produces the data. 
 * [DataProducerExample.cxx](../Framework/src/DataProducerExample.cxx) : 
-  This is just the implementation of the header described just above. You will probably want to modify `getDataProducerSpec` and the inner-most block of `getDataProducerAlgorithm`. You might be taken aback by the look of this function, if you don't know what a _lambda_ is just ignore it and write your code inside the accolades.
+  This is just the implementation of the header described just above. You will probably want to modify `getDataProducerExampleSpec` and the inner-most block of `getDataProducerExampleAlgorithm`. You might be taken aback by the look of this function, if you don't know what a _lambda_ is just ignore it and write your code inside the accolades.
   
 You will probably write it in your detector's O2 directory rather than in the QC repository. 
 

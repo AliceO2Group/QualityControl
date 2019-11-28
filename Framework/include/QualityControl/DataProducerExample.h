@@ -25,14 +25,14 @@ namespace o2::quality_control::core
 ///
 /// \param myParam  The value the producer should produce.
 /// \return         A fixed number producer specification
-framework::DataProcessorSpec getDataProducerSpec(size_t myParam);
+framework::DataProcessorSpec getDataProducerExampleSpec(size_t myParam);
 
 /// \brief Returns an algorithm generating random messages
 ///
 /// \param output   Origin, Description and SubSpecification of data to be produced
 /// \param  myParam  The value the producer should produce.
 /// \return         A fixed number producer algorithm
-framework::AlgorithmSpec getDataProducerAlgorithm(framework::ConcreteDataMatcher output, size_t myParam);
+framework::AlgorithmSpec getDataProducerExampleAlgorithm(ConcreteDataMatcher output, size_t myParam);
 
 } // namespace o2::quality_control::core
 

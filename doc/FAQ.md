@@ -55,7 +55,7 @@ Add the library name to the list `O2_LIBRARIES_NAMES` in [FindAliceO2.cmake](../
 
 ### Why are my QC processes using 100% CPU ? 
 
-When running `o2-qc` or other qc binaries, the system will show that the processes use 100% of the CPU. This is due to the DPL default rate for data source devices. 
+When running `o2-qc` or other qc binaries, the system will show that the processes use 100% of the CPU. This is due to the DPL default rate for the event loop of devices with inputs. 
 
 Simply start your binary with `--rate 10000` and it should solve the problem. The rate might have to be adapted to your workflow : 
 ```bash
