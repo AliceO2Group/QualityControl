@@ -12,6 +12,8 @@
       * [Build](#build)
          * [How do I add a dependency to my module ?](#how-do-i-add-a-dependency-to-my-module-)
          * [How do I make my module depend on library XXX from AliceO2 ?](#how-do-i-make-my-module-depend-on-library-xxx-from-aliceo2-)
+      * [Run](#run)
+         * [Why are my QC processes using 100% CPU ?](#why-are-my-qc-processes-using-100-cpu-)
       * [CCDB repository](#ccdb-repository)
          * [How to see which objects are stored in the CCDB ?](#how-to-see-which-objects-are-stored-in-the-ccdb-)
          * [How to delete objects from the CCDB ?](#how-to-delete-objects-from-the-ccdb-)
@@ -48,6 +50,17 @@ For AliceO2 libraries see the next question.
 ### How do I make my module depend on library XXX from AliceO2 ? 
 
 Add the library name to the list `O2_LIBRARIES_NAMES` in [FindAliceO2.cmake](../cmake/FindAliceO2.cmake)
+
+## Run 
+
+### Why are my QC processes using 100% CPU ? 
+
+When running `o2-qc` or other qc binaries, the system will show that the processes use 100% of the CPU. This is due to the DPL default rate for the event loop of devices with inputs. 
+
+Simply start your binary with `--rate 10000` and it should solve the problem. The rate might have to be adapted to your workflow : 
+```bash
+o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json --rate 10000
+```
 
 ## CCDB repository
 
