@@ -32,7 +32,7 @@ DataProcessorSpec getDataProducerExampleSpec(size_t myParam)
     Inputs{},
     Outputs{
       { { "out" }, "TST", "RAWDATA", static_cast<SubSpec>(0) } },
-    getDataProducerAlgorithm({ "TST", "RAWDATA", static_cast<SubSpec>(0) }, myParam)
+    getDataProducerExampleAlgorithm({ "TST", "RAWDATA", static_cast<SubSpec>(0) }, myParam)
   };
 }
 
