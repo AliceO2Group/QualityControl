@@ -32,7 +32,7 @@ framework::DataProcessorSpec getDataProducerExampleSpec(size_t myParam);
 /// \param output   Origin, Description and SubSpecification of data to be produced
 /// \param  myParam  The value the producer should produce.
 /// \return         A fixed number producer algorithm
-framework::AlgorithmSpec getDataProducerExampleAlgorithm(ConcreteDataMatcher output, size_t myParam);
+framework::AlgorithmSpec getDataProducerExampleAlgorithm(framework::ConcreteDataMatcher output, size_t myParam);
 
 } // namespace o2::quality_control::core
 

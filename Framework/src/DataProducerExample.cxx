@@ -37,7 +37,7 @@ DataProcessorSpec getDataProducerExampleSpec(size_t myParam)
 }
 
 framework::AlgorithmSpec
-  getDataProducerExampleAlgorithm(ConcreteDataMatcher output, size_t myParam)
+  getDataProducerExampleAlgorithm(framework::ConcreteDataMatcher output, size_t myParam)
 {
   return AlgorithmSpec{
     [=](InitContext&) {
