@@ -61,7 +61,8 @@ add_library(QualityControl
             src/PostProcessingConfig.cxx
             src/PostProcessingInterface.cxx
             src/DummyDatabase.cxx
-            src/DataProducer.cxx)
+            src/DataProducer.cxx
+            src/DataProducerExample.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -120,6 +121,7 @@ set(EXE_SRCS
     src/runInformationService.cxx
     src/runInformationServiceDump.cxx
     src/runDataProducer.cxx
+    src/runDataProducerExample.cxx
     src/runQC.cxx
     src/runBasic.cxx
     src/runTPCQCPID.cxx
@@ -134,6 +136,7 @@ set(EXE_NAMES
     o2-qc-info-service
     o2-qc-info-service-dump
     o2-qc-run-producer
+    o2-qc-run-producer-basic
     o2-qc
     o2-qc-run-basic
     o2-qc-run-tpcpid
@@ -150,6 +153,7 @@ set(EXE_OLD_NAMES
     qcInfoService
     qcInfoServiceDump
     qcRunProducer
+    o2-qc-run-producer-basic
     o2-qc-run-qc
     qcRunBasic
     qcRunTPCPID
@@ -363,7 +367,7 @@ install(FILES example-default.json
         DESTINATION etc)
 
 install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/skip.py
-                 script/RepoCleaner/repoCleaner.py
+                 script/RepoCleaner/repoCleaner.py script/RepoCleaner/1_per_run.py
                  script/o2-qc-database-setup.sh
         DESTINATION bin)
 

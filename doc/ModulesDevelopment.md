@@ -16,7 +16,7 @@
       * [Test run](#test-run)
       * [Modification of a Task](#modification-of-a-task)
       * [Check](#check)
-      * [Commit Code](#commit-code)
+      * [Committing code](#committing-code)
       * [Details on data storage](#details-on-data-storage)
          * [Storage before v0.14 and ROOT 6.18](#storage-before-v014-and-root-618)
       * [Tuning the rates to avoid 100% CPU usage](#tuning-the-rates-to-avoid-100-cpu-usage)
@@ -187,7 +187,7 @@ Change the lines as indicated below :
 Now we can run it
 
 ```
-o2-qc-run-basic | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
 ```
 
 You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.
@@ -265,7 +265,8 @@ void beautify(std::shared_ptr<MonitorObject> mo, Quality = Quality::Null) {}
 The `check` function is called whenever the _policy_ is satisfied. It gets a map with all declared MonitorObjects. It is expected to return Quality of the given MonitorObjects.
 
 The `beautify` function is called after the `check` function if there is only one declared MonitorObject.
-## Commit Code
+
+## Committing code
 
 To commit your new or modified code, please follow this procedure
 1. Fork the [QualityControl](github.com/AliceO2Group/QualityControl) repo using github webpage or github desktop app.
@@ -281,37 +282,6 @@ To commit your new or modified code, please follow this procedure
 For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
-
-## Details on data storage
-
-Each MonitorObject is stored as a TFile in the CCDB (see section [Details on data storage](doc/ModulesDevelopment.md#details-on-data-storage)
-). It is therefore possible to easily open it with root loaded with alienv. It also seamlessly supports class schema evolution. 
-
-The objects are stored in at at path which is enforced by the qc framework : `/qc/<detector name>/<task name>/object/name`
-Note that the name of the object can contain slashes (`/`) in order to build a sub-tree visible in the gui. 
-The detector name and the taskname are set in the config file : 
-```json
-"tasks": {
-  "QcTask": {       <-------- task name
-    "active": "true",
-    "className": "o2::quality_control_modules::skeleton::SkeletonTask",
-    "moduleName": "QcSkeleton",
-    "detectorName": "TST",         <---------- detector name
-```
-
-The quality is stored as a metadata on the object. 
-
-### Storage before v0.14 and ROOT 6.18
-
-Before September 2019, objects were serialized with TMessage and stored as _blobs_ in the CCDB. The main drawback was the loss of the corresponding streamer infos leading to problems when the class evolved or when accessing the data outside the QC framework. 
-
-The QC framework is nevertheless backward compatible and can handle the old and the new storage system. 
-
-## Tuning the rates to avoid 100% CPU usage
-
-When running `o2-qc` or other qc binaries, the system will show that the processes use 100% of the CPU. This is due to the default rate for data source devices. 
-
-Simply start the DPL driver with `--rate 10000` and it should solve the problem. The rate might have to be adapted to your workflow.
 
 ---
 
