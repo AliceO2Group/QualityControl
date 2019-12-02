@@ -16,10 +16,9 @@
       * [Test run](#test-run)
       * [Modification of a Task](#modification-of-a-task)
       * [Check](#check)
+      * [Configuration](#configuration)
+      * [Implementation](#implementation)
       * [Committing code](#committing-code)
-      * [Details on data storage](#details-on-data-storage)
-         * [Storage before v0.14 and ROOT 6.18](#storage-before-v014-and-root-618)
-      * [Tuning the rates to avoid 100% CPU usage](#tuning-the-rates-to-avoid-100-cpu-usage)
 
 <!-- Added by: bvonhall, at:  -->
 
