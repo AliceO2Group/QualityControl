@@ -93,7 +93,7 @@ namespace o2::quality_control_modules::muonchambers
           }
             
             if((sum == 0) && ((std::find(DSIdTestedb.begin(), DSIdTestedb.end(), i) != DSIdTestedb.end()) ||  (std::find(DSIdTestednb.begin(), DSIdTestednb.end(), i) != DSIdTestednb.end()) ) ){
-                nDSmiss += 1
+                nDSmiss += 1;
                 missing.push_back(i);
                 int J = 1 + ((i-(i%5))/5);
                 int DSnum = i%5;
@@ -191,7 +191,7 @@ namespace o2::quality_control_modules::muonchambers
             h->GetListOfFunctions()->Add(line);
           }
         
-            for(int num = 0; num < missing.size(), num++){
+            for(int num = 0; num < missing.size(); num++){
                 int dualSampaId = missing[num];
           o2::mch::contour::Contour<double> dscontour = o2::mch::mapping::getDualSampaContour(csegment, dualSampaId);
           std::vector<o2::mch::contour::Vertex<double>> vertices = dscontour.getVertices();
@@ -227,7 +227,7 @@ namespace o2::quality_control_modules::muonchambers
             std::cout<<"v1="<<v1.x<<","<<v1.y<<"  v2="<<v2.x<<","<<v2.y<<std::endl;
           }
             
-            for(int num = 0; num < missing.size(), num++){
+            for(int num = 0; num < missing.size(); num++){
                 int dualSampaId = missing[num];
                 o2::mch::contour::Contour<double> dscontour = o2::mch::mapping::getDualSampaContour(csegment, dualSampaId);
                 std::vector<o2::mch::contour::Vertex<double>> vertices = dscontour.getVertices();
