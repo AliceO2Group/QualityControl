@@ -46,8 +46,12 @@ class MCHCheckPedestals : public o2::quality_control::checker::CheckInterface
   Float_t maxMCHpedestal;
 
  private:
-
+    
+    /// Vector filled with DualSampas Ids that have been tested but sent back no data
+    std::vector<int> missing;
+    
   ClassDefOverride(MCHCheckPedestals, 1);
+  
 };
 
 } // namespace o2::quality_control_modules::muonchambers

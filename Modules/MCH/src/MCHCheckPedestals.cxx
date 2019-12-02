@@ -24,13 +24,16 @@
 #include <TList.h>
 #include <TMath.h>
 #include <TPaveText.h>
+#include <iostream>
+#include <vector>
+#include <algorithm>
 
 using namespace std;
 
 namespace o2::quality_control_modules::muonchambers
 {
 
-  MCHCheckPedestals::MCHCheckPedestals() : minMCHpedestal(50.f), maxMCHpedestal(100.f)
+  MCHCheckPedestals::MCHCheckPedestals() : minMCHpedestal(50.f), maxMCHpedestal(100.f), missing(0)
   {
   }
 
@@ -55,6 +58,10 @@ namespace o2::quality_control_modules::muonchambers
 
     // if ((histname.EndsWith("RawsTime")) || (histname.Contains("RawsTime") && suffixTrgCl)) {
     if (mo->getName().find("QcMuonChambers_Pedestals") != std::string::npos) {
+        
+      int deid;
+      sscanf(mo->getName().c_str(), "QcMuonChambers_Pedestals_DE%d", &deid);
+        
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
       if( !h ) return result;
 
@@ -62,17 +69,41 @@ namespace o2::quality_control_modules::muonchambers
         result = Quality::Medium;
         // flag = AliQAv1::kWARNING;
       } else {
-        int nbinsx = 6;//h->GetXaxis()->GetNbins();
+          
+        int nbinsx = h->GetXaxis()->GetNbins();
         int nbinsy = h->GetYaxis()->GetNbins();
         int nbad = 0;
+        int nDSmiss = 0;
+        std:vector<int> DSIdTestedb;
+        std:vector<int> DSIdTestedb;
+          
+        o2::mch::mapping::Segmentation segment(deid);
+        const o2::mch::mapping::CathodeSegmentation& csegmentb = segment.bending();
+        const o2::mch::mapping::CathodeSegmentation& csegmentnb = segment.nonBending();
+          DSIdTestedb = csegmentb.mDualSampaIds();
+          DSIdTestednb = csegmentnb.mDualSampaIds();
+          
         for(int i = 1; i <= nbinsx; i++) {
+          float sum = 0;
+            
           for(int j = 1; j <= nbinsy; j++) {
             Float_t ped = h->GetBinContent(i, j);
-            if( ped < minMCHpedestal || ped > maxMCHpedestal ) nbad += 1;
+            sum += ped;
+            if((ped < minMCHpedestal || ped > maxMCHpedestal) && ((std::find(DSIdTestedb.begin(), DSIdTestedb.end(), i) != DSIdTestedb.end()) ||  (std::find(DSIdTestednb.begin(), DSIdTestednb.end(), i) != DSIdTestednb.end()) )) nbad += 1;
           }
+            
+            if((sum == 0) && ((std::find(DSIdTestedb.begin(), DSIdTestedb.end(), i) != DSIdTestedb.end()) ||  (std::find(DSIdTestednb.begin(), DSIdTestednb.end(), i) != DSIdTestednb.end()) ) ){
+                nDSmiss += 1
+                missing.push_back(i);
+                int J = 1 + ((i-(i%5))/5);
+                int DSnum = i%5;
+                QcInfoLogger::GetInstance() << " Missing J" << J << " DS" << DSnum << AliceO2::InfoLogger::InfoLogger::endm;
+            }
+            
         }
         if( nbad < 1 ) result = Quality::Good;
-        else result = Quality::Bad;
+        else if( nbad != 0 && nDSmiss == 0) result = Quality::Bad;
+        else if( nbad != 0 && nDSmiss != 0) result = Quality::BadAndMissing;
       }
     }
     return result;
@@ -106,6 +137,15 @@ namespace o2::quality_control_modules::muonchambers
         msg->SetFillColor(kRed);
         //
         h->SetFillColor(kRed);
+      } else if (checkResult == Quality::BadAndMissing) {
+        LOG(INFO) << "Quality::BadAndMissing, setting to black";
+        //
+        msg->Clear();
+        msg->AddText("There are missing DSs here !!!");
+        msg->AddText(checkMissing);
+        msg->SetFillColor(kBlack);
+        //
+        h->SetFillColor(kBlack);
       } else if (checkResult == Quality::Medium) {
         LOG(INFO) << "Quality::medium, setting to orange";
         //
@@ -150,6 +190,20 @@ namespace o2::quality_control_modules::muonchambers
             TLine* line = new TLine(v1.x, v1.y, v2.x, v2.y);
             h->GetListOfFunctions()->Add(line);
           }
+        
+            for(int num = 0; num < missing.size(), num++){
+                int dualSampaId = missing[num];
+          o2::mch::contour::Contour<double> dscontour = o2::mch::mapping::getDualSampaContour(csegment, dualSampaId);
+          std::vector<o2::mch::contour::Vertex<double>> vertices = dscontour.getVertices();
+          for(unsigned int vi = 0; vi < vertices.size(); vi++) {
+            const o2::mch::contour::Vertex<double> v1 = vertices[vi];
+            const o2::mch::contour::Vertex<double> v2 = (vi < (vertices.size()-1)) ? vertices[vi+1] : vertices[0];
+            TLine* line = new TLine(v1.x, v1.y, v2.x, v2.y);
+              line->SetLineColor(kRed);
+            h->GetListOfFunctions()->Add(line);
+          }
+            }
+              
         } catch(std::exception& e) {
           return;
         }
@@ -172,6 +226,19 @@ namespace o2::quality_control_modules::muonchambers
             h->GetListOfFunctions()->Add(line);
             std::cout<<"v1="<<v1.x<<","<<v1.y<<"  v2="<<v2.x<<","<<v2.y<<std::endl;
           }
+            
+            for(int num = 0; num < missing.size(), num++){
+                int dualSampaId = missing[num];
+                o2::mch::contour::Contour<double> dscontour = o2::mch::mapping::getDualSampaContour(csegment, dualSampaId);
+                std::vector<o2::mch::contour::Vertex<double>> vertices = dscontour.getVertices();
+                for(unsigned int vi = 0; vi < vertices.size(); vi++) {
+                  const o2::mch::contour::Vertex<double> v1 = vertices[vi];
+                  const o2::mch::contour::Vertex<double> v2 = (vi < (vertices.size()-1)) ? vertices[vi+1] : vertices[0];
+                  TLine* line = new TLine(v1.x, v1.y, v2.x, v2.y);
+                    line->SetLineColor(kRed);
+                  h->GetListOfFunctions()->Add(line);
+                }
+            }
         } catch(std::exception& e) {
           return;
         }
