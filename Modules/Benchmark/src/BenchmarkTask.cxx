@@ -29,13 +29,6 @@ BenchmarkTask::~BenchmarkTask()
 {
 }
 
-// https://stackoverflow.com/questions/5840148/how-can-i-get-a-files-size-in-c
-std::ifstream::pos_type filesize(const char* filename)
-{
-  std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
-  return in.tellg();
-}
-
 void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize BenchmarkTask" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -56,23 +49,8 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   QcInfoLogger::GetInstance() << "Will create " << histogramsNumber << " histograms." << AliceO2::InfoLogger::InfoLogger::endm;
-  QcInfoLogger::GetInstance() << "They will have " << binsNumber << " bins each." << AliceO2::InfoLogger::InfoLogger::endm;
-  {
-    TH2F testHisto("a", "", binsNumber, 0, 30000, binsNumber, 0, 30000);
-    testHisto.SetStats(0);
-    Double_t px, py;
-    for (Int_t i = 0; i < 50000; i++) {
-      gRandom->Rannor(px, py);
-      px *= 5000;
-      py *= 5000;
-      px += 15000;
-      py += 15000;
-      testHisto.Fill(px, py);
-    }
-    testHisto.SaveAs("/tmp/histo-size-test.root");
-    QcInfoLogger::GetInstance() << "Size of each will be " << filesize("/tmp/histo-size-test.root")
-                                << AliceO2::InfoLogger::InfoLogger::endm;
-  }
+  QcInfoLogger::GetInstance() << "They will have 2 dimensions with " << binsNumber << " bins each." << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "In-memory size of one histogram will be around " << binsNumber * binsNumber * 4 << "." << AliceO2::InfoLogger::InfoLogger::endm;
 
   for (int i = 0; i < histogramsNumber; i++) {
     std::string name = "histo-" + std::to_string(i);
@@ -100,7 +78,7 @@ void BenchmarkTask::startOfCycle()
 
 void BenchmarkTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  //  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
+  // the minimum that we can do, which includes accessing data and creating non-empty histograms
   size_t dummySum = 0;
   for (auto&& input : ctx.inputs()) {
     if (input.header != nullptr && input.payload != nullptr) {
@@ -110,7 +88,8 @@ void BenchmarkTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   for (auto& histo : mHistograms) {
-    histo->Fill(dummySum++, dummySum++);
+    histo->Fill(dummySum, dummySum + 1);
+    dummySum += 2;
   }
 }
 
