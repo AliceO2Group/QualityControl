@@ -72,7 +72,7 @@ framework::AlgorithmSpec
         timer->increment();
 
         // generating data
-        size_t length = minSize + (generator() % (maxSize - minSize));
+        size_t length = (minSize == maxSize) ? minSize : (minSize + (generator() % (maxSize - minSize)));
         auto data = processingContext.outputs().make<char>({ output.origin, output.description, output.subSpec },
                                                            length);
         if (fill) {
