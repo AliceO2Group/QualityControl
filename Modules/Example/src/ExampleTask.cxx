@@ -47,14 +47,6 @@ void ExampleTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // Extendable axis
   mHistos[0]->SetCanExtend(TH1::kXaxis);
-
-  // Add checks (first by name, then by reference)
-  getObjectsManager()->addCheck("array-0", "checkMeanIsAbove", "o2::quality_control_modules::common::MeanIsAbove",
-                                "QcCommon");
-  getObjectsManager()->addCheck(mHistos[0], "checkNonEmpty", "o2::quality_control_modules::common::NonEmpty",
-                                "QcCommon");
-  getObjectsManager()->addCheck(mHistos[0], "checkFromExample", "o2::quality_control_modules::example::FakeCheck",
-                                "QcExample");
 }
 
 void ExampleTask::publishHisto(int i)
