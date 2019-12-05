@@ -13,8 +13,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_MODULE_BENCHMARK_BENCHMARKBENCHMARKCHECK_H
-#define QC_MODULE_BENCHMARK_BENCHMARKBENCHMARKCHECK_H
+#ifndef QC_MODULE_BENCHMARK_BENCHMARKCHECK_H
+#define QC_MODULE_BENCHMARK_BENCHMARKCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 
@@ -43,4 +43,4 @@ class BenchmarkCheck : public o2::quality_control::checker::CheckInterface
 
 } // namespace o2::quality_control_modules::benchmark
 
-#endif // QC_MODULE_BENCHMARK_BENCHMARKBENCHMARKCHECK_H
+#endif // QC_MODULE_BENCHMARK_BENCHMARKCHECK_H

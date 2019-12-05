@@ -14,8 +14,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_MODULE_BENCHMARK_BENCHMARKBENCHMARKTASK_H
-#define QC_MODULE_BENCHMARK_BENCHMARKBENCHMARKTASK_H
+#ifndef QC_MODULE_BENCHMARK_BENCHMARKTASK_H
+#define QC_MODULE_BENCHMARK_BENCHMARKTASK_H
 
 #include "QualityControl/TaskInterface.h"
 
@@ -53,4 +53,4 @@ class BenchmarkTask /*final*/ : public TaskInterface // todo add back the "final
 
 } // namespace o2::quality_control_modules::benchmark
 
-#endif // QC_MODULE_BENCHMARK_BENCHMARKBENCHMARKTASK_H
+#endif // QC_MODULE_BENCHMARK_BENCHMARKTASK_H
