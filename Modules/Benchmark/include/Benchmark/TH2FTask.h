@@ -26,11 +26,9 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::benchmark
 {
 
-/// \brief Example Quality Control DPL Task
-/// It is final because there is no reason to derive from it. Just remove it if needed.
-/// \author Barthelemy von Haller
+/// \brief A benchmark task which produces TH2Fs
 /// \author Piotr Konopka
-class TH2FTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class TH2FTask final : public TaskInterface
 {
  public:
   /// \brief Constructor

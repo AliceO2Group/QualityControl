@@ -17,9 +17,7 @@
 #include "Benchmark/TH2FTask.h"
 
 #include <TH2F.h>
-#include <fstream>
 #include <Headers/DataHeader.h>
-#include <TRandom.h>
 #include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control_modules::benchmark
@@ -49,8 +47,8 @@ void TH2FTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   QcInfoLogger::GetInstance() << "Will create " << histogramsNumber << " histograms." << AliceO2::InfoLogger::InfoLogger::endm;
-  QcInfoLogger::GetInstance() << "They will have 2 dimensions with " << binsNumber << " bins each." << AliceO2::InfoLogger::InfoLogger::endm;
-  QcInfoLogger::GetInstance() << "In-memory size of one histogram will be around " << binsNumber * binsNumber * 4 << "." << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "They will have 2 dimensions with " << binsNumber << " x " << binsNumber << " bins each." << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "In-memory size of one histogram will be around " << binsNumber * binsNumber * 4 << " bytes." << AliceO2::InfoLogger::InfoLogger::endm;
 
   for (int i = 0; i < histogramsNumber; i++) {
     std::string name = "histo-" + std::to_string(i);
@@ -105,7 +103,10 @@ void TH2FTask::endOfActivity(Activity& /*activity*/)
 
 void TH2FTask::reset()
 {
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "Resetting the histograms" << AliceO2::InfoLogger::InfoLogger::endm;
+  for (auto& histo : mHistograms) {
+    histo->Reset();
+  }
 }
 
 } // namespace o2::quality_control_modules::benchmark
