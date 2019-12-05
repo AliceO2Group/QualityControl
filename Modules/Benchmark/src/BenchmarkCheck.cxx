@@ -32,7 +32,7 @@ Quality BenchmarkCheck::check(const MonitorObject* mo)
   return Quality::Good;
 }
 
-std::string BenchmarkCheck::getAcceptedType() { return "TH1"; }
+std::string BenchmarkCheck::getAcceptedType() { return "TH2"; }
 
 void BenchmarkCheck::beautify(MonitorObject* mo, Quality checkResult)
 {
