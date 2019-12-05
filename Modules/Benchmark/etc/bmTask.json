@@ -25,7 +25,7 @@
     "tasks" : {
       "QcTask" : {
         "active" : "true",
-        "className" : "o2::quality_control_modules::benchmark::BenchmarkTask",
+        "className" : "o2::quality_control_modules::benchmark::TH2FTask",
         "moduleName" : "QcBenchmark",
         "detectorName" : "TST",
         "cycleDurationSeconds" : "[[ CYCLE_SECONDS ]]",

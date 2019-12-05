@@ -3,6 +3,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class o2::quality_control_modules::benchmark::BenchmarkTask+;
-#pragma link C++ class o2::quality_control_modules::benchmark::BenchmarkCheck+;
+#pragma link C++ class o2::quality_control_modules::benchmark::TH2FTask+;
+#pragma link C++ class o2::quality_control_modules::benchmark::AlwaysGoodTH2Check+;
 #endif

@@ -14,7 +14,7 @@
 /// \author Piotr Konopka
 ///
 
-#include "Benchmark/BenchmarkTask.h"
+#include "Benchmark/TH2FTask.h"
 
 #include <TH2F.h>
 #include <fstream>
@@ -25,13 +25,13 @@
 namespace o2::quality_control_modules::benchmark
 {
 
-BenchmarkTask::~BenchmarkTask()
+TH2FTask::~TH2FTask()
 {
 }
 
-void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
+void TH2FTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize BenchmarkTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "initialize TH2FTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   int histogramsNumber = 1;
   if (auto param = mCustomParameters.find("histoNumber"); param != mCustomParameters.end()) {
@@ -58,12 +58,12 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mHistograms.back().get());
     for (int i = 0; i < checksPerHisto; i++) {
       getObjectsManager()->addCheck(mHistograms.back().get(), "bmCheck-" + std::to_string(i),
-                                    "o2::quality_control_modules::benchmark::BenchmarkCheck", "QcBenchmark");
+                                    "o2::quality_control_modules::benchmark::AlwaysGoodTH2Check", "QcBenchmark");
     }
   }
 }
 
-void BenchmarkTask::startOfActivity(Activity& /*activity*/)
+void TH2FTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   for (auto& histo : mHistograms) {
@@ -71,12 +71,12 @@ void BenchmarkTask::startOfActivity(Activity& /*activity*/)
   }
 }
 
-void BenchmarkTask::startOfCycle()
+void TH2FTask::startOfCycle()
 {
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void BenchmarkTask::monitorData(o2::framework::ProcessingContext& ctx)
+void TH2FTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // the minimum that we can do, which includes accessing data and creating non-empty histograms
   size_t dummySum = 0;
@@ -93,17 +93,17 @@ void BenchmarkTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void BenchmarkTask::endOfCycle()
+void TH2FTask::endOfCycle()
 {
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void BenchmarkTask::endOfActivity(Activity& /*activity*/)
+void TH2FTask::endOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void BenchmarkTask::reset()
+void TH2FTask::reset()
 {
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
 }

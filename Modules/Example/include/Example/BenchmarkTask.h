@@ -54,7 +54,7 @@ class BenchmarkTask : public TaskInterface
   std::string mTypeOfChecks;
   std::string mModuleOfChecks;
 
-  //    ClassDef(BenchmarkTask,1);
+  //    ClassDef(TH2FTask,1);
 };
 
 } // namespace o2::quality_control_modules::example

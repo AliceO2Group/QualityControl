@@ -30,13 +30,13 @@ namespace o2::quality_control_modules::benchmark
 /// It is final because there is no reason to derive from it. Just remove it if needed.
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
-class BenchmarkTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class TH2FTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
-  BenchmarkTask() = default;
+  TH2FTask() = default;
   /// Destructor
-  ~BenchmarkTask() override;
+  ~TH2FTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;

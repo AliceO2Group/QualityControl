@@ -2,7 +2,7 @@
 
 add_library(QcBenchmark)
 
-target_sources(QcBenchmark PRIVATE src/BenchmarkCheck.cxx  src/BenchmarkTask.cxx )
+target_sources(QcBenchmark PRIVATE src/AlwaysGoodTH2Check.cxx src/TH2FTask.cxx)
 
 target_include_directories(
   QcBenchmark
@@ -19,8 +19,8 @@ install(TARGETS QcBenchmark
 
 add_root_dictionary(QcBenchmark
                     HEADERS
-  include/Benchmark/BenchmarkCheck.h
-  include/Benchmark/BenchmarkTask.h
+                    include/Benchmark/AlwaysGoodTH2Check.h
+                    include/Benchmark/TH2FTask.h
                     LINKDEF include/Benchmark/LinkDef.h
                     BASENAME QcBenchmark)
 

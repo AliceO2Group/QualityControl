@@ -24,13 +24,13 @@ namespace o2::quality_control_modules::benchmark
 /// \brief  Give always a good quality
 ///
 /// \author Piotr Konopka
-class BenchmarkCheck : public o2::quality_control::checker::CheckInterface
+class AlwaysGoodTH2Check : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  BenchmarkCheck() = default;
+  AlwaysGoodTH2Check() = default;
   /// Destructor
-  ~BenchmarkCheck() override = default;
+  ~AlwaysGoodTH2Check() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -38,7 +38,7 @@ class BenchmarkCheck : public o2::quality_control::checker::CheckInterface
   void beautify(MonitorObject* mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(BenchmarkCheck, 1);
+  ClassDefOverride(AlwaysGoodTH2Check, 1);
 };
 
 } // namespace o2::quality_control_modules::benchmark

@@ -13,7 +13,7 @@
 /// \author Piotr Konopka
 ///
 
-#include "Benchmark/BenchmarkCheck.h"
+#include "Benchmark/AlwaysGoodTH2Check.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
@@ -25,16 +25,16 @@ using namespace std;
 namespace o2::quality_control_modules::benchmark
 {
 
-void BenchmarkCheck::configure(std::string) {}
+void AlwaysGoodTH2Check::configure(std::string) {}
 
-Quality BenchmarkCheck::check(const MonitorObject* mo)
+Quality AlwaysGoodTH2Check::check(const MonitorObject* mo)
 {
   return Quality::Good;
 }
 
-std::string BenchmarkCheck::getAcceptedType() { return "TH2"; }
+std::string AlwaysGoodTH2Check::getAcceptedType() { return "TH2"; }
 
-void BenchmarkCheck::beautify(MonitorObject* mo, Quality checkResult)
+void AlwaysGoodTH2Check::beautify(MonitorObject* mo, Quality checkResult)
 {
 
 }
