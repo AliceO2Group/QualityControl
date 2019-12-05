@@ -58,14 +58,6 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   getObjectsManager()->startPublishing(mDigitAmplitudeEMCAL);
   getObjectsManager()->startPublishing(mDigitAmplitudeDCAL);
-  //add checker for histograms //decide the name of ONE checker
-  getObjectsManager()->addCheck(mDigitAmplitude[0], "checkAmplHighG", "o2::quality_control_modules::emcal::DigitCheck", "QcEMCAL");
-  getObjectsManager()->addCheck(mDigitAmplitude[1], "checkAmplLowG", "o2::quality_control_modules::emcal::DigitCheck", "QcEMCAL");
-  getObjectsManager()->addCheck(mDigitTime[0], "checkDigitTimeHighG", "o2::quality_control_modules::emcal::DigitCheck", "QcEMCAL");
-  getObjectsManager()->addCheck(mDigitTime[1], "checkDigitTimeLowG", "o2::quality_control_modules::emcal::DigitCheck", "QcEMCAL");
-  //digitAmplitudeEMCAL-DCAL
-  getObjectsManager()->addCheck(mDigitAmplitudeEMCAL, "checkAmplEMCAL", "o2::quality_control_modules::emcal::DigitCheck", "QcEMCAL");
-  getObjectsManager()->addCheck(mDigitAmplitudeDCAL, "checkAmplDCAL", "o2::quality_control_modules::emcal::DigitCheck", "QcEMCAL");
 
   // initialize geometry
   if (!mGeometry)

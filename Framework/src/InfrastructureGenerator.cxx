@@ -118,34 +118,36 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
     }
   }
 
-  typedef std::vector<std::string> InputNames;
-  typedef std::vector<Check> CheckRunnerNames;
-  std::map<InputNames, CheckRunnerNames> checkerMap;
-  for (const auto& [checkName, checkConfig] : config->getRecursive("qc.checks")) {
-    QcInfoLogger::GetInstance() << ">> Check name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
-    if (checkConfig.get<bool>("active", true)) {
-      auto check = Check(checkName, configurationSource);
-      InputNames inputNames;
+  if (config->getRecursive("qc").count("checks")) {
+    typedef std::vector<std::string> InputNames;
+    typedef std::vector<Check> CheckRunnerNames;
+    std::map<InputNames, CheckRunnerNames> checkerMap;
+    for (const auto& [checkName, checkConfig] : config->getRecursive("qc.checks")) {
+      QcInfoLogger::GetInstance() << ">> Check name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
+      if (checkConfig.get<bool>("active", true)) {
+        auto check = Check(checkName, configurationSource);
+        InputNames inputNames;
 
-      for (auto& inputSpec : check.getInputs()) {
-        inputNames.push_back(DataSpecUtils::label(inputSpec));
+        for (auto& inputSpec : check.getInputs()) {
+          inputNames.push_back(DataSpecUtils::label(inputSpec));
+        }
+        std::sort(inputNames.begin(), inputNames.end());
+        checkerMap[inputNames].push_back(check);
       }
-      std::sort(inputNames.begin(), inputNames.end());
-      checkerMap[inputNames].push_back(check);
     }
-  }
-  for (auto& [inputNames, checks] : checkerMap) {
-    //Logging
-    QcInfoLogger::GetInstance() << ">> Inputs (" << inputNames.size() << "): ";
-    for (auto& name : inputNames)
-      QcInfoLogger::GetInstance() << name << " ";
-    QcInfoLogger::GetInstance() << " checks (" << checks.size() << "): ";
-    for (auto& check : checks)
-      QcInfoLogger::GetInstance() << check.getName() << " ";
-    QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
+    for (auto& [inputNames, checks] : checkerMap) {
+      //Logging
+      QcInfoLogger::GetInstance() << ">> Inputs (" << inputNames.size() << "): ";
+      for (auto& name : inputNames)
+        QcInfoLogger::GetInstance() << name << " ";
+      QcInfoLogger::GetInstance() << " checks (" << checks.size() << "): ";
+      for (auto& check : checks)
+        QcInfoLogger::GetInstance() << check.getName() << " ";
+      QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
 
-    //push workflow
-    workflow.emplace_back(checkerFactory.create(checks, configurationSource));
+      //push workflow
+      workflow.emplace_back(checkerFactory.create(checks, configurationSource));
+    }
   }
 
   return workflow;

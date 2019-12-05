@@ -59,6 +59,19 @@
           "o2flp2"
         ]
       }
+    },
+    "checks": {
+      "QcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "myTask_1",
+          "MOs": ["example"]
+        }]
+      }
     }
   },
   "dataSamplingPoliciesFile_comment": "In case that policies are stored in different file, specify its path below. When both dataSamplingPolicies and dataSamplingPoliciesFile are specified, the latter has higher priority",
