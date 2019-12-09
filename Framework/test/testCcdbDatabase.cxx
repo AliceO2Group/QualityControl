@@ -44,17 +44,17 @@ std::unordered_map<std::string, std::string> Objects;
  * Fixture for the tests, i.e. code is ran in every test that uses it, i.e. it is like a setup and teardown for tests.
  */
 struct test_fixture {
-  test_fixture()
-  {
-    backend = DatabaseFactory::create("CCDB");
-    backend->connect(CCDB_ENDPOINT, "", "", "");
-    std::cout << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << std::endl;
-  }
+    test_fixture()
+    {
+      backend = DatabaseFactory::create("CCDB");
+      backend->connect(CCDB_ENDPOINT, "", "", "");
+      std::cout << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << std::endl;
+    }
 
-  ~test_fixture() = default;
+    ~test_fixture() = default;
 
-  std::unique_ptr<DatabaseInterface> backend;
-  map<string, string> metadata;
+    std::unique_ptr<DatabaseInterface> backend;
+    map<string, string> metadata;
 };
 
 BOOST_AUTO_TEST_CASE(ccdb_create)
@@ -98,6 +98,18 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
   TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
   BOOST_CHECK_NE(h1, nullptr);
   BOOST_CHECK_EQUAL(h1->GetEntries(), 10000);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
+{
+  test_fixture f;
+  std::string task = "qc/TST/my/task";
+  std::string object = "asdf/asdf";
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(task, object);
+  std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
+  auto json = f.backend->retrieveMOJson(task, object);
+
+  BOOST_CHECK(!json.empty());
 }
 
 } // namespace
