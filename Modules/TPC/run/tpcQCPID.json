@@ -11,6 +11,15 @@
       "Activity": {
         "number": "42",
         "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
       }
     },
     "tasks": {
@@ -18,6 +27,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::tpc::PID",
         "moduleName": "QcTPC",
+        "detectorName": "TPC",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
@@ -37,14 +47,7 @@
       "id": "tpc-tracks",
       "active": "true",
       "machines": [],
-      "dataHeaders": [
-        {
-          "binding": "tpc-sampled-tracks",
-          "dataOrigin": "TPC",
-          "dataDescription": "TRACKS"
-        }
-      ],
-      "subSpec": "0",
+      "query" : "tpc-sampled-tracks:TPC/TRACKS/0",
       "samplingConditions": [
         {
           "condition": "random",

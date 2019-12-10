@@ -11,12 +11,11 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
           ${O2_ROOT}/include/GPU)
 
-target_link_libraries(QcTPC PUBLIC QualityControl O2::TPCQC)
+target_link_libraries(QcTPC
+                      PUBLIC QualityControl
+                             O2::TPCQC)
 
-install(TARGETS QcTPC
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 
 add_root_dictionary(QcTPC
                     HEADERS include/TPC/PID.h
@@ -38,3 +37,32 @@ foreach(test ${TEST_SRCS})
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
 endforeach()
+
+# ---- Executables ----
+
+set(EXE_SRCS
+    run/runTPCQCTrackReader.cxx)
+
+set(EXE_NAMES
+    o2-qc-run-tpctrackreader)
+
+list(LENGTH EXE_SRCS count)
+math(EXPR count "${count}-1")
+foreach(i RANGE ${count})
+  list(GET EXE_SRCS ${i} src)
+  list(GET EXE_NAMES ${i} name)
+  add_executable(${name} ${src})
+  target_link_libraries(${name} PRIVATE QcTPC ROOT::Tree)
+endforeach()
+
+# ---- Install ----
+
+install(TARGETS QcTPC ${EXE_NAMES}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# ---- Install config files ----
+
+install(FILES run/tpcQCPID.json
+        DESTINATION etc)
