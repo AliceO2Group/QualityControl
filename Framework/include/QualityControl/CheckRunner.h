@@ -23,6 +23,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <unordered_set>
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>
@@ -91,6 +92,8 @@ class CheckRunner : public framework::Task
   framework::Inputs getInputs() { return mInputs; };
   framework::Outputs getOutputs() { return mOutputs; };
 
+  void setTaskStoreSet(std::unordered_set<std::string> storeSet) { mInputStoreSet = storeSet; }
+
   /// \brief Unified DataDescription naming scheme for all checkers
   static o2::header::DataDescription createCheckRunnerDataDescription(const std::string taskName);
   static o2::framework::Inputs createInputSpec(const std::string checkName, const std::string configSource);
@@ -158,6 +161,8 @@ class CheckRunner : public framework::Task
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::map<std::string, unsigned int> mMonitorObjectRevision;
   unsigned int mGlobalRevision = 1;
+  std::unordered_set<std::string> mInputStoreSet;
+  std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
 
   // DPL
   o2::framework::Inputs mInputs;

@@ -40,6 +40,7 @@
 using namespace std::chrono;
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
+using namespace o2::framework;
 using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace o2::quality_control::core;
@@ -161,6 +162,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   if (startFirstObject == std::chrono::system_clock::time_point::min()) {
     startFirstObject = system_clock::now();
   }
+  mMonitorObjectStoreVector.clear();
 
   for (const auto& input : mInputs) {
     auto dataRef = ctx.inputs().get(input.binding.c_str());
@@ -171,12 +173,21 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
               << " MonitorObjects from " << input.binding
               << AliceO2::InfoLogger::InfoLogger::endm;
 
+      // Check if this CheckRunner stores this input
+      bool store = mInputStoreSet.count(DataSpecUtils::label(input)) > 0;
+
       for (const auto& to : *moArray) {
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(to) };
 
         if (mo) {
           update(mo);
           mTotalNumberHistosReceived++;
+
+          // Add monitor object to store later, after possible beautification
+          if (store) {
+            mMonitorObjectStoreVector.push_back(mo);
+          }
+
         } else {
           mLogger << "The mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
         }
@@ -240,19 +251,10 @@ void CheckRunner::store(std::vector<Check*>& checks)
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
   }
 
-  mLogger << "Storing updated monitor objects" << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << "Storing " << mMonitorObjectStoreVector.size() << " monitor objects" << AliceO2::InfoLogger::InfoLogger::endm;
   try {
-    // Ensure to write only once updated MOs
-    std::set<std::string> moNames;
-    for (auto check : checks) {
-      if (check->isBeautified()) {
-        // If beautified then only one MO
-        auto name = *(check->getMonitorObjectNames().begin());
-        moNames.insert(name);
-      }
-    }
-    for (auto name : moNames) {
-      mDatabase->storeMO(mMonitorObjects[name]);
+    for (auto mo : mMonitorObjectStoreVector) {
+      mDatabase->storeMO(mo);
     }
   } catch (boost::exception& e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
