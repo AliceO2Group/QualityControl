@@ -67,7 +67,7 @@ ITSRawTask::~ITSRawTask()
 
 }
 
-void ITSRawTask::initialize(o2::framework::InitContext &ctx)
+void ITSRawTask::initialize(o2::framework::InitContext &/*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize ITSRawTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -129,7 +129,7 @@ void ITSRawTask::initialize(o2::framework::InitContext &ctx)
   Yellowed = 0;
 }
 
-void ITSRawTask::startOfActivity(Activity &activity)
+void ITSRawTask::startOfActivity(Activity &/*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -144,7 +144,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
 {
   double eta, phi;
   int lay, sta, ssta, mod, chip;
-  UShort_t col, row, ChipID;
+  UShort_t col = 0, row = 0, ChipID = 0;
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> startLoop;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
@@ -649,7 +649,7 @@ void ITSRawTask::endOfCycle()
 
 }
 
-void ITSRawTask::endOfActivity(Activity &activity)
+void ITSRawTask::endOfActivity(Activity &/*activity*/)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
