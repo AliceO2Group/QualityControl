@@ -41,8 +41,6 @@ add_library(QualityControl
             src/CheckInterface.cxx
             src/DatabaseFactory.cxx
             src/CcdbDatabase.cxx
-            src/InformationService.cxx
-            src/InformationServiceDump.cxx
             src/TaskFactory.cxx
             src/TaskRunner.cxx
             src/TaskRunnerFactory.cxx
@@ -114,8 +112,6 @@ add_root_dictionary(QualityControl
 # ---- Executables ----
 
 set(EXE_SRCS
-    src/runInformationService.cxx
-    src/runInformationServiceDump.cxx
     src/runDataProducer.cxx
     src/runDataProducerExample.cxx
     src/runQC.cxx
@@ -129,8 +125,6 @@ set(EXE_SRCS
     src/runPostProcessing.cxx)
 
 set(EXE_NAMES
-    o2-qc-info-service
-    o2-qc-info-service-dump
     o2-qc-run-producer
     o2-qc-run-producer-basic
     o2-qc
@@ -146,8 +140,6 @@ set(EXE_NAMES
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
 set(EXE_OLD_NAMES
-    qcInfoService
-    qcInfoServiceDump
     qcRunProducer
     o2-qc-run-producer-basic
     o2-qc-run-qc
