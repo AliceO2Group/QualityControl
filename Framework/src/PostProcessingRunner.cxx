@@ -56,7 +56,7 @@ bool PostProcessingRunner::init()
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     ILOG(Error) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic << ENDM;
+                << diagnostic << ENDM;
     throw;
   }
 
