@@ -39,33 +39,33 @@ PostProcessingRunner::~PostProcessingRunner()
 
 bool PostProcessingRunner::init()
 {
-  LOG(INFO) << "Initializing PostProcessingRunner";
+  ILOG(Info) << "Initializing PostProcessingRunner" << ENDM;
 
   try {
     // configuration of the database
     mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
     mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
-    LOG(INFO) << "Database that is going to be used : ";
-    LOG(INFO) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation");
-    LOG(INFO) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
+    ILOG(Info) << "Database that is going to be used : " << ENDM;
+    ILOG(Info) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation") << ENDM;
+    ILOG(Info) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host") << ENDM;
     mServices.registerService<DatabaseInterface>(mDatabase.get());
   } catch (
     std::string const& e) { // we have to catch here to print the exception because the device will make it disappear todo: is it still the case?
-    LOG(ERROR) << "exception : " << e;
+    ILOG(Error) << "exception : " << e << ENDM;
     throw;
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
+    ILOG(Error) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic << ENDM;
     throw;
   }
 
   // setup user's task
-  LOG(INFO) << "Creating a user task '" << mConfig.taskName << "'";
+  ILOG(Info) << "Creating a user task '" << mConfig.taskName << "'" << ENDM;
   PostProcessingFactory f;
   mTask.reset(f.create(mConfig));
   if (mTask) {
-    LOG(INFO) << "The user task '" << mConfig.taskName << "' successfully created";
+    ILOG(Info) << "The user task '" << mConfig.taskName << "' successfully created" << ENDM;
 
     mState = TaskState::Created;
     mTask->setName(mConfig.taskName);
@@ -74,7 +74,7 @@ bool PostProcessingRunner::init()
     mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers);
     return true;
   } else {
-    LOG(INFO) << "Failed to create the task '" << mConfig.taskName << "'";
+    ILOG(Info) << "Failed to create the task '" << mConfig.taskName << "'" << ENDM;
     // todo :maybe exceptions instead of return values
     return false;
   }
@@ -82,11 +82,11 @@ bool PostProcessingRunner::init()
 
 bool PostProcessingRunner::run()
 {
-  LOG(INFO) << "Running PostProcessingRunner";
+  ILOG(Info) << "Running PostProcessingRunner" << ENDM;
 
   if (mState == TaskState::Created) {
     if (Trigger trigger = trigger_helpers::tryTrigger(mInitTriggers)) {
-      LOG(INFO) << "Initializing user task";
+      ILOG(Info) << "Initializing user task" << ENDM;
 
       mTask->initialize(trigger, mServices);
 
@@ -98,22 +98,22 @@ bool PostProcessingRunner::run()
   if (mState == TaskState::Running) {
 
     if (Trigger trigger = trigger_helpers::tryTrigger(mUpdateTriggers)) {
-      LOG(INFO) << "Updating user task";
+      ILOG(Info) << "Updating user task" << ENDM;
       mTask->update(trigger, mServices);
     }
     if (Trigger trigger = trigger_helpers::tryTrigger(mStopTriggers)) {
-      LOG(INFO) << "Finalizing user task";
+      ILOG(Info) << "Finalizing user task" << ENDM;
       mTask->finalize(trigger, mServices);
       mState = TaskState::Finished; // maybe the task should monitor its state by itself?
     }
   }
   if (mState == TaskState::Finished) {
-    LOG(INFO) << "User task finished, returning...";
+    ILOG(Info) << "User task finished, returning..." << ENDM;
     return false;
   }
   if (mState == TaskState::INVALID) {
     // todo maybe exception?
-    LOG(INFO) << "User task state INVALID, returning...";
+    ILOG(Info) << "User task state INVALID, returning..." << ENDM;
     return false;
   }
 

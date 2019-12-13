@@ -92,6 +92,7 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   BOOST_CHECK(std::find(list.begin(), list.end(), prefixPath + "functional_test") != list.end());
 
   // test getting objects list from task
+  auto objectNames = ccdb->getPublishedObjectNames(prefixPath + "functional_test");
   //    ILOG(Info) << "objects in task functional_test" << ENDM;
   //  for (auto name : objectNames) {
   //      ILOG(Info) << " - object : " << name << ENDM;
