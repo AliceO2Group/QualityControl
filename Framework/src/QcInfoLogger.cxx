@@ -16,10 +16,8 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <InfoLogger/InfoLoggerFMQ.hxx>
 
-// clang-format off
 namespace o2::quality_control::core
 {
-// clang-format on
 
 QcInfoLogger::QcInfoLogger()
 {
@@ -27,7 +25,7 @@ QcInfoLogger::QcInfoLogger()
   context.setField(infoContext::FieldName::Facility, "QC");
   context.setField(infoContext::FieldName::System, "QC");
   this->setContext(context);
-  setFMQLogsToInfoLogger(this); // theLog being our singleton of QcInfoLogger
+  //  setFMQLogsToInfoLogger(this); // disabled, see https://github.com/AliceO2Group/QualityControl/pull/222
   *this << "QC infologger initialized" << infologger::endm;
 }
 
