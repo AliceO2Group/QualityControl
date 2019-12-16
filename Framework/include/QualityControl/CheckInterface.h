@@ -82,6 +82,11 @@ class CheckInterface
   bool isObjectCheckable(const std::shared_ptr<MonitorObject> mo);
   bool isObjectCheckable(const MonitorObject* mo);
 
+  void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters);
+
+ protected:
+  std::unordered_map<std::string, std::string> mCustomParameters;
+
   //  private:
   //    std::string mName;
 

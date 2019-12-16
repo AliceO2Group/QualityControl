@@ -28,4 +28,9 @@ bool CheckInterface::isObjectCheckable(const MonitorObject* mo)
   return encapsulated->IsA()->InheritsFrom(getAcceptedType().c_str());
 }
 
+void CheckInterface::setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
+{
+  mCustomParameters = parameters;
+}
+
 } // namespace o2::quality_control::checker
