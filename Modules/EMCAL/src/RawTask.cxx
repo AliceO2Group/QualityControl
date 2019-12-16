@@ -59,7 +59,6 @@ RawTask::~RawTask()
     delete h;
   }
 }
-
 void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize RawTask" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -153,11 +152,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       short int maxADCSM[20];
       while (rawreader.hasNext()) {
         rawreader.next();
-        auto payLoad = rawreader.getPayload();
-        auto payLoadSizeTest = payLoad.getPayloadWords().size() * sizeof(uint32_t); //payloadsize in byte
+        auto payLoadSize = rawreader.getPayloadSize(); //payloadsize in byte;
 
         auto headerR = rawreader.getRawHeader();
-        mPayloadSizePerDDL->Fill(headerR.feeId, payLoadSizeTest / 1024.);
+        mPayloadSizePerDDL->Fill(headerR.feeId, payLoadSize / 1024.);
 
         //fill histograms with max ADC for each supermodules and reset cache
         if (!first) {                               // check if it is the first event in the payload
@@ -229,12 +227,14 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (chType == CHTYP::LEDMON || chType == CHTYP::TRU)
             continue;
 
-          Float_t maxADC;
-          Double_t meanADC;
-          Double_t rmsADC;
+          Float_t maxADC = 0;
+          Double_t meanADC = 0;
+          Double_t rmsADC = 0;
           for (auto& bunch : chan.getBunches()) {
             auto adcs = bunch.getADC();
-            maxADC = *max_element(adcs.begin(), adcs.end());
+            double maxADCbunch = *max_element(adcs.begin(), adcs.end());
+            if (maxADCbunch > maxADC)
+              maxADC = maxADCbunch;
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());
             mRMSperSM[j]->Fill(col, row, rmsADC);
