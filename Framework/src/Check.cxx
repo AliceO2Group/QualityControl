@@ -71,7 +71,7 @@ void Check::initConfig()
     std::vector<std::string> inputs;
     const auto& conf = config->getRecursive("qc.checks." + mName);
     // Params
-    if (conf.count("checkParameters")){
+    if (conf.count("checkParameters")) {
       mCustomParameters = config->getRecursiveMap("qc.checks." + mName + ".checkParameters");
     }
 
