@@ -4,7 +4,8 @@
 #include <Framework/DataSampling.h>
 #include <EMCALWorkflow/PublisherSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
-#include "QualityControl/Checker.h"
+#include "QualityControl/CheckRunner.h"
+#include "QualityControl/CheckRunnerFactory.h"
 
 void customize(std::vector<o2::framework::CompletionPolicy>& policies)
 {
@@ -51,7 +52,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
   o2::framework::DataProcessorSpec printer{
     "printer",
     o2::framework::Inputs{
-      {"checked-mo", "QC", o2::quality_control::checker::Checker::createCheckerDataDescription("DigitsQcTask"), 0}
+      {"checked-mo", "QC", o2::quality_control::checker::CheckRunner::createCheckRunnerDataDescription("DigitsQcTask"), 0}
     },
     o2::framework::Outputs{},
     o2::framework::AlgorithmSpec{

@@ -87,13 +87,14 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
-  f.backend->store(mo1);
+  f.backend->storeMO(mo1);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
+  //MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
   BOOST_CHECK_NE(mo, nullptr);
   TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
   BOOST_CHECK_NE(h1, nullptr);

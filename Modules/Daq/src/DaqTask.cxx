@@ -58,8 +58,7 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPayloadSize = new TH1F("payloadSize", "Payload size of blocks;bytes", 2048, 0, 2047);
   mPayloadSize->SetCanExtend(TH1::kXaxis);
   getObjectsManager()->startPublishing(mPayloadSize);
-  getObjectsManager()->addCheck(mPayloadSize, "checkNonEmpty", "o2::quality_control_modules::common::NonEmpty",
-                                "QcCommon");
+
   mNumberSubblocks = new TH1F("numberSubBlocks", "Number of subblocks", 100, 1, 100);
   getObjectsManager()->startPublishing(mNumberSubblocks);
   mSubPayloadSize = new TH1F("PayloadSizeSubBlocks", "Payload size of subblocks;bytes", 2048, 0, 2047);
@@ -76,9 +75,6 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
   mIds->GetXaxis()->SetLabelSize(0.02);
   mIds->GetYaxis()->SetLabelSize(0.02);
   getObjectsManager()->startPublishing(mIds);
-  getObjectsManager()->addCheck(mIds, "checkIncreasingIDs", "o2::quality_control_modules::daq::EverIncreasingGraph",
-                                "QcDaq");
-  getObjectsManager()->addCheck(mIds, "checkNonEmpty", "o2::quality_control_modules::common::NonEmpty", "QcCommon");
 
   mObjString = new TObjString("hello");
   getObjectsManager()->startPublishing(mObjString);

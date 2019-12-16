@@ -85,9 +85,9 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "functional_test", "TST");
   shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "functional_test", "TST");
   shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, "functional_test", "TST");
-  ccdb->store(mo1);
-  ccdb->store(mo2);
-  ccdb->store(mo3);
+  ccdb->storeMO(mo1);
+  ccdb->storeMO(mo2);
+  ccdb->storeMO(mo3);
 
   // test getting list of tasks
   std::vector<std::string> list = ccdb->getListing(prefixPath);

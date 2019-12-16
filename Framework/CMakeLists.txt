@@ -9,6 +9,7 @@ configure_file("include/QualityControl/Version.h.in"
 
 add_library(QualityControlTypes
   src/MonitorObject.cxx
+  src/QualityObject.cxx
   src/Quality.cxx
 )
 
@@ -27,6 +28,7 @@ target_link_libraries(QualityControlTypes
 
 add_root_dictionary(QualityControlTypes
   HEADERS include/QualityControl/MonitorObject.h
+  include/QualityControl/QualityObject.h
   include/QualityControl/Quality.h
   LINKDEF include/QualityControl/TypesLinkDef.h
   BASENAME QualityControlTypes
@@ -36,8 +38,8 @@ add_root_dictionary(QualityControlTypes
 
 add_library(QualityControl
             src/ObjectsManager.cxx
-            src/Checker.cxx
-            src/CheckerFactory.cxx
+            src/CheckRunner.cxx
+            src/CheckRunnerFactory.cxx
             src/CheckInterface.cxx
             src/DatabaseFactory.cxx
             src/CcdbDatabase.cxx
@@ -48,6 +50,7 @@ add_library(QualityControl
             src/RepositoryBenchmark.cxx
             src/HistoMerger.cxx
             src/InfrastructureGenerator.cxx
+            src/Check.cxx
             src/ServiceDiscovery.cxx
             src/Triggers.cxx
             src/TriggerHelpers.cxx
@@ -94,10 +97,10 @@ target_compile_definitions(QualityControl PRIVATE
                            $<$<BOOL:${ENABLE_MYSQL}>:_WITH_MYSQL>)
 
 add_root_dictionary(QualityControl
-                    HEADERS
+                    HEADERS include/QualityControl/Check.h
                             include/QualityControl/CheckInterface.h
-                            include/QualityControl/Checker.h
-                            include/QualityControl/CheckerFactory.h
+                            include/QualityControl/CheckRunner.h
+                            include/QualityControl/CheckRunnerFactory.h
                             include/QualityControl/DatabaseInterface.h
                             include/QualityControl/CcdbDatabase.h
                             include/QualityControl/ServiceDiscovery.h
@@ -105,6 +108,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/TaskRunnerFactory.h
                             include/QualityControl/HistoMerger.h
                             include/QualityControl/InfrastructureGenerator.h
+                            include/QualityControl/InputUtils.h
                             include/QualityControl/PostProcessingInterface.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
@@ -209,7 +213,8 @@ set(TEST_SRCS
     test/testTaskInterface.cxx
     test/testTaskRunner.cxx
     test/testCheckInterface.cxx
-    test/testChecker.cxx
+    test/testCheckRunner.cxx
+    test/testCheck.cxx
     test/testQuality.cxx
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
@@ -219,6 +224,7 @@ set(TEST_SRCS
     test/testPostProcessingRunner.cxx
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
+    test/testCheckWorkflow.cxx
     test/testWorkflow.cxx)
 
 set(TEST_ARGS
@@ -240,6 +246,8 @@ set(TEST_ARGS
     ""
     ""
     ""
+    ""
+    "-b --run"
     "-b --run")
 
 list(LENGTH TEST_SRCS count)
@@ -261,9 +269,9 @@ foreach(i RANGE ${count})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
 
-foreach(t testTaskInterface testWorkflow testTaskRunner
+foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
         testInfrastructureGenerator testPostProcessingConfig testPostProcessingInterface
-        testPostProcessingRunner)
+        testPostProcessingRunner testCheck testCheckRunner)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
@@ -271,6 +279,8 @@ endforeach()
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 10)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
+set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 60)
+set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 20)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 15)
@@ -361,6 +371,7 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py scr
 
 set(TEST_FILES
   "testSharedConfig.json"
+  "testCheckWorkflow.json"
   "testWorkflow.json")
 set(TEST_FILES_PREFIXED ${TEST_FILES})
 list(TRANSFORM TEST_FILES_PREFIXED PREPEND ${CMAKE_BINARY_DIR}/tests/)

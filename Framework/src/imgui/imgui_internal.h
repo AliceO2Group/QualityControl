@@ -99,7 +99,7 @@ extern IMGUI_API ImGuiContext* GImGui; // Current implicit ImGui context pointer
 
 #define IM_PI 3.14159265358979323846f
 #ifdef _WIN32
-#define IM_NEWLINE                                                                                               \
+#define IM_NEWLINE \
   "\r\n" // Play it nice with Windows users (2018/05 news: Microsoft announced that Notepad will finally display \
          // Unix-style carriage returns!)
 #else
