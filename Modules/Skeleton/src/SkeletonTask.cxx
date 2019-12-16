@@ -36,7 +36,7 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - myOwnKey : " << param->second << ENDM;
+    ILOG(Info) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
