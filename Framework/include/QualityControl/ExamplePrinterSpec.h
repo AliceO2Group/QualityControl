@@ -26,12 +26,13 @@
 #include <Framework/DataRefUtils.h>
 
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/QualityObject.h"
 
 namespace o2::quality_control::example
 {
 
 /**
- * \brief Example DPL task to be plugged after a QC checker.
+ * \brief Example DPL task to be plugged after a QC task.
  *
  * This example DPL task takes a TObjArray of MonitorObjects as input (corresponding to the output of a checker)
  * and prints the bins of the first element. The element needs to be a TH1 otherwise it is ignored.
@@ -66,6 +67,23 @@ class ExamplePrinterSpec : public framework::Task
       bins += " " + std::to_string((int)histo->GetBinContent(i));
     }
     LOG(INFO) << bins;
+  }
+};
+
+/**
+ * \brief Example DPL task to be plugged after a QC check.
+ *
+ * This example DPL task takes a TObjArray of MonitorObjects as input (corresponding to the output of a checker)
+ * and prints the bins of the first element. The element needs to be a TH1 otherwise it is ignored.
+ */
+class ExampleQualityPrinterSpec : public framework::Task
+{
+ public:
+  void run(ProcessingContext& processingContext) final
+  {
+    auto qo = processingContext.inputs().get<QualityObject*>("checked-mo");
+
+    LOG(INFO) << "Received Quality: " << qo->getQuality();
   }
 };
 

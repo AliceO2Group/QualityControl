@@ -17,9 +17,9 @@
 #define QC_CHECKER_CHECKINTERFACE_H
 
 #include <string>
+#include <map>
 
 #include <Rtypes.h>
-
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
@@ -56,7 +56,7 @@ class CheckInterface
   ///
   /// @param mo The MonitorObject to check.
   /// @return The quality of the object.
-  virtual Quality check(const MonitorObject* mo) = 0;
+  virtual Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) = 0;
 
   /// \brief Modify the aspect of the plot.
   ///
@@ -67,7 +67,7 @@ class CheckInterface
   /// @param checkResult The quality returned by the check. It is not the same as the quality of the mo
   ///                    as the latter represents the combination of all the checks the mo passed. This
   ///                    parameter is to be used to pass the result of the check of the same class.
-  virtual void beautify(MonitorObject* mo, Quality checkResult = Quality::Null) = 0;
+  virtual void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) = 0;
 
   /// \brief Returns the name of the class that can be treated by this check.
   ///
@@ -79,6 +79,7 @@ class CheckInterface
   /// \author Barthelemy von Haller
   virtual std::string getAcceptedType();
 
+  bool isObjectCheckable(const std::shared_ptr<MonitorObject> mo);
   bool isObjectCheckable(const MonitorObject* mo);
 
   //  private:

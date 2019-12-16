@@ -55,11 +55,6 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
     name << "histogram_" << getName() << "_" << i;
     mHistos.push_back(new TH1F(name.str().c_str(), name.str().c_str(), 1000, -5, 5));
     getObjectsManager()->startPublishing(mHistos[i]);
-
-    // Add the checks
-    for (size_t j = 0; j < mNumberChecks; j++) {
-      getObjectsManager()->addCheck(name.str(), "fakeCheck_" + std::to_string(j), mTypeOfChecks, mModuleOfChecks);
-    }
   }
 }
 

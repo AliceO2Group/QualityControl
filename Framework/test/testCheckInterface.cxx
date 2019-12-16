@@ -47,8 +47,9 @@ class TestCheck : public checker::CheckInterface
   {
     mValidString = name;
   }
-  Quality check(const MonitorObject* mo) override
+  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
   {
+    auto mo = moMap->begin()->second;
     if (mValidString.empty()) {
       return Quality::Null;
     }
@@ -57,7 +58,7 @@ class TestCheck : public checker::CheckInterface
     return mValidString == str->String() ? Quality::Good : Quality::Bad;
   }
 
-  void beautify(MonitorObject* mo, Quality = Quality::Null) override
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality = Quality::Null) override
   {
     TObjString* str = reinterpret_cast<TObjString*>(mo->getObject());
     str->String().Append(" is beautiful now");
@@ -78,18 +79,19 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 {
   test::TestCheck testCheck;
 
-  MonitorObject mo(new TObjString("A string"), "str");
+  std::shared_ptr<MonitorObject> mo(new MonitorObject(new TObjString("A string"), "str"));
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "test", mo } };
 
-  BOOST_CHECK_EQUAL(testCheck.check(&mo), Quality::Null);
+  BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Null);
 
   testCheck.configure("A different string");
-  BOOST_CHECK_EQUAL(testCheck.check(&mo), Quality::Bad);
+  BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Bad);
 
   testCheck.configure("A string");
-  BOOST_CHECK_EQUAL(testCheck.check(&mo), Quality::Good);
+  BOOST_CHECK_EQUAL(testCheck.check(&moMap), Quality::Good);
 
-  testCheck.beautify(&mo);
-  BOOST_CHECK_EQUAL(reinterpret_cast<TObjString*>(mo.getObject())->String(), "A string is beautiful now");
+  testCheck.beautify(mo);
+  BOOST_CHECK_EQUAL(reinterpret_cast<TObjString*>(mo->getObject())->String(), "A string is beautiful now");
 
   BOOST_CHECK_EQUAL(testCheck.getAcceptedType(), "TObjString");
 }

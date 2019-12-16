@@ -39,8 +39,9 @@ TOFCheckRawsMulti::~TOFCheckRawsMulti() {}
 
 void TOFCheckRawsMulti::configure(std::string) {}
 
-Quality TOFCheckRawsMulti::check(const MonitorObject* mo)
+Quality TOFCheckRawsMulti::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  auto mo = moMap->begin()->second;
   Quality result = Quality::Null;
 
   // Int_t nTrgCl = 0; // AliQADataMaker::GetNTrigClasses();
@@ -151,7 +152,7 @@ Quality TOFCheckRawsMulti::check(const MonitorObject* mo)
 
 std::string TOFCheckRawsMulti::getAcceptedType() { return "TH1"; }
 
-void TOFCheckRawsMulti::beautify(MonitorObject* mo, Quality checkResult)
+void TOFCheckRawsMulti::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName().find("TOFRawsMulti") != std::string::npos) {
     auto* h = dynamic_cast<TH1I*>(mo->getObject());

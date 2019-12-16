@@ -59,6 +59,86 @@
           "o2flp2"
         ]
       }
+    },
+    "checks": {
+      "example/checkMeanIsAbove": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::MeanIsAbove",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "myTask_1",
+          "MOs": "all"
+        }]
+      },
+      "example/checkNonEmpty": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::MeanIsAbove",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "myTask_1",
+          "MOs": "all"
+        }]
+      },
+      "example/checkFromExample": {
+        "active": "true",
+        "className": "o2::quality_control_modules::example::FakeCheck",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "myTask_1",
+          "MOs": "all"
+        }]
+      },
+      "daq/checkNonEmpty/payloadSize": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::NonEmpty",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "DaqTask",
+          "MOs": ["payloadSize"]
+        }]
+      },
+      "daq/checkNonEmpty/IDs": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::NonEmpty",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "DaqTask",
+          "MOs": ["IDs"]
+        }]
+      },
+      "daq/checkIncreasingIDs": {
+        "active": "true",
+        "className": "o2::quality_control_modules::daq::EverIncreasingGraph",
+        "moduleName": "QcDaq",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "DaqTask",
+          "MOs": ["IDs"]
+        }]
+      },
+      "benchmark/fakeCheck_1": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::NonEmpty",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "myTask_1",
+          "MOs": ["histogram_myTask_1_0"]
+        }]
+      }
+
     }
   },
   "dataSamplingPoliciesFile_comment": "In case that policies are stored in different file, specify its path below. When both dataSamplingPolicies and dataSamplingPoliciesFile are specified, the latter has higher priority",

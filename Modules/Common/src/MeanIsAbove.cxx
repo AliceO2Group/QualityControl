@@ -47,8 +47,9 @@ void MeanIsAbove::configure(std::string /*name*/)
 
 std::string MeanIsAbove::getAcceptedType() { return "TH1"; }
 
-Quality MeanIsAbove::check(const MonitorObject* mo)
+Quality MeanIsAbove::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  auto mo = moMap->begin()->second;
   auto* th1 = dynamic_cast<TH1*>(mo->getObject());
   if (!th1) {
     // TODO
@@ -60,7 +61,7 @@ Quality MeanIsAbove::check(const MonitorObject* mo)
   return Quality::Bad;
 }
 
-void MeanIsAbove::beautify(MonitorObject* mo, Quality checkResult)
+void MeanIsAbove::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   // A line is drawn at the level of the threshold.
   // Its colour depends on the quality.

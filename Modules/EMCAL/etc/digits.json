@@ -39,6 +39,74 @@
           },
           "location": "remote"
         }
+      },
+      "checks": {
+        "checkAmplHighG": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitAmplitudeHG"]
+          }]
+        },
+        "checkAmplLowG": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitAmplitudeLG"]
+          }]
+        },
+        "checkDigitTimeHighG": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitTimeHG"]
+          }]
+        },
+        "checkDigitTimeLowG": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitTimeLG"]
+          }]
+        },
+        "checkAmplEMCAL": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitAmplitudeEMCAL"]
+          }]
+        },
+        "checkAmplDCAL": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitAmplitudeDCAL"]
+          }]
+        }
       }
     },
     "dataSamplingPolicies": [

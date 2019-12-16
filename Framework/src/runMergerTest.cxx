@@ -36,7 +36,8 @@ void customize(std::vector<CompletionPolicy>& policies)
 
 #include <Framework/runDataProcessing.h>
 
-#include "QualityControl/CheckerFactory.h"
+#include "QualityControl/CheckRunner.h"
+#include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/HistoMerger.h"
 
 using namespace o2::quality_control::core;
