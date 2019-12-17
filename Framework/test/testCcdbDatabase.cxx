@@ -102,5 +102,17 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(h1->GetEntries(), 10000);
 }
 
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
+{
+  test_fixture f;
+  std::string task = "qc/TST/my/task";
+  std::string object = "asdf/asdf";
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(task, object);
+  std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
+  auto json = f.backend->retrieveMOJson(task, object);
+
+  BOOST_CHECK(!json.empty());
+}
+
 } // namespace
 } // namespace o2::quality_control::core
