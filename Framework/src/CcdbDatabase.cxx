@@ -16,6 +16,7 @@
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Version.h"
+#include "QualityControl/QcInfoLogger.h"
 #include "Common/Exceptions.h"
 // ROOT
 #include <TBufferJSON.h>
@@ -46,19 +47,19 @@ CcdbDatabase::~CcdbDatabase() { disconnect(); }
 void CcdbDatabase::loadDeprecatedStreamerInfos()
 {
   if (getenv("QUALITYCONTROL_ROOT") == nullptr) {
-    LOG(WARNING) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
-                 << "Consequently, old data might not be readable.";
+    ILOG(Warning) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
+                  << "Consequently, old data might not be readable." << ENDM;
     return;
   }
   string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
   vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
   for (auto filename : filenames) {
     string localPath = path + filename;
-    LOG(INFO) << "Loading streamerinfos from : " << localPath;
+    ILOG(Info) << "Loading streamerinfos from : " << localPath << ENDM;
     TFile file(localPath.data(), "READ");
     if (file.IsZombie()) {
       string s = string("Cannot find ") + localPath;
-      LOG(ERROR) << s;
+      ILOG(Error) << s << ENDM;
       BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
     }
     TIter next(file.GetListOfKeys());
@@ -68,7 +69,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
       if (!cl->InheritsFrom("TStreamerInfo"))
         continue;
       auto* si = (TStreamerInfo*)key->ReadObj();
-      LOG(DEBUG) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName();
+      ILOG(Debug) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
       si->BuildCheck();
     }
   }
@@ -134,14 +135,14 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   if (object == nullptr) {
     // We could not open a TFile we should now try to open an object directly serialized
     object = ccdbApi.retrieve(path, metadata, when);
-    LOG(DEBUG) << "We could retrieve the object " << path << " as a streamed object.";
+    ILOG(Debug) << "We could retrieve the object " << path << " as a streamed object." << ENDM;
     if (object == nullptr) {
       return nullptr;
     }
   }
   std::shared_ptr<core::MonitorObject> mo(dynamic_cast<core::MonitorObject*>(object));
   if (mo == nullptr) {
-    LOG(ERROR) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject";
+    ILOG(Error) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
   }
   return mo;
 }
@@ -304,7 +305,7 @@ long CcdbDatabase::getCurrentTimestamp()
 
 void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 {
-  LOG(INFO) << "truncating data for " << taskName << "/" << objectName;
+  ILOG(Info) << "truncating data for " << taskName << "/" << objectName << ENDM;
 
   ccdbApi.truncate(taskName + "/" + objectName);
 }

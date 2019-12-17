@@ -9,26 +9,24 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TaskFactory.cxx
+/// \file   QcInfoLogger.cxx
 /// \author Barthelemy von Haller
 ///
 
-#include "QualityControl/TaskFactory.h"
 #include "QualityControl/QcInfoLogger.h"
-
-#include "RootClassFactory.h"
+#include <InfoLogger/InfoLoggerFMQ.hxx>
 
 namespace o2::quality_control::core
 {
 
-TaskInterface* TaskFactory::create(TaskConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
+QcInfoLogger::QcInfoLogger()
 {
-  TaskInterface* result = root_class_factory::create<TaskInterface>(taskConfig.moduleName, taskConfig.className);
-  result->setName(taskConfig.taskName);
-  result->setObjectsManager(objectsManager);
-  result->setCustomParameters(taskConfig.customParameters);
-
-  return result;
+  infoContext context;
+  context.setField(infoContext::FieldName::Facility, "QC");
+  context.setField(infoContext::FieldName::System, "QC");
+  this->setContext(context);
+  //  setFMQLogsToInfoLogger(this); // disabled, see https://github.com/AliceO2Group/QualityControl/pull/222
+  *this << "QC infologger initialized" << infologger::endm;
 }
 
 } // namespace o2::quality_control::core

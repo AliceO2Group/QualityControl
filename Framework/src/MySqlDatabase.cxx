@@ -61,7 +61,7 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
     }
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(s));
   } else {
-    QcInfoLogger::GetInstance() << "Connected to the database" << infologger::endm;
+    ILOG(Info) << "Connected to the database" << ENDM;
   }
 }
 
@@ -88,7 +88,7 @@ void MySqlDatabase::prepareTable(std::string table_name)
   if (!execute(query)) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to create data table"));
   } else {
-    QcInfoLogger::GetInstance() << "Create data table " << table_name << infologger::endm;
+    ILOG(Info) << "Create data table " << table_name << ENDM;
   }
 }
 
@@ -116,8 +116,8 @@ void MySqlDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorOb
 
 void MySqlDatabase::storeQueue()
 {
-  QcInfoLogger::GetInstance() << "Database queue will now be processed (" << queueSize << " objects)"
-                              << infologger::endm;
+  ILOG(Info) << "Database queue will now be processed (" << queueSize << " objects)"
+             << ENDM;
 
   for (auto& kv : mMonitorObjectsQueue) {
     storeForMonitorObject(kv.first);
@@ -191,8 +191,8 @@ void MySqlDatabase::storeForMonitorObject(std::string name)
     return;
   }
 
-  cout << "** Store for task " << name << endl;
-  cout << "        # objects : " << objects.size() << endl;
+  ILOG(Info) << "** Store for task " << name << ENDM;
+  ILOG(Info) << "        # objects : " << objects.size() << ENDM;
 
   // build statement string
   string table_name = "data_" + name;
@@ -346,7 +346,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> MySqlDatabase::retriev
     try {
       mo = std::shared_ptr<MonitorObject>((MonitorObject*)(mess.ReadObjectAny(mess.GetClass())));
     } catch (...) {
-      QcInfoLogger::GetInstance() << "Node: unable to parse TObject from MySQL" << infologger::endm;
+      ILOG(Info) << "Node: unable to parse TObject from MySQL" << ENDM;
       throw;
     }
   }
@@ -406,7 +406,7 @@ void MySqlDatabase::addIndex(string table, string column)
   if (res) {
     delete (res);
   } else {
-    cerr << "Couldn't create the index on table " << table << " on column " << column << endl;
+    ILOG(Error) << "Couldn't create the index on table " << table << " on column " << column << ENDM;
   }
 }
 
@@ -457,7 +457,7 @@ void MySqlDatabase::truncate(std::string taskName, std::string objectName)
     string s = string("Failed to delete object ") + objectName + " from task " + taskName;
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(s));
   } else {
-    QcInfoLogger::GetInstance() << "Delete object " << objectName << " from task " << taskName << infologger::endm;
+    ILOG(Info) << "Delete object " << objectName << " from task " << taskName << ENDM;
   }
 }
 

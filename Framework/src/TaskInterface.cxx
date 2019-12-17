@@ -15,6 +15,7 @@
 ///
 
 #include "QualityControl/TaskInterface.h"
+#include "QualityControl/QcInfoLogger.h"
 #include <CCDB/CcdbApi.h>
 
 using namespace o2::ccdb;
@@ -43,7 +44,7 @@ void TaskInterface::loadCcdb(std::string url)
 
   mCcdbApi->init(url);
   if (!mCcdbApi->isHostReachable()) {
-    LOG(WARN) << "CCDB at URL '" << url << "' is not reachable.";
+    ILOG(Warning) << "CCDB at URL '" << url << "' is not reachable." << ENDM;
   }
 }
 
@@ -57,7 +58,7 @@ TObject* TaskInterface::retrieveCondition(std::string path, std::map<std::string
   if (mCcdbApi) {
     return mCcdbApi->retrieve(path, metadata, timestamp);
   } else {
-    LOG(ERROR) << "Trying to retrieve a condition, but CCDB API is not constructed.";
+    ILOG(Error) << "Trying to retrieve a condition, but CCDB API is not constructed." << ENDM;
     return nullptr;
   }
 }

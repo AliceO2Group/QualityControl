@@ -15,7 +15,6 @@
 
 #include "Common/MeanIsAbove.h"
 
-#include <iostream>
 // ROOT
 #include <TClass.h>
 #include <TH1.h>
@@ -24,6 +23,7 @@
 // QC
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 
 ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 
@@ -38,7 +38,7 @@ void MeanIsAbove::configure(std::string /*name*/)
   //  try {
   //    auto configFile = ConfigurationFactory::getConfiguration("file:../example.ini"); // not ok...
   //  } catch (string &exception) {
-  //    cout << "error getting config file in MeanIsAbove : " << exception << endl;
+  //    ILOG(Info) << "error getting config file in MeanIsAbove : " << exception << ENDM;
   //    mThreshold = 1.0f;
   //    return;
   //  }
@@ -67,7 +67,7 @@ void MeanIsAbove::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   // Its colour depends on the quality.
 
   if (!this->isObjectCheckable(mo)) {
-    cerr << "object not checkable" << endl;
+    ILOG(Error) << "object not checkable" << ENDM;
     return;
   }
 
