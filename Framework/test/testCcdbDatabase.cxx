@@ -52,10 +52,10 @@ struct test_fixture {
     ILOG(Info) << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
   }
 
-    ~test_fixture() = default;
+  ~test_fixture() = default;
 
-    std::unique_ptr<DatabaseInterface> backend;
-    map<string, string> metadata;
+  std::unique_ptr<DatabaseInterface> backend;
+  map<string, string> metadata;
 };
 
 BOOST_AUTO_TEST_CASE(ccdb_create)
