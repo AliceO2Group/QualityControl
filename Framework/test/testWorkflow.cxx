@@ -14,7 +14,7 @@
 ///
 
 #include "getTestDataDirectory.h"
-#include "QualityControl/Checker.h"
+#include "QualityControl/CheckRunner.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/runnerUtils.h"
 #include <Framework/runDataProcessing.h>
@@ -59,41 +59,20 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataProcessorSpec receiver{
     "receiver",
     Inputs{
-      { "checked-mo", "QC", Checker::createCheckerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
+      { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckerName(qcConfigurationSource)), 0 } },
     Outputs{},
     AlgorithmSpec{
       [](ProcessingContext& pctx) {
         // If any message reaches this point, the QC workflow should work at least on a basic level.
 
-        std::shared_ptr<TObjArray> moArray{ DataRefUtils::as<TObjArray>(*pctx.inputs().begin()) };
-        if (!moArray) {
-          LOG(ERROR) << "No array present at the first input.";
+        auto qo = pctx.inputs().get<QualityObject*>("checked-mo");
+        if (!qo) {
+          LOG(ERROR) << "Quality Object is a NULL";
           pctx.services().get<ControlService>().readyToQuit(true);
           return;
         }
 
-        if (moArray->IsEmpty()) {
-          LOG(ERROR) << "The array is empty";
-          pctx.services().get<ControlService>().readyToQuit(true);
-          return;
-        }
-
-        auto* mo = dynamic_cast<MonitorObject*>(moArray->At(0));
-        if (mo == nullptr) {
-          LOG(ERROR) << "First element is not a MonitorObject";
-          pctx.services().get<ControlService>().readyToQuit(true);
-          return;
-        }
-        auto* histo = dynamic_cast<TH1F*>(mo->getObject());
-        if (histo == nullptr) {
-          LOG(ERROR) << "MonitorObject does not contain a TH1F";
-          pctx.services().get<ControlService>().readyToQuit(true);
-          return;
-        }
-
-        // we don't check if TH1 contains any meaningful data, because we (probably) cannot guarantee, that the QC Task
-        // has sent the MO after receiving already some data. F.e. on an overloaded CI build machine it could end the
-        // first cycle before the producer was up and running.
+        LOG(DEBUG) << qo->getName() << " - qualit: " << qo->getQuality();
 
         // We ask to shut the topology down, returning 0 if there were no ERROR logs.
         pctx.services().get<ControlService>().readyToQuit(true);

@@ -1,0 +1,70 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "DaqTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::daq::DaqTask",
+        "moduleName": "QcDaq",
+        "detectorName": "DAQ"
+      }
+    },
+    "checks": {
+      "checkNonEmpty/payloadSize": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::NonEmpty",
+        "moduleName": "QcCommon",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "DaqTask",
+          "MOs": ["payloadSize"]
+        }]
+      },
+      "checkNonEmpty/IDs": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "DaqTask",
+          "MOs": ["IDs"]
+        }]
+      },
+      "CheckIncreasingIDs": {
+        "active": "true",
+        "className": "o2::quality_control_modules::daq::EverIncreasingGraph",
+        "moduleName": "QcDaq",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "DaqTask",
+          "MOs": ["IDs"]
+        }]
+      }
+
+    }
+  }
+}

@@ -26,7 +26,7 @@ ClassImp(o2::quality_control_modules::example::FakeCheck)
 
   void FakeCheck::configure(std::string /*name*/) {}
 
-  Quality FakeCheck::check(const MonitorObject* /*mo*/)
+  Quality FakeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>> * /*moMap*/)
   {
     Quality result = Quality::Null;
 
@@ -35,7 +35,7 @@ ClassImp(o2::quality_control_modules::example::FakeCheck)
 
   std::string FakeCheck::getAcceptedType() { return "TH1"; }
 
-  void FakeCheck::beautify(MonitorObject* /*mo*/, Quality /*checkResult*/)
+  void FakeCheck::beautify(std::shared_ptr<MonitorObject> /*mo*/, Quality /*checkResult*/)
   {
     // NOOP
   }

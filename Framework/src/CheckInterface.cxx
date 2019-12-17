@@ -16,6 +16,11 @@ namespace o2::quality_control::checker
 
 std::string CheckInterface::getAcceptedType() { return "TObject"; }
 
+bool CheckInterface::isObjectCheckable(const std::shared_ptr<MonitorObject> mo)
+{
+  return isObjectCheckable(mo.get());
+}
+
 bool CheckInterface::isObjectCheckable(const MonitorObject* mo)
 {
   TObject* encapsulated = mo->getObject();

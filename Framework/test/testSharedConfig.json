@@ -25,7 +25,7 @@
           "name": "tpcclust"
         },
         "taskParameters": {
-          "parameter1": 100001,
+          "parameter1": "100001",
           "parameter2": "qu'est-ce que c'est que ce truc la"
         },
         "location": "local",
@@ -46,7 +46,7 @@
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "taskParameters": {
-          "parameter1": 100002,
+          "parameter1": "100002",
           "parameter2": "c'est quoi"
         },
         "location": "remote"
@@ -66,6 +66,71 @@
       },
       "defTask": {
         "active": "false"
+      }
+    },
+    "checks": {
+      "singleCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "dataSource": [{
+          "type": "Task",
+          "name": "skeletonTask",
+          "MOs": [
+            "example"
+          ]
+        }]
+      },
+      "checkAll": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "dataSource": [{
+          "type": "Task",
+          "name": "abcTask",
+          "MOs": [
+            "test1",
+            "test2"
+          ]
+        }]
+      },
+      "checkAny": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "abcTask",
+          "MOs": [
+            "test1",
+            "test2"
+          ]
+        }]
+      },
+      "checkAnyNonZero": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAnyNonZero",
+        "dataSource": [{
+          "type": "Task",
+          "name": "abcTask",
+          "MOs": [
+            "test1",
+            "test2"
+          ]
+        }]
+      },
+      "checkGlobalAny": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "dataSource": [{
+          "type": "Task",
+          "name": "xyzTask"
+        }]
       }
     },
     "postprocessing": {

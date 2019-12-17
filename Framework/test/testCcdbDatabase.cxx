@@ -17,6 +17,7 @@
 #include "QualityControl/DatabaseFactory.h"
 #include <unordered_map>
 #include "QualityControl/CcdbDatabase.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE CcdbDatabase test
 #define BOOST_TEST_MAIN
@@ -44,12 +45,12 @@ std::unordered_map<std::string, std::string> Objects;
  * Fixture for the tests, i.e. code is ran in every test that uses it, i.e. it is like a setup and teardown for tests.
  */
 struct test_fixture {
-    test_fixture()
-    {
-      backend = DatabaseFactory::create("CCDB");
-      backend->connect(CCDB_ENDPOINT, "", "", "");
-      std::cout << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << std::endl;
-    }
+  test_fixture()
+  {
+    backend = DatabaseFactory::create("CCDB");
+    backend->connect(CCDB_ENDPOINT, "", "", "");
+    ILOG(Info) << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
+  }
 
     ~test_fixture() = default;
 
@@ -87,13 +88,14 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
-  f.backend->store(mo1);
+  f.backend->storeMO(mo1);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
+  //MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
   BOOST_CHECK_NE(mo, nullptr);
   TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
   BOOST_CHECK_NE(h1, nullptr);

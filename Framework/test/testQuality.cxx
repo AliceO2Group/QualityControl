@@ -14,12 +14,12 @@
 ///
 
 #include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE Quality test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
 using namespace std;
 
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(quality_test)
   BOOST_CHECK_EQUAL(myQuality.getLevel(), Quality::NullLevel);
   BOOST_CHECK_EQUAL(myQuality.getName(), "Null");
 
-  cout << "test quality output : " << myQuality << endl;
+  ILOG(Info) << "test quality output : " << myQuality << ENDM;
 
   BOOST_CHECK(Quality::Bad.isWorstThan(Quality::Medium));
   BOOST_CHECK(Quality::Bad.isWorstThan(Quality::Good));

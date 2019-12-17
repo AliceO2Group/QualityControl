@@ -15,6 +15,7 @@
 /// \brief This is DPL workflow to see HistoMerger in action
 
 #include <fairlogger/Logger.h>
+#include "QualityControl/QcInfoLogger.h"
 #include <Framework/CompletionPolicy.h>
 #include <Framework/CompletionPolicyHelpers.h>
 #include <TH1F.h>
@@ -35,7 +36,8 @@ void customize(std::vector<CompletionPolicy>& policies)
 
 #include <Framework/runDataProcessing.h>
 
-#include "QualityControl/CheckerFactory.h"
+#include "QualityControl/CheckRunner.h"
+#include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/HistoMerger.h"
 
 using namespace o2::quality_control::core;
@@ -95,7 +97,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback) [](InitContext&) {
         return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
-          LOG(INFO) << "printer invoked";
+          ILOG(Info) << "printer invoked" << ENDM;
           auto moArray = processingContext.inputs().get<TObjArray*>("moarray");
           auto mo = dynamic_cast<MonitorObject*>(moArray->First());
 
@@ -105,7 +107,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
             for (int i = 0; i <= g->GetNbinsX(); i++) {
               bins += " " + std::to_string((int) g->GetBinContent(i));
             }
-            LOG(INFO) << bins;
+            ILOG(Info) << bins << ENDM;
           }
         };
       }
