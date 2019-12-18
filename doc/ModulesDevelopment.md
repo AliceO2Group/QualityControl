@@ -16,8 +16,8 @@
       * [Test run](#test-run)
       * [Modification of a Task](#modification-of-a-task)
       * [Check](#check)
-      * [Configuration](#configuration)
-      * [Implementation](#implementation)
+        * [Configuration](#configuration)
+        * [Implementation](#implementation)
       * [Committing code](#committing-code)
 
 <!-- Added by: bvonhall, at:  -->
@@ -204,9 +204,9 @@ appear in the QCG.
 
 ## Check
 
-The Check is a function that determines the quality of the Monitor Objects produced in the previous step - Task. It can subscribe to receive multiple Monitor Objects from several Tasks.
+A Check is a function that determines the quality of the Monitor Objects produced in the previous step - Task. It can receive multiple Monitor Objects from several Tasks.
 
-## Configuration
+### Configuration
 
 ```json
 {
@@ -252,8 +252,8 @@ The Check is a function that determines the quality of the Monitor Objects produ
     * _name_ - name of the _Task_
     * _MOs_ - list of MonitorObjects name or "all"
 
-## Implementation
-After creation of the module described in the above section, every Check functionality requires a separate implementation. The module might implement several Check classes.
+### Implementation
+After the creation of the module described in the above section, every Check functionality requires a separate implementation. The module might implement several Check classes.
 ```c++
 Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) {}
 
