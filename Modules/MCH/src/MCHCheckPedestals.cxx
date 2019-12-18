@@ -30,7 +30,11 @@
 
 using namespace std;
 
-namespace o2::quality_control_modules::muonchambers
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace muonchambers
 {
 
   MCHCheckPedestals::MCHCheckPedestals() : minMCHpedestal(50.f), maxMCHpedestal(100.f), missing(0)
@@ -74,14 +78,19 @@ namespace o2::quality_control_modules::muonchambers
         int nbinsy = h->GetYaxis()->GetNbins();
         int nbad = 0;
         int nDSmiss = 0;
-        std:vector<int> DSIdTestedb;
-        std:vector<int> DSIdTestedb;
+        std::vector<int> DSIdTestedb, DSIdTestednb;
           
         o2::mch::mapping::Segmentation segment(deid);
         const o2::mch::mapping::CathodeSegmentation& csegmentb = segment.bending();
         const o2::mch::mapping::CathodeSegmentation& csegmentnb = segment.nonBending();
-          DSIdTestedb = csegmentb.mDualSampaIds();
-          DSIdTestednb = csegmentnb.mDualSampaIds();
+          
+          for(int i=0; i< csegmentb.nofDualSampas(); i++){
+              DSIdTestedb[i] = csegmentb.dualSampaId(i);
+          }
+          
+          for(int i=0; i< csegmentnb.nofDualSampas(); i++){
+              DSIdTestednb[i] = csegmentnb.dualSampaId(i);
+          }
           
         for(int i = 1; i <= nbinsx; i++) {
           float sum = 0;
@@ -97,7 +106,7 @@ namespace o2::quality_control_modules::muonchambers
                 missing.push_back(i);
                 int J = 1 + ((i-(i%5))/5);
                 int DSnum = i%5;
-                QcInfoLogger::GetInstance() << " Missing J" << J << " DS" << DSnum << AliceO2::InfoLogger::InfoLogger::endm;
+                LOG(INFO) << " Missing J" << J << " DS" << DSnum;
             }
             
         }
@@ -142,7 +151,6 @@ namespace o2::quality_control_modules::muonchambers
         //
         msg->Clear();
         msg->AddText("There are missing DSs here !!!");
-        msg->AddText(checkMissing);
         msg->SetFillColor(kBlack);
         //
         h->SetFillColor(kBlack);
@@ -191,7 +199,7 @@ namespace o2::quality_control_modules::muonchambers
             h->GetListOfFunctions()->Add(line);
           }
         
-            for(int num = 0; num < missing.size(); num++){
+            for(unsigned long num = 0; num < missing.size(); num++){
                 int dualSampaId = missing[num];
           o2::mch::contour::Contour<double> dscontour = o2::mch::mapping::getDualSampaContour(csegment, dualSampaId);
           std::vector<o2::mch::contour::Vertex<double>> vertices = dscontour.getVertices();
@@ -227,7 +235,7 @@ namespace o2::quality_control_modules::muonchambers
             std::cout<<"v1="<<v1.x<<","<<v1.y<<"  v2="<<v2.x<<","<<v2.y<<std::endl;
           }
             
-            for(int num = 0; num < missing.size(); num++){
+            for(unsigned long num = 0; num < missing.size(); num++){
                 int dualSampaId = missing[num];
                 o2::mch::contour::Contour<double> dscontour = o2::mch::mapping::getDualSampaContour(csegment, dualSampaId);
                 std::vector<o2::mch::contour::Vertex<double>> vertices = dscontour.getVertices();
@@ -296,4 +304,6 @@ namespace o2::quality_control_modules::muonchambers
     }
   }
 
-} // namespace o2::quality_control_modules::tof
+} // namespace muonchambers
+} // namespace quality_control_modules
+} // namespace o2

@@ -215,8 +215,6 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       mHistogramADCamplitude[hit.link_id]->Fill(hit.csum);
       //}
 
-      mch::DigitStruct digit;
-
       int de = hit.pad.fDE;
       float padX = hit.pad.fX;
       float padY = hit.pad.fY;
