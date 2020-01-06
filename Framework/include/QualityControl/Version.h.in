@@ -10,8 +10,7 @@
 
 ///
 /// \file    Version.h
-/// \brief   Report the version for this package.
-/// \author  bvonhall
+/// \author  Barthelemy von Haller
 ///
 
 #ifndef QC_CORE_VERSION_H
@@ -20,71 +19,87 @@
 #include <string>
 #include <sstream>
 
-namespace o2::quality_control::core
+namespace o2::quality_control::core {
+
+/// Represents a software package version.
+/// Inspired from https://sourcey.com/articles/comparing-version-strings-in-cpp
+class Version
 {
+  public:
 
-/// The current major version.
-#define QUALITYCONTROL_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+    /// Create a version from a string.
+    /// @param version The version in the form X.Y.Z. If minor or patch is missing, it is replaced by 0.
+    Version(std::string version)
+    {
+      std::sscanf(version.c_str(), "%d.%d.%d", &mMajor, &mMinor, &mPatch);
+    }
 
-/// The current minor version.
-#define QUALITYCONTROL_VERSION_MINOR @PROJECT_VERSION_MINOR@
+    Version(int major, int minor, int patch): mMajor(major), mMinor(minor), mPatch(patch)
+    {
+    }
 
-/// The current patch level.
-#define QUALITYCONTROL_VERSION_PATCH @PROJECT_VERSION_PATCH@
+    ~Version() = default;
 
-/// True if the current version is newer than the given one.
-#define QUALITYCONTROL_VERSION_GT(MAJOR, MINOR, PATCH) \
-  ((QUALITYCONTROL_VERSION_MAJOR > MAJOR) ||           \
-   (QUALITYCONTROL_VERSION_MAJOR ==                    \
-    MAJOR&&(QUALITYCONTROL_VERSION_MINOR > MINOR || (QUALITYCONTROL_VERSION_MINOR == MINOR&& QUALITYCONTROL_VERSION_PATCH > PATCH))))
+    /// \brief Returns the version of the QC framework.
+    /// Returns the version of the QC framework as found in CMake.
+    static Version& GetQcVersion()
+    {
+      // Guaranteed to be destroyed. Instantiated on first use
+      static Version qcVersion{@PROJECT_VERSION_MAJOR@, @PROJECT_VERSION_MINOR@, @PROJECT_VERSION_PATCH@};
+      return qcVersion;
+    }
 
-/// True if the current version is equal or newer to the given.
-#define QUALITYCONTROL_VERSION_GE(MAJOR, MINOR, PATCH) \
-  ((QUALITYCONTROL_VERSION_MAJOR > MAJOR) ||           \
-   (QUALITYCONTROL_VERSION_MAJOR ==                    \
-    MAJOR&&(QUALITYCONTROL_VERSION_MINOR > MINOR || (QUALITYCONTROL_VERSION_MINOR == MINOR&& QUALITYCONTROL_VERSION_PATCH >= PATCH))))
+    int getMajor() const
+    {
+      return mMajor;
+    }
 
-/// True if the current version is older than the given one.
-#define QUALITYCONTROL_VERSION_LT(MAJOR, MINOR, PATCH) \
-  ((QUALITYCONTROL_VERSION_MAJOR < MAJOR) ||           \
-   (QUALITYCONTROL_VERSION_MAJOR ==                    \
-    MAJOR&&(QUALITYCONTROL_VERSION_MINOR < MINOR || (QUALITYCONTROL_VERSION_MINOR == MINOR&& QUALITYCONTROL_VERSION_PATCH < PATCH))))
+    int getMinor() const
+    {
+      return mMinor;
+    }
 
-/// True if the current version is older or equal to the given.
-#define QUALITYCONTROL_VERSION_LE(MAJOR, MINOR, PATCH) \
-  ((QUALITYCONTROL_VERSION_MAJOR < MAJOR) ||           \
-   (QUALITYCONTROL_VERSION_MAJOR ==                    \
-    MAJOR&&(QUALITYCONTROL_VERSION_MINOR < MINOR || (QUALITYCONTROL_VERSION_MINOR == MINOR&& QUALITYCONTROL_VERSION_PATCH <= PATCH))))
+    int getPatch() const
+    {
+      return mPatch;
+    }
 
-/// Information about the current QualityControl version.
-class Version {
-public:
-  /// @return the current major version of QualityControl.
-  static int getMajor()
-  {
-    return QUALITYCONTROL_VERSION_MAJOR;
-  }
+    bool operator<(const Version &other)
+    {
+      if (getMajor() < other.getMajor()) {
+        return true;
+      }
+      if (getMinor() < other.getMinor()) {
+        return true;
+      }
+      if (getPatch() < other.getPatch()) {
+        return true;
+      }
+      return false;
+    }
 
-  /// @return the current minor version of QualityControl.
-  static int getMinor()
-  {
-    return QUALITYCONTROL_VERSION_MINOR;
-  }
+    bool operator==(const Version &other)
+    {
+      return getMajor() == other.getMajor()
+             && getMinor() == other.getMinor()
+             && getPatch() == other.getPatch();
+    }
 
-  /// @return the current patch level of QualityControl.
-  static int getPatch()
-  {
-    return QUALITYCONTROL_VERSION_PATCH;
-  }
+    friend std::ostream &operator<<(std::ostream &stream, const Version &ver)
+    {
+      stream << ver.getMajor() << '.' << ver.getMinor() << '.' << ver.getPatch();
+      return stream;
+    }
 
-  /// @return the current QualityControl version (MM.mm.pp).
-  static std::string getString()
-  {
-    std::ostringstream version;
-    version << QUALITYCONTROL_VERSION_MAJOR << '.' << QUALITYCONTROL_VERSION_MINOR << '.' << QUALITYCONTROL_VERSION_PATCH;
-    return version.str();
-  }
+    std::string getString()
+    {
+      std::ostringstream version;
+      version << this;
+      return version.str();
+    }
 
+  private:
+    int mMajor = 0, mMinor = 0, mPatch = 0;
 };
 
 } // namespace o2::quality_control::core
