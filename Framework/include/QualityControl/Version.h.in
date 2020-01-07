@@ -34,7 +34,7 @@ class Version
     /// @param version The version in the form X.Y.Z. If minor or patch is missing, it is replaced by 0.
     Version(std::string version)
     {
-      std::sscanf(version.c_str(), "%d.%d.%d", &mMajor, &mMinor, &mPatch);
+      std::sscanf(version.c_str(), "%u.%u.%u", &mMajor, &mMinor, &mPatch);
     }
 
     Version(unsigned int major, unsigned int minor, unsigned int patch): mMajor(major), mMinor(minor), mPatch(patch)
@@ -115,7 +115,7 @@ class Version
       return getMajor() * (getMaxVersion() * getMaxVersion()) + getMinor() * getMaxVersion() + getPatch() * 1;
     }
 
-    unsigned int getMaxVersion() {
+    unsigned int getMaxVersion() const {
       return mMaxVersion;
     }
 
