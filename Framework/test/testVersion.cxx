@@ -81,6 +81,8 @@ BOOST_AUTO_TEST_CASE(test_output)
   output << v;
 
   BOOST_CHECK(output.is_equal("1.2.3"));
+
+  BOOST_CHECK(v.getString() == "1.2.3");
 }
 
 } // namespace o2::quality_control::core

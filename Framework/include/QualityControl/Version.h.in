@@ -99,15 +99,15 @@ class Version
 
     friend std::ostream &operator<<(std::ostream &stream, const Version &ver)
     {
-      stream << ver.getMajor() << '.' << ver.getMinor() << '.' << ver.getPatch();
+      stream << ver.getString();
       return stream;
     }
 
-    std::string getString()
+    std::string getString() const
     {
-      std::ostringstream version;
-      version << this;
-      return version.str();
+      std::stringstream result;
+      result << getMajor() << '.' << getMinor() << '.' << getPatch();
+      return result.str();
     }
 
     unsigned int getIntegerRepresentation() const
