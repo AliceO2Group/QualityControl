@@ -26,28 +26,52 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
-BOOST_AUTO_TEST_CASE(test_original_version)
+BOOST_AUTO_TEST_CASE(test_int_repr)
 {
-  assert((Version("3.7.8.0") == Version("3.7.8.0")) == true);
-  assert((Version("3.7.8.0") == Version("3.7.8")) == true);
-  assert((Version("3.7.8.0") < Version("3.7.8")) == false);
-  assert((Version("3.7.9") < Version("3.7.8")) == false);
-  assert((Version("3") < Version("3.7.9")) == true);
-  assert((Version("1.7.9") < Version("3.1")) == true);
-  assert((Version("") == Version("0.0.0")) == true);
-  assert((Version("0") == Version("0.0.0")) == true);
-  assert((Version("") != Version("0.0.1")) == true);
-
-  std::cout << "Printing version (3.7.8): " << Version("3.7.8.0") << std::endl;
+  Version v1("0.19.2");
+  Version v2("1.19.2");
+  Version v3("2.0.0");
+  BOOST_CHECK(v1.getIntegerRepresentation() == (19002));
+  BOOST_CHECK(v2.getIntegerRepresentation() == 1019002);
+  BOOST_CHECK(v3.getIntegerRepresentation() == 2000000);
 }
 
 BOOST_AUTO_TEST_CASE(test_version)
 {
+  BOOST_CHECK((Version("3.7.8.0") == Version("3.7.8.0")) == true);
+  BOOST_CHECK((Version("3.7.8.0") == Version("3.7.8")) == true);
+  BOOST_CHECK((Version("3.7.8.0") < Version("3.7.8")) == false);
+  BOOST_CHECK((Version("3.7.9") < Version("3.7.8")) == false);
+  BOOST_CHECK((Version("3") < Version("3.7.9")) == true);
+  BOOST_CHECK((Version("1.7.9") < Version("3.1")) == true);
+  BOOST_CHECK((Version("") == Version("0.0.0")) == true);
+  BOOST_CHECK((Version("0") == Version("0.0.0")) == true);
+  BOOST_CHECK((Version("") != Version("0.0.1")) == true);
+  BOOST_CHECK((Version("2.0.0") < Version("1.19.0")) == false);
+
   Version v("2.0.0");
   BOOST_CHECK(v == Version("2.0.0"));
   Version qc = Version::GetQcVersion();
   BOOST_CHECK(qc.getMajor() != 0 || qc.getMinor() != 0 || qc.getPatch() != 0);
   cout << qc << endl;
+
+  Version v2("3.2.1");
+  BOOST_CHECK(v2.getMajor() == 3);
+  BOOST_CHECK(v2.getMinor() == 2);
+  BOOST_CHECK(v2.getPatch() == 1);
+
+  BOOST_CHECK(v < Version("2.1.0"));
+  BOOST_CHECK(v < Version("2.1"));
+  BOOST_CHECK(v < Version("20"));
+  BOOST_CHECK(v >= Version("1.19"));
+  BOOST_CHECK(v >= Version("1"));
+  BOOST_CHECK(v >= Version("1.8.1"));
+  BOOST_CHECK(v >= Version("2.0.0"));
+  BOOST_CHECK(v >= Version("2.0"));
+  BOOST_CHECK(v > Version("1.19"));
+  BOOST_CHECK(v > Version("1"));
+  BOOST_CHECK(v > Version("1.8.1"));
+  BOOST_CHECK(!(v > Version("2.0.0")));
 }
 
 BOOST_AUTO_TEST_CASE(test_output)
