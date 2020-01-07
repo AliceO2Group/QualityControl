@@ -121,7 +121,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
-  ccdbApi.storeAsTFile(mo.get(), path, metadata, from, to);
+  ccdbApi.storeAsTFileAny<core::MonitorObject>(mo.get(), path, metadata, from, to);
 }
 
 std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskName, std::string objectName, long timestamp)
@@ -130,21 +130,46 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   map<string, string> metadata;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
-  // we try first to load a TFile
-  TObject* object = ccdbApi.retrieveFromTFile(path, metadata, when);
-  if (object == nullptr) {
-    // We could not open a TFile we should now try to open an object directly serialized
-    object = ccdbApi.retrieve(path, metadata, when);
-    ILOG(Debug) << "We could retrieve the object " << path << " as a streamed object." << ENDM;
+  // retrieve headers to determine the version of the QC framework
+  const map<string, string> metadataFromCcdb;
+  std::map<std::string, std::string> headers = ccdbApi.retrieveHeaders( path, metadataFromCcdb, when);
+  Version objectVersion(headers["version"]);
+
+  core::MonitorObject *mo = nullptr;
+  if(objectVersion == Version("0.0.0") || objectVersion < Version("0.21")) {
+    // The object is either in a TFile or is a blob but it was stored with storeAsTFile and the name
+    // is not understood by retrieveFromTFileAny
+    // we try first to load a TFile
+    TObject* object = ccdbApi.retrieveFromTFile(path, metadata, when);
     if (object == nullptr) {
-      return nullptr;
+      // We could not open a TFile we should now try to open an object directly serialized (i.e. < v0.18)
+      object = ccdbApi.retrieve(path, metadata, when);
+      if (object == nullptr) {
+        return nullptr;
+      }
+      ILOG(Debug) << "We could retrieve the object " << path << " as a streamed object." << ENDM;
+      mo = dynamic_cast<core::MonitorObject*>(object);
+      if (mo == nullptr) {
+        ILOG(Error) << "Could not cast the object " << path << " to MonitorObject" << ENDM;
+      }
+    }
+  } else if (objectVersion >= Version("0.21")) {
+    if (objectVersion > Version::GetQcVersion()) {
+      ILOG(Error) << "The object " << path << " has been stored by a more recent version of the QC framework, "
+                                              "there might be issues." << ENDM
+    }
+    // After 0.21 the objects are stored with storeAsTFileAny and thus have the proper name.
+    mo = ccdbApi.retrieveFromTFileAny<core::MonitorObject>(path, metadata, when);
+    if (mo == nullptr) {
+      ILOG(Error) << "Could not retrieve the object " << path << ENDM;
     }
   }
-  std::shared_ptr<core::MonitorObject> mo(dynamic_cast<core::MonitorObject*>(object));
-  if (mo == nullptr) {
-    ILOG(Error) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
+  if(mo == nullptr) {
+    return nullptr;
   }
-  return mo;
+
+  std::shared_ptr<core::MonitorObject> moShared(mo);
+  return moShared;
 }
 
 std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objectName)
@@ -173,30 +198,48 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
-  ccdbApi.storeAsTFile(qo.get(), path, metadata, from, to);
+  ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
 }
 
 std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName, long timestamp)
 {
-  string fullPath = checkerName;
+  string path = checkerName;
   map<string, string> metadata;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
-  // we try first to load a TFile
-  TObject* object = ccdbApi.retrieveFromTFile(fullPath, metadata, when);
-  if (object == nullptr) {
-    // We could not open a TFile we should now try to open an object directly serialized
-    object = ccdbApi.retrieve(fullPath, metadata, when);
-    LOG(DEBUG) << "We could retrieve the object " << fullPath << " as a streamed object.";
+  // retrieve headers to determine the version of the QC framework
+  const map<string, string> metadataFromCcdb;
+  std::map<std::string, std::string> headers = ccdbApi.retrieveHeaders( path, metadataFromCcdb, when);
+  Version objectVersion(headers["version"]);
+
+  core::QualityObject *qo = nullptr;
+  if(objectVersion == Version("0.0.0") || objectVersion < Version("0.21")) {
+    TObject* object = ccdbApi.retrieveFromTFile(path, metadata, when);
     if (object == nullptr) {
+      ILOG(Error) << "Could not retrieve the object " << path << ENDM;
       return nullptr;
     }
+    qo = dynamic_cast<core::QualityObject*>(object);
+    if (qo == nullptr) {
+      ILOG(Error) << "Could not cast the object " << path << " to QualityObject" << ENDM;
+    }
+  } else if (objectVersion >= Version("0.21")) {
+    if (objectVersion > Version::GetQcVersion()) {
+      ILOG(Error) << "The object " << path << " has been stored by a more recent version of the QC framework, "
+                                              "there might be issues." << ENDM
+    }
+    // After 0.21 the objects are stored with storeAsTFileAny and thus have the proper name.
+    qo = ccdbApi.retrieveFromTFileAny<core::QualityObject>(path, metadata, when);
+    if (qo == nullptr) {
+      ILOG(Error) << "Could not retrieve the object " << path << ENDM;
+    }
   }
-  std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(object));
-  if (qo == nullptr) {
-    LOG(ERROR) << "Could not cast the object " << checkerName << " to QualityObject";
+  if(qo == nullptr) {
+    return nullptr;
   }
-  return qo;
+
+  std::shared_ptr<core::QualityObject> moShared(qo);
+  return moShared;
 }
 
 std::string CcdbDatabase::retrieveQOJson(std::string checkName)
