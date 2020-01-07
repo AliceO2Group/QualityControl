@@ -18,11 +18,14 @@
 
 #include <string>
 #include <sstream>
+#include <iostream>
+
+using namespace std;
 
 namespace o2::quality_control::core {
 
 /// Represents a software package version.
-/// Inspired from https://sourcey.com/articles/comparing-version-strings-in-cpp
+/// Version numbers can go up to 999.
 class Version
 {
   public:
@@ -31,10 +34,10 @@ class Version
     /// @param version The version in the form X.Y.Z. If minor or patch is missing, it is replaced by 0.
     Version(std::string version)
     {
-      std::sscanf(version.c_str(), "%d.%d.%d", &mMajor, &mMinor, &mPatch);
+      std::sscanf(version.c_str(), "%u.%u.%u", &mMajor, &mMinor, &mPatch);
     }
 
-    Version(int major, int minor, int patch): mMajor(major), mMinor(minor), mPatch(patch)
+    Version(unsigned int major, unsigned int minor, unsigned int patch): mMajor(major), mMinor(minor), mPatch(patch)
     {
     }
 
@@ -49,57 +52,77 @@ class Version
       return qcVersion;
     }
 
-    int getMajor() const
+    unsigned int getMajor() const
     {
       return mMajor;
     }
 
-    int getMinor() const
+    unsigned int getMinor() const
     {
       return mMinor;
     }
 
-    int getPatch() const
+    unsigned int getPatch() const
     {
       return mPatch;
     }
 
     bool operator<(const Version &other)
     {
-      if (getMajor() < other.getMajor()) {
-        return true;
-      }
-      if (getMinor() < other.getMinor()) {
-        return true;
-      }
-      if (getPatch() < other.getPatch()) {
-        return true;
-      }
-      return false;
+      return getIntegerRepresentation() < other.getIntegerRepresentation();
+    }
+
+    bool operator>=(const Version &other)
+    {
+      return getIntegerRepresentation() >= other.getIntegerRepresentation();
+    }
+
+    bool operator>(const Version &other)
+    {
+      return getIntegerRepresentation() > other.getIntegerRepresentation();
+    }
+
+    bool operator<=(const Version &other)
+    {
+      return getIntegerRepresentation() <= other.getIntegerRepresentation();
     }
 
     bool operator==(const Version &other)
     {
-      return getMajor() == other.getMajor()
-             && getMinor() == other.getMinor()
-             && getPatch() == other.getPatch();
+      return getIntegerRepresentation() == other.getIntegerRepresentation();
+    }
+
+    bool operator!=(const Version &other)
+    {
+      return getIntegerRepresentation() != other.getIntegerRepresentation();
     }
 
     friend std::ostream &operator<<(std::ostream &stream, const Version &ver)
     {
-      stream << ver.getMajor() << '.' << ver.getMinor() << '.' << ver.getPatch();
+      stream << ver.getString();
       return stream;
     }
 
-    std::string getString()
+    std::string getString() const
     {
-      std::ostringstream version;
-      version << this;
-      return version.str();
+      std::stringstream result;
+      result << getMajor() << '.' << getMinor() << '.' << getPatch();
+      return result.str();
+    }
+
+    unsigned int getIntegerRepresentation() const
+    {
+      return getMajor() * (getMaxVersion() * getMaxVersion()) + getMinor() * getMaxVersion() + getPatch() * 1;
+    }
+
+    unsigned int getMaxVersion() const {
+      return mMaxVersion;
     }
 
   private:
-    int mMajor = 0, mMinor = 0, mPatch = 0;
+    unsigned int mMajor = 0, mMinor = 0, mPatch = 0;
+    unsigned int mMaxVersion = 1000;
+
 };
 
 } // namespace o2::quality_control::core
