@@ -226,7 +226,9 @@ set(TEST_SRCS
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
     test/testCheckWorkflow.cxx
-    test/testWorkflow.cxx)
+    test/testWorkflow.cxx
+    test/testVersion.cxx
+  )
 
 set(TEST_ARGS
     ""
@@ -249,7 +251,9 @@ set(TEST_ARGS
     ""
     ""
     "-b --run"
-    "-b --run")
+    "-b --run"
+    ""
+  )
 
 list(LENGTH TEST_SRCS count)
 math(EXPR count "${count}-1")
@@ -272,11 +276,14 @@ endforeach()
 
 foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
         testInfrastructureGenerator testPostProcessingConfig testPostProcessingInterface
-        testPostProcessingRunner testCheck testCheckRunner)
+        testPostProcessingRunner testCheck testCheckRunner )
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
 endforeach()
+
+target_include_directories(testVersion PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 10)
 set_property(TEST testWorkflow PROPERTY LABELS slow)

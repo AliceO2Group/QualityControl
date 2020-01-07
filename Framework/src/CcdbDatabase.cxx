@@ -109,7 +109,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   // metadata
   map<string, string> metadata;
   // QC metadata (prefix qc_)
-  metadata["qc_version"] = Version::getString();
+  metadata["qc_version"] = Version::GetQcVersion().getString();
   // user metadata
   map<string, string> userMetadata = mo->getMetadataMap();
   if (!userMetadata.empty()) {
@@ -165,7 +165,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
   // metadata
   map<string, string> metadata;
   // QC metadata (prefix qc_)
-  metadata["qc_version"] = Version::getString();
+  metadata["qc_version"] = Version::GetQcVersion().getString();
   metadata["qc_quality"] = std::to_string(qo->getQuality().getLevel());
 
   // other attributes
