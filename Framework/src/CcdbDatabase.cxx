@@ -132,11 +132,11 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
 
   // retrieve headers to determine the version of the QC framework
   const map<string, string> metadataFromCcdb;
-  std::map<std::string, std::string> headers = ccdbApi.retrieveHeaders( path, metadataFromCcdb, when);
+  std::map<std::string, std::string> headers = ccdbApi.retrieveHeaders(path, metadataFromCcdb, when);
   Version objectVersion(headers["version"]);
 
-  core::MonitorObject *mo = nullptr;
-  if(objectVersion == Version("0.0.0") || objectVersion < Version("0.21")) {
+  core::MonitorObject* mo = nullptr;
+  if (objectVersion == Version("0.0.0") || objectVersion < Version("0.21")) {
     // The object is either in a TFile or is a blob but it was stored with storeAsTFile and the name
     // is not understood by retrieveFromTFileAny
     // we try first to load a TFile
@@ -156,7 +156,8 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   } else if (objectVersion >= Version("0.21")) {
     if (objectVersion > Version::GetQcVersion()) {
       ILOG(Error) << "The object " << path << " has been stored by a more recent version of the QC framework, "
-                                              "there might be issues." << ENDM
+                                              "there might be issues."
+                  << ENDM
     }
     // After 0.21 the objects are stored with storeAsTFileAny and thus have the proper name.
     mo = ccdbApi.retrieveFromTFileAny<core::MonitorObject>(path, metadata, when);
@@ -164,7 +165,7 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
       ILOG(Error) << "Could not retrieve the object " << path << ENDM;
     }
   }
-  if(mo == nullptr) {
+  if (mo == nullptr) {
     return nullptr;
   }
 
@@ -209,11 +210,11 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName,
 
   // retrieve headers to determine the version of the QC framework
   const map<string, string> metadataFromCcdb;
-  std::map<std::string, std::string> headers = ccdbApi.retrieveHeaders( path, metadataFromCcdb, when);
+  std::map<std::string, std::string> headers = ccdbApi.retrieveHeaders(path, metadataFromCcdb, when);
   Version objectVersion(headers["version"]);
 
-  core::QualityObject *qo = nullptr;
-  if(objectVersion == Version("0.0.0") || objectVersion < Version("0.21")) {
+  core::QualityObject* qo = nullptr;
+  if (objectVersion == Version("0.0.0") || objectVersion < Version("0.21")) {
     TObject* object = ccdbApi.retrieveFromTFile(path, metadata, when);
     if (object == nullptr) {
       ILOG(Error) << "Could not retrieve the object " << path << ENDM;
@@ -226,7 +227,8 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName,
   } else if (objectVersion >= Version("0.21")) {
     if (objectVersion > Version::GetQcVersion()) {
       ILOG(Error) << "The object " << path << " has been stored by a more recent version of the QC framework, "
-                                              "there might be issues." << ENDM
+                                              "there might be issues."
+                  << ENDM
     }
     // After 0.21 the objects are stored with storeAsTFileAny and thus have the proper name.
     qo = ccdbApi.retrieveFromTFileAny<core::QualityObject>(path, metadata, when);
@@ -234,7 +236,7 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName,
       ILOG(Error) << "Could not retrieve the object " << path << ENDM;
     }
   }
-  if(qo == nullptr) {
+  if (qo == nullptr) {
     return nullptr;
   }
 
