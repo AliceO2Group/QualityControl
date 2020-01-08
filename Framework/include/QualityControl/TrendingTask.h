@@ -13,8 +13,8 @@
 /// \author  Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_TTREETREND_H
-#define QUALITYCONTROL_TTREETREND_H
+#ifndef QUALITYCONTROL_TRENDINGTASK_H
+#define QUALITYCONTROL_TRENDINGTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/TTreeTrendConfig.h"
@@ -40,11 +40,11 @@ class Reductor;
 /// configured with configuration files, see Framework/postprocessing.json as an example.
 ///
 /// \author Piotr Konopka
-class TTreeTrend : public PostProcessingInterface
+class TrendingTask : public PostProcessingInterface
 {
  public:
-  TTreeTrend() = default;
-  ~TTreeTrend() override = default;
+  TrendingTask() = default;
+  ~TrendingTask() override = default;
 
   void configure(std::string name, o2::configuration::ConfigurationInterface& config) override;
   void initialize(Trigger, framework::ServiceRegistry&) override;
@@ -70,4 +70,4 @@ class TTreeTrend : public PostProcessingInterface
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_TTREETREND_H
+#endif //QUALITYCONTROL_TRENDINGTASK_H

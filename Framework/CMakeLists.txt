@@ -59,7 +59,7 @@ add_library(QualityControl
             src/PostProcessingFactory.cxx
             src/PostProcessingConfig.cxx
             src/PostProcessingInterface.cxx
-            src/TTreeTrend.cxx
+            src/TrendingTask.cxx
             src/TTreeTrendConfig.cxx
             src/DummyDatabase.cxx
             src/DataProducer.cxx
@@ -113,7 +113,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/InfrastructureGenerator.h
                             include/QualityControl/InputUtils.h
                             include/QualityControl/PostProcessingInterface.h
-                            include/QualityControl/TTreeTrend.h
+                            include/QualityControl/TrendingTask.h
                             include/QualityControl/Reductor.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)

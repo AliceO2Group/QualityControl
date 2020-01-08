@@ -40,7 +40,7 @@
       },
       "ExampleTrend": {
         "active": "true",
-        "className": "o2::quality_control::postprocessing::TTreeTrend",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QualityControl",
         "detectorName": "TST",
         "dataSources": [

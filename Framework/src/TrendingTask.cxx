@@ -13,7 +13,7 @@
 /// \author  Piotr Konopka
 ///
 
-#include "QualityControl/TTreeTrend.h"
+#include "QualityControl/TrendingTask.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
@@ -28,12 +28,12 @@ using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
-void TTreeTrend::configure(std::string name, o2::configuration::ConfigurationInterface& config)
+void TrendingTask::configure(std::string name, o2::configuration::ConfigurationInterface& config)
 {
   mConfig = TTreeTrendConfig(name, config);
 }
 
-void TTreeTrend::initialize(Trigger, framework::ServiceRegistry& services)
+void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we continue trending. maybe do it optionally?
@@ -55,7 +55,7 @@ void TTreeTrend::initialize(Trigger, framework::ServiceRegistry& services)
 }
 
 //todo: see if OptimizeBaskets() indeed helps after some time
-void TTreeTrend::update(Trigger, framework::ServiceRegistry&)
+void TrendingTask::update(Trigger, framework::ServiceRegistry&)
 {
   trendValues();
 
@@ -63,13 +63,13 @@ void TTreeTrend::update(Trigger, framework::ServiceRegistry&)
   storeTrend();
 }
 
-void TTreeTrend::finalize(Trigger, framework::ServiceRegistry&)
+void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
 {
   storePlots();
   storeTrend();
 }
 
-void TTreeTrend::storeTrend()
+void TrendingTask::storeTrend()
 {
   ILOG(Info) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
@@ -78,7 +78,7 @@ void TTreeTrend::storeTrend()
   mDatabase->storeMO(mo);
 }
 
-void TTreeTrend::trendValues()
+void TrendingTask::trendValues()
 {
   // We use current date and time. This for planned processing (not history). We still might need to use the objects
   // timestamps in the end, but this would become ambiguous if there is more than one data source.
@@ -109,7 +109,7 @@ void TTreeTrend::trendValues()
   mTrend->Fill();
 }
 
-void TTreeTrend::storePlots()
+void TrendingTask::storePlots()
 {
   ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
 
