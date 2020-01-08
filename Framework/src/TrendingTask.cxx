@@ -49,9 +49,6 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
 
   // Setting up services
   mDatabase = &services.get<repository::DatabaseInterface>();
-
-  // Putting first values to the trend (fixme should we do it in init?)
-  trendValues();
 }
 
 //todo: see if OptimizeBaskets() indeed helps after some time
