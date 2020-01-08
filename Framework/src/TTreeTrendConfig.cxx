@@ -15,7 +15,6 @@
 
 #include "QualityControl/TTreeTrendConfig.h"
 #include <Configuration/ConfigurationInterface.h>
-#include <fairmq/FairMQLogger.h>
 
 namespace o2::quality_control::postprocessing
 {
@@ -31,8 +30,6 @@ TTreeTrendConfig::TTreeTrendConfig(std::string name, configuration::Configuratio
                       plotConfig.second.get<std::string>("option", "") });
   }
   for (const auto& dataSourceConfig : config.getRecursive("qc.postprocessing." + name + ".dataSources")) {
-    LOG(INFO) << dataSourceConfig.first;
-    //    LOG(INFO) << dataSourceConfig.second.;
     dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", "repository"),
                             dataSourceConfig.second.get<std::string>("path"),
                             dataSourceConfig.second.get<std::string>("name"),

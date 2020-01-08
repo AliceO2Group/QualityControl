@@ -229,7 +229,6 @@ set(TEST_SRCS
     test/testPostProcessingRunner.cxx
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
-    test/testTrendingTask.cxx
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
     test/testVersion.cxx
