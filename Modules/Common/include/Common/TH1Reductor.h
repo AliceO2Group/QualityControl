@@ -21,6 +21,9 @@ namespace o2::quality_control_modules::common
 {
 
 /// \brief A Reductor which obtains the most popular characteristics of TH1.
+///
+/// A Reductor which obtains the most popular characteristics of TH1.
+/// It produces a branch in the format: "mean/D:stddev:entries"
 class TH1Reductor : public quality_control::postprocessing::Reductor
 {
  public:

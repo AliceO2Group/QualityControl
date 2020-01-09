@@ -15,7 +15,7 @@
 #ifndef QUALITYCONTROL_REDUCTOR_H
 #define QUALITYCONTROL_REDUCTOR_H
 
-class TObject;
+#include <TObject.h>
 
 namespace o2::quality_control::postprocessing
 {

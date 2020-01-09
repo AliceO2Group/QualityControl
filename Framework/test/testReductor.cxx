@@ -17,7 +17,7 @@
 #include <TH1I.h>
 #include <TTree.h>
 
-#define BOOST_TEST_MODULE Reductors test
+#define BOOST_TEST_MODULE Reductor test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 

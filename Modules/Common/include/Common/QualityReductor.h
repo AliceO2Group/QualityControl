@@ -15,7 +15,6 @@
 #ifndef QUALITYCONTROL_QUALITYREDUCTOR_H
 #define QUALITYCONTROL_QUALITYREDUCTOR_H
 
-#include <TH1.h>
 #include "QualityControl/Reductor.h"
 #include "QualityControl/Quality.h"
 
@@ -24,6 +23,9 @@ namespace o2::quality_control_modules::common
 
 // todo fix plots with qualities names - ugly axes with names
 /// \brief A Reductor of QualityObjects, stores a name and level of a Quality
+///
+/// A Reductor of QualityObjects, stores a name and level of a Quality
+/// It produces a branch in the format: "level/i:name/C"
 class QualityReductor : public quality_control::postprocessing::Reductor
 {
  public:
@@ -34,9 +36,8 @@ class QualityReductor : public quality_control::postprocessing::Reductor
   const char* getBranchLeafList() override;
   void update(TObject* obj) override;
 
- private:
   static constexpr size_t NAME_SIZE = 8;
-
+  private:
   struct {
     UInt_t level = quality_control::core::Quality::NullLevel;
     char name[NAME_SIZE];

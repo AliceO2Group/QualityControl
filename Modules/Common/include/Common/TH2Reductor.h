@@ -21,6 +21,9 @@ namespace o2::quality_control_modules::common
 {
 
 /// \brief A Reductor which obtains the most popular characteristics of TH2.
+///
+/// A Reductor which obtains the most popular characteristics of TH2.
+/// It produces a branch in the format: "sumw/D:sumw2:sumwx:sumwx2:sumwy:sumwy2:sumwxy:entries"
 class TH2Reductor : public quality_control::postprocessing::Reductor
 {
  public:
@@ -45,10 +48,7 @@ class TH2Reductor : public quality_control::postprocessing::Reductor
       } named;
       Double_t array[7];
     } sums;
-
-    Double_t correlationFactor;
-    Double_t covariance;
-    Double_t entries;
+    Double_t entries; // is sumw == entries always? maybe not for values which land into the edge bins?
   } mStats;
 };
 
