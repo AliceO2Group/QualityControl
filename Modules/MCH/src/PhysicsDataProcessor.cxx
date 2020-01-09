@@ -15,6 +15,11 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "MCH/PhysicsDataProcessor.h"
 #include "MCHPreClustering/PreClusterFinder.h"
+#include "MCHPreClustering/PreClusterBlock.h"
+#include "MCHPreClustering/PreClusterFinderMapping.h"
+#include "MCHClustering/ClusteringForTest.h"
+#include "MCHBase/Digit.h"
+#include "MCHMappingInterface/Segmentation.h"
 
 using namespace std;
 
@@ -149,7 +154,7 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
   // todo: update API examples or refer to DPL README.md
 
   QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
-  fprintf(flog, "\n\n====================\PhysicsDataProcessor::monitorData\n====================\n");
+  fprintf(flog, "\n\n====================\nPhysicsDataProcessor::monitorData\n====================\n");
 
   printf("count: %d\n", count);
   if( (count % 1) == 0) {
@@ -200,6 +205,7 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 
     std::vector<SampaHit>& hits = mDecoder.getHits();
     if(gPrintLevel>=1) fprintf(flog, "hits.size()=%d\n", (int)hits.size());
+      digits.clear();
     for(uint32_t i = 0; i < hits.size(); i++) {
       //continue;
       SampaHit& hit = hits[i];
@@ -214,12 +220,24 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       mHistogramNhits[hit.link_id]->Fill(hit.ds_addr, hit.chan_addr);
       mHistogramADCamplitude[hit.link_id]->Fill(hit.csum);
       //}
+        
+      digits.push_back( std::make_unique<mch::Digit>() );
+      mch::Digit* digit = digits.back().get();
 
       int de = hit.pad.fDE;
+      int dsid = hit.pad.fDsID;
       float padX = hit.pad.fX;
       float padY = hit.pad.fY;
       float padSizeX = hit.pad.fSizeX;
       float padSizeY = hit.pad.fSizeY;
+        
+        o2::mch::mapping::Segmentation segment(de);
+        int padid = segment.findPadByFEE(dsid, hit.chan_addr);
+        
+        digit->setDetID(de);
+        digit->setPadID(padid);
+        digit->setADC(hit.csum);
+        
 
       if(gPrintLevel>=1)
         fprintf(flog, "mapping: link_id=%d ds_addr=%d chan_addr=%d  ==>  de=%d x=%f y=%f\n",
@@ -271,7 +289,47 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
+      nDigits = getNumberOfDigits();
+      digitsBuffer = (mch::Digit*)realloc(digitsBuffer, sizeof(mch::Digit) * nDigits);
+      storeDigits(digitsBuffer);
+      
+        mch::PreClusterFinder preClusterFinder;
+        mch::PreClusterBlock preClusterBlock;
+        mch::Clustering clustering;
+        
+        std::string fname;
+        preClusterFinder.init(fname);
 
+        char* preClustersBuffer = NULL;
+        std::vector<mch::Clustering::Cluster> clusters(0);
+
+          // load the digits from the memory buffer and run the pre-clustering phase
+          preClusterFinder.reset();
+          preClusterFinder.loadDigits(digitsBuffer, nDigits);
+          preClusterFinder.run();
+
+          // get number of pre-clusters and store them into a memory buffer
+          auto preClustersSize = preClusterBlock.getPreClustersBufferSize(preClusterFinder);
+          printf("preClustersSize: %d\n", (int)preClustersSize);
+          preClustersBuffer = (char*)realloc(preClustersBuffer, preClustersSize);
+          preClusterBlock.storePreClusters(preClusterFinder, preClustersBuffer);
+
+          //continue;
+          printf("\n\n==========\nReading clusters\n\n");
+
+          std::vector<mch::PreClusterStruct> preClusters;
+          preClusterBlock.readPreClusters(preClusters, preClustersBuffer, preClustersSize);
+            
+            printf("\n\n==========\nRunning Clustering\n\n");
+            
+          //Runs the clustering of preClusters following a CenterOfGravity algorithm. Fills clusters.
+      //    clustering.runFinderCOG(preClusters, clusters);
+      //    printf("Number of clusters obtained and saved: %lu\n", clusters.size());
+            
+         clustering.runFinderSimpleFit(preClusters, clusters);
+            
+       //     clustering.runFinderGaussianFit(preClusters, clusters);
+      
     mDecoder.clearHits();
   }
 }
@@ -291,6 +349,22 @@ void PhysicsDataProcessor::reset()
   // clean all the monitor objects here
 
   QcInfoLogger::GetInstance() << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+}
+
+ssize_t PhysicsDataProcessor::getNumberOfDigits()
+{
+  return digits.size();
+}
+
+
+void PhysicsDataProcessor::storeDigits(void* bufferPtr)
+{
+  mch::Digit* ptr = (mch::Digit*)bufferPtr;
+  for(unsigned int di = 0; di < digits.size(); di++) {
+
+    memcpy(ptr, digits[di].get(), sizeof(mch::Digit));
+    ptr += 1;
+  }
 }
 
 } // namespace muonchambers

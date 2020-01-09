@@ -84,6 +84,9 @@ target_link_libraries(QualityControl
                              Boost::container
                              O2::Framework
                              O2::CCDB
+                             O2::MCHBase
+                             O2::MCHPreClustering
+                             O2::MCHClustering
                              ms_gsl::ms_gsl
                              QualityControlTypes
                       PRIVATE Boost::system

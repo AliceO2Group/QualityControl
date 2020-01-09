@@ -11,6 +11,7 @@
 #include "QualityControl/TaskInterface.h"
 #include "MCH/MuonChambersMapping.h"
 #include "MCH/MuonChambersDataDecoder.h"
+#include "MCHBase/Digit.h"
 
 class TH1F;
 class TH2F;
@@ -45,11 +46,18 @@ class PhysicsDataProcessor /*final*/ : public TaskInterface // todo add back the
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
+    
+    ssize_t getNumberOfDigits();
+    void storeDigits(void* bufferPtr);
 
  private:
   int count;
   MuonChambersDataDecoder mDecoder;
   uint64_t nhits[24][40][64];
+    
+  std::vector< std::unique_ptr<mch::Digit> > digits;
+  mch::Digit* digitsBuffer;
+    int nDigits;
 
 
   TH2F* mHistogramNhits[72];
