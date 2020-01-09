@@ -37,7 +37,8 @@ class QualityReductor : public quality_control::postprocessing::Reductor
   void update(TObject* obj) override;
 
   static constexpr size_t NAME_SIZE = 8;
-  private:
+
+ private:
   struct {
     UInt_t level = quality_control::core::Quality::NullLevel;
     char name[NAME_SIZE];
