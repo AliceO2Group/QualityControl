@@ -230,12 +230,14 @@ set(TEST_SRCS
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
     test/testReductor.cxx
+    test/testTrendingTask.cxx
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
     test/testVersion.cxx
   )
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""
@@ -282,7 +284,7 @@ endforeach()
 
 foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
         testInfrastructureGenerator testPostProcessingConfig testPostProcessingInterface
-        testPostProcessingRunner testCheck testCheckRunner )
+        testPostProcessingRunner testCheck testCheckRunner testTrendingTask)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
@@ -300,6 +302,7 @@ set_property(TEST testObjectsManager PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 15)
 set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
+set_property(TEST testTrendingTask PROPERTY LABELS manual)
 
 # ---- Install ----
 
@@ -386,6 +389,7 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py scr
 set(TEST_FILES
   "testSharedConfig.json"
   "testCheckWorkflow.json"
+  "testTrendingTask.json"
   "testWorkflow.json")
 set(TEST_FILES_PREFIXED ${TEST_FILES})
 list(TRANSFORM TEST_FILES_PREFIXED PREPEND ${CMAKE_BINARY_DIR}/tests/)

@@ -18,6 +18,7 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/TTreeTrendConfig.h"
+#include "QualityControl/Reductor.h"
 
 #include <memory>
 #include <unordered_map>
@@ -30,7 +31,6 @@ class DatabaseInterface;
 
 namespace o2::quality_control::postprocessing
 {
-class Reductor;
 
 /// \brief  A post-processing task which trends values, stores them in a TTree and produces plots.
 ///
