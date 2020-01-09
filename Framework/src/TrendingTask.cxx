@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    TTreeTrend.cxx
+/// \file    TrendingTask.cxx
 /// \author  Piotr Konopka
 ///
 

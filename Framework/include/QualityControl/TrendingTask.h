@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    TTreeTrend.h
+/// \file    TrendingTask.h
 /// \author  Piotr Konopka
 ///
 
