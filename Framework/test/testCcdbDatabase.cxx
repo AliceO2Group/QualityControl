@@ -70,8 +70,10 @@ BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
   test_fixture f;
 
   CcdbDatabase* ccdb = static_cast<CcdbDatabase*>(f.backend.get());
+  ILOG(Info) << "getListing()" << ENDM;
   auto tasks = ccdb->getListing();
   for (auto& task : tasks) {
+    ILOG(Info) << "getPublishedObjectNames of task " << task << ENDM;
     auto objects = f.backend->getPublishedObjectNames(task);
     for (auto& object : objects) {
       Objects.insert({ task, object });

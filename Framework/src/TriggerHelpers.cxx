@@ -40,14 +40,10 @@ std::optional<double> string2Seconds(std::string str)
       return {};
     }
   } catch (std::invalid_argument& ex) {
-    QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error
-                                << "Unexpected format of string describing time '" << str << "'"
-                                << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Error) << "Unexpected format of string describing time '" << str << "'" << ENDM;
     throw ex;
   } catch (std::out_of_range& ex) {
-    QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error
-                                << "Time out of range '" << str << "'"
-                                << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Error) << "Trying to convert time, which is out of supported range '" << str << "'" << ENDM;
     throw ex;
   }
 }
