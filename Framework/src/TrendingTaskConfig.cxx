@@ -13,13 +13,13 @@
 /// \author Piotr Konopka
 ///
 
-#include "QualityControl/TTreeTrendConfig.h"
+#include "QualityControl/TrendingTaskConfig.h"
 #include <Configuration/ConfigurationInterface.h>
 
 namespace o2::quality_control::postprocessing
 {
 
-TTreeTrendConfig::TTreeTrendConfig(std::string name, configuration::ConfigurationInterface& config)
+TrendingTaskConfig::TrendingTaskConfig(std::string name, configuration::ConfigurationInterface& config)
   : PostProcessingConfig(name, config)
 {
   for (const auto& plotConfig : config.getRecursive("qc.postprocessing." + name + ".plots")) {

@@ -17,7 +17,7 @@
 #define QUALITYCONTROL_TRENDINGTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
-#include "QualityControl/TTreeTrendConfig.h"
+#include "QualityControl/TrendingTaskConfig.h"
 #include "QualityControl/Reductor.h"
 
 #include <memory>
@@ -60,7 +60,7 @@ class TrendingTask : public PostProcessingInterface
   void storePlots();
   void storeTrend();
 
-  TTreeTrendConfig mConfig;
+  TrendingTaskConfig mConfig;
   MetaData mMetaData;
   UInt_t mTime;
   std::unique_ptr<TTree> mTrend;

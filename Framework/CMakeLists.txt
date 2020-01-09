@@ -60,7 +60,7 @@ add_library(QualityControl
             src/PostProcessingConfig.cxx
             src/PostProcessingInterface.cxx
             src/TrendingTask.cxx
-            src/TTreeTrendConfig.cxx
+            src/TrendingTaskConfig.cxx
             src/DummyDatabase.cxx
             src/DataProducer.cxx
             src/DataProducerExample.cxx)

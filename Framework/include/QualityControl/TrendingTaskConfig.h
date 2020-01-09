@@ -13,8 +13,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_TTREETRENDCONFIG_H
-#define QUALITYCONTROL_TTREETRENDCONFIG_H
+#ifndef QUALITYCONTROL_TRENDINGTASKCONFIG_H
+#define QUALITYCONTROL_TRENDINGTASKCONFIG_H
 
 #include <vector>
 #include <string>
@@ -24,11 +24,11 @@ namespace o2::quality_control::postprocessing
 {
 
 //todo pretty print
-/// \brief  TTreeTrend configuration structure
-struct TTreeTrendConfig : PostProcessingConfig {
-  TTreeTrendConfig() = default;
-  TTreeTrendConfig(std::string name, configuration::ConfigurationInterface& config);
-  ~TTreeTrendConfig() = default;
+/// \brief  TrendingTask configuration structure
+struct TrendingTaskConfig : PostProcessingConfig {
+  TrendingTaskConfig() = default;
+  TrendingTaskConfig(std::string name, configuration::ConfigurationInterface& config);
+  ~TrendingTaskConfig() = default;
 
   struct Plot {
     std::string name;
@@ -52,4 +52,4 @@ struct TTreeTrendConfig : PostProcessingConfig {
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_TTREETRENDCONFIG_H
+#endif //QUALITYCONTROL_TRENDINGTASKCONFIG_H

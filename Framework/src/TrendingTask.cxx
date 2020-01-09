@@ -30,7 +30,7 @@ using namespace o2::quality_control::postprocessing;
 
 void TrendingTask::configure(std::string name, o2::configuration::ConfigurationInterface& config)
 {
-  mConfig = TTreeTrendConfig(name, config);
+  mConfig = TrendingTaskConfig(name, config);
 }
 
 void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
