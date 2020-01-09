@@ -39,7 +39,7 @@ add_root_dictionary(QcCommon
 
 # ---- Tests ----
 
-set(TEST_SRCS test/testMeanIsAbove.cxx test/testNonEmpty.cxx)
+set(TEST_SRCS test/testMeanIsAbove.cxx test/testNonEmpty.cxx test/testCommonReductors.cxx)
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)
