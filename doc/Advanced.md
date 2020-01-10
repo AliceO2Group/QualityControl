@@ -5,6 +5,8 @@
 <!--./gh-md-toc --insert /path/to/README.md-->
 <!--ts-->
    * [Advanced topics](#advanced-topics)
+      * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
+      * [Writing a DPL data producer](#writing-a-dpl-data-producer)
       * [Access conditions from the CCDB](#access-conditions-from-the-ccdb)
       * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
       * [Custom QC object metadata](#custom-qc-object-metadata)
@@ -13,10 +15,12 @@
          * [Compilation](#compilation)
          * [Execution](#execution)
          * [Configuration](#configuration)
-      * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
+      * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
+         * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
       * [Local CCDB setup](#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
       * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
+      * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
       * [Information Service](#information-service)
          * [Usage](#usage)
       * [Configuration files details](#configuration-files-details)
@@ -27,6 +31,36 @@
 
 
 [← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
+
+
+## Plugging the QC to an existing DPL workflow
+
+Your existing DPL workflow can simply be considered a publisher. Therefore, replace `o2-qc-run-producer` with your own workflow. 
+
+For example, if TPC wants to monitor the output `{"TPC", "CLUSTERS"}` of the workflow `o2-qc-run-tpcpid`, modify the config file to point to the correct data and do : 
+```
+o2-qc-run-tpcpid | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/tpcQCPID.json
+```
+
+## Writing a DPL data producer 
+
+For your convenience, and although it does not lie within the QC scope, we would like to document how to write a simple data producer in the DPL. The DPL documentation can be found [here](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) and for questions please head to the [forum](https://alice-talk.web.cern.ch/).
+
+As an example we take the `DataProducerExample` that you can find in the QC repository. It is produces a number. By default it will be 1s but one can specify with the parameter `my-param` a different number. It is made of 3 files : 
+* [runDataProducerExample.cxx](../Framework/src/runDataProducerExample.cxx) : 
+  This is an executable with a basic data producer in the Data Processing Layer. 
+  There are 2 important functions here :
+  * `customize(...)` to add parameters to the executable. Note that it must be written before the includes for the dataProcessing.
+  * `defineDataProcessing(...)` to define the workflow to be ran, in our case the device(s) publishing the number.
+* [DataProducerExample.h](../Framework/include/QualityControl/DataProducerExample.h) : 
+  The key elements are : 
+  1. The include `#include <Framework/DataProcessorSpec.h>`
+  2. The function `getDataProducerExampleSpec(...)` which must return a `DataProcessorSpec` i.e. the description of a device (name, inputs, outputs, algorithm)
+  3. The function `getDataProducerExampleAlgorithm` which must return an `AlgorithmSpec` i.e. the actual algorithm that produces the data. 
+* [DataProducerExample.cxx](../Framework/src/DataProducerExample.cxx) : 
+  This is just the implementation of the header described just above. You will probably want to modify `getDataProducerExampleSpec` and the inner-most block of `getDataProducerExampleAlgorithm`. You might be taken aback by the look of this function, if you don't know what a _lambda_ is just ignore it and write your code inside the accolades.
+  
+You will probably write it in your detector's O2 directory rather than in the QC repository. 
 
 ## Access conditions from the CCDB
 
@@ -129,21 +163,30 @@ The Data Sampling sends data to the GUI via the port `26525`.
 If this port is not free, edit the config file `$QUALITYCONTROL_ROOT/etc/readoutForDataDump.json`
 and `$QUALITYCONTROL_ROOT/etc/dataDump.json`.
 
-## Use MySQL as QC backend
+## Details on the data storage format in the CCDB
 
-1. Install the MySQL/MariaDB development package
-       * CC7 : `sudo yum install mariadb-server`
-       * Mac (or download the dmg from Oracle) : `brew install mysql`
+Each MonitorObject is stored as a TFile in the CCDB. 
+It is therefore possible to easily open it with ROOT when loaded with alienv. It also seamlessly supports class schema evolution. 
 
-2. Rebuild the QualityControl (so that the mysql backend classes are compiled)
+The objects are stored at a path which is enforced by the qc framework : `/qc/<detector name>/<task name>/object/name`
+Note that the name of the object can contain slashes (`/`) in order to build a sub-tree visible in the GUI. 
+The detector name and the taskname are set in the config file : 
+```json
+"tasks": {
+  "QcTask": {       <---------- task name
+    "active": "true",
+    "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+    "moduleName": "QcSkeleton",
+    "detectorName": "TST",       <---------- detector name
+```
 
-3. Start and populate database :
+The quality is stored as a CCDB metadata of the object.
 
-   ```
-   sudo systemctl start mariadb # for CC7, check for your specific OS
-   alienv enter qcg/latest
-   o2-qc-database-setup.sh
-   ```
+### Data storage format before v0.14 and ROOT 6.18
+
+Before September 2019, objects were serialized with TMessage and stored as _blobs_ in the CCDB. The main drawback was the loss of the corresponding streamer infos leading to problems when the class evolved or when accessing the data outside the QC framework. 
+
+The QC framework is nevertheless backward compatible and can handle the old and the new storage system. 
 
 ## Local CCDB setup
 
@@ -187,6 +230,22 @@ interfaces have to be identical.
 - If there are checks applied to MonitorObjects, update the library path in
 the addCheck() functions as well. This will not be necessary when checks are
 configured inside config files.
+
+## Use MySQL as QC backend
+
+1. Install the MySQL/MariaDB development package
+       * CC7 : `sudo yum install mariadb-server`
+       * Mac (or download the dmg from Oracle) : `brew install mysql`
+
+2. Rebuild the QualityControl (so that the mysql backend classes are compiled)
+
+3. Start and populate database :
+
+   ```
+   sudo systemctl start mariadb # for CC7, check for your specific OS
+   alienv enter qcg/latest
+   o2-qc-database-setup.sh
+   ```
 
 ## Information Service
 

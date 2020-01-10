@@ -14,13 +14,13 @@
 ///
 
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE MO test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <chrono>
-#include <iostream>
 #include <TH1F.h>
 #include <TFile.h>
 #include <TSystem.h>
@@ -74,9 +74,9 @@ BOOST_AUTO_TEST_CASE(mo_save)
   string objectName = "asdf";
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
   o2::quality_control::core::MonitorObject obj(&h, "task");
-  cout << "getName : '" << obj.getName() << "'" << endl;
-  cout << "GetName : '" << obj.GetName() << "'" << endl;
-  cout << "title : '" << obj.GetTitle() << "'" << endl;
+  ILOG(Info) << "getName : '" << obj.getName() << "'" << ENDM;
+  ILOG(Info) << "GetName : '" << obj.GetName() << "'" << ENDM;
+  ILOG(Info) << "title : '" << obj.GetTitle() << "'" << ENDM;
   BOOST_CHECK_EQUAL(obj.getName(), "asdf");
   BOOST_CHECK_EQUAL(obj.GetName(), "asdf");
   BOOST_CHECK_EQUAL(obj.GetTitle(), "");
@@ -87,31 +87,31 @@ BOOST_AUTO_TEST_CASE(mo_save)
   obj.addCheck("name2", "className2", libName2);
   obj.setQualityForCheck("name", Quality::Good);
   BOOST_CHECK_EQUAL(obj.getQuality(), Quality::Good);
-  cout << "quality : " << obj.getQuality() << endl;
-  cout << "check numbers : " << obj.getChecks().size() << endl;
+  ILOG(Info) << "quality : " << obj.getQuality() << ENDM;
+  ILOG(Info) << "check numbers : " << obj.getChecks().size() << ENDM;
   CheckDefinition c = obj.getCheck("name2");
-  cout << "check2 libraryName : " << c.libraryName << endl;
+  ILOG(Info) << "check2 libraryName : " << c.libraryName << ENDM;
   std::chrono::nanoseconds ns = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch());
   std::string filename = string("/tmp/test") + std::to_string(ns.count()) + ".root";
   TFile file(filename.data(), "RECREATE");
   obj.Write(obj.getName().data());
   file.Close();
 
-  cout << "***" << endl;
+  ILOG(Info) << "***" << ENDM;
   TFile file2(filename.data());
   o2::quality_control::core::MonitorObject* mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(file2.Get(objectName.data()));
   BOOST_CHECK_NE(mo, nullptr);
-  cout << "mo : " << mo << endl;
+  ILOG(Info) << "mo : " << mo << ENDM;
   BOOST_CHECK_EQUAL(mo->GetName(), objectName);
   BOOST_CHECK_EQUAL(mo->getName(), objectName);
-  cout << "name : " << mo->GetName() << endl;
-  cout << "name : " << mo->getName() << endl;
+  ILOG(Info) << "name : " << mo->GetName() << ENDM;
+  ILOG(Info) << "name : " << mo->getName() << ENDM;
   BOOST_CHECK_EQUAL(mo->getQuality(), Quality::Good);
-  cout << "quality : " << mo->getQuality() << endl;
+  ILOG(Info) << "quality : " << mo->getQuality() << ENDM;
   BOOST_CHECK_EQUAL(mo->getChecks().size(), 2);
-  cout << "check numbers : " << mo->getChecks().size() << endl;
+  ILOG(Info) << "check numbers : " << mo->getChecks().size() << ENDM;
   CheckDefinition c2 = mo->getCheck("name2");
-  cout << "check2 libraryName : " << c2.libraryName << endl;
+  ILOG(Info) << "check2 libraryName : " << c2.libraryName << ENDM;
   BOOST_CHECK_EQUAL(c2.libraryName, libName2);
   gSystem->Unlink(filename.data());
 }

@@ -34,8 +34,8 @@ BenchmarkTask::~BenchmarkTask() = default;
 
 void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize benchmarktask \"" << getName() << "\""
-                              << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "initialize benchmarktask \"" << getName() << "\""
+             << ENDM;
 
   mConfigFile = ConfigurationFactory::getConfiguration("file:./example.ini");
   string prefix = "qc.tasks_config." + getName();
@@ -55,22 +55,17 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
     name << "histogram_" << getName() << "_" << i;
     mHistos.push_back(new TH1F(name.str().c_str(), name.str().c_str(), 1000, -5, 5));
     getObjectsManager()->startPublishing(mHistos[i]);
-
-    // Add the checks
-    for (size_t j = 0; j < mNumberChecks; j++) {
-      getObjectsManager()->addCheck(name.str(), "fakeCheck_" + std::to_string(j), mTypeOfChecks, mModuleOfChecks);
-    }
   }
 }
 
 void BenchmarkTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "startOfActivity" << ENDM;
 }
 
 void BenchmarkTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "startOfCycle" << ENDM;
 }
 
 void BenchmarkTask::monitorData(o2::framework::ProcessingContext& /*ctx*/)
@@ -84,14 +79,14 @@ void BenchmarkTask::endOfCycle()
     histo->Reset();
     histo->FillRandom("gaus", 1000);
   }
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "endOfCycle" << ENDM;
 }
 
 void BenchmarkTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "endOfActivity" << ENDM;
 }
 
-void BenchmarkTask::reset() { QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm; }
+void BenchmarkTask::reset() { ILOG(Info) << "Reset" << ENDM; }
 
 } // namespace o2::quality_control_modules::example

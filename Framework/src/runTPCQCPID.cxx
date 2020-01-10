@@ -22,11 +22,13 @@
 #include "Framework/DataSampling.h"
 #include "QualityControl/InfrastructureGenerator.h"
 
+using namespace o2;
 using namespace o2::framework;
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
+  quality_control::customizeInfrastructure(policies);
 }
 
 void customize(std::vector<ChannelConfigurationPolicy>& policies)
@@ -53,7 +55,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include "DPLUtils/RootTreeReader.h"
 
 // qc includes
-#include "QualityControl/Checker.h"
+#include "QualityControl/CheckRunner.h"
 #include "QualityControl/runnerUtils.h"
 
 WorkflowSpec defineDataProcessing(const ConfigContext& config)

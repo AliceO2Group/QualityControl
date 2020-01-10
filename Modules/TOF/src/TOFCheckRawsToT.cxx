@@ -35,8 +35,9 @@ TOFCheckRawsToT::~TOFCheckRawsToT() {}
 
 void TOFCheckRawsToT::configure(std::string) {}
 
-Quality TOFCheckRawsToT::check(const MonitorObject* mo)
+Quality TOFCheckRawsToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  auto mo = moMap->begin()->second;
   Quality result = Quality::Null;
 
   // if ((histname.EndsWith("RawsToT")) || (histname.Contains("RawsToT") && suffixTrgCl)) {
@@ -71,7 +72,7 @@ Quality TOFCheckRawsToT::check(const MonitorObject* mo)
 
 std::string TOFCheckRawsToT::getAcceptedType() { return "TH1"; }
 
-void TOFCheckRawsToT::beautify(MonitorObject* mo, Quality checkResult)
+void TOFCheckRawsToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName().find("RawsToT") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());

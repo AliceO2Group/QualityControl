@@ -80,6 +80,10 @@ class MonitorObject : public TObject
   /// @return The name of the encapsulated object or "" if there is no object.
   const char* GetName() const override;
 
+  /// \brief Return joined task name and name of the encapsulated object (if any).
+  /// @return The name as "{getTaskName()}/{getName())}.
+  const std::string getFullName() const { return getTaskName() + "/" + getName(); }
+
   ///
   /// \brief Get the quality of this object.
   ///

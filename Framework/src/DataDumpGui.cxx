@@ -15,7 +15,7 @@
 ///
 
 #include "QualityControl/DataDumpGui.h"
-
+#include "QualityControl/QcInfoLogger.h"
 #include "imgui/BaseGui.h"
 #include "imgui/imgui.h"
 #include <Headers/DataHeader.h>
@@ -265,7 +265,7 @@ bool DataDumpGui::ConditionalRun()
 bool DataDumpGui::handleParts(FairMQParts& parts)
 {
   if (parts.Size() != 2) {
-    cout << "number of parts must be 2" << endl;
+    ILOG(Debug) << "number of parts must be 2" << ENDM;
     return false;
   }
 

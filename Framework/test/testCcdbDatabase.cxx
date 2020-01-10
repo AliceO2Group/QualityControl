@@ -17,6 +17,7 @@
 #include "QualityControl/DatabaseFactory.h"
 #include <unordered_map>
 #include "QualityControl/CcdbDatabase.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE CcdbDatabase test
 #define BOOST_TEST_MAIN
@@ -48,7 +49,7 @@ struct test_fixture {
   {
     backend = DatabaseFactory::create("CCDB");
     backend->connect(CCDB_ENDPOINT, "", "", "");
-    std::cout << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << std::endl;
+    ILOG(Info) << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
   }
 
   ~test_fixture() = default;
@@ -69,8 +70,10 @@ BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
   test_fixture f;
 
   CcdbDatabase* ccdb = static_cast<CcdbDatabase*>(f.backend.get());
+  ILOG(Info) << "getListing()" << ENDM;
   auto tasks = ccdb->getListing();
   for (auto& task : tasks) {
+    ILOG(Info) << "getPublishedObjectNames of task " << task << ENDM;
     auto objects = f.backend->getPublishedObjectNames(task);
     for (auto& object : objects) {
       Objects.insert({ task, object });
@@ -87,17 +90,30 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
-  f.backend->store(mo1);
+  f.backend->storeMO(mo1);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
+  //MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
   BOOST_CHECK_NE(mo, nullptr);
   TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
   BOOST_CHECK_NE(h1, nullptr);
   BOOST_CHECK_EQUAL(h1->GetEntries(), 10000);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
+{
+  test_fixture f;
+  std::string task = "qc/TST/my/task";
+  std::string object = "asdf/asdf";
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(task, object);
+  std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
+  auto json = f.backend->retrieveMOJson(task, object);
+
+  BOOST_CHECK(!json.empty());
 }
 
 } // namespace

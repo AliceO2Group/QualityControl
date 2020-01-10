@@ -40,6 +40,17 @@ std::string getFirstTaskName(std::string configurationSource)
   throw;
 }
 
+std::string getFirstCheckerName(std::string configurationSource)
+{
+  auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
+
+  for (const auto& task : config->getRecursive("qc.checks")) {
+    return task.first; // task name;
+  }
+
+  throw;
+}
+
 } // namespace o2::quality_control::core
 
 #endif //QUALITYCONTROL_RUNNERUTILS_H

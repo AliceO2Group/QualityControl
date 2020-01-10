@@ -54,9 +54,9 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   //  try {
   //    objectsManager.getQuality("test2");
   //  } catch (ObjectNotFoundError& e) {
-  //    std::cout << e.what() << std::endl;
+  //    std::ILOG(Info) << e.what() << std::ENDM;
   //    if (std::string const* extra = boost::get_error_info<errinfo_object_name>(e)) {
-  //      std::cout << "object name : " << *extra << std::endl;
+  //      std::ILOG(Info) << "object name : " << *extra << std::ENDM;
   //    }
   //  }
 }

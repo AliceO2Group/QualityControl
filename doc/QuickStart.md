@@ -25,8 +25,8 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 
 ## Setup
 
-1. Setup O2 environment and tools <br>We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/), in particular make sure to follow these steps :
-   1. Install GLFW to have GUIs in the DPL (optional, DPL GUIs do not work in containers nor over SSH).
+1. Setup O2 environment and tools <br>We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/) (prefer the second option, not alidock). In particular make sure to follow these steps :
+   1. Install GLFW to have GUIs in the DPL (optional, **DPL GUIs do not work in containers nor over SSH**).
         * CC7 : `sudo yum install -y glfw-devel --enablerepo=epel`
         * Mac : `brew install glfw`
    2. Prerequisites  

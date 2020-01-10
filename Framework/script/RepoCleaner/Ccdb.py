@@ -15,7 +15,7 @@ class ObjectVersion:
     This class represents a single version. 
     '''
 
-    def __init__(self, path, uuid, validFrom, validTo):
+    def __init__(self, path, uuid, validFrom, validTo, metadata):
         '''
         Construct an ObjectVersion.
         :param path: path to the object
@@ -28,9 +28,14 @@ class ObjectVersion:
         self.validFromAsDatetime = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
         self.validFrom = validFrom
         self.validTo = validTo
+        self.metadata = metadata
         
     def __repr__(self):
-        return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, ts {self.validFrom})"
+        if "Run" in self.metadata:
+            return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, " \
+               f"ts {self.validFrom}), run {self.metadata['Run']}"
+        else:
+            return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, ts {self.validFrom})"
 
 
 class Ccdb:
@@ -81,7 +86,8 @@ class Ccdb:
             exit(1)
         versions = []
         for object_path in json_result['objects']:
-            version = ObjectVersion(path=object_path['path'], uuid=object_path['id'], validFrom=object_path['validFrom'], validTo=object_path['validUntil'])
+            # print(f"\n***object_path : {object_path}")
+            version = ObjectVersion(path=object_path['path'], uuid=object_path['id'], validFrom=object_path['validFrom'], validTo=object_path['validUntil'], metadata=object_path)
             versions.insert(0, version)
         return versions
 
