@@ -36,7 +36,7 @@ using namespace o2::framework;
 
 class FileReaderTask
 {
-public:
+ public:
   //_________________________________________________________________________________________________
   void init(framework::InitContext& ic)
   {
@@ -76,10 +76,10 @@ public:
 
     // create the output message
     auto freefct = [](void* data, void* /*hint*/) { free(data); };
-    pc.outputs().adoptChunk(Output{"ROUT", "RAWDATA"}, buf, RDH_BLOCK_SIZE, freefct, nullptr);
+    pc.outputs().adoptChunk(Output{ "ROUT", "RAWDATA" }, buf, RDH_BLOCK_SIZE, freefct, nullptr);
   }
 
-private:
+ private:
   std::ifstream mInputFile{}; ///< input file
   bool mPrint = false;        ///< print digits
 };
@@ -91,7 +91,7 @@ o2::framework::DataProcessorSpec getFileReaderSpec()
     "FileReader",
     Inputs{},
     Outputs{ { { "readout" }, { "ROUT", "RAWDATA" } } },
-    AlgorithmSpec{adaptFromTask<FileReaderTask>()},
+    AlgorithmSpec{ adaptFromTask<FileReaderTask>() },
     Options{{"infile", VariantType::String, "data.raw", {"input file name"}}}
   };
 }
@@ -109,7 +109,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext&)
     Inputs{},
     Outputs{ { { "readout" }, { "ROUT", "RAWDATA" } } },
     AlgorithmSpec{adaptFromTask<FileReaderTask>()},
-    Options{{"infile", VariantType::String, "", {"input file name"}}}
+    Options{ { "infile", VariantType::String, "", { "input file name" } } }
   };
   specs.push_back(producer);
 
