@@ -46,7 +46,7 @@ public:
     auto inputFileName = ic.options().get<std::string>("infile");
     mInputFile.open(inputFileName, std::ios::binary);
     if (!mInputFile.is_open()) {
-      throw std::invalid_argument("Cannot open input file " + inputFileName);
+      throw std::invalid_argument("Cannot open input file \"" + inputFileName + "\"");
     }
 
     auto stop = [this]() {
@@ -75,16 +75,8 @@ public:
     }
 
     // create the output message
-    auto msgOut = pc.outputs().make<char>(Output{"ROUT", "RAWDATA"}, RDH_BLOCK_SIZE);
-    if (msgOut.size() != RDH_BLOCK_SIZE) {
-      free(buf);
-      throw std::length_error("incorrect message payload");
-    }
-
-    auto bufferPtr = msgOut.data();
-    // fill output buffer
-    memcpy(bufferPtr, buf, RDH_BLOCK_SIZE);
-    free(buf);
+    auto freefct = [](void* data, void* /*hint*/) { free(data); };
+    pc.outputs().adoptChunk(Output{"ROUT", "RAWDATA"}, buf, RDH_BLOCK_SIZE, freefct, nullptr);
   }
 
 private:
