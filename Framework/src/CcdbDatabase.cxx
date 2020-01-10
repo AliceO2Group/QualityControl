@@ -282,9 +282,11 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
       } catch (std::out_of_range& ex) {
 
         ILOG(Info) << "std::out_of_range exception caught" << ENDM;
-        ILOG(Info) << "line: '" << line << "'";
-        ILOG(Info) << "taskNameEscaped: '" << taskNameEscaped << "'";
-        ILOG(Info) << "objNameStart: '" << objNameStart << "'";
+        ILOG(Info) << "line: '" << line << "'" << ENDM;
+        ILOG(Info) << "line.length(): '" << line.length() << "'" << ENDM;
+        ILOG(Info) << "line.length() - 2 - objNameStart: '" << line.length() - 2 - objNameStart << "'" << ENDM;
+        ILOG(Info) << "taskNameEscaped: '" << taskNameEscaped << "'" << ENDM;
+        ILOG(Info) << "objNameStart: '" << objNameStart << "'" << ENDM;
 
         throw ex;
       }
