@@ -276,8 +276,18 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
     rtrim(line);
     if (line.length() > 0 && line.find("\"path\"") == 0) {
       unsigned long objNameStart = 9 + taskNameEscaped.length();
-      string path = line.substr(objNameStart, line.length() - 2 /*final 2 char*/ - objNameStart);
-      result.push_back(path);
+      try {
+        string path = line.substr(objNameStart, line.length() - 2 /*final 2 char*/ - objNameStart);
+        result.push_back(path);
+      } catch (std::out_of_range& ex) {
+
+        ILOG(Info) << "std::out_of_range exception caught" << ENDM;
+        ILOG(Info) << "line: '" << line << "'";
+        ILOG(Info) << "taskNameEscaped: '" << taskNameEscaped << "'";
+        ILOG(Info) << "objNameStart: '" << objNameStart << "'";
+
+        throw ex;
+      }
     }
   }
 
