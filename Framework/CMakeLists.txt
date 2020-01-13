@@ -122,6 +122,7 @@ add_root_dictionary(QualityControl
 
 set(EXE_SRCS
     src/runDataProducer.cxx
+    src/runFileReader.cxx
     src/runDataProducerExample.cxx
     src/runQC.cxx
     src/runBasic.cxx
@@ -135,6 +136,7 @@ set(EXE_SRCS
 
 set(EXE_NAMES
     o2-qc-run-producer
+    o2-qc-run-file-reader
     o2-qc-run-producer-basic
     o2-qc
     o2-qc-run-basic
@@ -150,6 +152,7 @@ set(EXE_NAMES
 # of them but for the time being we want to create symlinks to avoid confusion.
 set(EXE_OLD_NAMES
     qcRunProducer
+    qcRunFileReader
     o2-qc-run-producer-basic
     o2-qc-run-qc
     qcRunBasic
