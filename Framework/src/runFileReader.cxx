@@ -33,7 +33,6 @@
 using namespace o2;
 using namespace o2::framework;
 
-
 class FileReaderTask
 {
  public:
@@ -92,11 +91,9 @@ o2::framework::DataProcessorSpec getFileReaderSpec()
     Inputs{},
     Outputs{ { { "readout" }, { "ROUT", "RAWDATA" } } },
     AlgorithmSpec{ adaptFromTask<FileReaderTask>() },
-    Options{{"infile", VariantType::String, "data.raw", {"input file name"}}}
+    Options{ { "infile", VariantType::String, "data.raw", { "input file name" } } }
   };
 }
-
-
 
 // clang-format off
 WorkflowSpec defineDataProcessing(const ConfigContext&)
