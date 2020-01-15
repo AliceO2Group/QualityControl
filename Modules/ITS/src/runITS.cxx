@@ -11,7 +11,10 @@
 ///
 /// \file   runITS.cxx
 /// \author Zhaozhong Shi
-///
+/// \author Markus Keil
+//  \author Mario Sitta
+//  \author Jian Liu
+//  \author Li'Ang Zhang 
 /// \brief This is an executable showing QC Task's usage in Data Processing Layer.
 ///
 /// This is an executable showing QC Task's usage in Data Processing Layer. The workflow consists of data producer,
@@ -23,12 +26,7 @@
 /// which use preinstalled config file, that can be found in
 /// ${QUALITYCONTROL_ROOT}/etc/qcTaskDplConfig.json or Framework/qcTaskDplConfig.json (original one).
 ///
-/// To launch it, build the project, load the environment and run the executable:
-///   \code{.sh}
-///   > aliBuild build QualityControl --defaults o2
-///   > alienv enter QualityControl/latest
-///   > runTaskDPL
-///   \endcode
+///
 /// If you have glfw installed, you should see a window with the workflow visualization and sub-windows for each Data
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
