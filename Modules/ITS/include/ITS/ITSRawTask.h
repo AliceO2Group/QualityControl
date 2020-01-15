@@ -11,49 +11,12 @@
 
 #include "QualityControl/TaskInterface.h"
 
-#include <deque>
-#include <fstream>
-#include <iostream>
-#include <iterator>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <utility>
-#include <vector>
-#include <TH1D.h>
-#include <TH1F.h>
 #include <TH2F.h>
-#include <THnSparse.h>
-#include <TTree.h>
-#include <TCanvas.h>
-#include <TPad.h>
-#include <TLatex.h>
-#include <TMathText.h>
-#include <TLegend.h>
-#include <TLine.h>
-#include <TBox.h>
-#include <TColor.h>
-#include <TMath.h>
-#include <TStyle.h>
-#include "Rtypes.h"		// for Digitizer::Class, Double_t, ClassDef, etc
-#include "TObject.h"		// for TObject
-#include "FairTask.h"
-#include "TPaveText.h"
-#include "TGaxis.h"
-#include "TEllipse.h"
-
-#include "ITSMFTReconstruction/RawPixelReader.h"
-
-#include "DataFormatsITSMFT/ROFRecord.h"
-#include "SimulationDataFormat/MCCompLabel.h"
-#include "Framework/DataProcessorSpec.h"
-#include "Framework/Task.h"
-#include "ITSMFTReconstruction/Clusterer.h"
-
-#include "ITSBase/GeometryTGeo.h"
-#include "DetectorsBase/GeometryManager.h"
-
-#include "ITSMFTReconstruction/DigitPixelReader.h"
+#include <TPaveText.h>
+#include <TEllipse.h>
+#include <ITSMFTReconstruction/RawPixelReader.h>
+#include <ITSBase/GeometryTGeo.h>
+#include <ITSMFTReconstruction/DigitPixelReader.h>
 
 class TH1F;
 
@@ -61,7 +24,7 @@ using namespace o2::quality_control::core;
 
 namespace o2 {
 namespace quality_control_modules {
-namespace itsrawtask {
+namespace its {
 
 class ITSRawTask: public TaskInterface // todo add back the "final" when doxygen is fixed
 {
@@ -130,11 +93,11 @@ class ITSRawTask: public TaskInterface // todo add back the "final" when doxygen
     const int NColHis = 1024;
     const int NRowHis = 512;
 
-    int SizeReduce = 4;
+    int mSizeReduce = 4;
 
     const int occUpdateFrequency = 1000000;
     
-    int DivisionStep = 32;
+    int mDivisionStep = 32;
     static constexpr int NPixels = NRows * NCols;
     static constexpr int NLayer = 7;
     static constexpr int NLayerIB = 3;
@@ -143,7 +106,7 @@ class ITSRawTask: public TaskInterface // todo add back the "final" when doxygen
     const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
     const int nHicPerStave[NLayer] = {1, 1, 1, 8, 8, 14, 14};
     const int nChipsPerHic[NLayer] = {9, 9, 9, 14, 14, 14, 14};
-    int layerEnable[NLayer] = {0, 0, 0, 0, 0, 0, 0};
+    int mlayerEnable[NLayer] = {0, 0, 0, 0, 0, 0, 0};
     const float etaCoverage[NLayer] = {2.5, 2.3, 2.0, 1.5, 1.4, 1.4, 1.3};
     const double PhiMin = 0;
     const double PhiMax = 3.284; //???
@@ -164,9 +127,9 @@ class ITSRawTask: public TaskInterface // todo add back the "final" when doxygen
     o2::its::GeometryTGeo *gm = o2::its::GeometryTGeo::Instance();
 
     static constexpr int NError = 11;
-    std::array<unsigned int, NError> Errors;
-    std::array<unsigned int, NError> ErrorPre;
-    std::array<unsigned int, NError> ErrorPerFile;
+    std::array<unsigned int, NError> mErrors;
+    std::array<unsigned int, NError> mErrorPre;
+    std::array<unsigned int, NError> mErrorPerFile;
 
     //unsigned int Error[NError];
     TPaveText *pt[NError];
@@ -188,15 +151,15 @@ class ITSRawTask: public TaskInterface // todo add back the "final" when doxygen
     const int NFiles = 24;
     TEllipse *bulb;
 
-    int TotalDigits = 0;
-    int NEvent;
-    int NEventPre;
-    int TotalFileDone;
+    int mTotalDigits = 0;
+    int mNEvent;
+    int mNEventPre;
+    int mTotalFileDone;
     //	int FileRest;
 
-    int Counted;
-    int TotalCounted = 10000;
-    int Yellowed;
+    int mCounted;
+    int mTotalCounted = 10000;
+    int mYellowed;
 };
 
 } // namespace simpleds

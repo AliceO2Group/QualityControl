@@ -6,28 +6,13 @@
 /// \brief  ITS QC task for raw data analysis
 ///
 
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <math.h>
-#include <TStopwatch.h>
-#include "DataFormatsParameters/GRPObject.h"
-#include "FairLogger.h"
-#include "FairRunAna.h"
-#include "FairFileSource.h"
-#include "FairRuntimeDb.h"
-#include "FairParRootFileIo.h"
-#include "FairSystemInfo.h"
-#include "TPaletteAxis.h"
-
 #include "QualityControl/QcInfoLogger.h"
 #include "ITS/ITSRawTask.h"
 #include "ITS/ITSTaskVariables.h"
-#include "DetectorsBase/GeometryManager.h"
-#include "ITSBase/GeometryTGeo.h"
-#include "ITSMFTReconstruction/DigitPixelReader.h"
 
-
+#include <TGaxis.h>
+#include <TStyle.h>
+#include <TPad.h>
 using o2::itsmft::Digit;
 
 using namespace std;
@@ -36,7 +21,7 @@ using namespace o2::its;
 
 namespace o2 {
 namespace quality_control_modules {
-namespace itsrawtask {
+namespace its {
 
 ITSRawTask::ITSRawTask()
     :
@@ -53,9 +38,9 @@ ITSRawTask::ITSRawTask()
   createHistos();
 
   for (int i = 0; i < NError; i++) {
-    Errors[i] = 0;
-    ErrorPre[i] = 0;
-    ErrorPerFile[i] = 0;
+    mErrors[i] = 0;
+    mErrorPre[i] = 0;
+    mErrorPerFile[i] = 0;
   }
 
   gStyle->SetOptFit(0);
@@ -64,7 +49,44 @@ ITSRawTask::ITSRawTask()
 
 ITSRawTask::~ITSRawTask()
 {
-
+  delete mChipData;
+  delete mReader;
+  delete mCurr;
+  delete mPrev;
+  delete hErrorPlots;
+  delete hFileNameInfo;
+  delete hErrorFile;
+  delete hInfoCanvas;
+  for (int i = 0; i < NLayer; i++) {
+    delete hOccupancyPlot[i];
+    delete hEtaPhiHitmap[i];
+    delete hChipStaveOccupancy[i];
+  }
+  for (int i = 0; i < 7; i++) {
+    for (int j = 0; j < 48; j++) {
+      for(int k = 0; k < 14; k++) {
+	delete hHicHitmap[i][j][k];
+	for(int l = 0; l < 14; l++) {
+	  delete hChipHitmap[i][j][k][l];
+	}
+      }
+    }
+  }
+  for(int i = 0; i < 3; i++) {
+    delete hIBHitmap[i];
+  }
+  delete mDigits;
+  delete gm;
+  for(int i = 0; i < NError; i++) {
+    delete pt[i];
+  }
+  delete ptFileName;
+  delete ptNFile;
+  delete ptNEvent;
+  delete bulbGreen;
+  delete bulbRed;
+  delete bulbYellow;
+  delete bulb;
 }
 
 void ITSRawTask::initialize(o2::framework::InitContext &/*ctx*/)
@@ -74,7 +96,7 @@ void ITSRawTask::initialize(o2::framework::InitContext &/*ctx*/)
   o2::its::GeometryTGeo *geom = o2::its::GeometryTGeo::Instance();
   geom->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::L2G));
   int numOfChips = geom->getNumberOfChips();
-  cout << "numOfChips = " << numOfChips << endl;
+  QcInfoLogger::GetInstance() << "numOfChips = " << numOfChips << AliceO2::InfoLogger::InfoLogger::endm;
   setNChips(numOfChips);
 
   for (int i = 0; i < NError; i++) {
@@ -120,13 +142,13 @@ void ITSRawTask::initialize(o2::framework::InitContext &/*ctx*/)
 
   publishHistos();
 
-  cout << "DONE Inititing Publication = " << endl;
+  QcInfoLogger::GetInstance() << "DONE Inititing Publication = " << AliceO2::InfoLogger::InfoLogger::endm;
 
   bulb->SetFillColor(kRed);
-  TotalFileDone = 0;
+  mTotalFileDone = 0;
   TotalHisTime = 0;
-  Counted = 0;
-  Yellowed = 0;
+  mCounted = 0;
+  mYellowed = 0;
 }
 
 void ITSRawTask::startOfActivity(Activity &/*activity*/)
@@ -168,28 +190,29 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
   int ResetDecision = ctx.inputs().get<int>("in");
   QcInfoLogger::GetInstance() << "Reset Histogram Decision = " << ResetDecision
       << AliceO2::InfoLogger::InfoLogger::endm;
-  if (ResetDecision == 1)
+  if (ResetDecision == 1) {
     reset();
+  }
 
   auto digits = ctx.inputs().get<const std::vector<o2::itsmft::Digit>>("digits");
   LOG(INFO) << "Digit Size Getting For This TimeFrame (Event) = " << digits.size();
 
-  Errors = ctx.inputs().get<const std::array<unsigned int, NError>>("Error");
+  mErrors = ctx.inputs().get<const std::array<unsigned int, NError>>("Error");
 
   for (int i = 0; i < NError; i++) {
-    ErrorPerFile[i] = Errors[i] - ErrorPre[i];
+    mErrorPerFile[i] = mErrors[i] - mErrorPre[i];
   }
 
   for (int i = 0; i < NError; i++) {
-    QcInfoLogger::GetInstance() << " i = " << i << "   Error = " << Errors[i] << "   ErrorPre = " << ErrorPre[i]
-        << "   ErrorPerFile = " << ErrorPerFile[i] << AliceO2::InfoLogger::InfoLogger::endm;
-    hErrorPlots->SetBinContent(i + 1, Errors[i]);
-    hErrorFile->SetBinContent((FileID + 1 + (EPID-4)*12), i + 1, ErrorPerFile[i]);
+    QcInfoLogger::GetInstance() << " i = " << i << "   Error = " << mErrors[i] << "   ErrorPre = " << mErrorPre[i]
+        << "   ErrorPerFile = " << mErrorPerFile[i] << AliceO2::InfoLogger::InfoLogger::endm;
+    hErrorPlots->SetBinContent(i + 1, mErrors[i]);
+    hErrorFile->SetBinContent((FileID + 1 + (EPID-4)*12), i + 1, mErrorPerFile[i]);
   }
 
   if (FileFinish == 1) {
     for (int i = 0; i < NError; i++) {
-      ErrorPre[i] = Errors[i];
+      mErrorPre[i] = mErrors[i];
     }
   }
 
@@ -203,33 +226,33 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
     ChipID = pixeldata.getChipIndex();
     col = pixeldata.getColumn();
     row = pixeldata.getRow();
-    NEvent = pixeldata.getROFrame();
+    mNEvent = pixeldata.getROFrame();
     //cout << "Event Compare: " << NEvent << ", " << NEventPre << endl;
 
-    if (NEvent % occUpdateFrequency == 0 && NEvent > 0 && NEvent != NEventPre) {
-      updateOccupancyPlots (NEventPre);
+    if (mNEvent % occUpdateFrequency == 0 && mNEvent > 0 && mNEvent != mNEventPre) {
+      updateOccupancyPlots (mNEventPre);
      // cout << "Carried out, " << NEventPre << endl;
     }
   
 
  // cout << "NFrame = " << NEvent  << endl;
-    if (Counted < TotalCounted) {
+    if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "Getting Value Time  = " << difference << "ns" << std::endl;
     }
 
-    if (NEvent % 1000000 == 0 && NEvent > 0)
-      cout << "ChipID = " << ChipID << "  col = " << col << "  row = " << row << "  NEvent = " << NEvent << endl;
-
+    if (mNEvent % 1000000 == 0 && mNEvent > 0) {
+      QcInfoLogger::GetInstance() << "ChipID = " << ChipID << "  col = " << col << "  row = " << row << "  mNEvent = " << mNEvent << AliceO2::InfoLogger::InfoLogger::endm;
+    }
     // wouldnt this update this update the text for every digit in events 1000, 2000 ... ?
-    if (NEvent % 1000 == 0 || NEventPre != NEvent) {
+    if (mNEvent % 1000 == 0 || mNEventPre != mNEvent) {
       ptNEvent->Clear();
-      ptNEvent->AddText(Form("Event Being Processed: %d", NEvent));
+      ptNEvent->AddText(Form("Event Being Processed: %d", mNEvent));
     }
 
-    if (Counted < TotalCounted) {
+    if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
@@ -242,9 +265,11 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
     const Point3D<float> loc(0., 0., 0.);
     auto glo = gm->getMatrixL2G(ChipID)(loc);
 
-    if (!layerEnable[lay]) continue;
+    if (!mlayerEnable[lay]) {
+      continue;
+    }
 
-    if (Counted < TotalCounted) {
+    if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
@@ -265,14 +290,14 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
      // hIBHitmap[lay]->Fill(hicCol, row+(sta*NRowHis));
     }
 
-    if (Counted < TotalCounted) {
+    if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "Fill HitMaps =  " << difference << "ns" << std::endl;
     }
 
-    if (Counted < TotalCounted) {
+    if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
@@ -283,19 +308,21 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
     phi = glo.phi();
     hEtaPhiHitmap[lay]->Fill(eta, phi);
 
-    if (Counted < TotalCounted) {
+    if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "After glo etaphi =  " << difference << "ns" << std::endl;
-      Counted = Counted + 1;
+      mCounted = mCounted + 1;
     }
 
-    NEventPre = NEvent;
+    mNEventPre = mNEvent;
 
   } // end digits loop
  
-  if(NEventPre > 0) updateOccupancyPlots(NEventPre);
+  if(mNEventPre > 0) {
+    updateOccupancyPlots(mNEventPre);
+  }
   //cout << "EndUpdateOcc " << NEventPre <<endl;
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast < std::chrono::milliseconds > (end - start).count();
@@ -303,8 +330,8 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
       << AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Time After Loop = " << difference / 1000.0 << "s" << std::endl;
 
-  cout << "NEventDone = " << NEvent << endl;
-  cout <<  "Test  " << endl;
+  QcInfoLogger::GetInstance() << "NEventDone = " << mNEvent << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() <<  "Test  " << AliceO2::InfoLogger::InfoLogger::endm;
 
   digits.clear();
 
@@ -315,9 +342,9 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
       << AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Time in Histogram = " << difference / 1000.0 << "s" << std::endl;
 
-  if (NEvent == 0 && ChipID == 0 && row == 0 && col == 0 && Yellowed == 0) {
+  if (mNEvent == 0 && ChipID == 0 && row == 0 && col == 0 && mYellowed == 0) {
     bulb->SetFillColor(kYellow);
-    Yellowed = 1;
+    mYellowed = 1;
   }
 
 }
@@ -325,7 +352,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
 void ITSRawTask::addObject(TObject* aObject, bool published)
 {
   if (!aObject) {
-    std::cout << "ERROR: trying to add non-existent object" << std::endl;
+    QcInfoLogger::GetInstance() << "ERROR: trying to add non-existent object" << AliceO2::InfoLogger::InfoLogger::endm;
     return;
   }
   m_objects.push_back(aObject);
@@ -339,7 +366,9 @@ void ITSRawTask::createHistos()
   createGlobalHistos();
 
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
-    if (!layerEnable[iLayer]) continue;
+    if (!mlayerEnable[iLayer]) {
+      continue;
+    }
     createLayerHistos(iLayer);
   }
 }
@@ -478,8 +507,8 @@ Title = Form("Hits on Layer %d, Stave %d, Hic %d", aLayer, aStave, aHic);
     maxY = 2 * NRowHis;
     nChips = 14;
   }
-  nBinsX = maxX / SizeReduce;
-  nBinsY = maxY / SizeReduce;
+  nBinsX = maxX / mSizeReduce;
+  nBinsY = maxY / mSizeReduce;
   hHicHitmap[aLayer][aStave][aHic] = new TH2I(Name, Title, nBinsX, 0, maxX, nBinsY, 0,  maxY);
   formatAxes(hHicHitmap[aLayer][aStave][aHic], "Column", "Row", 1., 1.1);
   // formatting, moved here from initialize
@@ -558,7 +587,7 @@ void ITSRawTask::ConfirmXAxis(TH1 *h)
   h->GetXaxis()->SetTickLength(0);
   // Redraw the new axis
   gPad->Update();
-  int XTicks = (h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin()) / DivisionStep;
+  int XTicks = (h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin()) / mDivisionStep;
 
   TGaxis *newaxis = new TGaxis(gPad->GetUxmin(), gPad->GetUymin(), gPad->GetUxmax(), gPad->GetUymin(),
       h->GetXaxis()->GetXmin(), h->GetXaxis()->GetXmax(), XTicks, "N");
@@ -576,7 +605,7 @@ void ITSRawTask::ReverseYAxis(TH1 *h)
   // Redraw the new axis
   gPad->Update();
 
-  int YTicks = (h->GetYaxis()->GetXmax() - h->GetYaxis()->GetXmin()) / DivisionStep;
+  int YTicks = (h->GetYaxis()->GetXmax() - h->GetYaxis()->GetXmin()) / mDivisionStep;
   TGaxis *newaxis = new TGaxis(gPad->GetUxmin(), gPad->GetUymax(), gPad->GetUxmin() - 0.001, gPad->GetUymin(),
       h->GetYaxis()->GetXmin(), h->GetYaxis()->GetXmax(), YTicks, "N");
 
@@ -611,12 +640,15 @@ void ITSRawTask::getProcessStatus(int aInfoFile, int& aFileFinish)
   QcInfoLogger::GetInstance() << "FileFinish = " << aFileFinish << AliceO2::InfoLogger::InfoLogger::endm;
   QcInfoLogger::GetInstance() << "FileRest = " << FileRest << AliceO2::InfoLogger::InfoLogger::endm;
 
-  if (aFileFinish == 0)
+  if (aFileFinish == 0) {
     bulb->SetFillColor(kGreen);
-  if (aFileFinish == 1 && FileRest > 1)
+  }
+  if (aFileFinish == 1 && FileRest > 1) {
     bulb->SetFillColor(kYellow);
-  if (aFileFinish == 1 && FileRest == 1)
+  }
+  if (aFileFinish == 1 && FileRest == 1) {
     bulb->SetFillColor(kRed);
+  }
 }
 
 void ITSRawTask::updateFile(int aRunID, int aEpID, int aFileID)
@@ -629,13 +661,13 @@ void ITSRawTask::updateFile(int aRunID, int aEpID, int aFileID)
         << AliceO2::InfoLogger::InfoLogger::endm;
     hFileNameInfo->Fill(0.5);
     hFileNameInfo->SetTitle(Form("Current File Name: %s", FileName.Data()));
-    TotalFileDone = TotalFileDone + 1;
+    mTotalFileDone = mTotalFileDone + 1;
     //hInfoCanvas->SetBinContent(1,FileID);
     //hInfoCanvas->SetBinContent(2,TotalFileDone);
     ptFileName->Clear();
     ptNFile->Clear();
     ptFileName->AddText(Form("File Being Proccessed: %s", FileName.Data()));
-    ptNFile->AddText(Form("File Processed: %d ", TotalFileDone));
+    ptNFile->AddText(Form("File Processed: %d ", mTotalFileDone));
 
     addMetadata(aRunID, aEpID, aFileID);
   }
@@ -659,10 +691,10 @@ void ITSRawTask::reset()
   // clean all the monitor objects here
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  TotalFileDone = 0;
+  mTotalFileDone = 0;
   ptNFile->Clear();
-  ptNFile->AddText(Form("File Processed: %d ", TotalFileDone));
-  Yellowed = 0;
+  ptNFile->AddText(Form("File Processed: %d ", mTotalFileDone));
+  mYellowed = 0;
 
   resetHitmaps();
   resetOccupancyPlots();
@@ -685,7 +717,9 @@ void ITSRawTask::resetHitmaps()
 
 
   for (int iLayer = 0; iLayer < NLayer; iLayer ++) {
-    if (!layerEnable[iLayer]) continue;
+    if (!mlayerEnable[iLayer]) {
+      continue;
+    }
     hEtaPhiHitmap[iLayer]->Reset();
    // hIBHitmap[iLayer]->Reset();
     for (int iStave = 0; iStave < NStaves[iLayer]; iStave ++) {
@@ -704,7 +738,9 @@ void ITSRawTask::resetHitmaps()
 void ITSRawTask::resetOccupancyPlots()
 {
   for (int iLayer = 0; iLayer < NLayer; iLayer++) {
-    if (!layerEnable[iLayer]) continue;
+    if (!mlayerEnable[iLayer]) {
+      continue;
+    }
     hOccupancyPlot[iLayer]->Reset();
     hChipStaveOccupancy[iLayer]->Reset();
   }
@@ -717,7 +753,9 @@ void ITSRawTask::updateOccupancyPlots(int nEvents)
   resetOccupancyPlots();
 
   for (int iLayer = 0; iLayer < NLayer; iLayer ++) {
-    if (!layerEnable[iLayer]) continue;
+    if (!mlayerEnable[iLayer]) {
+      continue;
+    }
     //hEtaPhiHitmap[iLayer]->Reset();
     for (int iStave = 0; iStave < NStaves[iLayer]; iStave ++) {
       for (int iHic = 0; iHic < nHicPerStave[iLayer]; iHic++) {
@@ -730,7 +768,7 @@ void ITSRawTask::updateOccupancyPlots(int nEvents)
           } else {
             hChipStaveOccupancy[iLayer]->Fill(iHic, iStave, chipOccupancy / nChipsPerHic[iLayer]);
           }
-          for (int iCol = 0; iCol < NCols; iCol++){
+          for (int iCol = 0; iCol < NCols; iCol++) {
             for (int iRow = 0; iRow < NRows; iRow ++) {
               pixelOccupancy = hChipHitmap[iLayer][iStave][iHic][iChip]->GetBinContent(iCol + 1, iRow + 1);
               if (pixelOccupancy > 0) {
@@ -761,7 +799,9 @@ void ITSRawTask::enableLayers(){
     std::ifstream EventPush("Config/ConfigThreshold.dat");
     EventPush >> mEventPerPush >> mTrackError >> mWorkDir >> enable[0] >>enable[1] >>enable[2] >>enable[3] >>enable[4] >>enable[5] >>enable[6];   
   }
-  for (int i=0; i<7; i++) layerEnable[i] = stoi(enable[i]);
+  for (int i=0; i<7; i++) {
+    mlayerEnable[i] = stoi(enable[i]);
+  }
   //cout << "LayerEnable = " << " layer0 = " << layerEnable[0] << " layer5 = " << layerEnable[5] <<  endl;
 }
 

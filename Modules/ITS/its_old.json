@@ -22,7 +22,7 @@
     "tasks": {
       "QcTest1": {
         "active": "true",
-        "className": "o2::quality_control_modules::its::ITSRawTask",
+        "className": "o2::quality_control_modules::itsrawtask::ITSRawTask",
         "moduleName": "QcITSRawTask",
 	"detectorName": "ITS",
         "cycleDurationSeconds": "60",
@@ -44,7 +44,43 @@
       "id": "its-raw",
       "active": "true",
       "machines": [],
-      "query": "digits:ITS/DIGITS/0;in:ITS/TEST/0;Error:ITS/Error/0;Run:ITS/Run/0;File:ITS/File/0;Finish:ITS/Finish/0;EP:ITS/EP/0",
+      "dataHeaders": [
+		{
+			"binding": "digits",
+			"dataOrigin": "ITS",
+			"dataDescription": "DIGITS"
+		},
+		{
+			"binding": "in",
+			"dataOrigin": "ITS",
+			"dataDescription": "TEST"
+		},
+		{
+			"binding": "Error",
+			"dataOrigin": "ITS",
+			"dataDescription": "Error"
+		},
+		{
+			"binding": "Run",
+			"dataOrigin": "ITS",
+			"dataDescription": "Run"
+		},
+		{
+			"binding": "File",
+			"dataOrigin": "ITS",
+			"dataDescription": "File"
+		},
+		{
+			"binding": "Finish",
+			"dataOrigin": "ITS",
+			"dataDescription": "Finish"
+		},
+		{	"binding": "EP",
+			"dataOrigin": "ITS",
+			"dataDescription": "EP"
+		}
+		],
+	  "subSpec": "0",
       "samplingConditions": [
         {
           "condition": "random",
