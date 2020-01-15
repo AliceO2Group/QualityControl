@@ -12,7 +12,7 @@ target_include_directories(
 
 include_directories(${O2_ROOT}/include/GPU)
 
-target_link_libraries(QcITSRawTask PUBLIC QualityControl)
+target_link_libraries(QcITSRawTask PUBLIC QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction)
 
 install(TARGETS QcITSRawTask
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
