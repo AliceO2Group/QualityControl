@@ -24,25 +24,9 @@
 #include <TObject.h>
 // O2
 #include <Common/Exceptions.h>
-// QC
-#include "QualityControl/Quality.h"
 
 namespace o2::quality_control::core
 {
-
-/// \brief Container for the definition of a check
-struct CheckDefinition {
- public:
-  CheckDefinition() : result(Quality::Null) {}
-  virtual ~CheckDefinition() = default;
-
-  std::string name;
-  std::string className;
-  std::string libraryName;
-  Quality result;
-
-  ClassDef(CheckDefinition, 1);
-};
 
 struct DuplicateObjectError : virtual AliceO2::Common::ExceptionBase {
   const char* what() const noexcept override
@@ -84,21 +68,9 @@ class MonitorObject : public TObject
   /// @return The name as "{getTaskName()}/{getName())}.
   const std::string getFullName() const { return getTaskName() + "/" + getName(); }
 
-  ///
-  /// \brief Get the quality of this object.
-  ///
-  /// The method returns the lowest quality met amongst all the checks listed in \ref mChecks.
-  /// If there are no checks, the method returns \ref Quality::Null.
-  ///
-  /// @return the quality of the object
-  ///
-  Quality getQuality() const;
-
   TObject* getObject() const { return mObject; }
 
   void setObject(TObject* object) { mObject = object; }
-
-  std::map<std::string, CheckDefinition> getChecks() const { return mChecks; }
 
   bool isIsOwner() const { return mIsOwner; }
 
@@ -109,37 +81,6 @@ class MonitorObject : public TObject
 
   const std::string& getDetectorName() const { return mDetectorName; }
   void setDetectorName(const std::string& detectorName) { mDetectorName = detectorName; }
-
-  /// \brief Add a check to be executed on this object when computing the quality.
-  /// If a check with the same name already exists it will be replaced by this check.
-  /// Several checks can be added for the same check class name, but with different names (and
-  /// they will get different configuration).
-  /// \author Barthelemy von Haller
-  /// \param name Arbitrary name to identify this Check.
-  /// \param checkClassName The name of the class of the Check.
-  /// \param checkLibraryName The name of the library containing the Check. If not specified it is taken from already
-  /// loaded libraries.
-  void addCheck(const std::string name, const std::string checkClassName, const std::string checkLibraryName = "");
-
-  /// \brief Add or update the check with the provided name.
-  /// @param checkName The name of the check. If another check has already been added with this name it will be
-  /// replaced.
-  /// @param check The check to add or replace.
-  void addOrReplaceCheck(std::string checkName, CheckDefinition check);
-
-  /// \brief Set the given quality to the check called checkName.
-  /// If no check exists with this name, it throws a AliceO2::Common::ObjectNotFoundError.
-  /// @param checkName The name of the check
-  /// @param quality The new quality of the check.
-  /// \throw AliceO2::Common::ObjectNotFoundError
-  void setQualityForCheck(std::string checkName, Quality quality);
-
-  /// Return the check (by value!) for the given name.
-  /// If no such check exists, AliceO2::Common::ObjectNotFoundError is thrown.
-  /// \param checkName The name of the check
-  /// \return The CheckDefinition of the check named checkName.
-  /// \throw AliceO2::Common::ObjectNotFoundError
-  CheckDefinition getCheck(std::string checkName) const;
 
   /// \brief Add key value pair that will end up in the database
   /// Add a metadata (key value pair) to the MonitorObject. It will be stored in the database.
@@ -158,7 +99,6 @@ class MonitorObject : public TObject
 
  private:
   TObject* mObject;
-  std::map<std::string /*checkName*/, CheckDefinition> mChecks;
   std::string mTaskName;
   std::string mDetectorName;
   std::map<std::string, std::string> mUserMetadata;
@@ -168,7 +108,7 @@ class MonitorObject : public TObject
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 5);
+  ClassDefOverride(MonitorObject, 6);
 };
 
 } // namespace o2::quality_control::core
