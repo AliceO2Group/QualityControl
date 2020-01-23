@@ -9,18 +9,17 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BasicMFTDigitQcTask.h
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
+/// \file   BasicDigitQcTask.h
+/// \author Tomas Herman
+/// \author Guillermo Contreras
 ///
 
-#ifndef QC_MODULE_MFT_MFTBASICMFTDIGITQCTASK_H
-#define QC_MODULE_MFT_MFTBASICMFTDIGITQCTASK_H
-
-#include "TH1F.h"
+#ifndef QC_MODULE_MFT_MFTBasicDIGITQCTASK_H
+#define QC_MODULE_MFT_MFTBasicDIGITQCTASK_H
+// ROOT
+#include <TH1F.h>
+// Quality Control
 #include "QualityControl/TaskInterface.h"
-
-class TH1F;
 
 using namespace o2::quality_control::core;
 
@@ -31,13 +30,13 @@ namespace o2::quality_control_modules::mft
 /// It is final because there is no reason to derive from it. Just remove it if needed.
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
-class BasicMFTDigitQcTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class BasicDigitQcTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
-  BasicMFTDigitQcTask() = default;
+  BasicDigitQcTask() = default;
   /// Destructor
-  ~BasicMFTDigitQcTask() override;
+  ~BasicDigitQcTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -49,9 +48,9 @@ class BasicMFTDigitQcTask /*final*/ : public TaskInterface // todo add back the 
   void reset() override;
 
  private:
-  std::unique_ptr<TH1F> MFT_chip_index_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_chip_index_H = nullptr;
 };
 
 } // namespace o2::quality_control_modules::mft
 
-#endif // QC_MODULE_MFT_MFTBASICMFTDIGITQCTASK_H
+#endif // QC_MODULE_MFT_MFTBasicDIGITQCTASK_H

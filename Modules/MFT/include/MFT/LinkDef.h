@@ -3,6 +3,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class o2::quality_control_modules::mft::BasicMFTDigitQcTask+;
-#pragma link C++ class o2::quality_control_modules::mft::BasicMFTDigitQcCheck+;
+#pragma link C++ class o2::quality_control_modules::mft::BasicDigitQcTask + ;
+#pragma link C++ class o2::quality_control_modules::mft::BasicDigitQcCheck + ;
 #endif

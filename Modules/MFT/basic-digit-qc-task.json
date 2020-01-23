@@ -23,9 +23,9 @@
       }
     },
     "tasks": {
-      "BasicMFTDigitQcTask": {
+      "BasicDigitQcTask": {
         "active": "true",
-        "className": "o2::quality_control_modules::mft::BasicMFTDigitQcTask",
+        "className": "o2::quality_control_modules::mft::BasicDigitQcTask",
         "moduleName": "QcMFT",
         "detectorName": "MFT",
         "cycleDurationSeconds": "10",
@@ -42,14 +42,14 @@
       }
     },
     "checks": {
-      "BasicMFTDigitQcCheck": {
+      "BasicDigitQcCheck": {
         "active": "true",
         "dataSource": [{
           "type": "Task",
-          "name": "BasicMFTDigitQcTask",
-          "MOs": ["MFT_chip_index"]
+          "name": "BasicDigitQcTask",
+          "MOs": ["mMFT_chip_index"]
         }],
-        "className": "o2::quality_control_modules::mft::BasicMFTDigitQcCheck",
+        "className": "o2::quality_control_modules::mft::BasicDigitQcCheck",
         "moduleName": "QcMFT",
         "policy": "OnAny"
       }

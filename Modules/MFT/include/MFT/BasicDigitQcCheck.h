@@ -9,13 +9,14 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BasicMFTDigitQcCheck.h
-/// \author Piotr Konopka
+/// \file   BasicDigitQcCheck.h
+/// \author Tomas Herman
+/// \author Guillermo Contreras
 ///
 
-#ifndef QC_MODULE_MFT_MFTBASICMFTDIGITQCCHECK_H
-#define QC_MODULE_MFT_MFTBASICMFTDIGITQCCHECK_H
-
+#ifndef QC_MODULE_MFT_MFTBasicDIGITQCCHECK_H
+#define QC_MODULE_MFT_MFTBasicDIGITQCCHECK_H
+// Quality Control
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::mft
@@ -24,13 +25,13 @@ namespace o2::quality_control_modules::mft
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Barthelemy von Haller
-class BasicMFTDigitQcCheck : public o2::quality_control::checker::CheckInterface
+class BasicDigitQcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  BasicMFTDigitQcCheck() = default;
+  BasicDigitQcCheck() = default;
   /// Destructor
-  ~BasicMFTDigitQcCheck() override = default;
+  ~BasicDigitQcCheck() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -38,9 +39,9 @@ class BasicMFTDigitQcCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(BasicMFTDigitQcCheck, 1);
+  ClassDefOverride(BasicDigitQcCheck, 1);
 };
 
 } // namespace o2::quality_control_modules::mft
 
-#endif // QC_MODULE_MFT_MFTBASICMFTDIGITQCCHECK_H
+#endif // QC_MODULE_MFT_MFTBasicDIGITQCCHECK_H

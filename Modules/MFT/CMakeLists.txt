@@ -2,7 +2,7 @@
 
 add_library(QcMFT)
 
-target_sources(QcMFT PRIVATE src/BasicMFTDigitQcCheck.cxx  src/BasicMFTDigitQcTask.cxx  src/BasicMFTDigitQcCheck.cxx  src/BasicMFTDigitQcTask.cxx )
+target_sources(QcMFT PRIVATE src/BasicDigitQcCheck.cxx  src/BasicDigitQcTask.cxx )
 
 target_include_directories(
   QcMFT
@@ -10,7 +10,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(QcMFT PUBLIC QualityControl)
+target_link_libraries(QcMFT PUBLIC QualityControl O2::DataFormatsITSMFT) 
 
 install(TARGETS QcMFT
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -19,10 +19,8 @@ install(TARGETS QcMFT
 
 add_root_dictionary(QcMFT
                     HEADERS
-  include/MFT/BasicMFTDigitQcCheck.h
-  include/MFT/BasicMFTDigitQcTask.h
-  include/MFT/BasicMFTDigitQcCheck.h
-  include/MFT/BasicMFTDigitQcTask.h
+  include/MFT/BasicDigitQcCheck.h
+  include/MFT/BasicDigitQcTask.h
                     LINKDEF include/MFT/LinkDef.h
                     BASENAME QcMFT)
                     
@@ -57,5 +55,5 @@ endforeach()
 
 # ---- Install config files and scripts ----
 
-install(FILES basic-mft-digit-qc-task.json
+install(FILES basic-digit-qc-task.json
         DESTINATION etc)

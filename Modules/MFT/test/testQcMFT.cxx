@@ -10,9 +10,10 @@
 
 ///
 /// \file   testMFT.cxx
-/// \author
-///
+/// \author Tomas Herman
+/// \author Guillermo Contreras
 
+// Quality Control
 #include "QualityControl/TaskFactory.h"
 
 #define BOOST_TEST_MODULE Publisher test

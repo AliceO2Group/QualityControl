@@ -22,35 +22,26 @@
 /// \endcode
 ///
 
-// is this needed?
-/*
-#include <random>
-#include <iostream>
-#include <fstream>
-*/
+// C++
 #include <vector>
-
-
-// root headers
-#include "TFile.h"
-#include "TTree.h"
-
-// o2 headers
+// ROOT
+#include <TFile.h>
+#include <TTree.h>
+// O2
 #include <Framework/CallbackService.h>
 #include <Framework/ControlService.h>
 #include <Framework/runDataProcessing.h>
 #include <Framework/Task.h>
-#include "ITSMFTBase/Digit.h"
-#include "DataFormatsITSMFT/ROFRecord.h"
+#include <DataFormatsITSMFT/Digit.h>
+#include <DataFormatsITSMFT/ROFRecord.h>
 
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::itsmft;
 
-
 class DigitsRootFileReaderMFT : public o2::framework::Task
 {
-public:
+ public:
   //_________________________________________________________________________________________________
   void init(framework::InitContext& ic)
   {
@@ -64,7 +55,6 @@ public:
       ic.services().get<ControlService>().readyToQuit(QuitRequest::All);
       return;
     }
-
   }
 
   //_________________________________________________________________________________________________
@@ -72,54 +62,51 @@ public:
   void run(framework::ProcessingContext& pc)
   {
     // get vector of ROF
-    std::unique_ptr<TTree> treeROF((TTree*)mFile->Get("MFTDigitROF"));
+    std::unique_ptr<TTree> tree((TTree*)mFile->Get("o2sim"));
     std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;
-    treeROF->SetBranchAddress("MFTDigitROF", &profs);
-    treeROF->GetEntry(0);
-   
+    tree->SetBranchAddress("MFTDigitROF", &profs);
+    tree->GetEntry(0);
+
     // Check if there is a new ROF
     auto nROFs = rofs.size();
     if (currentROF >= nROFs) {
-      ///if (currentROF >= 50) {    
+      ///if (currentROF >= 50) {
       LOG(INFO) << " runDigitsRootFileReaderMFT::run. End of file reached";
       pc.services().get<ControlService>().readyToQuit(QuitRequest::All);
       return;
     }
     // prepare the rof output
-    std::vector<o2::itsmft::ROFRecord> oneROFvec;
-    std::copy(rofs.begin()+currentROF, rofs.begin()+currentROF+1, std::back_inserter(oneROFvec));
+    std::vector<o2::itsmft::ROFRecord>* oneROFvec = new std::vector<o2::itsmft::ROFRecord>();
+    std::copy(rofs.begin() + currentROF, rofs.begin() + currentROF + 1, std::back_inserter(*oneROFvec));
     // get the current ROF
     auto& rof = rofs[currentROF];
     currentROF++;
-      
+
     // get the digits in current ROF
     // --> get digit branch
-    std::unique_ptr<TTree> treeDig((TTree*)mFile->Get("o2sim"));
     std::vector<o2::itsmft::Digit> digits, *pdigits = &digits;
-    treeDig->SetBranchAddress("MFTDigit", &pdigits);
-    treeDig->GetEntry(0);
+    tree->SetBranchAddress("MFTDigit", &pdigits);
+    tree->GetEntry(0);
     // --> find the ranges
-    int index = rof.getROFEntry().getIndex(); // first digit position
-    int nDigitsInROF = rof.getNROFEntries(); // number of digits
-    int lastIndex = index+nDigitsInROF;
-     // --> fill in the corresponding digits
-    std::vector<o2::itsmft::Digit> DigitsInROF;
-    std::copy(digits.begin()+index, digits.begin()+lastIndex, std::back_inserter(DigitsInROF));
+    int index = rof.getFirstEntry();      // first digit position
+    int nDigitsInROF = rof.getNEntries(); // number of digits
+    int lastIndex = index + nDigitsInROF;
+    // --> fill in the corresponding digits
+    std::vector<o2::itsmft::Digit>* DigitsInROF = new std::vector<o2::itsmft::Digit>();
+    std::copy(digits.begin() + index, digits.begin() + lastIndex, std::back_inserter(*DigitsInROF));
 
     // fill in the message
     //   LOG(INFO) << " runDigitsRootFileReaderMFT::run. In this ROF there are  " << DigitsInROF.size() << " digits";
-    pc.outputs().snapshot(Output{"MFT", "DIGITS", 0, Lifetime::Timeframe}, DigitsInROF);
-    pc.outputs().snapshot(Output{"MFT", "MFTDigitROF", 0, Lifetime::Timeframe}, oneROFvec);
+    pc.outputs().snapshot(Output{ "MFT", "DIGITS", 0, Lifetime::Timeframe }, *DigitsInROF);
+    pc.outputs().snapshot(Output{ "MFT", "MFTDigitROF", 0, Lifetime::Timeframe }, *oneROFvec);
   }
 
-private:
+ private:
   std::unique_ptr<TFile> mFile = nullptr;
   unsigned long currentROF = 0;
-  
+
 }; // end class definition
 
-
-// clang-format off
 WorkflowSpec defineDataProcessing(const ConfigContext&)
 {
   WorkflowSpec specs; // to return the work flow
@@ -134,11 +121,10 @@ WorkflowSpec defineDataProcessing(const ConfigContext&)
     "digits-root-file-reader-mft",
     Inputs{},
     outputs,
-    AlgorithmSpec{adaptFromTask<DigitsRootFileReaderMFT>()},
-    Options{{"mft-digit-infile", VariantType::String, "mftdigits.root", {"Name of the input file"}}}
+    AlgorithmSpec{ adaptFromTask<DigitsRootFileReaderMFT>() },
+    Options{ { "mft-digit-infile", VariantType::String, "mftdigits.root", { "Name of the input file" } } }
   };
   specs.push_back(producer);
 
   return specs;
 }
-// clang-format on

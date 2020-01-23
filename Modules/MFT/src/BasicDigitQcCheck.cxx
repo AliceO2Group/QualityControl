@@ -9,38 +9,39 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BasicMFTDigitQcCheck.cxx
-/// \author Piotr Konopka
-///
+/// \file   BasicDigitQcCheck.cxx
+/// \author Tomas Herman
+/// \author Guillermo Contreras
 
-#include "MFT/BasicMFTDigitQcCheck.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
-
+// Fair
 #include <fairlogger/Logger.h>
 // ROOT
 #include <TH1.h>
+// Quality Control
+#include "MFT/BasicDigitQcCheck.h"
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 
 using namespace std;
 
 namespace o2::quality_control_modules::mft
 {
 
-void BasicMFTDigitQcCheck::configure(std::string) {}
+void BasicDigitQcCheck::configure(std::string) {}
 
-Quality BasicMFTDigitQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality BasicDigitQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
 
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "MFT_chip_index") {
+    if (mo->getName() == "mMFT_chip_index") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       result = Quality::Good;
 
       // test it
-      if ( h->GetBinContent(401) == 0) {
+      if (h->GetBinContent(401) == 0) {
         result = Quality::Bad;
       }
     }
@@ -48,11 +49,11 @@ Quality BasicMFTDigitQcCheck::check(std::map<std::string, std::shared_ptr<Monito
   return result;
 }
 
-std::string BasicMFTDigitQcCheck::getAcceptedType() { return "TH1"; }
+std::string BasicDigitQcCheck::getAcceptedType() { return "TH1"; }
 
-void BasicMFTDigitQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void BasicDigitQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "MFT_chip_index") {
+  if (mo->getName() == "mMFT_chip_index") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
