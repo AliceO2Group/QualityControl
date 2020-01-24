@@ -96,7 +96,7 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
     std::copy(digits.begin() + index, digits.begin() + lastIndex, std::back_inserter(*DigitsInROF));
 
     // fill in the message
-    //   LOG(INFO) << " runDigitsRootFileReaderMFT::run. In this ROF there are  " << DigitsInROF.size() << " digits";
+    // LOG(INFO) << " runDigitsRootFileReaderMFT::run. In this ROF there are  " << DigitsInROF.size() << " digits";
     pc.outputs().snapshot(Output{ "MFT", "DIGITS", 0, Lifetime::Timeframe }, *DigitsInROF);
     pc.outputs().snapshot(Output{ "MFT", "MFTDigitROF", 0, Lifetime::Timeframe }, *oneROFvec);
   }
