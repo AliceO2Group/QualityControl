@@ -70,7 +70,7 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
     // Check if there is a new ROF
     auto nROFs = rofs.size();
     if (currentROF >= nROFs) {
-      ///if (currentROF >= 50) {
+      // if (currentROF >= 50) {
       LOG(INFO) << " runDigitsRootFileReaderMFT::run. End of file reached";
       pc.services().get<ControlService>().readyToQuit(QuitRequest::All);
       return;
