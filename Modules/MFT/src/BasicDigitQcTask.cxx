@@ -64,7 +64,7 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   const auto digits = ctx.inputs().get<gsl::span<o2::itsmft::Digit>>("randomdigit");
   if (digits.size() < 1)
     return;
-  /// fill the histograms
+  // fill the histograms
   for (auto& one_digit : digits) {
     mMFT_chip_index_H->Fill(one_digit.getChipIndex());
   }
