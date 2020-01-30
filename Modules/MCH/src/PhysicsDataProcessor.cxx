@@ -330,6 +330,43 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
             
        //     clustering.runFinderGaussianFit(preClusters, clusters);
       
+      // Distribution of cluster size
+      
+      TCanvas *cclsize = new TCanvas("cclsize","Cluster Size",0,0,600,600);
+      TH1F *hclsize = new TH1F("hclsize", "Cluister size distribution", 20, 0, 20);
+      for(int i=0; i<preClusters.size(); i++){
+          hclsize->Fill(preClusters[i].nDigits);
+      }
+      hclsize->GetXaxis()->SetTitle("Size");
+      hclsize->GetYaxis()->SetTitle("Count");
+      hclsize->Draw();
+      cclsize->Update();
+      cclsize->Draw();
+      
+      // Distrubution of cluster charge
+      
+      int sizedigit;
+      mch::Digit digittmp;
+      
+      TCanvas *cclchg = new TCanvas("cclchg","Cluster Charge",0,0,600,600);
+      TH1F *hclchg = new TH1F("hclsize", "Cluister size distribution", 1000, 0, 3000);
+      for(int i=0; i<preClusters.size(); i++){
+          const mch::Digit* ptrdigit = preClusters[i].digits;
+          float chgsum = 0;
+          for (int j=0; j<preClusters[i].nDigits; j++){
+              digittmp = *ptrdigit;
+              chgsum += digittmp.getADC();
+              sizedigit = sizeof(digittmp);
+              ptrdigit++;
+          }
+          hclchg->Fill(chgsum);
+      }
+      hclchg->GetXaxis()->SetTitle("Charge of cluster");
+      hclchg->GetYaxis()->SetTitle("Count");
+      hclchg->Draw();
+      cclchg->Update();
+      cclchg->Draw();
+      
     mDecoder.clearHits();
   }
 }
