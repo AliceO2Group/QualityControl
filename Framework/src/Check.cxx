@@ -80,8 +80,8 @@ Check::Check(std::string checkName, std::vector<std::string> taskNames)
     return false;
   };
 
-  for(auto task : taskNames) {
-    mInputs.push_back({task, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(task)});
+  for (auto task : taskNames) {
+    mInputs.push_back({ task, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(task) });
   }
   mMonitorObjectNames.push_back("/asdf");
 
