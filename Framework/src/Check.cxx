@@ -25,6 +25,7 @@
 // QC
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/InputUtils.h"
+#include "../include/QualityControl/Check.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -62,6 +63,33 @@ Check::Check(std::string checkName, std::string configurationSource)
   };
 
   initConfig();
+}
+
+Check::Check(std::string checkName, std::vector<std::string> taskNames)
+  : mName(checkName),
+    mConfigurationSource(""),
+    mLogger(QcInfoLogger::GetInstance()),
+    mQualityObject(std::make_shared<QualityObject>(checkName)),
+    mInputs{},
+    mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 },
+    mPolicyType("OnAny")
+{
+  mPolicy = [](std::map<std::string, unsigned int>) {
+    // Prevent from using of uninitiated policy
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Policy not initiated: try to run Check::init() first"));
+    return false;
+  };
+
+  for(auto task : taskNames) {
+    mInputs.push_back({task, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(task)});
+  }
+  mMonitorObjectNames.push_back("/asdf");
+
+  mQualityObject->setInputs(stringifyInput(mInputs));
+
+  // Prepare module loading
+  mModuleName = "QcSkeleton";
+  mClassName = "o2::quality_control_modules::skeleton::SkeletonCheck";
 }
 
 void Check::initConfig()
@@ -131,8 +159,8 @@ void Check::initConfig()
 void Check::initPolicy(std::string policyType)
 {
   if (policyType == "OnAll") {
-    /** 
-     * Run check if all MOs are updated 
+    /**
+     * Run check if all MOs are updated
      */
 
     mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
@@ -147,7 +175,7 @@ void Check::initPolicy(std::string policyType)
   } else if (policyType == "OnAnyNonZero") {
     /**
      * Return true if any declared MOs were updated
-     * Guaranee that all declared MOs are available 
+     * Guaranee that all declared MOs are available
      */
     mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
       if (!mPolicyHelper) {
@@ -187,7 +215,7 @@ void Check::initPolicy(std::string policyType)
      * Default behaviour
      *
      * Run check if any declared MOs are updated
-     * Does not guarantee to contain all declared MOs 
+     * Does not guarantee to contain all declared MOs
      */
     mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
       for (const auto& moname : mMonitorObjectNames) {
@@ -204,7 +232,7 @@ void Check::init()
 {
   loadLibrary();
 
-  /** 
+  /**
    * The policy needs to be here. If running in constructor, the lambda gets wrong reference
    * and runs into SegmentationFault.
    */
@@ -273,13 +301,13 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
   if (mCheckInterface != nullptr) {
     std::shared_ptr<Quality> quality;
     if (mAllMOs) {
-      /* 
+      /*
        * User didn't specify the MOs.
        * All MOs are passed, no shadowing needed.
        */
       mQualityObject->updateQuality(mCheckInterface->check(&moMap));
     } else {
-      /* 
+      /*
        * Shadow MOs.
        * Don't pass MOs that weren't specified by user.
        * The user might safely relay on getting only required MOs inside the map.

@@ -49,6 +49,16 @@ class Check
   Check(std::string checkName, std::string configurationSource);
 
   /**
+   * \brief Very specific check constructor
+   *
+   * Create a fake check for the task named taskName using the skeleton module.
+   *
+   * @param checkName Check name from the configuration
+   * @param taskName Name of the task for which we build a fake check.
+   */
+  Check(std::string checkName, std::vector<std::string> taskNames);
+
+  /**
    * \brief Initialize the check state
    * Expected to run in the init phase of the FairDevice
    */
