@@ -29,8 +29,6 @@ namespace o2::quality_control_modules::common
 BOOST_AUTO_TEST_CASE(test_checks)
 {
   std::shared_ptr<MonitorObject> mo(new MonitorObject()); // here we are the owner of the histo
-  mo->addCheck("test", "test", "test");
-  mo->setQualityForCheck("test", Quality::Null);
   TH1F th1f("h1", "h1", 10, 0, 9);
   mo->setObject(&th1f);
   mo->setIsOwner(false);
@@ -61,8 +59,6 @@ BOOST_AUTO_TEST_CASE(test_checks)
 BOOST_AUTO_TEST_CASE(test_types)
 {
   std::shared_ptr<MonitorObject> mo(new MonitorObject()); // here we are the owner of the histo
-  mo->addCheck("test", "test", "test");
-  mo->setQualityForCheck("test", Quality::Null);
   TObject obj;
   mo->setObject(&obj);
   mo->setIsOwner(false);

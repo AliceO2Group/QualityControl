@@ -63,54 +63,6 @@ const char* MonitorObject::GetName() const
   return mObject->GetName();
 }
 
-void MonitorObject::setQualityForCheck(std::string checkName, Quality quality)
-{
-  auto check = mChecks.find(checkName);
-  if (check != mChecks.end()) {
-    check->second.result = quality;
-    mChecks[checkName] = check->second;
-  } else {
-    throw AliceO2::Common::ObjectNotFoundError();
-  }
-}
-
-CheckDefinition MonitorObject::getCheck(std::string checkName) const
-{
-  if (mChecks.find(checkName) != mChecks.end()) {
-    return mChecks.at(checkName);
-  } else {
-    throw AliceO2::Common::ObjectNotFoundError();
-  }
-}
-
-void MonitorObject::addCheck(const std::string name, const std::string checkClassName,
-                             const std::string checkLibraryName)
-{
-  CheckDefinition check;
-  check.name = name;
-  check.libraryName = checkLibraryName;
-  check.className = checkClassName;
-  mChecks[name] = check;
-}
-
-void MonitorObject::addOrReplaceCheck(std::string checkName, CheckDefinition check) { mChecks[checkName] = check; }
-
-Quality MonitorObject::getQuality() const
-{
-  Quality global = Quality::Null;
-
-  for (const auto& checkPair : getChecks()) {
-    const CheckDefinition& checkDef = checkPair.second;
-    if (checkDef.result != Quality::Null) {
-      if (checkDef.result.isWorstThan(global) || global == Quality::Null) {
-        global = checkDef.result;
-      }
-    }
-  }
-
-  return global;
-}
-
 void MonitorObject::addMetadata(std::string key, std::string value)
 {
   mUserMetadata[key] = value;
