@@ -83,11 +83,18 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
   printVersion();
 
+  std::map<std::string, o2::framework::InputSpec> checkInputMap;
+
   TaskRunnerFactory taskRunnerFactory;
   CheckRunnerFactory checkerFactory;
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     // todo sanitize somehow this if-frenzy
     if (taskConfig.get<bool>("active", true)) {
+      // Store inputSpec for check setup
+      // Used in order to store all MOs
+      o2::framework::InputSpec checkInput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
+      checkInputMap.insert({ DataSpecUtils::label(checkInput), checkInput });
+
       if (taskConfig.get<std::string>("location") == "local") {
         // if tasks are LOCAL, generate mergers + checkers
 
@@ -110,7 +117,6 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
       } else if (taskConfig.get<std::string>("location") == "remote") {
         // -- if tasks are REMOTE, generate tasks + mergers + checkers
-
         workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
       }
 
@@ -122,7 +128,6 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
     typedef std::vector<std::string> InputNames;
     typedef std::vector<Check> CheckRunnerNames;
     std::map<InputNames, CheckRunnerNames> checkerMap;
-    std::unordered_set<std::string> storeSet;
     std::map<InputNames, InputNames> storeVectorMap;
 
     for (const auto& [checkName, checkConfig] : config->getRecursive("qc.checks")) {
@@ -134,19 +139,19 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
         for (auto& inputSpec : check.getInputs()) {
           auto name = DataSpecUtils::label(inputSpec);
           inputNames.push_back(name);
-          storeSet.insert(name);
         }
         std::sort(inputNames.begin(), inputNames.end());
         checkerMap[inputNames].push_back(check);
       }
     }
-    for (auto input : storeSet) {
+    for (auto& [label, inputSpec] : checkInputMap) {
+      (void)inputSpec;
       // Look for single input
       bool isStored = false;
       for (auto& [inputNames, checks] : checkerMap) {
         (void)checks;
-        if (std::find(inputNames.begin(), inputNames.end(), input) != inputNames.end() && inputNames.size() == 1) {
-          storeVectorMap[inputNames].push_back(input);
+        if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
+          storeVectorMap[inputNames].push_back(label);
           isStored = true;
           break;
         }
@@ -156,11 +161,20 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
         // If not assigned to store in previous step, find a candidate withoud input size limitation
         for (auto& [inputNames, checks] : checkerMap) {
           (void)checks;
-          if (std::find(inputNames.begin(), inputNames.end(), input) != inputNames.end()) {
-            storeVectorMap[inputNames].push_back(input);
+          if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end()) {
+            storeVectorMap[inputNames].push_back(label);
+            isStored = true;
             break;
           }
         }
+      }
+
+      if (!isStored) {
+        // If there is no Check for a given input
+        InputNames singleEntry{ label };
+        // Init empty Check vector to appear in the next step
+        checkerMap[singleEntry];
+        storeVectorMap[singleEntry].push_back(label);
       }
     }
 
@@ -178,7 +192,13 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
 
       //push workflow
-      workflow.emplace_back(checkerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));
+      if (checks.size() > 0) {
+        // Create a CheckRunner for the grouped checks
+        workflow.emplace_back(checkerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));
+      } else {
+        // If there are no checks, create a sink CheckRunner
+        workflow.emplace_back(checkerFactory.create(checkInputMap.find(inputNames[0])->second, configurationSource, storeVectorMap[inputNames]));
+      }
     }
   }
 

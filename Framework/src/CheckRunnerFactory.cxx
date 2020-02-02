@@ -13,10 +13,12 @@
 /// \author Piotr Konopka
 ///
 #include <vector>
+#include <unordered_set>
 
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/DeviceSpec.h>
 #include <Framework/DataProcessorSpec.h>
+#include <Framework/DataSpecUtils.h>
 
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
@@ -46,6 +48,22 @@ DataProcessorSpec CheckRunnerFactory::create(Check check, std::string configurat
 DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::string configurationSource, std::vector<std::string> storeVector)
 {
   CheckRunner qcCheckRunner{ checks, configurationSource };
+  qcCheckRunner.setTaskStoreSet({ storeVector.begin(), storeVector.end() });
+
+  DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
+                                    qcCheckRunner.getInputs(),
+                                    Outputs{ qcCheckRunner.getOutputs() },
+                                    adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
+                                    Options{},
+                                    std::vector<std::string>{},
+                                    std::vector<DataProcessorLabel>{} };
+
+  return newCheckRunner;
+}
+
+DataProcessorSpec CheckRunnerFactory::create(o2::framework::InputSpec input, std::string configurationSource, std::vector<std::string> storeVector)
+{
+  CheckRunner qcCheckRunner{ input, configurationSource };
   qcCheckRunner.setTaskStoreSet({ storeVector.begin(), storeVector.end() });
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),

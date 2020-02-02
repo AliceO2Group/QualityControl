@@ -39,6 +39,7 @@ class CheckRunnerFactory
 
   framework::DataProcessorSpec create(Check check, std::string configurationSource, std::vector<std::string> storeVector = {});
   framework::DataProcessorSpec create(std::vector<Check> checks, std::string configurationSource, std::vector<std::string> storeVector = {});
+  framework::DataProcessorSpec create(o2::framework::InputSpec input, std::string configurationSource, std::vector<std::string> storeVector = {});
 
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };
