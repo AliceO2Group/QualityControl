@@ -61,10 +61,10 @@ DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::str
   return newCheckRunner;
 }
 
-DataProcessorSpec CheckRunnerFactory::create(o2::framework::InputSpec input, std::string configurationSource, std::vector<std::string> storeVector)
+DataProcessorSpec CheckRunnerFactory::createSinkDevice(o2::framework::InputSpec input, std::string configurationSource)
 {
   CheckRunner qcCheckRunner{ input, configurationSource };
-  qcCheckRunner.setTaskStoreSet({ storeVector.begin(), storeVector.end() });
+  qcCheckRunner.setTaskStoreSet({ DataSpecUtils::label(input) });
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
                                     qcCheckRunner.getInputs(),
