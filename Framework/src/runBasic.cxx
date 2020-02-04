@@ -65,6 +65,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include <string>
 
 #include <Framework/runDataProcessing.h>
+#include <Configuration/ConfigurationFactory.h>
 
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/InfrastructureGenerator.h"
@@ -98,14 +99,25 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
   // Finally the printer
-  DataProcessorSpec printer{
-    "printer",
-    Inputs{
-      { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckerName(qcConfigurationSource)), 0 } },
-    Outputs{},
-    adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>()
-  };
-  specs.push_back(printer);
+  if (hasChecks(qcConfigurationSource)) {
+    DataProcessorSpec printer{
+      "printer",
+      Inputs{
+        { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckerName(qcConfigurationSource)), 0 } },
+      Outputs{},
+      adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>()
+    };
+    specs.push_back(printer);
+  } else {
+    DataProcessorSpec printer{
+      "printer",
+      Inputs{
+        { "checked-mo", "QC", TaskRunner::createTaskDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
+      Outputs{},
+      adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
+    };
+    specs.push_back(printer);
+  }
 
   return specs;
 }

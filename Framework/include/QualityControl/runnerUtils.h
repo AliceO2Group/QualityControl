@@ -44,11 +44,19 @@ std::string getFirstCheckerName(std::string configurationSource)
 {
   auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
 
-  for (const auto& task : config->getRecursive("qc.checks")) {
-    return task.first; // task name;
+  if (config->getRecursive("qc").count("checks")) {
+    for (const auto& task : config->getRecursive("qc.checks")) {
+      return task.first; // task name;
+    }
   }
 
   throw;
+}
+
+bool hasChecks(std::string configSource)
+{
+  auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
+  return config->getRecursive("qc").count("checks") > 0;
 }
 
 } // namespace o2::quality_control::core
