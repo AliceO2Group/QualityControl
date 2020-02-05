@@ -13,6 +13,7 @@
 /// \author Nicolo' Jacazio
 ///
 
+// ROOT includes
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH1F.h>
@@ -20,6 +21,7 @@
 #include <TH1I.h>
 #include <TH2I.h>
 
+// QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TOF/TOFTask.h"
 
@@ -112,7 +114,7 @@ TOFTask::~TOFTask()
 
 void TOFTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize TOFTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "initialize TOFTask" << ENDM;
 
   mTOFRawsMulti.reset(new TH1I("TOFRawsMulti", "TOF raw hit multiplicity; TOF raw hits number; Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity));
   getObjectsManager()->startPublishing(mTOFRawsMulti.get());
@@ -229,7 +231,7 @@ void TOFTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TOFTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "startOfActivity" << ENDM;
   mTOFRawsMulti->Reset();
   mTOFRawsMultiIA->Reset();
   mTOFRawsMultiOA->Reset();
@@ -267,7 +269,7 @@ void TOFTask::startOfActivity(Activity& /*activity*/)
 
 void TOFTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "startOfCycle" << ENDM;
 }
 
 void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -275,6 +277,7 @@ void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
   // In this function you can access data inputs specified in the JSON config file, for example:
   //   "query": "random:ITS/RAWDATA/0"
   // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
+  // One can also access conditions from CCDB, via separate API (see point 3)
 
   // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
   // One can find additional examples at:
@@ -314,23 +317,31 @@ void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
   //   h->GetStats(stats);
   //   auto s = ctx.inputs().get<TObjString*>("string");
   //   LOG(INFO) << "String is " << s->GetString().Data();
+
+  // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
+  // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
+  //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
+  //   if (condition) {
+  //     LOG(INFO) << "Retrieved " << condition->ClassName();
+  //     delete condition;
+  //   }
 }
 
 void TOFTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "endOfCycle" << ENDM;
 }
 
 void TOFTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "endOfActivity" << ENDM;
 }
 
 void TOFTask::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "Resetting the histogram" << ENDM;
   mTOFRawsMulti->Reset();
   mTOFRawsMultiIA->Reset();
   mTOFRawsMultiOA->Reset();
