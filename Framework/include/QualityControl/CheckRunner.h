@@ -80,6 +80,17 @@ class CheckRunner : public framework::Task
   CheckRunner(Check check, std::string configurationSource);
   CheckRunner(std::vector<Check> checks, std::string configurationSource);
 
+  /**
+   * \brief CheckRunner constructor
+   *
+   * Create a sink for the Input. It is expected to receive Monitor Object to store.
+   * It will not run any checks on a given input.
+   *
+   * @param input Monitor Object input spec.
+   * @param configSource Path to configuration
+   */
+  CheckRunner(o2::framework::InputSpec input, std::string configurationSource);
+
   /// Destructor
   ~CheckRunner() override;
 
@@ -101,6 +112,7 @@ class CheckRunner : public framework::Task
   std::string getDeviceName() { return mDeviceName; };
   static std::string createCheckRunnerIdString() { return "QC-CHECK-RUNNER"; };
   static std::string createCheckRunnerName(std::vector<Check> checks);
+  static std::string createSinkCheckRunnerName(o2::framework::InputSpec input);
 
  private:
   /**
