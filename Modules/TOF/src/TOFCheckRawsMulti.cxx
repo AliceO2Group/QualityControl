@@ -13,13 +13,16 @@
 /// \author Nicolo' Jacazio
 ///
 
+// QC
 #include "TOF/TOFCheckRawsMulti.h"
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 
-// ROOT
 #include <fairlogger/Logger.h>
+// ROOT
 #include <TH1.h>
-#include <TList.h>
 #include <TPaveText.h>
+#include <TList.h>
 
 using namespace std;
 
@@ -41,7 +44,7 @@ void TOFCheckRawsMulti::configure(std::string) {}
 
 Quality TOFCheckRawsMulti::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  auto mo = moMap->begin()->second;
+
   Quality result = Quality::Null;
 
   // Int_t nTrgCl = 0; // AliQADataMaker::GetNTrigClasses();
@@ -63,104 +66,109 @@ Quality TOFCheckRawsMulti::check(std::map<std::string, std::shared_ptr<MonitorOb
   //   if (histname.EndsWith(AliQADataMaker::GetTrigClassName(trgCl)))
   //     suffixTrgCl = kTRUE;
   // if ((histname.EndsWith("TOFRawsMulti")) || (histname.Contains("TOFRawsMulti") && suffixTrgCl)) {
-  if (mo->getName().find("TOFRawsMulti") != std::string::npos) {
-    auto* h = dynamic_cast<TH1I*>(mo->getObject());
-    // if (!suffixTrgCl)
-    //   h->SetBit(AliQAv1::GetImageBit(), drawRawsSumImage);
-    // if (suffixTrgCl) {
-    //   h->SetBit(AliQAv1::GetImageBit(), kFALSE); //clones not shown by default
-    //   for (int i = 0; i < nToDrawTrgCl; i++) {
-    //     if (histname.EndsWith(ClToDraw[i]))
-    //       h->SetBit(AliQAv1::GetImageBit(), kTRUE);
-    //   }
-    // }
-    if (h->GetEntries() == 0) {
-      result = Quality::Medium;
-      // flag = AliQAv1::kWARNING;
-    } else {
-      multiMean = h->GetMean();
-      zeroBinIntegral = h->Integral(1, 1);
-      lowMIntegral = h->Integral(1, 10);
-      totIntegral = h->Integral(2, h->GetNbinsX());
 
-      if (totIntegral == 0) { //if only "0 hits per event" bin is filled -> error
-        if (h->GetBinContent(1) > 0) {
-          result = Quality::Medium;
-          // flag = AliQAv1::kERROR;
-        }
+  for (auto& [moName, mo] : *moMap) {
+    (void)moName;
+    if (mo->getName() == "TOFRawsMulti") {
+      auto* h = dynamic_cast<TH1I*>(mo->getObject());
+      // if (!suffixTrgCl)
+      //   h->SetBit(AliQAv1::GetImageBit(), drawRawsSumImage);
+      // if (suffixTrgCl) {
+      //   h->SetBit(AliQAv1::GetImageBit(), kFALSE); //clones not shown by default
+      //   for (int i = 0; i < nToDrawTrgCl; i++) {
+      //     if (histname.EndsWith(ClToDraw[i]))
+      //       h->SetBit(AliQAv1::GetImageBit(), kTRUE);
+      //   }
+      // }
+      if (h->GetEntries() == 0) {
+        result = Quality::Medium;
+        // flag = AliQAv1::kWARNING;
       } else {
-        // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
-        if (0) {
-          if (multiMean < 10.) {
-            result = Quality::Good;
-            // flag = AliQAv1::kINFO;
-          } else {
+        multiMean = h->GetMean();
+        zeroBinIntegral = h->Integral(1, 1);
+        lowMIntegral = h->Integral(1, 10);
+        totIntegral = h->Integral(2, h->GetNbinsX());
+
+        if (totIntegral == 0) { //if only "0 hits per event" bin is filled -> error
+          if (h->GetBinContent(1) > 0) {
             result = Quality::Medium;
-            // flag = AliQAv1::kWARNING;
+            // flag = AliQAv1::kERROR;
           }
         } else {
-          Bool_t isZeroBinContentHigh = kFALSE;
-          Bool_t isLowMultContentHigh = kFALSE;
-          Bool_t isINT7AverageLow = kFALSE;
-          Bool_t isINT7AverageHigh = kFALSE;
-
-          if (zeroBinIntegral > 0.75 * totIntegral)
-            isZeroBinContentHigh = kTRUE;
-          if (lowMIntegral > 0.75 * totIntegral)
-            isLowMultContentHigh = kTRUE;
-          if (multiMean < minTOFrawhits)
-            isINT7AverageLow = kTRUE;
-          if (multiMean > maxTOFrawhits)
-            isINT7AverageHigh = kTRUE;
-
-          // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult) {
+          // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
           if (0) {
-            if (isZeroBinContentHigh && (multiMean > 10.)) {
-
+            if (multiMean < 10.) {
+              result = Quality::Good;
+              // flag = AliQAv1::kINFO;
             } else {
-              // if (!histname.Contains("INT7") && (multiMean > 100.)) {
-              if ((multiMean > 100.)) {
-                result = Quality::Medium;
-                // flag = AliQAv1::kWARNING;
+              result = Quality::Medium;
+              // flag = AliQAv1::kWARNING;
+            }
+          } else {
+            Bool_t isZeroBinContentHigh = kFALSE;
+            Bool_t isLowMultContentHigh = kFALSE;
+            Bool_t isINT7AverageLow = kFALSE;
+            Bool_t isINT7AverageHigh = kFALSE;
+
+            if (zeroBinIntegral > 0.75 * totIntegral)
+              isZeroBinContentHigh = kTRUE;
+            if (lowMIntegral > 0.75 * totIntegral)
+              isLowMultContentHigh = kTRUE;
+            if (multiMean < minTOFrawhits)
+              isINT7AverageLow = kTRUE;
+            if (multiMean > maxTOFrawhits)
+              isINT7AverageHigh = kTRUE;
+
+            // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult) {
+            if (0) {
+              if (isZeroBinContentHigh && (multiMean > 10.)) {
+
               } else {
-                // if (histname.Contains("INT7") && (isINT7AverageLow || isINT7AverageHigh)) {
-                if ((isINT7AverageLow || isINT7AverageHigh)) {
+                // if (!histname.Contains("INT7") && (multiMean > 100.)) {
+                if ((multiMean > 100.)) {
                   result = Quality::Medium;
                   // flag = AliQAv1::kWARNING;
                 } else {
-                  result = Quality::Good;
-                  // flag = AliQAv1::kINFO;
+                  // if (histname.Contains("INT7") && (isINT7AverageLow || isINT7AverageHigh)) {
+                  if ((isINT7AverageLow || isINT7AverageHigh)) {
+                    result = Quality::Medium;
+                    // flag = AliQAv1::kWARNING;
+                  } else {
+                    result = Quality::Good;
+                    // flag = AliQAv1::kINFO;
+                  }
                 }
               }
+              // } else if ((AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult) && (isLowMultContentHigh || (multiMean > 500.))) {
+            } else if ((isLowMultContentHigh || (multiMean > 500.))) {
+              //assume that good range of multi in PbPb goes from 20 to 500 tracks
+              result = Quality::Medium;
+              // flag = AliQAv1::kWARNING;
+            } else {
+              result = Quality::Good;
+              // flag = AliQAv1::kINFO;
             }
-            // } else if ((AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult) && (isLowMultContentHigh || (multiMean > 500.))) {
-          } else if ((isLowMultContentHigh || (multiMean > 500.))) {
-            //assume that good range of multi in PbPb goes from 20 to 500 tracks
-            result = Quality::Medium;
-            // flag = AliQAv1::kWARNING;
-          } else {
-            result = Quality::Good;
-            // flag = AliQAv1::kINFO;
           }
         }
       }
     }
   }
-
   return result;
 }
 
-std::string TOFCheckRawsMulti::getAcceptedType() { return "TH1"; }
+std::string TOFCheckRawsMulti::getAcceptedType() { return "TH1I"; }
 
 void TOFCheckRawsMulti::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName().find("TOFRawsMulti") != std::string::npos) {
+  if (mo->getName() == "TOFRawsMulti") {
     auto* h = dynamic_cast<TH1I*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
+    msg->Draw();
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
+      LOG(INFO) << "Quality::Good, setting to green";
       msg->Clear();
       msg->AddText(Form("Mean value = %5.2f", multiMean));
       msg->AddText(Form("Reference range: %5.2f-%5.2f", minTOFrawhits, maxTOFrawhits));
@@ -187,9 +195,12 @@ void TOFCheckRawsMulti::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       msg->SetFillColor(kYellow);
       //
       h->SetFillColor(kOrange);
+    } else {
+      LOG(INFO) << "Quality::Null, setting to black background";
+      msg->SetFillColor(kBlack);
     }
-    h->SetLineColor(kBlack);
-  }
+  } else
+    LOG(ERROR) << "Did not get correct histo from " << mo->GetName();
 }
 
 } // namespace o2::quality_control_modules::tof

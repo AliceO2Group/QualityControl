@@ -17,8 +17,6 @@
 #define QC_MODULE_TOF_TOFCHECKRAWSMULTI_H
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::tof
 {
