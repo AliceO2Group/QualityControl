@@ -82,7 +82,7 @@ class TaskRunner : public framework::Task
   void run(framework::ProcessingContext& pCtx) override;
 
   /// \brief TaskRunner's completion policy callback
-  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(gsl::span<framework::PartRef const> const& inputs);
+  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::CompletionPolicy::InputSet inputs);
 
   std::string getDeviceName() { return mDeviceName; };
   const framework::Inputs& getInputsSpecs() { return mInputSpecs; };
