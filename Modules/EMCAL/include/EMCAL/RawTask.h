@@ -59,6 +59,7 @@ class RawTask /*final*/ : public TaskInterface // todo add back the "final" when
   std::array<TProfile2D*, 20> mRMSperSM;                //ADC rms per SM
   std::array<TProfile2D*, 20> mMEANperSM;               //ADC mean per SM
   std::array<TProfile2D*, 20> mMAXperSM;                //ADC max per SM
+  std::array<TProfile2D*, 20> mMINperSM;                //ADC min per SM
   TH2F* mErrorTypeAltro = nullptr;                      //Error from AltroDecoder
   TH2F* mPayloadSizePerDDL = nullptr;                   //Payload size per ddl
 };

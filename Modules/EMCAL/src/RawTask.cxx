@@ -58,9 +58,19 @@ RawTask::~RawTask()
   for (auto h : mMAXperSM) {
     delete h;
   }
+
+  for (auto h : mMINperSM) {
+    delete h;
+  }
 }
 void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
+  using infoCONTEXT = AliceO2::InfoLogger::InfoLoggerContext;
+  infoCONTEXT context;
+  context.setField(infoCONTEXT::FieldName::Facility, "QC");
+  context.setField(infoCONTEXT::FieldName::System, "QC");
+  context.setField(infoCONTEXT::FieldName::Detector, "EMC");
+  QcInfoLogger::GetInstance().setContext(context);
   QcInfoLogger::GetInstance() << "initialize RawTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
@@ -83,6 +93,14 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeAltro = new TH2F("ErrorTypePerSM", "ErrorTypeForSM", 40, 0, 40, 8, 0, 8);
   mErrorTypeAltro->GetXaxis()->SetTitle("SM");
   mErrorTypeAltro->GetYaxis()->SetTitle("Error Type");
+  mErrorTypeAltro->GetYaxis()->SetBinLabel(1, "RCU Trailer");
+  mErrorTypeAltro->GetYaxis()->SetBinLabel(2, "RCU Version");
+  mErrorTypeAltro->GetYaxis()->SetBinLabel(3, "RCU Trailer Size");
+  mErrorTypeAltro->GetYaxis()->SetBinLabel(4, "ALTRO Bunch Header");
+  mErrorTypeAltro->GetYaxis()->SetBinLabel(5, "ALTRO Bunch Length");
+  mErrorTypeAltro->GetYaxis()->SetBinLabel(6, "ALTRO Payload");
+  mErrorTypeAltro->GetYaxis()->SetBinLabel(7, "ALTRO Mapping");
+  mErrorTypeAltro->GetYaxis()->SetBinLabel(8, "Channel");
   getObjectsManager()->startPublishing(mErrorTypeAltro);
 
   //histos per SM
@@ -106,6 +124,11 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     mMAXperSM[i]->GetXaxis()->SetTitle("col");
     mMAXperSM[i]->GetYaxis()->SetTitle("row");
     getObjectsManager()->startPublishing(mMAXperSM[i]);
+
+    mMINperSM[i] = new TProfile2D(Form("MinADCperSM%d", i), Form("MinADCperSM%d", i), 48, 0, 47, 24, 0, 23);
+    mMINperSM[i]->GetXaxis()->SetTitle("col");
+    mMINperSM[i]->GetYaxis()->SetTitle("row");
+    getObjectsManager()->startPublishing(mMINperSM[i]);
   }
 }
 
@@ -133,7 +156,6 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   using CHTYP = o2::emcal::ChannelType_t;
   // Some examples:
-
   // 1. In a loop
   for (auto&& input : ctx.inputs()) {
     // get message header
@@ -150,6 +172,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       uint64_t currentTrigger(0);
       bool first = true; //for the first event
       short int maxADCSM[20];
+      short int minADCSM[20];
       while (rawreader.hasNext()) {
         rawreader.next();
         auto payLoadSize = rawreader.getPayloadSize(); //payloadsize in byte;
@@ -173,43 +196,51 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (headerR.feeId > 40)
           continue;                                                      //skip STU ddl
         o2::emcal::AltroDecoder<decltype(rawreader)> decoder(rawreader); //(atrodecoder in Detectors/Emcal/reconstruction/src)
-        //add try block to check the words of the payload exception in  altrodecoder
+        //check the words of the payload exception in altrodecoder
         try {
           decoder.decode();
         } catch (AltroDecoderError& e) {
-          // AliceO2::InfoLogger::InfoLogger logger;
-          // logger << e.what();
-          // and add checker for calling oncall
+          std::stringstream errormessage;
           using AltroErrType = o2::emcal::AltroDecoderError::ErrorType_t;
           int errornum = -1;
           switch (e.getErrorType()) {
             case AltroErrType::RCU_TRAILER_ERROR:
               errornum = 0;
+              errormessage << " RCU Trailer Error ";
               break;
             case AltroErrType::RCU_VERSION_ERROR:
               errornum = 1;
+              errormessage << " RCU Version Error ";
               break;
             case AltroErrType::RCU_TRAILER_SIZE_ERROR:
               errornum = 2;
+              errormessage << " RCU Trailer Size Error ";
               break;
             case AltroErrType::ALTRO_BUNCH_HEADER_ERROR:
               errornum = 3;
+              errormessage << " ALTRO Bunch Header Error ";
               break;
             case AltroErrType::ALTRO_BUNCH_LENGTH_ERROR:
               errornum = 4;
+              errormessage << " ALTRO Bunch Length Error ";
               break;
             case AltroErrType::ALTRO_PAYLOAD_ERROR:
               errornum = 5;
+              errormessage << " ALTRO Payload Error ";
               break;
             case AltroErrType::ALTRO_MAPPING_ERROR:
               errornum = 6;
+              errormessage << " ALTRO Mapping Error ";
               break;
             case AltroErrType::CHANNEL_ERROR:
               errornum = 7;
+              errormessage << " Channel Error ";
               break;
             default:
               break;
           }
+          errormessage << " in Supermodule " << headerR.feeId;
+          QcInfoLogger::GetInstance() << QcInfoLogger::Error << " EMCAL raw task: " << errormessage.str() << AliceO2::InfoLogger::InfoLogger::endm;
           //fill histograms  with error types
           mErrorTypeAltro->Fill(headerR.feeId, errornum);
           continue;
@@ -217,6 +248,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         int j = headerR.feeId / 2; //SM id
         auto& mapping = mMappings->getMappingForDDL(headerR.feeId);
         int col;
+
         int row;
 
         for (auto& chan : decoder.getChannels()) {
@@ -228,13 +260,20 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             continue;
 
           Float_t maxADC = 0;
+          Float_t minADC = 0;
           Double_t meanADC = 0;
           Double_t rmsADC = 0;
           for (auto& bunch : chan.getBunches()) {
             auto adcs = bunch.getADC();
+
             double maxADCbunch = *max_element(adcs.begin(), adcs.end());
             if (maxADCbunch > maxADC)
               maxADC = maxADCbunch;
+
+            double minADCbunch = *min_element(adcs.begin(), adcs.end());
+            if (minADCbunch < minADC)
+              minADC = minADCbunch;
+
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());
             mRMSperSM[j]->Fill(col, row, rmsADC);
@@ -243,6 +282,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (maxADC > maxADCSM[j])
             maxADCSM[j] = maxADC;
           mMAXperSM[j]->Fill(col, row, maxADC);
+
+          if (minADC < minADCSM[j])
+            minADCSM[j] = minADC;
+          mMINperSM[j]->Fill(col, row, minADC);
         } //channels
       }   //new page
     }     //header
@@ -270,6 +313,7 @@ void RawTask::reset()
     mRMSperSM[i]->Reset();
     mMEANperSM[i]->Reset();
     mMAXperSM[i]->Reset();
+    mMINperSM[i]->Reset();
   }
   mPayloadSizePerDDL->Reset();
   mHistogram->Reset();
