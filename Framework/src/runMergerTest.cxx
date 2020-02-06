@@ -67,11 +67,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
           MonitorObject* mo = new MonitorObject(histo, "histo-task");
           mo->setIsOwner(true);
 
-          TObjArray* array = new TObjArray;
+          auto* array = &processingContext.outputs().make<TObjArray>(Output{ "TST", "HISTO", static_cast<o2::framework::DataAllocator::SubSpecificationType>(p + 1) });
           array->SetOwner(true);
           array->Add(mo);
-
-          processingContext.outputs().adopt(Output{ "TST", "HISTO", static_cast<o2::framework::DataAllocator::SubSpecificationType>(p + 1) }, array);
         }
       }
     };
