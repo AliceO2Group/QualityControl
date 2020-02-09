@@ -79,6 +79,21 @@ o2::framework::Inputs CheckRunner::createInputSpec(const std::string checkName, 
   return inputs;
 }
 
+std::size_t CheckRunner::hash(std::string input_string)
+{
+  // BSD checksum
+  const int mode = 16;
+  std::size_t checksum = 0;
+
+  const std::size_t mask = (1 << (mode + 1)) - 1;
+  for (char c : input_string) {
+    // Rotate the sum
+    checksum = (checksum >> 1) + ((checksum & 1) << (mode - 1));
+    checksum = (checksum + (std::size_t)c) & mask;
+  }
+  return checksum;
+}
+
 std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
 {
   static const std::string alphanumeric =
@@ -105,7 +120,7 @@ std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
     for (auto& n : names) {
       hash_string += n;
     }
-    std::size_t num = std::hash<std::string>{}(hash_string);
+    std::size_t num = hash(hash_string);
 
     // Change numerical to alphanumeric hash representation
     for (int i = 0; i < NAME_LEN; ++i) {
