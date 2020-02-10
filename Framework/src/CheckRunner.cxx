@@ -79,14 +79,14 @@ o2::framework::Inputs CheckRunner::createInputSpec(const std::string checkName, 
   return inputs;
 }
 
-std::size_t CheckRunner::hash(std::string input_string)
+std::size_t CheckRunner::hash(std::string inputString)
 {
   // BSD checksum
   const int mode = 16;
   std::size_t checksum = 0;
 
   const std::size_t mask = (1 << (mode + 1)) - 1;
-  for (char c : input_string) {
+  for (char c : inputString) {
     // Rotate the sum
     checksum = (checksum >> 1) + ((checksum & 1) << (mode - 1));
     checksum = (checksum + (std::size_t)c) & mask;
