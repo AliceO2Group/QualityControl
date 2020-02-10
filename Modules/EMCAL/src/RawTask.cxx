@@ -18,6 +18,7 @@
 #include <TH1.h>
 #include <TProfile2D.h>
 #include <TMath.h>
+#include <cfloat>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/RawTask.h"
@@ -163,6 +164,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       const auto* header = header::get<header::DataHeader*>(input.header);
       // get payload of a specific input, which is a char array.
       // const char* payload = input.payload;
+      QcInfoLogger::GetInstance() << QcInfoLogger::Debug << " EMCAL Reading Payload size: " << header->payloadSize << " for " << header->dataOrigin << AliceO2::InfoLogger::InfoLogger::endm;
 
       //fill the histogram with payload sizes
       mHistogram->Fill(header->payloadSize);
@@ -186,6 +188,8 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             for (int sm = 0; sm < 20; sm++) {
               mRawAmplitudeEMCAL[sm]->Fill(maxADCSM[sm]);
               maxADCSM[sm] = 0;
+              //initialize
+              minADCSM[sm] = SHRT_MAX;
             } //sm loop
             currentTrigger = headerR.triggerBC;
           }      //new event
@@ -259,18 +263,18 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (chType == CHTYP::LEDMON || chType == CHTYP::TRU)
             continue;
 
-          Float_t maxADC = 0;
-          Float_t minADC = 0;
+          Short_t maxADC = 0;
+          Short_t minADC = SHRT_MAX;
           Double_t meanADC = 0;
           Double_t rmsADC = 0;
           for (auto& bunch : chan.getBunches()) {
             auto adcs = bunch.getADC();
 
-            double maxADCbunch = *max_element(adcs.begin(), adcs.end());
+            auto maxADCbunch = *max_element(adcs.begin(), adcs.end());
             if (maxADCbunch > maxADC)
               maxADC = maxADCbunch;
 
-            double minADCbunch = *min_element(adcs.begin(), adcs.end());
+            auto minADCbunch = *min_element(adcs.begin(), adcs.end());
             if (minADCbunch < minADC)
               minADC = minADCbunch;
 
@@ -286,6 +290,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (minADC < minADCSM[j])
             minADCSM[j] = minADC;
           mMINperSM[j]->Fill(col, row, minADC);
+
         } //channels
       }   //new page
     }     //header
