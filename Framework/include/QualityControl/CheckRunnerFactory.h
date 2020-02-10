@@ -40,6 +40,16 @@ class CheckRunnerFactory
   framework::DataProcessorSpec create(Check check, std::string configurationSource, std::vector<std::string> storeVector = {});
   framework::DataProcessorSpec create(std::vector<Check> checks, std::string configurationSource, std::vector<std::string> storeVector = {});
 
+  /*
+   * \brief Create a CheckRunner sink DPL device.
+   * 
+   * The purpose of this device is to receive and store the MO from task.
+   *
+   * @param input InputSpec with the content to store
+   * @param configurationSource
+   */
+  framework::DataProcessorSpec createSinkDevice(o2::framework::InputSpec input, std::string configurationSource);
+
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };
 

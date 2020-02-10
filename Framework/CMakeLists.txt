@@ -43,6 +43,7 @@ add_library(QualityControl
             src/CheckInterface.cxx
             src/DatabaseFactory.cxx
             src/CcdbDatabase.cxx
+            src/QcInfoLogger.cxx
             src/TaskFactory.cxx
             src/TaskRunner.cxx
             src/TaskRunnerFactory.cxx
@@ -58,6 +59,8 @@ add_library(QualityControl
             src/PostProcessingFactory.cxx
             src/PostProcessingConfig.cxx
             src/PostProcessingInterface.cxx
+            src/TrendingTask.cxx
+            src/TrendingTaskConfig.cxx
             src/DummyDatabase.cxx
             src/DataProducer.cxx
             src/DataProducerExample.cxx)
@@ -110,6 +113,8 @@ add_root_dictionary(QualityControl
                             include/QualityControl/InfrastructureGenerator.h
                             include/QualityControl/InputUtils.h
                             include/QualityControl/PostProcessingInterface.h
+                            include/QualityControl/TrendingTask.h
+                            include/QualityControl/Reductor.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 
@@ -117,10 +122,10 @@ add_root_dictionary(QualityControl
 
 set(EXE_SRCS
     src/runDataProducer.cxx
+    src/runFileReader.cxx
     src/runDataProducerExample.cxx
     src/runQC.cxx
     src/runBasic.cxx
-    src/runTPCQCPID.cxx
     src/runAdvanced.cxx
     src/runReadout.cxx
     src/runMergerTest.cxx
@@ -130,10 +135,10 @@ set(EXE_SRCS
 
 set(EXE_NAMES
     o2-qc-run-producer
+    o2-qc-run-file-reader
     o2-qc-run-producer-basic
     o2-qc
     o2-qc-run-basic
-    o2-qc-run-tpcpid
     o2-qc-run-advanced
     o2-qc-run-readout
     o2-qc-run-merger-test
@@ -145,10 +150,10 @@ set(EXE_NAMES
 # of them but for the time being we want to create symlinks to avoid confusion.
 set(EXE_OLD_NAMES
     qcRunProducer
+    qcRunFileReader
     o2-qc-run-producer-basic
     o2-qc-run-qc
     qcRunBasic
-    qcRunTPCPID
     qcRunAdvanced
     qcRunReadout
     runMergerTest
@@ -224,8 +229,12 @@ set(TEST_SRCS
     test/testPostProcessingRunner.cxx
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
+    test/testReductor.cxx
+    test/testTrendingTask.cxx
     test/testCheckWorkflow.cxx
-    test/testWorkflow.cxx)
+    test/testWorkflow.cxx
+    test/testVersion.cxx
+  )
 
 set(TEST_ARGS
     ""
@@ -247,8 +256,12 @@ set(TEST_ARGS
     ""
     ""
     ""
+    ""
+    ""
     "-b --run"
-    "-b --run")
+    "-b --run"
+    ""
+  )
 
 list(LENGTH TEST_SRCS count)
 math(EXPR count "${count}-1")
@@ -271,11 +284,14 @@ endforeach()
 
 foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
         testInfrastructureGenerator testPostProcessingConfig testPostProcessingInterface
-        testPostProcessingRunner testCheck testCheckRunner)
+        testPostProcessingRunner testCheck testCheckRunner testTrendingTask)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
 endforeach()
+
+target_include_directories(testVersion PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 10)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
@@ -284,8 +300,9 @@ set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 20)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 15)
-set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
+set_property(TEST testCcdbDatabase PROPERTY LABELS manual slow)
 set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
+set_property(TEST testTrendingTask PROPERTY LABELS manual)
 
 # ---- Install ----
 
@@ -346,7 +363,6 @@ install(FILES example-default.json
               alfa.json
               dataDump.json
               basic.json
-              tpcQCPID.json
               basic-no-sampling.json
               advanced.json
               readout.json
@@ -372,6 +388,7 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py scr
 set(TEST_FILES
   "testSharedConfig.json"
   "testCheckWorkflow.json"
+  "testTrendingTask.json"
   "testWorkflow.json")
 set(TEST_FILES_PREFIXED ${TEST_FILES})
 list(TRANSFORM TEST_FILES_PREFIXED PREPEND ${CMAKE_BINARY_DIR}/tests/)

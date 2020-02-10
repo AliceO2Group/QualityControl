@@ -15,6 +15,7 @@
 /// \brief This is DPL workflow to see HistoMerger in action
 
 #include <fairlogger/Logger.h>
+#include "QualityControl/QcInfoLogger.h"
 #include <Framework/CompletionPolicy.h>
 #include <Framework/CompletionPolicyHelpers.h>
 #include <TH1F.h>
@@ -66,11 +67,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
           MonitorObject* mo = new MonitorObject(histo, "histo-task");
           mo->setIsOwner(true);
 
-          TObjArray* array = new TObjArray;
+          auto* array = &processingContext.outputs().make<TObjArray>(Output{ "TST", "HISTO", static_cast<o2::framework::DataAllocator::SubSpecificationType>(p + 1) });
           array->SetOwner(true);
           array->Add(mo);
-
-          processingContext.outputs().adopt(Output{ "TST", "HISTO", static_cast<o2::framework::DataAllocator::SubSpecificationType>(p + 1) }, array);
         }
       }
     };
@@ -96,7 +95,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     AlgorithmSpec{
       (AlgorithmSpec::InitCallback) [](InitContext&) {
         return (AlgorithmSpec::ProcessCallback) [](ProcessingContext& processingContext) mutable {
-          LOG(INFO) << "printer invoked";
+          ILOG(Info) << "printer invoked" << ENDM;
           auto moArray = processingContext.inputs().get<TObjArray*>("moarray");
           auto mo = dynamic_cast<MonitorObject*>(moArray->First());
 
@@ -106,7 +105,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
             for (int i = 0; i <= g->GetNbinsX(); i++) {
               bins += " " + std::to_string((int) g->GetBinContent(i));
             }
-            LOG(INFO) << bins;
+            ILOG(Info) << bins << ENDM;
           }
         };
       }

@@ -7,4 +7,6 @@
 
 #pragma link C++ class o2::quality_control_modules::emcal::DigitCheck + ;
 
+#pragma link C++ class o2::quality_control_modules::emcal::RawTask+;
+
 #endif

@@ -83,11 +83,18 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
   printVersion();
 
+  std::map<std::string, o2::framework::InputSpec> checkInputMap;
+
   TaskRunnerFactory taskRunnerFactory;
   CheckRunnerFactory checkerFactory;
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     // todo sanitize somehow this if-frenzy
     if (taskConfig.get<bool>("active", true)) {
+      // Store inputSpec for check setup
+      // Used in order to store all MOs
+      o2::framework::InputSpec checkInput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
+      checkInputMap.insert({ DataSpecUtils::label(checkInput), checkInput });
+
       if (taskConfig.get<std::string>("location") == "local") {
         // if tasks are LOCAL, generate mergers + checkers
 
@@ -110,7 +117,6 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
       } else if (taskConfig.get<std::string>("location") == "remote") {
         // -- if tasks are REMOTE, generate tasks + mergers + checkers
-
         workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
       }
 
@@ -118,13 +124,13 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
     }
   }
 
+  typedef std::vector<std::string> InputNames;
+  typedef std::vector<Check> CheckRunnerNames;
+  std::map<InputNames, CheckRunnerNames> checkerMap;
+  std::map<InputNames, InputNames> storeVectorMap;
+  // Check if there is "checks" section
   if (config->getRecursive("qc").count("checks")) {
-    typedef std::vector<std::string> InputNames;
-    typedef std::vector<Check> CheckRunnerNames;
-    std::map<InputNames, CheckRunnerNames> checkerMap;
-    std::unordered_set<std::string> storeSet;
-    std::map<InputNames, InputNames> storeVectorMap;
-
+    // For every check definition, create a Check
     for (const auto& [checkName, checkConfig] : config->getRecursive("qc.checks")) {
       QcInfoLogger::GetInstance() << ">> Check name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
       if (checkConfig.get<bool>("active", true)) {
@@ -134,51 +140,70 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
         for (auto& inputSpec : check.getInputs()) {
           auto name = DataSpecUtils::label(inputSpec);
           inputNames.push_back(name);
-          storeSet.insert(name);
         }
+        // Create a grouping key - sorted vector of stringified InputSpecs
         std::sort(inputNames.begin(), inputNames.end());
+        // Group checks
         checkerMap[inputNames].push_back(check);
       }
     }
-    for (auto input : storeSet) {
-      // Look for single input
-      bool isStored = false;
+  }
+
+  // For every Task output, find device to store the MO
+  for (auto& [label, inputSpec] : checkInputMap) {
+    (void)inputSpec;
+    bool isStored = false;
+    // Look for single input
+    for (auto& [inputNames, checks] : checkerMap) {
+      (void)checks;
+      if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
+        storeVectorMap[inputNames].push_back(label);
+        isStored = true;
+        break;
+      }
+    }
+
+    if (!isStored) {
+      // If not assigned to store in previous step, find a candidate without input size limitation
       for (auto& [inputNames, checks] : checkerMap) {
         (void)checks;
-        if (std::find(inputNames.begin(), inputNames.end(), input) != inputNames.end() && inputNames.size() == 1) {
-          storeVectorMap[inputNames].push_back(input);
+        if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end()) {
+          storeVectorMap[inputNames].push_back(label);
           isStored = true;
           break;
         }
       }
-
-      if (!isStored) {
-        // If not assigned to store in previous step, find a candidate withoud input size limitation
-        for (auto& [inputNames, checks] : checkerMap) {
-          (void)checks;
-          if (std::find(inputNames.begin(), inputNames.end(), input) != inputNames.end()) {
-            storeVectorMap[inputNames].push_back(input);
-            break;
-          }
-        }
-      }
     }
 
-    for (auto& [inputNames, checks] : checkerMap) {
-      //Logging
-      QcInfoLogger::GetInstance() << ">> Inputs (" << inputNames.size() << "): ";
-      for (auto& name : inputNames)
-        QcInfoLogger::GetInstance() << name << " ";
-      QcInfoLogger::GetInstance() << " checks (" << checks.size() << "): ";
-      for (auto& check : checks)
-        QcInfoLogger::GetInstance() << check.getName() << " ";
-      QcInfoLogger::GetInstance() << " stores (" << storeVectorMap[inputNames].size() << "): ";
-      for (auto& input : storeVectorMap[inputNames])
-        QcInfoLogger::GetInstance() << input << " ";
-      QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
+    if (!isStored) {
+      // If there is no Check for a given input, create a candidate for a sink device
+      InputNames singleEntry{ label };
+      // Init empty Check vector to appear in the next step
+      checkerMap[singleEntry];
+      storeVectorMap[singleEntry].push_back(label);
+    }
+  }
 
-      //push workflow
+  for (auto& [inputNames, checks] : checkerMap) {
+    //Logging
+    QcInfoLogger::GetInstance() << ">> Inputs (" << inputNames.size() << "): ";
+    for (auto& name : inputNames)
+      QcInfoLogger::GetInstance() << name << " ";
+    QcInfoLogger::GetInstance() << " checks (" << checks.size() << "): ";
+    for (auto& check : checks)
+      QcInfoLogger::GetInstance() << check.getName() << " ";
+    QcInfoLogger::GetInstance() << " stores (" << storeVectorMap[inputNames].size() << "): ";
+    for (auto& input : storeVectorMap[inputNames])
+      QcInfoLogger::GetInstance() << input << " ";
+    QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
+
+    //push workflow
+    if (checks.size() > 0) {
+      // Create a CheckRunner for the grouped checks
       workflow.emplace_back(checkerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));
+    } else {
+      // If there are no checks, create a sink CheckRunner
+      workflow.emplace_back(checkerFactory.createSinkDevice(checkInputMap.find(inputNames[0])->second, configurationSource));
     }
   }
 
@@ -200,7 +225,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
 void InfrastructureGenerator::printVersion()
 {
   // Log the version number
-  QcInfoLogger::GetInstance() << "QC version " << o2::quality_control::core::Version::getString() << infologger::endm;
+  QcInfoLogger::GetInstance() << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << infologger::endm;
 }
 
 } // namespace o2::quality_control::core

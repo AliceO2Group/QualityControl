@@ -17,8 +17,8 @@
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 
-#include <iostream>
 // ROOT
 #include <TGraph.h>
 #include <TH1.h>
@@ -60,7 +60,7 @@ ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
 
   void EverIncreasingGraph::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
   {
-    cout << "Beautify" << endl;
+    ILOG(Info) << "Beautify" << ENDM;
 
     if (checkResult == Quality::Null || checkResult == Quality::Medium) {
       return;
@@ -68,7 +68,7 @@ ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
 
     auto* g = dynamic_cast<TGraph*>(mo->getObject());
     if (!g) {
-      cerr << "MO should be a graph" << endl;
+      ILOG(Error) << "MO should be a graph" << ENDM;
       return;
     }
 

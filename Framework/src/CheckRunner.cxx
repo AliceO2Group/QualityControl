@@ -131,6 +131,13 @@ std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
   return name;
 }
 
+std::string CheckRunner::createSinkCheckRunnerName(InputSpec input)
+{
+  std::string name(CheckRunner::createCheckRunnerIdString() + "-sink-");
+  name += DataSpecUtils::label(input);
+  return name;
+}
+
 o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& checks)
 {
   o2::framework::Outputs outputs;
@@ -162,6 +169,19 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
 CheckRunner::CheckRunner(Check check, std::string configurationSource)
   : CheckRunner(std::vector{ check }, configurationSource)
 {
+}
+
+CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
+  : mDeviceName(createSinkCheckRunnerName(input)),
+    mChecks{},
+    mConfigurationSource(configurationSource),
+    mLogger(QcInfoLogger::GetInstance()),
+    mInputs{ input },
+    mOutputs{},
+    startFirstObject{ system_clock::time_point::min() },
+    endLastObject{ system_clock::time_point::min() }
+{
+  mTotalNumberHistosReceived = 0;
 }
 
 CheckRunner::~CheckRunner()

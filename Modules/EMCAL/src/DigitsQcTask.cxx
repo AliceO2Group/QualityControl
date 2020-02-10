@@ -26,13 +26,8 @@ DigitsQcTask::~DigitsQcTask()
   }
   for (auto h : mDigitTime) {
     delete h;
-    if (mDigitTime[0]) {
-      delete mDigitTime[0];
-    }
-    if (mDigitTime[1]) {
-      delete mDigitTime[1];
-    }
   }
+
   if (mDigitAmplitudeEMCAL)
     delete mDigitAmplitudeEMCAL;
   if (mDigitAmplitudeDCAL)
@@ -50,6 +45,7 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   // 1D histograms for showing the integrated spectrum
   mDigitAmplitudeEMCAL = new TH1F("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 100, 0., 100.);
   mDigitAmplitudeDCAL = new TH1F("digitAmplitudeDCAL", "Digit amplitude in DCAL", 100, 0., 100.);
+
   //Puglishing histograms
   for (auto h : mDigitAmplitude)
     getObjectsManager()->startPublishing(h);
@@ -87,15 +83,19 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     //ctx.services().get<o2::framework::ControlService>().readyToQuit(false);
     return;
   }
+
   // Get payload and loop over digits
   auto digitcontainer = ctx.inputs().get<std::vector<o2::emcal::Digit>>("emcal-digits");
+
   //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << AliceO2::InfoLogger::InfoLogger::endm;
   for (auto digit : digitcontainer) {
     int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
     if (index < 0)
       continue;
+
     mDigitAmplitude[index]->Fill(digit.getEnergy(), digit.getTower());
     mDigitTime[index]->Fill(digit.getTimeStamp(), digit.getTower());
+    //if we fill phy vs eta plots integrated: filled with eta phi GlobalRowColumnFromIndex  from Geometry
 
     // get the supermodule for filling EMCAL/DCAL spectra
     try {
@@ -132,7 +132,6 @@ void DigitsQcTask::reset()
   mDigitAmplitudeEMCAL->Reset();
   mDigitAmplitudeDCAL->Reset();
 }
-
 } // namespace emcal
 } // namespace quality_control_modules
 } // namespace o2

@@ -18,6 +18,7 @@
 
 #include <string>
 #include <Configuration/ConfigurationFactory.h>
+#include <Common/Exceptions.h>
 
 namespace o2::quality_control::core
 {
@@ -44,11 +45,19 @@ std::string getFirstCheckerName(std::string configurationSource)
 {
   auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
 
-  for (const auto& task : config->getRecursive("qc.checks")) {
-    return task.first; // task name;
+  if (config->getRecursive("qc").count("checks")) {
+    for (const auto& task : config->getRecursive("qc.checks")) {
+      return task.first; // task name;
+    }
   }
 
-  throw;
+  BOOST_THROW_EXCEPTION(AliceO2::Common::ObjectNotFoundError() << AliceO2::Common::errinfo_details("No checks defined"));
+}
+
+bool hasChecks(std::string configSource)
+{
+  auto config = o2::configuration::ConfigurationFactory::getConfiguration(configSource);
+  return config->getRecursive("qc").count("checks") > 0;
 }
 
 } // namespace o2::quality_control::core

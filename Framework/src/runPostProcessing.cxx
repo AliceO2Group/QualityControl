@@ -30,10 +30,10 @@ int main(int argc, const char* argv[])
 {
   try {
     bpo::options_description desc{ "Options" };
-    desc.add_options()                                                                                        //
-      ("help,h", "Help screen")                                                                               //
-      ("config", bpo::value<std::string>(), "Absolute path to a configuration file, preceeded with backend.") //
-      ("name", bpo::value<std::string>(), "Name of a post processing task to run")                            //
+    desc.add_options()                                                                                       //
+      ("help,h", "Help screen")                                                                              //
+      ("config", bpo::value<std::string>(), "Absolute path to a configuration file, preceded with backend.") //
+      ("name", bpo::value<std::string>(), "Name of a post processing task to run")                           //
       ("rate", bpo::value<double>()->default_value(10.0), "Rate of checking triggers in seconds");
 
     bpo::variables_map vm;
@@ -41,10 +41,10 @@ int main(int argc, const char* argv[])
     notify(vm);
 
     if (vm.count("help")) {
-      QcInfoLogger::GetInstance() << desc << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Info) << desc << ENDM;
       return 0;
     } else if (vm.count("name") == 0 && vm.count("config") == 0) {
-      QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error << "No name and/or config parameters provided" << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error) << "No name and/or config parameters provided" << ENDM;
       return 1;
     }
 
@@ -67,7 +67,7 @@ int main(int argc, const char* argv[])
     }
     return 0;
   } catch (const bpo::error& ex) {
-    QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error << ex.what() << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Error) << ex.what() << ENDM;
   }
 
   return 0;
