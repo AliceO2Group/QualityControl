@@ -300,7 +300,7 @@ set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 20)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 15)
-set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
+set_property(TEST testCcdbDatabase PROPERTY LABELS manual slow)
 set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
 set_property(TEST testTrendingTask PROPERTY LABELS manual)
 
