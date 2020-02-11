@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "TPCQCPID": {
+      "PID": {
         "active": "true",
         "className": "o2::quality_control_modules::tpc::PID",
         "moduleName": "QcTPC",
@@ -32,11 +32,11 @@
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tpc-tracks"
+          "type": "direct",
+	  "query" : "inputTracks:TPC/TRACKS/0"
         },
         "taskParameters": {
-          "myOwnKey": "myOwnValue"
+          "nothing": "rien"
         },
         "location": "remote"
       }
@@ -49,26 +49,13 @@
         "policy": "OnAny",
         "dataSource": [{
           "type": "Task",
-          "name": "TPCQCPID",
+          "name": "PID",
           "MOs": ["example"]
         }]
       }
     }
   },
   "dataSamplingPolicies": [
-    {
-      "id": "tpc-tracks",
-      "active": "true",
-      "machines": [],
-      "query" : "tpc-sampled-tracks:TPC/TRACKS/0",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "0.9",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    }
+
   ]
 }
