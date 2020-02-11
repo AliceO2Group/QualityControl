@@ -21,7 +21,8 @@
 
 #include <utility>
 #include <memory>
-#include <random>
+#include <functional>
+#include <algorithm>
 #include <set>
 // ROOT
 #include <TClass.h>
@@ -78,6 +79,21 @@ o2::framework::Inputs CheckRunner::createInputSpec(const std::string checkName, 
   return inputs;
 }
 
+std::size_t CheckRunner::hash(std::string inputString)
+{
+  // BSD checksum
+  const int mode = 16;
+  std::size_t checksum = 0;
+
+  const std::size_t mask = (1 << (mode + 1)) - 1;
+  for (char c : inputString) {
+    // Rotate the sum
+    checksum = (checksum >> 1) + ((checksum & 1) << (mode - 1));
+    checksum = (checksum + (std::size_t)c) & mask;
+  }
+  return checksum;
+}
+
 std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
 {
   static const std::string alphanumeric =
@@ -91,11 +107,25 @@ std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
     // If single check, use the check name
     name += checks[0].getName();
   } else {
-    std::default_random_engine generator;
-    std::uniform_int_distribution<int> distribution(0, alphanumeric.size());
+    std::string hash_string = "";
+    std::vector<std::string> names;
+    // Fill vector with check names
+    for (auto& c : checks) {
+      names.push_back(c.getName());
+    }
+    // Be sure that after configuration shuffle, the name will be the same
+    std::sort(names.begin(), names.end());
 
+    // Create a single string and hash it
+    for (auto& n : names) {
+      hash_string += n;
+    }
+    std::size_t num = hash(hash_string);
+
+    // Change numerical to alphanumeric hash representation
     for (int i = 0; i < NAME_LEN; ++i) {
-      name += alphanumeric[distribution(generator)];
+      name += alphanumeric[num % alphanumeric.size()];
+      num = num / alphanumeric.size();
     }
   }
   return name;

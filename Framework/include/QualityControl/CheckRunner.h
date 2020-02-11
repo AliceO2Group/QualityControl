@@ -165,6 +165,13 @@ class CheckRunner : public framework::Task
    */
   void updateRevision();
 
+  /**
+   * \brief BSD checksum algorithm.
+   *
+   * \param input_string String intended to be hashed
+   */
+  static std::size_t hash(std::string input_string);
+
   // General state
   std::string mDeviceName;
   std::vector<Check> mChecks;
