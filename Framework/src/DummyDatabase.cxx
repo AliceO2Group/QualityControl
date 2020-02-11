@@ -15,6 +15,7 @@
 
 #include "QualityControl/DummyDatabase.h"
 
+using namespace o2::quality_control::core;
 namespace o2::quality_control::repository
 {
 
@@ -26,16 +27,30 @@ void DummyDatabase::connect(const std::unordered_map<std::string, std::string>&)
 {
 }
 
-void DummyDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObject>)
+void DummyDatabase::storeMO(std::shared_ptr<MonitorObject>)
 {
 }
 
-core::MonitorObject* DummyDatabase::retrieve(std::string, std::string, long)
+std::shared_ptr<MonitorObject> DummyDatabase::retrieveMO(std::string, std::string, long)
 {
-  return nullptr;
+  return std::shared_ptr<MonitorObject>();
 }
 
-std::string DummyDatabase::retrieveJson(std::string, std::string)
+std::string DummyDatabase::retrieveMOJson(std::string, std::string)
+{
+  return std::string();
+}
+
+void DummyDatabase::storeQO(std::shared_ptr<QualityObject>)
+{
+}
+
+std::shared_ptr<QualityObject> DummyDatabase::retrieveQO(std::string, long)
+{
+  return std::shared_ptr<QualityObject>();
+}
+
+std::string DummyDatabase::retrieveQOJson(std::string)
 {
   return std::string();
 }

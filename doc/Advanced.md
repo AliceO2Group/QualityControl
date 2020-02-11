@@ -30,7 +30,7 @@
 <!--te-->
 
 
-[← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
+[← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
 
 
 ## Plugging the QC to an existing DPL workflow
@@ -227,9 +227,6 @@ workflow specification for AliECS
 - The library is compiled with the same QC, O2, ROOT and GCC version as the 
 ones which are installed with the FLP suite. Especially, the task and check
 interfaces have to be identical.
-- If there are checks applied to MonitorObjects, update the library path in
-the addCheck() functions as well. This will not be necessary when checks are
-configured inside config files.
 
 ## Use MySQL as QC backend
 
@@ -442,4 +439,4 @@ database connection, the monitoring or the data sampling.
 
 ---
 
-[← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
+[← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)

@@ -57,3 +57,10 @@ Any one in alice-member has access. We use the egroup alice-o2-qcg-access to gra
 #### Start and stop
 
 `systemctl restart qcg`
+
+### Logging
+
+We use the infologger. There is a utility class, `QcInfoLogger`, that can be used. It is a singleton. See [the header](../Framework/include/QualityControl/QcInfoLogger.h) for its usage.
+
+Related issues : https://alice.its.cern.ch/jira/browse/QC-224
+

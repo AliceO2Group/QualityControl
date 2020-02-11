@@ -14,6 +14,7 @@
 ///
 
 #include "QualityControl/TaskFactory.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include "RootClassFactory.h"
 

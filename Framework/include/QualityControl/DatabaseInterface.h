@@ -21,6 +21,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include "QualityControl/QualityObject.h"
 #include "QualityControl/MonitorObject.h"
 
 namespace o2::quality_control::repository
@@ -58,7 +59,13 @@ class DatabaseInterface
    * Stores the serialized MonitorObject in the database.
    * @param mo The MonitorObject to serialize and store.
    */
-  virtual void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) = 0;
+  virtual void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) = 0;
+
+  /**
+   * Stores the serialized QualityObject in the database.
+   * @param qo The QualityObject to serialize and store.
+   */
+  virtual void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo) = 0;
 
   /**
    * Look up an object of a task and return it.
@@ -67,12 +74,14 @@ class DatabaseInterface
    * templates)
    * TODO evaluate whether we should have a method to retrieve a list of objects (optimization)
    */
-  virtual o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName, long timestamp = 0) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkName, long timestamp = 0) = 0;
 
   /**
    * Returns JSON encoded object
    */
-  virtual std::string retrieveJson(std::string taskName, std::string objectName) = 0;
+  virtual std::string retrieveMOJson(std::string taskName, std::string objectName) = 0;
+  virtual std::string retrieveQOJson(std::string checkName) = 0;
   virtual void disconnect() = 0;
   /**
    * \brief Prepare the container, such as a table in a relational database, that will contain the MonitorObject's for

@@ -37,6 +37,72 @@
         "stopTrigger": [
           "once"
         ]
+      },
+      "ExampleTrend": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TST/QcTask",
+            "name": "example",
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository-quality",
+            "path": "qc/checks",
+            "name": "QcCheck",
+            "reductorName": "o2::quality_control_modules::common::QualityReductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "mean_of_histogram",
+            "title": "Mean trend of the example histogram",
+            "varexp": "example.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "histogram_of_means",
+            "title": "Distribution of mean values in the example histogram",
+            "varexp": "example.mean",
+            "selection": "",
+            "option": ""
+          },
+          {
+            "name": "correlation_mean_stddev",
+            "title": "Correlation between the mean and stddev of the example histogram",
+            "varexp": "example.mean:example.stddev",
+            "selection": "",
+            "option": "*"
+          },
+          {
+            "name": "correlation_stddev_entries",
+            "title": "Correlation between the stddev and entries of the example histogram",
+            "varexp": "example.stddev:example.entries",
+            "selection": "",
+            "option": "*"
+          },
+          {
+            "name": "example_quality",
+            "title": "Trend of the example histogram's quality",
+            "varexp": "QcCheck.name:time",
+            "selection": "",
+            "option": "*"
+          }
+        ],
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "always"
+        ],
+        "stopTrigger": []
       }
     }
   }

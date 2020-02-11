@@ -19,7 +19,7 @@
 /// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The checker performs a simple check of
 /// the histogram shape and colorizes it. The resulting histogram contents are shown in logs by printer.
 ///
-/// QC task and Checker are instantiated by respectively TaskFactory and CheckerFactory,
+/// QC task and CheckRunner are instantiated by respectively TaskFactory and CheckRunnerFactory,
 /// which use preinstalled config file, that can be found in
 /// ${QUALITYCONTROL_ROOT}/etc/basic.json or Framework/basic.json (original one).
 ///
@@ -65,12 +65,14 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include <string>
 
 #include <Framework/runDataProcessing.h>
+#include <Configuration/ConfigurationFactory.h>
 
-#include "QualityControl/Checker.h"
+#include "QualityControl/CheckRunner.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/ExamplePrinterSpec.h"
 #include "QualityControl/DataProducer.h"
+#include "QualityControl/TaskRunner.h"
 
 std::string getConfigPath(const ConfigContext& config);
 
@@ -98,14 +100,25 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
 
   // Finally the printer
-  DataProcessorSpec printer{
-    "printer",
-    Inputs{
-      { "checked-mo", "QC", Checker::createCheckerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
-    Outputs{},
-    adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
-  };
-  specs.push_back(printer);
+  if (hasChecks(qcConfigurationSource)) {
+    DataProcessorSpec printer{
+      "printer",
+      Inputs{
+        { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckerName(qcConfigurationSource)), 0 } },
+      Outputs{},
+      adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>()
+    };
+    specs.push_back(printer);
+  } else {
+    DataProcessorSpec printer{
+      "printer",
+      Inputs{
+        { "checked-mo", "QC", TaskRunner::createTaskDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
+      Outputs{},
+      adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
+    };
+    specs.push_back(printer);
+  }
 
   return specs;
 }

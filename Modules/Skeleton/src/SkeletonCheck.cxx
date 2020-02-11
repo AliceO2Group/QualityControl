@@ -28,21 +28,25 @@ namespace o2::quality_control_modules::skeleton
 
 void SkeletonCheck::configure(std::string) {}
 
-Quality SkeletonCheck::check(const MonitorObject* mo)
+Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
 
-  if (mo->getName() == "example") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+  for (auto& [moName, mo] : *moMap) {
 
-    result = Quality::Good;
+    (void)moName;
+    if (mo->getName() == "example") {
+      auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
-    for (int i = 0; i < h->GetNbinsX(); i++) {
-      if (i > 0 && i < 8 && h->GetBinContent(i) == 0) {
-        result = Quality::Bad;
-        break;
-      } else if ((i == 0 || i > 7) && h->GetBinContent(i) > 0) {
-        result = Quality::Medium;
+      result = Quality::Good;
+
+      for (int i = 0; i < h->GetNbinsX(); i++) {
+        if (i > 0 && i < 8 && h->GetBinContent(i) == 0) {
+          result = Quality::Bad;
+          break;
+        } else if ((i == 0 || i > 7) && h->GetBinContent(i) > 0) {
+          result = Quality::Medium;
+        }
       }
     }
   }
@@ -51,7 +55,7 @@ Quality SkeletonCheck::check(const MonitorObject* mo)
 
 std::string SkeletonCheck::getAcceptedType() { return "TH1"; }
 
-void SkeletonCheck::beautify(MonitorObject* mo, Quality checkResult)
+void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "example") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());

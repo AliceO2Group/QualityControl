@@ -33,8 +33,8 @@ class NonEmpty : public o2::quality_control::checker::CheckInterface
   ~NonEmpty() override = default;
 
   void configure(std::string name) override;
-  Quality check(const MonitorObject* mo) override;
-  void beautify(MonitorObject* mo, Quality checkResult) override;
+  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
   ClassDefOverride(NonEmpty, 1);

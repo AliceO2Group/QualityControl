@@ -32,6 +32,7 @@
 #include "QualityControl/TaskFactory.h"
 
 #include <string>
+#include <memory>
 
 using namespace std;
 
@@ -330,7 +331,7 @@ void TaskRunner::endOfActivity()
 
 void TaskRunner::startCycle()
 {
-  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << " in " << mTaskConfig.taskName << AliceO2::InfoLogger::InfoLogger::endm;
   mTask->startOfCycle();
   mNumberBlocks = 0;
   mNumberObjectsPublishedInCycle = 0;
@@ -377,18 +378,21 @@ void TaskRunner::publishCycleStats()
 
 int TaskRunner::publish(DataAllocator& outputs)
 {
+  QcInfoLogger::GetInstance() << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << AliceO2::InfoLogger::InfoLogger::endm;
   AliceO2::Common::Timer publicationDurationTimer;
 
-  TObjArray* array = mObjectsManager->getNonOwningArray();
+  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);
+  // getNonOwningArray creates a TObjArray containing the monitoring objects, but not
+  // owning them. The array is created by new and must be cleaned up by the caller
+  std::unique_ptr<TObjArray> array(mObjectsManager->getNonOwningArray());
   int objectsPublished = array->GetEntries();
 
-  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);
-  outputs.adopt(
+  outputs.snapshot(
     Output{ concreteOutput.origin,
             concreteOutput.description,
             concreteOutput.subSpec,
             mMonitorObjectsSpec.lifetime },
-    dynamic_cast<TObject*>(array));
+    *array);
 
   mLastPublicationDuration = publicationDurationTimer.getTime();
   return objectsPublished;
