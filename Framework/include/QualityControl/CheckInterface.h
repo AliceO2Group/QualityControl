@@ -90,7 +90,7 @@ class CheckInterface
   //  private:
   //    std::string mName;
 
-  ClassDef(CheckInterface, 1)
+  ClassDef(CheckInterface, 2)
 };
 
 } // namespace o2::quality_control::checker
