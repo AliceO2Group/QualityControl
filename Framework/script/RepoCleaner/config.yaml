@@ -2,6 +2,12 @@ Rules:
   - object_path: qc/ITS/ITSRawTask/.*
     delay: 120
     policy: 1_per_run
+  - object_path: qc/ITS/ITSRawTaskIBB1/.*
+    delay: 120
+    policy: 1_per_run
+  - object_path: qc/ITS/ITSRawTaskIBB2/.*
+    delay: 120
+    policy: 1_per_run
   - object_path: qc/ITS/.*
     delay: 120
     policy: 1_per_hour
