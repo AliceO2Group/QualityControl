@@ -40,6 +40,21 @@ RawTask::~RawTask()
   if (mPayloadSizePerDDL) {
     delete mPayloadSizePerDDL;
   }
+  if (mMessageCounter) {
+    delete mMessageCounter;
+  }
+  if (mPageCounter) {
+    delete mPageCounter;
+  }
+  if (mSuperpageCounter) {
+    delete mSuperpageCounter;
+  }
+  if (mNumberOfPagesPerMessage) {
+    delete mNumberOfPagesPerMessage;
+  }
+  if (mNumberOfSuperpagesPerMessage) {
+    delete mNumberOfSuperpagesPerMessage;
+  }
   if (mErrorTypeAltro) {
     delete mErrorTypeAltro;
   }
@@ -81,6 +96,38 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mMappings = std::unique_ptr<o2::emcal::MappingHandler>(new o2::emcal::MappingHandler); //initialize the unique pointer to Mapper
 
+  // Statistics histograms
+  mMessageCounter = new TH1F("NumberOfMessages", "Number of messages in time interval", 1, 0.5, 1.5);
+  mMessageCounter->GetXaxis()->SetTitle("MonitorData");
+  mMessageCounter->GetYaxis()->SetTitle("Number of messages");
+  getObjectsManager()->startPublishing(mMessageCounter);
+
+  mSuperpageCounter = new TH1F("NumberOfSuperpages", "Number of superpages in time interval", 1, 0.5, 1.5);
+  mSuperpageCounter->GetXaxis()->SetTitle("MonitorData");
+  mSuperpageCounter->GetYaxis()->SetTitle("Number of superpages");
+  getObjectsManager()->startPublishing(mSuperpageCounter);
+
+  mPageCounter = new TH1F("NumberOfPages", "Number of pages in time interval", 1, 0.5, 1.5);
+  mPageCounter->GetXaxis()->SetTitle("MonitorData");
+  mPageCounter->GetYaxis()->SetTitle("Number of pages");
+  getObjectsManager()->startPublishing(mPageCounter);
+
+  mNumberOfSuperpagesPerMessage = new TH1F("NumberOfSuperpagesPerMessage", "Number of superpages per message", 40., 0., 40.);
+  mNumberOfSuperpagesPerMessage->GetXaxis()->SetTitle("Number of superpages");
+  mNumberOfSuperpagesPerMessage->GetYaxis()->SetTitle("Number of messages");
+  getObjectsManager()->startPublishing(mNumberOfSuperpagesPerMessage);
+
+  mNumberOfPagesPerMessage = new TH1F("NumberOfPagesPerMessage", "Number of pages per message", 400, 0., 400.);
+  mNumberOfPagesPerMessage->GetXaxis()->SetTitle("Number of pages");
+  mNumberOfPagesPerMessage->GetYaxis()->SetTitle("Number of messages");
+  getObjectsManager()->startPublishing(mNumberOfPagesPerMessage);
+
+  mTotalDataVolume = new TH1D("TotalDataVolume", "Total data volume", 1, 0.5, 1.5);
+  mTotalDataVolume->GetXaxis()->SetTitle("MonitorData");
+  mTotalDataVolume->GetYaxis()->SetTitle("Total data volume (Byte)");
+  getObjectsManager()->startPublishing(mTotalDataVolume);
+
+  // EMCAL related histograms
   mPayloadSizePerDDL = new TH2F("PayloadSizePerDDL", "PayloadSizePerDDL", 40, 0, 40, 100, 0, 1);
   mPayloadSizePerDDL->GetXaxis()->SetTitle("ddl");
   mPayloadSizePerDDL->GetYaxis()->SetTitle("PayloadSize");
@@ -156,6 +203,12 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
 
   using CHTYP = o2::emcal::ChannelType_t;
+
+  Int_t nPagesMessage = 0, nSuperpagesMessage = 0;
+  QcInfoLogger::GetInstance() << QcInfoLogger::Debug << " Processing message " << mNumberOfMessages << AliceO2::InfoLogger::InfoLogger::endm;
+  mNumberOfMessages++;
+  mMessageCounter->Fill(1);
+
   // Some examples:
   // 1. In a loop
   for (auto&& input : ctx.inputs()) {
@@ -164,10 +217,15 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       const auto* header = header::get<header::DataHeader*>(input.header);
       // get payload of a specific input, which is a char array.
       // const char* payload = input.payload;
+      QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Processing superpage " << mNumberOfSuperpages << AliceO2::InfoLogger::InfoLogger::endm;
+      mNumberOfSuperpages++;
+      nSuperpagesMessage++;
+      mSuperpageCounter->Fill(1);
       QcInfoLogger::GetInstance() << QcInfoLogger::Debug << " EMCAL Reading Payload size: " << header->payloadSize << " for " << header->dataOrigin << AliceO2::InfoLogger::InfoLogger::endm;
 
       //fill the histogram with payload sizes
       mHistogram->Fill(header->payloadSize);
+      mTotalDataVolume->Fill(1., header->payloadSize);
 
       // try decoding payload
       o2::emcal::RawReaderMemory<o2::header::RAWDataHeaderV4> rawreader(gsl::span(input.payload, header->payloadSize));
@@ -176,6 +234,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       short int maxADCSM[20];
       short int minADCSM[20];
       while (rawreader.hasNext()) {
+        QcInfoLogger::GetInstance() << QcInfoLogger::Debug << " Processing page " << mNumberOfPages << AliceO2::InfoLogger::InfoLogger::endm;
+        mNumberOfPages++;
+        nPagesMessage++;
+        mPageCounter->Fill(1);
         rawreader.next();
         auto payLoadSize = rawreader.getPayloadSize(); //payloadsize in byte;
 
@@ -295,6 +357,8 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       }   //new page
     }     //header
   }       //inputs
+  mNumberOfPagesPerMessage->Fill(nPagesMessage);
+  mNumberOfSuperpagesPerMessage->Fill(nSuperpagesMessage);
 } //function monitor data
 
 void RawTask::endOfCycle()
@@ -305,6 +369,8 @@ void RawTask::endOfCycle()
 void RawTask::endOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "Total amount of messages: " << mNumberOfMessages << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "Total amount of superpages: " << mNumberOfSuperpages << ", pages: " << mNumberOfPages << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void RawTask::reset()
