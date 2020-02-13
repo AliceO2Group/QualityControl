@@ -54,14 +54,23 @@ class RawTask /*final*/ : public TaskInterface // todo add back the "final" when
 
  private:
   TH1F* mHistogram = nullptr;
-  std::array<TH1*, 20> mRawAmplitudeEMCAL;              /// Raw amplitude in EMCAL
-  std::unique_ptr<o2::emcal::MappingHandler> mMappings; //
-  std::array<TProfile2D*, 20> mRMSperSM;                //ADC rms per SM
-  std::array<TProfile2D*, 20> mMEANperSM;               //ADC mean per SM
-  std::array<TProfile2D*, 20> mMAXperSM;                //ADC max per SM
-  std::array<TProfile2D*, 20> mMINperSM;                //ADC min per SM
-  TH2F* mErrorTypeAltro = nullptr;                      //Error from AltroDecoder
-  TH2F* mPayloadSizePerDDL = nullptr;                   //Payload size per ddl
+  TH1* mMessageCounter = nullptr;
+  TH1* mNumberOfSuperpagesPerMessage;
+  TH1* mNumberOfPagesPerMessage;
+  TH1* mSuperpageCounter = nullptr;                     ///< Counter for number of superpages
+  TH1* mPageCounter = nullptr;                          ///< Counter for number of pages (headers)
+  TH1* mTotalDataVolume = nullptr;                      ///< Total data volume
+  std::array<TH1*, 20> mRawAmplitudeEMCAL;              ///< Raw amplitude in EMCAL
+  std::unique_ptr<o2::emcal::MappingHandler> mMappings; ///< Mappings Hardware address -> Channel
+  std::array<TProfile2D*, 20> mRMSperSM;                ///< ADC rms per SM
+  std::array<TProfile2D*, 20> mMEANperSM;               ///< ADC mean per SM
+  std::array<TProfile2D*, 20> mMAXperSM;                ///< ADC max per SM
+  std::array<TProfile2D*, 20> mMINperSM;                ///< ADC min per SM
+  TH2F* mErrorTypeAltro = nullptr;                      ///< Error from AltroDecoder
+  TH2F* mPayloadSizePerDDL = nullptr;                   ///< Payload size per ddl
+  Int_t mNumberOfSuperpages = 0;                        ///< Simple total superpage counter
+  Int_t mNumberOfPages = 0;                             ///< Simple total number of superpages counter
+  Int_t mNumberOfMessages = 0;
 };
 
 } // namespace o2::quality_control_modules::emcal
