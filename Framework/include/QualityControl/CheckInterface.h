@@ -18,6 +18,7 @@
 
 #include <string>
 #include <map>
+#include <unordered_map>
 
 #include <Rtypes.h>
 #include "QualityControl/MonitorObject.h"
@@ -90,7 +91,7 @@ class CheckInterface
   //  private:
   //    std::string mName;
 
-  ClassDef(CheckInterface, 1)
+  ClassDef(CheckInterface, 2)
 };
 
 } // namespace o2::quality_control::checker

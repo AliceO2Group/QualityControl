@@ -64,5 +64,6 @@ install(TARGETS QcTPC ${EXE_NAMES}
 
 # ---- Install config files ----
 
-install(FILES run/tpcQCPID.json
+install(FILES run/tpcQCPID_sampled.json
+              run/tpcQCPID_direct.json
         DESTINATION etc)

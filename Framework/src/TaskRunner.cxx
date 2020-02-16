@@ -24,6 +24,7 @@
 #include <Monitoring/MonitoringFactory.h>
 #include <Framework/DataSampling.h>
 #include <Framework/CallbackService.h>
+#include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
@@ -110,7 +111,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
   }
 }
 
-CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(gsl::span<PartRef const> const& inputs)
+CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::CompletionPolicy::InputSet inputs)
 {
   // fixme: we assume that there is one timer input and the rest are data inputs. If some other implicit inputs are
   //  added, this will break.
@@ -125,7 +126,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(gsl::span<Pa
       continue;
     }
 
-    const auto* dataHeader = get<DataHeader*>(input.header.get()->GetData());
+    const auto* dataHeader = CompletionPolicyHelpers::getHeader<DataHeader>(input);
     assert(dataHeader);
 
     if (!strncmp(dataHeader->dataDescription.str, "TIMER", 5)) {

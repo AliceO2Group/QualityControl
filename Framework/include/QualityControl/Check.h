@@ -16,6 +16,7 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 // O2
 #include <Framework/DataProcessorSpec.h>
 // QC

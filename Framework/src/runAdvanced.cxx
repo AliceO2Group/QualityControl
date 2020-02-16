@@ -34,6 +34,7 @@
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DataSampling.h>
 #include <Framework/DataSpecUtils.h>
+#include <Framework/CompletionPolicyHelpers.h>
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
@@ -48,16 +49,7 @@ void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
   quality_control::customizeInfrastructure(policies);
-  CompletionPolicy mergerConsumesASAP{
-    "mergers-always-consume",
-    [](DeviceSpec const& device) {
-      return device.name.find("merger") != std::string::npos;
-    },
-    [](gsl::span<PartRef const> const& /*inputs*/) {
-      return CompletionPolicy::CompletionOp::Consume;
-    }
-  };
-  policies.push_back(mergerConsumesASAP);
+  policies.push_back(CompletionPolicyHelpers::defineByName(".*merger.*", CompletionPolicy::CompletionOp::Consume));
 }
 
 void customize(std::vector<ChannelConfigurationPolicy>& policies)
