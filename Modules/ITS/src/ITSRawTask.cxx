@@ -195,6 +195,8 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
   }
 
   auto digits = ctx.inputs().get<const std::vector<o2::itsmft::Digit>>("digits");
+  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("Events").header);
+  auto events = ctx.inputs().get<DigitEvent*>("Events");
   LOG(INFO) << "Digit Size Getting For This TimeFrame (Event) = " << digits.size();
 
   mErrors = ctx.inputs().get<const std::array<unsigned int, NError>>("Error");
@@ -219,14 +221,16 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
   difference = std::chrono::duration_cast < std::chrono::milliseconds > (end - start).count();
   //	QcInfoLogger::GetInstance() << "Before Loop = " << difference/1000.0 << "s" <<  AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Before Loop  = " << difference / 1000.0 << "s" << std::endl;
-
+  int i = 0;
   for (auto &&pixeldata : digits) {
     startLoop = std::chrono::high_resolution_clock::now();
 
     ChipID = pixeldata.getChipIndex();
     col = pixeldata.getColumn();
     row = pixeldata.getRow();
-    mNEvent = pixeldata.getROFrame();
+//    mNEvent = pixeldata.getROFrame();
+    mNEvent = events.get()[i].NEvent;
+    i++;
     //cout << "Event Compare: " << NEvent << ", " << NEventPre << endl;
 
     if (mNEvent % occUpdateFrequency == 0 && mNEvent > 0 && mNEvent != mNEventPre) {
@@ -319,7 +323,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
     mNEventPre = mNEvent;
 
   } // end digits loop
- 
+  i = 0;
   if(mNEventPre > 0) {
     updateOccupancyPlots(mNEventPre);
   }

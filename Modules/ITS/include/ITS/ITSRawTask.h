@@ -22,6 +22,11 @@ class TH1F;
 
 using namespace o2::quality_control::core;
 
+struct DigitEvent {
+      o2::itsmft::Digit Digits;
+      unsigned int NEvent;
+};
+
 namespace o2 {
 namespace quality_control_modules {
 namespace its {
