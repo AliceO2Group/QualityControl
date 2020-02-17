@@ -19,6 +19,7 @@
 #include <Framework/DeviceSpec.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/DataSpecUtils.h>
+#include <Framework/CompletionPolicyHelpers.h>
 
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
@@ -82,18 +83,9 @@ void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::Completi
   auto matcher = [](framework::DeviceSpec const& device) {
     return device.name.find(CheckRunner::createCheckRunnerIdString()) != std::string::npos;
   };
-  auto callback = [](gsl::span<PartRef const> const& inputs) {
-    // TODO: Check if need to check nullptr (done in checker::run)
-    for (auto& input : inputs) {
-      if (!(input.header == nullptr || input.payload == nullptr)) {
-        return framework::CompletionPolicy::CompletionOp::Consume;
-      }
-    }
-    return framework::CompletionPolicy::CompletionOp::Wait;
-  };
+  auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 
-  framework::CompletionPolicy checkerCompletionPolicy{ "checkerCompletionPolicy", matcher, callback };
-  policies.push_back(checkerCompletionPolicy);
+  policies.emplace_back("checkerCompletionPolicy", matcher, callback);
 }
 
 } // namespace o2::quality_control::checker
