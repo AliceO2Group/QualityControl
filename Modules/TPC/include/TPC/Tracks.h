@@ -28,16 +28,15 @@ namespace o2::quality_control_modules::tpc
 {
 
 /// \brief Quality Control DPL Task for QC Module TPC for track related observables
-/// It is final because there is no reason to derive from it. Just remove it if needed.
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
+/// \author Stefan Heckel
+
 class Tracks /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
-  Tracks();
+  Tracks() = default;
   /// Destructor
-  ~Tracks() override;
+  ~Tracks() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -49,7 +48,7 @@ class Tracks /*final*/ : public TaskInterface // todo add back the "final" when 
   void reset() override;
 
  private:
-  o2::tpc::qc::Tracks mQCTracks{};
+  o2::tpc::qc::Tracks mQCTracks{}; ///< TPC QC class from o2
 };
 
 } // namespace o2::quality_control_modules::tpc

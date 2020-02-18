@@ -17,6 +17,7 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <gsl/span>
 
 // O2 includes
 #include "Framework/ProcessingContext.h"
@@ -28,12 +29,6 @@
 
 namespace o2::quality_control_modules::tpc
 {
-
-Tracks::Tracks() : TaskInterface() {}
-
-Tracks::~Tracks()
-{
-}
 
 void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
 {
@@ -65,13 +60,14 @@ void Tracks::startOfCycle()
 
 void Tracks::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  using TrackType = std::vector<o2::tpc::TrackTPC>;
-  auto tracks = ctx.inputs().get<TrackType>("inputTracks");
+  using TracksType = gsl::span<o2::tpc::TrackTPC>;
+  const auto tracks = ctx.inputs().get<TracksType>("inputTracks");
   QcInfoLogger::GetInstance() << "monitorData: " << tracks.size() << AliceO2::InfoLogger::InfoLogger::endm;
 
-  for (auto const& track : tracks) {
-    mQCTracks.processTrack(track);
-  }
+  mQCTracks.processTracks(tracks);
+  //for (auto const& track : tracks) {
+  //  mQCTracks.processTrack(track);
+  //}
 }
 
 void Tracks::endOfCycle()
