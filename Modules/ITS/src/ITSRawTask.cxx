@@ -195,7 +195,6 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
   }
 
   auto digits = ctx.inputs().get<const std::vector<o2::itsmft::Digit>>("digits");
-  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("Events").header);
   auto events = ctx.inputs().get<DigitEvent*>("Events");
   LOG(INFO) << "Digit Size Getting For This TimeFrame (Event) = " << digits.size();
 
