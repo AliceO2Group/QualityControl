@@ -30,6 +30,6 @@ namespace itstaskraw
 
 BOOST_AUTO_TEST_CASE(instantiate_task) { BOOST_CHECK(true); }
 
-} // namespace simpleds
+} // namespace itstaskraw
 } // namespace quality_control_modules
 } // namespace o2

@@ -14,7 +14,7 @@
 /// \author Markus Keil
 //  \author Mario Sitta
 //  \author Jian Liu
-//  \author Li'Ang Zhang 
+//  \author Li'Ang Zhang
 /// \brief This is an executable showing QC Task's usage in Data Processing Layer.
 ///
 /// This is an executable showing QC Task's usage in Data Processing Layer. The workflow consists of data producer,

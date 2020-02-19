@@ -19,13 +19,15 @@ using namespace std;
 using namespace o2::itsmft;
 using namespace o2::its;
 
-namespace o2 {
-namespace quality_control_modules {
-namespace its {
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace its
+{
 
 ITSRawTask::ITSRawTask()
-    :
-    TaskInterface()
+  : TaskInterface()
 {
 
   o2::base::GeometryManager::loadGeometry();
@@ -33,7 +35,7 @@ ITSRawTask::ITSRawTask()
   gStyle->SetPadLeftMargin(0.15);
   m_objects.clear();
   m_publishedObjects.clear();
-  enableLayers(); 
+  enableLayers();
 
   createHistos();
 
@@ -64,20 +66,20 @@ ITSRawTask::~ITSRawTask()
   }
   for (int i = 0; i < 7; i++) {
     for (int j = 0; j < 48; j++) {
-      for(int k = 0; k < 14; k++) {
-	delete hHicHitmap[i][j][k];
-	for(int l = 0; l < 14; l++) {
-	  delete hChipHitmap[i][j][k][l];
-	}
+      for (int k = 0; k < 14; k++) {
+        delete hHicHitmap[i][j][k];
+        for (int l = 0; l < 14; l++) {
+          delete hChipHitmap[i][j][k][l];
+        }
       }
     }
   }
-  for(int i = 0; i < 3; i++) {
+  for (int i = 0; i < 3; i++) {
     delete hIBHitmap[i];
   }
   delete mDigits;
   delete gm;
-  for(int i = 0; i < NError; i++) {
+  for (int i = 0; i < NError; i++) {
     delete pt[i];
   }
   delete ptFileName;
@@ -89,11 +91,11 @@ ITSRawTask::~ITSRawTask()
   delete bulb;
 }
 
-void ITSRawTask::initialize(o2::framework::InitContext &/*ctx*/)
+void ITSRawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize ITSRawTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  o2::its::GeometryTGeo *geom = o2::its::GeometryTGeo::Instance();
+  o2::its::GeometryTGeo* geom = o2::its::GeometryTGeo::Instance();
   geom->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::L2G));
   int numOfChips = geom->getNumberOfChips();
   QcInfoLogger::GetInstance() << "numOfChips = " << numOfChips << AliceO2::InfoLogger::InfoLogger::endm;
@@ -151,10 +153,9 @@ void ITSRawTask::initialize(o2::framework::InitContext &/*ctx*/)
   mYellowed = 0;
 }
 
-void ITSRawTask::startOfActivity(Activity &/*activity*/)
+void ITSRawTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
-
 }
 
 void ITSRawTask::startOfCycle()
@@ -162,7 +163,7 @@ void ITSRawTask::startOfCycle()
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
+void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   double eta, phi;
   int lay, sta, ssta, mod, chip;
@@ -189,7 +190,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
 
   int ResetDecision = ctx.inputs().get<int>("in");
   QcInfoLogger::GetInstance() << "Reset Histogram Decision = " << ResetDecision
-      << AliceO2::InfoLogger::InfoLogger::endm;
+                              << AliceO2::InfoLogger::InfoLogger::endm;
   if (ResetDecision == 1) {
     reset();
   }
@@ -206,9 +207,9 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
 
   for (int i = 0; i < NError; i++) {
     QcInfoLogger::GetInstance() << " i = " << i << "   Error = " << mErrors[i] << "   ErrorPre = " << mErrorPre[i]
-        << "   ErrorPerFile = " << mErrorPerFile[i] << AliceO2::InfoLogger::InfoLogger::endm;
+                                << "   ErrorPerFile = " << mErrorPerFile[i] << AliceO2::InfoLogger::InfoLogger::endm;
     hErrorPlots->SetBinContent(i + 1, mErrors[i]);
-    hErrorFile->SetBinContent((FileID + 1 + (EPID-4)*12), i + 1, mErrorPerFile[i]);
+    hErrorFile->SetBinContent((FileID + 1 + (EPID - 4) * 12), i + 1, mErrorPerFile[i]);
   }
 
   if (FileFinish == 1) {
@@ -217,31 +218,30 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
     }
   }
 
-  difference = std::chrono::duration_cast < std::chrono::milliseconds > (end - start).count();
+  difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   //	QcInfoLogger::GetInstance() << "Before Loop = " << difference/1000.0 << "s" <<  AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Before Loop  = " << difference / 1000.0 << "s" << std::endl;
   int i = 0;
-  for (auto &&pixeldata : digits) {
+  for (auto&& pixeldata : digits) {
     startLoop = std::chrono::high_resolution_clock::now();
 
     ChipID = pixeldata.getChipIndex();
     col = pixeldata.getColumn();
     row = pixeldata.getRow();
-//    mNEvent = pixeldata.getROFrame();
+    //    mNEvent = pixeldata.getROFrame();
     mNEvent = events.get()[i].NEvent;
     i++;
     //cout << "Event Compare: " << NEvent << ", " << NEventPre << endl;
 
     if (mNEvent % occUpdateFrequency == 0 && mNEvent > 0 && mNEvent != mNEventPre) {
-      updateOccupancyPlots (mNEventPre);
-     // cout << "Carried out, " << NEventPre << endl;
+      updateOccupancyPlots(mNEventPre);
+      // cout << "Carried out, " << NEventPre << endl;
     }
-  
 
- // cout << "NFrame = " << NEvent  << endl;
+    // cout << "NFrame = " << NEvent  << endl;
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
-      difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
+      difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "Getting Value Time  = " << difference << "ns" << std::endl;
     }
@@ -257,13 +257,13 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
 
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
-      difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
+      difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "Before Geo  = " << difference << "ns" << std::endl;
     }
 
     gm->getChipId(ChipID, lay, sta, ssta, mod, chip);
-   // cout << "getID : " << ChipID << ", " << lay << ", " << sta << ", " << ssta << ", " << mod << ", " << chip << endl;
+    // cout << "getID : " << ChipID << ", " << lay << ", " << sta << ", " << ssta << ", " << mod << ", " << chip << endl;
     gm->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::L2G));
     const Point3D<float> loc(0., 0., 0.);
     auto glo = gm->getMatrixL2G(ChipID)(loc);
@@ -274,7 +274,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
 
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
-      difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
+      difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "After Geo =  " << difference << "ns" << std::endl;
     }
@@ -282,27 +282,26 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
     int hicCol, hicRow;
     // Todo: check if chipID is really chip ID
     getHicCoordinates(lay, chip, col, row, hicRow, hicCol);
-  //  if (lay == 0 && sta == 0 && ssta == 0 && mod == 0 && chip == 0) cout << ChipID << ", " << col << ", " << row << endl;
+    //  if (lay == 0 && sta == 0 && ssta == 0 && mod == 0 && chip == 0) cout << ChipID << ", " << col << ", " << row << endl;
     hHicHitmap[lay][sta][mod]->Fill(hicCol, hicRow);
     if (lay > NLayerIB && chip > 6) {
       // OB HICs: take into account that chip IDs are 0 .. 6, 8 .. 14
-      hChipHitmap[lay][sta][mod][chip-1]->Fill(col, row);
-    }
-    else {
+      hChipHitmap[lay][sta][mod][chip - 1]->Fill(col, row);
+    } else {
       hChipHitmap[lay][sta][mod][chip]->Fill(col, row);
-     // hIBHitmap[lay]->Fill(hicCol, row+(sta*NRowHis));
+      // hIBHitmap[lay]->Fill(hicCol, row+(sta*NRowHis));
     }
 
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
-      difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
+      difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "Fill HitMaps =  " << difference << "ns" << std::endl;
     }
 
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
-      difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
+      difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "Before glo etaphi =  " << difference << "ns" << std::endl;
     }
@@ -313,7 +312,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
 
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
-      difference = std::chrono::duration_cast < std::chrono::nanoseconds > (end - startLoop).count();
+      difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
       //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "After glo etaphi =  " << difference << "ns" << std::endl;
       mCounted = mCounted + 1;
@@ -323,33 +322,32 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext &ctx)
 
   } // end digits loop
   i = 0;
-  if(mNEventPre > 0) {
+  if (mNEventPre > 0) {
     updateOccupancyPlots(mNEventPre);
   }
   //cout << "EndUpdateOcc " << NEventPre <<endl;
   end = std::chrono::high_resolution_clock::now();
-  difference = std::chrono::duration_cast < std::chrono::milliseconds > (end - start).count();
+  difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   QcInfoLogger::GetInstance() << "Time After Loop = " << difference / 1000.0 << "s"
-      << AliceO2::InfoLogger::InfoLogger::endm;
+                              << AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Time After Loop = " << difference / 1000.0 << "s" << std::endl;
 
   QcInfoLogger::GetInstance() << "NEventDone = " << mNEvent << AliceO2::InfoLogger::InfoLogger::endm;
-  QcInfoLogger::GetInstance() <<  "Test  " << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "Test  " << AliceO2::InfoLogger::InfoLogger::endm;
 
   digits.clear();
 
   end = std::chrono::high_resolution_clock::now();
-  difference = std::chrono::duration_cast < std::chrono::milliseconds > (end - start).count();
+  difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   TotalHisTime = TotalHisTime + difference;
   QcInfoLogger::GetInstance() << "Time in Histogram = " << difference / 1000.0 << "s"
-      << AliceO2::InfoLogger::InfoLogger::endm;
+                              << AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Time in Histogram = " << difference / 1000.0 << "s" << std::endl;
 
   if (mNEvent == 0 && ChipID == 0 && row == 0 && col == 0 && mYellowed == 0) {
     bulb->SetFillColor(kYellow);
     mYellowed = 1;
   }
-
 }
 
 void ITSRawTask::addObject(TObject* aObject, bool published)
@@ -409,10 +407,10 @@ void ITSRawTask::createLayerHistos(int aLayer)
 
   // 1d- occupancy histogram of the full layer, x-axis units = log (occupancy)
   hOccupancyPlot[aLayer] = new TH1D(Form("Occupancy/Layer%dOccupancy", aLayer),
-				    Form("ITS Layer %d Occupancy Distribution", aLayer), 300, -15, 0);
+                                    Form("ITS Layer %d Occupancy Distribution", aLayer), 300, -15, 0);
   formatAxes(hOccupancyPlot[aLayer], "Occupancy", "Counts", 1., 2.2);
   addObject(hOccupancyPlot[aLayer]);
-/*
+  /*
 //HITMAPS of the full inner layers
   int maxX, maxY, nBinsX, nBinsY;
 
@@ -429,7 +427,7 @@ void ITSRawTask::createLayerHistos(int aLayer)
 */
   // HITMAPS per HIC, binning in groups of SizeReduce * SizeReduce pixels
   // chipHitmap: fine binning, one hitmap per chip, but not to be saved to CCDB (only for determination of noisy pixels)
-  for (int iStave = 0; iStave < NStaves[aLayer]; iStave ++) {
+  for (int iStave = 0; iStave < NStaves[aLayer]; iStave++) {
     createStaveHistos(aLayer, iStave);
   }
 }
@@ -443,18 +441,17 @@ void ITSRawTask::createChipStaveOcc(int aLayer)
   if (aLayer < NLayerIB) {
     nBinsX = nChipsPerHic[aLayer];
     hChipStaveOccupancy[aLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dChipStave", aLayer, aLayer),
-        Form("ITS Layer%d, Occupancy vs Chip and Stave", aLayer), nBinsX, -.5 , nBinsX-.5 , NStaves[aLayer], -.5, NStaves[aLayer]-.5);
+                                           Form("ITS Layer%d, Occupancy vs Chip and Stave", aLayer), nBinsX, -.5, nBinsX - .5, NStaves[aLayer], -.5, NStaves[aLayer] - .5);
     formatAxes(hChipStaveOccupancy[aLayer], "Chip Number", "Stave Number", 1., 1.1);
     formatStatistics(hChipStaveOccupancy[aLayer]);
-   // format2DZaxis(hChipStaveOccupancy[aLayer]);
-  }
-  else {
+    // format2DZaxis(hChipStaveOccupancy[aLayer]);
+  } else {
     nBinsX = nHicPerStave[aLayer];
     hChipStaveOccupancy[aLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dHicStave", aLayer, aLayer),
-        Form("ITS Layer%d, Occupancy vs Hic and Stave", aLayer), nBinsX, -.5 , nBinsX-.5 , NStaves[aLayer], -.5, NStaves[aLayer]-.5);
+                                           Form("ITS Layer%d, Occupancy vs Hic and Stave", aLayer), nBinsX, -.5, nBinsX - .5, NStaves[aLayer], -.5, NStaves[aLayer] - .5);
     formatAxes(hChipStaveOccupancy[aLayer], "Hic Number", "Stave Number", 1., 1.1);
     formatStatistics(hChipStaveOccupancy[aLayer]);
-   // format2DZaxis(hChipStaveOccupancy[aLayer]);
+    // format2DZaxis(hChipStaveOccupancy[aLayer]);
   }
 
   hChipStaveOccupancy[aLayer]->GetZaxis()->SetTitle("Number of Hits");
@@ -470,13 +467,12 @@ void ITSRawTask::createEtaPhiHitmap(int aLayer)
   if (aLayer < NLayerIB) {
     NEta = 9 * 10;
     NPhi = NStaves[aLayer] * 5;
-  }
-  else {
+  } else {
     NEta = nHicPerStave[aLayer] * 70;
     NPhi = NStaves[aLayer] * 10;
   }
   hEtaPhiHitmap[aLayer] = new TH2I(Form("Occupancy/Layer%d/Layer%dEtaPhi", aLayer, aLayer),
-      Form("ITS Layer%d, Hits vs Eta and Phi", aLayer), NEta, (-1)*etaCoverage[aLayer], etaCoverage[aLayer], NPhi, PhiMin, PhiMax);
+                                   Form("ITS Layer%d, Hits vs Eta and Phi", aLayer), NEta, (-1) * etaCoverage[aLayer], etaCoverage[aLayer], NPhi, PhiMin, PhiMax);
   formatAxes(hEtaPhiHitmap[aLayer], "#eta", "#phi", 1., 1.1);
   hEtaPhiHitmap[aLayer]->GetZaxis()->SetTitle("Number of Hits");
   hEtaPhiHitmap[aLayer]->GetZaxis()->SetTitleOffset(1.4);
@@ -486,10 +482,9 @@ void ITSRawTask::createEtaPhiHitmap(int aLayer)
 void ITSRawTask::createStaveHistos(int aLayer, int aStave)
 {
   for (int iHic = 0; iHic < nHicPerStave[aLayer]; iHic++) {
-     createHicHistos(aLayer, aStave, iHic);
+    createHicHistos(aLayer, aStave, iHic);
   }
 }
-
 
 void ITSRawTask::createHicHistos(int aLayer, int aStave, int aHic)
 {
@@ -501,18 +496,17 @@ void ITSRawTask::createHicHistos(int aLayer, int aStave, int aHic)
     Title = Form("Hits on Layer %d, Stave %d", aLayer, aStave);
     maxX = 9 * NColHis;
     maxY = NRowHis;
-nChips = 9;
-  }
-  else {
+    nChips = 9;
+  } else {
     Name = Form("Occupancy/Layer%d/Stave%d/HIC%d/Layer%dStave%dHIC%dHITMAP", aLayer, aStave, aHic, aLayer, aStave, aHic);
-Title = Form("Hits on Layer %d, Stave %d, Hic %d", aLayer, aStave, aHic);
+    Title = Form("Hits on Layer %d, Stave %d, Hic %d", aLayer, aStave, aHic);
     maxX = 7 * NColHis;
     maxY = 2 * NRowHis;
     nChips = 14;
   }
   nBinsX = maxX / mSizeReduce;
   nBinsY = maxY / mSizeReduce;
-  hHicHitmap[aLayer][aStave][aHic] = new TH2I(Name, Title, nBinsX, 0, maxX, nBinsY, 0,  maxY);
+  hHicHitmap[aLayer][aStave][aHic] = new TH2I(Name, Title, nBinsX, 0, maxX, nBinsY, 0, maxY);
   formatAxes(hHicHitmap[aLayer][aStave][aHic], "Column", "Row", 1., 1.1);
   // formatting, moved here from initialize
   hHicHitmap[aLayer][aStave][aHic]->GetZaxis()->SetTitleOffset(1.50);
@@ -521,9 +515,9 @@ Title = Form("Hits on Layer %d, Stave %d, Hic %d", aLayer, aStave, aHic);
   hHicHitmap[aLayer][aStave][aHic]->Draw("COLZ"); // should this really be drawn here?
   addObject(hHicHitmap[aLayer][aStave][aHic]);
 
-  for (int iChip = 0; iChip < nChips; iChip ++) {
+  for (int iChip = 0; iChip < nChips; iChip++) {
     hChipHitmap[aLayer][aStave][aHic][iChip] = new TH2I(Form("chipHitmapL%dS%dH%dC%d", aLayer, aStave, aHic, iChip),
-    Form("chipHitmapL%dS%dH%dC%d", aLayer, aStave, aHic, iChip),  1024, -.5, 1023.5, 512, -.5, 511.5);
+                                                        Form("chipHitmapL%dS%dH%dC%d", aLayer, aStave, aHic, iChip), 1024, -.5, 1023.5, 512, -.5, 511.5);
     addObject(hChipHitmap[aLayer][aStave][aHic][iChip], false);
   }
 }
@@ -531,31 +525,27 @@ Title = Form("Hits on Layer %d, Stave %d, Hic %d", aLayer, aStave, aHic);
 // To be checked:
 // - something like this should exist in the official geometry already
 // - is aChip really the chipID (i.e. 0..6, 8.. 14 in case of OB HICs)?
-void ITSRawTask::getHicCoordinates (int aLayer, int aChip, int aCol, int aRow, int& aHicRow, int& aHicCol)
+void ITSRawTask::getHicCoordinates(int aLayer, int aChip, int aCol, int aRow, int& aHicRow, int& aHicCol)
 {
   aChip &= 0xf;
   if (aLayer < NLayerIB) {
     aHicCol = aChip * NCols + aCol;
     aHicRow = aRow;
-  }
-  else { // OB Hic: chip row 0 at center of HIC
+  } else { // OB Hic: chip row 0 at center of HIC
     if (aChip < 7) {
       aHicCol = aChip * NCols + aCol;
       aHicRow = NRows - aRow - 1;
-    }
-    else {
+    } else {
       aHicRow = NRows + aRow;
       aHicCol = 7 * NCols - ((aChip - 8) * NCols + aCol);
     }
   }
 }
 
-
-void ITSRawTask::formatStatistics(TH2 *h){
+void ITSRawTask::formatStatistics(TH2* h)
+{
 
   h->SetStats(0);
-
-
 }
 /*
 void ITSRawTask::format2DZaxis(TH2 *h){
@@ -566,7 +556,7 @@ void ITSRawTask::format2DZaxis(TH2 *h){
 
 }
 */
-void ITSRawTask::formatAxes(TH1 *h, const char* xTitle, const char* yTitle, float xOffset, float yOffset)
+void ITSRawTask::formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset, float yOffset)
 {
   h->GetXaxis()->SetTitle(xTitle);
   h->GetYaxis()->SetTitle(yTitle);
@@ -574,7 +564,7 @@ void ITSRawTask::formatAxes(TH1 *h, const char* xTitle, const char* yTitle, floa
   h->GetYaxis()->SetTitleOffset(yOffset);
 }
 
-void ITSRawTask::formatPaveText(TPaveText *aPT, float aTextSize, Color_t aTextColor, short aTextAlign, const char *aText)
+void ITSRawTask::formatPaveText(TPaveText* aPT, float aTextSize, Color_t aTextColor, short aTextAlign, const char* aText)
 {
   aPT->SetTextSize(aTextSize);
   aPT->SetTextAlign(aTextAlign);
@@ -583,7 +573,7 @@ void ITSRawTask::formatPaveText(TPaveText *aPT, float aTextSize, Color_t aTextCo
   aPT->AddText(aText);
 }
 
-void ITSRawTask::ConfirmXAxis(TH1 *h)
+void ITSRawTask::ConfirmXAxis(TH1* h)
 {
   // Remove the current axis
   h->GetXaxis()->SetLabelOffset(999);
@@ -592,14 +582,14 @@ void ITSRawTask::ConfirmXAxis(TH1 *h)
   gPad->Update();
   int XTicks = (h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin()) / mDivisionStep;
 
-  TGaxis *newaxis = new TGaxis(gPad->GetUxmin(), gPad->GetUymin(), gPad->GetUxmax(), gPad->GetUymin(),
-      h->GetXaxis()->GetXmin(), h->GetXaxis()->GetXmax(), XTicks, "N");
+  TGaxis* newaxis = new TGaxis(gPad->GetUxmin(), gPad->GetUymin(), gPad->GetUxmax(), gPad->GetUymin(),
+                               h->GetXaxis()->GetXmin(), h->GetXaxis()->GetXmax(), XTicks, "N");
   newaxis->SetLabelOffset(0.0);
   newaxis->Draw();
   h->GetListOfFunctions()->Add(newaxis);
 }
 
-void ITSRawTask::ReverseYAxis(TH1 *h)
+void ITSRawTask::ReverseYAxis(TH1* h)
 {
   // Remove the current axis
   h->GetYaxis()->SetLabelOffset(999);
@@ -609,13 +599,12 @@ void ITSRawTask::ReverseYAxis(TH1 *h)
   gPad->Update();
 
   int YTicks = (h->GetYaxis()->GetXmax() - h->GetYaxis()->GetXmin()) / mDivisionStep;
-  TGaxis *newaxis = new TGaxis(gPad->GetUxmin(), gPad->GetUymax(), gPad->GetUxmin() - 0.001, gPad->GetUymin(),
-      h->GetYaxis()->GetXmin(), h->GetYaxis()->GetXmax(), YTicks, "N");
+  TGaxis* newaxis = new TGaxis(gPad->GetUxmin(), gPad->GetUymax(), gPad->GetUxmin() - 0.001, gPad->GetUymin(),
+                               h->GetYaxis()->GetXmin(), h->GetYaxis()->GetXmax(), YTicks, "N");
 
   newaxis->SetLabelOffset(0);
   newaxis->Draw();
   h->GetListOfFunctions()->Add(newaxis);
-
 }
 
 void ITSRawTask::publishHistos()
@@ -657,11 +646,11 @@ void ITSRawTask::getProcessStatus(int aInfoFile, int& aFileFinish)
 void ITSRawTask::updateFile(int aRunID, int aEpID, int aFileID)
 {
 
-  static int RunIDPre=0, FileIDPre=0;
+  static int RunIDPre = 0, FileIDPre = 0;
   if (RunIDPre != aRunID || FileIDPre != aFileID) {
     TString FileName = Form("infiles/run000%d/data-ep%d-link%d", aRunID, aEpID, aFileID);
     QcInfoLogger::GetInstance() << "For the Moment: RunID = " << aRunID << "  FileID = " << aFileID
-        << AliceO2::InfoLogger::InfoLogger::endm;
+                                << AliceO2::InfoLogger::InfoLogger::endm;
     hFileNameInfo->Fill(0.5);
     hFileNameInfo->SetTitle(Form("Current File Name: %s", FileName.Data()));
     mTotalFileDone = mTotalFileDone + 1;
@@ -681,10 +670,9 @@ void ITSRawTask::updateFile(int aRunID, int aEpID, int aFileID)
 void ITSRawTask::endOfCycle()
 {
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-
 }
 
-void ITSRawTask::endOfActivity(Activity &/*activity*/)
+void ITSRawTask::endOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
@@ -711,24 +699,23 @@ void ITSRawTask::resetHitmaps()
   hErrorPlots->Reset();
   hErrorFile->Reset();
 
-// for (int iLayer = 0; iLayer < NLayerIB; iLayer ++) {
- 
-   // if (!layerEnable[iLayer]) continue;
-   // hIBHitmap[iLayer]->Reset();
-  
- //}
+  // for (int iLayer = 0; iLayer < NLayerIB; iLayer ++) {
 
+  // if (!layerEnable[iLayer]) continue;
+  // hIBHitmap[iLayer]->Reset();
 
-  for (int iLayer = 0; iLayer < NLayer; iLayer ++) {
+  //}
+
+  for (int iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mlayerEnable[iLayer]) {
       continue;
     }
     hEtaPhiHitmap[iLayer]->Reset();
-   // hIBHitmap[iLayer]->Reset();
-    for (int iStave = 0; iStave < NStaves[iLayer]; iStave ++) {
+    // hIBHitmap[iLayer]->Reset();
+    for (int iStave = 0; iStave < NStaves[iLayer]; iStave++) {
       for (int iHic = 0; iHic < nHicPerStave[iLayer]; iHic++) {
         hHicHitmap[iLayer][iStave][iHic]->Reset();
-        for (int iChip = 0; iChip < nChipsPerHic[iLayer]; iChip ++) {
+        for (int iChip = 0; iChip < nChipsPerHic[iLayer]; iChip++) {
           hChipHitmap[iLayer][iStave][iHic][iChip]->Reset();
         }
       }
@@ -755,24 +742,24 @@ void ITSRawTask::updateOccupancyPlots(int nEvents)
 
   resetOccupancyPlots();
 
-  for (int iLayer = 0; iLayer < NLayer; iLayer ++) {
+  for (int iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mlayerEnable[iLayer]) {
       continue;
     }
     //hEtaPhiHitmap[iLayer]->Reset();
-    for (int iStave = 0; iStave < NStaves[iLayer]; iStave ++) {
+    for (int iStave = 0; iStave < NStaves[iLayer]; iStave++) {
       for (int iHic = 0; iHic < nHicPerStave[iLayer]; iHic++) {
-        for (int iChip = 0; iChip < nChipsPerHic[iLayer]; iChip ++) {
+        for (int iChip = 0; iChip < nChipsPerHic[iLayer]; iChip++) {
           chipOccupancy = hChipHitmap[iLayer][iStave][iHic][iChip]->Integral();
-          chipOccupancy = chipOccupancy/((double)nEvents * (double)NPixels);
-         // cout << "chipOcc = " << hChipHitmap[iLayer][iStave][iHic][iChip]->Integral() << ", " << iLayer << ", " << iStave << ", " << iHic << ", " << iChip << endl;
+          chipOccupancy = chipOccupancy / ((double)nEvents * (double)NPixels);
+          // cout << "chipOcc = " << hChipHitmap[iLayer][iStave][iHic][iChip]->Integral() << ", " << iLayer << ", " << iStave << ", " << iHic << ", " << iChip << endl;
           if (iLayer < NLayerIB) {
             hChipStaveOccupancy[iLayer]->Fill(iChip, iStave, chipOccupancy);
           } else {
             hChipStaveOccupancy[iLayer]->Fill(iHic, iStave, chipOccupancy / nChipsPerHic[iLayer]);
           }
           for (int iCol = 0; iCol < NCols; iCol++) {
-            for (int iRow = 0; iRow < NRows; iRow ++) {
+            for (int iRow = 0; iRow < NRows; iRow++) {
               pixelOccupancy = hChipHitmap[iLayer][iStave][iHic][iChip]->GetBinContent(iCol + 1, iRow + 1);
               if (pixelOccupancy > 0) {
                 pixelOccupancy /= (double)nEvents;
@@ -786,9 +773,8 @@ void ITSRawTask::updateOccupancyPlots(int nEvents)
   }
 }
 
- 
-
-void ITSRawTask::enableLayers(){
+void ITSRawTask::enableLayers()
+{
 
   string mRunType, mEventPerPush, mTrackError, mWorkDir, enable[7];
   std::ifstream RunFileType("Config/RunType.dat");
@@ -796,19 +782,18 @@ void ITSRawTask::enableLayers(){
 
   if (mRunType == "FakeHitRate") {
     std::ifstream EventPush("Config/ConfigFakeRate.dat");
-    EventPush >> mEventPerPush >> mTrackError >> mWorkDir >> enable[0] >>enable[1] >>enable[2] >>enable[3] >>enable[4] >>enable[5] >>enable[6];
+    EventPush >> mEventPerPush >> mTrackError >> mWorkDir >> enable[0] >> enable[1] >> enable[2] >> enable[3] >> enable[4] >> enable[5] >> enable[6];
   }
   if (mRunType == "ThresholdScan") {
     std::ifstream EventPush("Config/ConfigThreshold.dat");
-    EventPush >> mEventPerPush >> mTrackError >> mWorkDir >> enable[0] >>enable[1] >>enable[2] >>enable[3] >>enable[4] >>enable[5] >>enable[6];   
+    EventPush >> mEventPerPush >> mTrackError >> mWorkDir >> enable[0] >> enable[1] >> enable[2] >> enable[3] >> enable[4] >> enable[5] >> enable[6];
   }
-  for (int i=0; i<7; i++) {
+  for (int i = 0; i < 7; i++) {
     mlayerEnable[i] = stoi(enable[i]);
   }
   //cout << "LayerEnable = " << " layer0 = " << layerEnable[0] << " layer5 = " << layerEnable[5] <<  endl;
 }
 
-
-} // namespace simpleds
+} // namespace its
 } // namespace quality_control_modules
 } // namespace o2
