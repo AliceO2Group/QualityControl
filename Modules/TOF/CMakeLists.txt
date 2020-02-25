@@ -15,10 +15,7 @@ target_include_directories(
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
-         ${O2_ROOT}/include/TOFWorkflow
-         ${O2_ROOT}/include/TOFCompression
-         ${O2_ROOT}/include/DataFormatsTOF
-         ${O2_ROOT}/include/TOFBase )
+         )
 
 target_link_libraries(QcTOF PUBLIC QualityControl
                                     O2::TOFBase
