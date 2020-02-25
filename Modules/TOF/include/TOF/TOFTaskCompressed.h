@@ -30,7 +30,7 @@ namespace o2::quality_control_modules::tof
 
 /// \brief TOF Quality Control DPL Task
 /// \author Nicolo' Jacazio
-class TOFTaskCompressed            /*final*/
+class TOFTaskCompressed  /*final*/
   : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
@@ -60,14 +60,14 @@ class TOFTaskCompressed            /*final*/
 
  private:
   std::shared_ptr<TH1F> mHisto;          /// Number of fired TOF macropads per event
-  std::shared_ptr<TH1F> mTime;          /// Number of fired TOF macropads per event
-  std::shared_ptr<TH1F> mTOT;          /// Number of fired TOF macropads per event
-  std::shared_ptr<TH1F> mIndexE;          /// Number of fired TOF macropads per event
-  std::shared_ptr<TH2F> mSlotEnableMask;          /// Number of fired TOF macropads per event
-  std::shared_ptr<TH2F> mDiagnostic;          /// Number of fired TOF macropads per event
-
+  std::shared_ptr<TH1F> mTime;           /// Number of fired TOF macropads per event
+  std::shared_ptr<TH1F> mTOT;            /// Number of fired TOF macropads per event
+  std::shared_ptr<TH1F> mIndexE;         /// Number of fired TOF macropads per event
+  std::shared_ptr<TH2F> mSlotEnableMask; /// Number of fired TOF macropads per event
+  std::shared_ptr<TH2F> mDiagnostic;     /// Number of fired TOF macropads per event
 };
 
 } // namespace o2::quality_control_modules::tof
 
 #endif // QC_MODULE_TOF_TOFTASKCOMPRESSED_H
+

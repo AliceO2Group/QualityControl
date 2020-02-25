@@ -99,10 +99,10 @@ void TOFTaskCompressed::startOfCycle()
 
 void TOFTaskCompressed::monitorData(o2::framework::ProcessingContext& ctx)
 {
-    LOG(INFO) << "Monitoring in the TOFCompressed Task "<<ENDM;
+  LOG(INFO) << "Monitoring in the TOFCompressed Task " << ENDM;
 
-//     TH1F *hasd = nullptr;
-// hasd->GetName();
+  //     TH1F *hasd = nullptr;
+  // hasd->GetName();
   /** check status **/
   //   if (mStatus) {
   //     ctx.services().get<ControlService>().readyToQuit(QuitRequest::Me);
@@ -240,3 +240,4 @@ void TOFTaskCompressed::reset()
 }
 
 } // namespace o2::quality_control_modules::tof
+
