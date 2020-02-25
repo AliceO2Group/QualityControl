@@ -13,6 +13,7 @@
 /// \author  Rafal Pacholek
 ///
 #include <Framework/DataSampling.h>
+#include <Framework/CompletionPolicyHelpers.h>
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
@@ -28,17 +29,9 @@ void customize(std::vector<CompletionPolicy>& policies)
   auto matcher = [](framework::DeviceSpec const& device) {
     return device.name.find(receiverName) != std::string::npos;
   };
-  auto callback = [](gsl::span<PartRef const> const& inputs) {
-    for (auto& input : inputs) {
-      if (!(input.header == nullptr || input.payload == nullptr)) {
-        return framework::CompletionPolicy::CompletionOp::Consume;
-      }
-    }
-    return framework::CompletionPolicy::CompletionOp::Wait;
-  };
+  auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 
-  framework::CompletionPolicy checkerCompletionPolicy{ "receiverCompletionPolicy", matcher, callback };
-  policies.push_back(checkerCompletionPolicy);
+  policies.emplace_back("receiverCompletionPolicy", matcher, callback);
 }
 
 #include "getTestDataDirectory.h"
