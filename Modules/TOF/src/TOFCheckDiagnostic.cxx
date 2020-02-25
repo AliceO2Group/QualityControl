@@ -59,7 +59,6 @@ std::string TOFCheckDiagnostic::getAcceptedType() { return "TH2F"; }
 
 void TOFCheckDiagnostic::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-#if 0
   if (mo->getName() == "hDiagnostic") {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
@@ -70,9 +69,6 @@ void TOFCheckDiagnostic::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     if (checkResult == Quality::Good) {
       LOG(INFO) << "Quality::Good, setting to green";
       msg->Clear();
-      msg->AddText(Form("Mean value = %5.2f", multiMean));
-      msg->AddText(Form("Reference range: %5.2f-%5.2f", minTOFrawhits, maxTOFrawhits));
-      msg->AddText(Form("Events with 0 hits = %5.2f%%", zeroBinIntegral * 100. / totIntegral));
       msg->AddText("OK!");
       msg->SetFillColor(kGreen);
       //
@@ -101,7 +97,6 @@ void TOFCheckDiagnostic::beautify(std::shared_ptr<MonitorObject> mo, Quality che
     }
   } else
     LOG(ERROR) << "Did not get correct histo from " << mo->GetName();
-#endif
 }
 
 } // namespace o2::quality_control_modules::tof

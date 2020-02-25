@@ -152,8 +152,8 @@ void TOFTaskCompressed::monitorData(o2::framework::ProcessingContext& ctx)
       pointer += 4;
 
       /** crate orbit expected **/
-      auto crateOrbit = reinterpret_cast<o2::tof::compressed::CrateOrbit_t*>(pointer);
       // #ifdef VERBOSE
+      //       auto crateOrbit = reinterpret_cast<o2::tof::compressed::CrateOrbit_t*>(pointer);
       //       printf(" %08x CrateOrbit           (orbit=0x%08x) \n ", *(uint32_t*)pointer, crateOrbit->orbitID);
       // #endif
       pointer += 4;
