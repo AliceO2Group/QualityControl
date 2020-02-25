@@ -240,4 +240,3 @@ void TOFTaskCompressed::reset()
 }
 
 } // namespace o2::quality_control_modules::tof
-

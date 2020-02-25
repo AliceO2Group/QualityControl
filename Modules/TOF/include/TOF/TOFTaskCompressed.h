@@ -70,4 +70,3 @@ class TOFTaskCompressed  /*final*/
 } // namespace o2::quality_control_modules::tof
 
 #endif // QC_MODULE_TOF_TOFTASKCOMPRESSED_H
-

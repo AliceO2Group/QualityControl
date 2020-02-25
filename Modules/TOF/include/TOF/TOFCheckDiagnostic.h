@@ -59,4 +59,3 @@ class TOFCheckDiagnostic : public o2::quality_control::checker::CheckInterface
 } // namespace o2::quality_control_modules::tof
 
 #endif // QC_MODULE_TOF_TOFCHECKDIAGNOSTIC_H
-
