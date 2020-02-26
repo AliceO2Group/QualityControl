@@ -42,11 +42,11 @@ class MySqlDatabase : public DatabaseInterface
   // MonitorObject
   void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> q) override;
   std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) override;
-  std::string retrieveMOJson(std::string taskName, std::string objectName) override;
+  std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = 0) override;
   // QualityObject
   void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> q) override;
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkerName, long timestamp = 0) override;
-  std::string retrieveQOJson(std::string checkName) override;
+  std::string retrieveQOJson(std::string checkName, long timestamp = 0) override;
 
   void disconnect() override;
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
