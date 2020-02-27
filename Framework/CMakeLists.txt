@@ -383,7 +383,7 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py scr
 #
 # Using file(COPY is wrong because cmake will not detect when the files are modified.
 # Using install is also wrong because we don't want to install nor package the test files.
-# The solution is this ugly piece of cmake code.
+# The solution is to use configure_file with COPYONLY.
 
 set(TEST_FILES
   "testSharedConfig.json"
@@ -394,15 +394,5 @@ set(TEST_FILES_PREFIXED ${TEST_FILES})
 list(TRANSFORM TEST_FILES_PREFIXED PREPEND ${CMAKE_BINARY_DIR}/tests/)
 
 foreach(test_file ${TEST_FILES})
-  message("**** ${test_file}")
-  add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/tests/${test_file}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/test/${test_file}
-                                     ${CMAKE_BINARY_DIR}/tests/${test_file}
-    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/test/${test_file}
-    COMMENT "Copying ${test_file}")
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test/${test_file} ${CMAKE_BINARY_DIR}/tests/${test_file} COPYONLY)
 endforeach()
-
-add_custom_target(copy_test_files ALL
-  DEPENDS ${TEST_FILES_PREFIXED}
-  )
