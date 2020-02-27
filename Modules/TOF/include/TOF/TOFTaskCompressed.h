@@ -32,7 +32,7 @@ namespace o2::quality_control_modules::tof
 
 /// \brief TOF Quality Control DPL Task for TOF Compressed data
 /// \author Nicolo' Jacazio
-class TOFTaskCompressed /*final*/
+class TOFTaskCompressed  /*final*/
   : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
@@ -59,7 +59,6 @@ class TOFTaskCompressed /*final*/
   std::shared_ptr<TH1F> mIndexE;         /// Index in electronic
   std::shared_ptr<TH2F> mSlotEnableMask; /// Enabled slot
   std::shared_ptr<TH2F> mDiagnostic;     /// Diagnostic histogram
-
 };
 
 } // namespace o2::quality_control_modules::tof
