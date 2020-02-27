@@ -80,12 +80,16 @@ void TaskRunner::init(InitContext& iCtx)
   // init user's task
   mTask->loadCcdb(mTaskConfig.conditionUrl);
   mTask->initialize(iCtx);
+
+  mNoMoreCycles = false;
+  mCycleNumber = 0;
 }
 
 void TaskRunner::run(ProcessingContext& pCtx)
 {
-  if (mTaskConfig.maxNumberCycles >= 0 && mCycleNumber >= mTaskConfig.maxNumberCycles) {
-    LOG(INFO) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached.";
+  if (mNoMoreCycles) {
+    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
+               << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
 
@@ -107,6 +111,8 @@ void TaskRunner::run(ProcessingContext& pCtx)
     }
     if (mTaskConfig.maxNumberCycles < 0 || mCycleNumber < mTaskConfig.maxNumberCycles) {
       startCycle();
+    } else {
+      mNoMoreCycles = true;
     }
   }
 }
@@ -117,7 +123,6 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   //  added, this will break.
   size_t dataInputsExpected = inputs.size() - 1;
   size_t dataInputsPresent = 0;
-  size_t allInputs = 0;
 
   CompletionPolicy::CompletionOp action = CompletionPolicy::CompletionOp::Wait;
 
@@ -138,7 +143,6 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
 
   LOG(DEBUG) << "Completion policy callback. "
              << "Total inputs possible: " << inputs.size()
-             << ", inputs present: " << allInputs
              << ", data inputs: " << dataInputsPresent
              << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume);
 
@@ -173,12 +177,20 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
   return description;
 }
 
+void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
+{
+  ILOG(Info) << "Received an EndOfStream, finishing the current cycle" << ENDM;
+  finishCycle(eosContext.outputs());
+  mNoMoreCycles = true;
+}
+
 void TaskRunner::start()
 {
   startOfActivity();
 
-  if (mTaskConfig.maxNumberCycles >= 0 && mCycleNumber >= mTaskConfig.maxNumberCycles) {
-    LOG(INFO) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached.";
+  if (mNoMoreCycles) {
+    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
+               << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
 
