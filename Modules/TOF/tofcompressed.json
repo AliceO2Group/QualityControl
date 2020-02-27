@@ -34,7 +34,7 @@
         "dataSource": {
           "type": "direct",
           "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1[;binding2:...]",
-          "query" : "dataframe:TOF/CMPDATAFRAME/0"
+          "query" : "dataframe:TOF/CRAWDATA"
         },
         "taskParameters": {
           "nothing": "myOwnValue"
@@ -61,7 +61,7 @@
       "id": "pippo",
       "active": "true",
       "machines": [],
-      "query": "dataframe:TOF/CMPDATAFRAME/0",
+      "query": "dataframe:TOF/CRAWDATA",
       "samplingConditions": [
         {
           "condition": "random",
