@@ -16,7 +16,9 @@
 #ifndef QC_MODULE_TOF_TOFTASKCOMPRESSED_H
 #define QC_MODULE_TOF_TOFTASKCOMPRESSED_H
 
+// QC includes
 #include "QualityControl/TaskInterface.h"
+#include "TOF/TOFDecoderCompressed.h"
 
 class TH1F;
 class TH2F;
@@ -28,9 +30,9 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief TOF Quality Control DPL Task
+/// \brief TOF Quality Control DPL Task for TOF Compressed data
 /// \author Nicolo' Jacazio
-class TOFTaskCompressed  /*final*/
+class TOFTaskCompressed /*final*/
   : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
@@ -48,23 +50,16 @@ class TOFTaskCompressed  /*final*/
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  static Int_t fgNbinsMultiplicity;         /// Number of bins in multiplicity plot
-  static Int_t fgRangeMinMultiplicity;      /// Min range in multiplicity plot
-  static Int_t fgRangeMaxMultiplicity;      /// Max range in multiplicity plot
-  static Int_t fgNbinsTime;                 /// Number of bins in time plot
-  static const Float_t fgkNbinsWidthTime;   /// Width of bins in time plot
-  static Float_t fgRangeMinTime;            /// Range min in time plot
-  static Float_t fgRangeMaxTime;            /// Range max in time plot
-  static Int_t fgCutNmaxFiredMacropad;      /// Cut on max number of fired macropad
-  static const Int_t fgkFiredMacropadLimit; /// Limit on cut on number of fired macropad
-
  private:
-  std::shared_ptr<TH1F> mHisto;          /// Number of fired TOF macropads per event
-  std::shared_ptr<TH1F> mTime;           /// Number of fired TOF macropads per event
-  std::shared_ptr<TH1F> mTOT;            /// Number of fired TOF macropads per event
-  std::shared_ptr<TH1F> mIndexE;         /// Number of fired TOF macropads per event
-  std::shared_ptr<TH2F> mSlotEnableMask; /// Number of fired TOF macropads per event
-  std::shared_ptr<TH2F> mDiagnostic;     /// Number of fired TOF macropads per event
+  TOFDecoderCompressed mDecoder;         /// Decoder for TOF Compressed data useful for the Task
+  std::shared_ptr<TH1F> mHits;           /// Number of TOF hits
+  std::shared_ptr<TH1F> mTime;           /// Time
+  std::shared_ptr<TH1F> mTimeBC;         /// Time in Bunch Crossing
+  std::shared_ptr<TH1F> mTOT;            /// Time-Over-Threshold
+  std::shared_ptr<TH1F> mIndexE;         /// Index in electronic
+  std::shared_ptr<TH2F> mSlotEnableMask; /// Enabled slot
+  std::shared_ptr<TH2F> mDiagnostic;     /// Diagnostic histogram
+
 };
 
 } // namespace o2::quality_control_modules::tof

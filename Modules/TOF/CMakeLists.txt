@@ -5,6 +5,7 @@ add_library(QcTOF)
 target_sources(QcTOF 
               PRIVATE src/TOFTask.cxx
                       src/TOFTaskCompressed.cxx
+                      src/TOFDecoderCompressed.cxx
                       src/TOFCheckDiagnostic.cxx
                       src/TOFCheckRawsMulti.cxx
                       src/TOFCheckRawsTime.cxx 
@@ -21,7 +22,8 @@ target_link_libraries(QcTOF PUBLIC QualityControl
                                     O2::TOFBase
                                     O2::TOFWorkflow
                                     O2::DataFormatsTOF
-                                    O2::TOFCompression)
+                                    O2::TOFCompression
+                                    O2::TOFReconstruction)
 
 install(TARGETS QcTOF
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -33,6 +35,7 @@ install(TARGETS QcTOF
 add_root_dictionary(QcTOF
                     HEADERS include/TOF/TOFTask.h
                             include/TOF/TOFTaskCompressed.h
+                            include/TOF/TOFDecoderCompressed.h
                             include/TOF/TOFCheckDiagnostic.h
                             include/TOF/TOFCheckRawsMulti.h
                             include/TOF/TOFCheckRawsTime.h
