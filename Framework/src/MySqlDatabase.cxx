@@ -290,7 +290,7 @@ std::shared_ptr<o2::quality_control::core::QualityObject> MySqlDatabase::retriev
   return qo;
 }
 
-std::string MySqlDatabase::retrieveQOJson(std::string checkName)
+std::string MySqlDatabase::retrieveQOJson(std::string checkName, long /*timestamp*/)
 {
   auto qualityObject = retrieveQO(checkName);
   if (qualityObject == nullptr) {
@@ -355,7 +355,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> MySqlDatabase::retriev
   return mo;
 }
 
-std::string MySqlDatabase::retrieveMOJson(std::string taskName, std::string objectName)
+std::string MySqlDatabase::retrieveMOJson(std::string taskName, std::string objectName, long /*timestamp*/)
 {
   auto monitor = retrieveMO(taskName, objectName);
   if (monitor == nullptr) {
