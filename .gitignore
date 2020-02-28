@@ -11,5 +11,6 @@ README.md.*
 cmake-build-*
 Framework/test/testCcdbApi2.cxx
 local_history.patch
+compile_commands.json
 .*.swp
 *.orig
