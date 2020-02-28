@@ -43,17 +43,19 @@ class PostProcessingRunner
   PostProcessingRunner(std::string name, std::string configPath);
   ~PostProcessingRunner();
 
-  bool init();
-  // one iteration over the event loop
+  /// \brief Initialization. Throws on errors.
+  void init();
+  /// \brief One iteration over the event loop. Throws on errors. Returns false when it can gracefully exit.
   bool run();
-  // other state transitions
-  void stop(); //todo can a task request a stop transition in OCC plugin and DPL?
+  /// \brief Stop transition. Throws on errors.
+  void stop();
+  /// \brief Reset transition. Throws on errors.
   void reset();
 
  private:
   enum class TaskState {
     INVALID,
-    Created, // configured
+    Created,
     Running,
     Finished
   };

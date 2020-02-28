@@ -51,10 +51,7 @@ int main(int argc, const char* argv[])
     int rateUs = static_cast<int>(1000000 * vm["rate"].as<double>());
     PostProcessingRunner runner(vm["name"].as<std::string>(), vm["config"].as<std::string>());
 
-    bool initResult = runner.init();
-    if (!initResult) {
-      return 1;
-    }
+    runner.init();
 
     Timer timer;
     timer.reset(rateUs);
@@ -67,7 +64,8 @@ int main(int argc, const char* argv[])
     }
     return 0;
   } catch (const bpo::error& ex) {
-    ILOG(Error) << ex.what() << ENDM;
+    ILOG(Error) << "Exception caught: " << ex.what() << ENDM;
+    return 1;
   }
 
   return 0;

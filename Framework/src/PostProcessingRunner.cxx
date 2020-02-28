@@ -11,7 +11,6 @@
 #include "QualityControl/PostProcessingRunner.h"
 
 #include "QualityControl/PostProcessingFactory.h"
-#include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/TriggerHelpers.h"
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -29,36 +28,24 @@ PostProcessingRunner::PostProcessingRunner(std::string name, std::string configP
   : mConfigFile(ConfigurationFactory::getConfiguration(configPath)),
     mConfig(name, *mConfigFile)
 {
-  // fixme: uncomment after a bugfix in Configuration is merged and released
-  // mConfigFile->setPrefix(""); // protect from having the prefix changed by PostProcessingConfig
+  mConfigFile->setPrefix(""); // protect from having the prefix changed by PostProcessingConfig
 }
 
 PostProcessingRunner::~PostProcessingRunner()
 {
 }
 
-bool PostProcessingRunner::init()
+void PostProcessingRunner::init()
 {
   ILOG(Info) << "Initializing PostProcessingRunner" << ENDM;
 
-  try {
-    // configuration of the database
-    mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
-    mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
-    ILOG(Info) << "Database that is going to be used : " << ENDM;
-    ILOG(Info) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation") << ENDM;
-    ILOG(Info) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host") << ENDM;
-    mServices.registerService<DatabaseInterface>(mDatabase.get());
-  } catch (
-    std::string const& e) { // we have to catch here to print the exception because the device will make it disappear todo: is it still the case?
-    ILOG(Error) << "exception : " << e << ENDM;
-    throw;
-  } catch (...) {
-    std::string diagnostic = boost::current_exception_diagnostic_information();
-    ILOG(Error) << "Unexpected exception, diagnostic information follows:\n"
-                << diagnostic << ENDM;
-    throw;
-  }
+  // configuration of the database
+  mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
+  mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
+  ILOG(Info) << "Database that is going to be used : " << ENDM;
+  ILOG(Info) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation") << ENDM;
+  ILOG(Info) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host") << ENDM;
+  mServices.registerService<DatabaseInterface>(mDatabase.get());
 
   // setup user's task
   ILOG(Info) << "Creating a user task '" << mConfig.taskName << "'" << ENDM;
@@ -72,17 +59,14 @@ bool PostProcessingRunner::init()
     mTask->configure(mConfig.taskName, *mConfigFile);
 
     mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers);
-    return true;
   } else {
-    ILOG(Info) << "Failed to create the task '" << mConfig.taskName << "'" << ENDM;
-    // todo :maybe exceptions instead of return values
-    return false;
+    throw std::runtime_error("Failed to create the task '" + mConfig.taskName + "'");
   }
 }
 
 bool PostProcessingRunner::run()
 {
-  ILOG(Info) << "Running PostProcessingRunner" << ENDM;
+  ILOG(Info) << "Checking triggers of the task '" << mTask->getName() << "'" << ENDM;
 
   if (mState == TaskState::Created) {
     if (Trigger trigger = trigger_helpers::tryTrigger(mInitTriggers)) {
@@ -112,9 +96,9 @@ bool PostProcessingRunner::run()
     return false;
   }
   if (mState == TaskState::INVALID) {
-    // todo maybe exception?
-    ILOG(Info) << "User task state INVALID, returning..." << ENDM;
-    return false;
+    // That in principle shouldn't happen, as we don't have a code path to reach INVALID.
+    ILOG(Error) << "User task state INVALID, returning..." << ENDM;
+    throw std::runtime_error("User task state INVALID");
   }
 
   return true;
