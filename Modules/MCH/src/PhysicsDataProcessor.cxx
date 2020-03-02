@@ -126,6 +126,18 @@ void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
                     TString::Format("QcMuonChambers - Number of hits for Csum>500 (DE%03d)", de), Xsize*2, -Xsize2, Xsize2, Ysize*2, -Ysize2, Ysize2);
                 mHistogramNhitsHighAmplDE.insert( make_pair(de, h2) );
                 getObjectsManager()->startPublishing(h2);
+//
+//                  hclchg = new TH1F("hclsize", "Cluster charge distribution", 1000, 0, 3000);
+//                  hclchg->GetXaxis()->SetTitle("Charge of cluster");
+//                  hclchg->GetYaxis()->SetTitle("Count");
+//                  mHistogramClchgDE.insert( make_pair(de, hclchg) );
+//                  getObjectsManager()->startPublishing(hclchg);
+//
+//                  hclsize = new TH1F("hclsize", "Cluster size distribution", 20, 0, 20);
+//                  hclsize->GetXaxis()->SetTitle("Size");
+//                  hclsize->GetYaxis()->SetTitle("Count");
+//                  mHistogramClsizeDE.insert( make_pair(de, hclsize) );
+//                  getObjectsManager()->startPublishing(hclsize);
                  
               }
               
@@ -133,7 +145,7 @@ void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
       }
   }
 
-  gPrintLevel = 0;
+  gPrintLevel = 5;
 
   flog = stdout; //fopen("/root/qc.log", "w");
   fprintf(stdout,"PhysicsDataProcessor initialization finished\n");
@@ -204,14 +216,17 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
     mDecoder.processData( input.payload, header->payloadSize );
 
     std::vector<SampaHit>& hits = mDecoder.getHits();
+    vector<int> padids_seen;
     if(gPrintLevel>=1) fprintf(flog, "hits.size()=%d\n", (int)hits.size());
       digits.clear();
     for(uint32_t i = 0; i < hits.size(); i++) {
       //continue;
+        cout << "JE GERE LE HIT " << i << " MIOIUM" << endl;
       SampaHit& hit = hits[i];
-      if(gPrintLevel>=1) fprintf(stdout,"hit[%d]: link_id=%d, ds_addr=%d, chan_addr=%d\n",
-          i, hit.link_id, hit.ds_addr, hit.chan_addr);
+      if(gPrintLevel>=1) fprintf(stdout,"hit[%d]: link_id=%d, ds_addr=%d, chan_addr=%d, CSUM=%d\n",
+          i, hit.link_id, hit.ds_addr, hit.chan_addr, hit.csum);
       if(hit.link_id>=24 || hit.ds_addr>=40 || hit.chan_addr>=64 ) {
+          cout << "Le continue chelou du rejet triste" << endl;
         fprintf(stdout,"hit[%d]: link_id=%d, ds_addr=%d, chan_addr=%d\n",
                   i, hit.link_id, hit.ds_addr, hit.chan_addr);
         continue;
@@ -220,9 +235,6 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       mHistogramNhits[hit.link_id]->Fill(hit.ds_addr, hit.chan_addr);
       mHistogramADCamplitude[hit.link_id]->Fill(hit.csum);
       //}
-        
-      digits.push_back( std::make_unique<mch::Digit>() );
-      mch::Digit* digit = digits.back().get();
 
       int de = hit.pad.fDE;
       int dsid = hit.pad.fDsID;
@@ -234,9 +246,32 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
         o2::mch::mapping::Segmentation segment(de);
         int padid = segment.findPadByFEE(dsid, hit.chan_addr);
         
-        digit->setDetID(de);
-        digit->setPadID(padid);
-        digit->setADC(hit.csum);
+        std::vector<int>::iterator itr = std::find(padids_seen.begin(), padids_seen.end(), padid);
+
+        if (itr != padids_seen.cend()) {
+            int indexfound = std::distance(padids_seen.begin(), itr);
+            cout << "The padid is already present at index " <<
+                        std::distance(padids_seen.begin(), itr) << endl;
+            
+            cout << "Update de la valeur csum du digit correspondant au padid" << padid << endl;
+            mch::Digit* digit = digits.at(indexfound).get();
+            int oldADC = digit->getADC();
+            cout << "On passe de csum = " << oldADC << endl;
+            digit->setADC(oldADC + hit.csum);
+            cout << "A oldADC + hit.csum = " << oldADC << " + " << hit.csum << " = " << digit->getADC() << endl;
+        }
+        else {
+            std::cout << "Padid not found, adding it:" << padid << endl;
+            padids_seen.push_back( padid );
+            
+            cout << "Adding le digit correspondant à ce nouveau padid au vecteur digits" << endl;
+            digits.push_back( std::make_unique<mch::Digit>() );
+            mch::Digit* digit = digits.back().get();
+            
+            digit->setDetID(de);
+            digit->setPadID(padid);
+            digit->setADC(hit.csum);
+        }
         
 
       if(gPrintLevel>=1)
@@ -289,6 +324,9 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
+      
+      
+      
       nDigits = getNumberOfDigits();
       digitsBuffer = (mch::Digit*)realloc(digitsBuffer, sizeof(mch::Digit) * nDigits);
       storeDigits(digitsBuffer);
@@ -330,42 +368,30 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
             
        //     clustering.runFinderGaussianFit(preClusters, clusters);
       
-      // Distribution of cluster size
-      
-      TCanvas *cclsize = new TCanvas("cclsize","Cluster Size",0,0,600,600);
-      TH1F *hclsize = new TH1F("hclsize", "Cluister size distribution", 20, 0, 20);
-      for(int i=0; i<preClusters.size(); i++){
-          hclsize->Fill(preClusters[i].nDigits);
-      }
-      hclsize->GetXaxis()->SetTitle("Size");
-      hclsize->GetYaxis()->SetTitle("Count");
-      hclsize->Draw();
-      cclsize->Update();
-      cclsize->Draw();
-      
-      // Distrubution of cluster charge
-      
-      int sizedigit;
-      mch::Digit digittmp;
-      
-      TCanvas *cclchg = new TCanvas("cclchg","Cluster Charge",0,0,600,600);
-      TH1F *hclchg = new TH1F("hclsize", "Cluister size distribution", 1000, 0, 3000);
-      for(int i=0; i<preClusters.size(); i++){
-          const mch::Digit* ptrdigit = preClusters[i].digits;
-          float chgsum = 0;
-          for (int j=0; j<preClusters[i].nDigits; j++){
-              digittmp = *ptrdigit;
-              chgsum += digittmp.getADC();
-              sizedigit = sizeof(digittmp);
-              ptrdigit++;
-          }
-          hclchg->Fill(chgsum);
-      }
-      hclchg->GetXaxis()->SetTitle("Charge of cluster");
-      hclchg->GetYaxis()->SetTitle("Count");
-      hclchg->Draw();
-      cclchg->Update();
-      cclchg->Draw();
+//      // Distribution of cluster size
+//
+//      auto hclsize = mHistogramClsizeDE.find(de);
+//      for(int i=0; i<preClusters.size(); i++){
+//          hclsize->Fill(preClusters[i].nDigits);
+//      }
+//
+//      // Distrubution of cluster charge
+//
+//      int sizedigit;
+//      mch::Digit digittmp;
+//
+//      auto hclchg = mHistogramClchgDE.find(de);
+//      for(int i=0; i<preClusters.size(); i++){
+//          const mch::Digit* ptrdigit = preClusters[i].digits;
+//          float chgsum = 0;
+//          for (int j=0; j<preClusters[i].nDigits; j++){
+//              digittmp = *ptrdigit;
+//              chgsum += digittmp.getADC();
+//              sizedigit = sizeof(digittmp);
+//              ptrdigit++;
+//          }
+//          hclchg->Fill(chgsum);
+//     }
       
     mDecoder.clearHits();
   }

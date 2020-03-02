@@ -66,6 +66,9 @@ class PhysicsDataProcessor /*final*/ : public TaskInterface // todo add back the
   std::map<int, TH1F*> mHistogramADCamplitudeDE;
   std::map<int, TH2F*> mHistogramNhitsDE;
   std::map<int, TH2F*> mHistogramNhitsHighAmplDE;
+    
+    std::map<int, TH1F*> mHistogramClchgDE;
+    std::map<int, TH1F*> mHistogramClsizeDE;
 };
 
 } // namespace muonchambers
