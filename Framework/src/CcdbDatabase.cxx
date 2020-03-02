@@ -30,6 +30,7 @@
 // std
 #include <chrono>
 #include <sstream>
+#include <unordered_set>
 
 #include <fairlogger/Logger.h>
 #include <boost/algorithm/string.hpp>
@@ -64,13 +65,18 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
     }
     TIter next(file.GetListOfKeys());
     TKey* key;
+    std::unordered_set<std::string> alreadySeen;
     while ((key = (TKey*)next())) {
       TClass* cl = gROOT->GetClass(key->GetClassName());
       if (!cl->InheritsFrom("TStreamerInfo"))
         continue;
       auto* si = (TStreamerInfo*)key->ReadObj();
-      ILOG(Debug) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
-      si->BuildCheck();
+      string stringRepresentation = si->GetName() + si->GetClassVersion();
+      if(alreadySeen.count(stringRepresentation) == 0) {
+        alreadySeen.emplace(stringRepresentation);
+        ILOG(Debug) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
+        si->BuildCheck();
+      }
     }
   }
 }
