@@ -353,12 +353,12 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             auto maxADCbunch = *max_element(adcs.begin(), adcs.end());
             if (maxADCbunch > maxADC)
               maxADC = maxADCbunch;
-            mRawAmplMaxEMCAL[j]->Fill(maxADCbunch); //max for each cell
+            mRawAmplMaxEMCAL[j]->Fill(maxADCbunch); // max for each cell
 
             auto minADCbunch = *min_element(adcs.begin(), adcs.end());
             if (minADCbunch < minADC)
               minADC = minADCbunch;
-            mRawAmplMinEMCAL[j]->Fill(minADCbunch); //min for each cell
+            mRawAmplMinEMCAL[j]->Fill(minADCbunch); // min for each cell
 
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());
