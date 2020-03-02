@@ -25,6 +25,14 @@ void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
     o2::framework::ConfigParamSpec{ "config-path", o2::framework::VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
   workflowOptions.push_back(
     o2::framework::ConfigParamSpec{ "no-data-sampling", o2::framework::VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
+  workflowOptions.push_back(
+    o2::framework::ConfigParamSpec{ "local", o2::framework::VariantType::Bool, false, { "Creates only the local part of the QC topology." } });
+  workflowOptions.push_back(
+    o2::framework::ConfigParamSpec{ "remote", o2::framework::VariantType::Bool, false, { "Creates only the remote part of the QC topology." } });
+  workflowOptions.push_back(
+    o2::framework::ConfigParamSpec{ "host", o2::framework::VariantType::String, "", { "Name of the host of the local part of the QC topology."
+                                                                                      "Necessary to specify when creating topologies on multiple"
+                                                                                      " machines, can be omitted for the local development" } });
 }
 
 #include "Framework/runDataProcessing.h"
@@ -48,45 +56,25 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
-
-  // Generation of the QC topology
-  o2::quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
-
-  /*
-  o2::framework::DataProcessorSpec printer{
-    "printer",
-    o2::framework::Inputs{
-      {"checked-mo", "QC", o2::quality_control::checker::CheckRunner::createCheckRunnerDataDescription("DigitsQcTask"), 0}
-    },
-    o2::framework::Outputs{},
-    o2::framework::AlgorithmSpec{
-      (o2::framework::AlgorithmSpec::InitCallback) [](o2::framework::InitContext& initContext) {
-
-        return (o2::framework::AlgorithmSpec::ProcessCallback) [](o2::framework::ProcessingContext& processingContext) mutable {
-          std::shared_ptr<TObjArray> moArray{
-            std::move(o2::framework::DataRefUtils::as<TObjArray>(*processingContext.inputs().begin()))
-          };
-
-          for (const auto& to : *moArray) {
-            MonitorObject* mo = dynamic_cast<MonitorObject*>(to);
-
-            if (mo->getName() == "example") {
-              auto* g = dynamic_cast<TH1F*>(mo->getObject());
-              std::string bins = "BINS:";
-              for (int i = 0; i < g->GetNbinsX(); i++) {
-                bins += " " + std::to_string((int) g->GetBinContent(i));
-              }
-              LOG(INFO) << bins;
-            }
-          }
-        };
-      }
-    }
-  };
-  specs.push_back(printer);
-*/
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
-  o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+
+  if (config.options().get<bool>("local") && config.options().get<bool>("remote")) {
+    ILOG(Info) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
+  }
+
+  if (config.options().get<bool>("local") || !config.options().get<bool>("remote")) {
+
+    // Generation of Data Sampling infrastructure
+    o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+
+    // Generation of the local QC topology (local QC tasks)
+    o2::quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, config.options().get<std::string>("host"));
+  }
+  if (config.options().get<bool>("remote") || !config.options().get<bool>("local")) {
+
+    // Generation of the remote QC topology (task for QC servers, mergers and all checkers)
+    o2::quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+  }
 
   return specs;
 }
