@@ -72,7 +72,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
         continue;
       auto* si = (TStreamerInfo*)key->ReadObj();
       string stringRepresentation = si->GetName() + si->GetClassVersion();
-      if(alreadySeen.count(stringRepresentation) == 0) {
+      if (alreadySeen.count(stringRepresentation) == 0) {
         alreadySeen.emplace(stringRepresentation);
         ILOG(Debug) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
         si->BuildCheck();
