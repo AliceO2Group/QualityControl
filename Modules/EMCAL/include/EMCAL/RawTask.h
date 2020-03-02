@@ -61,6 +61,8 @@ class RawTask /*final*/ : public TaskInterface // todo add back the "final" when
   TH1* mPageCounter = nullptr;                          ///< Counter for number of pages (headers)
   TH1* mTotalDataVolume = nullptr;                      ///< Total data volume
   std::array<TH1*, 20> mRawAmplitudeEMCAL;              ///< Raw amplitude in EMCAL
+  std::array<TH1*, 20> mRawAmplMaxEMCAL;                ///< Max Raw amplitude in EMCAL per cell
+  std::array<TH1*, 20> mRawAmplMinEMCAL;                ///< Min Raw amplitude in EMCAL per cell
   std::unique_ptr<o2::emcal::MappingHandler> mMappings; ///< Mappings Hardware address -> Channel
   std::array<TProfile2D*, 20> mRMSperSM;                ///< ADC rms per SM
   std::array<TProfile2D*, 20> mMEANperSM;               ///< ADC mean per SM
