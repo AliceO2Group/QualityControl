@@ -2,6 +2,7 @@
 #include <TH1.h>
 
 #include <Framework/DataSampling.h>
+#include <DataFormatsEMCAL/Digit.h>
 #include <EMCALWorkflow/PublisherSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/CheckRunner.h"
@@ -33,14 +34,17 @@ std::string getConfigPath(const o2::framework::ConfigContext& config);
 o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext const& config)
 {
   o2::framework::WorkflowSpec specs;
-  specs.push_back(o2::emcal::getPublisherSpec(o2::emcal::PublisherConf{
-                                                "emcal-digit-reader",
-                                                "o2sim",
-                                                { "digitbranch", "EMCALDigit", "Digit branch" },
-                                                { "mcbranch", "EMCALDigitMCTruth", "MC label branch" },
-                                                o2::framework::OutputSpec{ "EMC", "DIGITS" },
-                                                o2::framework::OutputSpec{ "EMC", "DIGITSMCTR" } },
-                                              false));
+  using digitInputType = std::vector<o2::emcal::Digit>;
+  specs.push_back(o2::emcal::getPublisherSpec<digitInputType>(o2::emcal::PublisherConf{
+                                                                "emcal-digit-reader",
+                                                                "o2sim",
+                                                                { "digitbranch", "EMCALDigit", "Digit branch" },
+                                                                { "triggerrecordbranch", "EMCALDigitTRGR", "Trigger record branch" },
+                                                                { "mcbranch", "EMCALDigitMCTruth", "MC label branch" },
+                                                                o2::framework::OutputSpec{ "EMC", "DIGITS" },
+                                                                o2::framework::OutputSpec{ "EMC", "DIGITSTRGR" },
+                                                                o2::framework::OutputSpec{ "EMC", "DIGITSMCTR" } },
+                                                              false));
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
