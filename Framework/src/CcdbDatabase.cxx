@@ -104,7 +104,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
 {
   if (mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
     BOOST_THROW_EXCEPTION(DatabaseException()
-                          << errinfo_details("Object and task names can't be empty. Do not store."));
+                          << errinfo_details("Object and task names can't be empty. Do not store. "));
   }
 
   if (mo->getName().find_first_of("\t\n ") != string::npos || mo->getTaskName().find_first_of("\t\n ") != string::npos) {
