@@ -95,10 +95,10 @@ Each of the three methods can be invoked by one or more triggers. Below are list
 
 The post-processing tasks can be run by using the `o2-qc-run-postprocessing` application. At the moment it does not use DPL nor OCC library, which means, that it cannot be integrated with AliECS yet, i.e. cannot be run from GUI within an FLP Suite.
 
-To run the basic example, use the command below. The `--config` parameter should point to the configuration file. The `--rate` parameter specifies how often the specified triggers should be checked.
+To run the basic example, use the command below. The `--config` parameter should point to the configuration file. The `--period` parameter specifies how often the specified triggers should be checked.
 
 ```
-o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExamplePostprocessing --rate 10
+o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExamplePostprocessing --period 10
 ```
 
 As it is configured to invoke each method only `"once"`, you will see it initializing, entering the update method, then finalizing the task and exiting.

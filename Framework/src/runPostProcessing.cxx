@@ -33,7 +33,7 @@ int main(int argc, const char* argv[])
       ("help,h", "Help screen")                                                                              //
       ("config", bpo::value<std::string>(), "Absolute path to a configuration file, preceded with backend.") //
       ("name", bpo::value<std::string>(), "Name of a post processing task to run")                           //
-      ("rate", bpo::value<double>()->default_value(10.0), "Rate of checking triggers in seconds");
+      ("period", bpo::value<double>()->default_value(10.0), "Cycle period of checking triggers in seconds");
 
     bpo::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -47,14 +47,14 @@ int main(int argc, const char* argv[])
       return 1;
     }
 
-    int rateUs = static_cast<int>(1000000 * vm["rate"].as<double>());
+    int periodUs = static_cast<int>(1000000 * vm["period"].as<double>());
     PostProcessingRunner runner(vm["name"].as<std::string>(), vm["config"].as<std::string>());
 
     runner.init();
     runner.start();
 
     Timer timer;
-    timer.reset(rateUs);
+    timer.reset(periodUs);
 
     while (runner.run()) {
       while (timer.getRemainingTime() < 0) {
