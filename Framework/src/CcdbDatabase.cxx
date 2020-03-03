@@ -30,6 +30,7 @@
 // std
 #include <chrono>
 #include <sstream>
+#include <unordered_set>
 
 #include <fairlogger/Logger.h>
 #include <boost/algorithm/string.hpp>
@@ -64,13 +65,18 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
     }
     TIter next(file.GetListOfKeys());
     TKey* key;
+    std::unordered_set<std::string> alreadySeen;
     while ((key = (TKey*)next())) {
       TClass* cl = gROOT->GetClass(key->GetClassName());
       if (!cl->InheritsFrom("TStreamerInfo"))
         continue;
       auto* si = (TStreamerInfo*)key->ReadObj();
-      ILOG(Debug) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
-      si->BuildCheck();
+      string stringRepresentation = si->GetName() + si->GetClassVersion();
+      if (alreadySeen.count(stringRepresentation) == 0) {
+        alreadySeen.emplace(stringRepresentation);
+        ILOG(Debug) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
+        si->BuildCheck();
+      }
     }
   }
 }
@@ -98,7 +104,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
 {
   if (mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
     BOOST_THROW_EXCEPTION(DatabaseException()
-                          << errinfo_details("Object and task names can't be empty. Do not store."));
+                          << errinfo_details("Object and task names can't be empty. Do not store. "));
   }
 
   if (mo->getName().find_first_of("\t\n ") != string::npos || mo->getTaskName().find_first_of("\t\n ") != string::npos) {
