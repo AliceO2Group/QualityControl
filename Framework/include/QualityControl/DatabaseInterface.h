@@ -80,8 +80,8 @@ class DatabaseInterface
   /**
    * Returns JSON encoded object
    */
-  virtual std::string retrieveMOJson(std::string taskName, std::string objectName) = 0;
-  virtual std::string retrieveQOJson(std::string checkName) = 0;
+  virtual std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = 0) = 0;
+  virtual std::string retrieveQOJson(std::string checkName, long timestamp = 0) = 0;
   virtual void disconnect() = 0;
   /**
    * \brief Prepare the container, such as a table in a relational database, that will contain the MonitorObject's for

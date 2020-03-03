@@ -7,6 +7,7 @@
 #include <TH2.h>
 
 #include <DataFormatsEMCAL/EMCALBlockHeader.h>
+#include <DataFormatsEMCAL/TriggerRecord.h>
 #include <DataFormatsEMCAL/Digit.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "EMCAL/DigitsQcTask.h"
@@ -85,28 +86,37 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   // Get payload and loop over digits
-  auto digitcontainer = ctx.inputs().get<std::vector<o2::emcal::Digit>>("emcal-digits");
+  auto digitcontainer = ctx.inputs().get<gsl::span<o2::emcal::Digit>>("emcal-digits");
+  auto triggerrecords = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>("emcal-triggerecords");
 
   //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << AliceO2::InfoLogger::InfoLogger::endm;
-  for (auto digit : digitcontainer) {
-    int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
-    if (index < 0)
+  int eventcouter = 0;
+  for (auto trg : triggerrecords) {
+    if (!trg.getNumberOfObjects())
       continue;
+    std::cout << "Next event " << eventcouter << "has " << trg.getNumberOfObjects() << " digits" << std::endl;
+    gsl::span<const o2::emcal::Digit> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
+    for (auto digit : eventdigits) {
+      int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
+      if (index < 0)
+        continue;
 
-    mDigitAmplitude[index]->Fill(digit.getEnergy(), digit.getTower());
-    mDigitTime[index]->Fill(digit.getTimeStamp(), digit.getTower());
-    //if we fill phy vs eta plots integrated: filled with eta phi GlobalRowColumnFromIndex  from Geometry
+      mDigitAmplitude[index]->Fill(digit.getEnergy(), digit.getTower());
+      mDigitTime[index]->Fill(digit.getTimeStamp(), digit.getTower());
+      //if we fill phy vs eta plots integrated: filled with eta phi GlobalRowColumnFromIndex  from Geometry
 
-    // get the supermodule for filling EMCAL/DCAL spectra
-    try {
-      auto cellindices = mGeometry->GetCellIndex(digit.getTower());
-      if (std::get<0>(cellindices) < 12)
-        mDigitAmplitudeEMCAL->Fill(digit.getEnergy());
-      else
-        mDigitAmplitudeDCAL->Fill(digit.getEnergy());
-    } catch (o2::emcal::InvalidCellIDException& e) {
-      QcInfoLogger::GetInstance() << "Invalid cell ID: " << e.getCellID() << AliceO2::InfoLogger::InfoLogger::endm;
-    };
+      // get the supermodule for filling EMCAL/DCAL spectra
+      try {
+        auto cellindices = mGeometry->GetCellIndex(digit.getTower());
+        if (std::get<0>(cellindices) < 12)
+          mDigitAmplitudeEMCAL->Fill(digit.getEnergy());
+        else
+          mDigitAmplitudeDCAL->Fill(digit.getEnergy());
+      } catch (o2::emcal::InvalidCellIDException& e) {
+        QcInfoLogger::GetInstance() << "Invalid cell ID: " << e.getCellID() << AliceO2::InfoLogger::InfoLogger::endm;
+      };
+    }
+    eventcouter++;
   }
 }
 

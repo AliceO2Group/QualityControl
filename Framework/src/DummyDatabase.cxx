@@ -36,7 +36,7 @@ std::shared_ptr<MonitorObject> DummyDatabase::retrieveMO(std::string, std::strin
   return std::shared_ptr<MonitorObject>();
 }
 
-std::string DummyDatabase::retrieveMOJson(std::string, std::string)
+std::string DummyDatabase::retrieveMOJson(std::string, std::string, long)
 {
   return std::string();
 }
@@ -50,7 +50,7 @@ std::shared_ptr<QualityObject> DummyDatabase::retrieveQO(std::string, long)
   return std::shared_ptr<QualityObject>();
 }
 
-std::string DummyDatabase::retrieveQOJson(std::string)
+std::string DummyDatabase::retrieveQOJson(std::string, long)
 {
   return std::string();
 }

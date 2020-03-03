@@ -63,6 +63,14 @@ RawTask::~RawTask()
     delete h;
   }
 
+  for (auto h : mRawAmplMaxEMCAL) {
+    delete h;
+  }
+
+  for (auto h : mRawAmplMinEMCAL) {
+    delete h;
+  }
+
   for (auto h : mRMSperSM) {
     delete h;
   }
@@ -153,10 +161,20 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   //histos per SM
   for (Int_t i = 0; i < 20; i++) {
-    mRawAmplitudeEMCAL[i] = new TH1F(Form("RawAmplidutdeEMCAL_sm%d", i), Form(" RawAmplitudeEMCAL%d", i), 100, 0., 100.);
+    mRawAmplitudeEMCAL[i] = new TH1F(Form("RawAmplitudeEMCAL_sm%d", i), Form(" RawAmplitudeEMCAL%d", i), 100, 0., 100.);
     mRawAmplitudeEMCAL[i]->GetXaxis()->SetTitle("Raw Amplitude");
     mRawAmplitudeEMCAL[i]->GetYaxis()->SetTitle("Counts");
     getObjectsManager()->startPublishing(mRawAmplitudeEMCAL[i]);
+
+    mRawAmplMaxEMCAL[i] = new TH1F(Form("RawAmplMaxEMCAL_sm%d", i), Form(" RawAmpMaxEMCAL%d", i), 100, 0., 100.);
+    mRawAmplMaxEMCAL[i]->GetXaxis()->SetTitle("Max Raw Amplitude");
+    mRawAmplMaxEMCAL[i]->GetYaxis()->SetTitle("Counts");
+    getObjectsManager()->startPublishing(mRawAmplMaxEMCAL[i]);
+
+    mRawAmplMinEMCAL[i] = new TH1F(Form("RawAmplMinEMCAL_sm%d", i), Form(" RawAmpMinEMCAL%d", i), 100, 0., 100.);
+    mRawAmplMinEMCAL[i]->GetXaxis()->SetTitle("Min Raw Amplitude");
+    mRawAmplMinEMCAL[i]->GetYaxis()->SetTitle("Counts");
+    getObjectsManager()->startPublishing(mRawAmplMinEMCAL[i]);
 
     mRMSperSM[i] = new TProfile2D(Form("RMSADCperSM%d", i), Form("RMSperSM%d", i), 48, 0, 48, 24, 0, 24);
     mRMSperSM[i]->GetXaxis()->SetTitle("col");
@@ -335,10 +353,12 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             auto maxADCbunch = *max_element(adcs.begin(), adcs.end());
             if (maxADCbunch > maxADC)
               maxADC = maxADCbunch;
+            mRawAmplMaxEMCAL[j]->Fill(maxADCbunch); // max for each cell
 
             auto minADCbunch = *min_element(adcs.begin(), adcs.end());
             if (minADCbunch < minADC)
               minADC = minADCbunch;
+            mRawAmplMinEMCAL[j]->Fill(minADCbunch); // min for each cell
 
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());
@@ -381,6 +401,8 @@ void RawTask::reset()
   mHistogram->Reset();
   for (Int_t i = 0; i < 20; i++) {
     mRawAmplitudeEMCAL[i]->Reset();
+    mRawAmplMaxEMCAL[i]->Reset();
+    mRawAmplMinEMCAL[i]->Reset();
     mRMSperSM[i]->Reset();
     mMEANperSM[i]->Reset();
     mMAXperSM[i]->Reset();

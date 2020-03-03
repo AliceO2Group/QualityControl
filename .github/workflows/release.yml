@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  bump_alidist:
+    runs-on: ubuntu-18.04
+    steps:
+      - run: curl -L https://github.com/github/hub/releases/download/v2.12.7/hub-linux-amd64-2.12.7.tgz | tar xz
+      - run: |
+          git config --global user.email ${{ secrets.GH_EMAIL }}
+          git config --global user.name ${{ secrets.GH_USERNAME }}
+      - run: git clone git://github.com/${{ secrets.ORG }}/alidist
+      - run: |
+          cd alidist
+          CURRENT_VERSION=`cat ${{ secrets.MODULE }}.sh | grep "tag:" | awk '{print $2}'`
+          sed -i "s/${CURRENT_VERSION}/${GITHUB_REF##*/}/g" ${{ secrets.MODULE }}.sh
+      - run: |
+          cd alidist
+          git add .
+          git commit -m "Bump ${{ secrets.MODULE }} to ${GITHUB_REF##*/}"
+          git push "https://${{ secrets.GH_TOKEN }}@github.com/${{ secrets.ORG }}/alidist" HEAD:refs/heads/${{ secrets.MODULE }}-${GITHUB_REF##*/} -f > /dev/null 2>&1
+      - run: |
+          cd alidist
+          GITHUB_TOKEN=${{ secrets.GH_TOKEN }} ../hub-linux-amd64-2.12.7/bin/hub pull-request -h ${{ secrets.MODULE }}-${GITHUB_REF##*/} -b master -m "Bump ${{ secrets.MODULE }} to ${GITHUB_REF##*/}"
+

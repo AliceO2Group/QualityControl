@@ -32,7 +32,7 @@
           "maxNumberCycles": "-1",
           "dataSource": {
             "type": "direct",
-            "query": "emcal-digits:EMC/DIGITS/0"
+            "query": "emcal-digits:EMC/DIGITS/0;emcal-triggerecords:EMC/DIGITSTRGR/0"
           },
           "taskParameters": {
             "nothing": "rien"

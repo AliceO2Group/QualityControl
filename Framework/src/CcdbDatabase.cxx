@@ -147,7 +147,7 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   return mo;
 }
 
-std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objectName)
+std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objectName, long /*timestamp*/)
 {
   auto monitor = retrieveMO(taskName, objectName);
   if (monitor == nullptr) {
@@ -199,7 +199,7 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName,
   return qo;
 }
 
-std::string CcdbDatabase::retrieveQOJson(std::string checkName)
+std::string CcdbDatabase::retrieveQOJson(std::string checkName, long /*timestamp*/)
 {
   auto qualityObject = retrieveQO(checkName);
   if (qualityObject == nullptr) {

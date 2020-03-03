@@ -117,6 +117,11 @@ In case one needs to sample at a very high rate, or even monitor 100% of the dat
 
 The file `basic-no-sampling.json` is provided as an example. To test it, you can run `o2-qc` with that configuration file instead of `basic.json`.
 
+To use multiple direct data sources, just place them one after another in the value of `"query"`, separated with a semicolon. For example:
+```
+"query" : "emcal-digits:EMC/DIGITS/0;emcal-triggers:EMC/TRIGGERS/0"
+```
+
 ### Code Organization
 
 The repository QualityControl contains the _Framework_  and the _Modules_ in the respectively named directories.
