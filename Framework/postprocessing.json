@@ -97,12 +97,14 @@
           }
         ],
         "initTrigger": [
-          "once"
+          "userorcontrol"
         ],
         "updateTrigger": [
-          "always"
+          "10 seconds"
         ],
-        "stopTrigger": []
+        "stopTrigger": [
+          "userorcontrol"
+        ]
       }
     }
   }

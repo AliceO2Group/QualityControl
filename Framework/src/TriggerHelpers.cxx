@@ -74,6 +74,8 @@ TriggerFcn triggerFactory(std::string trigger)
       throw std::invalid_argument("negative number of seconds in trigger '" + trigger + "'");
     }
     return triggers::Periodic(seconds.value());
+  } else if (trigger.find("user") != std::string::npos || trigger.find("control") != std::string::npos) {
+    return triggers::Never();
   } else {
     throw std::invalid_argument("unknown trigger: " + trigger);
   }
@@ -96,6 +98,14 @@ std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNa
     triggerFcns.push_back(triggerFactory(triggerName));
   }
   return triggerFcns;
+}
+
+bool isThereUserOrControlTrigger(const std::vector<std::string>& triggerNames)
+{
+  return std::find_if(triggerNames.begin(), triggerNames.end(), [](std::string name) {
+           boost::algorithm::to_lower(name);
+           return name.find("user") != std::string::npos || name.find("control") != std::string::npos;
+         }) != triggerNames.end();
 }
 
 } // namespace o2::quality_control::postprocessing::trigger_helpers

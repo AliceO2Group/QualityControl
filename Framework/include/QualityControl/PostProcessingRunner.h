@@ -41,25 +41,31 @@ class PostProcessingRunner
 {
  public:
   PostProcessingRunner(std::string name, std::string configPath);
-  ~PostProcessingRunner();
+  ~PostProcessingRunner() = default;
 
   /// \brief Initialization. Throws on errors.
   void init();
   /// \brief One iteration over the event loop. Throws on errors. Returns false when it can gracefully exit.
   bool run();
+  /// \brief Start transition. Throws on errors.
+  void start();
   /// \brief Stop transition. Throws on errors.
   void stop();
   /// \brief Reset transition. Throws on errors.
   void reset();
 
  private:
+  void doInitialize(Trigger trigger);
+  void doUpdate(Trigger trigger);
+  void doFinalize(Trigger trigger);
+
   enum class TaskState {
     INVALID,
     Created,
     Running,
     Finished
   };
-  TaskState mState = TaskState::INVALID;
+  TaskState mTaskState = TaskState::INVALID;
   std::vector<TriggerFcn> mInitTriggers;
   std::vector<TriggerFcn> mUpdateTriggers;
   std::vector<TriggerFcn> mStopTriggers;
@@ -67,9 +73,11 @@ class PostProcessingRunner
   std::unique_ptr<PostProcessingInterface> mTask;
   framework::ServiceRegistry mServices;
 
+  std::string mName = "";
+  std::string mConfigPath = "";
+  PostProcessingConfig mConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile;
-  PostProcessingConfig mConfig;
 };
 
 } // namespace o2::quality_control::postprocessing

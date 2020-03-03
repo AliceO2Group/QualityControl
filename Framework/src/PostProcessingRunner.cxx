@@ -25,19 +25,17 @@ namespace o2::quality_control::postprocessing
 {
 
 PostProcessingRunner::PostProcessingRunner(std::string name, std::string configPath) //
-  : mConfigFile(ConfigurationFactory::getConfiguration(configPath)),
-    mConfig(name, *mConfigFile)
-{
-  mConfigFile->setPrefix(""); // protect from having the prefix changed by PostProcessingConfig
-}
-
-PostProcessingRunner::~PostProcessingRunner()
+  : mName(name), mConfigPath(configPath)
 {
 }
 
 void PostProcessingRunner::init()
 {
   ILOG(Info) << "Initializing PostProcessingRunner" << ENDM;
+
+  mConfigFile = ConfigurationFactory::getConfiguration(mConfigPath);
+  mConfig = PostProcessingConfig(mName, *mConfigFile);
+  mConfigFile->setPrefix(""); // protect from having the prefix changed by PostProcessingConfig
 
   // configuration of the database
   mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
@@ -54,11 +52,9 @@ void PostProcessingRunner::init()
   if (mTask) {
     ILOG(Info) << "The user task '" << mConfig.taskName << "' successfully created" << ENDM;
 
-    mState = TaskState::Created;
+    mTaskState = TaskState::Created;
     mTask->setName(mConfig.taskName);
     mTask->configure(mConfig.taskName, *mConfigFile);
-
-    mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers);
   } else {
     throw std::runtime_error("Failed to create the task '" + mConfig.taskName + "'");
   }
@@ -68,58 +64,98 @@ bool PostProcessingRunner::run()
 {
   ILOG(Info) << "Checking triggers of the task '" << mTask->getName() << "'" << ENDM;
 
-  if (mState == TaskState::Created) {
+  if (mTaskState == TaskState::Created) {
     if (Trigger trigger = trigger_helpers::tryTrigger(mInitTriggers)) {
-      ILOG(Info) << "Initializing user task" << ENDM;
-
-      mTask->initialize(trigger, mServices);
-
-      mState = TaskState::Running; // maybe the task should monitor its state by itself?
-      mUpdateTriggers = trigger_helpers::createTriggers(mConfig.updateTriggers);
-      mStopTriggers = trigger_helpers::createTriggers(mConfig.stopTriggers);
+      doInitialize(trigger);
     }
   }
-  if (mState == TaskState::Running) {
-
+  if (mTaskState == TaskState::Running) {
     if (Trigger trigger = trigger_helpers::tryTrigger(mUpdateTriggers)) {
-      ILOG(Info) << "Updating user task" << ENDM;
-      mTask->update(trigger, mServices);
+      doUpdate(trigger);
     }
     if (Trigger trigger = trigger_helpers::tryTrigger(mStopTriggers)) {
-      ILOG(Info) << "Finalizing user task" << ENDM;
-      mTask->finalize(trigger, mServices);
-      mState = TaskState::Finished; // maybe the task should monitor its state by itself?
+      doFinalize(trigger);
     }
   }
-  if (mState == TaskState::Finished) {
-    ILOG(Info) << "User task finished, returning..." << ENDM;
+  if (mTaskState == TaskState::Finished) {
+    ILOG(Info) << "The user task finished." << ENDM;
     return false;
   }
-  if (mState == TaskState::INVALID) {
-    // That in principle shouldn't happen, as we don't have a code path to reach INVALID.
-    ILOG(Error) << "User task state INVALID, returning..." << ENDM;
-    throw std::runtime_error("User task state INVALID");
+  if (mTaskState == TaskState::INVALID) {
+    // That in principle shouldn't happen if we reach run()
+    throw std::runtime_error("The user task has INVALID state");
   }
 
   return true;
 }
 
+void PostProcessingRunner::start()
+{
+  if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
+    mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers);
+    if (trigger_helpers::isThereUserOrControlTrigger(mConfig.initTriggers)) {
+      doInitialize(Trigger::UserOrControl);
+    }
+  } else if (mTaskState == TaskState::Running) {
+    ILOG(Info) << "Requested start, but the user task is already running - doing nothing." << ENDM;
+  } else if (mTaskState == TaskState::INVALID) {
+    throw std::runtime_error("The user task has INVALID state");
+  } else {
+    throw std::runtime_error("Unknown task state");
+  }
+}
+
 void PostProcessingRunner::stop()
 {
-  if (mState == TaskState::Created || mState == TaskState::Running) {
-    if (Trigger trigger = trigger_helpers::tryTrigger(mStopTriggers)) {
-      ILOG(Info) << "Finalizing user task";
-      mTask->finalize(trigger, mServices);
-      mState = TaskState::Finished; // maybe the task should monitor its state by itself?
+  if (mTaskState == TaskState::Created || mTaskState == TaskState::Running) {
+    if (trigger_helpers::isThereUserOrControlTrigger(mConfig.stopTriggers)) {
+      doFinalize(Trigger::UserOrControl);
     }
+  } else if (mTaskState == TaskState::Finished) {
+    ILOG(Info) << "Requested stop, but the user task is already finalized - doing nothing." << ENDM;
+  } else if (mTaskState == TaskState::INVALID) {
+    throw std::runtime_error("The user task has INVALID state");
+  } else {
+    throw std::runtime_error("Unknown task state");
   }
 }
 
 void PostProcessingRunner::reset()
 {
-  // todo: see where is "reset" in the state machine
-  // stop();
-  // init();
+  mTaskState = TaskState::INVALID;
+
+  mTask.reset();
+  mDatabase.reset();
+  mServices = framework::ServiceRegistry();
+
+  mInitTriggers.clear();
+  mUpdateTriggers.clear();
+  mStopTriggers.clear();
+}
+
+void PostProcessingRunner::doInitialize(Trigger trigger)
+{
+  ILOG(Info) << "Initializing the user task due to trigger '" << trigger << "'" << ENDM;
+
+  mTask->initialize(trigger, mServices);
+  mTaskState = TaskState::Running;
+
+  // We create the triggers just after task init (and not any sooner), so the timer triggers work as expected.
+  mUpdateTriggers = trigger_helpers::createTriggers(mConfig.updateTriggers);
+  mStopTriggers = trigger_helpers::createTriggers(mConfig.stopTriggers);
+}
+
+void PostProcessingRunner::doUpdate(Trigger trigger)
+{
+  ILOG(Info) << "Updating the user task" << ENDM;
+  mTask->update(trigger, mServices);
+}
+
+void PostProcessingRunner::doFinalize(Trigger trigger)
+{
+  ILOG(Info) << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
+  mTask->finalize(UserOrControl, mServices);
+  mTaskState = TaskState::Finished;
 }
 
 } // namespace o2::quality_control::postprocessing

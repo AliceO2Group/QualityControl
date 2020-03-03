@@ -25,7 +25,6 @@ using namespace o2::quality_control::postprocessing;
 using namespace AliceO2::Common;
 namespace bpo = boost::program_options;
 
-// todo: wrap in OCC library or DPL
 int main(int argc, const char* argv[])
 {
   try {
@@ -52,6 +51,7 @@ int main(int argc, const char* argv[])
     PostProcessingRunner runner(vm["name"].as<std::string>(), vm["config"].as<std::string>());
 
     runner.init();
+    runner.start();
 
     Timer timer;
     timer.reset(rateUs);
@@ -62,6 +62,7 @@ int main(int argc, const char* argv[])
       }
       usleep(1000000.0 * timer.getRemainingTime());
     }
+    runner.stop();
     return 0;
   } catch (const bpo::error& ex) {
     ILOG(Error) << "Exception caught: " << ex.what() << ENDM;

@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(test_task)
     for (size_t i = 0; i < trendTimes; i++) {
       task.update(Trigger::Always, services);
     }
-    task.finalize(Trigger::UserExit, services);
+    task.finalize(Trigger::UserOrControl, services);
   }
 
   // The test itself
