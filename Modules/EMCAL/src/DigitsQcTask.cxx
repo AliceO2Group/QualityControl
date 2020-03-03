@@ -94,7 +94,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto trg : triggerrecords) {
     if (!trg.getNumberOfObjects())
       continue;
-    std::cout << "Next event " << eventcouter << "has " << trg.getNumberOfObjects() << " digits" << std::endl;
+    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcouter << " has " << trg.getNumberOfObjects() << " digits" << QcInfoLogger::endm;
     gsl::span<const o2::emcal::Digit> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
     for (auto digit : eventdigits) {
       int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
