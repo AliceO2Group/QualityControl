@@ -57,7 +57,8 @@ namespace o2::quality_control::checker
 /// \brief The class in charge of running the checks on a MonitorObject.
 ///
 /// A CheckRunner is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
-/// and to run them on the MonitorObject in order to generate a quality. At the moment, a checker also stores quality in the repository.
+/// and to run them on the MonitorObject in order to generate a quality.
+/// At the moment, a checker also stores quality in the repository.
 ///
 /// TODO Evaluate whether we should have a dedicated device to store in the database.
 ///
@@ -188,13 +189,7 @@ class CheckRunner : public framework::Task
   o2::framework::Outputs mOutputs;
 
   // Checks cache
-  std::vector<std::string> mCheckList;
-  std::vector<std::string> mLibrariesLoaded;
-  std::map<std::string, CheckInterface*> mChecksLoaded;
-  std::map<std::string, TClass*> mClassesLoaded;
   std::map<std::string, std::shared_ptr<MonitorObject>> mMonitorObjects;
-  std::map<std::string, std::shared_ptr<QualityObject>> mQualityObjects;
-  std::map<std::string, CheckInterface*> mCheckInreface;
 
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;

@@ -77,7 +77,6 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
   }
 }
 
-// TODO this should not be executed automatically, too much error prone.
 // It depends on what is in the database.
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
 {
@@ -101,21 +100,39 @@ long oldTimestamp;
 BOOST_AUTO_TEST_CASE(ccdb_store)
 {
   test_fixture f;
+
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->storeMO(mo1);
+
+  Quality q = Quality::Bad;
+  std::vector<std::string> inputs;
+  shared_ptr<QualityObject> qo =  make_shared<QualityObject>("checkName", inputs, "TST");
+  qo->setQuality(q);
+  f.backend->storeQO(qo);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_json)
 {
   test_fixture f;
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
-  BOOST_CHECK(mo);
-  TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
-  BOOST_CHECK_NE(h1, nullptr);
-  BOOST_CHECK_EQUAL(h1->GetEntries(), 10000);
+
+  string json = f.backend->retrieveMOJson("qc/TST/my/task", "asdf/asdf");
+  BOOST_CHECK (!json.empty());
+  ILOG(Info) << json << ENDM;
+  std::stringstream ss;
+  ss << json;
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  json = f.backend->retrieveQOJson("qc/checks/TST/checkName");
+  BOOST_CHECK (!json.empty());
+  ILOG(Info) << json << ENDM;
+  std::stringstream ss2;
+  ss2 << json;
+  boost::property_tree::ptree pt2;
+  boost::property_tree::read_json(ss2, pt2);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store"))

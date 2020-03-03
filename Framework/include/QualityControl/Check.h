@@ -72,7 +72,7 @@ class Check
   bool isReady(std::map<std::string, unsigned int>& revisionMap);
 
   const std::string getName() { return mName; };
-  std::shared_ptr<o2::quality_control::core::QualityObject> getQualityObject() { return mQualityObject; };
+  std::shared_ptr<o2::quality_control::core::QualityObject> getQualityObject() { return mLatestQuality; };
   o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
   o2::framework::Inputs getInputs() const { return mInputs; };
   std::vector<std::string> getMonitorObjectNames() { return mMonitorObjectNames; }
@@ -102,7 +102,7 @@ class Check
   o2::quality_control::core::QcInfoLogger& mLogger;
 
   // Latest Quality
-  std::shared_ptr<o2::quality_control::core::QualityObject> mQualityObject;
+  std::shared_ptr<o2::quality_control::core::QualityObject> mLatestQuality;
 
   // DPL information
   o2::framework::Inputs mInputs;
@@ -116,6 +116,7 @@ class Check
   // Check module
   std::string mModuleName;
   std::string mClassName;
+  std::string mDetectorName;
   CheckInterface* mCheckInterface = nullptr;
   std::unordered_map<std::string, std::string> mCustomParameters;
 

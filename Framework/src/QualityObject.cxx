@@ -5,8 +5,9 @@ ClassImp(o2::quality_control::core::QualityObject)
   namespace o2::quality_control::core
 {
 
-  QualityObject::QualityObject(const std::string& checkerName, std::vector<std::string> inputs)
-    : mCheckName(checkerName),
+  QualityObject::QualityObject(const std::string& checkName, std::vector<std::string> inputs, const std::string& detectorName)
+  : mDetectorName(detectorName),
+      mCheckName(checkName),
       mInputs{},
       mUserMetadata{}
   {
@@ -14,12 +15,7 @@ ClassImp(o2::quality_control::core::QualityObject)
     updateQuality(Quality());
   }
 
-  QualityObject::QualityObject(const std::string& checkerName)
-    : QualityObject(checkerName, {})
-  {
-  }
-
-  QualityObject::~QualityObject() {}
+  QualityObject::~QualityObject() = default;
 
   const std::string anonChecker = "anonymouseChecker";
   QualityObject::QualityObject()
@@ -32,15 +28,16 @@ ClassImp(o2::quality_control::core::QualityObject)
     return mCheckName.c_str();
   }
 
+
+
   void QualityObject::updateQuality(Quality quality)
   {
     //TODO: Update timestamp
-    mQualityLevel = quality.getLevel();
-    mQualityName = quality.getName();
+    mQuality = quality;
   }
   Quality QualityObject::getQuality() const
   {
-    return Quality(mQualityLevel, mQualityName);
+    return mQuality;
   }
 
   void QualityObject::addMetadata(std::string key, std::string value)
@@ -55,7 +52,22 @@ ClassImp(o2::quality_control::core::QualityObject)
 
   std::string QualityObject::getPath() const
   {
-    std::string path = "qc/checks/" + getName();
+    std::string path = "qc/checks/" + getDetectorName() + "/" + getName();
     return path;
+  }
+
+  const std::string& QualityObject::getDetectorName() const
+  {
+    return mDetectorName;
+  }
+
+  void QualityObject::setDetectorName(const std::string& detectorName)
+  {
+    QualityObject::mDetectorName = detectorName;
+  }
+
+  void QualityObject::setQuality(const Quality& quality)
+  {
+    updateQuality(quality);
   }
 }

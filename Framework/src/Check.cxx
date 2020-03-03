@@ -50,7 +50,7 @@ Check::Check(std::string checkName, std::string configurationSource)
   : mName(checkName),
     mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
-    mQualityObject(std::make_shared<QualityObject>(checkName)),
+    mLatestQuality(std::make_shared<QualityObject>(checkName)),
     mInputs{},
     mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 },
     mPolicyType("OnAny")
@@ -108,17 +108,22 @@ void Check::initConfig()
       // Here can be implemented other sources for the Check then Task if needed
     }
 
-    mQualityObject->setInputs(stringifyInput(mInputs));
+    mLatestQuality->setInputs(stringifyInput(mInputs));
 
     // Prepare module loading
     mModuleName = conf.get<std::string>("moduleName");
     mClassName = conf.get<std::string>("className");
 
+    // Detector name, if none use "DET"
+    mDetectorName = conf.get<std::string>("detectorName", "DET");
+    mLatestQuality->setDetectorName(mDetectorName);
+
     // Print setting
     mLogger << mName << ": Module " << mModuleName << AliceO2::InfoLogger::InfoLogger::endm;
     mLogger << mName << ": Class " << mClassName << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << mName << ": Detector " << mDetectorName << AliceO2::InfoLogger::InfoLogger::endm;
     mLogger << mName << ": Policy " << mPolicyType << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << mName << " MonitorObjects" << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << mName << ": MonitorObjects" << AliceO2::InfoLogger::InfoLogger::endm;
     for (const auto& moname : mMonitorObjectNames) {
       mLogger << mName << " - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
     }
@@ -281,7 +286,7 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
        * User didn't specify the MOs.
        * All MOs are passed, no shadowing needed.
        */
-      mQualityObject->updateQuality(mCheckInterface->check(&moMap));
+      mLatestQuality->updateQuality(mCheckInterface->check(&moMap));
     } else {
       /* 
        * Shadow MOs.
@@ -299,14 +304,14 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
       }
 
       // Trigger loaded check and update quality of the Check.
-      mQualityObject->updateQuality(mCheckInterface->check(&shadowMap));
+      mLatestQuality->updateQuality(mCheckInterface->check(&shadowMap));
     }
   }
-  mLogger << mName << " Quality: " << mQualityObject->getQuality() << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mName << " Quality: " << mLatestQuality->getQuality() << AliceO2::InfoLogger::InfoLogger::endm;
   // Trigger beautification
   beautify(moMap);
 
-  return mQualityObject;
+  return mLatestQuality;
 }
 
 void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
@@ -325,5 +330,5 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
 
   // Beautify
   mLogger << mName << " Beautify" << AliceO2::InfoLogger::InfoLogger::endm;
-  mCheckInterface->beautify(mo, mQualityObject->getQuality());
+  mCheckInterface->beautify(mo, mLatestQuality->getQuality());
 }
