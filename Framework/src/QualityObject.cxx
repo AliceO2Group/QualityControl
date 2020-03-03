@@ -6,7 +6,7 @@ ClassImp(o2::quality_control::core::QualityObject)
 {
 
   QualityObject::QualityObject(const std::string& checkName, std::vector<std::string> inputs, const std::string& detectorName)
-  : mDetectorName(detectorName),
+    : mDetectorName(detectorName),
       mCheckName(checkName),
       mInputs{},
       mUserMetadata{}
@@ -27,8 +27,6 @@ ClassImp(o2::quality_control::core::QualityObject)
   {
     return mCheckName.c_str();
   }
-
-
 
   void QualityObject::updateQuality(Quality quality)
   {

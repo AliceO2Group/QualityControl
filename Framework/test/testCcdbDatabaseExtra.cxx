@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 
   Quality q = Quality::Bad;
   std::vector<std::string> inputs;
-  shared_ptr<QualityObject> qo =  make_shared<QualityObject>("checkName", inputs, "TST");
+  shared_ptr<QualityObject> qo = make_shared<QualityObject>("checkName", inputs, "TST");
   qo->setQuality(q);
   f.backend->storeQO(qo);
 }
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json)
   test_fixture f;
 
   string json = f.backend->retrieveMOJson("qc/TST/my/task", "asdf/asdf");
-  BOOST_CHECK (!json.empty());
+  BOOST_CHECK(!json.empty());
   ILOG(Info) << json << ENDM;
   std::stringstream ss;
   ss << json;
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json)
   boost::property_tree::read_json(ss, pt);
 
   json = f.backend->retrieveQOJson("qc/checks/TST/checkName");
-  BOOST_CHECK (!json.empty());
+  BOOST_CHECK(!json.empty());
   ILOG(Info) << json << ENDM;
   std::stringstream ss2;
   ss2 << json;
