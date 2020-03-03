@@ -1,7 +1,7 @@
 ///
 /// \file   DigitsQcTask.cxx
 /// \author Markus Fasel, Cristina Terrevoli
-///
+/// 
 
 #include <TCanvas.h>
 #include <TH2.h>
