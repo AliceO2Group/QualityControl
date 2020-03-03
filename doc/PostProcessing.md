@@ -105,9 +105,9 @@ As it is configured to invoke each method only `"once"`, you will see it initial
 
 To have more control over the state transitions or to run a post-processing task in production, one should use `o2-qc-run-postprocessing-occ`. It is run almost exactly as the previously mentioned application, however one has to use [`peanut`](https://github.com/AliceO2Group/Control/tree/master/occ#single-process-control-with-peanut) to drive its state transitions.
 
-To try it out locally, run the following in the first terminal window:
+To try it out locally, run the following in the first terminal window (we will try out a different task this time):
 ```
-o2-qc-run-postprocessing-occ --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExamplePostprocessing --period 10
+o2-qc-run-postprocessing-occ --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExampleTrend --period 10
 ```
 In the logs you will see a port number which listens for RPC commands. Remember it. 
 ```
