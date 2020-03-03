@@ -93,7 +93,7 @@ Each of the three methods can be invoked by one or more triggers. Below are list
 
 ## Running it
 
-The post-processing tasks can be run by using the `o2-qc-run-postprocessing` application. At the moment it does not use DPL nor OCC library, which means, that it cannot be integrated with AliECS yet, i.e. cannot be run from GUI within an FLP Suite.
+The post-processing tasks can be run by using the `o2-qc-run-postprocessing` application (only for development) or with `o2-qc-run-postprocessing-occ` (both development and production).
 
 To run the basic example, use the command below. The `--config` parameter should point to the configuration file. The `--period` parameter specifies how often the specified triggers should be checked.
 
@@ -102,6 +102,27 @@ o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessi
 ```
 
 As it is configured to invoke each method only `"once"`, you will see it initializing, entering the update method, then finalizing the task and exiting.
+
+To have more control over the state transitions or to run a post-processing task in production, one should use `o2-qc-run-postprocessing-occ`. It is run almost exactly as the previously mentioned application, however one has to use [`peanut`](https://github.com/AliceO2Group/Control/tree/master/occ#single-process-control-with-peanut) to drive its state transitions.
+
+To try it out locally, run the following in the first terminal window:
+```
+o2-qc-run-postprocessing-occ --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExamplePostprocessing --period 10
+```
+In the logs you will see a port number which listens for RPC commands. Remember it. 
+```
+no control port configured, defaulting to 47100
+no role configured, defaulting to default-role
+gRPC server listening on port 47100
+```
+In the second window, run the following. Use the port number from the output of the QC executable.
+```
+# If you haven't built it:
+# aliBuild build Coconut --defaults o2-dataflow
+alienv enter coconut/latest
+OCC_CONTROL_PORT=47100 peanut
+```
+A simple terminal user interface will open, which will allow you to trigger state transitions. The usual transition sequence, which you might want to try out, is CONFIGURE, START, STOP, RESET, EXIT.
 
 # Convenience classes
 
