@@ -47,6 +47,7 @@
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
         "policy": "OnAny",
+        "detectorName": "TPC",
         "dataSource": [{
           "type": "Task",
           "name": "Tracks",
