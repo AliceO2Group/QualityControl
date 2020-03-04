@@ -221,6 +221,7 @@ set(TEST_SRCS
     test/testCheckRunner.cxx
     test/testCheck.cxx
     test/testQuality.cxx
+    test/testQualityObject.cxx
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
     test/testCcdbDatabaseExtra.cxx
@@ -237,6 +238,7 @@ set(TEST_SRCS
   )
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""
