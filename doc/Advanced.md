@@ -21,8 +21,6 @@
       * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
       * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
       * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
-      * [Information Service](#information-service)
-         * [Usage](#usage)
       * [Configuration files details](#configuration-files-details)
 
 <!-- Added by: bvonhall, at:  -->
@@ -243,90 +241,6 @@ interfaces have to be identical.
    alienv enter qcg/latest
    o2-qc-database-setup.sh
    ```
-
-## Information Service
-
-The information service publishes information about the tasks currently
-running and the objects they publish. It is needed by some GUIs, or
-other clients.
-
-By default it will publish on port 5561 the json description of a task
-when it is updated. A client can also request on port 5562 the information
-about a specific task or about all the tasks, by passing the name of the
-task as a parameter or "all" respectively.
-
-The JSON for a task looks like :
-```
-{
-    "name": "myTask_1",
-    "objects": [
-        {
-            "id": "array-0"
-        },
-        {
-            "id": "array-1"
-        },
-        {
-            "id": "array-2"
-        },
-        {
-            "id": "array-3"
-        },
-        {
-            "id": "array-4"
-        }
-    ]
-}
-```
-
-The JSON for all tasks looks like :
-```
-{
-    "tasks": [
-        {
-            "name": "myTask_1",
-            "objects": [
-                {
-                    "id": "array-0"
-                },
-                {
-                    "id": "array-1"
-                }
-            ]
-        },
-        {
-            "name": "myTask_2",
-            "objects": [
-                {
-                    "id": "array-0"
-                },
-                {
-                    "id": "array-1"
-                }
-            ]
-        }
-    ]
-}
-```
-### Usage
-```
-o2-qc-info-service -c /absolute/path/to/InformationService.json -n information_service \
-              --id information_service --mq-config /absolute/path/to/InformationService.json
-```
-
-The `o2-qc-info-service` can provide fake data from a file. This is useful
-to test the clients. Use the option `--fake-data-file` and provide the
-absolute path to the file. The file `infoServiceFake.json` is provided
-as an example.
-
-To check what is being output by the Information Service, one can
-run the InformationServiceDump :
-```
-o2-qc-info-service-dump -c /absolute/path/to/InformationService.json -n information_service_dump \
-                  --id information_service_dump --mq-config /absolute/path/to/InformationService.json
-                  --request-task myTask1
-```
-The last parameter can be omitted to receive information about all tasks.
 
 ## Configuration files details
 
