@@ -58,9 +58,11 @@ def parseArgs():
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
+    parser.add_argument('--only-path', dest='only_path', action='store', default="",
+                        help='Only work on given path (omit the initial slash).')
     args = parser.parse_args()
     dryable.set(args.dry_run)
-    logging.debug(args)
+    logging.info(args)
     return args
 
 
@@ -114,7 +116,7 @@ def main():
     # Parse arguments 
     args = parseArgs()
     logging.getLogger().setLevel(int(args.log_level))
-    
+
     # Read configuration
     config = parseConfig(args.config)
     rules: List[Rule] = config['rules']
@@ -123,7 +125,10 @@ def main():
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url)
     paths = ccdb.getObjectsList()
-    
+    if args.only_path != '':
+        paths = [item for item in paths if item.startswith(args.only_path)]
+    logging.debug(paths)
+
     # For each object call the first matching rule
     logging.info("Loop through the objects and apply first matching rule.")
     for object_path in paths:
