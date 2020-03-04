@@ -70,13 +70,11 @@ class DatabaseInterface
   /**
    * Look up an object of a task and return it.
    * \details It returns the object if found or nullptr if not.
-   * TODO evaluate whether we should have more methods to retrieve objects of different types (with or without
-   * templates)
-   * TODO evaluate whether we should have a method to retrieve a list of objects (optimization)
+   * @deprecated
    */
   virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) = 0;
   virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkName, long timestamp = 0) = 0;
-  virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp) = 0;
+  virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp = 0) = 0;
 
   /**
    * Returns JSON encoded object

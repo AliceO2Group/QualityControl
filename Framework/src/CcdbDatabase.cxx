@@ -170,6 +170,17 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName,
   return qo;
 }
 
+std::string CcdbDatabase::retrieveQOJson(std::string checkName, long timestamp)
+{
+  return retrieveJson(checkName, timestamp);
+}
+
+std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objectName, long timestamp)
+{
+  string path = taskName + "/" + objectName;
+  return retrieveJson(path, timestamp);
+}
+
 std::string CcdbDatabase::retrieveJson(std::string path, long timestamp)
 {
   auto tobj = retrieveTObject(path, timestamp);

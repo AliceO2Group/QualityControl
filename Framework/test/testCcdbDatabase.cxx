@@ -86,17 +86,32 @@ long oldTimestamp;
 BOOST_AUTO_TEST_CASE(ccdb_store)
 {
   test_fixture f;
+
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->storeMO(mo1);
+
+//  QualityObject *qo = new QualityObject("checkName", )
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  //MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
+  std::shared_ptr<TObject> obj = f.backend->retrieveTObject("qc/TST/my/task/asdf/asdf");
+  auto mo = dynamic_pointer_cast<MonitorObject>(obj);
+  auto mo2 = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
+  BOOST_CHECK_NE(mo, nullptr);
+  BOOST_CHECK_EQUAL(mo->getName(), mo2->getName());
+  TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
+  BOOST_CHECK_NE(h1, nullptr);
+  BOOST_CHECK_EQUAL(h1->GetEntries(), 10000);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
+{
+  test_fixture f;
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
   BOOST_CHECK_NE(mo, nullptr);
   TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
@@ -109,7 +124,21 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   test_fixture f;
   std::string task = "qc/TST/my/task";
   std::string object = "asdf/asdf";
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(task, object);
+  std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
+  auto json = f.backend->retrieveJson(task + "/" + object);
+  auto json2 = f.backend->retrieveMOJson(task, object);
+
+  cout << "mo json : " << json << endl;
+
+  BOOST_CHECK(!json.empty());
+  BOOST_CHECK_EQUAL(json, json2);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo_json, *utf::depends_on("ccdb_store"))
+{
+  test_fixture f;
+  std::string task = "qc/TST/my/task";
+  std::string object = "asdf/asdf";
   std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
   auto json = f.backend->retrieveMOJson(task, object);
 
