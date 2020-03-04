@@ -88,9 +88,6 @@ class CheckInterface
  protected:
   std::unordered_map<std::string, std::string> mCustomParameters;
 
-  //  private:
-  //    std::string mName;
-
   ClassDef(CheckInterface, 2)
 };
 

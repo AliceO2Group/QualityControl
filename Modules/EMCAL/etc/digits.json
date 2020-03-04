@@ -46,6 +46,7 @@
           "className": "o2::quality_control_modules::emcal::DigitCheck",
           "moduleName": "QcEMCAL",
           "policy": "OnAny",
+          "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
             "name": "QcTask",
@@ -57,6 +58,7 @@
           "className": "o2::quality_control_modules::emcal::DigitCheck",
           "moduleName": "QcEMCAL",
           "policy": "OnAny",
+          "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
             "name": "QcTask",
@@ -68,6 +70,7 @@
           "className": "o2::quality_control_modules::emcal::DigitCheck",
           "moduleName": "QcEMCAL",
           "policy": "OnAny",
+          "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
             "name": "QcTask",
@@ -79,6 +82,7 @@
           "className": "o2::quality_control_modules::emcal::DigitCheck",
           "moduleName": "QcEMCAL",
           "policy": "OnAny",
+          "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
             "name": "QcTask",
@@ -90,6 +94,7 @@
           "className": "o2::quality_control_modules::emcal::DigitCheck",
           "moduleName": "QcEMCAL",
           "policy": "OnAny",
+          "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
             "name": "QcTask",
@@ -101,6 +106,7 @@
           "className": "o2::quality_control_modules::emcal::DigitCheck",
           "moduleName": "QcEMCAL",
           "policy": "OnAny",
+          "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
             "name": "QcTask",

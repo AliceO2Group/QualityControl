@@ -36,6 +36,7 @@
         "className": "o2::quality_control_modules::common::NonEmpty",
         "moduleName": "QcCommon",
         "policy": "OnAny",
+        "detectorName": "DAQ",
         "dataSource": [{
           "type": "Task",
           "name": "DaqTask",
@@ -47,6 +48,7 @@
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
         "policy": "OnAny",
+        "detectorName": "DAQ",
         "dataSource": [{
           "type": "Task",
           "name": "DaqTask",
@@ -58,6 +60,7 @@
         "className": "o2::quality_control_modules::daq::EverIncreasingGraph",
         "moduleName": "QcDaq",
         "policy": "OnAny",
+        "detectorName": "DAQ",
         "dataSource": [{
           "type": "Task",
           "name": "DaqTask",

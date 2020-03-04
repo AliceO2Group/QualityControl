@@ -24,12 +24,14 @@
 namespace o2::quality_control::core
 {
 
+/// \brief  Encapsulation of a Quality into a TObject that can be streamed and stored.
+///
+/// \author Barthelemy von Haller
 class QualityObject : public TObject
 {
  public:
   /// Default constructor
-  QualityObject(const std::string& checkerName, std::vector<std::string> inputs);
-  QualityObject(const std::string& checkerName);
+  explicit QualityObject(const std::string& checkName, std::vector<std::string> inputs = {}, const std::string& detectorName = "DET");
   QualityObject();
 
   /// Destructor
@@ -46,7 +48,7 @@ class QualityObject : public TObject
 
   /// \brief Return the name of the encapsulated object (if any).
   /// @return The name of the encapsulated object or "" if there is no object.
-  const std::string getName() const { return mCheckName; };
+  std::string getName() const { return mCheckName; };
 
   /// \brief Overwrite the TObject's method just to avoid confusion.
   /// @return The name of the encapsulated object or "" if there is no object.
@@ -67,7 +69,7 @@ class QualityObject : public TObject
    * Use o2::framework::DataSpecUtils::describe(input) to get string
    */
   void setInputs(std::vector<std::string> inputs) { mInputs = inputs; }
-  std::vector<std::string> getInputs() { return mInputs; }
+  std::vector<std::string> getInputs() const { return mInputs; }
 
   /// \brief Add key value pair that will end up in the database
   /// Add a metadata (key value pair) to the QualityObject. It will be stored in the database.
@@ -81,16 +83,19 @@ class QualityObject : public TObject
   /// \return A string containing the path.
   std::string getPath() const;
 
- private:
-  //Quality
-  unsigned int mQualityLevel;
-  std::string mQualityName;
+  const std::string& getDetectorName() const;
+  void setDetectorName(const std::string& detectorName);
 
+  void setQuality(const Quality& quality);
+
+ private:
+  Quality mQuality;
+  std::string mDetectorName;
   std::string mCheckName;
   std::vector<std::string> mInputs;
   std::map<std::string, std::string> mUserMetadata;
 
-  ClassDefOverride(QualityObject, 1);
+  ClassDefOverride(QualityObject, 2);
 };
 
 } // namespace o2::quality_control::core

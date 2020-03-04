@@ -28,7 +28,7 @@
         "location": "remote",
         "machines": [] 
       },
-    "QYZTask": {
+      "QYZTask": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
@@ -42,7 +42,7 @@
         "location": "remote",
         "machines": [] 
       },
-    "XYZTask": {
+      "XYZTask": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
@@ -62,6 +62,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "policy": "OnAll",
         "dataSource": [{
             "type": "Task",
@@ -78,6 +79,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "policy": "OnAny",
         "dataSource": [{
             "type": "Task",
@@ -100,6 +102,7 @@
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
         "policy": "OnAny",
+        "detectorName": "TST",
         "dataSource": [{
             "type": "Task",
             "name": "skeletonTask",
