@@ -75,13 +75,13 @@ class DatabaseInterface
    * TODO evaluate whether we should have a method to retrieve a list of objects (optimization)
    */
   virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) = 0;
-  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkName, long timestamp = 0) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = 0) = 0;
 
   /**
    * Returns JSON encoded object
    */
   virtual std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = 0) = 0;
-  virtual std::string retrieveQOJson(std::string checkName, long timestamp = 0) = 0;
+  virtual std::string retrieveQOJson(std::string qoPath, long timestamp = 0) = 0;
   virtual void disconnect() = 0;
   /**
    * \brief Prepare the container, such as a table in a relational database, that will contain the MonitorObject's for

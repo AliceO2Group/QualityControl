@@ -182,9 +182,9 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
   ccdbApi.storeAsTFile(qo.get(), path, metadata, from, to);
 }
 
-std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName, long timestamp)
+std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp)
 {
-  string fullPath = checkerName;
+  string fullPath = qoPath;
   map<string, string> metadata;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
@@ -200,14 +200,14 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName,
   }
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(object));
   if (qo == nullptr) {
-    LOG(ERROR) << "Could not cast the object " << checkerName << " to QualityObject";
+    LOG(ERROR) << "Could not cast the object " << qoPath << " to QualityObject";
   }
   return qo;
 }
 
-std::string CcdbDatabase::retrieveQOJson(std::string checkName, long /*timestamp*/)
+std::string CcdbDatabase::retrieveQOJson(std::string qoPath, long /*timestamp*/)
 {
-  auto qualityObject = retrieveQO(checkName);
+  auto qualityObject = retrieveQO(qoPath);
   if (qualityObject == nullptr) {
     return std::string();
   }
