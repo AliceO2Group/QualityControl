@@ -48,11 +48,11 @@ class QualityObject : public TObject
 
   /// \brief Return the name of the encapsulated object (if any).
   /// @return The name of the encapsulated object or "" if there is no object.
-  [[nodiscard]] std::string getName() const { return mCheckName; };
+  std::string getName() const { return mCheckName; };
 
   /// \brief Overwrite the TObject's method just to avoid confusion.
   /// @return The name of the encapsulated object or "" if there is no object.
-  [[nodiscard]] const char* GetName() const override;
+  const char* GetName() const override;
 
   ///
   /// \brief Get the quality of this object.
@@ -63,13 +63,13 @@ class QualityObject : public TObject
   /// @return the quality of the object
   ///
   void updateQuality(Quality quality);
-  [[nodiscard]] Quality getQuality() const;
+  Quality getQuality() const;
 
   /**
    * Use o2::framework::DataSpecUtils::describe(input) to get string
    */
   void setInputs(std::vector<std::string> inputs) { mInputs = inputs; }
-  [[nodiscard]] std::vector<std::string> getInputs() const { return mInputs; }
+  std::vector<std::string> getInputs() const { return mInputs; }
 
   /// \brief Add key value pair that will end up in the database
   /// Add a metadata (key value pair) to the QualityObject. It will be stored in the database.
@@ -81,9 +81,9 @@ class QualityObject : public TObject
   /// \brief Build the path to this object.
   /// Build the path to this object as it will appear in the GUI.
   /// \return A string containing the path.
-  [[nodiscard]] std::string getPath() const;
+  std::string getPath() const;
 
-  [[nodiscard]] const std::string& getDetectorName() const;
+  const std::string& getDetectorName() const;
   void setDetectorName(const std::string& detectorName);
 
   void setQuality(const Quality& quality);
