@@ -76,12 +76,16 @@ class DatabaseInterface
    */
   virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) = 0;
   virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkName, long timestamp = 0) = 0;
+  virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp) = 0;
 
   /**
    * Returns JSON encoded object
    */
   virtual std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = 0) = 0;
   virtual std::string retrieveQOJson(std::string checkName, long timestamp = 0) = 0;
+  virtual std::string retrieveJson(std::string path, long timestamp = 0) = 0;
+
+
   virtual void disconnect() = 0;
   /**
    * \brief Prepare the container, such as a table in a relational database, that will contain the MonitorObject's for

@@ -130,9 +130,8 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   ccdbApi.storeAsTFile(mo.get(), path, metadata, from, to);
 }
 
-std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskName, std::string objectName, long timestamp)
+std::shared_ptr<TObject> CcdbDatabase::retrieveTObject(std::string path, long timestamp)
 {
-  string path = taskName + "/" + objectName;
   map<string, string> metadata;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
@@ -146,22 +145,54 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
       return nullptr;
     }
   }
-  std::shared_ptr<core::MonitorObject> mo(dynamic_cast<core::MonitorObject*>(object));
+  std::shared_ptr<TObject> result(object);
+  return result;
+}
+
+std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskName, std::string objectName, long timestamp)
+{
+  string path = taskName + "/" + objectName;
+  std::shared_ptr<TObject> obj = retrieveTObject(path, timestamp);
+  std::shared_ptr<MonitorObject> mo = std::dynamic_pointer_cast<MonitorObject>(obj);
   if (mo == nullptr) {
     ILOG(Error) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
   }
   return mo;
 }
 
-std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objectName, long /*timestamp*/)
+std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName, long timestamp)
 {
-  auto monitor = retrieveMO(taskName, objectName);
-  if (monitor == nullptr) {
+  std::shared_ptr<TObject> obj = retrieveTObject(checkerName, timestamp);
+  std::shared_ptr<QualityObject> qo = std::dynamic_pointer_cast<QualityObject>(obj);
+  if (qo == nullptr) {
+    LOG(ERROR) << "Could not cast the object " << checkerName << " to QualityObject";
+  }
+  return qo;
+}
+
+std::string CcdbDatabase::retrieveJson(std::string path, long timestamp)
+{
+  auto tobj = retrieveTObject(path, timestamp);
+  if (tobj == nullptr) {
     return std::string();
   }
-  std::unique_ptr<TObject> obj(monitor->getObject());
-  monitor->setIsOwner(false);
-  TString json = TBufferJSON::ConvertToJSON(obj.get());
+  TObject* toConvert;
+  if(tobj->IsA() == MonitorObject::Class()) {
+    cout << "MONITOROBJECDT" << endl;
+    std::shared_ptr<MonitorObject> mo = std::dynamic_pointer_cast<MonitorObject>(tobj);
+    toConvert = mo->getObject();
+    mo->setIsOwner(false);
+  } else if(tobj->IsA() == QualityObject::Class()) {
+    cout << "QUALITYOBJCECT" << endl;
+    toConvert = dynamic_cast<QualityObject*>(tobj.get());
+    if (toConvert == nullptr) {
+      return std::string();
+    }
+  } else {
+    LOG(ERROR) << "Unknown type of object : " << path << " -> " << tobj->ClassName();
+    return std::string();
+  }
+  TString json = TBufferJSON::ConvertToJSON(toConvert);
   return json.Data();
 }
 
@@ -180,39 +211,6 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
   ccdbApi.storeAsTFile(qo.get(), path, metadata, from, to);
-}
-
-std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkerName, long timestamp)
-{
-  string fullPath = checkerName;
-  map<string, string> metadata;
-  long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
-
-  // we try first to load a TFile
-  TObject* object = ccdbApi.retrieveFromTFile(fullPath, metadata, when);
-  if (object == nullptr) {
-    // We could not open a TFile we should now try to open an object directly serialized
-    object = ccdbApi.retrieve(fullPath, metadata, when);
-    LOG(DEBUG) << "We could retrieve the object " << fullPath << " as a streamed object.";
-    if (object == nullptr) {
-      return nullptr;
-    }
-  }
-  std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(object));
-  if (qo == nullptr) {
-    LOG(ERROR) << "Could not cast the object " << checkerName << " to QualityObject";
-  }
-  return qo;
-}
-
-std::string CcdbDatabase::retrieveQOJson(std::string checkName, long /*timestamp*/)
-{
-  auto qualityObject = retrieveQO(checkName);
-  if (qualityObject == nullptr) {
-    return std::string();
-  }
-  TString json = TBufferJSON::ConvertToJSON(qualityObject.get());
-  return json.Data();
 }
 
 void CcdbDatabase::disconnect()
