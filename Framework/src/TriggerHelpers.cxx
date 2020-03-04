@@ -100,7 +100,7 @@ std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNa
   return triggerFcns;
 }
 
-bool isThereUserOrControlTrigger(const std::vector<std::string>& triggerNames)
+bool hasUserOrControlTrigger(const std::vector<std::string>& triggerNames)
 {
   return std::find_if(triggerNames.begin(), triggerNames.end(), [](std::string name) {
            boost::algorithm::to_lower(name);

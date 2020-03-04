@@ -93,7 +93,7 @@ void PostProcessingRunner::start()
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
     mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers);
-    if (trigger_helpers::isThereUserOrControlTrigger(mConfig.initTriggers)) {
+    if (trigger_helpers::hasUserOrControlTrigger(mConfig.initTriggers)) {
       doInitialize(Trigger::UserOrControl);
     }
   } else if (mTaskState == TaskState::Running) {
@@ -108,7 +108,7 @@ void PostProcessingRunner::start()
 void PostProcessingRunner::stop()
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Running) {
-    if (trigger_helpers::isThereUserOrControlTrigger(mConfig.stopTriggers)) {
+    if (trigger_helpers::hasUserOrControlTrigger(mConfig.stopTriggers)) {
       doFinalize(Trigger::UserOrControl);
     }
   } else if (mTaskState == TaskState::Finished) {
