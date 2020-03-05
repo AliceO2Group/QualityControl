@@ -86,11 +86,16 @@ long oldTimestamp;
 BOOST_AUTO_TEST_CASE(ccdb_store)
 {
   test_fixture f;
+
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
+
+  shared_ptr<QualityObject> qo1 = make_shared<QualityObject>("test-ccdb-check", vector{ string("input1"), string("input2") }, "TST");
+
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->storeMO(mo1);
+  f.backend->storeQO(qo1);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
@@ -98,22 +103,38 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
   test_fixture f;
   //MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
-  BOOST_CHECK_NE(mo, nullptr);
+  BOOST_REQUIRE_NE(mo, nullptr);
   TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
-  BOOST_CHECK_NE(h1, nullptr);
+  BOOST_REQUIRE_NE(h1, nullptr);
   BOOST_CHECK_EQUAL(h1->GetEntries(), 10000);
+
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO("qc/checks/TST/test-ccdb-check");
+  BOOST_REQUIRE_NE(qo, nullptr);
+  BOOST_CHECK_EQUAL(qo->getName(), "test-ccdb-check");
+  BOOST_REQUIRE_EQUAL(qo->getInputs().size(), 2);
+  BOOST_CHECK_EQUAL(qo->getInputs()[0], "input1");
+  BOOST_CHECK_EQUAL(qo->getInputs()[1], "input2");
+  BOOST_CHECK_EQUAL(qo->getDetectorName(), "TST");
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
+
   std::string task = "qc/TST/my/task";
   std::string object = "asdf/asdf";
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(task, object);
   std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
-  auto json = f.backend->retrieveMOJson(task, object);
+  auto jsonMO = f.backend->retrieveMOJson(task, object);
 
-  BOOST_CHECK(!json.empty());
+  BOOST_CHECK(!jsonMO.empty());
+
+  std::string qoPath = "qc/checks/TST/test-ccdb-check";
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(qoPath);
+  std::cout << "[json retrieve]: " << qoPath << std::endl;
+  auto jsonQO = f.backend->retrieveQOJson(qoPath);
+
+  BOOST_CHECK(!jsonQO.empty());
 }
 
 } // namespace
