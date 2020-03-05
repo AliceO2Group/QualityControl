@@ -76,6 +76,13 @@ TriggerFcn Always()
   };
 }
 
+TriggerFcn Never()
+{
+  return []() mutable -> Trigger {
+    return Trigger::No;
+  };
+}
+
 TriggerFcn EndOfRun()
 {
   return NotImplemented("EndOfRun");

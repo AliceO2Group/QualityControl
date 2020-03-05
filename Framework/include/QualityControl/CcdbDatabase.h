@@ -65,8 +65,8 @@ class CcdbDatabase : public DatabaseInterface
   std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = 0) override;
 
   // retrieval - QO
-  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkerName, long timestamp = 0) override;
-  std::string retrieveQOJson(std::string checkName, long timestamp = 0) override;
+  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = 0) override;
+  std::string retrieveQOJson(std::string qoPath, long timestamp = 0) override;
 
   // retrieval - general
   std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp = -1) override;

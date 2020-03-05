@@ -160,7 +160,7 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   return mo;
 }
 
-std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkName, long timestamp)
+std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp)
 {
   std::shared_ptr<TObject> obj = retrieveTObject(checkName, timestamp);
   std::shared_ptr<QualityObject> qo = std::dynamic_pointer_cast<QualityObject>(obj);
@@ -170,7 +170,7 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string checkName, l
   return qo;
 }
 
-std::string CcdbDatabase::retrieveQOJson(std::string checkName, long timestamp)
+std::string CcdbDatabase::retrieveQOJson(std::string qoPath, long timestamp)
 {
   return retrieveJson(checkName, timestamp);
 }

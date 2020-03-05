@@ -235,14 +235,14 @@ void MySqlDatabase::storeForMonitorObject(std::string name)
   objects.clear();
 }
 
-std::shared_ptr<o2::quality_control::core::QualityObject> MySqlDatabase::retrieveQO(std::string checkName, long /*timestamp*/)
+std::shared_ptr<o2::quality_control::core::QualityObject> MySqlDatabase::retrieveQO(std::string qoPath, long /*timestamp*/)
 {
   // TODO use the timestamp
 
   string query;
   TMySQLStatement* statement = nullptr;
 
-  query += "SELECT object_name, data, updatetime, run, fill FROM data_" + checkName + " WHERE object_name = ?";
+  query += "SELECT object_name, data, updatetime, run, fill FROM data_" + qoPath + " WHERE object_name = ?";
   statement = (TMySQLStatement*)mServer->Statement(query.c_str());
   if (mServer->IsError()) {
     if (statement) {
@@ -253,7 +253,7 @@ std::shared_ptr<o2::quality_control::core::QualityObject> MySqlDatabase::retriev
                           << errinfo_db_message(mServer->GetErrorMsg()) << errinfo_db_errno(mServer->GetErrorCode()));
   }
   statement->NextIteration();
-  statement->SetString(0, checkName.c_str());
+  statement->SetString(0, qoPath.c_str());
 
   if (!(statement->Process() && statement->StoreResult())) {
     delete statement;
@@ -290,9 +290,9 @@ std::shared_ptr<o2::quality_control::core::QualityObject> MySqlDatabase::retriev
   return qo;
 }
 
-std::string MySqlDatabase::retrieveQOJson(std::string checkName, long /*timestamp*/)
+std::string MySqlDatabase::retrieveQOJson(std::string qoPath, long /*timestamp*/)
 {
-  auto qualityObject = retrieveQO(checkName);
+  auto qualityObject = retrieveQO(qoPath);
   if (qualityObject == nullptr) {
     return std::string();
   }
