@@ -97,6 +97,7 @@ find_package(CURL REQUIRED)
 find_package(GLFW NAMES glfw3 CONFIG)
 find_package(FairMQ REQUIRED)
 find_package(FairLogger REQUIRED)
+find_package(Occ REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP Gui REQUIRED)
 
 set(ENABLE_MYSQL ON)

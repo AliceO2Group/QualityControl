@@ -85,6 +85,7 @@ target_link_libraries(QualityControl
                              AliceO2::InfoLogger
                              AliceO2::Monitoring
                              AliceO2::Configuration
+                             AliceO2::Occ
                              ROOT::Net
                              Boost::container
                              O2::Framework
@@ -131,7 +132,8 @@ set(EXE_SRCS
     src/runMergerTest.cxx
     src/runReadoutForDataDump.cxx
     src/runRepositoryBenchmark.cxx
-    src/runPostProcessing.cxx)
+    src/runPostProcessing.cxx
+    src/runPostProcessingOCC.cxx)
 
 set(EXE_NAMES
     o2-qc-run-producer
@@ -144,7 +146,8 @@ set(EXE_NAMES
     o2-qc-run-merger-test
     o2-qc-run-readout-for-data-dump
     o2-qc-repository-benchmark
-    o2-qc-run-postprocessing)
+    o2-qc-run-postprocessing
+    o2-qc-run-postprocessing-occ)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
@@ -159,7 +162,8 @@ set(EXE_OLD_NAMES
     runMergerTest
     qcRunReadoutForDataDump
     repositoryBenchmark
-    qcRunPostProcessing)
+    qcRunPostProcessing
+    qcRunPostProcessingOCC)
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)
