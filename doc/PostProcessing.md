@@ -95,7 +95,7 @@ Each of the three methods can be invoked by one or more triggers. Below are list
 
 The post-processing tasks can be run by using the `o2-qc-run-postprocessing` application (only for development) or with `o2-qc-run-postprocessing-occ` (both development and production).
 
-To run the basic example, use the command below. The `--config` parameter should point to the configuration file. The `--period` parameter specifies how often the specified triggers should be checked.
+To run the basic example, use the command below. The `--config` parameter should point to the configuration file. The `--period` parameter specifies the time interval of checking the specified triggers (in seconds).
 
 ```
 o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExamplePostprocessing --period 10

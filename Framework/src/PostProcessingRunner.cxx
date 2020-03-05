@@ -147,7 +147,7 @@ void PostProcessingRunner::doInitialize(Trigger trigger)
 
 void PostProcessingRunner::doUpdate(Trigger trigger)
 {
-  ILOG(Info) << "Updating the user task" << ENDM;
+  ILOG(Info) << "Updating the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->update(trigger, mServices);
 }
 
