@@ -188,12 +188,12 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp)
     return std::string();
   }
   TObject* toConvert;
-  if(tobj->IsA() == MonitorObject::Class()) {
+  if (tobj->IsA() == MonitorObject::Class()) {
     cout << "MONITOROBJECDT" << endl;
     std::shared_ptr<MonitorObject> mo = std::dynamic_pointer_cast<MonitorObject>(tobj);
     toConvert = mo->getObject();
     mo->setIsOwner(false);
-  } else if(tobj->IsA() == QualityObject::Class()) {
+  } else if (tobj->IsA() == QualityObject::Class()) {
     cout << "QUALITYOBJCECT" << endl;
     toConvert = dynamic_cast<QualityObject*>(tobj.get());
     if (toConvert == nullptr) {

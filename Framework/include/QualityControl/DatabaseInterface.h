@@ -83,7 +83,7 @@ class DatabaseInterface
    * \brief Look up an object and return it.
    * Look up an object and return it if found or nullptr if not.
    */
-   virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp) = 0;
+  virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp) = 0;
 
   /**
    * \brief Look up a monitor object and return it in JSON format.
@@ -102,7 +102,6 @@ class DatabaseInterface
  * Look up an object and return it in JSON format if found or an empty string if not.
  */
   virtual std::string retrieveJson(std::string path, long timestamp) = 0;
-
 
   virtual void disconnect() = 0;
   /**
