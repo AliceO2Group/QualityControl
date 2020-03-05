@@ -68,20 +68,40 @@ class DatabaseInterface
   virtual void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo) = 0;
 
   /**
-   * Look up an object of a task and return it.
-   * \details It returns the object if found or nullptr if not.
+   * \brief Look up a monitor object and return it.
+   * Look up a monitor object and return it if found or nullptr if not.
    * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) = 0;
-  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkName, long timestamp = 0) = 0;
-  virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp = 0) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp) = 0;
+  /**
+   * \brief Look up a quality object and return it.
+   * Look up a quality object and return it if found or nullptr if not.
+   * @deprecated
+   */
+  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkName, long timestamp) = 0;
+  /**
+   * \brief Look up an object and return it.
+   * Look up an object and return it if found or nullptr if not.
+   */
+   virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp) = 0;
 
   /**
-   * Returns JSON encoded object
+   * \brief Look up a monitor object and return it in JSON format.
+   * Look up a monitor object and return it in JSON format if found or an empty string if not.
+   * @deprecated
    */
-  virtual std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = 0) = 0;
-  virtual std::string retrieveQOJson(std::string checkName, long timestamp = 0) = 0;
-  virtual std::string retrieveJson(std::string path, long timestamp = 0) = 0;
+  virtual std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp) = 0;
+  /**
+ * \brief Look up a quality object and return it in JSON format.
+ * Look up a quality object and return it in JSON format if found or an empty string if not.
+ * @deprecated
+ */
+  virtual std::string retrieveQOJson(std::string checkName, long timestamp) = 0;
+  /**
+ * \brief Look up an object and return it in JSON format.
+ * Look up an object and return it in JSON format if found or an empty string if not.
+ */
+  virtual std::string retrieveJson(std::string path, long timestamp) = 0;
 
 
   virtual void disconnect() = 0;
