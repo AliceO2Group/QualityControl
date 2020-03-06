@@ -79,7 +79,7 @@ void TOFDecoderCompressed::rdhHandler(const o2::header::RAWDataHeader* rdh)
   ILOG(Info) << "Reading RDH #" << rdhread++ / 2;
   o2::raw::HBFUtils::printRDH(*rdh);
   if (rdh && 0) {
-     ILOG(Info) << "Processing RDH";
+    ILOG(Info) << "Processing RDH";
   }
 #endif
 }
