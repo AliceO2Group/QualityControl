@@ -1,11 +1,12 @@
 from datetime import datetime
 from datetime import timedelta
 import logging
+from typing import Dict
 
 from Ccdb import Ccdb, ObjectVersion
 
 
-def process(ccdb: Ccdb, object_path: str, delay: int):
+def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, str]):
     '''
     Process this deletion rule on the object. We use the CCDB passed by argument.
     
