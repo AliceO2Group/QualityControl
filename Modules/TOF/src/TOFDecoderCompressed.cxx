@@ -25,7 +25,7 @@ using namespace o2::framework;
 #include "QualityControl/QcInfoLogger.h"
 #include "TOF/TOFDecoderCompressed.h"
 
-#define VERBOSEDECODERCOMPRESSED //Flag for a verbose Decoder
+// #define VERBOSEDECODERCOMPRESSED //Flag for a verbose Decoder
 
 namespace o2::quality_control_modules::tof
 {
@@ -76,10 +76,10 @@ void TOFDecoderCompressed::trailerHandler(const CrateHeader_t* crateHeader, cons
 void TOFDecoderCompressed::rdhHandler(const o2::header::RAWDataHeader* rdh)
 {
 #ifdef VERBOSEDECODERCOMPRESSED
-  LOG(INFO) << "Reading RDH #" << rdhread++ / 2;
+  ILOG(Info) << "Reading RDH #" << rdhread++ / 2;
   o2::raw::HBFUtils::printRDH(*rdh);
   if (rdh && 0) {
-    LOG(INFO) << "Processing RDH";
+     ILOG(Info) << "Processing RDH";
   }
 #endif
 }
