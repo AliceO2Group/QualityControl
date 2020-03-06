@@ -114,7 +114,7 @@ void TOFTaskCompressed::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto& input : ctx.inputs()) {
     /** input **/
     const auto* headerIn = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(input);
-    auto payloadIn = const_cast<char*>(input.payload);
+    auto payloadIn = input.payload;
     auto payloadInSize = headerIn->payloadSize;
     mDecoder.setDecoderBuffer(payloadIn);
     mDecoder.setDecoderBufferSize(payloadInSize);
