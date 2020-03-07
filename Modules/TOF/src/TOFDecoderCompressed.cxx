@@ -35,14 +35,14 @@ void TOFDecoderCompressed::decode()
   DecoderBase::run();
 }
 
-void TOFDecoderCompressed::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit)
+void TOFDecoderCompressed::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/)
 {
   for (int ibit = 0; ibit < 11; ++ibit)
     if (crateHeader->slotEnableMask & (1 << ibit))
       mHistos["hSlotEnableMask"]->Fill(crateHeader->drmID, ibit + 2);
 }
 
-void TOFDecoderCompressed::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
+void TOFDecoderCompressed::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
                                         const FrameHeader_t* frameHeader, const PackedHit_t* packedHits)
 {
   mHistos["hHits"]->Fill(frameHeader->numberOfHits);
@@ -64,7 +64,7 @@ void TOFDecoderCompressed::frameHandler(const CrateHeader_t* crateHeader, const 
   }
 }
 
-void TOFDecoderCompressed::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
+void TOFDecoderCompressed::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
                                           const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics)
 {
   for (int i = 0; i < crateTrailer->numberOfDiagnostics; ++i) {
@@ -78,9 +78,9 @@ void TOFDecoderCompressed::rdhHandler(const o2::header::RAWDataHeader* rdh)
 #ifdef VERBOSEDECODERCOMPRESSED
   ILOG(Info) << "Reading RDH #" << rdhread++ / 2;
   o2::raw::HBFUtils::printRDH(*rdh);
-  if (rdh && 0) {
+#else
+  if (rdh)
     ILOG(Info) << "Processing RDH";
-  }
 #endif
 }
 
