@@ -39,7 +39,7 @@ void TOFDecoderCompressed::headerHandler(const CrateHeader_t* crateHeader, const
 {
   for (int ibit = 0; ibit < 11; ++ibit) {
     if (crateHeader->slotEnableMask & (1 << ibit)) {
-      mHistos["hSlotEnableMask"]->Fill(crateHeader->drmID, ibit + 2);
+      mHistos.at("hSlotEnableMask")->Fill(crateHeader->drmID, ibit + 2);
     }
   }
 }
@@ -47,7 +47,7 @@ void TOFDecoderCompressed::headerHandler(const CrateHeader_t* crateHeader, const
 void TOFDecoderCompressed::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
                                         const FrameHeader_t* frameHeader, const PackedHit_t* packedHits)
 {
-  mHistos["hHits"]->Fill(frameHeader->numberOfHits);
+  mHistos.at("hHits")->Fill(frameHeader->numberOfHits);
   for (int i = 0; i < frameHeader->numberOfHits; ++i) {
     auto packedHit = packedHits + i;
     auto indexE = packedHit->channel +
@@ -59,10 +59,10 @@ void TOFDecoderCompressed::frameHandler(const CrateHeader_t* crateHeader, const 
     int timebc = time % 1024;
     time += (frameHeader->frameID << 13);
 
-    mHistos["hIndexE"]->Fill(indexE);
-    mHistos["hTime"]->Fill(time);
-    mHistos["hTimeBC"]->Fill(timebc);
-    mHistos["hTOT"]->Fill(packedHit->tot);
+    mHistos.at("hIndexE")->Fill(indexE);
+    mHistos.at("hTime")->Fill(time);
+    mHistos.at("hTimeBC")->Fill(timebc);
+    mHistos.at("hTOT")->Fill(packedHit->tot);
   }
 }
 
@@ -71,7 +71,7 @@ void TOFDecoderCompressed::trailerHandler(const CrateHeader_t* crateHeader, cons
 {
   for (int i = 0; i < crateTrailer->numberOfDiagnostics; ++i) {
     auto diagnostic = diagnostics + i;
-    mHistos["hDiagnostic"]->Fill(crateHeader->drmID, diagnostic->slotID);
+    mHistos.at("hDiagnostic")->Fill(crateHeader->drmID, diagnostic->slotID);
   }
 }
 
