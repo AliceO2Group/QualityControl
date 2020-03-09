@@ -9,28 +9,30 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckRawsMulti.h
+/// \file   TOFCheckDiagnostic.h
 /// \author Nicolo' Jacazio
 ///
 
-#ifndef QC_MODULE_TOF_TOFCHECKRAWSMULTI_H
-#define QC_MODULE_TOF_TOFCHECKRAWSMULTI_H
+#ifndef QC_MODULE_TOF_TOFCHECKDIAGNOSTIC_H
+#define QC_MODULE_TOF_TOFCHECKDIAGNOSTIC_H
 
 #include "QualityControl/CheckInterface.h"
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief  Check whether a plot is empty or not.
+/// \brief  Checker for diagnostic histogram of TOF Raw data
 ///
 /// \author Nicolo' Jacazio
-class TOFCheckRawsMulti : public o2::quality_control::checker::CheckInterface
+class TOFCheckDiagnostic : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TOFCheckRawsMulti();
+  TOFCheckDiagnostic();
   /// Destructor
-  ~TOFCheckRawsMulti() override;
+  ~TOFCheckDiagnostic() override;
 
   // Override interface
   void configure(std::string name) override;
@@ -38,24 +40,9 @@ class TOFCheckRawsMulti : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
-  /// Minumum value of TOF raw hit multiplicity
-  Float_t minTOFrawhits;
-  /// Maximum value of TOF raw hit multiplicity
-  Float_t maxTOFrawhits;
-
- private:
-  /// Mean of the TOF hit multiplicity histogram
-  Float_t multiMean;
-  /// Number of events with 0 TOF hits
-  Float_t zeroBinIntegral;
-  /// Number of events with low TOF hits multiplicity
-  Float_t lowMIntegral;
-  /// Number of events with TOF hits multiplicity > 0
-  Float_t totIntegral;
-
-  ClassDefOverride(TOFCheckRawsMulti, 1);
+  ClassDefOverride(TOFCheckDiagnostic, 1);
 };
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFCHECKRAWSMULTI_H
+#endif // QC_MODULE_TOF_TOFCHECKDIAGNOSTIC_H

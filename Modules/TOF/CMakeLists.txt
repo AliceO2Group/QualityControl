@@ -2,16 +2,28 @@
 
 add_library(QcTOF)
 
-target_sources(QcTOF PRIVATE src/TOFTask.cxx src/TOFCheckRawsMulti.cxx
-        src/TOFCheckRawsTime.cxx src/TOFCheckRawsToT.cxx)
+target_sources(QcTOF 
+              PRIVATE src/TOFTask.cxx
+                      src/TOFTaskCompressed.cxx
+                      src/TOFDecoderCompressed.cxx
+                      src/TOFCheckDiagnostic.cxx
+                      src/TOFCheckRawsMulti.cxx
+                      src/TOFCheckRawsTime.cxx 
+                      src/TOFCheckRawsToT.cxx)
 
 target_include_directories(
   QcTOF
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+         )
 
-target_link_libraries(QcTOF PUBLIC QualityControl)
+target_link_libraries(QcTOF PUBLIC QualityControl
+                                    O2::TOFBase
+                                    O2::TOFWorkflow
+                                    O2::DataFormatsTOF
+                                    O2::TOFCompression
+                                    O2::TOFReconstruction)
 
 install(TARGETS QcTOF
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -22,6 +34,9 @@ install(TARGETS QcTOF
 
 add_root_dictionary(QcTOF
                     HEADERS include/TOF/TOFTask.h
+                            include/TOF/TOFTaskCompressed.h
+                            include/TOF/TOFDecoderCompressed.h
+                            include/TOF/TOFCheckDiagnostic.h
                             include/TOF/TOFCheckRawsMulti.h
                             include/TOF/TOFCheckRawsTime.h
                             include/TOF/TOFCheckRawsToT.h
@@ -54,7 +69,7 @@ endforeach()
 
 # ---- Extra scripts ----
 
-install(FILES tof.json DESTINATION etc)
+install(FILES tof.json tofcompressed.json DESTINATION etc)
 
 get_property(dirs
              DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

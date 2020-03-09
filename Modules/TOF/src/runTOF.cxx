@@ -16,18 +16,18 @@
 ///
 /// This is an executable showing QC Task's usage in Data Processing Layer. The workflow consists of data producer,
 /// which generates arrays of random size and content. Its output is dispatched to QC task using Data Sampling
-/// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The checker performes a simple check of
+/// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The checker performs a simple check of
 /// the histogram shape and colorizes it. The resulting histogram contents are shown in logs by printer.
 ///
 /// QC task and CheckRunner are instantiated by respectively TaskFactory and CheckRunnerFactory,
 /// which use preinstalled config file, that can be found in
-/// ${QUALITYCONTROL_ROOT}/etc/qcTaskDplConfig.json or Framework/qcTaskDplConfig.json (original one).
+/// ${QUALITYCONTROL_ROOT}/etc/tof.json or Framework/tof.json (original one).
 ///
 /// To launch it, build the project, load the environment and run the executable:
 ///   \code{.sh}
 ///   > aliBuild build QualityControl --defaults o2
 ///   > alienv enter QualityControl/latest
-///   > runTaskDPL
+///   > o2-qc-run-tof
 ///   \endcode
 /// If you have glfw installed, you should see a window with the workflow visualization and sub-windows for each Data
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
@@ -38,6 +38,10 @@
 
 using namespace o2;
 using namespace o2::framework;
+
+// The customize() functions are used to declare the executable arguments and to specify custom completion and channel
+// configuration policies. They have to be above `#include "Framework/runDataProcessing.h"` - that header checks if
+// these functions are defined by user and if so, it invokes them. It uses a trick with SFINAE expressions to do that.
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
@@ -58,20 +62,23 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
 
+#include <string>
 #include <fairlogger/Logger.h>
 #include <TH1F.h>
 #include <memory>
 #include <random>
 
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
 
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/runnerUtils.h"
 #include "QualityControl/ExamplePrinterSpec.h"
+#include "QualityControl/DataProducer.h"
 
 std::string getConfigPath(const ConfigContext& config);
 
+using namespace o2;
 using namespace o2::framework;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
@@ -81,52 +88,30 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   WorkflowSpec specs;
 
   // The producer to generate some data in the workflow
-  DataProcessorSpec producer{
-    "producer",
-    Inputs{},
-    Outputs{
-      { "ITS", "RAWDATA", 0, Lifetime::Timeframe } },
-    AlgorithmSpec{
-      (AlgorithmSpec::InitCallback)[](InitContext&){
-        std::default_random_engine generator(11);
-  return (AlgorithmSpec::ProcessCallback)[generator](ProcessingContext & processingContext) mutable
-  {
-    usleep(100000);
-    size_t length = generator() % 10000;
-    auto data = processingContext.outputs().make<char>(Output{ "ITS", "RAWDATA", 0, Lifetime::Timeframe },
-                                                       length);
-    for (auto&& item : data) {
-      item = static_cast<char>(generator());
-    }
+  DataProcessorSpec producer = getDataProducerSpec(1, 10000, 10);
+  specs.push_back(producer);
+
+  // Path to the config file
+  std::string qcConfigurationSource = getConfigPath(config);
+  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+
+  // Generation of Data Sampling infrastructure
+  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+
+  // Generation of the QC topology (one task, one checker in this case)
+  quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+
+  // Finally the printer
+  DataProcessorSpec printer{
+    "printer",
+    Inputs{
+      { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckerName(qcConfigurationSource)), 0 } },
+    Outputs{},
+    adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>()
   };
-}
-}
-}
-;
+  specs.push_back(printer);
 
-specs.push_back(producer);
-
-// Path to the config file
-std::string qcConfigurationSource = getConfigPath(config);
-LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
-
-// Generation of Data Sampling infrastructure
-DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
-
-// Generation of the QC topology (one task, one checker in this case)
-quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
-
-// Finally the printer
-DataProcessorSpec printer{
-  "printer",
-  Inputs{
-    { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstTaskName(qcConfigurationSource)), 0 } },
-  Outputs{},
-  adaptFromTask<o2::quality_control::example::ExamplePrinterSpec>()
-};
-specs.push_back(printer);
-
-return specs;
+  return specs;
 }
 
 // TODO merge this with the one from runReadout.cxx
