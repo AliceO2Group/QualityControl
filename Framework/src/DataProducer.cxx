@@ -13,10 +13,12 @@
 /// \author Piotr Konopka
 ///
 #include "QualityControl/DataProducer.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <random>
 #include <Common/Timer.h>
 #include <Monitoring/MonitoringFactory.h>
+#include <Framework/ControlService.h>
 
 using namespace o2::framework;
 using namespace o2::monitoring;
@@ -27,20 +29,21 @@ using namespace AliceO2::Common;
 namespace o2::quality_control::core
 {
 
-DataProcessorSpec getDataProducerSpec(size_t minSize, size_t maxSize, double rate, bool fill, size_t index, std::string monitoringUrl)
+DataProcessorSpec getDataProducerSpec(size_t minSize, size_t maxSize, double rate, uint64_t amount, size_t index,
+                                      std::string monitoringUrl, bool fill)
 {
   return DataProcessorSpec{
     "producer-" + std::to_string(index),
     Inputs{},
     Outputs{
       { { "out" }, "TST", "RAWDATA", static_cast<SubSpec>(index) } },
-    getDataProducerAlgorithm({ "TST", "RAWDATA", static_cast<SubSpec>(index) }, minSize, maxSize, rate, fill, monitoringUrl)
+    getDataProducerAlgorithm({ "TST", "RAWDATA", static_cast<SubSpec>(index) }, minSize, maxSize, rate, amount,
+                             monitoringUrl, fill)
   };
 }
 
-framework::AlgorithmSpec
-  getDataProducerAlgorithm(ConcreteDataMatcher output, size_t minSize, size_t maxSize, double rate, bool fill,
-                           std::string monitoringUrl)
+AlgorithmSpec getDataProducerAlgorithm(ConcreteDataMatcher output, size_t minSize, size_t maxSize, double rate,
+                                       uint64_t amount, std::string monitoringUrl, bool fill)
 {
   return AlgorithmSpec{
     [=](InitContext&) {
@@ -48,7 +51,7 @@ framework::AlgorithmSpec
       std::default_random_engine generator(time(nullptr));
       std::shared_ptr<Timer> timer = nullptr;
 
-      int messageCounter = 0;
+      uint64_t messageCounter = 0;
       std::shared_ptr<monitoring::Monitoring> collector;
       if (!monitoringUrl.empty()) {
         collector = MonitoringFactory::Get(monitoringUrl);
@@ -58,6 +61,14 @@ framework::AlgorithmSpec
       // after the initialization, we return the processing callback
       return [=](ProcessingContext& processingContext) mutable {
         // everything inside this lambda function is invoked in a loop, because it this Data Processor has no inputs
+
+        // checking if we have reached the maximum amount of messages
+        if (amount != 0 && messageCounter >= amount) {
+          ILOG(Info) << "Reached the maximum number of messages, requesting to quit the producer and sending an EndOfStream" << ENDM;
+          processingContext.services().get<ControlService>().endOfStream();
+          processingContext.services().get<ControlService>().readyToQuit(QuitRequest::Me);
+          return;
+        }
 
         // setting up the timer
         if (!timer) {
@@ -72,17 +83,19 @@ framework::AlgorithmSpec
         timer->increment();
 
         // generating data
-        size_t length = minSize + (generator() % (maxSize - minSize));
+        size_t length = (minSize == maxSize) ? minSize : (minSize + (generator() % (maxSize - minSize)));
         auto data = processingContext.outputs().make<char>({ output.origin, output.description, output.subSpec },
                                                            length);
+        ++messageCounter;
         if (fill) {
           for (auto&& item : data) {
             item = static_cast<char>(generator());
           }
         }
 
+        // send metrics
         if (collector) {
-          collector->send({ messageCounter++, "Data_producer_" + std::to_string(output.subSpec) + "_message_" },
+          collector->send({ messageCounter, "Data_producer_" + std::to_string(output.subSpec) + "_message_" },
                           DerivedMetricMode::RATE);
         }
       };
