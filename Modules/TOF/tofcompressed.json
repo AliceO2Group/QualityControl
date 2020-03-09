@@ -47,6 +47,7 @@
           "active": "true",
           "className": "o2::quality_control_modules::tof::TOFCheckDiagnostic",
           "moduleName": "QcTOF",
+          "detectorName": "TOF",
           "policy": "OnAny",
           "dataSource": [{
               "type": "Task",
