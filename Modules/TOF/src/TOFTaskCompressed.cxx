@@ -61,31 +61,31 @@ void TOFTaskCompressed::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHits.reset(new TH1F("hHits", "hHits;Number of hits", 1000, 0., 1000.));
   getObjectsManager()->startPublishing(mHits.get());
-  mDecoder.mHistos[mHits->GetName()] = mHits.get();
+  mDecoder.mHistos[mHits->GetName()] = mHits;
   //
   mTime.reset(new TH1F("hTime", "hTime;time (24.4 ps)", 2097152, 0., 2097152.));
   getObjectsManager()->startPublishing(mTime.get());
-  mDecoder.mHistos[mTime->GetName()] = mTime.get();
+  mDecoder.mHistos[mTime->GetName()] = mTime;
   //
   mTimeBC.reset(new TH1F("hTimeBC", "hTimeBC;time (24.4 ps)", 1024, 0., 1024.));
   getObjectsManager()->startPublishing(mTimeBC.get());
-  mDecoder.mHistos[mTimeBC->GetName()] = mTimeBC.get();
+  mDecoder.mHistos[mTimeBC->GetName()] = mTimeBC;
   //
   mTOT.reset(new TH1F("hTOT", "hTOT;ToT (48.8 ps)", 2048, 0., 2048.));
   getObjectsManager()->startPublishing(mTOT.get());
-  mDecoder.mHistos[mTOT->GetName()] = mTOT.get();
+  mDecoder.mHistos[mTOT->GetName()] = mTOT;
   //
   mIndexE.reset(new TH1F("hIndexE", "hIndexE;index EO", 172800, 0., 172800.));
   getObjectsManager()->startPublishing(mIndexE.get());
-  mDecoder.mHistos[mIndexE->GetName()] = mIndexE.get();
+  mDecoder.mHistos[mIndexE->GetName()] = mIndexE;
   //
   mSlotEnableMask.reset(new TH2F("hSlotEnableMask", "hSlotEnableMask;crate;slot", 72, 0., 72., 12, 1., 13.));
   getObjectsManager()->startPublishing(mSlotEnableMask.get());
-  mDecoder.mHistos[mSlotEnableMask->GetName()] = mSlotEnableMask.get();
+  mDecoder.mHistos[mSlotEnableMask->GetName()] = mSlotEnableMask;
   //
   mDiagnostic.reset(new TH2F("hDiagnostic", "hDiagnostic;crate;slot", 72, 0., 72., 12, 1., 13.));
   getObjectsManager()->startPublishing(mDiagnostic.get());
-  mDecoder.mHistos[mDiagnostic->GetName()] = mDiagnostic.get();
+  mDecoder.mHistos[mDiagnostic->GetName()] = mDiagnostic;
   //
 }
 

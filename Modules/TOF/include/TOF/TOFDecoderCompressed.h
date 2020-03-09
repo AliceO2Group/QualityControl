@@ -44,7 +44,7 @@ class TOFDecoderCompressed /*final*/
   void decode();
 
   /// Histograms to fill
-  std::map<std::string, TH1*> mHistos;
+  std::map<std::string, std::shared_ptr<TH1>> mHistos;
 
   Int_t rdhread = 0; /// Number of times a RDH is read
 
