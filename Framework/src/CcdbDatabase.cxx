@@ -202,7 +202,7 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp)
     return std::string();
   }
   TString json = TBufferJSON::ConvertToJSON(toConvert);
-  if(toConvert) {
+  if (toConvert) {
     delete toConvert;
   }
   return json.Data();
