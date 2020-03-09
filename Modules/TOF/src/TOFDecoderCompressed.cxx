@@ -37,9 +37,11 @@ void TOFDecoderCompressed::decode()
 
 void TOFDecoderCompressed::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/)
 {
-  for (int ibit = 0; ibit < 11; ++ibit)
-    if (crateHeader->slotEnableMask & (1 << ibit))
+  for (int ibit = 0; ibit < 11; ++ibit) {
+    if (crateHeader->slotEnableMask & (1 << ibit)) {
       mHistos["hSlotEnableMask"]->Fill(crateHeader->drmID, ibit + 2);
+    }
+  }
 }
 
 void TOFDecoderCompressed::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
