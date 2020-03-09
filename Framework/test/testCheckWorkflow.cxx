@@ -14,6 +14,7 @@
 ///
 #include <Framework/DataSampling.h>
 #include <Framework/CompletionPolicyHelpers.h>
+#include <Framework/DeviceSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
