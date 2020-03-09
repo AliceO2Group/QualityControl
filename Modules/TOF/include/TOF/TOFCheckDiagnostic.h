@@ -23,9 +23,9 @@
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief  Check whether a plot is empty or not.
+/// \brief  Checker for diagnostic histogram of TOF Raw data
 ///
-/// \author Barthelemy von Haller
+/// \author Nicolo' Jacazio
 class TOFCheckDiagnostic : public o2::quality_control::checker::CheckInterface
 {
  public:
@@ -39,19 +39,6 @@ class TOFCheckDiagnostic : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
-
-  //   /// Minimum value for TOF raw time
-  //   Float_t minTOFrawTime;
-  //   /// Maximum value for TOF raw time
-  //   Float_t maxTOFrawTime;
-
- private:
-  //   /// Mean of the TOF raw time distribution
-  //   Float_t timeMean;
-  //   /// Integral of the TOF raw time distribution in the peak region i.e. within minTOFrawTime and maxTOFrawTime
-  //   Float_t peakIntegral;
-  //   /// Integral of the TOF raw time distribution in the whole histogram range
-  //   Float_t totIntegral;
 
   ClassDefOverride(TOFCheckDiagnostic, 1);
 };
