@@ -57,7 +57,8 @@ BOOST_AUTO_TEST_CASE(test_task)
     std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(histo, taskName, "TST");
     repository->storeMO(mo);
 
-    std::shared_ptr<QualityObject> qo = std::make_shared<QualityObject>("testTrendingTaskCheck");
+    std::vector<std::string> inputs;
+    std::shared_ptr<QualityObject> qo = std::make_shared<QualityObject>("testTrendingTaskCheck", inputs, "TST");
     qo->updateQuality(Quality::Bad);
     repository->storeQO(qo);
   }

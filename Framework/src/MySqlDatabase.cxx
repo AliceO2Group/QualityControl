@@ -461,4 +461,13 @@ void MySqlDatabase::truncate(std::string taskName, std::string objectName)
   }
 }
 
+std::shared_ptr<TObject> MySqlDatabase::retrieveTObject(std::string /*path*/, long /*timestamp*/)
+{
+  return std::shared_ptr<TObject>(); // TODO
+}
+std::string MySqlDatabase::retrieveJson(std::string /*path*/, long /*timestamp*/)
+{
+  return std::string(); // TODO
+}
+
 } // namespace o2::quality_control::repository

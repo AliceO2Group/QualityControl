@@ -55,14 +55,22 @@ class CcdbDatabase : public DatabaseInterface
 
   void connect(std::string host, std::string database, std::string username, std::string password) override;
   void connect(const std::unordered_map<std::string, std::string>& config) override;
-  // MonitorObject
+
+  // storage
   void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> q) override;
+  void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> q) override;
+
+  // retrieval - MO
   std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) override;
   std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = 0) override;
-  // QualityObject
-  void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> q) override;
+
+  // retrieval - QO
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = 0) override;
   std::string retrieveQOJson(std::string qoPath, long timestamp = 0) override;
+
+  // retrieval - general
+  std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp = -1) override;
+  std::string retrieveJson(std::string path, long timestamp = -1) override;
 
   void disconnect() override;
   void prepareTaskDataContainer(std::string taskName) override;

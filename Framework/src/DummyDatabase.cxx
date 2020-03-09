@@ -1,3 +1,4 @@
+
 // Copyright CERN and copyright holders of ALICE O2. This software is
 // distributed under the terms of the GNU General Public License v3 (GPL
 // Version 3), copied verbatim in the file "COPYING".
@@ -70,6 +71,15 @@ std::vector<std::string> DummyDatabase::getPublishedObjectNames(std::string)
 
 void DummyDatabase::truncate(std::string, std::string)
 {
+}
+
+std::shared_ptr<TObject> DummyDatabase::retrieveTObject(std::string /*path*/, long /*timestamp*/)
+{
+  return std::shared_ptr<TObject>();
+}
+std::string DummyDatabase::retrieveJson(std::string /*path*/, long /*timestamp*/)
+{
+  return std::string();
 }
 
 } // namespace o2::quality_control::repository
