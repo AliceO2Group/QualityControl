@@ -90,7 +90,7 @@ class ClustersRootFileReaderMFT : public o2::framework::Task
     tree->SetBranchAddress("MFTCluster", &pclusters);
     tree->GetEntry(0);
     // --> find the ranges
-    int index = rof.getFirstEntry();      // first cluster position
+    int index = rof.getFirstEntry();        // first cluster position
     int nClustersInROF = rof.getNEntries(); // number of clusters
     int lastIndex = index + nClustersInROF;
     // --> fill in the corresponding clusters
