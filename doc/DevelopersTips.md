@@ -3,7 +3,14 @@
 This is a resource meant for the developers of the QC. Whenever we learn something useful we put it
 here. It is not sanitized or organized. Just a brain dump.
 
-## Where and how to configure the repo_cleaner of the ccdb-test 
+### Release procedure / check list
+1. Update the version number in [CMakeLists.txt](../CMakeLists.txt), commit and push
+2. Prepare the release notes using the commits since the last release in github
+3. Release in github, paste the release notes
+4. A PR is automatically created in alidist
+5. Once merged, send an email to alice-o2-wp7@cern.ch, alice-o2-qc-contact@cern.ch and alice-dpg-qa-tools@cern.ch to announce the new release. Use the email for the previous release as a template. 
+
+### Where and how to configure the repo_cleaner of the ccdb-test 
 
 The config file is in `aldaqci@aidrefflp01:~/alice-ccdb/config.yaml`. Simply edit it and it will be picked up the next time the repo_cleaner runs. 
 
