@@ -5,7 +5,7 @@ here. It is not sanitized or organized. Just a brain dump.
 
 ### Release procedure / check list
 1. Update the version number in [CMakeLists.txt](../CMakeLists.txt), commit and push
-2. Prepare the release notes using the commits since the last release in github
+2. Prepare the release notes using the commits since the last release in github (see [this template](ReleaseNotesTemplate.md)). 
 3. Release in github, paste the release notes
 4. A PR is automatically created in alidist
 5. Once merged, send an email to alice-o2-wp7@cern.ch, alice-o2-qc-contact@cern.ch and alice-dpg-qa-tools@cern.ch to announce the new release. Use the email for the previous release as a template. 
