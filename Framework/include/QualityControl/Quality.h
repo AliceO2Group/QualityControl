@@ -33,6 +33,8 @@ class Quality
   explicit Quality(unsigned int level = Quality::NullLevel, std::string name = "");
   /// Destructor
   virtual ~Quality() = default;
+  // Copy constructor
+  Quality(const Quality& q);
 
   unsigned int getLevel() const;
   const std::string& getName() const;

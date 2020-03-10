@@ -27,6 +27,7 @@
 
 #include <Framework/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -71,7 +72,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   WorkflowSpec specs;
 
   const std::string qcConfigurationSource = config.options().get<std::string>("config");
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  ILOG(Info) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // The QC infrastructure is divided into two parts:
   // - local - QC tasks which are on the same machines as the main processing. We also put Data Sampling there.
@@ -81,7 +82,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   // or both of them, which is the default option (no flags needed).
 
   if (config.options().get<bool>("local") && config.options().get<bool>("remote")) {
-    LOG(INFO) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags.";
+    ILOG(Info) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
   }
 
   if (config.options().get<bool>("local") || !config.options().get<bool>("remote")) {

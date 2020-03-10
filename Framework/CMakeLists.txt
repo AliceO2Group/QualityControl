@@ -9,6 +9,7 @@ configure_file("include/QualityControl/Version.h.in"
 
 add_library(QualityControlTypes
   src/MonitorObject.cxx
+  src/QualityObject.cxx
   src/Quality.cxx
 )
 
@@ -27,6 +28,7 @@ target_link_libraries(QualityControlTypes
 
 add_root_dictionary(QualityControlTypes
   HEADERS include/QualityControl/MonitorObject.h
+  include/QualityControl/QualityObject.h
   include/QualityControl/Quality.h
   LINKDEF include/QualityControl/TypesLinkDef.h
   BASENAME QualityControlTypes
@@ -36,13 +38,12 @@ add_root_dictionary(QualityControlTypes
 
 add_library(QualityControl
             src/ObjectsManager.cxx
-            src/Checker.cxx
-            src/CheckerFactory.cxx
+            src/CheckRunner.cxx
+            src/CheckRunnerFactory.cxx
             src/CheckInterface.cxx
             src/DatabaseFactory.cxx
             src/CcdbDatabase.cxx
-            src/InformationService.cxx
-            src/InformationServiceDump.cxx
+            src/QcInfoLogger.cxx
             src/TaskFactory.cxx
             src/TaskRunner.cxx
             src/TaskRunnerFactory.cxx
@@ -50,6 +51,7 @@ add_library(QualityControl
             src/RepositoryBenchmark.cxx
             src/HistoMerger.cxx
             src/InfrastructureGenerator.cxx
+            src/Check.cxx
             src/ServiceDiscovery.cxx
             src/Triggers.cxx
             src/TriggerHelpers.cxx
@@ -57,8 +59,11 @@ add_library(QualityControl
             src/PostProcessingFactory.cxx
             src/PostProcessingConfig.cxx
             src/PostProcessingInterface.cxx
+            src/TrendingTask.cxx
+            src/TrendingTaskConfig.cxx
             src/DummyDatabase.cxx
-            src/DataProducer.cxx)
+            src/DataProducer.cxx
+            src/DataProducerExample.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -80,6 +85,7 @@ target_link_libraries(QualityControl
                              AliceO2::InfoLogger
                              AliceO2::Monitoring
                              AliceO2::Configuration
+                             AliceO2::Occ
                              ROOT::Net
                              Boost::container
                              O2::Framework
@@ -98,10 +104,10 @@ target_compile_definitions(QualityControl PRIVATE
                            $<$<BOOL:${ENABLE_MYSQL}>:_WITH_MYSQL>)
 
 add_root_dictionary(QualityControl
-                    HEADERS
+                    HEADERS include/QualityControl/Check.h
                             include/QualityControl/CheckInterface.h
-                            include/QualityControl/Checker.h
-                            include/QualityControl/CheckerFactory.h
+                            include/QualityControl/CheckRunner.h
+                            include/QualityControl/CheckRunnerFactory.h
                             include/QualityControl/DatabaseInterface.h
                             include/QualityControl/CcdbDatabase.h
                             include/QualityControl/ServiceDiscovery.h
@@ -109,58 +115,58 @@ add_root_dictionary(QualityControl
                             include/QualityControl/TaskRunnerFactory.h
                             include/QualityControl/HistoMerger.h
                             include/QualityControl/InfrastructureGenerator.h
+                            include/QualityControl/InputUtils.h
                             include/QualityControl/PostProcessingInterface.h
+                            include/QualityControl/TrendingTask.h
+                            include/QualityControl/Reductor.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 
 # ---- Executables ----
 
 set(EXE_SRCS
-    src/runInformationService.cxx
-    src/runInformationServiceDump.cxx
     src/runDataProducer.cxx
     src/runFileReader.cxx
+    src/runDataProducerExample.cxx
     src/runQC.cxx
     src/runBasic.cxx
-    src/runTPCQCPID.cxx
     src/runAdvanced.cxx
     src/runReadout.cxx
     src/runMergerTest.cxx
     src/runReadoutForDataDump.cxx
     src/runRepositoryBenchmark.cxx
-    src/runPostProcessing.cxx)
+    src/runPostProcessing.cxx
+    src/runPostProcessingOCC.cxx)
 
 set(EXE_NAMES
-    o2-qc-info-service
-    o2-qc-info-service-dump
     o2-qc-run-producer
     o2-qc-run-file-reader
+    o2-qc-run-producer-basic
     o2-qc
     o2-qc-run-basic
-    o2-qc-run-tpcpid
     o2-qc-run-advanced
     o2-qc-run-readout
     o2-qc-run-merger-test
     o2-qc-run-readout-for-data-dump
     o2-qc-repository-benchmark
-    o2-qc-run-postprocessing)
+    o2-qc-run-postprocessing
+    o2-qc-run-postprocessing-occ)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
 set(EXE_OLD_NAMES
-    qcInfoService
-    qcInfoServiceDump
     qcRunProducer
     qcRunFileReader
+    o2-qc-run-producer-basic
     o2-qc-run-qc
     qcRunBasic
-    qcRunTPCPID
     qcRunAdvanced
     qcRunReadout
     runMergerTest
     qcRunReadoutForDataDump
     repositoryBenchmark
-    qcRunPostProcessing)
+    qcRunPostProcessing
+    qcRunPostProcessingOCC)
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)
@@ -219,8 +225,10 @@ set(TEST_SRCS
     test/testTaskInterface.cxx
     test/testTaskRunner.cxx
     test/testCheckInterface.cxx
-    test/testChecker.cxx
+    test/testCheckRunner.cxx
+    test/testCheck.cxx
     test/testQuality.cxx
+    test/testQualityObject.cxx
     test/testObjectsManager.cxx
     test/testCcdbDatabase.cxx
     test/testCcdbDatabaseExtra.cxx
@@ -229,7 +237,12 @@ set(TEST_SRCS
     test/testPostProcessingRunner.cxx
     test/testPostProcessingInterface.cxx
     test/testPostProcessingConfig.cxx
-    test/testWorkflow.cxx)
+    test/testReductor.cxx
+    test/testTrendingTask.cxx
+    test/testCheckWorkflow.cxx
+    test/testWorkflow.cxx
+    test/testVersion.cxx
+  )
 
 set(TEST_ARGS
     ""
@@ -250,7 +263,14 @@ set(TEST_ARGS
     ""
     ""
     ""
-    "-b --run")
+    ""
+    ""
+    ""
+    ""
+    "-b --run"
+    "-b --run"
+    ""
+  )
 
 list(LENGTH TEST_SRCS count)
 math(EXPR count "${count}-1")
@@ -271,21 +291,27 @@ foreach(i RANGE ${count})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
 
-foreach(t testTaskInterface testWorkflow testTaskRunner
+foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
         testInfrastructureGenerator testPostProcessingConfig testPostProcessingInterface
-        testPostProcessingRunner)
+        testPostProcessingRunner testCheck testCheckRunner testTrendingTask)
   target_sources(${t} PRIVATE
                  ${CMAKE_BINARY_DIR}/getTestDataDirectory.cxx)
   target_include_directories(${t} PRIVATE ${CMAKE_SOURCE_DIR})
 endforeach()
 
+target_include_directories(testVersion PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+
 set_property(TEST testWorkflow PROPERTY TIMEOUT 10)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
+set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 60)
+set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 20)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 15)
-set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
+set_property(TEST testCcdbDatabase PROPERTY LABELS manual slow)
 set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
+set_property(TEST testTrendingTask PROPERTY LABELS manual)
 
 # ---- Install ----
 
@@ -346,7 +372,6 @@ install(FILES example-default.json
               alfa.json
               dataDump.json
               basic.json
-              tpcQCPID.json
               basic-no-sampling.json
               advanced.json
               readout.json
@@ -359,7 +384,7 @@ install(FILES example-default.json
         DESTINATION etc)
 
 install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/skip.py
-                 script/RepoCleaner/repoCleaner.py script/RepoCleaner/1_per_run.py
+                 script/RepoCleaner/repoCleaner.py script/RepoCleaner/1_per_run.py script/RepoCleaner/none_kept.py
                  script/o2-qc-database-setup.sh
         DESTINATION bin)
 
@@ -367,24 +392,16 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py scr
 #
 # Using file(COPY is wrong because cmake will not detect when the files are modified.
 # Using install is also wrong because we don't want to install nor package the test files.
-# The solution is this ugly piece of cmake code.
+# The solution is to use configure_file with COPYONLY.
 
 set(TEST_FILES
   "testSharedConfig.json"
+  "testCheckWorkflow.json"
+  "testTrendingTask.json"
   "testWorkflow.json")
 set(TEST_FILES_PREFIXED ${TEST_FILES})
 list(TRANSFORM TEST_FILES_PREFIXED PREPEND ${CMAKE_BINARY_DIR}/tests/)
 
 foreach(test_file ${TEST_FILES})
-  message("**** ${test_file}")
-  add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/tests/${test_file}
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/test/${test_file}
-                                     ${CMAKE_BINARY_DIR}/tests/${test_file}
-    MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/test/${test_file}
-    COMMENT "Copying ${test_file}")
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/test/${test_file} ${CMAKE_BINARY_DIR}/tests/${test_file} COPYONLY)
 endforeach()
-
-add_custom_target(copy_test_files ALL
-  DEPENDS ${TEST_FILES_PREFIXED}
-  )

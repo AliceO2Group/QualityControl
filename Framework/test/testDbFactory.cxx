@@ -25,16 +25,11 @@
 #define BOOST_TEST_DYN_LINK
 
 #include <boost/test/unit_test.hpp>
-//#include <cassert>
-//#include <iostream>
 
 #include <QualityControl/DummyDatabase.h>
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/MonitorObject.h>
 #include <TH1F.h>
-//#include <fcntl.h>
-//#include <stdio.h>
-//#include <sys/stat.h>
 
 using namespace std;
 using namespace o2::quality_control::core;
@@ -85,22 +80,22 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "functional_test", "TST");
   shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "functional_test", "TST");
   shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, "functional_test", "TST");
-  ccdb->store(mo1);
-  ccdb->store(mo2);
-  ccdb->store(mo3);
+  ccdb->storeMO(mo1);
+  ccdb->storeMO(mo2);
+  ccdb->storeMO(mo3);
 
   // test getting list of tasks
   std::vector<std::string> list = ccdb->getListing(prefixPath);
   //  for (const auto& item : list) {
-  //    cout << "task : " << item << endl;
+  //    ILOG(Info) << "task : " << item << ENDM;
   //  }
   BOOST_CHECK(std::find(list.begin(), list.end(), prefixPath + "functional_test") != list.end());
 
   // test getting objects list from task
   auto objectNames = ccdb->getPublishedObjectNames(prefixPath + "functional_test");
-  //  cout << "objects in task functional_test" << endl;
+  //    ILOG(Info) << "objects in task functional_test" << ENDM;
   //  for (auto name : objectNames) {
-  //    cout << " - object : " << name << endl;
+  //      ILOG(Info) << " - object : " << name << ENDM;
   //  }
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object1") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object2") != objectNames.end());

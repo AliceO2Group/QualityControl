@@ -85,8 +85,8 @@ void RepositoryBenchmark::InitTask()
     mDatabase->prepareTaskDataContainer(mTaskName);
   } catch (boost::exception& exc) {
     string diagnostic = boost::current_exception_diagnostic_information();
-    std::cerr << "Unexpected exception, diagnostic information follows:\n"
-              << diagnostic << endl;
+    ILOG(Error) << "Unexpected exception, diagnostic information follows:\n"
+                << diagnostic << ENDM;
     if (diagnostic == "No diagnostic information available.") {
       throw;
     }
@@ -154,7 +154,7 @@ bool RepositoryBenchmark::ConditionalRun()
 
   // Store the object
   for (unsigned int i = 0; i < mNumberObjects; i++) {
-    mDatabase->store(mMyObjects[i]);
+    mDatabase->storeMO(mMyObjects[i]);
     mTotalNumberObjects++;
   }
   if (!mThreadedMonitoring) {

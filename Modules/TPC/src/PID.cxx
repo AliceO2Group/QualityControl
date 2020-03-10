@@ -16,9 +16,12 @@
 // root includes
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TH2.h>
 
 // O2 includes
 #include "Framework/ProcessingContext.h"
+#include "DataFormatsTPC/TrackTPC.h"
+#include "TPCQC/Helpers.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -38,10 +41,17 @@ void PID::initialize(o2::framework::InitContext& /*ctx*/)
   QcInfoLogger::GetInstance() << "initialize TPC PID QC task" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mQCPID.initializeHistograms();
+  //o2::tpc::qc::helpers::setStyleHistogram1D(mQCPID.getHistograms1D());
+  o2::tpc::qc::helpers::setStyleHistogram2D(mQCPID.getHistograms2D());
 
   for (auto& hist : mQCPID.getHistograms1D()) {
     getObjectsManager()->startPublishing(&hist);
     getObjectsManager()->addMetadata(hist.GetName(), "custom", "34");
+  }
+
+  for (auto& hist : mQCPID.getHistograms2D()) {
+    getObjectsManager()->startPublishing(&hist);
+    getObjectsManager()->addMetadata(hist.GetName(), "custom", "43");
   }
 }
 
@@ -59,7 +69,7 @@ void PID::startOfCycle()
 void PID::monitorData(o2::framework::ProcessingContext& ctx)
 {
   using TrackType = std::vector<o2::tpc::TrackTPC>;
-  auto tracks = ctx.inputs().get<TrackType>("tpc-sampled-tracks");
+  auto tracks = ctx.inputs().get<TrackType>("inputTracks");
   QcInfoLogger::GetInstance() << "monitorData: " << tracks.size() << AliceO2::InfoLogger::InfoLogger::endm;
 
   for (auto const& track : tracks) {

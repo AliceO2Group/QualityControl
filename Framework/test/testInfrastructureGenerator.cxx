@@ -80,15 +80,6 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
     });
   BOOST_CHECK(mergerSkeletonTask != workflow.end());
 
-  auto checkerSkeletonTask = std::find_if(
-    workflow.begin(), workflow.end(),
-    [](const DataProcessorSpec& d) {
-      return d.name == "skeletonTask-checker" &&
-             d.inputs.size() == 1 &&
-             d.outputs.size() == 1;
-    });
-  BOOST_CHECK(checkerSkeletonTask != workflow.end());
-
   auto taskRunnerAbcTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
@@ -98,12 +89,11 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
     });
   BOOST_CHECK(taskRunnerAbcTask != workflow.end());
 
-  auto checkerAbcTask = std::find_if(
+  auto checkRunnerCount = std::count_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "abcTask-checker" &&
-             d.inputs.size() == 1 &&
-             d.outputs.size() == 1;
+      return d.name.find("QC-CHECK-RUNNER") != std::string::npos &&
+             d.inputs.size() == 1;
     });
-  BOOST_CHECK(checkerAbcTask != workflow.end());
+  BOOST_REQUIRE_EQUAL(checkRunnerCount, 3);
 }

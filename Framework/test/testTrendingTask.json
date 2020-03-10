@@ -1,0 +1,69 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "TestTrendingTask": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TST",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TST/TestTrendingTask",
+            "name": "testHistoTrending",
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository-quality",
+            "path": "qc/checks/TST",
+            "name": "testTrendingTaskCheck",
+            "reductorName": "o2::quality_control_modules::common::QualityReductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "mean_of_histogram",
+            "title": "Mean trend of the testHistoTrending histogram",
+            "varexp": "testHistoTrending.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "quality_histogram",
+            "title": "Histogram of qualities",
+            "varexp": "testTrendingTaskCheck.level",
+            "selection": "",
+            "option": ""
+          }
+        ],
+        "initTrigger": [],
+        "updateTrigger": [],
+        "stopTrigger": []
+      }
+    }
+  }
+}

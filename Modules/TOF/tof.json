@@ -40,7 +40,405 @@
         },
         "location": "remote"
       }
-    }
+    },
+    "checks": {
+      "checkFromTOF/TOFRawsMulti": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsMulti"]
+          }]
+      },
+      "checkFromTOF/TOFRawsMultiIA": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsMultiIA"]
+          }]
+      },
+      "checkFromTOF/TOFRawsMultiOA": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsMultiOA"]
+          }]
+      },
+      "checkFromTOF/TOFRawsMultiIC": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsMultiIC"]
+          }]
+      },
+      "checkFromTOF/TOFRawsMultiOC": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsMultiOC"]
+          }]
+      },
+      "checkFromTOF/TOFRawsTime": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsTime",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsTime"]
+          }]
+      },
+      "checkFromTOF/TOFRawsTimeIA": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsTime",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsTimeIA"]
+          }]
+      },
+      "checkFromTOF/TOFRawsTimeOA": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsTime",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsTimeOA"]
+          }]
+      },
+      "checkFromTOF/TOFRawsTimeIC": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsTime",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsTimeIC"]
+          }]
+      },
+      "checkFromTOF/TOFRawsTimeOC": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsTime",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsTimeOC"]
+          }]
+      },
+      "checkFromTOF/TOFRawsToT": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsToT",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsToT"]
+          }]
+      },
+      "checkFromTOF/TOFRawsToTIA": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsToT",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsToTIA"]
+          }]
+      },
+      "checkFromTOF/TOFRawsToTOA": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsToT",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsToTOA"]
+          }]
+      },
+      "checkFromTOF/TOFRawsToTIC": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsToT",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsToTIC"]
+          }]
+      },
+      "checkFromTOF/TOFRawsToTOC": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsToT",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsToTOC"]
+          }]
+      },
+      "checkFromTOF/TOFRawsLTMHits": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawsLTMHits"]
+          }]
+      },
+      "checkFromTOF/TOFrefMap": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFrefMap"]
+          }]
+      },
+      "checkFromTOF/TOFRawHitMap": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawHitMap"]
+          }]
+      },
+      "checkFromTOF/TOFDecodingErrors": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFDecodingErrors"]
+          }]
+      },
+      "checkFromTOF/TOFOrphansTime": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFOrphansTime"]
+          }]
+      },
+      "checkFromTOF/TOFRawTimeVsTRM035": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawTimeVsTRM035"]
+          }]
+      },
+      "checkFromTOF/TOFRawTimeVsTRM3671": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawTimeVsTRM3671"]
+          }]
+      },
+      "checkFromTOF/TOFTimeVsStrip": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFTimeVsStrip"]
+          }]
+      },
+      "checkFromTOF/TOFtimeVsBCID": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFtimeVsBCID"]
+          }]
+      },
+      "checkFromTOF/TOFchannelEfficiencyMap": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFchannelEfficiencyMap"]
+          }]
+      },
+      "checkFromTOF/TOFhitsCTTM": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFhitsCTTM"]
+          }]
+      },
+      "checkFromTOF/TOFmacropadCTTM": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFmacropadCTTM"]
+          }]
+      },
+      "checkFromTOF/TOFmacropadDeltaPhiTime": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFmacropadDeltaPhiTime"]
+          }]
+      },
+      "checkFromTOF/BXVsCttmBit": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["BXVsCttmBit"]
+          }]
+      },
+      "checkFromTOF/TimeVsCttmBit": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TimeVsCttmBit"]
+          }]
+      },
+      "checkFromTOF/TOFRawHitMap24": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["TOFRawHitMap24"]
+          }]
+      },
+      "checkFromTOF/HitMultiVsDDL": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["HitMultiVsDDL"]
+          }]
+      },
+      "checkFromTOF/NfiredMacropad": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "moduleName": "QcTOF",
+          "policy": "OnAny",
+          "detectorName": "TOF",
+          "dataSource": [{
+              "type": "Task",
+              "name": "TOFTask",
+              "MOs": ["NfiredMacropad"]
+          }]
+      }
+    }  
   },
   "dataSamplingPolicies": [
     {

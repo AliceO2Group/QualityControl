@@ -16,6 +16,7 @@
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Version.h"
+#include "QualityControl/QcInfoLogger.h"
 #include "Common/Exceptions.h"
 // ROOT
 #include <TBufferJSON.h>
@@ -29,6 +30,7 @@
 // std
 #include <chrono>
 #include <sstream>
+#include <unordered_set>
 
 #include <fairlogger/Logger.h>
 #include <boost/algorithm/string.hpp>
@@ -46,30 +48,35 @@ CcdbDatabase::~CcdbDatabase() { disconnect(); }
 void CcdbDatabase::loadDeprecatedStreamerInfos()
 {
   if (getenv("QUALITYCONTROL_ROOT") == nullptr) {
-    LOG(WARNING) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
-                 << "Consequently, old data might not be readable.";
+    ILOG(Warning) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
+                  << "Consequently, old data might not be readable." << ENDM;
     return;
   }
   string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
   vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
   for (auto filename : filenames) {
     string localPath = path + filename;
-    LOG(INFO) << "Loading streamerinfos from : " << localPath;
+    ILOG(Info) << "Loading streamerinfos from : " << localPath << ENDM;
     TFile file(localPath.data(), "READ");
     if (file.IsZombie()) {
       string s = string("Cannot find ") + localPath;
-      LOG(ERROR) << s;
+      ILOG(Error) << s << ENDM;
       BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
     }
     TIter next(file.GetListOfKeys());
     TKey* key;
+    std::unordered_set<std::string> alreadySeen;
     while ((key = (TKey*)next())) {
       TClass* cl = gROOT->GetClass(key->GetClassName());
       if (!cl->InheritsFrom("TStreamerInfo"))
         continue;
       auto* si = (TStreamerInfo*)key->ReadObj();
-      LOG(DEBUG) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName();
-      si->BuildCheck();
+      string stringRepresentation = si->GetName() + si->GetClassVersion();
+      if (alreadySeen.count(stringRepresentation) == 0) {
+        alreadySeen.emplace(stringRepresentation);
+        ILOG(Debug) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
+        si->BuildCheck();
+      }
     }
   }
 }
@@ -92,11 +99,12 @@ void CcdbDatabase::init()
   loadDeprecatedStreamerInfos();
 }
 
-void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
+// Monitor object
+void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
 {
   if (mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
     BOOST_THROW_EXCEPTION(DatabaseException()
-                          << errinfo_details("Object and task names can't be empty. Do not store."));
+                          << errinfo_details("Object and task names can't be empty. Do not store. "));
   }
 
   if (mo->getName().find_first_of("\t\n ") != string::npos || mo->getTaskName().find_first_of("\t\n ") != string::npos) {
@@ -107,8 +115,7 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
   // metadata
   map<string, string> metadata;
   // QC metadata (prefix qc_)
-  metadata["quality"] = std::to_string(mo->getQuality().getLevel()); // this is going to disappear
-  metadata["qc_version"] = Version::getString();
+  metadata["qc_version"] = Version::GetQcVersion().getString();
   // user metadata
   map<string, string> userMetadata = mo->getMetadataMap();
   if (!userMetadata.empty()) {
@@ -123,39 +130,99 @@ void CcdbDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObjec
   ccdbApi.storeAsTFile(mo.get(), path, metadata, from, to);
 }
 
-core::MonitorObject* CcdbDatabase::retrieve(std::string path, std::string objectName, long timestamp)
+std::shared_ptr<TObject> CcdbDatabase::retrieveTObject(std::string path, long timestamp)
 {
-  string fullPath = path + "/" + objectName;
   map<string, string> metadata;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
   // we try first to load a TFile
-  TObject* object = ccdbApi.retrieveFromTFile(fullPath, metadata, when);
+  TObject* object = ccdbApi.retrieveFromTFile(path, metadata, when);
   if (object == nullptr) {
     // We could not open a TFile we should now try to open an object directly serialized
-    object = ccdbApi.retrieve(fullPath, metadata, when);
-    LOG(DEBUG) << "We could retrieve the object " << fullPath << " as a streamed object.";
+    object = ccdbApi.retrieve(path, metadata, when);
+    ILOG(Debug) << "We could retrieve the object " << path << " as a streamed object." << ENDM;
     if (object == nullptr) {
       return nullptr;
     }
   }
-  auto* mo = dynamic_cast<core::MonitorObject*>(object);
+  std::shared_ptr<TObject> result(object);
+  return result;
+}
+
+std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskName, std::string objectName, long timestamp)
+{
+  string path = taskName + "/" + objectName;
+  std::shared_ptr<TObject> obj = retrieveTObject(path, timestamp);
+  std::shared_ptr<MonitorObject> mo = std::dynamic_pointer_cast<MonitorObject>(obj);
   if (mo == nullptr) {
-    LOG(ERROR) << "Could not cast the object " << fullPath << " to MonitorObject";
+    ILOG(Error) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
   }
   return mo;
 }
 
-std::string CcdbDatabase::retrieveJson(std::string path, std::string objectName)
+std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp)
 {
-  std::unique_ptr<core::MonitorObject> monitor(retrieve(path, objectName));
-  if (monitor == nullptr) {
+  std::shared_ptr<TObject> obj = retrieveTObject(qoPath, timestamp);
+  std::shared_ptr<QualityObject> qo = std::dynamic_pointer_cast<QualityObject>(obj);
+  if (qo == nullptr) {
+    LOG(ERROR) << "Could not cast the object " << qoPath << " to QualityObject";
+  }
+  return qo;
+}
+
+std::string CcdbDatabase::retrieveQOJson(std::string qoPath, long timestamp)
+{
+  return retrieveJson(qoPath, timestamp);
+}
+
+std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objectName, long timestamp)
+{
+  string path = taskName + "/" + objectName;
+  return retrieveJson(path, timestamp);
+}
+
+std::string CcdbDatabase::retrieveJson(std::string path, long timestamp)
+{
+  auto tobj = retrieveTObject(path, timestamp);
+  if (tobj == nullptr) {
     return std::string();
   }
-  std::unique_ptr<TObject> obj(monitor->getObject());
-  monitor->setIsOwner(false);
-  TString json = TBufferJSON::ConvertToJSON(obj.get());
+  TObject* toConvert;
+  if (tobj->IsA() == MonitorObject::Class()) {
+    std::shared_ptr<MonitorObject> mo = std::dynamic_pointer_cast<MonitorObject>(tobj);
+    toConvert = mo->getObject();
+    mo->setIsOwner(false);
+  } else if (tobj->IsA() == QualityObject::Class()) {
+    toConvert = dynamic_cast<QualityObject*>(tobj.get());
+    if (toConvert == nullptr) {
+      return std::string();
+    }
+  } else {
+    LOG(ERROR) << "Unknown type of object : " << path << " -> " << tobj->ClassName();
+    return std::string();
+  }
+  TString json = TBufferJSON::ConvertToJSON(toConvert);
+  if (toConvert) {
+    delete toConvert;
+  }
   return json.Data();
+}
+
+//Quality Object
+void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
+{
+  // metadata
+  map<string, string> metadata;
+  // QC metadata (prefix qc_)
+  metadata["qc_version"] = Version::GetQcVersion().getString();
+  metadata["qc_quality"] = std::to_string(qo->getQuality().getLevel());
+
+  // other attributes
+  string path = qo->getPath();
+  long from = getCurrentTimestamp();
+  long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
+
+  ccdbApi.storeAsTFile(qo.get(), path, metadata, from, to);
 }
 
 void CcdbDatabase::disconnect()
@@ -254,7 +321,7 @@ long CcdbDatabase::getCurrentTimestamp()
 
 void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 {
-  LOG(INFO) << "truncating data for " << taskName << "/" << objectName;
+  ILOG(Info) << "truncating data for " << taskName << "/" << objectName << ENDM;
 
   ccdbApi.truncate(taskName + "/" + objectName);
 }

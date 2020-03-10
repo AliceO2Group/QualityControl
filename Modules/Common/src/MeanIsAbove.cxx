@@ -15,7 +15,6 @@
 
 #include "Common/MeanIsAbove.h"
 
-#include <iostream>
 // ROOT
 #include <TClass.h>
 #include <TH1.h>
@@ -24,6 +23,7 @@
 // QC
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 
 ClassImp(o2::quality_control_modules::common::MeanIsAbove)
 
@@ -38,7 +38,7 @@ void MeanIsAbove::configure(std::string /*name*/)
   //  try {
   //    auto configFile = ConfigurationFactory::getConfiguration("file:../example.ini"); // not ok...
   //  } catch (string &exception) {
-  //    cout << "error getting config file in MeanIsAbove : " << exception << endl;
+  //    ILOG(Info) << "error getting config file in MeanIsAbove : " << exception << ENDM;
   //    mThreshold = 1.0f;
   //    return;
   //  }
@@ -47,8 +47,9 @@ void MeanIsAbove::configure(std::string /*name*/)
 
 std::string MeanIsAbove::getAcceptedType() { return "TH1"; }
 
-Quality MeanIsAbove::check(const MonitorObject* mo)
+Quality MeanIsAbove::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  auto mo = moMap->begin()->second;
   auto* th1 = dynamic_cast<TH1*>(mo->getObject());
   if (!th1) {
     // TODO
@@ -60,13 +61,13 @@ Quality MeanIsAbove::check(const MonitorObject* mo)
   return Quality::Bad;
 }
 
-void MeanIsAbove::beautify(MonitorObject* mo, Quality checkResult)
+void MeanIsAbove::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   // A line is drawn at the level of the threshold.
   // Its colour depends on the quality.
 
   if (!this->isObjectCheckable(mo)) {
-    cerr << "object not checkable" << endl;
+    ILOG(Error) << "object not checkable" << ENDM;
     return;
   }
 

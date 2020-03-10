@@ -3,6 +3,16 @@
 This is a resource meant for the developers of the QC. Whenever we learn something useful we put it
 here. It is not sanitized or organized. Just a brain dump.
 
+## Where and how to configure the repo_cleaner of the ccdb-test 
+
+The config file is in `aldaqci@aidrefflp01:~/alice-ccdb/config.yaml`. Simply edit it and it will be picked up the next time the repo_cleaner runs. 
+
+The repo_cleaner is launched every 5 minutes by [Jenkins](https://alijenkins.cern.ch/job/FLP/job/CCDB%20Clean%20up/).
+
+It is a good practice to update [config.yaml](../Framework/script/RepoCleaner/config.yaml) in this repo when updating the file on `aidrefflp01`. 
+
+Documentation of the repo_cleaner can be found [here](../Framework/script/RepoCleaner/README.md).
+
 ### Trick used to load old data
 Until version 3 of the class MonitorObject, objects were stored in the repository directly. They are now stored within TFiles. The issue with the former way is that the StreamerInfo are lost. To be able to load old data, the StreamerInfos have been saved in a root file "streamerinfos.root". The CcdbDatabase access class loads this file and the StreamerInfos upon creation which allows for a smooth reading of the old objects. The day we are certain nobody will add objects in the old format and that the old objects have been removed from the database, we can delete this file and remove the loading from CcdbDatabase. Moreover, the following lines can be removed : 
 ```
@@ -57,3 +67,10 @@ Any one in alice-member has access. We use the egroup alice-o2-qcg-access to gra
 #### Start and stop
 
 `systemctl restart qcg`
+
+### Logging
+
+We use the infologger. There is a utility class, `QcInfoLogger`, that can be used. It is a singleton. See [the header](../Framework/include/QualityControl/QcInfoLogger.h) for its usage.
+
+Related issues : https://alice.its.cern.ch/jira/browse/QC-224
+

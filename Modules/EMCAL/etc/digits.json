@@ -32,12 +32,86 @@
           "maxNumberCycles": "-1",
           "dataSource": {
             "type": "direct",
-            "query": "emcal-digits:EMC/DIGITS/0"
+            "query": "emcal-digits:EMC/DIGITS/0;emcal-triggerecords:EMC/DIGITSTRGR/0"
           },
           "taskParameters": {
             "nothing": "rien"
           },
           "location": "remote"
+        }
+      },
+      "checks": {
+        "checkAmplHighG": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "detectorName": "EMC",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitAmplitudeHG"]
+          }]
+        },
+        "checkAmplLowG": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "detectorName": "EMC",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitAmplitudeLG"]
+          }]
+        },
+        "checkDigitTimeHighG": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "detectorName": "EMC",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitTimeHG"]
+          }]
+        },
+        "checkDigitTimeLowG": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "detectorName": "EMC",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitTimeLG"]
+          }]
+        },
+        "checkAmplEMCAL": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "detectorName": "EMC",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitAmplitudeEMCAL"]
+          }]
+        },
+        "checkAmplDCAL": {
+          "active": "true",
+          "className": "o2::quality_control_modules::emcal::DigitCheck",
+          "moduleName": "QcEMCAL",
+          "policy": "OnAny",
+          "detectorName": "EMC",
+          "dataSource": [{
+            "type": "Task",
+            "name": "QcTask",
+            "MOs": ["digitAmplitudeDCAL"]
+          }]
         }
       }
     },

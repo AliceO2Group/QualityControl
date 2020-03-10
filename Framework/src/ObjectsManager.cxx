@@ -95,22 +95,6 @@ void ObjectsManager::stopPublishing(const string& name)
   mMonitorObjects->Remove(mo);
 }
 
-Quality ObjectsManager::getQuality(std::string objectName)
-{
-  MonitorObject* mo = getMonitorObject(objectName);
-  return mo->getQuality();
-}
-// fixme: keep user informed, that giving the same names for their objects is a bad idea
-void ObjectsManager::addCheck(const std::string& objectName, const std::string& checkName,
-                              const std::string& checkClassName, const std::string& checkLibraryName)
-{
-  MonitorObject* mo = getMonitorObject(objectName);
-  mo->addCheck(checkName, checkClassName, checkLibraryName);
-
-  QcInfoLogger::GetInstance() << "Added check : " << objectName << " , " << checkName << " , " << checkClassName
-                              << " , " << checkLibraryName << infologger::endm;
-}
-
 MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
 {
   TObject* mo = mMonitorObjects->FindObject(objectName.c_str());
@@ -131,12 +115,6 @@ TObject* ObjectsManager::getObject(std::string objectName)
 TObjArray* ObjectsManager::getNonOwningArray() const
 {
   return new TObjArray(*mMonitorObjects);
-}
-
-void ObjectsManager::addCheck(const TObject* object, const std::string& checkName, const std::string& checkClassName,
-                              const std::string& checkLibraryName)
-{
-  addCheck(object->GetName(), checkName, checkClassName, checkLibraryName);
 }
 
 void ObjectsManager::addMetadata(const std::string& objectName, const std::string& key, const std::string& value)

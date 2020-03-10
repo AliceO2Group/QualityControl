@@ -71,26 +71,6 @@ class ObjectsManager
    */
   void stopPublishing(const std::string& name);
 
-  /**
-   * Return the quality of the object whose name is contained in objectName.
-   * @param objectName
-   * @return The quality of the object if was found.
-   * @throw ObjectNotFoundError if object is not found.
-   */
-  Quality getQuality(std::string objectName);
-
-  /// \brief Add a check to the object defined by objectName.
-  /// If a check with the same already exist for this object, it will be replaced.
-  /// \param objectName
-  /// \param checkName
-  /// \param checkClassName
-  /// \param checkLibraryName
-  void addCheck(const std::string& objectName, const std::string& checkName, const std::string& checkClassName,
-                const std::string& checkLibraryName = "");
-
-  void addCheck(const TObject* object, const std::string& checkName, const std::string& checkClassName,
-                const std::string& checkLibraryName = "");
-
   MonitorObject* getMonitorObject(std::string objectName);
 
   TObject* getObject(std::string objectName);

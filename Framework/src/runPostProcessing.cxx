@@ -25,39 +25,36 @@ using namespace o2::quality_control::postprocessing;
 using namespace AliceO2::Common;
 namespace bpo = boost::program_options;
 
-// todo: wrap in OCC library or DPL
 int main(int argc, const char* argv[])
 {
   try {
     bpo::options_description desc{ "Options" };
-    desc.add_options()                                                                                        //
-      ("help,h", "Help screen")                                                                               //
-      ("config", bpo::value<std::string>(), "Absolute path to a configuration file, preceeded with backend.") //
-      ("name", bpo::value<std::string>(), "Name of a post processing task to run")                            //
-      ("rate", bpo::value<double>()->default_value(10.0), "Rate of checking triggers in seconds");
+    desc.add_options()                                                                                       //
+      ("help,h", "Help screen")                                                                              //
+      ("config", bpo::value<std::string>(), "Absolute path to a configuration file, preceded with backend.") //
+      ("name", bpo::value<std::string>(), "Name of a post processing task to run")                           //
+      ("period", bpo::value<double>()->default_value(10.0), "Cycle period of checking triggers in seconds");
 
     bpo::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
     notify(vm);
 
     if (vm.count("help")) {
-      QcInfoLogger::GetInstance() << desc << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Info) << desc << ENDM;
       return 0;
     } else if (vm.count("name") == 0 && vm.count("config") == 0) {
-      QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error << "No name and/or config parameters provided" << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error) << "No name and/or config parameters provided" << ENDM;
       return 1;
     }
 
-    int rateUs = static_cast<int>(1000000 * vm["rate"].as<double>());
+    int periodUs = static_cast<int>(1000000 * vm["period"].as<double>());
     PostProcessingRunner runner(vm["name"].as<std::string>(), vm["config"].as<std::string>());
 
-    bool initResult = runner.init();
-    if (!initResult) {
-      return 1;
-    }
+    runner.init();
+    runner.start();
 
     Timer timer;
-    timer.reset(rateUs);
+    timer.reset(periodUs);
 
     while (runner.run()) {
       while (timer.getRemainingTime() < 0) {
@@ -65,9 +62,11 @@ int main(int argc, const char* argv[])
       }
       usleep(1000000.0 * timer.getRemainingTime());
     }
+    runner.stop();
     return 0;
   } catch (const bpo::error& ex) {
-    QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::Error << ex.what() << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Error) << "Exception caught: " << ex.what() << ENDM;
+    return 1;
   }
 
   return 0;

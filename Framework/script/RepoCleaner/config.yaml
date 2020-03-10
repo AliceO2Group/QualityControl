@@ -1,16 +1,17 @@
 Rules:
-  - object_path: qc/ITS/ITSRawTask/.*
-    delay: 120
-    policy: 1_per_run
   - object_path: qc/ITS/.*
-    delay: 120
-    policy: 1_per_hour
+    delay: 240
+    policy: 1_per_run
+    delete_when_no_run: True
   - object_path: qc/.*       # Path in the CCDB to a certain object
     delay: 1440              # Delay in minutes during which a new object is not touched. (1 day)
     policy: 1_per_hour       # name of the policy to apply, must correspond to a python script.
   - object_path: QcCheck/.*
     delay: 60
     policy: 1_per_hour
+  - object_path: Test
+    delay: 240
+    policy: none_kept
   - object_path: .*
     delay: 1440
     policy: skip

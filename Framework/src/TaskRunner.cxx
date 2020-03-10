@@ -24,6 +24,7 @@
 #include <Monitoring/MonitoringFactory.h>
 #include <Framework/DataSampling.h>
 #include <Framework/CallbackService.h>
+#include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
@@ -32,6 +33,7 @@
 #include "QualityControl/TaskFactory.h"
 
 #include <string>
+#include <memory>
 
 using namespace std;
 
@@ -78,12 +80,16 @@ void TaskRunner::init(InitContext& iCtx)
   // init user's task
   mTask->loadCcdb(mTaskConfig.conditionUrl);
   mTask->initialize(iCtx);
+
+  mNoMoreCycles = false;
+  mCycleNumber = 0;
 }
 
 void TaskRunner::run(ProcessingContext& pCtx)
 {
-  if (mTaskConfig.maxNumberCycles >= 0 && mCycleNumber >= mTaskConfig.maxNumberCycles) {
-    LOG(INFO) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached.";
+  if (mNoMoreCycles) {
+    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
+               << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
 
@@ -105,17 +111,18 @@ void TaskRunner::run(ProcessingContext& pCtx)
     }
     if (mTaskConfig.maxNumberCycles < 0 || mCycleNumber < mTaskConfig.maxNumberCycles) {
       startCycle();
+    } else {
+      mNoMoreCycles = true;
     }
   }
 }
 
-CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(gsl::span<PartRef const> const& inputs)
+CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::CompletionPolicy::InputSet inputs)
 {
   // fixme: we assume that there is one timer input and the rest are data inputs. If some other implicit inputs are
   //  added, this will break.
   size_t dataInputsExpected = inputs.size() - 1;
   size_t dataInputsPresent = 0;
-  size_t allInputs = 0;
 
   CompletionPolicy::CompletionOp action = CompletionPolicy::CompletionOp::Wait;
 
@@ -124,7 +131,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(gsl::span<Pa
       continue;
     }
 
-    const auto* dataHeader = get<DataHeader*>(input.header.get()->GetData());
+    const auto* dataHeader = CompletionPolicyHelpers::getHeader<DataHeader>(input);
     assert(dataHeader);
 
     if (!strncmp(dataHeader->dataDescription.str, "TIMER", 5)) {
@@ -136,7 +143,6 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(gsl::span<Pa
 
   LOG(DEBUG) << "Completion policy callback. "
              << "Total inputs possible: " << inputs.size()
-             << ", inputs present: " << allInputs
              << ", data inputs: " << dataInputsPresent
              << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume);
 
@@ -171,12 +177,20 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
   return description;
 }
 
+void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
+{
+  ILOG(Info) << "Received an EndOfStream, finishing the current cycle" << ENDM;
+  finishCycle(eosContext.outputs());
+  mNoMoreCycles = true;
+}
+
 void TaskRunner::start()
 {
   startOfActivity();
 
-  if (mTaskConfig.maxNumberCycles >= 0 && mCycleNumber >= mTaskConfig.maxNumberCycles) {
-    LOG(INFO) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached.";
+  if (mNoMoreCycles) {
+    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
+               << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
 
@@ -330,7 +344,7 @@ void TaskRunner::endOfActivity()
 
 void TaskRunner::startCycle()
 {
-  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << " in " << mTaskConfig.taskName << AliceO2::InfoLogger::InfoLogger::endm;
   mTask->startOfCycle();
   mNumberBlocks = 0;
   mNumberObjectsPublishedInCycle = 0;
@@ -377,18 +391,21 @@ void TaskRunner::publishCycleStats()
 
 int TaskRunner::publish(DataAllocator& outputs)
 {
+  QcInfoLogger::GetInstance() << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << AliceO2::InfoLogger::InfoLogger::endm;
   AliceO2::Common::Timer publicationDurationTimer;
 
-  TObjArray* array = mObjectsManager->getNonOwningArray();
+  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);
+  // getNonOwningArray creates a TObjArray containing the monitoring objects, but not
+  // owning them. The array is created by new and must be cleaned up by the caller
+  std::unique_ptr<TObjArray> array(mObjectsManager->getNonOwningArray());
   int objectsPublished = array->GetEntries();
 
-  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);
-  outputs.adopt(
+  outputs.snapshot(
     Output{ concreteOutput.origin,
             concreteOutput.description,
             concreteOutput.subSpec,
             mMonitorObjectsSpec.lifetime },
-    dynamic_cast<TObject*>(array));
+    *array);
 
   mLastPublicationDuration = publicationDurationTimer.getTime();
   return objectsPublished;

@@ -8,7 +8,12 @@ configure_file("include/Common/Version.h.in"
 
 add_library(QcCommon)
 
-target_sources(QcCommon PRIVATE src/NonEmpty.cxx src/MeanIsAbove.cxx)
+target_sources(QcCommon
+               PRIVATE src/NonEmpty.cxx
+                       src/MeanIsAbove.cxx
+                       src/TH1Reductor.cxx
+                       src/TH2Reductor.cxx
+                       src/QualityReductor.cxx)
 
 target_include_directories(
   QcCommon
@@ -26,12 +31,15 @@ install(TARGETS QcCommon
 add_root_dictionary(QcCommon
                     HEADERS include/Common/NonEmpty.h
                             include/Common/MeanIsAbove.h
+                            include/Common/TH1Reductor.h
+                            include/Common/TH2Reductor.h
+                            include/Common/QualityReductor.h
                     LINKDEF include/Common/LinkDef.h
                     BASENAME QcCommon)
 
 # ---- Tests ----
 
-set(TEST_SRCS test/testMeanIsAbove.cxx test/testNonEmpty.cxx)
+set(TEST_SRCS test/testMeanIsAbove.cxx test/testNonEmpty.cxx test/testCommonReductors.cxx)
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

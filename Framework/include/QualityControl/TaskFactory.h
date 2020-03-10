@@ -20,6 +20,7 @@
 #include <memory>
 // QC
 #include "QualityControl/TaskConfig.h"
+#include "QualityControl/TaskInterface.h"
 
 namespace o2::quality_control::core
 {
