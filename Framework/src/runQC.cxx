@@ -26,6 +26,7 @@
 /// generates both local and remote topologies, as it is the usual use-case for local development.
 
 #include <Framework/DataSampling.h>
+#include "SimConfig/ConfigurableParam.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
 
@@ -49,6 +50,12 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
                                                         " machines, can be omitted for the local development" } });
   workflowOptions.push_back(
     ConfigParamSpec{ "remote", VariantType::Bool, false, { "Creates only the remote part of the QC topology." } });
+
+  // configurable param support
+  workflowOptions.push_back(
+    ConfigParamSpec{ "configKeyValues", VariantType::String, "", { "Semicolon separated key=value strings" } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "configFile", VariantType::String, "", { "configuration file for configurable parameters" } });
 }
 
 void customize(std::vector<CompletionPolicy>& policies)
@@ -70,6 +77,11 @@ using namespace std::chrono;
 WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
+
+  // set up configuration
+  o2::conf::ConfigurableParam::updateFromFile(config.options().get<std::string>("configFile"));
+  o2::conf::ConfigurableParam::updateFromString(config.options().get<std::string>("configKeyValues"));
+  o2::conf::ConfigurableParam::writeINI("o2qc_configuration.ini");
 
   const std::string qcConfigurationSource = config.options().get<std::string>("config");
   ILOG(Info) << "Using config file '" << qcConfigurationSource << "'" << ENDM;

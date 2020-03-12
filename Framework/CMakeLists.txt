@@ -90,6 +90,7 @@ target_link_libraries(QualityControl
                              Boost::container
                              O2::Framework
                              O2::CCDB
+                             O2::SimConfig
                              ms_gsl::ms_gsl
                              QualityControlTypes
                       PRIVATE Boost::system
