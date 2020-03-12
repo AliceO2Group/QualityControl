@@ -9,6 +9,7 @@ target_sources(QcTOF
                       src/TOFCheckDiagnostic.cxx
                       src/TOFCheckRawsMulti.cxx
                       src/TOFCheckRawsTime.cxx 
+                      src/Counter.cxx
                       src/TOFCheckRawsToT.cxx)
 
 target_include_directories(
@@ -40,6 +41,7 @@ add_root_dictionary(QcTOF
                             include/TOF/TOFCheckRawsMulti.h
                             include/TOF/TOFCheckRawsTime.h
                             include/TOF/TOFCheckRawsToT.h
+                            include/Base/Counter.h
                     LINKDEF include/TOF/LinkDef.h
                     BASENAME QcTOF)
 
