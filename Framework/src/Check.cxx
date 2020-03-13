@@ -12,13 +12,8 @@
 
 #include <memory>
 #include <algorithm>
-// Boost
-#include <boost/filesystem/path.hpp>
-#include <boost/algorithm/string/trim.hpp>
 // ROOT
 #include <TClass.h>
-#include <TMessage.h>
-#include <TSystem.h>
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
@@ -265,7 +260,6 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
   }
   mLogger << mCheckConfig.checkName << " Quality: " << mLatestQuality->getQuality() << AliceO2::InfoLogger::InfoLogger::endm;
   // Trigger beautification
-  cout << __FILE__ << ":" << __LINE__ << " - calling beautify" << endl;
   beautify(moMap);
 
   return mLatestQuality;
