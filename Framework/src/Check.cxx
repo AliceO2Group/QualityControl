@@ -25,6 +25,7 @@
 // QC
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/InputUtils.h"
+#include "RootClassFactory.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -32,6 +33,7 @@ using namespace o2::configuration;
 
 using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
+using namespace std;
 
 /// Static functions
 o2::header::DataDescription Check::createCheckerDataDescription(const std::string name)
@@ -47,13 +49,11 @@ o2::header::DataDescription Check::createCheckerDataDescription(const std::strin
 /// Members
 
 Check::Check(std::string checkName, std::string configurationSource)
-  : mName(checkName),
-    mConfigurationSource(configurationSource),
+  : mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
     mLatestQuality(std::make_shared<QualityObject>(checkName)),
     mInputs{},
-    mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 },
-    mPolicyType("OnAny")
+    mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 }
 {
   mPolicy = [](std::map<std::string, unsigned int>) {
     // Prevent from using of uninitiated policy
@@ -61,78 +61,79 @@ Check::Check(std::string checkName, std::string configurationSource)
     return false;
   };
 
-  initConfig();
+  try {
+    initConfig(checkName);
+  } catch (...) {
+    std::string diagnostic = boost::current_exception_diagnostic_information();
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n" << diagnostic;
+    throw;
+  }
 }
 
-void Check::initConfig()
+void Check::initConfig(std::string checkName)
 {
-  try {
-    std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-    std::vector<std::string> inputs;
-    const auto& conf = config->getRecursive("qc.checks." + mName);
-    // Params
-    if (conf.count("checkParameters")) {
-      mCustomParameters = config->getRecursiveMap("qc.checks." + mName + ".checkParameters");
-    }
+  mCheckConfig.checkName = checkName;
 
-    // Policy
-    if (conf.count("policy")) {
-      mPolicyType = conf.get<std::string>("policy");
-    }
+  std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
+  std::vector<std::string> inputs;
+  const auto& checkConfig = config->getRecursive("qc.checks." + mCheckConfig.checkName);
 
-    // Inputs
-    for (const auto& [_key, dataSource] : conf.get_child("dataSource")) {
-      (void)_key;
-      if (dataSource.get<std::string>("type") == "Task") {
-        auto taskName = dataSource.get<std::string>("name");
+  // Params
+  if (checkConfig.count("checkParameters")) {
+    mCheckConfig.customParameters = config->getRecursiveMap("qc.checks." + checkName + ".checkParameters");
+  }
 
-        mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
+  // Policy
+  if (checkConfig.count("policy")) {
+    mCheckConfig.policyType = checkConfig.get<std::string>("policy");
+  }
 
-        /*
-           * Subscribe on predefined MOs.
-           * If "MOs" not set or "MOs" set to "all", the check function will be triggered whenever a new MO appears.
-           */
-        if (dataSource.count("MOs") == 0 || dataSource.get<std::string>("MOs") == "all") {
-          mPolicyType = "_OnGlobalAny";
-          mAllMOs = true;
-        } else {
-          for (const auto& moName : dataSource.get_child("MOs")) {
-            auto name = std::string(taskName + "/" + moName.second.get_value<std::string>());
-            if (std::find(mMonitorObjectNames.begin(), mMonitorObjectNames.end(), name) == mMonitorObjectNames.end()) {
-              mMonitorObjectNames.push_back(name);
-            }
+  // Inputs
+  for (const auto& [_key, dataSource] : checkConfig.get_child("dataSource")) {
+    (void)_key;
+    if (dataSource.get<std::string>("type") == "Task") {
+      auto taskName = dataSource.get<std::string>("name");
+
+      mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
+
+      /*
+         * Subscribe on predefined MOs.
+         * If "MOs" not set or "MOs" set to "all", the check function will be triggered whenever a new MO appears.
+         */
+      if (dataSource.count("MOs") == 0 || dataSource.get<std::string>("MOs") == "all") {
+        mCheckConfig.policyType = "_OnGlobalAny";
+        mCheckConfig.allMOs = true;
+      } else {
+        for (const auto& moName : dataSource.get_child("MOs")) {
+          auto name = std::string(taskName + "/" + moName.second.get_value<std::string>());
+          if (std::find(mCheckConfig.moNames.begin(), mCheckConfig.moNames.end(), name) == mCheckConfig.moNames.end()) {
+            mCheckConfig.moNames.push_back(name);
           }
         }
       }
-
-      // Here can be implemented other sources for the Check then Task if needed
     }
 
-    mLatestQuality->setInputs(stringifyInput(mInputs));
+    // Here can be implemented other sources for the Check then Task if needed
+  }
 
-    // Prepare module loading
-    mModuleName = conf.get<std::string>("moduleName");
-    mClassName = conf.get<std::string>("className");
+  mLatestQuality->setInputs(stringifyInput(mInputs));
 
-    // Detector name, if none use "DET"
-    mDetectorName = conf.get<std::string>("detectorName", "DET");
-    mLatestQuality->setDetectorName(mDetectorName);
+  // Prepare module loading
+  mCheckConfig.moduleName = checkConfig.get<std::string>("moduleName");
+  mCheckConfig.className = checkConfig.get<std::string>("className");
 
-    // Print setting
-    mLogger << mName << ": Module " << mModuleName << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << mName << ": Class " << mClassName << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << mName << ": Detector " << mDetectorName << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << mName << ": Policy " << mPolicyType << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << mName << ": MonitorObjects" << AliceO2::InfoLogger::InfoLogger::endm;
-    for (const auto& moname : mMonitorObjectNames) {
-      mLogger << mName << " - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
-    }
+  // Detector name, if none use "DET"
+  mCheckConfig.detectorName = checkConfig.get<std::string>("detectorName", "DET");
+  mLatestQuality->setDetectorName(mCheckConfig.detectorName);
 
-  } catch (...) {
-    std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
-    throw;
+  // Print setting
+  mLogger << checkName << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << checkName << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << checkName << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << checkName << ": Policy " << mCheckConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << checkName << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  for (const auto& moname : mCheckConfig.moNames) {
+    mLogger << checkName << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
 
@@ -144,7 +145,7 @@ void Check::initPolicy(std::string policyType)
      */
 
     mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
-      for (const auto& moname : mMonitorObjectNames) {
+      for (const auto& moname : mCheckConfig.moNames) {
         if (revisionMap[moname] <= mMORevision) {
           // Expect: revisionMap[notExistingKey] == 0
           return false;
@@ -160,7 +161,7 @@ void Check::initPolicy(std::string policyType)
     mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
       if (!mPolicyHelper) {
         // Check if all monitor objects are available
-        for (const auto& moname : mMonitorObjectNames) {
+        for (const auto& moname : mCheckConfig.moNames) {
           if (!revisionMap.count(moname)) {
             return false;
           }
@@ -169,7 +170,7 @@ void Check::initPolicy(std::string policyType)
         mPolicyHelper = true;
       }
 
-      for (const auto& moname : mMonitorObjectNames) {
+      for (const auto& moname : mCheckConfig.moNames) {
         if (revisionMap[moname] > mMORevision) {
           return true;
         }
@@ -198,7 +199,7 @@ void Check::initPolicy(std::string policyType)
      * Does not guarantee to contain all declared MOs 
      */
     mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
-      for (const auto& moname : mMonitorObjectNames) {
+      for (const auto& moname : mCheckConfig.moNames) {
         if (revisionMap.count(moname) && revisionMap[moname] > mMORevision) {
           return true;
         }
@@ -210,60 +211,15 @@ void Check::initPolicy(std::string policyType)
 
 void Check::init()
 {
-  loadLibrary();
+  CheckInterface* mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
+  mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
+  mCheckInterface->configure(mCheckConfig.checkName);
 
   /** 
    * The policy needs to be here. If running in constructor, the lambda gets wrong reference
    * and runs into SegmentationFault.
    */
-  initPolicy(mPolicyType);
-}
-
-void Check::loadLibrary()
-{
-  // Load module
-  if (boost::algorithm::trim_copy(mModuleName).empty()) {
-    mLogger << "no library name specified" << AliceO2::InfoLogger::InfoLogger::endm;
-    return;
-  }
-
-  std::string library = "lib" + mModuleName;
-  // if vector does not contain -> first time we see it
-  mLogger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
-  int libLoaded = gSystem->Load(library.c_str(), "", true);
-  if (libLoaded == 1) {
-    mLogger << "Already loaded before" << AliceO2::InfoLogger::InfoLogger::endm;
-  } else if (libLoaded < 0 || libLoaded > 1) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
-  }
-
-  // Load class
-
-  // Get the class
-  TClass* cl;
-  std::string tempString("Failed to instantiate Quality Control Module");
-
-  mLogger << "Loading class " << mClassName << AliceO2::InfoLogger::InfoLogger::endm;
-  cl = TClass::GetClass(mClassName.c_str());
-  if (!cl) {
-    tempString += R"( because no dictionary for class named ")";
-    tempString += mClassName;
-    tempString += R"(" could be retrieved)";
-    LOG(ERROR) << tempString;
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
-  }
-
-  //Get instance
-  mLogger << "Instantiating class " << mClassName << " (" << cl << ")" << AliceO2::InfoLogger::InfoLogger::endm;
-  mCheckInterface = static_cast<CheckInterface*>(cl->New());
-  if (!mCheckInterface) {
-    tempString += R"( because the class named ")";
-    tempString += mClassName;
-    tempString += R"( because the class named ")";
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
-  }
-  mCheckInterface->setCustomParameters(mCustomParameters);
-  mCheckInterface->configure(mName);
+  initPolicy(mCheckConfig.policyType);
 }
 
 bool Check::isReady(std::map<std::string, unsigned int>& revisionMap)
@@ -281,7 +237,7 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
   // Check if the module with the function is loaded
   if (mCheckInterface != nullptr) {
     std::shared_ptr<Quality> quality;
-    if (mAllMOs) {
+    if (mCheckConfig.allMOs) {
       /* 
        * User didn't specify the MOs.
        * All MOs are passed, no shadowing needed.
@@ -296,7 +252,7 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
        * Implementation: Copy to different map only required MOs.
        */
       std::map<std::string, std::shared_ptr<MonitorObject>> shadowMap;
-      for (auto& key : mMonitorObjectNames) {
+      for (auto& key : mCheckConfig.moNames) {
         if (moMap.count(key)) {
           // don't create empty shared_ptr
           shadowMap.insert({ key, moMap[key] });
@@ -307,8 +263,9 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
       mLatestQuality->updateQuality(mCheckInterface->check(&shadowMap));
     }
   }
-  mLogger << mName << " Quality: " << mLatestQuality->getQuality() << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.checkName << " Quality: " << mLatestQuality->getQuality() << AliceO2::InfoLogger::InfoLogger::endm;
   // Trigger beautification
+  cout << __FILE__ << ":" << __LINE__ << " - calling beautify" << endl;
   beautify(moMap);
 
   return mLatestQuality;
@@ -320,15 +277,18 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
     // Already checked - do not check again
     return;
   }
-  if (!(moMap.size() == 1 && mMonitorObjectNames.size() == 1)) {
+
+  if (!(moMap.size() == 1 && mCheckConfig.moNames.size() == 1)) {
+
     // Do not beautify and check in future iterations
     mBeautify = false;
     return;
   }
+
   // Take first and only item from moMap
   auto& mo = moMap.begin()->second;
 
   // Beautify
-  mLogger << mName << " Beautify" << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.checkName << " Beautify" << AliceO2::InfoLogger::InfoLogger::endm;
   mCheckInterface->beautify(mo, mLatestQuality->getQuality());
 }
