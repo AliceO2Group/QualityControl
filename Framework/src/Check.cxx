@@ -48,7 +48,8 @@ Check::Check(std::string checkName, std::string configurationSource)
     mLogger(QcInfoLogger::GetInstance()),
     mLatestQuality(std::make_shared<QualityObject>(checkName)),
     mInputs{},
-    mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 }
+    mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 },
+    mBeautify(true)
 {
   mPolicy = [](std::map<std::string, unsigned int>) {
     // Prevent from using of uninitiated policy
@@ -85,11 +86,12 @@ void Check::initConfig(std::string checkName)
   }
 
   // Inputs
+  size_t numberOfTaskSources = 0;
   for (const auto& [_key, dataSource] : checkConfig.get_child("dataSource")) {
     (void)_key;
     if (dataSource.get<std::string>("type") == "Task") {
       auto taskName = dataSource.get<std::string>("name");
-
+      numberOfTaskSources++;
       mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
 
       /*
@@ -111,7 +113,6 @@ void Check::initConfig(std::string checkName)
 
     // Here can be implemented other sources for the Check then Task if needed
   }
-
   mLatestQuality->setInputs(stringifyInput(mInputs));
 
   // Prepare module loading
@@ -121,6 +122,13 @@ void Check::initConfig(std::string checkName)
   // Detector name, if none use "DET"
   mCheckConfig.detectorName = checkConfig.get<std::string>("detectorName", "DET");
   mLatestQuality->setDetectorName(mCheckConfig.detectorName);
+
+  // Determine whether we can beautify
+  // See QC-299 for details
+  if(numberOfTaskSources > 1) {
+    mBeautify = false;
+    ILOG(Warning) << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.checkName << ")" << ENDM;
+  }
 
   // Print setting
   mLogger << checkName << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
@@ -207,9 +215,16 @@ void Check::initPolicy(std::string policyType)
 
 void Check::init()
 {
+  try{
   mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
   mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
   mCheckInterface->configure(mCheckConfig.checkName);
+  } catch (...) {
+    std::string diagnostic = boost::current_exception_diagnostic_information();
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic;
+    throw;
+  }
 
   /** 
    * The policy needs to be here. If running in constructor, the lambda gets wrong reference
@@ -239,6 +254,9 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
        * All MOs are passed, no shadowing needed.
        */
       mLatestQuality->updateQuality(mCheckInterface->check(&moMap));
+      // Trigger beautification
+      cout << __FILE__ << ":" << __LINE__ << " - calling beautify" << endl;
+      beautify(moMap);
     } else {
       /* 
        * Shadow MOs.
@@ -257,33 +275,38 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
 
       // Trigger loaded check and update quality of the Check.
       mLatestQuality->updateQuality(mCheckInterface->check(&shadowMap));
+      // Trigger beautification
+      cout << __FILE__ << ":" << __LINE__ << " - calling beautify" << endl;
+      beautify(shadowMap);
     }
   }
   mLogger << mCheckConfig.checkName << " Quality: " << mLatestQuality->getQuality() << AliceO2::InfoLogger::InfoLogger::endm;
-  // Trigger beautification
-  beautify(moMap);
 
   return mLatestQuality;
 }
 
 void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
 {
+  cout << __FILE__ << ":" << __LINE__ << endl;
   if (!mBeautify) {
-    // Already checked - do not check again
     return;
+    cout << __FILE__ << ":" << __LINE__ << endl;
   }
+  cout << __FILE__ << ":" << __LINE__ << endl;
 
-  if (!(moMap.size() == 1 && mCheckConfig.moNames.size() == 1)) {
+  for( auto const& [name, mo] : moMap ) {
+    cout << "mo : " << name << endl;
 
-    // Do not beautify and check in future iterations
-    mBeautify = false;
-    return;
+    cout << __FILE__ << ":" << __LINE__ << endl;
+
+    // Beautify
+    mLogger << mCheckConfig.checkName << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << mCheckConfig.checkName << " 1Beautify : " << mo << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << mCheckConfig.checkName << " 2Beautify : " << mo->getName() << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << mCheckConfig.checkName << " 3Beautify : " << mCheckInterface << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << mCheckConfig.checkName << " 4Beautify : " << mCheckInterface->IsA()->GetName() << AliceO2::InfoLogger::InfoLogger::endm;
+    cout << __FILE__ << ":" << __LINE__ << endl;
+    mCheckInterface->beautify(mo, mLatestQuality->getQuality());
+    cout << __FILE__ << ":" << __LINE__ << endl;
   }
-
-  // Take first and only item from moMap
-  auto& mo = moMap.begin()->second;
-
-  // Beautify
-  mLogger << mCheckConfig.checkName << " Beautify" << AliceO2::InfoLogger::InfoLogger::endm;
-  mCheckInterface->beautify(mo, mLatestQuality->getQuality());
 }
