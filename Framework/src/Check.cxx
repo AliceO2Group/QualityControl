@@ -207,7 +207,7 @@ void Check::initPolicy(std::string policyType)
 
 void Check::init()
 {
-  CheckInterface* mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
+  mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
   mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
   mCheckInterface->configure(mCheckConfig.checkName);
 
