@@ -26,10 +26,10 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::mft
 {
 
-/// \brief Example Quality Control DPL Task
-/// It is final because there is no reason to derive from it. Just remove it if needed.
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
+/// \brief MFT Track QC task
+/// 
+/// \author Tomas Herman
+/// \author Guillermo Contreras
 class BasicTrackQcTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:

@@ -36,7 +36,7 @@ Quality BasicTrackQcCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "mMFT_Pt") {
+    if (mo->getName() == "mMFT_nPoints") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       result = Quality::Good;
 
@@ -53,7 +53,7 @@ std::string BasicTrackQcCheck::getAcceptedType() { return "TH1"; }
 
 void BasicTrackQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "mMFT_Pt") {
+  if (mo->getName() == "mMFT_nPoints") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {

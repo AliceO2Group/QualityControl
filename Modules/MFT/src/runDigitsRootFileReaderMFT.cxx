@@ -11,6 +11,7 @@
 ///
 /// \file    runDigitsRootFileReaderMFT.cxx
 /// \author  Guillermo Contreras
+/// \author  Tomas Herman
 ///
 /// \brief This is an executable that reads digits from a root file from disk and sends the data to QC via DPL.
 ///
@@ -45,13 +46,13 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
   //_________________________________________________________________________________________________
   void init(framework::InitContext& ic)
   {
-    LOG(INFO) << " In runDigitsRootFileReaderMFT::init ... entering ";
+    LOG(INFO) << " In DigitsRootFileReaderMFT::init ... entering ";
 
     // open the input file
     auto filename = ic.options().get<std::string>("mft-digit-infile");
     mFile = std::make_unique<TFile>(filename.c_str(), "OLD");
     if (!mFile->IsOpen()) {
-      LOG(ERROR) << "runDigitsRootFileReaderMFT::init. Cannot open the file: " << filename.c_str();
+      LOG(ERROR) << "DigitsRootFileReaderMFT::init. Cannot open the file: " << filename.c_str();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::All);
       return;
     }
@@ -71,7 +72,7 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
     auto nROFs = rofs.size();
     if (currentROF >= nROFs) {
       // if (currentROF >= 50) {
-      LOG(INFO) << " runDigitsRootFileReaderMFT::run. End of file reached";
+      LOG(INFO) << " DigitsRootFileReaderMFT::run. End of file reached";
       pc.services().get<ControlService>().readyToQuit(QuitRequest::All);
       return;
     }
@@ -96,7 +97,7 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
     std::copy(digits.begin() + index, digits.begin() + lastIndex, std::back_inserter(*DigitsInROF));
 
     // fill in the message
-    // LOG(INFO) << " runDigitsRootFileReaderMFT::run. In this ROF there are  " << DigitsInROF.size() << " digits";
+    // LOG(INFO) << " DigitsRootFileReaderMFT::run. In this ROF there are  " << DigitsInROF.size() << " digits";
     pc.outputs().snapshot(Output{ "MFT", "DIGITS", 0, Lifetime::Timeframe }, *DigitsInROF);
     pc.outputs().snapshot(Output{ "MFT", "MFTDigitROF", 0, Lifetime::Timeframe }, *oneROFvec);
   }

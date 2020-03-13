@@ -51,6 +51,7 @@
         }],
         "className": "o2::quality_control_modules::mft::BasicTrackQcCheck",
         "moduleName": "QcMFT",
+        "detectorName": "MFT",
         "policy": "OnAny"
       }
     }    

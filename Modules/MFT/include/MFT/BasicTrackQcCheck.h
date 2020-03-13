@@ -22,9 +22,10 @@
 namespace o2::quality_control_modules::mft
 {
 
-/// \brief  Check whether a plot is empty or not.
+/// \brief  MFT Track Check
 ///
-/// \author Barthelemy von Haller
+/// \author Tomas Herman
+/// \author Guillermo Contreras
 class BasicTrackQcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:

@@ -22,9 +22,10 @@
 namespace o2::quality_control_modules::mft
 {
 
-/// \brief  Check whether a plot is empty or not.
+/// \brief  MFT Digit Check
 ///
-/// \author Barthelemy von Haller
+/// \author Tomas Herman
+/// \author Guillermo Contreras
 class BasicDigitQcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:

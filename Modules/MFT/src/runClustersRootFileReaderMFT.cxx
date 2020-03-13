@@ -11,6 +11,7 @@
 ///
 /// \file    runClustersRootFileReaderMFT.cxx
 /// \author  Guillermo Contreras
+/// \author  Tomas Herman
 ///
 /// \brief This is an executable that reads clusters from a root file from disk and sends the data to QC via DPL.
 ///
@@ -45,13 +46,13 @@ class ClustersRootFileReaderMFT : public o2::framework::Task
   //_________________________________________________________________________________________________
   void init(framework::InitContext& ic)
   {
-    LOG(INFO) << " In runClustersRootFileReaderMFT::init ... entering ";
+    LOG(INFO) << " In ClustersRootFileReaderMFT::init ... entering ";
 
     // open the input file
     auto filename = ic.options().get<std::string>("mft-cluster-infile");
     mFile = std::make_unique<TFile>(filename.c_str(), "OLD");
     if (!mFile->IsOpen()) {
-      LOG(ERROR) << "runClustersRootFileReaderMFT::init. Cannot open the file: " << filename.c_str();
+      LOG(ERROR) << "ClustersRootFileReaderMFT::init. Cannot open the file: " << filename.c_str();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::All);
       return;
     }
@@ -69,11 +70,9 @@ class ClustersRootFileReaderMFT : public o2::framework::Task
 
     // Check if there is a new ROF
     auto nROFs = rofs.size();
-    // LOG(INFO) << " runClustersRootFileReaderMFT::run. Number of ROFs " << nROFs;
-    // LOG(INFO) << " runClustersRootFileReaderMFT::run. Current ROF " << currentROF;
     if (currentROF >= nROFs) {
       // if (currentROF >= 50) {
-      LOG(INFO) << " runClustersRootFileReaderMFT::run. End of file reached";
+      LOG(INFO) << " ClustersRootFileReaderMFT::run. End of file reached";
       pc.services().get<ControlService>().readyToQuit(QuitRequest::All);
       return;
     }
@@ -98,7 +97,7 @@ class ClustersRootFileReaderMFT : public o2::framework::Task
     std::copy(clusters.begin() + index, clusters.begin() + lastIndex, std::back_inserter(*ClustersInROF));
 
     // fill in the message
-    // LOG(INFO) << " runClustersRootFileReaderMFT::run. In this ROF there are  " << ClustersInROF.size() << " clusters";
+    // LOG(INFO) << " ClustersRootFileReaderMFT::run. In this ROF there are  " << ClustersInROF.size() << " clusters";
     pc.outputs().snapshot(Output{ "MFT", "CLUSTERS", 0, Lifetime::Timeframe }, *ClustersInROF);
     pc.outputs().snapshot(Output{ "MFT", "MFTClusterROF", 0, Lifetime::Timeframe }, *oneROFvec);
   }

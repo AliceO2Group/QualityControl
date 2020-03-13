@@ -11,6 +11,7 @@
 ///
 /// \file    runTracksRootFileReaderMFT.cxx
 /// \author  Guillermo Contreras
+/// \author  Tomas Herman
 ///
 /// \brief This is an executable that reads tracks from a root file from disk and sends the data to QC via DPL.
 ///
@@ -47,13 +48,13 @@ class TracksRootFileReaderMFT : public o2::framework::Task
   //_________________________________________________________________________________________________
   void init(framework::InitContext& ic)
   {
-    LOG(INFO) << " In runTracksRootFileReaderMFT::init ... entering ";
+    LOG(INFO) << " In TracksRootFileReaderMFT::init ... entering ";
 
     // open the input file
     auto filename = ic.options().get<std::string>("mft-track-infile");
     mFile = std::make_unique<TFile>(filename.c_str(), "OLD");
     if (!mFile->IsOpen()) {
-      LOG(ERROR) << "runTracksRootFileReaderMFT::init. Cannot open the file: " << filename.c_str();
+      LOG(ERROR) << "TracksRootFileReaderMFT::init. Cannot open the file: " << filename.c_str();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::All);
       return;
     }
@@ -73,7 +74,7 @@ class TracksRootFileReaderMFT : public o2::framework::Task
     auto ntracks = tracks.size();
     if (currentTrack >= ntracks) {
       // if (currentTrack >= 50) {
-      LOG(INFO) << " runTracksRootFileReaderMFT::run. End of file reached";
+      LOG(INFO) << " TracksRootFileReaderMFT::run. End of file reached";
       pc.services().get<ControlService>().readyToQuit(QuitRequest::All);
       return;
     }
@@ -83,7 +84,7 @@ class TracksRootFileReaderMFT : public o2::framework::Task
     currentTrack++;
 
     // fill in the message
-    // LOG(INFO) << " runTracksRootFileReaderMFT::run. In this file there are  " << TracksInFile.size() << " tracks";
+    // LOG(INFO) << " TracksRootFileReaderMFT::run. In this file there are  " << TracksInFile.size() << " tracks";
     pc.outputs().snapshot(Output{ "MFT", "TRACKSLTF", 0, Lifetime::Timeframe }, *TracksInFile);
   }
 
