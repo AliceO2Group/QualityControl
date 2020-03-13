@@ -27,7 +27,7 @@ namespace o2::quality_control_modules::mft
 {
 
 /// \brief MFT Digit QC task
-/// 
+///
 /// \author Tomas Herman
 /// \author Guillermo Contreras
 class BasicDigitQcTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
