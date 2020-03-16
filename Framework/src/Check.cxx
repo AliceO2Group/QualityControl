@@ -46,6 +46,7 @@ o2::header::DataDescription Check::createCheckerDataDescription(const std::strin
 Check::Check(std::string checkName, std::string configurationSource)
   : mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
+    mNumberOfTaskSources(0),
     mLatestQuality(std::make_shared<QualityObject>(checkName)),
     mInputs{},
     mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 },
@@ -85,12 +86,12 @@ void Check::initConfig(std::string checkName)
   }
 
   // Inputs
-  size_t numberOfTaskSources = 0;
+  mNumberOfTaskSources = 0;
   for (const auto& [_key, dataSource] : checkConfig.get_child("dataSource")) {
     (void)_key;
     if (dataSource.get<std::string>("type") == "Task") {
       auto taskName = dataSource.get<std::string>("name");
-      numberOfTaskSources++;
+      mNumberOfTaskSources++;
       mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
 
       /*
@@ -121,23 +122,6 @@ void Check::initConfig(std::string checkName)
   // Detector name, if none use "DET"
   mCheckConfig.detectorName = checkConfig.get<std::string>("detectorName", "DET");
   mLatestQuality->setDetectorName(mCheckConfig.detectorName);
-
-  // Determine whether we can beautify
-  // See QC-299 for details
-  if (numberOfTaskSources > 1) {
-    mBeautify = false;
-    ILOG(Warning) << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.checkName << ")" << ENDM;
-  }
-
-  // Print setting
-  mLogger << checkName << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << checkName << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << checkName << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << checkName << ": Policy " << mCheckConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << checkName << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
-  for (const auto& moname : mCheckConfig.moNames) {
-    mLogger << checkName << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
-  }
 }
 
 void Check::initPolicy(std::string policyType)
@@ -230,6 +214,23 @@ void Check::init()
    * and runs into SegmentationFault.
    */
   initPolicy(mCheckConfig.policyType);
+
+  // Determine whether we can beautify
+  // See QC-299 for details
+  if (mNumberOfTaskSources > 1) {
+    mBeautify = false;
+    ILOG(Warning) << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.checkName << ")" << ENDM;
+  }
+
+  // Print setting
+  mLogger << mCheckConfig.checkName << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.checkName << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.checkName << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.checkName << ": Policy " << mCheckConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.checkName << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  for (const auto& moname : mCheckConfig.moNames) {
+    mLogger << mCheckConfig.checkName << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
+  }
 }
 
 bool Check::isReady(std::map<std::string, unsigned int>& revisionMap)
