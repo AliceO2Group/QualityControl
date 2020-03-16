@@ -34,7 +34,7 @@ enum Trigger {
   EndOfFill,
   Periodic,
   NewObject,
-  UserExit, // SIGINT or SIGTERM, user wanted to exit. todo: maybe it should be a default behaviour?
+  UserOrControl, // reacts start and stop transitions (not an update trigger).
   INVALID
 };
 
@@ -59,6 +59,8 @@ TriggerFcn NewObject(std::string name);
 TriggerFcn Once();
 /// \brief Triggers always
 TriggerFcn Always();
+/// \brief Triggers never
+TriggerFcn Never();
 
 } // namespace triggers
 

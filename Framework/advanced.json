@@ -53,6 +53,32 @@
         },
         "location": "remote"
       }
+    },
+    "checks": {
+      "dataSizeCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "dataSizeTask",
+          "MOs": ["example"]
+        }]
+      },
+      "someNumbersCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "someNumbersTask",
+          "MOs": ["example"]
+        }]
+      }
     }
   },
   "dataSamplingPolicies": [
@@ -74,7 +100,7 @@
       "id": "tst2",
       "active": "true",
       "machines": [],
-      "query" : "data:TST/RAWDATA",
+      "query" : "data:TST/DATA",
       "samplingConditions": [
         {
           "condition": "payloadSize",

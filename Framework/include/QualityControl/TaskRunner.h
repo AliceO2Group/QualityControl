@@ -17,13 +17,12 @@
 #ifndef QC_CORE_TASKRUNNER_H
 #define QC_CORE_TASKRUNNER_H
 
-//#include <boost/accumulators/accumulators.hpp>
-//#include <boost/accumulators/statistics.hpp>
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
+#include <Framework/EndOfStreamContext.h>
 #include <Headers/DataHeader.h>
 // QC
 #include "QualityControl/TaskConfig.h"
@@ -82,7 +81,7 @@ class TaskRunner : public framework::Task
   void run(framework::ProcessingContext& pCtx) override;
 
   /// \brief TaskRunner's completion policy callback
-  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(gsl::span<framework::PartRef const> const& inputs);
+  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::CompletionPolicy::InputSet inputs);
 
   std::string getDeviceName() { return mDeviceName; };
   const framework::Inputs& getInputsSpecs() { return mInputSpecs; };
@@ -97,6 +96,9 @@ class TaskRunner : public framework::Task
   static header::DataOrigin createTaskDataOrigin();
   /// \brief Unified DataDescription naming scheme for all tasks
   static header::DataDescription createTaskDataDescription(const std::string& taskName);
+
+  /// \brief Callback for CallbackService::Id::EndOfStream
+  void endOfStream(framework::EndOfStreamContext& eosContext) override;
 
  private:
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
@@ -132,6 +134,7 @@ class TaskRunner : public framework::Task
   framework::Options mOptions;
 
   bool mCycleOn = false;
+  bool mNoMoreCycles = false;
   int mCycleNumber = 0;
 
   // stats

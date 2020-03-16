@@ -34,6 +34,7 @@
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DataSampling.h>
 #include <Framework/DataSpecUtils.h>
+#include <Framework/CompletionPolicyHelpers.h>
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
@@ -48,16 +49,7 @@ void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
   quality_control::customizeInfrastructure(policies);
-  CompletionPolicy mergerConsumesASAP{
-    "mergers-always-consume",
-    [](DeviceSpec const& device) {
-      return device.name.find("merger") != std::string::npos;
-    },
-    [](gsl::span<PartRef const> const& /*inputs*/) {
-      return CompletionPolicy::CompletionOp::Consume;
-    }
-  };
-  policies.push_back(mergerConsumesASAP);
+  policies.push_back(CompletionPolicyHelpers::defineByName(".*merger.*", CompletionPolicy::CompletionOp::Consume));
 }
 
 void customize(std::vector<ChannelConfigurationPolicy>& policies)
@@ -139,8 +131,16 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
     // a fix to make the topologies work when merged together
     localTopology.back().name += std::to_string(i);
     if (i != 2) {
-      localTopology.back().inputs.erase(localTopology.back().inputs.begin(), localTopology.back().inputs.end() - 1);
-      localTopology.back().outputs.erase(localTopology.back().outputs.begin(), localTopology.back().outputs.end() - 1);
+      // can't do it like that, because of this bug: https://alice.its.cern.ch/jira/browse/O2-791
+      // localTopology.back().inputs.erase(localTopology.back().inputs.begin(), localTopology.back().inputs.end() - 1);
+      // localTopology.back().outputs.erase(localTopology.back().outputs.begin(), localTopology.back().outputs.end() - 1);
+      // for the time being, we use the following workaround:
+      auto in = localTopology.back().inputs.back();
+      auto out = localTopology.back().outputs.back();
+      localTopology.back().inputs.clear();
+      localTopology.back().inputs.push_back(in);
+      localTopology.back().outputs.clear();
+      localTopology.back().outputs.push_back(out);
     }
     DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs.back(), i);
     DataSpecUtils::updateMatchingSubspec(localTopology.back().outputs.back(), i);

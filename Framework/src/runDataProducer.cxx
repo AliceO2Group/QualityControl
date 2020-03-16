@@ -42,6 +42,8 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
   workflowOptions.push_back(
     ConfigParamSpec{ "message-rate", VariantType::Double, 10.0, { "Rate of messages per second." } });
   workflowOptions.push_back(
+    ConfigParamSpec{ "message-amount", VariantType::Int, 0, { "Amount of messages to be produced in total (0 for inf)." } });
+  workflowOptions.push_back(
     ConfigParamSpec{ "producers", VariantType::Int, 1, { "Number of producers. Each will have unique SubSpec, counting from 0." } });
   workflowOptions.push_back(
     ConfigParamSpec{ "monitoring-url", VariantType::String, "", { "URL of the Monitoring backend" } });
@@ -58,12 +60,13 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   size_t maxSize = config.options().get<int>("max-size");
   bool fill = !config.options().get<bool>("empty");
   double rate = config.options().get<double>("message-rate");
+  uint64_t amount = config.options().get<int>("message-amount");
   size_t producers = config.options().get<int>("producers");
   std::string monitoringUrl = config.options().get<std::string>("monitoring-url");
 
   WorkflowSpec specs;
   for (size_t i = 0; i < producers; i++) {
-    specs.push_back(getDataProducerSpec(minSize, maxSize, rate, fill, i, monitoringUrl));
+    specs.push_back(getDataProducerSpec(minSize, maxSize, rate, amount, i, monitoringUrl, fill));
   }
   return specs;
 }

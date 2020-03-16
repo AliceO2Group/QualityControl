@@ -1,3 +1,4 @@
+
 // Copyright CERN and copyright holders of ALICE O2. This software is
 // distributed under the terms of the GNU General Public License v3 (GPL
 // Version 3), copied verbatim in the file "COPYING".
@@ -15,6 +16,7 @@
 
 #include "QualityControl/DummyDatabase.h"
 
+using namespace o2::quality_control::core;
 namespace o2::quality_control::repository
 {
 
@@ -26,16 +28,30 @@ void DummyDatabase::connect(const std::unordered_map<std::string, std::string>&)
 {
 }
 
-void DummyDatabase::store(std::shared_ptr<o2::quality_control::core::MonitorObject>)
+void DummyDatabase::storeMO(std::shared_ptr<MonitorObject>)
 {
 }
 
-core::MonitorObject* DummyDatabase::retrieve(std::string, std::string, long)
+std::shared_ptr<MonitorObject> DummyDatabase::retrieveMO(std::string, std::string, long)
 {
-  return nullptr;
+  return std::shared_ptr<MonitorObject>();
 }
 
-std::string DummyDatabase::retrieveJson(std::string, std::string)
+std::string DummyDatabase::retrieveMOJson(std::string, std::string, long)
+{
+  return std::string();
+}
+
+void DummyDatabase::storeQO(std::shared_ptr<QualityObject>)
+{
+}
+
+std::shared_ptr<QualityObject> DummyDatabase::retrieveQO(std::string, long)
+{
+  return std::shared_ptr<QualityObject>();
+}
+
+std::string DummyDatabase::retrieveQOJson(std::string, long)
 {
   return std::string();
 }
@@ -55,6 +71,15 @@ std::vector<std::string> DummyDatabase::getPublishedObjectNames(std::string)
 
 void DummyDatabase::truncate(std::string, std::string)
 {
+}
+
+std::shared_ptr<TObject> DummyDatabase::retrieveTObject(std::string /*path*/, long /*timestamp*/)
+{
+  return std::shared_ptr<TObject>();
+}
+std::string DummyDatabase::retrieveJson(std::string /*path*/, long /*timestamp*/)
+{
+  return std::string();
 }
 
 } // namespace o2::quality_control::repository

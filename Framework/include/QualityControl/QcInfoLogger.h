@@ -17,9 +17,9 @@
 #define QC_CORE_QCINFOLOGGER_H
 
 #include <InfoLogger/InfoLogger.hxx>
-#include "QualityControl/TaskInterface.h"
 
-typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time -> log::endm
+typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time
+typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;
 
 namespace o2::quality_control::core
 {
@@ -30,6 +30,10 @@ namespace o2::quality_control::core
 /// and configure its own instance of InfoLogger.
 /// Independent InfoLogger instances can still be created when and if needed.
 /// Usage :   QcInfoLogger::GetInstance() << "blabla" << infologger::endm;
+///           ILOG(Info) << "info message" << ENDM; // short version
+///           ILOGI << "info message" << ENDM;      // shorter
+///           ILOG_INST << InfoLogger::InfoLoggerMessageOption{ InfoLogger::Fatal, 1, 1, "asdf", 3 }
+///                     << "fatal message with extra fields" << ENDM; // complex version
 ///
 /// \author Barthelemy von Haller
 class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
@@ -44,12 +48,7 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
   }
 
  private:
-  QcInfoLogger()
-  {
-    // TODO configure the QC infologger, e.g. proper facility
-    *this << "QC infologger initialized" << infologger::endm;
-  }
-
+  QcInfoLogger();
   ~QcInfoLogger() override = default;
 
   // Disallow copying
@@ -58,5 +57,15 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
 };
 
 } // namespace o2::quality_control::core
+
+// Define the ILOG() macro.
+// Unfortunately it is not possible to have a zero argument MACRO here without generating warnings
+#define ILOG_INST o2::quality_control::core::QcInfoLogger::GetInstance()
+#define ILOG(severity) ILOG_INST << AliceO2::InfoLogger::InfoLogger::Severity::severity
+#define ILOGI ILOG_INST << AliceO2::InfoLogger::InfoLogger::Info
+#define ILOGW ILOG_INST << AliceO2::InfoLogger::InfoLogger::Warning
+#define ILOGE ILOG_INST << AliceO2::InfoLogger::InfoLogger::Error
+#define ILOGF ILOG_INST << AliceO2::InfoLogger::InfoLogger::Fatal
+#define ENDM AliceO2::InfoLogger::InfoLogger::endm;
 
 #endif // QC_CORE_QCINFOLOGGER_H

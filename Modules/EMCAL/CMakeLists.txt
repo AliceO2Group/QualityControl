@@ -1,8 +1,8 @@
-# ---- Library ----
+# ---- Library ---- 
 
 add_library(QcEMCAL)
 
-target_sources(QcEMCAL PRIVATE src/DigitsQcTask.cxx src/DigitCheck.cxx)
+target_sources(QcEMCAL PRIVATE src/RawTask.cxx src/RawCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx)
 
 target_include_directories(
   QcEMCAL
@@ -10,11 +10,13 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(QcEMCAL PUBLIC QualityControl O2::EMCALBase)
+target_link_libraries(QcEMCAL PUBLIC QualityControl O2::EMCALBase O2::EMCALReconstruction)
 
 add_root_dictionary(QcEMCAL
                     HEADERS include/EMCAL/DigitsQcTask.h
 		    include/EMCAL/DigitCheck.h
+include/EMCAL/RawTask.h
+include/EMCAL/RawCheck.h
                     LINKDEF include/EMCAL/LinkDef.h
                     BASENAME QcEMCAL)
 

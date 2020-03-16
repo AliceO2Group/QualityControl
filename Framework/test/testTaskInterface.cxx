@@ -15,6 +15,7 @@
 
 #include "QualityControl/TaskFactory.h"
 #include "QualityControl/TaskInterface.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE TaskInterface test
 #define BOOST_TEST_MAIN
@@ -24,7 +25,6 @@
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/ServiceRegistry.h>
 #include <boost/test/unit_test.hpp>
-#include <iostream>
 
 using namespace o2::quality_control;
 using namespace std;
@@ -47,43 +47,43 @@ class TestTask : public TaskInterface
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& /*ctx*/) override
   {
-    cout << "initialize" << endl;
+    ILOG(Info) << "initialize" << ENDM;
     test = 1;
   }
 
   void startOfActivity(Activity& /*activity*/) override
   {
-    cout << "startOfActivity" << endl;
+    ILOG(Info) << "startOfActivity" << ENDM;
     test = 2;
   }
 
   void startOfCycle() override
   {
-    cout << "startOfCycle" << endl;
+    ILOG(Info) << "startOfCycle" << ENDM;
     test = 3;
   }
 
   void monitorData(o2::framework::ProcessingContext& /*ctx*/) override
   {
-    cout << "monitorData" << endl;
+    ILOG(Info) << "monitorData" << ENDM;
     test = 4;
   }
 
   void endOfCycle() override
   {
-    cout << "endOfCycle" << endl;
+    ILOG(Info) << "endOfCycle" << ENDM;
     test = 5;
   }
 
   void endOfActivity(Activity& /*activity*/) override
   {
-    cout << "endOfActivity" << endl;
+    ILOG(Info) << "endOfActivity" << ENDM;
     test = 6;
   }
 
   void reset() override
   {
-    cout << "reset" << endl;
+    ILOG(Info) << "reset" << ENDM;
     test = 7;
   }
 

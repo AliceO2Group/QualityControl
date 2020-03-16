@@ -31,8 +31,9 @@ namespace o2::quality_control_modules::emcal
 
 void DigitCheck::configure(std::string) {}
 
-Quality DigitCheck::check(const MonitorObject* mo)
+Quality DigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
+  auto mo = moMap->begin()->second;
   Quality result = Quality::Good;
 
   if (mo->getName() == "digitAmplitudeEMCAL") {
@@ -86,7 +87,7 @@ Quality DigitCheck::check(const MonitorObject* mo)
 
 std::string DigitCheck::getAcceptedType() { return "TH1"; }
 
-void DigitCheck::beautify(MonitorObject* mo, Quality checkResult)
+void DigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName().find("Time") != std::string::npos) {
     auto* h = dynamic_cast<TH2*>(mo->getObject());

@@ -17,6 +17,7 @@
 #include "QualityControl/DatabaseFactory.h"
 #include <unordered_map>
 #include "QualityControl/CcdbDatabase.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #define BOOST_TEST_MODULE CcdbDatabaseExtra test
 #define BOOST_TEST_MAIN
@@ -50,7 +51,7 @@ struct test_fixture {
   {
     backend = DatabaseFactory::create("CCDB");
     backend->connect(CCDB_ENDPOINT, "", "", "");
-    std::cout << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << std::endl;
+    ILOG(Info) << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
   }
 
   ~test_fixture() = default;
@@ -66,26 +67,25 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
 {
   test_fixture f;
   for (auto const& [task, object] : Objects) {
-    std::cout << "[RETRIEVE]: " << task << object << std::endl;
-    auto mo = f.backend->retrieve(task, object);
+    ILOG(Info) << "[RETRIEVE]: " << task << object << ENDM;
+    auto mo = f.backend->retrieveMO(task, object);
     if (mo == nullptr) {
-      std::cout << "No object found (" << task << object << ")" << std::endl;
+      ILOG(Info) << "No object found (" << task << object << ")" << ENDM;
       continue;
     }
-    cout << "name of encapsulated object : " << mo->getObject()->GetName() << endl; // just to test it
+    ILOG(Info) << "name of encapsulated object : " << mo->getObject()->GetName() << ENDM; // just to test it
   }
 }
 
-// TODO this should not be executed automatically, too much error prone.
 // It depends on what is in the database.
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
 {
   test_fixture f;
   for (auto const& [task, object] : Objects) {
-    std::cout << "[JSON RETRIEVE]: " << task << "/" << object << std::endl;
-    auto json = f.backend->retrieveJson(task, object);
+    ILOG(Info) << "[JSON RETRIEVE]: " << task << "/" << object << ENDM;
+    auto json = f.backend->retrieveMOJson(task, object);
     if (json.empty()) {
-      std::cout << "skipping empty object..." << std::endl;
+      ILOG(Info) << "skipping empty object..." << ENDM;
       continue;
     }
     std::stringstream ss;
@@ -100,21 +100,39 @@ long oldTimestamp;
 BOOST_AUTO_TEST_CASE(ccdb_store)
 {
   test_fixture f;
+
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
-  f.backend->store(mo1);
+  f.backend->storeMO(mo1);
+
+  Quality q = Quality::Bad;
+  std::vector<std::string> inputs;
+  shared_ptr<QualityObject> qo = make_shared<QualityObject>("checkName", inputs, "TST");
+  qo->setQuality(q);
+  f.backend->storeQO(qo);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_json)
 {
   test_fixture f;
-  MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
-  BOOST_CHECK_NE(mo, nullptr);
-  TH1F* h1 = dynamic_cast<TH1F*>(mo->getObject());
-  BOOST_CHECK_NE(h1, nullptr);
-  BOOST_CHECK_EQUAL(h1->GetEntries(), 10000);
+
+  string json = f.backend->retrieveMOJson("qc/TST/my/task", "asdf/asdf");
+  BOOST_CHECK(!json.empty());
+  ILOG(Info) << json << ENDM;
+  std::stringstream ss;
+  ss << json;
+  boost::property_tree::ptree pt;
+  boost::property_tree::read_json(ss, pt);
+
+  json = f.backend->retrieveQOJson("qc/checks/TST/checkName");
+  BOOST_CHECK(!json.empty());
+  ILOG(Info) << json << ENDM;
+  std::stringstream ss2;
+  ss2 << json;
+  boost::property_tree::ptree pt2;
+  boost::property_tree::read_json(ss2, pt2);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store"))
@@ -124,25 +142,25 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10001);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
-  f.backend->store(mo1);
+  f.backend->storeMO(mo1);
 
   // Retrieve old object stored at timestampStorage
-  MonitorObject* mo = f.backend->retrieve("qc/TST/my/task", "asdf/asdf", oldTimestamp);
-  BOOST_CHECK_NE(mo, nullptr);
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf", oldTimestamp);
+  BOOST_CHECK(mo);
   TH1F* old = dynamic_cast<TH1F*>(mo->getObject());
   BOOST_CHECK_NE(old, nullptr);
   BOOST_CHECK_EQUAL(old->GetEntries(), 10000);
 
   // Retrieve latest object with timestamp
-  MonitorObject* mo2 = f.backend->retrieve("qc/TST/my/task", "asdf/asdf", CcdbDatabase::getCurrentTimestamp());
-  BOOST_CHECK_NE(mo2, nullptr);
+  std::shared_ptr<MonitorObject> mo2 = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf", CcdbDatabase::getCurrentTimestamp());
+  BOOST_CHECK(mo2);
   TH1F* latest = dynamic_cast<TH1F*>(mo2->getObject());
   BOOST_CHECK_NE(latest, nullptr);
   BOOST_CHECK_EQUAL(latest->GetEntries(), 10001);
 
   // Retrieve latest object without timetsamp
-  MonitorObject* mo3 = f.backend->retrieve("qc/TST/my/task", "asdf/asdf");
-  BOOST_CHECK_NE(mo3, nullptr);
+  std::shared_ptr<MonitorObject> mo3 = f.backend->retrieveMO("qc/TST/my/task", "asdf/asdf");
+  BOOST_CHECK(mo3);
   TH1F* latest2 = dynamic_cast<TH1F*>(mo3->getObject());
   BOOST_CHECK_NE(latest2, nullptr);
   BOOST_CHECK_EQUAL(latest2->GetEntries(), 10001);

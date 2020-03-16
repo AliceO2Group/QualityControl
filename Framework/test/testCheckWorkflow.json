@@ -1,0 +1,129 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      }
+    },
+    "tasks": {
+      "skeletonTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "cycleDurationSeconds": "5",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "test-policy"
+        },
+        "taskParameters": {},
+        "location": "remote",
+        "machines": [] 
+      },
+      "QYZTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "cycleDurationSeconds": "5",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "test-policy"
+        },
+        "taskParameters": {},
+        "location": "remote",
+        "machines": [] 
+      },
+      "XYZTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "cycleDurationSeconds": "5",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "test-policy"
+        },
+        "taskParameters": {},
+        "location": "remote",
+        "machines": [] 
+      }
+    },
+    "checks": {
+      "QcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "policy": "OnAll",
+        "dataSource": [{
+            "type": "Task",
+            "name": "skeletonTask",
+            "MOs": ["example"]
+        },
+        {
+            "type": "Task",
+            "name": "QYZTask",
+            "MOs": ["example"]
+        }]
+      },
+      "XYZCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "policy": "OnAny",
+        "dataSource": [{
+            "type": "Task",
+            "name": "skeletonTask",
+            "MOs": ["example"]
+        },
+        {
+            "type": "Task",
+            "name": "QYZTask",
+            "MOs": ["example"]
+        },
+        {
+            "type": "Task",
+            "name": "XYZTask",
+            "MOs": ["example", "example2"]
+        }]
+      },
+      "ABCCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+            "type": "Task",
+            "name": "skeletonTask",
+            "MOs": ["example", "example2"]
+        },
+        {
+            "type": "Task",
+            "name": "QYZTask",
+            "MOs": ["example", "example3"]
+        }]
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "test-policy",
+      "active": "true",
+      "machines": [],
+      "query": "tst-data:TST/DATA/0",
+      "samplingConditions": [],
+      "blocking": "false"
+    }
+  ]
+}

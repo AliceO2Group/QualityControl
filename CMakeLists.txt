@@ -12,7 +12,7 @@ include(GNUInstallDirs)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 0.19.4 # TODO update this automatically when there are new releases
+        VERSION 0.23.1 # TODO update this automatically when there are new releases
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES CXX)
 
@@ -97,6 +97,7 @@ find_package(CURL REQUIRED)
 find_package(GLFW NAMES glfw3 CONFIG)
 find_package(FairMQ REQUIRED)
 find_package(FairLogger REQUIRED)
+find_package(Occ REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP Gui REQUIRED)
 
 set(ENABLE_MYSQL ON)

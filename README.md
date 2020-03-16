@@ -4,10 +4,10 @@
 [![doxygen](https://img.shields.io/badge/doxygen-documentation-blue.svg)](https://aliceo2group.github.io/QualityControl/)
 [![Discourse](https://img.shields.io/badge/discourse-Get%20help-blue.svg)](https://alice-talk.web.cern.ch/)
 
-<!--  \endcond  -->
+<!--  \endcond  --> 
 
 This is the repository of the data quality control (QC) software for the ALICE O<sup>2</sup> system. 
-
+ 
 For a general overview of our (O2) software, organization and processes, please see this [page](https://aliceo2group.github.io/).
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
@@ -19,6 +19,7 @@ For a general overview of our (O2) software, organization and processes, please 
       * [Execution](doc/QuickStart.md#execution)
          * [Basic workflow](doc/QuickStart.md#basic-workflow)
          * [Readout chain](doc/QuickStart.md#readout-chain)
+         * [Post-processing example](doc/QuickStart.md#post-processing-example)
    * [Modules development](doc/ModulesDevelopment.md)
       * [Context](doc/ModulesDevelopment.md#context)
          * [QC architecture](doc/ModulesDevelopment.md#qc-architecture)
@@ -30,18 +31,29 @@ For a general overview of our (O2) software, organization and processes, please 
       * [Test run](doc/ModulesDevelopment.md#test-run)
       * [Modification of a Task](doc/ModulesDevelopment.md#modification-of-a-task)
       * [Addition of a Check](doc/ModulesDevelopment.md#addition-of-a-check)
-      * [Commit Code](doc/ModulesDevelopment.md#commit-code)
-      * [Details on data storage](doc/ModulesDevelopment.md#details-on-data-storage)
+      * [Committing code](doc/ModulesDevelopment.md#committing-code)
+   * [Post-processing](doc/PostProcessing.md)
+      * [The post-processing framework](doc/PostProcessing.md#the-post-processing-framework)
+         * [Post-processing interface](doc/PostProcessing.md#post-processing-interface)
+         * [Post-processing Task configuration](doc/PostProcessing.md#post-processing-task-configuration)
+           * [Triggers configuration](doc/PostProcessing.md#triggers-configuration)
+         * [Running it](doc/PostProcessing.md#running-it)
+         * [Triggers](doc/PostProcessing.md#triggers)
+      * [Convenience classes](doc/PostProcessing.md#convenience-classes)
+         * [The TrendingTask class](doc/PostProcessing.md#the-trendingtask-class)
+            * [TrendingTask configuration](doc/PostProcessing.md#trendingtask-configuration)
    * [Advanced topics](doc/Advanced.md)
+      * [Plugging the QC to an existing DPL workflow](doc/Advanced.md#plugging-the-qc-to-an-existing-dpl-workflow)
+      * [Writing a DPL data producer](doc/Advanced.md#writing-a-dpl-data-producer)
       * [Access conditions from the CCDB](doc/Advanced.md#access-conditions-from-the-ccdb)
       * [Definition and access of task-specific configuration](doc/Advanced.md#definition-and-access-of-task-specific-configuration)
       * [Custom QC object metadata](doc/Advanced.md#custom-qc-object-metadata)
       * [Data Inspector](doc/Advanced.md#data-inspector)
-      * [Use MySQL as QC backend](doc/Advanced.md#use-mysql-as-qc-backend)
+      * [Details on the data storage format in the CCDB](doc/Advanced.md#details-on-the-data-storage-format-in-the-ccdb)
       * [Local CCDB setup](doc/Advanced.md#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](doc/Advanced.md#local-qcg-qc-gui-setup)
       * [Developing QC modules on a machine with FLP suite](doc/Advanced.md#developing-qc-modules-on-a-machine-with-flp-suite)
-      * [Information Service](doc/Advanced.md#information-service)
+      * [Use MySQL as QC backend](doc/Advanced.md#use-mysql-as-qc-backend)
       * [Configuration files details](doc/Advanced.md#configuration-files-details)
    * [Frequently Asked Questions](doc/FAQ.md)
 <!-- Added by: bvonhall, at:  -->

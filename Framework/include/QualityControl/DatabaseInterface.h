@@ -21,6 +21,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include "QualityControl/QualityObject.h"
 #include "QualityControl/MonitorObject.h"
 
 namespace o2::quality_control::repository
@@ -58,21 +59,74 @@ class DatabaseInterface
    * Stores the serialized MonitorObject in the database.
    * @param mo The MonitorObject to serialize and store.
    */
-  virtual void store(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) = 0;
+  virtual void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) = 0;
 
   /**
-   * Look up an object of a task and return it.
-   * \details It returns the object if found or nullptr if not.
-   * TODO evaluate whether we should have more methods to retrieve objects of different types (with or without
-   * templates)
-   * TODO evaluate whether we should have a method to retrieve a list of objects (optimization)
+   * Stores the serialized QualityObject in the database.
+   * @param qo The QualityObject to serialize and store.
    */
-  virtual o2::quality_control::core::MonitorObject* retrieve(std::string taskName, std::string objectName, long timestamp = 0) = 0;
+  virtual void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo) = 0;
 
   /**
-   * Returns JSON encoded object
+   * \brief Look up a monitor object and return it.
+   * Look up a monitor object and return it if found or nullptr if not.
+   * @deprecated
    */
-  virtual std::string retrieveJson(std::string taskName, std::string objectName) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) = 0;
+  /**
+   * \brief Look up a quality object and return it.
+   * Look up a quality object and return it if found or nullptr if not.
+   * @deprecated
+   */
+  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = 0) = 0;
+  /**
+   * \brief Look up an object and return it.
+   * Look up an object and return it if found or nullptr if not.
+   * \param path the path of the object
+   * \param timestamp the timestamp to query the object
+   */
+  virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp) = 0;
+  /**
+   * \brief Look up an object and return it.
+   * Look up an object and return it if found or nullptr if not.
+   * A default timestamp of -1 is used, usually meaning to use the current timestamp.
+   * \param path the path of the object
+   */
+  virtual std::shared_ptr<TObject> retrieveTObject(std::string path)
+  {
+    return retrieveTObject(path, -1);
+  }
+
+  /**
+   * \brief Look up a monitor object and return it in JSON format.
+   * Look up a monitor object and return it in JSON format if found or an empty string if not.
+   * @deprecated
+   */
+  virtual std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = 0) = 0;
+  /**
+   * \brief Look up a quality object and return it in JSON format.
+   * Look up a quality object and return it in JSON format if found or an empty string if not.
+   * @deprecated
+   */
+  virtual std::string retrieveQOJson(std::string qoPath, long timestamp = 0) = 0;
+  /**
+   * \brief Look up an object and return it in JSON format.
+   * Look up an object and return it in JSON format if found or an empty string if not.
+   * \param path the path of the object
+   * \param timestamp the timestamp to query the object
+   */
+  virtual std::string retrieveJson(std::string path, long timestamp) = 0;
+  /**
+   * \brief Look up an object and return it in JSON format.
+   * Look up an object and return it in JSON format if found or an empty string if not.
+   * A default timestamp of -1 is used, usually meaning to use the current timestamp.
+   * \param path the path to the object
+   */
+  virtual std::string retrieveJson(std::string path)
+  {
+    return retrieveJson(path, -1);
+  }
+
   virtual void disconnect() = 0;
   /**
    * \brief Prepare the container, such as a table in a relational database, that will contain the MonitorObject's for

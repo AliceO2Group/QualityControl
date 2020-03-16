@@ -26,10 +26,15 @@ namespace o2::quality_control::core
 /// \param minSize  Minimum size of a message in bytes
 /// \param maxSize  Maximum size of a message in bytes
 /// \param rate     How much messages to produce in one second
-/// \param fill     Should it fill messages with random data
+/// \param amount   How many messages should be produce in total (0 for inf). EndOfStream is sent at the end.
 /// \param index    SubSpecification of the data producer (useful when more than one needed)
+/// \param monitoringUrl Where monitoring metrics should be sent
+/// \param fill     Should it fill messages with random data
+///
 /// \return         A random data producer specification
-framework::DataProcessorSpec getDataProducerSpec(size_t minSize, size_t maxSize, double rate, bool fill = true, size_t index = 0, std::string monitoringUrl = "");
+framework::DataProcessorSpec
+  getDataProducerSpec(size_t minSize, size_t maxSize, double rate, uint64_t amount = 0, size_t index = 0,
+                      std::string monitoringUrl = "", bool fill = true);
 
 /// \brief Returns an algorithm generating random messages
 ///
@@ -37,9 +42,14 @@ framework::DataProcessorSpec getDataProducerSpec(size_t minSize, size_t maxSize,
 /// \param minSize  Minimum size of a message in bytes
 /// \param maxSize  Maximum size of a message in bytes
 /// \param rate     How much messages to produce in one second
+/// \param amount   How many messages should be produce in total (0 for inf). EndOfStream is sent at the end.
+/// \param monitoringUrl Where monitoring metrics should be sent
 /// \param fill     Should it fill messages with random data
+///
 /// \return         A random data producer algorithm
-framework::AlgorithmSpec getDataProducerAlgorithm(framework::ConcreteDataMatcher output, size_t minSize, size_t maxSize, double rate, bool fill = true, std::string monitoringUrl = "");
+framework::AlgorithmSpec
+  getDataProducerAlgorithm(framework::ConcreteDataMatcher output, size_t minSize, size_t maxSize, double rate,
+                           uint64_t amount = 0, std::string monitoringUrl = "", bool fill = true);
 
 } // namespace o2::quality_control::core
 

@@ -13,7 +13,7 @@
 ///
 
 #include "QualityControl/ServiceDiscovery.h"
-#include <iostream>
+#include "QualityControl/QcInfoLogger.h"
 #include <string>
 #include <boost/asio.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -124,7 +124,7 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
     }
   } catch (std::exception& e) {
     mThreadRunning = false;
-    std::cerr << e.what() << std::endl;
+    ILOG(Error) << e.what() << ENDM;
   }
 }
 
@@ -145,10 +145,10 @@ void ServiceDiscovery::send(const std::string& path, std::string&& post)
   response = curl_easy_perform(curl);
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
   if (response != CURLE_OK) {
-    std::cerr << "ServiceDiscovery: " << curl_easy_strerror(response) << ": " << uri << std::endl;
+    ILOG(Error) << "ServiceDiscovery: " << curl_easy_strerror(response) << ": " << uri << ENDM;
   }
   if (responseCode < 200 || responseCode > 206) {
-    std::cerr << "ServiceDiscovery: Response code: " << responseCode << std::endl;
+    ILOG(Error) << "ServiceDiscovery: Response code: " << responseCode << ENDM;
   }
 }
 } // namespace o2::quality_control::core

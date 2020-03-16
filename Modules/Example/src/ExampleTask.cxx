@@ -39,7 +39,7 @@ ExampleTask::~ExampleTask()
 
 void ExampleTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize ExampleTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "initialize ExampleTask" << ENDM;
 
   for (int i = 0; i < 24; i++) {
     publishHisto(i);
@@ -47,14 +47,6 @@ void ExampleTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // Extendable axis
   mHistos[0]->SetCanExtend(TH1::kXaxis);
-
-  // Add checks (first by name, then by reference)
-  getObjectsManager()->addCheck("array-0", "checkMeanIsAbove", "o2::quality_control_modules::common::MeanIsAbove",
-                                "QcCommon");
-  getObjectsManager()->addCheck(mHistos[0], "checkNonEmpty", "o2::quality_control_modules::common::NonEmpty",
-                                "QcCommon");
-  getObjectsManager()->addCheck(mHistos[0], "checkFromExample", "o2::quality_control_modules::example::FakeCheck",
-                                "QcExample");
 }
 
 void ExampleTask::publishHisto(int i)
@@ -67,7 +59,7 @@ void ExampleTask::publishHisto(int i)
 
 void ExampleTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "startOfActivity" << ENDM;
   for (auto& mHisto : mHistos) {
     if (mHisto) {
       mHisto->Reset();
@@ -77,7 +69,7 @@ void ExampleTask::startOfActivity(Activity& /*activity*/)
 
 void ExampleTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "startOfCycle" << ENDM;
 }
 
 void ExampleTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -98,7 +90,7 @@ void ExampleTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ExampleTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "endOfCycle" << ENDM;
   mNumberCycles++;
 
   // Add one more object just to show that we can do it
@@ -109,9 +101,9 @@ void ExampleTask::endOfCycle()
 
 void ExampleTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "endOfActivity" << ENDM;
 }
 
-void ExampleTask::reset() { QcInfoLogger::GetInstance() << "Reset" << AliceO2::InfoLogger::InfoLogger::endm; }
+void ExampleTask::reset() { ILOG(Info) << "Reset" << ENDM; }
 
 } // namespace o2::quality_control_modules::example

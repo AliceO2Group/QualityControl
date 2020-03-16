@@ -33,19 +33,25 @@ from Ccdb import Ccdb
 class Rule:
     """A class to hold information about a "rule" defined in the config file."""
 
-    def __init__(self, object_path=None, delay=None, policy=None):
+    def __init__(self, object_path=None, delay=None, policy=None, all_params=None):
         '''
         Constructor.
         :param object_path: path to the object, or pattern, to which a rule will apply.
         :param delay: the grace period during which a new object is never deleted.
         :param policy: which policy to apply in order to clean up. It should correspond to a plugin.
+        :param all_params: a map with all the parameters from the config file for this rule. We will keep only the
+        extra ones.
         '''
         self.object_path = object_path
         self.delay = delay
         self.policy = policy
+        self.extra_params = all_params
+        self.extra_params.pop("object_path")
+        self.extra_params.pop("delay")
+        self.extra_params.pop("policy")
 
     def __repr__(self):
-        return 'Rule(object_path={.object_path}, delay={.delay}, policy={.policy})'.format(self, self, self)
+        return 'Rule(object_path={.object_path}, delay={.delay}, policy={.policy}, extra_params={.extra_params})'.format(self, self, self, self)
 
 
 def parseArgs():
@@ -58,9 +64,11 @@ def parseArgs():
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--dry-run', action='store_true',
                         help='Dry run, no actual deletion nor modification to the CCDB.')
+    parser.add_argument('--only-path', dest='only_path', action='store', default="",
+                        help='Only work on given path (omit the initial slash).')
     args = parser.parse_args()
     dryable.set(args.dry_run)
-    logging.debug(args)
+    logging.info(args)
     return args
 
 
@@ -81,7 +89,7 @@ def parseConfig(config_file_path):
     rules = []
     logging.debug("Rules found in the config file:")
     for rule_yaml in config_content["Rules"]:
-        rule = Rule(rule_yaml["object_path"], rule_yaml["delay"], rule_yaml["policy"])
+        rule = Rule(rule_yaml["object_path"], rule_yaml["delay"], rule_yaml["policy"], rule_yaml)
         rules.append(rule)
         logging.debug(f"   * {rule}")
 
@@ -114,16 +122,19 @@ def main():
     # Parse arguments 
     args = parseArgs()
     logging.getLogger().setLevel(int(args.log_level))
-    
+
     # Read configuration
     config = parseConfig(args.config)
     rules: List[Rule] = config['rules']
     ccdb_url = config['ccdb_url']
-    
+
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url)
     paths = ccdb.getObjectsList()
-    
+    if args.only_path != '':
+        paths = [item for item in paths if item.startswith(args.only_path)]
+    logging.debug(paths)
+
     # For each object call the first matching rule
     logging.info("Loop through the objects and apply first matching rule.")
     for object_path in paths:
@@ -135,7 +146,7 @@ def main():
              
         # Apply rule on object (find the plug-in script and apply)
         module = __import__(rule.policy)
-        stats = module.process(ccdb, object_path, int(rule.delay))
+        stats = module.process(ccdb, object_path, int(rule.delay), rule.extra_params)
         logging.info(f"{rule.policy} applied on {object_path}: {stats}")
     
     logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")

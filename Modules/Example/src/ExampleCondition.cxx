@@ -14,6 +14,7 @@
 ///
 
 #include "Example/ExampleCondition.h"
+#include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control_modules::example
 {
