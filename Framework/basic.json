@@ -23,12 +23,29 @@
       }
     },
     "tasks": {
-      "QcTask": {
+      "QcTask-test": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst-raw"
+        },
+        "taskParameters": {
+          "myOwnKey": "myOwnValue"
+        },
+        "location": "remote"
+      },
+      "QcTask-test2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "cycleDurationSeconds": "2",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
@@ -50,8 +67,25 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "QcTask",
+          "name": "QcTask-test",
           "MOs": ["example"]
+        },
+          {
+            "type": "Task",
+            "name": "QcTask-test2",
+            "MOs": ["example"]
+          }]
+      },
+      "QcCheck2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "QcTask-test2",
+          "MOs": ["example2"]
         }]
       }
     }
