@@ -61,8 +61,7 @@ Check::Check(std::string checkName, std::string configurationSource)
     initConfig(checkName);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n" << diagnostic;
     throw;
   }
 }
@@ -255,7 +254,6 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
        */
       mLatestQuality->updateQuality(mCheckInterface->check(&moMap));
       // Trigger beautification
-      cout << __FILE__ << ":" << __LINE__ << " - calling beautify" << endl;
       beautify(moMap);
     } else {
       /* 
@@ -276,7 +274,6 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
       // Trigger loaded check and update quality of the Check.
       mLatestQuality->updateQuality(mCheckInterface->check(&shadowMap));
       // Trigger beautification
-      cout << __FILE__ << ":" << __LINE__ << " - calling beautify" << endl;
       beautify(shadowMap);
     }
   }
@@ -287,26 +284,11 @@ std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_pt
 
 void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
 {
-  cout << __FILE__ << ":" << __LINE__ << endl;
   if (!mBeautify) {
     return;
-    cout << __FILE__ << ":" << __LINE__ << endl;
   }
-  cout << __FILE__ << ":" << __LINE__ << endl;
 
   for (auto const& [name, mo] : moMap) {
-    cout << "mo : " << name << endl;
-
-    cout << __FILE__ << ":" << __LINE__ << endl;
-
-    // Beautify
-    mLogger << mCheckConfig.checkName << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << mCheckConfig.checkName << " 1Beautify : " << mo << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << mCheckConfig.checkName << " 2Beautify : " << mo->getName() << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << mCheckConfig.checkName << " 3Beautify : " << mCheckInterface << AliceO2::InfoLogger::InfoLogger::endm;
-    mLogger << mCheckConfig.checkName << " 4Beautify : " << mCheckInterface->IsA()->GetName() << AliceO2::InfoLogger::InfoLogger::endm;
-    cout << __FILE__ << ":" << __LINE__ << endl;
     mCheckInterface->beautify(mo, mLatestQuality->getQuality());
-    cout << __FILE__ << ":" << __LINE__ << endl;
   }
 }
