@@ -47,6 +47,7 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 
 #include <Framework/DataSamplingReadoutAdapter.h>
 #include <Framework/runDataProcessing.h>
+#include <QualityControl/QcInfoLogger.h>
 
 #include <string>
 
@@ -64,7 +65,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   const std::string qcConfigurationSource =
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutForDataDump.json";
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  ILOG(Info) << "Using config file '" << qcConfigurationSource << "'";
 
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
