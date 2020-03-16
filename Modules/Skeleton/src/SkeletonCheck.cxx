@@ -59,11 +59,11 @@ std::string SkeletonCheck::getAcceptedType() { return "TH1"; }
 void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Warning) << "beautify Skeleton " << mo->getName() << ENDM;
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+  auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
-    if (checkResult == Quality::Good) {
-      LOG(INFO) << "Quality::Good, setting to green";
-      h->SetFillColor(kGreen);
+  if (checkResult == Quality::Good) {
+    LOG(INFO) << "Quality::Good, setting to green";
+    h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
       LOG(INFO) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);

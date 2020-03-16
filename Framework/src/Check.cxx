@@ -62,7 +62,8 @@ Check::Check(std::string checkName, std::string configurationSource)
     initConfig(checkName);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n" << diagnostic;
+    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic;
     throw;
   }
 }
