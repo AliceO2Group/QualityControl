@@ -32,7 +32,6 @@
 #include <sstream>
 #include <unordered_set>
 
-#include <fairlogger/Logger.h>
 #include <boost/algorithm/string.hpp>
 
 using namespace std::chrono;

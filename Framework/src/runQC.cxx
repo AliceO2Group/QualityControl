@@ -62,7 +62,6 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
   DataSampling::CustomizeInfrastructure(policies);
 }
 
-#include <fairlogger/Logger.h>
 #include <Framework/runDataProcessing.h>
 
 using namespace std::chrono;
