@@ -27,13 +27,13 @@ struct CheckConfig {
   std::string checkName;
   std::string moduleName;
   std::string className;
-  std::string detectorName= "MISC"; // intended to be the 3 letters code;
+  std::string detectorName = "MISC"; // intended to be the 3 letters code;
   std::unordered_map<std::string, std::string> customParameters = {};
-  std::string policyType="OnAny";
+  std::string policyType = "OnAny";
   std::vector<std::string> moNames;
   bool allMOs = false;
 };
 
-} // namespace o2::quality_control::core
+} // namespace o2::quality_control::checker
 
 #endif // QC_CORE_CHECKCONFIG_H
