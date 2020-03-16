@@ -16,11 +16,11 @@
       * [Test run](#test-run)
       * [Modification of a Task](#modification-of-a-task)
       * [Check](#check)
-        * [Configuration](#configuration)
-        * [Implementation](#implementation)
+         * [Configuration](#configuration)
+         * [Implementation](#implementation)
       * [Committing code](#committing-code)
 
-<!-- Added by: bvonhall, at:  -->
+<!-- Added by: barth, at: Lun 16 mar 2020 13:18:24 CET -->
 
 <!--te-->
 
@@ -268,7 +268,7 @@ void beautify(std::shared_ptr<MonitorObject> mo, Quality = Quality::Null) {}
 
 The `check` function is called whenever the _policy_ is satisfied. It gets a map with all declared MonitorObjects. It is expected to return Quality of the given MonitorObjects.
 
-The `beautify` function is called after the `check` function if there is only one declared MonitorObject.
+The `beautify` function is called after the `check` function if there is a single `dataSource` of type `Task` in the configuration of the check. If there is more than one, the `beautify()` is not called in this check. 
 
 ## Committing code
 
