@@ -125,7 +125,7 @@ void Check::initConfig(std::string checkName)
 
   // Determine whether we can beautify
   // See QC-299 for details
-  if(numberOfTaskSources > 1) {
+  if (numberOfTaskSources > 1) {
     mBeautify = false;
     ILOG(Warning) << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.checkName << ")" << ENDM;
   }
@@ -215,10 +215,10 @@ void Check::initPolicy(std::string policyType)
 
 void Check::init()
 {
-  try{
-  mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
-  mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
-  mCheckInterface->configure(mCheckConfig.checkName);
+  try {
+    mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
+    mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
+    mCheckInterface->configure(mCheckConfig.checkName);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
@@ -294,7 +294,7 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
   }
   cout << __FILE__ << ":" << __LINE__ << endl;
 
-  for( auto const& [name, mo] : moMap ) {
+  for (auto const& [name, mo] : moMap) {
     cout << "mo : " << name << endl;
 
     cout << __FILE__ << ":" << __LINE__ << endl;
