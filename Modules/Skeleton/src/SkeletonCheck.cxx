@@ -16,7 +16,6 @@
 #include "Skeleton/SkeletonCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-#include <QualityControl/QcInfoLogger.h>
 
 #include <fairlogger/Logger.h>
 // ROOT
@@ -58,23 +57,20 @@ std::string SkeletonCheck::getAcceptedType() { return "TH1"; }
 
 void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  ILOG(Warning) << "beautify Skeleton " << mo->getName() << ENDM;
-  auto* h = dynamic_cast<TH1F*>(mo->getObject());
+  if (mo->getName() == "example") {
+    auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
-  if (checkResult == Quality::Good) {
-    LOG(INFO) << "Quality::Good, setting to green";
-    h->SetFillColor(kGreen);
+    if (checkResult == Quality::Good) {
+      h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
       LOG(INFO) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
       LOG(INFO) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
-    } else {
-      LOG(INFO) << "no quality, setting to gray";
-      h->SetFillColor(kGray);
     }
     h->SetLineColor(kBlack);
+  }
 }
 
 } // namespace o2::quality_control_modules::skeleton

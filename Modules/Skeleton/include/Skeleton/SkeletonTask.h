@@ -49,7 +49,6 @@ class SkeletonTask /*final*/ : public TaskInterface // todo add back the "final"
 
  private:
   TH1F* mHistogram = nullptr;
-  TH1F* mHistogram2 = nullptr;
 };
 
 } // namespace o2::quality_control_modules::skeleton

@@ -41,9 +41,7 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
-  getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
-  mHistogram2 = new TH1F("example2", "example", 20, 0, 30000);
-  getObjectsManager()->startPublishing(mHistogram2);
+  getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");z
 }
 
 void SkeletonTask::startOfActivity(Activity& /*activity*/)
@@ -80,7 +78,6 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       // for the sake of an example, let's fill the histogram with payload sizes
       mHistogram->Fill(header->payloadSize);
-      mHistogram2->Fill(header->payloadSize);
     }
   }
 
