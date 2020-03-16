@@ -289,7 +289,7 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
     return;
   }
 
-  for (auto const& [name, mo] : moMap) {
-    mCheckInterface->beautify(mo, mLatestQuality->getQuality());
+  for (auto const& item : moMap) {
+    mCheckInterface->beautify(item.second /*mo*/, mLatestQuality->getQuality());
   }
 }
