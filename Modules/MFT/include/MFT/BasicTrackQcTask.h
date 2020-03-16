@@ -9,13 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BasicDigitQcTask.h
+/// \file   BasicTrackQcTask.h
 /// \author Tomas Herman
 /// \author Guillermo Contreras
 ///
 
-#ifndef QC_MODULE_MFT_MFTBasicDIGITQCTASK_H
-#define QC_MODULE_MFT_MFTBasicDIGITQCTASK_H
+#ifndef QC_MODULE_MFT_MFTBasicTrackQcTask_H
+#define QC_MODULE_MFT_MFTBasicTrackQcTask_H
 // ROOT
 #include <TH1F.h>
 // Quality Control
@@ -26,17 +26,17 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::mft
 {
 
-/// \brief MFT Digit QC task
+/// \brief MFT Track QC task
 ///
 /// \author Tomas Herman
 /// \author Guillermo Contreras
-class BasicDigitQcTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class BasicTrackQcTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
-  BasicDigitQcTask() = default;
+  BasicTrackQcTask() = default;
   /// Destructor
-  ~BasicDigitQcTask() override;
+  ~BasicTrackQcTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -48,9 +48,9 @@ class BasicDigitQcTask /*final*/ : public TaskInterface // todo add back the "fi
   void reset() override;
 
  private:
-  std::unique_ptr<TH1F> mMFT_chip_index_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_nPoints_H = nullptr;
 };
 
 } // namespace o2::quality_control_modules::mft
 
-#endif // QC_MODULE_MFT_MFTBasicDIGITQCTASK_H
+#endif // QC_MODULE_MFT_MFTBasicTrackQcTask_H

@@ -2,7 +2,13 @@
 
 add_library(QcMFT)
 
-target_sources(QcMFT PRIVATE src/BasicDigitQcCheck.cxx  src/BasicDigitQcTask.cxx )
+target_sources(QcMFT PRIVATE 
+               src/BasicDigitQcCheck.cxx
+               src/BasicDigitQcTask.cxx
+               src/BasicClusterQcCheck.cxx
+               src/BasicClusterQcTask.cxx
+               src/BasicTrackQcCheck.cxx
+               src/BasicTrackQcTask.cxx)
 
 target_include_directories(
   QcMFT
@@ -19,20 +25,39 @@ install(TARGETS QcMFT
 
 add_root_dictionary(QcMFT
                     HEADERS
-  include/MFT/BasicDigitQcCheck.h
-  include/MFT/BasicDigitQcTask.h
+                    include/MFT/BasicDigitQcCheck.h
+                    include/MFT/BasicDigitQcTask.h
+                    include/MFT/BasicClusterQcCheck.h
+                    include/MFT/BasicClusterQcTask.h
+                    include/MFT/BasicTrackQcCheck.h
+                    include/MFT/BasicTrackQcTask.h  
                     LINKDEF include/MFT/LinkDef.h
                     BASENAME QcMFT)
                     
 # ---- Executables ----
 
-#set(EXE_SRCS src/runDigitsRootFileReaderMFT.cxx)
-#set(EXE_NAMES o2-qc-run-digits-root-file-reader-mft)
+set(EXE_SRCS 
+     src/runDigitsRootFileReaderMFT.cxx 
+     src/runClustersRootFileReaderMFT.cxx
+     src/runTracksRootFileReaderMFT.cxx)
+set(EXE_NAMES 
+     o2-qc-run-digits-root-file-reader-mft
+     o2-qc-run-clusters-root-file-reader-mft
+     o2-qc-run-tracks-root-file-reader-mft)
 
-add_executable(o2-qc-run-digits-root-file-reader-mft src/runDigitsRootFileReaderMFT.cxx)
-target_link_libraries(o2-qc-run-digits-root-file-reader-mft PUBLIC QualityControl QcMFT O2::ITSMFTBase)
+list(LENGTH EXE_SRCS count)
+math(EXPR count "${count}-1")
+foreach(i RANGE ${count})
+  list(GET EXE_SRCS ${i} src)
+  list(GET EXE_NAMES ${i} name)
+  add_executable(${name} ${src})
+  target_link_libraries(${name} PRIVATE QualityControl QcMFT O2::ITSMFTBase)
+endforeach()
+
 install(
   TARGETS o2-qc-run-digits-root-file-reader-mft
+          o2-qc-run-clusters-root-file-reader-mft
+          o2-qc-run-tracks-root-file-reader-mft
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )   
 
@@ -56,4 +81,6 @@ endforeach()
 # ---- Install config files and scripts ----
 
 install(FILES basic-digit-qc-task.json
+              basic-cluster-qc-task.json
+              basic-track-qc-task.json
         DESTINATION etc)
