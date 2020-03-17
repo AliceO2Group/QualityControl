@@ -25,6 +25,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/CheckConfig.h"
 
 namespace o2::quality_control::checker
 {
@@ -71,12 +72,10 @@ class Check
    */
   bool isReady(std::map<std::string, unsigned int>& revisionMap);
 
-  const std::string getName() { return mName; };
+  const std::string getName() { return mCheckConfig.checkName; };
   std::shared_ptr<o2::quality_control::core::QualityObject> getQualityObject() { return mLatestQuality; };
   o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
   o2::framework::Inputs getInputs() const { return mInputs; };
-  std::vector<std::string> getMonitorObjectNames() { return mMonitorObjectNames; }
-  bool isBeautified() { return mBeautify; }
 
   //TODO: Unique Input string
   static o2::header::DataDescription createCheckerDataDescription(const std::string taskName);
@@ -85,21 +84,15 @@ class Check
   void setCheckInterface(CheckInterface* checkInterface) { mCheckInterface = checkInterface; };
 
  private:
-  void initConfig();
+  void initConfig(std::string checkName);
   void initPolicy(std::string policyType);
-
-  /**
-   * \brief Load a library.
-   * Load a library if it is not already in the cache.
-   */
-  void loadLibrary();
 
   void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);
 
-  const std::string mName;
-
   std::string mConfigurationSource;
   o2::quality_control::core::QcInfoLogger& mLogger;
+  CheckConfig mCheckConfig;
+  CheckInterface* mCheckInterface = nullptr;
 
   // Latest Quality
   std::shared_ptr<o2::quality_control::core::QualityObject> mLatestQuality;
@@ -108,20 +101,9 @@ class Check
   o2::framework::Inputs mInputs;
   o2::framework::OutputSpec mOutputSpec;
 
-  // Monitor Object information
-  std::vector<std::string> mMonitorObjectNames;
-  bool mAllMOs = false;
   bool mBeautify = true;
 
-  // Check module
-  std::string mModuleName;
-  std::string mClassName;
-  std::string mDetectorName;
-  CheckInterface* mCheckInterface = nullptr;
-  std::unordered_map<std::string, std::string> mCustomParameters;
-
   // Policy
-  std::string mPolicyType;
   std::function<bool(std::map<std::string, unsigned int>&)> mPolicy;
   unsigned int mMORevision = 0;
   bool mPolicyHelper = false; // Depending on policy, the purpose might change

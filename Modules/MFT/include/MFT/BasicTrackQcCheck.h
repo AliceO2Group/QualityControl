@@ -9,30 +9,30 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   BasicDigitQcCheck.h
+/// \file   BasicTrackQcCheck.h
 /// \author Tomas Herman
 /// \author Guillermo Contreras
 ///
 
-#ifndef QC_MODULE_MFT_MFTBasicDIGITQCCHECK_H
-#define QC_MODULE_MFT_MFTBasicDIGITQCCHECK_H
+#ifndef QC_MODULE_MFT_MFTBasicTrackQcCheck_H
+#define QC_MODULE_MFT_MFTBasicTrackQcCheck_H
 // Quality Control
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::mft
 {
 
-/// \brief  MFT Digit Check
+/// \brief  MFT Track Check
 ///
 /// \author Tomas Herman
 /// \author Guillermo Contreras
-class BasicDigitQcCheck : public o2::quality_control::checker::CheckInterface
+class BasicTrackQcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  BasicDigitQcCheck() = default;
+  BasicTrackQcCheck() = default;
   /// Destructor
-  ~BasicDigitQcCheck() override = default;
+  ~BasicTrackQcCheck() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -40,9 +40,9 @@ class BasicDigitQcCheck : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(BasicDigitQcCheck, 1);
+  ClassDefOverride(BasicTrackQcCheck, 1);
 };
 
 } // namespace o2::quality_control_modules::mft
 
-#endif // QC_MODULE_MFT_MFTBasicDIGITQCCHECK_H
+#endif // QC_MODULE_MFT_MFTBasicTrackQcCheck_H

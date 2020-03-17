@@ -16,8 +16,7 @@
 #include "Skeleton/SkeletonCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-
-#include <fairlogger/Logger.h>
+#include "QualityControl/QcInfoLogger.h"
 // ROOT
 #include <TH1.h>
 
@@ -63,10 +62,10 @@ void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     if (checkResult == Quality::Good) {
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
+      ILOG(Info) << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
+      ILOG(Info) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);

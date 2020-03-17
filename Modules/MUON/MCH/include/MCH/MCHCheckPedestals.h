@@ -36,8 +36,8 @@ class MCHCheckPedestals : public o2::quality_control::checker::CheckInterface
 
   // Override interface
   void configure(std::string name) override;
-  virtual Quality check(const MonitorObject* mo);
-  virtual void beautify(MonitorObject* mo, Quality checkResult = Quality::Null);
+  Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
   /// Minimum value for SAMPA pedestals
@@ -46,10 +46,13 @@ class MCHCheckPedestals : public o2::quality_control::checker::CheckInterface
   Float_t maxMCHpedestal;
 
  private:
+<<<<<<< HEAD:Modules/MCH/include/MCH/MCHCheckPedestals.h
     
     /// Vector filled with DualSampas Ids that have been tested but sent back no data
     std::vector<int> missing;
     
+=======
+>>>>>>> AliceMCH/master:Modules/MUON/MCH/include/MCH/MCHCheckPedestals.h
   ClassDefOverride(MCHCheckPedestals, 1);
   
 };

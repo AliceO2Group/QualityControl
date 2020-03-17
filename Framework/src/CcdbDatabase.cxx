@@ -32,7 +32,6 @@
 #include <sstream>
 #include <unordered_set>
 
-#include <fairlogger/Logger.h>
 #include <boost/algorithm/string.hpp>
 
 using namespace std::chrono;
@@ -187,24 +186,23 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp)
   if (tobj == nullptr) {
     return std::string();
   }
-  TObject* toConvert;
+  TObject* toConvert = 0;
   if (tobj->IsA() == MonitorObject::Class()) {
     std::shared_ptr<MonitorObject> mo = std::dynamic_pointer_cast<MonitorObject>(tobj);
     toConvert = mo->getObject();
-    mo->setIsOwner(false);
+    mo->setIsOwner(true);
   } else if (tobj->IsA() == QualityObject::Class()) {
     toConvert = dynamic_cast<QualityObject*>(tobj.get());
-    if (toConvert == nullptr) {
-      return std::string();
-    }
   } else {
-    LOG(ERROR) << "Unknown type of object : " << path << " -> " << tobj->ClassName();
+    ILOG(Error) << "Unknown type of object : " << path << " -> " << tobj->ClassName() << ENDM;
+    return std::string();
+  }
+  if (toConvert == nullptr) {
+    ILOG(Error) << "Unable to get the object to convert" << ENDM;
     return std::string();
   }
   TString json = TBufferJSON::ConvertToJSON(toConvert);
-  if (toConvert) {
-    delete toConvert;
-  }
+
   return json.Data();
 }
 

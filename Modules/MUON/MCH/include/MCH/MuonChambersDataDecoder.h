@@ -10,7 +10,6 @@
 #include "MCH/sampa_header.h"
 #include "MCH/MuonChambersMapping.h"
 
-
 using namespace o2::quality_control::core;
 
 namespace o2
@@ -20,22 +19,18 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-
-
 enum DualSampaStatus {
-    notSynchronized              = 1,
-    synchronized                 = 2,
-    headerToRead                 = 3,
-    sizeToRead                   = 4,
-    timeToRead                   = 5,
-    dataToRead                   = 6,
-    chargeToRead                 = 7,
-    OK                           = 8   // Data block filled (over a time window)
+  notSynchronized = 1,
+  synchronized = 2,
+  headerToRead = 3,
+  sizeToRead = 4,
+  timeToRead = 5,
+  dataToRead = 6,
+  chargeToRead = 7,
+  OK = 8 // Data block filled (over a time window)
 };
 
-
-struct SampaHit
-{
+struct SampaHit {
   uint8_t cru_id, link_id, ds_addr, chan_addr;
   int64_t bxc;
   uint32_t size, time;
@@ -44,21 +39,19 @@ struct SampaHit
   MapPad pad;
 };
 
-
-struct DualSampa
-{
+struct DualSampa {
   int id;
-  DualSampaStatus status;            // Status during the data filling
-  uint64_t data;                // curent data
-  int bit;                           // current position
-  uint64_t powerMultiplier;     // power to convert to move bits
-  int nsyn2Bits;                     // Nb of words waiting synchronization
-  Sampa::SampaHeaderStruct header;   // current channel header
+  DualSampaStatus status;          // Status during the data filling
+  uint64_t data;                   // curent data
+  int bit;                         // current position
+  uint64_t powerMultiplier;        // power to convert to move bits
+  int nsyn2Bits;                   // Nb of words waiting synchronization
+  Sampa::SampaHeaderStruct header; // current channel header
   int64_t bxc[2];
   uint32_t csize, ctime, cid, sample;
   int chan_addr[2];
   uint64_t packetsize;
-  int nbHit; // incremented each time a header packet is received for this card
+  int nbHit;         // incremented each time a header packet is received for this card
   int nbHitChan[64]; // incremented each time a header packet for a given packet is received for this card
   int ndata[2][32];
   int nclus[2][32];
@@ -66,12 +59,9 @@ struct DualSampa
   SampaHit hit;
 };
 
-
-struct DualSampaGroup
-{
+struct DualSampaGroup {
   int64_t bxc;
 };
-
 
 /// \brief decoding of MCH data
 /// \author Andrea Ferrero
@@ -93,10 +83,12 @@ class MuonChambersDataDecoder
   void reset();
 
   int32_t getMapCRU(int cruid, int linkid) { return mMapCRU.getLink(cruid, linkid); }
-  int32_t getMapFEC(uint32_t link_id, uint32_t ds_addr, uint32_t& de, uint32_t& dsid) {
-      mMapFEC.getDSMapping(link_id, ds_addr, de, dsid);
-      return de;
+  int32_t getMapFEC(uint32_t link_id, uint32_t ds_addr, uint32_t& de, uint32_t& dsid)
+  {
+    mMapFEC.getDSMapping(link_id, ds_addr, de, dsid);
+    return de;
   }
+  MapFEC& getMapFEC() { return mMapFEC; }
 
  private:
   int hb_orbit;
