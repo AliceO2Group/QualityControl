@@ -106,8 +106,8 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
             TString::Format("QcMuonChambers - Pedestals (CRU %01d, link %02d)", cruid, linkid), 40, 0, 40, 64, 0, 64);
         //mHistogramPedestals->SetDrawOption("col");
         getObjectsManager()->startPublishing(mHistogramPedestals[index]);
-        getObjectsManager()->addCheck(mHistogramPedestals[index], "checkFromMuonChambers",
-            "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
+       // getObjectsManager()->addCheck(mHistogramPedestals[index], "checkFromMuonChambers",
+       //     "o2::quality_control_modules::muonchambers::MCHCheckPedestals", "QcMuonChambers");
 
         mHistogramNoise[index] =
             new TH2F(TString::Format("QcMuonChambers_Noise_CRU%01d_LINK%02d", cruid, linkid),

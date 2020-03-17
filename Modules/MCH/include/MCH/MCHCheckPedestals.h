@@ -36,8 +36,8 @@ class MCHCheckPedestals : public o2::quality_control::checker::CheckInterface
 
   // Override interface
   void configure(std::string name) override;
-  Quality check(const MonitorObject* mo) override;
-  void beautify(MonitorObject* mo, Quality checkResult = Quality::Null) override;
+  virtual Quality check(const MonitorObject* mo);
+  virtual void beautify(MonitorObject* mo, Quality checkResult = Quality::Null);
   std::string getAcceptedType() override;
 
   /// Minimum value for SAMPA pedestals
