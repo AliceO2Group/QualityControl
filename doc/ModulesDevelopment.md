@@ -287,6 +287,10 @@ For a new feature, just create a new branch for it and use the same procedure. D
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
 
+## Raw data source
+
+To read a raw data file, one can use the O2's [RawFileReader](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader). On the same page, there are instructions to write such file from Simulation. 
+
 ---
 
 [← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Post-processing →](PostProcessing.md)
