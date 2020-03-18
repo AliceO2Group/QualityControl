@@ -324,7 +324,10 @@ std::string TaskRunner::validateDetectorName(std::string name)
 
 void TaskRunner::startOfActivity()
 {
+  // stats
   mTimerTotalDurationActivity.reset();
+  mTotalNumberObjectsPublished = 0;
+
   Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->startOfActivity(activity);
@@ -379,11 +382,12 @@ void TaskRunner::publishCycleStats()
   double totalDurationActivity = mTimerTotalDurationActivity.getTime();
 
   // monitoring metrics
-  mCollector->send({ mNumberBlocks, "QC_task_Numberofblocks_in_cycle" });
+  mCollector->send({ mNumberBlocks, "QC_task_Numberofblocks_received_in_cycle" });
   mCollector->send({ cycleDuration, "QC_task_Module_cycle_duration" });
   mCollector->send({ mLastPublicationDuration, "QC_task_Publication_duration" });
   mCollector->send({ mNumberObjectsPublishedInCycle, "QC_task_Number_objects_published_in_cycle" });
   mCollector->send({ rate, "QC_task_Rate_objects_published_per_second" });
+  mCollector->send({ mNumberObjectsPublishedInCycle, "QC_task_Numberofobjects_published_in_cycle" });
   mCollector->send({ mTotalNumberObjectsPublished, "QC_task_Total_objects_published_whole_run" });
   mCollector->send({ totalDurationActivity, "QC_task_Total_duration_activity_whole_run" });
   mCollector->send({ wholeRunRate, "QC_task_Rate_objects_published_per_second_whole_run" });
