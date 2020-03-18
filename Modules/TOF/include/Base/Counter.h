@@ -18,6 +18,7 @@
 
 // ROOT includes
 #include "TObject.h"
+#include "TH1.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -25,30 +26,11 @@
 namespace o2::quality_control_modules::tof
 {
 
-// Enums
-enum ECrateCounter_t {
-  kCrateCounter_Data,
-  kCrateCounter_Error,
-  kNCrateCounters
-};
-
-enum ETRMCounter_t {
-  kTRMCounter_Data,
-  kTRMCounter_Error,
-  kNTRMCounters
-};
-
-enum ETRMChainCounter_t {
-  kTRMChainCounter_Data,
-  kTRMChainCounter_Error,
-  kNTRMChainCounters
-};
-
 /// \brief Class to count events
 /// \author Nicolo' Jacazio
 template <typename Tc, Tc cdim>
 class Counter
-//  : TObject/*final*/
+// : TObject /*final*/
 // todo add back the "final" when doxygen is fixed
 {
  public:
@@ -57,65 +39,47 @@ class Counter
   /// Destructor
   ~Counter() = default;
   /// Function to increment a counter
-  void Count(Tc v);
+  void Count(Tc v)
+  {
+    ILOG(Info) << "Incrementing " << v << " to " << counter[v] << ENDM;
+    counter[v]++;
+  }
   /// Function to reset counters
-  void Reset();
+  void Reset()
+  {
+    ILOG(Info) << "Resetting Counter" << ENDM;
+    for (UInt_t i = 0; i < size; i++) {
+      counter[i] = 0;
+    }
+  }
+
+  /// Function to get how many counts where observed
+  uint32_t HowMany(UInt_t pos) const { return counter[pos]; };
+  void MakeHistogram(TH1* h) const
+  {
+    ILOG(Info) << "Making Histogram out of counter" << ENDM;
+    h->Reset();
+    h->GetXaxis()->Set(size, 0, size);
+    h->GetXaxis()->Print("All");
+    h->Print("All");
+  }
+  void FillHistogram(TH1* h) const
+  {
+    ILOG(Info) << "Filling Histogram out of counter" << ENDM;
+    for (UInt_t i = 0; i < size; i++) {
+      h->SetBinContent(i + 1, counter[i]);
+    }
+    h->Print("All");
+  }
+
+  /// Size of the counter
+  static const Tc size = cdim;
 
  private:
   /// Containers to fill
-  static const Tc size = cdim;
   uint32_t counter[size] = { 0 };
 };
 
-/// \brief Class for linear container for counters
-/// \author Nicolo' Jacazio
-template <UInt_t dim, typename Tc, Tc cdim>
-class CounterList
-//  : TObject/*final*/
-// todo add back the "final" when doxygen is fixed
-{
- public:
-  /// \brief Constructor
-  CounterList() = default;
-  /// Destructor
-  ~CounterList() = default;
-
-  /// Function to increment a counter
-  void Count(UInt_t c, Tc v);
-
-  /// Function to reset counters
-  void Reset();
-
- private:
-  /// Containers to fill
-  static const UInt_t size = dim;
-  Counter<Tc, cdim> counter[size];
-};
-
-/// \brief Class for matrix container for counters
-/// \author Nicolo' Jacazio
-template <UInt_t dimX, UInt_t dimY, typename Tc, Tc cdim>
-class CounterMatrix
-//  : TObject/*final*/
-// todo add back the "final" when doxygen is fixed
-{
- public:
-  /// \brief Constructor
-  CounterMatrix() = default;
-  /// Destructor
-  ~CounterMatrix() = default;
-
-  /// Function to increment a counter
-  void Count(UInt_t c, UInt_t cc, Tc v);
-
-  /// Function to reset counters
-  void Reset();
-
- private:
-  /// Containers to fill
-  static const UInt_t size = dimX;
-  CounterList<dimY, Tc, cdim> counter[size];
-};
 
 } // namespace o2::quality_control_modules::tof
 
