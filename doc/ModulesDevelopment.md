@@ -19,8 +19,9 @@
          * [Configuration](#configuration)
          * [Implementation](#implementation)
       * [Committing code](#committing-code)
+      * [Raw data source](#raw-data-source)
 
-<!-- Added by: barth, at: Lun 16 mar 2020 13:18:24 CET -->
+<!-- Added by: barth, at: Mer 18 mar 2020 13:34:28 CET -->
 
 <!--te-->
 
@@ -286,6 +287,10 @@ To commit your new or modified code, please follow this procedure
 For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
+
+## Raw data source
+
+To read a raw data file, one can use the O2's [RawFileReader](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader). On the same page, there are instructions to write such file from Simulation. 
 
 ---
 
