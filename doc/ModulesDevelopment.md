@@ -19,8 +19,9 @@
          * [Configuration](#configuration)
          * [Implementation](#implementation)
       * [Committing code](#committing-code)
+      * [Raw data source](#raw-data-source)
 
-<!-- Added by: barth, at: Lun 16 mar 2020 13:18:24 CET -->
+<!-- Added by: barth, at: Mer 18 mar 2020 13:34:28 CET -->
 
 <!--te-->
 

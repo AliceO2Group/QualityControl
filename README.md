@@ -34,6 +34,7 @@ For a general overview of our (O2) software, organization and processes, please 
          * [Configuration](doc/ModulesDevelopment.md#configuration)
          * [Implementation](doc/ModulesDevelopment.md#implementation)
       * [Committing code](doc/ModulesDevelopment.md#committing-code)
+      * [Raw data source](#raw-data-source)
    * [Post-processing](doc/PostProcessing.md)
       * [The post-processing framework](doc/PostProcessing.md#the-post-processing-framework)
          * [Post-processing interface](doc/PostProcessing.md#post-processing-interface)
