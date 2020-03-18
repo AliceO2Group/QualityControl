@@ -3,14 +3,21 @@
 add_library(QcTOF)
 
 target_sources(QcTOF 
+                      # Tasks
               PRIVATE src/TOFTask.cxx
                       src/TOFTaskCompressed.cxx
-                      src/TOFDecoderCompressed.cxx
+                      src/TOFTaskCompressedCounter.cxx
+                      # Checkers
+                      src/TOFCheckCompressedCounter.cxx
                       src/TOFCheckDiagnostic.cxx
                       src/TOFCheckRawsMulti.cxx
-                      src/TOFCheckRawsTime.cxx 
+                      src/TOFCheckRawsTime.cxx
+                      src/TOFCheckRawsToT.cxx
+                      # Utilities
+                      src/TOFDecoderCompressed.cxx
+                      src/TOFCounter.cxx
                       src/Counter.cxx
-                      src/TOFCheckRawsToT.cxx)
+                )
 
 target_include_directories(
   QcTOF
@@ -34,14 +41,20 @@ install(TARGETS QcTOF
 # ---- ROOT dictionary ----
 
 add_root_dictionary(QcTOF
+                            # Tasks
                     HEADERS include/TOF/TOFTask.h
                             include/TOF/TOFTaskCompressed.h
-                            include/TOF/TOFDecoderCompressed.h
+                            include/TOF/TOFTaskCompressedCounter.h
+                            # Checkers
                             include/TOF/TOFCheckDiagnostic.h
+                            include/TOF/TOFCheckCompressedCounter.h
                             include/TOF/TOFCheckRawsMulti.h
                             include/TOF/TOFCheckRawsTime.h
                             include/TOF/TOFCheckRawsToT.h
+                            # Utilities
+                            include/TOF/TOFDecoderCompressed.h
                             include/Base/Counter.h
+                            include/TOF/TOFCounter.h
                     LINKDEF include/TOF/LinkDef.h
                     BASENAME QcTOF)
 
@@ -71,7 +84,10 @@ endforeach()
 
 # ---- Extra scripts ----
 
-install(FILES tof.json tofcompressed.json DESTINATION etc)
+install(FILES tof.json
+              tofcompressed.json
+              tofcompressedcounter.json
+        DESTINATION etc)
 
 get_property(dirs
              DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
