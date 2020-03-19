@@ -14,12 +14,6 @@
 ///
 
 // ROOT includes
-#include <TCanvas.h>
-#include <TH1.h>
-#include <TH1F.h>
-#include <TH2F.h>
-#include <TH1I.h>
-#include <TH2I.h>
 
 // O2 includes
 #include "DataFormatsTOF/CompressedDataFormat.h"
@@ -33,30 +27,33 @@ namespace o2::quality_control_modules::tof
 {
 
 TOFTaskCompressedCounter::TOFTaskCompressedCounter() : TaskInterface(),
-                                         mCounter(),
-                                         mRDHCounterCrate0(nullptr)
+                                                       mDRMCounterHisto{ nullptr },
+                                                       mCounter()
 {
 }
 
 TOFTaskCompressedCounter::~TOFTaskCompressedCounter()
 {
-  mRDHCounterCrate0.reset();
+  for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
+    mDRMCounterHisto[i].reset();
+  }
 }
-
 
 void TOFTaskCompressedCounter::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info) << "initialize TOFTaskCompressedCounter" << ENDM;
-
-  mRDHCounterCrate0.reset(new TH1F("RDHCounterCrate0", ";RDH Word;Words", 1, 0, 1));
-  mCounter.mRDHCounter[0].MakeHistogram(mRDHCounterCrate0.get());
-  getObjectsManager()->startPublishing(mRDHCounterCrate0.get());
+  for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
+    // WARNING! Here the histograms have to be larger than the counter size, otherwise in memory they will be badly handled with undefined behaviour. I.e. put more bins than necessary, they will be trimmed out later.
+    mDRMCounterHisto[i].reset(new TH1F(Form("DRMCounterCrate%i", i), ";DRM Word;Words", 32, 0, 32));
+    mCounter.mDRMCounter[i].MakeHistogram(mDRMCounterHisto[i].get());
+    getObjectsManager()->startPublishing(mDRMCounterHisto[i].get());
+  }
 }
 
 void TOFTaskCompressedCounter::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info) << "startOfActivity" << ENDM;
-  mRDHCounterCrate0->Reset();
+  reset();
 }
 
 void TOFTaskCompressedCounter::startOfCycle()
@@ -78,8 +75,9 @@ void TOFTaskCompressedCounter::monitorData(o2::framework::ProcessingContext& ctx
     mCounter.setDecoderBufferSize(payloadInSize);
     mCounter.decode();
   }
-  // mCounter.mRDHCounter[0].FillHistogram(mRDHCounterCrate0.get());
-
+  for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
+    mCounter.mDRMCounter[i].FillHistogram(mDRMCounterHisto[i].get());
+  }
 }
 
 void TOFTaskCompressedCounter::endOfCycle()
@@ -97,7 +95,9 @@ void TOFTaskCompressedCounter::reset()
   // clean all the monitor objects here
 
   ILOG(Info) << "Resetting the histogram" << ENDM;
-  mRDHCounterCrate0->Reset();
+  for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
+    mDRMCounterHisto[i]->Reset();
+  }
 }
 
 } // namespace o2::quality_control_modules::tof
