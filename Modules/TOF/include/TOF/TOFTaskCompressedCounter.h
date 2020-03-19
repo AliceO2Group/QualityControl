@@ -16,11 +16,14 @@
 #ifndef QC_MODULE_TOF_TOFTASKCOMPRESSEDCOUNTER_H
 #define QC_MODULE_TOF_TOFTASKCOMPRESSEDCOUNTER_H
 
+#define ENABLE_2D_HISTOGRAMS // Flag to enable 2D histograms
+
 // QC includes
 #include "QualityControl/TaskInterface.h"
 #include "TOF/Diagnostics.h"
 
-#include "TH1F.h"
+class TH1F;
+class TH2F;
 
 using namespace o2::quality_control::core;
 
@@ -49,10 +52,17 @@ class TOFTaskCompressedCounter /*final*/
 
  private:
   // Histograms
+#ifdef ENABLE_2D_HISTOGRAMS
+  std::shared_ptr<TH2F> mRDHCounterHisto;                                                    /// Words per RDH
+  std::shared_ptr<TH2F> mDRMCounterHisto;                                                    /// Words per DRM
+  std::shared_ptr<TH2F> mTRMCounterHisto[Diagnostics::ntrms];                                /// Words per TRM
+  std::shared_ptr<TH2F> mTRMChainCounterHisto[Diagnostics::ntrms][Diagnostics::ntrmschains]; /// Words per TRM Chain
+#else
   std::shared_ptr<TH1F> mRDHCounterHisto[Diagnostics::ncrates];                                                    /// Words per RDH
   std::shared_ptr<TH1F> mDRMCounterHisto[Diagnostics::ncrates];                                                    /// Words per DRM
   std::shared_ptr<TH1F> mTRMCounterHisto[Diagnostics::ncrates][Diagnostics::ntrms];                                /// Words per TRM
   std::shared_ptr<TH1F> mTRMChainCounterHisto[Diagnostics::ncrates][Diagnostics::ntrms][Diagnostics::ntrmschains]; /// Words per TRM Chain
+#endif
 
   Diagnostics mCounter; /// Decoder and counter for TOF Compressed data useful for the Task
 };

@@ -14,6 +14,8 @@
 ///
 
 // ROOT includes
+#include "TH1F.h"
+#include "TH2F.h"
 
 // O2 includes
 #include "DataFormatsTOF/CompressedDataFormat.h"
@@ -29,6 +31,23 @@ namespace o2::quality_control_modules::tof
 void TOFTaskCompressedCounter::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info) << "initialize TOFTaskCompressedCounter" << ENDM;
+#ifdef ENABLE_2D_HISTOGRAMS
+  // WARNING X axis is reserved to the counter
+  // WARNING! Here the histograms have to be larger than the counter size, otherwise in memory they will be badly handled with undefined behaviour. I.e. put more bins than necessary, they will be trimmed out later.
+  mDRMCounterHisto.reset(new TH2F("DRMCounter", ";DRM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
+  mCounter.mDRMCounter[0].MakeHistogram(mDRMCounterHisto.get());
+  getObjectsManager()->startPublishing(mDRMCounterHisto.get());
+  for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
+    mTRMCounterHisto[j].reset(new TH2F(Form("TRMCounterSlot%i", j), ";TRM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
+    mCounter.mTRMCounter[0][j].MakeHistogram(mTRMCounterHisto[j].get());
+    getObjectsManager()->startPublishing(mTRMCounterHisto[j].get());
+    for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
+      mTRMChainCounterHisto[j][k].reset(new TH2F(Form("TRMChainCounterSlot%iChain%i", j, k), ";TRMChain Word;Crate;Words", 32, 0, 32, 72, 0, 72));
+      mCounter.mTRMChainCounter[0][j][k].MakeHistogram(mTRMChainCounterHisto[j][k].get());
+      getObjectsManager()->startPublishing(mTRMChainCounterHisto[j][k].get());
+    }
+  }
+#else
   for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
     // WARNING! Here the histograms have to be larger than the counter size, otherwise in memory they will be badly handled with undefined behaviour. I.e. put more bins than necessary, they will be trimmed out later.
     mDRMCounterHisto[i].reset(new TH1F(Form("DRMCounterCrate%i", i), ";DRM Word;Words", 32, 0, 32));
@@ -45,7 +64,8 @@ void TOFTaskCompressedCounter::initialize(o2::framework::InitContext& /*ctx*/)
       }
     }
   }
-}
+#endif
+} // namespace o2::quality_control_modules::tof
 
 void TOFTaskCompressedCounter::startOfActivity(Activity& /*activity*/)
 {
@@ -72,6 +92,17 @@ void TOFTaskCompressedCounter::monitorData(o2::framework::ProcessingContext& ctx
     mCounter.setDecoderBufferSize(payloadInSize);
     mCounter.decode();
   }
+#ifdef ENABLE_2D_HISTOGRAMS
+  for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
+    mCounter.mDRMCounter[i].FillHistogram(mDRMCounterHisto.get(), i + 1);
+    for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
+      mCounter.mTRMCounter[i][j].FillHistogram(mTRMCounterHisto[j].get(), i + 1);
+      for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
+        mCounter.mTRMChainCounter[i][j][k].FillHistogram(mTRMChainCounterHisto[j][k].get(), i + 1);
+      }
+    }
+  }
+#else
   for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
     mCounter.mDRMCounter[i].FillHistogram(mDRMCounterHisto[i].get());
     for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
@@ -81,6 +112,7 @@ void TOFTaskCompressedCounter::monitorData(o2::framework::ProcessingContext& ctx
       }
     }
   }
+#endif
 }
 
 void TOFTaskCompressedCounter::endOfCycle()
@@ -98,6 +130,15 @@ void TOFTaskCompressedCounter::reset()
   // clean all the monitor objects here
 
   ILOG(Info) << "Resetting the histogram" << ENDM;
+#ifdef ENABLE_2D_HISTOGRAMS
+  mDRMCounterHisto->Reset();
+  for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
+    mTRMCounterHisto[j]->Reset();
+    for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
+      mTRMChainCounterHisto[j][k]->Reset();
+    }
+  }
+#else
   for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
     mDRMCounterHisto[i]->Reset();
     for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
@@ -107,6 +148,7 @@ void TOFTaskCompressedCounter::reset()
       }
     }
   }
+#endif
 }
 
 } // namespace o2::quality_control_modules::tof
