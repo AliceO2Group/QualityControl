@@ -46,8 +46,7 @@ TrendingTaskConfig::TrendingTaskConfig(std::string name, configuration::Configur
                               dataSourceConfig.second.get<std::string>("reductorName"),
                               dataSourceConfig.second.get<std::string>("moduleName") });
     } else {
-      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name
-                                 + ".dataSources'");
+      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name + ".dataSources'");
     }
   }
 }
