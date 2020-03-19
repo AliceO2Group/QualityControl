@@ -54,7 +54,7 @@ add_root_dictionary(QcTOF
                             # Utilities
                             include/TOF/TOFDecoderCompressed.h
                             include/Base/Counter.h
-                            include/TOF/TOFCounter.h
+                            include/TOF/Diagnostics.h
                     LINKDEF include/TOF/LinkDef.h
                     BASENAME QcTOF)
 
