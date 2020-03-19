@@ -21,6 +21,8 @@
 
 import argparse
 import logging
+import requests
+import os
 import re
 from typing import List
 
@@ -60,6 +62,8 @@ def parseArgs():
     parser = argparse.ArgumentParser(description='Clean the QC database.')
     parser.add_argument('--config', dest='config', action='store', default="config.yaml",
                         help='Path to the config file')
+    parser.add_argument('--config-git', action='store_true',
+                        help='Check out the config file from git (branch repo_cleaner), ignore --config.')
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--dry-run', action='store_true',
@@ -97,6 +101,22 @@ def parseConfig(config_file_path):
 
     return {'rules': rules, 'ccdb_url': ccdb_url}
 
+def downloadConfigFromGit():
+    """
+    Download a config file from git.
+    :param config_git: True if the file must be downloaded from git.
+    :return: the path to the config file
+    """
+
+    logging.debug("Get it from git")
+    r = requests.get('https://raw.github.com/AliceO2Group/QualityControl/repo_cleaner/Framework/script/RepoCleaner/config.yaml')
+    logging.debug(f"config file from git : \n{r.text}")
+    path = "/tmp/config.yaml"
+    with open(path, 'w') as f:
+        f.write(r.text)
+    logging.info(f"Config path : {path}")
+    return path
+
 
 def findMatchingRule(rules, object_path):
     """Return the first matching rule for the given path or None if none is found."""
@@ -124,7 +144,10 @@ def main():
     logging.getLogger().setLevel(int(args.log_level))
 
     # Read configuration
-    config = parseConfig(args.config)
+    path = args.config
+    if args.config_git:
+        path = downloadConfigFromGit()
+    config = parseConfig(path)
     rules: List[Rule] = config['rules']
     ccdb_url = config['ccdb_url']
 
