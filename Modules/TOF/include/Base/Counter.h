@@ -16,14 +16,14 @@
 #ifndef QC_MODULE_TOF_COUNTER_H
 #define QC_MODULE_TOF_COUNTER_H
 
+// #define ENABLE_COUNTER_DEBUG_MODE // Flag used to enable more printing and more debug
+
 // ROOT includes
 #include "TObject.h"
 #include "TH1.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
-
-#define ENABLE_COUNTER_DEBUG_MODE
 
 namespace o2::quality_control_modules::tof
 {
@@ -43,12 +43,12 @@ class Counter
   /// Function to increment a counter
   void Count(UInt_t v)
   {
-#ifdef ENABLE_COUNTER_DEBUG_MODE
     if (v > size) {
       ILOG(Error) << "Incrementing counter too far! " << v << "/" << size << ENDM;
     }
-#endif
+#ifdef ENABLE_COUNTER_DEBUG_MODE
     ILOG(Info) << "Incrementing " << v << "/" << size << " to " << counter[v] << ENDM;
+#endif
     counter[v]++;
   }
   /// Function to reset counters
@@ -64,7 +64,7 @@ class Counter
   /// Function to make a histogram out of the counters
   void MakeHistogram(TH1* h) const
   {
-    ILOG(Info) << "Making Histogram out of counter" << ENDM;
+    ILOG(Info) << "Making Histogram " << h->GetName() << " out of counter" << ENDM;
     h->Reset();
     h->GetXaxis()->Set(size, 0, size);
     Int_t binx = 1;
@@ -75,18 +75,22 @@ class Counter
       h->GetXaxis()->SetBinLabel(binx++, names[i]);
     }
     h->Reset();
-    h->GetXaxis()->Print("All");
+#ifdef ENABLE_COUNTER_DEBUG_MODE
     h->Print("All");
+#endif
   }
   /// Function to fill a histogram with the counters
   void FillHistogram(TH1* h, Int_t biny = 0, Int_t binz = 0) const
   {
-    ILOG(Info) << "Filling Histogram out of counter" << ENDM;
+    ILOG(Info) << "Filling Histogram " << h->GetName() << " out of counter" << ENDM;
     Int_t binx = 1;
     for (UInt_t i = 0; i < size; i++) {
       if (names[i].IsNull()) {
         continue;
       }
+#ifdef ENABLE_COUNTER_DEBUG_MODE
+      ILOG(Info) << "Filling bin " << binx << " of position " << i << " of label " << names[i] << " with " << counter[i] << ENDM;
+#endif
       if (biny > 0) {
         if (binz > 0) {
           h->SetBinContent(binx, biny, binz, counter[i]);
@@ -98,7 +102,9 @@ class Counter
       }
       binx++;
     }
+#ifdef ENABLE_COUNTER_DEBUG_MODE
     h->Print("All");
+#endif
   }
   /// Getter for the size
   Tc Size() const { return size; };
