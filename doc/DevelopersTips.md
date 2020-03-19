@@ -12,11 +12,11 @@ here. It is not sanitized or organized. Just a brain dump.
 
 ### Where and how to configure the repo_cleaner of the ccdb-test 
 
-The config file is in `aldaqci@aidrefflp01:~/alice-ccdb/config.yaml`. Simply edit it and it will be picked up the next time the repo_cleaner runs. 
+The config file is stored in git in the branch `repo_cleaner` (careful not to update in master instead !). Check out the branch, update the file Framework/script/RepoCleaner/config.yaml and commit it. A PR is necessary but in case of emergency, force-merge it. As soon as it is merged, it will be used by the script.
+
+The config file used to be in `aldaqci@aidrefflp01:~/alice-ccdb/config.yaml` but it is not the case any more.
 
 The repo_cleaner is launched every 5 minutes by [Jenkins](https://alijenkins.cern.ch/job/FLP/job/CCDB%20Clean%20up/).
-
-It is a good practice to update [config.yaml](../Framework/script/RepoCleaner/config.yaml) in this repo when updating the file on `aidrefflp01`. 
 
 Documentation of the repo_cleaner can be found [here](../Framework/script/RepoCleaner/README.md).
 
