@@ -30,11 +30,25 @@ TrendingTaskConfig::TrendingTaskConfig(std::string name, configuration::Configur
                       plotConfig.second.get<std::string>("option", "") });
   }
   for (const auto& dataSourceConfig : config.getRecursive("qc.postprocessing." + name + ".dataSources")) {
-    dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", "repository"),
-                            dataSourceConfig.second.get<std::string>("path"),
-                            dataSourceConfig.second.get<std::string>("name"),
-                            dataSourceConfig.second.get<std::string>("reductorName", ""),
-                            dataSourceConfig.second.get<std::string>("moduleName", "") });
+    if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
+      for (const auto& sourceName : sourceNames.value()) {
+        dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", "repository"),
+                                dataSourceConfig.second.get<std::string>("path"),
+                                sourceName.second.data(),
+                                dataSourceConfig.second.get<std::string>("reductorName"),
+                                dataSourceConfig.second.get<std::string>("moduleName") });
+      }
+    } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
+      // "name" : [ "something" ] would return an empty string here
+      dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", "repository"),
+                              dataSourceConfig.second.get<std::string>("path"),
+                              dataSourceConfig.second.get<std::string>("name"),
+                              dataSourceConfig.second.get<std::string>("reductorName"),
+                              dataSourceConfig.second.get<std::string>("moduleName") });
+    } else {
+      throw std::runtime_error("No 'name' value or a 'names' vector in the path 'qc.postprocessing." + name
+                                 + ".dataSources'");
+    }
   }
 }
 
