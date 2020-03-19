@@ -28,7 +28,7 @@ namespace o2::quality_control_modules::tof
 
 /// \brief Class to count events
 /// \author Nicolo' Jacazio
-template <typename Tc, Tc cdim>
+template <typename Tc, Tc cdim, const Char_t** cnames>
 class Counter
 // : TObject /*final*/
 // todo add back the "final" when doxygen is fixed
@@ -39,7 +39,7 @@ class Counter
   /// Destructor
   ~Counter() = default;
   /// Function to increment a counter
-  void Count(Tc v)
+  void Count(UInt_t v)
   {
     ILOG(Info) << "Incrementing " << v << " to " << counter[v] << ENDM;
     counter[v]++;
@@ -55,19 +55,35 @@ class Counter
 
   /// Function to get how many counts where observed
   uint32_t HowMany(UInt_t pos) const { return counter[pos]; };
+  /// Function to make a histogram out of the counters
   void MakeHistogram(TH1* h) const
   {
     ILOG(Info) << "Making Histogram out of counter" << ENDM;
     h->Reset();
     h->GetXaxis()->Set(size, 0, size);
+    Int_t binoffset = 1;
+    for (Int_t i = 0; i < size; i++) {
+      TString name = cnames[i];
+      if (name.IsNull())
+        continue;
+      h->GetXaxis()->SetBinLabel(binoffset++, name);
+    }
     h->GetXaxis()->Print("All");
     h->Print("All");
   }
-  void FillHistogram(TH1* h) const
+  /// Function to fill a histogram with the counters
+  void FillHistogram(TH1* h, Int_t biny = 0, Int_t binz = 0) const
   {
     ILOG(Info) << "Filling Histogram out of counter" << ENDM;
     for (UInt_t i = 0; i < size; i++) {
-      h->SetBinContent(i + 1, counter[i]);
+      if (biny > 0) {
+        if (binz > 0) {
+          h->SetBinContent(i + 1, biny, binz, counter[i]);
+        } else {
+          h->SetBinContent(i + 1, biny, counter[i]);
+        }
+      } else
+        h->SetBinContent(i + 1, counter[i]);
     }
     h->Print("All");
   }
@@ -79,7 +95,6 @@ class Counter
   /// Containers to fill
   uint32_t counter[size] = { 0 };
 };
-
 
 } // namespace o2::quality_control_modules::tof
 
