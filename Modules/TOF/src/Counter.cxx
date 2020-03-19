@@ -15,10 +15,7 @@
 
 #include "Base/Counter.h"
 
+namespace o2::quality_control_modules::tof
+{
 
-
-
-
-
-
-
+} // namespace o2::quality_control_modules::tof

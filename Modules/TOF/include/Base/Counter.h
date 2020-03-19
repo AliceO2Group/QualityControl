@@ -23,12 +23,14 @@
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 
+#define ENABLE_COUNTER_DEBUG_MODE
+
 namespace o2::quality_control_modules::tof
 {
 
 /// \brief Class to count events
 /// \author Nicolo' Jacazio
-template <typename Tc, Tc cdim, const Char_t** cnames>
+template <typename Tc, Tc size, const TString* names>
 class Counter
 // : TObject /*final*/
 // todo add back the "final" when doxygen is fixed
@@ -41,7 +43,12 @@ class Counter
   /// Function to increment a counter
   void Count(UInt_t v)
   {
-    ILOG(Info) << "Incrementing " << v << " to " << counter[v] << ENDM;
+#ifdef ENABLE_COUNTER_DEBUG_MODE
+    if (v > size) {
+      ILOG(Error) << "Incrementing counter too far! " << v << "/" << size << ENDM;
+    }
+#endif
+    ILOG(Info) << "Incrementing " << v << "/" << size << " to " << counter[v] << ENDM;
     counter[v]++;
   }
   /// Function to reset counters
@@ -52,7 +59,6 @@ class Counter
       counter[i] = 0;
     }
   }
-
   /// Function to get how many counts where observed
   uint32_t HowMany(UInt_t pos) const { return counter[pos]; };
   /// Function to make a histogram out of the counters
@@ -61,13 +67,14 @@ class Counter
     ILOG(Info) << "Making Histogram out of counter" << ENDM;
     h->Reset();
     h->GetXaxis()->Set(size, 0, size);
-    Int_t binoffset = 1;
+    Int_t binx = 1;
     for (Int_t i = 0; i < size; i++) {
-      TString name = cnames[i];
-      if (name.IsNull())
+      if (names[i].IsNull()) {
         continue;
-      h->GetXaxis()->SetBinLabel(binoffset++, name);
+      }
+      h->GetXaxis()->SetBinLabel(binx++, names[i]);
     }
+    h->Reset();
     h->GetXaxis()->Print("All");
     h->Print("All");
   }
@@ -75,21 +82,26 @@ class Counter
   void FillHistogram(TH1* h, Int_t biny = 0, Int_t binz = 0) const
   {
     ILOG(Info) << "Filling Histogram out of counter" << ENDM;
+    Int_t binx = 1;
     for (UInt_t i = 0; i < size; i++) {
+      if (names[i].IsNull()) {
+        continue;
+      }
       if (biny > 0) {
         if (binz > 0) {
-          h->SetBinContent(i + 1, biny, binz, counter[i]);
+          h->SetBinContent(binx, biny, binz, counter[i]);
         } else {
-          h->SetBinContent(i + 1, biny, counter[i]);
+          h->SetBinContent(binx, biny, counter[i]);
         }
-      } else
-        h->SetBinContent(i + 1, counter[i]);
+      } else {
+        h->SetBinContent(binx, counter[i]);
+      }
+      binx++;
     }
     h->Print("All");
   }
-
-  /// Size of the counter
-  static const Tc size = cdim;
+  /// Getter for the size
+  Tc Size() const { return size; };
 
  private:
   /// Containers to fill

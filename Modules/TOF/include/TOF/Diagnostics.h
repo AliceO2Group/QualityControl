@@ -13,8 +13,8 @@
 /// \author Nicolo' Jacazio
 ///
 
-#ifndef QC_MODULE_TOF_TOFCOUNTER_H
-#define QC_MODULE_TOF_TOFCOUNTER_H
+#ifndef QC_MODULE_TOF_DIAGNOSTICS_H
+#define QC_MODULE_TOF_DIAGNOSTICS_H
 
 // O2 includes
 #include "TOFReconstruction/DecoderBase.h"
@@ -37,14 +37,14 @@ enum ERDHCounter_t {
   kNRDHCounters = 2
 };
 /// Name of RDH counters
-static const Char_t* RDHCounterName[kNRDHCounters] = { "counterA", "counterB" };
+static const TString RDHCounterName[kNRDHCounters] = { "counterA", "counterB" };
 
 /// Number of DRM counters
 enum EDRMCounter_t {
   kNDRMCounters = 14
 };
 /// Name of DRM counters
-static const Char_t* DRMCounterName[kNDRMCounters] = {
+static const TString DRMCounterName[kNDRMCounters] = {
   "DRM_HAS_DATA", // DRM has read some data
   "",             // Empty for now
   "",             // Empty for now
@@ -66,7 +66,7 @@ enum ETRMCounter_t {
   kNTRMCounters = 13
 };
 /// Name of TRM counters
-static const Char_t* TRMCounterName[kNTRMCounters] = {
+static const TString TRMCounterName[kNTRMCounters] = {
   "TRM_HAS_DATA", // TRM has read some data
   "",             // Empty for now
   "",             // Empty for now
@@ -86,9 +86,11 @@ static const Char_t* TRMCounterName[kNTRMCounters] = {
 enum ETRMChainCounter_t {
   kNTRMChainCounters = 2
 };
-static const Char_t* TRMChainCounterName[kNTRMChainCounters] = { "counterA", "counterB" };
+static const TString TRMChainCounterName[kNTRMChainCounters] = { "counterA", "counterB" };
 
 } // namespace counters
+
+using namespace counters;
 
 /// \brief TOF Quality Control class for Decoding Compressed data for TOF Compressed data QC Task
 /// \author Nicolo' Jacazio
@@ -109,10 +111,10 @@ class Diagnostics /*final*/
   static const int ncrates = 72;
   static const int ntrms = 10;
   static const int ntrmschains = 2;
-  Counter<counters::ERDHCounter_t, counters::kNRDHCounters, counters::RDHCounterName> mRDHCounter[ncrates];
-  Counter<counters::EDRMCounter_t, counters::kNDRMCounters, counters::DRMCounterName> mDRMCounter[ncrates];
-  Counter<counters::ETRMCounter_t, counters::kNTRMCounters, counters::TRMCounterName> mTRMCounter[ncrates][ntrms];
-  Counter<counters::ETRMChainCounter_t, counters::kNTRMChainCounters, counters::TRMChainCounterName> mTRMChainCounter[ncrates][ntrms][ntrmschains];
+  Counter<ERDHCounter_t, kNRDHCounters, RDHCounterName> mRDHCounter[ncrates];
+  Counter<EDRMCounter_t, kNDRMCounters, DRMCounterName> mDRMCounter[ncrates];
+  Counter<ETRMCounter_t, kNTRMCounters, TRMCounterName> mTRMCounter[ncrates][ntrms];
+  Counter<ETRMChainCounter_t, kNTRMChainCounters, TRMChainCounterName> mTRMChainCounter[ncrates][ntrms][ntrmschains];
 
  private:
   /** decoding handlers **/
@@ -126,4 +128,4 @@ class Diagnostics /*final*/
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFCOUNTER_H
+#endif // QC_MODULE_TOF_DIAGNOSTICS_H

@@ -33,7 +33,7 @@ void Diagnostics::decode()
   DecoderBase::run();
 }
 
-void Diagnostics::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit)
+void Diagnostics::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/)
 {
   // mDRMCounter[crateHeader->drmID].Count(counters::kDRM_HAS_DATA);
   mDRMCounter[crateHeader->drmID].Count(0);
