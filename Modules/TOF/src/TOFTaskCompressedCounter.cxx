@@ -26,19 +26,6 @@
 namespace o2::quality_control_modules::tof
 {
 
-TOFTaskCompressedCounter::TOFTaskCompressedCounter() : TaskInterface(),
-                                                       mDRMCounterHisto{ nullptr },
-                                                       mCounter()
-{
-}
-
-TOFTaskCompressedCounter::~TOFTaskCompressedCounter()
-{
-  for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
-    mDRMCounterHisto[i].reset();
-  }
-}
-
 void TOFTaskCompressedCounter::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info) << "initialize TOFTaskCompressedCounter" << ENDM;
@@ -47,6 +34,16 @@ void TOFTaskCompressedCounter::initialize(o2::framework::InitContext& /*ctx*/)
     mDRMCounterHisto[i].reset(new TH1F(Form("DRMCounterCrate%i", i), ";DRM Word;Words", 32, 0, 32));
     mCounter.mDRMCounter[i].MakeHistogram(mDRMCounterHisto[i].get());
     getObjectsManager()->startPublishing(mDRMCounterHisto[i].get());
+    for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
+      mTRMCounterHisto[i][j].reset(new TH1F(Form("TRMCounterCrate%iSlot%i", i, j), ";TRM Word;Words", 32, 0, 32));
+      mCounter.mTRMCounter[i][j].MakeHistogram(mTRMCounterHisto[i][j].get());
+      getObjectsManager()->startPublishing(mTRMCounterHisto[i][j].get());
+      for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
+        mTRMChainCounterHisto[i][j][k].reset(new TH1F(Form("TRMChainCounterCrate%iSlot%iChain%i", i, j, k), ";TRMChain Word;Words", 32, 0, 32));
+        mCounter.mTRMChainCounter[i][j][k].MakeHistogram(mTRMChainCounterHisto[i][j][k].get());
+        getObjectsManager()->startPublishing(mTRMChainCounterHisto[i][j][k].get());
+      }
+    }
   }
 }
 
@@ -77,6 +74,12 @@ void TOFTaskCompressedCounter::monitorData(o2::framework::ProcessingContext& ctx
   }
   for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
     mCounter.mDRMCounter[i].FillHistogram(mDRMCounterHisto[i].get());
+    for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
+      mCounter.mTRMCounter[i][j].FillHistogram(mTRMCounterHisto[i][j].get());
+      for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
+        mCounter.mTRMChainCounter[i][j][k].FillHistogram(mTRMChainCounterHisto[i][j][k].get());
+      }
+    }
   }
 }
 
@@ -97,6 +100,12 @@ void TOFTaskCompressedCounter::reset()
   ILOG(Info) << "Resetting the histogram" << ENDM;
   for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
     mDRMCounterHisto[i]->Reset();
+    for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
+      mTRMCounterHisto[i][j]->Reset();
+      for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
+        mTRMChainCounterHisto[i][j][k]->Reset();
+      }
+    }
   }
 }
 

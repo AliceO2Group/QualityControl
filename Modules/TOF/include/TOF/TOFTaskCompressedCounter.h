@@ -20,10 +20,7 @@
 #include "QualityControl/TaskInterface.h"
 #include "TOF/Diagnostics.h"
 
-class TH1F;
-class TH2F;
-class TH1I;
-class TH2I;
+#include "TH1F.h"
 
 using namespace o2::quality_control::core;
 
@@ -37,9 +34,9 @@ class TOFTaskCompressedCounter /*final*/
 {
  public:
   /// \brief Constructor
-  TOFTaskCompressedCounter();
+  TOFTaskCompressedCounter() = default;
   /// Destructor
-  ~TOFTaskCompressedCounter() override;
+  ~TOFTaskCompressedCounter() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -52,8 +49,12 @@ class TOFTaskCompressedCounter /*final*/
 
  private:
   // Histograms
-  std::shared_ptr<TH1F> mRDHCounterCrate0; /// TOF raw hit multiplicity per event
-  Diagnostics mCounter;                    /// Decoder for TOF Compressed data useful for the Task
+  std::shared_ptr<TH1F> mRDHCounterHisto[Diagnostics::ncrates];                                                    /// Words per RDH
+  std::shared_ptr<TH1F> mDRMCounterHisto[Diagnostics::ncrates];                                                    /// Words per DRM
+  std::shared_ptr<TH1F> mTRMCounterHisto[Diagnostics::ncrates][Diagnostics::ntrms];                                /// Words per TRM
+  std::shared_ptr<TH1F> mTRMChainCounterHisto[Diagnostics::ncrates][Diagnostics::ntrms][Diagnostics::ntrmschains]; /// Words per TRM Chain
+
+  Diagnostics mCounter; /// Decoder and counter for TOF Compressed data useful for the Task
 };
 
 } // namespace o2::quality_control_modules::tof
