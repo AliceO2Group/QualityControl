@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCounter.h
+/// \file   Diagnostics.h
 /// \author Nicolo' Jacazio
 ///
 
@@ -31,22 +31,56 @@ namespace o2::quality_control_modules::tof
 namespace counters
 {
 // Enums for counters
+
 /// RDH counters: there will only be one instance of such counters per crate
 enum ERDHCounter_t {
-  kRDHCounter_Data,
-  kRDHCounter_Error,
-  kNRDHCounters
+  kNRDHCounters = 2
 };
-static const TString RDHCounterName[kNRDHCounters] = { "counterA", "counterB" };
+/// Name of RDH counters
+static const Char_t* RDHCounterName[kNRDHCounters] = { "counterA", "counterB" };
 
-/// TRM counters: there will be 10 instances of such counters per crate
+/// Number of DRM counters
+enum EDRMCounter_t {
+  kNDRMCounters = 11
+};
+/// Name of DRM counters
+static const Char_t* DRMCounterName[kNDRMCounters] = {
+  "DRM_HAS_DATA", // DRM has read some data
+  "",             // Empty for now
+  "",             // Empty for now
+  "",             // Empty for now
+  "DRM_HEADER_MISSING",
+  "DRM_TRAILER_MISSING",
+  "DRM_FEEID_MISMATCH",
+  "DRM_ORBIT_MISMATCH",
+  "DRM_CRC_MISMATCH",
+  "DRM_ENAPARTMASK_DIFFER",
+  "DRM_CLOCKSTATUS_WRONG",
+  "DRM_FAULTSLOTMASK_NOTZERO",
+  "DRM_READOUTTIMEOUT_NOTZERO",
+  "DRM_MAXDIAGNOSTIC_BIT"
+};
+
+/// Number of TRM counters
 enum ETRMCounter_t {
-  kTRMCounter_Data,
-  kTRMCounter_Error,
-  kNTRMCounters
+  kNTRMCounters = 13
 };
 /// Name of TRM counters
-static const TString TRMCounterName[kNTRMCounters] = { "counterA", "counterB" };
+static const Char_t* TRMCounterName[kNTRMCounters] = {
+  "TRM_HAS_DATA", // TRM has read some data
+  "",             // Empty for now
+  "",             // Empty for now
+  "",             // Empty for now
+  "TRM_HEADER_MISSING",
+  "TRM_TRAILER_MISSING",
+  "TRM_CRC_MISMATCH",
+  "TRM_HEADER_UNEXPECTED",
+  "TRM_EVENTCNT_MISMATCH",
+  "TRM_EMPTYBIT_NOTZERO",
+  "TRM_LBIT_NOTZERO",
+  "TRM_FAULTSLOTBIT_NOTZERO",
+  "TRM_MAXDIAGNOSTIC_BIT"
+};
 
 /// TRM Chain: counters there will be 20 instances of such counters per crate
 enum ETRMChainCounter_t {
@@ -54,39 +88,21 @@ enum ETRMChainCounter_t {
   kTRMChainCounter_Error,
   kNTRMChainCounters
 };
-/// Name of TRMChain counters
-static const TString TRMChainCounterName[kNTRMChainCounters] = { "counterA", "counterB" };
+static const Char_t* TRMChainCounterName[kNTRMChainCounters] = { "counterA", "counterB" };
 
-/// DRM counters: there will only be one instance of such counters per crate
-enum EDRMCounter_t {
-  kDRMCounter_A,
-  kDRMCounter_B,
-  kNDRMCounters
-};
-/// Name of DRM counters
-static const TString DRMCounterName[kNDRMCounters] = { "counterA", "counterB" };
 } // namespace counters
-
-/// \brief TOF Quality Control struct to contain all the counters for the words created by a crate
-/// \author Nicolo' Jacazio
-struct CrateCounter {
-  Counter<counters::ERDHCounter_t, counters::kNRDHCounters> mRDHCounter;
-  Counter<counters::EDRMCounter_t, counters::kNDRMCounters> mDRMCounter;
-  Counter<counters::ETRMCounter_t, counters::kNTRMCounters> mTRMCounter[10];
-  Counter<counters::ETRMChainCounter_t, counters::kNTRMChainCounters> mTRMChainCounter[10][2];
-};
 
 /// \brief TOF Quality Control class for Decoding Compressed data for TOF Compressed data QC Task
 /// \author Nicolo' Jacazio
-class TOFCounter /*final*/
+class Diagnostics /*final*/
   : public DecoderBase
 // todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
-  TOFCounter() = default;
+  Diagnostics() = default;
   /// Destructor
-  ~TOFCounter() = default;
+  ~Diagnostics() = default;
 
   /// Function to run decoding
   void decode();
@@ -98,15 +114,15 @@ class TOFCounter /*final*/
   // static const int nslots = 14;
   // CounterMatrix<ncrates, nslots, ECrateCounter_t, kNCrateCounters> mDiagnostic;
   // CrateCounter crate_counter[ncrates];
-  Counter<counters::ERDHCounter_t, counters::kNRDHCounters> mRDHCounter[ncrates];
-  Counter<counters::EDRMCounter_t, counters::kNDRMCounters> mDRMCounter[ncrates];
-  Counter<counters::ETRMCounter_t, counters::kNTRMCounters> mTRMCounter[ncrates][ntrms];
-  Counter<counters::ETRMChainCounter_t, counters::kNTRMChainCounters> mTRMChainCounter[ncrates][ntrms][ntrmschains];
+  Counter<counters::ERDHCounter_t, counters::kNRDHCounters, counters::RDHCounterName> mRDHCounter[ncrates];
+  Counter<counters::EDRMCounter_t, counters::kNDRMCounters, counters::DRMCounterName> mDRMCounter[ncrates];
+  Counter<counters::ETRMCounter_t, counters::kNTRMCounters, counters::TRMCounterName> mTRMCounter[ncrates][ntrms];
+  Counter<counters::ETRMChainCounter_t, counters::kNTRMChainCounters, counters::TRMChainCounterName> mTRMChainCounter[ncrates][ntrms][ntrmschains];
 
  private:
   /** decoding handlers **/
   // void rdhHandler(const o2::header::RAWDataHeader* rdh) override;
-  // void headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit) override;
+  void headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit) override;
   // void frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
   //                   const FrameHeader_t* frameHeader, const PackedHit_t* packedHits) override;
   void trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
