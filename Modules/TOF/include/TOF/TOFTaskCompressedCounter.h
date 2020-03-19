@@ -18,7 +18,7 @@
 
 // QC includes
 #include "QualityControl/TaskInterface.h"
-#include "TOF/TOFCounter.h"
+#include "TOF/Diagnostics.h"
 
 class TH1F;
 class TH2F;
@@ -53,7 +53,7 @@ class TOFTaskCompressedCounter /*final*/
  private:
   // Histograms
   std::shared_ptr<TH1F> mRDHCounterCrate0; /// TOF raw hit multiplicity per event
-  TOFCounter mCounter; /// Decoder for TOF Compressed data useful for the Task
+  Diagnostics mCounter;                    /// Decoder for TOF Compressed data useful for the Task
 };
 
 } // namespace o2::quality_control_modules::tof

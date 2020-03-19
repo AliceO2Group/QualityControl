@@ -23,7 +23,7 @@ using namespace o2::framework;
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
-#include "TOF/TOFCounter.h"
+#include "TOF/Diagnostics.h"
 
 namespace o2::quality_control_modules::tof
 {
