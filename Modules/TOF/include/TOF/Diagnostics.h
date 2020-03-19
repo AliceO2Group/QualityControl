@@ -41,7 +41,7 @@ static const Char_t* RDHCounterName[kNRDHCounters] = { "counterA", "counterB" };
 
 /// Number of DRM counters
 enum EDRMCounter_t {
-  kNDRMCounters = 11
+  kNDRMCounters = 14
 };
 /// Name of DRM counters
 static const Char_t* DRMCounterName[kNDRMCounters] = {
@@ -84,9 +84,7 @@ static const Char_t* TRMCounterName[kNTRMCounters] = {
 
 /// TRM Chain: counters there will be 20 instances of such counters per crate
 enum ETRMChainCounter_t {
-  kTRMChainCounter_Data,
-  kTRMChainCounter_Error,
-  kNTRMChainCounters
+  kNTRMChainCounters = 2
 };
 static const Char_t* TRMChainCounterName[kNTRMChainCounters] = { "counterA", "counterB" };
 
@@ -111,9 +109,6 @@ class Diagnostics /*final*/
   static const int ncrates = 72;
   static const int ntrms = 10;
   static const int ntrmschains = 2;
-  // static const int nslots = 14;
-  // CounterMatrix<ncrates, nslots, ECrateCounter_t, kNCrateCounters> mDiagnostic;
-  // CrateCounter crate_counter[ncrates];
   Counter<counters::ERDHCounter_t, counters::kNRDHCounters, counters::RDHCounterName> mRDHCounter[ncrates];
   Counter<counters::EDRMCounter_t, counters::kNDRMCounters, counters::DRMCounterName> mDRMCounter[ncrates];
   Counter<counters::ETRMCounter_t, counters::kNTRMCounters, counters::TRMCounterName> mTRMCounter[ncrates][ntrms];
