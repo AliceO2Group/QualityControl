@@ -11,6 +11,7 @@
 #include "QualityControl/TaskInterface.h"
 #include "MCH/MuonChambersMapping.h"
 #include "MCH/MuonChambersDataDecoder.h"
+#include "MCHBase/Digit.h"
 
 class TH1F;
 class TH2F;
@@ -40,7 +41,8 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(Activity& activity) override;
   void startOfCycle() override;
-  void monitorData(o2::framework::ProcessingContext& ctx) override;
+  void monitorDataReadout(o2::framework::ProcessingContext& ctx);
+  void monitorDataDigits(o2::framework::ProcessingContext& ctx);
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
@@ -51,6 +53,13 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
   uint64_t nhits[MCH_MAX_CRU_IN_FLP][24][40][64];
   double pedestal[MCH_MAX_CRU_IN_FLP][24][40][64];
   double noise[MCH_MAX_CRU_IN_FLP][24][40][64];
+    
+    //Matrices [de][padid], stated an upper value for de# and padid#
+    
+    uint64_t nhitsDigits[1100][1500];
+    double pedestalDigits[1100][1500];
+    double noiseDigits[1100][1500];
+    
   MapCRU mMapCRU[MCH_MAX_CRU_IN_FLP];
   TH1F* mHistogram;
   TH2F* mHistogramPedestals[MCH_MAX_CRU_IN_FLP * 24];

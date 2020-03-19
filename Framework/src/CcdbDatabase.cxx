@@ -164,7 +164,7 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
   std::shared_ptr<TObject> obj = retrieveTObject(qoPath, timestamp);
   std::shared_ptr<QualityObject> qo = std::dynamic_pointer_cast<QualityObject>(obj);
   if (qo == nullptr) {
-    LOG(ERROR) << "Could not cast the object " << qoPath << " to QualityObject";
+    ILOG(Error) << "Could not cast the object " << qoPath << " to QualityObject";
   }
   return qo;
 }

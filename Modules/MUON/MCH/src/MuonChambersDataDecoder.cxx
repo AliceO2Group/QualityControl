@@ -12,6 +12,7 @@
 #include "Headers/RAWDataHeader.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "MCH/MuonChambersDataDecoder.h"
+#include "MCHBase/Digit.h"
 
 using namespace std;
 
@@ -1058,6 +1059,7 @@ void MuonChambersDataDecoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords,
   }
 }
 
+
 void MuonChambersDataDecoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, int cru_id, int dpw_id)
 {
   uint64_t* payload_buf = (uint64_t*)payload_buf_32;
@@ -1458,9 +1460,15 @@ void MuonChambersDataDecoder::clearHits()
   mHits.clear();
 }
 
+void MuonChambersDataDecoder::clearDigits()
+{
+  mDigits.clear();
+}
+
 void MuonChambersDataDecoder::reset()
 {
   clearHits();
+  clearDigits();
 }
 
 } // namespace muonchambers

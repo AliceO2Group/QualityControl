@@ -13,6 +13,10 @@
 #include "Headers/RAWDataHeader.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "MCH/RawDataProcessor.h"
+#include "MCHBase/Digit.h"
+#include "MCHMappingInterface/Segmentation.h"
+#include "MCHMappingInterface/CathodeSegmentation.h"
+#include "MCHRawElecMap/Mapper.h"
 
 using namespace std;
 
@@ -82,6 +86,13 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
         }
       }
     }
+      
+      for(int de=0; de<1100; de++){
+          for(int padid=0; padid<1500; padid++){
+              nhitsDigits[de][padid] = 0;
+              pedestalDigits[de][padid] = noiseDigits[de][padid] = 0;
+          }
+      }
 
     mDecoder.initialize();
 
@@ -202,7 +213,7 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  gPrintLevel = 0;
+  gPrintLevel = 5;
 
   flog = stdout; //fopen("/root/qc.log", "w");
 }
@@ -286,7 +297,7 @@ void RawDataProcessor::fill_noise_distributions()
   }
 }
 
-void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
+void RawDataProcessor::monitorDataReadout(o2::framework::ProcessingContext& ctx)
 {
   // todo: update API examples or refer to DPL README.md
 
@@ -501,6 +512,202 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
     mDecoder.clearHits();
   }
 }
+
+
+void RawDataProcessor::monitorDataDigits(o2::framework::ProcessingContext& ctx)
+{
+
+    //Copie de monitor data readout adaptee à la lecture de digits
+  // todo: update API examples or refer to DPL README.md
+
+  //QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
+  //fprintf(flog, "\n\n====================\nRawDataProcessor::monitorData\n====================\n");
+  //fprintf(flog,"count: %d\n", count);
+
+  if ((count % 10000) == 0 /*&& count <= 5000*/) {
+    TFile f("/tmp/qc.root", "RECREATE");
+    fill_noise_distributions();
+    for (int i = 0; i < MCH_MAX_CRU_IN_FLP * 24; i++) {
+      mHistogramNoise[i]->Write();
+      mHistogramPedestals[i]->Write();
+    }
+    for (int i = 0; i < 2; i++) {
+      auto ih = mHistogramPedestalsXY[i].begin();
+      while (ih != mHistogramPedestalsXY[i].end()) {
+        ih->second->Write();
+        ih++;
+      }
+    }
+    for (int i = 0; i < 2; i++) {
+      auto ih = mHistogramNoiseXY[i].begin();
+      while (ih != mHistogramNoiseXY[i].end()) {
+        ih->second->Write();
+        ih++;
+      }
+    }
+    {
+      auto ih = mHistogramPedestalsDE.begin();
+      while (ih != mHistogramPedestalsDE.end()) {
+        ih->second->Write();
+        ih++;
+      }
+    }
+    {
+      auto ih = mHistogramNoiseDE.begin();
+      while (ih != mHistogramNoiseDE.end()) {
+        ih->second->Write();
+        ih++;
+      }
+    }
+    for (int pi = 0; pi < 5; pi++) {
+      for (int i = 0; i < 2; i++) {
+        auto ih = mHistogramNoiseDistributionDE[pi][i].begin();
+        while (ih != mHistogramNoiseDistributionDE[pi][i].end()) {
+          ih->second->Write();
+          ih++;
+        }
+      }
+    }
+
+    f.ls();
+    f.Close();
+    printf("count: %d\n", count);
+  }
+  count += 1;
+
+  // exemplary ways of accessing inputs (incoming data), that were specified in the .ini file - e.g.:
+  //  [readoutInput]
+  //  inputName=readout
+  //  dataOrigin=ITS
+  //  dataDescription=RAWDATA
+
+  // 1. in a loop
+  for (auto&& input : ctx.inputs()) {
+    //QcInfoLogger::GetInstance() << "run RawDataProcessor: input " << input.spec->binding << AliceO2::InfoLogger::InfoLogger::endm;
+
+    if (input.spec->binding != "digits")
+      continue;
+
+    const auto* header = o2::header::get<header::DataHeader*>(input.header);
+    //QcInfoLogger::GetInstance() << "header: " << header << AliceO2::InfoLogger::InfoLogger::endm;
+    if (gPrintLevel >= 1)
+      fprintf(flog, "Header: %p\n", header);
+    if (!header)
+      continue;
+    //QcInfoLogger::GetInstance() << "payloadSize: " << header->payloadSize << AliceO2::InfoLogger::InfoLogger::endm;
+    if (gPrintLevel >= 1)
+      fprintf(flog, "payloadSize: %d\n", (int)header->payloadSize);
+    if (gPrintLevel >= 1)
+      fprintf(flog, "payload: %p\n", input.payload);
+    mHistogram->Fill(header->payloadSize);
+    //continue;
+
+
+      //Recuperer le buffer digit dpl tel qu'on l'a envoyé
+      
+      std::vector<o2::mch::Digit> digits{0};
+      o2::mch::Digit* digitsBuffer = NULL;
+      digitsBuffer = (o2::mch::Digit*)input.payload;
+      int ndigits = (int)((int)header->payloadSize/sizeof(o2::mch::Digit));
+      
+      std::cout << "There are " << ndigits << " digits in the payload" <<std::endl;
+
+      o2::mch::Digit* ptr = (o2::mch::Digit*)digitsBuffer;
+      for(unsigned int di = 0; di < ndigits; di++) {
+          digits.push_back(*ptr);
+        ptr += 1;
+      }
+      
+      
+    if (gPrintLevel >= 1)
+      fprintf(flog, "digits size: %d\n", digits.size());
+    for (uint32_t i = 0; i < digits.size(); i++) {
+      //continue;
+      o2::mch::Digit& digit = digits[i];
+        int ADC = digit.getADC();
+        int de = digit.getDetID();
+        int padid = digit.getPadID();
+
+      if (ADC < 0 || de < 0 || padid < 0) {
+        fprintf(stdout, "digit[%d]: ADC=%d, DetId=%d, PadId=%d\n",
+                i, ADC, de, padid);
+        continue;
+      }
+
+
+
+    // APPELER LA SEGMENTATION
+
+               o2::mch::mapping::Segmentation segment(de);
+
+            double padX = segment.padPositionX(padid);
+            double padY = segment.padPositionY(padid);
+            float padSizeX = segment.padSizeX(padid);
+            float padSizeY = segment.padSizeY(padid);
+            int dsid = segment.padDualSampaId(padid);
+            int dsch = segment.padDualSampaChannel(padid);
+            int cathode = segment.isBendingPad(padid) ? 0 : 1;
+            int solarid = 0;
+            int cru_id = 0;
+            int link_id = 0;
+
+
+
+        nhitsDigits[de][padid] += 1;
+        uint64_t N = nhitsDigits[de][padid];
+
+        double p0 = pedestalDigits[de][padid];
+        double p = p0 + (ADC - p0) / N;
+        pedestalDigits[de][padid] = p;
+
+        double M0 = noiseDigits[de][padid];
+        double M = M0 + (ADC - p0) * (ADC - p);
+        noiseDigits[de][padid] = M;
+
+    
+      double rms = std::sqrt(noiseDigits[de][padid] /
+                             nhitsDigits[de][padid]);
+    
+
+
+      if (de < 0)
+        continue;
+
+
+      auto hPedXY = mHistogramPedestalsXY[cathode].find(de);
+      if ((hPedXY != mHistogramPedestalsXY[cathode].end()) && (hPedXY->second != NULL)) {
+        //fprintf(flog,"Filling histograms for XY %d,%d -> %f,%f + %f,%f\n", de, hit.pad.fCathode, padX, padY, padSizeX, padSizeY);
+        int binx_min = hPedXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
+        int binx_max = hPedXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
+        int biny_min = hPedXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
+        int biny_max = hPedXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
+        //fprintf(flog, "  binx_min=%f binx_max=%f\n", binx_min, binx_max);
+        for (int by = biny_min; by <= biny_max; by++) {
+          for (int bx = binx_min; bx <= binx_max; bx++) {
+            hPedXY->second->SetBinContent(bx, by, pedestalDigits[de][padid]);
+          }
+        }
+      }
+      auto hNoiseXY = mHistogramNoiseXY[cathode].find(de);
+      if ((hNoiseXY != mHistogramNoiseXY[cathode].end()) && (hNoiseXY->second != NULL)) {
+        //fprintf(stdout,"Filling histograms for XY %d\n", de);
+        int binx_min = hNoiseXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
+        int binx_max = hNoiseXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
+        int biny_min = hNoiseXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
+        int biny_max = hNoiseXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
+        for (int by = biny_min; by <= biny_max; by++) {
+          for (int bx = binx_min; bx <= binx_max; bx++) {
+            hNoiseXY->second->SetBinContent(bx, by, rms);
+          }
+        }
+      }
+    }
+
+    mDecoder.clearDigits();
+  }
+}
+
+
 
 void RawDataProcessor::endOfCycle()
 {

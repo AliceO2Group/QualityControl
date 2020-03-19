@@ -9,6 +9,7 @@
 #include "QualityControl/TaskInterface.h"
 #include "MCH/sampa_header.h"
 #include "MCH/MuonChambersMapping.h"
+#include "MCHBase/Digit.h"
 
 using namespace o2::quality_control::core;
 
@@ -79,7 +80,9 @@ class MuonChambersDataDecoder
   void decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int link_id);
   void decodeUL(uint32_t* payload_buf, size_t nWords, int cru_id, int dpw_id);
   void clearHits();
+  void clearDigits();
   std::vector<SampaHit>& getHits() { return mHits; }
+  std::vector<o2::mch::Digit>& getDigits() { return mDigits; }
   void reset();
 
   int32_t getMapCRU(int cruid, int linkid) { return mMapCRU.getLink(cruid, linkid); }
@@ -96,6 +99,7 @@ class MuonChambersDataDecoder
   DualSampaGroup dsg[MCH_MAX_CRU_ID][24][8];
   int ds_enable[MCH_MAX_CRU_IN_FLP][24][40];
   std::vector<SampaHit> mHits;
+  std::vector<o2::mch::Digit> mDigits;
   int nFrames;
   MapCRU mMapCRU;
   MapFEC mMapFEC;

@@ -43,7 +43,7 @@
       "id": "readout",
       "active": "true",
       "machines": [],
-      "query" : "readout:ROUT/RAWDATA",
+      "query" : "digits:MCH/DIGITS",
       "samplingConditions": [
         {
           "condition": "random",
