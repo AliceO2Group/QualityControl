@@ -88,7 +88,7 @@ class MuonChambersDataDecoder
   int32_t getMapCRU(int cruid, int linkid) { return mMapCRU.getLink(cruid, linkid); }
   int32_t getMapFEC(uint32_t link_id, uint32_t ds_addr, uint32_t& de, uint32_t& dsid)
   {
-    mMapFEC.getDSMapping(link_id, ds_addr, de, dsid);
+    if( !mMapFEC.getDSMapping(link_id, ds_addr, de, dsid) ) return -1;
     return de;
   }
   MapFEC& getMapFEC() { return mMapFEC; }
