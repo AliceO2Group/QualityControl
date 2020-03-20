@@ -167,7 +167,7 @@ As this class is a post-processing task, it inherits also its configuration JSON
 }
 ```
 
-Data sources are defined by filling the corresponding structure, as in the example below. For the key `"type"` use the value `"repository"` if you access a Monitor Object and `"repository-quality"` if that should be a Quality (this will be unified in the future). The fields `"path"` and `"name"` should point to the object in the repository. The values of `"reductorName"` and `"moduleName"` should point to a full name of a data Reductor and a library where it is located. One can use the Reductors available in the `Common` module or write their own by inheriting the interface class.
+Data sources are defined by filling the corresponding structure, as in the example below. For the key `"type"` use the value `"repository"` if you access a Monitor Object and `"repository-quality"` if that should be a Quality (this will be unified in the future). The `"names"` array should point to one or more objects under a common `"path"` in the repository. The values of `"reductorName"` and `"moduleName"` should point to a full name of a data Reductor and a library where it is located. One can use the Reductors available in the `Common` module or write their own by inheriting the interface class.
 
 ``` json
 {
@@ -176,14 +176,14 @@ Data sources are defined by filling the corresponding structure, as in the examp
           {
             "type": "repository",
             "path": "qc/TST/QcTask",
-            "name": "example",
+            "names": [ "example" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
             "path": "qc/checks",
-            "name": "QcCheck",
+            "names": [ "QcCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
           }
