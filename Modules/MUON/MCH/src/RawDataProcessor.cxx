@@ -302,7 +302,7 @@ void RawDataProcessor::monitorDataReadout(o2::framework::ProcessingContext& ctx)
   // todo: update API examples or refer to DPL README.md
 
   //QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
-  //fprintf(flog, "\n\n====================\nRawDataProcessor::monitorData\n====================\n");
+  fprintf(flog, "\n\n====================\nRawDataProcessor::monitorDataReadout\n====================\n");
   //fprintf(flog,"count: %d\n", count);
 
   if ((count % 10000) == 0 /*&& count <= 5000*/) {
@@ -514,14 +514,14 @@ void RawDataProcessor::monitorDataReadout(o2::framework::ProcessingContext& ctx)
 }
 
 
-void RawDataProcessor::monitorDataDigits(o2::framework::ProcessingContext& ctx)
+void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
     //Copie de monitor data readout adaptee à la lecture de digits
   // todo: update API examples or refer to DPL README.md
 
   //QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
-  //fprintf(flog, "\n\n====================\nRawDataProcessor::monitorData\n====================\n");
+  fprintf(flog, "\n\n====================\nRawDataProcessor::monitorDataDigits\n====================\n");
   //fprintf(flog,"count: %d\n", count);
 
   if ((count % 10000) == 0 /*&& count <= 5000*/) {

@@ -42,7 +42,7 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
   void startOfActivity(Activity& activity) override;
   void startOfCycle() override;
   void monitorDataReadout(o2::framework::ProcessingContext& ctx);
-  void monitorDataDigits(o2::framework::ProcessingContext& ctx);
+  void monitorData(o2::framework::ProcessingContext& ctx);
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
