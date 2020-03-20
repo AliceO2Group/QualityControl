@@ -514,7 +514,7 @@ void RawDataProcessor::monitorDataReadout(o2::framework::ProcessingContext& ctx)
 }
 
 
-void RawDataProcessor::monitorDataDigits(o2::framework::ProcessingContext& ctx)
+void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
     //Copie de monitor data readout adaptee à la lecture de digits
