@@ -10,6 +10,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "MCH/MuonChambersMapping.h"
+#include "MCHMappingFactory/CreateSegmentation.h"
 #include "MCH/MuonChambersDataDecoder.h"
 #include "MCHBase/Digit.h"
 
@@ -31,7 +32,7 @@ namespace muonchambers
 /// \author Piotr Konopka
 class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
- public:
+public:
   /// \brief Constructor
   RawDataProcessor();
   /// Destructor
@@ -42,24 +43,25 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
   void startOfActivity(Activity& activity) override;
   void startOfCycle() override;
   void monitorDataReadout(o2::framework::ProcessingContext& ctx);
+  void monitorDataDigits(const o2::framework::DataRef& input);
   void monitorData(o2::framework::ProcessingContext& ctx);
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
- private:
+private:
   int count;
   MuonChambersDataDecoder mDecoder;
   uint64_t nhits[MCH_MAX_CRU_IN_FLP][24][40][64];
   double pedestal[MCH_MAX_CRU_IN_FLP][24][40][64];
   double noise[MCH_MAX_CRU_IN_FLP][24][40][64];
-    
-    //Matrices [de][padid], stated an upper value for de# and padid#
-    
-    uint64_t nhitsDigits[1100][1500];
-    double pedestalDigits[1100][1500];
-    double noiseDigits[1100][1500];
-    
+
+  //Matrices [de][padid], stated an upper value for de# and padid#
+
+  uint64_t nhitsDigits[1100][1500];
+  double pedestalDigits[1100][1500];
+  double noiseDigits[1100][1500];
+
   MapCRU mMapCRU[MCH_MAX_CRU_IN_FLP];
   TH1F* mHistogram;
   TH2F* mHistogramPedestals[MCH_MAX_CRU_IN_FLP * 24];
@@ -76,7 +78,10 @@ class RawDataProcessor /*final*/ : public TaskInterface // todo add back the "fi
 
   std::map<int, TH1F*> mHistogramNoiseDistributionDE[5][2];
 
+  int mPrintLevel;
+
   void fill_noise_distributions();
+  void save_histograms();
 };
 
 } // namespace muonchambers
