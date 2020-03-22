@@ -1,0 +1,171 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "localhost:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "ExampleTrendingPID": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TPC/PID",
+            "names": [ "hNClusters", "hPhi" ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository-quality",
+            "path": "qc/checks",
+            "name": "QcCheck",
+            "reductorName": "o2::quality_control_modules::common::QualityReductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "mean_of_hPhi",
+            "title": "Mean trend of hPhi",
+            "varexp": "hPhi.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "mean_of_hNClusters",
+            "title": "Mean trend of the number of clusters",
+            "varexp": "hNClusters.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "histogram_of_means_hNClusters",
+            "title": "Distribution of mean values in the number of clusters histograms",
+            "varexp": "hNClusters.mean",
+            "selection": "",
+            "option": ""
+          },
+          {
+            "name": "correlation_mean_stddev_hNClusters",
+            "title": "Correlation between the mean and stddev of the number of clusters",
+            "varexp": "hNClusters.mean:hNClusters.stddev",
+            "selection": "",
+            "option": "*"
+          },
+          {
+            "name": "correlation_stddev_entries_hNClusters",
+            "title": "Correlation between the stddev and entries of the number of clusters",
+            "varexp": "hNClusters.stddev:hNClusters.entries",
+            "selection": "",
+            "option": "*"
+          },
+          {
+            "name": "hNClusters_quality",
+            "title": "Trend of the example histogram's quality",
+            "varexp": "hNClusters.name:time",
+            "selection": "",
+            "option": "*"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "ExampleTrendingTracks": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TPC/Tracks",
+            "names": [ "hEta" ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository-quality",
+            "path": "qc/checks",
+            "name": "QcCheck",
+            "reductorName": "o2::quality_control_modules::common::QualityReductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "mean_of_hEta",
+            "title": "Mean trend of hEta",
+            "varexp": "hEta.mean:time",
+            "selection": "",
+            "option": "*L"
+          },
+          {
+            "name": "histogram_of_means_hEta",
+            "title": "Distribution of mean values of hEta",
+            "varexp": "hEta.mean",
+            "selection": "",
+            "option": ""
+          },
+          {
+            "name": "correlation_mean_stddev_hEta",
+            "title": "Correlation between the mean and stddev of hEta",
+            "varexp": "hEta.mean:hEta.stddev",
+            "selection": "",
+            "option": "*"
+          },
+          {
+            "name": "correlation_stddev_entries_hEta",
+            "title": "Correlation between the stddev and entries of hEta",
+            "varexp": "hEta.stddev:hEta.entries",
+            "selection": "",
+            "option": "*"
+          },
+          {
+            "name": "hEta_quality",
+            "title": "Trend of the example histogram's quality",
+            "varexp": "QcCheck.name:time",
+            "selection": "",
+            "option": "*"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}
