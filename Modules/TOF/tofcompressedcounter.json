@@ -23,9 +23,9 @@
       }
     },
     "tasks": {
-      "TOFTaskCompressedCounter": {
+      "TaskDiagnostics": {
         "active": "true",
-        "className": "o2::quality_control_modules::tof::TOFTaskCompressedCounter",
+        "className": "o2::quality_control_modules::tof::TaskDiagnostics",
         "moduleName": "QcTOF",
         "detectorName": "TOF",
         "cycleDurationSeconds": "60",
@@ -52,7 +52,7 @@
           "policy": "OnAny",
           "dataSource": [{
               "type": "Task",
-              "name": "TOFTaskCompressedCounter",
+              "name": "TaskDiagnostics",
               "MOs": ["RDHCounterCrate0"]
           }]
       }

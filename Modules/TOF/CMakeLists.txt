@@ -6,7 +6,7 @@ target_sources(QcTOF
                       # Tasks
               PRIVATE src/TOFTask.cxx
                       src/TOFTaskCompressed.cxx
-                      src/TOFTaskCompressedCounter.cxx
+                      src/TaskDiagnostics.cxx
                       # Checkers
                       src/TOFCheckCompressedCounter.cxx
                       src/TOFCheckDiagnostic.cxx
@@ -44,7 +44,7 @@ add_root_dictionary(QcTOF
                             # Tasks
                     HEADERS include/TOF/TOFTask.h
                             include/TOF/TOFTaskCompressed.h
-                            include/TOF/TOFTaskCompressedCounter.h
+                            include/TOF/TaskDiagnostics.h
                             # Checkers
                             include/TOF/TOFCheckDiagnostic.h
                             include/TOF/TOFCheckCompressedCounter.h
