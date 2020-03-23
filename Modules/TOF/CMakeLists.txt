@@ -15,7 +15,6 @@ target_sources(QcTOF
                       src/TOFCheckRawsToT.cxx
                       # Utilities
                       src/TOFDecoderCompressed.cxx
-                      src/Counter.cxx
                       src/Diagnostics.cxx
                 )
 
