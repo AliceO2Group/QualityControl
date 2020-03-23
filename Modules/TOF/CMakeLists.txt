@@ -86,7 +86,7 @@ endforeach()
 
 install(FILES tof.json
               tofcompressed.json
-              tofcompressedcounter.json
+              tofdiagnostics.json
         DESTINATION etc)
 
 get_property(dirs
