@@ -60,7 +60,7 @@
   },
   "dataSamplingPolicies": [
     {
-      "id": "pippo",
+      "id": "tofrawdata",
       "active": "true",
       "machines": [],
       "query": "dataframe:TOF/CRAWDATA",
