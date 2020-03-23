@@ -32,8 +32,8 @@ namespace o2::quality_control_modules::tof
 
 /// \brief TOF Quality Control DPL Task for TOF Compressed data
 /// \author Nicolo' Jacazio
-class TaskDiagnostics /*final*/
-  : public TaskInterface       // todo add back the "final" when doxygen is fixed
+class TaskDiagnostics    /*final*/
+  : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
