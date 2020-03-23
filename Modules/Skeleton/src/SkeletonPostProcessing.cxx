@@ -10,7 +10,7 @@
 
 ///
 /// \file   PostProcessingInterface.cxx
-/// \author Piotr Konopka
+/// \author My Name
 ///
 
 #include "Skeleton/SkeletonPostProcessing.h"

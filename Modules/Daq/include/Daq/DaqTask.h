@@ -32,7 +32,7 @@ namespace o2::quality_control_modules::daq
 /// \brief Example Quality Control Task
 /// It is final because there is no reason to derive from it. Just remove it if needed.
 /// \author Barthelemy von Haller
-class DaqTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class DaqTask final : public TaskInterface
 {
  public:
   /// \brief Constructor

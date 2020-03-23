@@ -31,7 +31,6 @@ const char* TH2Reductor::getBranchLeafList()
 
 void TH2Reductor::update(TObject* obj)
 {
-  // todo: use GetStats() instead?
   auto histo = dynamic_cast<TH2*>(obj);
   if (histo) {
     histo->GetStats(mStats.sums.array);

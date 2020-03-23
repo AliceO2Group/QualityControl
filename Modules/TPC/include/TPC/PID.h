@@ -29,11 +29,10 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::tpc
 {
 
-/// \brief Example Quality Control DPL Task
+/// \brief TPC PID QC Task
 /// It is final because there is no reason to derive from it. Just remove it if needed.
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
-class PID /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+/// \author Jens Wiechula
+class PID final : public TaskInterface
 {
  public:
   /// \brief Constructor

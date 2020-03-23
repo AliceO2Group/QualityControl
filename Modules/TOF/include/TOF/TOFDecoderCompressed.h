@@ -30,9 +30,7 @@ namespace o2::quality_control_modules::tof
 
 /// \brief TOF Quality Control class for Decoding Compressed data for TOF Compressed data QC Task
 /// \author Nicolo' Jacazio
-class TOFDecoderCompressed /*final*/
-  : public DecoderBase
-// todo add back the "final" when doxygen is fixed
+class TOFDecoderCompressed final : public DecoderBase
 {
  public:
   /// \brief Constructor

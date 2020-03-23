@@ -9,8 +9,8 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    SkeletonPostProcessing.cxx
-/// \author  Piotr Konopka
+/// \file   SkeletonPostProcessing.h
+/// \author My Name
 ///
 
 #ifndef QUALITYCONTROL_SKELETONPOSTPROCESSING_H
@@ -24,7 +24,7 @@ namespace o2::quality_control_modules::skeleton
 {
 
 /// \brief Example Quality Control Postprocessing Task
-/// \author Piotr Konopka
+/// \author My Name
 class SkeletonPostProcessing final : public quality_control::postprocessing::PostProcessingInterface
 {
  public:
