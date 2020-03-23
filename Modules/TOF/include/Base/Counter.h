@@ -32,8 +32,6 @@ namespace o2::quality_control_modules::tof
 /// \author Nicolo' Jacazio
 template <typename Tc, Tc size, const TString* names>
 class Counter
-// : TObject /*final*/
-// todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
@@ -60,7 +58,7 @@ class Counter
     }
   }
   /// Function to get how many counts where observed
-  uint32_t HowMany(UInt_t pos) const { return counter[pos]; };
+  uint32_t HowMany(UInt_t pos) const { return counter[pos]; }
   /// Function to make a histogram out of the counters
   void MakeHistogram(TH1* h) const
   {
@@ -107,7 +105,7 @@ class Counter
 #endif
   }
   /// Getter for the size
-  Tc Size() const { return size; };
+  Tc Size() const { return size; }
 
  private:
   /// Containers to fill

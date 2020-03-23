@@ -94,9 +94,8 @@ using namespace counters;
 
 /// \brief TOF Quality Control class for Decoding Compressed data for TOF Compressed data QC Task
 /// \author Nicolo' Jacazio
-class Diagnostics /*final*/
+class Diagnostics final
   : public DecoderBase
-// todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
