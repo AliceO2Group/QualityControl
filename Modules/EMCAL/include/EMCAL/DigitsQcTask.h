@@ -33,7 +33,7 @@ namespace emcal
 /// Monitoring observables:
 /// - Digit amplitude for different towers
 /// - Digit time for different towers
-class DigitsQcTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class DigitsQcTask final : public TaskInterface
 {
  public:
   /// \brief Constructor

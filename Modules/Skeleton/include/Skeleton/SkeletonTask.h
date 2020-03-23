@@ -10,8 +10,7 @@
 
 ///
 /// \file   SkeletonTask.h
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
+/// \author My Name
 ///
 
 #ifndef QC_MODULE_SKELETON_SKELETONTASK_H
@@ -27,10 +26,8 @@ namespace o2::quality_control_modules::skeleton
 {
 
 /// \brief Example Quality Control DPL Task
-/// It is final because there is no reason to derive from it. Just remove it if needed.
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
-class SkeletonTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+/// \author My Name
+class SkeletonTask final : public TaskInterface
 {
  public:
   /// \brief Constructor

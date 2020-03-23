@@ -10,7 +10,7 @@
 
 ///
 /// \file   SkeletonCheck.cxx
-/// \author Piotr Konopka
+/// \author My Name
 ///
 
 #include "Skeleton/SkeletonCheck.h"

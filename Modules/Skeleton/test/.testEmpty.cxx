@@ -10,7 +10,7 @@
 
 ///
 /// \file   .testEmpty.cxx
-/// \author
+/// \author My Name
 ///
 
 #include "QualityControl/TaskFactory.h"

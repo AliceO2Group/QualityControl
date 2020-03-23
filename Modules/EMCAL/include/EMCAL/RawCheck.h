@@ -25,10 +25,10 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::emcal
 {
 
-/// \brief Example Quality Control DPL Task
+/// \brief EMCAL raw data check
 /// It is final because there is no reason to derive from it. Just remove it if needed.
-/// \author Barthelemy von Haller
-class RawCheck /*final*/ : public o2::quality_control::checker::CheckInterface // todo add back the "final" when doxygen is fixed
+/// \author Cristina Terrevoli
+class RawCheck final : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
