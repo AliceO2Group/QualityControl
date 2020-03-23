@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFTaskCompressedCounter.cxx
+/// \file   TaskDiagnostics.cxx
 /// \author Nicolo' Jacazio
 ///
 
@@ -23,14 +23,14 @@
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
-#include "TOF/TOFTaskCompressedCounter.h"
+#include "TOF/TaskDiagnostics.h"
 
 namespace o2::quality_control_modules::tof
 {
 
-void TOFTaskCompressedCounter::initialize(o2::framework::InitContext& /*ctx*/)
+void TaskDiagnostics::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize TOFTaskCompressedCounter" << ENDM;
+  ILOG(Info) << "initialize TaskDiagnostics" << ENDM;
 #ifdef ENABLE_2D_HISTOGRAMS
   // WARNING X axis is reserved to the counter
   // WARNING! Here the histograms have to be larger than the counter size, otherwise in memory they will be badly handled with undefined behaviour. I.e. put more bins than necessary, they will be trimmed out later.
@@ -67,20 +67,20 @@ void TOFTaskCompressedCounter::initialize(o2::framework::InitContext& /*ctx*/)
 #endif
 } // namespace o2::quality_control_modules::tof
 
-void TOFTaskCompressedCounter::startOfActivity(Activity& /*activity*/)
+void TaskDiagnostics::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info) << "startOfActivity" << ENDM;
   reset();
 }
 
-void TOFTaskCompressedCounter::startOfCycle()
+void TaskDiagnostics::startOfCycle()
 {
   ILOG(Info) << "startOfCycle" << ENDM;
 }
 
-void TOFTaskCompressedCounter::monitorData(o2::framework::ProcessingContext& ctx)
+void TaskDiagnostics::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  LOG(INFO) << "Monitoring in the TOFTaskCompressedCounter";
+  LOG(INFO) << "Monitoring in the TaskDiagnostics";
 
   /** receive input **/
   for (auto& input : ctx.inputs()) {
@@ -115,17 +115,17 @@ void TOFTaskCompressedCounter::monitorData(o2::framework::ProcessingContext& ctx
 #endif
 }
 
-void TOFTaskCompressedCounter::endOfCycle()
+void TaskDiagnostics::endOfCycle()
 {
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 
-void TOFTaskCompressedCounter::endOfActivity(Activity& /*activity*/)
+void TaskDiagnostics::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info) << "endOfActivity" << ENDM;
 }
 
-void TOFTaskCompressedCounter::reset()
+void TaskDiagnostics::reset()
 {
   // clean all the monitor objects here
 

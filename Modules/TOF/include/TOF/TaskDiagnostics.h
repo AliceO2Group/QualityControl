@@ -9,12 +9,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFTaskCompressedCounter.h
+/// \file   TaskDiagnostics.h
 /// \author Nicolo' Jacazio
 ///
 
-#ifndef QC_MODULE_TOF_TOFTASKCOMPRESSEDCOUNTER_H
-#define QC_MODULE_TOF_TOFTASKCOMPRESSEDCOUNTER_H
+#ifndef QC_MODULE_TOF_TASKDIAGNOSTICS_H
+#define QC_MODULE_TOF_TASKDIAGNOSTICS_H
 
 #define ENABLE_2D_HISTOGRAMS // Flag to enable 2D histograms
 
@@ -32,14 +32,14 @@ namespace o2::quality_control_modules::tof
 
 /// \brief TOF Quality Control DPL Task for TOF Compressed data
 /// \author Nicolo' Jacazio
-class TOFTaskCompressedCounter /*final*/
+class TaskDiagnostics /*final*/
   : public TaskInterface       // todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
-  TOFTaskCompressedCounter() = default;
+  TaskDiagnostics() = default;
   /// Destructor
-  ~TOFTaskCompressedCounter() override = default;
+  ~TaskDiagnostics() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -69,4 +69,4 @@ class TOFTaskCompressedCounter /*final*/
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFTASKCOMPRESSEDCOUNTER_H
+#endif // QC_MODULE_TOF_TASKDIAGNOSTICS_H
