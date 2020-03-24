@@ -19,7 +19,7 @@ install(TARGETS QcITSRawTask
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-# ---- ROOT dictionary ----
+# ---- ROOT dictionary  ----
 
 add_root_dictionary(QcITSRawTask
                     HEADERS include/ITS/ITSRawTask.h
