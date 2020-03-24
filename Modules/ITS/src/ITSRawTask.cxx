@@ -3,6 +3,8 @@
 /// \author Zhaozhong Shi
 /// \author Markus Keil
 /// \author Mario Sitta
+/// \author Jian Liu
+/// \author Liang Zhang
 /// \brief  ITS QC task for raw data analysis
 ///
 
