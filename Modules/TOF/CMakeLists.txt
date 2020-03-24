@@ -3,13 +3,20 @@
 add_library(QcTOF)
 
 target_sources(QcTOF 
+                      # Tasks
               PRIVATE src/TOFTask.cxx
                       src/TOFTaskCompressed.cxx
-                      src/TOFDecoderCompressed.cxx
+                      src/TaskDiagnostics.cxx
+                      # Checkers
+                      src/TOFCheckCompressedCounter.cxx
                       src/TOFCheckDiagnostic.cxx
                       src/TOFCheckRawsMulti.cxx
-                      src/TOFCheckRawsTime.cxx 
-                      src/TOFCheckRawsToT.cxx)
+                      src/TOFCheckRawsTime.cxx
+                      src/TOFCheckRawsToT.cxx
+                      # Utilities
+                      src/TOFDecoderCompressed.cxx
+                      src/Diagnostics.cxx
+                )
 
 target_include_directories(
   QcTOF
@@ -33,13 +40,20 @@ install(TARGETS QcTOF
 # ---- ROOT dictionary ----
 
 add_root_dictionary(QcTOF
+                            # Tasks
                     HEADERS include/TOF/TOFTask.h
                             include/TOF/TOFTaskCompressed.h
-                            include/TOF/TOFDecoderCompressed.h
+                            include/TOF/TaskDiagnostics.h
+                            # Checkers
                             include/TOF/TOFCheckDiagnostic.h
+                            include/TOF/TOFCheckCompressedCounter.h
                             include/TOF/TOFCheckRawsMulti.h
                             include/TOF/TOFCheckRawsTime.h
                             include/TOF/TOFCheckRawsToT.h
+                            # Utilities
+                            include/TOF/TOFDecoderCompressed.h
+                            include/Base/Counter.h
+                            include/TOF/Diagnostics.h
                     LINKDEF include/TOF/LinkDef.h
                     BASENAME QcTOF)
 
@@ -69,7 +83,10 @@ endforeach()
 
 # ---- Extra scripts ----
 
-install(FILES tof.json tofcompressed.json DESTINATION etc)
+install(FILES tof.json
+              tofcompressed.json
+              tofdiagnostics.json
+        DESTINATION etc)
 
 get_property(dirs
              DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
