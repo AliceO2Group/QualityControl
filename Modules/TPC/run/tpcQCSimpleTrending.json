@@ -38,8 +38,8 @@
           },
           {
             "type": "repository-quality",
-            "path": "qc/checks",
-            "name": "QcCheck",
+            "path": "qc/checks/TPC",
+            "names": [ "PIDClusterCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
           }
@@ -81,9 +81,9 @@
             "option": "*"
           },
           {
-            "name": "hNClusters_quality",
+            "name": "PIDClusterCheck_quality",
             "title": "Trend of the example histogram's quality",
-            "varexp": "hNClusters.name:time",
+            "varexp": "PIDClusterCheck.name:time",
             "selection": "",
             "option": "*"
           }
@@ -107,51 +107,51 @@
           {
             "type": "repository",
             "path": "qc/TPC/Tracks",
-            "names": [ "hEta" ],
+            "names": [ "hNClustersBeforeCuts" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
-            "path": "qc/checks",
-            "name": "QcCheck",
+            "path": "qc/checks/TPC",
+            "names": [ "TrackClusterCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
           }
         ],
         "plots": [
           {
-            "name": "mean_of_hEta",
-            "title": "Mean trend of hEta",
-            "varexp": "hEta.mean:time",
+            "name": "mean_of_hNClustersBeforeCuts",
+            "title": "Mean trend of hNClustersBeforeCuts",
+            "varexp": "hNClustersBeforeCuts.mean:time",
             "selection": "",
             "option": "*L"
           },
           {
-            "name": "histogram_of_means_hEta",
-            "title": "Distribution of mean values of hEta",
-            "varexp": "hEta.mean",
+            "name": "histogram_of_means_hNClustersBeforeCuts",
+            "title": "Distribution of mean values of hNClustersBeforeCuts",
+            "varexp": "hNClustersBeforeCuts.mean",
             "selection": "",
             "option": ""
           },
           {
-            "name": "correlation_mean_stddev_hEta",
-            "title": "Correlation between the mean and stddev of hEta",
-            "varexp": "hEta.mean:hEta.stddev",
+            "name": "correlation_mean_stddev_hNClustersBeforeCuts",
+            "title": "Correlation between the mean and stddev of hNClustersBeforeCuts",
+            "varexp": "hNClustersBeforeCuts.mean:hNClustersBeforeCuts.stddev",
             "selection": "",
             "option": "*"
           },
           {
-            "name": "correlation_stddev_entries_hEta",
-            "title": "Correlation between the stddev and entries of hEta",
-            "varexp": "hEta.stddev:hEta.entries",
+            "name": "correlation_stddev_entries_hNClustersBeforeCuts",
+            "title": "Correlation between the stddev and entries of hNClustersBeforeCuts",
+            "varexp": "hNClustersBeforeCuts.stddev:hNClustersBeforeCuts.entries",
             "selection": "",
             "option": "*"
           },
           {
-            "name": "hEta_quality",
-            "title": "Trend of the example histogram's quality",
-            "varexp": "QcCheck.name:time",
+            "name": "TrackClusterCheck_quality",
+            "title": "Trend of the quality of TrackClusterCheck",
+            "varexp": "TrackClusterCheck.name:time",
             "selection": "",
             "option": "*"
           }
