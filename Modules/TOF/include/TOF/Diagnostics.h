@@ -30,63 +30,38 @@ namespace o2::quality_control_modules::tof
 {
 namespace counters
 {
-// Enums for counters
-
+// Structs for counters
 /// RDH counters: there will only be one instance of such counters per crate
-enum ERDHCounter_t {
-  kNRDHCounters = 2
-};
-/// Name of RDH counters
-static const TString RDHCounterName[kNRDHCounters] = { "counterA", "counterB" };
-
-/// Number of DRM counters
-enum EDRMCounter_t {
-  kNDRMCounters = 14
-};
-/// Name of DRM counters
-static const TString DRMCounterName[kNDRMCounters] = {
-  "DRM_HAS_DATA", // DRM has read some data
-  "",             // Empty for now
-  "",             // Empty for now
-  "",             // Empty for now
-  "DRM_HEADER_MISSING",
-  "DRM_TRAILER_MISSING",
-  "DRM_FEEID_MISMATCH",
-  "DRM_ORBIT_MISMATCH",
-  "DRM_CRC_MISMATCH",
-  "DRM_ENAPARTMASK_DIFFER",
-  "DRM_CLOCKSTATUS_WRONG",
-  "DRM_FAULTSLOTMASK_NOTZERO",
-  "DRM_READOUTTIMEOUT_NOTZERO",
-  "DRM_MAXDIAGNOSTIC_BIT"
+struct ERDHCounter_t {
+  /// Number of RDH counters
+  static const UInt_t size = 2;
+  /// Name of RDH counters
+  static const TString names[size];
 };
 
-/// Number of TRM counters
-enum ETRMCounter_t {
-  kNTRMCounters = 13
-};
-/// Name of TRM counters
-static const TString TRMCounterName[kNTRMCounters] = {
-  "TRM_HAS_DATA", // TRM has read some data
-  "",             // Empty for now
-  "",             // Empty for now
-  "",             // Empty for now
-  "TRM_HEADER_MISSING",
-  "TRM_TRAILER_MISSING",
-  "TRM_CRC_MISMATCH",
-  "TRM_HEADER_UNEXPECTED",
-  "TRM_EVENTCNT_MISMATCH",
-  "TRM_EMPTYBIT_NOTZERO",
-  "TRM_LBIT_NOTZERO",
-  "TRM_FAULTSLOTBIT_NOTZERO",
-  "TRM_MAXDIAGNOSTIC_BIT"
+/// DRM counters: there will only be one instance of such counters per crate
+struct EDRMCounter_t {
+  /// Number of DRM counters
+  static const UInt_t size = 14;
+  /// Name of DRM counters
+  static const TString names[size];
 };
 
-/// TRM Chain: counters there will be 20 instances of such counters per crate
-enum ETRMChainCounter_t {
-  kNTRMChainCounters = 2
+/// TRM counters: there will only be ten instance of such counters per crate
+struct ETRMCounter_t {
+  /// Number of TRM counters
+  static const UInt_t size = 13;
+  /// Name of TRM counters
+  static const TString names[size];
 };
-static const TString TRMChainCounterName[kNTRMChainCounters] = { "counterA", "counterB" };
+
+/// TRMChain: counters there will be 20 instances of such counters per crate
+struct ETRMChainCounter_t {
+  /// Number of TRMChain counters
+  static const UInt_t size = 2;
+  /// Name of TRMChain counters
+  static const TString names[size];
+};
 
 } // namespace counters
 
@@ -107,13 +82,13 @@ class Diagnostics final
   void decode();
 
   /// Counters to fill
-  static const int ncrates = 72;
-  static const int ntrms = 10;
-  static const int ntrmschains = 2;
-  Counter<ERDHCounter_t, kNRDHCounters, RDHCounterName> mRDHCounter[ncrates];
-  Counter<EDRMCounter_t, kNDRMCounters, DRMCounterName> mDRMCounter[ncrates];
-  Counter<ETRMCounter_t, kNTRMCounters, TRMCounterName> mTRMCounter[ncrates][ntrms];
-  Counter<ETRMChainCounter_t, kNTRMChainCounters, TRMChainCounterName> mTRMChainCounter[ncrates][ntrms][ntrmschains];
+  static const int ncrates = 72;                                             /// Number of crates
+  static const int ntrms = 10;                                               /// Number of TRMs per crate
+  static const int ntrmschains = 2;                                          /// Number of TRMChains per TRM
+  Counter<ERDHCounter_t> mRDHCounter[ncrates];                               /// RDH Counters
+  Counter<EDRMCounter_t> mDRMCounter[ncrates];                               /// DRM Counters
+  Counter<ETRMCounter_t> mTRMCounter[ncrates][ntrms];                        /// TRM Counters
+  Counter<ETRMChainCounter_t> mTRMChainCounter[ncrates][ntrms][ntrmschains]; /// TRMChain Counters
 
  private:
   /** decoding handlers **/

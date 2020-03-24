@@ -28,6 +28,51 @@ using namespace o2::framework;
 namespace o2::quality_control_modules::tof
 {
 
+namespace counters
+{
+const TString ERDHCounter_t::names[ERDHCounter_t::size] = {
+  "counterA",
+  "counterB"
+};
+
+const TString EDRMCounter_t::names[EDRMCounter_t::size] = {
+  "DRM_HAS_DATA", // DRM has read some data
+  "",             // Empty for now
+  "",             // Empty for now
+  "",             // Empty for now
+  "DRM_HEADER_MISSING",
+  "DRM_TRAILER_MISSING",
+  "DRM_FEEID_MISMATCH",
+  "DRM_ORBIT_MISMATCH",
+  "DRM_CRC_MISMATCH",
+  "DRM_ENAPARTMASK_DIFFER",
+  "DRM_CLOCKSTATUS_WRONG",
+  "DRM_FAULTSLOTMASK_NOTZERO",
+  "DRM_READOUTTIMEOUT_NOTZERO",
+  "DRM_MAXDIAGNOSTIC_BIT"
+};
+
+const TString ETRMCounter_t::names[ETRMCounter_t::size] = {
+  "TRM_HAS_DATA", // TRM has read some data
+  "",             // Empty for now
+  "",             // Empty for now
+  "",             // Empty for now
+  "TRM_HEADER_MISSING",
+  "TRM_TRAILER_MISSING",
+  "TRM_CRC_MISMATCH",
+  "TRM_HEADER_UNEXPECTED",
+  "TRM_EVENTCNT_MISMATCH",
+  "TRM_EMPTYBIT_NOTZERO",
+  "TRM_LBIT_NOTZERO",
+  "TRM_FAULTSLOTBIT_NOTZERO",
+  "TRM_MAXDIAGNOSTIC_BIT"
+};
+
+const TString ETRMChainCounter_t::names[ETRMChainCounter_t::size] = {
+  "counterA",
+  "counterB"
+};
+} // namespace counters
 void Diagnostics::decode()
 {
   DecoderBase::run();
