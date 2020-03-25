@@ -69,9 +69,9 @@ bool MapCRU::readMapping(std::string mapFile)
 {
   std::ifstream file;
   file.open(mapFile);
-  printf("[MapCRU::readMapping]: opening \"%s\"\n", mapFile.c_str());
+  //printf("[MapCRU::readMapping]: opening \"%s\"\n", mapFile.c_str());
   if (!file) {
-    std::cerr << "Can't open file " << mapFile << std::endl;
+    QcInfoLogger::GetInstance() << "[MapCRU::readMapping] can't open file " << mapFile << AliceO2::InfoLogger::InfoLogger::endm;
     return false;
   }
 
@@ -90,9 +90,10 @@ bool MapCRU::readMapping(std::string mapFile)
     //printf("[MapCRU::readMapping]: added %d %d -> %d\n", c, l, link_id);
     mSolarMap[c][l].mLink = link_id;
   }
+  return true;
 }
 
-int32_t MapCRU::getLink(uint32_t c, uint32_t l)
+int32_t MapCRU::getLink(int32_t c, int32_t l)
 {
   int32_t result = -1;
   if (c < 0 || c >= MCH_MAX_CRU_IN_FLP)
@@ -114,7 +115,7 @@ bool MapFEC::readDSMapping(std::string mapFile)
   std::ifstream file;
   file.open(mapFile);
   if (!file) {
-    std::cerr << "Can't open file " << mapFile << std::endl;
+    QcInfoLogger::GetInstance() << "[MapFEC::readDSMapping] can't open file " << mapFile << AliceO2::InfoLogger::InfoLogger::endm;
     return false;
   }
 
@@ -152,6 +153,7 @@ bool MapFEC::getPadByLinkID(uint32_t link_id, uint32_t ds_addr, uint32_t dsch, M
   uint32_t de, dsid;
   if (!getDSMapping(link_id, ds_addr, de, dsid))
     return false;
+  //printf("link_d=%d  ds=%d  ->  de=%d  dsid=%d\n", link_id, ds_addr, de, dsid);
 
   return getPadByDE(de, dsid, dsch, pad);
 }
@@ -162,6 +164,11 @@ bool MapFEC::getPadByDE(uint32_t de, uint32_t dsid, uint32_t dsch, MapPad& pad)
     const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
 
     int padid = segment.findPadByFEE(dsid, dsch);
+
+    if (padid < 0) {
+      pad.fDE = -1;
+      return false;
+    }
 
     float padX = segment.padPositionX(padid);
     float padY = segment.padPositionY(padid);

@@ -22,13 +22,13 @@ namespace muonchambers
 
 enum DualSampaStatus {
   notSynchronized = 1,
-  synchronized = 2,
+  //synchronized = 2,
   headerToRead = 3,
   sizeToRead = 4,
   timeToRead = 5,
-  dataToRead = 6,
-  chargeToRead = 7,
-  OK = 8 // Data block filled (over a time window)
+  dataToRead = 6
+  //chargeToRead = 7,
+  //OK = 8 // Data block filled (over a time window)
 };
 
 struct SampaHit {

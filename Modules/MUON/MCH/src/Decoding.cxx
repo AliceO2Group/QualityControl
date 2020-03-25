@@ -60,18 +60,6 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-/*
-static void SampaHeaderDump(struct Sampa::SampaHeaderStruct* sampaHeader)
-{
-  printf("--> SAMPA Header: HCode %d HPar %d PkgType %d 10BitWords %d ChipAdd %d ChAdd %d BX %d PPar %d",
-      (int)sampaHeader->fHammingCode,(int)sampaHeader->fHeaderParity,(int)sampaHeader->fPkgType,
-      (int)sampaHeader->fNbOf10BitWords,(int)sampaHeader->fChipAddress,(int)sampaHeader->fChannelAddress,
-      (int)sampaHeader->fBunchCrossingCounter,(int)sampaHeader->fPayloadParity);
-  printf("\n");
-
-}
- */
-
 bool BXCNT_compare(int64_t c1, int64_t c2)
 {
   const int64_t MAX = 0xFFFFF;
@@ -109,7 +97,6 @@ void DualSampaInit(DualSampa* ds)
       ds->noise[j][k] = 0;
     }
   }
-  //ds->nbHit=-1; don't reset counter - do it externally
 }
 
 void DualSampaReset(DualSampa* ds)
@@ -124,7 +111,6 @@ void DualSampaReset(DualSampa* ds)
   ds->bxc[0] = ds->bxc[1] = -1;
   ds->chan_addr[0] = 0;
   ds->chan_addr[1] = 0;
-  //ds->nbHit=-1; don't reset counter - do it externally
 }
 
 void DualSampaGroupInit(DualSampaGroup* dsg)
@@ -300,11 +286,8 @@ void HammingDecode(unsigned int buffer[2], bool& error, bool& uncorrectable, boo
 void DecodeGBTWord(uint32_t* bufpt, uint32_t* data)
 {
   uint32_t word = *(bufpt + 3);
-  //fprintf(flog,"*(bufpt+3): %.8X\n", word);
   data[0] = (((word) >> 0) & 0x1) << 1;
   data[0] += (((word) >> 1) & 0x1);
-
-  //return;
 
   data[1] = (((word) >> 2) & 0x1) << 1;
   data[1] += (((word) >> 3) & 0x1);
@@ -315,8 +298,6 @@ void DecodeGBTWord(uint32_t* bufpt, uint32_t* data)
 
   data[4] = (((word) >> 8) & 0x1) << 1;
   data[4] += (((word) >> 9) & 0x1);
-
-  //return;
 
   data[5] = (((word) >> 10) & 0x1) << 1;
   data[5] += (((word) >> 11) & 0x1);
@@ -438,7 +419,6 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       if (gPrintLevel >= 2)
         fprintf(flog, "  ==> ds[%d]->data: %.16lX\n", ds->id, ds->data);
       if (ds->data == 0x1555540f00113 && ds->bit >= 50) {
-        //ds->nbHit=0;
         if (gPrintLevel >= 1)
           fprintf(flog, "SAMPA #%d: Synchronizing... (Sync word found)\n", ds->id); // Next word of 50 bits should be a Sync Word
         ds->bit = 0;
@@ -464,8 +444,6 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       if (dsr.data == 0x1555540f00113) {
         if (gPrintLevel >= 2)
           fprintf(flog, "SAMPA #%d: Sync word found\n", dsr.id); // Next word of 50 bits should be a Sync Word
-        //dsr.chan_addr[0] = 0;
-        //dsr.chan_addr[1] = 0;
         result = DECODE_STATE_SYNC_FOUND;
       } else {
         result = DECODE_STATE_HEADER_FOUND;
@@ -570,7 +548,6 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
         ds->bit = 0;
         ds->data = 0;
         ds->powerMultiplier = 1;
-        //ds->status = synchronized;
       }
       break;
     }
@@ -611,14 +588,6 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       if (gPrintLevel >= 1)
         fprintf(flog, "SAMPA [%2d]: Cluster Size 0x%lX (%lu)\n", ds->id, ds->data, ds->data);
 
-      //        MuTrkSampaCluster* sampacluster;
-      //            if (fMode == kChargeSum)
-      //                sampacluster = new MuTrkSampaCluster(1,-1); // ONLY ONE DATA Time to be filled later
-      //            else
-      //                sampacluster = new MuTrkSampaCluster(ds->data,-1); // Time to be filled later
-
-      //        sampacluster = new MuTrkSampaCluster(ds->data,-1);
-      //        fSampaPacket[fNPackets-1]->AddCluster(sampacluster);
       ds->csize = ds->data;
       ds->cid = 0;
       ds->packetsize += 1;
@@ -639,9 +608,6 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       if (gPrintLevel >= 1)
         fprintf(flog, "SAMPA [%2d]: Cluster Time 0x%lX (%lu)\n", ds->id, ds->data, ds->data);
 
-      //          MuTrkSampaPacket* currentpacket = fSampaPacket[fNPackets-1];
-      //          MuTrkSampaCluster* currentcluster = currentpacket->fCluster[currentpacket->fNClusters-1];
-      //          currentcluster->fTime = ds->data;
       ds->ctime = ds->data;
       ds->packetsize += 1;
       ds->status = dataToRead;
@@ -662,14 +628,8 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
         fprintf(flog, "SAMPA #%d Data word: 0x%lX (%lu)\n", ds->id, ds->data, ds->data);
 
       if (1 /*ds->header.fPkgType == 4*/) {
-        //              MuTrkSampaPacket* currentpacket = fSampaPacket[fNPackets-1];
-        //              MuTrkSampaCluster* currentcluster = currentpacket->fCluster[currentpacket->fNClusters-1];
-        //              currentcluster->fData[(currentcluster->fDataIndex)++] = ds->data;
         if (ds->header.fPkgType == 4) { // Good data
           result = DECODE_STATE_SAMPLE_FOUND;
-          //ds->pedestal[ds->header.fChipAddress%2][ds->header.fChannelAddress] += ds->data;
-          //ds->noise[ds->header.fChipAddress%2][ds->header.fChannelAddress] += ds->data*ds->data;
-          //ds->ndata[ds->header.fChipAddress%2][ds->header.fChannelAddress] += 1;
           ds->sample = ds->data;
 
           if (gPattern > 0) {
@@ -706,7 +666,6 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
               }
             }
           }
-          //                    if (currentpacket->fHeader.fNbOf10BitWords > currentcluster->fSize+2)
           if (ds->header.fNbOf10BitWords > ds->packetsize)
             ds->status = sizeToRead;
           else {
@@ -740,7 +699,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
   return result;
 }
 
-decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* dsg)
+decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* /*dsg*/)
 {
   decode_state_t result = DECODE_STATE_UNKNOWN;
   switch (dsr.status) {
@@ -806,7 +765,7 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
           dsr.packetsize = 0;
           Sampa::SampaHeaderStruct* header = (Sampa::SampaHeaderStruct*)&(dsr.header);
           if (gPrintLevel >= 1)
-            fprintf(flog, "SAMPA Header: HCode %2d HPar %d PkgType %d 10BitWords %d ChipAdd %d ChAdd %2d BX %d PPar %d\n",
+            fprintf(flog, "SAMPA Header: HCode %2lu HPar %lu PkgType %lu 10BitWords %lu ChipAdd %lu ChAdd %2lu BX %lu PPar %lu\n",
                     header->fHammingCode, header->fHeaderParity, header->fPkgType,
                     header->fNbOf10BitWords, header->fChipAddress, header->fChannelAddress,
                     header->fBunchCrossingCounter, header->fPayloadParity);
@@ -947,12 +906,8 @@ void Decoder::initialize()
     fprintf(stdout, "ds_enable[%d][%d][%d]=%d\n", c, l, b, ds_enable[c][l][b]);
   }
 
-  //  int de = 814;
-  //mMapCRU[0].addDSMapping(1, 0, de, 5);
-  //mMapCRU[0].addDSMapping(1, 2, de, 4);
-  //mMapCRU[0].addDSMapping(1, 4, de, 3);
-  mMapCRU.readMapping("/tmp/cru.map");
-  mMapFEC.readDSMapping("/tmp/fec.map");
+  mMapCRU.readMapping("cru.map");
+  mMapFEC.readDSMapping("fec.map");
 
   gPrintLevel = 0;
 
@@ -973,16 +928,11 @@ void Decoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int
     llvalue = ptr[0];
     //fprintf(stdout,"wi=%d  %.8X %.8X %.8X %.8X\n", wi,
     //    hhvalue, hlvalue, lhvalue, llvalue);
-    //printf("%.2X\n", (llvalue&0x3));
 
     uint32_t bufpt[4] = { hhvalue, hlvalue, lhvalue, llvalue };
     uint32_t data2bits[40] = { 0 };
     DecodeGBTWord(bufpt, data2bits);
-    //continue;
 
-    //fprintf(stdout,"GBT word %d decoded\n", wi);
-
-    //cru_lid = 0;
     for (int i = 0; i < 40; i++) {
       if (ds_enable[cru_id][link_id][i] == 0)
         continue;
@@ -1001,7 +951,7 @@ void Decoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int
             uint64_t _h;
             memcpy(&_h, &(ds[cru_id][link_id][i].header), sizeof(ds[cru_id][link_id][i].header));
             if (gPrintLevel >= 1)
-              fprintf(flog, "board %d %d %d -> HEADER: %05lX, %d, %d\n",
+              fprintf(flog, "board %d %d %d -> HEADER: %05lX, %lu, %lu\n",
                       cru_id, link_id, i, _h,
                       ds[cru_id][link_id][i].header.fChipAddress,
                       ds[cru_id][link_id][i].header.fChannelAddress);
@@ -1043,7 +993,6 @@ void Decoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int
                         hit.link_id, hit.ds_addr, hit.chan_addr);
                 getchar();
               }
-              //fprintf(stdout,"mHits.size()=%d\n",(int)mHits.size());
               hit.size = 0;
               hit.samples.clear();
               hit.csum = 0;
@@ -1062,16 +1011,14 @@ void Decoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int
 void Decoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, int cru_id, int dpw_id)
 {
   uint64_t* payload_buf = (uint64_t*)payload_buf_32;
-  for (int wi = 0; wi < nWords; wi += 1) {
+  for (size_t wi = 0; wi < nWords; wi += 1) {
 
-    //for(int k = 0; k < 4; k++) {
     uint64_t* ptr = payload_buf + wi;
     uint64_t value = *ptr;
 
     int link_id = (value >> 59) & 0x1F;
     int ds_id = (value >> 53) & 0x3F;
     link_id += 12 * dpw_id;
-    //if(ds_id != 0) continue;
     if (gPrintLevel >= 1)
       fprintf(flog, "64 bits: %016lX\n", value);
 
@@ -1154,7 +1101,6 @@ void Decoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, int cru_id, int 
                       hit.link_id, hit.ds_addr, hit.chan_addr);
               getchar();
             }
-            //fprintf(stdout,"mHits.size()=%d\n",(int)mHits.size());
             hit.size = 0;
             hit.samples.clear();
             hit.csum = 0;
@@ -1171,19 +1117,11 @@ void Decoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, int cru_id, int 
       if (skip)
         break;
     }
-    //}
   }
-  //printf("=========\n");
 }
 
 void Decoder::processData(const char* buf, size_t size)
 {
-
-  // exemplary ways of accessing inputs (incoming data), that were specified in the .ini file - e.g.:
-  //  [readoutInput]
-  //  inputName=readout
-  //  dataOrigin=ITS
-  //  dataDescription=RAWDATA
   int RDH_BLOCK_SIZE = 8192;
 
   int manu2ds[64] = { 62, 61, 63, 60, 59, 55, 58, 57, 56, 54, 50, 46, 42, 39, 37, 41,
@@ -1225,11 +1163,11 @@ void Decoder::processData(const char* buf, size_t size)
 
     // Check RDH version and size
     if (((int)CRUh.header_version) != 4) {
-      fprintf(flog, "Wrong CRU header version: %d\n", (int)CRUh.header_version);
+      QcInfoLogger::GetInstance() << "[Decoder::processData] Wrong CRU header version: " << (int)CRUh.header_version << AliceO2::InfoLogger::InfoLogger::endm;
       return;
     }
     if (((int)CRUh.header_size) != 64) {
-      fprintf(flog, "Wrong CRU header size: %d\n", (int)CRUh.header_size);
+      QcInfoLogger::GetInstance() << "[Decoder::processData] Wrong CRU header size: " << (int)CRUh.header_size << AliceO2::InfoLogger::InfoLogger::endm;
       return;
     }
     // Compute size of payload inside 8kB block
@@ -1259,8 +1197,6 @@ void Decoder::processData(const char* buf, size_t size)
       fprintf(flog, "CRU ID: %d\n", (int)cruId);
     if (gPrintLevel >= 1)
       fprintf(flog, "DPW ID: %d\n", (int)dpwId);
-    //fprintf(flog, "\n");
-    //continue;
 
     nFrames += 1;
 
@@ -1297,11 +1233,8 @@ void Decoder::processData(const char* buf, size_t size)
     }
     hb_orbit = CRUh.hb_orbit;
 
-    //uint32_t* payload_buf = (uint32_t*)(rdh + 16*4);
     int nGBTwords = CRUh.block_length / 16;
     int n64bitWords = CRUh.block_length / 8;
-    //fprintf(stdout,"nGBTwords=%d\n",nGBTwords);
-    //continue;
 
     if (gPrintLevel >= 1)
       fprintf(flog, "Starting to decode buffer...\n");
@@ -1312,7 +1245,7 @@ void Decoder::processData(const char* buf, size_t size)
 
     if (gPrintLevel >= 1)
       fprintf(flog, "mHits.size(): %d\n", (int)mHits.size());
-    for (int ih = 0; ih < mHits.size(); ih++) {
+    for (size_t ih = 0; ih < mHits.size(); ih++) {
       SampaHit& hit = mHits[ih];
       hit.pad.fDE = -1;
       hit.pad.fCathode = 0;
@@ -1324,133 +1257,11 @@ void Decoder::processData(const char* buf, size_t size)
         continue;
       //printf("cru_id=%d link_id=%d  LID=%d\n", (int)hit.cru_id, (int)hit.link_id, (int)link_id);
 
-      //uint32_t de, dsid;
-      //if( !mMapFEC.getDSMapping(link_id, hit.ds_addr, de, dsid) ) continue;
-      //hit.pad.fDE = de;
-
-      /*
-      if( !mMapCRU[0].getDSMapping(hit.link_id, hit.ds_addr, de, dsid) ) continue;
-      */
-      /*
-      std::map<int, std::unique_ptr<o2::mch::mapping::Segmentation>>::iterator si = segmentations.find(de);
-      o2::mch::mapping::Segmentation* segment = nullptr;
-      if( si == segmentations.end() ) {
-	segment = new o2::mch::mapping::Segmentation(de);
-	std::unique_ptr<o2::mch::mapping::Segmentation> sp( segment );
-	segmentations.insert( make_pair( de, std::move(sp) ) );
-      } else {
-	segment = si->second.get();
-      }
-      if( !segment ) continue;
-      //std::unique_ptr<o2::mch::mapping::Segmentation>> segment
-      //o2::mch::mapping::Segmentation segment(de);
-      int padid = segment->findPadByFEE(dsid, hit.chan_addr);
-      if(padid < 0) {
-        //fprintf(flog,"Invalid pad: %d %d %d\n", link_id, dsid, hit.chan_addr);
-        continue;
-      }
-      //fprintf(flog,"Found pad: %d %d %d -> %d %d\n", link_id, dsid, hit.chan_addr, de, dsid);
-
-      float padX = segment->padPositionX(padid);
-      float padY = segment->padPositionY(padid);
-      float padSizeX = segment->padSizeX(padid);
-      float padSizeY = segment->padSizeY(padid);
-
-      hit.pad.fDE = de;
-      hit.pad.fDsID = dsid;
-      hit.pad.fAddress = padid;
-      hit.pad.fX = padX;
-      hit.pad.fY = padY;
-      hit.pad.fSizeX = padSizeX;
-      hit.pad.fSizeY = padSizeY;
-      hit.pad.fCathode = segment->isBendingPad(padid) ? 0 : 1;
-      hit.pad.fBad = 0;
-      */
-      /**/
       if (!mMapFEC.getPadByLinkID(link_id, hit.ds_addr, hit.chan_addr, hit.pad))
         continue;
-      /**/
     }
     if (gPrintLevel >= 1)
       fprintf(flog, "Finished processing hits\n");
-    //if( !mHits.empty() ) return;
-
-    /*
-    for( int wi = 0; wi < nGBTwords; wi++) {
-      uint32_t* ptr = payload_buf + wi*4;
-      hhvalue = ptr[3]; hlvalue = ptr[2]; lhvalue = ptr[1]; llvalue = ptr[0];
-      //fprintf(stdout,"wi=%d  %.8X %.8X %.8X %.8X\n", wi,
-      //    hhvalue, hlvalue, lhvalue, llvalue);
-      //printf("%.2X\n", (llvalue&0x3));
-
-      uint32_t bufpt[4] = {hhvalue, hlvalue, lhvalue, llvalue};
-      uint32_t data2bits[40] = {0};
-      DecodeGBTWord(bufpt, data2bits);
-      //continue;
-
-      //fprintf(stdout,"GBT word %d decoded\n", wi);
-
-      //cru_lid = 0;
-      for( int i = 0; i < 1; i++ ) {
-        uint32_t group = ds[cru_lid][i].id / 5;
-        uint32_t bits[2] = {data2bits[i]&0x1, (data2bits[i]>>1)&0x1};
-        for(int k = 0; k < 2; k++) {
-          decode_state_t state = Add1BitOfData( bits[k], (ds[cru_lid][i]), &(dsg[cru_lid][group]) );
-          switch(state) {
-          case DECODE_STATE_SYNC_FOUND: break;
-          case DECODE_STATE_HEADER_FOUND:
-            uint64_t _h; memcpy(&_h, &(ds[cru_lid][i].header), sizeof(ds[cru_lid][i].header));
-            if(gPrintLevel>=1) fprintf(flog,"HEADER: %05lX\n", _h);
-            break;
-          case DECODE_STATE_CSIZE_FOUND: {
-            if(gPrintLevel>=1) fprintf(flog,"CLUSTER SIZE: %d\n",ds[cru_lid][i].csize);
-            Sampa::SampaHeaderStruct& header = ds[cru_lid][i].header;
-            SampaHit& hit = ds[cru_lid][i].hit;
-            hit.cru_id = cruId;
-            hit.link_id = cru_lid;
-            if(dpwId != 0) hit.link_id += 12;
-            hit.ds_addr = ds[cru_lid][i].id;
-            int chip_id = ds[cru_lid][i].header.fChipAddress % 2;
-            hit.chan_addr = header.fChannelAddress + 32*chip_id;
-            hit.bxc = header.fBunchCrossingCounter;
-            hit.size = ds[cru_lid][i].csize;
-            hit.samples.clear();
-            hit.csum = 0;
-            hit.time = 0;
-            break;
-          }
-          case DECODE_STATE_CTIME_FOUND:
-            if(gPrintLevel>=1) fprintf(flog,"CLUSTER TIME: %d\n",ds[cru_lid][i].ctime);
-            ds[cru_lid][i].hit.time = ds[cru_lid][i].ctime;
-            break;
-          case DECODE_STATE_SAMPLE_FOUND:
-          case DECODE_STATE_END_OF_CLUSTER: {
-            SampaHit& hit = ds[cru_lid][i].hit;
-            if(gPrintLevel>=1) fprintf(flog,"SAMPLE: %X\n",ds[cru_lid][i].sample);
-            hit.samples.push_back(ds[cru_lid][i].sample);
-            hit.csum += ds[cru_lid][i].sample;
-
-            if( state == DECODE_STATE_END_OF_CLUSTER ) {
-              mHits.push_back(hit);
-              if(hit.link_id>=24) {
-                fprintf(stdout,"hit: link_id=%d, ds_addr=%d, chan_addr=%d\n",
-                    hit.link_id, hit.ds_addr, hit.chan_addr);
-                getchar();
-              }
-              //fprintf(stdout,"mHits.size()=%d\n",(int)mHits.size());
-              hit.size = 0;
-              hit.samples.clear();
-              hit.csum = 0;
-              hit.time = 0;
-            }
-            break;
-          }
-          default: break;
-          }
-        }
-      }
-    }
-     */
   }
 }
 

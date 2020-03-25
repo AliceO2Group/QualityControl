@@ -71,7 +71,7 @@ class MapCRU
  public:
   MapCRU();
   bool readMapping(std::string mapFile);
-  int32_t getLink(uint32_t c, uint32_t l);
+  int32_t getLink(int32_t c, int32_t l);
 };
 
 class MapFEC

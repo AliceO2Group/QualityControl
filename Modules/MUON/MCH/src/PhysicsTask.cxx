@@ -140,8 +140,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // todo: update API examples or refer to DPL README.md
 
-  QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
-  fprintf(flog, "\n\n====================\PhysicsTask::monitorData\n====================\n");
+  //QcInfoLogger::GetInstance() << "PhysicsTask::monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
 
   printf("count: %d\n", count);
   if ((count % 1) == 0) {
@@ -157,12 +156,10 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
       auto h = mHistogramADCamplitudeDE.find(de);
       if ((h != mHistogramADCamplitudeDE.end()) && (h->second != NULL)) {
         h->second->Write();
-        QcInfoLogger::GetInstance() << "On vient de write dans h->second ADCAmplitudeDE" << AliceO2::InfoLogger::InfoLogger::endm;
       }
       auto h2 = mHistogramNhitsDE.find(de);
       if ((h2 != mHistogramNhitsDE.end()) && (h2->second != NULL)) {
         h2->second->Write();
-        QcInfoLogger::GetInstance() << "On vient de write dans h2->second NHitsDE" << AliceO2::InfoLogger::InfoLogger::endm;
       }
 
       f.ls();
@@ -228,16 +225,12 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
       //    hit.link_id, hit.ds_addr, hit.chan_addr, pad.fDE, pad.fX, pad.fY, hit.csum);
 
       auto h = mHistogramADCamplitudeDE.find(de);
-      if (gPrintLevel >= 1)
-        fprintf(flog, "monitorData: h=%p\n", h->second);
       if ((h != mHistogramADCamplitudeDE.end()) && (h->second != NULL)) {
         h->second->Fill(hit.csum);
       }
 
       if (hit.csum > 0) {
         auto h2 = mHistogramNhitsDE.find(de);
-        if (gPrintLevel >= 1)
-          fprintf(flog, "monitorData: h2=%p\n", h2->second);
         if ((h2 != mHistogramNhitsDE.end()) && (h2->second != NULL)) {
           int binx_min = h2->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
           int binx_max = h2->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
@@ -247,8 +240,6 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
             float y = h2->second->GetYaxis()->GetBinCenter(by);
             for (int bx = binx_min; bx <= binx_max; bx++) {
               float x = h2->second->GetXaxis()->GetBinCenter(bx);
-              if (gPrintLevel >= 1)
-                fprintf(flog, "monitorData: added hit to %f, %f\n", x, y);
               h2->second->Fill(x, y);
             }
           }
@@ -256,8 +247,6 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       if (hit.csum > 500) {
         auto h2 = mHistogramNhitsHighAmplDE.find(de);
-        if (gPrintLevel >= 1)
-          fprintf(flog, "monitorData: h2=%p\n", h2->second);
         if ((h2 != mHistogramNhitsHighAmplDE.end()) && (h2->second != NULL)) {
           int binx_min = h2->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
           int binx_max = h2->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
@@ -267,8 +256,6 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
             float y = h2->second->GetYaxis()->GetBinCenter(by);
             for (int bx = binx_min; bx <= binx_max; bx++) {
               float x = h2->second->GetXaxis()->GetBinCenter(bx);
-              if (gPrintLevel >= 1)
-                fprintf(flog, "monitorData: added hit to %f, %f\n", x, y);
               h2->second->Fill(x, y);
             }
           }
