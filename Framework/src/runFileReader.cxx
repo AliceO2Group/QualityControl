@@ -33,10 +33,7 @@
 using namespace o2;
 using namespace o2::framework;
 
-
-
-struct CRUheader
-{
+struct CRUheader {
   uint8_t header_version;
   uint8_t header_size;
   uint16_t block_length;
@@ -54,7 +51,6 @@ struct CRUheader
   //uint8_t dummy1;
   //uint64_t dummy2;
 };
-
 
 class FileReaderTask
 {
@@ -82,22 +78,23 @@ class FileReaderTask
   //_________________________________________________________________________________________________
   void run(framework::ProcessingContext& pc)
   {
-    uint32_t CRUbuf[4*4];
+    uint32_t CRUbuf[4 * 4];
     CRUheader CRUh;
-   /// send one RDH block via DPL
+    /// send one RDH block via DPL
 
     int RDH_BLOCK_SIZE = 8192;
 
     mInputFile.read((char*)(&CRUbuf), sizeof(CRUbuf));
-    memcpy(&CRUh,CRUbuf,sizeof(CRUheader));
-    if( CRUh.header_version != 4 || CRUh.header_size != 64 ) return;
+    memcpy(&CRUh, CRUbuf, sizeof(CRUheader));
+    if (CRUh.header_version != 4 || CRUh.header_size != 64)
+      return;
 
     RDH_BLOCK_SIZE = CRUh.next_packet_offset;
 
     char* buf = (char*)malloc(RDH_BLOCK_SIZE);
-    memcpy(buf,CRUbuf,CRUh.header_size);
+    memcpy(buf, CRUbuf, CRUh.header_size);
 
-    mInputFile.read(buf+CRUh.header_size, RDH_BLOCK_SIZE-CRUh.header_size);
+    mInputFile.read(buf + CRUh.header_size, RDH_BLOCK_SIZE - CRUh.header_size);
     if (mInputFile.fail()) {
       if (mPrint) {
         LOG(INFO) << "end of file reached";
