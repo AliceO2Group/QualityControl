@@ -9,42 +9,40 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   RawCheck.h
-/// \author Cristina Terrevoli
+/// \file   TOFCheckCompressedCounter.h
+/// \author Nicolo' Jacazio
 ///
 
-#ifndef QC_MODULE_EMCAL_EMCALRAWCHECK_H
-#define QC_MODULE_EMCAL_EMCALRAWCHECK_H
+#ifndef QC_MODULE_TOF_TOFCHECKCOMPRESSEDCOUNTER_H
+#define QC_MODULE_TOF_TOFCHECKCOMPRESSEDCOUNTER_H
 
 #include "QualityControl/CheckInterface.h"
+#include "QualityControl/MonitorObject.h"
+#include "QualityControl/Quality.h"
 
-class TH1F;
-
-using namespace o2::quality_control::core;
-
-namespace o2::quality_control_modules::emcal
+namespace o2::quality_control_modules::tof
 {
 
-/// \brief EMCAL raw data check
-/// It is final because there is no reason to derive from it. Just remove it if needed.
-/// \author Cristina Terrevoli
-class RawCheck final : public o2::quality_control::checker::CheckInterface
+/// \brief  Checker for diagnostic histogram of TOF Raw data
+///
+/// \author Nicolo' Jacazio
+class TOFCheckCompressedCounter : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  RawCheck() = default;
+  TOFCheckCompressedCounter() = default;
   /// Destructor
-  ~RawCheck() override = default;
+  ~TOFCheckCompressedCounter() override = default;
 
   // Override interface
   void configure(std::string name) override;
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
-  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
+  void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(RawCheck, 1);
+  ClassDefOverride(TOFCheckCompressedCounter, 1);
 };
 
-} // namespace o2::quality_control_modules::emcal
+} // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_EMCAL_EMCALRAWCHECK_H
+#endif // QC_MODULE_TOF_TOFCHECKCOMPRESSEDCOUNTER_H

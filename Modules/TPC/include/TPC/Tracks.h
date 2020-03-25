@@ -30,7 +30,7 @@ namespace o2::quality_control_modules::tpc
 /// \brief Quality Control DPL Task for QC Module TPC for track related observables
 /// \author Stefan Heckel
 
-class Tracks /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class Tracks final : public TaskInterface
 {
  public:
   /// \brief Constructor

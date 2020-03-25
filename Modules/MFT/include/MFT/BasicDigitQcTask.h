@@ -30,7 +30,7 @@ namespace o2::quality_control_modules::mft
 ///
 /// \author Tomas Herman
 /// \author Guillermo Contreras
-class BasicDigitQcTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class BasicDigitQcTask final : public TaskInterface
 {
  public:
   /// \brief Constructor

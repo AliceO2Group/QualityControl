@@ -93,6 +93,7 @@ class Check
   o2::quality_control::core::QcInfoLogger& mLogger;
   CheckConfig mCheckConfig;
   CheckInterface* mCheckInterface = nullptr;
+  size_t mNumberOfTaskSources;
 
   // Latest Quality
   std::shared_ptr<o2::quality_control::core::QualityObject> mLatestQuality;

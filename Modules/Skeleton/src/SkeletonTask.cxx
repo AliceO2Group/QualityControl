@@ -10,8 +10,7 @@
 
 ///
 /// \file   SkeletonTask.cxx
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
+/// \author My Name
 ///
 
 #include <TCanvas.h>

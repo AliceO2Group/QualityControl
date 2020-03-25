@@ -47,14 +47,14 @@
           {
             "type": "repository",
             "path": "qc/TST/QcTask",
-            "name": "example",
+            "names": [ "example" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
             "path": "qc/checks",
-            "name": "QcCheck",
+            "names": [ "QcCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
           }

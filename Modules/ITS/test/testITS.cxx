@@ -9,8 +9,8 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   .testEmpty.cxx
-/// \author My Name
+/// \file   testITS.cxx
+/// \author
 ///
 
 #include "QualityControl/TaskFactory.h"
@@ -21,9 +21,15 @@
 
 #include <boost/test/unit_test.hpp>
 
-namespace o2::quality_control_modules::skeleton
+namespace o2
+{
+namespace quality_control_modules
+{
+namespace itstaskraw
 {
 
 BOOST_AUTO_TEST_CASE(instantiate_task) { BOOST_CHECK(true); }
 
-} // namespace o2::quality_control_modules::skeleton
+} // namespace itstaskraw
+} // namespace quality_control_modules
+} // namespace o2

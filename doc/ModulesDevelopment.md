@@ -16,11 +16,12 @@
       * [Test run](#test-run)
       * [Modification of a Task](#modification-of-a-task)
       * [Check](#check)
-        * [Configuration](#configuration)
-        * [Implementation](#implementation)
+         * [Configuration](#configuration)
+         * [Implementation](#implementation)
       * [Committing code](#committing-code)
+      * [Raw data source](#raw-data-source)
 
-<!-- Added by: bvonhall, at:  -->
+<!-- Added by: barth, at: Mer 18 mar 2020 13:34:28 CET -->
 
 <!--te-->
 
@@ -268,7 +269,7 @@ void beautify(std::shared_ptr<MonitorObject> mo, Quality = Quality::Null) {}
 
 The `check` function is called whenever the _policy_ is satisfied. It gets a map with all declared MonitorObjects. It is expected to return Quality of the given MonitorObjects.
 
-The `beautify` function is called after the `check` function if there is only one declared MonitorObject.
+The `beautify` function is called after the `check` function if there is a single `dataSource` of type `Task` in the configuration of the check. If there is more than one, the `beautify()` is not called in this check. 
 
 ## Committing code
 
@@ -286,6 +287,10 @@ To commit your new or modified code, please follow this procedure
 For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
+
+## Raw data source
+
+To read a raw data file, one can use the O2's [RawFileReader](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader). On the same page, there are instructions to write such file from Simulation. 
 
 ---
 

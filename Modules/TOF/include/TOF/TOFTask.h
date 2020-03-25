@@ -30,8 +30,7 @@ namespace o2::quality_control_modules::tof
 
 /// \brief TOF Quality Control DPL Task
 /// \author Nicolo' Jacazio
-class TOFTask            /*final*/
-  : public TaskInterface // todo add back the "final" when doxygen is fixed
+class TOFTask final : public TaskInterface
 {
  public:
   /// \brief Constructor

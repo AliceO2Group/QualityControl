@@ -1,0 +1,59 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      }
+    },
+    "tasks": {
+      "QcTest3": {
+        "active": "true",
+        "className": "o2::quality_control_modules::its::ITSRawTask",
+        "moduleName": "QcITSRawTask",
+	"detectorName": "ITS",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "its-raw"
+        },
+        "taskParameters": {
+          "nothing": "rien"
+        },
+        "location": "remote"
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "its-raw",
+      "active": "true",
+      "machines": [],
+      "query": "digits:ITS/DIGITS/0;in:ITS/TEST/0;Error:ITS/Error/0;Run:ITS/Run/0;File:ITS/File/0;Finish:ITS/Finish/0;EP:ITS/EP/0;Events:ITS/Events/0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "1.0",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
+}
+

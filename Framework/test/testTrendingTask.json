@@ -39,7 +39,7 @@
           {
             "type": "repository-quality",
             "path": "qc/checks/TST",
-            "name": "testTrendingTaskCheck",
+            "names": [ "testTrendingTaskCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
           }

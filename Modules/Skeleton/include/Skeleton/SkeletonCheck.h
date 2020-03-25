@@ -10,7 +10,7 @@
 
 ///
 /// \file   SkeletonCheck.h
-/// \author Piotr Konopka
+/// \author My Name
 ///
 
 #ifndef QC_MODULE_SKELETON_SKELETONCHECK_H
@@ -21,9 +21,8 @@
 namespace o2::quality_control_modules::skeleton
 {
 
-/// \brief  Check whether a plot is empty or not.
-///
-/// \author Barthelemy von Haller
+/// \brief  Example QC Check
+/// \author My Name
 class SkeletonCheck : public o2::quality_control::checker::CheckInterface
 {
  public:

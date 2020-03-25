@@ -21,7 +21,7 @@
 
 namespace o2::framework
 {
-struct CompletionPolicy;
+class CompletionPolicy;
 }
 #include <Framework/WorkflowSpec.h>
 

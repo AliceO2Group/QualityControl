@@ -23,7 +23,7 @@
 
 namespace o2::framework
 {
-struct CompletionPolicy;
+class CompletionPolicy;
 }
 
 namespace o2::quality_control::core
