@@ -3,19 +3,19 @@ set(MODULE_NAME "QcMuonChambers")
 # ---- Files ----
 
 set(SRCS
-  src/MuonChambersMapping.cxx
-  src/MuonChambersDataDecoder.cxx
-  src/RawDataProcessor.cxx
-  src/PhysicsDataProcessor.cxx
-  src/MCHCheckPedestals.cxx
+  src/Mapping.cxx
+  src/Decoding.cxx
+  src/PedestalsTask.cxx
+  src/PhysicsTask.cxx
+  src/PedestalsCheck.cxx
 )
 
 set(HEADERS
-  include/MCH/MuonChambersMapping.h
-  include/MCH/MuonChambersDataDecoder.h
-  include/MCH/RawDataProcessor.h
-  include/MCH/PhysicsDataProcessor.h
-  include/MCH/MCHCheckPedestals.h
+  include/MCH/Mapping.h
+  include/MCH/Decoding.h
+  include/MCH/PedestalsTask.h
+  include/MCH/PhysicsTask.h
+  include/MCH/PedestalsCheck.h
 )
 
 # ---- Library ----
@@ -29,7 +29,7 @@ target_include_directories(
 )
 
 #target_link_libraries(${MODULE_NAME} PUBLIC QualityControl)
-target_link_libraries(${MODULE_NAME} PUBLIC QualityControl O2::MCHMappingImpl3 O2::MCHMappingSegContour)
+target_link_libraries(${MODULE_NAME} PUBLIC QualityControl O2::CommonDataFormat O2::GPUCommon O2::MCHMappingFactory O2::MCHMappingImpl3 O2::MCHMappingSegContour)
 
 install(
         TARGETS ${MODULE_NAME}
@@ -43,11 +43,11 @@ install(
 #generate_root_dict(MODULE_NAME ${MODULE_NAME} LINKDEF "include/MCH/LinkDef.h" DICT_CLASS "${MODULE_NAME}Dict")
 
 add_root_dictionary(${MODULE_NAME}
-                    HEADERS include/MCH/MuonChambersMapping.h
-                            include/MCH/MuonChambersDataDecoder.h
-                            include/MCH/RawDataProcessor.h
-                            include/MCH/PhysicsDataProcessor.h
-                            include/MCH/MCHCheckPedestals.h
+                    HEADERS include/MCH/Mapping.h
+                            include/MCH/Decoding.h
+                            include/MCH/PedestalsTask.h
+                            include/MCH/PhysicsTask.h
+                            include/MCH/PedestalsCheck.h
                             include/MCH/sampa_header.h
                     LINKDEF include/MCH/LinkDef.h
                     BASENAME ${MODULE_NAME})

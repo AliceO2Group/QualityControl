@@ -1,16 +1,17 @@
 ///
-/// \file   RawDataProcessor.h
+/// \file   PhysicsTask.h
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
 /// \author Andrea Ferrero
 ///
 
-#ifndef QC_MODULE_MUONCHAMBERS_PHYSICSDATAPROCESSOR_H
-#define QC_MODULE_MUONCHAMBERS_PHYSICSDATAPROCESSOR_H
+#ifndef QC_MODULE_MUONCHAMBERS_PHYSICSTASK_H
+#define QC_MODULE_MUONCHAMBERS_PHYSICSTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "MCH/MuonChambersMapping.h"
-#include "MCH/MuonChambersDataDecoder.h"
+#include "MCH/Mapping.h"
+#include "MCH/Decoding.h"
+#include "MCHBase/Digit.h"
 
 class TH1F;
 class TH2F;
@@ -28,13 +29,13 @@ namespace muonchambers
 /// It is final because there is no reason to derive from it. Just remove it if needed.
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
-class PhysicsDataProcessor /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class PhysicsTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
-  PhysicsDataProcessor();
+  PhysicsTask();
   /// Destructor
-  ~PhysicsDataProcessor() override;
+  ~PhysicsTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -45,10 +46,17 @@ class PhysicsDataProcessor /*final*/ : public TaskInterface // todo add back the
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
+  ssize_t getNumberOfDigits();
+  void storeDigits(void* bufferPtr);
+
  private:
   int count;
-  MuonChambersDataDecoder mDecoder;
+  Decoder mDecoder;
   uint64_t nhits[24][40][64];
+
+  std::vector<std::unique_ptr<mch::Digit>> digits;
+  mch::Digit* digitsBuffer;
+  int nDigits;
 
   TH2F* mHistogramNhits[72];
   TH1F* mHistogramADCamplitude[72];
@@ -56,6 +64,9 @@ class PhysicsDataProcessor /*final*/ : public TaskInterface // todo add back the
   std::map<int, TH1F*> mHistogramADCamplitudeDE;
   std::map<int, TH2F*> mHistogramNhitsDE;
   std::map<int, TH2F*> mHistogramNhitsHighAmplDE;
+
+  std::map<int, TH1F*> mHistogramClchgDE;
+  std::map<int, TH1F*> mHistogramClsizeDE;
 };
 
 } // namespace muonchambers

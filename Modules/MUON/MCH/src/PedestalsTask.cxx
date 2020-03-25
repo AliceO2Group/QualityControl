@@ -1,5 +1,5 @@
 ///
-/// \file   RawDataProcessor.cxx
+/// \file   PedestalsTask.cxx
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
 /// \author Andrea Ferrero
@@ -11,12 +11,21 @@
 #include <TFile.h>
 
 #include "Headers/RAWDataHeader.h"
+#include "Framework/CallbackService.h"
+#include "Framework/ControlService.h"
+#include "Framework/Task.h"
+#include "Framework/runDataProcessing.h"
+#include "DPLUtils/DPLRawParser.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "MCH/RawDataProcessor.h"
+#include "MCH/PedestalsTask.h"
+#include "MCHBase/Digit.h"
+#include "MCHMappingInterface/Segmentation.h"
+#include "MCHMappingInterface/CathodeSegmentation.h"
+#include "MCHRawElecMap/Mapper.h"
+
+#define QC_MCH_SAVE_TEMP_ROOTFILE
 
 using namespace std;
-
-static int gPrintLevel;
 
 static FILE* flog = NULL;
 
@@ -53,23 +62,22 @@ namespace quality_control_modules
 {
 namespace muonchambers
 {
-RawDataProcessor::RawDataProcessor() : TaskInterface(), count(1), mHistogram(nullptr)
+PedestalsTask::PedestalsTask() : TaskInterface(), count(1), mHistogram(nullptr)
 {
   flog = nullptr;
   mHistogram = nullptr;
 }
 
-RawDataProcessor::~RawDataProcessor()
+PedestalsTask::~PedestalsTask()
 {
-  printf("~RawDataProcessor() called\n");
+  printf("~PedestalsTask() called\n");
   if (flog)
     fclose(flog);
 }
 
-void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
+void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize RawDataProcessor" << AliceO2::InfoLogger::InfoLogger::endm;
-  printf("initialize RawDataProcessor\n");
+  QcInfoLogger::GetInstance() << "initialize PedestalsTask" << AliceO2::InfoLogger::InfoLogger::endm;
   if (true) {
 
     for (int c = 0; c < MCH_MAX_CRU_IN_FLP; c++) {
@@ -83,9 +91,14 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
       }
     }
 
-    mDecoder.initialize();
+    for (int de = 0; de < 1100; de++) {
+      for (int padid = 0; padid < 1500; padid++) {
+        nhitsDigits[de][padid] = 0;
+        pedestalDigits[de][padid] = noiseDigits[de][padid] = 0;
+      }
+    }
 
-    //  int de = 819;
+    mDecoder.initialize();
 
     mHistogram = new TH1F("QcMuonChambers_PayloadSize", "QcMuonChambers Payload Size", 20, 0, 1000000000);
     getObjectsManager()->startPublishing(mHistogram);
@@ -143,7 +156,10 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
 
           QcInfoLogger::GetInstance() << "JE SUIS ENTRÉ DANS LA BOUCLE DS_ADDR " << ds_addr << AliceO2::InfoLogger::InfoLogger::endm;
 
-          uint32_t de = mDecoder.getMapFEC(link_id, ds_addr, de, dsid);
+          uint32_t de;
+          int32_t ret = mDecoder.getMapFEC(link_id, ds_addr, de, dsid);
+          if (ret < 0)
+            continue;
 
           QcInfoLogger::GetInstance() << "C'EST LA LIGNE APRÈS LE GETMAPFEC, DE " << de << AliceO2::InfoLogger::InfoLogger::endm;
 
@@ -202,23 +218,23 @@ void RawDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  gPrintLevel = 0;
+  mPrintLevel = 0;
 
   flog = stdout; //fopen("/root/qc.log", "w");
 }
 
-void RawDataProcessor::startOfActivity(Activity& /*activity*/)
+void PedestalsTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   mHistogram->Reset();
 }
 
-void RawDataProcessor::startOfCycle()
+void PedestalsTask::startOfCycle()
 {
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void RawDataProcessor::fill_noise_distributions()
+void PedestalsTask::fill_noise_distributions()
 {
   for (int pi = 0; pi < 5; pi++) {
     for (int i = 0; i < 2; i++) {
@@ -263,7 +279,7 @@ void RawDataProcessor::fill_noise_distributions()
         float padSizeX = segment.padSizeX(padid);
         float padSizeY = segment.padSizeY(padid);
         int cathode = segment.isBendingPad(padid) ? 0 : 1;
-	*/
+         */
         float szmax = padSizeX;
         if (szmax < padSizeY)
           szmax = padSizeY;
@@ -286,99 +302,99 @@ void RawDataProcessor::fill_noise_distributions()
   }
 }
 
-void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
+void PedestalsTask::save_histograms()
 {
-  // todo: update API examples or refer to DPL README.md
-
-  //QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
-  //fprintf(flog, "\n\n====================\nRawDataProcessor::monitorData\n====================\n");
-  //fprintf(flog,"count: %d\n", count);
-
-  if ((count % 10000) == 0 /*&& count <= 5000*/) {
-    TFile f("/tmp/qc.root", "RECREATE");
-    fill_noise_distributions();
-    for (int i = 0; i < MCH_MAX_CRU_IN_FLP * 24; i++) {
-      mHistogramNoise[i]->Write();
-      mHistogramPedestals[i]->Write();
-    }
-    for (int i = 0; i < 2; i++) {
-      auto ih = mHistogramPedestalsXY[i].begin();
-      while (ih != mHistogramPedestalsXY[i].end()) {
-        ih->second->Write();
-        ih++;
-      }
-    }
-    for (int i = 0; i < 2; i++) {
-      auto ih = mHistogramNoiseXY[i].begin();
-      while (ih != mHistogramNoiseXY[i].end()) {
-        ih->second->Write();
-        ih++;
-      }
-    }
-    {
-      auto ih = mHistogramPedestalsDE.begin();
-      while (ih != mHistogramPedestalsDE.end()) {
-        ih->second->Write();
-        ih++;
-      }
-    }
-    {
-      auto ih = mHistogramNoiseDE.begin();
-      while (ih != mHistogramNoiseDE.end()) {
-        ih->second->Write();
-        ih++;
-      }
-    }
-    for (int pi = 0; pi < 5; pi++) {
-      for (int i = 0; i < 2; i++) {
-        auto ih = mHistogramNoiseDistributionDE[pi][i].begin();
-        while (ih != mHistogramNoiseDistributionDE[pi][i].end()) {
-          ih->second->Write();
-          ih++;
-        }
-      }
-    }
-
-    f.ls();
-    f.Close();
-    printf("count: %d\n", count);
+  TFile f("/tmp/qc.root", "RECREATE");
+  fill_noise_distributions();
+  for (int i = 0; i < MCH_MAX_CRU_IN_FLP * 24; i++) {
+    mHistogramNoise[i]->Write();
+    mHistogramPedestals[i]->Write();
   }
+  for (int i = 0; i < 2; i++) {
+    auto ih = mHistogramPedestalsXY[i].begin();
+    while (ih != mHistogramPedestalsXY[i].end()) {
+      ih->second->Write();
+      ih++;
+    }
+  }
+  for (int i = 0; i < 2; i++) {
+    auto ih = mHistogramNoiseXY[i].begin();
+    while (ih != mHistogramNoiseXY[i].end()) {
+      ih->second->Write();
+      ih++;
+    }
+  }
+  {
+    auto ih = mHistogramPedestalsDE.begin();
+    while (ih != mHistogramPedestalsDE.end()) {
+      ih->second->Write();
+      ih++;
+    }
+  }
+  {
+    auto ih = mHistogramNoiseDE.begin();
+    while (ih != mHistogramNoiseDE.end()) {
+      ih->second->Write();
+      ih++;
+    }
+  }
+  for (int pi = 0; pi < 5; pi++) {
+    for (int i = 0; i < 2; i++) {
+      auto ih = mHistogramNoiseDistributionDE[pi][i].begin();
+      while (ih != mHistogramNoiseDistributionDE[pi][i].end()) {
+        ih->second->Write();
+        ih++;
+      }
+    }
+  }
+
+  f.ls();
+  f.Close();
+}
+
+void PedestalsTask::monitorDataReadout(o2::framework::ProcessingContext& ctx)
+{
+  //QcInfoLogger::GetInstance() << "monitorDataReadout" << AliceO2::InfoLogger::InfoLogger::endm;
+
+#ifdef QC_MCH_SAVE_TEMP_ROOTFILE
+  if ((count % 2) == 0 /*&& count <= 5000*/) {
+    save_histograms();
+  }
+  printf("count: %d\n", count);
   count += 1;
+#endif
 
-  // exemplary ways of accessing inputs (incoming data), that were specified in the .ini file - e.g.:
-  //  [readoutInput]
-  //  inputName=readout
-  //  dataOrigin=ITS
-  //  dataDescription=RAWDATA
+  // Reset the hits container
+  mDecoder.clearHits();
 
-  // 1. in a loop
-  for (auto&& input : ctx.inputs()) {
-    //QcInfoLogger::GetInstance() << "run RawDataProcessor: input " << input.spec->binding << AliceO2::InfoLogger::InfoLogger::endm;
+  // For some reason the input selection doesn't work, to be investigated...
+  o2::framework::DPLRawParser parser(ctx.inputs() /*, o2::framework::select("readout:MCH/RAWDATA")*/);
 
-    if (input.spec->binding != "readout")
+  for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
+    // retrieving RDH v4
+    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV4>();
+    if (!rdh)
+      continue;
+    // retrieving the raw pointer of the page
+    auto const* raw = it.raw();
+    // retrieving payload pointer of the page
+    auto const* payload = it.data();
+    // size of payload
+    size_t payloadSize = it.size();
+    if (payloadSize == 0)
       continue;
 
-    const auto* header = o2::header::get<header::DataHeader*>(input.header);
-    //QcInfoLogger::GetInstance() << "header: " << header << AliceO2::InfoLogger::InfoLogger::endm;
-    if (gPrintLevel >= 1)
-      fprintf(flog, "Header: %p\n", header);
-    if (!header)
-      continue;
-    //QcInfoLogger::GetInstance() << "payloadSize: " << header->payloadSize << AliceO2::InfoLogger::InfoLogger::endm;
-    if (gPrintLevel >= 1)
-      fprintf(flog, "payloadSize: %d\n", (int)header->payloadSize);
-    if (gPrintLevel >= 1)
-      fprintf(flog, "payload: %p\n", input.payload);
-    mHistogram->Fill(header->payloadSize);
-    //continue;
+    //std::cout<<"\n\npayloadSize: "<<payloadSize<<std::endl;
+    //std::cout<<"raw:     "<<(void*)raw<<std::endl;
+    //std::cout<<"payload: "<<(void*)payload<<std::endl;
 
-    mDecoder.processData(input.payload, header->payloadSize);
+    // Run the decoder on the CRU buffer
+    mDecoder.processData((const char*)raw, (size_t)(payloadSize + sizeof(o2::header::RAWDataHeaderV4)));
 
     std::vector<SampaHit>& hits = mDecoder.getHits();
-    if (gPrintLevel >= 1)
-      fprintf(flog, "hits size: %d\n", hits.size());
+    if (mPrintLevel >= 1)
+      fprintf(flog, "hits size: %lu\n", hits.size());
     for (uint32_t i = 0; i < hits.size(); i++) {
-      //continue;
       SampaHit& hit = hits[i];
       if (hit.link_id >= 24 || hit.ds_addr >= 40 || hit.chan_addr >= 64) {
         fprintf(stdout, "hit[%d]: link_id=%d, ds_addr=%d, chan_addr=%d\n",
@@ -390,27 +406,8 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       int ds_id_in_group = hit.ds_addr % 5;
       int ds_chan_addr_in_group = hit.chan_addr + 64 * ds_id_in_group;
 
-      /*
-      if(hit.size != 10 || hit.time != 0 ) {
-        fprintf(stdout,"hit[%d]: size=%d, time=%d\n",
-            i, hit.size, hit.time);
-        continue;
-      }
-
-      bool bad_hit = false;
-      for(uint32_t s = 0; s < hit.samples.size(); s++) {
-        int sample = hit.samples[s];
-        if( sample > 100 || sample < 10 ) {
-          fprintf(stdout,"hit[%d]: bad sample=%d\n", i, sample);
-          bad_hit = true;
-          break;
-        }
-      }
-      if( bad_hit ) continue;
-       */
-
+      // Update the average and RMS of the pedestal values
       for (uint32_t s = 0; s < hit.samples.size(); s++) {
-        //continue;
         int sample = hit.samples[s];
 
         nhits[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr] += 1;
@@ -423,29 +420,31 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
         double M0 = noise[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr];
         double M = M0 + (sample - p0) * (sample - p);
         noise[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr] = M;
-        if (false && hit.link_id == 2 && hit.ds_addr == 37 && hit.chan_addr == 30)
-          fprintf(stdout, "M0=%f  sample=%d  M=%f  nhits=%lu  rms=%f\n",
-                  (float)M0, sample, (float)M, nhits[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr],
-                  (float)std::sqrt(noise[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr] /
-                                   nhits[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr]));
+
+        /*if (false && hit.link_id == 2 && hit.ds_addr == 37 && hit.chan_addr == 30)
+        fprintf(stdout, "M0=%f  sample=%d  M=%f  nhits=%lu  rms=%f\n",
+            (float)M0, sample, (float)M, nhits[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr],
+            (float)std::sqrt(noise[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr] /
+                nhits[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr]));*/
       }
-      //continue;
-      mHistogramPedestals[hit.cru_id * 24 + hit.link_id]->SetBinContent(hit.ds_addr + 1, hit.chan_addr + 1,
-                                                                        pedestal[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr]);
+
+      // Fill the histograms for each CRU link
       double rms = std::sqrt(noise[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr] /
                              nhits[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr]);
-      if (false)
-        fprintf(flog, "rms=%f\n", (float)rms);
+
+      /*if( false && hit.cru_id==0 && hit.link_id==0 && hit.ds_addr==0 && hit.chan_addr==0)
+      printf("%d %d %d %d -> %d %f %f\n", (int)hit.cru_id, (int)hit.link_id, (int)hit.ds_addr, (int)hit.chan_addr,
+          (int)nhits[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr],
+          pedestal[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr], rms);*/
+
+      mHistogramPedestals[hit.cru_id * 24 + hit.link_id]->SetBinContent(hit.ds_addr + 1, hit.chan_addr + 1,
+                                                                        pedestal[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr]);
       mHistogramNoise[hit.cru_id * 24 + hit.link_id]->SetBinContent(hit.ds_addr + 1, hit.chan_addr + 1, rms);
 
-      if (false)
-        fprintf(flog, "ds_group_id=%d  ds_chan_addr_in_group=%d\n", ds_group_id, ds_chan_addr_in_group);
-      //mHistogramPedestalsDS[hit.link_id][ds_group_id]->SetBinContent(ds_chan_addr_in_group+1,
-      //    pedestal[hit.link_id][hit.ds_addr][hit.chan_addr]);
-      //mHistogramNoiseDS[hit.link_id][ds_group_id]->SetBinContent(ds_chan_addr_in_group+1, rms);
+      if (hit.pad.fDE < 0)
+        continue;
 
-      //if( hit.ds_addr != 0 || hit.chan_addr != 0 ) continue;
-
+      // Fill the histograms for each detection element
       int de = hit.pad.fDE;
       int dsid = hit.pad.fDsID;
       float padX = hit.pad.fX;
@@ -453,12 +452,8 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       float padSizeX = hit.pad.fSizeX;
       float padSizeY = hit.pad.fSizeY;
 
-      if (false)
-        fprintf(flog, "mapping: link_id=%d ds_addr=%d chan_addr=%d  ==>  de=%d dsid=%d x=%f y=%f sx=%f sy=%f\n",
-                hit.link_id, hit.ds_addr, hit.chan_addr, de, dsid, padX, padY, padSizeX, padSizeY);
-
-      if (hit.pad.fDE < 0)
-        continue;
+      /*if (false) fprintf(flog, "mapping: link_id=%d ds_addr=%d chan_addr=%d  ==>  de=%d dsid=%d x=%f y=%f sx=%f sy=%f\n",
+        hit.link_id, hit.ds_addr, hit.chan_addr, de, dsid, padX, padY, padSizeX, padSizeY);*/
 
       auto hPedDE = mHistogramPedestalsDE.find(de);
       if ((hPedDE != mHistogramPedestalsDE.end()) && (hPedDE->second != NULL)) {
@@ -471,12 +466,10 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
 
       auto hPedXY = mHistogramPedestalsXY[hit.pad.fCathode].find(de);
       if ((hPedXY != mHistogramPedestalsXY[hit.pad.fCathode].end()) && (hPedXY->second != NULL)) {
-        //fprintf(flog,"Filling histograms for XY %d,%d -> %f,%f + %f,%f\n", de, hit.pad.fCathode, padX, padY, padSizeX, padSizeY);
         int binx_min = hPedXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
         int binx_max = hPedXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
         int biny_min = hPedXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
         int biny_max = hPedXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
-        //fprintf(flog, "  binx_min=%f binx_max=%f\n", binx_min, binx_max);
         for (int by = biny_min; by <= biny_max; by++) {
           for (int bx = binx_min; bx <= binx_max; bx++) {
             hPedXY->second->SetBinContent(bx, by, pedestal[hit.cru_id][hit.link_id][hit.ds_addr][hit.chan_addr]);
@@ -485,7 +478,6 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
       }
       auto hNoiseXY = mHistogramNoiseXY[hit.pad.fCathode].find(de);
       if ((hNoiseXY != mHistogramNoiseXY[hit.pad.fCathode].end()) && (hNoiseXY->second != NULL)) {
-        //fprintf(stdout,"Filling histograms for XY %d\n", de);
         int binx_min = hNoiseXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
         int binx_max = hNoiseXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
         int biny_min = hNoiseXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
@@ -497,23 +489,139 @@ void RawDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
-
-    mDecoder.clearHits();
   }
 }
 
-void RawDataProcessor::endOfCycle()
+void PedestalsTask::monitorDataDigits(const o2::framework::DataRef& input)
+{
+  //QcInfoLogger::GetInstance() << "monitorDataDigits" << AliceO2::InfoLogger::InfoLogger::endm;
+
+#ifdef QC_MCH_SAVE_TEMP_ROOTFILE
+  if ((count % 10) == 0 /*&& count <= 5000*/) {
+    save_histograms();
+    printf("count: %d\n", count);
+  }
+  count += 1;
+#endif
+
+  if (input.spec->binding != "digits")
+    return;
+
+  const auto* header = o2::header::get<header::DataHeader*>(input.header);
+  if (mPrintLevel >= 1)
+    fprintf(flog, "Header: %p\n", (void*)header);
+  if (!header)
+    return;
+  //QcInfoLogger::GetInstance() << "payloadSize: " << header->payloadSize << AliceO2::InfoLogger::InfoLogger::endm;
+  if (mPrintLevel >= 1)
+    fprintf(flog, "payloadSize: %d\n", (int)header->payloadSize);
+  if (mPrintLevel >= 1)
+    fprintf(flog, "payload: %p\n", input.payload);
+
+  std::vector<o2::mch::Digit> digits{ 0 };
+  o2::mch::Digit* digitsBuffer = NULL;
+  digitsBuffer = (o2::mch::Digit*)input.payload;
+  size_t ndigits = ((size_t)header->payloadSize / sizeof(o2::mch::Digit));
+
+  if (mPrintLevel >= 1)
+    std::cout << "There are " << ndigits << " digits in the payload" << std::endl;
+
+  o2::mch::Digit* ptr = (o2::mch::Digit*)digitsBuffer;
+  for (int di = 0; di < ndigits; di++) {
+    digits.push_back(*ptr);
+    ptr += 1;
+  }
+
+  for (uint32_t i = 0; i < digits.size(); i++) {
+    o2::mch::Digit& digit = digits[i];
+    int ADC = digit.getADC();
+    int de = digit.getDetID();
+    int padid = digit.getPadID();
+
+    //fprintf(stdout, "digit[%d]: ADC=%d, DetId=%d, PadId=%d\n",
+    //        i, ADC, de, padid);
+    if (ADC < 0 || de < 0 || padid < 0) {
+      continue;
+    }
+
+    try {
+      const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
+
+      double padX = segment.padPositionX(padid);
+      double padY = segment.padPositionY(padid);
+      float padSizeX = segment.padSizeX(padid);
+      float padSizeY = segment.padSizeY(padid);
+      int cathode = segment.isBendingPad(padid) ? 0 : 1;
+
+      // Update the average and RMS of the pedestal values
+      nhitsDigits[de][padid] += 1;
+      uint64_t N = nhitsDigits[de][padid];
+
+      double p0 = pedestalDigits[de][padid];
+      double p = p0 + (ADC - p0) / N;
+      pedestalDigits[de][padid] = p;
+
+      double M0 = noiseDigits[de][padid];
+      double M = M0 + (ADC - p0) * (ADC - p);
+      noiseDigits[de][padid] = M;
+
+      double rms = std::sqrt(noiseDigits[de][padid] /
+                             nhitsDigits[de][padid]);
+
+      // Fill the histograms for each detection element
+      auto hPedXY = mHistogramPedestalsXY[cathode].find(de);
+      if ((hPedXY != mHistogramPedestalsXY[cathode].end()) && (hPedXY->second != NULL)) {
+        int binx_min = hPedXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
+        int binx_max = hPedXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
+        int biny_min = hPedXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
+        int biny_max = hPedXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
+        for (int by = biny_min; by <= biny_max; by++) {
+          for (int bx = binx_min; bx <= binx_max; bx++) {
+            hPedXY->second->SetBinContent(bx, by, pedestalDigits[de][padid]);
+          }
+        }
+      }
+      auto hNoiseXY = mHistogramNoiseXY[cathode].find(de);
+      if ((hNoiseXY != mHistogramNoiseXY[cathode].end()) && (hNoiseXY->second != NULL)) {
+        int binx_min = hNoiseXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
+        int binx_max = hNoiseXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
+        int biny_min = hNoiseXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
+        int biny_max = hNoiseXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
+        for (int by = biny_min; by <= biny_max; by++) {
+          for (int bx = binx_min; bx <= binx_max; bx++) {
+            hNoiseXY->second->SetBinContent(bx, by, rms);
+          }
+        }
+      }
+    } catch (const std::exception& e) {
+      QcInfoLogger::GetInstance() << "[MCH] Detection Element " << de << " not found in mapping." << AliceO2::InfoLogger::InfoLogger::endm;
+      return;
+    }
+  }
+}
+
+void PedestalsTask::monitorData(o2::framework::ProcessingContext& ctx)
+{
+  monitorDataReadout(ctx);
+  for (auto&& input : ctx.inputs()) {
+    //QcInfoLogger::GetInstance() << "run PedestalsTask: input " << input.spec->binding << AliceO2::InfoLogger::InfoLogger::endm;
+    if (input.spec->binding == "digits")
+      monitorDataDigits(input);
+  }
+}
+
+void PedestalsTask::endOfCycle()
 {
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void RawDataProcessor::endOfActivity(Activity& /*activity*/)
+void PedestalsTask::endOfActivity(Activity& /*activity*/)
 {
-  printf("RawDataProcessor::endOfActivity() called\n");
+  printf("PedestalsTask::endOfActivity() called\n");
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void RawDataProcessor::reset()
+void PedestalsTask::reset()
 {
   // clean all the monitor objects here
 

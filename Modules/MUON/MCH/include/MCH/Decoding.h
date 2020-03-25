@@ -1,5 +1,5 @@
 ///
-/// \file   MuonChambersDataDecoder.h
+/// \file   Decoding.h
 /// \author Andrea Ferrero
 ///
 
@@ -8,7 +8,8 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "MCH/sampa_header.h"
-#include "MCH/MuonChambersMapping.h"
+#include "MCH/Mapping.h"
+#include "MCHBase/Digit.h"
 
 using namespace o2::quality_control::core;
 
@@ -65,13 +66,13 @@ struct DualSampaGroup {
 
 /// \brief decoding of MCH data
 /// \author Andrea Ferrero
-class MuonChambersDataDecoder
+class Decoder
 {
  public:
   /// \brief Constructor
-  MuonChambersDataDecoder();
+  Decoder();
   /// Destructor
-  ~MuonChambersDataDecoder();
+  ~Decoder();
 
   // Definition of the methods for the template method pattern
   void initialize();
@@ -79,13 +80,16 @@ class MuonChambersDataDecoder
   void decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int link_id);
   void decodeUL(uint32_t* payload_buf, size_t nWords, int cru_id, int dpw_id);
   void clearHits();
+  void clearDigits();
   std::vector<SampaHit>& getHits() { return mHits; }
+  std::vector<o2::mch::Digit>& getDigits() { return mDigits; }
   void reset();
 
   int32_t getMapCRU(int cruid, int linkid) { return mMapCRU.getLink(cruid, linkid); }
   int32_t getMapFEC(uint32_t link_id, uint32_t ds_addr, uint32_t& de, uint32_t& dsid)
   {
-    mMapFEC.getDSMapping(link_id, ds_addr, de, dsid);
+    if (!mMapFEC.getDSMapping(link_id, ds_addr, de, dsid))
+      return -1;
     return de;
   }
   MapFEC& getMapFEC() { return mMapFEC; }
@@ -96,6 +100,7 @@ class MuonChambersDataDecoder
   DualSampaGroup dsg[MCH_MAX_CRU_ID][24][8];
   int ds_enable[MCH_MAX_CRU_IN_FLP][24][40];
   std::vector<SampaHit> mHits;
+  std::vector<o2::mch::Digit> mDigits;
   int nFrames;
   MapCRU mMapCRU;
   MapFEC mMapFEC;

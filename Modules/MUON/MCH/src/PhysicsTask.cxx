@@ -1,5 +1,5 @@
 ///
-/// \file   PhysicsDataProcessor.cxx
+/// \file   PhysicsTask.cxx
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
 /// \author Andrea Ferrero
@@ -13,7 +13,7 @@
 
 #include "Headers/RAWDataHeader.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "MCH/PhysicsDataProcessor.h"
+#include "MCH/PhysicsTask.h"
 //#include "MCHPreClustering/PreClusterFinder.h"
 
 using namespace std;
@@ -55,14 +55,14 @@ namespace quality_control_modules
 {
 namespace muonchambers
 {
-PhysicsDataProcessor::PhysicsDataProcessor() : TaskInterface(), count(1) {}
+PhysicsTask::PhysicsTask() : TaskInterface(), count(1) {}
 
-PhysicsDataProcessor::~PhysicsDataProcessor() { fclose(flog); }
+PhysicsTask::~PhysicsTask() { fclose(flog); }
 
-void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
+void PhysicsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize PhysicsDataProcessor" << AliceO2::InfoLogger::InfoLogger::endm;
-  fprintf(stdout, "initialize PhysicsDataProcessor\n");
+  QcInfoLogger::GetInstance() << "initialize PhysicsTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  fprintf(stdout, "initialize PhysicsTask\n");
 
   mDecoder.initialize();
 
@@ -123,25 +123,25 @@ void PhysicsDataProcessor::initialize(o2::framework::InitContext& /*ctx*/)
   gPrintLevel = 0;
 
   flog = stdout; //fopen("/root/qc.log", "w");
-  fprintf(stdout, "PhysicsDataProcessor initialization finished\n");
+  fprintf(stdout, "PhysicsTask initialization finished\n");
 }
 
-void PhysicsDataProcessor::startOfActivity(Activity& /*activity*/)
+void PhysicsTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void PhysicsDataProcessor::startOfCycle()
+void PhysicsTask::startOfCycle()
 {
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
+void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // todo: update API examples or refer to DPL README.md
 
   QcInfoLogger::GetInstance() << "monitorData" << AliceO2::InfoLogger::InfoLogger::endm;
-  fprintf(flog, "\n\n====================\PhysicsDataProcessor::monitorData\n====================\n");
+  fprintf(flog, "\n\n====================\PhysicsTask::monitorData\n====================\n");
 
   printf("count: %d\n", count);
   if ((count % 1) == 0) {
@@ -280,17 +280,17 @@ void PhysicsDataProcessor::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void PhysicsDataProcessor::endOfCycle()
+void PhysicsTask::endOfCycle()
 {
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void PhysicsDataProcessor::endOfActivity(Activity& /*activity*/)
+void PhysicsTask::endOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void PhysicsDataProcessor::reset()
+void PhysicsTask::reset()
 {
   // clean all the monitor objects here
 

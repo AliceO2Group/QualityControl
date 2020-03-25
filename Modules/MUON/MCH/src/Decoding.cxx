@@ -1,5 +1,5 @@
 ///
-/// \file   MuonChambersDataDecoder.cxx
+/// \file   Decoding.cxx
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
 /// \author Andrea Ferrero
@@ -11,7 +11,8 @@
 
 #include "Headers/RAWDataHeader.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "MCH/MuonChambersDataDecoder.h"
+#include "MCH/Decoding.h"
+#include "MCHBase/Digit.h"
 
 using namespace std;
 
@@ -894,14 +895,14 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* ds
   return result;
 }
 
-MuonChambersDataDecoder::MuonChambersDataDecoder() {}
+Decoder::Decoder() {}
 
-MuonChambersDataDecoder::~MuonChambersDataDecoder() { fclose(flog); }
+Decoder::~Decoder() { fclose(flog); }
 
-void MuonChambersDataDecoder::initialize()
+void Decoder::initialize()
 {
-  QcInfoLogger::GetInstance() << "initialize MuonChambersDataDecoder" << AliceO2::InfoLogger::InfoLogger::endm;
-  fprintf(stdout, "initialize MuonChambersDataDecoder\n");
+  QcInfoLogger::GetInstance() << "initialize Decoder" << AliceO2::InfoLogger::InfoLogger::endm;
+  fprintf(stdout, "initialize Decoder\n");
 
   hb_orbit = -1;
   nFrames = 0;
@@ -958,10 +959,10 @@ void MuonChambersDataDecoder::initialize()
   //if( gPrintLevel > 0 ) flog = fopen("/home/flp/qc.log", "w");
   //else
   flog = stdout;
-  fprintf(stdout, "MuonChambersDataDecoder initialization finished\n");
+  fprintf(stdout, "Decoder initialization finished\n");
 }
 
-void MuonChambersDataDecoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int link_id)
+void Decoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int link_id)
 {
   uint32_t hhvalue, hlvalue, lhvalue, llvalue;
   for (size_t wi = 0; wi < nGBTwords; wi++) {
@@ -1058,7 +1059,7 @@ void MuonChambersDataDecoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords,
   }
 }
 
-void MuonChambersDataDecoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, int cru_id, int dpw_id)
+void Decoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, int cru_id, int dpw_id)
 {
   uint64_t* payload_buf = (uint64_t*)payload_buf_32;
   for (int wi = 0; wi < nWords; wi += 1) {
@@ -1175,7 +1176,7 @@ void MuonChambersDataDecoder::decodeUL(uint32_t* payload_buf_32, size_t nWords, 
   //printf("=========\n");
 }
 
-void MuonChambersDataDecoder::processData(const char* buf, size_t size)
+void Decoder::processData(const char* buf, size_t size)
 {
 
   // exemplary ways of accessing inputs (incoming data), that were specified in the .ini file - e.g.:
@@ -1453,14 +1454,20 @@ void MuonChambersDataDecoder::processData(const char* buf, size_t size)
   }
 }
 
-void MuonChambersDataDecoder::clearHits()
+void Decoder::clearHits()
 {
   mHits.clear();
 }
 
-void MuonChambersDataDecoder::reset()
+void Decoder::clearDigits()
+{
+  mDigits.clear();
+}
+
+void Decoder::reset()
 {
   clearHits();
+  clearDigits();
 }
 
 } // namespace muonchambers

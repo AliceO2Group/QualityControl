@@ -9,13 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   MCHCheckPedestals.cxx
+/// \file   PedestalsCheck.cxx
 /// \author Andrea Ferrero
 ///
 
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingSegContour/CathodeSegmentationContours.h"
-#include "MCH/MCHCheckPedestals.h"
+#include "MCH/PedestalsCheck.h"
 
 // ROOT
 #include <fairlogger/Logger.h>
@@ -30,13 +30,13 @@ using namespace std;
 namespace o2::quality_control_modules::muonchambers
 {
 
-MCHCheckPedestals::MCHCheckPedestals() : minMCHpedestal(50.f), maxMCHpedestal(100.f)
+PedestalsCheck::PedestalsCheck() : minMCHpedestal(50.f), maxMCHpedestal(100.f)
 {
 }
 
-MCHCheckPedestals::~MCHCheckPedestals() {}
+PedestalsCheck::~PedestalsCheck() {}
 
-void MCHCheckPedestals::configure(std::string)
+void PedestalsCheck::configure(std::string)
 {
   // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
   //   minTOFrawTime = 150.; //ns
@@ -44,52 +44,50 @@ void MCHCheckPedestals::configure(std::string)
   // }
 }
 
-Quality MCHCheckPedestals::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality PedestalsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   //std::cout<<"================================="<<std::endl;
-  //std::cout<<"MCHCheckPedestals::check() called"<<std::endl;
+  //std::cout<<"PedestalsCheck::check() called"<<std::endl;
   //std::cout<<"================================="<<std::endl;
   Quality result = Quality::Null;
-  /*
-  // const Double_t binWidthTOFrawTime = 2.44;
 
-  // if ((histname.EndsWith("RawsTime")) || (histname.Contains("RawsTime") && suffixTrgCl)) {
-  if (mo->getName().find("QcMuonChambers_Pedestals") != std::string::npos) {
-    auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    if (!h)
-      return result;
+  for (auto& [moName, mo] : *moMap) {
 
-    if (h->GetEntries() == 0) {
-      result = Quality::Medium;
-      // flag = AliQAv1::kWARNING;
-    } else {
-      int nbinsx = 6; //h->GetXaxis()->GetNbins();
-      int nbinsy = h->GetYaxis()->GetNbins();
-      int nbad = 0;
-      for (int i = 1; i <= nbinsx; i++) {
-        for (int j = 1; j <= nbinsy; j++) {
-          Float_t ped = h->GetBinContent(i, j);
-          if (ped < minMCHpedestal || ped > maxMCHpedestal)
-            nbad += 1;
+    (void)moName;
+    if (mo->getName().find("QcMuonChambers_Pedestals") != std::string::npos) {
+      auto* h = dynamic_cast<TH2F*>(mo->getObject());
+      if (!h)
+        return result;
+
+      if (h->GetEntries() == 0) {
+        result = Quality::Medium;
+      } else {
+        int nbinsx = 6; //h->GetXaxis()->GetNbins();
+        int nbinsy = h->GetYaxis()->GetNbins();
+        int nbad = 0;
+        for (int i = 1; i <= nbinsx; i++) {
+          for (int j = 1; j <= nbinsy; j++) {
+            Float_t ped = h->GetBinContent(i, j);
+            if (ped < minMCHpedestal || ped > maxMCHpedestal)
+              nbad += 1;
+          }
         }
+        if (nbad < 1)
+          result = Quality::Good;
+        else
+          result = Quality::Bad;
       }
-      if (nbad < 1)
-        result = Quality::Good;
-      else
-        result = Quality::Bad;
     }
   }
-  */
   return result;
 }
 
-std::string MCHCheckPedestals::getAcceptedType() { return "TH1"; }
+std::string PedestalsCheck::getAcceptedType() { return "TH1"; }
 
-void MCHCheckPedestals::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void PedestalsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  /*
   //std::cout<<"===================================="<<std::endl;
-  //std::cout<<"MCHCheckPedestals::beautify() called"<<std::endl;
+  //std::cout<<"PedestalsCheck::beautify() called"<<std::endl;
   //std::cout<<"===================================="<<std::endl;
   if (mo->getName().find("QcMuonChambers_Pedestals") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
@@ -233,7 +231,6 @@ void MCHCheckPedestals::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       }
     }
   }
-  */
 }
 
 } // namespace o2::quality_control_modules::muonchambers
