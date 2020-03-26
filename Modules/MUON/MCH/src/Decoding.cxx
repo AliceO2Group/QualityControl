@@ -60,12 +60,12 @@ namespace muonchambers
 
 bool BXCNT_compare(unsigned long c1, unsigned long c2)
 {
-  const int64_t MAX = 0xFFFFF;
+  const uint64_t MAX = 0xFFFFF;
   //int64_t diff = c1 - c2;
   //if(diff >= MAX) diff -= MAX;
   //if(diff <= -MAX) diff += MAX;
-  int64_t c1p = (c1 + 1) & MAX;
-  int64_t c2p = (c2 + 1) & MAX;
+  uint64_t c1p = (c1 + 1) & MAX;
+  uint64_t c2p = (c2 + 1) & MAX;
   if (c1 == c2)
     return true;
   if (c1p == c2)
