@@ -41,9 +41,9 @@ class PedestalsCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
   /// Minimum value for SAMPA pedestals
-  Float_t minMCHpedestal;
+  float minMCHpedestal;
   /// Maximum value for SAMPA pedestals
-  Float_t maxMCHpedestal;
+  float maxMCHpedestal;
 
  private:
   /// Vector filled with DualSampas Ids that have been tested but sent back no data

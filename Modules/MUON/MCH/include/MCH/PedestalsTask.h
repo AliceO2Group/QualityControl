@@ -26,10 +26,9 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-/// \brief Example Quality Control DPL Task
-/// It is final because there is no reason to derive from it. Just remove it if needed.
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
+/// \brief Quality Control Task for the analysis of MCH pedestal data
+/// \author Andrea Ferrero
+/// \author Sebastien Perrin
 class PedestalsTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
@@ -63,11 +62,8 @@ class PedestalsTask /*final*/ : public TaskInterface // todo add back the "final
   double noiseDigits[1100][1500];
 
   MapCRU mMapCRU[MCH_MAX_CRU_IN_FLP];
-  TH1F* mHistogram;
   TH2F* mHistogramPedestals[MCH_MAX_CRU_IN_FLP * 24];
   TH2F* mHistogramNoise[MCH_MAX_CRU_IN_FLP * 24];
-  TH1F* mHistogramPedestalsDS[MCH_MAX_CRU_IN_FLP * 24][8];
-  TH1F* mHistogramNoiseDS[MCH_MAX_CRU_IN_FLP * 24][8];
 
   std::vector<int> DEs;
   //MapFEC mMapFEC;

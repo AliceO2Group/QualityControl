@@ -1,7 +1,5 @@
 ///
 /// \file   Decoding.cxx
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
 /// \author Andrea Ferrero
 ///
 
@@ -60,7 +58,7 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-bool BXCNT_compare(int64_t c1, int64_t c2)
+bool BXCNT_compare(unsigned long c1, unsigned long c2)
 {
   const int64_t MAX = 0xFFFFF;
   //int64_t diff = c1 - c2;
@@ -399,7 +397,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       // Looking for Sync word (2 packets)
       // Look for 10 consecutives 01 (sent 10 from the GBT)
       if (gPrintLevel >= 2)
-        fprintf(flog, "  ds[%d]->bit=%d\n  ->powerMultiplier=%lu\n  (gbtdata&0x1)=%d\n",
+        fprintf(flog, "  ds[%d]->bit=%d\n  ->powerMultiplier=%llu\n  (gbtdata&0x1)=%d\n",
                 ds->id, ds->bit, ds->powerMultiplier, (int)(gbtdata & 0x1));
       if (ds->bit < 50) { // Fill the word
         ds->data += (gbtdata & 0x1) * ds->powerMultiplier;
@@ -435,7 +433,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       // We are waiting for a Sampa header
       // It can be preceded by an undefined number os Sync words
       if (gPrintLevel >= 2)
-        fprintf(flog, "  ds[%d]->bit=%d\n  ->powerMultiplier=%lu\n  (gbtdata&0x1)=%d\n",
+        fprintf(flog, "  ds[%d]->bit=%d\n  ->powerMultiplier=%llu\n  (gbtdata&0x1)=%d\n",
                 dsr.id, dsr.bit, dsr.powerMultiplier, (int)(gbtdata & 0x1));
       if (gPrintLevel >= 2)
         fprintf(flog, "  ==> ds[%d]->data: %.16lX\n", dsr.id, dsr.data);
@@ -471,7 +469,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
         //              ds->header.fBunchCrossingCounter, ds->bxc);
         int link = ds->id / 5;
         if (gPrintLevel >= 1)
-          fprintf(flog, "SAMPA [%2d]: BX counter for link %d is %lu\n", ds->id, link, dsg->bxc);
+          fprintf(flog, "SAMPA [%2d]: BX counter for link %d is %ld\n", ds->id, link, dsg->bxc);
         if (false && dsg && dsg->bxc >= 0) {
           if (!BXCNT_compare(dsg->bxc, ds->header.fBunchCrossingCounter)) {
             gNbErrors++;
@@ -586,7 +584,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
                 ds->chan_addr[0], ds->chan_addr[1]);
 
       if (gPrintLevel >= 1)
-        fprintf(flog, "SAMPA [%2d]: Cluster Size 0x%lX (%lu)\n", ds->id, ds->data, ds->data);
+        fprintf(flog, "SAMPA [%2d]: Cluster Size 0x%llX (%llu)\n", ds->id, ds->data, ds->data);
 
       ds->csize = ds->data;
       ds->cid = 0;
@@ -606,7 +604,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
         break;
       result = DECODE_STATE_CTIME_FOUND;
       if (gPrintLevel >= 1)
-        fprintf(flog, "SAMPA [%2d]: Cluster Time 0x%lX (%lu)\n", ds->id, ds->data, ds->data);
+        fprintf(flog, "SAMPA [%2d]: Cluster Time 0x%llX (%llu)\n", ds->id, ds->data, ds->data);
 
       ds->ctime = ds->data;
       ds->packetsize += 1;
@@ -625,7 +623,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       if (ds->bit < 10)
         break;
       if (gPrintLevel >= 2)
-        fprintf(flog, "SAMPA #%d Data word: 0x%lX (%lu)\n", ds->id, ds->data, ds->data);
+        fprintf(flog, "SAMPA #%d Data word: 0x%llX (%llu)\n", ds->id, ds->data, ds->data);
 
       if (1 /*ds->header.fPkgType == 4*/) {
         if (ds->header.fPkgType == 4) { // Good data
@@ -636,7 +634,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
             int patt = (gPattern & 0xFF) + (gPattern << 8 & 0xFF00);
             if ((ds->data & 0x2FF) != (patt & 0x2FF)) {
               gNbWarnings++;
-              fprintf(flog, "===> WARNING SAMPA [%2d]: wrong data pattern 0x%lX, expected 0x%X\n", ds->id,
+              fprintf(flog, "===> WARNING SAMPA [%2d]: wrong data pattern 0x%llX, expected 0x%X\n", ds->id,
                       ds->data & 0x2FF, (patt & 0x2FF));
             }
           }

@@ -48,7 +48,7 @@ struct DualSampa {
   uint64_t powerMultiplier;        // power to convert to move bits
   int nsyn2Bits;                   // Nb of words waiting synchronization
   Sampa::SampaHeaderStruct header; // current channel header
-  int64_t bxc[2];
+  unsigned long bxc[2];
   uint32_t csize, ctime, cid, sample;
   int chan_addr[2];
   uint64_t packetsize;
@@ -61,7 +61,7 @@ struct DualSampa {
 };
 
 struct DualSampaGroup {
-  int64_t bxc;
+  unsigned long bxc;
 };
 
 /// \brief decoding of MCH data

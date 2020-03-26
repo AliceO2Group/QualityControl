@@ -25,10 +25,9 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-/// \brief Example Quality Control DPL Task
-/// It is final because there is no reason to derive from it. Just remove it if needed.
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
+/// \brief Quality Control Task for the analysis of MCH physics data
+/// \author Andrea Ferrero
+/// \author Sebastien Perrin
 class PhysicsTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:

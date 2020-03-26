@@ -62,10 +62,9 @@ namespace quality_control_modules
 {
 namespace muonchambers
 {
-PedestalsTask::PedestalsTask() : TaskInterface(), count(1), mHistogram(nullptr)
+PedestalsTask::PedestalsTask() : TaskInterface(), count(1)
 {
   flog = nullptr;
-  mHistogram = nullptr;
 }
 
 PedestalsTask::~PedestalsTask()
@@ -99,9 +98,6 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
 
     mDecoder.initialize();
-
-    mHistogram = new TH1F("QcMuonChambers_PayloadSize", "QcMuonChambers Payload Size", 20, 0, 1000000000);
-    getObjectsManager()->startPublishing(mHistogram);
 
     uint32_t dsid;
     std::vector<int> DEs;
@@ -137,11 +133,11 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
             TH2F* hPedDE = new TH2F(TString::Format("QcMuonChambers_Pedestals_DE%03d", de),
                                     TString::Format("QcMuonChambers - Pedestals (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
             mHistogramPedestalsDE.insert(make_pair(de, hPedDE));
-            getObjectsManager()->startPublishing(hPedDE);
+            //getObjectsManager()->startPublishing(hPedDE);
             TH2F* hNoiseDE = new TH2F(TString::Format("QcMuonChambers_Noise_DE%03d", de),
                                       TString::Format("QcMuonChambers - Noise (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
             mHistogramNoiseDE.insert(make_pair(de, hNoiseDE));
-            getObjectsManager()->startPublishing(hNoiseDE);
+            //getObjectsManager()->startPublishing(hNoiseDE);
 
             for (int pi = 0; pi < 5; pi++) {
               TH1F* hNoiseDE = new TH1F(TString::Format("QcMuonChambers_Noise_Distr_DE%03d_b_%d", de, pi),
@@ -190,7 +186,6 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 void PedestalsTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
-  mHistogram->Reset();
 }
 
 void PedestalsTask::startOfCycle()
@@ -589,7 +584,6 @@ void PedestalsTask::reset()
   // clean all the monitor objects here
 
   QcInfoLogger::GetInstance() << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
-  mHistogram->Reset();
 }
 
 } // namespace muonchambers
