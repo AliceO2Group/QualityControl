@@ -33,6 +33,25 @@
 using namespace o2;
 using namespace o2::framework;
 
+struct CRUheader {
+  uint8_t header_version;
+  uint8_t header_size;
+  uint16_t block_length;
+  uint16_t fee_id;
+  uint8_t priority_bit;
+  uint8_t reserved_1;
+  uint16_t next_packet_offset;
+  uint16_t memory_size;
+  uint8_t link_id;
+  uint8_t packet_counter;
+  uint16_t cru_id : 12;
+  uint8_t dpw_id : 4;
+  uint32_t hb_orbit;
+  //uint16_t cru_id;
+  //uint8_t dummy1;
+  //uint64_t dummy2;
+};
+
 class FileReaderTask
 {
  public:
@@ -59,12 +78,23 @@ class FileReaderTask
   //_________________________________________________________________________________________________
   void run(framework::ProcessingContext& pc)
   {
+    uint32_t CRUbuf[4 * 4];
+    CRUheader CRUh;
     /// send one RDH block via DPL
 
-    const int RDH_BLOCK_SIZE = 8192;
-    char* buf = (char*)malloc(RDH_BLOCK_SIZE);
+    int RDH_BLOCK_SIZE = 8192;
 
-    mInputFile.read(buf, RDH_BLOCK_SIZE);
+    mInputFile.read((char*)(&CRUbuf), sizeof(CRUbuf));
+    memcpy(&CRUh, CRUbuf, sizeof(CRUheader));
+    if (CRUh.header_version != 4 || CRUh.header_size != 64)
+      return;
+
+    RDH_BLOCK_SIZE = CRUh.next_packet_offset;
+
+    char* buf = (char*)malloc(RDH_BLOCK_SIZE);
+    memcpy(buf, CRUbuf, CRUh.header_size);
+
+    mInputFile.read(buf + CRUh.header_size, RDH_BLOCK_SIZE - CRUh.header_size);
     if (mInputFile.fail()) {
       if (mPrint) {
         LOG(INFO) << "end of file reached";
