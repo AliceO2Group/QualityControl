@@ -58,7 +58,7 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-bool BXCNT_compare(long int c1, unsigned long c2)
+bool BXCNT_compare(long int c1, long int c2)
 {
   const int64_t MAX = 0xFFFFF;
   //int64_t diff = c1 - c2;
@@ -471,7 +471,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
         if (gPrintLevel >= 1)
           fprintf(flog, "SAMPA [%2d]: BX counter for link %d is %ld\n", ds->id, link, dsg->bxc);
         if (dsg && dsg->bxc >= 0) {
-          if (!BXCNT_compare(dsg->bxc, ds->header.fBunchCrossingCounter)) {
+          if (!BXCNT_compare(dsg->bxc, static_cast<long int>(ds->header.fBunchCrossingCounter))) {
             gNbErrors++;
             fprintf(flog, "===> ERROR SAMPA [%2d]: ChipAdd %lu ChAdd %2lu BX %lu, expected %ld, diff %ld\n",
                     ds->id, ds->header.fChipAddress, ds->header.fChannelAddress,
