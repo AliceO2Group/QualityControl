@@ -58,14 +58,14 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
-bool BXCNT_compare(unsigned long c1, unsigned long c2)
+bool BXCNT_compare(long int c1, unsigned long c2)
 {
-  const uint64_t MAX = 0xFFFFF;
+  const int64_t MAX = 0xFFFFF;
   //int64_t diff = c1 - c2;
   //if(diff >= MAX) diff -= MAX;
   //if(diff <= -MAX) diff += MAX;
-  uint64_t c1p = (c1 + 1) & MAX;
-  uint64_t c2p = (c2 + 1) & MAX;
+  int64_t c1p = (c1 + 1) & MAX;
+  int64_t c2p = (c2 + 1) & MAX;
   if (c1 == c2)
     return true;
   if (c1p == c2)
@@ -470,19 +470,19 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
         int link = ds->id / 5;
         if (gPrintLevel >= 1)
           fprintf(flog, "SAMPA [%2d]: BX counter for link %d is %ld\n", ds->id, link, dsg->bxc);
-        if (false && dsg && dsg->bxc >= 0) {
+        if (dsg && dsg->bxc >= 0) {
           if (!BXCNT_compare(dsg->bxc, ds->header.fBunchCrossingCounter)) {
             gNbErrors++;
-            fprintf(flog, "===> ERROR SAMPA [%2d]: ChipAdd %lu ChAdd %2lu BX %lu, expected %lu, diff %lu\n",
+            fprintf(flog, "===> ERROR SAMPA [%2d]: ChipAdd %lu ChAdd %2lu BX %lu, expected %ld, diff %ld\n",
                     ds->id, ds->header.fChipAddress, ds->header.fChannelAddress,
                     ds->header.fBunchCrossingCounter, dsg->bxc,
                     ds->header.fBunchCrossingCounter - dsg->bxc);
           }
         } else {
-          if (ds->header.fPkgType == 4) { // physics trigger
+          if (dsg && ds->header.fPkgType == 4) { // physics trigger
             dsg->bxc = ds->header.fBunchCrossingCounter;
             if (gPrintLevel >= 1)
-              fprintf(flog, "SAMPA [%2d]: BX counter for link %d set to %lu\n", ds->id, link, dsg->bxc);
+              fprintf(flog, "SAMPA [%2d]: BX counter for link %d set to %ld\n", ds->id, link, dsg->bxc);
           }
         }
         //if( gPrintLevel >= 1 ) fprintf(flog,"SAMPA [%2d]: BX counter for link %d is %d (2)\n", ds->id, link, dsg->bxc);

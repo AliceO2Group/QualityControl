@@ -61,7 +61,7 @@ struct DualSampa {
 };
 
 struct DualSampaGroup {
-  unsigned long bxc;
+  long int bxc;
 };
 
 /// \brief decoding of MCH data
