@@ -14,7 +14,6 @@
 #include "Framework/CallbackService.h"
 #include "Framework/ControlService.h"
 #include "Framework/Task.h"
-#include "Framework/runDataProcessing.h"
 #include "DPLUtils/DPLRawParser.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "MCH/PedestalsTask.h"
