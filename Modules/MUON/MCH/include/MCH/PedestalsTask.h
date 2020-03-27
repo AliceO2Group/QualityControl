@@ -1,7 +1,5 @@
 ///
 /// \file   PedestalsTask.h
-/// \author Barthelemy von Haller
-/// \author Piotr Konopka
 /// \author Andrea Ferrero
 ///
 
@@ -19,17 +17,13 @@ class TH2F;
 
 using namespace o2::quality_control::core;
 
-namespace o2
-{
-namespace quality_control_modules
-{
-namespace muonchambers
+namespace o2::quality_control_modules::muonchambers
 {
 
 /// \brief Quality Control Task for the analysis of MCH pedestal data
 /// \author Andrea Ferrero
 /// \author Sebastien Perrin
-class PedestalsTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class PedestalsTask final : public TaskInterface
 {
  public:
   /// \brief Constructor
@@ -43,13 +37,12 @@ class PedestalsTask /*final*/ : public TaskInterface // todo add back the "final
   void startOfCycle() override;
   void monitorDataReadout(o2::framework::ProcessingContext& ctx);
   void monitorDataDigits(const o2::framework::DataRef& input);
-  void monitorData(o2::framework::ProcessingContext& ctx);
+  void monitorData(o2::framework::ProcessingContext& ctx) override;
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
  private:
-  int count;
   Decoder mDecoder;
   uint64_t nhits[MCH_MAX_CRU_IN_FLP][24][40][64];
   double pedestal[MCH_MAX_CRU_IN_FLP][24][40][64];
@@ -80,8 +73,6 @@ class PedestalsTask /*final*/ : public TaskInterface // todo add back the "final
   void save_histograms();
 };
 
-} // namespace muonchambers
-} // namespace quality_control_modules
 } // namespace o2
 
-#endif // QC_MODULE_MUONCHAMBERS_RAWDATAPROCESSOR_H
+#endif // QC_MODULE_MUONCHAMBERS_PEDESTALSTASK_H
