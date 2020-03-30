@@ -126,7 +126,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
-  ccdbApi.storeAsTFile(mo.get(), path, metadata, from, to);
+  ccdbApi.storeAsTFileAny<MonitorObject>(mo.get(), path, metadata, from, to);
 }
 
 std::shared_ptr<TObject> CcdbDatabase::retrieveTObject(std::string path, long timestamp)
@@ -164,7 +164,7 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
   std::shared_ptr<TObject> obj = retrieveTObject(qoPath, timestamp);
   std::shared_ptr<QualityObject> qo = std::dynamic_pointer_cast<QualityObject>(obj);
   if (qo == nullptr) {
-    LOG(ERROR) << "Could not cast the object " << qoPath << " to QualityObject";
+    ILOG(Error) << "Could not cast the object " << qoPath << " to QualityObject" << ENDM;
   }
   return qo;
 }
@@ -220,7 +220,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
-  ccdbApi.storeAsTFile(qo.get(), path, metadata, from, to);
+  ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
 }
 
 void CcdbDatabase::disconnect()
