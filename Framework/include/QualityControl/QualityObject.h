@@ -87,6 +87,7 @@ class QualityObject : public TObject
   void setDetectorName(const std::string& detectorName);
 
   void setQuality(const Quality& quality);
+  const std::string& getCheckName() const;
 
  private:
   Quality mQuality;

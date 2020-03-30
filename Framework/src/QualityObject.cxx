@@ -68,4 +68,8 @@ ClassImp(o2::quality_control::core::QualityObject)
   {
     updateQuality(quality);
   }
+  const std::string& QualityObject::getCheckName() const
+  {
+    return mCheckName;
+  }
 }
