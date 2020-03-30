@@ -69,7 +69,7 @@ class CcdbDatabase : public DatabaseInterface
   std::string retrieveQOJson(std::string qoPath, long timestamp = 0) override;
 
   // retrieval - general
-  std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp = -1) override;
+  std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp = -1);
   std::string retrieveJson(std::string path, long timestamp = -1) override;
 
   void disconnect() override;

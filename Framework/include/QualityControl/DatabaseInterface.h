@@ -85,17 +85,13 @@ class DatabaseInterface
    * \param path the path of the object
    * \param timestamp the timestamp to query the object
    */
-  virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp) = 0;
+//  virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp) = 0;
   /**
    * \brief Look up an object and return it.
    * Look up an object and return it if found or nullptr if not.
    * A default timestamp of -1 is used, usually meaning to use the current timestamp.
    * \param path the path of the object
    */
-  virtual std::shared_ptr<TObject> retrieveTObject(std::string path)
-  {
-    return retrieveTObject(path, -1);
-  }
 
   /**
    * \brief Look up a monitor object and return it in JSON format.

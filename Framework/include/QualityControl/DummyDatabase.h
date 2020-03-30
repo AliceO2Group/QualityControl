@@ -39,7 +39,6 @@ class DummyDatabase : public DatabaseInterface
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string checkerName, long timestamp = 0) override;
   std::string retrieveQOJson(std::string checkName, long timestamp = 0) override;
   // General
-  std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp) override;
   std::string retrieveJson(std::string path, long timestamp = 0) override;
 
   void disconnect() override;

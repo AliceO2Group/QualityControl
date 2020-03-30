@@ -73,10 +73,6 @@ void DummyDatabase::truncate(std::string, std::string)
 {
 }
 
-std::shared_ptr<TObject> DummyDatabase::retrieveTObject(std::string /*path*/, long /*timestamp*/)
-{
-  return std::shared_ptr<TObject>();
-}
 std::string DummyDatabase::retrieveJson(std::string /*path*/, long /*timestamp*/)
 {
   return std::string();
