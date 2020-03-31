@@ -39,7 +39,7 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
 
-const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";//"localhost:8888";//
+const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080"; //"localhost:8888";//
 std::unordered_map<std::string, std::string> Objects;
 
 /**
@@ -143,14 +143,14 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_024)
   auto jsonMO = f.backend->retrieveJson("qc/TST_KEEP/task/to_be_kept", 1585647354705);
   BOOST_CHECK(!jsonMO.empty());
 
-//   jsonMO = f.backend->retrieveMOJson("qc/TST_KEEP/task", "to_be_kept", 1585647354705);
-//  BOOST_CHECK(!jsonMO.empty());
-//
-//  auto jsonQO = f.backend->retrieveJson("qc/checks/TST_KEEP/check", 1585647427642);
-//  BOOST_CHECK(!jsonQO.empty());
-//
-//   jsonQO = f.backend->retrieveQOJson("qc/checks/TST_KEEP/check", 1585647427642);
-//  BOOST_CHECK(!jsonQO.empty());
+  //   jsonMO = f.backend->retrieveMOJson("qc/TST_KEEP/task", "to_be_kept", 1585647354705);
+  //  BOOST_CHECK(!jsonMO.empty());
+  //
+  //  auto jsonQO = f.backend->retrieveJson("qc/checks/TST_KEEP/check", 1585647427642);
+  //  BOOST_CHECK(!jsonQO.empty());
+  //
+  //   jsonQO = f.backend->retrieveQOJson("qc/checks/TST_KEEP/check", 1585647427642);
+  //  BOOST_CHECK(!jsonQO.empty());
 }
 
 //BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_025)

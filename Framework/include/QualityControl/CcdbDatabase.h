@@ -70,9 +70,10 @@ class CcdbDatabase : public DatabaseInterface
 
   // retrieval - general
   std::string retrieveJson(std::string path, long timestamp = -1) override;
-  TObject* retrieveTObject(std::string path, long timestamp = -1, std::map<std::string, std::string>* headers=nullptr) override ;
+  TObject* retrieveTObject(std::string path, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) override;
 
-  template<class T> T retrieveObject(T n);
+  template <class T>
+  T retrieveObject(T n);
 
   void disconnect() override;
   void prepareTaskDataContainer(std::string taskName) override;

@@ -86,8 +86,7 @@ class DatabaseInterface
    * \param timestamp the timestamp to query the object
    * \param headers Map to be populated with the headers we received, if it is not null.
    */
-  virtual TObject* retrieveTObject(std::string path, long timestamp = -1, std::map<std::string, std::string>* headers=nullptr) = 0;
-
+  virtual TObject* retrieveTObject(std::string path, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) = 0;
 
   /**
    * \brief Look up a monitor object and return it in JSON format.

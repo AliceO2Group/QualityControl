@@ -127,7 +127,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
   // extract object and metadata from MonitorObject
-  TObject *obj = mo->getObject();
+  TObject* obj = mo->getObject();
   metadata["qc_detector_name"] = mo->getDetectorName();
   metadata["qc_task_name"] = mo->getTaskName();
   metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
@@ -187,7 +187,7 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
 
   std::shared_ptr<MonitorObject> mo;
   if (objectVersion == Version("0.0.0") || objectVersion < Version("0.25")) {
-    ILOG(Debug) << "Version of object "<< taskName << "/" << objectName << " is < 0.25" << ENDM;
+    ILOG(Debug) << "Version of object " << taskName << "/" << objectName << " is < 0.25" << ENDM;
     // The object is either in a TFile or is a blob but it was stored with storeAsTFile as a full MO
     mo.reset(dynamic_cast<MonitorObject*>(obj));
     if (mo == nullptr) {
@@ -195,7 +195,7 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
     }
   } else {
     // Version >= 0.25 -> the object is stored directly unencapsulated
-    ILOG(Debug) << "Version of object "<< taskName << "/" << objectName << " is >= 0.25" << ENDM;
+    ILOG(Debug) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
     mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"]);
     // TODO add the user metadata
   }
