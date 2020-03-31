@@ -112,6 +112,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
   mo1->addMetadata("Run", o2::quality_control::core::Version::GetQcVersion().getString());
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>("check", vector{ string("input1"), string("input2") }, "TST_KEEP");
   qo1->setQuality(Quality::Bad);
+  qo1->addMetadata("Run", o2::quality_control::core::Version::GetQcVersion().getString());
 
   f.backend->storeMO(mo1);
   f.backend->storeQO(qo1);
