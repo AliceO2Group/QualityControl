@@ -81,17 +81,13 @@ class DatabaseInterface
   virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = 0) = 0;
   /**
    * \brief Look up an object and return it.
-   * Look up an object and return it if found or nullptr if not.
+   * Look up an object and return it if found or nullptr if not. It is a raw pointer because we might need it to build a MO.
    * \param path the path of the object
    * \param timestamp the timestamp to query the object
+   * \param headers Map to be populated with the headers we received, if it is not null.
    */
-//  virtual std::shared_ptr<TObject> retrieveTObject(std::string path, long timestamp) = 0;
-  /**
-   * \brief Look up an object and return it.
-   * Look up an object and return it if found or nullptr if not.
-   * A default timestamp of -1 is used, usually meaning to use the current timestamp.
-   * \param path the path of the object
-   */
+  virtual TObject* retrieveTObject(std::string path, long timestamp = -1, std::map<std::string, std::string>* headers=nullptr) = 0;
+
 
   /**
    * \brief Look up a monitor object and return it in JSON format.

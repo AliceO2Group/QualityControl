@@ -461,6 +461,11 @@ void MySqlDatabase::truncate(std::string taskName, std::string objectName)
   }
 }
 
+TObject* MySqlDatabase::retrieveTObject(std::string /*path*/, long /*timestamp*/, std::map<std::string, std::string>* /*headers*/)
+{
+  return nullptr; // TODO
+}
+
 std::string MySqlDatabase::retrieveJson(std::string /*path*/, long /*timestamp*/)
 {
   return std::string(); // TODO

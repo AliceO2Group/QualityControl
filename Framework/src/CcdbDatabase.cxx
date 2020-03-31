@@ -126,43 +126,88 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   long from = getCurrentTimestamp();
   long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
 
-  ccdbApi.storeAsTFileAny<MonitorObject>(mo.get(), path, metadata, from, to);
+  // extract object and metadata from MonitorObject
+  TObject *obj = mo->getObject();
+  metadata["qc_detector_name"] = mo->getDetectorName();
+  metadata["qc_task_name"] = mo->getTaskName();
+  metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
+
+  ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
 }
 
-std::shared_ptr<TObject> CcdbDatabase::retrieveTObject(std::string path, long timestamp)
+void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
+{
+  // metadata
+  map<string, string> metadata;
+  // QC metadata (prefix qc_)
+  metadata["qc_version"] = Version::GetQcVersion().getString();
+  metadata["qc_quality"] = std::to_string(qo->getQuality().getLevel());
+
+  // other attributes
+  string path = qo->getPath();
+  long from = getCurrentTimestamp();
+  long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
+
+  ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
+}
+
+TObject* CcdbDatabase::retrieveTObject(std::string path, long timestamp, std::map<std::string, std::string>* headers)
 {
   map<string, string> metadata;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
   // we try first to load a TFile
-  TObject* object = ccdbApi.retrieveFromTFile(path, metadata, when);
+  TObject* object = ccdbApi.retrieveFromTFileAny<TObject>(path, metadata, when, headers);
   if (object == nullptr) {
     // We could not open a TFile we should now try to open an object directly serialized
     object = ccdbApi.retrieve(path, metadata, when);
     ILOG(Debug) << "We could retrieve the object " << path << " as a streamed object." << ENDM;
     if (object == nullptr) {
+      ILOG(Error) << "We could NOT retrieve the object " << path << "." << ENDM;
       return nullptr;
     }
   }
-  std::shared_ptr<TObject> result(object);
-  return result;
+  ILOG(Info) << "retrieved object " << object->GetName() << ENDM;
+  return object;
+}
+
+template <class T>
+T CcdbDatabase::retrieveObject(T n)
+{
+  return nullptr;
 }
 
 std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskName, std::string objectName, long timestamp)
 {
   string path = taskName + "/" + objectName;
-  std::shared_ptr<TObject> obj = retrieveTObject(path, timestamp);
-  std::shared_ptr<MonitorObject> mo = std::dynamic_pointer_cast<MonitorObject>(obj);
-  if (mo == nullptr) {
-    ILOG(Error) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
+  long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
+  map<string, string> headers;
+  TObject* obj = retrieveTObject(path, when, &headers);
+  Version objectVersion(headers["qc_version"]); // retrieve headers to determine the version of the QC framework
+
+  std::shared_ptr<MonitorObject> mo;
+  if (objectVersion == Version("0.0.0") || objectVersion < Version("0.25")) {
+    ILOG(Debug) << "Version of object "<< taskName << "/" << objectName << " is < 0.25" << ENDM;
+    // The object is either in a TFile or is a blob but it was stored with storeAsTFile as a full MO
+    mo.reset(dynamic_cast<MonitorObject*>(obj));
+    if (mo == nullptr) {
+      ILOG(Error) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
+    }
+  } else {
+    // Version >= 0.25 -> the object is stored directly unencapsulated
+    ILOG(Debug) << "Version of object "<< taskName << "/" << objectName << " is >= 0.25" << ENDM;
+    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"]);
+    // TODO add the user metadata
   }
+
   return mo;
 }
 
 std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp)
 {
-  std::shared_ptr<TObject> obj = retrieveTObject(qoPath, timestamp);
-  std::shared_ptr<QualityObject> qo = std::dynamic_pointer_cast<QualityObject>(obj);
+  long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
+  TObject* obj = retrieveTObject(qoPath, when);
+  std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {
     ILOG(Error) << "Could not cast the object " << qoPath << " to QualityObject" << ENDM;
   }
@@ -182,45 +227,31 @@ std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objec
 
 std::string CcdbDatabase::retrieveJson(std::string path, long timestamp)
 {
-  auto tobj = retrieveTObject(path, timestamp);
+  map<string, string> headers;
+  auto tobj = retrieveTObject(path, timestamp, &headers);
+
   if (tobj == nullptr) {
     return std::string();
   }
-  TObject* toConvert = 0;
-  if (tobj->IsA() == MonitorObject::Class()) {
-    std::shared_ptr<MonitorObject> mo = std::dynamic_pointer_cast<MonitorObject>(tobj);
+
+  TObject* toConvert = nullptr;
+  if (tobj->IsA() == MonitorObject::Class()) { // a full MO -> pre-v0.25
+    std::shared_ptr<MonitorObject> mo(dynamic_cast<MonitorObject*>(tobj));
     toConvert = mo->getObject();
-    mo->setIsOwner(true);
+    mo->setIsOwner(false);
   } else if (tobj->IsA() == QualityObject::Class()) {
-    toConvert = dynamic_cast<QualityObject*>(tobj.get());
-  } else {
-    ILOG(Error) << "Unknown type of object : " << path << " -> " << tobj->ClassName() << ENDM;
-    return std::string();
+    toConvert = dynamic_cast<QualityObject*>(tobj);
+  } else { // something else but a TObject
+    toConvert = tobj;
   }
   if (toConvert == nullptr) {
     ILOG(Error) << "Unable to get the object to convert" << ENDM;
     return std::string();
   }
   TString json = TBufferJSON::ConvertToJSON(toConvert);
+  delete toConvert;
 
   return json.Data();
-}
-
-//Quality Object
-void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
-{
-  // metadata
-  map<string, string> metadata;
-  // QC metadata (prefix qc_)
-  metadata["qc_version"] = Version::GetQcVersion().getString();
-  metadata["qc_quality"] = std::to_string(qo->getQuality().getLevel());
-
-  // other attributes
-  string path = qo->getPath();
-  long from = getCurrentTimestamp();
-  long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
-
-  ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
 }
 
 void CcdbDatabase::disconnect()

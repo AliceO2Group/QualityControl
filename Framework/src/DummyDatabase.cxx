@@ -73,6 +73,11 @@ void DummyDatabase::truncate(std::string, std::string)
 {
 }
 
+TObject* DummyDatabase::retrieveTObject(std::string /*path*/, long /*timestamp*/, std::map<std::string, std::string>* /*headers*/)
+{
+  return nullptr;
+}
+
 std::string DummyDatabase::retrieveJson(std::string /*path*/, long /*timestamp*/)
 {
   return std::string();

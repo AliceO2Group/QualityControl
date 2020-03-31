@@ -40,6 +40,7 @@ class DummyDatabase : public DatabaseInterface
   std::string retrieveQOJson(std::string checkName, long timestamp = 0) override;
   // General
   std::string retrieveJson(std::string path, long timestamp = 0) override;
+  TObject* retrieveTObject(std::string path, long timestamp = -1, std::map<std::string, std::string>* headers=nullptr) override ;
 
   void disconnect() override;
   void prepareTaskDataContainer(std::string taskName) override;
