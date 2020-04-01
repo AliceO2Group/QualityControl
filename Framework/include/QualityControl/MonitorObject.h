@@ -82,10 +82,17 @@ class MonitorObject : public TObject
   const std::string& getDetectorName() const { return mDetectorName; }
   void setDetectorName(const std::string& detectorName) { mDetectorName = detectorName; }
 
-  /// \brief Add key value pair that will end up in the database
-  /// Add a metadata (key value pair) to the MonitorObject. It will be stored in the database.
-  /// If the key already exists the value will be updated.
+  /// \brief Add key value pair that will end up in the database as metadata of the object
+  /// Add a metadata (key value pair) to the MonitorObject. It will be stored in the database as metadata.
+  /// If the key already exists the value will NOT be updated.
   void addMetadata(std::string key, std::string value);
+  /// \brief Add key value pairs that will end up in the database as metadata of the object
+  /// Add all the key-value pairs in the map to the MonitorObject. It will be stored in the database as metadata.
+  /// If a key already exists the value will NOT be updated.
+  void addMetadata(std::map<std::string, std::string> pairs);
+  /// \brief Update the value of metadata.
+  /// If the key does not exist it will ignore it.
+  void updateMetadata(std::string key, std::string value);
 
   std::map<std::string, std::string> getMetadataMap() const;
 

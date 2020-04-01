@@ -65,7 +65,20 @@ const char* MonitorObject::GetName() const
 
 void MonitorObject::addMetadata(std::string key, std::string value)
 {
-  mUserMetadata[key] = value;
+  mUserMetadata.insert({key, value});
+}
+
+void MonitorObject::addMetadata(std::map<std::string, std::string> pairs)
+{
+  // we do not use "merge" because it would ignore the items whose key already exist in mUserMetadata.
+  mUserMetadata.insert(pairs.begin(), pairs.end());
+}
+
+void MonitorObject::updateMetadata(std::string key, std::string value)
+{
+  if(mUserMetadata.count(key) > 0) {
+    mUserMetadata[key] = value;
+  }
 }
 
 std::map<std::string, std::string> MonitorObject::getMetadataMap() const

@@ -157,17 +157,16 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, long timestamp, std::ma
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
   // we try first to load a TFile
-  TObject* object = ccdbApi.retrieveFromTFileAny<TObject>(path, metadata, when, headers);
+  auto* object = ccdbApi.retrieveFromTFileAny<TObject>(path, metadata, when, headers);
   if (object == nullptr) {
     // We could not open a TFile we should now try to open an object directly serialized
     object = ccdbApi.retrieve(path, metadata, when);
-    ILOG(Debug) << "We could retrieve the object " << path << " as a streamed object." << ENDM;
     if (object == nullptr) {
       ILOG(Error) << "We could NOT retrieve the object " << path << "." << ENDM;
       return nullptr;
     }
   }
-  ILOG(Info) << "retrieved object " << object->GetName() << ENDM;
+  ILOG(Debug) << "Retrieved object " << path << ENDM;
   return object;
 }
 
@@ -191,9 +190,9 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
     // Version >= 0.25 -> the object is stored directly unencapsulated
     ILOG(Debug) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
     mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"]);
-    // TODO add the user metadata
+    // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
+    mo->addMetadata(headers);
   }
-
   return mo;
 }
 
