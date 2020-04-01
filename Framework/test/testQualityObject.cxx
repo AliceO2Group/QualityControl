@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(quality_object_test)
   BOOST_CHECK_EQUAL(qo.getInputs()[0], "qc/TST/testTask/mo1");
   BOOST_CHECK_EQUAL(qo.getInputs()[1], "qc/TST/testTask/mo2");
   BOOST_REQUIRE_EQUAL(qo.getMetadataMap().count("probability"), 1);
-  BOOST_CHECK_EQUAL(qo.getMetadataMap()["probability"], "0.45");
+  BOOST_CHECK_EQUAL(qo.getMetadataMap().at("probability"), "0.45");
   BOOST_REQUIRE_EQUAL(qo.getMetadataMap().count("threshold_medium"), 1);
-  BOOST_CHECK_EQUAL(qo.getMetadataMap()["threshold_medium"], "0.42");
+  BOOST_CHECK_EQUAL(qo.getMetadataMap().at("threshold_medium"), "0.42");
 }
