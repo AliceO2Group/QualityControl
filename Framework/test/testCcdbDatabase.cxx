@@ -90,15 +90,22 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 
   TH1F* h1 = new TH1F("quarantine", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST"); // TODO put back the slash
-  ILOG(Info) << "mo1 name : " << mo1->getName() << ENDM;
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
+
+  TH1F* h2 = new TH1F("metadata", "asdf", 100, 0, 99);
+  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "my/task", "TST");
+  mo2->addMetadata("my_meta", "is_good");
 
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>("test-ccdb-check", vector{ string("input1"), string("input2") }, "TST");
   qo1->setQuality(Quality::Bad);
+  shared_ptr<QualityObject> qo2 = make_shared<QualityObject>("metadata", vector{ string("input1") }, "TST");
+  qo2->addMetadata("my_meta", "is_good");
 
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->storeMO(mo1);
+  f.backend->storeMO(mo2);
   f.backend->storeQO(qo1);
+  f.backend->storeQO(qo2);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
@@ -230,6 +237,42 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo_json, *utf::depends_on("ccdb_store"))
   auto jsonQO = f.backend->retrieveQOJson(qoPath);
 
   BOOST_CHECK(!jsonQO.empty());
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
+{
+  test_fixture f;
+  std::map<std::string, std::string> headers1;
+  std::map<std::string, std::string> headers2;
+  TObject *obj1 = f.backend->retrieveTObject("qc/TST/my/task/quarantine", 0, &headers1);
+  TObject *obj2 = f.backend->retrieveTObject("qc/TST/my/task/metadata", 0, &headers2);
+  BOOST_CHECK_NE(obj1, nullptr);
+  BOOST_CHECK_NE(obj2, nullptr);
+  BOOST_CHECK(headers1.size() > 0);
+  BOOST_CHECK(headers2.size() > 1);
+  BOOST_CHECK_EQUAL(headers1.count("my_meta"), 0);
+  BOOST_CHECK_EQUAL(headers2.count("my_meta"), 1);
+  BOOST_CHECK_EQUAL(headers2.at("my_meta"), "is_good");
+
+  auto obj1a = f.backend->retrieveMO("qc/TST/my/task", "quarantine");
+  auto obj2a = f.backend->retrieveMO("qc/TST/my/task", "metadata");
+  BOOST_CHECK_NE(obj1a, nullptr);
+  BOOST_CHECK_NE(obj2a, nullptr);
+  BOOST_CHECK(obj1a->getMetadataMap().size() > 0);
+  BOOST_CHECK(obj2a->getMetadataMap().size() > 1);
+  BOOST_CHECK_EQUAL(obj1a->getMetadataMap().count("my_meta"), 0);
+  BOOST_CHECK_EQUAL(obj2a->getMetadataMap().count("my_meta"), 1);
+  BOOST_CHECK_EQUAL(obj2a->getMetadataMap().at("my_meta"), "is_good");
+
+  auto obj3 = f.backend->retrieveQO("qc/checks/TST/test-ccdb-check");
+  auto obj4 = f.backend->retrieveQO("qc/checks/TST/metadata");
+  BOOST_CHECK_NE(obj3, nullptr);
+  BOOST_CHECK_NE(obj4, nullptr);
+  BOOST_CHECK(obj3->getMetadataMap().size() > 0);
+  BOOST_CHECK(obj4->getMetadataMap().size() > 1);
+  BOOST_CHECK_EQUAL(obj3->getMetadataMap().count("my_meta"), 0);
+  BOOST_CHECK_EQUAL(obj4->getMetadataMap().count("my_meta"), 1);
+  BOOST_CHECK_EQUAL(obj4->getMetadataMap().at("my_meta"), "is_good");
 }
 
 } // namespace

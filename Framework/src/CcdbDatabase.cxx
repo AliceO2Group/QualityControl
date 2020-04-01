@@ -199,11 +199,14 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
 std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp)
 {
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
-  TObject* obj = retrieveTObject(qoPath, when);
+  map<string, string> headers;
+  TObject* obj = retrieveTObject(qoPath, when, &headers);
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {
     ILOG(Error) << "Could not cast the object " << qoPath << " to QualityObject" << ENDM;
   }
+  // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
+  qo->addMetadata(headers);
   return qo;
 }
 

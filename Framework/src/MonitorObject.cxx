@@ -74,16 +74,16 @@ void MonitorObject::addMetadata(std::map<std::string, std::string> pairs)
   mUserMetadata.insert(pairs.begin(), pairs.end());
 }
 
+const std::map<std::string, std::string>& MonitorObject::getMetadataMap() const
+{
+  return mUserMetadata;
+}
+
 void MonitorObject::updateMetadata(std::string key, std::string value)
 {
   if(mUserMetadata.count(key) > 0) {
     mUserMetadata[key] = value;
   }
-}
-
-std::map<std::string, std::string> MonitorObject::getMetadataMap() const
-{
-  return mUserMetadata;
 }
 
 std::string MonitorObject::getPath() const

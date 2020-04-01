@@ -35,7 +35,7 @@ struct DuplicateObjectError : virtual AliceO2::Common::ExceptionBase {
   }
 };
 
-/// \brief  This class keeps the metadata about one published object.
+/// \brief  This class keeps the meta data about one published object.
 ///
 /// \author Barthelemy von Haller
 class MonitorObject : public TObject
@@ -93,8 +93,8 @@ class MonitorObject : public TObject
   /// \brief Update the value of metadata.
   /// If the key does not exist it will ignore it.
   void updateMetadata(std::string key, std::string value);
-
-  std::map<std::string, std::string> getMetadataMap() const;
+  /// \brief Get the full map of user's metadata
+  const std::map<std::string, std::string>& getMetadataMap() const;
 
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;
