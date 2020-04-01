@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(metadata)
   BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key1"), "value1");
 
   // add map
-  map<string, string> another = {{"key2", "value2"}, {"key3", "value3"}};
+  map<string, string> another = { { "key2", "value2" }, { "key3", "value3" } };
   obj.addMetadata(another);
   BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 3);
   BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key1"), "value1");
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(metadata)
   BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key3"), "value3");
 
   // add map sharing some keys -> those are ignored not the others
-  map<string, string> another2 = {{"key2", "value2a"}, {"key4", "value4"}};
+  map<string, string> another2 = { { "key2", "value2a" }, { "key4", "value4" } };
   obj.addMetadata(another2);
   BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 4);
   BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key1"), "value1");

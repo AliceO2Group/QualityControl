@@ -79,9 +79,9 @@ class QualityObject : public TObject
   /// Add all the key-value pairs in the map to the MonitorObject. It will be stored in the database as metadata.
   /// If a key already exists the value will NOT be updated.
   void addMetadata(std::map<std::string, std::string> pairs);
-    /// \brief Update the value of metadata.
-    /// If the key does not exist it will ignore it.
-    void updateMetadata(std::string key, std::string value);
+  /// \brief Update the value of metadata.
+  /// If the key does not exist it will ignore it.
+  void updateMetadata(std::string key, std::string value);
   /// \brief Get the full map of user's metadata
   const std::map<std::string, std::string>& getMetadataMap() const;
 

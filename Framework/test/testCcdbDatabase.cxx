@@ -244,8 +244,8 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   test_fixture f;
   std::map<std::string, std::string> headers1;
   std::map<std::string, std::string> headers2;
-  TObject *obj1 = f.backend->retrieveTObject("qc/TST/my/task/quarantine", 0, &headers1);
-  TObject *obj2 = f.backend->retrieveTObject("qc/TST/my/task/metadata", 0, &headers2);
+  TObject* obj1 = f.backend->retrieveTObject("qc/TST/my/task/quarantine", 0, &headers1);
+  TObject* obj2 = f.backend->retrieveTObject("qc/TST/my/task/metadata", 0, &headers2);
   BOOST_CHECK_NE(obj1, nullptr);
   BOOST_CHECK_NE(obj2, nullptr);
   BOOST_CHECK(headers1.size() > 0);

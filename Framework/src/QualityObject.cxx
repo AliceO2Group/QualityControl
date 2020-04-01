@@ -56,7 +56,7 @@ ClassImp(o2::quality_control::core::QualityObject)
 
   void QualityObject::updateMetadata(std::string key, std::string value)
   {
-    if(mUserMetadata.count(key) > 0) {
+    if (mUserMetadata.count(key) > 0) {
       mUserMetadata[key] = value;
     }
   }
