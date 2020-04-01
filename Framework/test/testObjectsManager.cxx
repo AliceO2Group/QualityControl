@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(metadata_test)
   objectsManager.startPublishing(&h);
 
   objectsManager.addMetadata("content", "aaa", "bbb");
-  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("content")->getMetadataMap()["aaa"], "bbb");
+  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("content")->getMetadataMap().at("aaa"), "bbb");
 }
 
 } // namespace o2::quality_control::core
