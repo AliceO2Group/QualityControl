@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(ccdb_create)
 {
   test_fixture f;
 
-  f.backend->truncate("mytask", "*");
+  f.backend->truncate("my/task", "*");
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 
   TH1F* h1 = new TH1F("quarantine", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "mytask", "TST"); // TODO put back the slash
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST"); // TODO put back the slash
   ILOG(Info) << "mo1 name : " << mo1->getName() << ENDM;
 
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>("test-ccdb-check", vector{ string("input1"), string("input2") }, "TST");
@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/mytask", "quarantine");
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "quarantine");
   BOOST_CHECK_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getName(), "quarantine");
 }
@@ -161,14 +161,14 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_024)
   auto jsonMO = f.backend->retrieveJson("qc/TST_KEEP/task/to_be_kept", 1585647354705);
   BOOST_CHECK(!jsonMO.empty());
 
-  //   jsonMO = f.backend->retrieveMOJson("qc/TST_KEEP/task", "to_be_kept", 1585647354705);
-  //  BOOST_CHECK(!jsonMO.empty());
-  //
-  //  auto jsonQO = f.backend->retrieveJson("qc/checks/TST_KEEP/check", 1585647427642);
-  //  BOOST_CHECK(!jsonQO.empty());
-  //
-  //   jsonQO = f.backend->retrieveQOJson("qc/checks/TST_KEEP/check", 1585647427642);
-  //  BOOST_CHECK(!jsonQO.empty());
+  jsonMO = f.backend->retrieveMOJson("qc/TST_KEEP/task", "to_be_kept", 1585647354705);
+  BOOST_CHECK(!jsonMO.empty());
+
+  auto jsonQO = f.backend->retrieveJson("qc/checks/TST_KEEP/check", 1585647427642);
+  BOOST_CHECK(!jsonQO.empty());
+
+  jsonQO = f.backend->retrieveQOJson("qc/checks/TST_KEEP/check", 1585647427642);
+  BOOST_CHECK(!jsonQO.empty());
 }
 
 //BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_025)
@@ -199,13 +199,11 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
 
-  std::string task = "qc/TST/mytask";
+  std::string task = "qc/TST/my/task";
   std::string object = "quarantine";
   std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
   auto json = f.backend->retrieveJson(task + "/" + object);
   auto json2 = f.backend->retrieveMOJson(task, object);
-
-  cout << "mo json : " << json << endl;
 
   BOOST_CHECK(!json.empty());
   BOOST_CHECK_EQUAL(json, json2);
@@ -214,7 +212,6 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   std::cout << "[json retrieve]: " << qualityPath << std::endl;
   auto json3 = f.backend->retrieveJson(qualityPath);
   auto json4 = f.backend->retrieveQOJson(qualityPath);
-  cout << "qo json : " << json3 << endl;
   BOOST_CHECK(!json3.empty());
   BOOST_CHECK_EQUAL(json3, json4);
 }
@@ -222,16 +219,14 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo_json, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  std::string task = "qc/TST/mytask";
+  std::string task = "qc/TST/my/task";
   std::string object = "quarantine";
-  std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
   auto jsonMO = f.backend->retrieveMOJson(task, object);
 
   BOOST_CHECK(!jsonMO.empty());
 
   std::string qoPath = "qc/checks/TST/test-ccdb-check";
   std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(qoPath);
-  std::cout << "[json retrieve]: " << qoPath << std::endl;
   auto jsonQO = f.backend->retrieveQOJson(qoPath);
 
   BOOST_CHECK(!jsonQO.empty());

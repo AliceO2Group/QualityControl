@@ -171,12 +171,6 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, long timestamp, std::ma
   return object;
 }
 
-template <class T>
-T CcdbDatabase::retrieveObject(T n)
-{
-  return nullptr;
-}
-
 std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskName, std::string objectName, long timestamp)
 {
   string path = taskName + "/" + objectName;
