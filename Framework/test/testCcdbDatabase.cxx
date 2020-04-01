@@ -113,6 +113,24 @@ BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
   mo1->addMetadata("Run", o2::quality_control::core::Version::GetQcVersion().getString());
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>("check", vector{ string("input1"), string("input2") }, "TST_KEEP");
   qo1->setQuality(Quality::Bad);
+  qo1->addMetadata("Run", o2::quality_control::core::Version::GetQcVersion().getString());
+
+  f.backend->storeMO(mo1);
+  f.backend->storeQO(qo1);
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
+{
+  // this test is storing a version of the objects in a different directory.
+  // The goal is to keep old versions of the objects, in old formats, for future backward compatibility testing.
+  test_fixture f;
+
+  TH1F* h1 = new TH1F("to_be_kept", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 12345);
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "task", "TST_KEEP");
+  mo1->addMetadata("Run", o2::quality_control::core::Version::GetQcVersion().getString());
+  shared_ptr<QualityObject> qo1 = make_shared<QualityObject>("check", vector{ string("input1"), string("input2") }, "TST_KEEP");
+  qo1->setQuality(Quality::Bad);
 
   f.backend->storeMO(mo1);
   f.backend->storeQO(qo1);
