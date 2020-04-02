@@ -42,10 +42,10 @@ class Counter
   void Count(UInt_t v)
   {
     if (v > Tc::size) {
-      ILOG(Error) << "Incrementing counter too far! " << v << "/" << Tc::size << ENDM;
+      ILOG(Error) << "Incrementing counter too far! " << v << "/" << Size() << ENDM;
     }
 #ifdef ENABLE_COUNTER_DEBUG_MODE
-    ILOG(Info) << "Incrementing " << v << "/" << Tc::size << " to " << counter[v] << ENDM;
+    ILOG(Info) << "Incrementing " << v << "/" << Size() << " to " << counter[v] << ENDM;
 #endif
     counter[v]++;
   }
@@ -105,9 +105,11 @@ class Counter
 #endif
   }
   /// Getter for the Tc::size
-  Tc Size() const { return Tc::size; }
+  UInt_t Size() const { return Tc::size; }
 
  private:
+  static_assert(std::is_same<decltype(Tc::size), const UInt_t>::value, "size must be const UInt_t");
+  static_assert(std::is_same<decltype(Tc::names), const TString[Tc::size]>::value, "names must be const TString arrays");
   /// Containers to fill
   uint32_t counter[Tc::size] = { 0 };
 };
