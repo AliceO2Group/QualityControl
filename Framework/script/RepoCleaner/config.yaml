@@ -4,7 +4,11 @@ Rules:
     policy: 1_per_run
     delete_when_no_run: True
   - object_path: qc/TST_KEEP/.*
-    delay: 240
+    delay: 60
+    policy: 1_per_run
+    delete_when_no_run: True
+  - object_path: qc/checks/TST_KEEP/.*
+    delay: 60
     policy: 1_per_run
     delete_when_no_run: True
   - object_path: qc/.*       # Path in the CCDB to a certain object
