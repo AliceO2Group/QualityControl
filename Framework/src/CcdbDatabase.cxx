@@ -142,6 +142,8 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
   // QC metadata (prefix qc_)
   metadata["qc_version"] = Version::GetQcVersion().getString();
   metadata["qc_quality"] = std::to_string(qo->getQuality().getLevel());
+  metadata["qc_detector_name"] = qo->getDetectorName();
+  metadata["qc_check_name"] = qo->getCheckName();
 
   // other attributes
   string path = qo->getPath();

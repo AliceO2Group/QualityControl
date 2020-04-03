@@ -155,43 +155,28 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_024)
 {
   // test whether we can read data from version 0.24
   test_fixture f;
-  shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST_KEEP/task", "to_be_kept", 1585647354705);
+  shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST_KEEP/task", "to_be_kept", 1585907398502);
   BOOST_CHECK_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getName(), "to_be_kept");
   BOOST_CHECK_EQUAL(dynamic_cast<TH1F*>(mo->getObject())->GetEntries(), 12345);
 
-  shared_ptr<QualityObject> qo = f.backend->retrieveQO("qc/checks/TST_KEEP/check", 1585647427642);
+  shared_ptr<QualityObject> qo = f.backend->retrieveQO("qc/checks/TST_KEEP/check", 1585913086695);
   BOOST_CHECK_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getName(), "check");
   BOOST_CHECK_EQUAL(qo->getQuality(), o2::quality_control::core::Quality::Bad);
 
-  auto jsonMO = f.backend->retrieveJson("qc/TST_KEEP/task/to_be_kept", 1585647354705);
+  auto jsonMO = f.backend->retrieveJson("qc/TST_KEEP/task/to_be_kept", 1585907398502);
   BOOST_CHECK(!jsonMO.empty());
 
-  jsonMO = f.backend->retrieveMOJson("qc/TST_KEEP/task", "to_be_kept", 1585647354705);
+  jsonMO = f.backend->retrieveMOJson("qc/TST_KEEP/task", "to_be_kept", 1585907398502);
   BOOST_CHECK(!jsonMO.empty());
 
-  auto jsonQO = f.backend->retrieveJson("qc/checks/TST_KEEP/check", 1585647427642);
+  auto jsonQO = f.backend->retrieveJson("qc/checks/TST_KEEP/check", 1585913086695);
   BOOST_CHECK(!jsonQO.empty());
 
-  jsonQO = f.backend->retrieveQOJson("qc/checks/TST_KEEP/check", 1585647427642);
+  jsonQO = f.backend->retrieveQOJson("qc/checks/TST_KEEP/check", 1585913086695);
   BOOST_CHECK(!jsonQO.empty());
 }
-
-//BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_025)
-//{
-//  // test whether we can read data from version 0.24
-//  test_fixture f;
-//  shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST_KEEP/task", "to_be_kept", 1585647354705); // TODO update timestamp
-//  BOOST_CHECK_NE(mo, nullptr);
-//  BOOST_CHECK_EQUAL(mo->getName(), "to_be_kept");
-//  BOOST_CHECK_EQUAL(dynamic_cast<TH1F*>(mo->getObject())->GetEntries(), 12345);
-//
-//  shared_ptr<QualityObject> qo = f.backend->retrieveQO("qc/checks/TST_KEEP/check", 1585647427642); // TODO update timestamp
-//  BOOST_CHECK_NE(qo, nullptr);
-//  BOOST_CHECK_EQUAL(qo->getName(), "check");
-//  BOOST_CHECK_EQUAL(qo->getQuality(), o2::quality_control::core::Quality::Bad);
-//}
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
 {
