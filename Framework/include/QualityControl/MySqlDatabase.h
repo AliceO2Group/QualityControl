@@ -49,7 +49,7 @@ class MySqlDatabase : public DatabaseInterface
   std::string retrieveQOJson(std::string qoPath, long timestamp = 0) override;
   // General
   std::string retrieveJson(std::string path, long timestamp, const std::map<string, string>& metadata) override;
-  TObject* retrieveTObject(std::string path, const std::map<string, string>& metadata, long timestamp = -1, std::map<string, string>* headers = nullptr) override;
+  TObject* retrieveTObject(std::string path, const std::map<std::string, std::string>& metadata, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) override;
 
   void disconnect() override;
   std::vector<std::string> getPublishedObjectNames(std::string taskName) override;
