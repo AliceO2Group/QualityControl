@@ -155,8 +155,8 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_024)
 {
   // test whether we can read data from version 0.24
   test_fixture f;
-  map<string, string> filter = {{"qc_version", "0.24.0"}};
-  long timestamp = CcdbDatabase::getFutureTimestamp(60*60*24*365*5); // target 5 years in the future as we store with validity of 10 years
+  map<string, string> filter = { { "qc_version", "0.24.0" } };
+  long timestamp = CcdbDatabase::getFutureTimestamp(60 * 60 * 24 * 365 * 5); // target 5 years in the future as we store with validity of 10 years
 
   auto* mo = dynamic_cast<MonitorObject*>(f.backend->retrieveTObject("qc/TST_KEEP/task/to_be_kept", filter, timestamp));
   BOOST_CHECK_NE(mo, nullptr);
