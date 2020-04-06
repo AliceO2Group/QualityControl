@@ -153,9 +153,8 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
   ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
 }
 
-TObject* CcdbDatabase::retrieveTObject(std::string path, long timestamp, std::map<std::string, std::string>* headers)
+TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, std::string> const& metadata, long timestamp, std::map<std::string, std::string>* headers)
 {
-  map<string, string> metadata;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
 
   // we try first to load a TFile
@@ -177,7 +176,8 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   string path = taskName + "/" + objectName;
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
   map<string, string> headers;
-  TObject* obj = retrieveTObject(path, when, &headers);
+  map<string, string> metadata;
+  TObject* obj = retrieveTObject(path, metadata, when, &headers);
   Version objectVersion(headers["qc_version"]); // retrieve headers to determine the version of the QC framework
 
   std::shared_ptr<MonitorObject> mo;
@@ -202,7 +202,8 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
 {
   long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
   map<string, string> headers;
-  TObject* obj = retrieveTObject(qoPath, when, &headers);
+  map<string, string> metadata;
+  TObject* obj = retrieveTObject(qoPath, metadata, when, &headers);
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {
     ILOG(Error) << "Could not cast the object " << qoPath << " to QualityObject" << ENDM;
@@ -214,19 +215,21 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
 
 std::string CcdbDatabase::retrieveQOJson(std::string qoPath, long timestamp)
 {
-  return retrieveJson(qoPath, timestamp);
+  map<string, string> metadata;
+  return retrieveJson(qoPath, timestamp, metadata);
 }
 
 std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objectName, long timestamp)
 {
   string path = taskName + "/" + objectName;
-  return retrieveJson(path, timestamp);
+  map<string, string> metadata;
+  return retrieveJson(path, timestamp, metadata);
 }
 
-std::string CcdbDatabase::retrieveJson(std::string path, long timestamp)
+std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata)
 {
   map<string, string> headers;
-  auto tobj = retrieveTObject(path, timestamp, &headers);
+  auto tobj = retrieveTObject(path, metadata, timestamp, &headers);
 
   if (tobj == nullptr) {
     return std::string();

@@ -85,8 +85,9 @@ class DatabaseInterface
    * \param path the path of the object
    * \param timestamp the timestamp to query the object
    * \param headers Map to be populated with the headers we received, if it is not null.
+   * \param metadata filters under the form of key-value pairs to select data
    */
-  virtual TObject* retrieveTObject(std::string path, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) = 0;
+  virtual TObject* retrieveTObject(std::string path, const std::map<std::string, std::string>& metadata, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) = 0;
 
   /**
    * \brief Look up a monitor object and return it in JSON format.
@@ -105,8 +106,9 @@ class DatabaseInterface
    * Look up an object and return it in JSON format if found or an empty string if not.
    * \param path the path of the object
    * \param timestamp the timestamp to query the object
+   * \param metadata filters under the form of key-value pairs to select data
    */
-  virtual std::string retrieveJson(std::string path, long timestamp) = 0;
+  virtual std::string retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata) = 0;
   /**
    * \brief Look up an object and return it in JSON format.
    * Look up an object and return it in JSON format if found or an empty string if not.
@@ -115,7 +117,8 @@ class DatabaseInterface
    */
   virtual std::string retrieveJson(std::string path)
   {
-    return retrieveJson(path, -1);
+    std::map<std::string, std::string> metadata;
+    return retrieveJson(path, -1, metadata);
   }
 
   virtual void disconnect() = 0;

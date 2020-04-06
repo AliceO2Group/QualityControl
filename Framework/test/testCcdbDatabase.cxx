@@ -155,26 +155,23 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_024)
 {
   // test whether we can read data from version 0.24
   test_fixture f;
-  shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST_KEEP/task", "to_be_kept", 1585907398502);
+  map<string, string> filter = {{"qc_version", "0.24.0"}};
+  long timestamp = CcdbDatabase::getFutureTimestamp(60*60*24*365*5); // target 5 years in the future as we store with validity of 10 years
+
+  auto* mo = dynamic_cast<MonitorObject*>(f.backend->retrieveTObject("qc/TST_KEEP/task/to_be_kept", filter, timestamp));
   BOOST_CHECK_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getName(), "to_be_kept");
   BOOST_CHECK_EQUAL(dynamic_cast<TH1F*>(mo->getObject())->GetEntries(), 12345);
 
-  shared_ptr<QualityObject> qo = f.backend->retrieveQO("qc/checks/TST_KEEP/check", 1585913086695);
+  auto* qo = dynamic_cast<QualityObject*>(f.backend->retrieveTObject("qc/checks/TST_KEEP/check", filter, timestamp));
   BOOST_CHECK_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getName(), "check");
   BOOST_CHECK_EQUAL(qo->getQuality(), o2::quality_control::core::Quality::Bad);
 
-  auto jsonMO = f.backend->retrieveJson("qc/TST_KEEP/task/to_be_kept", 1585907398502);
+  auto jsonMO = f.backend->retrieveJson("qc/TST_KEEP/task/to_be_kept", timestamp, filter);
   BOOST_CHECK(!jsonMO.empty());
 
-  jsonMO = f.backend->retrieveMOJson("qc/TST_KEEP/task", "to_be_kept", 1585907398502);
-  BOOST_CHECK(!jsonMO.empty());
-
-  auto jsonQO = f.backend->retrieveJson("qc/checks/TST_KEEP/check", 1585913086695);
-  BOOST_CHECK(!jsonQO.empty());
-
-  jsonQO = f.backend->retrieveQOJson("qc/checks/TST_KEEP/check", 1585913086695);
+  auto jsonQO = f.backend->retrieveJson("qc/checks/TST_KEEP/check", timestamp, filter);
   BOOST_CHECK(!jsonQO.empty());
 }
 
@@ -194,7 +191,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   std::string task = "qc/TST/my/task";
   std::string object = "quarantine";
   std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
-  auto json = f.backend->retrieveJson(task + "/" + object);
+  auto json = f.backend->retrieveJson(task + "/" + object, 0, f.metadata);
   auto json2 = f.backend->retrieveMOJson(task, object);
 
   BOOST_CHECK(!json.empty());
@@ -202,7 +199,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
 
   string qualityPath = "qc/checks/TST/test-ccdb-check";
   std::cout << "[json retrieve]: " << qualityPath << std::endl;
-  auto json3 = f.backend->retrieveJson(qualityPath);
+  auto json3 = f.backend->retrieveJson(qualityPath, 0, f.metadata);
   auto json4 = f.backend->retrieveQOJson(qualityPath);
   BOOST_CHECK(!json3.empty());
   BOOST_CHECK_EQUAL(json3, json4);
@@ -229,8 +226,8 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   test_fixture f;
   std::map<std::string, std::string> headers1;
   std::map<std::string, std::string> headers2;
-  TObject* obj1 = f.backend->retrieveTObject("qc/TST/my/task/quarantine", 0, &headers1);
-  TObject* obj2 = f.backend->retrieveTObject("qc/TST/my/task/metadata", 0, &headers2);
+  TObject* obj1 = f.backend->retrieveTObject("qc/TST/my/task/quarantine", f.metadata, 0, &headers1);
+  TObject* obj2 = f.backend->retrieveTObject("qc/TST/my/task/metadata", f.metadata, 0, &headers2);
   BOOST_CHECK_NE(obj1, nullptr);
   BOOST_CHECK_NE(obj2, nullptr);
   BOOST_CHECK(headers1.size() > 0);
