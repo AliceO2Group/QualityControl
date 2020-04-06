@@ -40,7 +40,6 @@ using namespace o2::quality_control::repository;
 using namespace std;
 
 const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
-std::unordered_map<std::string, std::string> Objects;
 
 /**
  * Fixture for the tests, i.e. code is ran in every test that uses it, i.e. it is like a setup and teardown for tests.
@@ -66,24 +65,20 @@ BOOST_AUTO_TEST_CASE(ccdb_create)
   f.backend->truncate("my/task", "*");
 }
 
-// this one sporadically fails when retrieving the list of objects under the "qc" directory
-/*
 BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
 {
   test_fixture f;
 
   CcdbDatabase* ccdb = static_cast<CcdbDatabase*>(f.backend.get());
   ILOG(Info) << "getListing()" << ENDM;
-  auto tasks = ccdb->getListing();
-  for (auto& task : tasks) {
-    ILOG(Info) << "getPublishedObjectNames of task " << task << ENDM;
-    auto objects = f.backend->getPublishedObjectNames(task);
-    for (auto& object : objects) {
-      Objects.insert({ task, object });
-    }
-  }
+  auto tasks = ccdb->getListing("/qc");
+  BOOST_CHECK_GT(tasks.size(), 5); // we know that there are a few
+  BOOST_CHECK_LT(tasks.size(), 100); // we know that there are not too many
+  // print but only for TST
+  auto objects = f.backend->getPublishedObjectNames("/qc/TST");
+  BOOST_CHECK_GT(objects.size(), 0);
+  BOOST_CHECK_LT(objects.size(), 200);
 }
-*/
 
 long oldTimestamp;
 
