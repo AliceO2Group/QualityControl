@@ -72,12 +72,10 @@ BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
   CcdbDatabase* ccdb = static_cast<CcdbDatabase*>(f.backend.get());
   ILOG(Info) << "getListing()" << ENDM;
   auto tasks = ccdb->getListing("/qc");
-  BOOST_CHECK_GT(tasks.size(), 5); // we know that there are a few
-  BOOST_CHECK_LT(tasks.size(), 100); // we know that there are not too many
+  BOOST_CHECK_GT(tasks.size(), 0); // we know that there are a few
   // print but only for TST
   auto objects = f.backend->getPublishedObjectNames("/qc/TST");
   BOOST_CHECK_GT(objects.size(), 0);
-  BOOST_CHECK_LT(objects.size(), 200);
 }
 
 long oldTimestamp;
