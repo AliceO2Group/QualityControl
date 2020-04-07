@@ -75,8 +75,15 @@ class QualityObject : public TObject
   /// Add a metadata (key value pair) to the QualityObject. It will be stored in the database.
   /// If the key already exists the value will be updated.
   void addMetadata(std::string key, std::string value);
-
-  std::map<std::string, std::string> getMetadataMap();
+  /// \brief Add key value pairs that will end up in the database as metadata of the object
+  /// Add all the key-value pairs in the map to the MonitorObject. It will be stored in the database as metadata.
+  /// If a key already exists the value will NOT be updated.
+  void addMetadata(std::map<std::string, std::string> pairs);
+  /// \brief Update the value of metadata.
+  /// If the key does not exist it will ignore it.
+  void updateMetadata(std::string key, std::string value);
+  /// \brief Get the full map of user's metadata
+  const std::map<std::string, std::string>& getMetadataMap() const;
 
   /// \brief Build the path to this object.
   /// Build the path to this object as it will appear in the GUI.
@@ -87,6 +94,7 @@ class QualityObject : public TObject
   void setDetectorName(const std::string& detectorName);
 
   void setQuality(const Quality& quality);
+  const std::string& getCheckName() const;
 
  private:
   Quality mQuality;
