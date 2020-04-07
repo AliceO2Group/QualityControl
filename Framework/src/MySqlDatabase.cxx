@@ -461,12 +461,12 @@ void MySqlDatabase::truncate(std::string taskName, std::string objectName)
   }
 }
 
-TObject* MySqlDatabase::retrieveTObject(std::string, std::map<std::string, std::string> const& , long, std::map<std::string, std::string>*)
+TObject* MySqlDatabase::retrieveTObject(std::string, std::map<std::string, std::string> const&, long, std::map<std::string, std::string>*)
 {
   return nullptr; // TODO
 }
 
-std::string MySqlDatabase::retrieveJson(std::string, long, const std::map<std::string, std::string>& )
+std::string MySqlDatabase::retrieveJson(std::string, long, const std::map<std::string, std::string>&)
 {
   return std::string(); // TODO
 }
