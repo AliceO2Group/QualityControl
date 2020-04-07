@@ -48,7 +48,7 @@ class MySqlDatabase : public DatabaseInterface
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = 0) override;
   std::string retrieveQOJson(std::string qoPath, long timestamp = 0) override;
   // General
-  std::string retrieveJson(std::string path, long timestamp, const std::map<string, string>& metadata) override;
+  std::string retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata) override;
   TObject* retrieveTObject(std::string path, const std::map<std::string, std::string>& metadata, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) override;
 
   void disconnect() override;
