@@ -461,11 +461,12 @@ void MySqlDatabase::truncate(std::string taskName, std::string objectName)
   }
 }
 
-std::shared_ptr<TObject> MySqlDatabase::retrieveTObject(std::string /*path*/, long /*timestamp*/)
+TObject* MySqlDatabase::retrieveTObject(std::string, std::map<std::string, std::string> const&, long, std::map<std::string, std::string>*)
 {
-  return std::shared_ptr<TObject>(); // TODO
+  return nullptr; // TODO
 }
-std::string MySqlDatabase::retrieveJson(std::string /*path*/, long /*timestamp*/)
+
+std::string MySqlDatabase::retrieveJson(std::string, long, const std::map<std::string, std::string>&)
 {
   return std::string(); // TODO
 }

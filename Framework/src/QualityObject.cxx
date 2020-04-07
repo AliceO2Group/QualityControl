@@ -43,9 +43,22 @@ ClassImp(o2::quality_control::core::QualityObject)
     mUserMetadata.insert(std::pair(key, value));
   }
 
-  std::map<std::string, std::string> QualityObject::getMetadataMap()
+  void QualityObject::addMetadata(std::map<std::string, std::string> pairs)
+  {
+    // we do not use "merge" because it would ignore the items whose key already exist in mUserMetadata.
+    mUserMetadata.insert(pairs.begin(), pairs.end());
+  }
+
+  const std::map<std::string, std::string>& QualityObject::getMetadataMap() const
   {
     return mUserMetadata;
+  }
+
+  void QualityObject::updateMetadata(std::string key, std::string value)
+  {
+    if (mUserMetadata.count(key) > 0) {
+      mUserMetadata[key] = value;
+    }
   }
 
   std::string QualityObject::getPath() const
@@ -67,5 +80,9 @@ ClassImp(o2::quality_control::core::QualityObject)
   void QualityObject::setQuality(const Quality& quality)
   {
     updateQuality(quality);
+  }
+  const std::string& QualityObject::getCheckName() const
+  {
+    return mCheckName;
   }
 }

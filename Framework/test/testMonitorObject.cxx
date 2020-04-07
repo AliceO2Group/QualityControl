@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(mo_save)
 
   ILOG(Info) << "***" << ENDM;
   TFile file2(filename.data());
-  o2::quality_control::core::MonitorObject* mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(file2.Get(objectName.data()));
+  auto* mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(file2.Get(objectName.data()));
   BOOST_CHECK_NE(mo, nullptr);
   ILOG(Info) << "mo : " << mo << ENDM;
   BOOST_CHECK_EQUAL(mo->GetName(), objectName);
@@ -67,6 +67,54 @@ BOOST_AUTO_TEST_CASE(mo_save)
   ILOG(Info) << "name : " << mo->GetName() << ENDM;
   ILOG(Info) << "name : " << mo->getName() << ENDM;
   gSystem->Unlink(filename.data());
+}
+
+BOOST_AUTO_TEST_CASE(metadata)
+{
+  string objectName = "asdf";
+  TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
+
+  // no metadata at creation
+  o2::quality_control::core::MonitorObject obj(&h, "task");
+  obj.setIsOwner(false);
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 0);
+
+  // add metadata with key value, check it is there
+  obj.addMetadata("key1", "value1");
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 1);
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key1"), "value1");
+
+  // add same key again -> ignore
+  obj.addMetadata("key1", "value1");
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 1);
+  auto test = obj.getMetadataMap();
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key1"), "value1");
+
+  // add map
+  map<string, string> another = { { "key2", "value2" }, { "key3", "value3" } };
+  obj.addMetadata(another);
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 3);
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key1"), "value1");
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key2"), "value2");
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key3"), "value3");
+
+  // add map sharing some keys -> those are ignored not the others
+  map<string, string> another2 = { { "key2", "value2a" }, { "key4", "value4" } };
+  obj.addMetadata(another2);
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 4);
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key1"), "value1");
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key2"), "value2");
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key3"), "value3");
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key4"), "value4");
+
+  // update value of existing key
+  obj.updateMetadata("key1", "value11");
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 4);
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().at("key1"), "value11");
+
+  // update value of non-existing key -> ignore
+  obj.updateMetadata("asdf", "asdf");
+  BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 4);
 }
 
 } // namespace o2::quality_control::core
