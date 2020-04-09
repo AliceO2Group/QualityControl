@@ -185,7 +185,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (gPrintLevel >= 1)
       fprintf(flog, "payloadSize: %d\n", (int)header->payloadSize);
     if (gPrintLevel >= 1)
-      fprintf(flog, "payload: %p\n", input.payload);
+      fprintf(flog, "payload: %s\n", input.payload);
     //continue;
 
     mDecoder.processData(input.payload, header->payloadSize);
