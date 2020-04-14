@@ -561,7 +561,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       int chip1 = chip0 + 1;
 
       if (gPrintLevel >= 5)
-        fprintf(flog, "SAMPA: chip addresses: %lu\n", (unsigned long) ds->header.fChipAddress);
+        fprintf(flog, "SAMPA: chip addresses: %lu\n", (unsigned long)ds->header.fChipAddress);
       if (gPrintLevel >= 5)
         fprintf(flog, "SAMPA: channel addresses: %d, %d\n",
                 ds->chan_addr[0], ds->chan_addr[1]);
