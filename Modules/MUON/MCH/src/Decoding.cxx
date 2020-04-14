@@ -458,10 +458,10 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
           ds->nbHitChan[ds->header.fChannelAddress + 32 * (ds->header.fChipAddress % 2)]++;
         }
         if (gPrintLevel >= 1 || (false && ds->id == 0 && ds->header.fChipAddress == 0 && ds->header.fChannelAddress >= 30))
-          fprintf(flog, "SAMPA [%2d]: Header 0x%014" PRIu64 " HCode %2d HPar %d PkgType %d 10BitWords %d ChipAdd %d ChAdd %2d BX %d PPar %d\n",
-                  ds->id, ds->data, ds->header.fHammingCode, ds->header.fHeaderParity, ds->header.fPkgType,
-                  ds->header.fNbOf10BitWords, ds->header.fChipAddress, ds->header.fChannelAddress,
-                  ds->header.fBunchCrossingCounter, (int)ds->header.fPayloadParity);
+          fprintf(flog, "SAMPA [%2d]: Header 0x%014" PRIu64 " HCode %2lu HPar %lu PkgType %lu 10BitWords %lu ChipAdd %lu ChAdd %2lu BX %lu PPar %d\n",
+                  ds->id, ds->data, (unsigned long)ds->header.fHammingCode, (unsigned long)ds->header.fHeaderParity, (unsigned long)ds->header.fPkgType,
+                  (unsigned long)ds->header.fNbOf10BitWords, (unsigned long)ds->header.fChipAddress, (unsigned long)ds->header.fChannelAddress,
+                  (unsigned long)ds->header.fBunchCrossingCounter, (int)ds->header.fPayloadParity);
         int parity = CheckDataParity(ds->data);
         if (parity)
           fprintf(flog, "===> SAMPA [%2d]: WARNING Parity %d\n", ds->id, parity);
@@ -475,10 +475,10 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
         if (dsg && dsg->bxc >= 0) {
           if (!BXCNT_compare(dsg->bxc, static_cast<long int>(ds->header.fBunchCrossingCounter))) {
             gNbErrors++;
-            fprintf(flog, "===> ERROR SAMPA [%2d]: ChipAdd %d ChAdd %2d BX %d, expected %ld, diff %ld\n",
-                    ds->id, ds->header.fChipAddress, ds->header.fChannelAddress,
-                    ds->header.fBunchCrossingCounter, dsg->bxc,
-                    ds->header.fBunchCrossingCounter - dsg->bxc);
+            fprintf(flog, "===> ERROR SAMPA [%2d]: ChipAdd %lu ChAdd %2lu BX %lu, expected %ld, diff %ld\n",
+                    ds->id, (unsigned long)ds->header.fChipAddress, (unsigned long)ds->header.fChannelAddress,
+                    (unsigned long)ds->header.fBunchCrossingCounter, dsg->bxc,
+                    (unsigned long)ds->header.fBunchCrossingCounter - dsg->bxc);
           }
         } else {
           if (dsg && ds->header.fPkgType == 4) { // physics trigger
@@ -561,21 +561,21 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
       int chip1 = chip0 + 1;
 
       if (gPrintLevel >= 5)
-        fprintf(flog, "SAMPA: chip addresses: %d\n", ds->header.fChipAddress);
+        fprintf(flog, "SAMPA: chip addresses: %lu\n", (unsigned long) ds->header.fChipAddress);
       if (gPrintLevel >= 5)
         fprintf(flog, "SAMPA: channel addresses: %d, %d\n",
                 ds->chan_addr[0], ds->chan_addr[1]);
       if (ds->header.fChipAddress < chip0 || ds->header.fChipAddress > chip1) {
         gNbWarnings++;
         if (gPrintLevel >= 1)
-          fprintf(flog, "===> WARNING SAMPA [%2d]: chip address = %d, expected = [%d,%d]\n", ds->id,
-                  ds->header.fChipAddress, chip0, chip1);
+          fprintf(flog, "===> WARNING SAMPA [%2d]: chip address = %lu, expected = [%d,%d]\n", ds->id,
+                  (unsigned long)ds->header.fChipAddress, chip0, chip1);
       }
       if (ds->chan_addr[ds->header.fChipAddress - chip0] != ds->header.fChannelAddress) {
         gNbWarnings++;
         if (gPrintLevel >= 1)
-          fprintf(flog, "===> WARNING SAMPA [%2d]: channel address = %d, expected = %d\n", ds->id,
-                  ds->header.fChannelAddress, ds->chan_addr[ds->header.fChipAddress - chip0]);
+          fprintf(flog, "===> WARNING SAMPA [%2d]: channel address = %lu, expected = %d\n", ds->id,
+                  (unsigned long)ds->header.fChannelAddress, ds->chan_addr[ds->header.fChipAddress - chip0]);
       }
       ds->chan_addr[ds->header.fChipAddress - chip0] += 1;
       if (ds->chan_addr[ds->header.fChipAddress - chip0] > 31) {
@@ -661,7 +661,7 @@ decode_state_t Add1BitOfData(uint32_t gbtdata, DualSampa& dsr, DualSampaGroup* d
               if (false) {
                 if (ds->header.fChannelAddress == 31)
                   fprintf(flog, "    ");
-                fprintf(flog, "%d %d %d: End of cluster found (%d)\n", ds->id, ds->header.fChipAddress, ds->header.fChannelAddress,
+                fprintf(flog, "%d %lu %lu: End of cluster found (%d)\n", ds->id, (unsigned long)ds->header.fChipAddress, (unsigned long)ds->header.fChannelAddress,
                         ds->nclus[ds->header.fChipAddress % 2][ds->header.fChannelAddress]);
               }
             }
@@ -765,10 +765,10 @@ decode_state_t Add10BitsOfData(uint64_t data, DualSampa& dsr, DualSampaGroup* /*
           dsr.packetsize = 0;
           Sampa::SampaHeaderStruct* header = (Sampa::SampaHeaderStruct*)&(dsr.header);
           if (gPrintLevel >= 1)
-            fprintf(flog, "SAMPA Header: HCode %2d HPar %d PkgType %d 10BitWords %d ChipAdd %d ChAdd %2d BX %d PPar %d\n",
-                    header->fHammingCode, header->fHeaderParity, header->fPkgType,
-                    header->fNbOf10BitWords, header->fChipAddress, header->fChannelAddress,
-                    header->fBunchCrossingCounter, header->fPayloadParity);
+            fprintf(flog, "SAMPA Header: HCode %2lu HPar %lu PkgType %lu 10BitWords %lu ChipAdd %lu ChAdd %2lu BX %lu PPar %lu\n",
+                    (unsigned long)header->fHammingCode, (unsigned long)header->fHeaderParity, (unsigned long)header->fPkgType,
+                    (unsigned long)header->fNbOf10BitWords, (unsigned long)header->fChipAddress, (unsigned long)header->fChannelAddress,
+                    (unsigned long)header->fBunchCrossingCounter, (unsigned long)header->fPayloadParity);
         }
       }
       break;
@@ -951,14 +951,14 @@ void Decoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int
             uint64_t _h;
             memcpy(&_h, &(ds[cru_id][link_id][i].header), sizeof(ds[cru_id][link_id][i].header));
             if (gPrintLevel >= 1)
-              fprintf(flog, "board %d %d %d -> HEADER: %05" PRIu64 ", %d, %d\n",
+              fprintf(flog, "board %d %d %d -> HEADER: %05" PRIu64 ", %lu, %lu\n",
                       cru_id, link_id, i, _h,
-                      ds[cru_id][link_id][i].header.fChipAddress,
-                      ds[cru_id][link_id][i].header.fChannelAddress);
+                      (unsigned long)ds[cru_id][link_id][i].header.fChipAddress,
+                      (unsigned long)ds[cru_id][link_id][i].header.fChannelAddress);
             break;
           case DECODE_STATE_CSIZE_FOUND: {
             if (gPrintLevel >= 2)
-              fprintf(flog, "CLUSTER SIZE: %d\n", ds[cru_id][link_id][i].csize);
+              fprintf(flog, "CLUSTER SIZE: %" PRIu32 "\n", ds[cru_id][link_id][i].csize);
             Sampa::SampaHeaderStruct& header = ds[cru_id][link_id][i].header;
             SampaHit& hit = ds[cru_id][link_id][i].hit;
             hit.cru_id = cru_id;
