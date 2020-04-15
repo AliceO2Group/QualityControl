@@ -109,10 +109,10 @@ void RepositoryBenchmark::InitTask()
   mMonitoring->addGlobalTag("numberObject", to_string(mNumberObjects));
   mMonitoring->addGlobalTag("sizeObject", to_string(mSizeObjects));
   if (mTaskName == "benchmarkTask_0") { // send these parameters to monitoring only once per benchmark run
-    mMonitoring->send(Metric{"ccdb-benchmark"}
-      .addField(mNumberObjects, "number-objects")
-      .addField(mSizeObjects * 1000, "size-objects")
-      .addField(numberTasks, "number-tasks");
+    mMonitoring->send(Metric{"ccdb_benchmark"}
+      .addField(mNumberObjects, "number_objects")
+      .addField(mSizeObjects * 1000, "size_objects")
+      .addField(numberTasks, "number_tasks");
   }
 
   if (mDeletionMode) {
@@ -138,7 +138,7 @@ void RepositoryBenchmark::InitTask()
 
 void RepositoryBenchmark::checkTimedOut()
 {
-  mMonitoring->send({ mTotalNumberObjects, "ccdb-benchmark-objects-sent" }, DerivedMetricMode::RATE);
+  mMonitoring->send({ mTotalNumberObjects, "ccdb_benchmark_objects_sent" }, DerivedMetricMode::RATE);
 
   // restart timer
   mTimer->expires_at(mTimer->expires_at() + boost::posix_time::seconds(mThreadedMonitoringInterval));
@@ -159,12 +159,12 @@ bool RepositoryBenchmark::ConditionalRun()
     mTotalNumberObjects++;
   }
   if (!mThreadedMonitoring) {
-    mMonitoring->send({ mTotalNumberObjects, "ccdb-benchmark-objects-sent" }, DerivedMetricMode::RATE);
+    mMonitoring->send({ mTotalNumberObjects, "ccdb_benchmark_objects_sent" }, DerivedMetricMode::RATE);
   }
 
   high_resolution_clock::time_point t2 = high_resolution_clock::now();
   long duration = duration_cast<milliseconds>(t2 - t1).count();
-  mMonitoring->send({ duration / mNumberObjects, "ccdb-benchmark-store-duration-for-one-object-ms" });
+  mMonitoring->send({ duration / mNumberObjects, "ccdb_benchmark_store_duration_for_one_object_ms" });
 
   // determine how long we should wait till next iteration in order to have 1 sec between storage
   auto duration2 = duration_cast<microseconds>(t2 - t1);
