@@ -123,9 +123,11 @@ In this second example, we are going to use the Readout as our data source.
 
 ![alt text](images/readout-schema.png)
 
-This workflow is a bit different from the basic one. The _Readout_ is not a DPL, nor a FairMQ, device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the _Data Sampling_, which then injects data to the task. This is handled in the _Readout_ as long as you enable the corresponding configuration flag.
+This workflow is a bit different from the basic one. The _Readout_ is not a DPL, nor a FairMQ, device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the _Data Sampling_, which then injects data to the task. This is handled in the _Readout_ as long as you enable the corresponding configuration flag. 
 
-To do so, open the readout config file located at `$READOUT_ROOT/etc/readout.cfg` and make sure that the following properties are correct :
+The first thing is to load the environment for the readout in a new terminal : `alienv enter Readout/latest`. 
+
+Then enable the data sampling channel in readout by opening the readout config file located at `$READOUT_ROOT/etc/readout.cfg` and make sure that the following properties are correct :
 
 ```
 # First make sure we never exit
