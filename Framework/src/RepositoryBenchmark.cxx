@@ -110,9 +110,9 @@ void RepositoryBenchmark::InitTask()
   mMonitoring->addGlobalTag("sizeObject", to_string(mSizeObjects));
   if (mTaskName == "benchmarkTask_0") { // send these parameters to monitoring only once per benchmark run
     mMonitoring->send(Metric{"ccdb_benchmark"}
-      .addField(mNumberObjects, "number_objects")
-      .addField(mSizeObjects * 1000, "size_objects")
-      .addField(numberTasks, "number_tasks");
+      .addValue(mNumberObjects, "number_objects")
+      .addValue(mSizeObjects * 1000, "size_objects")
+      .addValue(numberTasks, "number_tasks"));
   }
 
   if (mDeletionMode) {
