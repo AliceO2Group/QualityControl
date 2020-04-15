@@ -19,6 +19,14 @@
 
 [↑ Go to the Table of Content ↑](../README.md) | [Continue to Modules Development →](ModulesDevelopment.md)
 
+## Read this first !
+
+This page will give you a basic idea of the QC and how to run it. Please read it *in its entirety* and run the commands along the way. Do not start developing your module before you have reached the next section called "Modules Development". 
+
+We would be very grateful if you could report to us any error or inaccuracy you found. 
+
+Thanks !
+
 ## Requirements
 
 A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the exact supported versions.
@@ -65,7 +73,9 @@ To run it simply do:
 
     o2-qc-run-basic
 
-Thanks to the Data Processing Layer (DPL, more details later) it is a single process that steers all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped, probably abnormally.
+Thanks to the Data Processing Layer (DPL, more details later) it is a single process that steers all the _devices_, i.e. processes making up the workflow. A window should appear that shows a graphical representation of the workflow if you are running locally. If you are running remotely via ssh, the DPL Debug GUI will not open. In some cases, it then requires to run with `-b`. The output of any of the processes is available by double clicking a box. If a box is red it means that the process has stopped, probably abnormally.
+
+This is not the GUI we will use to see the histograms. 
 
 ![basic-dpl-gui](images/basic-dpl-gui.png)
 
@@ -88,7 +98,7 @@ Please note that anyone running o2-qc-run-basic publishes the object under the s
 ![alt text](images/basic-qcg1.png)
 <!---![alt text](images/basic-qcg2.png)-->
 
-TODO add a link to the user documentation of the QCG when it is written.
+<!--- TODO add a link to the user documentation of the QCG when it is written. -->
 
 __Configuration file__
 
@@ -130,12 +140,12 @@ enabled=1
 (...)
 ```
 
-Start Readout :
+Start Readout in a terminal :
 ```
 readout.exe file://$READOUT_ROOT/etc/readout.cfg
 ```
 
-Start the proxy, DataSampling and QC workflows :
+Start in another terminal the proxy, DataSampling and QC workflows :
 ```
 o2-qc-run-readout | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
 ```
@@ -154,6 +164,8 @@ equipment-player-* 	filePath 	string
 equipment-player-* 	preLoad 	int 	1 	If 1, data pages preloaded with file content on startup. If 0, data is copied at runtime.
 equipment-player-* 	fillPage 	int 	1 	If 1, content of data file is copied multiple time in each data page until page is full (or almost full: on the last iteration, there is no partial copy if remaining space is smaller than full file size). If 0, data file is copied exactly once in each data page.
 ```
+
+Another option is to use the program `o2-raw-file-reader-workflow` in O2 and described [here](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#raw-data-file-reader-workflow). One can for example produce raw data with some Simulation workflow, or record it with `readout.exe`.
 
 #### Readout data format as received by the Task
 
