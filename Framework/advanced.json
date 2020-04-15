@@ -35,11 +35,13 @@
           "name": "tst2"
         },
         "location": "local",
-        "machines": [
+        "localMachines": [
           "o2flptst1",
           "o2flptst2",
           "o2flptst3"
-        ]
+        ],
+        "remoteMachine": "o2qctst1",
+        "remotePort": "30587"
       },
       "someNumbersTask": {
         "active": "true",
@@ -51,7 +53,8 @@
           "type": "dataSamplingPolicy",
           "name": "tst1"
         },
-        "location": "remote"
+        "location": "remote",
+        "remoteMachine": "o2qctst1"
       }
     },
     "checks": {

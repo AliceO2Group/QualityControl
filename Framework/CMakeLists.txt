@@ -93,6 +93,7 @@ target_link_libraries(QualityControl
                              O2::MCHBase
                              ms_gsl::ms_gsl
                              QualityControlTypes
+                             O2::Mergers
                       PRIVATE Boost::system
                               $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
                               $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL> ROOT::Gui

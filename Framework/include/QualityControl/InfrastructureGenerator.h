@@ -99,6 +99,12 @@ class InfrastructureGenerator
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 
   static void printVersion();
+
+ private:
+  static void generateLocalOutputProxy(framework::WorkflowSpec& workflow, size_t id, std::string taskName, std::string remoteHost, std::string remotePort);
+  static void generateRemoteInputProxy(framework::WorkflowSpec& workflow, std::string taskName, std::string remoteHost, std::string remotePort);
+  static void generateMergers(framework::WorkflowSpec& workflow, std::string taskName, double cycleDurationSeconds);
+  static void generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource);
 };
 
 } // namespace core
