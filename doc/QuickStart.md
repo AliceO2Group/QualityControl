@@ -115,7 +115,7 @@ The configuration for the QC is made of many parameters described in an [advance
     "cycleDurationSeconds": "10",
 (...)
 ```
-Try and change the name of the task by replace `QcTask` by a name of your choice. Relaunch the workflows. You should now see the object published under a different directory in the QCG.
+Try and change the name of the task by replacing `QcTask` by a name of your choice (there are 2 places to update in the config file!). Relaunch the workflows. You should now see the object published under a different directory in the QCG.
 
 ### Readout chain
 
