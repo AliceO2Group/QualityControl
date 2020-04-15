@@ -172,7 +172,7 @@ Now that there is a module, we can build it and test it. First let's build it :
 ```
 # We are in ~/alice and alienv has been called.
 # Go to the build directory of QualityControl.
-cd sw/slc7_x86-64/BUILD/QualityControl-latest/QualityControl
+cd sw/BUILD/QualityControl-latest/QualityControl
 make -j8 install # replace 8 by the number of cores on your machine
 ```
 
