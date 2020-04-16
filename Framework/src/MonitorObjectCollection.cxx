@@ -19,6 +19,8 @@
 
 #include <Mergers/Merger.h>
 
+using namespace o2::experimental::mergers;
+
 namespace o2::quality_control::core {
 
 long long MonitorObjectCollection::merge(experimental::mergers::MergeInterface* const other)
@@ -47,5 +49,3 @@ long long MonitorObjectCollection::merge(experimental::mergers::MergeInterface* 
 }
 
 }
-
-#endif //QUALITYCONTROL_MONITOROBJECTCOLLECTION_H

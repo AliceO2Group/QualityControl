@@ -23,6 +23,7 @@ namespace o2::quality_control::core {
 
 class MonitorObjectCollection : public TObjArray, public experimental::mergers::MergeInterface
 {
+ public:
   MonitorObjectCollection() = default;
   ~MonitorObjectCollection() = default;
 
@@ -31,4 +32,5 @@ class MonitorObjectCollection : public TObjArray, public experimental::mergers::
 };
 
 }
+
 #endif //QUALITYCONTROL_MONITOROBJECTCOLLECTION_H
