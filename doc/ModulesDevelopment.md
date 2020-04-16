@@ -41,7 +41,7 @@ The main data flow is represented in blue. Data samples are selected by the Data
 
 [Data Processing Layer](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) is a software framework developed as a part of O2 project. It structurizes the computing into units called _Data Processors_ - processes that communicate with each other via messages. DPL takes care of generating and running the processing topology out of user declaration code, serializing and deserializing messages, providing the data processors with all the anticipated messages for a given timestamp and much more. Each piece of data is characterized by its `DataHeader`, which consists (among others) of `dataOrigin`, `dataDescription` and `SubSpecification` - for example `{"MFT", "TRACKS", 0}`.
 
-An example of a workflow definition which describes the processing steps (_Data Processors_), their inputs and their outputs can be seen in [runBasic.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/runBasic.cxx). In the QC we define the workflows in files whose names are prefixed with `run`.
+An example of a workflow definition which describes the processing steps (_Data Processors_), their inputs and their outputs can be seen in [runBasic.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/runBasic.cxx). In the QC we define the workflows in files whose names are prefixed with `run`.
 
 ### Data Sampling
 
@@ -83,7 +83,7 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
 }
 ```
 
-An example of using the data sampling in a DPL workflow is visible in [runAdvanced.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/runAdvanced.cxx).
+An example of using the data sampling in a DPL workflow is visible in [runAdvanced.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/runAdvanced.cxx).
 
 #### Custom Data Sampling Condition
 
@@ -172,7 +172,7 @@ Now that there is a module, we can build it and test it. First let's build it :
 ```
 # We are in ~/alice and alienv has been called.
 # Go to the build directory of QualityControl.
-cd sw/slc7_x86-64/BUILD/QualityControl-latest/QualityControl
+cd sw/BUILD/QualityControl-latest/QualityControl
 make -j8 install # replace 8 by the number of cores on your machine
 ```
 
