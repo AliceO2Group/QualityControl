@@ -19,13 +19,13 @@
 
 [↑ Go to the Table of Content ↑](../README.md) | [Continue to Modules Development →](ModulesDevelopment.md)
 
-## Read this first !
+## Read this first!
 
-This page will give you a basic idea of the QC and how to run it. Please read it *in its entirety* and run the commands along the way. Do not start developing your module before you have reached the next section called "Modules Development". 
+This page will give you a basic idea of the QC and how to run it. Please read it *in its entirety* and run the commands along the way. Do not start developing your module before you have reached the next section called "Modules Development". Also, make sure you have pulled the latest QC version.
 
 We would be very grateful if you could report to us any error or inaccuracy you found. 
 
-Thanks !
+Thanks!
 
 ## Requirements
 
@@ -33,10 +33,10 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
 
 ## Setup
 
-1. Setup O2 environment and tools <br>We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/) (prefer the second option, not alidock). In particular make sure to follow these steps :
+1. Setup O2 environment and tools <br>We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/) (prefer the second option, not alidock). In particular make sure to follow these steps:
    1. Install GLFW to have GUIs in the DPL (optional, **DPL GUIs do not work in containers nor over SSH**).
-        * CC7 : `sudo yum install -y glfw-devel --enablerepo=epel`
-        * Mac : `brew install glfw`
+        * CC7: `sudo yum install -y glfw-devel --enablerepo=epel`
+        * Mac: `brew install glfw`
    2. Prerequisites  
         * [CC7](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-centos7.html)
         * [Mac](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-macos.html)
@@ -51,7 +51,7 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
     * `aliBuild build O2Suite --defaults o2`
     * At this point you might encounter a message about missing system requirements. Run `aliDoctor O2Suite` to get a full information about what is missing and how to install it.
 
-Note : on non-CC7 systems, you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
+Note: on non-CC7 systems, you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
 
 ### Environment loading
 
@@ -89,7 +89,7 @@ This command uses two executables. The first one contains only the _Producer (se
 
 __Repository and GUI__
 
-The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address : [https://qcg-test.cern.ch/?page=objectTree](https://qcg-test.cern.ch/?page=objectTree). The link brings you to the hierarchy of objects (see screenshot below). Open "/qc/TST/QcTask" (the task you are running) and click on "example" which is the name of your histogram. 
+The data is stored in the [ccdb-test](ccdb-test.cern.ch:8080/browse) at CERN. If everything works fine you should see the objects being published in the QC web GUI (QCG) at this address: [https://qcg-test.cern.ch/?page=objectTree](https://qcg-test.cern.ch/?page=objectTree). The link brings you to the hierarchy of objects (see screenshot below). Open "/qc/TST/QcTask" (the task you are running) and click on "example" which is the name of your histogram. 
 
 <!---
 The plot should be displayed on the right. If you wait a bit and hit "REFRESH NOW" in the far left menu you should see it changing from time to time (see second screenshot below). 
@@ -125,9 +125,9 @@ In this second example, we are going to use the Readout as our data source.
 
 This workflow is a bit different from the basic one. The _Readout_ is not a DPL, nor a FairMQ, device and thus we have to have a _proxy_ to get data from it. This is the extra box going to the _Data Sampling_, which then injects data to the task. This is handled in the _Readout_ as long as you enable the corresponding configuration flag. 
 
-The first thing is to load the environment for the readout in a new terminal : `alienv enter Readout/latest`. 
+The first thing is to load the environment for the readout in a new terminal: `alienv enter Readout/latest`. 
 
-Then enable the data sampling channel in readout by opening the readout config file located at `$READOUT_ROOT/etc/readout.cfg` and make sure that the following properties are correct :
+Then enable the data sampling channel in readout by opening the readout config file located at `$READOUT_ROOT/etc/readout.cfg` and make sure that the following properties are correct:
 
 ```
 # First make sure we never exit
@@ -142,12 +142,12 @@ enabled=1
 (...)
 ```
 
-Start Readout in a terminal :
+Start Readout in a terminal:
 ```
 readout.exe file://$READOUT_ROOT/etc/readout.cfg
 ```
 
-Start in another terminal the proxy, DataSampling and QC workflows :
+Start in another terminal the proxy, DataSampling and QC workflows:
 ```
 o2-qc-run-readout | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
 ```
@@ -158,7 +158,7 @@ The data sampling is configured to sample 1% of the data as the readout should r
 
 The first option is to configure readout.exe to connect to a cru. Please refer to the [Readout documentation](https://github.com/AliceO2Group/Readout/blob/master/doc/README.md). 
 
-A more practical approach is to record a data file with Readout and then replay it on your development setup to develop and test your QC. The configuration options are described [here](https://github.com/AliceO2Group/Readout/blob/master/doc/configurationParameters.md), in particular : 
+A more practical approach is to record a data file with Readout and then replay it on your development setup to develop and test your QC. The configuration options are described [here](https://github.com/AliceO2Group/Readout/blob/master/doc/configurationParameters.md), in particular: 
 
 ```
 equipment-player-* 	filePath 	string 	
