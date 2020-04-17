@@ -19,7 +19,9 @@
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingInterface/CathodeSegmentation.h"
 #include "MCHRawElecMap/Mapper.h"
-
+#ifdef MCH_HAS_MAPPING_FACTORY
+#include "MCHMappingFactory/CreateSegmentation.h"
+#endif
 //#define QC_MCH_SAVE_TEMP_ROOTFILE
 
 using namespace std;
@@ -450,7 +452,7 @@ void PedestalsTask::monitorDataReadout(o2::framework::ProcessingContext& ctx)
 
 void PedestalsTask::monitorDataDigits(const o2::framework::DataRef& input)
 {
-  //QcInfoLogger::GetInstance() << "monitorDataDigits" << AliceO2::InfoLogger::InfoLogger::endm;
+//QcInfoLogger::GetInstance() << "monitorDataDigits" << AliceO2::InfoLogger::InfoLogger::endm;
 
 #ifdef QC_MCH_SAVE_TEMP_ROOTFILE
   if ((count % 10) == 0 /*&& count <= 5000*/) {
