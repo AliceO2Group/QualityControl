@@ -25,21 +25,47 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <Configuration/ConfigurationFactory.h>
+#include <Framework/DataSampling.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/ExternalFairMQDeviceProxy.h>
 #include <Mergers/MergerInfrastructureBuilder.h>
+#include <Mergers/MergerBuilder.h>
 
 #include <algorithm>
 
 using namespace o2::framework;
 using namespace o2::configuration;
-using namespace o2::experimental::mergers;
+using namespace o2::mergers;
 using namespace o2::quality_control::checker;
 using boost::property_tree::ptree;
 using SubSpec = o2::header::DataHeader::SubSpecificationType;
 
 namespace o2::quality_control::core
 {
+
+framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructure(std::string configurationSource)
+{
+  WorkflowSpec workflow;
+  auto config = ConfigurationFactory::getConfiguration(configurationSource);
+  printVersion();
+
+  TaskRunnerFactory taskRunnerFactory;
+  for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
+    if (taskConfig.get<bool>("active", true)) {
+      workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
+    }
+  }
+
+  generateCheckRunners(workflow, configurationSource);
+
+  return workflow;
+}
+
+void InfrastructureGenerator::generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource)
+{
+  auto qcInfrastructure = InfrastructureGenerator::generateStandaloneInfrastructure(configurationSource);
+  workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
+}
 
 WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string configurationSource, std::string host)
 {
@@ -49,27 +75,49 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   printVersion();
 
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
-    if (taskConfig.get<bool>("active") && taskConfig.get<std::string>("location") == "local") {
+    if (taskConfig.get<bool>("active")) {
+      if (taskConfig.get<std::string>("location") == "local") {
 
-      // ids are assigned to local tasks in order to distinguish monitor objects outputs from each other and be able to
-      // merge them. If there is no need to merge (only one qc task), it gets subspec 0.
-      size_t id = taskConfig.get_child("machines").size() > 1 ? 1 : 0;
+        if (taskConfig.get_child("localMachines").empty()) {
+          throw std::runtime_error("No local machines specified for task " + taskName + " in its configuration");
+        }
 
-      // Create a TaskRunner and find out the id
-      if (host.empty() || taskConfig.get_child("machines").size() <= 1) {
-        workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0, false));
-      } else {
-        for (const auto& machine : taskConfig.get_child("machines")) {
+        bool needsMergers = taskConfig.get_child("localMachines").size() > 1;
+        size_t id = needsMergers ? 1 : 0;
+        for (const auto& machine : taskConfig.get_child("localMachines")) {
+          // We spawn a task and proxy only if we are on the right machine.
           if (machine.second.get<std::string>("") == host) {
-            workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, id, true));
+            // Generate QC Task Runner
+            workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, id, needsMergers));
+            // Generate an output proxy
+            // These should be removed when we are able to declare dangling output in normal DPL devices
+            generateLocalTaskLocalProxy(workflow, id, taskName, taskConfig.get<std::string>("remoteMachine"), taskConfig.get<std::string>("remotePort"));
+            break;
           }
           id++;
         }
-      }
+      } else // if (taskConfig.get<std::string>("location") == "remote")
+      {
+        // Creating Data Sampling proxies
+        auto dataSourceTree = taskConfig.get_child("dataSource");
+        std::string type = dataSourceTree.get<std::string>("type");
+        if (type == "dataSamplingPolicy") {
+          auto policyName = dataSourceTree.get<std::string>("name");
+          std::string port = std::to_string(DataSampling::PortForPolicy(config.get(), policyName));
+          Inputs inputSpecs = DataSampling::InputSpecsForPolicy(config.get(), policyName);
 
-      // Generate an output proxy
-      // These should be removed when we are able to declare dangling output in normal DPL devices
-      generateLocalOutputProxy(workflow, id, taskName, taskConfig.get<std::string>("remoteHost"), taskConfig.get<std::string>("remotePort"));
+          std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
+          for (const auto& machine : machines) {
+            if (machine == host) {
+              generateDataSamplingPolicyLocalProxy(workflow, policyName, inputSpecs, port);
+            }
+          }
+        } else if (type == "direct") {
+          throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
+        } else {
+          throw std::runtime_error("Configuration error: dataSource type unknown : " + type);
+        }
+      }
     }
   }
   return workflow;
@@ -89,27 +137,53 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
   TaskRunnerFactory taskRunnerFactory;
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
-    // todo sanitize somehow this if-frenzy
     if (taskConfig.get<bool>("active", true)) {
 
       if (taskConfig.get<std::string>("location") == "local") {
         // if tasks are LOCAL, generate input proxies + mergers + checkers
 
+        size_t numberOfLocalMachines = taskConfig.get_child("localMachines").size() > 1 ? taskConfig.get_child("localMachines").size() : 1;
+
         // Generate an input proxy
         // These should be removed when we are able to declare dangling inputs in normal DPL devices
-        generateRemoteInputProxy(workflow, taskName, taskConfig.get<std::string>("remoteHost"), taskConfig.get<std::string>("remotePort"));
+        generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, taskConfig.get<std::string>("remotePort"));
 
         // Generate a Merger only when there is a need to merge something - there is more than one machine with the QC Task
         // I don't expect the list of machines to be reconfigured - all of them should be declared beforehand,
         // even if some of them will be on standby.
-        if (taskConfig.get_child("machines").size() > 1) {
-          generateMergers(workflow, taskName, taskConfig.get<double>("cycleDurationSeconds"));
+        if (numberOfLocalMachines > 1) {
+          generateMergers(workflow, taskName, numberOfLocalMachines, taskConfig.get<double>("cycleDurationSeconds"));
         }
 
       } else if (taskConfig.get<std::string>("location") == "remote") {
 
-        // -- if tasks are REMOTE, generate dispatcher proxies (to do) + tasks + checkers
+        // -- if tasks are REMOTE, generate dispatcher proxies + tasks + checkers
         // (for the time being we don't foresee parallel tasks on QC servers, so no mergers here)
+
+        // fixme: ideally we should check if we are on the right remote machine, but now we support only n -> 1 setups,
+        //  so there is no point. Also, I expect that we should be able to generate one big topology or its parts
+        //  and we would place it among QC servers using AliECS, not by configuration files.
+
+        // Creating Data Sampling proxies
+        // todo now we have to generate one proxy per local machine and policy, because of the proxy limitations.
+        //  Use one proxy per policy when it is possible.
+        auto dataSourceTree = taskConfig.get_child("dataSource");
+        std::string type = dataSourceTree.get<std::string>("type");
+        if (type == "dataSamplingPolicy") {
+          auto policyName = dataSourceTree.get<std::string>("name");
+          std::string port = std::to_string(DataSampling::PortForPolicy(config.get(), policyName));
+          Outputs outputSpecs = DataSampling::OutputSpecsForPolicy(config.get(), policyName);
+          std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
+          for (const auto& machine : machines) {
+            generateDataSamplingPolicyRemoteProxy(workflow, outputSpecs, machine, port);
+          }
+        } else if (type == "direct") {
+          throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
+        } else {
+          throw std::runtime_error("Configuration error: dataSource type unknown : " + type);
+        }
+
+        // Creating the remote task
         workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
       }
     }
@@ -129,6 +203,7 @@ void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSp
 void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
   TaskRunnerFactory::customizeInfrastructure(policies);
+  MergerBuilder::customizeInfrastructure(policies);
   CheckRunnerFactory::customizeInfrastructure(policies);
 }
 
@@ -138,58 +213,109 @@ void InfrastructureGenerator::printVersion()
   QcInfoLogger::GetInstance() << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << infologger::endm;
 }
 
-void InfrastructureGenerator::generateLocalOutputProxy(framework::WorkflowSpec& workflow, size_t id, std::string taskName, std::string remoteHost, std::string remotePort)
+void InfrastructureGenerator::generateDataSamplingPolicyLocalProxy(framework::WorkflowSpec& workflow,
+                                                                   const string& policyName,
+                                                                   const framework::Inputs& inputSpecs,
+                                                                   const string& localPort)
 {
-  std::string proxyName = taskName + "-input-proxy-" + std::to_string(id);
-  InputSpec proxyInput{taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id)};
-  std::string channelConfig =
-    "name=" + taskName + "-proxy"
-    ",type=push"
-    ",method=connect,"
-    ",address=tcp://" + remoteHost + ":" + remotePort +
-    ",rateLogging=60"
-    ",transport=zeromq";
+  std::string proxyName = policyName + "-proxy";
+  std::string channelName = inputSpecs.at(0).binding; // channel name has to match binding name.
+  std::string channelConfig = "name=" + channelName + ",type=push,method=bind,address=tcp://*:" + localPort +
+                              ",rateLogging=60,transport=zeromq";
 
   workflow.emplace_back(
-     specifyFairMQDeviceOutputProxy(
-        proxyName.c_str(),
-        { proxyInput },
-        channelConfig.c_str()
-      ));
+    specifyFairMQDeviceOutputProxy(
+      proxyName.c_str(),
+      inputSpecs,
+      channelConfig.c_str()));
 }
-void InfrastructureGenerator::generateRemoteInputProxy(framework::WorkflowSpec& workflow, std::string taskName, std::string /* remoteHost */, std::string remotePort)
+
+void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxy(framework::WorkflowSpec& workflow,
+                                                                    const Outputs& outputSpecs,
+                                                                    const std::string& localMachine,
+                                                                    const std::string& localPort)
 {
-  std::string proxyName = taskName + "-input-proxy";
-  OutputSpec proxyOutput{{taskName}, {TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName)}};
-  std::string channelConfig =
-    "name=" + taskName + "-proxy"
-                         ",type=pull"
-                         ",method=bind,"
-                         ",address=tcp://*:" + remotePort +
-    ",rateLogging=60"
-    ",transport=zeromq";
+  std::string channelName = outputSpecs.at(0).binding.value; // channel name has to match binding name.
+  std::string proxyName = channelName;                       // channel name has to match proxy name
+
+  std::string channelConfig = "name=" + channelName + ",type=pull,method=connect,address=tcp://" +
+                              localMachine + ":" + localPort + ",rateLogging=60,transport=zeromq";
 
   workflow.emplace_back(specifyExternalFairMQDeviceProxy(
     proxyName.c_str(),
-    { proxyOutput },
+    outputSpecs,
     channelConfig.c_str(),
     dplModelAdaptor()));
 }
 
-void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName, double cycleDurationSeconds)
+void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow, size_t id,
+                                                          std::string taskName, std::string remoteHost,
+                                                          std::string remotePort)
 {
+  std::string proxyName = taskName + "-proxy-" + std::to_string(id);
+  std::string channelName = taskName + "-proxy";
+  InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) };
+  std::string channelConfig = "name=" + channelName + ",type=push,method=connect,address=tcp://" +
+                              remoteHost + ":" + remotePort + ",rateLogging=60,transport=zeromq";
+
+  workflow.emplace_back(
+    specifyFairMQDeviceOutputProxy(
+      proxyName.c_str(),
+      { proxyInput },
+      channelConfig.c_str()));
+}
+
+void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSpec& workflow, std::string taskName,
+                                                           size_t numberOfLocalMachines, std::string remotePort)
+{
+  std::string proxyName = taskName + "-proxy"; // channel name has to match proxy name
+  std::string channelName = taskName + "-proxy";
+
+  Outputs proxyOutputs;
+  if (numberOfLocalMachines > 1) {
+    for (size_t id = 1; id <= numberOfLocalMachines; id++) {
+      proxyOutputs.emplace_back(
+        OutputSpec{ { channelName }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) });
+    }
+  } else {
+    proxyOutputs.emplace_back(
+      OutputSpec{ { channelName }, { TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) } });
+  }
+
+  std::string channelConfig = "name=" + channelName + ",type=pull,method=bind,address=tcp://*:" + remotePort +
+                              ",rateLogging=60,transport=zeromq";
+
+  workflow.emplace_back(specifyExternalFairMQDeviceProxy(
+    proxyName.c_str(),
+    proxyOutputs,
+    channelConfig.c_str(),
+    dplModelAdaptor()));
+}
+
+void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName,
+                                              size_t numberOfLocalMachines, double cycleDurationSeconds)
+{
+  Inputs mergerInputs;
+  for (size_t id = 1; id <= numberOfLocalMachines; id++) {
+    mergerInputs.emplace_back(
+      InputSpec{ { taskName + std::to_string(id) },
+                 TaskRunner::createTaskDataOrigin(),
+                 TaskRunner::createTaskDataDescription(taskName),
+                 static_cast<SubSpec>(id) });
+  }
+
   MergerInfrastructureBuilder mergersBuilder;
   mergersBuilder.setInfrastructureName(taskName);
-  mergersBuilder.setInputSpecs(
-    {{ taskName, { TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) }}});
+  mergersBuilder.setInputSpecs(mergerInputs);
   mergersBuilder.setOutputSpec(
-    {{ "main" }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), 0 });
+    { { "main" }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), 0 });
   MergerConfig mergerConfig;
-  mergerConfig.ownershipMode = { OwnershipMode::Integral, 0 };
+  // if we are to change the mode to Full, disable reseting tasks after each cycle.
+  mergerConfig.inputObjectTimespan = { InputObjectsTimespan::LastDifference, 0 };
   mergerConfig.publicationDecision = {
     PublicationDecision::EachNSeconds, cycleDurationSeconds
   };
-  mergerConfig.timespan = { Timespan::FullHistory, 0 };
+  mergerConfig.mergedObjectTimespan = { MergedObjectTimespan::FullHistory, 0 };
   // for now one merger should be enough, multiple layers to be supported later
   mergerConfig.topologySize = { TopologySize::NumberOfLayers, 1 };
   mergersBuilder.setConfig(mergerConfig);
@@ -283,7 +409,6 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     for (auto& input : storeVectorMap[inputNames])
       QcInfoLogger::GetInstance() << input << " ";
     QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
-
 
     CheckRunnerFactory checkRunnerFactory;
     //push workflow

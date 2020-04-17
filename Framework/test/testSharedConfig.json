@@ -29,10 +29,12 @@
           "parameter2": "qu'est-ce que c'est que ce truc la"
         },
         "location": "local",
-        "machines": [
+        "localMachines": [
           "o2flp1",
           "o2flp2"
-        ]
+        ],
+        "remoteMachine": "o2qc01",
+        "remotePort": "30123"
       },
       "abcTask": {
         "active": true,

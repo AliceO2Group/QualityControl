@@ -30,11 +30,11 @@ using namespace o2::framework;
 BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
-
+  std::cout << configFilePath << std::endl;
   {
     auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configFilePath, "o2flp1");
 
-    BOOST_REQUIRE_EQUAL(workflow.size(), 1);
+    BOOST_REQUIRE_EQUAL(workflow.size(), 2);
 
     BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 2);
@@ -45,12 +45,17 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
   {
     auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configFilePath, "o2flp2");
 
-    BOOST_REQUIRE_EQUAL(workflow.size(), 1);
+    BOOST_REQUIRE_EQUAL(workflow.size(), 2);
 
     BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 2);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 2);
+
+    BOOST_CHECK_EQUAL(workflow[1].name, "skeletonTask-proxy-2");
+    BOOST_CHECK_EQUAL(workflow[1].inputs.size(), 1);
+    BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[1].inputs[0]).value_or(-1), 2);
+    BOOST_CHECK_EQUAL(workflow[1].outputs.size(), 0);
   }
 
   {
@@ -65,17 +70,24 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   auto workflow = InfrastructureGenerator::generateRemoteInfrastructure(configFilePath);
 
-  // the infrastructure should consist of a merger and checker for the 'skeletonTask' (its taskRunner is declared to be
+  // the infrastructure should consist of a proxy, merger and checker for the 'skeletonTask' (its taskRunner is declared to be
   // local) and also taskRunner and checker for the 'abcTask' and 'xyzTask'.
-  BOOST_REQUIRE_EQUAL(workflow.size(), 6);
+  BOOST_REQUIRE_EQUAL(workflow.size(), 7);
+
+  auto skeletonTaskProxy = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "skeletonTask-proxy" &&
+             d.inputs.size() == 0 &&
+             d.outputs.size() == 2;
+    });
+  BOOST_CHECK(skeletonTaskProxy != workflow.end());
 
   auto mergerSkeletonTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      auto concreteInput0 = DataSpecUtils::asConcreteDataMatcher(d.inputs[0]);
-      auto concreteInput1 = DataSpecUtils::asConcreteDataMatcher(d.inputs[1]);
-      return d.name == "skeletonTask-merger" &&
-             d.inputs.size() == 2 && concreteInput0.subSpec == 1 && concreteInput1.subSpec == 2 &&
+      return d.name.find("MERGER") != std::string::npos &&
+             d.inputs.size() == 3 &&
              d.outputs.size() == 1 && DataSpecUtils::getOptionalSubSpec(d.outputs[0]).value_or(-1) == 0;
     });
   BOOST_CHECK(mergerSkeletonTask != workflow.end());
@@ -88,6 +100,23 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
              d.outputs.size() == 1;
     });
   BOOST_CHECK(taskRunnerAbcTask != workflow.end());
+
+  auto taskRunnerXyzTask = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "QC-TASK-RUNNER-xyzTask" &&
+             d.inputs.size() == 2 &&
+             d.outputs.size() == 1;
+    });
+  BOOST_CHECK(taskRunnerXyzTask != workflow.end());
+
+  // This task shouldn't be generated here - it is local
+  auto taskRunnerSkeletonTask = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "QC-TASK-RUNNER-skeletonTask";
+    });
+  BOOST_CHECK(taskRunnerSkeletonTask == workflow.end());
 
   auto checkRunnerCount = std::count_if(
     workflow.begin(), workflow.end(),

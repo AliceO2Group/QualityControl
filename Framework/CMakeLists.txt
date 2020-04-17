@@ -119,6 +119,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/PostProcessingInterface.h
                             include/QualityControl/TrendingTask.h
                             include/QualityControl/Reductor.h
+                            include/QualityControl/MonitorObjectCollection.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 
@@ -374,6 +375,7 @@ install(FILES example-default.json
               basic.json
               basic-no-sampling.json
               advanced.json
+              multiNode.json
               readout.json
               readout-no-sampling.json
               readoutForDataDump.json

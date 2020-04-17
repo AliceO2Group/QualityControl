@@ -17,17 +17,17 @@
 
 #include "QualityControl/MonitorObject.h"
 
-#include <Mergers/Merger.h>
+#include <Mergers/MergerAlgorithm.h>
 
-using namespace o2::experimental::mergers;
+using namespace o2::mergers;
 
 namespace o2::quality_control::core {
 
-long long MonitorObjectCollection::merge(experimental::mergers::MergeInterface* const other)
+void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
 {
   auto otherCollection = dynamic_cast<MonitorObjectCollection*>(other); // reinterpret_cast maybe?
   if (otherCollection == nullptr) {
-    throw std::runtime_error("The other object does not inherit TObjArray");
+    throw std::runtime_error("The other object is not a MonitorObjectCollection");
   }
 
   auto otherIterator = otherCollection->MakeIterator();
@@ -37,7 +37,7 @@ long long MonitorObjectCollection::merge(experimental::mergers::MergeInterface* 
       auto targetMO = dynamic_cast<MonitorObject*>(targetObject);
       if (otherMO && targetMO) {
         // That might be another collection or a concrete object to be merged, we walk on the collection recursively.
-        Merger::merge(targetMO->getObject(), otherMO->getObject());
+        algorithm::merge(targetMO->getObject(), otherMO->getObject());
       } else {
         throw std::runtime_error("The target object or the other object could not be casted to MonitorObject.");
       }
@@ -48,4 +48,4 @@ long long MonitorObjectCollection::merge(experimental::mergers::MergeInterface* 
   }
 }
 
-}
+} // namespace o2::quality_control::core

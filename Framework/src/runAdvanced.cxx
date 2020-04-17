@@ -14,11 +14,9 @@
 ///
 /// \brief This is an executable showing a more complicated QC topology.
 ///
-/// This is an executable showing a more complicated QC topology. It pretends to spawn 4 separate topologies - 3 of them
-/// consist of some dummy processing chain, a dispatcher and a local QC task. The last one represents the remote
-/// QC servers topology, which has a merger (joining the results from local QC tasks), a checker (checks the result of
-/// the previous) and a different, remote QC task with associated checker. Here they are joined into one big topology
-/// just to present the concept.
+/// This is an executable showing a more complicated QC topology. It spawns 3 separate dummy processing chains,
+/// a Dispatcher, two QC Tasks which require different data and CheckRunners which run Checks on MonitorObjects
+/// produced by these QC Tasks.
 /// \image html qcRunAdvanced.png
 ///
 /// To launch it, build the project, load the environment and run the executable:
@@ -49,7 +47,6 @@ void customize(std::vector<CompletionPolicy>& policies)
 {
   DataSampling::CustomizeInfrastructure(policies);
   quality_control::customizeInfrastructure(policies);
-  policies.push_back(CompletionPolicyHelpers::defineByName(".*merger.*", CompletionPolicy::CompletionOp::Consume));
 }
 
 void customize(std::vector<ChannelConfigurationPolicy>& policies)
@@ -106,8 +103,8 @@ WorkflowSpec processingTopology(SubSpecificationType subspec)
     Outputs{},
     AlgorithmSpec{
       (AlgorithmSpec::ProcessCallback)[](ProcessingContext & ctx) {
-        LOG(INFO) << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0];
-        LOG(INFO) << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0];
+        LOG(DEBUG) << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0];
+        LOG(DEBUG) << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0];
       }
     }
   };
@@ -126,39 +123,13 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   // here we pretend to spawn topologies on three processing machines
   for (int i = 1; i < 4; i++) {
     auto localTopology = processingTopology(i);
-
-    DataSampling::GenerateInfrastructure(localTopology, qcConfigurationSource);
-    // a fix to make the topologies work when merged together
-    localTopology.back().name += std::to_string(i);
-    if (i != 2) {
-      // can't do it like that, because of this bug: https://alice.its.cern.ch/jira/browse/O2-791
-      // localTopology.back().inputs.erase(localTopology.back().inputs.begin(), localTopology.back().inputs.end() - 1);
-      // localTopology.back().outputs.erase(localTopology.back().outputs.begin(), localTopology.back().outputs.end() - 1);
-      // for the time being, we use the following workaround:
-      auto in = localTopology.back().inputs.back();
-      auto out = localTopology.back().outputs.back();
-      localTopology.back().inputs.clear();
-      localTopology.back().inputs.push_back(in);
-      localTopology.back().outputs.clear();
-      localTopology.back().outputs.push_back(out);
-    }
-    DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs.back(), i);
-    DataSpecUtils::updateMatchingSubspec(localTopology.back().outputs.back(), i);
-
-    std::string host = "o2flptst" + std::to_string(i);
-    quality_control::generateLocalInfrastructure(localTopology, qcConfigurationSource, host);
-    // a fix to make the topologies work when merged together
-    localTopology.back().name += std::to_string(i);
-    DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs[0], i);
-    DataSpecUtils::updateMatchingSubspec(localTopology.back().inputs[1], i);
-
-    LOG(INFO) << localTopology.back().name << " " << localTopology.back().inputs.size() << " " << localTopology.back().inputs[0].binding << " " << localTopology.back().inputs[1].binding;
-
     specs.insert(std::end(specs), std::begin(localTopology), std::end(localTopology));
   }
 
+  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+
   // Generation of the remote QC topology (for the QC servers)
-  quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
 
   return specs;
 }

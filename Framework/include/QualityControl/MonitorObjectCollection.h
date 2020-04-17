@@ -21,14 +21,14 @@
 
 namespace o2::quality_control::core {
 
-class MonitorObjectCollection : public TObjArray, public experimental::mergers::MergeInterface
+class MonitorObjectCollection : public TObjArray, public mergers::MergeInterface
 {
  public:
   MonitorObjectCollection() = default;
   ~MonitorObjectCollection() = default;
 
-  long long merge(experimental::mergers::MergeInterface* const other) override;
-
+  void merge(mergers::MergeInterface* const other) override;
+  ClassDefOverride(MonitorObjectCollection, 0);
 };
 
 }

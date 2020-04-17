@@ -75,7 +75,7 @@ class ObjectsManager
 
   TObject* getObject(std::string objectName);
 
-  TObjArray* getNonOwningArray() const;
+  MonitorObjectCollection* getNonOwningArray() const;
 
   /**
    * \brief Add metadata to a MonitorObject.

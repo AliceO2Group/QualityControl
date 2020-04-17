@@ -113,9 +113,9 @@ TObject* ObjectsManager::getObject(std::string objectName)
   return mo->getObject();
 }
 
-TObjArray* ObjectsManager::getNonOwningArray() const
+MonitorObjectCollection* ObjectsManager::getNonOwningArray() const
 {
-  return new TObjArray(*mMonitorObjects);
+  return new MonitorObjectCollection(*mMonitorObjects);
 }
 
 void ObjectsManager::addMetadata(const std::string& objectName, const std::string& key, const std::string& value)

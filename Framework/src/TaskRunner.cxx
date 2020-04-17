@@ -400,7 +400,7 @@ int TaskRunner::publish(DataAllocator& outputs)
   auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);
   // getNonOwningArray creates a TObjArray containing the monitoring objects, but not
   // owning them. The array is created by new and must be cleaned up by the caller
-  std::unique_ptr<TObjArray> array(mObjectsManager->getNonOwningArray());
+  std::unique_ptr<MonitorObjectCollection> array(mObjectsManager->getNonOwningArray());
   int objectsPublished = array->GetEntries();
 
   outputs.snapshot(

@@ -24,6 +24,7 @@ namespace o2::framework
 class CompletionPolicy;
 }
 #include <Framework/WorkflowSpec.h>
+#include <Framework/DataProcessorSpec.h>
 
 namespace o2::quality_control
 {
@@ -36,14 +37,33 @@ namespace core
 /// Framework/example-default.json). As QC topologies will be spread on both processing chain machines and dedicated
 /// QC servers, a _local_ vs. _remote_ distinction was introduced. Tasks which are _local_ should have taskRunners
 /// placed on FLP or EPN machines and their results should be merged and checked on QC servers. The 'remote' option
-/// means, that full QC chain should be located on remote (QC) machines. For the laptop development, use 'remote' tasks
-/// and generateRemoteInfrastructure() to obtain the full topology in one go.
+/// means, that full QC chain should be located on remote (QC) machines. For the laptop development, use
+/// generateStandaloneInfrastructure() to obtain the full topology in one go.
 ///
 /// \author Piotr Konopka
 class InfrastructureGenerator
 {
  public:
   InfrastructureGenerator() = delete;
+
+  /// \brief Generates a standalone QC infrastructure.
+  ///
+  /// Generates a full QC infrastructure from a configuration file. This function is aimed to use for standalone setups
+  /// and local development. It will create both local and remote QC tasks, and CheckRunners running associated Checks.
+  ///
+  /// \param configurationSource - full path to configuration file, preceded with the backend (f.e. "json://")
+  /// \return generated standalone QC workflow
+  static framework::WorkflowSpec generateStandaloneInfrastructure(std::string configurationSource);
+
+  /// \brief Generates a standalone QC infrastructure.
+  ///
+  /// Generates a full QC infrastructure from a configuration file. This function is aimed to use for standalone setups
+  /// and local development. It will create both local and remote QC tasks, and CheckRunners running associated Checks.
+  ///
+  /// \param workflow - existing workflow where QC infrastructure should be placed
+  /// \param configurationSource - full path to configuration file, preceded with the backend (f.e. "json://")
+  /// \return generated standalone QC workflow
+  static void generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource);
 
   /// \brief Generates the local part of the QC infrastructure for a specified host.
   ///
@@ -101,15 +121,43 @@ class InfrastructureGenerator
   static void printVersion();
 
  private:
-  static void generateLocalOutputProxy(framework::WorkflowSpec& workflow, size_t id, std::string taskName, std::string remoteHost, std::string remotePort);
-  static void generateRemoteInputProxy(framework::WorkflowSpec& workflow, std::string taskName, std::string remoteHost, std::string remotePort);
-  static void generateMergers(framework::WorkflowSpec& workflow, std::string taskName, double cycleDurationSeconds);
+  static void generateDataSamplingPolicyLocalProxy(framework::WorkflowSpec& workflow,
+                                                   const std::string& policyName,
+                                                   const framework::Inputs& inputSpecs,
+                                                   const std::string& localPort);
+  static void generateDataSamplingPolicyRemoteProxy(framework::WorkflowSpec& workflow,
+                                                    const framework::Outputs& outputSpecs,
+                                                    const std::string& localMachine,
+                                                    const std::string& localPort);
+  static void generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow,
+                                          size_t id,
+                                          std::string taskName,
+                                          std::string remoteHost,
+                                          std::string remotePort);
+  static void generateLocalTaskRemoteProxy(framework::WorkflowSpec& workflow,
+                                           std::string taskName,
+                                           size_t numberOfLocalMachines,
+                                           std::string remotePort);
+  static void generateMergers(framework::WorkflowSpec& workflow,
+                              std::string taskName,
+                              size_t numberOfLocalMachines,
+                              double cycleDurationSeconds);
   static void generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource);
 };
 
 } // namespace core
 
 // exposing the class above as a main QC interface, syntactic sugar
+
+inline framework::WorkflowSpec generateStandaloneInfrastructure(std::string configurationSource)
+{
+  return core::InfrastructureGenerator::generateStandaloneInfrastructure(configurationSource);
+}
+
+inline void generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource)
+{
+  core::InfrastructureGenerator::generateStandaloneInfrastructure(workflow, configurationSource);
+}
 
 inline framework::WorkflowSpec generateLocalInfrastructure(std::string configurationSource, std::string host)
 {

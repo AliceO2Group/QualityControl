@@ -58,21 +58,24 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
   std::string qcConfigurationSource = getConfigPath(config);
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
-  if (config.options().get<bool>("local") && config.options().get<bool>("remote")) {
-    ILOG(Info) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
+  if (!config.options().get<bool>("local") && !config.options().get<bool>("remote")) {
+    ILOG(Info) << "Creating a standalone QC topology." << ENDM;
+    o2::quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
   }
 
-  if (config.options().get<bool>("local") || !config.options().get<bool>("remote")) {
+  if (config.options().get<bool>("local")) {
+    ILOG(Info) << "Creating a local QC topology." << ENDM;
 
     // Generation of Data Sampling infrastructure
     o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
-    // Generation of the local QC topology (local QC tasks)
+    // Generation of the local QC topology (local QC tasks and their output proxies)
     o2::quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, config.options().get<std::string>("host"));
   }
-  if (config.options().get<bool>("remote") || !config.options().get<bool>("local")) {
+  if (config.options().get<bool>("remote")) {
+    ILOG(Info) << "Creating a remote QC topology." << ENDM;
 
-    // Generation of the remote QC topology (task for QC servers, mergers and all checkers)
+    // Generation of the remote QC topology (task for QC servers, input proxies, mergers and all check runners)
     o2::quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
   }
 
