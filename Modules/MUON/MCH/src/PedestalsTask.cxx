@@ -19,7 +19,9 @@
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingInterface/CathodeSegmentation.h"
 #include "MCHRawElecMap/Mapper.h"
-
+#ifdef MCH_HAS_MAPPING_FACTORY
+#include "MCHMappingFactory/CreateSegmentation.h"
+#endif
 //#define QC_MCH_SAVE_TEMP_ROOTFILE
 
 using namespace std;
