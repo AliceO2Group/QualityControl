@@ -229,16 +229,10 @@ o2-qc-run-producer | o2-qc --config json://$HOME/alice/QualityControl/Modules/TS
 
 You should see an object `example` in `/qc/TST/MyRawDataQcTask` at qcg-test.cern.ch.
 
-## Modification of a Task
+## Modification of the Task
 
-Fill in the methods in RawDataQcTask.cxx. For example, make it publish a second histogram. Objects must be published only once and they will then be updated automatically every cycle (10 seconds for our example, 1 minute in general). 
-Once done, recompile it (see section above) and run it. You should see the second object published in the qcg.
-
-TODO give actual steps
-
-You can rename the task by simply changing its name in the config file. Change the name from 
-`QcTask` to whatever you like and run it again (no need to recompile). You should see the new name
-appear in the QCG.
+We are going to modify our task to make it publish a second histogram. Objects must be published only once and they will then be updated automatically every cycle (10 seconds for our example, 1 minute in general). Modify `RawDataQcTask.cxx` and its header to add a new histogram, build it and publish it with `getObjectsManager()->startPublishing(mHistogram);`.
+Once done, recompile it (see section above, `make -j8 install` in the build directory) and run it (same as above). You should see the second object published in the qcg.
 
 ## Check
 
