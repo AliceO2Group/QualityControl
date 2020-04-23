@@ -133,7 +133,7 @@ The Data Sampling code is part of the AliceO2 repository.
 
 One can of course build using `aliBuild` (`aliBuild build --defaults o2 QualityControl`). However, that will take quite some time as it checks all dependencies and builds everything. 
 
-The correct way of building is to load the environment with `alienv` and then go to the build directory and run `make` or `ninja`.
+After the initial use of `aliBuild`, which is necessary, the correct way of building is to load the environment with `alienv` and then go to the build directory and run `make` or `ninja`.
 
 ```
 alienv load QualityControl/latest
@@ -145,7 +145,7 @@ make -j8 install # or ninja -j8 install , also adapt to the number of cores avai
 
 The Quality Control uses _plugins_ to load the actual code to be executed by the _Tasks_ and the _Checks_. A module, or plugin, can contain one or several of these classes, both Tasks and Checks. They must subclass `TaskInterface.h` and `CheckInterface.h` respectively. We use the Template Method Design Pattern.
 
-The same code, the same class, can be run many times in parallel. It means that you can run several qc tasks (no uppercase, i.e. processes) in parallel, each executing the same code defined in the same Task (uppercase, the class).
+The same code, the same class, can be run many times in parallel. It means that you can run several qc tasks (no uppercase, i.e. processes) in parallel, each executing the same code defined in the same Task (uppercase, the class). Similarly, one Check can be executed against different Monitor Objects and Tasks.
 
 ## Module creation
 
