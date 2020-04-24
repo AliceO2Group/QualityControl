@@ -38,8 +38,8 @@ void TOFDecoderCompressed::decode()
 void TOFDecoderCompressed::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/)
 {
   for (int ibit = 0; ibit < 11; ++ibit) {
-    if (crateHeader->slotEnableMask & (1 << ibit)) {
-      mHistos.at("hSlotEnableMask")->Fill(crateHeader->drmID, ibit + 2);
+    if (crateHeader->slotPartMask & (1 << ibit)) {
+      mHistos.at("hSlotPartMask")->Fill(crateHeader->drmID, ibit + 2);
     }
   }
 }
