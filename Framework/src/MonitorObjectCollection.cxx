@@ -21,7 +21,8 @@
 
 using namespace o2::mergers;
 
-namespace o2::quality_control::core {
+namespace o2::quality_control::core
+{
 
 void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
 {

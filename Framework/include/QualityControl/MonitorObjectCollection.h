@@ -19,7 +19,8 @@
 #include <TObjArray.h>
 #include <Mergers/MergeInterface.h>
 
-namespace o2::quality_control::core {
+namespace o2::quality_control::core
+{
 
 class MonitorObjectCollection : public TObjArray, public mergers::MergeInterface
 {
@@ -31,6 +32,6 @@ class MonitorObjectCollection : public TObjArray, public mergers::MergeInterface
   ClassDefOverride(MonitorObjectCollection, 0);
 };
 
-}
+} // namespace o2::quality_control::core
 
 #endif //QUALITYCONTROL_MONITOROBJECTCOLLECTION_H
