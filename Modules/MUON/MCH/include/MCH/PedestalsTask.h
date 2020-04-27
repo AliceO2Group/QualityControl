@@ -8,7 +8,6 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "MCH/Mapping.h"
-#include "MCHMappingFactory/CreateSegmentation.h"
 #include "MCH/Decoding.h"
 #include "MCHBase/Digit.h"
 

@@ -5,8 +5,11 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "MCH/Mapping.h"
-//#include "MCHMappingInterface/Segmentation.h"
+#ifdef MCH_HAS_MAPPING_FACTORY
 #include "MCHMappingFactory/CreateSegmentation.h"
+#else
+#include "MCHMappingInterface/Segmentation.h"
+#endif
 
 using namespace std;
 

@@ -41,7 +41,7 @@ The main data flow is represented in blue. Data samples are selected by the Data
 
 [Data Processing Layer](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) is a software framework developed as a part of O2 project. It structurizes the computing into units called _Data Processors_ - processes that communicate with each other via messages. DPL takes care of generating and running the processing topology out of user declaration code, serializing and deserializing messages, providing the data processors with all the anticipated messages for a given timestamp and much more. Each piece of data is characterized by its `DataHeader`, which consists (among others) of `dataOrigin`, `dataDescription` and `SubSpecification` - for example `{"MFT", "TRACKS", 0}`.
 
-An example of a workflow definition which describes the processing steps (_Data Processors_), their inputs and their outputs can be seen in [runBasic.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/runBasic.cxx). In the QC we define the workflows in files whose names are prefixed with `run`.
+An example of a workflow definition which describes the processing steps (_Data Processors_), their inputs and their outputs can be seen in [runBasic.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/runBasic.cxx). In the QC we define the workflows in files whose names are prefixed with `run`.
 
 ### Data Sampling
 
@@ -83,7 +83,7 @@ Data Sampling is used by Quality Control to feed the tasks with data. Below we p
 }
 ```
 
-An example of using the data sampling in a DPL workflow is visible in [runAdvanced.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/runAdvanced.cxx).
+An example of using the data sampling in a DPL workflow is visible in [runAdvanced.cxx](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/src/runAdvanced.cxx).
 
 #### Custom Data Sampling Condition
 
@@ -129,9 +129,23 @@ The repository QualityControl contains the _Framework_  and the _Modules_ in the
 
 The Data Sampling code is part of the AliceO2 repository.
 
+### Developing with aliBuild/alienv
+
+One can of course build using `aliBuild` (`aliBuild build --defaults o2 QualityControl`). However, that will take quite some time as it checks all dependencies and builds everything. 
+
+After the initial use of `aliBuild`, which is necessary, the correct way of building is to load the environment with `alienv` and then go to the build directory and run `make` or `ninja`.
+
+```
+alienv load QualityControl/latest
+cd sw/BUILD/QualityControl-latest/QualityControl
+make -j8 install # or ninja -j8 install , also adapt to the number of cores available
+```
+
 ### User-defined modules
 
-The Quality Control uses _plugins_ to load the actual code to be executed by the _Tasks_ and the _Checkers_. A module, or plugin, can contain one or several _Tasks_ and/or one or several _Checks_. They must subclass `TaskInterface.h` and `CheckInterface.h` respectively. We use the Template Method Design Pattern.
+The Quality Control uses _plugins_ to load the actual code to be executed by the _Tasks_ and the _Checks_. A module, or plugin, can contain one or several of these classes, both Tasks and Checks. They must subclass `TaskInterface.h` and `CheckInterface.h` respectively. We use the Template Method Design Pattern.
+
+The same code, the same class, can be run many times in parallel. It means that you can run several qc tasks (no uppercase, i.e. processes) in parallel, each executing the same code defined in the same Task (uppercase, the class). Similarly, one Check can be executed against different Monitor Objects and Tasks.
 
 ## Module creation
 
@@ -159,26 +173,36 @@ Options:
  -p PP_NAME       create a postprocessing task named PP_NAME
 ```
 
-For example, if your detector 3-letter code is ABC you might want to do
+For example, if your detector 3-letter code is TST you might want to do
 ```
 # we are in ~/alice
 cd QualityControl/Modules
-./o2-qc-module-configurator.sh -m Abc -t RawDataQcTask # create the module and a task
+./o2-qc-module-configurator.sh -m TST -t RawDataQcTask # create the module and a task
 ```
+
+IMPORTANT: Make sure that your detector code is listed in TaskRunner::validateDetectorName. If it is not, feel free to add it. 
+
+We will refer in the following section to the module as `Tst` and the task as `RawDataQcTask`. Make sure to use your own code and names. 
 
 ## Test run
 
 Now that there is a module, we can build it and test it. First let's build it :
 ```
-# We are in ~/alice and alienv has been called.
+# We are in ~/alice, call alienv if not already done
+alienv enter QualityControl/latest
 # Go to the build directory of QualityControl.
-cd sw/slc7_x86-64/BUILD/QualityControl-latest/QualityControl
-make -j8 install # replace 8 by the number of cores on your machine
+cd sw/BUILD/QualityControl-latest/QualityControl
+make -j8 install # or ninja, replace 8 by the number of cores on your machine
 ```
 
-To test whether it works, we are going to run a basic DPL workflow defined in `runBasic.cxx`.
-We need to modify slightly the config file to indicate our freshly created module and classes.
-The config file is called `basic.json` and is located in `$QUALITYCONTROL_ROOT/etc/`. After installation, if you want to modify the original one, it is in the source directory `Framework`. In case you need it updated in the installation directory, you have to `make install` the project again.
+To test whether it works, we are going to run a basic workflow made of a producer and the qc, which corresponds to the one we saw in the [QuickStart](QuickStart.md#basic-workflow).
+
+We are going to duplicate the config file we used previously, i.e. `basic.json`: 
+```
+cp ~/alice/QualityControl/Framework/basic.json ~/alice/QualityControl/Modules/TST/basic-tst.json
+```
+
+We need to modify it slightly to indicate our freshly created module and classes.
 Change the lines as indicated below :
 
 ```
@@ -186,27 +210,29 @@ Change the lines as indicated below :
   "MyRawDataQcTask": {
     "active": "true",
     "className": "o2::quality_control_modules::abc::RawDataQcTask",
-    "moduleName": "QcAbc",
+    "moduleName": "QcTST",
+    "detectorName": "TST",
+```
+and 
+```
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "MyRawDataQcTask",
 ```
 
 Now we can run it
 
 ```
-o2-qc-run-producer | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/basic.json
+o2-qc-run-producer | o2-qc --config json://$HOME/alice/QualityControl/Modules/TST/basic-tst.json
 ```
 
-You should see the QcTask at qcg-test.cern.ch with an object `Example` updating.
+You should see an object `example` in `/qc/TST/MyRawDataQcTask` at qcg-test.cern.ch.
 
-## Modification of a Task
+## Modification of the Task
 
-Fill in the methods in RawDataQcTask.cxx. For example, make it publish a second histogram. Objects must be published only once and they will then be updated automatically every cycle (10 seconds for our example, 1 minute in general). 
-Once done, recompile it (see section above) and run it. You should see the second object published in the qcg.
-
-TODO give actual steps
-
-You can rename the task by simply changing its name in the config file. Change the name from 
-`QcTask` to whatever you like and run it again (no need to recompile). You should see the new name
-appear in the QCG.
+We are going to modify our task to make it publish a second histogram. Objects must be published only once and they will then be updated automatically every cycle (10 seconds for our example, 1 minute in general). Modify `RawDataQcTask.cxx` and its header to add a new histogram, build it and publish it with `getObjectsManager()->startPublishing(mHistogram);`.
+Once done, recompile it (see section above, `make -j8 install` in the build directory) and run it (same as above). You should see the second object published in the qcg.
 
 ## Check
 
