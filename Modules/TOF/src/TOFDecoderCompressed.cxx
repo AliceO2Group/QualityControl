@@ -67,7 +67,8 @@ void TOFDecoderCompressed::frameHandler(const CrateHeader_t* crateHeader, const 
 }
 
 void TOFDecoderCompressed::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
-                                          const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics)
+                                          const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
+                                          const Error_t* /*errors*/)
 {
   for (int i = 0; i < crateTrailer->numberOfDiagnostics; ++i) {
     auto diagnostic = diagnostics + i;

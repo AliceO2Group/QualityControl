@@ -91,7 +91,8 @@ void Diagnostics::headerHandler(const CrateHeader_t* crateHeader, const CrateOrb
 }
 
 void Diagnostics::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
-                                 const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics)
+                                 const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
+                                 const Error_t* /*errors*/)
 {
   LOG(INFO) << "DECODING!!!" << ENDM;
   Int_t drmID = crateHeader->drmID;
