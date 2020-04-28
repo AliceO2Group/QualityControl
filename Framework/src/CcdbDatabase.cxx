@@ -328,8 +328,7 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
   ss << listing;
   boost::property_tree::read_json(ss, pt);
 
-  BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pt.get_child("objects"))
-  {
+  BOOST_FOREACH (boost::property_tree::ptree::value_type& v, pt.get_child("objects")) {
     assert(v.first.empty()); // array elements have no names
     string data = v.second.get_child("path").data();
     string path = data.substr(taskName.size());
