@@ -33,6 +33,9 @@
 #include <unordered_set>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/foreach.hpp>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -318,22 +321,19 @@ std::vector<std::string> CcdbDatabase::getListing(std::string subpath)
 std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskName)
 {
   std::vector<string> result;
-
   string listing = ccdbApi.list(taskName + "/.*", true, "Application/JSON");
 
-  // Split the string we received, by line. Also trim it and remove empty lines. Select the lines starting with "path".
-  std::stringstream ss(listing);
-  std::string line;
-  std::string taskNameEscaped = boost::replace_all_copy(taskName, "/", "\\/");
-  while (std::getline(ss, line, '\n')) {
-    ltrim(line);
-    rtrim(line);
-    if (line.length() > 0 && line.find("{\"path\"") == 0) {
-      unsigned long objNameStart = 10 + taskNameEscaped.length();
-      unsigned long objNameEnd = line.find("\"", objNameStart);
-      string path = line.substr(objNameStart, objNameEnd - objNameStart); //line.length() - 2 /*final 2 char*/ - objNameStart);
-      result.push_back(path);
-    }
+  boost::property_tree::ptree pt;
+  stringstream ss;
+  ss << listing;
+  boost::property_tree::read_json(ss, pt);
+
+  BOOST_FOREACH(boost::property_tree::ptree::value_type &v, pt.get_child("objects"))
+  {
+    assert(v.first.empty()); // array elements have no names
+    string data = v.second.get_child("path").data();
+    string path = data.substr(taskName.size());
+    result.push_back(path);
   }
 
   return result;
