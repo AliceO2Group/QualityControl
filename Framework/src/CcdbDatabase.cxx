@@ -184,9 +184,9 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   map<string, string> metadata;
   TObject* obj = retrieveTObject(path, metadata, when, &headers);
   Version objectVersion(headers["qc_version"]); // retrieve headers to determine the version of the QC framework
-  ILOG(Debug) << "Version of object is " << objectVersion << ENDM;
-  ILOG(Debug) << "objectVersion == Version(\"0.0.0\") : " << (objectVersion == Version("0.0.0")) << ENDM;
-  ILOG(Debug) << "objectVersion < Version(\"0.25\") : " << (objectVersion < Version("0.25")) << ENDM
+//  ILOG(Debug) << "Version of object is " << objectVersion << ENDM;
+//  ILOG(Debug) << "objectVersion == Version(\"0.0.0\") : " << (objectVersion == Version("0.0.0")) << ENDM;
+//  ILOG(Debug) << "objectVersion < Version(\"0.25\") : " << (objectVersion < Version("0.25")) << ENDM
 
   std::shared_ptr<MonitorObject> mo;
   if (objectVersion == Version("0.0.0") || objectVersion < Version("0.25")) {
