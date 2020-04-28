@@ -184,6 +184,9 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   map<string, string> metadata;
   TObject* obj = retrieveTObject(path, metadata, when, &headers);
   Version objectVersion(headers["qc_version"]); // retrieve headers to determine the version of the QC framework
+  ILOG(Debug) << "Version of object is " << objectVersion << ENDM;
+  ILOG(Debug) << "objectVersion == Version(\"0.0.0\") : " << (objectVersion == Version("0.0.0")) << ENDM;
+  ILOG(Debug) << "objectVersion < Version(\"0.25\") : " << (objectVersion < Version("0.25")) << ENDM
 
   std::shared_ptr<MonitorObject> mo;
   if (objectVersion == Version("0.0.0") || objectVersion < Version("0.25")) {
@@ -325,9 +328,10 @@ std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskN
   while (std::getline(ss, line, '\n')) {
     ltrim(line);
     rtrim(line);
-    if (line.length() > 0 && line.find("\"path\"") == 0) {
-      unsigned long objNameStart = 9 + taskNameEscaped.length();
-      string path = line.substr(objNameStart, line.length() - 2 /*final 2 char*/ - objNameStart);
+    if (line.length() > 0 && line.find("{\"path\"") == 0) {
+      unsigned long objNameStart = 10 + taskNameEscaped.length();
+      unsigned long objNameEnd = line.find("\"", objNameStart);
+      string path = line.substr(objNameStart, objNameEnd-objNameStart);//line.length() - 2 /*final 2 char*/ - objNameStart);
       result.push_back(path);
     }
   }

@@ -14,12 +14,12 @@
 ///
 
 #include "QualityControl/DatabaseFactory.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #ifdef _WITH_MYSQL
-
 #include "QualityControl/MySqlDatabase.h"
-
 #endif
+
 #define BOOST_TEST_MODULE DbFactory test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
