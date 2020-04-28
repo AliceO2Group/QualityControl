@@ -45,8 +45,6 @@ Quality PIDClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
         result = Quality::Bad;
       }
     }
-    // Call beautify function because the framework does not trigger it.
-    beautify(mo, result);
   }
 
   return result;
@@ -56,7 +54,6 @@ std::string PIDClusterCheck::getAcceptedType() { return "TH1"; }
 
 void PIDClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  std::cout << "BEAUTIFY FUNCTION OUTPUT! The Quality passed: " << checkResult << std::endl;
   auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
   TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
