@@ -25,7 +25,7 @@ class ObjectVersion:
         '''
         self.path = path
         self.uuid = uuid
-        self.validFromAsDatetime = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
+        self.validFromAsDatetime = datetime.datetime.fromtimestamp(validFrom / 1000)  # /1000 because we get ms 
         self.validFrom = validFrom
         self.validTo = validTo
         self.metadata = metadata
@@ -97,7 +97,7 @@ class Ccdb:
         Delete the specified version of an object. 
         :param version: The version of the object to delete, as an instance of ObjectVersion.
         '''
-        url_delete = self.url + '/' + version.path + '/' + version.validFrom + '/' + version.uuid
+        url_delete = self.url + '/' + version.path + '/' + str(version.validFrom) + '/' + version.uuid
         logging.debug(f"Delete version at url {url_delete}")
         try:
             r = requests.delete(url_delete)
@@ -108,7 +108,7 @@ class Ccdb:
             sys.exit(1)  # really ? 
         
     @dryable.Dryable()
-    def updateValidity(self, version: ObjectVersion, validFrom: str, validTo: str):    
+    def updateValidity(self, version: ObjectVersion, validFrom: int, validTo: int):
         '''
         Update the validity range of the specified version of an object.
         :param version: The ObjectVersion to update.
@@ -118,7 +118,7 @@ class Ccdb:
         if version.validTo == validTo:
             logging.debug("The new timestamp for validTo is identical to the existing one. Skipping.")
             return
-        url_update_validity = self.url + '/' + version.path + '/' + validFrom + '/' + validTo
+        url_update_validity = self.url + '/' + version.path + '/' + str(validFrom) + '/' + str(validTo)
         logging.debug(f"Update end limit validity of {version.path} from {version.validTo} to {validTo}")
         try:
             r = requests.put(url_update_validity)
