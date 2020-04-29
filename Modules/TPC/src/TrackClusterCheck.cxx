@@ -47,8 +47,6 @@ Quality TrackClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
         result = Quality::Medium;
       }
     }
-    // Call beautify function because the framework does not trigger it.
-    beautify(mo, result);
   }
 
   return result;
@@ -58,7 +56,6 @@ std::string TrackClusterCheck::getAcceptedType() { return "TH1"; }
 
 void TrackClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  std::cout << "BEAUTIFY FUNCTION OUTPUT! The Quality passed: " << checkResult << std::endl;
   auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
   TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
