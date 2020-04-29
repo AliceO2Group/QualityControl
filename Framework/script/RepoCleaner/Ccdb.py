@@ -25,7 +25,7 @@ class ObjectVersion:
         '''
         self.path = path
         self.uuid = uuid
-        self.validFromAsDatetime = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
+        self.validFromAsDatetime = datetime.datetime.fromtimestamp(validFrom / 1000)  # /1000 because we get ms
         self.validFrom = validFrom
         self.validTo = validTo
         self.metadata = metadata
@@ -108,7 +108,7 @@ class Ccdb:
             sys.exit(1)  # really ? 
         
     @dryable.Dryable()
-    def updateValidity(self, version: ObjectVersion, validFrom: str, validTo: str):
+    def updateValidity(self, version: ObjectVersion, validFrom: int, validTo: int):
         '''
         Update the validity range of the specified version of an object.
         :param version: The ObjectVersion to update.
