@@ -34,9 +34,6 @@ if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
       ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
-
 # ---- End Project ----
 # The line above is necessary for the generation of doxygen by travis
 
@@ -72,6 +69,7 @@ unset(isSystemDir)
 # C++ standard
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 endif()
 
 # Add compiler flags for warnings and (more importantly) fPIC and debug symbols
