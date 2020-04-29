@@ -14,12 +14,12 @@
 ///
 
 #include "QualityControl/DatabaseFactory.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #ifdef _WITH_MYSQL
-
 #include "QualityControl/MySqlDatabase.h"
-
 #endif
+
 #define BOOST_TEST_MODULE DbFactory test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   //  }
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object1") != objectNames.end());
   BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/object2") != objectNames.end());
-  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/path\\/to\\/object3") != objectNames.end());
+  BOOST_CHECK(std::find(objectNames.begin(), objectNames.end(), "/path/to/object3") != objectNames.end());
 
   // store list of streamer infos
   //    ccdb->storeStreamerInfosToFile("streamerinfos.root");
