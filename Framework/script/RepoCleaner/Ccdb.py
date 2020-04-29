@@ -25,7 +25,7 @@ class ObjectVersion:
         '''
         self.path = path
         self.uuid = uuid
-        self.validFromAsDatetime = datetime.datetime.fromtimestamp(validFrom / 1000)  # /1000 because we get ms
+        self.validFromAsDatetime = datetime.datetime.fromtimestamp(validFrom / 1000)  # /1000 because we get ms 
         self.validFrom = validFrom
         self.validTo = validTo
         self.metadata = metadata
