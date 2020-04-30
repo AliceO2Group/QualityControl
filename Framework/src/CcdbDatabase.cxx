@@ -188,8 +188,8 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   TObject* obj = retrieveTObject(path, metadata, when, &headers);
 
   // no object found
-  if(obj == nullptr) {
-    if(headers.count("Error") > 0) {
+  if (obj == nullptr) {
+    if (headers.count("Error") > 0) {
       ILOGE << headers["Error"] << ENDM;
     }
     return nullptr;
