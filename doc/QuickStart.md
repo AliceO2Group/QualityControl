@@ -158,7 +158,7 @@ The data sampling is configured to sample 1% of the data as the readout should r
 
 The first option is to configure readout.exe to connect to a cru. Please refer to the [Readout documentation](https://github.com/AliceO2Group/Readout/blob/master/doc/README.md). 
 
-A more practical approach is to record a data file with Readout and then replay it on your development setup to develop and test your QC. The configuration options are described [here](https://github.com/AliceO2Group/Readout/blob/master/doc/configurationParameters.md), in particular: 
+A more practical approach is to record a data file with Readout and then replay it on your development setup to develop and test your QC. The configuration options for readout (readout.cfg not readout.json) are described [here](https://github.com/AliceO2Group/Readout/blob/master/doc/configurationParameters.md), in particular: 
 
 ```
 equipment-player-* 	filePath 	string 	
@@ -167,7 +167,13 @@ equipment-player-* 	preLoad 	int 	1 	If 1, data pages preloaded with file conten
 equipment-player-* 	fillPage 	int 	1 	If 1, content of data file is copied multiple time in each data page until page is full (or almost full: on the last iteration, there is no partial copy if remaining space is smaller than full file size). If 0, data file is copied exactly once in each data page.
 ```
 
-Another option is to use the program `o2-raw-file-reader-workflow` in O2 and described [here](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#raw-data-file-reader-workflow). One can for example produce raw data with some Simulation workflow, or record it with `readout.exe`.
+
+#### Getting real data from the O2 RawDataFileReader
+
+Another option to read a raw data file, produced by Simulation or recorded with `readout.exe` per instance, is to use the program `o2-raw-file-reader-workflow` in O2 as described [here](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#raw-data-file-reader-workflow) (the config file is described [earlier in the page](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader)). 
+```
+	o2-raw-file-reader-workflow --conf myConf.cfg | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
+```
 
 #### Readout data format as received by the Task
 
