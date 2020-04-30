@@ -343,7 +343,7 @@ void TaskRunner::endOfActivity()
   mObjectsManager->removeAllFromServiceDiscovery();
 
   double rate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
-  mCollector->send(Metric{ "qc_objects_published" }.addField(rate, "per_second_whole_run"));
+  mCollector->send(Metric{ "qc_objects_published" }.addValue(rate, "per_second_whole_run"));
 }
 
 void TaskRunner::startCycle()
@@ -386,15 +386,15 @@ void TaskRunner::publishCycleStats()
 
   // monitoring metrics
   mCollector->send(Metric{ "qc_duration" }
-                     .addField(cycleDuration, "module_cycle")
-                     .addField(mLastPublicationDuration, "publication")
-                     .addField(totalDurationActivity, "activity_whole_run"));
+                     .addValue(cycleDuration, "module_cycle")
+                     .addValue(mLastPublicationDuration, "publication")
+                     .addValue(totalDurationActivity, "activity_whole_run"));
 
   mCollector->send(Metric{ "qc_objects_published" }
-                     .addField(mNumberObjectsPublishedInCycle, "in_cycle")
-                     .addField(rate, "per_second")
-                     .addField(mTotalNumberObjectsPublished, "whole_run")
-                     .addField(wholeRunRate, "per_second_whole_run"));
+                     .addValue(mNumberObjectsPublishedInCycle, "in_cycle")
+                     .addValue(rate, "per_second")
+                     .addValue(mTotalNumberObjectsPublished, "whole_run")
+                     .addValue(wholeRunRate, "per_second_whole_run"));
 }
 
 int TaskRunner::publish(DataAllocator& outputs)
