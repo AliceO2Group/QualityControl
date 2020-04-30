@@ -39,7 +39,7 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
 
-const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
+const std::string CCDB_ENDPOINT = "localhost:8080";
 
 /**
  * Fixture for the tests, i.e. code is ran in every test that uses it, i.e. it is like a setup and teardown for tests.
@@ -145,6 +145,14 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "quarantine");
   BOOST_CHECK_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getName(), "quarantine");
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_inexisting_mo)
+{
+  test_fixture f;
+
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("non/existing", "object");
+  BOOST_CHECK(mo == nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_024)
