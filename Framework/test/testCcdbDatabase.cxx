@@ -39,7 +39,7 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
 
-const std::string CCDB_ENDPOINT = "localhost:8080";
+const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
 
 /**
  * Fixture for the tests, i.e. code is ran in every test that uses it, i.e. it is like a setup and teardown for tests.
