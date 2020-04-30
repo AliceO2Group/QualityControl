@@ -12,7 +12,7 @@ include(GNUInstallDirs)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 0.25.0 #  TODO update this automatically when there are new releases
+        VERSION 0.25.3 #  TODO update this automatically when there are new releases
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES CXX)
 
@@ -69,6 +69,7 @@ unset(isSystemDir)
 # C++ standard
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 endif()
 
 # Add compiler flags for warnings and (more importantly) fPIC and debug symbols
