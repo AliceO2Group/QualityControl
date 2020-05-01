@@ -65,6 +65,7 @@
         "className": "o2::quality_control_modules::tpc::PIDClusterCheck",
         "moduleName": "QcTPC",
         "policy": "OnAny",
+        "detectorName": "TPC",
         "dataSource": [{
           "type": "Task",
           "name": "PID",
@@ -75,6 +76,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::tpc::TrackClusterCheck",
         "moduleName": "QcTPC",
+        "detectorName": "TPC",
         "policy": "OnAny",
         "dataSource": [{
           "type": "Task",
