@@ -57,7 +57,7 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
-    ConfigParamSpec{ "config-path", VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
+    ConfigParamSpec{ "config-path", VariantType::String, "", { "Absolute path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
   workflowOptions.push_back(
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
@@ -133,6 +133,6 @@ std::string getConfigPath(const ConfigContext& config)
   // The the optional one by the user
   auto userConfigPath = config.options().get<std::string>("config-path");
   // Finally build the config path based on the default or the user-base one
-  std::string path = std::string("json:/") + (userConfigPath.empty() ? defaultConfigPath : userConfigPath);
+  std::string path = std::string("json://") + (userConfigPath.empty() ? defaultConfigPath : userConfigPath);
   return path;
 }
