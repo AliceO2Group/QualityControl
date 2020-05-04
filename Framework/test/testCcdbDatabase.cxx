@@ -65,19 +65,6 @@ BOOST_AUTO_TEST_CASE(ccdb_create)
   f.backend->truncate("my/task", "*");
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
-{
-  test_fixture f;
-
-  CcdbDatabase* ccdb = static_cast<CcdbDatabase*>(f.backend.get());
-  ILOG(Info) << "getListing()" << ENDM;
-  auto tasks = ccdb->getListing("/qc");
-  BOOST_CHECK_GT(tasks.size(), 0); // we know that there are a few
-  // print but only for TST
-  auto objects = f.backend->getPublishedObjectNames("/qc/TST");
-  BOOST_CHECK_GT(objects.size(), 0);
-}
-
 long oldTimestamp;
 
 BOOST_AUTO_TEST_CASE(ccdb_store)
