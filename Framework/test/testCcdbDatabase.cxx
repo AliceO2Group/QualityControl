@@ -147,6 +147,14 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(mo->getName(), "quarantine");
 }
 
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_inexisting_mo)
+{
+  test_fixture f;
+
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("non/existing", "object");
+  BOOST_CHECK(mo == nullptr);
+}
+
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_024)
 {
   // test whether we can read data from version 0.24
