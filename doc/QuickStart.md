@@ -172,7 +172,7 @@ equipment-player-* 	fillPage 	int 	1 	If 1, content of data file is copied multi
 
 Another option to read a raw data file, produced by Simulation or recorded with `readout.exe` per instance, is to use the program `o2-raw-file-reader-workflow` in O2 as described [here](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#raw-data-file-reader-workflow) (the config file is described [earlier in the page](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader)). 
 ```
-	o2-raw-file-reader-workflow --conf myConf.cfg | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
+o2-raw-file-reader-workflow --conf myConf.cfg | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
 ```
 
 #### Readout data format as received by the Task
