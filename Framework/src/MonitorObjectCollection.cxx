@@ -47,6 +47,7 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
       this->Add(otherObject->Clone());
     }
   }
+  delete otherIterator;
 }
 
 } // namespace o2::quality_control::core
