@@ -46,11 +46,13 @@ During the data-taking Quality Control runs on a distributed computing system. S
 executed on dedicated QC servers, while others run on FLPs and EPNs. In the first case, messages
 coming from Data Sampling should reach QC servers where they are processed. In the latter case,
 locally produced Monitor Objects should be merged on QC servers and then have Checks run on them.
+By **remote QC tasks** we mean those which run on QC servers (**remote machines**), while **local QC Tasks**
+run on FLPs and EPNs (**local machines**).
 
 While it is responsibility of the run operators to run all the processing topologies during the
 data taking, here we show how to achieve such multinode workflows on development setups, running
 them just with DPL driver. Note that for now we support cases with one or more local machines,
-but just only one QC server.
+but just only one remote machine.
 
 In our example, we assume having two local processing nodes (`localnode1`, `localnode2`) and one
 QC node (`qcnode`). There are two types of QC Tasks declared:

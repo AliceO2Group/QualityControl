@@ -62,7 +62,6 @@ class InfrastructureGenerator
   ///
   /// \param workflow - existing workflow where QC infrastructure should be placed
   /// \param configurationSource - full path to configuration file, preceded with the backend (f.e. "json://")
-  /// \return generated standalone QC workflow
   static void generateStandaloneInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource);
 
   /// \brief Generates the local part of the QC infrastructure for a specified host.
@@ -121,6 +120,8 @@ class InfrastructureGenerator
   static void printVersion();
 
  private:
+  // Dedicated methods for creating each QC component to hide implementation details.
+
   static void generateDataSamplingPolicyLocalProxy(framework::WorkflowSpec& workflow,
                                                    const std::string& policyName,
                                                    const framework::Inputs& inputSpecs,
