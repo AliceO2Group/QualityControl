@@ -62,7 +62,11 @@ class Ccdb:
         headers = {'Accept':'application/json'}
         r = requests.get(url_for_all_obj, headers=headers)
         r.raise_for_status()
-        json = r.json()
+        try:
+            json = r.json()
+        except JSONDecodeError as err:
+            logging.error(f"JSON decode error: {err}")
+            raise
         paths = []
         for item in json['objects']:
             paths.append(item['path'])
