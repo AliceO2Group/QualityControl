@@ -83,7 +83,7 @@ void Diagnostics::headerHandler(const CrateHeader_t* crateHeader, const CrateOrb
   // mDRMCounter[crateHeader->drmID].Count(counters::kDRM_HAS_DATA);
   mDRMCounter[crateHeader->drmID].Count(0);
   for (Int_t i = 1; i < 11; i++) {
-    if (crateHeader->slotEnableMask & 1 << i) { // Magari includere l'LTM come i==0
+    if (crateHeader->slotPartMask & 1 << i) { // Magari includere l'LTM come i==0
       // mTRMCounter[crateHeader->drmID][i - 1].Count(counters::kTRM_HAS_DATA);
       mTRMCounter[crateHeader->drmID][i - 1].Count(0);
     }
@@ -91,7 +91,8 @@ void Diagnostics::headerHandler(const CrateHeader_t* crateHeader, const CrateOrb
 }
 
 void Diagnostics::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
-                                 const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics)
+                                 const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
+                                 const Error_t* /*errors*/)
 {
   LOG(INFO) << "DECODING!!!" << ENDM;
   Int_t drmID = crateHeader->drmID;

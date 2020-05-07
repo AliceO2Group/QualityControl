@@ -53,7 +53,8 @@ class TOFDecoderCompressed final : public DecoderBase
   void frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
                     const FrameHeader_t* frameHeader, const PackedHit_t* packedHits) override;
   void trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
-                      const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics) override;
+                      const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
+                      const Error_t* errors) override;
 };
 
 } // namespace o2::quality_control_modules::tof

@@ -56,7 +56,7 @@ class TOFTaskCompressed final : public TaskInterface
   std::shared_ptr<TH1F> mTimeBC;         /// Time in Bunch Crossing
   std::shared_ptr<TH1F> mTOT;            /// Time-Over-Threshold
   std::shared_ptr<TH1F> mIndexE;         /// Index in electronic
-  std::shared_ptr<TH2F> mSlotEnableMask; /// Enabled slot
+  std::shared_ptr<TH2F> mSlotPartMask;   /// Participating slot
   std::shared_ptr<TH2F> mDiagnostic;     /// Diagnostic histogram
 };
 

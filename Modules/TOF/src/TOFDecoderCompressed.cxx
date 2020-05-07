@@ -38,8 +38,8 @@ void TOFDecoderCompressed::decode()
 void TOFDecoderCompressed::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/)
 {
   for (int ibit = 0; ibit < 11; ++ibit) {
-    if (crateHeader->slotEnableMask & (1 << ibit)) {
-      mHistos.at("hSlotEnableMask")->Fill(crateHeader->drmID, ibit + 2);
+    if (crateHeader->slotPartMask & (1 << ibit)) {
+      mHistos.at("hSlotPartMask")->Fill(crateHeader->drmID, ibit + 2);
     }
   }
 }
@@ -67,7 +67,8 @@ void TOFDecoderCompressed::frameHandler(const CrateHeader_t* crateHeader, const 
 }
 
 void TOFDecoderCompressed::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
-                                          const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics)
+                                          const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
+                                          const Error_t* /*errors*/)
 {
   for (int i = 0; i < crateTrailer->numberOfDiagnostics; ++i) {
     auto diagnostic = diagnostics + i;

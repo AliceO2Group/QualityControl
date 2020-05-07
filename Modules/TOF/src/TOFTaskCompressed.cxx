@@ -39,7 +39,7 @@ TOFTaskCompressed::TOFTaskCompressed() : TaskInterface(),
                                          mTimeBC(nullptr),
                                          mTOT(nullptr),
                                          mIndexE(nullptr),
-                                         mSlotEnableMask(nullptr),
+                                         mSlotPartMask(nullptr),
                                          mDiagnostic(nullptr)
 {
 }
@@ -51,7 +51,7 @@ TOFTaskCompressed::~TOFTaskCompressed()
   mTimeBC.reset();
   mTOT.reset();
   mIndexE.reset();
-  mSlotEnableMask.reset();
+  mSlotPartMask.reset();
   mDiagnostic.reset();
 }
 
@@ -79,9 +79,9 @@ void TOFTaskCompressed::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mIndexE.get());
   mDecoder.mHistos[mIndexE->GetName()] = mIndexE;
   //
-  mSlotEnableMask.reset(new TH2F("hSlotEnableMask", "hSlotEnableMask;crate;slot", 72, 0., 72., 12, 1., 13.));
-  getObjectsManager()->startPublishing(mSlotEnableMask.get());
-  mDecoder.mHistos[mSlotEnableMask->GetName()] = mSlotEnableMask;
+  mSlotPartMask.reset(new TH2F("hSlotPartMask", "hSlotPartMask;crate;slot", 72, 0., 72., 12, 1., 13.));
+  getObjectsManager()->startPublishing(mSlotPartMask.get());
+  mDecoder.mHistos[mSlotPartMask->GetName()] = mSlotPartMask;
   //
   mDiagnostic.reset(new TH2F("hDiagnostic", "hDiagnostic;crate;slot", 72, 0., 72., 12, 1., 13.));
   getObjectsManager()->startPublishing(mDiagnostic.get());
@@ -97,7 +97,7 @@ void TOFTaskCompressed::startOfActivity(Activity& /*activity*/)
   mTimeBC->Reset();
   mTOT->Reset();
   mIndexE->Reset();
-  mSlotEnableMask->Reset();
+  mSlotPartMask->Reset();
   mDiagnostic->Reset();
 }
 
@@ -141,7 +141,7 @@ void TOFTaskCompressed::reset()
   mTime->Reset();
   mTOT->Reset();
   mIndexE->Reset();
-  mSlotEnableMask->Reset();
+  mSlotPartMask->Reset();
   mDiagnostic->Reset();
 }
 
