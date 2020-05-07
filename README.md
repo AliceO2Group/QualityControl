@@ -47,6 +47,7 @@ For a general overview of our (O2) software, organization and processes, please 
             * [TrendingTask configuration](doc/PostProcessing.md#trendingtask-configuration)
    * [Advanced topics](doc/Advanced.md)
       * [Plugging the QC to an existing DPL workflow](doc/Advanced.md#plugging-the-qc-to-an-existing-dpl-workflow)
+      * [Multi-node setups](doc/Advanced.md#multi-node-setupts)
       * [Writing a DPL data producer](doc/Advanced.md#writing-a-dpl-data-producer)
       * [Access conditions from the CCDB](doc/Advanced.md#access-conditions-from-the-ccdb)
       * [Definition and access of task-specific configuration](doc/Advanced.md#definition-and-access-of-task-specific-configuration)

@@ -23,34 +23,45 @@
       }
     },
     "tasks": {
-      "dataSizeTask": {
+      "MultiNodeLocal": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "tst2"
+          "name": "rnd-many"
         },
-        "location": "remote"
+        "taskParameters": {},
+        "location": "local",
+        "localMachines": [
+          "localnode1",
+          "localnode2"
+        ],
+        "remoteMachine": "qcnode1",
+        "remotePort": "30132"
       },
-      "someNumbersTask": {
+      "MultiNodeRemote": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "tst1"
+          "name": "rnd-little"
         },
+        "taskParameters": {},
         "location": "remote"
       }
     },
     "checks": {
-      "dataSizeCheck": {
+      "MultiNodeLocalCheck": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
@@ -58,11 +69,11 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "dataSizeTask",
+          "name": "MultiNodeLocal",
           "MOs": ["example"]
         }]
       },
-      "someNumbersCheck": {
+      "MultiNodeRemoteCheck": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
@@ -70,7 +81,7 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "someNumbersTask",
+          "name": "MultiNodeRemote",
           "MOs": ["example"]
         }]
       }
@@ -78,29 +89,35 @@
   },
   "dataSamplingPolicies": [
     {
-      "id": "tst1",
+      "id": "rnd-many",
       "active": "true",
-      "machines": [],
-      "query" : "sum:TST/SUM/2;param:TST/PARAM/2",
+      "machines": [
+        "localnode1",
+        "localnode2"
+      ],
+      "query": "random:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "0.1",
-          "seed": "32112332123"
+          "fraction": "0.5",
+          "seed": "1234"
         }
       ],
       "blocking": "false"
     },
     {
-      "id": "tst2",
+      "id": "rnd-little",
       "active": "true",
-      "machines": [],
-      "query" : "data:TST/DATA",
+      "machines": [
+        "localnode2"
+      ],
+      "port": "30333",
+      "query": "random:TST/RAWDATA",
       "samplingConditions": [
         {
-          "condition": "payloadSize",
-          "lowerLimit": "8000",
-          "upperLimit": "10000"
+          "condition": "random",
+          "fraction": "0.05",
+          "seed": "1234"
         }
       ],
       "blocking": "false"

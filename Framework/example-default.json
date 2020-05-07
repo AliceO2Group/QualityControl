@@ -54,10 +54,12 @@
           "name": "ex1"
         },
         "location": "local",
-        "machines": [
+        "localMachines": [
           "o2flp1",
           "o2flp2"
-        ]
+        ],
+        "remoteMachine": "o2qc1",
+        "remotePort": "30432"
       }
     },
     "checks": {

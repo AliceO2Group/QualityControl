@@ -26,7 +26,7 @@
         },
         "taskParameters": {},
         "location": "remote",
-        "machines": [] 
+        "localMachines": []
       },
       "QYZTask": {
         "active": "true",
@@ -40,7 +40,7 @@
         },
         "taskParameters": {},
         "location": "remote",
-        "machines": [] 
+        "localMachines": []
       },
       "XYZTask": {
         "active": "true",
@@ -54,7 +54,7 @@
         },
         "taskParameters": {},
         "location": "remote",
-        "machines": [] 
+        "localMachines": []
       }
     },
     "checks": {

@@ -63,7 +63,8 @@ add_library(QualityControl
             src/TrendingTaskConfig.cxx
             src/DummyDatabase.cxx
             src/DataProducer.cxx
-            src/DataProducerExample.cxx)
+            src/DataProducerExample.cxx
+            src/MonitorObjectCollection.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -93,6 +94,7 @@ target_link_libraries(QualityControl
                              O2::MCHBase
                              ms_gsl::ms_gsl
                              QualityControlTypes
+                             O2::Mergers
                       PRIVATE Boost::system
                               $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
                               $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL> ROOT::Gui
@@ -117,6 +119,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/PostProcessingInterface.h
                             include/QualityControl/TrendingTask.h
                             include/QualityControl/Reductor.h
+                            include/QualityControl/MonitorObjectCollection.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 
@@ -372,6 +375,7 @@ install(FILES example-default.json
               basic.json
               basic-no-sampling.json
               advanced.json
+              multiNode.json
               readout.json
               readout-no-sampling.json
               readoutForDataDump.json

@@ -17,6 +17,7 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ServiceDiscovery.h"
+#include "QualityControl/MonitorObjectCollection.h"
 #include <Common/Exceptions.h>
 #include <TObjArray.h>
 
@@ -29,7 +30,7 @@ namespace o2::quality_control::core
 
 ObjectsManager::ObjectsManager(TaskConfig& taskConfig, bool noDiscovery) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
 {
-  mMonitorObjects = std::make_unique<TObjArray>();
+  mMonitorObjects = std::make_unique<MonitorObjectCollection>();
   mMonitorObjects->SetOwner(true);
 
   // register with the discovery service
@@ -112,9 +113,9 @@ TObject* ObjectsManager::getObject(std::string objectName)
   return mo->getObject();
 }
 
-TObjArray* ObjectsManager::getNonOwningArray() const
+MonitorObjectCollection* ObjectsManager::getNonOwningArray() const
 {
-  return new TObjArray(*mMonitorObjects);
+  return new MonitorObjectCollection(*mMonitorObjects);
 }
 
 void ObjectsManager::addMetadata(const std::string& objectName, const std::string& key, const std::string& value)

@@ -18,7 +18,7 @@
 
 // QC
 #include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
+#include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/TaskConfig.h"
 // stl
 #include <string>
@@ -75,7 +75,7 @@ class ObjectsManager
 
   TObject* getObject(std::string objectName);
 
-  TObjArray* getNonOwningArray() const;
+  MonitorObjectCollection* getNonOwningArray() const;
 
   /**
    * \brief Add metadata to a MonitorObject.
@@ -106,7 +106,7 @@ class ObjectsManager
   void removeAllFromServiceDiscovery();
 
  private:
-  std::unique_ptr<TObjArray> mMonitorObjects;
+  std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
   TaskConfig& mTaskConfig;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;
