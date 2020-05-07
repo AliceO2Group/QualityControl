@@ -123,7 +123,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   return specs;
 }
 
-// TODO merge this with the one from runReadout.cxx
+// TODO merge this with the one from runReadout.cxx 
 std::string getConfigPath(const ConfigContext& config)
 {
   // Determine the default config file path and name (based on option no-data-sampling and the QC_ROOT path)
