@@ -159,8 +159,11 @@
     {
       "id": "tpcclust",
       "active": "true",
-      "machines": [],
+      "machines": [
+        "o2flp1"
+      ],
       "query": "clusters:TPC/CLUSTERS/0",
+      "port": "30303",
       "samplingConditions": [
         {
           "condition": "random",

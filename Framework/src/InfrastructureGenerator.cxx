@@ -71,6 +71,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
 {
   WorkflowSpec workflow;
   TaskRunnerFactory taskRunnerFactory;
+  std::unordered_set<std::string> samplingPoliciesUsed;
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
   printVersion();
 
@@ -98,20 +99,11 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
         }
       } else // if (taskConfig.get<std::string>("location") == "remote")
       {
-        // Creating Data Sampling proxies
+        // Collecting Data Sampling Policies
         auto dataSourceTree = taskConfig.get_child("dataSource");
         std::string type = dataSourceTree.get<std::string>("type");
         if (type == "dataSamplingPolicy") {
-          auto policyName = dataSourceTree.get<std::string>("name");
-          std::string port = std::to_string(DataSampling::PortForPolicy(config.get(), policyName));
-          Inputs inputSpecs = DataSampling::InputSpecsForPolicy(config.get(), policyName);
-
-          std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
-          for (const auto& machine : machines) {
-            if (machine == host) {
-              generateDataSamplingPolicyLocalProxy(workflow, policyName, inputSpecs, port);
-            }
-          }
+          samplingPoliciesUsed.insert(dataSourceTree.get<std::string>("name"));
         } else if (type == "direct") {
           throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
         } else {
@@ -120,6 +112,20 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
       }
     }
   }
+
+  // Creating Data Sampling Policies proxies
+  for (const auto& policyName : samplingPoliciesUsed) {
+    std::string port = std::to_string(DataSampling::PortForPolicy(config.get(), policyName));
+    Inputs inputSpecs = DataSampling::InputSpecsForPolicy(config.get(), policyName);
+
+    std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
+    for (const auto& machine : machines) {
+      if (machine == host) {
+        generateDataSamplingPolicyLocalProxy(workflow, policyName, inputSpecs, port);
+      }
+    }
+  }
+
   return workflow;
 }
 
@@ -132,6 +138,7 @@ void InfrastructureGenerator::generateLocalInfrastructure(framework::WorkflowSpe
 o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructure(std::string configurationSource)
 {
   WorkflowSpec workflow;
+  std::unordered_set<std::string> samplingPoliciesUsed;
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
   printVersion();
 
@@ -164,19 +171,11 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
         //  so there is no point. Also, I expect that we should be able to generate one big topology or its parts
         //  and we would place it among QC servers using AliECS, not by configuration files.
 
-        // Creating Data Sampling proxies
-        // todo now we have to generate one proxy per local machine and policy, because of the proxy limitations.
-        //  Use one proxy per policy when it is possible.
+        // Collecting Data Sampling Policies
         auto dataSourceTree = taskConfig.get_child("dataSource");
         std::string type = dataSourceTree.get<std::string>("type");
         if (type == "dataSamplingPolicy") {
-          auto policyName = dataSourceTree.get<std::string>("name");
-          std::string port = std::to_string(DataSampling::PortForPolicy(config.get(), policyName));
-          Outputs outputSpecs = DataSampling::OutputSpecsForPolicy(config.get(), policyName);
-          std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
-          for (const auto& machine : machines) {
-            generateDataSamplingPolicyRemoteProxy(workflow, outputSpecs, machine, port);
-          }
+          samplingPoliciesUsed.insert(dataSourceTree.get<std::string>("name"));
         } else if (type == "direct") {
           throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
         } else {
@@ -186,6 +185,18 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
         // Creating the remote task
         workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
       }
+    }
+  }
+
+  // Creating Data Sampling Policies proxies
+  for (const auto& policyName : samplingPoliciesUsed) {
+    // todo now we have to generate one proxy per local machine and policy, because of the proxy limitations.
+    //  Use one proxy per policy when it is possible.
+    std::string port = std::to_string(DataSampling::PortForPolicy(config.get(), policyName));
+    Outputs outputSpecs = DataSampling::OutputSpecsForPolicy(config.get(), policyName);
+    std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
+    for (const auto& machine : machines) {
+      generateDataSamplingPolicyRemoteProxy(workflow, outputSpecs, machine, port);
     }
   }
 

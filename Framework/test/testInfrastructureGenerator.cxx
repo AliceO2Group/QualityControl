@@ -34,12 +34,21 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
   {
     auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configFilePath, "o2flp1");
 
-    BOOST_REQUIRE_EQUAL(workflow.size(), 2);
+    BOOST_REQUIRE_EQUAL(workflow.size(), 3);
 
     BOOST_CHECK_EQUAL(workflow[0].name, "QC-TASK-RUNNER-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 2);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 1);
+
+    BOOST_CHECK_EQUAL(workflow[1].name, "skeletonTask-proxy-1");
+    BOOST_CHECK_EQUAL(workflow[1].inputs.size(), 1);
+    BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[1].inputs[0]).value_or(-1), 1);
+    BOOST_CHECK_EQUAL(workflow[1].outputs.size(), 0);
+
+    BOOST_CHECK_EQUAL(workflow[2].name, "tpcclust-proxy");
+    BOOST_CHECK_EQUAL(workflow[2].inputs.size(), 1);
+    BOOST_CHECK_EQUAL(workflow[2].outputs.size(), 0);
   }
 
   {
@@ -72,7 +81,16 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
 
   // the infrastructure should consist of a proxy, merger and checker for the 'skeletonTask' (its taskRunner is declared to be
   // local) and also taskRunner and checker for the 'abcTask' and 'xyzTask'.
-  BOOST_REQUIRE_EQUAL(workflow.size(), 7);
+  BOOST_REQUIRE_EQUAL(workflow.size(), 8);
+
+  auto tcpclustProxy = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "clusters" &&
+             d.inputs.size() == 0 &&
+             d.outputs.size() == 1;
+    });
+  BOOST_CHECK(tcpclustProxy != workflow.end());
 
   auto skeletonTaskProxy = std::find_if(
     workflow.begin(), workflow.end(),
