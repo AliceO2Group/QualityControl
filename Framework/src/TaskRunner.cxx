@@ -53,7 +53,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
 {
   // setup configuration
   mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-  populateConfig(taskName);
+  populateConfig(taskName, id);
 }
 
 void TaskRunner::init(InitContext& iCtx)
@@ -239,7 +239,7 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   return { dataReady, timerReady };
 }
 
-void TaskRunner::populateConfig(std::string taskName)
+void TaskRunner::populateConfig(std::string taskName, int id)
 {
   try {
     auto tasksConfigList = mConfigFile->getRecursive("qc.tasks");
@@ -262,6 +262,7 @@ void TaskRunner::populateConfig(std::string taskName)
     } catch (...) {
       LOG(INFO) << "No custom parameters for " << taskName;
     }
+    mTaskConfig.parallelTaskID = id;
 
     auto policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
     ConfigurationInterface* config = policiesFilePath.empty() ? mConfigFile.get() : ConfigurationFactory::getConfiguration(policiesFilePath).get();

@@ -20,7 +20,6 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
-#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::core
 {
