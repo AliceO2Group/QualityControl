@@ -21,6 +21,10 @@
 #include <TH1I.h>
 #include <TH2I.h>
 
+// O2 includes
+#include "TOFBase/Digit.h"
+#include "TOFBase/Geo.h"
+
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TOF/TOFTask.h"
@@ -285,18 +289,39 @@ void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // Some examples:
 
-  // 1. In a loop
-  for (auto&& input : ctx.inputs()) {
-    // get message header
-    if (input.header != nullptr && input.payload != nullptr) {
-      const auto* header = header::get<header::DataHeader*>(input.header);
-      // get payload of a specific input, which is a char array.
-      // const char* payload = input.payload;
+  // Get TOF digits
+  auto digits = ctx.inputs().get<gsl::span<o2::tof::Digit>>("tofdigits");
+  // Get TOF Readout window
+  auto rows = ctx.inputs().get<std::vector<o2::tof::ReadoutWindowData>>("readoutwin");
+  LOG(INFO) << "ReadoutWindow size::: " << rows.size();
 
-      // for the sake of an example, let's fill the histogram with payload sizes
-      mTOFRawsMulti->Fill(header->payloadSize);
-    }
+  // Loop on readout windows
+  for (const auto& row : rows) {
+    mTOFRawsMulti->Fill(row.size());
   }
+
+  Int_t strip = 0;      // Strip (Put it into Geo.h?)
+
+  // Loop on digits
+  for (auto const& digi : digits) {
+    strip = ((digi.getChannel() / 96) % 91);
+    Int_t ech = o2::tof::Geo::getECHFromCH(digi.getChannel());
+    // mTOFRawHitMap->Fill(det[0], strip);
+    mTOFRawHitMap->Fill(Float_t(o2::tof::Geo::getCrateFromECH(ech)) / 4.f, strip);
+  }
+
+  // 1. In a loop
+  // for (auto&& input : ctx.inputs()) {
+  // get message header
+  //   if (input.header != nullptr && input.payload != nullptr) {
+  //     const auto* header = header::get<header::DataHeader*>(input.header);
+  // get payload of a specific input, which is a char array.
+  // const char* payload = input.payload;
+  //     LOG(INFO) << "Payload is :::::::: " << input.payload;
+  // for the sake of an example, let's fill the histogram with payload sizes
+  //     mTOFRawsMulti->Fill(header->payloadSize);
+  //   }
+  // }
 
   // 2. Using get("<binding>")
 
