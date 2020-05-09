@@ -42,9 +42,6 @@ std::string getConfigPath(const o2::framework::ConfigContext& config);
 o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext const& config)
 {
   o2::framework::WorkflowSpec specs;
-  using digitInputType = std::vector<o2::phos::Digit>;
-
-  //  specs.push_back(o2::emcal::getPublisherSpec<digitInputType>(o2::emcal::PublisherConf{
 
   specs.push_back(o2::phos::getPublisherSpec(o2::phos::PublisherConf{
                                                "phos-digit-reader",
