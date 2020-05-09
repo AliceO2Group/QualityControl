@@ -23,7 +23,6 @@
 
 class TH1F;
 class TH2F;
-class TProfile2D;
 
 using namespace o2::quality_control::core;
 
@@ -49,25 +48,26 @@ class RawTask final : public TaskInterface
   void reset() override;
 
  private:
+  static constexpr short mNmod = 5;
   TH1F* mHistogram = nullptr;
-  TH1* mMessageCounter = nullptr;
-  TH1* mNumberOfSuperpagesPerMessage;
-  TH1* mNumberOfPagesPerMessage;
-  TH1* mSuperpageCounter = nullptr;       ///< Counter for number of superpages
-  TH1* mPageCounter = nullptr;            ///< Counter for number of pages (headers)
-  TH1* mTotalDataVolume = nullptr;        ///< Total data volume
-  std::array<TH1*, 20> mRawAmplitudePHOS; ///< Raw amplitude in PHOS
-  std::array<TH1*, 20> mRawAmplMaxPHOS;   ///< Max Raw amplitude in PHOS per cell
-  std::array<TH1*, 20> mRawAmplMinPHOS;   ///< Min Raw amplitude in PHOS per cell
-  std::array<TProfile2D*, 20> mRMSperSM;  ///< ADC rms per SM
-  std::array<TProfile2D*, 20> mMEANperSM; ///< ADC mean per SM
-  std::array<TProfile2D*, 20> mMAXperSM;  ///< ADC max per SM
-  std::array<TProfile2D*, 20> mMINperSM;  ///< ADC min per SM
-  TH2F* mErrorTypeAltro = nullptr;        ///< Error from AltroDecoder
-  TH2F* mPayloadSizePerDDL = nullptr;     ///< Payload size per ddl
-  Int_t mNumberOfSuperpages = 0;          ///< Simple total superpage counter
-  Int_t mNumberOfPages = 0;               ///< Simple total number of superpages counter
-  Int_t mNumberOfMessages = 0;
+  TH1F* mMessageCounter = nullptr;
+  TH1F* mNumberOfSuperpagesPerMessage;
+  TH1F* mNumberOfPagesPerMessage;             ///<
+  TH1F* mSuperpageCounter = nullptr;          ///< Counter for number of superpages
+  TH1F* mPageCounter = nullptr;               ///< Counter for number of pages (headers)
+  TH1F* mTotalDataVolume = nullptr;           ///< Total data volume
+  std::array<TH1F*, mNmod> mRawAmplitudePHOS; ///< Raw amplitude in PHOS
+  std::array<TH1F*, mNmod> mRawAmplMaxPHOS;   ///< Max Raw amplitude in PHOS per cell
+  std::array<TH1F*, mNmod> mRawAmplMinPHOS;   ///< Min Raw amplitude in PHOS per cell
+  std::array<TH2F*, mNmod> mRMSperMod;        ///< ADC rms per SM
+  std::array<TH2F*, mNmod> mMEANperMod;       ///< ADC mean per SM
+  std::array<TH2F*, mNmod> mMAXperMod;        ///< ADC max per SM
+  std::array<TH2F*, mNmod> mMINperMod;        ///< ADC min per SM
+  TH2F* mErrorTypeAltro = nullptr;            ///< Error from AltroDecoder
+  TH2F* mPayloadSizePerDDL = nullptr;         ///< Payload size per ddl
+  int mNumberOfSuperpages = 0;                ///< Simple total superpage counter
+  int mNumberOfPages = 0;                     ///< Simple total number of superpages counter
+  int mNumberOfMessages = 0;
 };
 
 } // namespace o2::quality_control_modules::phos

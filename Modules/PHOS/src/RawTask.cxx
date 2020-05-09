@@ -16,7 +16,7 @@
 
 #include <TCanvas.h>
 #include <TH1.h>
-#include <TProfile2D.h>
+#include <TH2.h>
 #include <TMath.h>
 #include <cfloat>
 
@@ -71,19 +71,19 @@ RawTask::~RawTask()
     delete h;
   }
 
-  for (auto h : mRMSperSM) {
+  for (auto h : mRMSperMod) {
     delete h;
   }
 
-  for (auto h : mMEANperSM) {
+  for (auto h : mMEANperMod) {
     delete h;
   }
 
-  for (auto h : mMAXperSM) {
+  for (auto h : mMAXperMod) {
     delete h;
   }
 
-  for (auto h : mMINperSM) {
+  for (auto h : mMINperMod) {
     delete h;
   }
 }
@@ -130,13 +130,13 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNumberOfPagesPerMessage->GetYaxis()->SetTitle("Number of messages");
   getObjectsManager()->startPublishing(mNumberOfPagesPerMessage);
 
-  mTotalDataVolume = new TH1D("TotalDataVolume", "Total data volume", 1, 0.5, 1.5);
+  mTotalDataVolume = new TH1F("TotalDataVolume", "Total data volume", 1, 0.5, 1.5);
   mTotalDataVolume->GetXaxis()->SetTitle("MonitorData");
   mTotalDataVolume->GetYaxis()->SetTitle("Total data volume (Byte)");
   getObjectsManager()->startPublishing(mTotalDataVolume);
 
   // PHOS related histograms
-  mPayloadSizePerDDL = new TH2F("PayloadSizePerDDL", "PayloadSizePerDDL", 40, 0, 40, 100, 0, 1);
+  mPayloadSizePerDDL = new TH2F("PayloadSizePerDDL", "PayloadSizePerDDL", 20, 0, 20, 100, 0, 1);
   mPayloadSizePerDDL->GetXaxis()->SetTitle("ddl");
   mPayloadSizePerDDL->GetYaxis()->SetTitle("PayloadSize");
   getObjectsManager()->startPublishing(mPayloadSizePerDDL);
@@ -146,8 +146,8 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistogram->GetYaxis()->SetTitle("Counts");
   getObjectsManager()->startPublishing(mHistogram);
 
-  mErrorTypeAltro = new TH2F("ErrorTypePerSM", "ErrorTypeForSM", 40, 0, 40, 8, 0, 8);
-  mErrorTypeAltro->GetXaxis()->SetTitle("SM");
+  mErrorTypeAltro = new TH2F("ErrorTypePerDDL", "ErrorTypePerDDL", 20, 0, 20, 8, 0, 8);
+  mErrorTypeAltro->GetXaxis()->SetTitle("Mod");
   mErrorTypeAltro->GetYaxis()->SetTitle("Error Type");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(1, "RCU Trailer");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(2, "RCU Version");
@@ -159,8 +159,8 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeAltro->GetYaxis()->SetBinLabel(8, "Channel");
   getObjectsManager()->startPublishing(mErrorTypeAltro);
 
-  //histos per SM
-  for (Int_t i = 0; i < 20; i++) {
+  //histos per Mod
+  for (short i = 0; i < mNmod; i++) {
     mRawAmplitudePHOS[i] = new TH1F(Form("RawAmplitudePHOS_sm%d", i), Form(" RawAmplitudePHOS%d", i), 100, 0., 100.);
     mRawAmplitudePHOS[i]->GetXaxis()->SetTitle("Raw Amplitude");
     mRawAmplitudePHOS[i]->GetYaxis()->SetTitle("Counts");
@@ -176,25 +176,25 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     mRawAmplMinPHOS[i]->GetYaxis()->SetTitle("Counts");
     getObjectsManager()->startPublishing(mRawAmplMinPHOS[i]);
 
-    mRMSperSM[i] = new TProfile2D(Form("RMSADCperSM%d", i), Form("RMSperSM%d", i), 48, 0, 48, 24, 0, 24);
-    mRMSperSM[i]->GetXaxis()->SetTitle("col");
-    mRMSperSM[i]->GetYaxis()->SetTitle("row");
-    getObjectsManager()->startPublishing(mRMSperSM[i]);
+    mRMSperMod[i] = new TH2F(Form("RMSADCperMod%d", i), Form("RMSperMod%d", i), 48, 0, 48, 24, 0, 24);
+    mRMSperMod[i]->GetXaxis()->SetTitle("col");
+    mRMSperMod[i]->GetYaxis()->SetTitle("row");
+    getObjectsManager()->startPublishing(mRMSperMod[i]);
 
-    mMEANperSM[i] = new TProfile2D(Form("MeanADCperSM%d", i), Form("MeanADCperSM%d", i), 48, 0, 48, 24, 0, 24);
-    mMEANperSM[i]->GetXaxis()->SetTitle("col");
-    mMEANperSM[i]->GetYaxis()->SetTitle("row");
-    getObjectsManager()->startPublishing(mMEANperSM[i]);
+    mMEANperMod[i] = new TH2F(Form("MeanADCperMod%d", i), Form("MeanADCperMod%d", i), 48, 0, 48, 24, 0, 24);
+    mMEANperMod[i]->GetXaxis()->SetTitle("col");
+    mMEANperMod[i]->GetYaxis()->SetTitle("row");
+    getObjectsManager()->startPublishing(mMEANperMod[i]);
 
-    mMAXperSM[i] = new TProfile2D(Form("MaxADCperSM%d", i), Form("MaxADCperSM%d", i), 48, 0, 47, 24, 0, 23);
-    mMAXperSM[i]->GetXaxis()->SetTitle("col");
-    mMAXperSM[i]->GetYaxis()->SetTitle("row");
-    getObjectsManager()->startPublishing(mMAXperSM[i]);
+    mMAXperMod[i] = new TH2F(Form("MaxADCperMod%d", i), Form("MaxADCperMod%d", i), 48, 0, 47, 24, 0, 23);
+    mMAXperMod[i]->GetXaxis()->SetTitle("col");
+    mMAXperMod[i]->GetYaxis()->SetTitle("row");
+    getObjectsManager()->startPublishing(mMAXperMod[i]);
 
-    mMINperSM[i] = new TProfile2D(Form("MinADCperSM%d", i), Form("MinADCperSM%d", i), 48, 0, 47, 24, 0, 23);
-    mMINperSM[i]->GetXaxis()->SetTitle("col");
-    mMINperSM[i]->GetYaxis()->SetTitle("row");
-    getObjectsManager()->startPublishing(mMINperSM[i]);
+    mMINperMod[i] = new TH2F(Form("MinADCperMod%d", i), Form("MinADCperMod%d", i), 48, 0, 47, 24, 0, 23);
+    mMINperMod[i]->GetXaxis()->SetTitle("col");
+    mMINperMod[i]->GetYaxis()->SetTitle("row");
+    getObjectsManager()->startPublishing(mMINperMod[i]);
   }
 }
 
@@ -249,8 +249,8 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       // o2::phos::RawReaderMemory<o2::header::RAWDataHeaderV4> rawreader(gsl::span(input.payload, header->payloadSize));
       // uint64_t currentTrigger(0);
       // bool first = true; //for the first event
-      // short int maxADCSM[20];
-      // short int minADCSM[20];
+      // short int maxADCMod[20];
+      // short int minADCMod[20];
       // while (rawreader.hasNext()) {
       //   QcInfoLogger::GetInstance() << QcInfoLogger::Debug << " Processing page " << mNumberOfPages << AliceO2::InfoLogger::InfoLogger::endm;
       //   mNumberOfPages++;
@@ -266,10 +266,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       //   if (!first) {                               // check if it is the first event in the payload
       //     if (headerR.triggerBC > currentTrigger) { //new event
       //       for (int sm = 0; sm < 20; sm++) {
-      //         mRawAmplitudePHOS[sm]->Fill(maxADCSM[sm]);
-      //         maxADCSM[sm] = 0;
+      //         mRawAmplitudePHOS[sm]->Fill(maxADCMod[sm]);
+      //         maxADCMod[sm] = 0;
       //         //initialize
-      //         minADCSM[sm] = SHRT_MAX;
+      //         minADCMod[sm] = SHRT_MAX;
       //       } //sm loop
       //       currentTrigger = headerR.triggerBC;
       //     }      //new event
@@ -329,7 +329,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       //     mErrorTypeAltro->Fill(headerR.feeId, errornum);
       //     continue;
       //   }
-      //   int j = headerR.feeId / 2; //SM id
+      //   int j = headerR.feeId / 2; //Mod id
       //   auto& mapping = mMappings->getMappingForDDL(headerR.feeId);
       //   int col;
 
@@ -362,16 +362,16 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       //       meanADC = TMath::Mean(adcs.begin(), adcs.end());
       //       rmsADC = TMath::RMS(adcs.begin(), adcs.end());
-      //       mRMSperSM[j]->Fill(col, row, rmsADC);
-      //       mMEANperSM[j]->Fill(col, row, meanADC);
+      //       mRMSperMod[j]->Fill(col, row, rmsADC);
+      //       mMEANperMod[j]->Fill(col, row, meanADC);
       //     }
-      //     if (maxADC > maxADCSM[j])
-      //       maxADCSM[j] = maxADC;
-      //     mMAXperSM[j]->Fill(col, row, maxADC);
+      //     if (maxADC > maxADCMod[j])
+      //       maxADCMod[j] = maxADC;
+      //     mMAXperMod[j]->Fill(col, row, maxADC);
 
-      //     if (minADC < minADCSM[j])
-      //       minADCSM[j] = minADC;
-      //     mMINperSM[j]->Fill(col, row, minADC);
+      //     if (minADC < minADCMod[j])
+      //       minADCMod[j] = minADC;
+      //     mMINperMod[j]->Fill(col, row, minADC);
 
       //   } //channels
       // }   //new page
@@ -399,14 +399,14 @@ void RawTask::reset()
 
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   mHistogram->Reset();
-  for (Int_t i = 0; i < 20; i++) {
+  for (short i = 0; i < mNmod; i++) {
     mRawAmplitudePHOS[i]->Reset();
     mRawAmplMaxPHOS[i]->Reset();
     mRawAmplMinPHOS[i]->Reset();
-    mRMSperSM[i]->Reset();
-    mMEANperSM[i]->Reset();
-    mMAXperSM[i]->Reset();
-    mMINperSM[i]->Reset();
+    mRMSperMod[i]->Reset();
+    mMEANperMod[i]->Reset();
+    mMAXperMod[i]->Reset();
+    mMINperMod[i]->Reset();
   }
   mPayloadSizePerDDL->Reset();
   mHistogram->Reset();
