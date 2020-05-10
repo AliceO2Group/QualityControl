@@ -17,6 +17,7 @@
 #define QC_MODULE_TOF_TOFCHECKRAWSMULTI_H
 
 #include "QualityControl/CheckInterface.h"
+#include "TString.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -38,10 +39,16 @@ class TOFCheckRawsMulti : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
-  /// Minumum value of TOF raw hit multiplicity
+  /// Minimum value of TOF raw hit multiplicity
   Float_t minTOFrawhits;
   /// Maximum value of TOF raw hit multiplicity
   Float_t maxTOFrawhits;
+  /// Fraction of the total integral which are considered Ok at 0 mult
+  const Float_t fracAtZeroMult= 0.75;
+  /// Fraction of the total integral which are considered Ok at low mult
+  const Float_t fracAtLowMult= 0.75;
+  /// Maximum average TOF raw hit multiplicity in Pb-Pb
+  const Float_t maxTOFrawhitsPbPb= 500;
 
  private:
   /// Mean of the TOF hit multiplicity histogram
@@ -52,6 +59,8 @@ class TOFCheckRawsMulti : public o2::quality_control::checker::CheckInterface
   Float_t lowMIntegral;
   /// Number of events with TOF hits multiplicity > 0
   Float_t totIntegral;
+  /// Message to print
+  TString shifter_msg = "";
 
   ClassDefOverride(TOFCheckRawsMulti, 1);
 };
