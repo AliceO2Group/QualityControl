@@ -278,6 +278,7 @@ void TOFTask::startOfCycle()
 
 void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // LOG(INFO) << "Monitoring in the TOF Task " << ENDM;
   // In this function you can access data inputs specified in the JSON config file, for example:
   //   "query": "random:ITS/RAWDATA/0"
   // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
@@ -300,15 +301,61 @@ void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
     mTOFRawsMulti->Fill(row.size());
   }
 
-  Int_t strip = 0;      // Strip (Put it into Geo.h?)
+  // Int_t ndigits = 0;      // Number of digits
+  // Int_t det[5] = { 0 }; // Coordinates
+  Int_t strip = 0;          // Strip (Put it into Geo.h?)
+  Int_t ndigits[4] = { 0 }; // Number of digits per side I/A,O/A,I/C,O/C
+  Int_t eta, phi;
+  Float_t tdc_time = 0;
+  Float_t tot_time = 0;
+  const Int_t half_eta = 910;
+  const Int_t half_phi = 432;
 
   // Loop on digits
   for (auto const& digi : digits) {
+    // ndigits++;
     strip = ((digi.getChannel() / 96) % 91);
+    // o2::tof::Geo::getVolumeIndices(digi.getChannel(), det);
+    // LOG(INFO) << "Filling digit #" << ndigits << " in sector #" << det[0] << " and strip #" << strip;
     Int_t ech = o2::tof::Geo::getECHFromCH(digi.getChannel());
     // mTOFRawHitMap->Fill(det[0], strip);
     mTOFRawHitMap->Fill(Float_t(o2::tof::Geo::getCrateFromECH(ech)) / 4.f, strip);
+    tdc_time = digi.getTDC() * o2::tof::Geo::TDCBIN * 1000;
+    mTOFRawsTime->Fill(tdc_time);
+    tot_time = digi.getTOT() * o2::tof::Geo::TOTBIN_NS;
+    mTOFRawsToT->Fill(tot_time);
+
+    digi.getPhiAndEtaIndex(phi, eta);
+    if (eta < half_eta) { // Sector A
+
+      if (phi < half_phi) { // Sector I/A
+        mTOFRawsTimeIA->Fill(tdc_time);
+        mTOFRawsToTIA->Fill(tot_time);
+        ndigits[0]++;
+      } else { // Sector O/A
+        mTOFRawsTimeOA->Fill(tdc_time);
+        mTOFRawsToTOA->Fill(tot_time);
+        ndigits[1]++;
+      }
+    } else { // Sector C
+
+      if (phi < half_phi) { // Sector I/C
+        mTOFRawsTimeIC->Fill(tdc_time);
+        mTOFRawsToTIC->Fill(tot_time);
+        ndigits[2]++;
+      } else { // Sector O/C
+        mTOFRawsTimeOC->Fill(tdc_time);
+        mTOFRawsToTOC->Fill(tot_time);
+        ndigits[3]++;
+      }
+    }
   }
+  // LOG(INFO) << "Digits counted:::::::: " << ndigits << "stop";
+
+  mTOFRawsMultiIA->Fill(ndigits[0]);
+  mTOFRawsMultiOA->Fill(ndigits[1]);
+  mTOFRawsMultiIC->Fill(ndigits[2]);
+  mTOFRawsMultiOC->Fill(ndigits[3]);
 
   // 1. In a loop
   // for (auto&& input : ctx.inputs()) {
