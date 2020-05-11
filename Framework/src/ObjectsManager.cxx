@@ -90,7 +90,12 @@ void ObjectsManager::stopPublishing(const string& name)
 {
   auto* mo = dynamic_cast<MonitorObject*>(mMonitorObjects->FindObject(name.data()));
   if (mo == nullptr) {
-    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(name));
+    // TODO: ideally we want to pass the object name to the exception but the implementation
+    // of AliceO2::Common::ObjectNotFoundError drops additional information. For clarity we
+    // better skip
+    //    << errinfo_object_name(name));
+    // until this is fixed
+    BOOST_THROW_EXCEPTION(ObjectNotFoundError());
   }
   mMonitorObjects->Remove(mo);
 }
@@ -102,7 +107,12 @@ MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
   if (mo != nullptr) {
     return dynamic_cast<MonitorObject*>(mo);
   } else {
-    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
+    // TODO: ideally we want to pass the object name to the exception but the implementation
+    // of AliceO2::Common::ObjectNotFoundError drops additional information. For clarity we
+    // better skip
+    //    << errinfo_object_name(objectName));
+    // until this is fixed
+    BOOST_THROW_EXCEPTION(ObjectNotFoundError());
   }
 }
 
