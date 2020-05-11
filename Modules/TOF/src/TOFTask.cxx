@@ -301,8 +301,16 @@ void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
   Int_t strip = 0; // Strip (Put it into Geo.h?)
   Float_t tdc_time = 0;
   Float_t tot_time = 0;
+  // SM in side I: 14-17, 0-4 -> 4 + 5
+  // SM in side O: 5-13 -> 9
+  // phi is counted every pad starting from SM 0.
+  // There are 48 pads per SM. Side I is from phi 0:48*4 and 48*14:48*18
+  const Int_t phi_I1 = 48 * 4;
+  const Int_t phi_I2 = 48 * 14;
+  // eta is counted every half strip starting from strip 0.
+  // Halves strips in side A 0-90, in side C 91-181
   const Int_t half_eta = 91;
-  const Int_t half_phi = 432;
+  Bool_t isSectorI = kFALSE;
   Int_t ndigits[4] = { 0 }; // Number of digits per side I/A,O/A,I/C,O/C
 
   // Loop on readout windows
@@ -323,8 +331,9 @@ void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTOFRawsTime->Fill(tdc_time);
       mTOFRawsToT->Fill(tot_time);
       digit.getPhiAndEtaIndex(phi, eta);
-      if (eta < half_eta) {   // Sector A
-        if (phi < half_phi) { // Sector I/A
+      isSectorI = phi < phi_I1 || phi > phi_I2;
+      if (eta < half_eta) { // Sector A
+        if (isSectorI) {    // Sector I/A
           mTOFRawsTimeIA->Fill(tdc_time);
           mTOFRawsToTIA->Fill(tot_time);
           ndigits[0]++;
@@ -333,8 +342,8 @@ void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
           mTOFRawsToTOA->Fill(tot_time);
           ndigits[1]++;
         }
-      } else {                // Sector C
-        if (phi < half_phi) { // Sector I/C
+      } else {           // Sector C
+        if (isSectorI) { // Sector I/C
           mTOFRawsTimeIC->Fill(tdc_time);
           mTOFRawsToTIC->Fill(tot_time);
           ndigits[2]++;
