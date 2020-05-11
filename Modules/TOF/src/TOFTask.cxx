@@ -296,66 +296,82 @@ void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto rows = ctx.inputs().get<std::vector<o2::tof::ReadoutWindowData>>("readoutwin");
   LOG(INFO) << "ReadoutWindow size::: " << rows.size();
 
+  Int_t eta, phi;
+  const Int_t half_eta = 91;
+  const Int_t half_phi = 432;
+  Int_t ndigits[4] = { 0 }; // Number of digits per side I/A,O/A,I/C,O/C
+
   // Loop on readout windows
   for (const auto& row : rows) {
     mTOFRawsMulti->Fill(row.size());
+    auto digits_in_row = row.getBunchChannelData(digits);
+    for (auto const& digit : digits_in_row) {
+      digit.getPhiAndEtaIndex(phi, eta);
+      if (eta < half_eta) {   // Sector A
+        if (phi < half_phi) { // Sector I/A
+          ndigits[0]++;
+        } else { // Sector O/A
+          ndigits[1]++;
+        }
+      } else {                // Sector C
+        if (phi < half_phi) { // Sector I/C
+          ndigits[2]++;
+        } else { // Sector O/C
+          ndigits[3]++;
+        }
+      }
+    }
+    // Filling histograms
+    mTOFRawsMultiIA->Fill(ndigits[0]);
+    mTOFRawsMultiOA->Fill(ndigits[1]);
+    mTOFRawsMultiIC->Fill(ndigits[2]);
+    mTOFRawsMultiOC->Fill(ndigits[3]);
+    //
+    ndigits[0] = 0;
+    ndigits[1] = 0;
+    ndigits[2] = 0;
+    ndigits[3] = 0;
   }
 
   // Int_t ndigits = 0;      // Number of digits
   // Int_t det[5] = { 0 }; // Coordinates
-  Int_t strip = 0;          // Strip (Put it into Geo.h?)
-  Int_t ndigits[4] = { 0 }; // Number of digits per side I/A,O/A,I/C,O/C
-  Int_t eta, phi;
+  Int_t strip = 0; // Strip (Put it into Geo.h?)
   Float_t tdc_time = 0;
   Float_t tot_time = 0;
-  const Int_t half_eta = 910;
-  const Int_t half_phi = 432;
 
   // Loop on digits
-  for (auto const& digi : digits) {
+  for (auto const& digit : digits) {
     // ndigits++;
-    strip = ((digi.getChannel() / 96) % 91);
-    // o2::tof::Geo::getVolumeIndices(digi.getChannel(), det);
+    strip = ((digit.getChannel() / 96) % 91);
+    // o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
     // LOG(INFO) << "Filling digit #" << ndigits << " in sector #" << det[0] << " and strip #" << strip;
-    Int_t ech = o2::tof::Geo::getECHFromCH(digi.getChannel());
+    Int_t ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
     // mTOFRawHitMap->Fill(det[0], strip);
     mTOFRawHitMap->Fill(Float_t(o2::tof::Geo::getCrateFromECH(ech)) / 4.f, strip);
-    tdc_time = digi.getTDC() * o2::tof::Geo::TDCBIN * 1000;
+    tdc_time = digit.getTDC() * o2::tof::Geo::TDCBIN * 0.001;
     mTOFRawsTime->Fill(tdc_time);
-    tot_time = digi.getTOT() * o2::tof::Geo::TOTBIN_NS;
+    tot_time = digit.getTOT() * o2::tof::Geo::TOTBIN_NS;
     mTOFRawsToT->Fill(tot_time);
-
-    digi.getPhiAndEtaIndex(phi, eta);
-    if (eta < half_eta) { // Sector A
-
+    digit.getPhiAndEtaIndex(phi, eta);
+    if (eta < half_eta) {   // Sector A
       if (phi < half_phi) { // Sector I/A
         mTOFRawsTimeIA->Fill(tdc_time);
         mTOFRawsToTIA->Fill(tot_time);
-        ndigits[0]++;
       } else { // Sector O/A
         mTOFRawsTimeOA->Fill(tdc_time);
         mTOFRawsToTOA->Fill(tot_time);
-        ndigits[1]++;
       }
-    } else { // Sector C
-
+    } else {                // Sector C
       if (phi < half_phi) { // Sector I/C
         mTOFRawsTimeIC->Fill(tdc_time);
         mTOFRawsToTIC->Fill(tot_time);
-        ndigits[2]++;
       } else { // Sector O/C
         mTOFRawsTimeOC->Fill(tdc_time);
         mTOFRawsToTOC->Fill(tot_time);
-        ndigits[3]++;
       }
     }
   }
   // LOG(INFO) << "Digits counted:::::::: " << ndigits << "stop";
-
-  mTOFRawsMultiIA->Fill(ndigits[0]);
-  mTOFRawsMultiOA->Fill(ndigits[1]);
-  mTOFRawsMultiIC->Fill(ndigits[2]);
-  mTOFRawsMultiOC->Fill(ndigits[3]);
 
   // 1. In a loop
   // for (auto&& input : ctx.inputs()) {
