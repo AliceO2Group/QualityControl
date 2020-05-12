@@ -74,7 +74,7 @@ class ObjectsManager
   /**
    * Check whether an object is already being published
    * @param objectName
-   * @return
+   * @return true if the object is already being published
    */
   bool isBeingPublished(const std::string& name);
 
