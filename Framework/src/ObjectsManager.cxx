@@ -96,6 +96,11 @@ void ObjectsManager::stopPublishing(const string& name)
   mMonitorObjects->Remove(mo);
 }
 
+bool ObjectsManager::isBeingPublished(const string& name)
+{
+  return (mMonitorObjects->FindObject(name.c_str()) != nullptr);
+}
+
 MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
 {
   TObject* mo = mMonitorObjects->FindObject(objectName.c_str());
