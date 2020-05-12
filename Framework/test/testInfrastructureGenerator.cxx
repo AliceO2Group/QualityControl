@@ -144,3 +144,47 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
     });
   BOOST_REQUIRE_EQUAL(checkRunnerCount, 3);
 }
+
+BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+  auto workflow = InfrastructureGenerator::generateStandaloneInfrastructure(configFilePath);
+
+  // the infrastructure should consist of 3 TaskRunners, 3 CheckRunners
+  BOOST_REQUIRE_EQUAL(workflow.size(), 6);
+
+  auto taskRunnerSkeleton = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "QC-TASK-RUNNER-skeletonTask" &&
+             d.inputs.size() == 2 &&
+             d.outputs.size() == 1;
+    });
+  BOOST_CHECK(taskRunnerSkeleton != workflow.end());
+
+  auto taskRunnerAbcTask = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "QC-TASK-RUNNER-abcTask" &&
+             d.inputs.size() == 2 &&
+             d.outputs.size() == 1;
+    });
+  BOOST_CHECK(taskRunnerAbcTask != workflow.end());
+
+  auto taskRunnerXyzTask = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "QC-TASK-RUNNER-xyzTask" &&
+             d.inputs.size() == 2 &&
+             d.outputs.size() == 1;
+    });
+  BOOST_CHECK(taskRunnerXyzTask != workflow.end());
+
+  auto checkRunnerCount = std::count_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name.find("QC-CHECK-RUNNER") != std::string::npos &&
+             d.inputs.size() == 1;
+    });
+  BOOST_REQUIRE_EQUAL(checkRunnerCount, 3);
+}
