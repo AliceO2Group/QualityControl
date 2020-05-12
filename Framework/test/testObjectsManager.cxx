@@ -49,6 +49,19 @@ BOOST_AUTO_TEST_CASE(duplicate_object_test)
   BOOST_CHECK_THROW(objectsManager.startPublishing(&s), o2::quality_control::core::DuplicateObjectError);
 }
 
+BOOST_AUTO_TEST_CASE(is_being_published_test)
+{
+  TaskConfig config;
+  config.taskName = "test";
+  config.consulUrl = "http://consul-test.cern.ch:8500";
+  ObjectsManager objectsManager(config, true);
+  TObjString s("content");
+  BOOST_CHECK(!objectsManager.isBeingPublished("content"));
+  objectsManager.startPublishing(&s);
+  BOOST_CHECK_THROW(objectsManager.startPublishing(&s), o2::quality_control::core::DuplicateObjectError);
+  BOOST_CHECK(objectsManager.isBeingPublished("content"));
+}
+
 BOOST_AUTO_TEST_CASE(unpublish_test)
 {
   TaskConfig config;
