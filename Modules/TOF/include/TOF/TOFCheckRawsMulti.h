@@ -44,11 +44,11 @@ class TOFCheckRawsMulti : public o2::quality_control::checker::CheckInterface
   /// Maximum value of TOF raw hit multiplicity
   Float_t maxTOFrawhits;
   /// Fraction of the total integral which are considered Ok at 0 mult
-  const Float_t fracAtZeroMult= 0.75;
+  const Float_t fracAtZeroMult = 0.75;
   /// Fraction of the total integral which are considered Ok at low mult
-  const Float_t fracAtLowMult= 0.75;
+  const Float_t fracAtLowMult = 0.75;
   /// Maximum average TOF raw hit multiplicity in Pb-Pb
-  const Float_t maxTOFrawhitsPbPb= 500;
+  const Float_t maxTOFrawhitsPbPb = 500;
 
  private:
   /// Mean of the TOF hit multiplicity histogram
