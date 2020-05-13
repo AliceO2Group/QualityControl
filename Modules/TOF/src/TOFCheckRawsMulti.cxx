@@ -142,7 +142,7 @@ Quality TOFCheckRawsMulti::check(std::map<std::string, std::shared_ptr<MonitorOb
             else { // High multiplicity running e.g. Pb-Pb
               if (isLowMultContentHigh) {
                 result = Quality::Medium;
-                shifter_msg = Form("High low-multiplicity counts (%.2f higher than total)!", fracAtLowMult);
+                shifter_msg = Form("Low-multiplicity counts are high\n(%.2f higher than total)!", fracAtLowMult);
               } else if (multiMean > maxTOFrawhitsPbPb) {
                 //assume that good range of multi in PbPb goes from 20 to 500 tracks
                 result = Quality::Medium;
@@ -173,7 +173,10 @@ void TOFCheckRawsMulti::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     msg->Draw();
     msg->SetName(Form("%s_msg", mo->GetName()));
     msg->Clear();
-    msg->AddText(shifter_msg);
+    TObjArray* txt_arr = shifter_msg.Tokenize("\n");
+    for (Int_t i = 0; i < txt_arr->GetEntries(); i++) {
+      msg->AddText(txt_arr->At(i)->GetName());
+    }
 
     if (checkResult == Quality::Good) {
       msg->AddText(Form("Mean value = %5.2f", multiMean));
