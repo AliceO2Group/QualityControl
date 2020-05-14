@@ -205,9 +205,10 @@ void CheckRunner::init(framework::InitContext&)
     for (auto& check : mChecks) {
       check.init();
     }
-  }  catch (...) {
+  } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n" << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during initialization:\n"
+                << current_diagnostic(true) << ENDM;
     throw;
   }
 }
@@ -253,13 +254,14 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   }
 
   // Check if compliant with policy
-  try{
+  try {
     auto triggeredChecks = check(mMonitorObjects);
     store(triggeredChecks);
     send(triggeredChecks, ctx.outputs());
-  }  catch (...) {
+  } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n" << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during initialization:\n"
+                << current_diagnostic(true) << ENDM;
     throw;
   }
 

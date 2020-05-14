@@ -60,7 +60,8 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   } catch (...) {
     // catch the configuration exception and print it,
     // because if we are called from a constructor the exception could be lost
-    ILOG(Fatal) << "Unexpected exception during configuration:\n" << current_diagnostic(true);
+    ILOG(Fatal) << "Unexpected exception during configuration:\n"
+                << current_diagnostic(true);
     throw;
   }
 }
@@ -88,12 +89,13 @@ void TaskRunner::init(InitContext& iCtx)
   mTask.reset(f.create(mTaskConfig, mObjectsManager));
 
   // init user's task
-  try{
+  try {
     mTask->loadCcdb(mTaskConfig.conditionUrl);
     mTask->initialize(iCtx);
   } catch (...) {
     // catch the initialization exception and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n" << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during initialization:\n"
+                << current_diagnostic(true) << ENDM;
     throw;
   }
 
@@ -115,7 +117,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
 
   auto [dataReady, timerReady] = validateInputs(pCtx.inputs());
 
-  try{
+  try {
     if (dataReady) {
       mTask->monitorData(pCtx);
       mNumberMessages++;
@@ -134,7 +136,8 @@ void TaskRunner::run(ProcessingContext& pCtx)
     }
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n" << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during initialization:\n"
+                << current_diagnostic(true) << ENDM;
     throw;
   }
 }
@@ -164,9 +167,9 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   }
 
   ILOG(Debug) << "Completion policy callback. "
-             << "Total inputs possible: " << inputs.size()
-             << ", data inputs: " << dataInputsPresent
-             << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
+              << "Total inputs possible: " << inputs.size()
+              << ", data inputs: " << dataInputsPresent
+              << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
 
   if (dataInputsPresent == dataInputsExpected) {
     action = CompletionPolicy::CompletionOp::Consume;
@@ -208,7 +211,7 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 
 void TaskRunner::start()
 {
-  try{
+  try {
     startOfActivity();
 
     if (mNoMoreCycles) {
@@ -220,14 +223,15 @@ void TaskRunner::start()
     startCycle();
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during startup:\n" << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during startup:\n"
+                << current_diagnostic(true) << ENDM;
     throw;
   }
 }
 
 void TaskRunner::stop()
 {
-  try{
+  try {
     if (mCycleOn) {
       mTask->endOfCycle();
       mCycleNumber++;
@@ -237,7 +241,8 @@ void TaskRunner::stop()
     mTask->reset();
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during stopping:\n" << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during stopping:\n"
+                << current_diagnostic(true) << ENDM;
     throw;
   }
 }
@@ -250,7 +255,8 @@ void TaskRunner::reset()
     mObjectsManager.reset();
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during startup:\n" << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during startup:\n"
+                << current_diagnostic(true) << ENDM;
     throw;
   }
 }
@@ -283,7 +289,7 @@ void TaskRunner::populateConfig(std::string taskName)
   auto tasksConfigList = mConfigFile->getRecursive("qc.tasks");
   auto taskConfigTree = tasksConfigList.find(taskName);
   if (taskConfigTree == tasksConfigList.not_found()) {
-    std::string message = "No configuration found for task \"" + taskName +"\"";
+    std::string message = "No configuration found for task \"" + taskName + "\"";
     BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
   }
 
@@ -349,8 +355,8 @@ std::string TaskRunner::validateDetectorName(std::string name)
     for (auto i : permitted)
       permittedString += i + ' ';
     ILOG(Error) << "Invalid detector name : " << name << "\n"
-               << "    Placeholder 'MISC' will be used instead\n"
-               << "    Note: list of permitted detector names :" << permittedString << ENDM;
+                << "    Placeholder 'MISC' will be used instead\n"
+                << "    Note: list of permitted detector names :" << permittedString << ENDM;
     return "MISC";
   }
   return name;
@@ -404,7 +410,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
   if (mTaskConfig.maxNumberCycles == mCycleNumber) {
     ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
-              << " The task will not do anything from now on." << ENDM;
+               << " The task will not do anything from now on." << ENDM;
   }
 }
 
