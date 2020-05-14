@@ -163,13 +163,11 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
 
 TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, std::string> const& metadata, long timestamp, std::map<std::string, std::string>* headers)
 {
-  long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
-
   // we try first to load a TFile
-  auto* object = ccdbApi.retrieveFromTFileAny<TObject>(path, metadata, when, headers);
+  auto* object = ccdbApi.retrieveFromTFileAny<TObject>(path, metadata, timestamp, headers);
   if (object == nullptr) {
     // We could not open a TFile we should now try to open an object directly serialized
-    object = ccdbApi.retrieve(path, metadata, when);
+    object = ccdbApi.retrieve(path, metadata, timestamp);
     if (object == nullptr) {
       ILOG(Error) << "We could NOT retrieve the object " << path << "." << ENDM;
       return nullptr;

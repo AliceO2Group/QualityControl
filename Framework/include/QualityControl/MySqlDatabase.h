@@ -41,12 +41,12 @@ class MySqlDatabase : public DatabaseInterface
   void connect(const std::unordered_map<std::string, std::string>& config) override;
   // MonitorObject
   void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> q) override;
-  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) override;
-  std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = 0) override;
+  std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) override;
+  std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = -1) override;
   // QualityObject
   void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> q) override;
-  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = 0) override;
-  std::string retrieveQOJson(std::string qoPath, long timestamp = 0) override;
+  std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1) override;
+  std::string retrieveQOJson(std::string qoPath, long timestamp = -1) override;
   // General
   std::string retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata) override;
   TObject* retrieveTObject(std::string path, const std::map<std::string, std::string>& metadata, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) override;
