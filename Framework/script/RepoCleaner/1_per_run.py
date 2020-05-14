@@ -18,7 +18,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     It is implemented like this :
     Go through all objects: if a run is set, add the object to the corresponding map element.
     Go through the map: for each run keep the most recent object and delete the rest.
-    Files without runs are
+    Files without runs are preserved if delete_when_no_run is set to false. Otherwise only the last one is preserved.
 
     TODO: how to handle the validity period ?
 
