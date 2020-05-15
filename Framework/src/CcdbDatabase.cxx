@@ -180,10 +180,9 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
 std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskName, std::string objectName, long timestamp)
 {
   string path = taskName + "/" + objectName;
-  long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
   map<string, string> headers;
   map<string, string> metadata;
-  TObject* obj = retrieveTObject(path, metadata, when, &headers);
+  TObject* obj = retrieveTObject(path, metadata, timestamp, &headers);
 
   // no object found
   if (obj == nullptr) {
@@ -217,10 +216,9 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
 
 std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long timestamp)
 {
-  long when = timestamp == 0 ? getCurrentTimestamp() : timestamp;
   map<string, string> headers;
   map<string, string> metadata;
-  TObject* obj = retrieveTObject(qoPath, metadata, when, &headers);
+  TObject* obj = retrieveTObject(qoPath, metadata, timestamp, &headers);
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {
     ILOG(Error) << "Could not cast the object " << qoPath << " to QualityObject" << ENDM;
