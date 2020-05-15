@@ -152,7 +152,7 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
     /* All checks have the same Input */
     mInputs(checks.front().getInputs()),
     mOutputs(CheckRunner::collectOutputs(checks)),
-    mTotalNumberHistosReceived(0),
+    mTotalNumberObjectsReceived(0),
     mTotalNumberCheckExecuted(0),
     mTotalNumberQOStored(0),
     mTotalNumberMOStored(0)
@@ -178,7 +178,7 @@ CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
     mLogger(QcInfoLogger::GetInstance()),
     mInputs{ input },
     mOutputs{},
-    mTotalNumberHistosReceived(0),
+    mTotalNumberObjectsReceived(0),
     mTotalNumberCheckExecuted(0),
     mTotalNumberQOStored(0),
     mTotalNumberMOStored(0)
@@ -227,7 +227,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
         if (mo) {
           update(mo);
-          mTotalNumberHistosReceived++;
+          mTotalNumberObjectsReceived++;
 
           // Add monitor object to store later, after possible beautification
           if (store) {
@@ -252,7 +252,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   // monitoring
   if (timer.isTimeout()) {
     timer.reset(1000000); // 10 s.
-    mCollector->send({ mTotalNumberHistosReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
+    mCollector->send({ mTotalNumberObjectsReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
     mCollector->send({ mTotalNumberCheckExecuted, "qc_checks_executed" }, DerivedMetricMode::RATE);
     mCollector->send({ mTotalNumberQOStored, "qc_qo_stored" }, DerivedMetricMode::RATE);
     mCollector->send({ mTotalNumberMOStored, "qc_mo_stored" }, DerivedMetricMode::RATE);
