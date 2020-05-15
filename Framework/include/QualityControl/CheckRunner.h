@@ -29,6 +29,7 @@
 #include <Framework/Task.h>
 #include <Headers/DataHeader.h>
 #include <Monitoring/MonitoringFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 #include <Framework/DataProcessorSpec.h>
 // QC
 #include "QualityControl/CheckInterface.h"
@@ -176,13 +177,13 @@ class CheckRunner : public framework::Task
   // General state
   std::string mDeviceName;
   std::vector<Check> mChecks;
-  std::string mConfigurationSource;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::map<std::string, unsigned int> mMonitorObjectRevision;
   unsigned int mGlobalRevision = 1;
   std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
+  std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
 
   // DPL
   o2::framework::Inputs mInputs;
@@ -193,9 +194,12 @@ class CheckRunner : public framework::Task
 
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
-  std::chrono::system_clock::time_point startFirstObject;
-  std::chrono::system_clock::time_point endLastObject;
+//  std::chrono::system_clock::time_point startFirstObject;
+//  std::chrono::system_clock::time_point endLastObject;
   int mTotalNumberHistosReceived;
+  int mTotalNumberCheckExecuted;
+  int mTotalNumberQOStored;
+  int mTotalNumberMOStored;
   AliceO2::Common::Timer timer;
 };
 

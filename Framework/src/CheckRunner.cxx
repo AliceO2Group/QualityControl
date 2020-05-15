@@ -16,21 +16,15 @@
 
 #include "QualityControl/CheckRunner.h"
 
-// Boost
-#include <boost/filesystem/path.hpp>
-
 #include <utility>
 #include <memory>
-#include <functional>
 #include <algorithm>
-#include <set>
 // ROOT
 #include <TClass.h>
 #include <TSystem.h>
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
-#include <Framework/DataRefUtils.h>
 #include <Framework/DataSpecUtils.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
@@ -46,7 +40,6 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
-namespace bfs = boost::filesystem;
 
 namespace o2::quality_control::checker
 {
@@ -155,15 +148,22 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& che
 CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
   : mDeviceName(createCheckRunnerName(checks)),
     mChecks{ checks },
-    mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
-    /* All checks has the same Input */
+    /* All checks have the same Input */
     mInputs(checks.front().getInputs()),
     mOutputs(CheckRunner::collectOutputs(checks)),
-    startFirstObject{ system_clock::time_point::min() },
-    endLastObject{ system_clock::time_point::min() }
+    mTotalNumberHistosReceived(0),
+    mTotalNumberCheckExecuted(0),
+    mTotalNumberQOStored(0),
+    mTotalNumberMOStored(0)
 {
-  mTotalNumberHistosReceived = 0;
+  try {
+    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
+  } catch (...) {
+    // catch the exceptions and print it (the ultimate caller might not know how to display it)
+    ILOG(Fatal) << "Unexpected exception during initialization:\n" << boost::current_exception_diagnostic_information(true) << ENDM;
+    throw;
+  }
 }
 
 CheckRunner::CheckRunner(Check check, std::string configurationSource)
@@ -174,26 +174,25 @@ CheckRunner::CheckRunner(Check check, std::string configurationSource)
 CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
   : mDeviceName(createSinkCheckRunnerName(input)),
     mChecks{},
-    mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
     mInputs{ input },
     mOutputs{},
-    startFirstObject{ system_clock::time_point::min() },
-    endLastObject{ system_clock::time_point::min() }
+    mTotalNumberHistosReceived(0),
+    mTotalNumberCheckExecuted(0),
+    mTotalNumberQOStored(0),
+    mTotalNumberMOStored(0)
 {
-  mTotalNumberHistosReceived = 0;
+  try {
+    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
+  } catch (...) {
+    // catch the exceptions and print it (the ultimate caller might not know how to display it)
+    ILOG(Fatal) << "Unexpected exception during initialization:\n" << boost::current_exception_diagnostic_information(true) << ENDM;
+    throw;
+  }
 }
 
 CheckRunner::~CheckRunner()
 {
-  // Monitoring
-  if (mCollector) {
-    std::chrono::duration<double> diff = endLastObject - startFirstObject;
-    mCollector->send({ diff.count(), "QC_checker_Time_between_first_and_last_objects_received" });
-    mCollector->send({ mTotalNumberHistosReceived, "QC_checker_Total_number_histos_treated" });
-    double rate = mTotalNumberHistosReceived / diff.count();
-    mCollector->send({ rate, "QC_checker_Rate_objects_treated_per_second_whole_run" });
-  }
 }
 
 void CheckRunner::init(framework::InitContext&)
@@ -207,11 +206,6 @@ void CheckRunner::init(framework::InitContext&)
 
 void CheckRunner::run(framework::ProcessingContext& ctx)
 {
-
-  // Save time of first object
-  if (startFirstObject == std::chrono::system_clock::time_point::min()) {
-    startFirstObject = system_clock::now();
-  }
   mMonitorObjectStoreVector.clear();
 
   for (const auto& input : mInputs) {
@@ -254,10 +248,12 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   updateRevision();
 
   // monitoring
-  endLastObject = system_clock::now();
   if (timer.isTimeout()) {
     timer.reset(1000000); // 10 s.
-    mCollector->send({ mTotalNumberHistosReceived, "objects" }, o2::monitoring::DerivedMetricMode::RATE);
+    mCollector->send({ mTotalNumberHistosReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
+    mCollector->send({ mTotalNumberCheckExecuted, "qc_checks_executed" }, DerivedMetricMode::RATE);
+    mCollector->send({ mTotalNumberQOStored, "qc_qo_stored" }, DerivedMetricMode::RATE);
+    mCollector->send({ mTotalNumberMOStored, "qc_mo_stored" }, DerivedMetricMode::RATE);
   }
 }
 
@@ -276,6 +272,7 @@ std::vector<Check*> CheckRunner::check(std::map<std::string, std::shared_ptr<Mon
   for (auto& check : mChecks) {
     if (check.isReady(mMonitorObjectRevision)) {
       auto qualityObj = check.check(moMap);
+      mTotalNumberCheckExecuted++;
       // Check if shared_ptr != nullptr
       if (qualityObj) {
         triggeredChecks.push_back(&check);
@@ -296,6 +293,7 @@ void CheckRunner::store(std::vector<Check*>& checks)
   try {
     for (auto check : checks) {
       mDatabase->storeQO(check->getQualityObject());
+      mTotalNumberQOStored++;
     }
   } catch (boost::exception& e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
@@ -305,6 +303,7 @@ void CheckRunner::store(std::vector<Check*>& checks)
   try {
     for (auto mo : mMonitorObjectStoreVector) {
       mDatabase->storeMO(mo);
+      mTotalNumberMOStored++;
     }
   } catch (boost::exception& e) {
     mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
@@ -337,15 +336,12 @@ void CheckRunner::updateRevision()
 
 void CheckRunner::initDatabase()
 {
-  // configuration
   try {
-    std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-    // configuration of the database
-    mDatabase = DatabaseFactory::create(config->get<std::string>("qc.config.database.implementation"));
-    mDatabase->connect(config->getRecursiveMap("qc.config.database"));
+    mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
+    mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
     LOG(INFO) << "Database that is going to be used : ";
-    LOG(INFO) << ">> Implementation : " << config->get<std::string>("qc.config.database.implementation");
-    LOG(INFO) << ">> Host : " << config->get<std::string>("qc.config.database.host");
+    LOG(INFO) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation");
+    LOG(INFO) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
   } catch (
     std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
     LOG(ERROR) << "exception : " << e;
@@ -360,7 +356,12 @@ void CheckRunner::initDatabase()
 
 void CheckRunner::initMonitoring()
 {
-  // monitoring
+  std::string monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
+  mCollector = MonitoringFactory::Get(monitoringUrl);
+  mCollector->enableProcessMonitoring();
+  mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
+  mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
+
   try {
     mCollector = MonitoringFactory::Get("infologger://");
   } catch (...) {
@@ -369,7 +370,6 @@ void CheckRunner::initMonitoring()
                << diagnostic;
     throw;
   }
-  startFirstObject = system_clock::time_point::min();
   timer.reset(1000000); // 10 s.
 }
 
