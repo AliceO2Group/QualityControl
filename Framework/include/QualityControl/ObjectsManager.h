@@ -72,6 +72,13 @@ class ObjectsManager
   void stopPublishing(const std::string& objectName);
 
   /**
+   * Check whether an object is already being published
+   * @param objectName
+   * @return true if the object is already being published
+   */
+  bool isBeingPublished(const std::string& name);
+
+  /**
    * Returns the published MonitorObject specified by its name
    * @param objectName The name of the object to find.
    * @return A pointer to the MonitorObject.

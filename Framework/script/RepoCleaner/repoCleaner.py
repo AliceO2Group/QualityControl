@@ -122,6 +122,11 @@ def findMatchingRule(rules, object_path):
     """Return the first matching rule for the given path or None if none is found."""
     
     logging.debug(f"findMatchingRule for {object_path}")
+    
+    if object_path == None:
+        logging.error(f"findMatchingRule: object_path is None")
+	    return None
+    
     for rule in rules:
         pattern = re.compile(rule.object_path)
         result = pattern.match(object_path)
