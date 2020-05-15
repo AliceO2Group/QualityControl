@@ -84,6 +84,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   if (!config.options().get<bool>("local") && !config.options().get<bool>("remote")) {
     ILOG(Info) << "Creating a standalone QC topology." << ENDM;
+    DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
     quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
   }
 
