@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   std::string task = "qc/TST/my/task";
   std::string object = "quarantine";
   std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
-  auto json = f.backend->retrieveJson(task + "/" + object, 0, f.metadata);
+  auto json = f.backend->retrieveJson(task + "/" + object, -1, f.metadata);
   auto json2 = f.backend->retrieveMOJson(task, object);
 
   BOOST_CHECK(!json.empty());
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
 
   string qualityPath = "qc/checks/TST/test-ccdb-check";
   std::cout << "[json retrieve]: " << qualityPath << std::endl;
-  auto json3 = f.backend->retrieveJson(qualityPath, 0, f.metadata);
+  auto json3 = f.backend->retrieveJson(qualityPath, -1, f.metadata);
   auto json4 = f.backend->retrieveQOJson(qualityPath);
   BOOST_CHECK(!json3.empty());
   BOOST_CHECK_EQUAL(json3, json4);
@@ -217,8 +217,8 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   test_fixture f;
   std::map<std::string, std::string> headers1;
   std::map<std::string, std::string> headers2;
-  TObject* obj1 = f.backend->retrieveTObject("qc/TST/my/task/quarantine", f.metadata, 0, &headers1);
-  TObject* obj2 = f.backend->retrieveTObject("qc/TST/my/task/metadata", f.metadata, 0, &headers2);
+  TObject* obj1 = f.backend->retrieveTObject("qc/TST/my/task/quarantine", f.metadata, -1, &headers1);
+  TObject* obj2 = f.backend->retrieveTObject("qc/TST/my/task/metadata", f.metadata, -1, &headers2);
   BOOST_CHECK_NE(obj1, nullptr);
   BOOST_CHECK_NE(obj2, nullptr);
   BOOST_CHECK(headers1.size() > 0);
