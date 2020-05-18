@@ -88,7 +88,7 @@ class CheckRunner : public framework::Task
    * Create a sink for the Input. It is expected to receive Monitor Object to store.
    * It will not run any checks on a given input.
    *
-   * @param input Monitor Object input spec.
+   * @param input Monitor Object input spec
    * @param configSource Path to configuration
    */
   CheckRunner(o2::framework::InputSpec input, std::string configurationSource);
