@@ -71,7 +71,7 @@ o2::framework::Inputs CheckRunner::createInputSpec(const std::string checkName, 
     (void)key;
     if (sourceConf.get<std::string>("type") == "Task") {
       const std::string& taskName = sourceConf.get<std::string>("name");
-      QcInfoLogger::GetInstance() << ">>>> Check name : " << checkName << " input task name: " << taskName << " " << TaskRunner::createTaskDataDescription(taskName).as<std::string>() << ENDM;
+      ILOG(Info) << ">>>> Check name : " << checkName << " input task name: " << taskName << " " << TaskRunner::createTaskDataDescription(taskName).as<std::string>() << ENDM;
       o2::framework::InputSpec input{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
       inputs.push_back(std::move(input));
     }
@@ -205,10 +205,9 @@ void CheckRunner::init(framework::InitContext&)
     for (auto& check : mChecks) {
       check.init();
     }
-  } catch (...) {
+  }  catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n"
-                << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during initialization:\n" << current_diagnostic(true) << ENDM;
     throw;
   }
 }
@@ -254,16 +253,9 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   }
 
   // Check if compliant with policy
-  try {
-    auto triggeredChecks = check(mMonitorObjects);
-    store(triggeredChecks);
-    send(triggeredChecks, ctx.outputs());
-  } catch (...) {
-    // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n"
-                << current_diagnostic(true) << ENDM;
-    throw;
-  }
+  auto triggeredChecks = check(mMonitorObjects);
+  store(triggeredChecks);
+  send(triggeredChecks, ctx.outputs());
 
   // Update global revision number
   updateRevision();
