@@ -59,7 +59,8 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     populateConfig(taskName);
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
-    ILOG(Fatal) << "Unexpected exception during configuration:\n" << current_diagnostic(true);
+    ILOG(Fatal) << "Unexpected exception during configuration:\n"
+                << current_diagnostic(true);
     throw;
   }
 }
@@ -252,7 +253,7 @@ void TaskRunner::populateConfig(std::string taskName)
   auto tasksConfigList = mConfigFile->getRecursive("qc.tasks");
   auto taskConfigTree = tasksConfigList.find(taskName);
   if (taskConfigTree == tasksConfigList.not_found()) {
-    std::string message = "No configuration found for task \"" + taskName +"\"";
+    std::string message = "No configuration found for task \"" + taskName + "\"";
     BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
   }
 
@@ -318,8 +319,8 @@ std::string TaskRunner::validateDetectorName(std::string name)
     for (auto i : permitted)
       permittedString += i + ' ';
     ILOG(Error) << "Invalid detector name : " << name << "\n"
-               << "    Placeholder 'MISC' will be used instead\n"
-               << "    Note: list of permitted detector names :" << permittedString << ENDM;
+                << "    Placeholder 'MISC' will be used instead\n"
+                << "    Note: list of permitted detector names :" << permittedString << ENDM;
     return "MISC";
   }
   return name;
@@ -373,7 +374,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
   if (mTaskConfig.maxNumberCycles == mCycleNumber) {
     ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
-              << " The task will not do anything from now on." << ENDM;
+               << " The task will not do anything from now on." << ENDM;
   }
 }
 
