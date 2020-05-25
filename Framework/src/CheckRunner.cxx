@@ -361,7 +361,6 @@ void CheckRunner::initMonitoring()
   mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
-  startFirstObject = system_clock::time_point::min();
   timer.reset(1000000); // 10 s.
 }
 
