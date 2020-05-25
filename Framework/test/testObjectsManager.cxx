@@ -97,9 +97,6 @@ BOOST_AUTO_TEST_CASE(getters_test)
   BOOST_CHECK_NO_THROW(objectsManager.getMonitorObject("content"));
   BOOST_CHECK_NO_THROW(objectsManager.getMonitorObject("histo"));
   BOOST_CHECK_THROW(objectsManager.getMonitorObject("unexisting object"), ObjectNotFoundError);
-  BOOST_CHECK_NO_THROW(objectsManager.getObject("content"));
-  BOOST_CHECK_NO_THROW(objectsManager.getObject("histo"));
-  BOOST_CHECK_THROW(objectsManager.getObject("unexisting object"), ObjectNotFoundError);
 
   // non owning array
   TObjArray* array = objectsManager.getNonOwningArray();

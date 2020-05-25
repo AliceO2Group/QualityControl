@@ -69,7 +69,7 @@ class ObjectsManager
    * @param obj
    * @throw ObjectNotFoundError if object is not found.
    */
-  void stopPublishing(const std::string& name);
+  void stopPublishing(const std::string& objectName);
 
   /**
    * Check whether an object is already being published
@@ -78,9 +78,13 @@ class ObjectsManager
    */
   bool isBeingPublished(const std::string& name);
 
+  /**
+   * Returns the published MonitorObject specified by its name
+   * @param objectName The name of the object to find.
+   * @return A pointer to the MonitorObject.
+   * @throw ObjectNotFoundError if the object is not found.
+   */
   MonitorObject* getMonitorObject(std::string objectName);
-
-  TObject* getObject(std::string objectName);
 
   MonitorObjectCollection* getNonOwningArray() const;
 
@@ -90,6 +94,7 @@ class ObjectsManager
    * @param objectName Name of the MonitorObject.
    * @param key Key of the metadata.
    * @param value Value of the metadata.
+   * @throw ObjectNotFoundError if object is not found.
    */
   void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
 

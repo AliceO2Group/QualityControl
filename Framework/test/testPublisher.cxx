@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   TObjString s("content");
   objectsManager.startPublishing(&s);
 
-  TObjString* s2 = (TObjString*)(objectsManager.getObject("content"));
+  TObjString* s2 = (TObjString*)(objectsManager.getMonitorObject("content")->getObject());
   BOOST_CHECK_EQUAL(s.GetString(), s2->GetString());
   MonitorObject* mo = nullptr;
   BOOST_CHECK_THROW(mo = objectsManager.getMonitorObject("test"), AliceO2::Common::ObjectNotFoundError);
