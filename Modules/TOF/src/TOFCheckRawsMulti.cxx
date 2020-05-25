@@ -23,6 +23,7 @@
 #include <TH1.h>
 #include <TPaveText.h>
 #include <TList.h>
+#include <TObjArray.h>
 
 using namespace std;
 
@@ -80,10 +81,11 @@ Quality TOFCheckRawsMulti::check(std::map<std::string, std::shared_ptr<MonitorOb
       //       h->SetBit(AliQAv1::GetImageBit(), kTRUE);
       //   }
       // }
-      if (h->GetEntries() == 0) {
+      if (h->GetEntries() == 0) { // Histogram is empty
         result = Quality::Medium;
         // flag = AliQAv1::kWARNING;
-      } else {
+        shifter_msg = "No counts!";
+      } else { // Histogram is non empty
         multiMean = h->GetMean();
         zeroBinIntegral = h->Integral(1, 1);
         lowMIntegral = h->Integral(1, 10);
@@ -91,62 +93,67 @@ Quality TOFCheckRawsMulti::check(std::map<std::string, std::shared_ptr<MonitorOb
 
         if (totIntegral == 0) { //if only "0 hits per event" bin is filled -> error
           if (h->GetBinContent(1) > 0) {
-            result = Quality::Medium;
+            result = Quality::Bad;
             // flag = AliQAv1::kERROR;
+            shifter_msg = "Only events at 0 filled!";
           }
         } else {
           // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
-          if (0) {
+          if (0) { // TODO: this is only for cosmics, how to check?
             if (multiMean < 10.) {
               result = Quality::Good;
+              shifter_msg = "Average within limits, OK!";
               // flag = AliQAv1::kINFO;
             } else {
               result = Quality::Medium;
+              shifter_msg = "Average outside limits!";
               // flag = AliQAv1::kWARNING;
             }
-          } else {
-            Bool_t isZeroBinContentHigh = kFALSE;
-            Bool_t isLowMultContentHigh = kFALSE;
-            Bool_t isINT7AverageLow = kFALSE;
-            Bool_t isINT7AverageHigh = kFALSE;
-
-            if (zeroBinIntegral > 0.75 * totIntegral)
-              isZeroBinContentHigh = kTRUE;
-            if (lowMIntegral > 0.75 * totIntegral)
-              isLowMultContentHigh = kTRUE;
-            if (multiMean < minTOFrawhits)
-              isINT7AverageLow = kTRUE;
-            if (multiMean > maxTOFrawhits)
-              isINT7AverageHigh = kTRUE;
+          } else { // Running with collisions
+            const Bool_t isZeroBinContentHigh = (zeroBinIntegral > fracAtZeroMult * totIntegral);
+            const Bool_t isLowMultContentHigh = (lowMIntegral > fracAtLowMult * totIntegral);
+            const Bool_t isINT7AverageLow = (multiMean < minTOFrawhits);
+            const Bool_t isINT7AverageHigh = (multiMean > maxTOFrawhits);
 
             // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult) {
-            if (0) {
+            if (0) { // TODO: Low multiplicity running, how to check if it is pp? Probably this can be simplified in the json
               if (isZeroBinContentHigh && (multiMean > 10.)) {
 
               } else {
                 // if (!histname.Contains("INT7") && (multiMean > 100.)) {
                 if ((multiMean > 100.)) {
                   result = Quality::Medium;
+                  shifter_msg = "Average outside limits!";
                   // flag = AliQAv1::kWARNING;
                 } else {
                   // if (histname.Contains("INT7") && (isINT7AverageLow || isINT7AverageHigh)) {
                   if ((isINT7AverageLow || isINT7AverageHigh)) {
                     result = Quality::Medium;
+                    shifter_msg = "Average outside limits!";
                     // flag = AliQAv1::kWARNING;
                   } else {
                     result = Quality::Good;
+                    shifter_msg = "Average within limits, OK!";
                     // flag = AliQAv1::kINFO;
                   }
                 }
               }
-              // } else if ((AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult) && (isLowMultContentHigh || (multiMean > 500.))) {
-            } else if ((isLowMultContentHigh || (multiMean > 500.))) {
-              //assume that good range of multi in PbPb goes from 20 to 500 tracks
-              result = Quality::Medium;
-              // flag = AliQAv1::kWARNING;
-            } else {
-              result = Quality::Good;
-              // flag = AliQAv1::kINFO;
+            }
+            // } else if ((AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult) && (isLowMultContentHigh || (multiMean > 500.))) {
+            else { // High multiplicity running e.g. Pb-Pb
+              if (isLowMultContentHigh) {
+                result = Quality::Medium;
+                shifter_msg = Form("Low-multiplicity counts are high\n(%.2f higher than total)!", fracAtLowMult);
+              } else if (multiMean > maxTOFrawhitsPbPb) {
+                //assume that good range of multi in PbPb goes from 20 to 500 tracks
+                result = Quality::Medium;
+                shifter_msg = Form("Average higher than expected (%.2f)!", maxTOFrawhitsPbPb);
+                // flag = AliQAv1::kWARNING;
+              } else {
+                result = Quality::Good;
+                shifter_msg = "Average within limits";
+                // flag = AliQAv1::kINFO;
+              }
             }
           }
         }
@@ -166,10 +173,13 @@ void TOFCheckRawsMulti::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     h->GetListOfFunctions()->Add(msg);
     msg->Draw();
     msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->Clear();
+    TObjArray* txt_arr = shifter_msg.Tokenize("\n");
+    for (Int_t i = 0; i < txt_arr->GetEntries(); i++) {
+      msg->AddText(txt_arr->At(i)->GetName());
+    }
 
     if (checkResult == Quality::Good) {
-      LOG(INFO) << "Quality::Good, setting to green";
-      msg->Clear();
       msg->AddText(Form("Mean value = %5.2f", multiMean));
       msg->AddText(Form("Reference range: %5.2f-%5.2f", minTOFrawhits, maxTOFrawhits));
       msg->AddText(Form("Events with 0 hits = %5.2f%%", zeroBinIntegral * 100. / totIntegral));
@@ -178,20 +188,12 @@ void TOFCheckRawsMulti::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
-      //
-      msg->Clear();
-      msg->AddText("No TOF hits for all events.");
       msg->AddText("Call TOF on-call.");
       msg->SetFillColor(kRed);
       //
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
-      //
-      msg->Clear();
-      msg->AddText("No entries. IF TOF IN RUN");
-      msg->AddText("check the TOF TWiki");
+      msg->AddText("IF TOF IN RUN check the TOF TWiki");
       msg->SetFillColor(kYellow);
       //
       h->SetFillColor(kOrange);
