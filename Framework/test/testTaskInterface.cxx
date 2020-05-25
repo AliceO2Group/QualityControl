@@ -16,6 +16,33 @@
 #include "QualityControl/TaskFactory.h"
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
+#include <Framework/ConfigParamRegistry.h>
+
+#if (__has_include(<Framework/ConfigParamStore.h>))
+#include <Framework/ConfigParamStore.h>
+o2::framework::ConfigParamRegistry createDummyRegistry()
+{
+  using namespace o2::framework;
+  std::vector<ConfigParamSpec> specs;
+  std::vector<std::unique_ptr<ParamRetriever>> retrievers;
+
+  auto store = std::make_unique<ConfigParamStore>(specs, std::move(retrievers));
+  store->preload();
+  store->activate();
+  ConfigParamRegistry registry(std::move(store));
+
+  return registry;
+}
+#else
+o2::framework::ConfigParamRegistry createDummyRegistry()
+{
+  using namespace o2::framework;
+  std::unique_ptr<ParamRetriever> retriever;
+  ConfigParamRegistry registry(move(retriever));
+
+  return registry;
+}
+#endif
 
 #define BOOST_TEST_MODULE TaskInterface test
 #define BOOST_TEST_MAIN
@@ -101,8 +128,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   test::TestTask testTask(objectsManager);
   BOOST_CHECK_EQUAL(testTask.test, 0);
 
-  std::unique_ptr<ParamRetriever> retriever;
-  ConfigParamRegistry options(move(retriever));
+  auto options = createDummyRegistry();
   ServiceRegistry services;
   InitContext ctx(options, services);
   testTask.initialize(ctx);

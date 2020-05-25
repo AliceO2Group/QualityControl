@@ -37,7 +37,7 @@ ObjectsManager::ObjectsManager(TaskConfig& taskConfig, bool noDiscovery) : mTask
   if (!noDiscovery) {
     mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName);
   } else {
-    QcInfoLogger::GetInstance() << "Service Discovery disabled" << infologger::endm;
+    ILOG(Info) << "Service Discovery disabled" << ENDM;
     mServiceDiscovery = nullptr;
   }
 }
@@ -47,8 +47,7 @@ ObjectsManager::~ObjectsManager() = default;
 void ObjectsManager::startPublishing(TObject* object)
 {
   if (mMonitorObjects->FindObject(object->GetName()) != 0) {
-    QcInfoLogger::GetInstance() << "Object already being published (" << object->GetName() << ")"
-                                << infologger::endm;
+    ILOG(Warning) << "Object already being published (" << object->GetName() << ")" << ENDM;
     BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
   }
   auto* newObject = new MonitorObject(object, mTaskConfig.taskName, mTaskConfig.detectorName);
@@ -87,30 +86,25 @@ void ObjectsManager::stopPublishing(TObject* object)
   stopPublishing(object->GetName());
 }
 
-void ObjectsManager::stopPublishing(const string& name)
+void ObjectsManager::stopPublishing(const string& objectName)
 {
-  auto* mo = dynamic_cast<MonitorObject*>(mMonitorObjects->FindObject(name.data()));
-  if (mo == nullptr) {
-    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(name));
-  }
+  auto* mo = dynamic_cast<MonitorObject*>(getMonitorObject(objectName));
   mMonitorObjects->Remove(mo);
+}
+
+bool ObjectsManager::isBeingPublished(const string& name)
+{
+  return (mMonitorObjects->FindObject(name.c_str()) != nullptr);
 }
 
 MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
 {
-  TObject* mo = mMonitorObjects->FindObject(objectName.c_str());
-
-  if (mo != nullptr) {
-    return dynamic_cast<MonitorObject*>(mo);
-  } else {
+  TObject* object = mMonitorObjects->FindObject(objectName.c_str());
+  if (object == nullptr) {
+    ILOG(Error) << "ObjectsManager: Unable to find object \"" << objectName << "\"" << ENDM;
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
   }
-}
-
-TObject* ObjectsManager::getObject(std::string objectName)
-{
-  MonitorObject* mo = getMonitorObject(objectName);
-  return mo->getObject();
+  return dynamic_cast<MonitorObject*>(object);
 }
 
 MonitorObjectCollection* ObjectsManager::getNonOwningArray() const
@@ -122,7 +116,7 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
 {
   MonitorObject* mo = getMonitorObject(objectName);
   mo->addMetadata(key, value);
-  QcInfoLogger::GetInstance() << "Added metadata on " << objectName << " : " << key << " -> " << value << infologger::endm;
+  ILOG(Info) << "Added metadata on " << objectName << " : " << key << " -> " << value << ENDM;
 }
 
 int ObjectsManager::getNumberPublishedObjects()

@@ -21,6 +21,10 @@
 #include <TH1I.h>
 #include <TH2I.h>
 
+// O2 includes
+#include "TOFBase/Digit.h"
+#include "TOFBase/Geo.h"
+
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TOF/TOFTask.h"
@@ -274,6 +278,7 @@ void TOFTask::startOfCycle()
 
 void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // LOG(INFO) << "Monitoring in the TOF Task " << ENDM;
   // In this function you can access data inputs specified in the JSON config file, for example:
   //   "query": "random:ITS/RAWDATA/0"
   // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
@@ -285,18 +290,96 @@ void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // Some examples:
 
-  // 1. In a loop
-  for (auto&& input : ctx.inputs()) {
-    // get message header
-    if (input.header != nullptr && input.payload != nullptr) {
-      const auto* header = header::get<header::DataHeader*>(input.header);
-      // get payload of a specific input, which is a char array.
-      // const char* payload = input.payload;
+  // Get TOF digits
+  auto digits = ctx.inputs().get<gsl::span<o2::tof::Digit>>("tofdigits");
+  // Get TOF Readout window
+  auto rows = ctx.inputs().get<std::vector<o2::tof::ReadoutWindowData>>("readoutwin");
+  LOG(INFO) << "ReadoutWindow size::: " << rows.size();
 
-      // for the sake of an example, let's fill the histogram with payload sizes
-      mTOFRawsMulti->Fill(header->payloadSize);
+  Int_t eta, phi;
+  // Int_t det[5] = { 0 }; // Coordinates
+  Int_t strip = 0; // Strip (Put it into Geo.h?)
+  Float_t tdc_time = 0;
+  Float_t tot_time = 0;
+  // SM in side I: 14-17, 0-4 -> 4 + 5
+  // SM in side O: 5-13 -> 9
+  // phi is counted every pad starting from SM 0.
+  // There are 48 pads per SM. Side I is from phi 0:48*4 and 48*14:48*18
+  const Int_t phi_I1 = 48 * 4;
+  const Int_t phi_I2 = 48 * 14;
+  // eta is counted every half strip starting from strip 0.
+  // Halves strips in side A 0-90, in side C 91-181
+  const Int_t half_eta = 91;
+  Bool_t isSectorI = kFALSE;
+  Int_t ndigits[4] = { 0 }; // Number of digits per side I/A,O/A,I/C,O/C
+
+  // Loop on readout windows
+  for (const auto& row : rows) {
+    mTOFRawsMulti->Fill(row.size());                      // Number of digits inside a readout window
+    auto digits_in_row = row.getBunchChannelData(digits); // Digits inside a readout window
+    // Loop on digits
+    for (auto const& digit : digits_in_row) {
+      strip = ((digit.getChannel() / 96) % 91); // Strip index
+      // o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
+      // LOG(INFO) << "Filling digit #" << ndigits << " in sector #" << det[0] << " and strip #" << strip;
+      Int_t ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
+      // mTOFRawHitMap->Fill(det[0], strip);
+      mTOFRawHitMap->Fill(Float_t(o2::tof::Geo::getCrateFromECH(ech)) / 4.f, strip);
+      // TDC time and ToT time
+      tdc_time = digit.getTDC() * o2::tof::Geo::TDCBIN * 0.001;
+      tot_time = digit.getTOT() * o2::tof::Geo::TOTBIN_NS;
+      mTOFRawsTime->Fill(tdc_time);
+      mTOFRawsToT->Fill(tot_time);
+      digit.getPhiAndEtaIndex(phi, eta);
+      isSectorI = phi < phi_I1 || phi > phi_I2;
+      if (eta < half_eta) { // Sector A
+        if (isSectorI) {    // Sector I/A
+          mTOFRawsTimeIA->Fill(tdc_time);
+          mTOFRawsToTIA->Fill(tot_time);
+          ndigits[0]++;
+        } else { // Sector O/A
+          mTOFRawsTimeOA->Fill(tdc_time);
+          mTOFRawsToTOA->Fill(tot_time);
+          ndigits[1]++;
+        }
+      } else {           // Sector C
+        if (isSectorI) { // Sector I/C
+          mTOFRawsTimeIC->Fill(tdc_time);
+          mTOFRawsToTIC->Fill(tot_time);
+          ndigits[2]++;
+        } else { // Sector O/C
+          mTOFRawsTimeOC->Fill(tdc_time);
+          mTOFRawsToTOC->Fill(tot_time);
+          ndigits[3]++;
+        }
+      }
     }
+    // Filling histograms of hit multiplicity
+    mTOFRawsMultiIA->Fill(ndigits[0]);
+    mTOFRawsMultiOA->Fill(ndigits[1]);
+    mTOFRawsMultiIC->Fill(ndigits[2]);
+    mTOFRawsMultiOC->Fill(ndigits[3]);
+    //
+    ndigits[0] = 0;
+    ndigits[1] = 0;
+    ndigits[2] = 0;
+    ndigits[3] = 0;
   }
+
+  // LOG(INFO) << "Digits counted:::::::: " << ndigits << "stop";
+
+  // 1. In a loop
+  // for (auto&& input : ctx.inputs()) {
+  // get message header
+  //   if (input.header != nullptr && input.payload != nullptr) {
+  //     const auto* header = header::get<header::DataHeader*>(input.header);
+  // get payload of a specific input, which is a char array.
+  // const char* payload = input.payload;
+  //     LOG(INFO) << "Payload is :::::::: " << input.payload;
+  // for the sake of an example, let's fill the histogram with payload sizes
+  //     mTOFRawsMulti->Fill(header->payloadSize);
+  //   }
+  // }
 
   // 2. Using get("<binding>")
 
