@@ -40,7 +40,14 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
-  getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
+  try {
+    getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
+  } catch (...) {
+    // some methods can throw exceptions, it is indicated in their doxygen.
+    // In case it is recoverable, it is recommended to catch them and do something meaningful.
+    // Here we don't care that the metadata was not added and just log the event.
+    ILOG(Warning) << "Metadata could not be added to " << mHistogram->GetName() << ENDM;
+  }
 }
 
 void SkeletonTask::startOfActivity(Activity& /*activity*/)

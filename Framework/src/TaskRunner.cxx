@@ -37,6 +37,8 @@
 
 using namespace std;
 
+const auto current_diagnostic = boost::current_exception_diagnostic_information;
+
 namespace o2::quality_control::core
 {
 
@@ -52,13 +54,20 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
   // setup configuration
-  mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-  populateConfig(taskName);
+  try {
+    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
+    populateConfig(taskName);
+  } catch (...) {
+    // catch the configuration exception and print it to avoid losing it
+    ILOG(Fatal) << "Unexpected exception during configuration:\n"
+                << current_diagnostic(true);
+    throw;
+  }
 }
 
 void TaskRunner::init(InitContext& iCtx)
 {
-  QcInfoLogger::GetInstance() << "initializing TaskRunner" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "initializing TaskRunner" << ENDM;
 
   // registering state machine callbacks
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this]() { start(); });
@@ -242,61 +251,55 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
 
 void TaskRunner::populateConfig(std::string taskName)
 {
-  try {
-    auto tasksConfigList = mConfigFile->getRecursive("qc.tasks");
-    auto taskConfigTree = tasksConfigList.find(taskName);
-    if (taskConfigTree == tasksConfigList.not_found()) {
-      throw;
-    }
-
-    mTaskConfig.taskName = taskName;
-    string test = taskConfigTree->second.get<std::string>("detectorName", "MISC");
-    mTaskConfig.detectorName = validateDetectorName(taskConfigTree->second.get<std::string>("detectorName", "MISC"));
-    mTaskConfig.moduleName = taskConfigTree->second.get<std::string>("moduleName");
-    mTaskConfig.className = taskConfigTree->second.get<std::string>("className");
-    mTaskConfig.cycleDurationSeconds = taskConfigTree->second.get<int>("cycleDurationSeconds", 10);
-    mTaskConfig.maxNumberCycles = taskConfigTree->second.get<int>("maxNumberCycles", -1);
-    mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
-    mTaskConfig.conditionUrl = mConfigFile->get<std::string>("qc.config.conditionDB.url", "http://ccdb-test.cern.ch:8080");
-    try {
-      mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + taskName + ".taskParameters");
-    } catch (...) {
-      LOG(INFO) << "No custom parameters for " << taskName;
-    }
-
-    auto policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
-    ConfigurationInterface* config = policiesFilePath.empty() ? mConfigFile.get() : ConfigurationFactory::getConfiguration(policiesFilePath).get();
-    auto policiesTree = config->getRecursive("dataSamplingPolicies");
-    auto dataSourceTree = taskConfigTree->second.get_child("dataSource");
-    std::string type = dataSourceTree.get<std::string>("type");
-
-    if (type == "dataSamplingPolicy") {
-      auto policyName = dataSourceTree.get<std::string>("name");
-      LOG(INFO) << "policyName : " << policyName;
-      mInputSpecs = DataSampling::InputSpecsForPolicy(config, policyName);
-    } else if (type == "direct") {
-      auto inputsQuery = dataSourceTree.get<std::string>("query");
-      mInputSpecs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
-    } else {
-      std::string message = std::string("Configuration error : dataSource type unknown : ") + type; // TODO pass this message to the exception
-      BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
-    }
-
-    mInputSpecs.emplace_back(InputSpec{ "timer-cycle", createTaskDataOrigin(), createTaskDataDescription("TIMER-" + taskName), 0, Lifetime::Timer });
-    mOptions.push_back({ "period-timer-cycle", framework::VariantType::Int, static_cast<int>(mTaskConfig.cycleDurationSeconds * 1000000), { "timer period" } });
-  } catch (...) { // catch already here the configuration exception and print it
-    // because if we are in a constructor, the exception could be lost
-    std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
-    throw;
+  auto tasksConfigList = mConfigFile->getRecursive("qc.tasks");
+  auto taskConfigTree = tasksConfigList.find(taskName);
+  if (taskConfigTree == tasksConfigList.not_found()) {
+    std::string message = "No configuration found for task \"" + taskName + "\"";
+    BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
   }
-  LOG(INFO) << "Configuration loaded : ";
-  LOG(INFO) << ">> Task name : " << mTaskConfig.taskName;
-  LOG(INFO) << ">> Module name : " << mTaskConfig.moduleName;
-  LOG(INFO) << ">> Detector name : " << mTaskConfig.detectorName;
-  LOG(INFO) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds;
-  LOG(INFO) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles;
+
+  mTaskConfig.taskName = taskName;
+  string test = taskConfigTree->second.get<std::string>("detectorName", "MISC");
+  mTaskConfig.detectorName = validateDetectorName(taskConfigTree->second.get<std::string>("detectorName", "MISC"));
+  mTaskConfig.moduleName = taskConfigTree->second.get<std::string>("moduleName");
+  mTaskConfig.className = taskConfigTree->second.get<std::string>("className");
+  mTaskConfig.cycleDurationSeconds = taskConfigTree->second.get<int>("cycleDurationSeconds", 10);
+  mTaskConfig.maxNumberCycles = taskConfigTree->second.get<int>("maxNumberCycles", -1);
+  mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+  mTaskConfig.conditionUrl = mConfigFile->get<std::string>("qc.config.conditionDB.url", "http://ccdb-test.cern.ch:8080");
+  try {
+    mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + taskName + ".taskParameters");
+  } catch (...) {
+    ILOG(Info) << "No custom parameters for " << taskName << ENDM;
+  }
+
+  auto policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
+  ConfigurationInterface* config = policiesFilePath.empty() ? mConfigFile.get() : ConfigurationFactory::getConfiguration(policiesFilePath).get();
+  auto policiesTree = config->getRecursive("dataSamplingPolicies");
+  auto dataSourceTree = taskConfigTree->second.get_child("dataSource");
+  std::string type = dataSourceTree.get<std::string>("type");
+
+  if (type == "dataSamplingPolicy") {
+    auto policyName = dataSourceTree.get<std::string>("name");
+    ILOG(Info) << "policyName : " << policyName << ENDM;
+    mInputSpecs = DataSampling::InputSpecsForPolicy(config, policyName);
+  } else if (type == "direct") {
+    auto inputsQuery = dataSourceTree.get<std::string>("query");
+    mInputSpecs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
+  } else {
+    std::string message = std::string("Configuration error : dataSource type unknown : ") + type;
+    BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
+  }
+
+  mInputSpecs.emplace_back(InputSpec{ "timer-cycle", createTaskDataOrigin(), createTaskDataDescription("TIMER-" + taskName), 0, Lifetime::Timer });
+  mOptions.push_back({ "period-timer-cycle", framework::VariantType::Int, static_cast<int>(mTaskConfig.cycleDurationSeconds * 1000000), { "timer period" } });
+
+  ILOG(Info) << "Configuration loaded : " << ENDM;
+  ILOG(Info) << ">> Task name : " << mTaskConfig.taskName << ENDM;
+  ILOG(Info) << ">> Module name : " << mTaskConfig.moduleName << ENDM;
+  ILOG(Info) << ">> Detector name : " << mTaskConfig.detectorName << ENDM;
+  ILOG(Info) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << ENDM;
+  ILOG(Info) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << ENDM;
 }
 
 std::string TaskRunner::validateDetectorName(std::string name)
@@ -316,9 +319,9 @@ std::string TaskRunner::validateDetectorName(std::string name)
     std::string permittedString;
     for (auto i : permitted)
       permittedString += i + ' ';
-    LOG(ERROR) << "Invalid detector name : " << name << "\n"
-               << "    Placeholder 'MISC' will be used instead\n"
-               << "    Note: list of permitted detector names :" << permittedString;
+    ILOG(Error) << "Invalid detector name : " << name << "\n"
+                << "    Placeholder 'MISC' will be used instead\n"
+                << "    Note: list of permitted detector names :" << permittedString << ENDM;
     return "MISC";
   }
   return name;
@@ -349,7 +352,7 @@ void TaskRunner::endOfActivity()
 
 void TaskRunner::startCycle()
 {
-  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << " in " << mTaskConfig.taskName << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << " in " << mTaskConfig.taskName << ENDM;
   mTask->startOfCycle();
   mNumberMessages = 0;
   mNumberObjectsPublishedInCycle = 0;
@@ -371,8 +374,8 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   mCycleOn = false;
 
   if (mTaskConfig.maxNumberCycles == mCycleNumber) {
-    LOG(INFO) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
-              << " The task will not do anything from now on.";
+    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
+               << " The task will not do anything from now on." << ENDM;
   }
 }
 
@@ -400,7 +403,7 @@ void TaskRunner::publishCycleStats()
 
 int TaskRunner::publish(DataAllocator& outputs)
 {
-  QcInfoLogger::GetInstance() << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << ENDM;
   AliceO2::Common::Timer publicationDurationTimer;
 
   auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);

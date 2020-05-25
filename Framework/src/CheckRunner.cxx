@@ -47,6 +47,7 @@ using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 namespace bfs = boost::filesystem;
+const auto current_diagnostic = boost::current_exception_diagnostic_information;
 
 namespace o2::quality_control::checker
 {
@@ -70,7 +71,7 @@ o2::framework::Inputs CheckRunner::createInputSpec(const std::string checkName, 
     (void)key;
     if (sourceConf.get<std::string>("type") == "Task") {
       const std::string& taskName = sourceConf.get<std::string>("name");
-      QcInfoLogger::GetInstance() << ">>>> Check name : " << checkName << " input task name: " << taskName << " " << TaskRunner::createTaskDataDescription(taskName).as<std::string>() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Info) << ">>>> Check name : " << checkName << " input task name: " << taskName << " " << TaskRunner::createTaskDataDescription(taskName).as<std::string>() << ENDM;
       o2::framework::InputSpec input{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
       inputs.push_back(std::move(input));
     }
@@ -198,10 +199,17 @@ CheckRunner::~CheckRunner()
 
 void CheckRunner::init(framework::InitContext&)
 {
-  initDatabase();
-  initMonitoring();
-  for (auto& check : mChecks) {
-    check.init();
+  try {
+    initDatabase();
+    initMonitoring();
+    for (auto& check : mChecks) {
+      check.init();
+    }
+  } catch (...) {
+    // catch the exceptions and print it (the ultimate caller might not know how to display it)
+    ILOG(Fatal) << "Unexpected exception during initialization:\n"
+                << current_diagnostic(true) << ENDM;
+    throw;
   }
 }
 
@@ -221,7 +229,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
       mLogger << "Device " << mDeviceName
               << " received " << moArray->GetEntries()
               << " MonitorObjects from " << input.binding
-              << AliceO2::InfoLogger::InfoLogger::endm;
+              << ENDM;
 
       // Check if this CheckRunner stores this input
       bool store = mInputStoreSet.count(DataSpecUtils::label(input)) > 0;
@@ -239,7 +247,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
           }
 
         } else {
-          mLogger << "The mo is null" << AliceO2::InfoLogger::InfoLogger::endm;
+          mLogger << "The mo is null" << ENDM;
         }
       }
     }
@@ -270,7 +278,7 @@ void CheckRunner::update(std::shared_ptr<MonitorObject> mo)
 std::vector<Check*> CheckRunner::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 {
   mLogger << "Running " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
-          << AliceO2::InfoLogger::InfoLogger::endm;
+          << ENDM;
 
   std::vector<Check*> triggeredChecks;
   for (auto& check : mChecks) {
@@ -284,7 +292,7 @@ std::vector<Check*> CheckRunner::check(std::map<std::string, std::shared_ptr<Mon
       // Was checked, update latest revision
       check.updateRevision(mGlobalRevision);
     } else {
-      mLogger << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << AliceO2::InfoLogger::InfoLogger::endm;
+      mLogger << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
     }
   }
   return triggeredChecks;
@@ -292,28 +300,28 @@ std::vector<Check*> CheckRunner::check(std::map<std::string, std::shared_ptr<Mon
 
 void CheckRunner::store(std::vector<Check*>& checks)
 {
-  mLogger << "Storing " << checks.size() << " quality objects" << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << "Storing " << checks.size() << " quality objects" << ENDM;
   try {
     for (auto check : checks) {
       mDatabase->storeQO(check->getQualityObject());
     }
   } catch (boost::exception& e) {
-    mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << "Unable to " << diagnostic_information(e) << ENDM;
   }
 
-  mLogger << "Storing " << mMonitorObjectStoreVector.size() << " monitor objects" << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << "Storing " << mMonitorObjectStoreVector.size() << " monitor objects" << ENDM;
   try {
     for (auto mo : mMonitorObjectStoreVector) {
       mDatabase->storeMO(mo);
     }
   } catch (boost::exception& e) {
-    mLogger << "Unable to " << diagnostic_information(e) << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << "Unable to " << diagnostic_information(e) << ENDM;
   }
 }
 
 void CheckRunner::send(std::vector<Check*>& checks, framework::DataAllocator& allocator)
 {
-  mLogger << "Send  " << checks.size() << " quality objects" << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << "Send  " << checks.size() << " quality objects" << ENDM;
   for (auto check : checks) {
     auto outputSpec = check->getOutputSpec();
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
@@ -337,38 +345,17 @@ void CheckRunner::updateRevision()
 
 void CheckRunner::initDatabase()
 {
-  // configuration
-  try {
-    std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-    // configuration of the database
-    mDatabase = DatabaseFactory::create(config->get<std::string>("qc.config.database.implementation"));
-    mDatabase->connect(config->getRecursiveMap("qc.config.database"));
-    LOG(INFO) << "Database that is going to be used : ";
-    LOG(INFO) << ">> Implementation : " << config->get<std::string>("qc.config.database.implementation");
-    LOG(INFO) << ">> Host : " << config->get<std::string>("qc.config.database.host");
-  } catch (
-    std::string const& e) { // we have to catch here to print the exception because the device will make it disappear
-    LOG(ERROR) << "exception : " << e;
-    throw;
-  } catch (...) {
-    std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
-    throw;
-  }
+  std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
+  mDatabase = DatabaseFactory::create(config->get<std::string>("qc.config.database.implementation"));
+  mDatabase->connect(config->getRecursiveMap("qc.config.database"));
+  LOG(INFO) << "Database that is going to be used : ";
+  LOG(INFO) << ">> Implementation : " << config->get<std::string>("qc.config.database.implementation");
+  LOG(INFO) << ">> Host : " << config->get<std::string>("qc.config.database.host");
 }
 
 void CheckRunner::initMonitoring()
 {
-  // monitoring
-  try {
-    mCollector = MonitoringFactory::Get("infologger://");
-  } catch (...) {
-    std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
-    throw;
-  }
+  mCollector = MonitoringFactory::Get("infologger://");
   startFirstObject = system_clock::time_point::min();
   timer.reset(1000000); // 10 s.
 }
