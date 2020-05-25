@@ -41,7 +41,6 @@ using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 
-namespace bfs = boost::filesystem;
 const auto current_diagnostic = boost::current_exception_diagnostic_information;
 
 namespace o2::quality_control::checker
