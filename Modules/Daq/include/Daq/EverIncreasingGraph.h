@@ -41,7 +41,7 @@ class EverIncreasingGraph : public o2::quality_control::checker::CheckInterface
 
  private:
 
-ClassDefOverride(EverIncreasingGraph, 1);
+  ClassDefOverride(EverIncreasingGraph, 1);
 };
 
 } // namespace o2::quality_control_modules::daq
