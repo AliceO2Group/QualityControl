@@ -40,8 +40,6 @@ class EverIncreasingGraph : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  DataBlockId mLastId;
-
   ClassDefOverride(EverIncreasingGraph, 1);
 };
 
