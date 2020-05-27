@@ -41,18 +41,20 @@ void customize(std::vector<CompletionPolicy>& policies)
 #include "QualityControl/runnerUtils.h"
 #include <Framework/runDataProcessing.h>
 #include <Framework/ControlService.h>
+#include <set>
+#include <vector>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;
 
 /**
- * Test descrition
+ * Test description
  * 
- * Test complex configuratio with 3 tasks and 3 checks.
+ * Test a complex configuration with 3 tasks and 3 checks.
  * Checks sources contain several tasks with different policies.
  *
  * The goal is to check whether all checks are triggered and generate Quality Objects.
- * It is expected to terminate whenever all task publish for the first time.
+ * It is expected to terminate as soon as all task publish for the first time.
  */
 
 class Receiver : public framework::Task
@@ -67,31 +69,34 @@ class Receiver : public framework::Task
     }
   }
 
-  Receiver(const Receiver& receiver) : mNames(receiver.mNames) {}
-
   /// Destructor
   ~Receiver() override{};
 
   /// \brief Receiver process callback
   void run(framework::ProcessingContext& pctx) override
   {
-    for (auto& checkName : mNames) {
+    std::vector<std::string> namesToErase;
+
+    for (const auto& checkName : mNames) {
       if (pctx.inputs().isValid(checkName)) {
         auto qo = pctx.inputs().get<QualityObject*>(checkName);
         if (!qo) {
           LOG(ERROR) << qo->getName() << " - quality is NULL";
-          pctx.services().get<ControlService>().readyToQuit(true);
+          pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);
         } else {
-          LOG(DEBUG) << qo->getName() << " - qualit: " << qo->getQuality();
-
-          mNames.erase(checkName);
+          LOG(DEBUG) << qo->getName() << " - quality: " << qo->getQuality();
+          namesToErase.emplace_back(checkName);
         }
-        // We ask to shut the topology down, returning 0 if there were no ERROR logs.
       }
     }
 
-    if (!mNames.size()) {
-      pctx.services().get<ControlService>().readyToQuit(true);
+    for (const auto& nameToErase : namesToErase) {
+      mNames.erase(nameToErase);
+    }
+
+    if (mNames.empty()) {
+      // We ask to shut the topology down, returning 0 if there were no ERROR logs.
+      pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);
     }
     LOG(DEBUG) << "Requires " << mNames.size() << " quality objects";
   }
@@ -139,15 +144,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   Receiver receiver(qcConfigurationSource);
   // Finally the receiver
-  DataProcessorSpec receiverSpec{
-    receiverName,
-    receiver.getInputs(),
-    Outputs{},
-    adaptFromTask<Receiver>(std::move(receiver)),
-    Options{},
-    std::vector<std::string>{},
-    std::vector<DataProcessorLabel>{}
-  };
+  DataProcessorSpec receiverSpec{ receiverName, receiver.getInputs(), {}, {} };
+  // We move the task at the end, so receiver.getInputs() is not called first.
+  receiverSpec.algorithm = adaptFromTask<Receiver>(std::move(receiver));
   specs.push_back(receiverSpec);
 
   return specs;
