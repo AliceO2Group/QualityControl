@@ -41,13 +41,13 @@ std::string getFirstTaskName(std::string configurationSource)
   throw;
 }
 
-std::string getFirstCheckerName(std::string configurationSource)
+std::string getFirstCheckName(std::string configurationSource)
 {
   auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
 
   if (config->getRecursive("qc").count("checks")) {
-    for (const auto& task : config->getRecursive("qc.checks")) {
-      return task.first; // task name;
+    for (const auto& check : config->getRecursive("qc.checks")) {
+      return check.first; // check name;
     }
   }
 

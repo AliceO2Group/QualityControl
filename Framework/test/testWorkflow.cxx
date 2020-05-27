@@ -13,17 +13,25 @@
 /// \author  Piotr Konopka
 ///
 
-#include "getTestDataDirectory.h"
-#include "QualityControl/CheckRunner.h"
 #include "QualityControl/InfrastructureGenerator.h"
-#include "QualityControl/runnerUtils.h"
-#include <Framework/runDataProcessing.h>
-#include <Framework/ControlService.h>
 #include <Framework/DataSampling.h>
-#include <TH1F.h>
 
 using namespace o2;
 using namespace o2::framework;
+
+void customize(std::vector<CompletionPolicy>& policies)
+{
+  DataSampling::CustomizeInfrastructure(policies);
+  quality_control::customizeInfrastructure(policies);
+}
+
+#include "getTestDataDirectory.h"
+#include "QualityControl/CheckRunner.h"
+#include "QualityControl/runnerUtils.h"
+#include <Framework/runDataProcessing.h>
+#include <Framework/ControlService.h>
+#include <TH1F.h>
+
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;
 
@@ -53,13 +61,13 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
   // Generation of the QC topology (one task, one checker in this case)
-  quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
 
   // Finally the receiver
   DataProcessorSpec receiver{
     "receiver",
     Inputs{
-      { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckerName(qcConfigurationSource)), 0 } },
+      { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
     Outputs{},
     AlgorithmSpec{
       [](ProcessingContext& pctx) {
@@ -68,14 +76,14 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
         auto qo = pctx.inputs().get<QualityObject*>("checked-mo");
         if (!qo) {
           LOG(ERROR) << "Quality Object is a NULL";
-          pctx.services().get<ControlService>().readyToQuit(true);
+          pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);
           return;
         }
 
-        LOG(DEBUG) << qo->getName() << " - qualit: " << qo->getQuality();
+        LOG(DEBUG) << qo->getName() << " - quality: " << qo->getQuality();
 
         // We ask to shut the topology down, returning 0 if there were no ERROR logs.
-        pctx.services().get<ControlService>().readyToQuit(true);
+        pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);
       } }
   };
   specs.push_back(receiver);
