@@ -51,15 +51,17 @@ class Ccdb:
         logging.info(f"Instantiate CCDB at {url}")
         self.url = url
 
-    def getObjectsList(self) -> List[str]:
+    def getObjectsList(self, added_since: int = 0) -> List[str]:
         '''
-        Get the full list of objects in the CCDB. 
-        
+        Get the full list of objects in the CCDB that have been created since added_since.
+
+        :param added_since: if specified, only return objects added since this timestamp in epoch milliseconds.
         :return A list of strings, each containing a path to an object in the CCDB.
         '''
+        logging.debug(f"added_since : {added_since}")
         url_for_all_obj = self.url + '/latest/.*'
         logging.debug(f"Ccdb::getObjectsList -> {url_for_all_obj}")
-        headers = {'Accept':'application/json'}
+        headers = {'Accept':'application/json', 'If-Not-Before':str(added_since)}
         r = requests.get(url_for_all_obj, headers=headers)
         r.raise_for_status()
         try:
