@@ -306,6 +306,12 @@ set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
 set_property(TEST testTrendingTask PROPERTY LABELS manual)
 
+# Add a functional test (QC-336)
+string(RANDOM UNIQUE_ID)
+configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-functional.json) # substitute the unique id in the task name
+set( TEST_COMMAND "o2-qc-run-producer --message-amount 10 -b | o2-qc --config json://${CMAKE_BINARY_DIR}/tests/basic-functional.json -b --run")
+add_test(NAME functional_test COMMAND sh -c "${TEST_COMMAND}")
+
 # ---- Install ----
 
 # Build targets with install rpath on Mac to dramatically speed up installation
