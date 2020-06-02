@@ -42,7 +42,7 @@
       }
     },
     "checks": {
-      "QcCheck": {
+      "QcCheck@UNIQUE_ID@": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",

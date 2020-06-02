@@ -309,8 +309,9 @@ set_property(TEST testTrendingTask PROPERTY LABELS manual)
 # Add a functional test (QC-336)
 string(RANDOM UNIQUE_ID)
 configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-functional.json) # substitute the unique id in the task name
-set( TEST_COMMAND "o2-qc-run-producer --message-amount 10 -b | o2-qc --config json://${CMAKE_BINARY_DIR}/tests/basic-functional.json -b --run")
-add_test(NAME functional_test COMMAND sh -c "${TEST_COMMAND}")
+add_test(NAME functional_test COMMAND sh -c "JSON_DIR=${CMAKE_BINARY_DIR}/tests UNIQUE_ID=${UNIQUE_ID} o2-qc-functional-test.sh ")
+set_property(TEST functional_test PROPERTY LABELS slow)
+set_property(TEST functional_test PROPERTY TIMEOUT 20)
 
 # ---- Install ----
 
@@ -385,7 +386,7 @@ install(FILES example-default.json
 
 install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/skip.py
                  script/RepoCleaner/repoCleaner.py script/RepoCleaner/1_per_run.py script/RepoCleaner/none_kept.py
-                 script/o2-qc-database-setup.sh
+                 script/o2-qc-database-setup.sh script/o2-qc-functional-test.sh
         DESTINATION bin)
 
 # ---- Copy test files ----
