@@ -17,6 +17,8 @@ then
   exit 1
 fi
 
+echo "ROOT_DYN_PATH : $ROOT_DYN_PATH"
+
 # make sure the CCDB is available otherwise we bail (no failure)
 # we do not use ping because it will fail from outside CERN.
 if curl --silent --connect-timeout 1 ccdb-test.cern.ch:8080 > /dev/null 2>&1 ; then
