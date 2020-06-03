@@ -17,6 +17,15 @@ then
   exit 1
 fi
 
+# make sure the CCDB is available otherwise we bail (no failure)
+# we do not use ping because it will fail from outside CERN.
+if curl --silent --connect-timeout 1 ccdb-test.cern.ch:8080 > /dev/null 2>&1 ; then
+  echo "CCDB is reachable."
+else
+  echo "CCDB not reachable, functional test is cancelled."
+  exit 0
+fi
+
 # delete data
 curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/FctTest${UNIQUE_ID}*
 
