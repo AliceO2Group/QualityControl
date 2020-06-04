@@ -31,8 +31,8 @@ namespace o2::quality_control::core
   const Quality Quality::Bad(3, "Bad");
   const Quality Quality::Null(NullLevel, "Null"); // we consider it the worst of the worst
 
-  Quality::Quality(unsigned int level, std::string name) : mLevel(level), mName(name) {}
-  Quality::Quality(const Quality& q) : mLevel(q.mLevel), mName(q.mName) {}
+  Quality::Quality(unsigned int level, std::string name) : mLevel(level), mName(name), mUserMetadata{} {}
+  Quality::Quality(const Quality& q) : mLevel(q.mLevel), mName(q.mName), mUserMetadata{} {}
 
   unsigned int Quality::getLevel() const { return mLevel; }
 
@@ -42,6 +42,29 @@ namespace o2::quality_control::core
   {
     out << "Quality: " << q.getName() << " (level " << q.getLevel() << ")\n";
     return out;
+  }
+
+  void Quality::addMetadata(std::string key, std::string value)
+  {
+    mUserMetadata.insert(std::pair(key, value));
+  }
+
+  void Quality::addMetadata(std::map<std::string, std::string> pairs)
+  {
+    // we do not use "merge" because it would ignore the items whose key already exist in mUserMetadata.
+    mUserMetadata.insert(pairs.begin(), pairs.end());
+  }
+
+  const std::map<std::string, std::string>& Quality::getMetadataMap() const
+  {
+    return mUserMetadata;
+  }
+
+  void Quality::updateMetadata(std::string key, std::string value)
+  {
+    if (mUserMetadata.count(key) > 0) {
+      mUserMetadata[key] = value;
+    }
   }
 
 } // namespace o2::quality_control::core

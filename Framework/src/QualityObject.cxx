@@ -20,6 +20,7 @@ ClassImp(o2::quality_control::core::QualityObject)
   namespace o2::quality_control::core
 {
 
+<<<<<<< HEAD
   QualityObject::QualityObject(
     Quality quality,
     std::string checkName,
@@ -33,8 +34,7 @@ ClassImp(o2::quality_control::core::QualityObject)
       mDetectorName{ std::move(detectorName) },
       mPolicyName{ std::move(policyName) },
       mInputs{ std::move(inputs) },
-      mMonitorObjectsNames{ std::move(monitorObjectsNames) },
-      mUserMetadata{ std::move(metadata) }
+      mMonitorObjectsNames{ std::move(monitorObjectsNames) }
   {
   }
 
@@ -63,25 +63,22 @@ ClassImp(o2::quality_control::core::QualityObject)
 
   void QualityObject::addMetadata(std::string key, std::string value)
   {
-    mUserMetadata.insert(std::pair(key, value));
+    mQuality.addMetadata(key, value);
   }
 
   void QualityObject::addMetadata(std::map<std::string, std::string> pairs)
   {
-    // we do not use "merge" because it would ignore the items whose key already exist in mUserMetadata.
-    mUserMetadata.insert(pairs.begin(), pairs.end());
+    mQuality.addMetadata(pairs);
   }
 
   const std::map<std::string, std::string>& QualityObject::getMetadataMap() const
   {
-    return mUserMetadata;
+    return mQuality.getMetadataMap();
   }
 
   void QualityObject::updateMetadata(std::string key, std::string value)
   {
-    if (mUserMetadata.count(key) > 0) {
-      mUserMetadata[key] = value;
-    }
+    mQuality.updateMetadata(key, value);
   }
 
   std::string QualityObject::getPath() const

@@ -111,7 +111,6 @@ class QualityObject : public TObject
   std::string mPolicyName;
   std::vector<std::string> mInputs;
   std::vector<std::string> mMonitorObjectsNames;
-  std::map<std::string, std::string> mUserMetadata;
 
   ClassDefOverride(QualityObject, 3);
 };
