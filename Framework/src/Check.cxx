@@ -12,6 +12,9 @@
 
 #include <memory>
 #include <algorithm>
+// boost
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm/copy.hpp>
 // ROOT
 #include <TClass.h>
 // O2
@@ -47,7 +50,6 @@ Check::Check(std::string checkName, std::string configurationSource)
   : mConfigurationSource(configurationSource),
     mLogger(QcInfoLogger::GetInstance()),
     mNumberOfTaskSources(0),
-    mLatestQuality(std::make_shared<QualityObject>(checkName)),
     mInputs{},
     mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 },
     mBeautify(true)
@@ -114,7 +116,7 @@ void Check::initConfig(std::string checkName)
 
     // Here can be implemented other sources for the Check then Task if needed
   }
-  mLatestQuality->setInputs(stringifyInput(mInputs));
+  mInputsStringified = stringifyInput(mInputs);
 
   // Prepare module loading
   mCheckConfig.moduleName = checkConfig.get<std::string>("moduleName");
@@ -122,7 +124,6 @@ void Check::initConfig(std::string checkName)
 
   // Detector name, if none use "DET"
   mCheckConfig.detectorName = checkConfig.get<std::string>("detectorName", "DET");
-  mLatestQuality->setDetectorName(mCheckConfig.detectorName);
 }
 
 void Check::initPolicy(std::string policyType)
@@ -144,7 +145,7 @@ void Check::initPolicy(std::string policyType)
   } else if (policyType == "OnAnyNonZero") {
     /**
      * Return true if any declared MOs were updated
-     * Guaranee that all declared MOs are available 
+     * Guarantee that all declared MOs are available
      */
     mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
       if (!mPolicyHelper) {
@@ -160,6 +161,21 @@ void Check::initPolicy(std::string policyType)
 
       for (const auto& moname : mCheckConfig.moNames) {
         if (revisionMap[moname] > mMORevision) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+  } else if (policyType == "OnEachSeparately") {
+    /**
+     * Return true if any declared MOs were updated
+     * This is the same behaviour as OnAny, but we should pass
+     * only one MO to a check at once.
+     */
+    mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
+      for (const auto& moname : mCheckConfig.moNames) {
+        if (revisionMap.count(moname) && revisionMap[moname] > mMORevision) {
           return true;
         }
       }
@@ -244,53 +260,75 @@ void Check::updateRevision(unsigned int revision)
   mMORevision = revision;
 }
 
-std::shared_ptr<QualityObject> Check::check(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
+QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
 {
-  // Check if the module with the function is loaded
-  if (mCheckInterface != nullptr) {
-    std::shared_ptr<Quality> quality;
-    if (mCheckConfig.allMOs) {
-      /* 
-       * User didn't specify the MOs.
-       * All MOs are passed, no shadowing needed.
-       */
-      mLatestQuality->updateQuality(mCheckInterface->check(&moMap));
-      // Trigger beautification
-      beautify(moMap);
-    } else {
-      /* 
-       * Shadow MOs.
-       * Don't pass MOs that weren't specified by user.
-       * The user might safely relay on getting only required MOs inside the map.
-       *
-       * Implementation: Copy to different map only required MOs.
-       */
-      std::map<std::string, std::shared_ptr<MonitorObject>> shadowMap;
-      for (auto& key : mCheckConfig.moNames) {
-        if (moMap.count(key)) {
-          // don't create empty shared_ptr
-          shadowMap.insert({ key, moMap[key] });
-        }
-      }
+  if (mCheckInterface == nullptr) {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Attempting to check, but no CheckInterface is loaded"));
+  }
 
-      // Trigger loaded check and update quality of the Check.
-      mLatestQuality->updateQuality(mCheckInterface->check(&shadowMap));
-      // Trigger beautification
-      beautify(shadowMap);
+  std::map<std::string, std::shared_ptr<MonitorObject>> shadowMap;
+  // Take only the MOs which are needed to be checked
+  if (mCheckConfig.allMOs) {
+    /*
+     * User didn't specify the MOs.
+     * All MOs are passed, no shadowing needed.
+     */
+    shadowMap = moMap;
+  } else {
+    /*
+     * Shadow MOs.
+     * Don't pass MOs that weren't specified by user.
+     * The user might safely rely on getting only required MOs inside the map.
+     *
+     * Implementation: Copy to different map only required MOs.
+     */
+    for (auto& key : mCheckConfig.moNames) {
+      // don't create empty shared_ptr
+      if (moMap.count(key)) {
+        shadowMap.insert({ key, moMap[key] });
+      }
     }
   }
-  mLogger << mCheckConfig.checkName << " Quality: " << mLatestQuality->getQuality() << AliceO2::InfoLogger::InfoLogger::endm;
 
-  return mLatestQuality;
+  // Prepare a vector of MO maps to be checked, each one will receive a separate Quality.
+  std::vector<std::map<std::string, std::shared_ptr<MonitorObject>>> moMapsToCheck;
+  if (mCheckConfig.policyType == "OnEachSeparately") {
+    // In this case we want to check all MOs separately and we get separate QOs for them.
+    for (auto mo : shadowMap) {
+      moMapsToCheck.push_back({ std::move(mo) });
+    }
+  } else {
+    moMapsToCheck.emplace_back(shadowMap);
+  }
+
+  QualityObjectsType qualityObjects;
+  for (auto& moMapToCheck : moMapsToCheck) {
+    std::vector<std::string> monitorObjectsNames;
+    boost::copy(moMapToCheck | boost::adaptors::map_keys, std::back_inserter(monitorObjectsNames));
+
+    auto quality = mCheckInterface->check(&moMapToCheck);
+    mLogger << "Check '" << mCheckConfig.checkName << "', quality '" << quality << "'" << ENDM;
+    // todo: take metadata from somewhere
+    qualityObjects.emplace_back(std::make_shared<QualityObject>(
+      quality,
+      mCheckConfig.checkName,
+      mCheckConfig.detectorName,
+      mCheckConfig.policyType,
+      mInputsStringified,
+      monitorObjectsNames));
+    beautify(shadowMap, quality);
+  }
+
+  return qualityObjects;
 }
 
-void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
+void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality)
 {
   if (!mBeautify) {
     return;
   }
 
   for (auto const& item : moMap) {
-    mCheckInterface->beautify(item.second /*mo*/, mLatestQuality->getQuality());
+    mCheckInterface->beautify(item.second /*mo*/, quality);
   }
 }

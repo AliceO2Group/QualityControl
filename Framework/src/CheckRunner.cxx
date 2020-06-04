@@ -231,8 +231,8 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
       // Check if this CheckRunner stores this input
       bool store = mInputStoreSet.count(DataSpecUtils::label(input)) > 0;
 
-      for (const auto& to : *moArray) {
-        std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(to) };
+      for (const auto tObject : *moArray) {
+        std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
 
         if (mo) {
           update(mo);
@@ -244,16 +244,18 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
           }
 
         } else {
-          mLogger << "The mo is null" << ENDM;
+          mLogger << AliceO2::InfoLogger::InfoLogger::Error << "The MO is null, probably a TObject could not be casted into an MO" << ENDM;
         }
       }
     }
   }
 
-  // Check if compliant with policy
-  auto triggeredChecks = check(mMonitorObjects);
-  store(triggeredChecks);
-  send(triggeredChecks, ctx.outputs());
+  auto qualityObjects = check(mMonitorObjects);
+
+  store(qualityObjects);
+  store(mMonitorObjectStoreVector);
+
+  send(qualityObjects, ctx.outputs());
 
   // Update global revision number
   updateRevision();
@@ -274,20 +276,19 @@ void CheckRunner::update(std::shared_ptr<MonitorObject> mo)
   mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
 }
 
-std::vector<Check*> CheckRunner::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
+QualityObjectsType CheckRunner::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 {
   mLogger << "Running " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
           << ENDM;
 
-  std::vector<Check*> triggeredChecks;
+  QualityObjectsType allQOs;
   for (auto& check : mChecks) {
     if (check.isReady(mMonitorObjectRevision)) {
-      auto qualityObj = check.check(moMap);
-      mTotalNumberCheckExecuted++;
-      // Check if shared_ptr != nullptr
-      if (qualityObj) {
-        triggeredChecks.push_back(&check);
-      }
+      auto newQOs = check.check(moMap);
+      mTotalNumberCheckExecuted += newQOs.size();
+
+      allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
+      newQOs.clear();
 
       // Was checked, update latest revision
       check.updateRevision(mGlobalRevision);
@@ -295,24 +296,27 @@ std::vector<Check*> CheckRunner::check(std::map<std::string, std::shared_ptr<Mon
       mLogger << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
     }
   }
-  return triggeredChecks;
+  return allQOs;
 }
 
-void CheckRunner::store(std::vector<Check*>& checks)
+void CheckRunner::store(QualityObjectsType& qualityObjects)
 {
-  mLogger << "Storing " << checks.size() << " quality objects" << ENDM;
+  mLogger << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
-    for (auto check : checks) {
-      mDatabase->storeQO(check->getQualityObject());
+    for (auto& qo : qualityObjects) {
+      mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
     }
   } catch (boost::exception& e) {
     mLogger << "Unable to " << diagnostic_information(e) << ENDM;
   }
+}
 
-  mLogger << "Storing " << mMonitorObjectStoreVector.size() << " monitor objects" << ENDM;
+void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects)
+{
+  mLogger << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
-    for (auto mo : mMonitorObjectStoreVector) {
+    for (auto& mo : monitorObjects) {
       mDatabase->storeMO(mo);
       mTotalNumberMOStored++;
     }
@@ -321,14 +325,22 @@ void CheckRunner::store(std::vector<Check*>& checks)
   }
 }
 
-void CheckRunner::send(std::vector<Check*>& checks, framework::DataAllocator& allocator)
+void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAllocator& allocator)
 {
-  mLogger << "Send  " << checks.size() << " quality objects" << ENDM;
-  for (auto check : checks) {
-    auto outputSpec = check->getOutputSpec();
+  // Note that we might send multiple QOs in one output, as separate parts.
+  // This should be fine if they are retrieved on the other side with InputRecordWalker.
+
+  mLogger << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
+  for (const auto& qo : qualityObjects) {
+
+    const auto& correspondingCheck = std::find_if(mChecks.begin(), mChecks.end(), [checkName = qo->getCheckName()](const auto& check) {
+      return check.getName() == checkName;
+    });
+
+    auto outputSpec = correspondingCheck->getOutputSpec();
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
     allocator.snapshot(
-      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *check->getQualityObject());
+      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
   }
 }
 

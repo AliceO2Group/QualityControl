@@ -127,19 +127,26 @@ class CheckRunner : public framework::Task
    * @param mo The MonitorObject to evaluate and whose quality will be set according
    *        to the worse quality encountered while running the Check's.
    */
-  std::vector<Check*> check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
+  QualityObjectsType check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
 
   /**
-   * \brief Store the MonitorObject in the database.
+   * \brief Store the QualityObjects in the database.
    *
-   * @param mo The MonitorObject to be stored in the database.
+   * @param qualityObjects QOs to be stored in DB.
    */
-  void store(std::vector<Check*>& checks);
+  void store(QualityObjectsType& qualityObjects);
 
   /**
-   * \brief Send the MonitorObject on FairMQ to whoever is listening.
+   * \brief Store the MonitorObjects in the database.
+   *
+   * @param monitorObjects MOs to be stored in DB.
    */
-  void send(std::vector<Check*>& checks, framework::DataAllocator& allocator);
+  void store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects);
+
+  /**
+   * \brief Send the QualityObjects on the DataProcessor output channel.
+   */
+  void send(QualityObjectsType& qualityObjects, framework::DataAllocator& allocator);
 
   /**
    * \brief Update cached monitor object with new one.

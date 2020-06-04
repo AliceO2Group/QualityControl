@@ -116,12 +116,9 @@ BOOST_AUTO_TEST_CASE(test_QualityReductor)
   auto tree = std::make_unique<TTree>();
   tree->Branch("quality", reductor->getBranchAddress(), reductor->getBranchLeafList());
 
-  QualityObject qoBad("check1");
-  qoBad.updateQuality(Quality::Bad);
-  QualityObject qoMedium("check1");
-  qoMedium.updateQuality(Quality::Medium);
-  QualityObject qoGood("check1");
-  qoGood.updateQuality(Quality::Good);
+  QualityObject qoBad(Quality::Bad, "check1");
+  QualityObject qoMedium(Quality::Medium, "check1");
+  QualityObject qoGood(Quality::Good, "check1");
 
   reductor->update(&qoBad);
   tree->Fill();

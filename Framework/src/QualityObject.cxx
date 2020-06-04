@@ -1,25 +1,48 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
+#include <utility>
+#include <Common/Exceptions.h>
+
 #include "QualityControl/QualityObject.h"
+
+using namespace AliceO2::Common;
 
 ClassImp(o2::quality_control::core::QualityObject)
 
   namespace o2::quality_control::core
 {
 
-  QualityObject::QualityObject(const std::string& checkName, std::vector<std::string> inputs, const std::string& detectorName)
-    : mDetectorName(detectorName),
-      mCheckName(checkName),
-      mInputs{},
-      mUserMetadata{}
+  QualityObject::QualityObject(
+    Quality quality,
+    std::string checkName,
+    std::string detectorName,
+    std::string policyName,
+    std::vector<std::string> inputs,
+    std::vector<std::string> monitorObjectsNames,
+    std::map<std::string, std::string> metadata) //
+    : mQuality{ quality },
+      mCheckName{ std::move(checkName) },
+      mDetectorName{ std::move(detectorName) },
+      mPolicyName{ std::move(policyName) },
+      mInputs{ std::move(inputs) },
+      mMonitorObjectsNames{ std::move(monitorObjectsNames) },
+      mUserMetadata{ std::move(metadata) }
   {
-    setInputs(inputs);
-    updateQuality(Quality());
   }
 
   QualityObject::~QualityObject() = default;
 
-  const std::string anonChecker = "anonymouseChecker";
+  const std::string anonChecker = "anonymousChecker";
   QualityObject::QualityObject()
-    : QualityObject(anonChecker, {})
+    : QualityObject(Quality(), anonChecker)
   {
   }
 
@@ -64,6 +87,13 @@ ClassImp(o2::quality_control::core::QualityObject)
   std::string QualityObject::getPath() const
   {
     std::string path = "qc/checks/" + getDetectorName() + "/" + getName();
+    if (mPolicyName == "OnEachSeparately") {
+      if (mMonitorObjectsNames.size() == 1) {
+        path += "/" + mMonitorObjectsNames[0];
+      } else {
+        BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Only one MO should be assigned to one QO With the policy OnEachSeparatety"));
+      }
+    }
     return path;
   }
 
@@ -85,4 +115,4 @@ ClassImp(o2::quality_control::core::QualityObject)
   {
     return mCheckName;
   }
-}
+} // namespace o2::quality_control::core
