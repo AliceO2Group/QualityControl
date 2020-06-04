@@ -138,7 +138,7 @@ def findMatchingRule(rules, object_path):
     return None
 
 filepath = tempfile.gettempdir() + "/repoCleaner.txt"
-currentTimeStamp = time.time_ns() // 1000000
+currentTimeStamp = int(time.time() * 1000)
 
 def getTimestampLastExecution():
     """
