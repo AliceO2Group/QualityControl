@@ -306,7 +306,7 @@ set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
 set_property(TEST testTrendingTask PROPERTY LABELS manual)
 
-# Add a functional test (QC-336)
+# Add a functional test (QC-336) 
 string(RANDOM UNIQUE_ID)
 configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-functional.json) # substitute the unique id in the task name
 add_test(NAME functional_test COMMAND o2-qc-functional-test.sh)
