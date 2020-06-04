@@ -113,6 +113,18 @@
             "name": "QYZTask",
             "MOs": ["example", "example3"]
         }]
+      },
+      "CheckSeparately": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnEachSeparately",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "skeletonTask",
+          "MOs": ["example", "example2"]
+        }]
       }
     }
   },

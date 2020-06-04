@@ -133,6 +133,20 @@
           "type": "Task",
           "name": "xyzTask"
         }]
+      },
+      "checkOnEachSeparately": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnEachSeparately",
+        "dataSource": [{
+          "type": "Task",
+          "name": "abcTask",
+          "MOs": [
+            "test1",
+            "test2"
+          ]
+        }]
       }
     },
     "postprocessing": {

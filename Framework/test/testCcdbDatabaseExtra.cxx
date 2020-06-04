@@ -107,10 +107,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->storeMO(mo1);
 
-  Quality q = Quality::Bad;
-  std::vector<std::string> inputs;
-  shared_ptr<QualityObject> qo = make_shared<QualityObject>("checkName", inputs, "TST");
-  qo->setQuality(q);
+  shared_ptr<QualityObject> qo = make_shared<QualityObject>(Quality::Bad, "checkName", "TST", "OnAll");
   f.backend->storeQO(qo);
 }
 

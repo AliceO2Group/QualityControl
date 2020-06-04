@@ -56,7 +56,7 @@ class Check
    */
   void init();
 
-  std::shared_ptr<o2::quality_control::core::QualityObject> check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
+  QualityObjectsType check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
 
   // Policy
   /**
@@ -72,8 +72,7 @@ class Check
    */
   bool isReady(std::map<std::string, unsigned int>& revisionMap);
 
-  const std::string getName() { return mCheckConfig.checkName; };
-  std::shared_ptr<o2::quality_control::core::QualityObject> getQualityObject() { return mLatestQuality; };
+  const std::string& getName() const { return mCheckConfig.checkName; };
   o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
   o2::framework::Inputs getInputs() const { return mInputs; };
 
@@ -87,7 +86,7 @@ class Check
   void initConfig(std::string checkName);
   void initPolicy(std::string policyType);
 
-  void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);
+  void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality);
 
   std::string mConfigurationSource;
   o2::quality_control::core::QcInfoLogger& mLogger;
@@ -95,11 +94,9 @@ class Check
   CheckInterface* mCheckInterface = nullptr;
   size_t mNumberOfTaskSources;
 
-  // Latest Quality
-  std::shared_ptr<o2::quality_control::core::QualityObject> mLatestQuality;
-
   // DPL information
   o2::framework::Inputs mInputs;
+  std::vector<std::string> mInputsStringified;
   o2::framework::OutputSpec mOutputSpec;
 
   bool mBeautify = true;

@@ -18,6 +18,7 @@
 #include "getTestDataDirectory.h"
 #include <Framework/DataSampling.h>
 #include <Common/Exceptions.h>
+#include <TH1F.h>
 
 #define BOOST_TEST_MODULE Check test
 #define BOOST_TEST_MAIN
@@ -181,6 +182,40 @@ BOOST_AUTO_TEST_CASE(test_check_policy_globalany)
 
   std::map<std::string, unsigned int> moMap2 = { { mo1, 10 }, { mo2, 13 } };
   BOOST_CHECK(check.isReady(moMap2));
+}
+
+BOOST_AUTO_TEST_CASE(test_check_policy_oneachseparately)
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+
+  Check check("checkOnEachSeparately", configFilePath);
+  check.init();
+
+  std::string moName1 = "abcTask/test1"; /* taskName / monitorObjectName */
+  std::string moName2 = "abcTask/test2"; /* taskName / monitorObjectName */
+
+  TH1F h1(moName1.data(), moName1.data(), 100, 0, 99);
+  auto mo1 = std::make_shared<MonitorObject>(&h1, "abcTask");
+  mo1->setIsOwner(false);
+  TH1F h2(moName2.data(), moName2.data(), 100, 0, 99);
+  auto mo2 = std::make_shared<MonitorObject>(&h2, "abcTask");
+  mo2->setIsOwner(false);
+
+  std::map<std::string, unsigned int> revisionMap1 = { { moName1, 10 } };
+  BOOST_CHECK(check.isReady(revisionMap1));
+
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap1 = { { moName1, mo1 } };
+  auto qos1 = check.check(moMap1);
+  BOOST_REQUIRE_EQUAL(qos1.size(), 1);
+  BOOST_CHECK_EQUAL(qos1[0]->getPath(), "qc/checks/DET/checkOnEachSeparately/abcTask/test1");
+
+  std::map<std::string, unsigned int> revisionMap2 = { { moName1, 10 }, { moName2, 13 } };
+  BOOST_CHECK(check.isReady(revisionMap2));
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap2 = { { moName1, mo1 }, { moName2, mo2 } };
+  auto qos2 = check.check(moMap2);
+  BOOST_REQUIRE_EQUAL(qos2.size(), 2);
+  BOOST_CHECK_EQUAL(qos2[0]->getPath(), "qc/checks/DET/checkOnEachSeparately/abcTask/test1");
+  BOOST_CHECK_EQUAL(qos2[1]->getPath(), "qc/checks/DET/checkOnEachSeparately/abcTask/test2");
 }
 
 /*

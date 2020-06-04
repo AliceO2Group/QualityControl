@@ -79,9 +79,8 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "my/task", "TST");
   mo2->addMetadata("my_meta", "is_good");
 
-  shared_ptr<QualityObject> qo1 = make_shared<QualityObject>("test-ccdb-check", vector{ string("input1"), string("input2") }, "TST");
-  qo1->setQuality(Quality::Bad);
-  shared_ptr<QualityObject> qo2 = make_shared<QualityObject>("metadata", vector{ string("input1") }, "TST");
+  shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, "test-ccdb-check", "TST", "OnAll", vector{ string("input1"), string("input2") });
+  shared_ptr<QualityObject> qo2 = make_shared<QualityObject>(Quality::Null, "metadata", "TST", "OnAll", vector{ string("input1") });
   qo2->addMetadata("my_meta", "is_good");
 
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
@@ -101,8 +100,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
   h1->FillRandom("gaus", 12345);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "task", "TST_KEEP");
   mo1->addMetadata("Run", o2::quality_control::core::Version::GetQcVersion().getString());
-  shared_ptr<QualityObject> qo1 = make_shared<QualityObject>("check", vector{ string("input1"), string("input2") }, "TST_KEEP");
-  qo1->setQuality(Quality::Bad);
+  shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, "check", "TST_KEEP", "OnAll", vector{ string("input1"), string("input2") });
   qo1->addMetadata("Run", o2::quality_control::core::Version::GetQcVersion().getString());
 
   f.backend->storeMO(mo1);
@@ -119,8 +117,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve, *utf::depends_on("ccdb_store"))
   h1->FillRandom("gaus", 12345);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "task", "TST_KEEP");
   mo1->addMetadata("Run", o2::quality_control::core::Version::GetQcVersion().getString());
-  shared_ptr<QualityObject> qo1 = make_shared<QualityObject>("check", vector{ string("input1"), string("input2") }, "TST_KEEP");
-  qo1->setQuality(Quality::Bad);
+  shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, "check", "TST_KEEP", "OnAll", vector{ string("input1"), string("input2") });
 
   f.backend->storeMO(mo1);
   f.backend->storeQO(qo1);

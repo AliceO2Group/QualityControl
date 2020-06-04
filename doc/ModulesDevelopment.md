@@ -278,6 +278,9 @@ A Check is a function that determines the quality of the Monitor Objects produce
     * _OnAny_ (default) - if any of the declared monitor objects change, might trigger even if not all are ready
     * _OnAnyNonZero_ - if any of the declared monitor objects change with assurance that there are all MOs
     * _OnAll_ - if all of the monitor objects updated at least once
+    * _OnEachSeparately_ - if MOs from any task are updated, runs the same check separately on each of them,
+     obtaining one Quality per one MO. Note that if any source Task updates their MOs, all of them will be checked
+      again. Prefer to assign one Check per one Task to avoid this behaviour.
     * if the MOs are not declared or _MO_: "all" in one or more dataSources, the above policy don't apply, the `check` will be triggered whenever a new MonitorObject is received from one of the inputs
 * __dataSource__ - declaration of the `check` input
     * _type_ - currently only supported is _Task_
