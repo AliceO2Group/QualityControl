@@ -36,9 +36,9 @@ class QualityObject : public TObject
     Quality quality,
     std::string checkName,
     std::string detectorName = "DET",
-    std::string policy = "",
+    std::string policyName = "",
     std::vector<std::string> inputs = {},
-    std::vector<std::string> mos = {},
+    std::vector<std::string> monitorObjectsNames = {},
     std::map<std::string, std::string> metadata = {});
 
   /// Destructor
@@ -108,9 +108,9 @@ class QualityObject : public TObject
   Quality mQuality;
   std::string mCheckName;
   std::string mDetectorName;
-  std::string mPolicy;
+  std::string mPolicyName;
   std::vector<std::string> mInputs;
-  std::vector<std::string> mMonitorObjects;
+  std::vector<std::string> mMonitorObjectsNames;
   std::map<std::string, std::string> mUserMetadata;
 
   ClassDefOverride(QualityObject, 3);

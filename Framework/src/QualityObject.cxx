@@ -24,16 +24,16 @@ ClassImp(o2::quality_control::core::QualityObject)
     Quality quality,
     std::string checkName,
     std::string detectorName,
-    std::string policy,
+    std::string policyName,
     std::vector<std::string> inputs,
-    std::vector<std::string> monitorObjects,
+    std::vector<std::string> monitorObjectsNames,
     std::map<std::string, std::string> metadata) //
     : mQuality{ quality },
       mCheckName{ std::move(checkName) },
       mDetectorName{ std::move(detectorName) },
-      mPolicy{ std::move(policy) },
+      mPolicyName{ std::move(policyName) },
       mInputs{ std::move(inputs) },
-      mMonitorObjects{ std::move(monitorObjects) },
+      mMonitorObjectsNames{ std::move(monitorObjectsNames) },
       mUserMetadata{ std::move(metadata) }
   {
   }
@@ -87,9 +87,9 @@ ClassImp(o2::quality_control::core::QualityObject)
   std::string QualityObject::getPath() const
   {
     std::string path = "qc/checks/" + getDetectorName() + "/" + getName();
-    if (mPolicy == "OnEachSeparately") {
-      if (mMonitorObjects.size() == 1) {
-        path += "/" + mMonitorObjects[0];
+    if (mPolicyName == "OnEachSeparately") {
+      if (mMonitorObjectsNames.size() == 1) {
+        path += "/" + mMonitorObjectsNames[0];
       } else {
         BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Only one MO should be assigned to one QO With the policy OnEachSeparatety"));
       }
