@@ -53,10 +53,10 @@ class CheckInterface
   /// for specific parameters.
   virtual void configure(std::string name) = 0;
 
-  /// \brief Returns the quality associated with this object.
+  /// \brief Returns the quality associated with these objects.
   ///
-  /// @param mo The MonitorObject to check.
-  /// @return The quality of the object.
+  /// @param moMap A map of the the MonitorObjects to check and their full names.
+  /// @return The quality associated with these objects.
   virtual Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) = 0;
 
   /// \brief Modify the aspect of the plot.
