@@ -34,7 +34,7 @@ QualityObject::QualityObject(
     mMonitorObjectsNames{ std::move(monitorObjectsNames) }
 {
   mQuality.overwriteMetadata(metadata);
-  }
+}
 
   QualityObject::~QualityObject() = default;
 
