@@ -306,6 +306,14 @@ set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
 set_property(TEST testTrendingTask PROPERTY LABELS manual)
 
+# Add a functional test (QC-336) 
+string(RANDOM UNIQUE_ID)
+configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-functional.json) # substitute the unique id in the task name
+add_test(NAME functional_test COMMAND o2-qc-functional-test.sh)
+set_tests_properties(functional_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
+set_property(TEST functional_test PROPERTY LABELS slow)
+set_property(TEST functional_test PROPERTY TIMEOUT 20)
+
 # ---- Install ----
 
 # Build targets with install rpath on Mac to dramatically speed up installation
@@ -379,7 +387,7 @@ install(FILES example-default.json
 
 install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/skip.py
                  script/RepoCleaner/repoCleaner.py script/RepoCleaner/1_per_run.py script/RepoCleaner/none_kept.py
-                 script/o2-qc-database-setup.sh
+                 script/o2-qc-database-setup.sh script/o2-qc-functional-test.sh
         DESTINATION bin)
 
 # ---- Copy test files ----
