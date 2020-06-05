@@ -15,12 +15,9 @@
 
 using namespace AliceO2::Common;
 
-ClassImp(o2::quality_control::core::QualityObject)
-
-  namespace o2::quality_control::core
+namespace o2::quality_control::core
 {
 
-<<<<<<< HEAD
   QualityObject::QualityObject(
     Quality quality,
     std::string checkName,
@@ -28,7 +25,7 @@ ClassImp(o2::quality_control::core::QualityObject)
     std::string policyName,
     std::vector<std::string> inputs,
     std::vector<std::string> monitorObjectsNames,
-    std::map<std::string, std::string> metadata) //
+    std::map<std::string, std::string> metadata)
     : mQuality{ quality },
       mCheckName{ std::move(checkName) },
       mDetectorName{ std::move(detectorName) },
