@@ -159,10 +159,18 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_026)
   BOOST_CHECK_EQUAL(tobj->GetName(), "to_be_kept");
   BOOST_CHECK_EQUAL(dynamic_cast<TH1F*>(tobj)->GetEntries(), 12345);
 
-  auto* qo = dynamic_cast<QualityObject*>(f.backend->retrieveTObject("qc/checks/TST_KEEP/check", filter, timestamp));
+  std::map<std::string, std::string> headers;
+  auto* qo = dynamic_cast<QualityObject*>(f.backend->retrieveTObject("qc/checks/TST_KEEP/check", filter, timestamp, &headers));
   BOOST_CHECK_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getName(), "check");
   BOOST_CHECK_EQUAL(qo->getQuality(), o2::quality_control::core::Quality::Bad);
+  BOOST_CHECK(headers.count("Valid-From") > 0);
+  string validityQO = headers["Valid-From"];
+
+  auto qo2 = f.backend->retrieveQO("qc/checks/TST_KEEP/check", std::stol(validityQO));
+  string run = qo2->getMetadata("Run");
+  cout << "Run : " << run << endl;
+  BOOST_CHECK(run == "0.26.0");
 
   auto jsonMO = f.backend->retrieveJson("qc/TST_KEEP/task/to_be_kept", timestamp, filter);
   BOOST_CHECK(!jsonMO.empty());

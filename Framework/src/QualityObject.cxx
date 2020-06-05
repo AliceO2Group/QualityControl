@@ -33,6 +33,7 @@ namespace o2::quality_control::core
       mInputs{ std::move(inputs) },
       mMonitorObjectsNames{ std::move(monitorObjectsNames) }
   {
+    mQuality.overwriteMetadata(metadata);
   }
 
   QualityObject::~QualityObject() = default;
@@ -76,6 +77,11 @@ namespace o2::quality_control::core
   void QualityObject::updateMetadata(std::string key, std::string value)
   {
     mQuality.updateMetadata(key, value);
+  }
+
+  const std::string QualityObject::getMetadata(std::string key)
+  {
+    return mQuality.getMetadata(key);
   }
 
   std::string QualityObject::getPath() const

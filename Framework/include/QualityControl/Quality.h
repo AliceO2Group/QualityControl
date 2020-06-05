@@ -81,11 +81,17 @@ class Quality
   void updateMetadata(std::string key, std::string value);
   /// \brief Get the full map of user's metadata
   const std::map<std::string, std::string>& getMetadataMap() const;
+  /// \brief Overwrite the existing metadata.
+  void overwriteMetadata(std::map<std::string, std::string> pairs);
+  /// \brief Get a metadata
+  /// \return the value corresponding to the key if it was found.
+  /// \throw ObjectNotFoundError in case the key is not found.
+  const std::string getMetadata(std::string key);
 
  private:
   unsigned int mLevel; /// 0 is no quality, 1 is best quality, then it only goes downhill...
   std::string mName;
-  std::map<std::string, std::string> mUserMetadata; //! no need to store it as we store it in the headers
+  std::map<std::string, std::string> mUserMetadata; 
 
  ClassDef(Quality, 2);
 };
