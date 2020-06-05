@@ -77,7 +77,7 @@ namespace o2::quality_control::core
 
   const std::string Quality::getMetadata(std::string key)
   {
-    if(mUserMetadata.count(key) == 0) {
+    if (mUserMetadata.count(key) == 0) {
       std::cerr << "Could not get the metadata with key \"" << key << "\"" << std::endl;
       BOOST_THROW_EXCEPTION(AliceO2::Common::ObjectNotFoundError() << AliceO2::Common::errinfo_object_name(key));
     }

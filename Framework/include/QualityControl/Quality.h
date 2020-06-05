@@ -91,9 +91,9 @@ class Quality
  private:
   unsigned int mLevel; /// 0 is no quality, 1 is best quality, then it only goes downhill...
   std::string mName;
-  std::map<std::string, std::string> mUserMetadata; 
+  std::map<std::string, std::string> mUserMetadata;
 
- ClassDef(Quality, 2);
+  ClassDef(Quality, 2);
 };
 
 } // namespace o2::quality_control::core

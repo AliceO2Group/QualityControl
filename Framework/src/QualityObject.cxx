@@ -18,22 +18,22 @@ using namespace AliceO2::Common;
 namespace o2::quality_control::core
 {
 
-  QualityObject::QualityObject(
-    Quality quality,
-    std::string checkName,
-    std::string detectorName,
-    std::string policyName,
-    std::vector<std::string> inputs,
-    std::vector<std::string> monitorObjectsNames,
-    std::map<std::string, std::string> metadata)
-    : mQuality{ quality },
-      mCheckName{ std::move(checkName) },
-      mDetectorName{ std::move(detectorName) },
-      mPolicyName{ std::move(policyName) },
-      mInputs{ std::move(inputs) },
-      mMonitorObjectsNames{ std::move(monitorObjectsNames) }
-  {
-    mQuality.overwriteMetadata(metadata);
+QualityObject::QualityObject(
+  Quality quality,
+  std::string checkName,
+  std::string detectorName,
+  std::string policyName,
+  std::vector<std::string> inputs,
+  std::vector<std::string> monitorObjectsNames,
+  std::map<std::string, std::string> metadata)
+  : mQuality{ quality },
+    mCheckName{ std::move(checkName) },
+    mDetectorName{ std::move(detectorName) },
+    mPolicyName{ std::move(policyName) },
+    mInputs{ std::move(inputs) },
+    mMonitorObjectsNames{ std::move(monitorObjectsNames) }
+{
+  mQuality.overwriteMetadata(metadata);
   }
 
   QualityObject::~QualityObject() = default;
