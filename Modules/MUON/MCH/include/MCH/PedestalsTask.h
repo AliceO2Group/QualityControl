@@ -10,6 +10,7 @@
 #include "MCH/Mapping.h"
 #include "MCH/Decoding.h"
 #include "MCHBase/Digit.h"
+#include "MCH/GlobalHistogram.h"
 
 class TH1F;
 class TH2F;
@@ -54,8 +55,8 @@ class PedestalsTask final : public TaskInterface
   double noiseDigits[1100][1500];
 
   MapCRU mMapCRU[MCH_MAX_CRU_IN_FLP];
-  TH2F* mHistogramPedestals[MCH_MAX_CRU_IN_FLP * 24];
-  TH2F* mHistogramNoise[MCH_MAX_CRU_IN_FLP * 24];
+  TH2F* mHistogramPedestals;
+  TH2F* mHistogramNoise;
 
   std::vector<int> DEs;
   //MapFEC mMapFEC;
@@ -66,12 +67,15 @@ class PedestalsTask final : public TaskInterface
 
   std::map<int, TH1F*> mHistogramNoiseDistributionDE[5][2];
 
+  GlobalHistogram* mHistogramPedestalsMCH;
+  GlobalHistogram* mHistogramNoiseMCH;
+
   int mPrintLevel;
 
   void fill_noise_distributions();
   void save_histograms();
 };
 
-} // namespace o2
+} // namespace o2::quality_control_modules::muonchambers
 
 #endif // QC_MODULE_MUONCHAMBERS_PEDESTALSTASK_H

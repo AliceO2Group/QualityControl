@@ -32,7 +32,7 @@ enum DualSampaStatus {
 };
 
 struct SampaHit {
-  uint8_t cru_id, link_id, ds_addr, chan_addr;
+  uint8_t cru_id, fee_id, data_path, link_id, ds_addr, chan_addr;
   int64_t bxc;
   uint32_t size, time;
   std::vector<uint16_t> samples;
