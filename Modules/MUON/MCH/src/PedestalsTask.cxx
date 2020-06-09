@@ -485,58 +485,53 @@ void PedestalsTask::monitorDataDigits(const o2::framework::DataRef& input)
       continue;
     }
 
-    try {
-      const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
+    const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
 
-      double padX = segment.padPositionX(padid);
-      double padY = segment.padPositionY(padid);
-      float padSizeX = segment.padSizeX(padid);
-      float padSizeY = segment.padSizeY(padid);
-      int cathode = segment.isBendingPad(padid) ? 0 : 1;
+    double padX = segment.padPositionX(padid);
+    double padY = segment.padPositionY(padid);
+    float padSizeX = segment.padSizeX(padid);
+    float padSizeY = segment.padSizeY(padid);
+    int cathode = segment.isBendingPad(padid) ? 0 : 1;
 
-      // Update the average and RMS of the pedestal values
-      nhitsDigits[de][padid] += 1;
-      uint64_t N = nhitsDigits[de][padid];
+    // Update the average and RMS of the pedestal values
+    nhitsDigits[de][padid] += 1;
+    uint64_t N = nhitsDigits[de][padid];
 
-      double p0 = pedestalDigits[de][padid];
-      double p = p0 + (ADC - p0) / N;
-      pedestalDigits[de][padid] = p;
+    double p0 = pedestalDigits[de][padid];
+    double p = p0 + (ADC - p0) / N;
+    pedestalDigits[de][padid] = p;
 
-      double M0 = noiseDigits[de][padid];
-      double M = M0 + (ADC - p0) * (ADC - p);
-      noiseDigits[de][padid] = M;
+    double M0 = noiseDigits[de][padid];
+    double M = M0 + (ADC - p0) * (ADC - p);
+    noiseDigits[de][padid] = M;
 
-      double rms = std::sqrt(noiseDigits[de][padid] /
-                             nhitsDigits[de][padid]);
+    double rms = std::sqrt(noiseDigits[de][padid] /
+                           nhitsDigits[de][padid]);
 
-      // Fill the histograms for each detection element
-      auto hPedXY = mHistogramPedestalsXY[cathode].find(de);
-      if ((hPedXY != mHistogramPedestalsXY[cathode].end()) && (hPedXY->second != NULL)) {
-        int binx_min = hPedXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
-        int binx_max = hPedXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
-        int biny_min = hPedXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
-        int biny_max = hPedXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
-        for (int by = biny_min; by <= biny_max; by++) {
-          for (int bx = binx_min; bx <= binx_max; bx++) {
-            hPedXY->second->SetBinContent(bx, by, pedestalDigits[de][padid]);
-          }
+    // Fill the histograms for each detection element
+    auto hPedXY = mHistogramPedestalsXY[cathode].find(de);
+    if ((hPedXY != mHistogramPedestalsXY[cathode].end()) && (hPedXY->second != NULL)) {
+      int binx_min = hPedXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
+      int binx_max = hPedXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
+      int biny_min = hPedXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
+      int biny_max = hPedXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
+      for (int by = biny_min; by <= biny_max; by++) {
+        for (int bx = binx_min; bx <= binx_max; bx++) {
+          hPedXY->second->SetBinContent(bx, by, pedestalDigits[de][padid]);
         }
       }
-      auto hNoiseXY = mHistogramNoiseXY[cathode].find(de);
-      if ((hNoiseXY != mHistogramNoiseXY[cathode].end()) && (hNoiseXY->second != NULL)) {
-        int binx_min = hNoiseXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
-        int binx_max = hNoiseXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
-        int biny_min = hNoiseXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
-        int biny_max = hNoiseXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
-        for (int by = biny_min; by <= biny_max; by++) {
-          for (int bx = binx_min; bx <= binx_max; bx++) {
-            hNoiseXY->second->SetBinContent(bx, by, rms);
-          }
+    }
+    auto hNoiseXY = mHistogramNoiseXY[cathode].find(de);
+    if ((hNoiseXY != mHistogramNoiseXY[cathode].end()) && (hNoiseXY->second != NULL)) {
+      int binx_min = hNoiseXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
+      int binx_max = hNoiseXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
+      int biny_min = hNoiseXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
+      int biny_max = hNoiseXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
+      for (int by = biny_min; by <= biny_max; by++) {
+        for (int bx = binx_min; bx <= binx_max; bx++) {
+          hNoiseXY->second->SetBinContent(bx, by, rms);
         }
       }
-    } catch (const std::exception& e) {
-      QcInfoLogger::GetInstance() << "[MCH] Detection Element " << de << " not found in mapping." << AliceO2::InfoLogger::InfoLogger::endm;
-      return;
     }
   }
 }

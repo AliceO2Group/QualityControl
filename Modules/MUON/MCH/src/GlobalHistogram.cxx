@@ -43,6 +43,13 @@ GlobalHistogram::GlobalHistogram(std::string name, std::string title) : TH2F(nam
 
 void GlobalHistogram::init()
 {
+  std::vector<int> allDE;
+
+  auto addDE = [&allDE](int detElemId) {
+    allDE.push_back(detElemId);
+  };
+  o2::mch::mapping::forEachDetectionElement(addDE);
+
   TLine* line;
 
   line = new TLine(0, HIST_HEIGHT / 2, HIST_WIDTH, HIST_HEIGHT / 2);
@@ -54,7 +61,10 @@ void GlobalHistogram::init()
   line = new TLine(NXHIST_PER_STATION * DE_WIDTH * 2, 0, NXHIST_PER_STATION * DE_WIDTH * 2, HIST_HEIGHT);
   GetListOfFunctions()->Add(line);
 
-  for (int de = 500; de < 1100; de++) {
+  for (auto& de : allDE) {
+    if (de < 500)
+      continue;
+    //std::cout<<"DE: "<<de<<std::endl;
     const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
     if ((&segment) == nullptr) {
       continue;
