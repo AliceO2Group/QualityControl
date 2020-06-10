@@ -16,8 +16,6 @@
 #ifndef QC_MODULE_DAQ_EVERINCREASINGRAPH_H
 #define QC_MODULE_DAQ_EVERINCREASINGRAPH_H
 
-#include <Common/DataBlock.h>
-
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::daq
