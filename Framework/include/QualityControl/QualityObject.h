@@ -91,10 +91,6 @@ class QualityObject : public TObject
   void updateMetadata(std::string key, std::string value);
   /// \brief Get the full map of user's metadata
   const std::map<std::string, std::string>& getMetadataMap() const;
-  /// \brief Get a metadata
-  /// \return the value corresponding to the key if it was found.
-  /// \throw ObjectNotFoundError in case the key is not found.
-  const std::string getMetadata(std::string key);
 
   /// \brief Build the path to this object.
   /// Build the path to this object as it will appear in the GUI.
@@ -115,6 +111,7 @@ class QualityObject : public TObject
   std::string mPolicyName;
   std::vector<std::string> mInputs;
   std::vector<std::string> mMonitorObjectsNames;
+  std::map<std::string, std::string> mUserMetadata;
 
   ClassDefOverride(QualityObject, 3);
 };

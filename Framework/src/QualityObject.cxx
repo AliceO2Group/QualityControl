@@ -15,26 +15,28 @@
 
 using namespace AliceO2::Common;
 
-namespace o2::quality_control::core
+ClassImp(o2::quality_control::core::QualityObject)
+
+  namespace o2::quality_control::core
 {
 
-QualityObject::QualityObject(
-  Quality quality,
-  std::string checkName,
-  std::string detectorName,
-  std::string policyName,
-  std::vector<std::string> inputs,
-  std::vector<std::string> monitorObjectsNames,
-  std::map<std::string, std::string> metadata)
-  : mQuality{ quality },
-    mCheckName{ std::move(checkName) },
-    mDetectorName{ std::move(detectorName) },
-    mPolicyName{ std::move(policyName) },
-    mInputs{ std::move(inputs) },
-    mMonitorObjectsNames{ std::move(monitorObjectsNames) }
-{
-  mQuality.overwriteMetadata(metadata);
-}
+  QualityObject::QualityObject(
+    Quality quality,
+    std::string checkName,
+    std::string detectorName,
+    std::string policyName,
+    std::vector<std::string> inputs,
+    std::vector<std::string> monitorObjectsNames,
+    std::map<std::string, std::string> metadata) //
+    : mQuality{ quality },
+      mCheckName{ std::move(checkName) },
+      mDetectorName{ std::move(detectorName) },
+      mPolicyName{ std::move(policyName) },
+      mInputs{ std::move(inputs) },
+      mMonitorObjectsNames{ std::move(monitorObjectsNames) },
+      mUserMetadata{ std::move(metadata) }
+  {
+  }
 
   QualityObject::~QualityObject() = default;
 
@@ -61,27 +63,25 @@ QualityObject::QualityObject(
 
   void QualityObject::addMetadata(std::string key, std::string value)
   {
-    mQuality.addMetadata(key, value);
+    mUserMetadata.insert(std::pair(key, value));
   }
 
   void QualityObject::addMetadata(std::map<std::string, std::string> pairs)
   {
-    mQuality.addMetadata(pairs);
+    // we do not use "merge" because it would ignore the items whose key already exist in mUserMetadata.
+    mUserMetadata.insert(pairs.begin(), pairs.end());
   }
 
   const std::map<std::string, std::string>& QualityObject::getMetadataMap() const
   {
-    return mQuality.getMetadataMap();
+    return mUserMetadata;
   }
 
   void QualityObject::updateMetadata(std::string key, std::string value)
   {
-    mQuality.updateMetadata(key, value);
-  }
-
-  const std::string QualityObject::getMetadata(std::string key)
-  {
-    return mQuality.getMetadata(key);
+    if (mUserMetadata.count(key) > 0) {
+      mUserMetadata[key] = value;
+    }
   }
 
   std::string QualityObject::getPath() const
