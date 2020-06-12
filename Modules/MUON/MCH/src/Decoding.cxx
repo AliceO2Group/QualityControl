@@ -962,6 +962,8 @@ void Decoder::decodeRaw(uint32_t* payload_buf, size_t nGBTwords, int cru_id, int
             Sampa::SampaHeaderStruct& header = ds[cru_id][link_id][i].header;
             SampaHit& hit = ds[cru_id][link_id][i].hit;
             hit.cru_id = cru_id;
+            hit.data_path = link_id / 12;
+            hit.fee_id = cru_id * 2 + hit.data_path;
             hit.link_id = link_id;
             hit.ds_addr = ds[cru_id][link_id][i].id;
             int chip_id = ds[cru_id][link_id][i].header.fChipAddress % 2;
@@ -1124,10 +1126,12 @@ void Decoder::processData(const char* buf, size_t size)
 {
   int RDH_BLOCK_SIZE = 8192;
 
-  int manu2ds[64] = { 62, 61, 63, 60, 59, 55, 58, 57, 56, 54, 50, 46, 42, 39, 37, 41,
-                      35, 36, 33, 34, 32, 38, 43, 40, 45, 44, 47, 48, 49, 52, 51, 53,
-                      7, 6, 5, 4, 2, 3, 1, 0, 9, 11, 13, 15, 17, 19, 21, 23,
-                      31, 30, 29, 28, 27, 26, 25, 24, 22, 20, 18, 16, 14, 12, 10, 8 };
+  int manu2ds[64] = {
+    63, 62, 61, 60, 59, 57, 56, 53, 51, 50, 47, 45, 44, 41, 38, 35,
+    36, 33, 34, 37, 32, 39, 40, 42, 43, 46, 48, 49, 52, 54, 55, 58,
+    7, 8, 5, 2, 6, 1, 3, 0, 4, 9, 10, 15, 17, 18, 22, 25,
+    31, 30, 29, 28, 27, 26, 24, 23, 20, 21, 16, 19, 12, 14, 11, 13
+  };
 
   int ds2manu[64];
   for (int i = 0; i < 64; i++) {
