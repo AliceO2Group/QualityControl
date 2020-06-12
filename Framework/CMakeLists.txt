@@ -62,6 +62,7 @@ add_library(QualityControl
             src/TrendingTaskConfig.cxx
             src/DummyDatabase.cxx
             src/DataProducer.cxx
+            src/HistoProducer.cxx
             src/DataProducerExample.cxx
             src/MonitorObjectCollection.cxx)
 
