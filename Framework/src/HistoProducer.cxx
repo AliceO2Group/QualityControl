@@ -47,7 +47,7 @@ framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatche
       std::default_random_engine generator(time(nullptr));
       std::shared_ptr<Timer> timer = nullptr;
       double period = 2; // how many seconds between the updates of the histogram
-      TH1F *histo = new TH1F("hello", "fromHistoProducer", 100, 0, 99);
+      TH1F* histo = new TH1F("hello", "fromHistoProducer", 100, 0, 99);
 
       return [=](ProcessingContext& processingContext) mutable {
         // everything inside this lambda function is invoked in a loop, because this Data Processor has no inputs
@@ -67,7 +67,7 @@ framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatche
         // Prepare array
         MonitorObjectCollection& monitorObjects = processingContext.outputs().make<MonitorObjectCollection>({ output.origin, output.description, output.subSpec });
         // Generate data
-        histo->Fill(index%100); // just fill 1 bin
+        histo->Fill(index % 100); // just fill 1 bin
         monitorObjects.Add(histo);
 
         LOG(INFO) << "sending array with 1 histo (" << histo->GetName() << " : " << histo->GetTitle() << " : " << histo->GetEntries() << ")";
