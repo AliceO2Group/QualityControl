@@ -278,7 +278,7 @@ void CheckRunner::update(std::shared_ptr<MonitorObject> mo)
 
 QualityObjectsType CheckRunner::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 {
-  mLogger << "Running " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
+  mLogger << "Trying " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
           << ENDM;
 
   QualityObjectsType allQOs;

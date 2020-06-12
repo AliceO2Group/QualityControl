@@ -191,7 +191,7 @@ void Check::initPolicy(std::string policyType)
 
     mPolicy = [](std::map<std::string, unsigned int>& revisionMap) {
       // Expecting check of this policy only if any change
-      (void)revisionMap; // Supprses Unused warning
+      (void)revisionMap; // Suppress Unused warning
       return true;
     };
 
@@ -316,7 +316,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       mCheckConfig.policyType,
       mInputsStringified,
       monitorObjectsNames));
-    beautify(shadowMap, quality);
+    beautify(moMapToCheck, quality);
   }
 
   return qualityObjects;
