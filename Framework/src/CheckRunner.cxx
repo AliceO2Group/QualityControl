@@ -155,11 +155,6 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
   }
 }
 
-CheckRunner::CheckRunner(Check check, std::string configurationSource)
-  : CheckRunner(std::vector{ check }, configurationSource)
-{
-}
-
 CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
   : mDeviceName(createSinkCheckRunnerName(input)),
     mChecks{},
