@@ -341,7 +341,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   typedef std::vector<std::string> InputNames;
   typedef std::vector<Check> Checks;
   std::map<std::string, o2::framework::InputSpec> tasksOutputMap; // all active tasks' output, as inputs, keyed by their label
-  std::map<InputNames, Checks> checksMap;   // all the Checks defined in the config mapped from their sorted inputNames
+  std::map<InputNames, Checks> checksMap;                         // all the Checks defined in the config mapped from their sorted inputNames
   std::map<InputNames, InputNames> storeVectorMap;
 
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
