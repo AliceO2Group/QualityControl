@@ -20,6 +20,7 @@
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
+#include <Framework/DataDescriptorQueryBuilder.h>
 // QC
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/InputUtils.h"
@@ -92,10 +93,19 @@ void Check::initConfig(std::string checkName)
   mNumberOfTaskSources = 0;
   for (const auto& [_key, dataSource] : checkConfig.get_child("dataSource")) {
     (void)_key;
-    if (dataSource.get<std::string>("type") == "Task") {
+    if (dataSource.get<std::string>("type") == "Task" || dataSource.get<std::string>("type") == "ExternalTask") {
       auto taskName = dataSource.get<std::string>("name");
       mNumberOfTaskSources++;
-      mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
+
+      if(dataSource.get<std::string>("type") == "Task") {
+        mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
+      } else if (dataSource.get<std::string>("type") == "ExternalTask") {
+        LOG(INFO) << "EXTERNAL TASK IN CHECK";
+        const std::string& externalQuery = config->getString("qc.externalTasks." + taskName + ".query").get();
+        ILOG(Info) << "query : " << externalQuery << ENDM;
+        framework::Inputs input = o2::framework::DataDescriptorQueryBuilder::parse(externalQuery.c_str());
+        mInputs.push_back(std::move(input.at(0)));
+      }
 
       /*
          * Subscribe on predefined MOs.

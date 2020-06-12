@@ -215,6 +215,25 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
       for (const auto tObject : *moArray) {
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
 
+        if (mo == nullptr) {
+          mLogger << AliceO2::InfoLogger::InfoLogger::Warning << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
+          mLogger << AliceO2::InfoLogger::InfoLogger::Warning << "    Creating an ad hoc MO." << ENDM;
+          // TODO simply put it as a MonitorObject ?
+          // TODO how do I get the description and origin ?
+//          try{
+//          header::DataDescription description = std::get<ConcreteDataMatcher>(input.matcher).description;
+//          } catch ( std::bad_variant_access exception) {
+//            ILOG(Error) << exception.what() << ENDM;
+//          }
+          header::DataDescription description = DataSpecUtils::asConcreteDataTypeMatcher(input).description;
+          mLogger <<"A" << ENDM;
+//          header::DataOrigin origin = DataSpecUtils::asConcreteDataMatcher(input).origin;
+          mLogger << "description : " << description.str << ENDM;
+          header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
+          mLogger << "origin : " << origin.str << ENDM;
+          mo = std::make_shared<MonitorObject>(tObject, "External-1", origin.str);
+        }
+
         if (mo) {
           update(mo);
           mTotalNumberObjectsReceived++;
@@ -223,9 +242,6 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
           if (store) {
             mMonitorObjectStoreVector.push_back(mo);
           }
-
-        } else {
-          mLogger << AliceO2::InfoLogger::InfoLogger::Error << "The MO is null, probably a TObject could not be casted into an MO" << ENDM;
         }
       }
     }
