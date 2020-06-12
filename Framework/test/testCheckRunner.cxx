@@ -29,19 +29,19 @@ using namespace std;
 using namespace o2::framework;
 using namespace o2::header;
 
-BOOST_AUTO_TEST_CASE(test_check_runner_factory)
-{
-  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
-
-  CheckRunnerFactory checkerFactory;
-  Check check("singleCheck", configFilePath);
-  DataProcessorSpec checker = checkerFactory.create(check, configFilePath);
-
-  BOOST_REQUIRE_EQUAL(checker.inputs.size(), 1);
-  BOOST_CHECK_EQUAL(checker.inputs[0], (InputSpec{ { "mo" }, "QC", "skeletonTask-mo", 0 }));
-
-  BOOST_CHECK(checker.algorithm.onInit != nullptr);
-}
+//BOOST_AUTO_TEST_CASE(test_check_runner_factory)
+//{
+//  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+//
+//  CheckRunnerFactory checkerFactory;
+//  Check check("singleCheck", configFilePath);
+//  DataProcessorSpec checker = checkerFactory.create(check, configFilePath);
+//
+//  BOOST_REQUIRE_EQUAL(checker.inputs.size(), 1);
+//  BOOST_CHECK_EQUAL(checker.inputs[0], (InputSpec{ { "mo" }, "QC", "skeletonTask-mo", 0 }));
+//
+//  BOOST_CHECK(checker.algorithm.onInit != nullptr);
+//}
 
 BOOST_AUTO_TEST_CASE(test_check_runner_static)
 {
@@ -50,16 +50,16 @@ BOOST_AUTO_TEST_CASE(test_check_runner_static)
   BOOST_CHECK_THROW(CheckRunner::createCheckRunnerDataDescription(""), AliceO2::Common::FatalException);
 }
 
-BOOST_AUTO_TEST_CASE(test_check_runner)
-{
-  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
-
-  Check check("singleCheck", configFilePath);
-  CheckRunner checker{ check, configFilePath };
-
-  BOOST_CHECK_EQUAL(checker.getInputs()[0], (InputSpec{ { "mo" }, "QC", "skeletonTask-mo", 0 }));
-  BOOST_CHECK_EQUAL(checker.getOutputs()[0], (OutputSpec{ "QC", "singleCheck-chk", 0 }));
-
-  // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
-  // TODO: When it is possible, we should try calling run() and init()
-}
+//BOOST_AUTO_TEST_CASE(test_check_runner)
+//{
+//  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+//
+//  Check check("singleCheck", configFilePath);
+//  CheckRunner checker{ check, configFilePath };
+//
+//  BOOST_CHECK_EQUAL(checker.getInputs()[0], (InputSpec{ { "mo" }, "QC", "skeletonTask-mo", 0 }));
+//  BOOST_CHECK_EQUAL(checker.getOutputs()[0], (OutputSpec{ "QC", "singleCheck-chk", 0 }));
+//
+//  // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
+//  // TODO: When it is possible, we should try calling run() and init()
+//}

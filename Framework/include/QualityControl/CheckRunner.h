@@ -79,7 +79,6 @@ class CheckRunner : public framework::Task
    * @param checkNames List of check names, that operate on the same inputs.
    * @param configurationSource Path to configuration
    */
-  CheckRunner(Check check, std::string configurationSource);
   CheckRunner(std::vector<Check> checks, std::string configurationSource);
 
   /**
@@ -106,12 +105,12 @@ class CheckRunner : public framework::Task
   framework::Outputs getOutputs() { return mOutputs; };
 
   void setTaskStoreSet(std::unordered_set<std::string> storeSet) { mInputStoreSet = storeSet; }
+  std::string getDeviceName() { return mDeviceName; };
 
   /// \brief Unified DataDescription naming scheme for all checkers
   static o2::header::DataDescription createCheckRunnerDataDescription(const std::string taskName);
   static o2::framework::Inputs createInputSpec(const std::string checkName, const std::string configSource);
 
-  std::string getDeviceName() { return mDeviceName; };
   static std::string createCheckRunnerIdString() { return "QC-CHECK-RUNNER"; };
   static std::string createCheckRunnerName(std::vector<Check> checks);
   static std::string createSinkCheckRunnerName(o2::framework::InputSpec input);
