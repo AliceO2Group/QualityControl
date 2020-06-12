@@ -57,7 +57,7 @@
         "dataSource": [{
           "type": "ExternalTask",
           "name": "External-1",
-          "MOs": ["Hello"]
+          "MOs": ["hello"]
         }]
       }
     }

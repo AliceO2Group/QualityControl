@@ -269,6 +269,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
 void CheckRunner::update(std::shared_ptr<MonitorObject> mo)
 {
+  std::cout << "update : " << mo->getFullName() << std::endl;
   mMonitorObjects[mo->getFullName()] = mo;
   mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
 }
