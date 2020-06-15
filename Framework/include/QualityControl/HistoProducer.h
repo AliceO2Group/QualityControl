@@ -21,18 +21,31 @@
 namespace o2::quality_control::core
 {
 
-/// \brief Returns a random data producer specification which publishes on {"TST", "RAWDATA", <index>}
+/// \brief Returns an histogram producer specification which publishes on {"TST", "HISTO", <index>}.
 ///
-/// \param myParam  The value the producer should produce.
-/// \return         A fixed number producer specification
-framework::DataProcessorSpec getHistoProducerSpec(size_t myParam);
+/// \param index    The index of this producer (i.e. the subspec).
+/// \return         An histograms producer specification.
+framework::DataProcessorSpec getHistoProducerSpec(size_t index, size_t nbHistograms, bool noTobjArray);
 
-/// \brief Returns an algorithm generating random messages
+/// \brief Returns an algorithm generating histograms randomly filled.
+/// The histograms have 100 bins and are named `hello<index>`.
+/// The histograms are embedded in a TObjArray.
 ///
 /// \param output   Origin, Description and SubSpecification of data to be produced
-/// \param  myParam  The value the producer should produce.
-/// \return         A fixed number producer algorithm
-framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatcher output, size_t myParam);
+/// \param index    The value the producer should produce.
+/// \return         An histogram producer algorithm
+framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatcher output, size_t nbHistograms, bool noTobjArray);
+
+/// \brief Returns a printer that prints histograms coming from {"TST", "HISTO", <index>}
+///
+/// \param index  The index of the producer (i.e. the subspec) to which the printer must connect.
+/// \return       A printer.
+framework::DataProcessorSpec getHistoPrinterSpec(size_t index);
+
+/// \brief  Returns an algorithm printing histograms.
+///
+/// \return An algorithm printing histograms.
+framework::AlgorithmSpec getHistoPrinterAlgorithm();
 
 } // namespace o2::quality_control::core
 

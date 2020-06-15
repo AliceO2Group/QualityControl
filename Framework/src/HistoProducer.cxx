@@ -14,44 +14,46 @@
 ///
 #include "QualityControl/HistoProducer.h"
 
-#include <random>
 #include <Common/Timer.h>
 #include <TH1F.h>
-#include <Common/Timer.h>
 #include <QualityControl/MonitorObjectCollection.h>
+#include <string>
 
 using namespace o2::framework;
 
 using SubSpec = o2::header::DataHeader::SubSpecificationType;
 using namespace AliceO2::Common;
+using namespace std;
 
 namespace o2::quality_control::core
 {
 
-DataProcessorSpec getHistoProducerSpec(size_t index)
+framework::DataProcessorSpec getHistoProducerSpec(size_t subspec, size_t nbHistograms, bool noTobjArray)
 {
   return DataProcessorSpec{
-    "producer",
+    "producer"+std::to_string(subspec),
     Inputs{},
     Outputs{
-      { { "out" }, "TST", "HISTO", static_cast<SubSpec>(index) } },
-    getHistoProducerAlgorithm({ "TST", "HISTO", static_cast<SubSpec>(index) }, index)
+      { { "out" }, "TST", "HISTO", static_cast<SubSpec>(subspec) } },
+    getHistoProducerAlgorithm({ "TST", "HISTO", static_cast<SubSpec>(subspec) }, nbHistograms, noTobjArray)
   };
 }
 
-framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatcher output, size_t index)
+framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatcher output, size_t nbHistograms, bool noTobjArray)
 {
   return AlgorithmSpec{
     [=](InitContext&) {
       // this is the initialization code
-      std::default_random_engine generator(time(nullptr));
       std::shared_ptr<Timer> timer = nullptr;
       double period = 2; // how many seconds between the updates of the histogram
-      TH1F* histo = new TH1F("hello", "fromHistoProducer", 100, 0, 99);
+      vector<TH1F*> allHistos;
+      allHistos.reserve(nbHistograms);
+      for(size_t i = 0 ; i < nbHistograms; i++) {
+        TH1F *histo = new TH1F(string("hello_")+i, "fromHistoProducer", 100, -3, 3);
+        allHistos.push_back(histo);
+      }
 
       return [=](ProcessingContext& processingContext) mutable {
-        // everything inside this lambda function is invoked in a loop, because this Data Processor has no inputs
-
         // setting up the timer
         if (!timer) {
           timer = std::make_shared<Timer>();
@@ -64,13 +66,71 @@ framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatche
         }
         timer->increment();
 
-        // Prepare array
-        MonitorObjectCollection& monitorObjects = processingContext.outputs().make<MonitorObjectCollection>({ output.origin, output.description, output.subSpec });
-        // Generate data
-        histo->Fill(index % 100); // just fill 1 bin
-        monitorObjects.Add(histo);
+        if(noTobjArray) { // just send the histogram, not a tobjarray
+          TH1F& th1f = processingContext.outputs().make<TH1F>({ output.origin, output.description, output.subSpec }, "hello", "fromHistoProducer", 100, -3, 3);
+          allHistos[0]->FillRandom("gaus", 100);
+          th1f.Add(allHistos[0]);
+          LOG(INFO) << "sending 1 histo named `hello`.";
+          return;
+        }
 
-        LOG(INFO) << "sending array with 1 histo (" << histo->GetName() << " : " << histo->GetTitle() << " : " << histo->GetEntries() << ")";
+        // Prepare the tobjarray
+        MonitorObjectCollection& monitorObjects = processingContext.outputs().make<MonitorObjectCollection>({ output.origin, output.description, output.subSpec });
+        // Fill histograms
+        for (size_t i = 0; i < nbHistograms; i++) {
+          allHistos[i]->FillRandom("gaus", 100);
+          monitorObjects.Add(allHistos[i]);
+        }
+        LOG(INFO) << "Sending a TObjArray with " << nbHistograms << " histos named `hello_<index>`.";
+
+      };
+    }
+  };
+}
+
+DataProcessorSpec getHistoPrinterSpec(size_t subspec)
+{
+  return DataProcessorSpec{
+    "histoPrinter",
+    Inputs{{ { "in" }, "TST", "HISTO", static_cast<SubSpec>(subspec) }},
+    Outputs{},
+    getHistoPrinterAlgorithm()
+  };
+}
+
+void printHisto(shared_ptr<const TH1F>& histo) {
+  LOG(INFO) << "histo : " << histo->GetName() << " : " << histo->GetTitle();
+  std::string bins = "BINS:";
+  for (int i = 1; i <= histo->GetNbinsX(); i++) {
+    bins += " " + std::to_string((int)histo->GetBinContent(i));
+  }
+  LOG(INFO) << bins;
+}
+
+framework::AlgorithmSpec getHistoPrinterAlgorithm()
+{
+  return AlgorithmSpec{
+    [=](InitContext&) {
+      // this is the initialization code
+
+      return [=](ProcessingContext& processingContext) mutable {
+        // We don't know what we receive, so we test for an array and then try a TH1F.
+        shared_ptr<const TObjArray> array = nullptr;
+        shared_ptr<const TH1F> th1f = nullptr;
+        try{
+          array = processingContext.inputs().get<TObjArray*>("in");
+        } catch (runtime_error& e) {
+          // we failed to get the TObjArray, let's try a TH1F. If it fails it will throw.
+          th1f = processingContext.inputs().get<TH1F*>("in");
+        }
+        if(array != nullptr) {
+          for (auto *const tObject : *array) {
+            std::shared_ptr<const TH1F> histo{ dynamic_cast<TH1F*>(tObject) };
+            printHisto(histo);
+          }
+        } else if (th1f != nullptr) {
+          printHisto(th1f);
+        }
       };
     }
   };

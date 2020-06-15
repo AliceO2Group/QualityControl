@@ -73,7 +73,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     specs.push_back(getDataProducerSpec(minSize, maxSize, rate, amount, i, monitoringUrl, fill));
   }
   for (size_t i = 0; i < histoProducers; i++) {
-    specs.push_back(getHistoProducerSpec(i));
+    specs.push_back(getHistoProducerSpec(i, 0, false));
   }
   return specs;
 }
