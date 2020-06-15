@@ -60,7 +60,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   bool printer = config.options().get<bool>("printer");
   bool noTobjArray = config.options().get<bool>("no-tobjarray");
 
-  if(noTobjArray && histograms > 1) {
+  if (noTobjArray && histograms > 1) {
     std::cerr << "Option no-tobjarray is only valid if histograms=1." << std::endl;
     exit(1);
   }
@@ -70,7 +70,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     specs.push_back(getHistoProducerSpec(i, histograms, noTobjArray));
   }
 
-  if(printer) {
+  if (printer) {
     specs.push_back(getHistoPrinterSpec(0));
   }
 
