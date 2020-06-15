@@ -11,17 +11,22 @@
             * [Custom Data Sampling Condition](#custom-data-sampling-condition)
             * [Bypassing the Data Sampling](#bypassing-the-data-sampling)
          * [Code Organization](#code-organization)
+         * [Developing with aliBuild/alienv](#developing-with-alibuildalienv)
          * [User-defined modules](#user-defined-modules)
       * [Module creation](#module-creation)
       * [Test run](#test-run)
-      * [Modification of a Task](#modification-of-a-task)
+      * [Modification of the Task](#modification-of-the-task)
       * [Check](#check)
          * [Configuration](#configuration)
          * [Implementation](#implementation)
       * [Committing code](#committing-code)
+      * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
+         * [Configuration](#configuration-1)
+         * [Example](#example)
+         * [Limitations](#limitations)
       * [Raw data source](#raw-data-source)
 
-<!-- Added by: barth, at: Mer 18 mar 2020 13:34:28 CET -->
+<!-- Added by: barth, at: Lun 15 jui 2020 16:36:24 CEST -->
 
 <!--te-->
 
