@@ -155,7 +155,7 @@ set(EXE_NAMES
 set(EXE_OLD_NAMES
     qcRunProducer
     o2-qc-run-producer-basic
-    o2-qc-run-producer-basic
+    o2-qc-run-histo-producer
     o2-qc-run-qc
     qcRunBasic
     qcRunAdvanced
