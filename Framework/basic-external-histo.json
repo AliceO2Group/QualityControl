@@ -58,7 +58,7 @@
         "dataSource": [{
           "type": "ExternalTask",
           "name": "External-1",
-          "MOs": ["hello"]
+          "MOs": ["hello_0"]
         }]
       },
       "QcCheck2": {

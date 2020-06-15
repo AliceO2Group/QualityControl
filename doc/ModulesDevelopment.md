@@ -357,6 +357,9 @@ As an example, we are going to produce histograms with the HistoProducer and col
       }
 ```
 When using this feature, make sure that the name of the MO in the Check definition matches the name of the object you are sending from the external device.
+```yaml
+o2-qc-run-producer | o2-qc-run-histo-producer | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/basic-external-histo.json
+```
 
 ### Limitations
 

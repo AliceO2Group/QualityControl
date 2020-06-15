@@ -361,14 +361,15 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
     if (taskConfig.get<bool>("active", true)) {
-      // TODO set proper values
-//      o2::framework::InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
       framework::Inputs inputs = o2::framework::DataDescriptorQueryBuilder::parse(taskConfig.get<std::string>("query").c_str());
       cout << "a" << endl;
       o2::framework::InputSpec taskOutput = inputs.at(0); // only consider the first one if several.
       cout << "b" << endl;
       // if we just use the label, then we get a different type of labels as we use queries
       string label = DataSpecUtils::label(taskOutput); //DataSpecUtils::label(DataSpecUtils::asConcreteDataMatcher(taskOutput));
+//      cout << "describe : " << DataSpecUtils::describe(DataSpecUtils::asConcreteDataMatcher(taskOutput)) << endl;
+//      string label = DataSpecUtils::label(DataSpecUtils::asConcreteDataMatcher(taskOutput));
+      cout << "c" << endl;
       cout << "create a task output for external task : label > " << label
            << ", taskName > " << taskName
            << ", TaskRunner::createTaskDataOrigin() > " << TaskRunner::createTaskDataOrigin()
