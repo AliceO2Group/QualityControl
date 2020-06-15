@@ -22,13 +22,6 @@
         "url": "ccdb-test.cern.ch:8080"
       }
     },
-    "externalTasks": {
-      "External-1": {
-        "active": "true",
-        "detectorName": "TST",
-        "query": "histos:TST/HISTO/0"
-      }
-    },
     "tasks": {
       "QcTask": {
         "active": "true",
@@ -46,6 +39,13 @@
           "myOwnKey": "myOwnValue"
         },
         "location": "remote"
+      }
+    },
+    "externalTasks": {
+      "External-1": {
+        "active": "true",
+        "detectorName": "TST",
+        "query": "histos:TST/HISTO/0"
       }
     },
     "checks": {

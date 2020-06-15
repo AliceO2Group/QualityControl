@@ -317,6 +317,52 @@ For a new feature, just create a new branch for it and use the same procedure. D
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
 
+## Production of QC objects outside this framework
+QC objects (e.g. histograms) are typically produced in a QC task. 
+This is however not the only way. Some processing tasks such as the calibration 
+might have already processed the data and produced histograms that should be 
+monitored. Instead of re-processing and doing twice the work, one can simply
+push this QC object to the QC framework where it will be checked and stored.
+
+### Configuration
+
+Let be a device in the main data flow that produces a histogram on a channel defined as `TST/HISTO/0`. To get this histogram in the QC and check it, add to the configuration file an "external device": 
+```yaml
+    "externalTasks": {
+      "External-1": {
+        "active": "true",
+        "detectorName": "TST",
+        "query": "histos:TST/HISTO/0"
+      }
+    },
+    "checks": {
+```
+The query syntax is the same as the one used in the DPL and in the Dispatcher. The channel can of course belong to a device of another workflow piped to the QC workflow.
+
+### Example
+
+As an example, we are going to produce histograms with the HistoProducer and collect them with the QC. The configuration is in [basic-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/basic-external-histo.json). An external task is defined and named "External-1". It is then used in the Check QCCheck : 
+```yaml
+      "QcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "ExternalTask",
+          "name": "External-1",
+          "MOs": ["hello"]
+        }]
+      }
+```
+When using this feature, make sure that the name of the MO in the Check definition matches the name of the object you are sending from the external device.
+
+### Limitations
+
+1. Objects sent by the external device must be either a TObject or a TObjArray. In the former case, the object will be sent to the checker encapsulated in a MonitorObject. In the latter case, each TObject of the TObjArray is encapsulated in a MonitorObject and is sent to the checker.
+2. Although we use a query syntax in the external task configuration, we only consider the first element defined there. If there are several sources we ignore all but the first one.
+
 ## Raw data source
 
 To read a raw data file, one can use the O2's [RawFileReader](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader). On the same page, there are instructions to write such file from Simulation. 
