@@ -135,6 +135,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   metadata["qc_task_name"] = mo->getTaskName();
   metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
 
+  cout << "Storing mo " << obj << " under path " << path << endl;
   ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
 }
 

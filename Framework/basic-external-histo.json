@@ -24,6 +24,7 @@
     },
     "externalTasks": {
       "External-1": {
+        "active": "true",
         "detectorName": "TST",
         "query": "histos:TST/HISTO/0"
       }
@@ -58,6 +59,18 @@
           "type": "ExternalTask",
           "name": "External-1",
           "MOs": ["hello"]
+        }]
+      },
+      "QcCheck2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["example"]
         }]
       }
     }

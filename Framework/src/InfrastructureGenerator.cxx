@@ -30,6 +30,7 @@
 #include <Framework/ExternalFairMQDeviceProxy.h>
 #include <Mergers/MergerInfrastructureBuilder.h>
 #include <Mergers/MergerBuilder.h>
+#include <Framework/DataDescriptorQueryBuilder.h>
 
 #include <algorithm>
 
@@ -341,7 +342,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   typedef std::vector<std::string> InputNames;
   typedef std::vector<Check> Checks;
   std::map<std::string, o2::framework::InputSpec> tasksOutputMap; // all active tasks' output, as inputs, keyed by their label
-  std::map<InputNames, Checks> checksMap;                         // all the Checks defined in the config mapped from their sorted inputNames
+  std::map<InputNames, Checks> checksMap;                         // all the Checks defined in the config mapped keyed by their sorted inputNames
   std::map<InputNames, InputNames> storeVectorMap;
 
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
@@ -349,8 +350,30 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // Build tasksOutputMap based on active tasks in the config
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     if (taskConfig.get<bool>("active", true)) {
-      o2::framework::InputSpec checkInput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
-      tasksOutputMap.insert({ DataSpecUtils::label(checkInput), checkInput });
+      o2::framework::InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
+      cout << "create a task output for task : label > " << DataSpecUtils::label(taskOutput)
+           << ", taskName > " << taskName
+           << ", TaskRunner::createTaskDataOrigin() > " << TaskRunner::createTaskDataOrigin()
+           << ", TaskRunner::createTaskDataDescription(taskName) > " << TaskRunner::createTaskDataDescription(taskName).str << endl;
+      tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
+    }
+  }
+
+  for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
+    if (taskConfig.get<bool>("active", true)) {
+      // TODO set proper values
+//      o2::framework::InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
+      framework::Inputs inputs = o2::framework::DataDescriptorQueryBuilder::parse(taskConfig.get<std::string>("query").c_str());
+      cout << "a" << endl;
+      o2::framework::InputSpec taskOutput = inputs.at(0); // only consider the first one if several.
+      cout << "b" << endl;
+      // if we just use the label, then we get a different type of labels as we use queries
+      string label = DataSpecUtils::label(taskOutput); //DataSpecUtils::label(DataSpecUtils::asConcreteDataMatcher(taskOutput));
+      cout << "create a task output for external task : label > " << label
+           << ", taskName > " << taskName
+           << ", TaskRunner::createTaskDataOrigin() > " << TaskRunner::createTaskDataOrigin()
+           << ", TaskRunner::createTaskDataDescription(taskName) > " << TaskRunner::createTaskDataDescription(taskName).str << endl;
+      tasksOutputMap.insert({ label, taskOutput });
     }
   }
 
@@ -364,7 +387,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
         InputNames inputNames;
 
         for (auto& inputSpec : check.getInputs()) {
-          auto name = DataSpecUtils::label(inputSpec);
+          cout << "   inputSpec of check input " <<  DataSpecUtils::describe(inputSpec) << endl;
+          cout << "   DataSpecUtils::label(inputSpec) " <<  DataSpecUtils::label(inputSpec) << endl;
+          // for external the input spec is a query matcher, for a task it is ??
+          auto name = DataSpecUtils::label(inputSpec); // !!!
           inputNames.push_back(name);
         }
         // Create a grouping key - sorted vector of stringified InputSpecs
@@ -378,16 +404,31 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // For every Task output, find a Check to store the MOs in the database.
   // If none is found we create a sink device.
   for (auto& [label, inputSpec] : tasksOutputMap) { // for each task output
-    (void)inputSpec;
+    cout << "task output label : " << label << endl;
+    (void)inputSpec; // avoid warning
     // Look for this task as input in the Checks' inputs, if we found it then we are done
     for (auto& [inputNames, checks] : checksMap) { // for each set of inputs
-      (void)checks;
+      cout << "   inputNames -> checks : " << endl;
+      for (size_t i = 0 ; i < inputNames.size() ; i++) {
+        cout << "      inputNames["<< i << "] = " << inputNames[i] << endl;
+      }
+      for (size_t i = 0 ; i < checks.size() ; i++) {
+        cout << "      checks["<< i << "].getName() = " << checks[i].getName() << endl;
+      }
+      (void)checks; // avoid warning
+      cout << "   can we find the task label in the inputNames ? " << endl;
       if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
+        cout << "   found !" << endl;
+        cout << "   IN STOREVECTORMAP" << endl;
         storeVectorMap[inputNames].push_back(label);
         break;
+      } else {
+        cout << "   Not found !" << endl;
       }
+
     }
 
+    cout << "creating a device for storage" << endl;
     // If there is no Check for a given input, create a candidate for a sink device
     InputNames singleEntry{ label };
     // Init empty Check vector to appear in the next step
@@ -399,16 +440,16 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   CheckRunnerFactory checkRunnerFactory;
   for (auto& [inputNames, checks] : checksMap) {
     //Logging
-    QcInfoLogger::GetInstance() << ">> Inputs (" << inputNames.size() << "): ";
+    ILOG(Info) << ">> Inputs (" << inputNames.size() << "): ";
     for (auto& name : inputNames)
-      QcInfoLogger::GetInstance() << name << " ";
-    QcInfoLogger::GetInstance() << " checks (" << checks.size() << "): ";
+      ILOG(Info) << name << " ";
+    ILOG(Info) << " checks (" << checks.size() << "): ";
     for (auto& check : checks)
-      QcInfoLogger::GetInstance() << check.getName() << " ";
-    QcInfoLogger::GetInstance() << " stores (" << storeVectorMap[inputNames].size() << "): ";
+      ILOG(Info) << check.getName() << " ";
+    ILOG(Info) << " stores (" << storeVectorMap[inputNames].size() << "): ";
     for (auto& input : storeVectorMap[inputNames])
-      QcInfoLogger::GetInstance() << input << " ";
-    QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Info) << input << " ";
+    ILOG(Info) << ENDM;
 
     if (!checks.empty()) { // Create a CheckRunner for the grouped checks
       workflow.emplace_back(checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));

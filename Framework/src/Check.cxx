@@ -105,6 +105,8 @@ void Check::initConfig(std::string checkName)
         ILOG(Info) << "query : " << externalQuery << ENDM;
         framework::Inputs input = o2::framework::DataDescriptorQueryBuilder::parse(externalQuery.c_str());
         mInputs.push_back(std::move(input.at(0)));
+//        auto taskName = dataSource.get<std::string>("name");
+//        mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
       }
 
       /*
