@@ -46,7 +46,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
   workflowOptions.push_back(
     ConfigParamSpec{ "producers", VariantType::Int, 1, { "Number of producers. Each will have unique SubSpec, counting from 0." } });
   workflowOptions.push_back(
-    ConfigParamSpec{ "monitoring-url", VariantType::String, "", { "URL of the Monitoring backend" } });
+    ConfigParamSpec{ "monitoring-url", VariantType::String, "", { "URL of the Monitoring backend." } });
 }
 
 #include <Framework/runDataProcessing.h>
