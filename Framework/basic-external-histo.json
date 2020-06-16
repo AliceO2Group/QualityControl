@@ -23,29 +23,12 @@
       }
     },
     "tasks": {
-      "QcTask": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
-        "moduleName": "QcSkeleton",
-        "detectorName": "TST",
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tst-raw"
-        },
-        "taskParameters": {
-          "myOwnKey": "myOwnValue"
-        },
-        "location": "remote"
-      }
     },
     "externalTasks": {
       "External-1": {
         "active": "true",
         "detectorName": "TST",
-        "query": "histos:TST/HISTO/0"
+        "query": "histos:TST/HISTO/0", "": "The binding is not needed, we will put our own"
       }
     },
     "checks": {
@@ -60,35 +43,9 @@
           "name": "External-1",
           "MOs": ["hello_0"]
         }]
-      },
-      "QcCheck2": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "OnAny",
-        "detectorName": "TST",
-        "dataSource": [{
-          "type": "Task",
-          "name": "QcTask",
-          "MOs": ["example"]
-        }]
       }
     }
   },
   "dataSamplingPolicies": [
-    {
-      "id": "tst-raw",
-      "active": "true",
-      "machines": [],
-      "query": "random:TST/RAWDATA/0",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "0.1",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    }
   ]
 }

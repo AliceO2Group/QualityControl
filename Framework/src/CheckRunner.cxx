@@ -12,6 +12,7 @@
 /// \file   CheckRunner.cxx
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
+/// \author Rafal Pacholek
 ///
 
 #include "QualityControl/CheckRunner.h"
@@ -246,7 +247,8 @@ void CheckRunner::prepareCacheData(framework::ProcessingContext& ctx)
           mLogger << AliceO2::InfoLogger::InfoLogger::Warning << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
           mLogger << AliceO2::InfoLogger::InfoLogger::Warning << "    Creating an ad hoc MO." << ENDM;
           header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
-          mo = std::make_shared<MonitorObject>(tObject, "External-1", origin.str);
+          cout << "creating a mo with taskname " << input.binding << endl;
+          mo = std::make_shared<MonitorObject>(tObject, input.binding, origin.str);
         }
 
         if (mo) {

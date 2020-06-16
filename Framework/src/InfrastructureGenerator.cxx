@@ -361,14 +361,34 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
     if (taskConfig.get<bool>("active", true)) {
-      framework::Inputs inputs = o2::framework::DataDescriptorQueryBuilder::parse(taskConfig.get<std::string>("query").c_str());
+
+      // replace the binding with the name of the external task (useful to name the data later)
+      auto query = taskConfig.get<std::string>("query");
+//      cout << "query before change : " << query << endl;
+//      query = query.find(':') == string::npos ? taskName + query : query; // if missing add it.
+//
+//      size_t bindingSeparator = query.find(':');
+//      if (bindingSeparator == string::npos) { // missing binding, add the task name
+//        query = taskName + ":" + query;
+//      } else {
+//        // replace the binding by the name of the task
+//        query.replace(0, bindingSeparator, taskName);
+//      }
+//      cout << "query after change : " << query << endl;
+
+      framework::Inputs inputs = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
+
       cout << "a" << endl;
       o2::framework::InputSpec taskOutput = inputs.at(0); // only consider the first one if several.
       cout << "b" << endl;
+      // Create a proper concrete input to match what exists in the case we have a QC task.
+//      o2::framework::InputSpec taskOutput{ temp.binding, DataSpecUtils::asConcreteOrigin(temp), DataSpecUtils::asConcreteDataDescription(temp) };
+
       // if we just use the label, then we get a different type of labels as we use queries
       string label = DataSpecUtils::label(taskOutput); //DataSpecUtils::label(DataSpecUtils::asConcreteDataMatcher(taskOutput));
 //      cout << "describe : " << DataSpecUtils::describe(DataSpecUtils::asConcreteDataMatcher(taskOutput)) << endl;
 //      string label = DataSpecUtils::label(DataSpecUtils::asConcreteDataMatcher(taskOutput));
+
       cout << "c" << endl;
       cout << "create a task output for external task : label > " << label
            << ", taskName > " << taskName
@@ -388,7 +408,6 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
         InputNames inputNames;
 
         for (auto& inputSpec : check.getInputs()) {
-          cout << "   inputSpec of check input " <<  DataSpecUtils::describe(inputSpec) << endl;
           cout << "   DataSpecUtils::label(inputSpec) " <<  DataSpecUtils::label(inputSpec) << endl;
           // for external the input spec is a query matcher, for a task it is ??
           auto name = DataSpecUtils::label(inputSpec); // !!!
