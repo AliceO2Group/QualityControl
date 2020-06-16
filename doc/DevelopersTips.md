@@ -10,6 +10,14 @@ here. It is not sanitized or organized. Just a brain dump.
 4. A PR is automatically created in alidist
 5. Once merged, send an email to alice-o2-wp7@cern.ch, alice-o2-qc-contact@cern.ch and alice-dpg-qa-tools@cern.ch to announce the new release. Use the email for the previous release as a template.
 
+### Create a fix version
+1. checkout last tagged version, e.g. `git checkout v0.26.1`
+2. branch, e.g. `git checkout -b branch_v0.26.2`
+2. cherry-pick the commit from master, e.g. `git cherry-pick b187ddbe52058d53a9bbf3cbdd53121c6b936cd8`
+3. change version in CMakeLists and commit
+5. tag, e.g. `git tag -a v0.26.2 -m "v0.26.2"`
+4. push to upstream, e.g. `git push upstream`
+
 ### Where and how to configure the repo_cleaner of the ccdb-test
 
 The config file is stored in git in the branch `repo_cleaner` (careful not to update in master instead !). Check out the branch, update the file Framework/script/RepoCleaner/config.yaml and commit it. A PR is necessary but in case of emergency, force-merge it. As soon as it is merged, it will be used by the script.
