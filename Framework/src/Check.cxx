@@ -101,27 +101,13 @@ void Check::initConfig(std::string checkName)
         mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
       } else if (dataSource.get<std::string>("type") == "ExternalTask") {
 
-        // replace the binding with the name of the external task (useful to name the data later)
         auto query = config->getString("qc.externalTasks." + taskName + ".query").get();
-        query = query.find(':') == string::npos ? taskName + query : query; // if missing add it.
-
-        size_t bindingSeparator = query.find(':');
-        if (bindingSeparator == string::npos) { // missing binding, add the task name
-          query = taskName + ":" + query;
-        } else {
-          // replace the binding by the name of the task
-          query.replace(0, bindingSeparator, taskName);
-        }
-
-        ILOG(Info) << "query : " << query << ENDM;
         framework::Inputs input = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
         mInputs.push_back(std::move(input.at(0)));
       }
 
-      /*
-         * Subscribe on predefined MOs.
-         * If "MOs" not set or "MOs" set to "all", the check function will be triggered whenever a new MO appears.
-         */
+      // Subscribe on predefined MOs.
+      // If "MOs" not set or "MOs" set to "all", the check function will be triggered whenever a new MO appears.
       if (dataSource.count("MOs") == 0 || dataSource.get<std::string>("MOs") == "all") {
         mCheckConfig.policyType = "_OnGlobalAny";
         mCheckConfig.allMOs = true;

@@ -337,12 +337,13 @@ Let be a device in the main data flow that produces a histogram on a channel def
       "External-1": {
         "active": "true",
         "detectorName": "TST",
-        "query": "histos:TST/HISTO/0"
+        "query": "External-1:TST/HISTO/0"
       }
     },
     "checks": {
 ```
 The "query" syntax is the same as the one used in the DPL and in the Dispatcher. It must match the output of another device, whether it is in the same workflow or in a piped one. 
+The `binding` (first part, before the colon) is used in the path of the stored objects and thus we encourage to use the task name to avoid confusion. 
 
 ### Example 1: basic
 
@@ -368,9 +369,9 @@ To run it, do:
 o2-qc-run-producer | o2-qc-run-histo-producer | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/basic-external-histo.json
 ```
 
-The object is visible in the QCG or the CCDB at `qc/TST/External-1/hello_0`. In general we publish the objects of an external device at `qc/<detector>/<externalTaskName>/object`. 
+The object is visible in the QCG or the CCDB at `qc/TST/External-1/hello_0`. In general we publish the objects of an external device at `qc/<detector>/<binding>/object`. 
 
-The check results are stored at `qc/checks/TST/External-1/hello_0`.
+The check results are stored at `qc/checks/<detector>/<binding>/object`.
 
 ### Example 2: advanced
 

@@ -377,8 +377,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
         InputNames inputNames;
 
         for (auto& inputSpec : check.getInputs()) {
-          // for external the input spec is a query matcher, for a task it is ??
-          auto name = DataSpecUtils::label(inputSpec); // !!!
+          auto name = DataSpecUtils::label(inputSpec);
           inputNames.push_back(name);
         }
         // Create a grouping key - sorted vector of stringified InputSpecs
@@ -402,7 +401,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
       }
     }
 
-    // If there is no Check for a given input, create a candidate for a sink device
+    // If there is no Check for a given task output, create a candidate for a sink device
     InputNames singleEntry{ label };
     // Init empty Check vector to appear in the next step
     checksMap[singleEntry];
