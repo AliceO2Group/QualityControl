@@ -100,11 +100,9 @@ void Check::initConfig(std::string checkName)
       if(dataSource.get<std::string>("type") == "Task") {
         mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
       } else if (dataSource.get<std::string>("type") == "ExternalTask") {
-        LOG(INFO) << "EXTERNAL TASK IN CHECK";
 
         // replace the binding with the name of the external task (useful to name the data later)
         auto query = config->getString("qc.externalTasks." + taskName + ".query").get();
-        std::cout << "query before change : " << query << std::endl;
         query = query.find(':') == string::npos ? taskName + query : query; // if missing add it.
 
         size_t bindingSeparator = query.find(':');
@@ -114,16 +112,10 @@ void Check::initConfig(std::string checkName)
           // replace the binding by the name of the task
           query.replace(0, bindingSeparator, taskName);
         }
-        cout << "query after change : " << query << endl;
 
-
-
-//        const std::string& externalQuery = config->getString("qc.externalTasks." + taskName + ".query").get();
         ILOG(Info) << "query : " << query << ENDM;
         framework::Inputs input = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
         mInputs.push_back(std::move(input.at(0)));
-//        auto taskName = dataSource.get<std::string>("name");
-//        mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
       }
 
       /*

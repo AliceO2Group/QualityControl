@@ -351,49 +351,18 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     if (taskConfig.get<bool>("active", true)) {
       o2::framework::InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
-      cout << "create a task output for task : label > " << DataSpecUtils::label(taskOutput)
-           << ", taskName > " << taskName
-           << ", TaskRunner::createTaskDataOrigin() > " << TaskRunner::createTaskDataOrigin()
-           << ", TaskRunner::createTaskDataDescription(taskName) > " << TaskRunner::createTaskDataDescription(taskName).str << endl;
       tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
     }
   }
 
+  // For each external task prepare the InputSpec to be stored in tasksoutputMap
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
     if (taskConfig.get<bool>("active", true)) {
-
-      // replace the binding with the name of the external task (useful to name the data later)
       auto query = taskConfig.get<std::string>("query");
-//      cout << "query before change : " << query << endl;
-//      query = query.find(':') == string::npos ? taskName + query : query; // if missing add it.
-//
-//      size_t bindingSeparator = query.find(':');
-//      if (bindingSeparator == string::npos) { // missing binding, add the task name
-//        query = taskName + ":" + query;
-//      } else {
-//        // replace the binding by the name of the task
-//        query.replace(0, bindingSeparator, taskName);
-//      }
-//      cout << "query after change : " << query << endl;
-
       framework::Inputs inputs = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
-
-      cout << "a" << endl;
       o2::framework::InputSpec taskOutput = inputs.at(0); // only consider the first one if several.
-      cout << "b" << endl;
-      // Create a proper concrete input to match what exists in the case we have a QC task.
-//      o2::framework::InputSpec taskOutput{ temp.binding, DataSpecUtils::asConcreteOrigin(temp), DataSpecUtils::asConcreteDataDescription(temp) };
 
-      // if we just use the label, then we get a different type of labels as we use queries
-      string label = DataSpecUtils::label(taskOutput); //DataSpecUtils::label(DataSpecUtils::asConcreteDataMatcher(taskOutput));
-//      cout << "describe : " << DataSpecUtils::describe(DataSpecUtils::asConcreteDataMatcher(taskOutput)) << endl;
-//      string label = DataSpecUtils::label(DataSpecUtils::asConcreteDataMatcher(taskOutput));
-
-      cout << "c" << endl;
-      cout << "create a task output for external task : label > " << label
-           << ", taskName > " << taskName
-           << ", TaskRunner::createTaskDataOrigin() > " << TaskRunner::createTaskDataOrigin()
-           << ", TaskRunner::createTaskDataDescription(taskName) > " << TaskRunner::createTaskDataDescription(taskName).str << endl;
+      string label = DataSpecUtils::label(taskOutput);
       tasksOutputMap.insert({ label, taskOutput });
     }
   }
@@ -408,7 +377,6 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
         InputNames inputNames;
 
         for (auto& inputSpec : check.getInputs()) {
-          cout << "   DataSpecUtils::label(inputSpec) " <<  DataSpecUtils::label(inputSpec) << endl;
           // for external the input spec is a query matcher, for a task it is ??
           auto name = DataSpecUtils::label(inputSpec); // !!!
           inputNames.push_back(name);
@@ -424,31 +392,16 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // For every Task output, find a Check to store the MOs in the database.
   // If none is found we create a sink device.
   for (auto& [label, inputSpec] : tasksOutputMap) { // for each task output
-    cout << "task output label : " << label << endl;
     (void)inputSpec; // avoid warning
     // Look for this task as input in the Checks' inputs, if we found it then we are done
     for (auto& [inputNames, checks] : checksMap) { // for each set of inputs
-      cout << "   inputNames -> checks : " << endl;
-      for (size_t i = 0 ; i < inputNames.size() ; i++) {
-        cout << "      inputNames["<< i << "] = " << inputNames[i] << endl;
-      }
-      for (size_t i = 0 ; i < checks.size() ; i++) {
-        cout << "      checks["<< i << "].getName() = " << checks[i].getName() << endl;
-      }
       (void)checks; // avoid warning
-      cout << "   can we find the task label in the inputNames ? " << endl;
       if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
-        cout << "   found !" << endl;
-        cout << "   IN STOREVECTORMAP" << endl;
         storeVectorMap[inputNames].push_back(label);
         break;
-      } else {
-        cout << "   Not found !" << endl;
       }
-
     }
 
-    cout << "creating a device for storage" << endl;
     // If there is no Check for a given input, create a candidate for a sink device
     InputNames singleEntry{ label };
     // Init empty Check vector to appear in the next step

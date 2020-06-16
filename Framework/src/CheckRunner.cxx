@@ -244,10 +244,9 @@ void CheckRunner::prepareCacheData(framework::ProcessingContext& ctx)
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
 
         if (mo == nullptr) {
-          mLogger << AliceO2::InfoLogger::InfoLogger::Warning << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
-          mLogger << AliceO2::InfoLogger::InfoLogger::Warning << "    Creating an ad hoc MO." << ENDM;
+          mLogger << AliceO2::InfoLogger::InfoLogger::Info << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
+          mLogger << AliceO2::InfoLogger::InfoLogger::Info << "    Creating an ad hoc MO." << ENDM;
           header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
-          cout << "creating a mo with taskname " << input.binding << endl;
           mo = std::make_shared<MonitorObject>(tObject, input.binding, origin.str);
         }
 
