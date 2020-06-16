@@ -45,12 +45,12 @@
       "External-1": {
         "active": "true",
         "detectorName": "TST",
-        "query": "histos:TST/HISTO/0", "": "The binding is not needed, we will put our own"
+        "query": "histos:TST/HISTO/0", "": "The binding is not needed, we will replace it by our own"
       },
       "External-2": {
         "active": "true",
         "detectorName": "TST",
-        "query": "histos:TST/HISTO/1", "": "The binding is not needed, we will put our own"
+        "query": "histos:TST/HISTO/1", "": "The binding is not needed, we will replace it by our own"
       }
     },
     "checks": {
@@ -64,18 +64,6 @@
           "type": "ExternalTask",
           "name": "External-1",
           "MOs": ["hello_0", "hello_1"]
-        }]
-      },
-      "QcCheck-external-2": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "OnAny",
-        "detectorName": "TST",
-        "dataSource": [{
-          "type": "ExternalTask",
-          "name": "External-2",
-          "MOs": ["hello_1"]
         }]
       },
       "QcCheck2": {

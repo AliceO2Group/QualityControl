@@ -342,11 +342,11 @@ Let be a device in the main data flow that produces a histogram on a channel def
     },
     "checks": {
 ```
-The query syntax is the same as the one used in the DPL and in the Dispatcher. The channel can of course belong to a device of another workflow piped to the QC workflow.
+The "query" syntax is the same as the one used in the DPL and in the Dispatcher. It must match the output of another device, whether it is in the same workflow or in a piped one. 
 
-### Example
+### Example 1: basic
 
-As an example, we are going to produce histograms with the HistoProducer and collect them with the QC. The configuration is in [basic-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/basic-external-histo.json). An external task is defined and named "External-1". It is then used in the Check QCCheck : 
+As a basic example, we are going to produce histograms with the HistoProducer and collect them with the QC. The configuration is in [basic-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/basic-external-histo.json). An external task is defined and named "External-1" (see subsection above). It is then used in the Check QCCheck : 
 ```yaml
       "QcCheck": {
         "active": "true",
@@ -362,8 +362,31 @@ As an example, we are going to produce histograms with the HistoProducer and col
       }
 ```
 When using this feature, make sure that the name of the MO in the Check definition matches the name of the object you are sending from the external device.
+
+To run it, do:
 ```yaml
 o2-qc-run-producer | o2-qc-run-histo-producer | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/basic-external-histo.json
+```
+
+The object is visible in the QCG or the CCDB at `qc/TST/External-1/hello_0`. In general we publish the objects of an external device at `qc/<detector>/<externalTaskName>/object`. 
+
+The check results are stored at `qc/checks/TST/External-1/hello_0`.
+
+### Example 2: advanced
+
+This second, more advanced, example mixes QC tasks and external tasks. It is defined in [advanced-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/advanced-external-histo.json). It is represented here:
+
+![alt text](images/Advanced-external.png)
+
+First, it runs 1 QC task (QC-TASK-RUNNER-QcTask) getting data from a data producer (bottom boxes, typical QC worfklow). 
+
+On top we see 3 histogram producers. `histoProducer-2` is not part of the QC, it is not an external device defined in the configuration file. The two other histogram producers are configured as external devices in the configuration file. 
+
+`histoProducer-0` produces an object that is used in a check (`QcCheck-External-1`). `histoProducer-1` objects are not used in any check but we generate one automatically to take care of the storage in the database.
+
+To run it, do: 
+```yaml
+o2-qc-run-producer | o2-qc-run-histo-producer --producers 3 --histograms 3 | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/advanced-external-histo.json 
 ```
 
 ### Limitations
