@@ -47,6 +47,7 @@ namespace o2::quality_control::checker
 {
 
 /// Static functions
+// fixme: this is not actually used. collectOutputs() is used instead.
 o2::header::DataDescription CheckRunner::createCheckRunnerDataDescription(const std::string taskName)
 {
   if (taskName.empty()) {
