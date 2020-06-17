@@ -97,7 +97,7 @@ void Check::initConfig(std::string checkName)
       auto taskName = dataSource.get<std::string>("name");
       mNumberOfTaskSources++;
 
-      if(dataSource.get<std::string>("type") == "Task") {
+      if (dataSource.get<std::string>("type") == "Task") {
         mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
       } else if (dataSource.get<std::string>("type") == "ExternalTask") {
 
