@@ -59,6 +59,11 @@ For a general overview of our (O2) software, organization and processes, please 
       * [Developing QC modules on a machine with FLP suite](doc/Advanced.md#developing-qc-modules-on-a-machine-with-flp-suite)
       * [Use MySQL as QC backend](doc/Advanced.md#use-mysql-as-qc-backend)
       * [Configuration files details](doc/Advanced.md#configuration-files-details)
+         * [Global configuration structure](doc/Advanced.md#global-configuration-structure)
+         * [Common configuration](doc/Advanced.md#common-configuration)
+         * [QC Tasks configuration](doc/Advanced.md#qc-tasks-configuration)
+         * [QC Checks configuration](doc/Advanced.md#qc-checks-configuration)
+         * [QC Post-processing configuration](doc/Advanced.md#qc-post-processing-configuration)
    * [Frequently Asked Questions](doc/FAQ.md)
 <!-- Added by: bvonhall, at:  -->
 
