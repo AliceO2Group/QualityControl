@@ -223,7 +223,7 @@ void CheckRunner::prepareCacheData(framework::ProcessingContext& ctx)
       // We don't know what we receive, so we test for an array and then try a tobject.
       // If we received a tobject, it gets encapsulated in the tobjarray.
       shared_ptr<const TObjArray> array = nullptr;
-      try{
+      try {
         array = ctx.inputs().get<TObjArray*>(input.binding.c_str());
         mLogger << AliceO2::InfoLogger::InfoLogger::Debug << "CheckRunner " << mDeviceName
                 << " received an array with " << array->GetEntries()

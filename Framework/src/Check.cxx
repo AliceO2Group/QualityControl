@@ -219,7 +219,7 @@ void Check::initPolicy(std::string policyType)
     mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
       for (const auto& moname : mCheckConfig.moNames) {
         std::cout << "in policy, moname: " << moname << std::endl;
-        for (const auto &[k, v] : revisionMap)
+        for (const auto& [k, v] : revisionMap)
           std::cout << "m[" << k << "] = (" << v << ") " << std::endl;
         if (revisionMap.count(moname) && revisionMap[moname] > mMORevision) {
           return true;

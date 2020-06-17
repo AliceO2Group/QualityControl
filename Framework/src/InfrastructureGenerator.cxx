@@ -391,10 +391,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // For every Task output, find a Check to store the MOs in the database.
   // If none is found we create a sink device.
   for (auto& [label, inputSpec] : tasksOutputMap) { // for each task output
-    (void)inputSpec; // avoid warning
+    (void)inputSpec;                                // avoid warning
     // Look for this task as input in the Checks' inputs, if we found it then we are done
     for (auto& [inputNames, checks] : checksMap) { // for each set of inputs
-      (void)checks; // avoid warning
+      (void)checks;                                // avoid warning
       if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
         storeVectorMap[inputNames].push_back(label);
         break;
