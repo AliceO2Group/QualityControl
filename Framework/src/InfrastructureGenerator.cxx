@@ -379,20 +379,23 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // If none is found we create a sink device.
   for (auto& [label, inputSpec] : tasksOutputMap) { // for each task output
     (void)inputSpec;
+    bool isStored = false;
     // Look for this task as input in the Checks' inputs, if we found it then we are done
     for (auto& [inputNames, checks] : checksMap) { // for each set of inputs
       (void)checks;
       if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
         storeVectorMap[inputNames].push_back(label);
+        isStored = true;
         break;
       }
     }
-
-    // If there is no Check for a given input, create a candidate for a sink device
-    InputNames singleEntry{ label };
-    // Init empty Check vector to appear in the next step
-    checksMap[singleEntry];
-    storeVectorMap[singleEntry].push_back(label);
+    if (!isStored) {
+      // If there is no Check for a given input, create a candidate for a sink device
+      InputNames singleEntry{ label };
+      // Init empty Check vector to appear in the next step
+      checksMap[singleEntry];
+      storeVectorMap[singleEntry].push_back(label);
+    }
   }
 
   // Create CheckRunners: 1 per set of inputs
