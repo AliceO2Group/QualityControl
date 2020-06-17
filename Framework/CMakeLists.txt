@@ -299,9 +299,9 @@ endforeach()
 target_include_directories(testVersion PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
-set_property(TEST testWorkflow PROPERTY TIMEOUT 20)
+set_property(TEST testWorkflow PROPERTY TIMEOUT 60)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
-set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 20)
+set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 60)
 set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 20)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
@@ -316,7 +316,7 @@ configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-function
 add_test(NAME functional_test COMMAND o2-qc-functional-test.sh)
 set_tests_properties(functional_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
 set_property(TEST functional_test PROPERTY LABELS slow)
-set_property(TEST functional_test PROPERTY TIMEOUT 20)
+set_property(TEST functional_test PROPERTY TIMEOUT 60)
 
 # ---- Install ----
 

@@ -5,6 +5,7 @@ set(MODULE_NAME "QcMuonChambers")
 set(SRCS
   src/Mapping.cxx
   src/Decoding.cxx
+  src/GlobalHistogram.cxx
   src/PedestalsTask.cxx
   src/PhysicsTask.cxx
   src/PedestalsCheck.cxx
@@ -13,6 +14,7 @@ set(SRCS
 set(HEADERS
   include/MCH/Mapping.h
   include/MCH/Decoding.h
+  include/MCH/GlobalHistogram.h
   include/MCH/PedestalsTask.h
   include/MCH/PhysicsTask.h
   include/MCH/PedestalsCheck.h
@@ -45,6 +47,7 @@ install(
 add_root_dictionary(${MODULE_NAME}
                     HEADERS include/MCH/Mapping.h
                             include/MCH/Decoding.h
+                            include/MCH/GlobalHistogram.h
                             include/MCH/PedestalsTask.h
                             include/MCH/PhysicsTask.h
                             include/MCH/PedestalsCheck.h
