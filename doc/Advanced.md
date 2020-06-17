@@ -548,6 +548,24 @@ Below the full QC Post-processing (PP) configuration structure is described. Not
 }
 ```
 
+### External tasks configuration
+
+Below the external task configuration structure is described. Note that more than one external task might be declared inside in the "externalTasks" path.
+
+```json
+{
+  "qc": {
+    "externalTasks": {
+      "External-1": {                       "": "Name of the taks",
+        "active": "true",                   "": "Activation flag. If not \"true\", the Task will not be created.",
+        "detectorName": "TST",              "": "3-letter code of the detector.",
+        "query": "External-1:TST/HISTO/0",  "": "Query specifying where the objects to be checked and stored are coming from. Use the task name as binding."
+      }
+    }
+  }
+}
+```
+
 ---
 
 [← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
