@@ -23,6 +23,11 @@
       * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
       * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
       * [Configuration files details](#configuration-files-details)
+        * [Global configuration structure](#global-configuration-structure)
+        * [Common configuration](#common-configuration)
+        * [QC Tasks configuration](#qc-tasks-configuration)
+        * [QC Checks configuration](#qc-checks-configuration)
+        * [QC Post-processing configuration](#qc-post-processing-configuration)
 
 <!-- Added by: bvonhall, at:  -->
 
@@ -345,6 +350,8 @@ interfaces have to be identical.
 
 ## Use MySQL as QC backend
 
+WARNING. We do not actively support MySQL as QC database anymore. The interface might not work as expected anymore.
+
 1. Install the MySQL/MariaDB development package
        * CC7 : `sudo yum install mariadb-server`
        * Mac (or download the dmg from Oracle) : `brew install mysql`
@@ -361,112 +368,185 @@ interfaces have to be identical.
 
 ## Configuration files details
 
-TODO : this is to be rewritten once we stabilize the configuration file format.
-
-TODO : task, checker, general parameters
-
-TODO review :
-
 The QC requires a number of configuration items. An example config file is
-provided in the repo under the name _example-default.json_. Moreover, the
-outgoing channel over which histograms are sent is defined in a JSON
-file such as the one called _alfa.json_ in the repo.
+provided in the repo under the name _example-default.json_. This is a quick reference for all the parameters.
 
-**QC tasks** must be defined in the configuration within the element `qc/tasks_config` :
+### Global configuration structure
 
-```
-   "tasks_config": {
-      "myTask_1": {
-        "taskDefinition": "taskDefinition_1"
-      },
-    ...
-```
+This is the global structure of the configuration in QC.
 
-We use an indirect system to allow multiple tasks to share
-most of their definition (`myTask_1` uses defintion `taskDefinition_1`):
-
-```
-    ...
-      "taskDefinition_1": {
-        "className": "o2::quality_control_modules::example::ExampleTask",
-        "moduleName": "QcExample",
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1"
-      },
-```
-The `moduleName` refers to which library contains the class `className`.
-
-The data source for the task is defined in the section `qc/config/DataSampling` :
-
-```
+```json
 {
   "qc": {
     "config": {
-      "DataSampling": {
-        "implementation": "MockSampler"
-      },
-...
-```
 
-Implementation can be `FairSampler` to get data from readout or
-`MockSampler` to get random data.
-
-The JSON `alfa.json` file contains a typical FairMQ device definition. One can
- change the port or the address there:
-```
-{
-    "fairMQOptions": {
-        "devices": [
-            {
-                "id": "myTask_1",
-                "channels": [
-                    {
-                        "name": "data-out",
-                        "sockets": [
-                            {
-                                "type": "pub",
-                                "method": "bind",
-                                "address": "tcp://*:5556",
-                                "sndBufSize": 100,
-                                "rcvBufSize": 100,
-                                "rateLogging": 0
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
+    },
+    "tasks": {
+      
+    },
+    "checks": {
+      
+    },
+    "postprocessing": {
+      
     }
+  },
+  "dataSamplingPoliciesFile": "json:///path/to/data/sampling/config.json",
+  "dataSamplingPolicies": [
+
+  ]
 }
 ```
 
-**QC checkers** are defined in the config file in section `checkers_config`:
+There are four QC-related components:
+ - "config" - contains global configuration of QC which apply to any component. It is required in any configuration
+  file.
+ - "tasks" - contains declarations of QC Tasks. It is mandatory for running topologies with Tasks and
+ Checks.
+ - "checks" - contains declarations of QC Checks. It is mandatory for running topologies with
+  Tasks and Checks.
+ - "postprocessing" - contains declarations of PostProcessing Tasks. It is only needed only when Post-Processing is
+  run.
 
-```
-    "checkers_config": {
-      "checker_0": {
-        "broadcast": "0",
-        "broadcastAddress": "tcp://*:5600",
-        "id": "0"
+The configuration file can also include a path to Data Sampling configuration ("dataSamplingPoliciesFile") or the
+ list of Data Sampling Policies. Please refer to the [Data Sampling documentation](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/Core#data-sampling) to find more information. 
+ 
+ ### Common configuration
+
+This is how a typical "config" structure looks like. Each configuration element is described with a relevant comment
+ afterwards. The `"": "<comment>",` formatting is to keep the JSON structure valid. Please note that these comments
+  should not be present in real configuration files.
+
+```json
+{
+  "qc": {
+    "config": {
+      "database": {                       "": "Configuration of a QC database (the place where QC results are stored).",
+        "username": "qc_user",            "": "Username to log into a DB. Relevant only to the MySQL implementation.",
+        "password": "qc_user",            "": "Password to log into a DB. Relevant only to the MySQL implementation.",
+        "name": "quality_control",        "": "Name of a DB. Relevant only to the MySQL implementation.",
+        "implementation": "CCDB",         "": "Implementation of a DB. It can be CCDB, or MySQL (deprecated).",
+        "host": "ccdb-test.cern.ch:8080", "": "URL of a DB."
       },
-      ...
+      "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
+                                               "change or the values might come from other source (e.g. AliECS)." ],
+        "number": "42",                   "": "Activity number.",
+        "type": "2",                      "": "Arbitrary activity type."
+      },
+      "monitoring": {                     "": "Configuration of the Monitoring library.",
+        "url": "infologger:///debug?qc",  "": ["URI to the Monitoring backend. Refer to the link below for more info:",
+                                               "https://github.com/AliceO2Group/Monitoring#monitoring-instance"]
+      },
+      "consul": {                         "": "Configuration of the Consul library (used for Service Discovery).",
+        "url": "http://consul-test.cern.ch:8500", "": "URL of the Consul backend"
+      },
+      "conditionDB": {                    "": ["Configuration of the Conditions and Calibration DataBase (CCDB).",
+                                               "Do not mistake with the CCDB which is used as QC repository."],
+        "url": "ccdb-test.cern.ch:8080",  "": "URL of a CCDB"
+      }
+    }
+  }
+}
 ```
 
-Here, `checker_0` is not going to broadcast its data but just store
-it in the database.
+ ### QC Tasks configuration
 
-And for the time, the mapping between checkers and tasks must be explicit :
-
+Below the full QC Task configuration structure is described. Note that more than one task might be declared inside in
+ the "tasks" path.
+ 
+ ```json
+{
+  "qc": {
+    "tasks": {
+      "QcTaskName": {                       "": "Name of the QC Task. Less than 14 character names are preferred.",
+        "active": "true",                   "": "Activation flag. If not \"true\", the Task will not be created.",
+        "className": "namespace::of::Task", "": "Class name of the QC Task with full namespace.",
+        "moduleName": "QcSkeleton",         "": "Library name. It can be found in CMakeLists of the detector module.",
+        "detectorName": "TST",              "": "3-letter code of the detector.",
+        "cycleDurationSeconds": "10",       "": "Duration of one cycle (how often MonitorObjects are published).",
+        "maxNumberCycles": "-1",            "": "Number of cycles to perform. Use -1 for infinite.",
+        "dataSource": {                     "": "Data source of the QC Task.",
+          "type": "dataSamplingPolicy",     "": "Type of the data source, \"dataSamplingPolicy\" or \"direct\".",
+          "name": "tst-raw",                "": "Name of Data Sampling Policy. Only for \"dataSamplingPolicy\" source.",
+          "query" : "raw:TST/RAWDATA/0",    "": "Query of the data source. Only for \"direct\" source."
+        },
+        "taskParameters": {                 "": "User Task parameters which are then accessible as a key-value map.",
+          "myOwnKey": "myOwnValue",         "": "An example of a key and a value. Nested structures are not supported"
+        },
+        "location": "local",                "": ["Location of the QC Task, it can be local or remote. Needed only for",
+                                                 "multi-node setups, not respected in standalone development setups."],
+        "localMachines": [                  "", "List of local machines where the QC task should run. Required only",
+                                            "", "for multi-node setups.",
+          "o2flp1",                         "", "Hostname of a local machine.",
+          "o2flp2",                         "", "Hostname of a local machine."
+        ],
+        "remoteMachine": "o2qc1",           "": "Remote QC machine hostname. Required ony for multi-node setups.",
+        "remotePort": "30432",              "": "Remote QC machine TCP port. Required ony for multi-node setups."
+      }
+    }
+  }
+}
 ```
-      ...
-      "numberCheckers": "1",
-      "numberTasks": "1",
-      "tasksAddresses": "tcp://localhost:5556,tcp://localhost:5557,tcp://localhost:5558,tcp://localhost:5559",
-```
-It is needed for the time being because we don't have an information service.
 
-There are configuration items for many other aspects, for example the
-database connection, the monitoring or the data sampling.
+### QC Checks configuration
+
+Below the full QC Checks configuration structure is described. Note that more than one check might be declared inside in
+ the "checks" path. Please also refer to [the Checks documentation](doc/ModulesDevelopment.md#configuration) for more details.
+ 
+ ```json
+{
+  "qc": {
+    "checks": {
+      "MeanIsAbove": {                "": "Name of the Check. Less than 12 character names are preferred.",
+        "active": "true",             "": "Activation flag. If not \"true\", the Check will not be run.",
+        "className": "ns::of::Check", "": "Class name of the QC Check with full namespace.",
+        "moduleName": "QcCommon",     "": "Library name. It can be found in CMakeLists of the detector module.",
+        "detectorName": "TST",        "": "3-letter code of the detector.",
+        "policy": "OnAny",            "": ["Policy which determines when MOs should be checked. See the documentation",
+                                           "of Checks for the list of available policies and their behaviour."],
+        "dataSource": [{              "": "List of data source of the Check.",
+          "type": "Task",             "": "Type of the data source, only \"Task\" up to this date", 
+          "name": "myTask_1",         "": "Name of the Task",
+          "MOs": [ "example" ],       "": ["List of MOs to be checked. Use \"all\" (not as a list) to check each MO ",
+                                           "which is produced by the Task"]
+        }],
+        "checkParameters": {          "": "User Check parameters which are then accessible as a key-value map.",
+          "myOwnKey": "myOwnValue",   "": "An example of a key and a value. Nested structures are not supported"
+        }
+      }
+    }
+  }
+}
+```
+
+### QC Post-processing configuration
+
+Below the full QC Post-processing (PP) configuration structure is described. Note that more than one PP Task might be
+ declared inside in the "postprocessing" path. Please also refer to [the Post-processing documentation](doc/PostProcessing.md) for more details.
+
+```json
+{
+  "qc": {
+    "postprocessing": {
+      "ExamplePostprocessing": {              "": "Name of the PP Task.",
+        "active": "true",                     "": "Activation flag. If not \"true\", the PP Task will not be run.",
+        "className": "namespace::of::PPTask", "": "Class name of the PP Task with full namespace.",
+        "moduleName": "QcSkeleton",           "": "Library name. It can be found in CMakeLists of the detector module.",
+        "detectorName": "TST",                "": "3-letter code of the detector.",
+        "initTrigger": [                      "", "List of initialization triggers",
+          "startofrun",                       "", "An example of an init trigger"
+        ],
+        "updateTrigger": [                    "", "List of update triggers",
+          "10min",                            "", "An example of an update trigger"
+        ],
+        "stopTrigger": [                      "", "List of stop triggers",
+          "endofrun",                         "", "An example of a stop trigger"
+        ]
+      }
+    }
+  }
+}
+```
 
 ---
 
