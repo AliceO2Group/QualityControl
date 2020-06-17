@@ -163,33 +163,29 @@ bool MapFEC::getPadByLinkID(uint32_t link_id, uint32_t ds_addr, uint32_t dsch, M
 
 bool MapFEC::getPadByDE(uint32_t de, uint32_t dsid, uint32_t dsch, MapPad& pad)
 {
-  try {
-    const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
+  const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
 
-    int padid = segment.findPadByFEE(dsid, dsch);
+  int padid = segment.findPadByFEE(dsid, dsch);
 
-    if (padid < 0) {
-      pad.fDE = -1;
-      return false;
-    }
-
-    float padX = segment.padPositionX(padid);
-    float padY = segment.padPositionY(padid);
-    float padSizeX = segment.padSizeX(padid);
-    float padSizeY = segment.padSizeY(padid);
-
-    pad.fDE = de;
-    pad.fDsID = dsid;
-    pad.fAddress = padid;
-    pad.fX = padX;
-    pad.fY = padY;
-    pad.fSizeX = padSizeX;
-    pad.fSizeY = padSizeY;
-    pad.fCathode = segment.isBendingPad(padid) ? 0 : 1;
-    pad.fBad = 0;
-  } catch (const std::exception& e) {
+  if (padid < 0) {
+    pad.fDE = -1;
     return false;
   }
+
+  float padX = segment.padPositionX(padid);
+  float padY = segment.padPositionY(padid);
+  float padSizeX = segment.padSizeX(padid);
+  float padSizeY = segment.padSizeY(padid);
+
+  pad.fDE = de;
+  pad.fDsID = dsid;
+  pad.fAddress = padid;
+  pad.fX = padX;
+  pad.fY = padY;
+  pad.fSizeX = padSizeX;
+  pad.fSizeY = padSizeY;
+  pad.fCathode = segment.isBendingPad(padid) ? 0 : 1;
+  pad.fBad = 0;
 
   return true;
 }

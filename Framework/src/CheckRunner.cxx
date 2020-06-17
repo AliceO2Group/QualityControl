@@ -45,11 +45,8 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 
 namespace o2::quality_control::checker
 {
-
-//
 // Static functions
-//
-
+// fixme: this is not actually used. collectOutputs() is used instead.
 o2::header::DataDescription CheckRunner::createCheckRunnerDataDescription(const std::string taskName)
 {
   if (taskName.empty()) {
@@ -256,7 +253,7 @@ void CheckRunner::update(std::shared_ptr<MonitorObject> mo)
 
 QualityObjectsType CheckRunner::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
 {
-  mLogger << "Running " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
+  mLogger << "Trying " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
           << ENDM;
 
   QualityObjectsType allQOs;

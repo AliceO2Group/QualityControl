@@ -98,11 +98,14 @@ void Check::initConfig(std::string checkName)
       mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
 
       /*
-         * Subscribe on predefined MOs.
-         * If "MOs" not set or "MOs" set to "all", the check function will be triggered whenever a new MO appears.
-         */
+       * Subscribe on predefined MOs.
+       * If "MOs" are not set or "MOs" is set to "all", the check function will be triggered whenever a new MO appears.
+       */
       if (dataSource.count("MOs") == 0 || dataSource.get<std::string>("MOs") == "all") {
-        mCheckConfig.policyType = "_OnGlobalAny";
+        // fixme: this is a dirty fix. Policies should be refactored, so this check won't be needed.
+        if (mCheckConfig.policyType != "OnEachSeparately") {
+          mCheckConfig.policyType = "_OnGlobalAny";
+        }
         mCheckConfig.allMOs = true;
       } else {
         for (const auto& moName : dataSource.get_child("MOs")) {
@@ -114,7 +117,7 @@ void Check::initConfig(std::string checkName)
       }
     }
 
-    // Here can be implemented other sources for the Check then Task if needed
+    // Support for sources other than Tasks can be implemented here.
   }
   mInputsStringified = stringifyInput(mInputs);
 
@@ -174,6 +177,10 @@ void Check::initPolicy(std::string policyType)
      * only one MO to a check at once.
      */
     mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
+      if (mCheckConfig.allMOs) {
+        return true;
+      }
+
       for (const auto& moname : mCheckConfig.moNames) {
         if (revisionMap.count(moname) && revisionMap[moname] > mMORevision) {
           return true;
@@ -191,7 +198,7 @@ void Check::initPolicy(std::string policyType)
 
     mPolicy = [](std::map<std::string, unsigned int>& revisionMap) {
       // Expecting check of this policy only if any change
-      (void)revisionMap; // Supprses Unused warning
+      (void)revisionMap; // Suppress Unused warning
       return true;
     };
 
@@ -316,7 +323,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       mCheckConfig.policyType,
       mInputsStringified,
       monitorObjectsNames));
-    beautify(shadowMap, quality);
+    beautify(moMapToCheck, quality);
   }
 
   return qualityObjects;

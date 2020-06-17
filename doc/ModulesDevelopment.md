@@ -285,7 +285,7 @@ A Check is a function that determines the quality of the Monitor Objects produce
 * __dataSource__ - declaration of the `check` input
     * _type_ - currently only supported is _Task_
     * _name_ - name of the _Task_
-    * _MOs_ - list of MonitorObjects name or "all"
+    * _MOs_ - list of MonitorObjects name or "all" (not as a list!)
 
 ### Implementation
 After the creation of the module described in the above section, every Check functionality requires a separate implementation. The module might implement several Check classes.
