@@ -29,7 +29,8 @@ else
 fi
 
 # delete data
-curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/FctTest${UNIQUE_ID}*
+curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/FunctionalTest${UNIQUE_ID}*
+curl -i -L ccdb-test.cern.ch:8080/truncate/qc/checks/TST/FunctionalTest${UNIQUE_ID}*
 
 # store data
 DIR="$(dirname "${BASH_SOURCE[0]}")"  # get the directory name
@@ -48,7 +49,7 @@ root -b -l -q -e 'TFile f("/tmp/output.root"); f.Print();'
 
 # check QualityObject
 # first the return code must be 200
-code=$(curl -L ccdb-test.cern.ch:8080/qc/checks/TST/QcCheck${UNIQUE_ID}/`date +%s`999 --write-out %{http_code} --silent --output /tmp/output${UNIQUE_ID}.root)
+code=$(curl -L ccdb-test.cern.ch:8080/qc/checks/TST/FunctionalTest${UNIQUE_ID}/`date +%s`999 --write-out %{http_code} --silent --output /tmp/output${UNIQUE_ID}.root)
 if (( $code != 200 )); then
   echo "Error, data not found."
   exit 2
@@ -58,3 +59,4 @@ root -b -l -q -e 'TFile f("/tmp/output.root"); f.Print();'
 
 # delete the data
 curl -i -L ccdb-test.cern.ch:8080/truncate/qc/TST/FunctionalTest${UNIQUE_ID}*
+curl -i -L ccdb-test.cern.ch:8080/truncate/qc/checks/TST/FunctionalTest${UNIQUE_ID}*
