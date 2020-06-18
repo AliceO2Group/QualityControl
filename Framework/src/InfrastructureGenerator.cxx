@@ -23,7 +23,6 @@
 #include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include <boost/property_tree/ptree.hpp>
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataSampling.h>
 #include <Framework/DataSpecUtils.h>
@@ -337,24 +336,22 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
 void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource)
 {
   // todo have a look if this complex procedure can be simplified.
-  // todo also make well defined and scoped functions to make it more readable and clearer.
   typedef std::vector<std::string> InputNames;
-  typedef std::vector<Check> Checks;
-  std::map<std::string, o2::framework::InputSpec> tasksOutputMap; // all active tasks' output, as inputs, keyed by their label
-  std::map<InputNames, Checks> checksMap;                         // all the Checks defined in the config mapped from their sorted inputNames
+  typedef std::vector<Check> CheckRunnerNames;
+  std::map<std::string, o2::framework::InputSpec> checkInputMap;
+  std::map<InputNames, CheckRunnerNames> checkRunnerMap;
   std::map<InputNames, InputNames> storeVectorMap;
 
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
 
-  // Build tasksOutputMap based on active tasks in the config
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     if (taskConfig.get<bool>("active", true)) {
       o2::framework::InputSpec checkInput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
-      tasksOutputMap.insert({ DataSpecUtils::label(checkInput), checkInput });
+      checkInputMap.insert({ DataSpecUtils::label(checkInput), checkInput });
     }
   }
 
-  // Instantiate Checks based on the configuration and build a map of checks (keyed by their inputs names)
+  // Check if there is "checks" section
   if (config->getRecursive("qc").count("checks")) {
     // For every check definition, create a Check
     for (const auto& [checkName, checkConfig] : config->getRecursive("qc.checks")) {
@@ -370,18 +367,17 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
         // Create a grouping key - sorted vector of stringified InputSpecs
         std::sort(inputNames.begin(), inputNames.end());
         // Group checks
-        checksMap[inputNames].push_back(check);
+        checkRunnerMap[inputNames].push_back(check);
       }
     }
   }
 
-  // For every Task output, find a Check to store the MOs in the database.
-  // If none is found we create a sink device.
-  for (auto& [label, inputSpec] : tasksOutputMap) { // for each task output
+  // For every Task output, find device to store the MO
+  for (auto& [label, inputSpec] : checkInputMap) {
     (void)inputSpec;
     bool isStored = false;
-    // Look for this task as input in the Checks' inputs, if we found it then we are done
-    for (auto& [inputNames, checks] : checksMap) { // for each set of inputs
+    // Look for single input
+    for (auto& [inputNames, checks] : checkRunnerMap) {
       (void)checks;
       if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
         storeVectorMap[inputNames].push_back(label);
@@ -389,18 +385,29 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
         break;
       }
     }
+
+    if (!isStored) {
+      // If not assigned to store in previous step, find a candidate without input size limitation
+      for (auto& [inputNames, checks] : checkRunnerMap) {
+        (void)checks;
+        if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end()) {
+          storeVectorMap[inputNames].push_back(label);
+          isStored = true;
+          break;
+        }
+      }
+    }
+
     if (!isStored) {
       // If there is no Check for a given input, create a candidate for a sink device
       InputNames singleEntry{ label };
       // Init empty Check vector to appear in the next step
-      checksMap[singleEntry];
+      checkRunnerMap[singleEntry];
       storeVectorMap[singleEntry].push_back(label);
     }
   }
 
-  // Create CheckRunners: 1 per set of inputs
-  CheckRunnerFactory checkRunnerFactory;
-  for (auto& [inputNames, checks] : checksMap) {
+  for (auto& [inputNames, checks] : checkRunnerMap) {
     //Logging
     QcInfoLogger::GetInstance() << ">> Inputs (" << inputNames.size() << "): ";
     for (auto& name : inputNames)
@@ -413,10 +420,14 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
       QcInfoLogger::GetInstance() << input << " ";
     QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
 
-    if (!checks.empty()) { // Create a CheckRunner for the grouped checks
+    CheckRunnerFactory checkRunnerFactory;
+    //push workflow
+    if (checks.size() > 0) {
+      // Create a CheckRunner for the grouped checks
       workflow.emplace_back(checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));
-    } else { // If there are no checks, create a sink CheckRunner
-      workflow.emplace_back(checkRunnerFactory.createSinkDevice(tasksOutputMap.find(inputNames[0])->second, configurationSource));
+    } else {
+      // If there are no checks, create a sink CheckRunner
+      workflow.emplace_back(checkRunnerFactory.createSinkDevice(checkInputMap.find(inputNames[0])->second, configurationSource));
     }
   }
 }
