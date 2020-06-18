@@ -34,7 +34,7 @@ class TestTask : public PostProcessingInterface
   TestTask() : test(0){};
   ~TestTask() override = default;
 
-  void configure(std::string, configuration::ConfigurationInterface&) override 
+  void configure(std::string, const boost::property_tree::ptree&) override
   {
     test = 1;
   }
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
   task.setName("asfd");
   BOOST_CHECK_EQUAL(task.getName(), "asfd");
 
-  task.configure("", *configFile);
+  task.configure("", configFile->getRecursive());
   BOOST_CHECK_EQUAL(task.test, 1);
 
   o2::framework::ServiceRegistry services;

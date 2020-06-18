@@ -25,7 +25,7 @@ void PostProcessingInterface::setName(const std::string& name)
   mName = name;
 }
 
-void PostProcessingInterface::configure(std::string name, configuration::ConfigurationInterface& /*config*/)
+void PostProcessingInterface::configure(std::string name, const boost::property_tree::ptree& /*config*/)
 {
   mName = name;
 }

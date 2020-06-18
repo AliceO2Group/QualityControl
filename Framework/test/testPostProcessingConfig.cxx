@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(test_configuration_read)
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
   auto configFile = ConfigurationFactory::getConfiguration(configFilePath);
-  PostProcessingConfig ppconfig("SkeletonPostProcessing", *configFile);
+  PostProcessingConfig ppconfig("SkeletonPostProcessing", configFile->getRecursive());
 
   BOOST_CHECK_EQUAL(ppconfig.taskName, "SkeletonPostProcessing");
   BOOST_CHECK_EQUAL(ppconfig.detectorName, "TST");

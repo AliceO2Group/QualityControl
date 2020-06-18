@@ -15,6 +15,7 @@
 
 #include "getTestDataDirectory.h"
 #include "QualityControl/PostProcessingRunner.h"
+#include <Configuration/ConfigurationFactory.h>
 
 #define BOOST_TEST_MODULE PostProcessingRunner test
 #define BOOST_TEST_MAIN
@@ -23,14 +24,16 @@
 #include <boost/test/unit_test.hpp>
 
 using namespace o2::quality_control::postprocessing;
+using namespace o2::configuration;
 
 BOOST_AUTO_TEST_CASE(test_factory)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+  auto config = ConfigurationFactory::getConfiguration(configFilePath);
 
-  PostProcessingRunner runner("SkeletonPostProcessing", configFilePath);
+  PostProcessingRunner runner("SkeletonPostProcessing");
 
   // todo: this initializes database. should we have an option not to do it, so we don't fail test randomly?
-  BOOST_CHECK_NO_THROW(runner.init());
+  BOOST_CHECK_NO_THROW(runner.init(config->getRecursive()));
   BOOST_CHECK_NO_THROW(runner.run());
 }
