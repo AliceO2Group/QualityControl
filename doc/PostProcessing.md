@@ -103,11 +103,11 @@ o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessi
 
 As it is configured to invoke each method only `"once"`, you will see it initializing, entering the update method, then finalizing the task and exiting.
 
-To have more control over the state transitions or to run a post-processing task in production, one should use `o2-qc-run-postprocessing-occ`. It is run almost exactly as the previously mentioned application, however one has to use [`peanut`](https://github.com/AliceO2Group/Control/tree/master/occ#single-process-control-with-peanut) to drive its state transitions.
+To have more control over the state transitions or to run a post-processing task in production, one should use `o2-qc-run-postprocessing-occ`. It is run almost exactly as the previously mentioned application, however one has to use [`peanut`](https://github.com/AliceO2Group/Control/tree/master/occ#single-process-control-with-peanut) to drive its state transitions and push the configuration.
 
 To try it out locally, run the following in the first terminal window (we will try out a different task this time):
 ```
-o2-qc-run-postprocessing-occ --config json://${QUALITYCONTROL_ROOT}/etc/postprocessing.json --name ExampleTrend --period 10
+o2-qc-run-postprocessing-occ --name ExampleTrend --period 10
 ```
 In the logs you will see a port number which listens for RPC commands. Remember it. 
 ```
@@ -122,7 +122,7 @@ In the second window, run the following. Use the port number from the output of 
 alienv enter coconut/latest
 OCC_CONTROL_PORT=47100 peanut
 ```
-A simple terminal user interface will open, which will allow you to trigger state transitions. The usual transition sequence, which you might want to try out, is CONFIGURE, START, STOP, RESET, EXIT.
+A simple terminal user interface will open, which will allow you to trigger state transitions. Use it to load the configuration by entering the path to the configuration file. The usual transition sequence, which you might want to try out, is CONFIGURE, START, STOP, RESET, EXIT.
 
 # Convenience classes
 

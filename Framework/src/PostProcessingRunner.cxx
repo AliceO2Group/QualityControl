@@ -15,34 +15,35 @@
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include <Configuration/ConfigurationFactory.h>
+#include <boost/property_tree/ptree.hpp>
 
-using namespace o2::configuration;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 
 namespace o2::quality_control::postprocessing
 {
 
-PostProcessingRunner::PostProcessingRunner(std::string name, std::string configPath) //
-  : mName(name), mConfigPath(configPath)
+PostProcessingRunner::PostProcessingRunner(std::string name) //
+  : mName(name)
 {
 }
 
-void PostProcessingRunner::init()
+void PostProcessingRunner::init(const boost::property_tree::ptree& config)
 {
   ILOG(Info) << "Initializing PostProcessingRunner" << ENDM;
 
-  mConfigFile = ConfigurationFactory::getConfiguration(mConfigPath);
-  mConfig = PostProcessingConfig(mName, *mConfigFile);
-  mConfigFile->setPrefix(""); // protect from having the prefix changed by PostProcessingConfig
+  mConfig = PostProcessingConfig(mName, config);
 
   // configuration of the database
-  mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
-  mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
+  mDatabase = DatabaseFactory::create(config.get<std::string>("qc.config.database.implementation"));
+  std::unordered_map<std::string, std::string> dbConfig;
+  for (const auto& [key, value] : config.get_child("qc.config.database")) {
+    dbConfig[key] = value.get_value<std::string>();
+  }
+  mDatabase->connect(dbConfig);
   ILOG(Info) << "Database that is going to be used : " << ENDM;
-  ILOG(Info) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation") << ENDM;
-  ILOG(Info) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host") << ENDM;
+  ILOG(Info) << ">> Implementation : " << config.get<std::string>("qc.config.database.implementation") << ENDM;
+  ILOG(Info) << ">> Host : " << config.get<std::string>("qc.config.database.host") << ENDM;
   mServices.registerService<DatabaseInterface>(mDatabase.get());
 
   // setup user's task
@@ -54,7 +55,7 @@ void PostProcessingRunner::init()
 
     mTaskState = TaskState::Created;
     mTask->setName(mConfig.taskName);
-    mTask->configure(mConfig.taskName, *mConfigFile);
+    mTask->configure(mConfig.taskName, config);
   } else {
     throw std::runtime_error("Failed to create the task '" + mConfig.taskName + "'");
   }

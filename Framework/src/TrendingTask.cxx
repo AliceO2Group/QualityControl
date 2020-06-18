@@ -19,7 +19,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
 #include "RootClassFactory.h"
-#include <Configuration/ConfigurationInterface.h>
+#include <boost/property_tree/ptree.hpp>
 #include <TH1.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
@@ -28,7 +28,7 @@ using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
-void TrendingTask::configure(std::string name, o2::configuration::ConfigurationInterface& config)
+void TrendingTask::configure(std::string name, const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfig(name, config);
 }

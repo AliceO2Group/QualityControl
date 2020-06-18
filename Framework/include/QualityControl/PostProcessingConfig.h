@@ -18,10 +18,8 @@
 
 #include <vector>
 #include <string>
-namespace o2::configuration
-{
-class ConfigurationInterface;
-}
+#include <boost/property_tree/ptree_fwd.hpp>
+
 namespace o2::quality_control::postprocessing
 {
 
@@ -30,7 +28,7 @@ namespace o2::quality_control::postprocessing
 /// \brief  Post-processing configuration structure
 struct PostProcessingConfig {
   PostProcessingConfig() = default;
-  PostProcessingConfig(std::string name, configuration::ConfigurationInterface& config);
+  PostProcessingConfig(std::string name, const boost::property_tree::ptree& config);
   ~PostProcessingConfig() = default;
   std::string taskName = "";
   std::string moduleName = "";

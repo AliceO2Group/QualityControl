@@ -14,22 +14,22 @@
 ///
 
 #include "QualityControl/TrendingTaskConfig.h"
-#include <Configuration/ConfigurationInterface.h>
+#include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control::postprocessing
 {
 
-TrendingTaskConfig::TrendingTaskConfig(std::string name, configuration::ConfigurationInterface& config)
+TrendingTaskConfig::TrendingTaskConfig(std::string name, const boost::property_tree::ptree& config)
   : PostProcessingConfig(name, config)
 {
-  for (const auto& plotConfig : config.getRecursive("qc.postprocessing." + name + ".plots")) {
+  for (const auto& plotConfig : config.get_child("qc.postprocessing." + name + ".plots")) {
     plots.push_back({ plotConfig.second.get<std::string>("name"),
                       plotConfig.second.get<std::string>("title", ""),
                       plotConfig.second.get<std::string>("varexp"),
                       plotConfig.second.get<std::string>("selection", ""),
                       plotConfig.second.get<std::string>("option", "") });
   }
-  for (const auto& dataSourceConfig : config.getRecursive("qc.postprocessing." + name + ".dataSources")) {
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSources")) {
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
       for (const auto& sourceName : sourceNames.value()) {
         dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", "repository"),

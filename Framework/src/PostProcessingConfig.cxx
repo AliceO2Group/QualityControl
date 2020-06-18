@@ -14,24 +14,24 @@
 ///
 
 #include "QualityControl/PostProcessingConfig.h"
-#include <Configuration/ConfigurationInterface.h>
+#include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control::postprocessing
 {
 
-PostProcessingConfig::PostProcessingConfig(std::string name, configuration::ConfigurationInterface& config) //
+PostProcessingConfig::PostProcessingConfig(std::string name, const boost::property_tree::ptree& config) //
   : taskName(name),
     moduleName(config.get<std::string>("qc.postprocessing." + name + ".moduleName")),
     className(config.get<std::string>("qc.postprocessing." + name + ".className")),
     detectorName(config.get<std::string>("qc.postprocessing." + name + ".detectorName", "MISC"))
 {
-  for (const auto& initTrigger : config.getRecursive("qc.postprocessing." + name + ".initTrigger")) {
+  for (const auto& initTrigger : config.get_child("qc.postprocessing." + name + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());
   }
-  for (const auto& updateTrigger : config.getRecursive("qc.postprocessing." + name + ".updateTrigger")) {
+  for (const auto& updateTrigger : config.get_child("qc.postprocessing." + name + ".updateTrigger")) {
     updateTriggers.push_back(updateTrigger.second.get_value<std::string>());
   }
-  for (const auto& stopTrigger : config.getRecursive("qc.postprocessing." + name + ".stopTrigger")) {
+  for (const auto& stopTrigger : config.get_child("qc.postprocessing." + name + ".stopTrigger")) {
     stopTriggers.push_back(stopTrigger.second.get_value<std::string>());
   }
 }
