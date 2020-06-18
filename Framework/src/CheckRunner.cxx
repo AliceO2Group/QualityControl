@@ -45,8 +45,7 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 
 namespace o2::quality_control::checker
 {
-
-/// Static functions
+// Static functions
 // fixme: this is not actually used. collectOutputs() is used instead.
 o2::header::DataDescription CheckRunner::createCheckRunnerDataDescription(const std::string taskName)
 {
@@ -56,23 +55,6 @@ o2::header::DataDescription CheckRunner::createCheckRunnerDataDescription(const 
   o2::header::DataDescription description;
   description.runtimeInit(std::string(taskName.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
   return description;
-}
-
-o2::framework::Inputs CheckRunner::createInputSpec(const std::string checkName, const std::string configSource)
-{
-  std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(configSource);
-  o2::framework::Inputs inputs;
-  for (auto& [key, sourceConf] : config->getRecursive("qc.checks." + checkName + ".dataSource")) {
-    (void)key;
-    if (sourceConf.get<std::string>("type") == "Task") {
-      const std::string& taskName = sourceConf.get<std::string>("name");
-      ILOG(Info) << ">>>> Check name : " << checkName << " input task name: " << taskName << " " << TaskRunner::createTaskDataDescription(taskName).as<std::string>() << ENDM;
-      o2::framework::InputSpec input{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
-      inputs.push_back(std::move(input));
-    }
-  }
-
-  return inputs;
 }
 
 std::size_t CheckRunner::hash(std::string inputString)
@@ -145,9 +127,6 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& che
 
 /// Members
 
-// TODO do we need a CheckFactory ? here it is embedded in the CheckRunner
-// TODO maybe we could use the CheckRunnerFactory
-
 CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
   : mDeviceName(createCheckRunnerName(checks)),
     mChecks{ checks },
@@ -168,11 +147,6 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
                 << boost::current_exception_diagnostic_information(true) << ENDM;
     throw;
   }
-}
-
-CheckRunner::CheckRunner(Check check, std::string configurationSource)
-  : CheckRunner(std::vector{ check }, configurationSource)
-{
 }
 
 CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
