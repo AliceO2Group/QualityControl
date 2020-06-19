@@ -35,4 +35,3 @@ BOOST_AUTO_TEST_CASE(test_check_runner_static)
   BOOST_CHECK(CheckRunner::createCheckRunnerDataDescription("012345678901234567890") == DataDescription("012345678901-chk"));
   BOOST_CHECK_THROW(CheckRunner::createCheckRunnerDataDescription(""), AliceO2::Common::FatalException);
 }
-
