@@ -19,10 +19,12 @@
 
 #include <Common/Timer.h>
 #include <boost/program_options.hpp>
+#include <Configuration/ConfigurationFactory.h>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace AliceO2::Common;
+using namespace o2::configuration;
 namespace bpo = boost::program_options;
 
 int main(int argc, const char* argv[])
@@ -48,9 +50,11 @@ int main(int argc, const char* argv[])
     }
 
     int periodUs = static_cast<int>(1000000 * vm["period"].as<double>());
-    PostProcessingRunner runner(vm["name"].as<std::string>(), vm["config"].as<std::string>());
+    PostProcessingRunner runner(vm["name"].as<std::string>());
 
-    runner.init();
+    auto config = ConfigurationFactory::getConfiguration(vm["config"].as<std::string>());
+
+    runner.init(config->getRecursive());
     runner.start();
 
     Timer timer;

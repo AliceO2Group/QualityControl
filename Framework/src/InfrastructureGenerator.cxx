@@ -23,7 +23,6 @@
 #include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include <boost/property_tree/ptree.hpp>
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataSampling.h>
 #include <Framework/DataSpecUtils.h>

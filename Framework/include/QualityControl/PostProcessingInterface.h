@@ -18,12 +18,8 @@
 
 #include <string>
 #include <Framework/ServiceRegistry.h>
+#include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/Triggers.h"
-
-namespace o2::configuration
-{
-class ConfigurationInterface;
-}
 
 namespace o2::quality_control::postprocessing
 {
@@ -45,7 +41,7 @@ class PostProcessingInterface
   /// Configuration of a post-processing task. Can be overridden if user wants to retrieve the configuration of the task.
   /// \param name     Name of the task
   /// \param config   ConfigurationInterface with prefix set to ""
-  virtual void configure(std::string name, configuration::ConfigurationInterface& config);
+  virtual void configure(std::string name, const boost::property_tree::ptree& config);
 
   /// \brief Initialization of a post-processing task.
   /// Initialization of a post-processing task. User receives a Trigger which caused the initialization and a service

@@ -47,8 +47,6 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 
 namespace o2::quality_control::checker
 {
-
-// Static functions
 // fixme: this is not actually used. collectOutputs() is used instead.
 o2::header::DataDescription CheckRunner::createCheckRunnerDataDescription(const std::string taskName)
 {
@@ -129,9 +127,6 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& che
 }
 
 /// Members
-
-// TODO do we need a CheckFactory ? here it is embedded in the CheckRunner
-// TODO maybe we could use the CheckRunnerFactory
 
 CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
   : mDeviceName(createCheckRunnerName(checks)),

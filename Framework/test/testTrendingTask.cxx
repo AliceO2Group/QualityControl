@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_task)
 
     TrendingTask task;
     task.setName(taskName);
-    task.configure(taskName, *ConfigurationFactory::getConfiguration(configFilePath));
+    task.configure(taskName, ConfigurationFactory::getConfiguration(configFilePath)->getRecursive());
     task.initialize(Trigger::Once, services);
     for (size_t i = 0; i < trendTimes; i++) {
       task.update(Trigger::Always, services);

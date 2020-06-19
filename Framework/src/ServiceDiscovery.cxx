@@ -79,6 +79,7 @@ void ServiceDiscovery::_register(const std::string& objects)
   boost::property_tree::ptree checks, check;
   check.put("Name", "Health check " + mId);
   check.put("Interval", "5s");
+  check.put("DeregisterCriticalServiceAfter", "1m");
   check.put("TCP", mHealthEndpoint);
   checks.push_back(std::make_pair("", check));
 
