@@ -186,7 +186,7 @@ class CheckRunner : public framework::Task
   /**
    * Send metrics to the monitoring system if the time has come.
    */
-  void sendMonitoring();
+  void sendPeriodicMonitoring();
 
   // General state
   std::string mDeviceName;

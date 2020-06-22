@@ -204,7 +204,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
   updateRevision();
 
-  sendMonitoring();
+  sendPeriodicMonitoring();
 }
 
 void CheckRunner::prepareCacheData(framework::ProcessingContext& ctx)
@@ -258,7 +258,7 @@ void CheckRunner::prepareCacheData(framework::ProcessingContext& ctx)
   }
 }
 
-void CheckRunner::sendMonitoring()
+void CheckRunner::sendPeriodicMonitoring()
 {
   if (mTimer.isTimeout()) {
     mTimer.reset(1000000); // 10 s.
