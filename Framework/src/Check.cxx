@@ -100,10 +100,10 @@ void Check::initConfig(std::string checkName)
       if (dataSource.get<std::string>("type") == "Task") {
         mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
       } else if (dataSource.get<std::string>("type") == "ExternalTask") {
-
         auto query = config->getString("qc.externalTasks." + taskName + ".query").get();
         framework::Inputs input = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
-        mInputs.push_back(std::move(input.at(0)));
+        mInputs.insert(mInputs.end(), std::make_move_iterator(input.begin()),
+                       std::make_move_iterator(input.end()));
       }
 
       // Subscribe on predefined MOs.
