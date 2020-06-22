@@ -44,12 +44,10 @@
     "externalTasks": {
       "External-1": {
         "active": "true",
-        "detectorName": "TST",
         "query": "External-1:TST/HISTO/0", "": "Use the task name as binding (encouraged)"
       },
       "External-2": {
         "active": "true",
-        "detectorName": "TST",
         "query": "External-2:TST/HISTO/1", "": "Use the task name as binding (encouraged)"
       }
     },

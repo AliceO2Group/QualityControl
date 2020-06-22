@@ -384,6 +384,9 @@ This is the global structure of the configuration in QC.
     "tasks": {
       
     },
+    "externalTasks": {
+    
+    },
     "checks": {
       
     },
@@ -403,6 +406,7 @@ There are four QC-related components:
   file.
  - "tasks" - contains declarations of QC Tasks. It is mandatory for running topologies with Tasks and
  Checks.
+ - "externalTasks" - contains declarations of external devices which sends objects to the QC to be checked and stored.
  - "checks" - contains declarations of QC Checks. It is mandatory for running topologies with
   Tasks and Checks.
  - "postprocessing" - contains declarations of PostProcessing Tasks. It is only needed only when Post-Processing is
@@ -556,9 +560,8 @@ Below the external task configuration structure is described. Note that more tha
 {
   "qc": {
     "externalTasks": {
-      "External-1": {                       "": "Name of the taks",
+      "External-1": {                       "": "Name of the task",
         "active": "true",                   "": "Activation flag. If not \"true\", the Task will not be created.",
-        "detectorName": "TST",              "": "3-letter code of the detector.",
         "query": "External-1:TST/HISTO/0",  "": "Query specifying where the objects to be checked and stored are coming from. Use the task name as binding."
       }
     }
