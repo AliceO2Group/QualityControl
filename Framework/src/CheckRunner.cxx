@@ -193,7 +193,7 @@ void CheckRunner::init(framework::InitContext&)
 
 void CheckRunner::run(framework::ProcessingContext& ctx)
 {
-  prepareCacheData(ctx);
+  prepareCacheData(ctx.inputs());
 
   auto qualityObjects = check(mMonitorObjects);
 
@@ -207,25 +207,25 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   sendPeriodicMonitoring();
 }
 
-void CheckRunner::prepareCacheData(framework::ProcessingContext& ctx)
+void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 {
   mMonitorObjectStoreVector.clear();
 
   for (const auto& input : mInputs) {
-    auto dataRef = ctx.inputs().get(input.binding.c_str());
+    auto dataRef = inputRecord.get(input.binding.c_str());
     if (dataRef.header != nullptr && dataRef.payload != nullptr) {
 
       // We don't know what we receive, so we test for an array and then try a tobject.
       // If we received a tobject, it gets encapsulated in the tobjarray.
       shared_ptr<const TObjArray> array = nullptr;
       try {
-        array = ctx.inputs().get<TObjArray*>(input.binding.c_str());
+        array = inputRecord.get<TObjArray*>(input.binding.c_str());
         mLogger << AliceO2::InfoLogger::InfoLogger::Debug << "CheckRunner " << mDeviceName
                 << " received an array with " << array->GetEntries()
                 << " entries from " << input.binding << ENDM;
       } catch (runtime_error& e) {
         // we failed to get the TObjArray, let's try a TObject. If it fails it will throw.
-        shared_ptr<const TObject> tobj = ctx.inputs().get<TObject*>(input.binding.c_str());
+        shared_ptr<const TObject> tobj = inputRecord.get<TObject*>(input.binding.c_str());
       }
 
       // Check if this CheckRunner stores this input

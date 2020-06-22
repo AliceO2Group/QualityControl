@@ -182,7 +182,7 @@ class CheckRunner : public framework::Task
    * It then stores these objects in the cache.
    * @param ctx
    */
-  void prepareCacheData(framework::ProcessingContext& ctx);
+  void prepareCacheData(framework::InputRecord& inputRecord);
   /**
    * Send metrics to the monitoring system if the time has come.
    */
