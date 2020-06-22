@@ -218,21 +218,27 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
       // We don't know what we receive, so we test for an array and then try a tobject.
       // If we received a tobject, it gets encapsulated in the tobjarray.
       shared_ptr<const TObjArray> array = nullptr;
-      try {
-        array = inputRecord.get<TObjArray*>(input.binding.c_str());
-        mLogger << AliceO2::InfoLogger::InfoLogger::Debug << "CheckRunner " << mDeviceName
+      shared_ptr<const TObject> tobj = inputRecord.get<TObject*>(input.binding.c_str());
+      // if the object has not been found, it will raise an exception that we just let go.
+      if(tobj->InheritsFrom("TObjArray")){
+        array = dynamic_pointer_cast<const TObjArray>(tobj);
+        mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
                 << " received an array with " << array->GetEntries()
                 << " entries from " << input.binding << ENDM;
-      } catch (runtime_error& e) {
-        // we failed to get the TObjArray, let's try a TObject. If it fails it will throw.
-        shared_ptr<const TObject> tobj = inputRecord.get<TObject*>(input.binding.c_str());
+      } else {
+        // it is just a TObject not embedded in a TObjArray. We build a TObjArray for it.
+        auto *newArray = new TObjArray(); // we cannot use `array` to add an object as it is const
+        TObject *newTObject = tobj->Clone(); // we need a copy to avoid that it gets deleted behind our back.
+        newArray->Add(newTObject);
+        array.reset(newArray); // now that the array is ready we can adopt it.
+        mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
+                << " received a tobject named " << tobj->GetName()
+                << " from " << input.binding << ENDM;
       }
-
-      // Check if this CheckRunner stores this input
-      bool store = mInputStoreSet.count(DataSpecUtils::label(input)) > 0;
 
       // for each item of the array, check whether it is a MonitorObject. If not, create one and encapsulate.
       // Then, store the MonitorObject in the various maps and vectors we will use later.
+      bool store = mInputStoreSet.count(DataSpecUtils::label(input)) > 0; // Check if this CheckRunner stores this input
       for (const auto tObject : *array) {
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
 
@@ -248,8 +254,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
           mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
           mTotalNumberObjectsReceived++;
 
-          // Add monitor object to store later, after possible beautification
-          if (store) {
+          if (store) { // Monitor Object will be stored later, after possible beautification
             mMonitorObjectStoreVector.push_back(mo);
           }
         }
