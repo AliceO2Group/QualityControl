@@ -220,15 +220,15 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
       shared_ptr<const TObjArray> array = nullptr;
       shared_ptr<const TObject> tobj = inputRecord.get<TObject*>(input.binding.c_str());
       // if the object has not been found, it will raise an exception that we just let go.
-      if(tobj->InheritsFrom("TObjArray")){
+      if (tobj->InheritsFrom("TObjArray")) {
         array = dynamic_pointer_cast<const TObjArray>(tobj);
         mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
                 << " received an array with " << array->GetEntries()
                 << " entries from " << input.binding << ENDM;
       } else {
         // it is just a TObject not embedded in a TObjArray. We build a TObjArray for it.
-        auto *newArray = new TObjArray(); // we cannot use `array` to add an object as it is const
-        TObject *newTObject = tobj->Clone(); // we need a copy to avoid that it gets deleted behind our back.
+        auto* newArray = new TObjArray();    // we cannot use `array` to add an object as it is const
+        TObject* newTObject = tobj->Clone(); // we need a copy to avoid that it gets deleted behind our back.
         newArray->Add(newTObject);
         array.reset(newArray); // now that the array is ready we can adopt it.
         mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
