@@ -16,8 +16,7 @@
 
 #ifndef QC_MODULE_MFT_MFTBasicClusterQcTask_H
 #define QC_MODULE_MFT_MFTBasicClusterQcTask_H
-// ROOT
-#include <TH1F.h>
+
 // Quality Control
 #include "QualityControl/TaskInterface.h"
 

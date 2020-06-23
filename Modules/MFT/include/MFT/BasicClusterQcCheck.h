@@ -16,6 +16,7 @@
 
 #ifndef QC_MODULE_MFT_MFTBasicClusterQcCheck_H
 #define QC_MODULE_MFT_MFTBasicClusterQcCheck_H
+
 // Quality Control
 #include "QualityControl/CheckInterface.h"
 
