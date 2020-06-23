@@ -21,11 +21,14 @@
 #include <RuntimeControlledObject.h>
 #include <boost/program_options.hpp>
 #include <Common/Timer.h>
+#include <boost/property_tree/ptree.hpp>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace AliceO2::Common;
 namespace bpo = boost::program_options;
+
+const std::string qcConfigurationKey = "qcConfiguration";
 
 class PostProcessingOCCStateMachine : public RuntimeControlledObject
 {
@@ -45,7 +48,8 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
 
     bool success = true;
     try {
-      mRunner->init(properties);
+      auto config = properties.count(qcConfigurationKey) > 0 ? properties.get_child(qcConfigurationKey) : properties;
+      mRunner->init(config);
     } catch (const std::exception& ex) {
       ILOG(Error) << "Exception caught: " << ex.what() << ENDM;
       success = false;
