@@ -243,13 +243,15 @@ std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objec
 
 std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata)
 {
+  stringstream result;
   map<string, string> headers;
-  auto tobj = retrieveTObject(path, metadata, timestamp, &headers);
+  auto *tobj = retrieveTObject(path, metadata, timestamp, &headers);
 
   if (tobj == nullptr) {
     return std::string();
   }
 
+  // Converte object to JSON
   TObject* toConvert = nullptr;
   if (tobj->IsA() == MonitorObject::Class()) { // a full MO -> pre-v0.25
     std::shared_ptr<MonitorObject> mo(dynamic_cast<MonitorObject*>(tobj));
@@ -267,7 +269,22 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
   TString json = TBufferJSON::ConvertToJSON(toConvert);
   delete toConvert;
 
-  return json.Data();
+  // Prepare the structure of the json
+  result << "{\nobject:\n" << json.Data() << ",";
+  result << "\nmetadata:\n";
+
+  // prepare JSON for the headers
+  result << "{";
+  const char* separator = "";
+  for( auto const& [key, value] : headers ) {
+    if(key.find("Content-") != 0 && key.find("ETag") != 0) { // remove a couple of specific headers
+      result << separator << "\n" << "  \"" << key << "\":\"" << value << "\"";
+      separator = ",";
+    }
+  }
+  result << "\n}\n";
+
+  return result.str();
 }
 
 void CcdbDatabase::disconnect()
