@@ -59,7 +59,6 @@ void BasicTrackQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMFT_xy_C = std::make_unique<TCanvas>("mMFT_xy_C", "mMFT_xy_C", 400, 550);
   getObjectsManager()->startPublishing(mMFT_xy_C.get());
   getObjectsManager()->addMetadata(mMFT_xy_C->GetName(), "custom", "34");
-
 }
 
 void BasicTrackQcTask::startOfActivity(Activity& /*activity*/)
@@ -69,7 +68,6 @@ void BasicTrackQcTask::startOfActivity(Activity& /*activity*/)
   mMFT_xy_H->Reset();
   mMFT_pos_phi_H->Reset();
   mMFT_neg_phi_H->Reset();
-
 }
 
 void BasicTrackQcTask::startOfCycle()
@@ -86,14 +84,15 @@ void BasicTrackQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // fill the histograms
   for (auto& one_track : tracks) {
     mMFT_xy_H->Fill(one_track.getX(), one_track.getY());
-    if (one_track.getCharge()==+1) mMFT_pos_phi_H->Fill(one_track.getPhi());
-    if (one_track.getCharge()==-1) mMFT_neg_phi_H->Fill(one_track.getPhi());
+    if (one_track.getCharge() == +1)
+      mMFT_pos_phi_H->Fill(one_track.getPhi());
+    if (one_track.getCharge() == -1)
+      mMFT_neg_phi_H->Fill(one_track.getPhi());
   }
 
   // Draw the canvas
   mMFT_xy_C->cd();
   mMFT_xy_H->Draw("text colz");
-
 }
 
 void BasicTrackQcTask::endOfCycle()
@@ -111,7 +110,7 @@ void BasicTrackQcTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info) << "Resetting the histogram" << ENDM;
-  
+
   mMFT_xy_H->Reset();
   mMFT_pos_phi_H->Reset();
   mMFT_neg_phi_H->Reset();

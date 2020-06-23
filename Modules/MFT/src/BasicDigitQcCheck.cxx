@@ -57,10 +57,10 @@ void BasicDigitQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
-      h->SetLineColor(kGreen+2);
+      h->SetLineColor(kGreen + 2);
     } else if (checkResult == Quality::Bad) {
       LOG(INFO) << "Quality::Bad, setting to red";
-      h->SetLineColor(kRed+1);
+      h->SetLineColor(kRed + 1);
     } else if (checkResult == Quality::Medium) {
       LOG(INFO) << "Quality::medium, setting to orange";
       h->SetLineColor(kOrange);
