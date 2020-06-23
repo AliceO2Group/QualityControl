@@ -28,6 +28,9 @@ using namespace std;
 namespace o2::quality_control::core
 {
 
+const std::string ObjectsManager::gDrawOptionsKey = "drawOptions";
+const std::string ObjectsManager::gDisplayHints = "displayHints";
+
 ObjectsManager::ObjectsManager(TaskConfig& taskConfig, bool noDiscovery) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects = std::make_unique<MonitorObjectCollection>();
@@ -122,6 +125,30 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
 int ObjectsManager::getNumberPublishedObjects()
 {
   return mMonitorObjects->GetLast() + 1; // GetLast returns the index
+}
+
+void ObjectsManager::setDefaultDrawOptions(const std::string& objectName, const std::string& options)
+{
+  MonitorObject* mo = getMonitorObject(objectName);
+  mo->addOrUpdateMetadata(gDrawOptionsKey, options);
+}
+
+void ObjectsManager::setDefaultDrawOptions(TObject* obj, const std::string& options)
+{
+  MonitorObject* mo = getMonitorObject(obj->GetName());
+  mo->addOrUpdateMetadata(gDrawOptionsKey, options);
+}
+
+void ObjectsManager::setDisplayHint(const std::string& objectName, const std::string& hints)
+{
+  MonitorObject* mo = getMonitorObject(objectName);
+  mo->addOrUpdateMetadata(gDisplayHints, hints);
+}
+
+void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
+{
+  MonitorObject* mo = getMonitorObject(obj->GetName());
+  mo->addOrUpdateMetadata(gDisplayHints, hints);
 }
 
 } // namespace o2::quality_control::core

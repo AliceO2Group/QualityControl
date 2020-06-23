@@ -49,6 +49,9 @@ class ObjectsManager
   explicit ObjectsManager(TaskConfig& taskConfig, bool noDiscovery = false);
   virtual ~ObjectsManager();
 
+  static const std::string gDrawOptionsKey;
+  static const std::string gDisplayHints;
+
   /**
    * Start publishing the object obj, i.e. it will be pushed forward in the workflow at regular intervals.
    * The ownership remains to the caller.
@@ -97,6 +100,39 @@ class ObjectsManager
    * @throw ObjectNotFoundError if object is not found.
    */
   void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
+
+  /**
+   * \brief Set default draw options for this object.
+   * If possible, the object will be drawn with these options (in the ROOT sense).
+   * See for example https://root.cern/doc/master/classTHistPainter.html#HP01
+   * E.g. manager->setDefaultDRawOptions("histo1", "colz");
+   * @param objectName Name of the object affected by these drawOptions.
+   * @param options The list of options.
+   * @throw ObjectNotFoundError if object is not found.
+   */
+  void setDefaultDrawOptions(const std::string& objectName, const std::string& options);
+
+  /**
+   * See setDefaultDrawOptions(const std::string& objectName, const std::string& hioptionsnts).
+   */
+  void setDefaultDrawOptions(TObject* obj, const std::string& options);
+
+  /**
+   * \brief Set some hints on how to display this object.
+   * A number of options can be set on a canvas to influence the way the object is displayed.
+   * Per instance, a logarithmic scale or a grid.
+   * Use this method to indicate which options should be used if possible when displaying the object.
+   * Currently supported by QCG: logx, logy, logz, gridx, gridy, gridz
+   * @param objectName
+   * @param hints
+   * @throw ObjectNotFoundError if object is not found.
+   */
+  void setDisplayHint(const std::string& objectName, const std::string& hints);
+
+  /**
+   * See setDisplayHint(const std::string& objectName, const std::string& hints).
+   */
+  void setDisplayHint(TObject* obj, const std::string& hints);
 
   /**
    * Get the number of objects that have been published.
