@@ -248,7 +248,6 @@ std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objec
 
 std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata)
 {
-  stringstream result;
   map<string, string> headers;
   Document jsonDocument;
 
