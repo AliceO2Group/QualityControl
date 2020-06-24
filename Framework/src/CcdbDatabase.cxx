@@ -31,16 +31,21 @@
 #include <chrono>
 #include <sstream>
 #include <unordered_set>
-
+// boost
 #include <boost/algorithm/string.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/foreach.hpp>
+// misc
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
 using namespace o2::quality_control::core;
 using namespace std;
+using namespace rapidjson;
 
 namespace o2::quality_control::repository
 {
@@ -245,6 +250,7 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
 {
   stringstream result;
   map<string, string> headers;
+  Document jsonDocument;
 
   // Get object
   auto* tobj = retrieveTObject(path, metadata, timestamp, &headers);
@@ -252,7 +258,7 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
     return std::string();
   }
 
-  // Convert object to JSON
+  // Convert object to JSON string
   TObject* toConvert = nullptr;
   if (tobj->IsA() == MonitorObject::Class()) { // a full MO -> pre-v0.25
     std::shared_ptr<MonitorObject> mo(dynamic_cast<MonitorObject*>(tobj));
@@ -270,24 +276,26 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
   TString json = TBufferJSON::ConvertToJSON(toConvert);
   delete toConvert;
 
-  // Prepare the structure of the json
-  result << "{\nobject:\n"
-         << json.Data() << ",";
-  result << "\nmetadata:\n";
-
-  // prepare JSON for the headers
-  result << "{";
-  const char* separator = "";
-  for (auto const& [key, value] : headers) {
-    if (key.find("Content-") != 0 && key.find("ETag") != 0) { // remove a couple of specific headers
-      result << separator << "\n"
-             << "  \"" << key << "\":\"" << value << "\"";
-      separator = ",";
-    }
+  // Prepare JSON document and add metadata
+  if (jsonDocument.Parse(json.Data()).HasParseError()) {
+    ILOG(Error) << "Unable to parse the JSON returned by TBufferJSON for object " << path << ENDM;
+    return std::string();
   }
-  result << "\n}\n";
+  rapidjson::Document::AllocatorType& allocator = jsonDocument.GetAllocator();
+  rapidjson::Value object(rapidjson::Type::kObjectType);
+  for (auto const& [key, value] : headers) {
+    rapidjson::Value k(key.c_str(), allocator);
+    rapidjson::Value v(value.c_str(), allocator);
+    object.AddMember(k, v, allocator);
+  }
+  jsonDocument.AddMember("metadata", object, allocator);
 
-  return result.str();
+  // Convert to string
+  StringBuffer buffer;
+  buffer.Clear();
+  Writer<rapidjson::StringBuffer> writer(buffer);
+  jsonDocument.Accept(writer);
+  return strdup( buffer.GetString() );
 }
 
 void CcdbDatabase::disconnect()

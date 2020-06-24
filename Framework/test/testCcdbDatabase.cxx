@@ -26,6 +26,7 @@
 
 #include <boost/test/unit_test.hpp>
 #include <TH1F.h>
+#include "rapidjson/document.h"
 
 namespace utf = boost::unit_test;
 
@@ -38,6 +39,7 @@ namespace
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
+using namespace rapidjson;
 
 const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
 
@@ -207,6 +209,15 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   auto json4 = f.backend->retrieveQOJson(qualityPath);
   BOOST_CHECK(!json3.empty());
   BOOST_CHECK_EQUAL(json3, json4);
+
+  Document jsonDocument;
+  jsonDocument.Parse(json.c_str());
+  BOOST_CHECK(jsonDocument["_typename"].IsString());
+  BOOST_CHECK_EQUAL(jsonDocument["_typename"].GetString(), "TH1F");
+  BOOST_CHECK(jsonDocument.FindMember("metadata") != jsonDocument.MemberEnd());
+  const Value& metadataNode = jsonDocument["metadata"];
+  BOOST_CHECK(metadataNode.IsObject());
+  BOOST_CHECK(metadataNode.FindMember("qc_task_name")!= jsonDocument.MemberEnd());
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo_json, *utf::depends_on("ccdb_store"))
