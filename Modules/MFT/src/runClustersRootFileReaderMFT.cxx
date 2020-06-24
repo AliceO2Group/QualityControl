@@ -53,7 +53,8 @@ class ClustersRootFileReaderMFT : public o2::framework::Task
     mFile = std::make_unique<TFile>(filename.c_str(), "OLD");
     if (!mFile->IsOpen()) {
       LOG(ERROR) << "ClustersRootFileReaderMFT::init. Cannot open the file: " << filename.c_str();
-      ic.services().get<ControlService>().readyToQuit(QuitRequest::All);
+      ic.services().get<ControlService>().endOfStream();
+      ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
     }
   }
@@ -73,7 +74,8 @@ class ClustersRootFileReaderMFT : public o2::framework::Task
     if (currentROF >= nROFs) {
       // if (currentROF >= 50) {
       LOG(INFO) << " ClustersRootFileReaderMFT::run. End of file reached";
-      pc.services().get<ControlService>().readyToQuit(QuitRequest::All);
+      pc.services().get<ControlService>().endOfStream();
+      pc.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
     }
     // prepare the rof output
