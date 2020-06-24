@@ -56,7 +56,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   // setup configuration
   try {
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-    populateConfig(taskName);
+    populateConfig(taskName, id);
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
     ILOG(Fatal) << "Unexpected exception during configuration:\n"
@@ -249,7 +249,7 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   return { dataReady, timerReady };
 }
 
-void TaskRunner::populateConfig(std::string taskName)
+void TaskRunner::populateConfig(std::string taskName, int id)
 {
   auto tasksConfigList = mConfigFile->getRecursive("qc.tasks");
   auto taskConfigTree = tasksConfigList.find(taskName);
@@ -272,6 +272,7 @@ void TaskRunner::populateConfig(std::string taskName)
   } catch (...) {
     ILOG(Info) << "No custom parameters for " << taskName << ENDM;
   }
+  mTaskConfig.parallelTaskID = id;
 
   auto policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
   ConfigurationInterface* config = policiesFilePath.empty() ? mConfigFile.get() : ConfigurationFactory::getConfiguration(policiesFilePath).get();

@@ -109,7 +109,7 @@ class TaskRunner : public framework::Task
   void reset();
 
   std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
-  void populateConfig(std::string taskName);
+  void populateConfig(std::string taskName, int id = 0);
   void startOfActivity();
   void endOfActivity();
   void startCycle();

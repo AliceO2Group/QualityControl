@@ -20,12 +20,12 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
-#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::quality_control::core
 {
 
-ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& id, const std::string& healthEndpoint) : curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mId(id), mHealthEndpoint(healthEndpoint)
+ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& name, const std::string& id, const std::string& healthEndpoint)
+  : curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mName(name), mId(id), mHealthEndpoint(healthEndpoint)
 {
   // parameter check
   if (mHealthEndpoint.find(':') == std::string::npos) {
@@ -83,7 +83,7 @@ void ServiceDiscovery::_register(const std::string& objects)
   check.put("TCP", mHealthEndpoint);
   checks.push_back(std::make_pair("", check));
 
-  pt.put("Name", mId);
+  pt.put("Name", mName);
   pt.put("ID", mId);
   pt.add_child("Checks", checks);
 

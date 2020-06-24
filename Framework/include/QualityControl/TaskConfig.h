@@ -33,6 +33,7 @@ struct TaskConfig {
   std::string conditionUrl = "";
   std::unordered_map<std::string, std::string> customParameters = {};
   std::string detectorName = "MISC"; // intended to be the 3 letters code
+  int parallelTaskID = 0;            // ID to differentiate parallel local Tasks from one another. 0 this is the only one.
 };
 
 } // namespace o2::quality_control::core
