@@ -186,10 +186,11 @@ int main(int argc, const char* argv[])
 {
   try {
     bpo::options_description desc{ "Options" };
-    desc.add_options()                                                                                       //
-      ("help,h", "Help screen")                                                                              //
-      ("name", bpo::value<std::string>(), "Name of a post processing task to run")                           //
-      ("period", bpo::value<double>()->default_value(1.0), "Cycle period of checking triggers in seconds");
+    desc.add_options()                                                                                     //
+      ("help,h", "Help screen")                                                                            //
+      ("name", bpo::value<std::string>(), "Name of a post processing task to run")                         //
+      ("period", bpo::value<double>()->default_value(1.0), "Cycle period of checking triggers in seconds") //
+      ("control-port", bpo::value<int>()->default_value(0), "Control port");
 
     bpo::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -204,7 +205,7 @@ int main(int argc, const char* argv[])
     }
 
     PostProcessingOCCStateMachine stateMachine(vm["name"].as<std::string>(), vm["period"].as<double>());
-    OccInstance occ(&stateMachine);
+    OccInstance occ(&stateMachine, vm["control-port"].as<int>());
     occ.wait();
     return 0;
 
