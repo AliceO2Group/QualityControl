@@ -34,12 +34,7 @@
           "type": "dataSamplingPolicy",
           "name": "tst2"
         },
-        "location": "local",
-        "machines": [
-          "o2flptst1",
-          "o2flptst2",
-          "o2flptst3"
-        ]
+        "location": "remote"
       },
       "someNumbersTask": {
         "active": "true",

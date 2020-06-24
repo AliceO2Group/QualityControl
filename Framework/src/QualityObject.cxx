@@ -1,25 +1,46 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
+#include <utility>
+#include <Common/Exceptions.h>
+
 #include "QualityControl/QualityObject.h"
 
-ClassImp(o2::quality_control::core::QualityObject)
+using namespace AliceO2::Common;
 
-  namespace o2::quality_control::core
+namespace o2::quality_control::core
 {
 
-  QualityObject::QualityObject(const std::string& checkName, std::vector<std::string> inputs, const std::string& detectorName)
-    : mDetectorName(detectorName),
-      mCheckName(checkName),
-      mInputs{},
-      mUserMetadata{}
-  {
-    setInputs(inputs);
-    updateQuality(Quality());
-  }
+QualityObject::QualityObject(
+  Quality quality,
+  std::string checkName,
+  std::string detectorName,
+  std::string policyName,
+  std::vector<std::string> inputs,
+  std::vector<std::string> monitorObjectsNames,
+  std::map<std::string, std::string> metadata)
+  : mQuality{ quality },
+    mCheckName{ std::move(checkName) },
+    mDetectorName{ std::move(detectorName) },
+    mPolicyName{ std::move(policyName) },
+    mInputs{ std::move(inputs) },
+    mMonitorObjectsNames{ std::move(monitorObjectsNames) }
+{
+  mQuality.overwriteMetadata(metadata);
+}
 
   QualityObject::~QualityObject() = default;
 
-  const std::string anonChecker = "anonymouseChecker";
+  const std::string anonChecker = "anonymousChecker";
   QualityObject::QualityObject()
-    : QualityObject(anonChecker, {})
+    : QualityObject(Quality(), anonChecker)
   {
   }
 
@@ -40,30 +61,39 @@ ClassImp(o2::quality_control::core::QualityObject)
 
   void QualityObject::addMetadata(std::string key, std::string value)
   {
-    mUserMetadata.insert(std::pair(key, value));
+    mQuality.addMetadata(key, value);
   }
 
   void QualityObject::addMetadata(std::map<std::string, std::string> pairs)
   {
-    // we do not use "merge" because it would ignore the items whose key already exist in mUserMetadata.
-    mUserMetadata.insert(pairs.begin(), pairs.end());
+    mQuality.addMetadata(pairs);
   }
 
   const std::map<std::string, std::string>& QualityObject::getMetadataMap() const
   {
-    return mUserMetadata;
+    return mQuality.getMetadataMap();
   }
 
   void QualityObject::updateMetadata(std::string key, std::string value)
   {
-    if (mUserMetadata.count(key) > 0) {
-      mUserMetadata[key] = value;
-    }
+    mQuality.updateMetadata(key, value);
+  }
+
+  const std::string QualityObject::getMetadata(std::string key)
+  {
+    return mQuality.getMetadata(key);
   }
 
   std::string QualityObject::getPath() const
   {
     std::string path = "qc/checks/" + getDetectorName() + "/" + getName();
+    if (mPolicyName == "OnEachSeparately") {
+      if (mMonitorObjectsNames.size() == 1) {
+        path += "/" + mMonitorObjectsNames[0];
+      } else {
+        BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Only one MO should be assigned to one QO With the policy OnEachSeparatety"));
+      }
+    }
     return path;
   }
 
@@ -85,4 +115,4 @@ ClassImp(o2::quality_control::core::QualityObject)
   {
     return mCheckName;
   }
-}
+} // namespace o2::quality_control::core

@@ -29,6 +29,7 @@
 #include <Framework/Task.h>
 #include <Headers/DataHeader.h>
 #include <Monitoring/MonitoringFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 #include <Framework/DataProcessorSpec.h>
 // QC
 #include "QualityControl/CheckInterface.h"
@@ -78,7 +79,6 @@ class CheckRunner : public framework::Task
    * @param checkNames List of check names, that operate on the same inputs.
    * @param configurationSource Path to configuration
    */
-  CheckRunner(Check check, std::string configurationSource);
   CheckRunner(std::vector<Check> checks, std::string configurationSource);
 
   /**
@@ -105,12 +105,12 @@ class CheckRunner : public framework::Task
   framework::Outputs getOutputs() { return mOutputs; };
 
   void setTaskStoreSet(std::unordered_set<std::string> storeSet) { mInputStoreSet = storeSet; }
+  std::string getDeviceName() { return mDeviceName; };
 
   /// \brief Unified DataDescription naming scheme for all checkers
   static o2::header::DataDescription createCheckRunnerDataDescription(const std::string taskName);
   static o2::framework::Inputs createInputSpec(const std::string checkName, const std::string configSource);
 
-  std::string getDeviceName() { return mDeviceName; };
   static std::string createCheckRunnerIdString() { return "QC-CHECK-RUNNER"; };
   static std::string createCheckRunnerName(std::vector<Check> checks);
   static std::string createSinkCheckRunnerName(o2::framework::InputSpec input);
@@ -126,19 +126,26 @@ class CheckRunner : public framework::Task
    * @param mo The MonitorObject to evaluate and whose quality will be set according
    *        to the worse quality encountered while running the Check's.
    */
-  std::vector<Check*> check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
+  QualityObjectsType check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
 
   /**
-   * \brief Store the MonitorObject in the database.
+   * \brief Store the QualityObjects in the database.
    *
-   * @param mo The MonitorObject to be stored in the database.
+   * @param qualityObjects QOs to be stored in DB.
    */
-  void store(std::vector<Check*>& checks);
+  void store(QualityObjectsType& qualityObjects);
 
   /**
-   * \brief Send the MonitorObject on FairMQ to whoever is listening.
+   * \brief Store the MonitorObjects in the database.
+   *
+   * @param monitorObjects MOs to be stored in DB.
    */
-  void send(std::vector<Check*>& checks, framework::DataAllocator& allocator);
+  void store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects);
+
+  /**
+   * \brief Send the QualityObjects on the DataProcessor output channel.
+   */
+  void send(QualityObjectsType& qualityObjects, framework::DataAllocator& allocator);
 
   /**
    * \brief Update cached monitor object with new one.
@@ -176,13 +183,13 @@ class CheckRunner : public framework::Task
   // General state
   std::string mDeviceName;
   std::vector<Check> mChecks;
-  std::string mConfigurationSource;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::map<std::string, unsigned int> mMonitorObjectRevision;
   unsigned int mGlobalRevision = 1;
   std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
+  std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
 
   // DPL
   o2::framework::Inputs mInputs;
@@ -193,9 +200,10 @@ class CheckRunner : public framework::Task
 
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
-  std::chrono::system_clock::time_point startFirstObject;
-  std::chrono::system_clock::time_point endLastObject;
-  int mTotalNumberHistosReceived;
+  int mTotalNumberObjectsReceived;
+  int mTotalNumberCheckExecuted;
+  int mTotalNumberQOStored;
+  int mTotalNumberMOStored;
   AliceO2::Common::Timer timer;
 };
 

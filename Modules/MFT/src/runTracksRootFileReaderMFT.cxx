@@ -55,7 +55,8 @@ class TracksRootFileReaderMFT : public o2::framework::Task
     mFile = std::make_unique<TFile>(filename.c_str(), "OLD");
     if (!mFile->IsOpen()) {
       LOG(ERROR) << "TracksRootFileReaderMFT::init. Cannot open the file: " << filename.c_str();
-      ic.services().get<ControlService>().readyToQuit(QuitRequest::All);
+      ic.services().get<ControlService>().endOfStream();
+      ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
     }
   }
@@ -66,8 +67,8 @@ class TracksRootFileReaderMFT : public o2::framework::Task
   {
     // get vector of ROF
     std::unique_ptr<TTree> tree((TTree*)mFile->Get("o2sim"));
-    std::vector<o2::mft::TrackLTF> tracks, *ptracks = &tracks;
-    tree->SetBranchAddress("MFTTrackLTF", &ptracks);
+    std::vector<o2::mft::TrackMFT> tracks, *ptracks = &tracks;
+    tree->SetBranchAddress("MFTTrack", &ptracks);
     tree->GetEntry(0);
 
     // Check if there is a new Track
@@ -75,17 +76,18 @@ class TracksRootFileReaderMFT : public o2::framework::Task
     if (currentTrack >= ntracks) {
       // if (currentTrack >= 50) {
       LOG(INFO) << " TracksRootFileReaderMFT::run. End of file reached";
-      pc.services().get<ControlService>().readyToQuit(QuitRequest::All);
+      pc.services().get<ControlService>().endOfStream();
+      pc.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
     }
     // prepare the track output
-    std::vector<o2::mft::TrackLTF>* TracksInFile = new std::vector<o2::mft::TrackLTF>();
+    std::vector<o2::mft::TrackMFT>* TracksInFile = new std::vector<o2::mft::TrackMFT>();
     std::copy(tracks.begin() + currentTrack, tracks.begin() + currentTrack + 1, std::back_inserter(*TracksInFile));
     currentTrack++;
 
     // fill in the message
     // LOG(INFO) << " TracksRootFileReaderMFT::run. In this file there are  " << TracksInFile.size() << " tracks";
-    pc.outputs().snapshot(Output{ "MFT", "TRACKSLTF", 0, Lifetime::Timeframe }, *TracksInFile);
+    pc.outputs().snapshot(Output{ "MFT", "TRACKSMFT", 0, Lifetime::Timeframe }, *TracksInFile);
   }
 
  private:
@@ -100,7 +102,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext&)
 
   // define the outputs
   std::vector<OutputSpec> outputs;
-  outputs.emplace_back("MFT", "TRACKSLTF", 0, Lifetime::Timeframe);
+  outputs.emplace_back("MFT", "TRACKSMFT", 0, Lifetime::Timeframe);
 
   // The producer to generate some data in the workflow
   DataProcessorSpec producer{

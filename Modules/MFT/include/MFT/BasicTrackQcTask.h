@@ -16,8 +16,11 @@
 
 #ifndef QC_MODULE_MFT_MFTBasicTrackQcTask_H
 #define QC_MODULE_MFT_MFTBasicTrackQcTask_H
+
 // ROOT
-#include <TH1F.h>
+#include <TCanvas.h>
+#include <TH1.h>
+#include <TH2.h>
 // Quality Control
 #include "QualityControl/TaskInterface.h"
 
@@ -48,7 +51,10 @@ class BasicTrackQcTask /*final*/ : public TaskInterface // todo add back the "fi
   void reset() override;
 
  private:
-  std::unique_ptr<TH1F> mMFT_nPoints_H = nullptr;
+  std::unique_ptr<TCanvas> mMFT_xy_C = nullptr;
+  std::unique_ptr<TH2F> mMFT_xy_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_pos_phi_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_neg_phi_H = nullptr;
 };
 
 } // namespace o2::quality_control_modules::mft

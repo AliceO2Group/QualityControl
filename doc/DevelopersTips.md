@@ -5,12 +5,21 @@ here. It is not sanitized or organized. Just a brain dump.
 
 ### Release procedure / check list
 1. Update the version number in [CMakeLists.txt](../CMakeLists.txt), commit and push
-2. Prepare the release notes using the commits since the last release in github (see [this template](ReleaseNotesTemplate.md)). 
+2. Prepare the release notes using the commits since the last release in github (see [this template](ReleaseNotesTemplate.md)).
 3. Release in github, paste the release notes
 4. A PR is automatically created in alidist
-5. Once merged, send an email to alice-o2-wp7@cern.ch, alice-o2-qc-contact@cern.ch and alice-dpg-qa-tools@cern.ch to announce the new release. Use the email for the previous release as a template. 
+5. Once merged, send an email to alice-o2-wp7@cern.ch, alice-o2-qc-contact@cern.ch and alice-dpg-qa-tools@cern.ch to announce the new release. Use the email for the previous release as a template.
 
-### Where and how to configure the repo_cleaner of the ccdb-test 
+### Create a fix version
+1. checkout last tagged version, e.g. `git checkout v0.26.1`
+2. branch, e.g. `git checkout -b branch_v0.26.2`
+2. push the branch upstream, e.g. `git push upstream -u branch_v0.26.2`
+2. cherry-pick the commit from master, e.g. `git cherry-pick b187ddbe52058d53a9bbf3cbdd53121c6b936cd8`
+3. change version in CMakeLists and commit
+5. tag, e.g. `git tag -a v0.26.2 -m "v0.26.2"`
+4. push the tag upstream, e.g. `git push upstream v0.26.2`
+
+### Where and how to configure the repo_cleaner of the ccdb-test
 
 The config file is stored in git in the branch `repo_cleaner` (careful not to update in master instead !). Check out the branch, update the file Framework/script/RepoCleaner/config.yaml and commit it. A PR is necessary but in case of emergency, force-merge it. As soon as it is merged, it will be used by the script.
 
@@ -81,3 +90,22 @@ We use the infologger. There is a utility class, `QcInfoLogger`, that can be use
 
 Related issues : https://alice.its.cern.ch/jira/browse/QC-224
 
+### Service Discovery (Online mode)
+
+Service discovery (Online mode) is used to list currently published objects by running QC tasks. It uses Consul to store:
+ - List of running QC tasks that respond to health check, known as "services" in Consul
+ - List of published object by each QC task ("service"), knows as "tags" of a "service" in Consul
+
+Both lists are updated from within QC task using [Service Discovery C++ API](#Service-Discovery-C++-API-and-Consul-HTTP-API):
+- `register` - when a tasks starts
+- `deregister` - when tasks ends
+
+#### Register (and health check)
+When a QC task starts, it register its presence in Consul by calling [register endpoit of Consul HTTP API](https://www.consul.io/api/agent/service.html#register-service). The request needs the following fields:
+- `Id` - Task ID (must be unique)
+- `Name` - Task name, tasks can have same name when they run on mutiple machines
+- `Tags` - List of published objects
+- `Checks` - Array of health check details for Consul, each should contain `Name`, `Interval`, type of check with endpoint to be check by Consul (eg. `"TCP": "localhost:1234"`) and `DeregisterCriticalServiceAfter` that defines timeout to automatically deregister service when fails health checks (minimum value `1m`).
+
+#### Deregister
+In order to deregister a service [`deregister/:Id` endpoint of Consul HTTP API](https://www.consul.io/api/agent/service.html#deregister-service) needs to be called. It does not need any additional parameters.

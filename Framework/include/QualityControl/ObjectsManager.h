@@ -18,7 +18,7 @@
 
 // QC
 #include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
+#include "QualityControl/MonitorObjectCollection.h"
 #include "QualityControl/TaskConfig.h"
 // stl
 #include <string>
@@ -69,13 +69,24 @@ class ObjectsManager
    * @param obj
    * @throw ObjectNotFoundError if object is not found.
    */
-  void stopPublishing(const std::string& name);
+  void stopPublishing(const std::string& objectName);
 
+  /**
+   * Check whether an object is already being published
+   * @param objectName
+   * @return true if the object is already being published
+   */
+  bool isBeingPublished(const std::string& name);
+
+  /**
+   * Returns the published MonitorObject specified by its name
+   * @param objectName The name of the object to find.
+   * @return A pointer to the MonitorObject.
+   * @throw ObjectNotFoundError if the object is not found.
+   */
   MonitorObject* getMonitorObject(std::string objectName);
 
-  TObject* getObject(std::string objectName);
-
-  TObjArray* getNonOwningArray() const;
+  MonitorObjectCollection* getNonOwningArray() const;
 
   /**
    * \brief Add metadata to a MonitorObject.
@@ -83,6 +94,7 @@ class ObjectsManager
    * @param objectName Name of the MonitorObject.
    * @param key Key of the metadata.
    * @param value Value of the metadata.
+   * @throw ObjectNotFoundError if object is not found.
    */
   void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
 
@@ -106,7 +118,7 @@ class ObjectsManager
   void removeAllFromServiceDiscovery();
 
  private:
-  std::unique_ptr<TObjArray> mMonitorObjects;
+  std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
   TaskConfig& mTaskConfig;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;

@@ -47,6 +47,7 @@ For a general overview of our (O2) software, organization and processes, please 
             * [TrendingTask configuration](doc/PostProcessing.md#trendingtask-configuration)
    * [Advanced topics](doc/Advanced.md)
       * [Plugging the QC to an existing DPL workflow](doc/Advanced.md#plugging-the-qc-to-an-existing-dpl-workflow)
+      * [Multi-node setups](doc/Advanced.md#multi-node-setups)
       * [Writing a DPL data producer](doc/Advanced.md#writing-a-dpl-data-producer)
       * [Access conditions from the CCDB](doc/Advanced.md#access-conditions-from-the-ccdb)
       * [Definition and access of task-specific configuration](doc/Advanced.md#definition-and-access-of-task-specific-configuration)
@@ -58,6 +59,11 @@ For a general overview of our (O2) software, organization and processes, please 
       * [Developing QC modules on a machine with FLP suite](doc/Advanced.md#developing-qc-modules-on-a-machine-with-flp-suite)
       * [Use MySQL as QC backend](doc/Advanced.md#use-mysql-as-qc-backend)
       * [Configuration files details](doc/Advanced.md#configuration-files-details)
+         * [Global configuration structure](doc/Advanced.md#global-configuration-structure)
+         * [Common configuration](doc/Advanced.md#common-configuration)
+         * [QC Tasks configuration](doc/Advanced.md#qc-tasks-configuration)
+         * [QC Checks configuration](doc/Advanced.md#qc-checks-configuration)
+         * [QC Post-processing configuration](doc/Advanced.md#qc-post-processing-configuration)
    * [Frequently Asked Questions](doc/FAQ.md)
 <!-- Added by: bvonhall, at:  -->
 

@@ -42,7 +42,7 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
-  mMFT_chip_index_H = std::make_unique<TH1F>("mMFT_chip_index", "mMFT_chip_index", 936, -0.5, 935.5);
+  mMFT_chip_index_H = std::make_unique<TH1F>("mMFT_chip_index_H", "mMFT_chip_index_H", 936, -0.5, 935.5);
   getObjectsManager()->startPublishing(mMFT_chip_index_H.get());
   getObjectsManager()->addMetadata(mMFT_chip_index_H->GetName(), "custom", "34");
 }

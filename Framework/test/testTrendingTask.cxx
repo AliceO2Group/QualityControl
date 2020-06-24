@@ -57,8 +57,7 @@ BOOST_AUTO_TEST_CASE(test_task)
     std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(histo, taskName, "TST");
     repository->storeMO(mo);
 
-    std::vector<std::string> inputs;
-    std::shared_ptr<QualityObject> qo = std::make_shared<QualityObject>("testTrendingTaskCheck", inputs, "TST");
+    std::shared_ptr<QualityObject> qo = std::make_shared<QualityObject>(Quality::Null, "testTrendingTaskCheck", "TST");
     qo->updateQuality(Quality::Bad);
     repository->storeQO(qo);
   }
@@ -80,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_task)
 
     TrendingTask task;
     task.setName(taskName);
-    task.configure(taskName, *ConfigurationFactory::getConfiguration(configFilePath));
+    task.configure(taskName, ConfigurationFactory::getConfiguration(configFilePath)->getRecursive());
     task.initialize(Trigger::Once, services);
     for (size_t i = 0; i < trendTimes; i++) {
       task.update(Trigger::Always, services);

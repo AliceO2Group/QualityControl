@@ -10,18 +10,9 @@
 
 ///
 /// \file    runTOF.cxx
-/// \author  Piotr Konopka
+/// \author  Nicolo Jacazio
 ///
 /// \brief This is an executable showing QC Task's usage in Data Processing Layer.
-///
-/// This is an executable showing QC Task's usage in Data Processing Layer. The workflow consists of data producer,
-/// which generates arrays of random size and content. Its output is dispatched to QC task using Data Sampling
-/// infrastructure. QC Task runs exemplary user code located in SkeletonDPL. The checker performs a simple check of
-/// the histogram shape and colorizes it. The resulting histogram contents are shown in logs by printer.
-///
-/// QC task and CheckRunner are instantiated by respectively TaskFactory and CheckRunnerFactory,
-/// which use preinstalled config file, that can be found in
-/// ${QUALITYCONTROL_ROOT}/etc/tof.json or Framework/tof.json (original one).
 ///
 /// To launch it, build the project, load the environment and run the executable:
 ///   \code{.sh}
@@ -99,13 +90,13 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
   // Generation of the QC topology (one task, one checker in this case)
-  quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
 
   // Finally the printer
   DataProcessorSpec printer{
     "printer",
     Inputs{
-      { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckerName(qcConfigurationSource)), 0 } },
+      { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
     Outputs{},
     adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>()
   };

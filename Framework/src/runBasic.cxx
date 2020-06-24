@@ -57,7 +57,7 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
-    ConfigParamSpec{ "config-path", VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
+    ConfigParamSpec{ "config-path", VariantType::String, "", { "Absolute path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
   workflowOptions.push_back(
     ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
 }
@@ -97,14 +97,14 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
   // Generation of the QC topology (one task, one checker in this case)
-  quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
 
   // Finally the printer
   if (hasChecks(qcConfigurationSource)) {
     DataProcessorSpec printer{
       "printer",
       Inputs{
-        { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckerName(qcConfigurationSource)), 0 } },
+        { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
       Outputs{},
       adaptFromTask<o2::quality_control::example::ExampleQualityPrinterSpec>()
     };
@@ -133,6 +133,6 @@ std::string getConfigPath(const ConfigContext& config)
   // The the optional one by the user
   auto userConfigPath = config.options().get<std::string>("config-path");
   // Finally build the config path based on the default or the user-base one
-  std::string path = std::string("json:/") + (userConfigPath.empty() ? defaultConfigPath : userConfigPath);
+  std::string path = std::string("json://") + (userConfigPath.empty() ? defaultConfigPath : userConfigPath);
   return path;
 }

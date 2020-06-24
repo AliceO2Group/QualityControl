@@ -27,7 +27,7 @@ using namespace o2::quality_control::core;
 
 BOOST_AUTO_TEST_CASE(quality_object_test)
 {
-  QualityObject qo("xyzCheck");
+  QualityObject qo(Quality::Null, "xyzCheck");
   qo.setDetectorName("INVALID");
   qo.setDetectorName("TST");
   qo.setQuality(Quality::Null);

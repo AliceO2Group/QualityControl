@@ -52,8 +52,8 @@ CURL* ServiceDiscovery::initCurl()
     throw std::runtime_error(std::string("cURL init") + curl_easy_strerror(globalInitResult));
   }
   CURL* curl = curl_easy_init();
-  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10);
-  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
+  curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 2);
+  curl_easy_setopt(curl, CURLOPT_TIMEOUT, 2);
   curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
   curl_easy_setopt(curl, CURLOPT_TCP_KEEPIDLE, 120L);
   curl_easy_setopt(curl, CURLOPT_TCP_KEEPINTVL, 60L);
@@ -77,9 +77,9 @@ void ServiceDiscovery::_register(const std::string& objects)
   }
 
   boost::property_tree::ptree checks, check;
-  check.put("Id", mId);
   check.put("Name", "Health check " + mId);
   check.put("Interval", "5s");
+  check.put("DeregisterCriticalServiceAfter", "1m");
   check.put("TCP", mHealthEndpoint);
   checks.push_back(std::make_pair("", check));
 

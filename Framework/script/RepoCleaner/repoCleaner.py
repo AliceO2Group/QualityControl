@@ -22,12 +22,13 @@
 import argparse
 import logging
 import requests
-import os
 import re
 from typing import List
+import tempfile
 
 import dryable
 import yaml
+import time
 
 from Ccdb import Ccdb
 
@@ -122,6 +123,11 @@ def findMatchingRule(rules, object_path):
     """Return the first matching rule for the given path or None if none is found."""
     
     logging.debug(f"findMatchingRule for {object_path}")
+    
+    if object_path == None:
+        logging.error(f"findMatchingRule: object_path is None")
+        return None
+    
     for rule in rules:
         pattern = re.compile(rule.object_path)
         result = pattern.match(object_path)
@@ -130,6 +136,38 @@ def findMatchingRule(rules, object_path):
             return rule
     logging.debug("   No rule found, skipping.")
     return None
+
+filepath = tempfile.gettempdir() + "/repoCleaner.txt"
+currentTimeStamp = int(time.time() * 1000)
+
+def getTimestampLastExecution():
+    """
+    Returns the timestamp of the last execution.
+    It is stored in a file in $TMP/repoCleaner.txt.
+    :return: the timestampe of the last execution or 0 if it cannot find it.
+    """
+    try:
+        f = open(filepath, "r")
+    except IOError as e:
+        logging.info(f"File {filepath} not readable, we return 0 as timestamp.")
+        return 0
+    timestamp = f.read()
+    logging.info(f"Timestamp retrieved from {filepath}: {timestamp}")
+    f.close()
+    return timestamp
+
+def storeSavedTimestamp():
+    """
+    Store the timestamp we saved at the beginning of the execution of this script.
+    """
+    try:
+        f = open(filepath, "w+")
+    except IOError:
+        logging.error(f"Could not write the saved timestamp to {filepath}")
+    f.write(str(currentTimeStamp))
+    logging.info(f"Stored timestamp {currentTimeStamp} in {filepath}")
+    f.close()
+
 
 # ****************
 # We start here !
@@ -153,10 +191,11 @@ def main():
 
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url)
-    paths = ccdb.getObjectsList()
+    paths = ccdb.getObjectsList(getTimestampLastExecution())
     if args.only_path != '':
         paths = [item for item in paths if item.startswith(args.only_path)]
     logging.debug(paths)
+    logging.debug(len(paths))
 
     # For each object call the first matching rule
     logging.info("Loop through the objects and apply first matching rule.")
@@ -173,6 +212,7 @@ def main():
         logging.info(f"{rule.policy} applied on {object_path}: {stats}")
     
     logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
+    storeSavedTimestamp()
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.
     main()

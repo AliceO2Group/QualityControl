@@ -72,13 +72,13 @@ class DatabaseInterface
    * Look up a monitor object and return it if found or nullptr if not.
    * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = 0) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) = 0;
   /**
    * \brief Look up a quality object and return it.
    * Look up a quality object and return it if found or nullptr if not.
    * @deprecated
    */
-  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = 0) = 0;
+  virtual std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1) = 0;
   /**
    * \brief Look up an object and return it.
    * Look up an object and return it if found or nullptr if not. It is a raw pointer because we might need it to build a MO.
@@ -94,13 +94,13 @@ class DatabaseInterface
    * Look up a monitor object and return it in JSON format if found or an empty string if not.
    * @deprecated
    */
-  virtual std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = 0) = 0;
+  virtual std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = -1) = 0;
   /**
    * \brief Look up a quality object and return it in JSON format.
    * Look up a quality object and return it in JSON format if found or an empty string if not.
    * @deprecated
    */
-  virtual std::string retrieveQOJson(std::string qoPath, long timestamp = 0) = 0;
+  virtual std::string retrieveQOJson(std::string qoPath, long timestamp = -1) = 0;
   /**
    * \brief Look up an object and return it in JSON format.
    * Look up an object and return it in JSON format if found or an empty string if not.

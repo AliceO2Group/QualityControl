@@ -16,8 +16,6 @@
 #ifndef QC_MODULE_DAQ_EVERINCREASINGRAPH_H
 #define QC_MODULE_DAQ_EVERINCREASINGRAPH_H
 
-#include <Common/DataBlock.h>
-
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::daq
@@ -40,8 +38,6 @@ class EverIncreasingGraph : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  DataBlockId mLastId;
-
   ClassDefOverride(EverIncreasingGraph, 1);
 };
 

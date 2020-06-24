@@ -3,6 +3,7 @@
 
 #include <Framework/DataSampling.h>
 #include <DataFormatsEMCAL/Digit.h>
+#include <DataFormatsEMCAL/Cell.h>
 #include <EMCALWorkflow/PublisherSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/CheckRunner.h"
@@ -24,6 +25,8 @@ void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
   workflowOptions.push_back(
     o2::framework::ConfigParamSpec{ "config-path", o2::framework::VariantType::String, "", { "Path to the config file. Overwrite the default paths. Do not use with no-data-sampling." } });
   workflowOptions.push_back(
+    o2::framework::ConfigParamSpec{ "input-type", o2::framework::VariantType::String, "cell", { "Input data type. Can be \"digit\" or \"cell\"." } });
+  workflowOptions.push_back(
     o2::framework::ConfigParamSpec{ "no-data-sampling", o2::framework::VariantType::Bool, false, { "Skips data sampling, connects directly the task to the producer." } });
   workflowOptions.push_back(
     o2::framework::ConfigParamSpec{ "local", o2::framework::VariantType::Bool, false, { "Creates only the local part of the QC topology." } });
@@ -39,40 +42,68 @@ void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
 
 std::string getConfigPath(const o2::framework::ConfigContext& config);
 
+o2::framework::DataProcessorSpec getDigitsPublisher()
+{
+  using digitInputType = std::vector<o2::emcal::Digit>;
+  return o2::emcal::getPublisherSpec<digitInputType>(o2::emcal::PublisherConf{
+                                                       "emcal-digit-reader",
+                                                       "o2sim",
+                                                       { "digitbranch", "EMCALDigit", "Digit branch" },
+                                                       { "triggerrecordbranch", "EMCALDigitTRGR", "Trigger record branch" },
+                                                       { "mcbranch", "EMCALDigitMCTruth", "MC label branch" },
+                                                       o2::framework::OutputSpec{ "EMC", "DIGITS" },
+                                                       o2::framework::OutputSpec{ "EMC", "DIGITSTRGR" },
+                                                       o2::framework::OutputSpec{ "EMC", "DIGITSMCTR" } },
+                                                     false);
+}
+
+o2::framework::DataProcessorSpec getCellPublisher()
+{
+  using digitInputType = std::vector<o2::emcal::Cell>;
+  return o2::emcal::getPublisherSpec<digitInputType>(o2::emcal::PublisherConf{
+                                                       "emcal-digit-reader",
+                                                       "o2sim",
+                                                       { "digitbranch", "EMCALCell", "Digit branch" },
+                                                       { "triggerrecordbranch", "EMCALCellTRGR", "Trigger record branch" },
+                                                       { "mcbranch", "EMCALDigitMCTruth", "MC label branch" },
+                                                       o2::framework::OutputSpec{ "EMC", "CELLS" },
+                                                       o2::framework::OutputSpec{ "EMC", "CELLSTRGR" },
+                                                       o2::framework::OutputSpec{ "EMC", "CELLSMCTR" } },
+                                                     false);
+}
+
 o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext const& config)
 {
   o2::framework::WorkflowSpec specs;
-  using digitInputType = std::vector<o2::emcal::Digit>;
-  specs.push_back(o2::emcal::getPublisherSpec<digitInputType>(o2::emcal::PublisherConf{
-                                                                "emcal-digit-reader",
-                                                                "o2sim",
-                                                                { "digitbranch", "EMCALDigit", "Digit branch" },
-                                                                { "triggerrecordbranch", "EMCALDigitTRGR", "Trigger record branch" },
-                                                                { "mcbranch", "EMCALDigitMCTruth", "MC label branch" },
-                                                                o2::framework::OutputSpec{ "EMC", "DIGITS" },
-                                                                o2::framework::OutputSpec{ "EMC", "DIGITSTRGR" },
-                                                                o2::framework::OutputSpec{ "EMC", "DIGITSMCTR" } },
-                                                              false));
+  auto inputtype = config.options().get<std::string>("input-type");
+  if (inputtype == "cell") {
+    specs.push_back(getCellPublisher());
+  } else {
+    specs.push_back(getDigitsPublisher());
+  }
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
-  if (config.options().get<bool>("local") && config.options().get<bool>("remote")) {
-    ILOG(Info) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
+  if (!config.options().get<bool>("local") && !config.options().get<bool>("remote")) {
+    ILOG(Info) << "Creating a standalone QC topology." << ENDM;
+    o2::quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
   }
 
-  if (config.options().get<bool>("local") || !config.options().get<bool>("remote")) {
+  if (config.options().get<bool>("local")) {
+    ILOG(Info) << "Creating a local QC topology." << ENDM;
 
     // Generation of Data Sampling infrastructure
     o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
-    // Generation of the local QC topology (local QC tasks)
+    // Generation of the local QC topology (local QC tasks and their output proxies)
     o2::quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, config.options().get<std::string>("host"));
   }
-  if (config.options().get<bool>("remote") || !config.options().get<bool>("local")) {
+  if (config.options().get<bool>("remote")) {
+    ILOG(Info) << "Creating a remote QC topology." << ENDM;
 
-    // Generation of the remote QC topology (task for QC servers, mergers and all checkers)
+    // Generation of the remote QC topology (task for QC servers, input proxies, mergers and all check runners)
     o2::quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
   }
 
