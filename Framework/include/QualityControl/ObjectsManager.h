@@ -118,13 +118,12 @@ class ObjectsManager
   void setDefaultDrawOptions(TObject* obj, const std::string& options);
 
   /**
-   * \brief Set some hints on how to display this object.
+   * \brief Indicate how to display this object.
    * A number of options can be set on a canvas to influence the way the object is displayed.
-   * Per instance, a logarithmic scale or a grid.
-   * Use this method to indicate which options should be used if possible when displaying the object.
+   * For drawOptions, use setDefaultDrawOptions, for others such as logarithmic scale or grid, use this method.
    * Currently supported by QCG: logx, logy, logz, gridx, gridy, gridz
-   * @param objectName
-   * @param hints
+   * @param objectName Name of the object affected by these drawOptions.
+   * @param options The list of hints.
    * @throw ObjectNotFoundError if object is not found.
    */
   void setDisplayHint(const std::string& objectName, const std::string& hints);

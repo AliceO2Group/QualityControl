@@ -245,13 +245,14 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
 {
   stringstream result;
   map<string, string> headers;
-  auto* tobj = retrieveTObject(path, metadata, timestamp, &headers);
 
+  // Get object
+  auto* tobj = retrieveTObject(path, metadata, timestamp, &headers);
   if (tobj == nullptr) {
     return std::string();
   }
 
-  // Converte object to JSON
+  // Convert object to JSON
   TObject* toConvert = nullptr;
   if (tobj->IsA() == MonitorObject::Class()) { // a full MO -> pre-v0.25
     std::shared_ptr<MonitorObject> mo(dynamic_cast<MonitorObject*>(tobj));
