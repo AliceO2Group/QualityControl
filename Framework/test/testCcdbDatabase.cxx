@@ -217,7 +217,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   BOOST_CHECK(jsonDocument.FindMember("metadata") != jsonDocument.MemberEnd());
   const Value& metadataNode = jsonDocument["metadata"];
   BOOST_CHECK(metadataNode.IsObject());
-  BOOST_CHECK(metadataNode.FindMember("qc_task_name")!= jsonDocument.MemberEnd());
+  BOOST_CHECK(metadataNode.FindMember("qc_task_name") != jsonDocument.MemberEnd());
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo_json, *utf::depends_on("ccdb_store"))

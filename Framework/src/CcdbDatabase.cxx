@@ -294,7 +294,7 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
   buffer.Clear();
   Writer<rapidjson::StringBuffer> writer(buffer);
   jsonDocument.Accept(writer);
-  return strdup( buffer.GetString() );
+  return strdup(buffer.GetString());
 }
 
 void CcdbDatabase::disconnect()
