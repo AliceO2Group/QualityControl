@@ -37,7 +37,7 @@ class ServiceDiscovery
   /// \param id 		Unique instance ID
   /// \param healthEndpoint	Local endpoint that is then used for health checks
   ///				(default value it set to  <hostname>:7777)
-  ServiceDiscovery(const std::string& url, const std::string& id, const std::string& healthEndpoint = GetDefaultUrl());
+  ServiceDiscovery(const std::string& url, const std::string& name, const std::string& id, const std::string& healthEndpoint = GetDefaultUrl());
 
   /// Stops the health thread and deregisteres from Consul health checks
   ~ServiceDiscovery();
@@ -57,6 +57,7 @@ class ServiceDiscovery
   std::unique_ptr<CURL, decltype(&ServiceDiscovery::deleteCurl)> curlHandle;
 
   const std::string mConsulUrl;     ///< Consul URL
+  const std::string mName;          ///< Instance (service) Name
   const std::string mId;            ///< Instance (service) ID
   std::string mHealthEndpoint;      ///< hostname and port of health check endpoint
   std::thread mHealthThread;        ///< Health check thread

@@ -35,7 +35,7 @@ ObjectsManager::ObjectsManager(TaskConfig& taskConfig, bool noDiscovery) : mTask
   // register with the discovery service
   if (!noDiscovery) {
     std::string uniqueTaskID = taskConfig.taskName + "_" + std::to_string(mTaskConfig.parallelTaskID);
-    mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, uniqueTaskID);
+    mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName, uniqueTaskID);
   } else {
     QcInfoLogger::GetInstance() << "Service Discovery disabled" << infologger::endm;
     mServiceDiscovery = nullptr;
