@@ -37,6 +37,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Check.h"
+#include "QualityControl/ServiceDiscovery.h"
 
 namespace o2::framework
 {
@@ -197,6 +198,9 @@ class CheckRunner : public framework::Task
 
   // Checks cache
   std::map<std::string, std::shared_ptr<MonitorObject>> mMonitorObjects;
+
+  // Service discovery
+  std::shared_ptr<ServiceDiscovery> mServiceDiscovery;
 
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;

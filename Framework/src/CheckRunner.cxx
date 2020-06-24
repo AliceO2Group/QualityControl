@@ -125,8 +125,6 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& che
   return outputs;
 }
 
-/// Members
-
 CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
   : mDeviceName(createCheckRunnerName(checks)),
     mChecks{ checks },
@@ -141,6 +139,8 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
 {
   try {
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
+    std::string consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+    mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
     ILOG(Fatal) << "Unexpected exception during initialization:\n"
@@ -172,6 +172,7 @@ CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
 
 CheckRunner::~CheckRunner()
 {
+  mServiceDiscovery->deregister();
 }
 
 void CheckRunner::init(framework::InitContext&)
@@ -231,6 +232,17 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   store(mMonitorObjectStoreVector);
 
   send(qualityObjects, ctx.outputs());
+
+  // Service Discovery
+  // tODO should we do it each time ?
+  // prepare the string of comma separated objects and publish it
+  std::string objects;
+  for (const auto& qo : qualityObjects) {
+    objects += qo->getPath() + ",";
+  }
+  objects.pop_back();
+  mServiceDiscovery->_register(objects);
+  std::cout << "registering : " << objects << std::endl;
 
   // Update global revision number
   updateRevision();
