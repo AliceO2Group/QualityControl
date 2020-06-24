@@ -245,7 +245,7 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
 {
   stringstream result;
   map<string, string> headers;
-  auto *tobj = retrieveTObject(path, metadata, timestamp, &headers);
+  auto* tobj = retrieveTObject(path, metadata, timestamp, &headers);
 
   if (tobj == nullptr) {
     return std::string();
@@ -270,15 +270,17 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
   delete toConvert;
 
   // Prepare the structure of the json
-  result << "{\nobject:\n" << json.Data() << ",";
+  result << "{\nobject:\n"
+         << json.Data() << ",";
   result << "\nmetadata:\n";
 
   // prepare JSON for the headers
   result << "{";
   const char* separator = "";
-  for( auto const& [key, value] : headers ) {
-    if(key.find("Content-") != 0 && key.find("ETag") != 0) { // remove a couple of specific headers
-      result << separator << "\n" << "  \"" << key << "\":\"" << value << "\"";
+  for (auto const& [key, value] : headers) {
+    if (key.find("Content-") != 0 && key.find("ETag") != 0) { // remove a couple of specific headers
+      result << separator << "\n"
+             << "  \"" << key << "\":\"" << value << "\"";
       separator = ",";
     }
   }
