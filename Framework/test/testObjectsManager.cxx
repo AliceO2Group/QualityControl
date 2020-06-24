@@ -142,11 +142,11 @@ BOOST_AUTO_TEST_CASE(drawOptions_test)
   objectsManager.setDefaultDrawOptions("histo", "alp lego1");
   BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDrawOptionsKey), "alp lego1");
 
-  BOOST_CHECK_THROW(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDisplayHints), out_of_range);
+  BOOST_CHECK_THROW(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDisplayHintsKey), out_of_range);
   objectsManager.setDisplayHint(&h, "logx");
-  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDisplayHints), "logx");
+  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDisplayHintsKey), "logx");
   objectsManager.setDisplayHint("histo", "gridy logy");
-  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDisplayHints), "gridy logy");
+  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDisplayHintsKey), "gridy logy");
 }
 
 } // namespace o2::quality_control::core

@@ -29,7 +29,7 @@ namespace o2::quality_control::core
 {
 
 const std::string ObjectsManager::gDrawOptionsKey = "drawOptions";
-const std::string ObjectsManager::gDisplayHints = "displayHints";
+const std::string ObjectsManager::gDisplayHintsKey = "displayHints";
 
 ObjectsManager::ObjectsManager(TaskConfig& taskConfig, bool noDiscovery) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
 {
@@ -142,13 +142,13 @@ void ObjectsManager::setDefaultDrawOptions(TObject* obj, const std::string& opti
 void ObjectsManager::setDisplayHint(const std::string& objectName, const std::string& hints)
 {
   MonitorObject* mo = getMonitorObject(objectName);
-  mo->addOrUpdateMetadata(gDisplayHints, hints);
+  mo->addOrUpdateMetadata(gDisplayHintsKey, hints);
 }
 
 void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
 {
   MonitorObject* mo = getMonitorObject(obj->GetName());
-  mo->addOrUpdateMetadata(gDisplayHints, hints);
+  mo->addOrUpdateMetadata(gDisplayHintsKey, hints);
 }
 
 } // namespace o2::quality_control::core

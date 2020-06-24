@@ -50,7 +50,7 @@ class ObjectsManager
   virtual ~ObjectsManager();
 
   static const std::string gDrawOptionsKey;
-  static const std::string gDisplayHints;
+  static const std::string gDisplayHintsKey;
 
   /**
    * Start publishing the object obj, i.e. it will be pushed forward in the workflow at regular intervals.
