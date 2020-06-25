@@ -23,7 +23,7 @@
         }
       },
       "tasks": {
-        "QcTask": {
+        "CellTask": {
           "active": "true",
           "className": "o2::quality_control_modules::emcal::DigitsQcTask",
           "moduleName": "QcEMCAL",
@@ -49,7 +49,7 @@
           "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
-            "name": "QcTask",
+            "name": "CellTask",
             "MOs": ["digitAmplitudeHG"]
           }]
         },
@@ -61,7 +61,7 @@
           "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
-            "name": "QcTask",
+            "name": "CellTask",
             "MOs": ["digitAmplitudeLG"]
           }]
         },
@@ -73,7 +73,7 @@
           "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
-            "name": "QcTask",
+            "name": "CellTask",
             "MOs": ["digitTimeHG"]
           }]
         },
@@ -85,7 +85,7 @@
           "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
-            "name": "QcTask",
+            "name": "CellTask",
             "MOs": ["digitTimeLG"]
           }]
         },
@@ -97,7 +97,7 @@
           "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
-            "name": "QcTask",
+            "name": "CellTask",
             "MOs": ["digitAmplitudeEMCAL"]
           }]
         },
@@ -109,7 +109,7 @@
           "detectorName": "EMC",
           "dataSource": [{
             "type": "Task",
-            "name": "QcTask",
+            "name": "CellTask",
             "MOs": ["digitAmplitudeDCAL"]
           }]
         }
