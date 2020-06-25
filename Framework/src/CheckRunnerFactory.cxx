@@ -40,7 +40,7 @@ DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::str
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
                                     Options{},
-                                    std::vector<std::string>{},
+                                    {},
                                     std::vector<DataProcessorLabel>{} };
 
   return newCheckRunner;
@@ -56,7 +56,7 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(o2::framework::InputSpec 
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
                                     Options{},
-                                    std::vector<std::string>{},
+                                    {},
                                     std::vector<DataProcessorLabel>{} };
 
   return newCheckRunner;
