@@ -383,8 +383,9 @@ void CheckRunner::initMonitoring()
 void CheckRunner::initServiceDiscovery()
 {
   auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
-  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);
-  LOG(INFO) << "ServiceDiscovery initialized" << endl;
+  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort+1); // we try to avoid colliding with the TaskRunner
+  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
+  LOG(INFO) << "ServiceDiscovery initialized";
 }
 
 } // namespace o2::quality_control::checker
