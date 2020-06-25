@@ -53,7 +53,7 @@
           },
           {
             "type": "repository-quality",
-            "path": "qc/checks",
+            "path": "qc/checks/TST",
             "names": [ "QcCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
