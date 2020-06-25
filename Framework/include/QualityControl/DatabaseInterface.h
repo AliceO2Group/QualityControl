@@ -92,18 +92,21 @@ class DatabaseInterface
   /**
    * \brief Look up a monitor object and return it in JSON format.
    * Look up a monitor object and return it in JSON format if found or an empty string if not.
+   * The headers associated with the object are added to the JSON object under the key "metadata".
    * @deprecated
    */
   virtual std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = -1) = 0;
   /**
    * \brief Look up a quality object and return it in JSON format.
    * Look up a quality object and return it in JSON format if found or an empty string if not.
+   * The headers associated with the object are added to the JSON object under the key "metadata".
    * @deprecated
    */
   virtual std::string retrieveQOJson(std::string qoPath, long timestamp = -1) = 0;
   /**
    * \brief Look up an object and return it in JSON format.
    * Look up an object and return it in JSON format if found or an empty string if not.
+   * The headers associated with the object are added to the JSON object under the key "metadata".
    * \param path the path of the object
    * \param timestamp the timestamp to query the object
    * \param metadata filters under the form of key-value pairs to select data
@@ -112,6 +115,7 @@ class DatabaseInterface
   /**
    * \brief Look up an object and return it in JSON format.
    * Look up an object and return it in JSON format if found or an empty string if not.
+   * The headers associated with the object are added to the JSON object under the key "metadata".
    * A default timestamp of -1 is used, usually meaning to use the current timestamp.
    * \param path the path to the object
    */

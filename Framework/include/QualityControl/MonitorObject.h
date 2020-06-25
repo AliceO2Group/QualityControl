@@ -95,6 +95,8 @@ class MonitorObject : public TObject
   void updateMetadata(std::string key, std::string value);
   /// \brief Get the full map of user's metadata
   const std::map<std::string, std::string>& getMetadataMap() const;
+  /// \brief Update the value of metadata or add it if it does not exist yet.
+  void addOrUpdateMetadata(std::string key, std::string value);
 
   void Draw(Option_t* option) override;
   TObject* DrawClone(Option_t* option) const override;

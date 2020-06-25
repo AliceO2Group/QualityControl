@@ -86,6 +86,15 @@ void MonitorObject::updateMetadata(std::string key, std::string value)
   }
 }
 
+void MonitorObject::addOrUpdateMetadata(std::string key, std::string value)
+{
+  if (mUserMetadata.count(key) > 0) {
+    mUserMetadata[key] = value;
+  } else {
+    mUserMetadata.insert({ key, value });
+  }
+}
+
 std::string MonitorObject::getPath() const
 {
   string path = "qc/" + getDetectorName() + "/" + getTaskName() + "/" + getName();
