@@ -164,6 +164,7 @@ class CheckRunner : public framework::Task
 
   inline void initDatabase();
   inline void initMonitoring();
+  inline void initServiceDiscovery();
 
   /**
    * \brief Increase the revision number for the Monitor Object.
@@ -173,6 +174,12 @@ class CheckRunner : public framework::Task
    * This function function should be called at the end of the receiving MOs.
    */
   void updateRevision();
+
+  /**
+   * Update the list of objects this TaskRunner is sending out.
+   * @param qualityObjects
+   */
+  void updateServiceDiscovery(const QualityObjectsType& qualityObjects);
 
   /**
    * \brief BSD checksum algorithm.
@@ -201,6 +208,7 @@ class CheckRunner : public framework::Task
 
   // Service discovery
   std::shared_ptr<ServiceDiscovery> mServiceDiscovery;
+  std::unordered_set<std::string> mListAllQOPaths; // store the names of all the QOs the Checks have generated so far
 
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;

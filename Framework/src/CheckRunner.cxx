@@ -40,6 +40,7 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
+using namespace std;
 
 const auto current_diagnostic = boost::current_exception_diagnostic_information;
 
@@ -139,8 +140,6 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
 {
   try {
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-    std::string consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
-    mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
     ILOG(Fatal) << "Unexpected exception during initialization:\n"
@@ -172,7 +171,9 @@ CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
 
 CheckRunner::~CheckRunner()
 {
-  mServiceDiscovery->deregister();
+  if(mServiceDiscovery != nullptr) {
+    mServiceDiscovery->deregister();
+  }
 }
 
 void CheckRunner::init(framework::InitContext&)
@@ -180,6 +181,7 @@ void CheckRunner::init(framework::InitContext&)
   try {
     initDatabase();
     initMonitoring();
+    initServiceDiscovery();
     for (auto& check : mChecks) {
       check.init();
     }
@@ -233,18 +235,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
   send(qualityObjects, ctx.outputs());
 
-  // Service Discovery
-  // tODO should we do it each time ?
-  // prepare the string of comma separated objects and publish it
-  std::string objects;
-  for (const auto& qo : qualityObjects) {
-    objects += qo->getPath() + ",";
-  }
-  objects.pop_back();
-  mServiceDiscovery->_register(objects);
-  std::cout << "registering : " << objects << std::endl;
-
-  // Update global revision number
+  updateServiceDiscovery(qualityObjects);
   updateRevision();
 
   // monitoring
@@ -331,6 +322,32 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
   }
 }
 
+void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObjects)
+{
+  if(mServiceDiscovery == nullptr) {
+    return;
+  }
+
+  // insert into the list of paths the QOs' paths.
+  // TODO it seems unoptimal to do it all the time. After a while, aren't we sure that we have run all the checks ?
+  size_t formerNumberQOsNames = mListAllQOPaths.size();
+  for (const auto& qo : qualityObjects) {
+    mListAllQOPaths.insert(qo->getPath());
+  }
+  // if nothing was inserted, no need to update
+  if(mListAllQOPaths.size() == formerNumberQOsNames) {
+    return;
+  }
+
+  // prepare the string of comma separated objects and publish it
+  std::string objects;
+  for (auto path : mListAllQOPaths) {
+    objects += path + ",";
+  }
+  objects.pop_back(); // remove last comma
+  mServiceDiscovery->_register(objects);
+}
+
 void CheckRunner::updateRevision()
 {
   ++mGlobalRevision;
@@ -355,12 +372,19 @@ void CheckRunner::initDatabase()
 
 void CheckRunner::initMonitoring()
 {
-  std::string monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
+  auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
   mCollector = MonitoringFactory::Get(monitoringUrl);
   mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
   timer.reset(1000000); // 10 s.
+}
+
+void CheckRunner::initServiceDiscovery()
+{
+  auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);
+  LOG(INFO) << "ServiceDiscovery initialized" << endl;
 }
 
 } // namespace o2::quality_control::checker
