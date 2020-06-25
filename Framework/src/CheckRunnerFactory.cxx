@@ -40,7 +40,7 @@ DataProcessorSpec CheckRunnerFactory::create(Check check, std::string configurat
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
                                     Options{},
-                                    std::vector<std::string>{},
+                                    {},
                                     std::vector<DataProcessorLabel>{} };
 
   return newCheckRunner;
