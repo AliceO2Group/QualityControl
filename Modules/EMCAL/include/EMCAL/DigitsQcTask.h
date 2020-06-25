@@ -8,6 +8,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include <array>
+#include <TProfile2D.h>
 
 class TH1;
 class TH2;
@@ -51,11 +52,13 @@ class DigitsQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  std::array<TH2*, 2> mDigitAmplitude;      ///< Digit amplitude
-  std::array<TH2*, 2> mDigitTime;           ///< Digit time
-  TH1* mDigitAmplitudeEMCAL = nullptr;      ///< Digit amplitude in EMCAL
-  TH1* mDigitAmplitudeDCAL = nullptr;       ///< Digit amplitude in DCAL
-  o2::emcal::Geometry* mGeometry = nullptr; ///< EMCAL geometry
+  std::array<TH2*, 2> mDigitAmplitude;        ///< Digit amplitude
+  std::array<TH2*, 2> mDigitTime;             ///< Digit time
+  TH2* mDigitOccupancy = nullptr;             ///< Digit occupancy EMCAL and DCAL
+  TProfile2D* mIntegratedOccupancy = nullptr; ///< Digit integrated occupancy
+  TH1* mDigitAmplitudeEMCAL = nullptr;        ///< Digit amplitude in EMCAL
+  TH1* mDigitAmplitudeDCAL = nullptr;         ///< Digit amplitude in DCAL
+  o2::emcal::Geometry* mGeometry = nullptr;   ///< EMCAL geometry
 };
 
 } // namespace emcal
