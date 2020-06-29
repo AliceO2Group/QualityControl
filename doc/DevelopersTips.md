@@ -92,13 +92,16 @@ Related issues : https://alice.its.cern.ch/jira/browse/QC-224
 
 ### Service Discovery (Online mode)
 
-Service discovery (Online mode) is used to list currently published objects by running QC tasks. It uses Consul to store:
+Service discovery (Online mode) is used to list currently published objects by running QC tasks and checkers. It uses Consul to store:
  - List of running QC tasks that respond to health check, known as "services" in Consul
  - List of published object by each QC task ("service"), knows as "tags" of a "service" in Consul
+ - List of published Quality Objects by each CheckRunner. 
 
 Both lists are updated from within QC task using [Service Discovery C++ API](#Service-Discovery-C++-API-and-Consul-HTTP-API):
 - `register` - when a tasks starts
 - `deregister` - when tasks ends
+
+If the "health check" is failing, make sure the ports 7777 (Tasks) and 7778 (CheckRuners) are open.
 
 #### Register (and health check)
 When a QC task starts, it register its presence in Consul by calling [register endpoit of Consul HTTP API](https://www.consul.io/api/agent/service.html#register-service). The request needs the following fields:
