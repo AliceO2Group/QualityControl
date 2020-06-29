@@ -171,7 +171,7 @@ CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
 
 CheckRunner::~CheckRunner()
 {
-  if(mServiceDiscovery != nullptr) {
+  if (mServiceDiscovery != nullptr) {
     mServiceDiscovery->deregister();
   }
 }
@@ -324,7 +324,7 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
 
 void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObjects)
 {
-  if(mServiceDiscovery == nullptr) {
+  if (mServiceDiscovery == nullptr) {
     return;
   }
 
@@ -335,7 +335,7 @@ void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObject
     mListAllQOPaths.insert(qo->getPath());
   }
   // if nothing was inserted, no need to update
-  if(mListAllQOPaths.size() == formerNumberQOsNames) {
+  if (mListAllQOPaths.size() == formerNumberQOsNames) {
     return;
   }
 
@@ -383,7 +383,7 @@ void CheckRunner::initMonitoring()
 void CheckRunner::initServiceDiscovery()
 {
   auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
-  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort+1); // we try to avoid colliding with the TaskRunner
+  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
   LOG(INFO) << "ServiceDiscovery initialized";
 }
