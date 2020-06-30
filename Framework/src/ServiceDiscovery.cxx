@@ -91,13 +91,13 @@ void ServiceDiscovery::_register(const std::string& objects)
   boost::property_tree::json_parser::write_json(ss, pt);
 
   send("/v1/agent/service/register", ss.str());
-  QcInfoLogger::GetInstance() << "Registration to ServiceDiscovery" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "Registration to ServiceDiscovery: " << objects << ENDM;
 }
 
 void ServiceDiscovery::deregister()
 {
   send("/v1/agent/service/deregister/" + mId, "");
-  QcInfoLogger::GetInstance() << "Deregistration from ServiceDiscovery" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info) << "Deregistration from ServiceDiscovery" << ENDM;
 }
 
 void ServiceDiscovery::runHealthServer(unsigned int port)
@@ -124,7 +124,7 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
     }
   } catch (std::exception& e) {
     mThreadRunning = false;
-    ILOG(Error) << e.what() << ENDM;
+    ILOG(Error) << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
   }
 }
 

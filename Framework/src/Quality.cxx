@@ -42,7 +42,7 @@ namespace o2::quality_control::core
 
   std::ostream& operator<<(std::ostream& out, const Quality& q) // output
   {
-    out << "Quality: " << q.getName() << " (level " << q.getLevel() << ")\n";
+    out << "Quality: " << q.getName() << " (level " << q.getLevel() << ")";
     return out;
   }
 

@@ -34,6 +34,7 @@ class ServiceDiscovery
  public:
   /// Sets up CURL and health check
   /// \param url 		Consul URL
+  /// \param name		Service name
   /// \param id 		Unique instance ID
   /// \param healthEndpoint	Local endpoint that is then used for health checks
   ///				(default value it set to  <hostname>:7777)
@@ -49,6 +50,18 @@ class ServiceDiscovery
   /// Deregisters service
   void deregister();
 
+  static inline std::string GetDefaultUrl() ///< Provides default health check URL
+  {
+    return GetDefaultUrl(DefaultHealthPort);
+  }
+
+  static inline std::string GetDefaultUrl(size_t port) ///< Provides default health check URL
+  {
+    return boost::asio::ip::host_name() + ":" + std::to_string(port);
+  }
+
+  static constexpr size_t DefaultHealthPort = 7777; ///< Health check default port
+
  private:
   /// Custom deleter of CURL object
   static void deleteCurl(CURL* curl);
@@ -62,18 +75,15 @@ class ServiceDiscovery
   std::string mHealthEndpoint;      ///< hostname and port of health check endpoint
   std::thread mHealthThread;        ///< Health check thread
   std::atomic<bool> mThreadRunning; ///< Health check thread running flag
-  CURL* initCurl();                 ///< Initializes CURL
+
+  /// Initializes CURL
+  CURL* initCurl();
 
   /// Sends PUT request
   void send(const std::string& path, std::string&& request);
 
   /// Health check thread loop
   void runHealthServer(unsigned int port);
-
-  static inline std::string GetDefaultUrl() ///< Provides default health check URL
-  {
-    return boost::asio::ip::host_name() + ":" + std::to_string(7777);
-  }
 };
 
 } // namespace o2::quality_control::core
