@@ -328,8 +328,13 @@ void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObject
     return;
   }
 
-  // insert into the list of paths the QOs' paths.
-  // TODO it seems unoptimal to do it all the time. After a while, aren't we sure that we have run all the checks ?
+  // Insert into the list of paths the QOs' paths.
+  // The list of paths cannot be computed during initialization and is therefore updated here.
+  // It cannot be done in the init because of the case when the policy OnEachSeparately is used with a
+  // data source specifying "all" MOs. As a consequence we have to check the QOs we actually receive.
+  // A possible optimization would be to collect the list of QOs for all checks where it is possible (i.e.
+  // all but OnEachSeparately with "All" MOs). If we can get all of them, then no need to update the list
+  // after initialization. Otherwise, we set the list we know in init and then add to it as we go.
   size_t formerNumberQOsNames = mListAllQOPaths.size();
   for (const auto& qo : qualityObjects) {
     mListAllQOPaths.insert(qo->getPath());
