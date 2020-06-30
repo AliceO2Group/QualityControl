@@ -1,6 +1,9 @@
 # ---- Library ----
 
-add_library(QcITSRawTask src/ITSRawTask.cxx)
+add_library(QcITSRawTask
+            src/ITSRawTask.cxx
+            src/TrendingTaskITS.cxx
+            src/TrendingTaskConfigITS.cxx)
 
 target_sources(QcITSRawTask PRIVATE)
 
@@ -12,7 +15,7 @@ target_include_directories(
 
 include_directories(${O2_ROOT}/include/GPU)
 
-target_link_libraries(QcITSRawTask PUBLIC QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction)
+target_link_libraries(QcITSRawTask PUBLIC QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist)
 
 install(TARGETS QcITSRawTask
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -23,6 +26,7 @@ install(TARGETS QcITSRawTask
 
 add_root_dictionary(QcITSRawTask
                     HEADERS include/ITS/ITSRawTask.h
+                            include/ITS/TrendingTaskITS.h
                     LINKDEF include/ITS/LinkDef.h
                     BASENAME QcITSRawTask)
 
@@ -39,13 +43,19 @@ install(
 
 # ---- Executables ----
 
-set(EXE_SRCS src/runITS.cxx)
+set(EXE_SRCS
+    src/runITS.cxx
+    src/runPostProcessingITS.cxx)
 
-set(EXE_NAMES o2-qc-run-its)
+set(EXE_NAMES
+    o2-qc-run-its
+    o2-qc-run-postprocessing-its)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
-set(EXE_OLD_NAMES qcRunITS)
+set(EXE_OLD_NAMES
+    qcRunITS
+    qcRunPostProcessingITS)
 
 list(LENGTH EXE_SRCS count)
 math(EXPR count "${count}-1")
@@ -54,7 +64,7 @@ foreach(i RANGE ${count})
   list(GET EXE_NAMES ${i} name)
   list(GET EXE_OLD_NAMES ${i} oldname)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE QualityControl CURL::libcurl O2::ITSQCDataReaderWorkflow O2::DetectorsBase)
+  target_link_libraries(${name} PRIVATE QualityControl CURL::libcurl O2::ITSQCDataReaderWorkflow O2::DetectorsBase ROOT::Tree)
   install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
 
@@ -65,7 +75,10 @@ install(
 
 # ---- Extra scripts ----
 
-install(FILES its.json DESTINATION etc)
+install(FILES
+        its.json
+        itsQCTrending.json
+        DESTINATION etc)
 
 get_property(dirs
              DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
