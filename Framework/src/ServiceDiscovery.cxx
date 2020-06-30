@@ -91,7 +91,7 @@ void ServiceDiscovery::_register(const std::string& objects)
   boost::property_tree::json_parser::write_json(ss, pt);
 
   send("/v1/agent/service/register", ss.str());
-  ILOG(Info) << "Registration to ServiceDiscovery : " << objects << ENDM;
+  ILOG(Info) << "Registration to ServiceDiscovery: " << objects << ENDM;
 }
 
 void ServiceDiscovery::deregister()
