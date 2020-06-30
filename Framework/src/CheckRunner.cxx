@@ -31,6 +31,7 @@
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/TaskRunner.h"
+#include "QualityControl/ServiceDiscovery.h"
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -40,7 +41,6 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
-using namespace std;
 
 const auto current_diagnostic = boost::current_exception_diagnostic_information;
 

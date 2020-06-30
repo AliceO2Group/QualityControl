@@ -37,7 +37,11 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Check.h"
-#include "QualityControl/ServiceDiscovery.h"
+
+namespace o2::quality_control::core
+{
+class ServiceDiscovery;
+}
 
 namespace o2::framework
 {

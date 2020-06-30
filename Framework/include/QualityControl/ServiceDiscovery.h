@@ -34,7 +34,7 @@ class ServiceDiscovery
  public:
   /// Sets up CURL and health check
   /// \param url 		Consul URL
-  /// \param name
+  /// \param name		Service name
   /// \param id 		Unique instance ID
   /// \param healthEndpoint	Local endpoint that is then used for health checks
   ///				(default value it set to  <hostname>:7777)
