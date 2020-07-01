@@ -21,11 +21,14 @@
 #include <RuntimeControlledObject.h>
 #include <boost/program_options.hpp>
 #include <Common/Timer.h>
+#include <boost/property_tree/ptree.hpp>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 using namespace AliceO2::Common;
 namespace bpo = boost::program_options;
+
+const std::string qcConfigurationKey = "qcConfiguration";
 
 class PostProcessingOCCStateMachine : public RuntimeControlledObject
 {
@@ -45,7 +48,8 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
 
     bool success = true;
     try {
-      mRunner->init(properties);
+      auto config = properties.count(qcConfigurationKey) > 0 ? properties.get_child(qcConfigurationKey) : properties;
+      mRunner->init(config);
     } catch (const std::exception& ex) {
       ILOG(Error) << "Exception caught: " << ex.what() << ENDM;
       success = false;
@@ -182,10 +186,11 @@ int main(int argc, const char* argv[])
 {
   try {
     bpo::options_description desc{ "Options" };
-    desc.add_options()                                                                                       //
-      ("help,h", "Help screen")                                                                              //
-      ("name", bpo::value<std::string>(), "Name of a post processing task to run")                           //
-      ("period", bpo::value<double>()->default_value(1.0), "Cycle period of checking triggers in seconds");
+    desc.add_options()                                                                                     //
+      ("help,h", "Help screen")                                                                            //
+      ("name", bpo::value<std::string>(), "Name of a post processing task to run")                         //
+      ("period", bpo::value<double>()->default_value(1.0), "Cycle period of checking triggers in seconds") //
+      ("control-port", bpo::value<int>()->default_value(0), "Control port");
 
     bpo::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -200,7 +205,7 @@ int main(int argc, const char* argv[])
     }
 
     PostProcessingOCCStateMachine stateMachine(vm["name"].as<std::string>(), vm["period"].as<double>());
-    OccInstance occ(&stateMachine);
+    OccInstance occ(&stateMachine, vm["control-port"].as<int>());
     occ.wait();
     return 0;
 

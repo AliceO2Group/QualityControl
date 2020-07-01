@@ -58,7 +58,6 @@ class Check
 
   QualityObjectsType check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
 
-  // Policy
   /**
    * \brief Change the revision.
    *

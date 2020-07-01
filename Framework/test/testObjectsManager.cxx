@@ -126,4 +126,27 @@ BOOST_AUTO_TEST_CASE(metadata_test)
   BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("content")->getMetadataMap().at("aaa"), "bbb");
 }
 
+BOOST_AUTO_TEST_CASE(drawOptions_test)
+{
+  TaskConfig config;
+  config.taskName = "test";
+  config.consulUrl = "http://consul-test.cern.ch:8500";
+  ObjectsManager objectsManager(config, true);
+
+  TH1F h("histo", "h", 100, 0, 99);
+  objectsManager.startPublishing(&h);
+
+  BOOST_CHECK_THROW(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDrawOptionsKey), out_of_range);
+  objectsManager.setDefaultDrawOptions(&h, "colz");
+  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDrawOptionsKey), "colz");
+  objectsManager.setDefaultDrawOptions("histo", "alp lego1");
+  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDrawOptionsKey), "alp lego1");
+
+  BOOST_CHECK_THROW(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDisplayHintsKey), out_of_range);
+  objectsManager.setDisplayHint(&h, "logx");
+  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDisplayHintsKey), "logx");
+  objectsManager.setDisplayHint("histo", "gridy logy");
+  BOOST_CHECK_EQUAL(objectsManager.getMonitorObject("histo")->getMetadataMap().at(ObjectsManager::gDisplayHintsKey), "gridy logy");
+}
+
 } // namespace o2::quality_control::core

@@ -32,6 +32,7 @@
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/TaskRunner.h"
+#include "QualityControl/ServiceDiscovery.h"
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -126,8 +127,6 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& che
   return outputs;
 }
 
-/// Members
-
 CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
   : mDeviceName(createCheckRunnerName(checks)),
     mChecks{ checks },
@@ -173,6 +172,9 @@ CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
 
 CheckRunner::~CheckRunner()
 {
+  if (mServiceDiscovery != nullptr) {
+    mServiceDiscovery->deregister();
+  }
 }
 
 void CheckRunner::init(framework::InitContext&)
@@ -180,6 +182,7 @@ void CheckRunner::init(framework::InitContext&)
   try {
     initDatabase();
     initMonitoring();
+    initServiceDiscovery();
     for (auto& check : mChecks) {
       check.init();
     }
@@ -342,6 +345,37 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
   }
 }
 
+void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObjects)
+{
+  if (mServiceDiscovery == nullptr) {
+    return;
+  }
+
+  // Insert into the list of paths the QOs' paths.
+  // The list of paths cannot be computed during initialization and is therefore updated here.
+  // It cannot be done in the init because of the case when the policy OnEachSeparately is used with a
+  // data source specifying "all" MOs. As a consequence we have to check the QOs we actually receive.
+  // A possible optimization would be to collect the list of QOs for all checks where it is possible (i.e.
+  // all but OnEachSeparately with "All" MOs). If we can get all of them, then no need to update the list
+  // after initialization. Otherwise, we set the list we know in init and then add to it as we go.
+  size_t formerNumberQOsNames = mListAllQOPaths.size();
+  for (const auto& qo : qualityObjects) {
+    mListAllQOPaths.insert(qo->getPath());
+  }
+  // if nothing was inserted, no need to update
+  if (mListAllQOPaths.size() == formerNumberQOsNames) {
+    return;
+  }
+
+  // prepare the string of comma separated objects and publish it
+  std::string objects;
+  for (auto path : mListAllQOPaths) {
+    objects += path + ",";
+  }
+  objects.pop_back(); // remove last comma
+  mServiceDiscovery->_register(objects);
+}
+
 void CheckRunner::updateRevision()
 {
   ++mGlobalRevision;
@@ -366,12 +400,20 @@ void CheckRunner::initDatabase()
 
 void CheckRunner::initMonitoring()
 {
-  std::string monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
+  auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
   mCollector = MonitoringFactory::Get(monitoringUrl);
   mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
   mTimer.reset(1000000); // 10 s.
+}
+
+void CheckRunner::initServiceDiscovery()
+{
+  auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
+  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
+  LOG(INFO) << "ServiceDiscovery initialized";
 }
 
 } // namespace o2::quality_control::checker

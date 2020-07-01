@@ -349,20 +349,8 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // Build tasksOutputMap based on active tasks in the config
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     if (taskConfig.get<bool>("active", true)) {
-      o2::framework::InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
-      tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
-    }
-  }
-
-  // For each external task prepare the InputSpec to be stored in tasksoutputMap
-  for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
-    if (taskConfig.get<bool>("active", true)) {
-      auto query = taskConfig.get<std::string>("query");
-      framework::Inputs inputs = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
-      o2::framework::InputSpec taskOutput = inputs.at(0); // only consider the first one if several.
-
-      string label = DataSpecUtils::label(taskOutput);
-      tasksOutputMap.insert({ label, taskOutput });
+      o2::framework::InputSpec checkInput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
+      tasksOutputMap.insert({ DataSpecUtils::label(checkInput), checkInput });
     }
   }
 
@@ -390,21 +378,23 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // For every Task output, find a Check to store the MOs in the database.
   // If none is found we create a sink device.
   for (auto& [label, inputSpec] : tasksOutputMap) { // for each task output
-    (void)inputSpec;                                // avoid warning
+    (void)inputSpec;
+    bool isStored = false;
     // Look for this task as input in the Checks' inputs, if we found it then we are done
     for (auto& [inputNames, checks] : checksMap) { // for each set of inputs
-      (void)checks;                                // avoid warning
+      (void)checks;
       if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
         storeVectorMap[inputNames].push_back(label);
         break;
       }
     }
-
-    // If there is no Check for a given task output, create a candidate for a sink device
-    InputNames singleEntry{ label };
-    // Init empty Check vector to appear in the next step
-    checksMap[singleEntry];
-    storeVectorMap[singleEntry].push_back(label);
+    if (!isStored) {
+      // If there is no Check for a given input, create a candidate for a sink device
+      InputNames singleEntry{ label };
+      // Init empty Check vector to appear in the next step
+      checksMap[singleEntry];
+      storeVectorMap[singleEntry].push_back(label);
+    }
   }
 
   // Create CheckRunners: 1 per set of inputs
