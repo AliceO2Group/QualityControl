@@ -114,16 +114,19 @@ void TrendingTaskITS::storePlots()
   int countplots = 0;
   int ilay = 0;
   for (const auto& plot : mConfig.plots) {
-    if(countplots>nStaves[ilay]-1) {countplots=0; ilay++;}
-    int colidx = countplots > 13 ? countplots-14 : countplots > 6 ? countplots-7 : countplots;
+    if (countplots > nStaves[ilay] - 1) {
+      countplots = 0;
+      ilay++;
+    }
+    int colidx = countplots > 13 ? countplots - 14 : countplots > 6 ? countplots - 7 : countplots;
     int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
-    int add = (plot.name.find("rms")!=std::string::npos) ? 1 : plot.name.find("dead")!=std::string::npos ? 2 : 0;
-    long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");//plot.option.c_str());
+    int add = (plot.name.find("rms") != std::string::npos) ? 1 : plot.name.find("dead") != std::string::npos ? 2 : 0;
+    long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff"); //plot.option.c_str());
     //post processing plot
-    TGraph *g = new TGraph(n,mTrend->GetV2(),mTrend->GetV1());
+    TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    double ymin = plot.name.find("rms")!=std::string::npos ? 0.: plot.name.find("dead")!=std::string::npos ? 1e-1 : 7.;
-    double ymax = plot.name.find("rms")!=std::string::npos ? 5.: plot.name.find("dead")!=std::string::npos ? 5e3 : 14.;
+    double ymin = plot.name.find("rms") != std::string::npos ? 0. : plot.name.find("dead") != std::string::npos ? 1e-1 : 7.;
+    double ymax = plot.name.find("rms") != std::string::npos ? 5. : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
     SetGraphNameAndAxes(g, plot.name, plot.title, "time", ytitles[add], ymin, ymax);
     ILOG(Info) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, mConfig.detectorName);
@@ -132,87 +135,90 @@ void TrendingTaskITS::storePlots()
 
     // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
     delete g;
-    if(plot.name.find("dead")!=std::string::npos) countplots++;
-  }//end loop on plots
+    if (plot.name.find("dead") != std::string::npos)
+      countplots++;
+  } //end loop on plots
 
   //
   // Create canvas with multiple trends - average threshold - 1 canvas per layer
   //
   ilay = 0;
   countplots = 0;
-  TCanvas* c[nLayers*nTrendsThr];
+  TCanvas* c[nLayers * nTrendsThr];
   TLegend* legstaves[nLayers];
-  for(int idx=0; idx<nLayers*nTrendsThr; idx++)//define canvases
-    c[idx] = new TCanvas(Form("threshold_%s_trends_L%d", trendnames[idx%nTrendsThr].c_str(), idx/nTrendsThr),Form("threshold_%s_trends_L%d", trendnames[idx%nTrendsThr].c_str(), idx/nTrendsThr));
+  for (int idx = 0; idx < nLayers * nTrendsThr; idx++) //define canvases
+    c[idx] = new TCanvas(Form("threshold_%s_trends_L%d", trendnames[idx % nTrendsThr].c_str(), idx / nTrendsThr), Form("threshold_%s_trends_L%d", trendnames[idx % nTrendsThr].c_str(), idx / nTrendsThr));
 
-  for(int ilay=0; ilay<nLayers; ilay++){//define legends
-    legstaves[ilay] = new TLegend(0.91,0.1,0.98,0.9);
-    legstaves[ilay] -> SetName(Form("legstaves_L%d",ilay));
+  for (int ilay = 0; ilay < nLayers; ilay++) { //define legends
+    legstaves[ilay] = new TLegend(0.91, 0.1, 0.98, 0.9);
+    legstaves[ilay]->SetName(Form("legstaves_L%d", ilay));
     SetLegendStyle(legstaves[ilay]);
     PrepareLegend(legstaves[ilay], ilay);
   }
-  ilay=0;
+  ilay = 0;
   for (const auto& plot : mConfig.plots) {
-    if(countplots>nStaves[ilay]-1) {
-      countplots=0;
+    if (countplots > nStaves[ilay] - 1) {
+      countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13 ? countplots-14 : countplots > 6 ? countplots-7 : countplots;
+    int colidx = countplots > 13 ? countplots - 14 : countplots > 6 ? countplots - 7 : countplots;
     int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
-    int add = (plot.name.find("rms")!=std::string::npos) ? 1 : plot.name.find("dead")!=std::string::npos ? 2 : 0;
+    int add = (plot.name.find("rms") != std::string::npos) ? 1 : plot.name.find("dead") != std::string::npos ? 2 : 0;
 
-    c[ilay*nTrendsThr+add]->cd();
-    c[ilay*nTrendsThr+add]->SetTickx();
-    c[ilay*nTrendsThr+add]->SetTicky();
-    if(plot.name.find("dead")!=std::string::npos) c[ilay*nTrendsThr+add]->SetLogy();
+    c[ilay * nTrendsThr + add]->cd();
+    c[ilay * nTrendsThr + add]->SetTickx();
+    c[ilay * nTrendsThr + add]->SetTicky();
+    if (plot.name.find("dead") != std::string::npos)
+      c[ilay * nTrendsThr + add]->SetLogy();
     long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");
     //post processing plot
-    TGraph *g = new TGraph(n,mTrend->GetV2(),mTrend->GetV1());
+    TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    double ymin = plot.name.find("rms")!=std::string::npos ? 0.: plot.name.find("dead")!=std::string::npos ? 1e-1 : 7.;
-    double ymax = plot.name.find("rms")!=std::string::npos ? 5.: plot.name.find("dead")!=std::string::npos ? 5e3 : 14.;
+    double ymin = plot.name.find("rms") != std::string::npos ? 0. : plot.name.find("dead") != std::string::npos ? 1e-1 : 7.;
+    double ymax = plot.name.find("rms") != std::string::npos ? 5. : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
     SetGraphNameAndAxes(g, plot.name, Form("L%d - %s trends", ilay, trendtitles[add].c_str()), "time", ytitles[add], ymin, ymax);
     ILOG(Info) << " Drawing " << plot.name << ENDM;
-    g->DrawClone(!countplots ? plot.option.c_str() : Form("%s same",plot.option.c_str()));
-    if(countplots==nStaves[ilay]-1) legstaves[ilay]->Draw("same");
-    if(plot.name.find("dead")!=std::string::npos) countplots++;
-  }//end loop on plots
-  for(int idx=0; idx<nLayers*nTrendsThr; idx++){
-    ILOG(Info) << " Saving canvas for layer "<<idx/nTrendsThr<<" to CCDB " << ENDM;
+    g->DrawClone(!countplots ? plot.option.c_str() : Form("%s same", plot.option.c_str()));
+    if (countplots == nStaves[ilay] - 1)
+      legstaves[ilay]->Draw("same");
+    if (plot.name.find("dead") != std::string::npos)
+      countplots++;
+  } //end loop on plots
+  for (int idx = 0; idx < nLayers * nTrendsThr; idx++) {
+    ILOG(Info) << " Saving canvas for layer " << idx / nTrendsThr << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName, mConfig.detectorName);
     mo->setIsOwner(false);
     mDatabase->storeMO(mo);
-    if(idx%nTrendsThr==nTrendsThr-1) delete legstaves[idx/nTrendsThr];
+    if (idx % nTrendsThr == nTrendsThr - 1)
+      delete legstaves[idx / nTrendsThr];
     delete c[idx];
   }
-
 }
 
-void TrendingTaskITS::SetLegendStyle(TLegend *leg)
+void TrendingTaskITS::SetLegendStyle(TLegend* leg)
 {
   leg->SetTextFont(42);
   leg->SetLineColor(kWhite);
   leg->SetFillColor(0);
 }
 
-void TrendingTaskITS::SetGraphStyle(TGraph *g, int col, int mkr)
+void TrendingTaskITS::SetGraphStyle(TGraph* g, int col, int mkr)
 {
   g->SetLineColor(col);
   g->SetMarkerStyle(mkr);
   g->SetMarkerColor(col);
 }
 
-void TrendingTaskITS::SetGraphNameAndAxes(TGraph *g, std::string name, std::string title, std::string xtitle, std::string ytitle, double ymin, double ymax)
+void TrendingTaskITS::SetGraphNameAndAxes(TGraph* g, std::string name, std::string title, std::string xtitle, std::string ytitle, double ymin, double ymax)
 {
   g->SetTitle(title.c_str());
   g->SetName(name.c_str());
 
-
   g->GetXaxis()->SetTitle(xtitle.c_str());
   g->GetYaxis()->SetTitle(ytitle.c_str());
-  g->GetYaxis()->SetRangeUser(ymin,ymax);
+  g->GetYaxis()->SetRangeUser(ymin, ymax);
 
-  if(xtitle.find("time")!=std::string::npos){
+  if (xtitle.find("time") != std::string::npos) {
     g->GetXaxis()->SetTimeDisplay(1);
     // It deals with highly congested dates labels
     g->GetXaxis()->SetNdivisions(505);
@@ -220,15 +226,15 @@ void TrendingTaskITS::SetGraphNameAndAxes(TGraph *g, std::string name, std::stri
     g->GetXaxis()->SetTimeOffset(0.0);
     g->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
   }
-
 }
 
-void TrendingTaskITS::PrepareLegend(TLegend *leg, int layer){
-  for(int istv = 0; istv<nStaves[layer]; istv++){
-    int colidx = istv > 13 ? istv-14 : istv > 6 ? istv-7 : istv;
+void TrendingTaskITS::PrepareLegend(TLegend* leg, int layer)
+{
+  for (int istv = 0; istv < nStaves[layer]; istv++) {
+    int colidx = istv > 13 ? istv - 14 : istv > 6 ? istv - 7 : istv;
     int mkridx = istv > 13 ? 2 : istv > 6 ? 1 : 0;
-    TGraph *gr = new TGraph();//dummy histo
+    TGraph* gr = new TGraph(); //dummy histo
     SetGraphStyle(gr, col[colidx], mkr[mkridx]);
-    leg->AddEntry(gr,Form("%02d",istv),"pl");
+    leg->AddEntry(gr, Form("%02d", istv), "pl");
   }
 }

@@ -27,7 +27,7 @@ void* THnSparseReductor::getBranchAddress()
 
 const char* THnSparseReductor::getBranchLeafList()
 {
-  return Form("mean[%i]/D:stddev[%i]:entries[%i]",nDim,nDim,nDim);
+  return Form("mean[%i]/D:stddev[%i]:entries[%i]", nDim, nDim, nDim);
 }
 
 void THnSparseReductor::update(TObject* obj)
@@ -36,15 +36,14 @@ void THnSparseReductor::update(TObject* obj)
   auto sparsehisto = dynamic_cast<THnSparse*>(obj);
   if (sparsehisto) {
     Int_t dim = sparsehisto->GetNdimensions();
-    for(int i=0; i<nDim; i++){
-      if(i<dim){
-        TH1D *hproj = (TH1D*)sparsehisto->Projection(i);
+    for (int i = 0; i < nDim; i++) {
+      if (i < dim) {
+        TH1D* hproj = (TH1D*)sparsehisto->Projection(i);
         mStats.entries[i] = hproj->GetEntries();
         mStats.mean[i] = hproj->GetMean();
         mStats.stddev[i] = hproj->GetStdDev();
         delete hproj;
-      }
-      else {
+      } else {
         mStats.entries[i] = -1;
         mStats.mean[i] = -1;
         mStats.stddev[i] = -1;

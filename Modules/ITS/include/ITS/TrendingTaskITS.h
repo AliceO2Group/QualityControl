@@ -57,11 +57,10 @@ class TrendingTaskITS : public PostProcessingInterface
   void finalize(Trigger, framework::ServiceRegistry&) override;
 
   //other functions (mainly style)
-  void SetLegendStyle(TLegend *leg);
-  void SetGraphStyle(TGraph *g, int col, int mkr);
-  void SetGraphNameAndAxes(TGraph *g, std::string name, std::string title, std::string xtitle, std::string ytitle, double ymin, double ymax);
-  void PrepareLegend(TLegend *leg, int layer);
-
+  void SetLegendStyle(TLegend* leg);
+  void SetGraphStyle(TGraph* g, int col, int mkr);
+  void SetGraphNameAndAxes(TGraph* g, std::string name, std::string title, std::string xtitle, std::string ytitle, double ymin, double ymax);
+  void PrepareLegend(TLegend* leg, int layer);
 
  private:
   struct MetaData {
@@ -81,14 +80,14 @@ class TrendingTaskITS : public PostProcessingInterface
 
   /*int col[10] = {TColor::GetColor("#ff3300"), TColor::GetColor("#ec6e0a"), TColor::GetColor("#daaa14"), TColor::GetColor("#c7e51e"), TColor::GetColor("#85dd69"),
                TColor::GetColor("#42d6b4"), TColor::GetColor("#00ceff"), TColor::GetColor("#009adf"), TColor::GetColor("#0067c0"), TColor::GetColor("#0033a1")};*/
-  const int col[7] = {1, 2, 3, 4, 5, 6, 7};
-  const int mkr[3] = {8, 29, 34};
+  const int col[7] = { 1, 2, 3, 4, 5, 6, 7 };
+  const int mkr[3] = { 8, 29, 34 };
   static constexpr int nLayers = 3;
   static constexpr int nTrendsThr = 3;
-  const int nStaves[nLayers] = {12, 16, 20};
-  const std::string trendtitles[nTrendsThr] = {"Threshold mean","Threshold rms","Dead pixel"};
-  const std::string trendnames[nTrendsThr] = {"mean","rms","deadpix"};
-  const std::string ytitles[nTrendsThr] = {"Threshold mean (DAC)","Threshold rms (DAC)","# Dead Pixels"};
+  const int nStaves[nLayers] = { 12, 16, 20 };
+  const std::string trendtitles[nTrendsThr] = { "Threshold mean", "Threshold rms", "Dead pixel" };
+  const std::string trendnames[nTrendsThr] = { "mean", "rms", "deadpix" };
+  const std::string ytitles[nTrendsThr] = { "Threshold mean (DAC)", "Threshold rms (DAC)", "# Dead Pixels" };
 };
 
 } // namespace o2::quality_control::postprocessing

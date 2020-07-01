@@ -37,8 +37,8 @@ class THnSparseReductor : public quality_control::postprocessing::Reductor
  private:
   static constexpr int nDim = 5;
   struct {
-    Double_t mean[nDim];// mean of each axis (up to 5 axes)
-    Double_t stddev[nDim];// stddev of each axis (up to 5 axes)
+    Double_t mean[nDim];   // mean of each axis (up to 5 axes)
+    Double_t stddev[nDim]; // stddev of each axis (up to 5 axes)
     Double_t entries[nDim];
   } mStats;
 };
