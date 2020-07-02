@@ -18,16 +18,14 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
-#include "RootClassFactory.h"
-#include <Configuration/ConfigurationInterface.h>
-
+#include "../../../Framework/src/RootClassFactory.h"
 #include <TCanvas.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
-void TrendingTaskITS::configure(std::string name, o2::configuration::ConfigurationInterface& config)
+void TrendingTaskITS::configure(std::string name, const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfigITS(name, config);
 }
@@ -144,12 +142,12 @@ void TrendingTaskITS::storePlots()
   //
   ilay = 0;
   countplots = 0;
-  TCanvas* c[nLayers * nTrendsThr];
-  TLegend* legstaves[nLayers];
-  for (int idx = 0; idx < nLayers * nTrendsThr; idx++) //define canvases
-    c[idx] = new TCanvas(Form("threshold_%s_trends_L%d", trendnames[idx % nTrendsThr].c_str(), idx / nTrendsThr), Form("threshold_%s_trends_L%d", trendnames[idx % nTrendsThr].c_str(), idx / nTrendsThr));
+  TCanvas* c[NLAYERS * NTRENDSTHR];
+  TLegend* legstaves[NLAYERS];
+  for (int idx = 0; idx < NLAYERS * NTRENDSTHR; idx++) //define canvases
+    c[idx] = new TCanvas(Form("threshold_%s_trends_L%d", trendnames[idx % NTRENDSTHR].c_str(), idx / NTRENDSTHR), Form("threshold_%s_trends_L%d", trendnames[idx % NTRENDSTHR].c_str(), idx / NTRENDSTHR));
 
-  for (int ilay = 0; ilay < nLayers; ilay++) { //define legends
+  for (int ilay = 0; ilay < NLAYERS; ilay++) { //define legends
     legstaves[ilay] = new TLegend(0.91, 0.1, 0.98, 0.9);
     legstaves[ilay]->SetName(Form("legstaves_L%d", ilay));
     SetLegendStyle(legstaves[ilay]);
@@ -165,11 +163,11 @@ void TrendingTaskITS::storePlots()
     int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
     int add = (plot.name.find("rms") != std::string::npos) ? 1 : plot.name.find("dead") != std::string::npos ? 2 : 0;
 
-    c[ilay * nTrendsThr + add]->cd();
-    c[ilay * nTrendsThr + add]->SetTickx();
-    c[ilay * nTrendsThr + add]->SetTicky();
+    c[ilay * NTRENDSTHR + add]->cd();
+    c[ilay * NTRENDSTHR + add]->SetTickx();
+    c[ilay * NTRENDSTHR + add]->SetTicky();
     if (plot.name.find("dead") != std::string::npos)
-      c[ilay * nTrendsThr + add]->SetLogy();
+      c[ilay * NTRENDSTHR + add]->SetLogy();
     long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");
     //post processing plot
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
@@ -184,13 +182,13 @@ void TrendingTaskITS::storePlots()
     if (plot.name.find("dead") != std::string::npos)
       countplots++;
   } //end loop on plots
-  for (int idx = 0; idx < nLayers * nTrendsThr; idx++) {
-    ILOG(Info) << " Saving canvas for layer " << idx / nTrendsThr << " to CCDB " << ENDM;
+  for (int idx = 0; idx < NLAYERS * NTRENDSTHR; idx++) {
+    ILOG(Info) << " Saving canvas for layer " << idx / NTRENDSTHR << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName, mConfig.detectorName);
     mo->setIsOwner(false);
     mDatabase->storeMO(mo);
-    if (idx % nTrendsThr == nTrendsThr - 1)
-      delete legstaves[idx / nTrendsThr];
+    if (idx % NTRENDSTHR == NTRENDSTHR - 1)
+      delete legstaves[idx / NTRENDSTHR];
     delete c[idx];
   }
 }

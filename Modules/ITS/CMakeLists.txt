@@ -1,5 +1,6 @@
 # ---- Library ----
 
+
 add_library(QcITSRawTask
             src/ITSRawTask.cxx
             src/TrendingTaskITS.cxx
@@ -44,18 +45,15 @@ install(
 # ---- Executables ----
 
 set(EXE_SRCS
-    src/runITS.cxx
-    src/runPostProcessingITS.cxx)
+    src/runITS.cxx)
 
 set(EXE_NAMES
-    o2-qc-run-its
-    o2-qc-run-postprocessing-its)
+    o2-qc-run-its)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
 set(EXE_OLD_NAMES
-    qcRunITS
-    qcRunPostProcessingITS)
+    qcRunITS)
 
 list(LENGTH EXE_SRCS count)
 math(EXPR count "${count}-1")

@@ -51,7 +51,7 @@ class TrendingTaskITS : public PostProcessingInterface
   TrendingTaskITS() = default;
   ~TrendingTaskITS() override = default;
 
-  void configure(std::string name, o2::configuration::ConfigurationInterface& config) override;
+  void configure(std::string name, const boost::property_tree::ptree& config) override;
   void initialize(Trigger, framework::ServiceRegistry&) override;
   void update(Trigger, framework::ServiceRegistry&) override;
   void finalize(Trigger, framework::ServiceRegistry&) override;
@@ -82,12 +82,12 @@ class TrendingTaskITS : public PostProcessingInterface
                TColor::GetColor("#42d6b4"), TColor::GetColor("#00ceff"), TColor::GetColor("#009adf"), TColor::GetColor("#0067c0"), TColor::GetColor("#0033a1")};*/
   const int col[7] = { 1, 2, 3, 4, 5, 6, 7 };
   const int mkr[3] = { 8, 29, 34 };
-  static constexpr int nLayers = 3;
-  static constexpr int nTrendsThr = 3;
-  const int nStaves[nLayers] = { 12, 16, 20 };
-  const std::string trendtitles[nTrendsThr] = { "Threshold mean", "Threshold rms", "Dead pixel" };
-  const std::string trendnames[nTrendsThr] = { "mean", "rms", "deadpix" };
-  const std::string ytitles[nTrendsThr] = { "Threshold mean (DAC)", "Threshold rms (DAC)", "# Dead Pixels" };
+  static constexpr int NLAYERS = 3;
+  static constexpr int NTRENDSTHR = 3;
+  const int nStaves[NLAYERS] = { 12, 16, 20 };
+  const std::string trendtitles[NTRENDSTHR] = { "Threshold mean", "Threshold rms", "Dead pixel" };
+  const std::string trendnames[NTRENDSTHR] = { "mean", "rms", "deadpix" };
+  const std::string ytitles[NTRENDSTHR] = { "Threshold mean (DAC)", "Threshold rms (DAC)", "# Dead Pixels" };
 };
 
 } // namespace o2::quality_control::postprocessing

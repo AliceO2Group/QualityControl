@@ -14,17 +14,17 @@
 ///
 
 #include "ITS/TrendingTaskConfigITS.h"
-#include <Configuration/ConfigurationInterface.h>
+#include <boost/property_tree/ptree.hpp>
 
 using boost::property_tree::ptree;
 
 namespace o2::quality_control::postprocessing
 {
 
-TrendingTaskConfigITS::TrendingTaskConfigITS(std::string name, configuration::ConfigurationInterface& config)
+TrendingTaskConfigITS::TrendingTaskConfigITS(std::string name, const boost::property_tree::ptree& config)
   : PostProcessingConfig(name, config)
 {
-  for (const auto& plotConfig : config.getRecursive("qc.postprocessing." + name + ".plots")) {
+  for (const auto& plotConfig : config.get_child("qc.postprocessing." + name + ".plots")) {
     if (const auto& sourceNames = plotConfig.second.get_child_optional("names"); sourceNames.has_value()) {
       const auto& sourceVarexps = plotConfig.second.get_child_optional("varexp"); //take all varexps
       const auto& sourceTitles = plotConfig.second.get_child_optional("title");   //take all titles
@@ -45,7 +45,7 @@ TrendingTaskConfigITS::TrendingTaskConfigITS(std::string name, configuration::Co
       }
     }
   }
-  for (const auto& dataSourceConfig : config.getRecursive("qc.postprocessing." + name + ".dataSources")) {
+  for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSources")) {
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
       const auto& sourceTypes = dataSourceConfig.second.get_child_optional("types");             //take all types
       const auto& sourcePaths = dataSourceConfig.second.get_child_optional("paths");             //take all paths

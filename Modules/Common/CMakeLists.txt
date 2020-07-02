@@ -6,7 +6,6 @@ configure_file("include/Common/Version.h.in"
 
 # ---- Library ----
 
-
 add_library(QcCommon)
 
 target_sources(QcCommon

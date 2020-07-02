@@ -20,10 +20,10 @@
 namespace o2::quality_control_modules::common
 {
 
-/// \brief A Reductor which obtains the most popular characteristics of TH1.
+/// \brief A Reductor which obtains the most popular characteristics of THnSparse.
 ///
-/// A Reductor which obtains the most popular characteristics of TH1.
-/// It produces a branch in the format: "mean/D:stddev:entries"
+/// A Reductor which obtains the most popular characteristics of THnSparse.
+/// It produces a branch in the format: "mean[NDIM]/D:stddev[NDIM]:entries[NDIM]"
 class THnSparseReductor : public quality_control::postprocessing::Reductor
 {
  public:
@@ -35,14 +35,14 @@ class THnSparseReductor : public quality_control::postprocessing::Reductor
   void update(TObject* obj) override;
 
  private:
-  static constexpr int nDim = 5;
+  static constexpr int NDIM = 5;
   struct {
-    Double_t mean[nDim];   // mean of each axis (up to 5 axes)
-    Double_t stddev[nDim]; // stddev of each axis (up to 5 axes)
-    Double_t entries[nDim];
+    Double_t mean[NDIM];   // mean of each axis (up to 5 axes)
+    Double_t stddev[NDIM]; // stddev of each axis (up to 5 axes)
+    Double_t entries[NDIM];
   } mStats;
 };
 
 } // namespace o2::quality_control_modules::common
 
-#endif //QUALITYCONTROL_TH1REDUCTOR_H
+#endif //QUALITYCONTROL_THNSPARSEREDUCTOR_H
