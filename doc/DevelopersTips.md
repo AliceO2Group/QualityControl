@@ -112,3 +112,15 @@ When a QC task starts, it register its presence in Consul by calling [register e
 
 #### Deregister
 In order to deregister a service [`deregister/:Id` endpoint of Consul HTTP API](https://www.consul.io/api/agent/service.html#deregister-service) needs to be called. It does not need any additional parameters.
+
+### QCG and QC integration tests 
+
+What are the QC integration tests in the FLP Pipeline doing?
+
+- They pretend to be one of us when doing a test for an FLP release.
+- Start a QC environment
+- Opening QCG and check existence of certain objects in offline & online mode and that when you click on them they open a plot
+- Stop/Destroy that env
+
+Those object names are configurable from Ansible so that we do not have to release a new QCG rpm if we need to update the objects we check. So, if you know something will change 
+modify the following file: https://gitlab.cern.ch/AliceO2Group/system-configuration/-/blob/dev/ansible/roles/flp-deployment-checks/templates/qcg-test-config.js.j2
