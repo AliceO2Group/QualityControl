@@ -377,8 +377,10 @@ install(FILES example-default.json
               alfa.json
               dataDump.json
               basic.json
+              basic-external-histo.json
               basic-no-sampling.json
               advanced.json
+              advanced-external-histo.json
               multiNode.json
               readout.json
               readout-no-sampling.json

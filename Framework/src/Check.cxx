@@ -20,6 +20,7 @@
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
+#include <Framework/DataDescriptorQueryBuilder.h>
 // QC
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/InputUtils.h"
@@ -92,15 +93,21 @@ void Check::initConfig(std::string checkName)
   mNumberOfTaskSources = 0;
   for (const auto& [_key, dataSource] : checkConfig.get_child("dataSource")) {
     (void)_key;
-    if (dataSource.get<std::string>("type") == "Task") {
+    if (dataSource.get<std::string>("type") == "Task" || dataSource.get<std::string>("type") == "ExternalTask") {
       auto taskName = dataSource.get<std::string>("name");
       mNumberOfTaskSources++;
-      mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
 
-      /*
-       * Subscribe on predefined MOs.
-       * If "MOs" are not set or "MOs" is set to "all", the check function will be triggered whenever a new MO appears.
-       */
+      if (dataSource.get<std::string>("type") == "Task") {
+        mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
+      } else if (dataSource.get<std::string>("type") == "ExternalTask") {
+        auto query = config->getString("qc.externalTasks." + taskName + ".query").get();
+        framework::Inputs input = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
+        mInputs.insert(mInputs.end(), std::make_move_iterator(input.begin()),
+                       std::make_move_iterator(input.end()));
+      }
+
+      // Subscribe on predefined MOs.
+      // If "MOs" are not set or "MOs" is set to "all", the check function will be triggered whenever a new MO appears.
       if (dataSource.count("MOs") == 0 || dataSource.get<std::string>("MOs") == "all") {
         // fixme: this is a dirty fix. Policies should be refactored, so this check won't be needed.
         if (mCheckConfig.policyType != "OnEachSeparately") {

@@ -31,7 +31,7 @@ namespace o2::quality_control::core
 framework::DataProcessorSpec getHistoProducerSpec(size_t subspec, size_t nbHistograms, bool noTobjArray)
 {
   return DataProcessorSpec{
-    "producer" + std::to_string(subspec),
+    "histoProducer-" + std::to_string(subspec),
     Inputs{},
     Outputs{
       { { "out" }, "TST", "HISTO", static_cast<SubSpec>(subspec) } },

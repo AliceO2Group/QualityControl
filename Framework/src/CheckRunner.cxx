@@ -12,6 +12,7 @@
 /// \file   CheckRunner.cxx
 /// \author Barthelemy von Haller
 /// \author Piotr Konopka
+/// \author Rafal Pacholek
 ///
 
 #include "QualityControl/CheckRunner.h"
@@ -41,12 +42,12 @@ using namespace o2::configuration;
 using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
+using namespace std;
 
 const auto current_diagnostic = boost::current_exception_diagnostic_information;
 
 namespace o2::quality_control::checker
 {
-// Static functions
 // fixme: this is not actually used. collectOutputs() is used instead.
 o2::header::DataDescription CheckRunner::createCheckRunnerDataDescription(const std::string taskName)
 {
@@ -195,38 +196,7 @@ void CheckRunner::init(framework::InitContext&)
 
 void CheckRunner::run(framework::ProcessingContext& ctx)
 {
-  mMonitorObjectStoreVector.clear();
-
-  for (const auto& input : mInputs) {
-    auto dataRef = ctx.inputs().get(input.binding.c_str());
-    if (dataRef.header != nullptr && dataRef.payload != nullptr) {
-      auto moArray = ctx.inputs().get<TObjArray*>(input.binding.c_str());
-      mLogger << "Device " << mDeviceName
-              << " received " << moArray->GetEntries()
-              << " MonitorObjects from " << input.binding
-              << ENDM;
-
-      // Check if this CheckRunner stores this input
-      bool store = mInputStoreSet.count(DataSpecUtils::label(input)) > 0;
-
-      for (const auto tObject : *moArray) {
-        std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
-
-        if (mo) {
-          update(mo);
-          mTotalNumberObjectsReceived++;
-
-          // Add monitor object to store later, after possible beautification
-          if (store) {
-            mMonitorObjectStoreVector.push_back(mo);
-          }
-
-        } else {
-          mLogger << AliceO2::InfoLogger::InfoLogger::Error << "The MO is null, probably a TObject could not be casted into an MO" << ENDM;
-        }
-      }
-    }
-  }
+  prepareCacheData(ctx.inputs());
 
   auto qualityObjects = check(mMonitorObjects);
 
@@ -235,23 +205,76 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
   send(qualityObjects, ctx.outputs());
 
-  updateServiceDiscovery(qualityObjects);
   updateRevision();
 
-  // monitoring
-  if (timer.isTimeout()) {
-    timer.reset(1000000); // 10 s.
+  sendPeriodicMonitoring();
+}
+
+void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
+{
+  mMonitorObjectStoreVector.clear();
+
+  for (const auto& input : mInputs) {
+    auto dataRef = inputRecord.get(input.binding.c_str());
+    if (dataRef.header != nullptr && dataRef.payload != nullptr) {
+
+      // We don't know what we receive, so we test for an array and then try a tobject.
+      // If we received a tobject, it gets encapsulated in the tobjarray.
+      shared_ptr<const TObjArray> array = nullptr;
+      shared_ptr<const TObject> tobj = inputRecord.get<TObject*>(input.binding.c_str());
+      // if the object has not been found, it will raise an exception that we just let go.
+      if (tobj->InheritsFrom("TObjArray")) {
+        array = dynamic_pointer_cast<const TObjArray>(tobj);
+        mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
+                << " received an array with " << array->GetEntries()
+                << " entries from " << input.binding << ENDM;
+      } else {
+        // it is just a TObject not embedded in a TObjArray. We build a TObjArray for it.
+        auto* newArray = new TObjArray();    // we cannot use `array` to add an object as it is const
+        TObject* newTObject = tobj->Clone(); // we need a copy to avoid that it gets deleted behind our back.
+        newArray->Add(newTObject);
+        array.reset(newArray); // now that the array is ready we can adopt it.
+        mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
+                << " received a tobject named " << tobj->GetName()
+                << " from " << input.binding << ENDM;
+      }
+
+      // for each item of the array, check whether it is a MonitorObject. If not, create one and encapsulate.
+      // Then, store the MonitorObject in the various maps and vectors we will use later.
+      bool store = mInputStoreSet.count(DataSpecUtils::label(input)) > 0; // Check if this CheckRunner stores this input
+      for (const auto tObject : *array) {
+        std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
+
+        if (mo == nullptr) {
+          mLogger << AliceO2::InfoLogger::InfoLogger::Info << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
+          mLogger << AliceO2::InfoLogger::InfoLogger::Info << "    Creating an ad hoc MO." << ENDM;
+          header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
+          mo = std::make_shared<MonitorObject>(tObject, input.binding, origin.str);
+        }
+
+        if (mo) {
+          mMonitorObjects[mo->getFullName()] = mo;
+          mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
+          mTotalNumberObjectsReceived++;
+
+          if (store) { // Monitor Object will be stored later, after possible beautification
+            mMonitorObjectStoreVector.push_back(mo);
+          }
+        }
+      }
+    }
+  }
+}
+
+void CheckRunner::sendPeriodicMonitoring()
+{
+  if (mTimer.isTimeout()) {
+    mTimer.reset(1000000); // 10 s.
     mCollector->send({ mTotalNumberObjectsReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
     mCollector->send({ mTotalNumberCheckExecuted, "qc_checks_executed" }, DerivedMetricMode::RATE);
     mCollector->send({ mTotalNumberQOStored, "qc_qo_stored" }, DerivedMetricMode::RATE);
     mCollector->send({ mTotalNumberMOStored, "qc_mo_stored" }, DerivedMetricMode::RATE);
   }
-}
-
-void CheckRunner::update(std::shared_ptr<MonitorObject> mo)
-{
-  mMonitorObjects[mo->getFullName()] = mo;
-  mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
 }
 
 QualityObjectsType CheckRunner::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
@@ -382,7 +405,7 @@ void CheckRunner::initMonitoring()
   mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
-  timer.reset(1000000); // 10 s.
+  mTimer.reset(1000000); // 10 s.
 }
 
 void CheckRunner::initServiceDiscovery()

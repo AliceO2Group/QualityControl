@@ -29,6 +29,7 @@
 #include <Framework/ExternalFairMQDeviceProxy.h>
 #include <Mergers/MergerInfrastructureBuilder.h>
 #include <Mergers/MergerBuilder.h>
+#include <Framework/DataDescriptorQueryBuilder.h>
 
 #include <algorithm>
 
@@ -340,7 +341,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   typedef std::vector<std::string> InputNames;
   typedef std::vector<Check> Checks;
   std::map<std::string, o2::framework::InputSpec> tasksOutputMap; // all active tasks' output, as inputs, keyed by their label
-  std::map<InputNames, Checks> checksMap;                         // all the Checks defined in the config mapped from their sorted inputNames
+  std::map<InputNames, Checks> checksMap;                         // all the Checks defined in the config mapped keyed by their sorted inputNames
   std::map<InputNames, InputNames> storeVectorMap;
 
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
@@ -384,7 +385,6 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
       (void)checks;
       if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
         storeVectorMap[inputNames].push_back(label);
-        isStored = true;
         break;
       }
     }
@@ -401,16 +401,16 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   CheckRunnerFactory checkRunnerFactory;
   for (auto& [inputNames, checks] : checksMap) {
     //Logging
-    QcInfoLogger::GetInstance() << ">> Inputs (" << inputNames.size() << "): ";
+    ILOG(Info) << ">> Inputs (" << inputNames.size() << "): ";
     for (auto& name : inputNames)
-      QcInfoLogger::GetInstance() << name << " ";
-    QcInfoLogger::GetInstance() << " checks (" << checks.size() << "): ";
+      ILOG(Info) << name << " ";
+    ILOG(Info) << " checks (" << checks.size() << "): ";
     for (auto& check : checks)
-      QcInfoLogger::GetInstance() << check.getName() << " ";
-    QcInfoLogger::GetInstance() << " stores (" << storeVectorMap[inputNames].size() << "): ";
+      ILOG(Info) << check.getName() << " ";
+    ILOG(Info) << " stores (" << storeVectorMap[inputNames].size() << "): ";
     for (auto& input : storeVectorMap[inputNames])
-      QcInfoLogger::GetInstance() << input << " ";
-    QcInfoLogger::GetInstance() << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Info) << input << " ";
+    ILOG(Info) << ENDM;
 
     if (!checks.empty()) { // Create a CheckRunner for the grouped checks
       workflow.emplace_back(checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));

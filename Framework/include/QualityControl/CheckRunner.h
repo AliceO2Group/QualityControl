@@ -153,13 +153,6 @@ class CheckRunner : public framework::Task
   void send(QualityObjectsType& qualityObjects, framework::DataAllocator& allocator);
 
   /**
-   * \brief Update cached monitor object with new one.
-   *
-   * \param mo The MonitorObject to be updated
-   */
-  void update(std::shared_ptr<MonitorObject> mo);
-
-  /**
    * \brief Collect input specs from Checks
    *
    * \param checks List of all checks
@@ -192,6 +185,21 @@ class CheckRunner : public framework::Task
    */
   static std::size_t hash(std::string input_string);
 
+  /**
+   * \brief Massage/Prepare data from the Context and store it in the cache.
+   * When data is received it can be 1. a TObjArray filled with MonitorObjects,
+   * 2. a TObjArray filled with TObjects or 3. a TObject. The two latter happen
+   * in case an external device is sending the data.
+   * This method first transform the data in order to have a TObjArray of MonitorObjects.
+   * It then stores these objects in the cache.
+   * @param ctx
+   */
+  void prepareCacheData(framework::InputRecord& inputRecord);
+  /**
+   * Send metrics to the monitoring system if the time has come.
+   */
+  void sendPeriodicMonitoring();
+
   // General state
   std::string mDeviceName;
   std::vector<Check> mChecks;
@@ -220,7 +228,7 @@ class CheckRunner : public framework::Task
   int mTotalNumberCheckExecuted;
   int mTotalNumberQOStored;
   int mTotalNumberMOStored;
-  AliceO2::Common::Timer timer;
+  AliceO2::Common::Timer mTimer;
 };
 
 } // namespace o2::quality_control::checker
