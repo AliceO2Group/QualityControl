@@ -14,33 +14,39 @@
 ///
 
 #include "ITS/TrendingTaskITS.h"
-#include "QualityControl/QcInfoLogger.h"
+#include "../../../Framework/src/RootClassFactory.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
-#include "../../../Framework/src/RootClassFactory.h"
 #include <TCanvas.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
-void TrendingTaskITS::configure(std::string name, const boost::property_tree::ptree& config)
+void TrendingTaskITS::configure(std::string name,
+                                const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfigITS(name, config);
 }
 
-void TrendingTaskITS::initialize(Trigger, framework::ServiceRegistry& services)
+void TrendingTaskITS::initialize(Trigger,
+                                 framework::ServiceRegistry& services)
 {
   // Preparing data structure of TTree
-  mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we continue trending. maybe do it optionally?
+  mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we
+                                      // continue trending. maybe do it
+                                      // optionally?
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   mTrend->Branch("meta", &mMetaData, "runNumber/I");
   mTrend->Branch("time", &mTime);
 
   for (const auto& source : mConfig.dataSources) {
-    std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(source.moduleName, source.reductorName));
-    mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
+    std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(
+      source.moduleName, source.reductorName));
+    mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(),
+                   reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
 
@@ -48,7 +54,7 @@ void TrendingTaskITS::initialize(Trigger, framework::ServiceRegistry& services)
   mDatabase = &services.get<repository::DatabaseInterface>();
 }
 
-//todo: see if OptimizeBaskets() indeed helps after some time
+// todo: see if OptimizeBaskets() indeed helps after some time
 void TrendingTaskITS::update(Trigger, framework::ServiceRegistry&)
 {
   trendValues();
@@ -67,25 +73,30 @@ void TrendingTaskITS::storeTrend()
 {
   ILOG(Info) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
-  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), mConfig.detectorName);
+  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(),
+                                                  mConfig.detectorName);
   mo->setIsOwner(false);
   mDatabase->storeMO(mo);
 }
 
 void TrendingTaskITS::trendValues()
 {
-  // We use current date and time. This for planned processing (not history). We still might need to use the objects
-  // timestamps in the end, but this would become ambiguous if there is more than one data source.
+  // We use current date and time. This for planned processing (not history). We
+  // still might need to use the objects
+  // timestamps in the end, but this would become ambiguous if there is more
+  // than one data source.
   mTime = TDatime().Convert();
-  // todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not
+  // todo get run number when it is available. consider putting it inside
+  // monitor object's metadata (this might be not
   //  enough if we trend across runs).
   mMetaData.runNumber = -1;
 
   for (auto& dataSource : mConfig.dataSources) {
 
-    // todo: make it agnostic to MOs, QOs or other objects. Let the reductor cast to whatever it needs.
+    // todo: make it agnostic to MOs, QOs or other objects. Let the reductor
+    // cast to whatever it needs.
     if (dataSource.type == "repository") {
-      //auto mo = mDatabase->retrieveMO(dataSource.path, dataSource.name);
+      // auto mo = mDatabase->retrieveMO(dataSource.path, dataSource.name);
       auto mo = mDatabase->retrieveMO(dataSource.path, "");
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
@@ -105,9 +116,10 @@ void TrendingTaskITS::trendValues()
 
 void TrendingTaskITS::storePlots()
 {
-  ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
+  ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots."
+             << ENDM;
   //
-  //Create and save trends for each stave
+  // Create and save trends for each stave
   //
   int countplots = 0;
   int ilay = 0;
@@ -116,26 +128,37 @@ void TrendingTaskITS::storePlots()
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13 ? countplots - 14 : countplots > 6 ? countplots - 7 : countplots;
+    int colidx = countplots > 13 ? countplots - 14
+                                 : countplots > 6 ? countplots - 7 : countplots;
     int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
-    int add = (plot.name.find("rms") != std::string::npos) ? 1 : plot.name.find("dead") != std::string::npos ? 2 : 0;
-    long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff"); //plot.option.c_str());
-    //post processing plot
+    int add = (plot.name.find("rms") != std::string::npos)
+                ? 1
+                : plot.name.find("dead") != std::string::npos ? 2 : 0;
+    long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(),
+                              "goff"); // plot.option.c_str());
+    // post processing plot
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    double ymin = plot.name.find("rms") != std::string::npos ? 0. : plot.name.find("dead") != std::string::npos ? 1e-1 : 7.;
-    double ymax = plot.name.find("rms") != std::string::npos ? 5. : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
-    SetGraphNameAndAxes(g, plot.name, plot.title, "time", ytitles[add], ymin, ymax);
+    double ymin = plot.name.find("rms") != std::string::npos
+                    ? 0.
+                    : plot.name.find("dead") != std::string::npos ? 1e-1 : 7.;
+    double ymax = plot.name.find("rms") != std::string::npos
+                    ? 5.
+                    : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
+    SetGraphNameAndAxes(g, plot.name, plot.title, "time", ytitles[add], ymin,
+                        ymax);
     ILOG(Info) << " Saving " << plot.name << " to CCDB " << ENDM;
-    auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, mConfig.detectorName);
+    auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName,
+                                              mConfig.detectorName);
     mo->setIsOwner(false);
     mDatabase->storeMO(mo);
 
-    // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
+    // It should delete everything inside. Confirmed by trying to delete histo
+    // after and getting a segfault.
     delete g;
     if (plot.name.find("dead") != std::string::npos)
       countplots++;
-  } //end loop on plots
+  } // end loop on plots
 
   //
   // Create canvas with multiple trends - average threshold - 1 canvas per layer
@@ -144,10 +167,14 @@ void TrendingTaskITS::storePlots()
   countplots = 0;
   TCanvas* c[NLAYERS * NTRENDSTHR];
   TLegend* legstaves[NLAYERS];
-  for (int idx = 0; idx < NLAYERS * NTRENDSTHR; idx++) //define canvases
-    c[idx] = new TCanvas(Form("threshold_%s_trends_L%d", trendnames[idx % NTRENDSTHR].c_str(), idx / NTRENDSTHR), Form("threshold_%s_trends_L%d", trendnames[idx % NTRENDSTHR].c_str(), idx / NTRENDSTHR));
+  for (int idx = 0; idx < NLAYERS * NTRENDSTHR; idx++) // define canvases
+    c[idx] = new TCanvas(
+      Form("threshold_%s_trends_L%d", trendnames[idx % NTRENDSTHR].c_str(),
+           idx / NTRENDSTHR),
+      Form("threshold_%s_trends_L%d", trendnames[idx % NTRENDSTHR].c_str(),
+           idx / NTRENDSTHR));
 
-  for (int ilay = 0; ilay < NLAYERS; ilay++) { //define legends
+  for (int ilay = 0; ilay < NLAYERS; ilay++) { // define legends
     legstaves[ilay] = new TLegend(0.91, 0.1, 0.98, 0.9);
     legstaves[ilay]->SetName(Form("legstaves_L%d", ilay));
     SetLegendStyle(legstaves[ilay]);
@@ -159,32 +186,45 @@ void TrendingTaskITS::storePlots()
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13 ? countplots - 14 : countplots > 6 ? countplots - 7 : countplots;
+    int colidx = countplots > 13 ? countplots - 14
+                                 : countplots > 6 ? countplots - 7 : countplots;
     int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
-    int add = (plot.name.find("rms") != std::string::npos) ? 1 : plot.name.find("dead") != std::string::npos ? 2 : 0;
+    int add = (plot.name.find("rms") != std::string::npos)
+                ? 1
+                : plot.name.find("dead") != std::string::npos ? 2 : 0;
 
     c[ilay * NTRENDSTHR + add]->cd();
     c[ilay * NTRENDSTHR + add]->SetTickx();
     c[ilay * NTRENDSTHR + add]->SetTicky();
     if (plot.name.find("dead") != std::string::npos)
       c[ilay * NTRENDSTHR + add]->SetLogy();
-    long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");
-    //post processing plot
+    long int n =
+      mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");
+    // post processing plot
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    double ymin = plot.name.find("rms") != std::string::npos ? 0. : plot.name.find("dead") != std::string::npos ? 1e-1 : 7.;
-    double ymax = plot.name.find("rms") != std::string::npos ? 5. : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
-    SetGraphNameAndAxes(g, plot.name, Form("L%d - %s trends", ilay, trendtitles[add].c_str()), "time", ytitles[add], ymin, ymax);
+    double ymin = plot.name.find("rms") != std::string::npos
+                    ? 0.
+                    : plot.name.find("dead") != std::string::npos ? 1e-1 : 7.;
+    double ymax = plot.name.find("rms") != std::string::npos
+                    ? 5.
+                    : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
+    SetGraphNameAndAxes(g, plot.name,
+                        Form("L%d - %s trends", ilay, trendtitles[add].c_str()),
+                        "time", ytitles[add], ymin, ymax);
     ILOG(Info) << " Drawing " << plot.name << ENDM;
-    g->DrawClone(!countplots ? plot.option.c_str() : Form("%s same", plot.option.c_str()));
+    g->DrawClone(!countplots ? plot.option.c_str()
+                             : Form("%s same", plot.option.c_str()));
     if (countplots == nStaves[ilay] - 1)
       legstaves[ilay]->Draw("same");
     if (plot.name.find("dead") != std::string::npos)
       countplots++;
-  } //end loop on plots
+  } // end loop on plots
   for (int idx = 0; idx < NLAYERS * NTRENDSTHR; idx++) {
-    ILOG(Info) << " Saving canvas for layer " << idx / NTRENDSTHR << " to CCDB " << ENDM;
-    auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName, mConfig.detectorName);
+    ILOG(Info) << " Saving canvas for layer " << idx / NTRENDSTHR << " to CCDB "
+               << ENDM;
+    auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName,
+                                              mConfig.detectorName);
     mo->setIsOwner(false);
     mDatabase->storeMO(mo);
     if (idx % NTRENDSTHR == NTRENDSTHR - 1)
@@ -207,7 +247,10 @@ void TrendingTaskITS::SetGraphStyle(TGraph* g, int col, int mkr)
   g->SetMarkerColor(col);
 }
 
-void TrendingTaskITS::SetGraphNameAndAxes(TGraph* g, std::string name, std::string title, std::string xtitle, std::string ytitle, double ymin, double ymax)
+void TrendingTaskITS::SetGraphNameAndAxes(TGraph* g, std::string name,
+                                          std::string title, std::string xtitle,
+                                          std::string ytitle, double ymin,
+                                          double ymax)
 {
   g->SetTitle(title.c_str());
   g->SetName(name.c_str());
@@ -220,7 +263,8 @@ void TrendingTaskITS::SetGraphNameAndAxes(TGraph* g, std::string name, std::stri
     g->GetXaxis()->SetTimeDisplay(1);
     // It deals with highly congested dates labels
     g->GetXaxis()->SetNdivisions(505);
-    // Without this it would show dates in order of 2044-12-18 on the day of 2019-12-19.
+    // Without this it would show dates in order of 2044-12-18 on the day of
+    // 2019-12-19.
     g->GetXaxis()->SetTimeOffset(0.0);
     g->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
   }
@@ -231,7 +275,7 @@ void TrendingTaskITS::PrepareLegend(TLegend* leg, int layer)
   for (int istv = 0; istv < nStaves[layer]; istv++) {
     int colidx = istv > 13 ? istv - 14 : istv > 6 ? istv - 7 : istv;
     int mkridx = istv > 13 ? 2 : istv > 6 ? 1 : 0;
-    TGraph* gr = new TGraph(); //dummy histo
+    TGraph* gr = new TGraph(); // dummy histo
     SetGraphStyle(gr, col[colidx], mkr[mkridx]);
     leg->AddEntry(gr, Form("%02d", istv), "pl");
   }

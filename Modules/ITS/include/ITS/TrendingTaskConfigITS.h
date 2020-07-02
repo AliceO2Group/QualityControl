@@ -16,18 +16,19 @@
 #ifndef QUALITYCONTROL_TRENDINGTASKCONFIGITS_H
 #define QUALITYCONTROL_TRENDINGTASKCONFIGITS_H
 
-#include <vector>
-#include <string>
 #include "QualityControl/PostProcessingConfig.h"
+#include <string>
+#include <vector>
 
 namespace o2::quality_control::postprocessing
 {
 
-//todo pretty print
+// todo pretty print
 /// \brief  TrendingTask configuration structure
 struct TrendingTaskConfigITS : PostProcessingConfig {
   TrendingTaskConfigITS() = default;
-  TrendingTaskConfigITS(std::string name, const boost::property_tree::ptree& config);
+  TrendingTaskConfigITS(std::string name,
+                        const boost::property_tree::ptree& config);
   ~TrendingTaskConfigITS() = default;
 
   struct Plot {
@@ -52,4 +53,4 @@ struct TrendingTaskConfigITS : PostProcessingConfig {
 
 } // namespace o2::quality_control::postprocessing
 
-#endif //QUALITYCONTROL_TRENDINGTASKCONFIG_H
+#endif // QUALITYCONTROL_TRENDINGTASKCONFIG_H
