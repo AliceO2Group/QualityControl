@@ -4,4 +4,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class o2::quality_control_modules::its::ITSRawTask + ;
+#pragma link C++ class o2::quality_control::postprocessing::TrendingTaskITS + ;
+
 #endif
