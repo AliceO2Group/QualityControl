@@ -176,11 +176,11 @@ void* ITSOnlineTask::decodeThread(void* threadarg)
 
   my_data->errorsCount = { 0 };
   my_data->triggersCount = { 0 };
-  for (int ipos = 0; ipos < my_data->payloadMessage.size(); ipos++) { //loop for all payload received
+  for (int ipos = 0; ipos < (int)my_data->payloadMessage.size(); ipos++) { //loop for all payload received
     auto& rawErrorReader = reinterpret_cast<o2::itsmft::RawPixelReader<o2::itsmft::ChipMappingITS>&>(*(my_data->rawReader[ipos]));
     my_data->rawReader[ipos]->getRawBuffer().setPtr(my_data->payloadMessage[ipos]);
     my_data->rawReader[ipos]->getRawBuffer().setEnd(my_data->payloadMessage[ipos] + my_data->messageSize[ipos]);
-    while (my_data->chipDataBuffer = my_data->rawReader[ipos % 5]->getNextChipDataFromBuffer(my_data->chipsBuffer)) { //loop for payload buffer and decode trigger by trigger
+    while ((my_data->chipDataBuffer = my_data->rawReader[ipos % 5]->getNextChipDataFromBuffer(my_data->chipsBuffer))) { //loop for payload buffer and decode trigger by trigger
       const auto* ruInfo = rawErrorReader.getCurrRUDecodeData()->ruInfo;
       const auto& statRU = rawErrorReader.getRUDecodingStatSW(ruInfo->idSW);
 
@@ -201,7 +201,7 @@ void* ITSOnlineTask::decodeThread(void* threadarg)
           bool flag = true;
 
           //check if this pixel have be hit, if yes hitnumber++, if no change flag to false
-          for (int jpos = 0; jpos < my_data->hitPixelID[my_data->layerId[ipos]][sta][chip].size(); jpos++) {
+          for (int jpos = 0; jpos < (int)my_data->hitPixelID[my_data->layerId[ipos]][sta][chip].size(); jpos++) {
             if ((pixel.getCol() == my_data->hitPixelID[my_data->layerId[ipos]][sta][chip][jpos].first) and (pixel.getRow() == my_data->hitPixelID[my_data->layerId[ipos]][sta][chip][jpos].second)) {
               my_data->hitNumber[my_data->layerId[ipos]][sta][chip][jpos]++;
               flag = false;
@@ -223,7 +223,7 @@ void* ITSOnlineTask::decodeThread(void* threadarg)
   }
 
   //Fill the occupancy vs chip & stave plots
-  for (int ipos = 0; ipos < my_data->layerId.size(); ipos++) { //loop for layer received
+  for (int ipos = 0; ipos < (int)my_data->layerId.size(); ipos++) { //loop for layer received
     auto const decodestat = my_data->rawReader[ipos]->getDecodingStat();
     for (int ichip = 0; ichip < 9; ichip++) { //loop for chip
       if (my_data->hitNumberOfChip[my_data->layerId[ipos]][my_data->feeId[ipos]][ichip] == 0) {
@@ -328,10 +328,16 @@ void ITSOnlineTask::monitorData(o2::framework::ProcessingContext& ctx)
             continue;
           }
           pixelnumber += threadInfomation[ithread].hitPixelID[ilayer][istave][ichip].size();
-          int counter = 0;
-          for (auto&& iPixel : threadInfomation[ithread].hitPixelID[ilayer][istave][ichip]) {
+/*          for (auto&& iPixel : threadInfomation[ithread].hitPixelID[ilayer][istave][ichip]) {
             double pixelOccupancy = (double)threadInfomation[ithread].hitNumber[ilayer][istave][ichip][counter];
             counter++;
+            if (pixelOccupancy > 0) {
+              pixelOccupancy /= (double)(decodestat.nTriggersProcessed);
+              mOccupancyPlot[ilayer]->Fill(log10(pixelOccupancy));
+            }
+          }*/
+          for (int counter = 0; counter < (int)threadInfomation[ithread].hitPixelID[ilayer][istave][ichip].size(); counter++) {
+            double pixelOccupancy = (double)threadInfomation[ithread].hitNumber[ilayer][istave][ichip][counter];
             if (pixelOccupancy > 0) {
               pixelOccupancy /= (double)(decodestat.nTriggersProcessed);
               mOccupancyPlot[ilayer]->Fill(log10(pixelOccupancy));
