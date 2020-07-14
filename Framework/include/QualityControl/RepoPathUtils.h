@@ -25,6 +25,7 @@ class RepoPathUtils
 
   /**
    * Compute and return the path to the MonitorObject.
+   * Current algorithm does qc/<detectorCode>/<taskName>/<moName>
    * @param detectorCode
    * @param taskName
    * @param moName
@@ -39,6 +40,7 @@ class RepoPathUtils
 
   /**
    * Compute and return the path to the MonitorObject.
+   * Current algorithm does qc/<detectorCode>/<taskName>/<moName>
    * @param mo
    * @return
    */
@@ -48,6 +50,8 @@ class RepoPathUtils
 
   /**
    * Compute and return the path to the QualityObject.
+   * Current algorithm does qc/checks/<detectorCode>/<checkName>[/<moName>].
+   * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.
    * @param detectorCode
    * @param checkName
    * @param policyName
@@ -71,11 +75,12 @@ class RepoPathUtils
 
   /**
    * Compute and return the path to the QualityObject.
-   * @param qo
+   * Current algorithm does qc/checks/<detectorCode>/<checkName>[/<moName>].
+   * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.    * @param qo
    * @return
    */
   static std::string getQoPath(const QualityObject *qo) {
-    return getQoPath(qo->getDetectorName(), qo->getCheckName(), qo->getPolicyName(), qo->getMonitorOjbectsNames());
+    return getQoPath(qo->getDetectorName(), qo->getCheckName(), qo->getPolicyName(), qo->getMonitorObjectsNames());
   }
 };
 }

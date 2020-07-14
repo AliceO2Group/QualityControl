@@ -112,7 +112,7 @@ class QualityObject : public TObject
 
   const std::string& getPolicyName() const;
 
-  const std::vector<std::string> getMonitorOjbectsNames() const;
+  const std::vector<std::string> getMonitorObjectsNames() const;
 
  private:
   Quality mQuality;
