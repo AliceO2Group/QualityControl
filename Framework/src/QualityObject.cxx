@@ -89,8 +89,8 @@ QualityObject::QualityObject(
     std::string path;
     try {
       path = RepoPathUtils::getQoPath(this);
-//      path = RepoPathUtils::getQoPath(getDetectorName(), getCheckName(), mPolicyName, mMonitorObjectsNames);
-    } catch (FatalException &fe) {
+      //      path = RepoPathUtils::getQoPath(getDetectorName(), getCheckName(), mPolicyName, mMonitorObjectsNames);
+    } catch (FatalException& fe) {
       fe << errinfo_details("Only one MO should be assigned to one QO With the policy OnEachSeparatety"); // update error info
       throw;
     }

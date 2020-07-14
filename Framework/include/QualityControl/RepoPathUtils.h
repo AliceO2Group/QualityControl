@@ -44,7 +44,8 @@ class RepoPathUtils
    * @param mo
    * @return
    */
-  static std::string getMoPath(const MonitorObject *mo) {
+  static std::string getMoPath(const MonitorObject* mo)
+  {
     return getMoPath(mo->getDetectorName(), mo->getTaskName(), mo->getName());
   }
 
@@ -84,6 +85,6 @@ class RepoPathUtils
     return getQoPath(qo->getDetectorName(), qo->getCheckName(), qo->getPolicyName(), qo->getMonitorObjectsNames());
   }
 };
-}
+} // namespace o2::quality_control::core
 
 #endif // QC_REPOPATH_UTILS_H

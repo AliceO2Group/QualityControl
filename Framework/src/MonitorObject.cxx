@@ -99,7 +99,7 @@ void MonitorObject::addOrUpdateMetadata(std::string key, std::string value)
 std::string MonitorObject::getPath() const
 {
   return RepoPathUtils::getMoPath(this);
-//  return RepoPathUtils::getMoPath(getDetectorName(), getTaskName(), getName());
+  //  return RepoPathUtils::getMoPath(getDetectorName(), getTaskName(), getName());
 }
 
 } // namespace o2::quality_control::core

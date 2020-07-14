@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(qopath)
   BOOST_CHECK_EQUAL(path2, "qc/checks/DET/xyzCheck");
 
   // policy is OnEachSeparately
-  QualityObject qo3(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, {"objectABC"});
+  QualityObject qo3(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, { "objectABC" });
   string path3 = qo3.getPath();
   BOOST_CHECK_EQUAL(path3, "qc/checks/DET/xyzCheck/objectABC");
 
@@ -77,4 +77,3 @@ BOOST_AUTO_TEST_CASE(qopath)
   QualityObject qo4(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, {});
   BOOST_CHECK_EXCEPTION(qo4.getPath(), AliceO2::Common::FatalException, do_nothing);
 }
-
