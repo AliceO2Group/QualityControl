@@ -22,7 +22,6 @@ namespace o2::quality_control::core
 class RepoPathUtils
 {
  public:
-
   /**
    * Compute and return the path to the MonitorObject.
    * Current algorithm does qc/<detectorCode>/<taskName>/<moName>
@@ -33,7 +32,8 @@ class RepoPathUtils
    */
   static std::string getMoPath(const std::string& detectorCode,
                                const std::string& taskName,
-                               const std::string& moName) {
+                               const std::string& moName)
+  {
     std::string path = "qc/" + detectorCode + "/" + taskName + "/" + moName;
     return path;
   }
@@ -61,12 +61,12 @@ class RepoPathUtils
   static std::string getQoPath(const std::string& detectorCode,
                                const std::string& checkName,
                                const std::string& policyName = "",
-                               const std::vector<std::string> &monitorObjectsNames= std::vector<std::string>()) {
+                               const std::vector<std::string>& monitorObjectsNames = std::vector<std::string>())
+  {
     std::string path = "qc/checks/" + detectorCode + "/" + checkName;
     if (policyName == "OnEachSeparately") {
       if (monitorObjectsNames.empty()) {
-        BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() <<
-                              AliceO2::Common::errinfo_details("getQoPath: The vector of monitorObjectsNames is empty."));
+        BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details("getQoPath: The vector of monitorObjectsNames is empty."));
       }
       path += "/" + monitorObjectsNames[0];
     }
@@ -79,7 +79,8 @@ class RepoPathUtils
    * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.    * @param qo
    * @return
    */
-  static std::string getQoPath(const QualityObject *qo) {
+  static std::string getQoPath(const QualityObject* qo)
+  {
     return getQoPath(qo->getDetectorName(), qo->getCheckName(), qo->getPolicyName(), qo->getMonitorObjectsNames());
   }
 };

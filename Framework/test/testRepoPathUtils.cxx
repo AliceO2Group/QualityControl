@@ -48,10 +48,10 @@ BOOST_AUTO_TEST_CASE(qopath)
   BOOST_CHECK_EQUAL(path2, "qc/checks/DET/xyzCheck");
 
   // policy is OnEachSeparately
-  QualityObject qo3(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, {"objectABC"});
+  QualityObject qo3(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, { "objectABC" });
   string path3 = RepoPathUtils::getQoPath(&qo3);
   BOOST_CHECK_EQUAL(path3, "qc/checks/DET/xyzCheck/objectABC");
-  path2 = RepoPathUtils::getQoPath("DET", "xyzCheck", "OnEachSeparately", {"objectABC"});
+  path2 = RepoPathUtils::getQoPath("DET", "xyzCheck", "OnEachSeparately", { "objectABC" });
   BOOST_CHECK_EQUAL(path3, "qc/checks/DET/xyzCheck/objectABC");
 
   // policy is OnEachSeparately and the vector is empty
@@ -71,4 +71,3 @@ BOOST_AUTO_TEST_CASE(mopath)
   path = RepoPathUtils::getMoPath("DET", "task", "asdf");
   BOOST_CHECK_EQUAL(path, "qc/DET/task/asdf");
 }
-
