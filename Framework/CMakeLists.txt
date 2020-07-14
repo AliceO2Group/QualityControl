@@ -239,6 +239,7 @@ set(TEST_SRCS
     test/testCheckWorkflow.cxx
     test/testWorkflow.cxx
     test/testVersion.cxx
+    test/testRepoPathUtils.cxx
   )
 
 set(TEST_ARGS
@@ -266,6 +267,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
   )
 

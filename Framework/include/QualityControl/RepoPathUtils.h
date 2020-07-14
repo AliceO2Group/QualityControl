@@ -25,11 +25,47 @@ class RepoPathUtils
 
   /**
    * Compute and return the path to the MonitorObject.
+   * @param detectorCode
+   * @param taskName
+   * @param moName
+   * @return
+   */
+  static std::string getMoPath(const std::string& detectorCode,
+                               const std::string& taskName,
+                               const std::string& moName) {
+    std::string path = "qc/" + detectorCode + "/" + taskName + "/" + moName;
+    return path;
+  }
+
+  /**
+   * Compute and return the path to the MonitorObject.
    * @param mo
    * @return
    */
   static std::string getMoPath(const MonitorObject *mo) {
-    std::string path = "qc/" + mo->getDetectorName() + "/" + mo->getTaskName() + "/" + mo->getName();
+    return getMoPath(mo->getDetectorName(), mo->getTaskName(), mo->getName());
+  }
+
+  /**
+   * Compute and return the path to the QualityObject.
+   * @param detectorCode
+   * @param checkName
+   * @param policyName
+   * @param monitorObjectsNames
+   * @return
+   */
+  static std::string getQoPath(const std::string& detectorCode,
+                               const std::string& checkName,
+                               const std::string& policyName = "",
+                               const std::vector<std::string> &monitorObjectsNames= std::vector<std::string>()) {
+    std::string path = "qc/checks/" + detectorCode + "/" + checkName;
+    if (policyName == "OnEachSeparately") {
+      if (monitorObjectsNames.empty()) {
+        BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() <<
+                              AliceO2::Common::errinfo_details("getQoPath: The vector of monitorObjectsNames is empty."));
+      }
+      path += "/" + monitorObjectsNames[0];
+    }
     return path;
   }
 
@@ -39,16 +75,7 @@ class RepoPathUtils
    * @return
    */
   static std::string getQoPath(const QualityObject *qo) {
-    std::string path = "qc/checks/" + qo->getDetectorName() + "/" + qo->getCheckName();
-    if (qo->getPolicyName() == "OnEachSeparately") {
-      std::vector<std::string> monitorObjectsNames = qo->getMonitorOjbectsNames();
-      if (monitorObjectsNames.empty()) {
-        BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() <<
-                                                                AliceO2::Common::errinfo_details("getQoPath: The vector of monitorObjectsNames is empty."));
-      }
-      path += "/" + monitorObjectsNames[0];
-    }
-    return path;
+    return getQoPath(qo->getDetectorName(), qo->getCheckName(), qo->getPolicyName(), qo->getMonitorOjbectsNames());
   }
 };
 }
