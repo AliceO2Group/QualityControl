@@ -53,12 +53,14 @@ class QualityObject : public TObject
   /// Move assignment operator
   QualityObject& operator=(QualityObject&& other) /*noexcept*/ = default;
 
-  /// \brief Return the name of the encapsulated object (if any).
-  /// @return The name of the encapsulated object or "" if there is no object.
+  /// \brief Return the name of the check.
+  /// @return The name of the check.
+  /// @deprecated Prefer getCheckName()
   std::string getName() const { return mCheckName; };
 
-  /// \brief Overwrite the TObject's method just to avoid confusion.
-  /// @return The name of the encapsulated object or "" if there is no object.
+  /// \brief Return the name of the check.
+  /// @return The name of the check.
+  /// @deprecated Prefer getCheckName()
   const char* GetName() const override;
 
   ///
@@ -107,6 +109,10 @@ class QualityObject : public TObject
 
   void setQuality(const Quality& quality);
   const std::string& getCheckName() const;
+
+  const std::string& getPolicyName() const;
+
+  const std::vector<std::string> getMonitorOjbectsNames() const;
 
  private:
   Quality mQuality;
