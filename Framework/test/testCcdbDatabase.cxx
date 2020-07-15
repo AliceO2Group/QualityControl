@@ -236,6 +236,7 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   std::string pathQuarantine = RepoPathUtils::getMoPath(detector, task, "quarantine");
   std::string pathMetadata = RepoPathUtils::getMoPath(detector, task, "metadata");
   std::string pathQuality = RepoPathUtils::getQoPath(detector, "test-ccdb-check");
+  std::string pathQualityMetadata = RepoPathUtils::getQoPath(detector, "metadata");
 
   std::map<std::string, std::string> headers1;
   std::map<std::string, std::string> headers2;
@@ -260,7 +261,7 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(obj2a->getMetadataMap().at("my_meta"), "is_good");
 
   auto obj3 = f.backend->retrieveQO(pathQuality);
-  auto obj4 = f.backend->retrieveQO(pathMetadata);
+  auto obj4 = f.backend->retrieveQO(pathQualityMetadata);
   BOOST_CHECK_NE(obj3, nullptr);
   BOOST_CHECK_NE(obj4, nullptr);
   BOOST_CHECK(obj3->getMetadataMap().size() > 0);
