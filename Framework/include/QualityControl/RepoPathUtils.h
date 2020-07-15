@@ -8,6 +8,11 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+///
+/// \file   RepoPathUtils.h
+/// \author Barthelemy von Haller
+///
+
 #ifndef QC_REPOPATH_UTILS_H
 #define QC_REPOPATH_UTILS_H
 
@@ -28,7 +33,7 @@ class RepoPathUtils
    * @param detectorCode
    * @param taskName
    * @param moName
-   * @return
+   * @return the path to the MonitorObject
    */
   static std::string getMoPath(const std::string& detectorCode,
                                const std::string& taskName,
@@ -42,7 +47,7 @@ class RepoPathUtils
    * Compute and return the path to the MonitorObject.
    * Current algorithm does qc/<detectorCode>/<taskName>/<moName>
    * @param mo
-   * @return
+   * @return the path to the MonitorObject
    */
   static std::string getMoPath(const MonitorObject* mo)
   {
@@ -57,7 +62,7 @@ class RepoPathUtils
    * @param checkName
    * @param policyName
    * @param monitorObjectsNames
-   * @return
+   * @return the path to the QualityObject
    */
   static std::string getQoPath(const std::string& detectorCode,
                                const std::string& checkName,
@@ -78,7 +83,7 @@ class RepoPathUtils
    * Compute and return the path to the QualityObject.
    * Current algorithm does qc/checks/<detectorCode>/<checkName>[/<moName>].
    * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.    * @param qo
-   * @return
+   * @return the path to the QualityObject
    */
   static std::string getQoPath(const QualityObject* qo)
   {
