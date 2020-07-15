@@ -36,7 +36,6 @@ DigitsQcTask::~DigitsQcTask()
   if (mDigitAmplitudeDCAL)
     delete mDigitAmplitudeDCAL;
 }
-
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize DigitsQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -45,6 +44,7 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDigitAmplitude[1] = new TH2F("digitAmplitudeLG", "Digit Amplitude (Low gain)", 100, 0, 100, 20000, 0., 20000.);
 
   mDigitOccupancy = new TH2F("digitOccupancyEMC", "Digit Occupancy EMCAL", 96, -0.5, 95.5, 208, -0.5, 207.5);
+  mDigitOccupancyThr = new TH2F("digitOccupancyEMCwThr", "Digit Occupancy EMCAL with E>0.5 GeV/c", 96, -0.5, 95.5, 208, -0.5, 207.5);
 
   mIntegratedOccupancy = new TProfile2D("digitOccupancyInt", "Digit Occupancy Integrated", 96, -0.5, 95.5, 208, -0.5, 207.5);
   mIntegratedOccupancy->GetXaxis()->SetTitle("col");
@@ -56,17 +56,19 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mDigitAmplitudeEMCAL = new TH1F("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 100, 0., 100.);
   mDigitAmplitudeDCAL = new TH1F("digitAmplitudeDCAL", "Digit amplitude in DCAL", 100, 0., 100.);
+  mnumberEvents = new TH1F("NumberOfEvents", "Number Of Events", 1, 0.5, 1.5);
 
   //Puglishing histograms
   for (auto h : mDigitAmplitude)
     getObjectsManager()->startPublishing(h);
   for (auto h : mDigitTime)
     getObjectsManager()->startPublishing(h);
-
   getObjectsManager()->startPublishing(mDigitAmplitudeEMCAL);
   getObjectsManager()->startPublishing(mDigitAmplitudeDCAL);
   getObjectsManager()->startPublishing(mDigitOccupancy);
+  getObjectsManager()->startPublishing(mDigitOccupancyThr);
   getObjectsManager()->startPublishing(mIntegratedOccupancy);
+  getObjectsManager()->startPublishing(mnumberEvents);
 
   // initialize geometry
   if (!mGeometry)
@@ -102,11 +104,11 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto triggerrecords = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>("emcal-triggerecords");
 
   //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << AliceO2::InfoLogger::InfoLogger::endm;
-  int eventcouter = 0;
+  int eventcounter = 0;
   for (auto trg : triggerrecords) {
     if (!trg.getNumberOfObjects())
       continue;
-    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcouter << " has " << trg.getNumberOfObjects() << " digits" << QcInfoLogger::endm;
+    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits" << QcInfoLogger::endm;
     //gsl::span<const o2::emcal::Digit> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
     gsl::span<const o2::emcal::Cell> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
     for (auto digit : eventdigits) {
@@ -122,8 +124,12 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       try {
 
         auto [row, col] = mGeometry->GlobalRowColFromIndex(digit.getTower());
-        if (digit.getEnergy() > 0)
+        if (digit.getEnergy() > 0) {
           mDigitOccupancy->Fill(col, row);
+        }
+        if (digit.getEnergy() > mCellThreshold) {
+          mDigitOccupancyThr->Fill(col, row);
+        }
         mIntegratedOccupancy->Fill(col, row, digit.getEnergy());
 
         auto cellindices = mGeometry->GetCellIndex(digit.getTower());
@@ -136,7 +142,8 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         QcInfoLogger::GetInstance() << "Invalid cell ID: " << e.getCellID() << AliceO2::InfoLogger::InfoLogger::endm;
       };
     }
-    eventcouter++;
+    eventcounter++;
+    mnumberEvents->Fill(1);
   }
 }
 
@@ -159,8 +166,12 @@ void DigitsQcTask::reset()
     h->Reset();
   for (auto h : mDigitTime)
     h->Reset();
+
   mDigitAmplitudeEMCAL->Reset();
   mDigitAmplitudeDCAL->Reset();
+  mDigitOccupancy->Reset();
+  mDigitOccupancyThr->Reset();
+  mIntegratedOccupancy->Reset();
 }
 } // namespace emcal
 } // namespace quality_control_modules
