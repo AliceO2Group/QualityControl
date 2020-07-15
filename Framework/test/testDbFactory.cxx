@@ -29,6 +29,7 @@
 #include <QualityControl/DummyDatabase.h>
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/MonitorObject.h>
+#include <QualityControl/RepoPathUtils.h>
 #include <TH1F.h>
 
 using namespace std;
@@ -70,7 +71,7 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   ccdb->connect("ccdb-test.cern.ch:8080", "", "", "");
 
   // prepare stuff in the db
-  string prefixPath = "qc/TST/";
+  string prefixPath = "qc/TST/MO/";
   ccdb->truncate(prefixPath + "functional_test", "object1");
   ccdb->truncate(prefixPath + "functional_test", "object2");
   ccdb->truncate(prefixPath + "functional_test", "path/to/object3");
@@ -85,11 +86,11 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   ccdb->storeMO(mo3);
 
   // test getting list of tasks
-  std::vector<std::string> list = ccdb->getListing(prefixPath);
-  //  for (const auto& item : list) {
-  //    ILOG(Info) << "task : " << item << ENDM;
-  //  }
-  BOOST_CHECK(std::find(list.begin(), list.end(), prefixPath + "functional_test") != list.end());
+  std::vector<std::string> list = ccdb->getListing(prefixPath+"/functional_test");
+//    for (const auto& item : list) {
+//      ILOG(Info) << "task : " << item << ENDM;
+//    }
+  BOOST_CHECK(std::find(list.begin(), list.end(), RepoPathUtils::getMoPath(mo1.get())) != list.end());
 
   // test getting objects list from task
   auto objectNames = ccdb->getPublishedObjectNames(prefixPath + "functional_test");

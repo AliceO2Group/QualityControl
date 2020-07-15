@@ -61,17 +61,17 @@ BOOST_AUTO_TEST_CASE(qopath)
   // no policy
   QualityObject qo(Quality::Null, "xyzCheck", "DET");
   string path = qo.getPath();
-  BOOST_CHECK_EQUAL(path, "qc/checks/DET/xyzCheck");
+  BOOST_CHECK_EQUAL(path, "qc/DET/QO/xyzCheck");
 
   // a policy which is not OnEachSeparately
   QualityObject qo2(Quality::Null, "xyzCheck", "DET", "OnAnyNonZero");
   string path2 = qo2.getPath();
-  BOOST_CHECK_EQUAL(path2, "qc/checks/DET/xyzCheck");
+  BOOST_CHECK_EQUAL(path2, "qc/DET/QO/xyzCheck");
 
   // policy is OnEachSeparately
   QualityObject qo3(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, { "objectABC" });
   string path3 = qo3.getPath();
-  BOOST_CHECK_EQUAL(path3, "qc/checks/DET/xyzCheck/objectABC");
+  BOOST_CHECK_EQUAL(path3, "qc/DET/QO/xyzCheck/objectABC");
 
   // policy is OnEachSeparately and the vector is empty
   QualityObject qo4(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, {});

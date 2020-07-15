@@ -11,7 +11,7 @@
 ///
 /// \file   testCcdbDatabase.cxx
 /// \author Adam Wegrzynek
-/// \author Bartheley von Haller
+/// \author Barthelemy von Haller
 ///
 
 #include "QualityControl/DatabaseFactory.h"
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   std::cout << "[json retrieve]: " << path << std::endl;
   auto json = f.backend->retrieveJson(path, -1, f.metadata);
   cout << "json : " << json << endl;
-  auto json2 = f.backend->retrieveMOJson("qc/TST/" + task, object);
+  auto json2 = f.backend->retrieveMOJson("qc/TST/MO/" + task, object);
   cout << "json2 : " << json2 << endl;
 
   BOOST_CHECK(!json.empty());

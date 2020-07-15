@@ -36,23 +36,23 @@ BOOST_AUTO_TEST_CASE(qopath)
   // no policy
   QualityObject qo(Quality::Null, "xyzCheck", "DET");
   string path = RepoPathUtils::getQoPath(&qo);
-  BOOST_CHECK_EQUAL(path, "qc/checks/DET/xyzCheck");
+  BOOST_CHECK_EQUAL(path, "qc/DET/QO/xyzCheck");
   path = RepoPathUtils::getQoPath("DET", "xyzCheck");
-  BOOST_CHECK_EQUAL(path, "qc/checks/DET/xyzCheck");
+  BOOST_CHECK_EQUAL(path, "qc/DET/QO/xyzCheck");
 
   // a policy which is not OnEachSeparately
   QualityObject qo2(Quality::Null, "xyzCheck", "DET", "OnAnyNonZero");
   string path2 = RepoPathUtils::getQoPath(&qo2);
-  BOOST_CHECK_EQUAL(path2, "qc/checks/DET/xyzCheck");
+  BOOST_CHECK_EQUAL(path2, "qc/DET/QO/xyzCheck");
   path2 = RepoPathUtils::getQoPath("DET", "xyzCheck", "OnAnyNonZero");
-  BOOST_CHECK_EQUAL(path2, "qc/checks/DET/xyzCheck");
+  BOOST_CHECK_EQUAL(path2, "qc/DET/QO/xyzCheck");
 
   // policy is OnEachSeparately
   QualityObject qo3(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, { "objectABC" });
   string path3 = RepoPathUtils::getQoPath(&qo3);
-  BOOST_CHECK_EQUAL(path3, "qc/checks/DET/xyzCheck/objectABC");
+  BOOST_CHECK_EQUAL(path3, "qc/DET/QO/xyzCheck/objectABC");
   path2 = RepoPathUtils::getQoPath("DET", "xyzCheck", "OnEachSeparately", { "objectABC" });
-  BOOST_CHECK_EQUAL(path3, "qc/checks/DET/xyzCheck/objectABC");
+  BOOST_CHECK_EQUAL(path3, "qc/DET/QO/xyzCheck/objectABC");
 
   // policy is OnEachSeparately and the vector is empty
   QualityObject qo4(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, {});
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(mopath)
   o2::quality_control::core::MonitorObject obj(&h, "task");
   obj.setIsOwner(false);
   string path = RepoPathUtils::getMoPath(&obj);
-  BOOST_CHECK_EQUAL(path, "qc/DET/task/asdf");
+  BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
   path = RepoPathUtils::getMoPath("DET", "task", "asdf");
-  BOOST_CHECK_EQUAL(path, "qc/DET/task/asdf");
+  BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
 }
