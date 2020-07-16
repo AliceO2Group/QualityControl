@@ -82,7 +82,8 @@ class RepoPathUtils
   /**
    * Compute and return the path to the QualityObject.
    * Current algorithm does qc/checks/<detectorCode>/<checkName>[/<moName>].
-   * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.    * @param qo
+   * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.
+   * @param qo
    * @return the path to the QualityObject
    */
   static std::string getQoPath(const QualityObject* qo)

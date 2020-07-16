@@ -14,7 +14,6 @@
 /// \author Bartheley von Haller
 ///
 
-#include "QualityControl/DatabaseFactory.h"
 #include <unordered_map>
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -28,6 +27,7 @@
 #include <TH1F.h>
 #include "rapidjson/document.h"
 #include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/testUtils.h"
 
 namespace utf = boost::unit_test;
 
@@ -202,9 +202,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   std::string path = RepoPathUtils::getMoPath(detector, task, object);
   std::cout << "[json retrieve]: " << path << std::endl;
   auto json = f.backend->retrieveJson(path, -1, f.metadata);
-  cout << "json : " << json << endl;
   auto json2 = f.backend->retrieveMOJson("qc/TST/" + task, object);
-  cout << "json2 : " << json2 << endl;
 
   BOOST_CHECK(!json.empty());
   BOOST_CHECK_EQUAL(json, json2);
