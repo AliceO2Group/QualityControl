@@ -352,7 +352,7 @@ void TaskRunner::startOfActivity()
   mTimerTotalDurationActivity.reset();
   mTotalNumberObjectsPublished = 0;
 
-  Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
+  Activity activity(mRunNumber,
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
@@ -360,7 +360,7 @@ void TaskRunner::startOfActivity()
 
 void TaskRunner::endOfActivity()
 {
-  Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
+  Activity activity(mRunNumber,
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->endOfActivity(activity);
   mObjectsManager->removeAllFromServiceDiscovery();

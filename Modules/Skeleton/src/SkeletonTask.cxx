@@ -50,9 +50,9 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void SkeletonTask::startOfActivity(Activity& /*activity*/)
+void SkeletonTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info) << "startOfActivity : " << activity.mId << ENDM;
   mHistogram->Reset();
 }
 
