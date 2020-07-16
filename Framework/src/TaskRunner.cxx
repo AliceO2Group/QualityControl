@@ -80,7 +80,7 @@ void TaskRunner::init(InitContext& iCtx)
 
   // registering state machine callbacks
 //  string runNumber = iCtx.options().get<string>("runNUmber"); // --> inexistent key, fine
-  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &iCtx]() { start(iCtx); });
+  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &options = iCtx.options()]() { start(options); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
 
@@ -205,18 +205,15 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::start(InitContext& iCtx)
+void TaskRunner::start(const ConfigParamRegistry &options)
 {
-//  try {
-  string runNumber = iCtx.options().get<string>("runNUmber");  // -> crash
-
-//    mRunNumber = iCtx.options().get<int>("runNUmber");
-//    string runString = iCtx.options().get<string>("runNUmber");
-
-//  } catch (.../*std::invalid_argument &ia*/) {
-//    cout << "run number not found, using 0 instead" << endl;
-//  }
-//  cout << "run number : " << mRunNumber << endl;
+  try {
+    mRunNumber = options.get<int>("runNUmber");
+  } catch (std::invalid_argument &ia) {
+    cout << "run number not found, using 0 instead" << endl;
+    mRunNumber = 0;
+  }
+  cout << "run number : " << mRunNumber << endl;
 
   startOfActivity();
 

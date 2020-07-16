@@ -103,7 +103,7 @@ class TaskRunner : public framework::Task
 
  private:
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
-  void start(o2::framework::InitContext& iCtx);
+  void start(const framework::ConfigParamRegistry &options);
   /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
   void stop();
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
