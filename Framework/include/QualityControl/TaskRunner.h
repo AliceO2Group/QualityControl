@@ -126,6 +126,7 @@ class TaskRunner : public framework::Task
   std::shared_ptr<TaskInterface> mTask;
   bool mResetAfterPublish = false;
   std::shared_ptr<ObjectsManager> mObjectsManager;
+  int mRunNumber;
 
   std::string validateDetectorName(std::string name);
 

@@ -33,12 +33,15 @@ using namespace o2::utilities;
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
+//#include <Framework/RawDeviceService.h>
+#include <Framework/ConfigParamRegistry.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
 
 #include <string>
 #include <memory>
+#include <boost/property_tree/ini_parser.hpp>
 
 using namespace std;
 
@@ -56,6 +59,7 @@ using namespace AliceO2::Common;
 
 TaskRunner::TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id)
   : mDeviceName(createTaskRunnerIdString() + "-" + taskName),
+    mRunNumber(0),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
   // setup configuration
@@ -75,8 +79,7 @@ void TaskRunner::init(InitContext& iCtx)
   ILOG(Info) << "initializing TaskRunner" << ENDM;
 
   // registering state machine callbacks
-  cout << "init services : " << &iCtx.services() << endl;
-  string runNumber = iCtx.services().get<o2::framework::RawDeviceService>().device()->GetConfig()->GetProperty<string>("runNumber", "0");
+//  string runNumber = iCtx.options().get<string>("runNUmber"); // --> inexistent key, fine
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &iCtx]() { start(iCtx); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
@@ -204,7 +207,16 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 
 void TaskRunner::start(InitContext& iCtx)
 {
-  cout << "services : " << &iCtx.services() << endl;
+//  try {
+  string runNumber = iCtx.options().get<string>("runNUmber");  // -> crash
+
+//    mRunNumber = iCtx.options().get<int>("runNUmber");
+//    string runString = iCtx.options().get<string>("runNUmber");
+
+//  } catch (.../*std::invalid_argument &ia*/) {
+//    cout << "run number not found, using 0 instead" << endl;
+//  }
+//  cout << "run number : " << mRunNumber << endl;
 
   startOfActivity();
 
