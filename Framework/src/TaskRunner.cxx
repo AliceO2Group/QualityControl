@@ -75,7 +75,9 @@ void TaskRunner::init(InitContext& iCtx)
   ILOG(Info) << "initializing TaskRunner" << ENDM;
 
   // registering state machine callbacks
-  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this]() { start(); });
+  cout << "init services : " << &iCtx.services() << endl;
+  string runNumber = iCtx.services().get<o2::framework::RawDeviceService>().device()->GetConfig()->GetProperty<string>("runNumber", "0");
+  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &iCtx]() { start(iCtx); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
 
@@ -200,8 +202,10 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::start()
+void TaskRunner::start(InitContext& iCtx)
 {
+  cout << "services : " << &iCtx.services() << endl;
+
   startOfActivity();
 
   if (mNoMoreCycles) {
