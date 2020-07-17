@@ -32,7 +32,7 @@
                 "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "dataSamplingPolicy",
-                    "name": "datadistribution"
+                    "name": "RAWDATA"
                 },
                 "location": "remote"
             }
@@ -40,10 +40,10 @@
     },
     "dataSamplingPolicies": [
         {
-            "id": "datadistribution",
+            "id": "RAWDATA",
             "active": "true",
             "machines": [],
-            "query": "A:ITS/RAWDATA/6;B:ITS/RAWDATA/7;G:FLP/DISTSUBTIMEFRAME/0",
+            "query": "filter:ITS/RAWDATA/8202;filter:ITS/RAWDATA/8203;filter:ITS/RAWDATA/8204;filter:ITS/RAWDATA/8205;filter:ITS/RAWDATA/8206;G:FLP/DISTSUBTIMEFRAME/0",
             "samplingConditions": [
                 {
                     "condition": "random",

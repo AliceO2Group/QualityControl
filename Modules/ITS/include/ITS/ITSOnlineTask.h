@@ -21,7 +21,7 @@
 #include <ITSMFTReconstruction/ChipMappingITS.h>
 #include <ITSMFTReconstruction/PixelData.h>
 #include <ITSBase/GeometryTGeo.h>
-#include <ITSMFTReconstruction/RawPixelReader.h>
+#include <ITSMFTReconstruction/RawPixelDecoder.h>
 #include <TH2I.h>
 #include <THnSparse.h>
 #include <pthread.h>
@@ -45,38 +45,6 @@ namespace o2::quality_control_modules::its
 class ITSOnlineTask final : public TaskInterface
 {
   using ChipPixelData = o2::itsmft::ChipPixelData;
-  struct DecodeInfomation {                   //transfer variables to threads
-    static constexpr int NumberOfErrors = 17; //Error infomation
-    std::array<std::array<unsigned int, NumberOfErrors>, 5> errorsCount = { 0 };
-
-    static constexpr int NumberOfTrigger = 13; //Trigger infomation
-    std::array<unsigned int, NumberOfTrigger> triggersCount;
-
-    o2::its::GeometryTGeo* Geom; //Geometry infomation
-
-    int threadId;
-    std::vector<int> feeId;
-    std::vector<int> layerId;
-    std::vector<uint8_t*> payloadMessage; //vector of raw data pointer
-    std::vector<int> messageSize;         //vector of payload size
-
-    std::unique_ptr<o2::itsmft::RawPixelReader<o2::itsmft::ChipMappingITS>> rawReader[5]; //decoder
-    ChipPixelData* chipDataBuffer = nullptr;
-    std::vector<ChipPixelData> chipsBuffer;
-
-    //declare some plots pointer of decoding result, just include inner barrel
-    TH2I* hicHitMap[3][20]; //TODO: replaced by THnSparse
-    TH2D* chipStaveOccupancy[3];
-    //plots declare end
-
-    std::vector<std::pair<int, int>> hitPixelID[3][20][9]; //The ID of hit pixel
-    std::vector<int> hitNumber[3][20][9];                  //The number of hits in one pixel, corresponds to HitPixelID
-
-    int hitNumberOfChip[3][20][9] = { 0 }; //Hit number of chip
-    //int eventNumber[3][20][9] = { 0 };	//Actually it is not be used
-
-    pthread_mutex_t myMutex = PTHREAD_MUTEX_INITIALIZER; //mutex
-  };
 
  public:
   /// \brief Constructor
@@ -93,17 +61,16 @@ class ITSOnlineTask final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  void createDecoder();
   void createPlots();
 
-  static void* decodeThread(void* threadarg);
-
  private:
-  int timeFrameId = 0;
-  static constexpr int sThreadNumber = 2;
-  std::array<struct DecodeInfomation, sThreadNumber> threadInfomation; //information for thread
-                                                                       //included inputs: raw data, payloadsize
-                                                                       //	  output: plots
+  std::vector<std::pair<int, int>> mHitPixelID[3][20][9];
+  o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
+  ChipPixelData* mChipDataBuffer = nullptr;
+  std::vector<ChipPixelData> mChipsBuffer;
+  int mHitNumberOfChip[3][20][9] = { 0 };
+  int mTimeFrameId = 0;
+  uint32_t mTriggerTypeCount[13] = { 0 };
 
   int mNError = 17;
   int mNTrigger = 13;
