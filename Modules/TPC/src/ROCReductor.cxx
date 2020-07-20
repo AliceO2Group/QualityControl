@@ -59,28 +59,5 @@ void ROCReductor::update(TObject* obj)
     }   //if (wrappedCalDet)
   }     // if(obj)
 } // void ROCReductor::update(TObject* obj)
-/*
-void ROCReductor::update(o2::tpc::CalPad* pcalDet)
-{
-  if (pcalDet)
-  {
-   auto& calDet = *pcalDet;
-   for (size_t iROC = 0; iROC < calDet.getData().size(); ++iROC) 
-   {
-    auto& calArray = calDet.getCalArray(iROC);
-    auto& data = calArray.getData();
-
-    //Erase NAN
-    data.erase(std::remove_if(data.begin(), data.end(), [](const auto& value) { return std::isnan(value); }), data.end());
-
-    //statistics and filling
-    mCalPad.median[iROC] = TMath::Median(data.size(), data.data());
-    mCalPad.stddev[iROC] = TMath::StdDev(data.begin(), data.end());
-    mCalPad.mean[iROC] = TMath::Mean(data.begin(), data.end());  
-
-   } // for (size_t iROC = 0; iROC < calDet.getData().size(); ++iROC)
-  } // if(pcalDet)
-} //void ROCReductor::update(o2::tpc::CalPad* pcalDet)
-*/
 
 } // namespace o2::quality_control_modules::tpc

@@ -13,8 +13,8 @@
 // author Cindy Mordasini
 // author Marcel Lesch
 //
-#ifndef QUALITYCONTROL_ROCREDUCTOR_H
-#define QUALITYCONTROL_ROCREDUCTOR_H
+#ifndef QC_MODULE_TPC_ROCREDUCTOR_H
+#define QC_MODULE_TPC_ROCREDUCTOR_H
 
 #include "QualityControl/Reductor.h"
 #include "TPCBase/CalDet.h"
@@ -36,7 +36,6 @@ class ROCReductor : public quality_control::postprocessing::Reductor
   void* getBranchAddress() override;
   const char* getBranchLeafList() override;
   void update(TObject* obj) override;
-  //virtual void update(o2::tpc::CalPad* pcalDet);
 
  private:
   struct {
@@ -49,4 +48,4 @@ class ROCReductor : public quality_control::postprocessing::Reductor
 
 } // namespace o2::quality_control_modules::tpc
 
-#endif //QUALITYCONTROL_ROCREDUCTOR_H
+#endif //QC_MODULE_TPC_ROCREDUCTOR_H
