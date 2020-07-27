@@ -11,12 +11,15 @@
 ///
 /// \file   Counter.h
 /// \author Nicolo' Jacazio
+/// \since 24/03/2020
+/// \brief Utilities to count events and fill histograms at the end of the main processing loops
 ///
 
 #ifndef QC_MODULE_TOF_COUNTER_H
 #define QC_MODULE_TOF_COUNTER_H
 
 // #define ENABLE_COUNTER_DEBUG_MODE // Flag used to enable more printing and more debug
+// #define ENABLE_PRINT_HISTOGRAMS_MODE // Flag used to enable more printing and more debug
 
 // ROOT includes
 #include "TObject.h"
@@ -42,17 +45,17 @@ class Counter
   void Count(UInt_t v)
   {
     if (v > Tc::size) {
-      ILOG(Error) << "Incrementing counter too far! " << v << "/" << Size() << ENDM;
+      LOG(ERROR) << "Incrementing counter too far! " << v << "/" << Size();
     }
 #ifdef ENABLE_COUNTER_DEBUG_MODE
-    ILOG(Info) << "Incrementing " << v << "/" << Size() << " to " << counter[v] << ENDM;
+    LOG(INFO) << "Incrementing " << v << "/" << Size() << " to " << counter[v];
 #endif
     counter[v]++;
   }
   /// Function to reset counters
   void Reset()
   {
-    ILOG(Info) << "Resetting Counter" << ENDM;
+    LOG(INFO) << "Resetting Counter";
     for (UInt_t i = 0; i < Tc::size; i++) {
       counter[i] = 0;
     }
@@ -62,7 +65,7 @@ class Counter
   /// Function to make a histogram out of the counters
   void MakeHistogram(TH1* h) const
   {
-    ILOG(Info) << "Making Histogram " << h->GetName() << " out of counter" << ENDM;
+    LOG(INFO) << "Making Histogram " << h->GetName() << " out of counter";
     h->Reset();
     h->GetXaxis()->Set(Tc::size, 0, Tc::size);
     UInt_t binx = 1;
@@ -73,21 +76,21 @@ class Counter
       h->GetXaxis()->SetBinLabel(binx++, Tc::names[i]);
     }
     h->Reset();
-#ifdef ENABLE_COUNTER_DEBUG_MODE
+#ifdef ENABLE_PRINT_HISTOGRAMS_MODE
     h->Print("All");
 #endif
   }
   /// Function to fill a histogram with the counters
   void FillHistogram(TH1* h, UInt_t biny = 0, UInt_t binz = 0) const
   {
-    ILOG(Info) << "Filling Histogram " << h->GetName() << " out of counter" << ENDM;
+    LOG(INFO) << "Filling Histogram " << h->GetName() << " out of counter";
     UInt_t binx = 1;
     for (UInt_t i = 0; i < Tc::size; i++) {
       if (Tc::names[i].IsNull()) {
         continue;
       }
 #ifdef ENABLE_COUNTER_DEBUG_MODE
-      ILOG(Info) << "Filling bin " << binx << " of position " << i << " of label " << Tc::names[i] << " with " << counter[i] << ENDM;
+      LOG(INFO) << "Filling bin " << binx << " of position " << i << " of label " << Tc::names[i] << " with " << counter[i];
 #endif
       if (biny > 0) {
         if (binz > 0) {
@@ -100,7 +103,7 @@ class Counter
       }
       binx++;
     }
-#ifdef ENABLE_COUNTER_DEBUG_MODE
+#ifdef ENABLE_PRINT_HISTOGRAMS_MODE
     h->Print("All");
 #endif
   }
@@ -111,7 +114,7 @@ class Counter
   static_assert(std::is_same<decltype(Tc::size), const UInt_t>::value, "size must be const UInt_t");
   static_assert(std::is_same<decltype(Tc::names), const TString[Tc::size]>::value, "names must be const TString arrays");
   /// Containers to fill
-  uint32_t counter[Tc::size] = { 0 };
+  std::array<uint32_t, Tc::size> counter = { 0 };
 };
 
 } // namespace o2::quality_control_modules::tof
