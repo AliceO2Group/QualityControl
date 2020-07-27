@@ -11,6 +11,7 @@
 ///
 /// \file   TOFCheckCompressedCounter.h
 /// \author Nicolo' Jacazio
+/// \brief Checker for the diagnostics of the TOF Readout apparatus
 ///
 
 #ifndef QC_MODULE_TOF_TOFCHECKCOMPRESSEDCOUNTER_H
