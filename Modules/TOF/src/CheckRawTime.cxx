@@ -9,11 +9,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckRawsTime.cxx
+/// \file   CheckRawTime.cxx
 /// \author Nicolo' Jacazio
 ///
 
-#include "TOF/TOFCheckRawsTime.h"
+#include "TOF/CheckRawTime.h"
 
 // ROOT
 #include <fairlogger/Logger.h>
@@ -27,7 +27,7 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-TOFCheckRawsTime::TOFCheckRawsTime() : minTOFrawTime(175.f),
+CheckRawTime::CheckRawTime() : minTOFrawTime(175.f),
                                        maxTOFrawTime(250.f),
                                        timeMean(0),
                                        peakIntegral(0),
@@ -35,9 +35,9 @@ TOFCheckRawsTime::TOFCheckRawsTime() : minTOFrawTime(175.f),
 {
 }
 
-TOFCheckRawsTime::~TOFCheckRawsTime() {}
+CheckRawTime::~CheckRawTime() {}
 
-void TOFCheckRawsTime::configure(std::string)
+void CheckRawTime::configure(std::string)
 {
   // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
   //   minTOFrawTime = 150.; //ns
@@ -45,7 +45,7 @@ void TOFCheckRawsTime::configure(std::string)
   // }
 }
 
-Quality TOFCheckRawsTime::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   auto mo = moMap->begin()->second;
   Quality result = Quality::Null;
@@ -93,9 +93,9 @@ Quality TOFCheckRawsTime::check(std::map<std::string, std::shared_ptr<MonitorObj
   return result;
 }
 
-std::string TOFCheckRawsTime::getAcceptedType() { return "TH1"; }
+std::string CheckRawTime::getAcceptedType() { return "TH1"; }
 
-void TOFCheckRawsTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void CheckRawTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName().find("RawsTime") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());

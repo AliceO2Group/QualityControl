@@ -11,7 +11,7 @@ target_sources(QcTOF
                       src/CheckDiagnostics.cxx
                       src/CheckCompressedData.cxx
                       src/CheckRawMultiplicity.cxx
-                      src/TOFCheckRawsTime.cxx
+                      src/CheckRawTime.cxx
                       src/CheckRawToT.cxx
                       # Utilities
                 )
@@ -46,7 +46,7 @@ add_root_dictionary(QcTOF
                             include/TOF/CheckCompressedData.h
                             include/TOF/CheckDiagnostics.h
                             include/TOF/CheckRawMultiplicity.h
-                            include/TOF/TOFCheckRawsTime.h
+                            include/TOF/CheckRawTime.h
                             include/TOF/CheckRawToT.h
                             # Utilities
                             include/Base/Counter.h

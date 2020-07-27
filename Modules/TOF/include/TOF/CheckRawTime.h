@@ -9,8 +9,9 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckRawsTime.h
+/// \file   CheckRawTime.h
 /// \author Nicolo' Jacazio
+/// \brief  Checker for TOF raw times
 ///
 
 #ifndef QC_MODULE_TOF_TOFCHECKRAWSTIME_H
@@ -26,13 +27,13 @@ namespace o2::quality_control_modules::tof
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Barthelemy von Haller
-class TOFCheckRawsTime : public o2::quality_control::checker::CheckInterface
+class CheckRawTime : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TOFCheckRawsTime();
+  CheckRawTime();
   /// Destructor
-  ~TOFCheckRawsTime() override;
+  ~CheckRawTime() override;
 
   // Override interface
   void configure(std::string name) override;
@@ -53,7 +54,7 @@ class TOFCheckRawsTime : public o2::quality_control::checker::CheckInterface
   /// Integral of the TOF raw time distribution in the whole histogram range
   Float_t totIntegral;
 
-  ClassDefOverride(TOFCheckRawsTime, 1);
+  ClassDefOverride(CheckRawTime, 1);
 };
 
 } // namespace o2::quality_control_modules::tof

@@ -104,7 +104,7 @@
       },
       "checkFromTOF/TOFRawsTime": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsTime",
+          "className": "o2::quality_control_modules::tof::CheckRawTime",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -116,7 +116,7 @@
       },
       "checkFromTOF/TOFRawsTimeIA": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsTime",
+          "className": "o2::quality_control_modules::tof::CheckRawTime",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -128,7 +128,7 @@
       },
       "checkFromTOF/TOFRawsTimeOA": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsTime",
+          "className": "o2::quality_control_modules::tof::CheckRawTime",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -140,7 +140,7 @@
       },
       "checkFromTOF/TOFRawsTimeIC": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsTime",
+          "className": "o2::quality_control_modules::tof::CheckRawTime",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -152,7 +152,7 @@
       },
       "checkFromTOF/TOFRawsTimeOC": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsTime",
+          "className": "o2::quality_control_modules::tof::CheckRawTime",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
