@@ -11,6 +11,7 @@
 ///
 /// \file   Diagnostics.h
 /// \author Nicolo' Jacazio
+/// \brief Here are defined the counters to check the diagnostics words of the TOF crates obtained from the compressor. This is why the Diagnostics class derives from DecoderBase: it reads data from the decoder.
 ///
 
 #ifndef QC_MODULE_TOF_DIAGNOSTICS_H
@@ -42,15 +43,23 @@ struct ERDHCounter_t {
 /// DRM counters: there will only be one instance of such counters per crate
 struct EDRMCounter_t {
   /// Number of DRM counters
-  static const UInt_t size = 14;
+  static const UInt_t size = 17;
   /// Name of DRM counters
+  static const TString names[size];
+};
+
+/// LTM counters: there will only be ten instance of such counters per crate
+struct ELTMCounter_t {
+  /// Number of LTM counters
+  static const UInt_t size = 17;
+  /// Name of LTM counters
   static const TString names[size];
 };
 
 /// TRM counters: there will only be ten instance of such counters per crate
 struct ETRMCounter_t {
   /// Number of TRM counters
-  static const UInt_t size = 13;
+  static const UInt_t size = 17;
   /// Name of TRM counters
   static const TString names[size];
 };
@@ -58,7 +67,7 @@ struct ETRMCounter_t {
 /// TRMChain: counters there will be 20 instances of such counters per crate
 struct ETRMChainCounter_t {
   /// Number of TRMChain counters
-  static const UInt_t size = 2;
+  static const UInt_t size = 33;
   /// Name of TRMChain counters
   static const TString names[size];
 };
@@ -87,6 +96,7 @@ class Diagnostics final
   static const int ntrmschains = 2;                                          /// Number of TRMChains per TRM
   Counter<ERDHCounter_t> mRDHCounter[ncrates];                               /// RDH Counters
   Counter<EDRMCounter_t> mDRMCounter[ncrates];                               /// DRM Counters
+  Counter<ELTMCounter_t> mLTMCounter[ncrates];                               /// LTM Counters
   Counter<ETRMCounter_t> mTRMCounter[ncrates][ntrms];                        /// TRM Counters
   Counter<ETRMChainCounter_t> mTRMChainCounter[ncrates][ntrms][ntrmschains]; /// TRMChain Counters
 
