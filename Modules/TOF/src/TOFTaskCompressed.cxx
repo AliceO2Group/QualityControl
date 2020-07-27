@@ -57,7 +57,13 @@ TOFTaskCompressed::~TOFTaskCompressed()
 
 void TOFTaskCompressed::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize TOFTaskCompressed" << ENDM;
+  LOG(INFO) << "initialize TOFTaskCompressed";
+  if (auto param = mCustomParameters.find("DecoderCONET"); param != mCustomParameters.end()) {
+    if (param->second == "True") {
+      LOG(INFO) << "Rig for DecoderCONET";
+      mDecoder.setDecoderCONET(kTRUE);
+    }
+  }
 
   mHits.reset(new TH1F("hHits", "hHits;Number of hits", 1000, 0., 1000.));
   getObjectsManager()->startPublishing(mHits.get());
@@ -91,7 +97,7 @@ void TOFTaskCompressed::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TOFTaskCompressed::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  LOG(INFO) << "startOfActivity";
   mHits->Reset();
   mTime->Reset();
   mTimeBC->Reset();
@@ -103,13 +109,11 @@ void TOFTaskCompressed::startOfActivity(Activity& /*activity*/)
 
 void TOFTaskCompressed::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  LOG(INFO) << "startOfCycle";
 }
 
 void TOFTaskCompressed::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  LOG(INFO) << "Monitoring in the TOFCompressed Task";
-
   /** receive input **/
   for (auto& input : ctx.inputs()) {
     /** input **/
@@ -124,19 +128,19 @@ void TOFTaskCompressed::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TOFTaskCompressed::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  LOG(INFO) << "endOfCycle";
 }
 
 void TOFTaskCompressed::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  LOG(INFO) << "endOfActivity";
 }
 
 void TOFTaskCompressed::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  LOG(INFO) << "Resetting the histogram";
   mHits->Reset();
   mTime->Reset();
   mTOT->Reset();

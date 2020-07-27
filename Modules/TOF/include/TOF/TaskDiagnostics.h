@@ -51,13 +51,13 @@ class TaskDiagnostics    /*final*/
 
  private:
   // Histograms
-  std::shared_ptr<TH2F> mRDHCounterHisto;                                                    /// Words per RDH
-  std::shared_ptr<TH2F> mDRMCounterHisto;                                                    /// Words per DRM
-  std::shared_ptr<TH2F> mLTMCounterHisto;                                                    /// Words per LTM
-  std::shared_ptr<TH2F> mTRMCounterHisto[Diagnostics::ntrms];                                /// Words per TRM
-  std::shared_ptr<TH2F> mTRMChainCounterHisto[Diagnostics::ntrms][Diagnostics::ntrmschains]; /// Words per TRM Chain
+  std::shared_ptr<TH2F> mRDHHisto;                                                    /// Words per RDH
+  std::shared_ptr<TH2F> mDRMHisto;                                                    /// Words per DRM
+  std::shared_ptr<TH2F> mLTMHisto;                                                    /// Words per LTM
+  std::shared_ptr<TH2F> mTRMHisto[Diagnostics::ntrms];                                /// Words per TRM
+  std::shared_ptr<TH2F> mTRMChainHisto[Diagnostics::ntrms][Diagnostics::ntrmschains]; /// Words per TRM Chain
 
-  Diagnostics mCounter; /// Decoder and counter for TOF Compressed data useful for the Task
+  Diagnostics mDecoderCounter; /// Decoder and counter for TOF Compressed data useful for the Task
 };
 
 } // namespace o2::quality_control_modules::tof
