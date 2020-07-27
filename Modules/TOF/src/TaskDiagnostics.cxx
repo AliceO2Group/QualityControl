@@ -45,7 +45,7 @@ void TaskDiagnostics::initialize(o2::framework::InitContext& /*ctx*/)
   mCounter.mLTMCounter[0].MakeHistogram(mLTMCounterHisto.get());
   getObjectsManager()->startPublishing(mLTMCounterHisto.get());
   for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
-    mTRMCounterHisto[j].reset(new TH2F(Form("TRMCounterSlot%i", j), Form("TRM %j Diagnostics;TRM Word;Crate;Words"), 32, 0, 32, 72, 0, 72));
+    mTRMCounterHisto[j].reset(new TH2F(Form("TRMCounterSlot%i", j), Form("TRM %i Diagnostics;TRM Word;Crate;Words", j), 32, 0, 32, 72, 0, 72));
     mCounter.mTRMCounter[0][j].MakeHistogram(mTRMCounterHisto[j].get());
     getObjectsManager()->startPublishing(mTRMCounterHisto[j].get());
     for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
