@@ -65,19 +65,31 @@ class Counter
   /// Function to make a histogram out of the counters
   void MakeHistogram(TH1* h) const
   {
-    LOG(INFO) << "Making Histogram " << h->GetName() << " to accomodate counter of size" << Tc::size;
+    LOG(INFO) << "Making Histogram " << h->GetName() << " to accomodate counter of size " << Tc::size;
     TAxis* axis = h->GetXaxis();
     if (((UInt_t)axis->GetNbins()) < Tc::size) {
       LOG(FATAL) << "The histogram size (" << axis->GetNbins() << ") is not large enough to accomodate the counter size (" << Tc::size << ")";
     }
     h->Reset();
-    axis->Set(Tc::size, 0, Tc::size);
+    UInt_t histo_size = Tc::size;
+    for (UInt_t i = 0; i < Tc::size; i++) {
+      if (Tc::names[i].IsNull()) {
+        histo_size--;
+      }
+    }
+    if (histo_size == 0) {
+      LOG(FATAL) << "Asked to produce a histogram with size " << histo_size << ", check counter bin labels";
+    }
+    axis->Set(histo_size, 0, histo_size);
     UInt_t binx = 1;
     for (UInt_t i = 0; i < Tc::size; i++) {
       if (Tc::names[i].IsNull()) {
         continue;
       }
-      LOG(INFO) << "Setting bin " << binx << " to contain counter for" << Tc::names[i] << "(index" << i << "/" << Tc::size << ")";
+      LOG(INFO) << "Setting bin " << binx << "/" << histo_size << " to contain counter for " << Tc::names[i] << " (index " << i << "/" << Tc::size - 1 << ")";
+      if (histo_size < binx) {
+        LOG(FATAL) << "Making bin outsied of histogram limits!";
+      }
       axis->SetBinLabel(binx++, Tc::names[i]);
     }
     h->Reset();
@@ -100,8 +112,8 @@ class Counter
 #ifdef ENABLE_COUNTER_DEBUG_MODE
       LOG(INFO) << "Filling bin " << binx << " of position " << i << " of label " << Tc::names[i] << " with " << counter[i];
 #endif
-      if (Tc::names[i].EqualTo(h->GetXaxis()->GetBinLabel(binx))) {
-        LOG(FATAL) << "Bin" << binx << " does not have the expected label " << h->GetXaxis()->GetBinLabel(binx) << " vs " << Tc::names[i];
+      if (!Tc::names[i].EqualTo(h->GetXaxis()->GetBinLabel(binx))) {
+        LOG(FATAL) << "Bin" << binx << " does not have the expected label '" << h->GetXaxis()->GetBinLabel(binx) << "' vs '" << Tc::names[i] << "'";
       }
       if (biny > 0) {
         if (binz > 0) {
