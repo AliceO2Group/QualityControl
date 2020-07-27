@@ -11,7 +11,7 @@
 ///
 /// \file   CheckRawMultiplicity.cxx
 /// \author Nicolo' Jacazio
-/// \brief  Checker for the raw hit multiplicity obtained with the TOFTask
+/// \brief  Checker for the raw hit multiplicity obtained with the TaskDigits
 ///
 
 // QC

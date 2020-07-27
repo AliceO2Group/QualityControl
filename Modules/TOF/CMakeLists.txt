@@ -4,7 +4,7 @@ add_library(QcTOF)
 
 target_sources(QcTOF 
                       # Tasks
-              PRIVATE src/TOFTask.cxx
+              PRIVATE src/TaskDigits.cxx
                       src/TaskCompressedData.cxx
                       src/TaskDiagnostics.cxx
                       # Checkers
@@ -39,7 +39,7 @@ install(TARGETS QcTOF
 
 add_root_dictionary(QcTOF
                             # Tasks
-                    HEADERS include/TOF/TOFTask.h
+                    HEADERS include/TOF/TaskDigits.h
                             include/TOF/TaskCompressedData.h
                             include/TOF/TaskDiagnostics.h
                             # Checkers

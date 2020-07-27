@@ -4,7 +4,7 @@
 #pragma link off all functions;
 
 // Tasks
-#pragma link C++ class o2::quality_control_modules::tof::TOFTask+;
+#pragma link C++ class o2::quality_control_modules::tof::TaskDigits+;
 #pragma link C++ class o2::quality_control_modules::tof::TaskCompressedData+;
 #pragma link C++ class o2::quality_control_modules::tof::TaskDiagnostics+;
 // Checks
