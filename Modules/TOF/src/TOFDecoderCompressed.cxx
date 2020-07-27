@@ -79,11 +79,11 @@ void TOFDecoderCompressed::trailerHandler(const CrateHeader_t* crateHeader, cons
 void TOFDecoderCompressed::rdhHandler(const o2::header::RAWDataHeader* rdh)
 {
 #ifdef VERBOSEDECODERCOMPRESSED
-  ILOG(Info) << "Reading RDH #" << rdhread++ / 2;
-  o2::raw::HBFUtils::printRDH(*rdh);
+  LOG(INFO) << "Reading RDH #" << rdhread++ / 2;
+  o2::raw::RDHUtils::printRDH(*rdh);
 #else
   if (rdh)
-    ILOG(Info) << "Processing RDH";
+    LOG(INFO) << "Processing RDH";
 #endif
 }
 
