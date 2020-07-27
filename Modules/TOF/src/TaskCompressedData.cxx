@@ -83,17 +83,17 @@ void CompressedDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, con
   }
 }
 
+#ifdef VERBOSEDECODERCOMPRESSED
 void CompressedDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
 {
-#ifdef VERBOSEDECODERCOMPRESSED
   LOG(INFO) << "Reading RDH #" << rdhread++ / 2;
   o2::raw::RDHUtils::printRDH(*rdh);
-#else
-  if (rdh) {
-    LOG(INFO) << "Processing RDH";
-  }
-#endif
 }
+#else
+void CompressedDataDecoder::rdhHandler(const o2::header::RAWDataHeader* /*rdh*/)
+{
+}
+#endif
 
 // Implement Task
 TaskCompressedData::TaskCompressedData() : TaskInterface(),
