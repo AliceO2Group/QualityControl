@@ -11,7 +11,7 @@
 ///
 /// \file   TaskCompressedData.cxx
 /// \author Nicolo' Jacazio
-/// \brief  Task To monitor data converted from TOF compressor
+/// \brief  Task To monitor data converted from TOF compressor, it implements a dedicated decoder from DecoderBase
 ///
 
 // ROOT includes
@@ -23,6 +23,10 @@
 // O2 includes
 #include "DataFormatsTOF/CompressedDataFormat.h"
 #include <Framework/DataRefUtils.h>
+#include "Headers/RAWDataHeader.h"
+#include "DetectorsRaw/HBFUtils.h"
+
+using namespace o2::framework;
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -31,6 +35,66 @@
 namespace o2::quality_control_modules::tof
 {
 
+// Implement decoder for Task
+
+void CompressedDataDecoder::decode()
+{
+  DecoderBase::run();
+}
+
+void CompressedDataDecoder::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/)
+{
+  for (int ibit = 0; ibit < 11; ++ibit) {
+    if (crateHeader->slotPartMask & (1 << ibit)) {
+      mHistos.at("hSlotPartMask")->Fill(crateHeader->drmID, ibit + 2);
+    }
+  }
+}
+
+void CompressedDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
+                                         const FrameHeader_t* frameHeader, const PackedHit_t* packedHits)
+{
+  mHistos.at("hHits")->Fill(frameHeader->numberOfHits);
+  for (int i = 0; i < frameHeader->numberOfHits; ++i) {
+    auto packedHit = packedHits + i;
+    auto indexE = packedHit->channel +
+                  8 * packedHit->tdcID +
+                  120 * packedHit->chain +
+                  240 * (frameHeader->trmID - 3) +
+                  2400 * crateHeader->drmID;
+    int time = packedHit->time;
+    int timebc = time % 1024;
+    time += (frameHeader->frameID << 13);
+
+    mHistos.at("hIndexE")->Fill(indexE);
+    mHistos.at("hTime")->Fill(time);
+    mHistos.at("hTimeBC")->Fill(timebc);
+    mHistos.at("hTOT")->Fill(packedHit->tot);
+  }
+}
+
+void CompressedDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
+                                           const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
+                                           const Error_t* /*errors*/)
+{
+  for (int i = 0; i < crateTrailer->numberOfDiagnostics; ++i) {
+    auto diagnostic = diagnostics + i;
+    mHistos.at("hDiagnostic")->Fill(crateHeader->drmID, diagnostic->slotID);
+  }
+}
+
+void CompressedDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
+{
+#ifdef VERBOSEDECODERCOMPRESSED
+  LOG(INFO) << "Reading RDH #" << rdhread++ / 2;
+  o2::raw::RDHUtils::printRDH(*rdh);
+#else
+  if (rdh)
+    LOG(INFO) << "Processing RDH";
+#endif
+}
+
+// Implement Task
 TaskCompressedData::TaskCompressedData() : TaskInterface(),
                                            mDecoder(),
                                            mHits(nullptr),

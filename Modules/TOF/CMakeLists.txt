@@ -14,7 +14,6 @@ target_sources(QcTOF
                       src/TOFCheckRawsTime.cxx
                       src/TOFCheckRawsToT.cxx
                       # Utilities
-                      src/TOFDecoderCompressed.cxx
                       src/Diagnostics.cxx
                 )
 
@@ -51,7 +50,6 @@ add_root_dictionary(QcTOF
                             include/TOF/TOFCheckRawsTime.h
                             include/TOF/TOFCheckRawsToT.h
                             # Utilities
-                            include/TOF/TOFDecoderCompressed.h
                             include/Base/Counter.h
                             include/TOF/Diagnostics.h
                     LINKDEF include/TOF/LinkDef.h

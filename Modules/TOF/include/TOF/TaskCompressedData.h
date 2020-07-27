@@ -11,16 +11,21 @@
 ///
 /// \file   TaskCompressedData.h
 /// \author Nicolo' Jacazio
-/// \brief  Task To monitor data converted from TOF compressor
+/// \brief  Task To monitor data converted from TOF compressor, it implements a dedicated decoder from DecoderBase
 ///
 
 #ifndef QC_MODULE_TOF_TASKCOMPRESSEDDATA_H
 #define QC_MODULE_TOF_TASKCOMPRESSEDDATA_H
 
+// O2 includes
+#include "TOFReconstruction/DecoderBase.h"
+#include "DataFormatsTOF/CompressedDataFormat.h"
+using namespace o2::tof::compressed;
+
 // QC includes
 #include "QualityControl/TaskInterface.h"
-#include "TOF/TOFDecoderCompressed.h"
 
+class TH1;
 class TH1F;
 class TH2F;
 
@@ -28,6 +33,36 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::tof
 {
+
+/// \brief TOF Quality Control class for Decoding Compressed data for TOF Compressed data QC Task
+/// \author Nicolo' Jacazio
+class CompressedDataDecoder final : public DecoderBase
+{
+ public:
+  /// \brief Constructor
+  CompressedDataDecoder() = default;
+  /// Destructor
+  ~CompressedDataDecoder() = default;
+
+  /// Function to run decoding
+  void decode();
+
+  /// Histograms to fill
+  std::map<std::string, std::shared_ptr<TH1>> mHistos;
+
+  Int_t rdhread = 0; /// Number of times a RDH is read
+
+ private:
+  /** decoding handlers **/
+  void rdhHandler(const o2::header::RAWDataHeader* rdh) override;
+  void headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit) override;
+  void frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
+                    const FrameHeader_t* frameHeader, const PackedHit_t* packedHits) override;
+  void trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
+                      const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
+                      const Error_t* errors) override;
+};
+
 
 /// \brief TOF Quality Control DPL Task for TOF Compressed data
 /// \author Nicolo' Jacazio
@@ -49,7 +84,7 @@ class TaskCompressedData final : public TaskInterface
   void reset() override;
 
  private:
-  TOFDecoderCompressed mDecoder;       /// Decoder for TOF Compressed data useful for the Task
+  CompressedDataDecoder mDecoder;       /// Decoder for TOF Compressed data useful for the Task
   std::shared_ptr<TH1F> mHits;         /// Number of TOF hits
   std::shared_ptr<TH1F> mTime;         /// Time
   std::shared_ptr<TH1F> mTimeBC;       /// Time in Bunch Crossing
