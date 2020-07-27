@@ -9,8 +9,9 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckRawsMulti.h
+/// \file   CheckRawMultiplicity.h
 /// \author Nicolo' Jacazio
+/// \brief  Checker for the raw hit multiplicity obtained with the TOFTask
 ///
 
 #ifndef QC_MODULE_TOF_TOFCHECKRAWSMULTI_H
@@ -25,13 +26,13 @@ namespace o2::quality_control_modules::tof
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Nicolo' Jacazio
-class TOFCheckRawsMulti : public o2::quality_control::checker::CheckInterface
+class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TOFCheckRawsMulti();
+  CheckRawMultiplicity();
   /// Destructor
-  ~TOFCheckRawsMulti() override;
+  ~CheckRawMultiplicity() override;
 
   // Override interface
   void configure(std::string name) override;
@@ -62,7 +63,7 @@ class TOFCheckRawsMulti : public o2::quality_control::checker::CheckInterface
   /// Message to print
   TString shifter_msg = "";
 
-  ClassDefOverride(TOFCheckRawsMulti, 1);
+  ClassDefOverride(CheckRawMultiplicity, 1);
 };
 
 } // namespace o2::quality_control_modules::tof

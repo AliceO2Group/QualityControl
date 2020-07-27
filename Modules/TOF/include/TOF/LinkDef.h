@@ -10,7 +10,7 @@
 // Checks
 #pragma link C++ class o2::quality_control_modules::tof::CheckDiagnostics+;
 #pragma link C++ class o2::quality_control_modules::tof::CheckCompressedData+;
-#pragma link C++ class o2::quality_control_modules::tof::TOFCheckRawsMulti+;
+#pragma link C++ class o2::quality_control_modules::tof::CheckRawMultiplicity+;
 #pragma link C++ class o2::quality_control_modules::tof::TOFCheckRawsTime+;
 #pragma link C++ class o2::quality_control_modules::tof::TOFCheckRawsToT+;
 // Utilities

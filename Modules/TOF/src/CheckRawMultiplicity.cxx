@@ -9,12 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckRawsMulti.cxx
+/// \file   CheckRawMultiplicity.cxx
 /// \author Nicolo' Jacazio
+/// \brief  Checker for the raw hit multiplicity obtained with the TOFTask
 ///
 
 // QC
-#include "TOF/TOFCheckRawsMulti.h"
+#include "TOF/CheckRawMultiplicity.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
@@ -30,7 +31,7 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-TOFCheckRawsMulti::TOFCheckRawsMulti() : minTOFrawhits(10),
+CheckRawMultiplicity::CheckRawMultiplicity() : minTOFrawhits(10),
                                          maxTOFrawhits(150),
                                          multiMean(0),
                                          zeroBinIntegral(0),
@@ -39,11 +40,11 @@ TOFCheckRawsMulti::TOFCheckRawsMulti() : minTOFrawhits(10),
 {
 }
 
-TOFCheckRawsMulti::~TOFCheckRawsMulti() {}
+CheckRawMultiplicity::~CheckRawMultiplicity() {}
 
-void TOFCheckRawsMulti::configure(std::string) {}
+void CheckRawMultiplicity::configure(std::string) {}
 
-Quality TOFCheckRawsMulti::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
 
   Quality result = Quality::Null;
@@ -163,9 +164,9 @@ Quality TOFCheckRawsMulti::check(std::map<std::string, std::shared_ptr<MonitorOb
   return result;
 }
 
-std::string TOFCheckRawsMulti::getAcceptedType() { return "TH1I"; }
+std::string CheckRawMultiplicity::getAcceptedType() { return "TH1I"; }
 
-void TOFCheckRawsMulti::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "TOFRawsMulti") {
     auto* h = dynamic_cast<TH1I*>(mo->getObject());

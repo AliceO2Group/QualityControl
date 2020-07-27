@@ -44,7 +44,7 @@
     "checks": {
       "checkFromTOF/TOFRawsMulti": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -56,7 +56,7 @@
       },
       "checkFromTOF/TOFRawsMultiIA": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -68,7 +68,7 @@
       },
       "checkFromTOF/TOFRawsMultiOA": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -80,7 +80,7 @@
       },
       "checkFromTOF/TOFRawsMultiIC": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -92,7 +92,7 @@
       },
       "checkFromTOF/TOFRawsMultiOC": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -224,7 +224,7 @@
       },
       "checkFromTOF/TOFRawsLTMHits": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -236,7 +236,7 @@
       },
       "checkFromTOF/TOFrefMap": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -248,7 +248,7 @@
       },
       "checkFromTOF/TOFRawHitMap": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -260,7 +260,7 @@
       },
       "checkFromTOF/TOFDecodingErrors": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -272,7 +272,7 @@
       },
       "checkFromTOF/TOFOrphansTime": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -284,7 +284,7 @@
       },
       "checkFromTOF/TOFRawTimeVsTRM035": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -296,7 +296,7 @@
       },
       "checkFromTOF/TOFRawTimeVsTRM3671": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -308,7 +308,7 @@
       },
       "checkFromTOF/TOFTimeVsStrip": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -320,7 +320,7 @@
       },
       "checkFromTOF/TOFtimeVsBCID": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -332,7 +332,7 @@
       },
       "checkFromTOF/TOFchannelEfficiencyMap": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -344,7 +344,7 @@
       },
       "checkFromTOF/TOFhitsCTTM": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -356,7 +356,7 @@
       },
       "checkFromTOF/TOFmacropadCTTM": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -368,7 +368,7 @@
       },
       "checkFromTOF/TOFmacropadDeltaPhiTime": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -380,7 +380,7 @@
       },
       "checkFromTOF/BXVsCttmBit": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -392,7 +392,7 @@
       },
       "checkFromTOF/TimeVsCttmBit": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -404,7 +404,7 @@
       },
       "checkFromTOF/TOFRawHitMap24": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -416,7 +416,7 @@
       },
       "checkFromTOF/HitMultiVsDDL": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -428,7 +428,7 @@
       },
       "checkFromTOF/NfiredMacropad": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsMulti",
+          "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
