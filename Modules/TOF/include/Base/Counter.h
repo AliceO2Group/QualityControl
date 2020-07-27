@@ -45,7 +45,7 @@ class Counter
   void Count(UInt_t v)
   {
     if (v > Tc::size) {
-      LOG(ERROR) << "Incrementing counter too far! " << v << "/" << Size();
+      LOG(FATAL) << "Incrementing counter too far! " << v << "/" << Size();
     }
 #ifdef ENABLE_COUNTER_DEBUG_MODE
     LOG(INFO) << "Incrementing " << v << "/" << Size() << " to " << counter[v];
@@ -92,6 +92,9 @@ class Counter
     UInt_t binx = 1;
     for (UInt_t i = 0; i < Tc::size; i++) {
       if (Tc::names[i].IsNull()) {
+        if (counter[i] > 0) {
+          LOG(WARNING) << "Counter at position " << i << " was non empty (" << counter[i] << ") but was discarded because of empty lables";
+        }
         continue;
       }
 #ifdef ENABLE_COUNTER_DEBUG_MODE
