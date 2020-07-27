@@ -67,7 +67,7 @@ class Counter
   {
     LOG(INFO) << "Making Histogram " << h->GetName() << " to accomodate counter of size" << Tc::size;
     TAxis* axis = h->GetXaxis();
-    if (axis->GetNbins() < Tc::size) {
+    if (((UInt_t)axis->GetNbins()) < Tc::size) {
       LOG(FATAL) << "The histogram size (" << axis->GetNbins() << ") is not large enough to accomodate the counter size (" << Tc::size << ")";
     }
     h->Reset();
