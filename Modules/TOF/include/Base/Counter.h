@@ -88,7 +88,7 @@ class Counter
       }
       LOG(INFO) << "Setting bin " << binx << "/" << histo_size << " to contain counter for " << Tc::names[i] << " (index " << i << "/" << Tc::size - 1 << ")";
       if (histo_size < binx) {
-        LOG(FATAL) << "Making bin outsied of histogram limits!";
+        LOG(FATAL) << "Making bin outside of histogram limits!";
       }
       axis->SetBinLabel(binx++, Tc::names[i]);
     }
@@ -100,7 +100,7 @@ class Counter
   /// Function to fill a histogram with the counters
   void FillHistogram(TH1* h, UInt_t biny = 0, UInt_t binz = 0) const
   {
-    LOG(INFO) << "Filling Histogram " << h->GetName() << " out of counter";
+    LOG(INFO) << "Filling Histogram " << h->GetName() << " with counter contents";
     UInt_t binx = 1;
     for (UInt_t i = 0; i < Tc::size; i++) {
       if (Tc::names[i].IsNull()) {
@@ -112,6 +112,9 @@ class Counter
 #ifdef ENABLE_COUNTER_DEBUG_MODE
       LOG(INFO) << "Filling bin " << binx << " of position " << i << " of label " << Tc::names[i] << " with " << counter[i];
 #endif
+      if (binx > h->GetNbinsX()) {
+        LOG(FATAL) << "Filling histogram " << h->GetName() << " at position " << binx << " i.e. past its size (" << h->GetNbinsX() << ")!";
+      }
       if (!Tc::names[i].EqualTo(h->GetXaxis()->GetBinLabel(binx))) {
         LOG(FATAL) << "Bin" << binx << " does not have the expected label '" << h->GetXaxis()->GetBinLabel(binx) << "' vs '" << Tc::names[i] << "'";
       }
