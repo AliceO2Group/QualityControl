@@ -53,8 +53,7 @@ const TString EDRMCounter_t::names[EDRMCounter_t::size] = {
   "DRM_READOUTTIMEOUT_NOTZERO", // 12
   "DRM_EVENTWORDS_MISMATCH",    // 13
   "",                           // 14
-  "",                           // 15
-  "DRM_MAXDIAGNOSTIC_BIT"       // 16
+  ""                            // 15
 };
 static_assert(TESTBIT(o2::tof::diagnostic::DRM_HEADER_MISSING, 4));
 static_assert(TESTBIT(o2::tof::diagnostic::DRM_TRAILER_MISSING, 5));
@@ -66,7 +65,7 @@ static_assert(TESTBIT(o2::tof::diagnostic::DRM_CLOCKSTATUS_WRONG, 10));
 static_assert(TESTBIT(o2::tof::diagnostic::DRM_FAULTSLOTMASK_NOTZERO, 11));
 static_assert(TESTBIT(o2::tof::diagnostic::DRM_READOUTTIMEOUT_NOTZERO, 12));
 static_assert(TESTBIT(o2::tof::diagnostic::DRM_EVENTWORDS_MISMATCH, 13));
-static_assert(TESTBIT(o2::tof::diagnostic::DRM_MAXDIAGNOSTIC_BIT, EDRMCounter_t::size - 1));
+static_assert(TESTBIT(o2::tof::diagnostic::DRM_MAXDIAGNOSTIC_BIT, EDRMCounter_t::size));
 
 const TString ELTMCounter_t::names[ELTMCounter_t::size] = {
   "LTM_HAS_DATA",          // 0 LTM has read some data
@@ -84,13 +83,12 @@ const TString ELTMCounter_t::names[ELTMCounter_t::size] = {
   "",                      // 12
   "",                      // 13
   "",                      // 14
-  "",                      // 15
-  "LTM_MAXDIAGNOSTIC_BIT"  // 16
+  ""                       // 15
 };
 static_assert(TESTBIT(o2::tof::diagnostic::LTM_HEADER_MISSING, 4));
 static_assert(TESTBIT(o2::tof::diagnostic::LTM_TRAILER_MISSING, 5));
 static_assert(TESTBIT(o2::tof::diagnostic::LTM_HEADER_UNEXPECTED, 7));
-static_assert(TESTBIT(o2::tof::diagnostic::LTM_MAXDIAGNOSTIC_BIT, ELTMCounter_t::size - 1));
+static_assert(TESTBIT(o2::tof::diagnostic::LTM_MAXDIAGNOSTIC_BIT, ELTMCounter_t::size));
 
 const TString ETRMCounter_t::names[ETRMCounter_t::size] = {
   "TRM_HAS_DATA",             // 0 TRM has read some data
@@ -108,8 +106,7 @@ const TString ETRMCounter_t::names[ETRMCounter_t::size] = {
   "TRM_EVENTWORDS_MISMATCH",  // 12
   "TRM_DIAGNOSTIC_SPARE1",    // 13
   "TRM_DIAGNOSTIC_SPARE2",    // 14
-  "TRM_DIAGNOSTIC_SPARE3",    // 15
-  "TRM_MAXDIAGNOSTIC_BIT"     // 16
+  "TRM_DIAGNOSTIC_SPARE3"     // 15
 };
 static_assert(TESTBIT(o2::tof::diagnostic::TRM_HEADER_MISSING, 4));
 static_assert(TESTBIT(o2::tof::diagnostic::TRM_TRAILER_MISSING, 5));
@@ -123,7 +120,7 @@ static_assert(TESTBIT(o2::tof::diagnostic::TRM_EVENTWORDS_MISMATCH, 12));
 static_assert(TESTBIT(o2::tof::diagnostic::TRM_DIAGNOSTIC_SPARE1, 13));
 static_assert(TESTBIT(o2::tof::diagnostic::TRM_DIAGNOSTIC_SPARE2, 14));
 static_assert(TESTBIT(o2::tof::diagnostic::TRM_DIAGNOSTIC_SPARE3, 15));
-static_assert(TESTBIT(o2::tof::diagnostic::TRM_MAXDIAGNOSTIC_BIT, ETRMCounter_t::size - 1));
+static_assert(TESTBIT(o2::tof::diagnostic::TRM_MAXDIAGNOSTIC_BIT, ETRMCounter_t::size));
 
 const TString ETRMChainCounter_t::names[ETRMChainCounter_t::size] = {
   "TRMCHAIN_HAS_DATA",            // 0 TRM Chain read some data
@@ -157,8 +154,7 @@ const TString ETRMChainCounter_t::names[ETRMChainCounter_t::size] = {
   "TRMCHAIN_B_TDCERROR_DETECTED", // 28
   "TRMCHAIN_B_BUNCHCNT_MISMATCH", // 29
   "TRMCHAIN_B_DIAGNOSTIC_SPARE1", // 30
-  "TRMCHAIN_B_DIAGNOSTIC_SPARE2", // 31
-  "TRMCHAIN_MAXDIAGNOSTIC_BIT"    // 32
+  "TRMCHAIN_B_DIAGNOSTIC_SPARE2"  // 31
 };
 static_assert(TESTBIT(o2::tof::diagnostic::TRMCHAIN_HEADER_MISSING, 16));
 static_assert(TESTBIT(o2::tof::diagnostic::TRMCHAIN_TRAILER_MISSING, 17));
@@ -168,7 +164,7 @@ static_assert(TESTBIT(o2::tof::diagnostic::TRMCHAIN_TDCERROR_DETECTED, 20));
 static_assert(TESTBIT(o2::tof::diagnostic::TRMCHAIN_BUNCHCNT_MISMATCH, 21));
 static_assert(TESTBIT(o2::tof::diagnostic::TRMCHAIN_DIAGNOSTIC_SPARE1, 22));
 static_assert(TESTBIT(o2::tof::diagnostic::TRMCHAIN_DIAGNOSTIC_SPARE2, 23));
-static_assert(TESTBIT(o2::tof::diagnostic::TRMCHAIN_MAXDIAGNOSTIC_BIT, ETRMChainCounter_t::size - 9));
+static_assert(TESTBIT(o2::tof::diagnostic::TRMCHAIN_MAXDIAGNOSTIC_BIT, ETRMChainCounter_t::size - 8));
 
 } // namespace counters
 void Diagnostics::decode()

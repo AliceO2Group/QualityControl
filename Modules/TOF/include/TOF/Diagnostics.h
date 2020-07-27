@@ -43,7 +43,7 @@ struct ERDHCounter_t {
 /// DRM counters: there will only be one instance of such counters per crate
 struct EDRMCounter_t {
   /// Number of DRM counters
-  static const UInt_t size = 17;
+  static const UInt_t size = 16;
   /// Name of DRM counters
   static const TString names[size];
 };
@@ -51,7 +51,7 @@ struct EDRMCounter_t {
 /// LTM counters: there will only be ten instance of such counters per crate
 struct ELTMCounter_t {
   /// Number of LTM counters
-  static const UInt_t size = 17;
+  static const UInt_t size = 16;
   /// Name of LTM counters
   static const TString names[size];
 };
@@ -59,7 +59,7 @@ struct ELTMCounter_t {
 /// TRM counters: there will only be ten instance of such counters per crate
 struct ETRMCounter_t {
   /// Number of TRM counters
-  static const UInt_t size = 17;
+  static const UInt_t size = 16;
   /// Name of TRM counters
   static const TString names[size];
 };
@@ -67,7 +67,7 @@ struct ETRMCounter_t {
 /// TRMChain: counters there will be 20 instances of such counters per crate
 struct ETRMChainCounter_t {
   /// Number of TRMChain counters
-  static const UInt_t size = 33;
+  static const UInt_t size = 32;
   /// Name of TRMChain counters
   static const TString names[size];
 };
