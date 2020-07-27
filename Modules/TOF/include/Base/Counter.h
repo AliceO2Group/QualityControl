@@ -65,7 +65,7 @@ class Counter
   /// Function to make a histogram out of the counters
   void MakeHistogram(TH1* h) const
   {
-    LOG(INFO) << "Making Histogram " << h->GetName() << " out of counter";
+    LOG(INFO) << "Making Histogram " << h->GetName() << " to accomodate counter of size" << Tc::size;
     TAxis* axis = h->GetXaxis();
     if (axis->GetNbins() < Tc::size) {
       LOG(FATAL) << "The histogram size (" << axis->GetNbins() << ") is not large enough to accomodate the counter size (" << Tc::size << ")";
@@ -77,6 +77,7 @@ class Counter
       if (Tc::names[i].IsNull()) {
         continue;
       }
+      LOG(INFO) << "Setting bin " << binx << " to contain counter for" << Tc::names[i] << "(index" << i << "/" << Tc::size << ")";
       axis->SetBinLabel(binx++, Tc::names[i]);
     }
     h->Reset();
@@ -96,6 +97,9 @@ class Counter
 #ifdef ENABLE_COUNTER_DEBUG_MODE
       LOG(INFO) << "Filling bin " << binx << " of position " << i << " of label " << Tc::names[i] << " with " << counter[i];
 #endif
+      if (Tc::names[i].EqualsTo(h->GetXaxis()->GetBinLabel())) {
+        LOG(FATAL) << "Bin" << binx << " does not have the expected label " << h->GetXaxis()->GetBinLabel() << " vs " << Tc::names[i];
+      }
       if (biny > 0) {
         if (binz > 0) {
           h->SetBinContent(binx, biny, binz, counter[i]);
