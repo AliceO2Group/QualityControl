@@ -89,8 +89,9 @@ void CompressedDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
   LOG(INFO) << "Reading RDH #" << rdhread++ / 2;
   o2::raw::RDHUtils::printRDH(*rdh);
 #else
-  if (rdh)
+  if (rdh) {
     LOG(INFO) << "Processing RDH";
+  }
 #endif
 }
 
@@ -124,7 +125,7 @@ void TaskCompressedData::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("DecoderCONET"); param != mCustomParameters.end()) {
     if (param->second == "True") {
       LOG(INFO) << "Rig for DecoderCONET";
-      mDecoder.setDecoderCONET(kTRUE);
+      // mDecoder.setDecoderCONET(kTRUE);
     }
   }
 
