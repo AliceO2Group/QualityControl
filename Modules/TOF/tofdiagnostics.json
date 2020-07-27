@@ -38,7 +38,7 @@
           "blocking": "true"
         },
         "taskParameters": {
-          "nothing": "myOwnValue"
+          "DecoderCONET": "True"
         },
         "location": "remote"
       }
