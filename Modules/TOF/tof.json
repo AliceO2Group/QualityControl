@@ -164,7 +164,7 @@
       },
       "checkFromTOF/TOFRawsToT": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsToT",
+          "className": "o2::quality_control_modules::tof::CheckRawToT",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -176,7 +176,7 @@
       },
       "checkFromTOF/TOFRawsToTIA": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsToT",
+          "className": "o2::quality_control_modules::tof::CheckRawToT",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -188,7 +188,7 @@
       },
       "checkFromTOF/TOFRawsToTOA": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsToT",
+          "className": "o2::quality_control_modules::tof::CheckRawToT",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -200,7 +200,7 @@
       },
       "checkFromTOF/TOFRawsToTIC": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsToT",
+          "className": "o2::quality_control_modules::tof::CheckRawToT",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",
@@ -212,7 +212,7 @@
       },
       "checkFromTOF/TOFRawsToTOC": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckRawsToT",
+          "className": "o2::quality_control_modules::tof::CheckRawToT",
           "moduleName": "QcTOF",
           "policy": "OnAny",
           "detectorName": "TOF",

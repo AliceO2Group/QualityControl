@@ -9,8 +9,9 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckRawsToT.h
+/// \file   CheckRawToT.h
 /// \author Nicolo' Jacazio
+/// \brief  Checker for TOF Raw data on ToT
 ///
 
 #ifndef QC_MODULE_TOF_TOFCHECKRAWSTOT_H
@@ -26,13 +27,13 @@ namespace o2::quality_control_modules::tof
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Barthelemy von Haller
-class TOFCheckRawsToT : public o2::quality_control::checker::CheckInterface
+class CheckRawToT : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TOFCheckRawsToT();
+  CheckRawToT();
   /// Destructor
-  ~TOFCheckRawsToT() override;
+  ~CheckRawToT() override;
 
   // Override interface
   void configure(std::string name) override;
@@ -45,7 +46,7 @@ class TOFCheckRawsToT : public o2::quality_control::checker::CheckInterface
   /// Maximum ToT allowed for the mean in ns
   Double_t maxTOFrawTot;
 
-  ClassDefOverride(TOFCheckRawsToT, 1);
+  ClassDefOverride(CheckRawToT, 1);
 };
 
 } // namespace o2::quality_control_modules::tof

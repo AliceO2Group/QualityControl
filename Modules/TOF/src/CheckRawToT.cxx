@@ -9,11 +9,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckRawsToT.cxx
+/// \file   CheckRawToT.cxx
 /// \author Nicolo' Jacazio
+/// \brief  Checker for TOF Raw data on ToT
 ///
 
-#include "TOF/TOFCheckRawsToT.h"
+#include "TOF/CheckRawToT.h"
 
 // ROOT
 #include <fairlogger/Logger.h>
@@ -26,16 +27,16 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-TOFCheckRawsToT::TOFCheckRawsToT() : minTOFrawTot(10.), // ns
+CheckRawToT::CheckRawToT() : minTOFrawTot(10.), // ns
                                      maxTOFrawTot(15.)  // ns
 {
 }
 
-TOFCheckRawsToT::~TOFCheckRawsToT() {}
+CheckRawToT::~CheckRawToT() {}
 
-void TOFCheckRawsToT::configure(std::string) {}
+void CheckRawToT::configure(std::string) {}
 
-Quality TOFCheckRawsToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   auto mo = moMap->begin()->second;
   Quality result = Quality::Null;
@@ -70,9 +71,9 @@ Quality TOFCheckRawsToT::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-std::string TOFCheckRawsToT::getAcceptedType() { return "TH1"; }
+std::string CheckRawToT::getAcceptedType() { return "TH1"; }
 
-void TOFCheckRawsToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName().find("RawsToT") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());

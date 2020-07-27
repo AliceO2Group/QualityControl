@@ -12,6 +12,6 @@
 #pragma link C++ class o2::quality_control_modules::tof::CheckCompressedData+;
 #pragma link C++ class o2::quality_control_modules::tof::CheckRawMultiplicity+;
 #pragma link C++ class o2::quality_control_modules::tof::TOFCheckRawsTime+;
-#pragma link C++ class o2::quality_control_modules::tof::TOFCheckRawsToT+;
+#pragma link C++ class o2::quality_control_modules::tof::CheckRawToT+;
 // Utilities
 #endif
