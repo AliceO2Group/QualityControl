@@ -28,7 +28,7 @@ namespace o2::quality_control_modules::tof
 {
 
 CheckRawToT::CheckRawToT() : minTOFrawTot(10.), // ns
-                                     maxTOFrawTot(15.)  // ns
+                             maxTOFrawTot(15.)  // ns
 {
 }
 

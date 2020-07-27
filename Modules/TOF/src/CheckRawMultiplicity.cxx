@@ -32,11 +32,11 @@ namespace o2::quality_control_modules::tof
 {
 
 CheckRawMultiplicity::CheckRawMultiplicity() : minTOFrawhits(10),
-                                         maxTOFrawhits(150),
-                                         multiMean(0),
-                                         zeroBinIntegral(0),
-                                         lowMIntegral(0),
-                                         totIntegral(0)
+                                               maxTOFrawhits(150),
+                                               multiMean(0),
+                                               zeroBinIntegral(0),
+                                               lowMIntegral(0),
+                                               totIntegral(0)
 {
 }
 

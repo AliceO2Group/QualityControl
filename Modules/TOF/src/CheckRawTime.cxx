@@ -28,10 +28,10 @@ namespace o2::quality_control_modules::tof
 {
 
 CheckRawTime::CheckRawTime() : minTOFrawTime(175.f),
-                                       maxTOFrawTime(250.f),
-                                       timeMean(0),
-                                       peakIntegral(0),
-                                       totIntegral(0)
+                               maxTOFrawTime(250.f),
+                               timeMean(0),
+                               peakIntegral(0),
+                               totIntegral(0)
 {
 }
 

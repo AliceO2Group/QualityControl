@@ -102,7 +102,7 @@ class Counter
   {
     LOG(INFO) << "Filling Histogram " << h->GetName() << " with counter contents";
     UInt_t binx = 1;
-    const UInt_t nbinsx =h->GetNbinsX();
+    const UInt_t nbinsx = h->GetNbinsX();
     for (UInt_t i = 0; i < Tc::size; i++) {
       if (Tc::names[i].IsNull()) {
         if (counter[i] > 0) {

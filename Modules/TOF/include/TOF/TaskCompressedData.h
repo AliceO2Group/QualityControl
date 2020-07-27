@@ -63,7 +63,6 @@ class CompressedDataDecoder final : public DecoderBase
                       const Error_t* errors) override;
 };
 
-
 /// \brief TOF Quality Control DPL Task for TOF Compressed data
 /// \author Nicolo' Jacazio
 class TaskCompressedData final : public TaskInterface
@@ -84,7 +83,7 @@ class TaskCompressedData final : public TaskInterface
   void reset() override;
 
  private:
-  CompressedDataDecoder mDecoder;       /// Decoder for TOF Compressed data useful for the Task
+  CompressedDataDecoder mDecoder;      /// Decoder for TOF Compressed data useful for the Task
   std::shared_ptr<TH1F> mHits;         /// Number of TOF hits
   std::shared_ptr<TH1F> mTime;         /// Time
   std::shared_ptr<TH1F> mTimeBC;       /// Time in Bunch Crossing
