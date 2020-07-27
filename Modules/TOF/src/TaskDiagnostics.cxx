@@ -11,6 +11,7 @@
 ///
 /// \file   TaskDiagnostics.cxx
 /// \author Nicolo' Jacazio
+/// \brief Task to check the diagnostic words of TOF crates
 ///
 
 // ROOT includes
@@ -37,41 +38,23 @@ void TaskDiagnostics::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  ILOG(Info) << "initialize TaskDiagnostics" << ENDM;
-#ifdef ENABLE_2D_HISTOGRAMS
-  // WARNING X axis is reserved to the counter
-  // WARNING! Here the histograms have to be larger than the counter size, otherwise in memory they will be badly handled with undefined behaviour. I.e. put more bins than necessary, they will be trimmed out later.
-  mDRMCounterHisto.reset(new TH2F("DRMCounter", ";DRM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
+  mDRMCounterHisto.reset(new TH2F("DRMCounter", "DRM Diagnostics;DRM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
   mCounter.mDRMCounter[0].MakeHistogram(mDRMCounterHisto.get());
   getObjectsManager()->startPublishing(mDRMCounterHisto.get());
+  mLTMCounterHisto.reset(new TH2F("LTMCounter", "LTM Diagnostics;LTM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
+  mCounter.mLTMCounter[0].MakeHistogram(mLTMCounterHisto.get());
+  getObjectsManager()->startPublishing(mLTMCounterHisto.get());
   for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
-    mTRMCounterHisto[j].reset(new TH2F(Form("TRMCounterSlot%i", j), ";TRM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
+    mTRMCounterHisto[j].reset(new TH2F(Form("TRMCounterSlot%i", j), Form("TRM %j Diagnostics;TRM Word;Crate;Words"), 32, 0, 32, 72, 0, 72));
     mCounter.mTRMCounter[0][j].MakeHistogram(mTRMCounterHisto[j].get());
     getObjectsManager()->startPublishing(mTRMCounterHisto[j].get());
     for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
-      mTRMChainCounterHisto[j][k].reset(new TH2F(Form("TRMChainCounterSlot%iChain%i", j, k), ";TRMChain Word;Crate;Words", 32, 0, 32, 72, 0, 72));
+      mTRMChainCounterHisto[j][k].reset(new TH2F(Form("TRMChainCounterSlot%iChain%i", j, k), Form("TRM %i Chain %i Diagnostics;TRMChain Word;Crate;Words", j, k), 32, 0, 32, 72, 0, 72));
       mCounter.mTRMChainCounter[0][j][k].MakeHistogram(mTRMChainCounterHisto[j][k].get());
       getObjectsManager()->startPublishing(mTRMChainCounterHisto[j][k].get());
     }
   }
-#else
-  for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
-    // WARNING! Here the histograms have to be larger than the counter size, otherwise in memory they will be badly handled with undefined behaviour. I.e. put more bins than necessary, they will be trimmed out later.
-    mDRMCounterHisto[i].reset(new TH1F(Form("DRMCounterCrate%i", i), ";DRM Word;Words", 32, 0, 32));
-    mCounter.mDRMCounter[i].MakeHistogram(mDRMCounterHisto[i].get());
-    getObjectsManager()->startPublishing(mDRMCounterHisto[i].get());
-    for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
-      mTRMCounterHisto[i][j].reset(new TH1F(Form("TRMCounterCrate%iSlot%i", i, j), ";TRM Word;Words", 32, 0, 32));
-      mCounter.mTRMCounter[i][j].MakeHistogram(mTRMCounterHisto[i][j].get());
-      getObjectsManager()->startPublishing(mTRMCounterHisto[i][j].get());
-      for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
-        mTRMChainCounterHisto[i][j][k].reset(new TH1F(Form("TRMChainCounterCrate%iSlot%iChain%i", i, j, k), ";TRMChain Word;Words", 32, 0, 32));
-        mCounter.mTRMChainCounter[i][j][k].MakeHistogram(mTRMChainCounterHisto[i][j][k].get());
-        getObjectsManager()->startPublishing(mTRMChainCounterHisto[i][j][k].get());
-      }
-    }
-  }
-#endif
+
 } // namespace o2::quality_control_modules::tof
 
 void TaskDiagnostics::startOfActivity(Activity& /*activity*/)
@@ -87,8 +70,6 @@ void TaskDiagnostics::startOfCycle()
 
 void TaskDiagnostics::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  LOG(INFO) << "Monitoring in the TaskDiagnostics";
-
   /** receive input **/
   for (auto& input : ctx.inputs()) {
     /** input **/
@@ -104,9 +85,9 @@ void TaskDiagnostics::monitorData(o2::framework::ProcessingContext& ctx)
 void TaskDiagnostics::endOfCycle()
 {
   ILOG(Info) << "endOfCycle" << ENDM;
-#ifdef ENABLE_2D_HISTOGRAMS
-  for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
+  for (Int_t i = 0; i < Diagnostics::ncrates; i++) { // Filling histograms only at the end of the cycle
     mCounter.mDRMCounter[i].FillHistogram(mDRMCounterHisto.get(), i + 1);
+    mCounter.mLTMCounter[i].FillHistogram(mLTMCounterHisto.get(), i + 1);
     for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
       mCounter.mTRMCounter[i][j].FillHistogram(mTRMCounterHisto[j].get(), i + 1);
       for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
@@ -114,17 +95,6 @@ void TaskDiagnostics::endOfCycle()
       }
     }
   }
-#else
-  for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
-    mCounter.mDRMCounter[i].FillHistogram(mDRMCounterHisto[i].get());
-    for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
-      mCounter.mTRMCounter[i][j].FillHistogram(mTRMCounterHisto[i][j].get());
-      for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
-        mCounter.mTRMChainCounter[i][j][k].FillHistogram(mTRMChainCounterHisto[i][j][k].get());
-      }
-    }
-  }
-#endif
 }
 
 void TaskDiagnostics::endOfActivity(Activity& /*activity*/)
@@ -137,7 +107,6 @@ void TaskDiagnostics::reset()
   // clean all the monitor objects here
 
   ILOG(Info) << "Resetting the histogram" << ENDM;
-#ifdef ENABLE_2D_HISTOGRAMS
   mDRMCounterHisto->Reset();
   for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
     mTRMCounterHisto[j]->Reset();
@@ -145,17 +114,6 @@ void TaskDiagnostics::reset()
       mTRMChainCounterHisto[j][k]->Reset();
     }
   }
-#else
-  for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
-    mDRMCounterHisto[i]->Reset();
-    for (Int_t j = 0; j < Diagnostics::ntrms; j++) {
-      mTRMCounterHisto[i][j]->Reset();
-      for (Int_t k = 0; k < Diagnostics::ntrmschains; k++) {
-        mTRMChainCounterHisto[i][j][k]->Reset();
-      }
-    }
-  }
-#endif
 }
 
 } // namespace o2::quality_control_modules::tof
