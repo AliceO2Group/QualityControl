@@ -30,6 +30,13 @@ namespace o2::quality_control_modules::tof
 
 void TaskDiagnostics::initialize(o2::framework::InitContext& /*ctx*/)
 {
+  if (auto param = mCustomParameters.find("DecoderCONET"); param != mCustomParameters.end()) {
+    if (param->second == "True") {
+      LOG(INFO) << "Rig for DecoderCONET";
+      mCounter.setDecoderCONET(kTRUE);
+    }
+  }
+
   ILOG(Info) << "initialize TaskDiagnostics" << ENDM;
 #ifdef ENABLE_2D_HISTOGRAMS
   // WARNING X axis is reserved to the counter
@@ -92,6 +99,11 @@ void TaskDiagnostics::monitorData(o2::framework::ProcessingContext& ctx)
     mCounter.setDecoderBufferSize(payloadInSize);
     mCounter.decode();
   }
+}
+
+void TaskDiagnostics::endOfCycle()
+{
+  ILOG(Info) << "endOfCycle" << ENDM;
 #ifdef ENABLE_2D_HISTOGRAMS
   for (Int_t i = 0; i < Diagnostics::ncrates; i++) {
     mCounter.mDRMCounter[i].FillHistogram(mDRMCounterHisto.get(), i + 1);
@@ -113,11 +125,6 @@ void TaskDiagnostics::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 #endif
-}
-
-void TaskDiagnostics::endOfCycle()
-{
-  ILOG(Info) << "endOfCycle" << ENDM;
 }
 
 void TaskDiagnostics::endOfActivity(Activity& /*activity*/)
