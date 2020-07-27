@@ -66,14 +66,18 @@ class Counter
   void MakeHistogram(TH1* h) const
   {
     LOG(INFO) << "Making Histogram " << h->GetName() << " out of counter";
+    TAxis* axis = h->GetXaxis();
+    if (axis->GetNbins() < Tc::size) {
+      LOG(FATAL) << "The histogram size (" << axis->GetNbins() << ") is not large enough to accomodate the counter size (" << Tc::size << ")";
+    }
     h->Reset();
-    h->GetXaxis()->Set(Tc::size, 0, Tc::size);
+    axis->Set(Tc::size, 0, Tc::size);
     UInt_t binx = 1;
     for (UInt_t i = 0; i < Tc::size; i++) {
       if (Tc::names[i].IsNull()) {
         continue;
       }
-      h->GetXaxis()->SetBinLabel(binx++, Tc::names[i]);
+      axis->SetBinLabel(binx++, Tc::names[i]);
     }
     h->Reset();
 #ifdef ENABLE_PRINT_HISTOGRAMS_MODE
