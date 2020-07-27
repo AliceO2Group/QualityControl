@@ -14,5 +14,4 @@
 #pragma link C++ class o2::quality_control_modules::tof::TOFCheckRawsTime+;
 #pragma link C++ class o2::quality_control_modules::tof::TOFCheckRawsToT+;
 // Utilities
-#pragma link C++ class o2::quality_control_modules::tof::Diagnostics+;
 #endif
