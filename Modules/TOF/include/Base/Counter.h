@@ -102,6 +102,7 @@ class Counter
   {
     LOG(INFO) << "Filling Histogram " << h->GetName() << " with counter contents";
     UInt_t binx = 1;
+    const UInt_t nbinsx =h->GetNbinsX();
     for (UInt_t i = 0; i < Tc::size; i++) {
       if (Tc::names[i].IsNull()) {
         if (counter[i] > 0) {
@@ -112,8 +113,8 @@ class Counter
 #ifdef ENABLE_COUNTER_DEBUG_MODE
       LOG(INFO) << "Filling bin " << binx << " of position " << i << " of label " << Tc::names[i] << " with " << counter[i];
 #endif
-      if (binx > h->GetNbinsX()) {
-        LOG(FATAL) << "Filling histogram " << h->GetName() << " at position " << binx << " i.e. past its size (" << h->GetNbinsX() << ")!";
+      if (binx > nbinsx) {
+        LOG(FATAL) << "Filling histogram " << h->GetName() << " at position " << binx << " i.e. past its size (" << nbinsx << ")!";
       }
       if (!Tc::names[i].EqualTo(h->GetXaxis()->GetBinLabel(binx))) {
         LOG(FATAL) << "Bin" << binx << " does not have the expected label '" << h->GetXaxis()->GetBinLabel(binx) << "' vs '" << Tc::names[i] << "'";
