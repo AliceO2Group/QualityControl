@@ -45,7 +45,7 @@
     "checks": {
       "checkFromTOF-Diagnostic": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckDiagnostic",
+          "className": "o2::quality_control_modules::tof::CheckCompressedData",
           "moduleName": "QcTOF",
           "detectorName": "TOF",
           "policy": "OnAny",

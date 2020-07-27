@@ -9,7 +9,7 @@ target_sources(QcTOF
                       src/TaskDiagnostics.cxx
                       # Checkers
                       src/TOFCheckCompressedCounter.cxx
-                      src/TOFCheckDiagnostic.cxx
+                      src/CheckCompressedData.cxx
                       src/TOFCheckRawsMulti.cxx
                       src/TOFCheckRawsTime.cxx
                       src/TOFCheckRawsToT.cxx
@@ -45,7 +45,7 @@ add_root_dictionary(QcTOF
                             include/TOF/TaskCompressedData.h
                             include/TOF/TaskDiagnostics.h
                             # Checkers
-                            include/TOF/TOFCheckDiagnostic.h
+                            include/TOF/CheckCompressedData.h
                             include/TOF/TOFCheckCompressedCounter.h
                             include/TOF/TOFCheckRawsMulti.h
                             include/TOF/TOFCheckRawsTime.h

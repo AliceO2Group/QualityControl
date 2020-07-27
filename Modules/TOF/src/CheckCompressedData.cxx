@@ -9,12 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckDiagnostic.cxx
+/// \file   CheckCompressedData.cxx
 /// \author Nicolo' Jacazio
+/// \brief  Checker for the raw compressed data for TOF
 ///
 
 // QC
-#include "TOF/TOFCheckDiagnostic.h"
+#include "TOF/CheckCompressedData.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -30,15 +31,15 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-TOFCheckDiagnostic::TOFCheckDiagnostic()
+CheckCompressedData::CheckCompressedData()
 {
 }
 
-TOFCheckDiagnostic::~TOFCheckDiagnostic() {}
+CheckCompressedData::~CheckCompressedData() {}
 
-void TOFCheckDiagnostic::configure(std::string) {}
+void CheckCompressedData::configure(std::string) {}
 
-Quality TOFCheckDiagnostic::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality CheckCompressedData::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
 
   Quality result = Quality::Null;
@@ -56,9 +57,9 @@ Quality TOFCheckDiagnostic::check(std::map<std::string, std::shared_ptr<MonitorO
   return result;
 }
 
-std::string TOFCheckDiagnostic::getAcceptedType() { return "TH2F"; }
+std::string CheckCompressedData::getAcceptedType() { return "TH2F"; }
 
-void TOFCheckDiagnostic::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Info) << "USING BEAUTIFY";
   if (mo->getName() == "hDiagnostic") {

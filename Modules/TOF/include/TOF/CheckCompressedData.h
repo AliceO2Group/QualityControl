@@ -9,12 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckDiagnostic.h
+/// \file   CheckCompressedData.h
 /// \author Nicolo' Jacazio
+/// \brief  Checker for the raw compressed data for TOF
 ///
 
-#ifndef QC_MODULE_TOF_TOFCHECKDIAGNOSTIC_H
-#define QC_MODULE_TOF_TOFCHECKDIAGNOSTIC_H
+#ifndef QC_MODULE_TOF_CHECKCOMPRESSEDDATA_H
+#define QC_MODULE_TOF_CHECKCOMPRESSEDDATA_H
 
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
@@ -23,16 +24,16 @@
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief  Checker for diagnostic histogram of TOF Raw data
+/// \brief  Checker for the data produced by the TOF compressor (i.e. checking raw data)
 ///
 /// \author Nicolo' Jacazio
-class TOFCheckDiagnostic : public o2::quality_control::checker::CheckInterface
+class CheckCompressedData : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TOFCheckDiagnostic();
+  CheckCompressedData();
   /// Destructor
-  ~TOFCheckDiagnostic() override;
+  ~CheckCompressedData() override;
 
   // Override interface
   void configure(std::string name) override;
@@ -40,9 +41,9 @@ class TOFCheckDiagnostic : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(TOFCheckDiagnostic, 1);
+  ClassDefOverride(CheckCompressedData, 1);
 };
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFCHECKDIAGNOSTIC_H
+#endif // QC_MODULE_TOF_CHECKCOMPRESSEDDATA_H
