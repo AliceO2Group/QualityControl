@@ -233,18 +233,18 @@ void TaskDiagnostics::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  mDRMHisto.reset(new TH2F("DRMCounter", "DRM DiagnosticsCounter;DRM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
+  mDRMHisto.reset(new TH2F("DRMCounter", "DRM Diagnostics;DRM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
   mDecoderCounter.mDRMCounter[0].MakeHistogram(mDRMHisto.get());
   getObjectsManager()->startPublishing(mDRMHisto.get());
-  mLTMHisto.reset(new TH2F("LTMCounter", "LTM DiagnosticsCounter;LTM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
+  mLTMHisto.reset(new TH2F("LTMCounter", "LTM Diagnostics;LTM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
   mDecoderCounter.mLTMCounter[0].MakeHistogram(mLTMHisto.get());
   getObjectsManager()->startPublishing(mLTMHisto.get());
   for (Int_t j = 0; j < DiagnosticsCounter::ntrms; j++) {
-    mTRMHisto[j].reset(new TH2F(Form("TRMCounterSlot%i", j), Form("TRM %i DiagnosticsCounter;TRM Word;Crate;Words", j), 32, 0, 32, 72, 0, 72));
+    mTRMHisto[j].reset(new TH2F(Form("TRMCounterSlot%i", j), Form("TRM %i Diagnostics;TRM Word;Crate;Words", j), 32, 0, 32, 72, 0, 72));
     mDecoderCounter.mTRMCounter[0][j].MakeHistogram(mTRMHisto[j].get());
     getObjectsManager()->startPublishing(mTRMHisto[j].get());
     for (Int_t k = 0; k < DiagnosticsCounter::ntrmschains; k++) {
-      mTRMChainHisto[j][k].reset(new TH2F(Form("TRMChainCounterSlot%iChain%i", j, k), Form("TRM %i Chain %i DiagnosticsCounter;TRMChain Word;Crate;Words", j, k), 32, 0, 32, 72, 0, 72));
+      mTRMChainHisto[j][k].reset(new TH2F(Form("TRMChainCounterSlot%iChain%i", j, k), Form("TRM %i Chain %i Diagnostics;TRMChain Word;Crate;Words", j, k), 32, 0, 32, 72, 0, 72));
       mDecoderCounter.mTRMChainCounter[0][j][k].MakeHistogram(mTRMChainHisto[j][k].get());
       getObjectsManager()->startPublishing(mTRMChainHisto[j][k].get());
     }
