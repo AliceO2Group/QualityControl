@@ -9,12 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckCompressedCounter.cxx
+/// \file   CheckDiagnostics.cxx
 /// \author Nicolo' Jacazio
+/// \brief  Checker dedicated to the study of low level raw data diagnostics words
 ///
 
 // QC
-#include "TOF/TOFCheckCompressedCounter.h"
+#include "TOF/CheckDiagnostics.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -30,9 +31,9 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void TOFCheckCompressedCounter::configure(std::string) {}
+void CheckDiagnostics::configure(std::string) {}
 
-Quality TOFCheckCompressedCounter::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
 
   Quality result = Quality::Null;
@@ -50,9 +51,9 @@ Quality TOFCheckCompressedCounter::check(std::map<std::string, std::shared_ptr<M
   return result;
 }
 
-std::string TOFCheckCompressedCounter::getAcceptedType() { return "TH1F"; }
+std::string CheckDiagnostics::getAcceptedType() { return "TH1F"; }
 
-void TOFCheckCompressedCounter::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Info) << "USING BEAUTIFY";
   if (mo->getName() == "RDHCounterCrate0") {
