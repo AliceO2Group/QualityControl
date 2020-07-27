@@ -1,0 +1,585 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "ITSqcTrendingThr": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTaskITSThr",
+        "moduleName": "QualityControl",
+        "detectorName": "ITS",
+        "dataSources": [
+          {
+            "type": "repository",
+            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave0/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave1/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave2/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave3/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave4/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave5/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave6/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave7/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave8/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave9/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave10/Threshold",
+                      "qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave11/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave0/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave1/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave2/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave3/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave4/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave5/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave6/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave7/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave8/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave9/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave10/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave11/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave12/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave13/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave14/Threshold",
+                      "qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave15/Threshold",
+                      "qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave0/Threshold",
+                      "qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave1/Threshold",
+                      "qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave2/Threshold",
+                      "qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave3/Threshold",
+                      "qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave4/Threshold",
+                      "qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave5/Threshold",
+                      "qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave6/Threshold",
+                      "qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave7/Threshold",
+                      "qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave8/Threshold",
+                      "qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave9/Threshold",
+                      "qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave10/Threshold",
+                      "qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave11/Threshold",
+                      "qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave12/Threshold",
+                      "qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave13/Threshold",
+                      "qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave14/Threshold",
+                      "qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave15/Threshold",
+                      "qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave16/Threshold",
+                      "qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave17/Threshold",
+                      "qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave18/Threshold",
+                      "qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave19/Threshold"],
+            "names": ["Threshold_l0_0",
+                      "Threshold_l0_1",
+                      "Threshold_l0_2",
+                      "Threshold_l0_3",
+                      "Threshold_l0_4",
+                      "Threshold_l0_5",
+                      "Threshold_l0_6",
+                      "Threshold_l0_7",
+                      "Threshold_l0_8",
+                      "Threshold_l0_9",
+                      "Threshold_l0_10",
+                      "Threshold_l0_11",
+                      "Threshold_l1_0",
+                      "Threshold_l1_1",
+                      "Threshold_l1_2",
+                      "Threshold_l1_3",
+                      "Threshold_l1_4",
+                      "Threshold_l1_5",
+                      "Threshold_l1_6",
+                      "Threshold_l1_7",
+                      "Threshold_l1_8",
+                      "Threshold_l1_9",
+                      "Threshold_l1_10",
+                      "Threshold_l1_11",
+                      "Threshold_l1_12",
+                      "Threshold_l1_13",
+                      "Threshold_l1_14",
+                      "Threshold_l1_15",
+                      "Threshold_l2_0",
+                      "Threshold_l2_1",
+                      "Threshold_l2_2",
+                      "Threshold_l2_3",
+                      "Threshold_l2_4",
+                      "Threshold_l2_5",
+                      "Threshold_l2_6",
+                      "Threshold_l2_7",
+                      "Threshold_l2_8",
+                      "Threshold_l2_9",
+                      "Threshold_l2_10",
+                      "Threshold_l2_11",
+                      "Threshold_l2_12",
+                      "Threshold_l2_13",
+                      "Threshold_l2_14",
+                      "Threshold_l2_15",
+                      "Threshold_l2_16",
+                      "Threshold_l2_17",
+                      "Threshold_l2_18",
+                      "Threshold_l2_19"],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository",
+            "paths": ["qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave0/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave1/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave2/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave3/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave4/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave5/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave6/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave7/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave8/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave9/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave10/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave11/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave0/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave1/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave2/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave3/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave4/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave5/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave6/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave7/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave8/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave9/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave10/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave11/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave12/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave13/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave14/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave15/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave0/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave1/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave2/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave3/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave4/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave5/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave6/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave7/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave8/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave9/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave10/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave11/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave12/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave13/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave14/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave15/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave16/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave17/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave18/DeadPixelHITMAP",
+                      "qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave19/DeadPixelHITMAP"],
+            "names": ["DeadPixels_l0_0",
+                      "DeadPixels_l0_1",
+                      "DeadPixels_l0_2",
+                      "DeadPixels_l0_3",
+                      "DeadPixels_l0_4",
+                      "DeadPixels_l0_5",
+                      "DeadPixels_l0_6",
+                      "DeadPixels_l0_7",
+                      "DeadPixels_l0_8",
+                      "DeadPixels_l0_9",
+                      "DeadPixels_l0_10",
+                      "DeadPixels_l0_11",
+                      "DeadPixels_l1_0",
+                      "DeadPixels_l1_1",
+                      "DeadPixels_l1_2",
+                      "DeadPixels_l1_3",
+                      "DeadPixels_l1_4",
+                      "DeadPixels_l1_5",
+                      "DeadPixels_l1_6",
+                      "DeadPixels_l1_7",
+                      "DeadPixels_l1_8",
+                      "DeadPixels_l1_9",
+                      "DeadPixels_l1_10",
+                      "DeadPixels_l1_11",
+                      "DeadPixels_l1_12",
+                      "DeadPixels_l1_13",
+                      "DeadPixels_l1_14",
+                      "DeadPixels_l1_15",
+                      "DeadPixels_l2_0",
+                      "DeadPixels_l2_1",
+                      "DeadPixels_l2_2",
+                      "DeadPixels_l2_3",
+                      "DeadPixels_l2_4",
+                      "DeadPixels_l2_5",
+                      "DeadPixels_l2_6",
+                      "DeadPixels_l2_7",
+                      "DeadPixels_l2_8",
+                      "DeadPixels_l2_9",
+                      "DeadPixels_l2_10",
+                      "DeadPixels_l2_11",
+                      "DeadPixels_l2_12",
+                      "DeadPixels_l2_13",
+                      "DeadPixels_l2_14",
+                      "DeadPixels_l2_15",
+                      "DeadPixels_l2_16",
+                      "DeadPixels_l2_17",
+                      "DeadPixels_l2_18",
+                      "DeadPixels_l2_19"],
+            "reductorName": "o2::quality_control_modules::common::THnSparseReductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "names": ["mean_of_Threshold_L0_00", "rms_of_Threshold_L0_00", "deadpix_of_L0_00"],
+            "title": ["Mean trend of Threshold: L0_00", "RMS trend of Threshold: L0_00", "Dead pixel trend: L0_00"],
+            "varexp": ["Threshold_l0_0.mean:time", "Threshold_l0_0.stddev:time", "DeadPixels_l0_0.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_01", "rms_of_Threshold_L0_01", "deadpix_of_L0_01"],
+            "title": ["Mean trend of Threshold: L0_01", "RMS trend of Threshold: L0_01", "Dead pixel trend: L0_01"],
+            "varexp": ["Threshold_l0_1.mean:time", "Threshold_l0_1.stddev:time", "DeadPixels_l0_1.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_02", "rms_of_Threshold_L0_02", "deadpix_of_L0_02"],
+            "title": ["Mean trend of Threshold: L0_02", "RMS trend of Threshold: L0_02", "Dead pixel trend: L0_02"],
+            "varexp": ["Threshold_l0_2.mean:time", "Threshold_l0_2.stddev:time", "DeadPixels_l0_2.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_03", "rms_of_Threshold_L0_03", "deadpix_of_L0_03"],
+            "title": ["Mean trend of Threshold: L0_03", "RMS trend of Threshold: L0_03", "Dead pixel trend: L0_03"],
+            "varexp": ["Threshold_l0_3.mean:time", "Threshold_l0_3.stddev:time", "DeadPixels_l0_3.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_04", "rms_of_Threshold_L0_04", "deadpix_of_L0_04"],
+            "title": ["Mean trend of Threshold: L0_04", "RMS trend of Threshold: L0_04", "Dead pixel trend: L0_04"],
+            "varexp": ["Threshold_l0_4.mean:time", "Threshold_l0_4.stddev:time", "DeadPixels_l0_4.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_05", "rms_of_Threshold_L0_05", "deadpix_of_L0_05"],
+            "title": ["Mean trend of Threshold: L0_05", "RMS trend of Threshold: L0_05", "Dead pixel trend: L0_05"],
+            "varexp": ["Threshold_l0_5.mean:time", "Threshold_l0_5.stddev:time", "DeadPixels_l0_5.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_06", "rms_of_Threshold_L0_06", "deadpix_of_L0_06"],
+            "title": ["Mean trend of Threshold: L0_06", "RMS trend of Threshold: L0_06", "Dead pixel trend: L0_06"],
+            "varexp": ["Threshold_l0_6.mean:time", "Threshold_l0_6.stddev:time", "DeadPixels_l0_6.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_07", "rms_of_Threshold_L0_07", "deadpix_of_L0_07"],
+            "title": ["Mean trend of Threshold: L0_07", "RMS trend of Threshold: L0_07", "Dead pixel trend: L0_07"],
+            "varexp": ["Threshold_l0_7.mean:time", "Threshold_l0_7.stddev:time", "DeadPixels_l0_7.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_08", "rms_of_Threshold_L0_08", "deadpix_of_L0_08"],
+            "title": ["Mean trend of Threshold: L0_08", "RMS trend of Threshold: L0_08", "Dead pixel trend: L0_08"],
+            "varexp": ["Threshold_l0_8.mean:time", "Threshold_l0_8.stddev:time", "DeadPixels_l0_8.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_09", "rms_of_Threshold_L0_09", "deadpix_of_L0_09"],
+            "title": ["Mean trend of Threshold: L0_09", "RMS trend of Threshold: L0_09", "Dead pixel trend: L0_09"],
+            "varexp": ["Threshold_l0_9.mean:time", "Threshold_l0_9.stddev:time", "DeadPixels_l0_9.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_10", "rms_of_Threshold_L0_10", "deadpix_of_L0_10"],
+            "title": ["Mean trend of Threshold: L0_10", "RMS trend of Threshold: L0_10", "Dead pixel trend: L0_10"],
+            "varexp": ["Threshold_l0_10.mean:time", "Threshold_l0_10.stddev:time", "DeadPixels_l0_10.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L0_11", "rms_of_Threshold_L0_11", "deadpix_of_L0_11"],
+            "title": ["Mean trend of Threshold: L0_11", "RMS trend of Threshold: L0_11", "Dead pixel trend: L0_11"],
+            "varexp": ["Threshold_l0_11.mean:time", "Threshold_l0_11.stddev:time", "DeadPixels_l0_11.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_00", "rms_of_Threshold_L1_00", "deadpix_of_L1_00"],
+            "title": ["Mean trend of Threshold: L1_00", "RMS trend of Threshold: L1_00", "Dead pixel trend: L1_00"],
+            "varexp": ["Threshold_l1_0.mean:time", "Threshold_l1_0.stddev:time", "DeadPixels_l1_0.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_01", "rms_of_Threshold_L1_01", "deadpix_of_L1_01"],
+            "title": ["Mean trend of Threshold: L1_01", "RMS trend of Threshold: L1_01", "Dead pixel trend: L1_01"],
+            "varexp": ["Threshold_l1_1.mean:time", "Threshold_l1_1.stddev:time", "DeadPixels_l1_1.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_02", "rms_of_Threshold_L1_02", "deadpix_of_L1_02"],
+            "title": ["Mean trend of Threshold: L1_02", "RMS trend of Threshold: L1_02", "Dead pixel trend: L1_02"],
+            "varexp": ["Threshold_l1_2.mean:time", "Threshold_l1_2.stddev:time", "DeadPixels_l1_2.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_03", "rms_of_Threshold_L1_03", "deadpix_of_L1_03"],
+            "title": ["Mean trend of Threshold: L1_03", "RMS trend of Threshold: L1_03", "Dead pixel trend: L1_03"],
+            "varexp": ["Threshold_l1_3.mean:time", "Threshold_l1_3.stddev:time", "DeadPixels_l1_3.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_04", "rms_of_Threshold_L1_04", "deadpix_of_L1_04"],
+            "title": ["Mean trend of Threshold: L1_04", "RMS trend of Threshold: L1_04", "Dead pixel trend: L1_04"],
+            "varexp": ["Threshold_l1_4.mean:time", "Threshold_l1_4.stddev:time", "DeadPixels_l1_4.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_05", "rms_of_Threshold_L1_05", "deadpix_of_L1_05"],
+            "title": ["Mean trend of Threshold: L1_05", "RMS trend of Threshold: L1_05", "Dead pixel trend: L1_05"],
+            "varexp": ["Threshold_l1_5.mean:time", "Threshold_l1_5.stddev:time", "DeadPixels_l1_5.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_06", "rms_of_Threshold_L1_06", "deadpix_of_L1_06"],
+            "title": ["Mean trend of Threshold: L1_06", "RMS trend of Threshold: L1_06", "Dead pixel trend: L1_06"],
+            "varexp": ["Threshold_l1_6.mean:time", "Threshold_l1_6.stddev:time", "DeadPixels_l1_6.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_07", "rms_of_Threshold_L1_07", "deadpix_of_L1_07"],
+            "title": ["Mean trend of Threshold: L1_07", "RMS trend of Threshold: L1_07", "Dead pixel trend: L1_07"],
+            "varexp": ["Threshold_l1_7.mean:time", "Threshold_l1_7.stddev:time", "DeadPixels_l1_7.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_08", "rms_of_Threshold_L1_08", "deadpix_of_L1_08"],
+            "title": ["Mean trend of Threshold: L1_08", "RMS trend of Threshold: L1_08", "Dead pixel trend: L1_08"],
+            "varexp": ["Threshold_l1_8.mean:time", "Threshold_l1_8.stddev:time", "DeadPixels_l1_8.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_09", "rms_of_Threshold_L1_09", "deadpix_of_L1_09"],
+            "title": ["Mean trend of Threshold: L1_09", "RMS trend of Threshold: L1_09", "Dead pixel trend: L1_09"],
+            "varexp": ["Threshold_l1_9.mean:time", "Threshold_l1_9.stddev:time", "DeadPixels_l1_9.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_10", "rms_of_Threshold_L1_10", "deadpix_of_L1_10"],
+            "title": ["Mean trend of Threshold: L1_10", "RMS trend of Threshold: L1_10", "Dead pixel trend: L1_10"],
+            "varexp": ["Threshold_l1_10.mean:time", "Threshold_l1_10.stddev:time", "DeadPixels_l1_10.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_11", "rms_of_Threshold_L1_11", "deadpix_of_L1_11"],
+            "title": ["Mean trend of Threshold: L1_11", "RMS trend of Threshold: L1_11", "Dead pixel trend: L1_11"],
+            "varexp": ["Threshold_l1_11.mean:time", "Threshold_l1_11.stddev:time", "DeadPixels_l1_11.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_12", "rms_of_Threshold_L1_12", "deadpix_of_L1_12"],
+            "title": ["Mean trend of Threshold: L1_12", "RMS trend of Threshold: L1_12", "Dead pixel trend: L1_12"],
+            "varexp": ["Threshold_l1_12.mean:time", "Threshold_l1_12.stddev:time", "DeadPixels_l1_12.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_13", "rms_of_Threshold_L1_13", "deadpix_of_L1_13"],
+            "title": ["Mean trend of Threshold: L1_13", "RMS trend of Threshold: L1_13", "Dead pixel trend: L1_13"],
+            "varexp": ["Threshold_l1_13.mean:time", "Threshold_l1_13.stddev:time", "DeadPixels_l1_13.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_14", "rms_of_Threshold_L1_14", "deadpix_of_L1_14"],
+            "title": ["Mean trend of Threshold: L1_14", "RMS trend of Threshold: L1_14", "Dead pixel trend: L1_14"],
+            "varexp": ["Threshold_l1_14.mean:time", "Threshold_l1_14.stddev:time", "DeadPixels_l1_14.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L1_15", "rms_of_Threshold_L1_15", "deadpix_of_L1_15"],
+            "title": ["Mean trend of Threshold: L1_15", "RMS trend of Threshold: L1_15", "Dead pixel trend: L1_15"],
+            "varexp": ["Threshold_l1_15.mean:time", "Threshold_l1_15.stddev:time", "DeadPixels_l1_15.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_00", "rms_of_Threshold_L2_00", "deadpix_of_L2_00"],
+            "title": ["Mean trend of Threshold: L2_00", "RMS trend of Threshold: L2_00", "Dead pixel trend: L2_00"],
+            "varexp": ["Threshold_l2_0.mean:time", "Threshold_l2_0.stddev:time", "DeadPixels_l2_0.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_01", "rms_of_Threshold_L2_01", "deadpix_of_L2_01"],
+            "title": ["Mean trend of Threshold: L2_01", "RMS trend of Threshold: L2_01", "Dead pixel trend: L2_01"],
+            "varexp": ["Threshold_l2_1.mean:time", "Threshold_l2_1.stddev:time", "DeadPixels_l2_1.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_02", "rms_of_Threshold_L2_02", "deadpix_of_L2_02"],
+            "title": ["Mean trend of Threshold: L2_02", "RMS trend of Threshold: L2_02", "Dead pixel trend: L2_02"],
+            "varexp": ["Threshold_l2_2.mean:time", "Threshold_l2_2.stddev:time", "DeadPixels_l2_2.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_03", "rms_of_Threshold_L2_03", "deadpix_of_L2_03"],
+            "title": ["Mean trend of Threshold: L2_03", "RMS trend of Threshold: L2_03", "Dead pixel trend: L2_03"],
+            "varexp": ["Threshold_l2_3.mean:time", "Threshold_l2_3.stddev:time", "DeadPixels_l2_3.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_04", "rms_of_Threshold_L2_04", "deadpix_of_L2_04"],
+            "title": ["Mean trend of Threshold: L2_04", "RMS trend of Threshold: L2_04", "Dead pixel trend: L2_04"],
+            "varexp": ["Threshold_l2_4.mean:time", "Threshold_l2_4.stddev:time", "DeadPixels_l2_4.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_05", "rms_of_Threshold_L2_05", "deadpix_of_L2_05"],
+            "title": ["Mean trend of Threshold: L2_05", "RMS trend of Threshold: L2_05", "Dead pixel trend: L2_05"],
+            "varexp": ["Threshold_l2_5.mean:time", "Threshold_l2_5.stddev:time", "DeadPixels_l2_5.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_06", "rms_of_Threshold_L2_06", "deadpix_of_L2_06"],
+            "title": ["Mean trend of Threshold: L2_06", "RMS trend of Threshold: L2_06", "Dead pixel trend: L2_06"],
+            "varexp": ["Threshold_l2_6.mean:time", "Threshold_l2_6.stddev:time", "DeadPixels_l2_6.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_07", "rms_of_Threshold_L2_07", "deadpix_of_L2_07"],
+            "title": ["Mean trend of Threshold: L2_07", "RMS trend of Threshold: L2_07", "Dead pixel trend: L2_07"],
+            "varexp": ["Threshold_l2_7.mean:time", "Threshold_l2_7.stddev:time", "DeadPixels_l2_7.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_08", "rms_of_Threshold_L2_08", "deadpix_of_L2_08"],
+            "title": ["Mean trend of Threshold: L2_08", "RMS trend of Threshold: L2_08", "Dead pixel trend: L2_08"],
+            "varexp": ["Threshold_l2_8.mean:time", "Threshold_l2_8.stddev:time", "DeadPixels_l2_8.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_09", "rms_of_Threshold_L2_09", "deadpix_of_L2_09"],
+            "title": ["Mean trend of Threshold: L2_09", "RMS trend of Threshold: L2_09", "Dead pixel trend: L2_09"],
+            "varexp": ["Threshold_l2_9.mean:time", "Threshold_l2_9.stddev:time", "DeadPixels_l2_9.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_10", "rms_of_Threshold_L2_10", "deadpix_of_L2_10"],
+            "title": ["Mean trend of Threshold: L2_10", "RMS trend of Threshold: L2_10", "Dead pixel trend: L2_10"],
+            "varexp": ["Threshold_l2_10.mean:time", "Threshold_l2_10.stddev:time", "DeadPixels_l2_10.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_11", "rms_of_Threshold_L2_11", "deadpix_of_L2_11"],
+            "title": ["Mean trend of Threshold: L2_11", "RMS trend of Threshold: L2_11", "Dead pixel trend: L2_11"],
+            "varexp": ["Threshold_l2_11.mean:time", "Threshold_l2_11.stddev:time", "DeadPixels_l2_11.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_12", "rms_of_Threshold_L2_12", "deadpix_of_L2_12"],
+            "title": ["Mean trend of Threshold: L2_12", "RMS trend of Threshold: L2_12", "Dead pixel trend: L2_12"],
+            "varexp": ["Threshold_l2_12.mean:time", "Threshold_l2_12.stddev:time", "DeadPixels_l2_12.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_13", "rms_of_Threshold_L2_13", "deadpix_of_L2_13"],
+            "title": ["Mean trend of Threshold: L2_13", "RMS trend of Threshold: L2_13", "Dead pixel trend: L2_13"],
+            "varexp": ["Threshold_l2_13.mean:time", "Threshold_l2_13.stddev:time", "DeadPixels_l2_13.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_14", "rms_of_Threshold_L2_14", "deadpix_of_L2_14"],
+            "title": ["Mean trend of Threshold: L2_14", "RMS trend of Threshold: L2_14", "Dead pixel trend: L2_14"],
+            "varexp": ["Threshold_l2_14.mean:time", "Threshold_l2_14.stddev:time", "DeadPixels_l2_14.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_15", "rms_of_Threshold_L2_15", "deadpix_of_L2_15"],
+            "title": ["Mean trend of Threshold: L2_15", "RMS trend of Threshold: L2_15", "Dead pixel trend: L2_15"],
+            "varexp": ["Threshold_l2_15.mean:time", "Threshold_l2_15.stddev:time", "DeadPixels_l2_15.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_16", "rms_of_Threshold_L2_16", "deadpix_of_L2_16"],
+            "title": ["Mean trend of Threshold: L2_16", "RMS trend of Threshold: L2_16", "Dead pixel trend: L2_16"],
+            "varexp": ["Threshold_l2_16.mean:time", "Threshold_l2_16.stddev:time", "DeadPixels_l2_16.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_17", "rms_of_Threshold_L2_17", "deadpix_of_L2_17"],
+            "title": ["Mean trend of Threshold: L2_17", "RMS trend of Threshold: L2_17", "Dead pixel trend: L2_17"],
+            "varexp": ["Threshold_l2_17.mean:time", "Threshold_l2_17.stddev:time", "DeadPixels_l2_17.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_18", "rms_of_Threshold_L2_18", "deadpix_of_L2_18"],
+            "title": ["Mean trend of Threshold: L2_18", "RMS trend of Threshold: L2_18", "Dead pixel trend: L2_18"],
+            "varexp": ["Threshold_l2_18.mean:time", "Threshold_l2_18.stddev:time", "DeadPixels_l2_18.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["mean_of_Threshold_L2_19", "rms_of_Threshold_L2_19", "deadpix_of_L2_19"],
+            "title": ["Mean trend of Threshold: L2_19", "RMS trend of Threshold: L2_19", "Dead pixel trend: L2_19"],
+            "varexp": ["Threshold_l2_19.mean:time", "Threshold_l2_19.stddev:time", "DeadPixels_l2_19.entries[0]:time"],
+            "selection": "",
+            "option": "PL"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}

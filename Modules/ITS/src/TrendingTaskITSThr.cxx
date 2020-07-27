@@ -9,11 +9,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    TrendingTaskITS.cxx
+/// \file    TrendingTaskITSThr.cxx
 /// \author  Ivan Ravasenga on the structure from Piotr Konopka
 ///
 
-#include "ITS/TrendingTaskITS.h"
+#include "ITS/TrendingTaskITSThr.h"
 #include "../../../Framework/src/RootClassFactory.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
@@ -25,13 +25,13 @@ using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
-void TrendingTaskITS::configure(std::string name,
+void TrendingTaskITSThr::configure(std::string name,
                                 const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfigITS(name, config);
 }
 
-void TrendingTaskITS::initialize(Trigger,
+void TrendingTaskITSThr::initialize(Trigger,
                                  framework::ServiceRegistry& services)
 {
   // Preparing data structure of TTree
@@ -55,7 +55,7 @@ void TrendingTaskITS::initialize(Trigger,
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingTaskITS::update(Trigger, framework::ServiceRegistry&)
+void TrendingTaskITSThr::update(Trigger, framework::ServiceRegistry&)
 {
   trendValues();
 
@@ -63,13 +63,13 @@ void TrendingTaskITS::update(Trigger, framework::ServiceRegistry&)
   storeTrend();
 }
 
-void TrendingTaskITS::finalize(Trigger, framework::ServiceRegistry&)
+void TrendingTaskITSThr::finalize(Trigger, framework::ServiceRegistry&)
 {
   storePlots();
   storeTrend();
 }
 
-void TrendingTaskITS::storeTrend()
+void TrendingTaskITSThr::storeTrend()
 {
   ILOG(Info) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
@@ -79,7 +79,7 @@ void TrendingTaskITS::storeTrend()
   mDatabase->storeMO(mo);
 }
 
-void TrendingTaskITS::trendValues()
+void TrendingTaskITSThr::trendValues()
 {
   // We use current date and time. This for planned processing (not history). We
   // still might need to use the objects
@@ -114,7 +114,7 @@ void TrendingTaskITS::trendValues()
   mTrend->Fill();
 }
 
-void TrendingTaskITS::storePlots()
+void TrendingTaskITSThr::storePlots()
 {
   ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots."
              << ENDM;
@@ -233,21 +233,21 @@ void TrendingTaskITS::storePlots()
   }
 }
 
-void TrendingTaskITS::SetLegendStyle(TLegend* leg)
+void TrendingTaskITSThr::SetLegendStyle(TLegend* leg)
 {
   leg->SetTextFont(42);
   leg->SetLineColor(kWhite);
   leg->SetFillColor(0);
 }
 
-void TrendingTaskITS::SetGraphStyle(TGraph* g, int col, int mkr)
+void TrendingTaskITSThr::SetGraphStyle(TGraph* g, int col, int mkr)
 {
   g->SetLineColor(col);
   g->SetMarkerStyle(mkr);
   g->SetMarkerColor(col);
 }
 
-void TrendingTaskITS::SetGraphNameAndAxes(TGraph* g, std::string name,
+void TrendingTaskITSThr::SetGraphNameAndAxes(TGraph* g, std::string name,
                                           std::string title, std::string xtitle,
                                           std::string ytitle, double ymin,
                                           double ymax)
@@ -270,7 +270,7 @@ void TrendingTaskITS::SetGraphNameAndAxes(TGraph* g, std::string name,
   }
 }
 
-void TrendingTaskITS::PrepareLegend(TLegend* leg, int layer)
+void TrendingTaskITSThr::PrepareLegend(TLegend* leg, int layer)
 {
   for (int istv = 0; istv < nStaves[layer]; istv++) {
     int colidx = istv > 13 ? istv - 14 : istv > 6 ? istv - 7 : istv;

@@ -6,6 +6,7 @@ configure_file("include/Common/Version.h.in"
 
 # ---- Library ----
 
+
 add_library(QcCommon)
 
 target_sources(QcCommon
@@ -13,6 +14,7 @@ target_sources(QcCommon
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
                        src/TH2Reductor.cxx
+                       src/TH2XlineReductor.cxx
                        src/THnSparseReductor.cxx
                        src/QualityReductor.cxx)
 
@@ -34,6 +36,7 @@ add_root_dictionary(QcCommon
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Reductor.h
                             include/Common/TH2Reductor.h
+                            include/Common/TH2XlineReductor.h
                             include/Common/THnSparseReductor.h
                             include/Common/QualityReductor.h
                     LINKDEF include/Common/LinkDef.h

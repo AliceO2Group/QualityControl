@@ -1,9 +1,8 @@
 # ---- Library ----
-
-
 add_library(QcITSRawTask
             src/ITSRawTask.cxx
-            src/TrendingTaskITS.cxx
+            src/TrendingTaskITSThr.cxx
+            src/TrendingTaskITSFhr.cxx
             src/TrendingTaskConfigITS.cxx)
 
 target_sources(QcITSRawTask PRIVATE)
@@ -27,7 +26,8 @@ install(TARGETS QcITSRawTask
 
 add_root_dictionary(QcITSRawTask
                     HEADERS include/ITS/ITSRawTask.h
-                            include/ITS/TrendingTaskITS.h
+                            include/ITS/TrendingTaskITSThr.h
+                            include/ITS/TrendingTaskITSFhr.h
                     LINKDEF include/ITS/LinkDef.h
                     BASENAME QcITSRawTask)
 
@@ -75,7 +75,8 @@ install(
 
 install(FILES
         its.json
-        itsQCTrending.json
+        itsQCTrendingThr.json
+        itsQCTrendingFhr.json
         DESTINATION etc)
 
 get_property(dirs
