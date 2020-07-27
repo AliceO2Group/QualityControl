@@ -97,8 +97,8 @@ class Counter
 #ifdef ENABLE_COUNTER_DEBUG_MODE
       LOG(INFO) << "Filling bin " << binx << " of position " << i << " of label " << Tc::names[i] << " with " << counter[i];
 #endif
-      if (Tc::names[i].EqualsTo(h->GetXaxis()->GetBinLabel())) {
-        LOG(FATAL) << "Bin" << binx << " does not have the expected label " << h->GetXaxis()->GetBinLabel() << " vs " << Tc::names[i];
+      if (Tc::names[i].EqualTo(h->GetXaxis()->GetBinLabel(binx))) {
+        LOG(FATAL) << "Bin" << binx << " does not have the expected label " << h->GetXaxis()->GetBinLabel(binx) << " vs " << Tc::names[i];
       }
       if (biny > 0) {
         if (binz > 0) {
