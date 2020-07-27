@@ -31,13 +31,13 @@ using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::common;
 
 void TrendingTaskITSFhr::configure(std::string name,
-                                const boost::property_tree::ptree& config)
+                                   const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfigITS(name, config);
 }
 
 void TrendingTaskITSFhr::initialize(Trigger,
-                                 framework::ServiceRegistry& services)
+                                    framework::ServiceRegistry& services)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we
@@ -46,22 +46,21 @@ void TrendingTaskITSFhr::initialize(Trigger,
   mTrend->SetName(PostProcessingInterface::getName().c_str());
   //mTrend->Branch("meta", &mMetaData, "runNumber/I");
   mTrend->Branch("runNumber", &mMetaData.runNumber, "runNumber/I");
-  mTrend->Branch("ntreeentries", &ntreeentries,"ntreeentries/L");
+  mTrend->Branch("ntreeentries", &ntreeentries, "ntreeentries/L");
   mTrend->Branch("time", &mTime);
 
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(
       source.moduleName, source.reductorName));
-    if(source.reductorName.find("TH2Xline")!=std::string::npos){
-      TH2XlineReductor::mystat *mystc = (TH2XlineReductor::mystat*)reductor->getBranchAddress();
-      mTrend->Branch(Form("%s_mean",source.name.c_str()), &(mystc->mean));
-      mTrend->Branch(Form("%s_stddev",source.name.c_str()), &(mystc->stddev));
-      mTrend->Branch(Form("%s_entries",source.name.c_str()), &(mystc->entries));
-      mTrend->Branch(Form("%s_occupancy",source.name.c_str()), &(mystc->mean_scaled));
-    }
-    else{
+    if (source.reductorName.find("TH2Xline") != std::string::npos) {
+      TH2XlineReductor::mystat* mystc = (TH2XlineReductor::mystat*)reductor->getBranchAddress();
+      mTrend->Branch(Form("%s_mean", source.name.c_str()), &(mystc->mean));
+      mTrend->Branch(Form("%s_stddev", source.name.c_str()), &(mystc->stddev));
+      mTrend->Branch(Form("%s_entries", source.name.c_str()), &(mystc->entries));
+      mTrend->Branch(Form("%s_occupancy", source.name.c_str()), &(mystc->mean_scaled));
+    } else {
       mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(),
-                   reductor->getBranchLeafList());
+                     reductor->getBranchLeafList());
     }
     mReductors[source.name] = std::move(reductor);
   }
@@ -114,10 +113,10 @@ void TrendingTaskITSFhr::trendValues()
     if (dataSource.type == "repository") {
       // auto mo = mDatabase->retrieveMO(dataSource.path, dataSource.name);
       auto mo = mDatabase->retrieveMO(dataSource.path, "");
-      if(!count){
-        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap();//full list of metadata as a map
-        mMetaData.runNumber = std::stoi(entryMetadata["Run"]);//get and set run number
-        ntreeentries = mTrend->GetEntries()+1;
+      if (!count) {
+        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
+        mMetaData.runNumber = std::stoi(entryMetadata["Run"]);                   //get and set run number
+        ntreeentries = mTrend->GetEntries() + 1;
       }
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
@@ -145,8 +144,8 @@ void TrendingTaskITSFhr::storePlots()
   //
   int countplots = 0;
   int ilay = 0;
-  double ymin[NTRENDSFHR] = {1e-15, 1e-1, -.5, 1e-9};
-  double ymax[NTRENDSFHR] = {1e-3, 1e-5, 9.5, 1};
+  double ymin[NTRENDSFHR] = { 1e-15, 1e-1, -.5, 1e-9 };
+  double ymax[NTRENDSFHR] = { 1e-3, 1e-5, 9.5, 1 };
   std::vector<std::string> runlist;
   for (const auto& plot : mConfig.plots) {
     if (countplots > nStaves[ilay] - 1) {
@@ -157,26 +156,30 @@ void TrendingTaskITSFhr::storePlots()
                                  : countplots > 6 ? countplots - 7 : countplots;
     int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
     int index = 0;
-    if(plot.name.find("occ") != std::string::npos) index = 3;
-    else if(plot.name.find("chips") != std::string::npos) index = 2;
-    else if(plot.name.find("stddev") != std::string::npos) index = 1;
-    else index = 0;
-    bool isl011 = plot.name.find("L0_11")!=std::string::npos ? true:false;
-    long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(),"goff"); // plot.option.c_str());
+    if (plot.name.find("occ") != std::string::npos)
+      index = 3;
+    else if (plot.name.find("chips") != std::string::npos)
+      index = 2;
+    else if (plot.name.find("stddev") != std::string::npos)
+      index = 1;
+    else
+      index = 0;
+    bool isl011 = plot.name.find("L0_11") != std::string::npos ? true : false;
+    long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff"); // plot.option.c_str());
     //get list of runs
     Int_t singlerun = 0;
-    mTrend->SetBranchAddress("runNumber",&singlerun);
-    ILOG(Info)<<"Branch entries: "<<mTrend->GetBranch("runNumber")->GetEntries()<<ENDM;
-    for(long int ien=0; ien<mTrend->GetEntries(); ien++){
+    mTrend->SetBranchAddress("runNumber", &singlerun);
+    ILOG(Info) << "Branch entries: " << mTrend->GetBranch("runNumber")->GetEntries() << ENDM;
+    for (long int ien = 0; ien < mTrend->GetEntries(); ien++) {
       mTrend->GetEntry(ien);
       runlist.push_back(std::to_string(singlerun));
-      ILOG(Info)<<"here: "<<std::to_string(singlerun)<<ENDM;
+      ILOG(Info) << "here: " << std::to_string(singlerun) << ENDM;
     }
 
     // post processing plot
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    SetGraphNameAndAxes(g, plot.name, plot.title, isl011 ? "run":"time", ytitles[index], ymin[index], ymax[index], runlist);
+    SetGraphNameAndAxes(g, plot.name, plot.title, isl011 ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
     ILOG(Info) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, mConfig.detectorName);
     mo->setIsOwner(false);
@@ -184,9 +187,10 @@ void TrendingTaskITSFhr::storePlots()
     // It should delete everything inside. Confirmed by trying to delete histo
     // after and getting a segfault.
     delete g;
-    if (plot.name.find("occ") != std::string::npos) countplots++;
+    if (plot.name.find("occ") != std::string::npos)
+      countplots++;
     runlist.clear(); //empty run list
-  } // end loop on plots
+  }                  // end loop on plots
 
   //
   // Create canvas with multiple trends - average threshold - 1 canvas per layer
@@ -218,14 +222,18 @@ void TrendingTaskITSFhr::storePlots()
                                  : countplots > 6 ? countplots - 7 : countplots;
     int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
     int index = 0;
-    if(plot.name.find("occ") != std::string::npos) index = 3;
-    else if(plot.name.find("chips") != std::string::npos) index = 2;
-    else if(plot.name.find("stddev") != std::string::npos) index = 1;
-    else index = 0;
+    if (plot.name.find("occ") != std::string::npos)
+      index = 3;
+    else if (plot.name.find("chips") != std::string::npos)
+      index = 2;
+    else if (plot.name.find("stddev") != std::string::npos)
+      index = 1;
+    else
+      index = 0;
     c[ilay * NTRENDSFHR + index]->cd();
     c[ilay * NTRENDSFHR + index]->SetTickx();
     c[ilay * NTRENDSFHR + index]->SetTicky();
-    if (index!=2)
+    if (index != 2)
       c[ilay * NTRENDSFHR + index]->SetLogy();
     long int n =
       mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), "goff");
@@ -271,9 +279,9 @@ void TrendingTaskITSFhr::SetGraphStyle(TGraph* g, int col, int mkr)
 }
 
 void TrendingTaskITSFhr::SetGraphNameAndAxes(TGraph* g, std::string name,
-                                          std::string title, std::string xtitle,
-                                          std::string ytitle, double ymin,
-                                          double ymax, std::vector<std::string> runlist)
+                                             std::string title, std::string xtitle,
+                                             std::string ytitle, double ymin,
+                                             double ymax, std::vector<std::string> runlist)
 {
   g->SetTitle(title.c_str());
   g->SetName(name.c_str());
@@ -292,10 +300,10 @@ void TrendingTaskITSFhr::SetGraphNameAndAxes(TGraph* g, std::string name,
     g->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
   }
   if (xtitle.find("run") != std::string::npos) {
-    ILOG(Info)<<"Nruns: "<<runlist.size()<<ENDM;
-    for(int irun=0; irun<(int)runlist.size(); irun++)
-      ILOG(Info)<<"Run: "<<runlist[irun]<<ENDM;
-    for(int ipoint=0; ipoint<g->GetN(); ipoint++)
+    ILOG(Info) << "Nruns: " << runlist.size() << ENDM;
+    for (int irun = 0; irun < (int)runlist.size(); irun++)
+      ILOG(Info) << "Run: " << runlist[irun] << ENDM;
+    for (int ipoint = 0; ipoint < g->GetN(); ipoint++)
       g->GetXaxis()->SetBinLabel(g->GetXaxis()->FindBin(ipoint + 1.), runlist[ipoint].c_str());
   }
 }

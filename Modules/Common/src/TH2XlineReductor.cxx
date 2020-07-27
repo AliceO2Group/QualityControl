@@ -41,25 +41,27 @@ void TH2XlineReductor::update(TObject* obj)
   if (histo) {
     Double_t entriesx = 0.;
     Double_t sum = 0.;
-    for(int iy=1; iy<=histo->GetNbinsY(); iy++){
-      for(int ix=1; ix<=histo->GetNbinsX(); ix++){
-        if(histo->GetBinContent(ix,iy) > 0.) entriesx++;
-        sum+=histo->GetBinContent(ix,iy);
+    for (int iy = 1; iy <= histo->GetNbinsY(); iy++) {
+      for (int ix = 1; ix <= histo->GetNbinsX(); ix++) {
+        if (histo->GetBinContent(ix, iy) > 0.)
+          entriesx++;
+        sum += histo->GetBinContent(ix, iy);
       }
-      Double_t meanx = sum/entriesx;
-      mStats.mean.push_back(meanx);//mean
-      mStats.entries.push_back(entriesx);//entries
-      mStats.mean_scaled.push_back(meanx*512.*1024.);
+      Double_t meanx = sum / entriesx;
+      mStats.mean.push_back(meanx);       //mean
+      mStats.entries.push_back(entriesx); //entries
+      mStats.mean_scaled.push_back(meanx * 512. * 1024.);
       sum = 0.;
-      for(int ix=1; ix<=histo->GetNbinsX(); ix++){
-        Double_t binc = histo->GetBinContent(ix,iy);
-        if(binc > 0.) sum+=(binc-meanx)*(binc-meanx);
+      for (int ix = 1; ix <= histo->GetNbinsX(); ix++) {
+        Double_t binc = histo->GetBinContent(ix, iy);
+        if (binc > 0.)
+          sum += (binc - meanx) * (binc - meanx);
       }
-      mStats.stddev.push_back(TMath::Sqrt(sum/(entriesx-1)));//std dev
+      mStats.stddev.push_back(TMath::Sqrt(sum / (entriesx - 1))); //std dev
       entriesx = 0.;
       sum = 0.;
-    }//end loop on y bins
-  }//end if
+    } //end loop on y bins
+  }   //end if
 }
 
 } // namespace o2::quality_control_modules::common

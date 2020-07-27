@@ -26,13 +26,13 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
 void TrendingTaskITSThr::configure(std::string name,
-                                const boost::property_tree::ptree& config)
+                                   const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfigITS(name, config);
 }
 
 void TrendingTaskITSThr::initialize(Trigger,
-                                 framework::ServiceRegistry& services)
+                                    framework::ServiceRegistry& services)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we
@@ -248,9 +248,9 @@ void TrendingTaskITSThr::SetGraphStyle(TGraph* g, int col, int mkr)
 }
 
 void TrendingTaskITSThr::SetGraphNameAndAxes(TGraph* g, std::string name,
-                                          std::string title, std::string xtitle,
-                                          std::string ytitle, double ymin,
-                                          double ymax)
+                                             std::string title, std::string xtitle,
+                                             std::string ytitle, double ymin,
+                                             double ymax)
 {
   g->SetTitle(title.c_str());
   g->SetName(name.c_str());

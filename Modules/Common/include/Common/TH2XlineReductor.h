@@ -28,23 +28,22 @@ namespace o2::quality_control_modules::common
 /// It produces a branch in the format: "sumw/D:sumw2:sumwx:sumwx2:sumwy:sumwy2:sumwxy:entries"
 class TH2XlineReductor : public quality_control::postprocessing::Reductor
 {
-   public:
-    TH2XlineReductor() = default;
-    ~TH2XlineReductor() = default;
+ public:
+  TH2XlineReductor() = default;
+  ~TH2XlineReductor() = default;
 
-    void* getBranchAddress() override;
-    const char* getBranchLeafList() override;
-    void update(TObject* obj) override;
-
+  void* getBranchAddress() override;
+  const char* getBranchLeafList() override;
+  void update(TObject* obj) override;
 
   //private:
-    struct mystat {
-      std::vector<Double_t> mean; //mean of the bin contents of each row (1 value per row)
-      std::vector<Double_t> stddev; //stddev of the bin contents of each row (1 value per row)
-      std::vector<Double_t> entries; //entries of each row (1 value per row)
-      std::vector<Double_t> mean_scaled; //for ITS: mean scaled with number of active pixels in a stave to get the occupancy 
-    };
-    struct mystat mStats;
+  struct mystat {
+    std::vector<Double_t> mean;        //mean of the bin contents of each row (1 value per row)
+    std::vector<Double_t> stddev;      //stddev of the bin contents of each row (1 value per row)
+    std::vector<Double_t> entries;     //entries of each row (1 value per row)
+    std::vector<Double_t> mean_scaled; //for ITS: mean scaled with number of active pixels in a stave to get the occupancy
+  };
+  struct mystat mStats;
 };
 
 } // namespace o2::quality_control_modules::common

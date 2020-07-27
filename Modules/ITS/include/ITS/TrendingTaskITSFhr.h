@@ -94,8 +94,8 @@ class TrendingTaskITSFhr : public PostProcessingInterface
   static constexpr int NTRENDSFHR = 4;
   const int nStaves[NLAYERS] = { 12, 16, 20 };
   const std::string trendtitles[NTRENDSFHR] = { "Fake-hit rate",
-                                                "Stddev Fake-hit rate", "Number of Active chips" , "Occupancy"};
-  const std::string trendnames[NTRENDSFHR] = { "mean", "rms", "activechips", "occupancy"};
+                                                "Stddev Fake-hit rate", "Number of Active chips", "Occupancy" };
+  const std::string trendnames[NTRENDSFHR] = { "mean", "rms", "activechips", "occupancy" };
   const std::string ytitles[NTRENDSFHR] = {
     "Fake-hit rate (/event/pixel)", "Stddev Fake-hit rate (/event/pixel)", "# Active chips", "Occupancy (/event)"
   };

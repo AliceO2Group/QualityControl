@@ -62,11 +62,11 @@ TrendingTaskConfigITS::TrendingTaskConfigITS(
       ptree::const_iterator itpath = sourcePaths.value().begin();
       while (itname != sourceNames.value().end() ||
              itpath != sourcePaths.value().end()) {
-        dataSources.push_back({ dataSourceConfig.second.get<std::string>("type",""),
+        dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", ""),
                                 itpath->second.data(),
                                 itname->second.data(),
-                                dataSourceConfig.second.get<std::string>("reductorName",""),
-                                dataSourceConfig.second.get<std::string>("moduleName","") });
+                                dataSourceConfig.second.get<std::string>("reductorName", ""),
+                                dataSourceConfig.second.get<std::string>("moduleName", "") });
         itpath++;
         itname++;
       }
