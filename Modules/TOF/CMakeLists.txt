@@ -68,18 +68,18 @@ set_tests_properties(testQcTOF PROPERTIES TIMEOUT 20)
 
 # ---- Executables ----
 
-set(EXE_SRCS src/runTOF.cxx)
-
-set(EXE_NAMES o2-qc-run-tof)
-
-list(LENGTH EXE_SRCS count)
-math(EXPR count "${count}-1")
-foreach(i RANGE ${count})
-  list(GET EXE_SRCS ${i} src)
-  list(GET EXE_NAMES ${i} name)
-  add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE QualityControl CURL::libcurl)
-endforeach()
+#set(EXE_SRCS src/runTOF.cxx)
+#
+#set(EXE_NAMES o2-qc-run-tof)
+#
+#list(LENGTH EXE_SRCS count)
+#math(EXPR count "${count}-1")
+#foreach(i RANGE ${count})
+#  list(GET EXE_SRCS ${i} src)
+#  list(GET EXE_NAMES ${i} name)
+#  add_executable(${name} ${src})
+#  target_link_libraries(${name} PRIVATE QualityControl CURL::libcurl)
+#endforeach()
 
 # ---- Extra scripts ----
 
