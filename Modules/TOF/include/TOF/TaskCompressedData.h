@@ -9,12 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFTaskCompressed.h
+/// \file   TaskCompressedData.h
 /// \author Nicolo' Jacazio
+/// \brief  Task To monitor data converted from TOF compressor
 ///
 
-#ifndef QC_MODULE_TOF_TOFTASKCOMPRESSED_H
-#define QC_MODULE_TOF_TOFTASKCOMPRESSED_H
+#ifndef QC_MODULE_TOF_TASKCOMPRESSEDDATA_H
+#define QC_MODULE_TOF_TASKCOMPRESSEDDATA_H
 
 // QC includes
 #include "QualityControl/TaskInterface.h"
@@ -22,8 +23,6 @@
 
 class TH1F;
 class TH2F;
-class TH1I;
-class TH2I;
 
 using namespace o2::quality_control::core;
 
@@ -32,13 +31,13 @@ namespace o2::quality_control_modules::tof
 
 /// \brief TOF Quality Control DPL Task for TOF Compressed data
 /// \author Nicolo' Jacazio
-class TOFTaskCompressed final : public TaskInterface
+class TaskCompressedData final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  TOFTaskCompressed();
+  TaskCompressedData();
   /// Destructor
-  ~TOFTaskCompressed() override;
+  ~TaskCompressedData() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -50,16 +49,16 @@ class TOFTaskCompressed final : public TaskInterface
   void reset() override;
 
  private:
-  TOFDecoderCompressed mDecoder;         /// Decoder for TOF Compressed data useful for the Task
-  std::shared_ptr<TH1F> mHits;           /// Number of TOF hits
-  std::shared_ptr<TH1F> mTime;           /// Time
-  std::shared_ptr<TH1F> mTimeBC;         /// Time in Bunch Crossing
-  std::shared_ptr<TH1F> mTOT;            /// Time-Over-Threshold
-  std::shared_ptr<TH1F> mIndexE;         /// Index in electronic
-  std::shared_ptr<TH2F> mSlotPartMask;   /// Participating slot
-  std::shared_ptr<TH2F> mDiagnostic;     /// Diagnostic histogram
+  TOFDecoderCompressed mDecoder;       /// Decoder for TOF Compressed data useful for the Task
+  std::shared_ptr<TH1F> mHits;         /// Number of TOF hits
+  std::shared_ptr<TH1F> mTime;         /// Time
+  std::shared_ptr<TH1F> mTimeBC;       /// Time in Bunch Crossing
+  std::shared_ptr<TH1F> mTOT;          /// Time-Over-Threshold
+  std::shared_ptr<TH1F> mIndexE;       /// Index in electronic
+  std::shared_ptr<TH2F> mSlotPartMask; /// Participating slot
+  std::shared_ptr<TH2F> mDiagnostic;   /// Diagnostic histogram
 };
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFTASKCOMPRESSED_H
+#endif // QC_MODULE_TOF_TASKCOMPRESSEDDATA_H

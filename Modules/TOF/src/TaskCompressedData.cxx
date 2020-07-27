@@ -9,8 +9,9 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFTaskCompressed.cxx
+/// \file   TaskCompressedData.cxx
 /// \author Nicolo' Jacazio
+/// \brief  Task To monitor data converted from TOF compressor
 ///
 
 // ROOT includes
@@ -18,8 +19,6 @@
 #include <TH1.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH1I.h>
-#include <TH2I.h>
 
 // O2 includes
 #include "DataFormatsTOF/CompressedDataFormat.h"
@@ -27,24 +26,24 @@
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
-#include "TOF/TOFTaskCompressed.h"
+#include "TOF/TaskCompressedData.h"
 
 namespace o2::quality_control_modules::tof
 {
 
-TOFTaskCompressed::TOFTaskCompressed() : TaskInterface(),
-                                         mDecoder(),
-                                         mHits(nullptr),
-                                         mTime(nullptr),
-                                         mTimeBC(nullptr),
-                                         mTOT(nullptr),
-                                         mIndexE(nullptr),
-                                         mSlotPartMask(nullptr),
-                                         mDiagnostic(nullptr)
+TaskCompressedData::TaskCompressedData() : TaskInterface(),
+                                           mDecoder(),
+                                           mHits(nullptr),
+                                           mTime(nullptr),
+                                           mTimeBC(nullptr),
+                                           mTOT(nullptr),
+                                           mIndexE(nullptr),
+                                           mSlotPartMask(nullptr),
+                                           mDiagnostic(nullptr)
 {
 }
 
-TOFTaskCompressed::~TOFTaskCompressed()
+TaskCompressedData::~TaskCompressedData()
 {
   mHits.reset();
   mTime.reset();
@@ -55,9 +54,9 @@ TOFTaskCompressed::~TOFTaskCompressed()
   mDiagnostic.reset();
 }
 
-void TOFTaskCompressed::initialize(o2::framework::InitContext& /*ctx*/)
+void TaskCompressedData::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  LOG(INFO) << "initialize TOFTaskCompressed";
+  LOG(INFO) << "initialize TaskCompressedData";
   if (auto param = mCustomParameters.find("DecoderCONET"); param != mCustomParameters.end()) {
     if (param->second == "True") {
       LOG(INFO) << "Rig for DecoderCONET";
@@ -95,7 +94,7 @@ void TOFTaskCompressed::initialize(o2::framework::InitContext& /*ctx*/)
   //
 }
 
-void TOFTaskCompressed::startOfActivity(Activity& /*activity*/)
+void TaskCompressedData::startOfActivity(Activity& /*activity*/)
 {
   LOG(INFO) << "startOfActivity";
   mHits->Reset();
@@ -107,12 +106,12 @@ void TOFTaskCompressed::startOfActivity(Activity& /*activity*/)
   mDiagnostic->Reset();
 }
 
-void TOFTaskCompressed::startOfCycle()
+void TaskCompressedData::startOfCycle()
 {
   LOG(INFO) << "startOfCycle";
 }
 
-void TOFTaskCompressed::monitorData(o2::framework::ProcessingContext& ctx)
+void TaskCompressedData::monitorData(o2::framework::ProcessingContext& ctx)
 {
   /** receive input **/
   for (auto& input : ctx.inputs()) {
@@ -126,17 +125,17 @@ void TOFTaskCompressed::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void TOFTaskCompressed::endOfCycle()
+void TaskCompressedData::endOfCycle()
 {
   LOG(INFO) << "endOfCycle";
 }
 
-void TOFTaskCompressed::endOfActivity(Activity& /*activity*/)
+void TaskCompressedData::endOfActivity(Activity& /*activity*/)
 {
   LOG(INFO) << "endOfActivity";
 }
 
-void TOFTaskCompressed::reset()
+void TaskCompressedData::reset()
 {
   // clean all the monitor objects here
 

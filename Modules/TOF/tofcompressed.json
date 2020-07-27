@@ -23,9 +23,9 @@
       }
     },
     "tasks": {
-      "TOFTaskCompressed": {
+      "TaskCompressedData": {
         "active": "true",
-        "className": "o2::quality_control_modules::tof::TOFTaskCompressed",
+        "className": "o2::quality_control_modules::tof::TaskCompressedData",
         "moduleName": "QcTOF",
         "detectorName": "TOF",
         "cycleDurationSeconds": "10",
@@ -51,7 +51,7 @@
           "policy": "OnAny",
           "dataSource": [{
               "type": "Task",
-              "name": "TOFTaskCompressed",
+              "name": "TaskCompressedData",
               "MOs": ["hDiagnostic"]
           }]
       }
