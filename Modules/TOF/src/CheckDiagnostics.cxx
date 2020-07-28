@@ -90,6 +90,7 @@ void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality check
       h->SetFillColor(kOrange);
     } else {
       ILOG(Info) << "Quality::Null, setting to black background";
+      msg->SetTextColor(kWhite);
       msg->SetFillColor(kBlack);
     }
   } else
