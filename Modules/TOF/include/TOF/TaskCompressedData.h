@@ -69,9 +69,9 @@ class TaskCompressedData final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  TaskCompressedData();
+  TaskCompressedData() = default;
   /// Destructor
-  ~TaskCompressedData() override;
+  ~TaskCompressedData() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -90,7 +90,12 @@ class TaskCompressedData final : public TaskInterface
   std::shared_ptr<TH1F> mTOT;          /// Time-Over-Threshold
   std::shared_ptr<TH1F> mIndexE;       /// Index in electronic
   std::shared_ptr<TH2F> mSlotPartMask; /// Participating slot
-  std::shared_ptr<TH2F> mDiagnostic;   /// Diagnostic histogram
+  std::shared_ptr<TH2F> mDiagnostic;   /// Diagnostic words
+  std::shared_ptr<TH1F> mNErrors;      /// Number of errors
+  std::shared_ptr<TH1F> mErrorBits;    /// Bits of errors
+  std::shared_ptr<TH2F> mError;        /// Errors in slot and TDC
+  std::shared_ptr<TH1F> mNTests;       /// Number of tests
+  std::shared_ptr<TH2F> mTest;         /// Tests in slot and TDC
 };
 
 } // namespace o2::quality_control_modules::tof
