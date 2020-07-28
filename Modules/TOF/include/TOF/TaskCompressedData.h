@@ -52,6 +52,27 @@ class CompressedDataDecoder final : public DecoderBase
 
   Int_t rdhread = 0; /// Number of times a RDH is read
 
+  /// Function to init histograms
+  void initHistograms();
+
+  /// Function to reset histograms
+  void resetHistograms();
+
+  // Histograms filled in the decoder
+  std::shared_ptr<TH1F> mHits;         /// Number of TOF hits
+  std::shared_ptr<TH1F> mTime;         /// Time
+  std::shared_ptr<TH1F> mTimeBC;       /// Time in Bunch Crossing
+  std::shared_ptr<TH1F> mTOT;          /// Time-Over-Threshold
+  std::shared_ptr<TH1F> mIndexE;       /// Index in electronic
+  std::shared_ptr<TH2F> mSlotPartMask; /// Participating slot
+  std::shared_ptr<TH2F> mDiagnostic;   /// Diagnostic words
+  std::shared_ptr<TH1F> mNErrors;      /// Number of errors
+  std::shared_ptr<TH1F> mErrorBits;    /// Bits of errors
+  std::shared_ptr<TH2F> mError;        /// Errors in slot and TDC
+  std::shared_ptr<TH1F> mNTests;       /// Number of tests
+  std::shared_ptr<TH2F> mTest;         /// Tests in slot and TDC
+  std::shared_ptr<TH2F> mOrbitID;      /// Orbit ID for the header and trailer words
+
  private:
   /** decoding handlers **/
   void rdhHandler(const o2::header::RAWDataHeader* rdh) override;
@@ -83,19 +104,7 @@ class TaskCompressedData final : public TaskInterface
   void reset() override;
 
  private:
-  CompressedDataDecoder mDecoder;      /// Decoder for TOF Compressed data useful for the Task
-  std::shared_ptr<TH1F> mHits;         /// Number of TOF hits
-  std::shared_ptr<TH1F> mTime;         /// Time
-  std::shared_ptr<TH1F> mTimeBC;       /// Time in Bunch Crossing
-  std::shared_ptr<TH1F> mTOT;          /// Time-Over-Threshold
-  std::shared_ptr<TH1F> mIndexE;       /// Index in electronic
-  std::shared_ptr<TH2F> mSlotPartMask; /// Participating slot
-  std::shared_ptr<TH2F> mDiagnostic;   /// Diagnostic words
-  std::shared_ptr<TH1F> mNErrors;      /// Number of errors
-  std::shared_ptr<TH1F> mErrorBits;    /// Bits of errors
-  std::shared_ptr<TH2F> mError;        /// Errors in slot and TDC
-  std::shared_ptr<TH1F> mNTests;       /// Number of tests
-  std::shared_ptr<TH2F> mTest;         /// Tests in slot and TDC
+  CompressedDataDecoder mDecoder; /// Decoder for TOF Compressed data useful for the Task and filler of histograms for compressed raw data
 };
 
 } // namespace o2::quality_control_modules::tof

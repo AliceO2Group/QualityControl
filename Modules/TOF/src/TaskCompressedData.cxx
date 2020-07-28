@@ -15,7 +15,6 @@
 ///
 
 // ROOT includes
-#include <TCanvas.h>
 #include <TH1.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -42,19 +41,20 @@ void CompressedDataDecoder::decode()
   DecoderBase::run();
 }
 
-void CompressedDataDecoder::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/)
+void CompressedDataDecoder::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit)
 {
   for (int ibit = 0; ibit < 11; ++ibit) {
     if (crateHeader->slotPartMask & (1 << ibit)) {
-      mHistos.at("hSlotPartMask")->Fill(crateHeader->drmID, ibit + 2);
+      mSlotPartMask->Fill(crateHeader->drmID, ibit + 2);
     }
   }
+  mOrbitID->Fill(0.5, crateOrbit->orbitID % 1048576);
 }
 
 void CompressedDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
                                          const FrameHeader_t* frameHeader, const PackedHit_t* packedHits)
 {
-  mHistos.at("hHits")->Fill(frameHeader->numberOfHits);
+  mHits->Fill(frameHeader->numberOfHits);
   for (int i = 0; i < frameHeader->numberOfHits; ++i) {
     auto packedHit = packedHits + i;
     auto indexE = packedHit->channel +
@@ -66,38 +66,40 @@ void CompressedDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const
     int timebc = time % 1024;
     time += (frameHeader->frameID << 13);
 
-    mHistos.at("hIndexE")->Fill(indexE);
-    mHistos.at("hTime")->Fill(time);
-    mHistos.at("hTimeBC")->Fill(timebc);
-    mHistos.at("hTOT")->Fill(packedHit->tot);
+    mIndexE->Fill(indexE);
+    mTime->Fill(time);
+    mTimeBC->Fill(timebc);
+    mTOT->Fill(packedHit->tot);
   }
+  mOrbitID->Fill(1.5, crateOrbit->orbitID % 1048576);
 }
 
-void CompressedDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
+void CompressedDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
                                            const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
                                            const Error_t* errors)
 {
   for (int i = 0; i < crateTrailer->numberOfDiagnostics; ++i) {
     auto diagnostic = diagnostics + i;
-    mHistos.at("hDiagnostic")->Fill(crateHeader->drmID, diagnostic->slotID);
+    mDiagnostic->Fill(crateHeader->drmID, diagnostic->slotID);
   }
   int nError = 0, nTest = 0;
   for (int i = 0; i < crateTrailer->numberOfErrors; ++i) {
     auto error = errors + i;
     if (error->undefined) {
       nTest++;
-      mHistos.at("hTest")->Fill(error->slotID + 0.5 * error->chain, error->tdcID);
+      mTest->Fill(error->slotID + 0.5 * error->chain, error->tdcID);
     } else {
       nError++;
-      mHistos.at("hError")->Fill(error->slotID + 0.5 * error->chain, error->tdcID);
+      mError->Fill(error->slotID + 0.5 * error->chain, error->tdcID);
       for (int ibit = 0; ibit < 15; ++ibit) {
         if (error->errorFlags & (1 << ibit))
-          mHistos.at("hErrorBit")->Fill(ibit);
+          mErrorBits->Fill(ibit);
       }
     }
   }
-  mHistos.at("hNErrors")->Fill(nError);
-  mHistos.at("hNTests")->Fill(nTest);
+  mNErrors->Fill(nError);
+  mNTests->Fill(nTest);
+  mOrbitID->Fill(2.5, crateOrbit->orbitID % 1048576);
 }
 
 #ifdef VERBOSEDECODERCOMPRESSED
@@ -112,6 +114,55 @@ void CompressedDataDecoder::rdhHandler(const o2::header::RAWDataHeader* /*rdh*/)
 }
 #endif
 
+void CompressedDataDecoder::initHistograms()
+{
+  mHits.reset(new TH1F("hHits", "Raw Hits;Hits per event", 1000, 0., 1000.));
+  //
+  mTime.reset(new TH1F("hTime", "Raw Time;Time (24.4 ps)", 2097152, 0., 2097152.));
+  //
+  mTimeBC.reset(new TH1F("hTimeBC", "Raw BC Time;BC time (24.4 ps)", 1024, 0., 1024.));
+  //
+  mTOT.reset(new TH1F("hTOT", "Raw ToT;ToT (48.8 ps)", 2048, 0., 2048.));
+  //
+  mIndexE.reset(new TH1F("hIndexE", "Equipment index;index EO", 172800, 0., 172800.));
+  //
+  mSlotPartMask.reset(new TH2F("hSlotPartMask", "Slot Participating;crate;slot", 72, 0., 72., 12, 1., 13.));
+  //
+  mDiagnostic.reset(new TH2F("hDiagnostic", "hDiagnostic;crate;slot", 72, 0., 72., 12, 1., 13.));
+  //
+  mNErrors.reset(new TH1F("hNErrors", "Error numbers;Number of errors", 1000, 0., 1000.));
+  //
+  mErrorBits.reset(new TH1F("hErrorBit", "Error Bit;TDC error bit", 15, 0., 15.));
+  //
+  mError.reset(new TH2F("hError", "Errors;slot;TDC", 24, 1., 13., 15, 0., 15.));
+  //
+  mNTests.reset(new TH1F("hNTests", "Test numbers;Number of errors", 1000, 0., 1000.));
+  //
+  mTest.reset(new TH2F("hTest", "Tests;slot;TDC", 24, 1., 13., 15, 0., 15.));
+  //
+  mOrbitID.reset(new TH2F("hOrbitID", "OrbitID;OrbitID;Position", 1000, 0, 1048576, 3, 0, 3));
+  mOrbitID->GetYaxis()->SetBinLabel(1, "Header");
+  mOrbitID->GetYaxis()->SetBinLabel(2, "Frame");
+  mOrbitID->GetYaxis()->SetBinLabel(3, "Trailer");
+}
+
+void CompressedDataDecoder::resetHistograms()
+{
+  mHits->Reset();
+  mTime->Reset();
+  mTimeBC->Reset();
+  mTOT->Reset();
+  mIndexE->Reset();
+  mSlotPartMask->Reset();
+  mDiagnostic->Reset();
+  mNErrors->Reset();
+  mErrorBits->Reset();
+  mError->Reset();
+  mNTests->Reset();
+  mTest->Reset();
+  mOrbitID->Reset();
+}
+
 // Implement Task
 void TaskCompressedData::initialize(o2::framework::InitContext& /*ctx*/)
 {
@@ -123,60 +174,26 @@ void TaskCompressedData::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  mHits.reset(new TH1F("hHits", "Raw Hits;Hits per event", 1000, 0., 1000.));
-  getObjectsManager()->startPublishing(mHits.get());
-  mDecoder.mHistos[mHits->GetName()] = mHits;
-  //
-  mTime.reset(new TH1F("hTime", "Raw Time;Time (24.4 ps)", 2097152, 0., 2097152.));
-  getObjectsManager()->startPublishing(mTime.get());
-  mDecoder.mHistos[mTime->GetName()] = mTime;
-  //
-  mTimeBC.reset(new TH1F("hTimeBC", "Raw BC Time;BC time (24.4 ps)", 1024, 0., 1024.));
-  getObjectsManager()->startPublishing(mTimeBC.get());
-  mDecoder.mHistos[mTimeBC->GetName()] = mTimeBC;
-  //
-  mTOT.reset(new TH1F("hTOT", "Raw ToT;ToT (48.8 ps)", 2048, 0., 2048.));
-  getObjectsManager()->startPublishing(mTOT.get());
-  mDecoder.mHistos[mTOT->GetName()] = mTOT;
-  //
-  mIndexE.reset(new TH1F("hIndexE", "Equipment index;index EO", 172800, 0., 172800.));
-  getObjectsManager()->startPublishing(mIndexE.get());
-  mDecoder.mHistos[mIndexE->GetName()] = mIndexE;
-  //
-  mSlotPartMask.reset(new TH2F("hSlotPartMask", "Slot Participating;crate;slot", 72, 0., 72., 12, 1., 13.));
-  getObjectsManager()->startPublishing(mSlotPartMask.get());
-  mDecoder.mHistos[mSlotPartMask->GetName()] = mSlotPartMask;
-  //
-  mDiagnostic.reset(new TH2F("hDiagnostic", "hDiagnostic;crate;slot", 72, 0., 72., 12, 1., 13.));
-  getObjectsManager()->startPublishing(mDiagnostic.get());
-  mDecoder.mHistos[mDiagnostic->GetName()] = mDiagnostic;
-  //
-  mNErrors.reset(new TH1F("hNErrors", "Error numbers;Number of errors", 1000, 0., 1000.));
-  getObjectsManager()->startPublishing(mNErrors.get());
-  mDecoder.mHistos[mNErrors->GetName()] = mNErrors;
-  //
-  mErrorBits.reset(new TH1F("hErrorBit", "Error Bit;TDC error bit", 15, 0., 15.));
-  getObjectsManager()->startPublishing(mErrorBits.get());
-  mDecoder.mHistos[mErrorBits->GetName()] = mErrorBits;
-  //
-  mError.reset(new TH2F("hError", "Errors;slot;TDC", 24, 1., 13., 15, 0., 15.));
-  getObjectsManager()->startPublishing(mError.get());
-  mDecoder.mHistos[mError->GetName()] = mError;
-  //
-  mNTests.reset(new TH1F("hNTests", "Test numbers;Number of errors", 1000, 0., 1000.));
-  getObjectsManager()->startPublishing(mNTests.get());
-  mDecoder.mHistos[mNTests->GetName()] = mNTests;
-  //
-  mTest.reset(new TH2F("hTest", "Tests;slot;TDC", 24, 1., 13., 15, 0., 15.));
-  getObjectsManager()->startPublishing(mTest.get());
-  mDecoder.mHistos[mTest->GetName()] = mTest;
-  //
+  mDecoder.initHistograms();
+  getObjectsManager()->startPublishing(mDecoder.mHits.get());
+  getObjectsManager()->startPublishing(mDecoder.mTime.get());
+  getObjectsManager()->startPublishing(mDecoder.mTimeBC.get());
+  getObjectsManager()->startPublishing(mDecoder.mTOT.get());
+  getObjectsManager()->startPublishing(mDecoder.mIndexE.get());
+  getObjectsManager()->startPublishing(mDecoder.mSlotPartMask.get());
+  getObjectsManager()->startPublishing(mDecoder.mDiagnostic.get());
+  getObjectsManager()->startPublishing(mDecoder.mNErrors.get());
+  getObjectsManager()->startPublishing(mDecoder.mErrorBits.get());
+  getObjectsManager()->startPublishing(mDecoder.mError.get());
+  getObjectsManager()->startPublishing(mDecoder.mNTests.get());
+  getObjectsManager()->startPublishing(mDecoder.mTest.get());
+  getObjectsManager()->startPublishing(mDecoder.mOrbitID.get());
 }
 
 void TaskCompressedData::startOfActivity(Activity& /*activity*/)
 {
   LOG(INFO) << "startOfActivity";
-  reset();
+  mDecoder.resetHistograms();
 }
 
 void TaskCompressedData::startOfCycle()
@@ -213,18 +230,7 @@ void TaskCompressedData::reset()
   // clean all the monitor objects here
 
   LOG(INFO) << "Resetting the histograms";
-  mHits->Reset();
-  mTime->Reset();
-  mTimeBC->Reset();
-  mTOT->Reset();
-  mIndexE->Reset();
-  mSlotPartMask->Reset();
-  mDiagnostic->Reset();
-  mNErrors->Reset();
-  mErrorBits->Reset();
-  mError->Reset();
-  mNTests->Reset();
-  mTest->Reset();
+  mDecoder.resetHistograms();
 }
 
 } // namespace o2::quality_control_modules::tof
