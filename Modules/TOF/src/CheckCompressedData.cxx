@@ -66,6 +66,7 @@ void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
+    msg->AddText("Default message for hDiagnostic");
     msg->Draw();
     msg->SetName(Form("%s_msg", mo->GetName()));
 
@@ -96,6 +97,7 @@ void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       h->SetFillColor(kOrange);
     } else {
       ILOG(Info) << "Quality::Null, setting to black background";
+      msg->SetTextColor(kWhite);
       msg->SetFillColor(kBlack);
     }
   } else
