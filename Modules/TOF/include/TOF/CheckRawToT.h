@@ -24,16 +24,13 @@
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief  Check whether a plot is empty or not.
-///
-/// \author Barthelemy von Haller
 class CheckRawToT : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  CheckRawToT();
+  CheckRawToT() = default;
   /// Destructor
-  ~CheckRawToT() override;
+  ~CheckRawToT() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -41,6 +38,7 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
+ private:
   /// Minimum ToT allowed for the mean in ns
   Float_t minTOFrawTot;
   /// Maximum ToT allowed for the mean in ns

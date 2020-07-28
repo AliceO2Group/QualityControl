@@ -27,18 +27,13 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-CheckRawTime::CheckRawTime() : minTOFrawTime(175.f),
-                               maxTOFrawTime(250.f),
-                               timeMean(0),
-                               peakIntegral(0),
-                               totIntegral(0)
-{
-}
-
-CheckRawTime::~CheckRawTime() {}
-
 void CheckRawTime::configure(std::string)
 {
+  minTOFrawTime = 175.f;
+  maxTOFrawTime = 250.f;
+  timeMean = 0;
+  peakIntegral = 0;
+  totIntegral = 0;
   // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
   //   minTOFrawTime = 150.; //ns
   //   maxTOFrawTime = 250.; //ns

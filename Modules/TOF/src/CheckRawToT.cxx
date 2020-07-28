@@ -27,14 +27,11 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-CheckRawToT::CheckRawToT() : minTOFrawTot(10.), // ns
-                             maxTOFrawTot(15.)  // ns
+void CheckRawToT::configure(std::string)
 {
+  minTOFrawTot = 10.; // ns
+  maxTOFrawTot = 15.; // ns
 }
-
-CheckRawToT::~CheckRawToT() {}
-
-void CheckRawToT::configure(std::string) {}
 
 Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {

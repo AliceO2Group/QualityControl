@@ -24,16 +24,13 @@
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief  Check whether a plot is empty or not.
-///
-/// \author Barthelemy von Haller
 class CheckRawTime : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  CheckRawTime();
+  CheckRawTime() = default;
   /// Destructor
-  ~CheckRawTime() override;
+  ~CheckRawTime() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -41,12 +38,11 @@ class CheckRawTime : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
+ private:
   /// Minimum value for TOF raw time
   Float_t minTOFrawTime;
   /// Maximum value for TOF raw time
   Float_t maxTOFrawTime;
-
- private:
   /// Mean of the TOF raw time distribution
   Float_t timeMean;
   /// Integral of the TOF raw time distribution in the peak region i.e. within minTOFrawTime and maxTOFrawTime
