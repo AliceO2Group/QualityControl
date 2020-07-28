@@ -22,7 +22,6 @@
 // #define ENABLE_PRINT_HISTOGRAMS_MODE // Flag used to enable more printing and more debug
 
 // ROOT includes
-#include "TObject.h"
 #include "TH1.h"
 
 // QC includes
@@ -39,9 +38,12 @@ class Counter
  public:
   /// \brief Constructor
   Counter() = default;
+
   /// Destructor
   ~Counter() = default;
+
   /// Function to increment a counter
+  /// @param v Index in the counter array to increment
   void Count(UInt_t v)
   {
     if (v > Tc::size) {
@@ -52,7 +54,8 @@ class Counter
 #endif
     counter[v]++;
   }
-  /// Function to reset counters
+
+  /// Function to reset counters to zero
   void Reset()
   {
     LOG(INFO) << "Resetting Counter";
@@ -60,9 +63,13 @@ class Counter
       counter[i] = 0;
     }
   }
+
   /// Function to get how many counts where observed
+  /// @return Returns the number of counts observed for a particular index
   uint32_t HowMany(UInt_t pos) const { return counter[pos]; }
+
   /// Function to make a histogram out of the counters
+  /// @param h histogram to shape in order to have room for the counter size
   void MakeHistogram(TH1* h) const
   {
     LOG(INFO) << "Making Histogram " << h->GetName() << " to accomodate counter of size " << Tc::size;
@@ -97,7 +104,11 @@ class Counter
     h->Print("All");
 #endif
   }
+
   /// Function to fill a histogram with the counters
+  /// @param h The histogram to fill
+  /// @param biny Y offset to fill to histogram, useful for TH2 and TH3
+  /// @param binz Z offset to fill to histogram, useful for TH3
   void FillHistogram(TH1* h, UInt_t biny = 0, UInt_t binz = 0) const
   {
     LOG(INFO) << "Filling Histogram " << h->GetName() << " with counter contents";
@@ -135,6 +146,7 @@ class Counter
 #endif
   }
   /// Getter for the Tc::size
+  /// @return Returns the size of the counter
   UInt_t Size() const { return Tc::size; }
 
  private:
