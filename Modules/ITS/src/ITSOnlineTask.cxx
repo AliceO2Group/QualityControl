@@ -69,6 +69,7 @@ void ITSOnlineTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder->init();
   mDecoder->setNThreads(2);
   mDecoder->setFormat(GBTLink::OldFormat);
+  mDecoder->setUserDataOrigin(header::DataOrigin("DS"));
   mChipsBuffer.resize(432); //temporarily hardcoded for IB; TODO: extend to OB.
                             ///////////RawPixelDecode end//////////////
 

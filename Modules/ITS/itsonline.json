@@ -43,7 +43,7 @@
             "id": "RAWDATA",
             "active": "true",
             "machines": [],
-            "query": "filter:ITS/RAWDATA/8202;filter:ITS/RAWDATA/8203;filter:ITS/RAWDATA/8204;filter:ITS/RAWDATA/8205;filter:ITS/RAWDATA/8206;G:FLP/DISTSUBTIMEFRAME/0",
+            "query": "filter:ITS/RAWDATA/8202;G:FLP/DISTSUBTIMEFRAME/0",
             "samplingConditions": [
                 {
                     "condition": "random",
