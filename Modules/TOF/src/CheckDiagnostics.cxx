@@ -37,12 +37,12 @@ Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObj
 {
 
   Quality result = Quality::Null;
-  ILOG(Info) << "Checking quality of diagnostic histogram" << ENDM;
+  ILOG(Info) << "Checking quality of diagnostic words";
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
-    if (mo->getName() == "RDHCounterCrate0") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    if (mo->getName() == "DRMCounter") {
+      auto* h = dynamic_cast<TH2F*>(mo->getObject());
       if (h->GetEntries() == 0) {
         result = Quality::Medium;
       }
@@ -56,7 +56,7 @@ std::string CheckDiagnostics::getAcceptedType() { return "TH1F"; }
 void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Info) << "USING BEAUTIFY";
-  if (mo->getName() == "RDHCounterCrate0") {
+  if (mo->getName() == "DRMCounter") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);

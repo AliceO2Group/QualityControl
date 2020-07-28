@@ -125,7 +125,7 @@ void TaskCompressedData::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("DecoderCONET"); param != mCustomParameters.end()) {
     if (param->second == "True") {
       LOG(INFO) << "Rig for DecoderCONET";
-      // mDecoder.setDecoderCONET(kTRUE);
+      mDecoder.setDecoderCONET(kTRUE);
     }
   }
 

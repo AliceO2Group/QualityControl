@@ -43,7 +43,7 @@ Quality CheckCompressedData::check(std::map<std::string, std::shared_ptr<Monitor
 {
 
   Quality result = Quality::Null;
-  ILOG(Info) << "Checking quality of diagnostic histogram" << ENDM;
+  ILOG(Info) << "Checking quality of compressed data";
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
