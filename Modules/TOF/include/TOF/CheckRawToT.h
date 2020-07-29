@@ -40,9 +40,9 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
 
  private:
   /// Minimum ToT allowed for the mean in ns
-  Float_t minTOFrawTot;
+  float mMinRawToT;
   /// Maximum ToT allowed for the mean in ns
-  Double_t maxTOFrawTot;
+  float mMaxRawToT;
 
   ClassDefOverride(CheckRawToT, 1);
 };

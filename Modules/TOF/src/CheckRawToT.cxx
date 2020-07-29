@@ -14,12 +14,13 @@
 /// \brief  Checker for TOF Raw data on ToT
 ///
 
+// QC
 #include "TOF/CheckRawToT.h"
+#include "QualityControl/QcInfoLogger.h"
 
 // ROOT
-#include <fairlogger/Logger.h>
 #include <TH1.h>
-#include <TList.h>
+#include <TH2.h>
 #include <TPaveText.h>
 
 using namespace std;
@@ -29,8 +30,15 @@ namespace o2::quality_control_modules::tof
 
 void CheckRawToT::configure(std::string)
 {
-  minTOFrawTot = 10.; // ns
-  maxTOFrawTot = 15.; // ns
+  mMinRawToT = 10.; // ns
+  mMaxRawToT = 15.; // ns
+
+  if (auto param = mCustomParameters.find("MinRawTime"); param != mCustomParameters.end()) {
+    mMinRawToT = ::atof(param->second.c_str());
+  }
+  if (auto param = mCustomParameters.find("MaxRawTime"); param != mCustomParameters.end()) {
+    mMaxRawToT = ::atof(param->second.c_str());
+  }
 }
 
 Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -52,16 +60,13 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
     // }
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
-      // flag = AliQAv1::kWARNING;
     } else {
-      Float_t timeMean = h->GetMean();
-      if ((timeMean > minTOFrawTot) && (timeMean < maxTOFrawTot)) {
+      const float timeMean = h->GetMean();
+      if ((timeMean > mMinRawToT) && (timeMean < mMaxRawToT)) {
         result = Quality::Good;
-        // flag = AliQAv1::kINFO;
       } else {
         LOG(WARNING) << Form("ToT mean = %5.2f ns", timeMean);
         result = Quality::Bad;
-        // flag = AliQAv1::kERROR;
       }
     }
   }
@@ -74,39 +79,39 @@ void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 {
   if (mo->getName().find("RawsToT") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "blNDC");
     h->GetListOfFunctions()->Add(msg);
+    msg->SetBorderSize(1);
+    msg->SetTextColor(kWhite);
+    msg->SetFillColor(kBlack);
+    msg->AddText("Default message for RawsTime");
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
-      LOG(INFO) << "Quality::Good, setting to green";
-      //
+      ILOG(Info) << "Quality::Good, setting to green";
       msg->Clear();
       msg->AddText("Mean inside limits: OK!!!");
-      msg->AddText(Form("Allowed range: %3.1f-%3.1f ns", minTOFrawTot, maxTOFrawTot));
+      msg->AddText(Form("Allowed range: %3.1f-%3.1f ns", mMinRawToT, mMaxRawToT));
       msg->SetFillColor(kGreen);
-      //
-      h->SetFillColor(kGreen);
+      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
-      //
+      ILOG(Info) << "Quality::Bad, setting to red";
       msg->Clear();
-      msg->AddText(Form("Mean outside limits (%3.1f-%3.1f ns)", minTOFrawTot, maxTOFrawTot));
+      msg->AddText(Form("Mean outside limits (%3.1f-%3.1f ns)", mMinRawToT, mMaxRawToT));
       msg->AddText("If NOT a technical run,");
       msg->AddText("call TOF on-call.");
       msg->SetFillColor(kRed);
-      //
-      h->SetFillColor(kRed);
+      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
+      ILOG(Info) << "Quality::medium, setting to yellow";
       //
       msg->Clear();
       msg->AddText("No entries. Check TOF TWiki");
       msg->SetFillColor(kYellow);
-      //
-      h->SetFillColor(kOrange);
+      msg->SetTextColor(kBlack);
     }
-    h->SetLineColor(kBlack);
+  } else {
+    ILOG(Error) << "Did not get correct histo from " << mo->GetName();
   }
 }
 

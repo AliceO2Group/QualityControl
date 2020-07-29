@@ -11,15 +11,15 @@
 ///
 /// \file   CheckRawTime.cxx
 /// \author Nicolo' Jacazio
+/// \brief  Checker for TOF Raw data on time distributions
 ///
 
+// QC
 #include "TOF/CheckRawTime.h"
+#include "QualityControl/QcInfoLogger.h"
 
 // ROOT
-#include <fairlogger/Logger.h>
 #include <TH1.h>
-#include <TList.h>
-#include <TMath.h>
 #include <TPaveText.h>
 
 using namespace std;
@@ -64,7 +64,6 @@ Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>
     // }
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
-      // flag = AliQAv1::kWARNING;
     } else {
       mRawTimeMean = h->GetMean();
       const Int_t lowBinId = h->GetXaxis()->FindBin(mMinRawTime);
@@ -102,7 +101,7 @@ void CheckRawTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
-      ILOG(Info) << "Quality::Bad, setting to red";
+      ILOG(Info) << "Quality::Good, setting to green";
       msg->Clear();
       msg->AddText("Mean inside limits: OK!!!");
       msg->AddText(Form("Allowed range: %3.0f-%3.0f ns", mMinRawTime, mMaxRawTime));
@@ -133,7 +132,6 @@ void CheckRawTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       // text->AddText("See TOF TWiki.");
       // text->SetFillColor(kYellow);
     }
-
   } else {
     ILOG(Error) << "Did not get correct histo from " << mo->GetName();
   }
