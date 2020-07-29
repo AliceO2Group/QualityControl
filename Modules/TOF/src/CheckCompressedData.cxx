@@ -31,13 +31,13 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-CheckCompressedData::CheckCompressedData()
+void CheckCompressedData::configure(std::string)
 {
+  mDiagnosticThresholdPerSlot = 0;
+  if (auto param = mCustomParameters.find("DiagnosticThresholdPerSlot"); param != mCustomParameters.end()) {
+    mDiagnosticThresholdPerSlot = param->second;
+  }
 }
-
-CheckCompressedData::~CheckCompressedData() {}
-
-void CheckCompressedData::configure(std::string) {}
 
 Quality CheckCompressedData::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -49,8 +49,16 @@ Quality CheckCompressedData::check(std::map<std::string, std::shared_ptr<Monitor
     (void)moName;
     if (mo->getName() == "hDiagnostic") {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
-      if (h->GetEntries() == 0) {
-        result = Quality::Medium;
+      result = Quality::Good;
+      for (int i = 1; i < h->GetNbinsX(); i++) {
+        for (int j = 1; j < h->GetNbinsY(); j++) {
+          const float content = h->GetBinContent(i, j);
+          if (content > mDiagnosticThresholdPerSlot) { // If above threshold
+            result = Quality::Bad;
+          } else if (content > 0) { // If larger than zero
+            result = Quality::Medium;
+          }
+        }
       }
     }
   }
