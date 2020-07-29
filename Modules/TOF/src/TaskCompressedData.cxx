@@ -48,7 +48,7 @@ void CompressedDataDecoder::headerHandler(const CrateHeader_t* crateHeader, cons
       mSlotPartMask->Fill(crateHeader->drmID, ibit + 2);
     }
   }
-  mOrbitID->Fill(crateOrbit->orbitID % 1048576, 0.5);
+  mOrbitID->Fill(crateOrbit->orbitID % 1048576, crateHeader->drmID);
 }
 
 void CompressedDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
@@ -71,7 +71,6 @@ void CompressedDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const
     mTimeBC->Fill(timebc);
     mTOT->Fill(packedHit->tot);
   }
-  mOrbitID->Fill(crateOrbit->orbitID % 1048576, 1.5);
 }
 
 void CompressedDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
@@ -99,7 +98,6 @@ void CompressedDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, con
   }
   mNErrors->Fill(nError);
   mNTests->Fill(nTest);
-  mOrbitID->Fill(crateOrbit->orbitID % 1048576, 2.5);
 }
 
 #ifdef VERBOSEDECODERCOMPRESSED
@@ -140,10 +138,8 @@ void CompressedDataDecoder::initHistograms()
   //
   mTest.reset(new TH2F("hTest", "Tests;slot;TDC", 24, 1., 13., 15, 0., 15.));
   //
-  mOrbitID.reset(new TH2F("hOrbitID", "OrbitID;OrbitID % 1048576;Position", 1000, 0, 1048576, 3, 0, 3));
-  mOrbitID->GetYaxis()->SetBinLabel(1, "Header");
-  mOrbitID->GetYaxis()->SetBinLabel(2, "Frame");
-  mOrbitID->GetYaxis()->SetBinLabel(3, "Trailer");
+  mOrbitID.reset(new TH2F("hOrbitID", "OrbitID;OrbitID % 1048576;Crate", 1000, 0, 1048576, 72, 0, 72));
+  //
 }
 
 void CompressedDataDecoder::resetHistograms()
