@@ -16,14 +16,11 @@
 
 // QC
 #include "TOF/CheckRawMultiplicity.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
+#include "QualityControl/QcInfoLogger.h"
 
-#include <fairlogger/Logger.h>
 // ROOT
 #include <TH1.h>
 #include <TPaveText.h>
-#include <TList.h>
 #include <TObjArray.h>
 
 using namespace std;
@@ -31,18 +28,17 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-CheckRawMultiplicity::CheckRawMultiplicity() : minTOFrawhits(10),
-                                               maxTOFrawhits(150),
-                                               multiMean(0),
-                                               zeroBinIntegral(0),
-                                               lowMIntegral(0),
-                                               totIntegral(0)
+void CheckRawMultiplicity::configure(std::string)
 {
+  mMinRawHits = 10;
+  mMaxRawHits = 150;
+  if (auto param = mCustomParameters.find("MinRawHits"); param != mCustomParameters.end()) {
+    mMinRawHits = ::atof(param->second.c_str());
+  }
+  if (auto param = mCustomParameters.find("MaxRawHits"); param != mCustomParameters.end()) {
+    mMaxRawHits = ::atof(param->second.c_str());
+  }
 }
-
-CheckRawMultiplicity::~CheckRawMultiplicity() {}
-
-void CheckRawMultiplicity::configure(std::string) {}
 
 Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -53,15 +49,15 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
   // Int_t nToDrawTrgCl;
 
   /*customize the summary image*/
-  // Bool_t drawRawsSumImage = kTRUE;                       //hTOF_Raws: kTRUE shows it in the summary image, kFALSE does not
-  // Bool_t drawRawsTimeSumImage = kTRUE;                   //hTOF_RawsTime: kTRUE shows it in the summary image, kFALSE does not
-  // Bool_t drawRawsToTSumImage = kTRUE;                    //hTOF_RawsToT: kTRUE shows it in the summary image, kFALSE does not
+  // bool drawRawsSumImage = kTRUE;                       //hTOF_Raws: kTRUE shows it in the summary image, kFALSE does not
+  // bool drawRawsTimeSumImage = kTRUE;                   //hTOF_RawsTime: kTRUE shows it in the summary image, kFALSE does not
+  // bool drawRawsToTSumImage = kTRUE;                    //hTOF_RawsToT: kTRUE shows it in the summary image, kFALSE does not
   // TString ClToDraw[] = { "kINT7", "kCalibBarell", "0" }; //trigger classes shown in the summary image (it MUST end with "0")
 
   // Int_t flag = AliQAv1::kNULLBit;
   // Int_t trgCl;
   // Int_t trigId = 0;
-  // Bool_t suffixTrgCl = kFALSE;
+  // bool suffixTrgCl = kFALSE;
 
   // TString histname = h->GetName();
   // for (trgCl = 0; trgCl < nTrgCl; trgCl++)
@@ -84,24 +80,22 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
       // }
       if (h->GetEntries() == 0) { // Histogram is empty
         result = Quality::Medium;
-        // flag = AliQAv1::kWARNING;
         shifter_msg = "No counts!";
       } else { // Histogram is non empty
-        multiMean = h->GetMean();
-        zeroBinIntegral = h->Integral(1, 1);
-        lowMIntegral = h->Integral(1, 10);
-        totIntegral = h->Integral(2, h->GetNbinsX());
+        mRawHitsMean = h->GetMean();
+        mRawHitsZeroMultIntegral = h->Integral(1, 1);
+        mRawHitsLowMultIntegral = h->Integral(1, 10);
+        mRawHitsIntegral = h->Integral(2, h->GetNbinsX());
 
-        if (totIntegral == 0) { //if only "0 hits per event" bin is filled -> error
+        if (mRawHitsIntegral == 0) { //if only "0 hits per event" bin is filled -> error
           if (h->GetBinContent(1) > 0) {
             result = Quality::Bad;
-            // flag = AliQAv1::kERROR;
             shifter_msg = "Only events at 0 filled!";
           }
         } else {
           // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
-          if (0) { // TODO: this is only for cosmics, how to check?
-            if (multiMean < 10.) {
+          if (0) { // TODO: this is only for cosmics, how to check? Re: from the configuration of the checker!
+            if (mRawHitsMean < 10.) {
               result = Quality::Good;
               shifter_msg = "Average within limits, OK!";
               // flag = AliQAv1::kINFO;
@@ -111,49 +105,44 @@ Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<Monito
               // flag = AliQAv1::kWARNING;
             }
           } else { // Running with collisions
-            const Bool_t isZeroBinContentHigh = (zeroBinIntegral > fracAtZeroMult * totIntegral);
-            const Bool_t isLowMultContentHigh = (lowMIntegral > fracAtLowMult * totIntegral);
-            const Bool_t isINT7AverageLow = (multiMean < minTOFrawhits);
-            const Bool_t isINT7AverageHigh = (multiMean > maxTOFrawhits);
+            const bool isZeroBinContentHigh = (mRawHitsZeroMultIntegral > (mFractAtZeroMult * mRawHitsIntegral));
+            const bool isLowMultContentHigh = (mRawHitsLowMultIntegral > (mFractAtLowMult * mRawHitsIntegral));
+            const bool isINT7AverageLow = (mRawHitsMean < mMinRawHits);
+            const bool isINT7AverageHigh = (mRawHitsMean > mMaxRawHits);
 
             // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kLowMult) {
             if (0) { // TODO: Low multiplicity running, how to check if it is pp? Probably this can be simplified in the json
-              if (isZeroBinContentHigh && (multiMean > 10.)) {
+              if (isZeroBinContentHigh && (mRawHitsMean > 10.)) {
 
               } else {
-                // if (!histname.Contains("INT7") && (multiMean > 100.)) {
-                if ((multiMean > 100.)) {
+                // if (!histname.Contains("INT7") && (mRawHitsMean > 100.)) {
+                if ((mRawHitsMean > 100.)) {
                   result = Quality::Medium;
                   shifter_msg = "Average outside limits!";
-                  // flag = AliQAv1::kWARNING;
                 } else {
                   // if (histname.Contains("INT7") && (isINT7AverageLow || isINT7AverageHigh)) {
                   if ((isINT7AverageLow || isINT7AverageHigh)) {
                     result = Quality::Medium;
                     shifter_msg = "Average outside limits!";
-                    // flag = AliQAv1::kWARNING;
                   } else {
                     result = Quality::Good;
                     shifter_msg = "Average within limits, OK!";
-                    // flag = AliQAv1::kINFO;
                   }
                 }
               }
             }
-            // } else if ((AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult) && (isLowMultContentHigh || (multiMean > 500.))) {
+            // } else if ((AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult) && (isLowMultContentHigh || (mRawHitsMean > 500.))) {
             else { // High multiplicity running e.g. Pb-Pb
               if (isLowMultContentHigh) {
                 result = Quality::Medium;
-                shifter_msg = Form("Low-multiplicity counts are high\n(%.2f higher than total)!", fracAtLowMult);
-              } else if (multiMean > maxTOFrawhitsPbPb) {
+                shifter_msg = Form("Low-multiplicity counts are high\n(%.2f higher than total)!", mFractAtLowMult);
+              } else if (mRawHitsMean > mMaxTOFRawHitsPbPb) {
                 //assume that good range of multi in PbPb goes from 20 to 500 tracks
                 result = Quality::Medium;
-                shifter_msg = Form("Average higher than expected (%.2f)!", maxTOFrawhitsPbPb);
-                // flag = AliQAv1::kWARNING;
+                shifter_msg = Form("Average higher than expected (%.2f)!", mMaxTOFRawHitsPbPb);
               } else {
                 result = Quality::Good;
                 shifter_msg = "Average within limits";
-                // flag = AliQAv1::kINFO;
               }
             }
           }
@@ -170,9 +159,12 @@ void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality c
 {
   if (mo->getName() == "TOFRawsMulti") {
     auto* h = dynamic_cast<TH1I*>(mo->getObject());
-    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "blNDC");
     h->GetListOfFunctions()->Add(msg);
-    msg->Draw();
+    msg->SetBorderSize(1);
+    msg->SetTextColor(kWhite);
+    msg->SetFillColor(kBlack);
+    msg->AddText(Form("Default message for %s", mo->GetName()));
     msg->SetName(Form("%s_msg", mo->GetName()));
     msg->Clear();
     TObjArray* txt_arr = shifter_msg.Tokenize("\n");
@@ -181,29 +173,25 @@ void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality c
     }
 
     if (checkResult == Quality::Good) {
-      msg->AddText(Form("Mean value = %5.2f", multiMean));
-      msg->AddText(Form("Reference range: %5.2f-%5.2f", minTOFrawhits, maxTOFrawhits));
-      msg->AddText(Form("Events with 0 hits = %5.2f%%", zeroBinIntegral * 100. / totIntegral));
+      msg->AddText(Form("Mean value = %5.2f", mRawHitsMean));
+      msg->AddText(Form("Reference range: %5.2f-%5.2f", mMinRawHits, mMaxRawHits));
+      msg->AddText(Form("Events with 0 hits = %5.2f%%", mRawHitsZeroMultIntegral * 100. / mRawHitsIntegral));
       msg->AddText("OK!");
       msg->SetFillColor(kGreen);
-      //
-      h->SetFillColor(kGreen);
+      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Bad) {
       msg->AddText("Call TOF on-call.");
       msg->SetFillColor(kRed);
-      //
-      h->SetFillColor(kRed);
+      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
+      ILOG(Info) << "Quality::medium, setting to yellow";
       msg->AddText("IF TOF IN RUN check the TOF TWiki");
       msg->SetFillColor(kYellow);
-      //
-      h->SetFillColor(kOrange);
-    } else {
-      LOG(INFO) << "Quality::Null, setting to black background";
-      msg->SetFillColor(kBlack);
+      msg->SetTextColor(kBlack);
     }
-  } else
-    LOG(ERROR) << "Did not get correct histo from " << mo->GetName();
+  } else {
+    ILOG(Error) << "Did not get correct histo from " << mo->GetName();
+  }
 }
 
 } // namespace o2::quality_control_modules::tof

@@ -84,7 +84,7 @@ void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     msg->SetBorderSize(1);
     msg->SetTextColor(kWhite);
     msg->SetFillColor(kBlack);
-    msg->AddText("Default message for RawsTime");
+    msg->AddText(Form("Default message for %s", mo->GetName()));
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
@@ -104,7 +104,6 @@ void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
       ILOG(Info) << "Quality::medium, setting to yellow";
-      //
       msg->Clear();
       msg->AddText("No entries. Check TOF TWiki");
       msg->SetFillColor(kYellow);
