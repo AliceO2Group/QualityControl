@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "TOF-TaskCompressedData": {
+      "TaskCompressedData": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskCompressedData",
         "moduleName": "QcTOF",
@@ -43,7 +43,7 @@
       }
     },
     "checks": {
-      "TOF-CheckCompressedData": {
+      "CheckCompressedData": {
           "active": "true",
           "className": "o2::quality_control_modules::tof::CheckCompressedData",
           "moduleName": "QcTOF",
@@ -51,7 +51,7 @@
           "policy": "OnAny",
           "dataSource": [{
               "type": "Task",
-              "name": "TOF-TaskCompressedData",
+              "name": "TaskCompressedData",
               "MOs": ["hDiagnostic"]
           }]
       }

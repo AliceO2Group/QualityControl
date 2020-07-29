@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "TOF-TaskDiagnostics": {
+      "TaskDiagnostics": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskDiagnostics",
         "moduleName": "QcTOF",
@@ -44,7 +44,7 @@
       }
     },
     "checks": {
-      "TOF-CheckDiagnostics": {
+      "CheckDiagnostics": {
           "active": "true",
           "className": "o2::quality_control_modules::tof::CheckDiagnostics",
           "moduleName": "QcTOF",
@@ -52,7 +52,7 @@
           "policy": "OnAny",
           "dataSource": [{
               "type": "Task",
-              "name": "TOF-TaskDiagnostics",
+              "name": "TaskDiagnostics",
               "MOs": ["RDHCounterCrate0"]
           }]
       }
