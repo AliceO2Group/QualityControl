@@ -52,7 +52,7 @@
           "policy": "OnAny",
           "dataSource": [{
               "type": "Task",
-              "name": "TaskDiagnostics",
+              "name": "TOF-TaskDiagnostics",
               "MOs": ["RDHCounterCrate0"]
           }]
       }

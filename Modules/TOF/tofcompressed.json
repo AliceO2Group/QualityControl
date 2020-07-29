@@ -51,7 +51,7 @@
           "policy": "OnAny",
           "dataSource": [{
               "type": "Task",
-              "name": "TaskCompressedData",
+              "name": "TOF-TaskCompressedData",
               "MOs": ["hDiagnostic"]
           }]
       }
