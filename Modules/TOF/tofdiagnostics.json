@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "TaskDiagnostics": {
+      "TOF-TaskDiagnostics": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskDiagnostics",
         "moduleName": "QcTOF",
@@ -44,7 +44,7 @@
       }
     },
     "checks": {
-      "checkFromTOF-CheckDiagnostics": {
+      "TOF-CheckDiagnostics": {
           "active": "true",
           "className": "o2::quality_control_modules::tof::CheckDiagnostics",
           "moduleName": "QcTOF",

@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "TaskCompressedData": {
+      "TOF-TaskCompressedData": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskCompressedData",
         "moduleName": "QcTOF",
@@ -43,7 +43,7 @@
       }
     },
     "checks": {
-      "checkFromTOF-CheckCompressedData": {
+      "TOF-CheckCompressedData": {
           "active": "true",
           "className": "o2::quality_control_modules::tof::CheckCompressedData",
           "moduleName": "QcTOF",
