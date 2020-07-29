@@ -21,6 +21,7 @@
 // ROOT
 #include <TH1.h>
 #include <TPaveText.h>
+#include <TList.h>
 
 using namespace std;
 
@@ -74,10 +75,10 @@ Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>
         result = Quality::Good;
       } else {
         if (mRawTimePeakIntegral / mRawTimeIntegral > 0.20) {
-          LOG(WARNING) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
+          ILOG(Warning) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
           result = Quality::Medium;
         } else {
-          LOG(WARNING) << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
+          ILOG(Warning) << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
           result = Quality::Bad;
         }
       }

@@ -22,6 +22,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TPaveText.h>
+#include <TList.h>
 
 using namespace std;
 
@@ -65,7 +66,7 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       if ((timeMean > mMinRawToT) && (timeMean < mMaxRawToT)) {
         result = Quality::Good;
       } else {
-        LOG(WARNING) << Form("ToT mean = %5.2f ns", timeMean);
+        ILOG(Warning) << Form("ToT mean = %5.2f ns", timeMean);
         result = Quality::Bad;
       }
     }
