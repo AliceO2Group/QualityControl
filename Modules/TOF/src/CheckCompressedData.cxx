@@ -35,7 +35,7 @@ void CheckCompressedData::configure(std::string)
 {
   mDiagnosticThresholdPerSlot = 0;
   if (auto param = mCustomParameters.find("DiagnosticThresholdPerSlot"); param != mCustomParameters.end()) {
-    mDiagnosticThresholdPerSlot = param->second;
+    mDiagnosticThresholdPerSlot = ::atof(param->second.c_str());
   }
 }
 
@@ -72,10 +72,12 @@ void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
   ILOG(Info) << "USING BEAUTIFY";
   if (mo->getName() == "hDiagnostic") {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+    TPaveText* msg = new TPaveText(0.9, 0.1, 1.0, 0.5, "blNDC");
     h->GetListOfFunctions()->Add(msg);
+    msg->SetBorderSize(1);
+    msg->SetTextColor(kWhite);
+    msg->SetFillColor(kBlack);
     msg->AddText("Default message for hDiagnostic");
-    msg->Draw();
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
@@ -83,30 +85,21 @@ void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->Clear();
       msg->AddText("OK!");
       msg->SetFillColor(kGreen);
-      //
-      h->SetFillColor(kGreen);
+      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Bad) {
       ILOG(Info) << "Quality::Bad, setting to red";
-      //
       msg->Clear();
-      msg->AddText("No TOF hits for all events.");
-      msg->AddText("Call TOF on-call.");
+      msg->AddText("Diagnostics");
+      msg->AddText("above");
+      msg->AddText(Form("threshold (%.0f)", mDiagnosticThresholdPerSlot));
       msg->SetFillColor(kRed);
-      //
-      h->SetFillColor(kRed);
+      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
       ILOG(Info) << "Quality::medium, setting to orange";
-      //
       msg->Clear();
-      msg->AddText("No entries. IF TOF IN RUN");
-      msg->AddText("check the TOF TWiki");
+      msg->AddText("Diagnostics above zero");
       msg->SetFillColor(kYellow);
-      //
-      h->SetFillColor(kOrange);
-    } else {
-      ILOG(Info) << "Quality::Null, setting to black background";
-      msg->SetTextColor(kWhite);
-      msg->SetFillColor(kBlack);
+      msg->SetTextColor(kBlack);
     }
   } else
     ILOG(Error) << "Did not get correct histo from " << mo->GetName();

@@ -49,6 +49,9 @@
           "moduleName": "QcTOF",
           "detectorName": "TOF",
           "policy": "OnAny",
+          "checkParameters": {
+            "DiagnosticThresholdPerSlot": "10"
+          },
           "dataSource": [{
               "type": "Task",
               "name": "TaskCompressedData",
