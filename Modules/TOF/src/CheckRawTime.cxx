@@ -29,11 +29,14 @@ namespace o2::quality_control_modules::tof
 
 void CheckRawTime::configure(std::string)
 {
-  minTOFrawTime = 175.f;
-  maxTOFrawTime = 250.f;
-  timeMean = 0;
-  peakIntegral = 0;
-  totIntegral = 0;
+  mMinRawTime = 175.f;
+  mMaxRawTime = 250.f;
+  if (auto param = mCustomParameters.find("MinRawTime"); param != mCustomParameters.end()) {
+    mMinRawTime = ::atof(param->second.c_str());
+  }
+  if (auto param = mCustomParameters.find("MaxRawTime"); param != mCustomParameters.end()) {
+    mMaxRawTime = ::atof(param->second.c_str());
+  }
   // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
   //   minTOFrawTime = 150.; //ns
   //   maxTOFrawTime = 250.; //ns
@@ -63,24 +66,20 @@ Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>
       result = Quality::Medium;
       // flag = AliQAv1::kWARNING;
     } else {
-      timeMean = h->GetMean();
-      Int_t lowBinId = h->GetXaxis()->FindBin(minTOFrawTime);
-      Int_t highBinId = h->GetXaxis()->FindBin(maxTOFrawTime);
-      peakIntegral = h->Integral(lowBinId, highBinId);
-      totIntegral = h->Integral(1, h->GetNbinsX());
-      if ((timeMean > minTOFrawTime) && (timeMean < maxTOFrawTime)) {
-
+      mRawTimeMean = h->GetMean();
+      const Int_t lowBinId = h->GetXaxis()->FindBin(mMinRawTime);
+      const Int_t highBinId = h->GetXaxis()->FindBin(mMaxRawTime);
+      mRawTimePeakIntegral = h->Integral(lowBinId, highBinId);
+      mRawTimeIntegral = h->Integral(1, h->GetNbinsX());
+      if ((mRawTimeMean > mMinRawTime) && (mRawTimeMean < mMaxRawTime)) {
         result = Quality::Good;
-        // flag = AliQAv1::kINFO;
       } else {
-        if (peakIntegral / totIntegral > 0.20) {
-          LOG(WARNING) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", peakIntegral / totIntegral, timeMean);
+        if (mRawTimePeakIntegral / mRawTimeIntegral > 0.20) {
+          LOG(WARNING) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
           result = Quality::Medium;
-          // flag = AliQAv1::kWARNING;
         } else {
-          LOG(WARNING) << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", peakIntegral / totIntegral, timeMean);
+          LOG(WARNING) << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
           result = Quality::Bad;
-          // flag = AliQAv1::kERROR;
         }
       }
     }
@@ -94,46 +93,49 @@ void CheckRawTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
 {
   if (mo->getName().find("RawsTime") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "blNDC");
     h->GetListOfFunctions()->Add(msg);
+    msg->SetBorderSize(1);
+    msg->SetTextColor(kWhite);
+    msg->SetFillColor(kBlack);
+    msg->AddText("Default message for RawsTime");
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
+      ILOG(Info) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Mean inside limits: OK!!!");
-      msg->AddText(Form("Allowed range: %3.0f-%3.0f ns", minTOFrawTime, maxTOFrawTime));
+      msg->AddText(Form("Allowed range: %3.0f-%3.0f ns", mMinRawTime, mMaxRawTime));
       msg->SetFillColor(kGreen);
-      //
-      h->SetFillColor(kGreen);
+      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
-      //
+      ILOG(Info) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Call TOF on-call.");
-      msg->AddText(Form("Mean outside limits (%3.0f-%3.0f ns)", minTOFrawTime, maxTOFrawTime));
-      msg->AddText(Form("Raw time peak/total integral = %5.2f%%", peakIntegral * 100. / totIntegral));
-      msg->AddText(Form("Mean = %5.2f ns", timeMean));
+      msg->AddText(Form("Mean outside limits (%3.0f-%3.0f ns)", mMinRawTime, mMaxRawTime));
+      msg->AddText(Form("Raw time peak/total integral = %5.2f%%", mRawTimePeakIntegral * 100. / mRawTimeIntegral));
+      msg->AddText(Form("Mean = %5.2f ns", mRawTimeMean));
       msg->SetFillColor(kRed);
-      //
-      h->SetFillColor(kRed);
+      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
+      ILOG(Info) << "Quality::medium, setting to yellow";
       //
       msg->Clear();
       msg->AddText("No entries. If TOF in the run");
       msg->AddText("check TOF TWiki");
       msg->SetFillColor(kYellow);
+      msg->SetTextColor(kBlack);
       // text->Clear();
-      // text->AddText(Form("Raw time peak/total integral = %5.2f%%", peakIntegral * 100. / totIntegral));
-      // text->AddText(Form("Mean = %5.2f ns", timeMean));
-      // text->AddText(Form("Allowed range: %3.0f-%3.0f ns", minTOFrawTime, maxTOFrawTime));
+      // text->AddText(Form("Raw time peak/total integral = %5.2f%%", mRawTimePeakIntegral * 100. / mRawTimeIntegral));
+      // text->AddText(Form("Mean = %5.2f ns", mRawTimeMean));
+      // text->AddText(Form("Allowed range: %3.0f-%3.0f ns", mMinRawTime, mMaxRawTime));
       // text->AddText("If multiple peaks, check filling scheme");
       // text->AddText("See TOF TWiki.");
       // text->SetFillColor(kYellow);
-      //
-      h->SetFillColor(kOrange);
     }
-    h->SetLineColor(kBlack);
+
+  } else {
+    ILOG(Error) << "Did not get correct histo from " << mo->GetName();
   }
 }
 

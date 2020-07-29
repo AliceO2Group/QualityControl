@@ -69,7 +69,6 @@ std::string CheckCompressedData::getAcceptedType() { return "TH2F"; }
 
 void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  ILOG(Info) << "USING BEAUTIFY";
   if (mo->getName() == "hDiagnostic") {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.9, 0.1, 1.0, 0.5, "blNDC");
@@ -95,14 +94,14 @@ void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->SetFillColor(kRed);
       msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info) << "Quality::medium, setting to orange";
+      ILOG(Info) << "Quality::medium, setting to yellow";
       msg->Clear();
       msg->AddText("Diagnostics above zero");
       msg->SetFillColor(kYellow);
       msg->SetTextColor(kBlack);
     }
-  } else
+  } else {
     ILOG(Error) << "Did not get correct histo from " << mo->GetName();
+  }
 }
-
 } // namespace o2::quality_control_modules::tof

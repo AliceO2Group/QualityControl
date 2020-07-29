@@ -39,16 +39,16 @@ class CheckRawTime : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
-  /// Minimum value for TOF raw time
-  Float_t minTOFrawTime;
-  /// Maximum value for TOF raw time
-  Float_t maxTOFrawTime;
+  /// Minimum value for TOF average raw time
+  float mMinRawTime;
+  /// Maximum value for TOF average raw time
+  float mMaxRawTime;
   /// Mean of the TOF raw time distribution
-  Float_t timeMean;
+  float mRawTimeMean = 0.f;
   /// Integral of the TOF raw time distribution in the peak region i.e. within minTOFrawTime and maxTOFrawTime
-  Float_t peakIntegral;
+  float mRawTimePeakIntegral = 0.f;
   /// Integral of the TOF raw time distribution in the whole histogram range
-  Float_t totIntegral;
+  float mRawTimeIntegral = 0.f;
 
   ClassDefOverride(CheckRawTime, 1);
 };
