@@ -43,7 +43,7 @@
       }
     },
     "checks": {
-      "checkFromTOF-Diagnostic": {
+      "checkFromTOF-CheckCompressedData": {
           "active": "true",
           "className": "o2::quality_control_modules::tof::CheckCompressedData",
           "moduleName": "QcTOF",
@@ -59,7 +59,7 @@
   },
   "dataSamplingPolicies": [
     {
-      "id": "pippo",
+      "id": "tofrawdata",
       "active": "true",
       "machines": [],
       "query": "dataframe:TOF/CRAWDATA",
