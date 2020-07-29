@@ -51,7 +51,7 @@ void CompressedDataDecoder::headerHandler(const CrateHeader_t* crateHeader, cons
   mOrbitID->Fill(crateOrbit->orbitID % 1048576, crateHeader->drmID);
 }
 
-void CompressedDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
+void CompressedDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
                                          const FrameHeader_t* frameHeader, const PackedHit_t* packedHits)
 {
   mHits->Fill(frameHeader->numberOfHits);
@@ -73,7 +73,7 @@ void CompressedDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const
   }
 }
 
-void CompressedDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
+void CompressedDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
                                            const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
                                            const Error_t* errors)
 {
