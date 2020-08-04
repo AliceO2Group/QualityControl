@@ -9,12 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckRawsTime.h
+/// \file   CheckCompressedData.h
 /// \author Nicolo' Jacazio
+/// \brief  Checker for the raw compressed data for TOF
 ///
 
-#ifndef QC_MODULE_TOF_TOFCHECKRAWSTIME_H
-#define QC_MODULE_TOF_TOFCHECKRAWSTIME_H
+#ifndef QC_MODULE_TOF_CHECKCOMPRESSEDDATA_H
+#define QC_MODULE_TOF_CHECKCOMPRESSEDDATA_H
 
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
@@ -23,16 +24,16 @@
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief  Check whether a plot is empty or not.
+/// \brief  Checker for the data produced by the TOF compressor (i.e. checking raw data)
 ///
-/// \author Barthelemy von Haller
-class TOFCheckRawsTime : public o2::quality_control::checker::CheckInterface
+/// \author Nicolo' Jacazio
+class CheckCompressedData : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TOFCheckRawsTime();
+  CheckCompressedData() = default;
   /// Destructor
-  ~TOFCheckRawsTime() override;
+  ~CheckCompressedData() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -40,22 +41,12 @@ class TOFCheckRawsTime : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
-  /// Minimum value for TOF raw time
-  Float_t minTOFrawTime;
-  /// Maximum value for TOF raw time
-  Float_t maxTOFrawTime;
-
  private:
-  /// Mean of the TOF raw time distribution
-  Float_t timeMean;
-  /// Integral of the TOF raw time distribution in the peak region i.e. within minTOFrawTime and maxTOFrawTime
-  Float_t peakIntegral;
-  /// Integral of the TOF raw time distribution in the whole histogram range
-  Float_t totIntegral;
+  float mDiagnosticThresholdPerSlot = 0;
 
-  ClassDefOverride(TOFCheckRawsTime, 1);
+  ClassDefOverride(CheckCompressedData, 1);
 };
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFCHECKRAWSTIME_H
+#endif // QC_MODULE_TOF_CHECKCOMPRESSEDDATA_H

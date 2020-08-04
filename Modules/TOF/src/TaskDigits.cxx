@@ -9,8 +9,9 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFTask.cxx
+/// \file   TaskDigits.cxx
 /// \author Nicolo' Jacazio
+/// \brief  Task to monitor quantities in TOF digits in both data and MC
 ///
 
 // ROOT includes
@@ -27,59 +28,59 @@
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
-#include "TOF/TOFTask.h"
+#include "TOF/TaskDigits.h"
 
 namespace o2::quality_control_modules::tof
 {
 
-Int_t TOFTask::fgNbinsMultiplicity = 2000;       /// Number of bins in multiplicity plot
-Int_t TOFTask::fgRangeMinMultiplicity = 0;       /// Min range in multiplicity plot
-Int_t TOFTask::fgRangeMaxMultiplicity = 1000;    /// Max range in multiplicity plot
-Int_t TOFTask::fgNbinsTime = 250;                /// Number of bins in time plot
-const Float_t TOFTask::fgkNbinsWidthTime = 2.44; /// Width of bins in time plot
-Float_t TOFTask::fgRangeMinTime = 0.0;           /// Range min in time plot
-Float_t TOFTask::fgRangeMaxTime = 620.0;         /// Range max in time plot
-Int_t TOFTask::fgCutNmaxFiredMacropad = 50;      /// Cut on max number of fired macropad
-const Int_t TOFTask::fgkFiredMacropadLimit = 50; /// Limit on cut on number of fired macropad
+Int_t TaskDigits::fgNbinsMultiplicity = 2000;       /// Number of bins in multiplicity plot
+Int_t TaskDigits::fgRangeMinMultiplicity = 0;       /// Min range in multiplicity plot
+Int_t TaskDigits::fgRangeMaxMultiplicity = 1000;    /// Max range in multiplicity plot
+Int_t TaskDigits::fgNbinsTime = 250;                /// Number of bins in time plot
+const Float_t TaskDigits::fgkNbinsWidthTime = 2.44; /// Width of bins in time plot
+Float_t TaskDigits::fgRangeMinTime = 0.0;           /// Range min in time plot
+Float_t TaskDigits::fgRangeMaxTime = 620.0;         /// Range max in time plot
+Int_t TaskDigits::fgCutNmaxFiredMacropad = 50;      /// Cut on max number of fired macropad
+const Int_t TaskDigits::fgkFiredMacropadLimit = 50; /// Limit on cut on number of fired macropad
 
-TOFTask::TOFTask() : TaskInterface(),
-                     mTOFRawsMulti(nullptr),
-                     mTOFRawsMultiIA(nullptr),
-                     mTOFRawsMultiOA(nullptr),
-                     mTOFRawsMultiIC(nullptr),
-                     mTOFRawsMultiOC(nullptr),
-                     mTOFRawsTime(nullptr),
-                     mTOFRawsTimeIA(nullptr),
-                     mTOFRawsTimeOA(nullptr),
-                     mTOFRawsTimeIC(nullptr),
-                     mTOFRawsTimeOC(nullptr),
-                     mTOFRawsToT(nullptr),
-                     mTOFRawsToTIA(nullptr),
-                     mTOFRawsToTOA(nullptr),
-                     mTOFRawsToTIC(nullptr),
-                     mTOFRawsToTOC(nullptr),
-                     mTOFRawsLTMHits(nullptr),
-                     mTOFrefMap(nullptr),
-                     mTOFRawHitMap(nullptr),
-                     mTOFDecodingErrors(nullptr),
-                     mTOFOrphansTime(nullptr),
-                     mTOFRawTimeVsTRM035(nullptr),
-                     mTOFRawTimeVsTRM3671(nullptr),
-                     mTOFTimeVsStrip(nullptr),
-                     mTOFtimeVsBCID(nullptr),
-                     mTOFchannelEfficiencyMap(nullptr),
-                     mTOFhitsCTTM(nullptr),
-                     mTOFmacropadCTTM(nullptr),
-                     mTOFmacropadDeltaPhiTime(nullptr),
-                     mBXVsCttmBit(nullptr),
-                     mTimeVsCttmBit(nullptr),
-                     mTOFRawHitMap24(nullptr),
-                     mHitMultiVsDDL(nullptr),
-                     mNfiredMacropad(nullptr)
+TaskDigits::TaskDigits() : TaskInterface(),
+                           mTOFRawsMulti(nullptr),
+                           mTOFRawsMultiIA(nullptr),
+                           mTOFRawsMultiOA(nullptr),
+                           mTOFRawsMultiIC(nullptr),
+                           mTOFRawsMultiOC(nullptr),
+                           mTOFRawsTime(nullptr),
+                           mTOFRawsTimeIA(nullptr),
+                           mTOFRawsTimeOA(nullptr),
+                           mTOFRawsTimeIC(nullptr),
+                           mTOFRawsTimeOC(nullptr),
+                           mTOFRawsToT(nullptr),
+                           mTOFRawsToTIA(nullptr),
+                           mTOFRawsToTOA(nullptr),
+                           mTOFRawsToTIC(nullptr),
+                           mTOFRawsToTOC(nullptr),
+                           mTOFRawsLTMHits(nullptr),
+                           mTOFrefMap(nullptr),
+                           mTOFRawHitMap(nullptr),
+                           mTOFDecodingErrors(nullptr),
+                           mTOFOrphansTime(nullptr),
+                           mTOFRawTimeVsTRM035(nullptr),
+                           mTOFRawTimeVsTRM3671(nullptr),
+                           mTOFTimeVsStrip(nullptr),
+                           mTOFtimeVsBCID(nullptr),
+                           mTOFchannelEfficiencyMap(nullptr),
+                           mTOFhitsCTTM(nullptr),
+                           mTOFmacropadCTTM(nullptr),
+                           mTOFmacropadDeltaPhiTime(nullptr),
+                           mBXVsCttmBit(nullptr),
+                           mTimeVsCttmBit(nullptr),
+                           mTOFRawHitMap24(nullptr),
+                           mHitMultiVsDDL(nullptr),
+                           mNfiredMacropad(nullptr)
 {
 }
 
-TOFTask::~TOFTask()
+TaskDigits::~TaskDigits()
 {
   mTOFRawsMulti.reset();
   mTOFRawsMultiIA.reset();
@@ -116,9 +117,9 @@ TOFTask::~TOFTask()
   mNfiredMacropad.reset();
 }
 
-void TOFTask::initialize(o2::framework::InitContext& /*ctx*/)
+void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize TOFTask" << ENDM;
+  ILOG(Info) << "initialize TaskDigits" << ENDM;
 
   mTOFRawsMulti.reset(new TH1I("TOFRawsMulti", "TOF raw hit multiplicity; TOF raw hits number; Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity));
   getObjectsManager()->startPublishing(mTOFRawsMulti.get());
@@ -233,7 +234,7 @@ void TOFTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mNfiredMacropad.get());
 }
 
-void TOFTask::startOfActivity(Activity& /*activity*/)
+void TaskDigits::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info) << "startOfActivity" << ENDM;
   mTOFRawsMulti->Reset();
@@ -271,12 +272,12 @@ void TOFTask::startOfActivity(Activity& /*activity*/)
   mNfiredMacropad->Reset();
 }
 
-void TOFTask::startOfCycle()
+void TaskDigits::startOfCycle()
 {
   ILOG(Info) << "startOfCycle" << ENDM;
 }
 
-void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
+void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // LOG(INFO) << "Monitoring in the TOF Task " << ENDM;
   // In this function you can access data inputs specified in the JSON config file, for example:
@@ -410,17 +411,17 @@ void TOFTask::monitorData(o2::framework::ProcessingContext& ctx)
   //   }
 }
 
-void TOFTask::endOfCycle()
+void TaskDigits::endOfCycle()
 {
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 
-void TOFTask::endOfActivity(Activity& /*activity*/)
+void TaskDigits::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info) << "endOfActivity" << ENDM;
 }
 
-void TOFTask::reset()
+void TaskDigits::reset()
 {
   // clean all the monitor objects here
 
