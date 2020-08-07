@@ -10,7 +10,7 @@
 
 #include <utility>
 #include <Common/Exceptions.h>
-
+#include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/QualityObject.h"
 
 using namespace AliceO2::Common;
@@ -86,13 +86,12 @@ QualityObject::QualityObject(
 
   std::string QualityObject::getPath() const
   {
-    std::string path = "qc/checks/" + getDetectorName() + "/" + getName();
-    if (mPolicyName == "OnEachSeparately") {
-      if (mMonitorObjectsNames.size() == 1) {
-        path += "/" + mMonitorObjectsNames[0];
-      } else {
-        BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Only one MO should be assigned to one QO With the policy OnEachSeparatety"));
-      }
+    std::string path;
+    try {
+      path = RepoPathUtils::getQoPath(this);
+    } catch (FatalException& fe) {
+      fe << errinfo_details("Only one MO should be assigned to one QO With the policy OnEachSeparatety"); // update error info
+      throw;
     }
     return path;
   }
@@ -115,4 +114,15 @@ QualityObject::QualityObject(
   {
     return mCheckName;
   }
+
+  const std::string& QualityObject::getPolicyName() const
+  {
+    return mPolicyName;
+  }
+
+  const std::vector<std::string> QualityObject::getMonitorObjectsNames() const
+  {
+    return mMonitorObjectsNames;
+  }
+
 } // namespace o2::quality_control::core

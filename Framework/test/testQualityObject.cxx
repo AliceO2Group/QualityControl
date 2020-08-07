@@ -15,6 +15,7 @@
 
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/testUtils.h"
 
 #define BOOST_TEST_MODULE QualityObject test
 #define BOOST_TEST_MAIN
@@ -48,4 +49,26 @@ BOOST_AUTO_TEST_CASE(quality_object_test)
   BOOST_CHECK_EQUAL(qo.getMetadataMap().at("probability"), "0.45");
   BOOST_REQUIRE_EQUAL(qo.getMetadataMap().count("threshold_medium"), 1);
   BOOST_CHECK_EQUAL(qo.getMetadataMap().at("threshold_medium"), "0.42");
+}
+
+BOOST_AUTO_TEST_CASE(qopath)
+{
+  // no policy
+  QualityObject qo(Quality::Null, "xyzCheck", "DET");
+  string path = qo.getPath();
+  BOOST_CHECK_EQUAL(path, "qc/checks/DET/xyzCheck");
+
+  // a policy which is not OnEachSeparately
+  QualityObject qo2(Quality::Null, "xyzCheck", "DET", "OnAnyNonZero");
+  string path2 = qo2.getPath();
+  BOOST_CHECK_EQUAL(path2, "qc/checks/DET/xyzCheck");
+
+  // policy is OnEachSeparately
+  QualityObject qo3(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, { "objectABC" });
+  string path3 = qo3.getPath();
+  BOOST_CHECK_EQUAL(path3, "qc/checks/DET/xyzCheck/objectABC");
+
+  // policy is OnEachSeparately and the vector is empty
+  QualityObject qo4(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, {});
+  BOOST_CHECK_EXCEPTION(qo4.getPath(), AliceO2::Common::FatalException, o2::quality_control::test::do_nothing);
 }
