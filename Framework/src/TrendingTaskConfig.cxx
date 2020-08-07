@@ -27,7 +27,8 @@ TrendingTaskConfig::TrendingTaskConfig(std::string name, const boost::property_t
                       plotConfig.second.get<std::string>("title", ""),
                       plotConfig.second.get<std::string>("varexp"),
                       plotConfig.second.get<std::string>("selection", ""),
-                      plotConfig.second.get<std::string>("option", "") });
+                      plotConfig.second.get<std::string>("option", ""),
+                      plotConfig.second.get<std::string>("graphErrors", "") });
   }
   for (const auto& dataSourceConfig : config.get_child("qc.postprocessing." + name + ".dataSources")) {
     if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names"); sourceNames.has_value()) {
