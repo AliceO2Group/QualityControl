@@ -23,7 +23,7 @@
 #include <boost/test/unit_test.hpp>
 
 using namespace std;
-
+using namespace o2::quality_control::test;
 using namespace o2::quality_control::core;
 
 BOOST_AUTO_TEST_CASE(quality_object_test)
