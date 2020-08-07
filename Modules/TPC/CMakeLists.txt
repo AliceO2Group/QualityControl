@@ -5,7 +5,8 @@ add_library(QcTPC)
 target_sources(QcTPC PRIVATE src/PID.cxx
                              src/Tracks.cxx
                              src/PIDClusterCheck.cxx
-                             src/TrackClusterCheck.cxx)
+                             src/TrackClusterCheck.cxx
+                             src/ROCReductor.cxx)
 
 target_include_directories(
   QcTPC
@@ -25,6 +26,7 @@ add_root_dictionary(QcTPC
                             include/TPC/Tracks.h
                             include/TPC/PIDClusterCheck.h
                             include/TPC/TrackClusterCheck.h
+                            include/TPC/ROCReductor.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME QcTPC)
 
@@ -75,4 +77,6 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTracks_sampled.json
               run/tpcQCTracks_direct.json
               run/tpcQCClusterChecker.json
+              run/tpcQCSimpleTrending.json
+              run/tpcQCTrendingClusters.json
         DESTINATION etc)
