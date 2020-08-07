@@ -9,8 +9,9 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFTask.h
+/// \file   TaskDigits.h
 /// \author Nicolo' Jacazio
+/// \brief  Task to monitor quantities in TOF digits in both data and MC
 ///
 
 #ifndef QC_MODULE_TOF_TOFTASK_H
@@ -30,13 +31,13 @@ namespace o2::quality_control_modules::tof
 
 /// \brief TOF Quality Control DPL Task
 /// \author Nicolo' Jacazio
-class TOFTask final : public TaskInterface
+class TaskDigits final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  TOFTask();
+  TaskDigits();
   /// Destructor
-  ~TOFTask() override;
+  ~TaskDigits() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;

@@ -9,12 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckDiagnostic.h
+/// \file   CheckRawToT.h
 /// \author Nicolo' Jacazio
+/// \brief  Checker for TOF Raw data on ToT
 ///
 
-#ifndef QC_MODULE_TOF_TOFCHECKDIAGNOSTIC_H
-#define QC_MODULE_TOF_TOFCHECKDIAGNOSTIC_H
+#ifndef QC_MODULE_TOF_TOFCHECKRAWSTOT_H
+#define QC_MODULE_TOF_TOFCHECKRAWSTOT_H
 
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
@@ -23,16 +24,13 @@
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief  Checker for diagnostic histogram of TOF Raw data
-///
-/// \author Nicolo' Jacazio
-class TOFCheckDiagnostic : public o2::quality_control::checker::CheckInterface
+class CheckRawToT : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TOFCheckDiagnostic();
+  CheckRawToT() = default;
   /// Destructor
-  ~TOFCheckDiagnostic() override;
+  ~CheckRawToT() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -40,9 +38,15 @@ class TOFCheckDiagnostic : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(TOFCheckDiagnostic, 1);
+ private:
+  /// Minimum ToT allowed for the mean in ns
+  float mMinRawToT;
+  /// Maximum ToT allowed for the mean in ns
+  float mMaxRawToT;
+
+  ClassDefOverride(CheckRawToT, 1);
 };
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFCHECKDIAGNOSTIC_H
+#endif // QC_MODULE_TOF_TOFCHECKRAWSTOT_H

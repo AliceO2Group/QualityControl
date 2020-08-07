@@ -14,6 +14,7 @@
 ///
 
 #include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/testUtils.h"
 #include <TH1F.h>
 
 #define BOOST_TEST_MODULE RepoPathUtils test
@@ -24,12 +25,6 @@
 using namespace std;
 
 using namespace o2::quality_control::core;
-
-bool do_nothing(AliceO2::Common::FatalException const& fe)
-{
-  std::cout << boost::diagnostic_information(fe) << std::endl;
-  return true;
-}
 
 BOOST_AUTO_TEST_CASE(qopath)
 {

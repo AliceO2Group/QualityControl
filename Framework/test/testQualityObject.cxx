@@ -15,6 +15,7 @@
 
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/testUtils.h"
 
 #define BOOST_TEST_MODULE QualityObject test
 #define BOOST_TEST_MAIN
@@ -48,12 +49,6 @@ BOOST_AUTO_TEST_CASE(quality_object_test)
   BOOST_CHECK_EQUAL(qo.getMetadataMap().at("probability"), "0.45");
   BOOST_REQUIRE_EQUAL(qo.getMetadataMap().count("threshold_medium"), 1);
   BOOST_CHECK_EQUAL(qo.getMetadataMap().at("threshold_medium"), "0.42");
-}
-
-bool do_nothing(AliceO2::Common::FatalException const& fe)
-{
-  std::cout << boost::diagnostic_information(fe) << std::endl;
-  return true;
 }
 
 BOOST_AUTO_TEST_CASE(qopath)

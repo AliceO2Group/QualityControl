@@ -4,18 +4,16 @@ add_library(QcTOF)
 
 target_sources(QcTOF 
                       # Tasks
-              PRIVATE src/TOFTask.cxx
-                      src/TOFTaskCompressed.cxx
+              PRIVATE src/TaskDigits.cxx
+                      src/TaskCompressedData.cxx
                       src/TaskDiagnostics.cxx
                       # Checkers
-                      src/TOFCheckCompressedCounter.cxx
-                      src/TOFCheckDiagnostic.cxx
-                      src/TOFCheckRawsMulti.cxx
-                      src/TOFCheckRawsTime.cxx
-                      src/TOFCheckRawsToT.cxx
+                      src/CheckDiagnostics.cxx
+                      src/CheckCompressedData.cxx
+                      src/CheckRawMultiplicity.cxx
+                      src/CheckRawTime.cxx
+                      src/CheckRawToT.cxx
                       # Utilities
-                      src/TOFDecoderCompressed.cxx
-                      src/Diagnostics.cxx
                 )
 
 target_include_directories(
@@ -41,19 +39,17 @@ install(TARGETS QcTOF
 
 add_root_dictionary(QcTOF
                             # Tasks
-                    HEADERS include/TOF/TOFTask.h
-                            include/TOF/TOFTaskCompressed.h
+                    HEADERS include/TOF/TaskDigits.h
+                            include/TOF/TaskCompressedData.h
                             include/TOF/TaskDiagnostics.h
                             # Checkers
-                            include/TOF/TOFCheckDiagnostic.h
-                            include/TOF/TOFCheckCompressedCounter.h
-                            include/TOF/TOFCheckRawsMulti.h
-                            include/TOF/TOFCheckRawsTime.h
-                            include/TOF/TOFCheckRawsToT.h
+                            include/TOF/CheckCompressedData.h
+                            include/TOF/CheckDiagnostics.h
+                            include/TOF/CheckRawMultiplicity.h
+                            include/TOF/CheckRawTime.h
+                            include/TOF/CheckRawToT.h
                             # Utilities
-                            include/TOF/TOFDecoderCompressed.h
                             include/Base/Counter.h
-                            include/TOF/Diagnostics.h
                     LINKDEF include/TOF/LinkDef.h
                     BASENAME QcTOF)
 
@@ -68,18 +64,18 @@ set_tests_properties(testQcTOF PROPERTIES TIMEOUT 20)
 
 # ---- Executables ----
 
-set(EXE_SRCS src/runTOF.cxx)
-
-set(EXE_NAMES o2-qc-run-tof)
-
-list(LENGTH EXE_SRCS count)
-math(EXPR count "${count}-1")
-foreach(i RANGE ${count})
-  list(GET EXE_SRCS ${i} src)
-  list(GET EXE_NAMES ${i} name)
-  add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE QualityControl CURL::libcurl)
-endforeach()
+#set(EXE_SRCS src/runTOF.cxx)
+#
+#set(EXE_NAMES o2-qc-run-tof)
+#
+#list(LENGTH EXE_SRCS count)
+#math(EXPR count "${count}-1")
+#foreach(i RANGE ${count})
+#  list(GET EXE_SRCS ${i} src)
+#  list(GET EXE_NAMES ${i} name)
+#  add_executable(${name} ${src})
+#  target_link_libraries(${name} PRIVATE QualityControl CURL::libcurl)
+#endforeach()
 
 # ---- Extra scripts ----
 

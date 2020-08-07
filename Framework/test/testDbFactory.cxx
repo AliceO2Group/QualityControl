@@ -30,6 +30,7 @@
 #include <QualityControl/CcdbDatabase.h>
 #include <QualityControl/MonitorObject.h>
 #include <QualityControl/RepoPathUtils.h>
+#include <QualityControl/testUtils.h>
 #include <TH1F.h>
 
 using namespace std;
@@ -37,8 +38,6 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control::repository
 {
-
-bool do_nothing(AliceO2::Common::FatalException const&) { return true; }
 
 BOOST_AUTO_TEST_CASE(db_factory_test)
 {
@@ -49,7 +48,7 @@ BOOST_AUTO_TEST_CASE(db_factory_test)
 #endif
 
   std::unique_ptr<DatabaseInterface> database2 = nullptr;
-  BOOST_CHECK_EXCEPTION(database2 = DatabaseFactory::create("asf"), AliceO2::Common::FatalException, do_nothing);
+  BOOST_CHECK_EXCEPTION(database2 = DatabaseFactory::create("asf"), AliceO2::Common::FatalException, o2::quality_control::test::do_nothing);
   BOOST_CHECK(!database2);
 
   std::unique_ptr<DatabaseInterface> database3 = DatabaseFactory::create("CCDB");

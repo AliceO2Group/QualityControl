@@ -9,12 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckRawsToT.h
+/// \file   CheckRawTime.h
 /// \author Nicolo' Jacazio
+/// \brief  Checker for TOF raw times
 ///
 
-#ifndef QC_MODULE_TOF_TOFCHECKRAWSTOT_H
-#define QC_MODULE_TOF_TOFCHECKRAWSTOT_H
+#ifndef QC_MODULE_TOF_TOFCHECKRAWSTIME_H
+#define QC_MODULE_TOF_TOFCHECKRAWSTIME_H
 
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
@@ -23,16 +24,13 @@
 namespace o2::quality_control_modules::tof
 {
 
-/// \brief  Check whether a plot is empty or not.
-///
-/// \author Barthelemy von Haller
-class TOFCheckRawsToT : public o2::quality_control::checker::CheckInterface
+class CheckRawTime : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TOFCheckRawsToT();
+  CheckRawTime() = default;
   /// Destructor
-  ~TOFCheckRawsToT() override;
+  ~CheckRawTime() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -40,14 +38,21 @@ class TOFCheckRawsToT : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
-  /// Minimum ToT allowed for the mean in ns
-  Float_t minTOFrawTot;
-  /// Maximum ToT allowed for the mean in ns
-  Double_t maxTOFrawTot;
+ private:
+  /// Minimum value for TOF average raw time
+  float mMinRawTime;
+  /// Maximum value for TOF average raw time
+  float mMaxRawTime;
+  /// Mean of the TOF raw time distribution
+  float mRawTimeMean = 0.f;
+  /// Integral of the TOF raw time distribution in the peak region i.e. within minTOFrawTime and maxTOFrawTime
+  float mRawTimePeakIntegral = 0.f;
+  /// Integral of the TOF raw time distribution in the whole histogram range
+  float mRawTimeIntegral = 0.f;
 
-  ClassDefOverride(TOFCheckRawsToT, 1);
+  ClassDefOverride(CheckRawTime, 1);
 };
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFCHECKRAWSTOT_H
+#endif // QC_MODULE_TOF_TOFCHECKRAWSTIME_H
