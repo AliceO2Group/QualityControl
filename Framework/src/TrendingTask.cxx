@@ -116,7 +116,7 @@ void TrendingTask::storePlots()
 
     // we determine the order of the plot, i.e. if it is a histogram (1), graph (2), or any higher dimension.
     const size_t plotOrder = std::count(plot.varexp.begin(), plot.varexp.end(), ':') + 1;
-    // we have to delete the graph errors after the plot is saved, unfortunately the canvas does not take ownership
+    // we have to delete the graph errors after the plot is saved, unfortunately the canvas does not take its ownership
     TGraphErrors* graphErrors = nullptr;
 
     TCanvas* c = new TCanvas();
@@ -131,9 +131,11 @@ void TrendingTask::storePlots()
       if (plotOrder != 2) {
         ILOG(Error) << "Non empty graphError seen for the plot '" << plot.name << "', which is not a graph, ignoring." << ENDM;
       } else {
+        // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars
         std::string varexpWithErrors(plot.varexp + ":" + plot.graphErrors);
         mTrend->Draw(varexpWithErrors.c_str(), plot.selection.c_str(), "goff");
         graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0), mTrend->GetVal(2), mTrend->GetVal(3));
+        // We draw on the same plot as the main graph, but only error bars
         graphErrors->Draw("SAME E");
       }
     }
@@ -176,9 +178,9 @@ void TrendingTask::storePlots()
     mo->setIsOwner(false);
     mDatabase->storeMO(mo);
 
-    // It should delete everything inside aside. Confirmed by trying to delete histo after and getting a segfault.
+    // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
     delete c;
-    // ...but not graphErrors
+    // ...but it does not delete graphErrors
     delete graphErrors;
   }
 }
