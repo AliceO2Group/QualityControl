@@ -21,11 +21,11 @@
 
 namespace o2::quality_control::test
 {
-  bool do_nothing(AliceO2::Common::FatalException const& fe)
-  {
-    std::cout << boost::diagnostic_information(fe) << std::endl;
-    return true;
-  }
-} // namespace o2::quality_control::core
+bool do_nothing(AliceO2::Common::FatalException const& fe)
+{
+  std::cout << boost::diagnostic_information(fe) << std::endl;
+  return true;
+}
+} // namespace o2::quality_control::test
 
 #endif // QC_TEST_UTILS_H
