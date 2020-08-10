@@ -192,8 +192,10 @@ Data sources are defined by filling the corresponding structure, as in the examp
 }
 ```
 
-Similarly, plots are defined by adding proper structures to the `"plots"` list, as shown below. The plot will be stored under the `"name"` value and it will have the `"title"` value shown on the top. The `"varexp"`, `"selection"` and `"option"` fields correspond to the arguments of the [`TTree::Draw`](https://root.cern/doc/master/classTTree.html#a73450649dc6e54b5b94516c468523e45) method.
-
+Similarly, plots are defined by adding proper structures to the `"plots"` list, as shown below. The plot will be
+ stored under the `"name"` value and it will have the `"title"` value shown on the top. The `"varexp"`, `"selection"` and `"option"` fields correspond to the arguments of the [`TTree::Draw`](https://root.cern/doc/master/classTTree.html#a73450649dc6e54b5b94516c468523e45) method.
+Optionally, one can use `"graphError"` to add x and y error bars to a graph, as in the first plot example.
+The `"name"` and `"varexp"` are the only compulsory arguments, others can be omitted to reduce configuration files size.
 ``` json
 {
         ...
@@ -203,7 +205,8 @@ Similarly, plots are defined by adding proper structures to the `"plots"` list, 
             "title": "Mean trend of the example histogram",
             "varexp": "example.mean:time",
             "selection": "",
-            "option": "*L"
+            "option": "*L",
+            "graphErrors": "5:example.stddev"
           },
           {
             "name": "histogram_of_means",

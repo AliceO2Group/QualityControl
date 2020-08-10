@@ -129,7 +129,7 @@ void TrendingTask::storePlots()
     // For graphs we allow to draw errors if they are specified.
     if (!plot.graphErrors.empty()) {
       if (plotOrder != 2) {
-        ILOG(Error) << "Non empty graphError seen for the plot '" << plot.name << "', which is not a graph, ignoring." << ENDM;
+        ILOG(Error) << "Non empty graphErrors seen for the plot '" << plot.name << "', which is not a graph, ignoring." << ENDM;
       } else {
         // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars
         std::string varexpWithErrors(plot.varexp + ":" + plot.graphErrors);
