@@ -71,6 +71,9 @@ int main(int argc, const char* argv[])
   } catch (const bpo::error& ex) {
     ILOG(Error) << "Exception caught: " << ex.what() << ENDM;
     return 1;
+  } catch (const boost::exception& ex) {
+    ILOG(Error) << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
+    return 1;
   }
 
   return 0;
