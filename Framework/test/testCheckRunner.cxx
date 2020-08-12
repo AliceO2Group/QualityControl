@@ -15,8 +15,6 @@
 
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/CheckRunner.h"
-#include <Framework/DataSampling.h>
-#include "getTestDataDirectory.h"
 
 #define BOOST_TEST_MODULE CheckRunner test
 #define BOOST_TEST_MAIN

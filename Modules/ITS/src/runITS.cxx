@@ -18,7 +18,12 @@
 /// \brief This is an executable to run the ITS QC Task.
 ///
 
-#include "Framework/DataSampling.h"
+#if __has_include(<Framework/DataSampling.h>)
+#include <Framework/DataSampling.h>
+#else
+#include <DataSampling/DataSampling.h>
+using namespace o2::datasampling;
+#endif
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
