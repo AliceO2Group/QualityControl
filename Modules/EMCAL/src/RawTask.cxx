@@ -267,7 +267,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         //fill histograms with max ADC for each supermodules and reset cache
         if (!first) {                       // check if it is the first event in the payload
-          if (triggerBC > currentTrigger) { //new event
+          if (triggerBC > currentTrigger) { // new event
             for (int sm = 0; sm < 20; sm++) {
               mRawAmplitudeEMCAL[sm]->Fill(maxADCSM[sm]);
               maxADCSM[sm] = 0;
