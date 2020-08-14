@@ -82,8 +82,9 @@ class TrendingTaskITSFhr : public PostProcessingInterface
 
   TrendingTaskConfigITS mConfig;
   MetaData mMetaData;
-  long int ntreeentries = 0;
+  Int_t ntreeentries = 0;
   UInt_t mTime;
+  std::vector<std::string> runlist;
   std::unique_ptr<TTree> mTrend;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
   repository::DatabaseInterface* mDatabase = nullptr;

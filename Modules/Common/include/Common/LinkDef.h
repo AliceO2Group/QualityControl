@@ -8,6 +8,6 @@
 #pragma link C++ class o2::quality_control_modules::common::TH1Reductor + ;
 #pragma link C++ class o2::quality_control_modules::common::TH2Reductor + ;
 #pragma link C++ class o2::quality_control_modules::common::TH2XlineReductor + ;
-#pragma link C++ class o2::quality_control_modules::common::THnSparseReductor + ;
+#pragma link C++ class o2::quality_control_modules::common::THnSparse5Reductor + ;
 #pragma link C++ class o2::quality_control_modules::common::QualityReductor + ;
 #endif

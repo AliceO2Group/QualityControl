@@ -67,7 +67,7 @@ class TrendingTaskITSThr : public PostProcessingInterface
   void SetGraphStyle(TGraph* g, int col, int mkr);
   void SetGraphNameAndAxes(TGraph* g, std::string name, std::string title,
                            std::string xtitle, std::string ytitle, double ymin,
-                           double ymax);
+                           double ymax, std::vector<std::string> runlist);
   void PrepareLegend(TLegend* leg, int layer);
 
  private:
@@ -83,6 +83,8 @@ class TrendingTaskITSThr : public PostProcessingInterface
   MetaData mMetaData;
   UInt_t mTime;
   std::unique_ptr<TTree> mTrend;
+  std::vector<std::string> runlist;
+  Int_t ntreeentries = 0;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
   repository::DatabaseInterface* mDatabase = nullptr;
 
