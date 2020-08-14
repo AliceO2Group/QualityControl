@@ -18,13 +18,14 @@
 
 #include <string>
 #include <functional>
+#include <iosfwd>
 
 namespace o2::quality_control::postprocessing
 {
 
 // todo: implement the rest
 /// \brief Possible triggers
-enum Trigger {
+enum TriggerType {
   No = 0, // casts to boolean false
   Once,   // triggers only first time it is asked
   Always, // triggers always
@@ -36,6 +37,23 @@ enum Trigger {
   NewObject,
   UserOrControl, // reacts start and stop transitions (not an update trigger).
   INVALID
+};
+
+struct Trigger {
+//  Trigger(TriggerType triggerType, uint64_t timestamp) = default; // : triggerType(triggerType), timestamp(timestamp) {}
+
+  operator bool() const { return triggerType == TriggerType::No || triggerType == TriggerType::INVALID; }
+//  bool operator!() const { return !this->operator bool(); }
+  friend std::ostream& operator<<(std::ostream& out, const Trigger &t); // {
+//    out << "triggerType: " << t.triggerType << ", timestamp: " << t.timestamp;
+//    return out;
+//  }
+  bool operator==(TriggerType other) const {
+    return triggerType == other;
+  }
+
+  TriggerType triggerType = TriggerType::INVALID;
+  uint64_t timestamp = 0;
 };
 
 using TriggerFcn = std::function<Trigger()>;

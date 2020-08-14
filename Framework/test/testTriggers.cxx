@@ -28,8 +28,8 @@ BOOST_AUTO_TEST_CASE(test_casting_triggers)
   auto once = triggers::Once();
 
   // confirm that enum values works
-  BOOST_CHECK_EQUAL(once(), Trigger::Once);
-  BOOST_CHECK_EQUAL(once(), Trigger::No);
+  BOOST_CHECK_EQUAL(once(), TriggerType::Once);
+  BOOST_CHECK_EQUAL(once(), TriggerType::No);
 
   // confirm that casting to booleans works
   BOOST_CHECK_EQUAL(once(), false);
@@ -44,9 +44,9 @@ BOOST_AUTO_TEST_CASE(test_trigger_once)
 {
   auto once = triggers::Once();
 
-  BOOST_CHECK_EQUAL(once(), Trigger::Once);
-  BOOST_CHECK_EQUAL(once(), Trigger::No);
-  BOOST_CHECK_EQUAL(once(), Trigger::No);
-  BOOST_CHECK_EQUAL(once(), Trigger::No);
-  BOOST_CHECK_EQUAL(once(), Trigger::No);
+  BOOST_CHECK_EQUAL(once(), TriggerType::Once);
+  BOOST_CHECK_EQUAL(once(), TriggerType::No);
+  BOOST_CHECK_EQUAL(once(), TriggerType::No);
+  BOOST_CHECK_EQUAL(once(), TriggerType::No);
+  BOOST_CHECK_EQUAL(once(), TriggerType::No);
 }
