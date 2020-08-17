@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE(test_timestamps_triggers)
   auto nowMs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
   Trigger t2(TriggerType::Once);
   BOOST_CHECK_EQUAL(t2.triggerType, TriggerType::Once);
-  BOOST_CHECK(std::abs(t2.timestamp - nowMs) < 100000); // 100 seconds of max. difference should be fine.
+  BOOST_CHECK(std::abs(static_cast<long long>(t2.timestamp - nowMs)) < 100000); // 100 seconds of max. difference should be fine.
 }
 
 BOOST_AUTO_TEST_CASE(test_trigger_once)
