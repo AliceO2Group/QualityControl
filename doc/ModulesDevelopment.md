@@ -309,7 +309,14 @@ To commit your new or modified code, please follow this procedure
 2. Push the branch : `git push --set-upstream origin feature-new-stuff`
 2. Add and commit your changes onto this branch : `git add Abc.cxx ; git commit Abc.cxx`
 3. Push your commits : `git push`
-4. Once you are satisfied with your changes, make a _Pull Request_ (PR). Go to your branches on the github webpage, and click "New Pull Request". Explain what you did. If you only wanted to share the progress, but your PR is not ready for a review yet, please put **[WIP]** (Wor
+4. Once you are satisfied with your changes, make a _Pull Request_ (PR). Go to your branches on the github webpage, and click "New Pull Request". Explain what you did. If you only wanted to share the progress, but your PR is not ready for a review yet, please put **[WIP]** (Work In Progress) in the beginning of its name.
+5. One of the QC developers will check your code. It will also be automatically tested.
+6. Once approved the changes will be merged in the main repo. You can delete your branch.
+
+For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
+
+General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
+
 ## Raw data source
 
 To read a raw data file, one can use the O2's [RawFileReader](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader). On the same page, there are instructions to write such file from Simulation. 

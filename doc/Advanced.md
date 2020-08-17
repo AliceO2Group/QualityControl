@@ -51,14 +51,6 @@ For example, if TPC wants to monitor the output `{"TPC", "CLUSTERS"}` of the wor
 o2-qc-run-tpcpid | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/tpcQCPID.json
 ```
 
-k In Progress) in the beginning of its name.
-5. One of the QC developers will check your code. It will also be automatically tested.
-6. Once approved the changes will be merged in the main repo. You can delete your branch.
-
-For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
-
-General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
-
 ## Production of QC objects outside this framework
 QC objects (e.g. histograms) are typically produced in a QC task. 
 This is however not the only way. Some processing tasks such as the calibration 
