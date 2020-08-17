@@ -95,7 +95,7 @@ target_link_libraries(QualityControl
                              ms_gsl::ms_gsl
                              QualityControlTypes
                              O2::Mergers
-                             O2::DataSampling
+                             $<$<TARGET_EXISTS:O2::DataSampling>:O2::DataSampling>
                       PRIVATE Boost::system
                               $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
                               $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL> ROOT::Gui
