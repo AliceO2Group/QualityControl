@@ -7,7 +7,7 @@ using namespace o2::framework;
 // TODO bring back full namespaces after the migration
 #else
 #include <DataSampling/DataSampling.h>
-using namespace o2::datasampling;
+using namespace o2::utilities;
 #endif
 #include <DataFormatsEMCAL/Digit.h>
 #include <DataFormatsEMCAL/Cell.h>

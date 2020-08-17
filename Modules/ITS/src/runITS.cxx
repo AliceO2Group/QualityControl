@@ -22,7 +22,7 @@
 #include <Framework/DataSampling.h>
 #else
 #include <DataSampling/DataSampling.h>
-using namespace o2::datasampling;
+using namespace o2::utilities;
 #endif
 #include "QualityControl/InfrastructureGenerator.h"
 
