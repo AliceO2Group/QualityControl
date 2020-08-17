@@ -30,6 +30,11 @@ std::ostream& operator<<(std::ostream &out, const Trigger &t) {
   return out;
 }
 
+uint64_t Trigger::msSinceEpoch()
+{
+  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
+
 namespace triggers
 {
 
@@ -40,14 +45,6 @@ TriggerFcn NotImplemented(std::string triggerName)
     return { TriggerType::No };
   };
 }
-
-uint64_t msSinceEpoch()
-{
-  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-}
-
-//Trigger::operator bool() const { return triggerType == TriggerType::No || triggerType == TriggerType::INVALID; }
-//
 
 TriggerFcn StartOfRun()
 {
@@ -77,10 +74,10 @@ TriggerFcn Once()
 {
   return [hasTriggered = false]() mutable -> Trigger {
     if (hasTriggered) {
-      return { TriggerType::No, msSinceEpoch() };
+      return { TriggerType::No };
     } else {
       hasTriggered = true;
-      return { TriggerType::Once, msSinceEpoch() };
+      return { TriggerType::Once };
     }
   };
 }
@@ -88,14 +85,14 @@ TriggerFcn Once()
 TriggerFcn Always()
 {
   return []() mutable -> Trigger {
-    return { TriggerType::Always, msSinceEpoch() };
+    return { TriggerType::Always };
   };
 }
 
 TriggerFcn Never()
 {
   return []() mutable -> Trigger {
-    return { TriggerType::No, msSinceEpoch() };
+    return { TriggerType::No };
   };
 }
 
@@ -122,7 +119,7 @@ TriggerFcn Periodic(double seconds)
   return [timer]() mutable -> Trigger {
     if (timer.isTimeout()) {
       // We calculate the exact time when timer has passed
-      uint64_t timestamp = msSinceEpoch() + static_cast<int>(timer.getRemainingTime() * 1000);
+      uint64_t timestamp = Trigger::msSinceEpoch() + static_cast<int>(timer.getRemainingTime() * 1000);
       // increment until it is cleared (in case that more than one cycle has passed)
       // let's hope there is no bug, which would make us stay in that loop forever
       while (timer.isTimeout()) {
@@ -130,7 +127,7 @@ TriggerFcn Periodic(double seconds)
       }
       return { TriggerType::Periodic, timestamp };
     } else {
-      return { TriggerType::No, msSinceEpoch() };
+      return { TriggerType::No };
     }
   };
 }
