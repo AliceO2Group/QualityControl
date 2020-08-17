@@ -25,7 +25,8 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control::postprocessing
 {
 
-std::ostream& operator<<(std::ostream &out, const Trigger &t) {
+std::ostream& operator<<(std::ostream& out, const Trigger& t)
+{
   out << "triggerType: " << t.triggerType << ", timestamp: " << t.timestamp;
   return out;
 }

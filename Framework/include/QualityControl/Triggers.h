@@ -42,13 +42,14 @@ enum TriggerType {
 struct Trigger {
 
   /// \brief Constructor. Timestamp is generated from the time of construction.
-  Trigger(TriggerType triggerType) : triggerType(triggerType), timestamp(msSinceEpoch()) {};
+  Trigger(TriggerType triggerType) : triggerType(triggerType), timestamp(msSinceEpoch()){};
   /// \brief Constructor.
-  Trigger(TriggerType triggerType, uint64_t timestamp) : triggerType(triggerType), timestamp(timestamp) {};
+  Trigger(TriggerType triggerType, uint64_t timestamp) : triggerType(triggerType), timestamp(timestamp){};
 
   operator bool() const { return triggerType == TriggerType::No || triggerType == TriggerType::INVALID; }
-  friend std::ostream& operator<<(std::ostream& out, const Trigger &t);
-  bool operator==(TriggerType other) const {
+  friend std::ostream& operator<<(std::ostream& out, const Trigger& t);
+  bool operator==(TriggerType other) const
+  {
     return triggerType == other;
   }
 
