@@ -21,6 +21,9 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <chrono>
+using namespace std::chrono;
+
 using namespace o2::quality_control::postprocessing;
 
 BOOST_AUTO_TEST_CASE(test_casting_triggers)
@@ -38,6 +41,18 @@ BOOST_AUTO_TEST_CASE(test_casting_triggers)
   BOOST_CHECK_EQUAL(once(), true);
   once = triggers::Once();
   BOOST_CHECK(once());
+}
+
+BOOST_AUTO_TEST_CASE(test_timestamps_triggers)
+{
+  Trigger t1(TriggerType::Once, 123);
+  BOOST_CHECK_EQUAL(t1.triggerType, TriggerType::Once);
+  BOOST_CHECK_EQUAL(t1.timestamp, 123);
+
+  auto nowMs = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  Trigger t2(TriggerType::Once);
+  BOOST_CHECK_EQUAL(t2.triggerType, TriggerType::Once);
+  BOOST_CHECK_CLOSE(t2.timestamp, nowMs, 100000); // 100 seconds of max. difference should be fine.
 }
 
 BOOST_AUTO_TEST_CASE(test_trigger_once)
