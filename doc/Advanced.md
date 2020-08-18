@@ -121,8 +121,6 @@ o2-qc-run-producer | o2-qc-run-histo-producer --producers 3 --histograms 3 | o2-
 ### Limitations
 
 1. Objects sent by the external device must be either a TObject or a TObjArray. In the former case, the object will be sent to the checker encapsulated in a MonitorObject. In the latter case, each TObject of the TObjArray is encapsulated in a MonitorObject and is sent to the checker.
-2. Although we use a query syntax in the external task configuration, we only consider the first element defined there. If there are several sources we ignore all but the first one.
-
 
 ## Multi-node setups
 
@@ -210,7 +208,7 @@ However in both cases, one has to specify the machines where data should be samp
   ]
 }
 ```
-
+/
 2. Make sure that the firewalls are properly configured. If your machines block incoming/outgoing connections by
  default, you can add these rules to the firewall (run as sudo). Consider enabling only concrete ports or a small
   range of those.
