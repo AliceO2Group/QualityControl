@@ -46,7 +46,7 @@ struct Trigger {
   /// \brief Constructor.
   Trigger(TriggerType triggerType, uint64_t timestamp) : triggerType(triggerType), timestamp(timestamp){};
 
-  operator bool() const { return triggerType == TriggerType::No || triggerType == TriggerType::INVALID; }
+  operator bool() const { return triggerType != TriggerType::No && triggerType != TriggerType::INVALID; }
   friend std::ostream& operator<<(std::ostream& out, const Trigger& t);
   bool operator==(TriggerType other) const
   {
