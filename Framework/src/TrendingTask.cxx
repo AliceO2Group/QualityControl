@@ -30,6 +30,9 @@ using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
+// 10 years. Should be updated when we have proper timestamping rules.
+constexpr long objectValidity = 1000l * 60 * 60 * 24 * 365 * 10;
+
 void TrendingTask::configure(std::string name, const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfig(name, config);
@@ -54,34 +57,32 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
 }
 
 //todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingTask::update(Trigger, framework::ServiceRegistry&)
+void TrendingTask::update(Trigger t, framework::ServiceRegistry&)
 {
-  trendValues();
+  trendValues(t.timestamp);
 
-  storePlots();
-  storeTrend();
+  storePlots(t.timestamp);
+  storeTrend(t.timestamp);
 }
 
-void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
+void TrendingTask::finalize(Trigger t, framework::ServiceRegistry&)
 {
-  storePlots();
-  storeTrend();
+  storePlots(t.timestamp);
+  storeTrend(t.timestamp);
 }
 
-void TrendingTask::storeTrend()
+void TrendingTask::storeTrend(uint64_t timestamp)
 {
   ILOG(Info) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), mConfig.detectorName);
   mo->setIsOwner(false);
-  mDatabase->storeMO(mo);
+  mDatabase->storeMO(mo, timestamp, timestamp + objectValidity);
 }
 
-void TrendingTask::trendValues()
+void TrendingTask::trendValues(uint64_t timestamp)
 {
-  // We use current date and time. This for planned processing (not history). We still might need to use the objects
-  // timestamps in the end, but this would become ambiguous if there is more than one data source.
-  mTime = TDatime().Convert();
+  mTime = timestamp;
   // todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not
   //  enough if we trend across runs).
   mMetaData.runNumber = -1;
@@ -90,13 +91,13 @@ void TrendingTask::trendValues()
 
     // todo: make it agnostic to MOs, QOs or other objects. Let the reductor cast to whatever it needs.
     if (dataSource.type == "repository") {
-      auto mo = mDatabase->retrieveMO(dataSource.path, dataSource.name);
+      auto mo = mDatabase->retrieveMO(dataSource.path, dataSource.name, timestamp);
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
         mReductors[dataSource.name]->update(obj);
       }
     } else if (dataSource.type == "repository-quality") {
-      auto qo = mDatabase->retrieveQO(dataSource.path + "/" + dataSource.name);
+      auto qo = mDatabase->retrieveQO(dataSource.path + "/" + dataSource.name, timestamp);
       if (qo) {
         mReductors[dataSource.name]->update(qo.get());
       }
@@ -108,7 +109,7 @@ void TrendingTask::trendValues()
   mTrend->Fill();
 }
 
-void TrendingTask::storePlots()
+void TrendingTask::storePlots(uint64_t timestamp)
 {
   ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
 
@@ -177,7 +178,7 @@ void TrendingTask::storePlots()
 
     auto mo = std::make_shared<MonitorObject>(c, mConfig.taskName, mConfig.detectorName);
     mo->setIsOwner(false);
-    mDatabase->storeMO(mo);
+    mDatabase->storeMO(mo, timestamp, timestamp + objectValidity);
 
     // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
     delete c;
