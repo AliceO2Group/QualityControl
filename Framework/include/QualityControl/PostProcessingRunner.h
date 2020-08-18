@@ -49,6 +49,8 @@ class PostProcessingRunner
   void stop();
   /// \brief Reset transition. Throws on errors.
   void reset();
+  /// \brief Runs the task over selected timestamps, performing the full start, run, stop cycle.
+  void runOverTimestamps(const std::vector<uint64_t>&);
 
  private:
   void doInitialize(Trigger trigger);

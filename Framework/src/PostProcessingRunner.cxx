@@ -90,6 +90,23 @@ bool PostProcessingRunner::run()
   return true;
 }
 
+void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timestamps)
+{
+  if (timestamps.size() < 2) {
+    throw std::runtime_error(
+      "At least two timestamps should be specified, " + std::to_string(timestamps.size()) +
+      " given. One is for the initialization, zero or more for update, one for finalization");
+  }
+
+  ILOG(Info) << "Running the task '" << mTask->getName() << "' over " << timestamps.size() << " timestamps." << ENDM;
+
+  doInitialize({ TriggerType::UserOrControl, timestamps.front() });
+  for (size_t i = 1; i < timestamps.size() - 1; i++) {
+    doUpdate({ TriggerType::UserOrControl, timestamps[i] });
+  }
+  doFinalize({ TriggerType::UserOrControl, timestamps.back() });
+}
+
 void PostProcessingRunner::start()
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {

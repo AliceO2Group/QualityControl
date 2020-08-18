@@ -19,7 +19,6 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
 #include "RootClassFactory.h"
-#include <boost/property_tree/ptree.hpp>
 #include <TH1.h>
 #include <TCanvas.h>
 #include <TPaveText.h>

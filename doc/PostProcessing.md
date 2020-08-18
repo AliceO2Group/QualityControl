@@ -103,6 +103,10 @@ o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessi
 
 As it is configured to invoke each method only `"once"`, you will see it initializing, entering the update method, then finalizing the task and exiting.
 
+This executable also allows to run a Post-processing task in batch mode, i.e. with selected timestamps (see the
+ `--timestamps` argument). This way, one can rerun a task over old data, if such a task actually respects given
+  timestamps.
+
 To have more control over the state transitions or to run a post-processing task in production, one should use `o2-qc-run-postprocessing-occ`. It is run almost exactly as the previously mentioned application, however one has to use [`peanut`](https://github.com/AliceO2Group/Control/tree/master/occ#single-process-control-with-peanut) to drive its state transitions and push the configuration.
 
 To try it out locally, run the following in the first terminal window (we will try out a different task this time):
