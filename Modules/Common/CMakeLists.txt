@@ -14,7 +14,6 @@ target_sources(QcCommon
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
                        src/TH2Reductor.cxx
-                       src/TH2XlineReductor.cxx
                        src/THnSparse5Reductor.cxx
                        src/QualityReductor.cxx)
 
@@ -36,7 +35,6 @@ add_root_dictionary(QcCommon
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Reductor.h
                             include/Common/TH2Reductor.h
-                            include/Common/TH2XlineReductor.h
                             include/Common/THnSparse5Reductor.h
                             include/Common/QualityReductor.h
                     LINKDEF include/Common/LinkDef.h

@@ -18,14 +18,13 @@
 #include "QualityControl/Reductor.h"
 #include <vector>
 
-namespace o2::quality_control_modules::common
+namespace o2::quality_control_modules::its
 {
 
 /// \brief A Reductor which obtains specific characteristics of TH2: mean and stddev of bin contents
 /// for each y bin (each row of the TH2)
 ///
 /// A Reductor which obtains specific characteristics of TH2.
-/// It produces a branch in the format: "sumw/D:sumw2:sumwx:sumwx2:sumwy:sumwy2:sumwxy:entries"
 class TH2XlineReductor : public quality_control::postprocessing::Reductor
 {
  public:
@@ -36,16 +35,17 @@ class TH2XlineReductor : public quality_control::postprocessing::Reductor
   const char* getBranchLeafList() override;
   void update(TObject* obj) override;
 
-  //private:
+ private:
+  static constexpr int NDIM = 20;
   struct mystat {
-    std::vector<Double_t> mean;        //mean of the bin contents of each row (1 value per row)
-    std::vector<Double_t> stddev;      //stddev of the bin contents of each row (1 value per row)
-    std::vector<Double_t> entries;     //entries of each row (1 value per row)
-    std::vector<Double_t> mean_scaled; //for ITS: mean scaled with number of active pixels in a stave to get the occupancy
+    Double_t mean[NDIM];        //mean of the bin contents of each row (1 value per row)
+    Double_t stddev[NDIM];      //stddev of the bin contents of each row (1 value per row)
+    Double_t entries[NDIM];     //entries of each row (1 value per row)
+    Double_t mean_scaled[NDIM]; //mean scaled with number of active pixels in a stave to get the occupancy
   };
-  struct mystat mStats;
+  mystat mStats;
 };
 
-} // namespace o2::quality_control_modules::common
+} // namespace o2::quality_control_modules::its
 
 #endif //QUALITYCONTROL_TH2XLINEREDUCTOR_H

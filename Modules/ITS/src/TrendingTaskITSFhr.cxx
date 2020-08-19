@@ -19,7 +19,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
-#include "../../Common/include/Common/TH2XlineReductor.h"
+#include "ITS/TH2XlineReductor.h"
 #include <TCanvas.h>
 #include <TH1.h>
 #include <map>
@@ -28,7 +28,7 @@
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
-using namespace o2::quality_control_modules::common;
+using namespace o2::quality_control_modules::its;
 
 void TrendingTaskITSFhr::configure(std::string name,
                                    const boost::property_tree::ptree& config)
@@ -52,16 +52,8 @@ void TrendingTaskITSFhr::initialize(Trigger,
   for (const auto& source : mConfig.dataSources) {
     std::unique_ptr<Reductor> reductor(root_class_factory::create<Reductor>(
       source.moduleName, source.reductorName));
-    if (source.reductorName.find("TH2Xline") != std::string::npos) {
-      TH2XlineReductor::mystat* mystc = (TH2XlineReductor::mystat*)reductor->getBranchAddress();
-      mTrend->Branch(Form("%s_mean", source.name.c_str()), &(mystc->mean));
-      mTrend->Branch(Form("%s_stddev", source.name.c_str()), &(mystc->stddev));
-      mTrend->Branch(Form("%s_entries", source.name.c_str()), &(mystc->entries));
-      mTrend->Branch(Form("%s_occupancy", source.name.c_str()), &(mystc->mean_scaled));
-    } else {
-      mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(),
-                     reductor->getBranchLeafList());
-    }
+    mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(),
+                   reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
 
@@ -191,12 +183,13 @@ void TrendingTaskITSFhr::storePlots()
   countplots = 0;
   TCanvas* c[NLAYERS * NTRENDSFHR];
   TLegend* legstaves[NLAYERS];
-  for (int idx = 0; idx < NLAYERS * NTRENDSFHR; idx++) // define canvases
+  for (int idx = 0; idx < NLAYERS * NTRENDSFHR; idx++) { // define canvases
     c[idx] = new TCanvas(
       Form("fhr_%s_trends_L%d", trendnames[idx % NTRENDSFHR].c_str(),
            idx / NTRENDSFHR),
       Form("fhr_%s_trends_L%d", trendnames[idx % NTRENDSFHR].c_str(),
            idx / NTRENDSFHR));
+  }
 
   for (int ilay = 0; ilay < NLAYERS; ilay++) { // define legends
     legstaves[ilay] = new TLegend(0.91, 0.1, 0.98, 0.9);
@@ -247,12 +240,10 @@ void TrendingTaskITSFhr::storePlots()
       hfake->GetXaxis()->SetNdivisions(505);
       for (int ir = 0; ir < (int)runlist.size(); ir++)
         hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
-      hfake->DrawClone();
+      hfake->DrawCopy();
       delete hfake;
     }
 
-    //g->DrawClone(!countplots ? plot.option.c_str()
-    //                         : Form("%s same", plot.option.c_str()));
     g->DrawClone((!countplots && !isrun) ? plot.option.c_str() : Form("%s same", plot.option.c_str()));
     if (countplots == nStaves[ilay] - 1)
       legstaves[ilay]->Draw("same");

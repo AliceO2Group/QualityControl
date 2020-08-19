@@ -63,6 +63,7 @@ class TrendingTaskITSFhr : public PostProcessingInterface
   void update(Trigger, framework::ServiceRegistry&) override;
   void finalize(Trigger, framework::ServiceRegistry&) override;
 
+ private:
   // other functions (mainly style)
   void SetLegendStyle(TLegend* leg);
   void SetGraphStyle(TGraph* g, int col, int mkr);
@@ -71,7 +72,6 @@ class TrendingTaskITSFhr : public PostProcessingInterface
                            double ymax, std::vector<std::string> runlist);
   void PrepareLegend(TLegend* leg, int layer);
 
- private:
   struct MetaData {
     Int_t runNumber = 0;
   };
