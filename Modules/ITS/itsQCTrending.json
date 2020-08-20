@@ -31,336 +31,336 @@
         "dataSources": [
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave0/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave0/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave0/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave0/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_0", "DeadPixels_l0_0" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave1/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave1/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave1/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave1/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_1", "DeadPixels_l0_1" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave2/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave2/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave2/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave2/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_2", "DeadPixels_l0_2" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave3/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave3/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave3/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave3/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_3", "DeadPixels_l0_3" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave4/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave4/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave4/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave4/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_4", "DeadPixels_l0_4" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave5/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave5/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave5/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave5/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_5", "DeadPixels_l0_5" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave6/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave6/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave6/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave6/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_6", "DeadPixels_l0_6" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave7/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave7/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave7/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave7/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_7", "DeadPixels_l0_7" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave8/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave8/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave8/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave8/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_8", "DeadPixels_l0_8" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave9/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave9/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave9/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave9/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_9", "DeadPixels_l0_9" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave10/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave10/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave10/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave10/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_10", "DeadPixels_l0_10" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask0/Threshold/Layer0/Stave11/Threshold","qc/ITS/ITSTHRTask0/DeadPixel/Layer0/Stave11/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask0/Threshold/Layer0/Stave11/Threshold","qc/ITS/MO/ITSTHRTask0/DeadPixel/Layer0/Stave11/DeadPixelHITMAP"],
             "names": [ "Threshold_l0_11", "DeadPixels_l0_11" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave0/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave0/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave0/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave0/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_0", "DeadPixels_l1_0" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave1/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave1/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave1/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave1/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_1", "DeadPixels_l1_1" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave2/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave2/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave2/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave2/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_2", "DeadPixels_l1_2" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave3/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave3/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave3/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave3/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_3", "DeadPixels_l1_3" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave4/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave4/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave4/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave4/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_4", "DeadPixels_l1_4" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave5/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave5/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave5/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave5/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_5", "DeadPixels_l1_5" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave6/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave6/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave6/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave6/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_6", "DeadPixels_l1_6" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave7/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave7/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave7/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave7/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_7", "DeadPixels_l1_7" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave8/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave8/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave8/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave8/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_8", "DeadPixels_l1_8" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave9/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave9/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave9/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave9/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_9", "DeadPixels_l1_9" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave10/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave10/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave10/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave10/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_10", "DeadPixels_l1_10" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave11/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave11/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave11/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave11/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_11", "DeadPixels_l1_11" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave12/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave12/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave12/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave12/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_12", "DeadPixels_l1_12" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave13/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave13/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave13/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave13/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_13", "DeadPixels_l1_13" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave14/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave14/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave14/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave14/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_14", "DeadPixels_l1_14" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask1/Threshold/Layer1/Stave15/Threshold","qc/ITS/ITSTHRTask1/DeadPixel/Layer1/Stave15/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask1/Threshold/Layer1/Stave15/Threshold","qc/ITS/MO/ITSTHRTask1/DeadPixel/Layer1/Stave15/DeadPixelHITMAP"],
             "names": [ "Threshold_l1_15", "DeadPixels_l1_15" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave0/Threshold","qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave0/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave0/Threshold","qc/ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave0/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_0", "DeadPixels_l2_0" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave1/Threshold","qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave1/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave1/Threshold","qc/ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave1/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_1", "DeadPixels_l2_1" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave2/Threshold","qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave2/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave2/Threshold","qc/ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave2/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_2", "DeadPixels_l2_2" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave3/Threshold","qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave3/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave3/Threshold","qc/ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave3/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_3", "DeadPixels_l2_3" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave4/Threshold","qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave4/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave4/Threshold","qc/ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave4/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_4", "DeadPixels_l2_4" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave5/Threshold","qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave5/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave5/Threshold","qc/ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave5/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_5", "DeadPixels_l2_5" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave6/Threshold","qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave6/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave6/Threshold","qc/ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave6/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_6", "DeadPixels_l2_6" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave7/Threshold","qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave7/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave7/Threshold","qc/ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave7/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_7", "DeadPixels_l2_7" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave8/Threshold","qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave8/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave8/Threshold","qc/ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave8/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_8", "DeadPixels_l2_8" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2T/Threshold/Layer2/Stave9/Threshold","qc/ITS/ITSTHRTask2T/DeadPixel/Layer2/Stave9/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2T/Threshold/Layer2/Stave9/Threshold","qc/ITS/MO/ITSTHRTask2T/DeadPixel/Layer2/Stave9/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_9", "DeadPixels_l2_9" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave10/Threshold","qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave10/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave10/Threshold","qc/ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave10/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_10", "DeadPixels_l2_10" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave11/Threshold","qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave11/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave11/Threshold","qc/ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave11/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_11", "DeadPixels_l2_11" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave12/Threshold","qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave12/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave12/Threshold","qc/ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave12/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_12", "DeadPixels_l2_12" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave13/Threshold","qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave13/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave13/Threshold","qc/ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave13/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_13", "DeadPixels_l2_13" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave14/Threshold","qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave14/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave14/Threshold","qc/ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave14/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_14", "DeadPixels_l2_14" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave15/Threshold","qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave15/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave15/Threshold","qc/ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave15/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_15", "DeadPixels_l2_15" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave16/Threshold","qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave16/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave16/Threshold","qc/ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave16/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_16", "DeadPixels_l2_16" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave17/Threshold","qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave17/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave17/Threshold","qc/ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave17/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_17", "DeadPixels_l2_17" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave18/Threshold","qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave18/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave18/Threshold","qc/ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave18/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_18", "DeadPixels_l2_18" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
           },
           {
             "types": ["repository","repository"],
-            "paths": ["qc/ITS/ITSTHRTask2B/Threshold/Layer2/Stave19/Threshold","qc/ITS/ITSTHRTask2B/DeadPixel/Layer2/Stave19/DeadPixelHITMAP"],
+            "paths": ["qc/ITS/MO/ITSTHRTask2B/Threshold/Layer2/Stave19/Threshold","qc/ITS/MO/ITSTHRTask2B/DeadPixel/Layer2/Stave19/DeadPixelHITMAP"],
             "names": [ "Threshold_l2_19", "DeadPixels_l2_19" ],
             "reductorNames": ["o2::quality_control_modules::common::TH1Reductor", "o2::quality_control_modules::common::THnSparseReductor"],
             "moduleNames": ["QcCommon","QcCommon"]
