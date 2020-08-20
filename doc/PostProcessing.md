@@ -87,7 +87,7 @@ Each of the three methods can be invoked by one or more triggers. Below are list
  * `"sof"` or `"startoffill"` - Start Of Fill
  * `"eof"` or `"endoffill"` - End Of Fill
  * `"<x><sec/min/hour>"` - Periodic - triggers when a specified period of time passes. For example: "5min", "0.001 seconds", "10sec", "2hours".
- * `"newobject:<path>"` - New Object - triggers when an object in QCDB is updated. For example: `"newobject:/qc/TST/QcTask/Example"`
+ * `"newobject:<path>"` - New Object - triggers when an object in QCDB is updated. For example: `"newobject:/qc/TST/MO/QcTask/Example"`
  * `"once"` - Once - triggers only first time it is checked
  * `"always"` - Always - triggers each time it is checked
 
@@ -175,14 +175,14 @@ Data sources are defined by filling the corresponding structure, as in the examp
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TST/QcTask",
+            "path": "qc/TST/MO/QcTask",
             "names": [ "example" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
-            "path": "qc/checks",
+            "path": "qc/TST/QO",
             "names": [ "QcCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
