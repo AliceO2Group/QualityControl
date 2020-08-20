@@ -241,6 +241,11 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 
       // for each item of the array, check whether it is a MonitorObject. If not, create one and encapsulate.
       // Then, store the MonitorObject in the various maps and vectors we will use later.
+      mLogger << "input : " << input << ENDM;
+      mLogger << "mInputStoreSet.size() : " << mInputStoreSet.size() << ENDM;
+      for(auto item: mInputStoreSet) {
+        mLogger << "  item : " << item << ENDM;
+      }
       bool store = mInputStoreSet.count(DataSpecUtils::label(input)) > 0; // Check if this CheckRunner stores this input
       for (const auto tObject : *array) {
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
@@ -252,6 +257,8 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
           mo = std::make_shared<MonitorObject>(tObject, input.binding, origin.str);
         }
 
+        mLogger << "mo : " << mo << ENDM;
+        mLogger << "store : " << store << ENDM;
         if (mo) {
           mMonitorObjects[mo->getFullName()] = mo;
           mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
