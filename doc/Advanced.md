@@ -6,16 +6,22 @@
 <!--ts-->
    * [Advanced topics](#advanced-topics)
       * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
-      * [Multi-node setups](#multi-node-setupts)
+      * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
+         * [Configuration](#configuration)
+         * [Example 1: basic](#example-1-basic)
+         * [Example 2: advanced](#example-2-advanced)
+         * [Limitations](#limitations)
+      * [Multi-node setups](#multi-node-setups)
       * [Writing a DPL data producer](#writing-a-dpl-data-producer)
-      * [Access conditions from the CCDB](#access-conditions-from-the-ccdb)
+      * [Access run conditions and calibrations from the CCDB](#access-run-conditions-and-calibrations-from-the-ccdb)
       * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
       * [Custom QC object metadata](#custom-qc-object-metadata)
+      * [Canvas options](#canvas-options)
       * [Data Inspector](#data-inspector)
          * [Prerequisite](#prerequisite)
          * [Compilation](#compilation)
          * [Execution](#execution)
-         * [Configuration](#configuration)
+         * [Configuration](#configuration-1)
       * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
          * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
       * [Local CCDB setup](#local-ccdb-setup)
@@ -23,14 +29,14 @@
       * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
       * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
       * [Configuration files details](#configuration-files-details)
-        * [Global configuration structure](#global-configuration-structure)
-        * [Common configuration](#common-configuration)
-        * [QC Tasks configuration](#qc-tasks-configuration)
-        * [QC Checks configuration](#qc-checks-configuration)
-        * [QC Post-processing configuration](#qc-post-processing-configuration)
+         * [Global configuration structure](#global-configuration-structure)
+         * [Common configuration](#common-configuration)
+         * [QC Tasks configuration](#qc-tasks-configuration)
+         * [QC Checks configuration](#qc-checks-configuration)
+         * [QC Post-processing configuration](#qc-post-processing-configuration)
+         * [External tasks configuration](#external-tasks-configuration)
 
-<!-- Added by: bvonhall, at:  -->
-
+<!-- Added by: barth, at: Lun 17 aoû 2020 14:57:43 CEST -->
 <!--te-->
 
 
@@ -44,6 +50,77 @@ For example, if TPC wants to monitor the output `{"TPC", "CLUSTERS"}` of the wor
 ```
 o2-qc-run-tpcpid | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/tpcQCPID.json
 ```
+
+## Production of QC objects outside this framework
+QC objects (e.g. histograms) are typically produced in a QC task. 
+This is however not the only way. Some processing tasks such as the calibration 
+might have already processed the data and produced histograms that should be 
+monitored. Instead of re-processing and doing twice the work, one can simply
+push this QC object to the QC framework where it will be checked and stored.
+
+### Configuration
+
+Let be a device in the main data flow that produces a histogram on a channel defined as `TST/HISTO/0`. To get this histogram in the QC and check it, add to the configuration file an "external device": 
+```yaml
+    "externalTasks": {
+      "External-1": {
+        "active": "true",
+        "query": "External-1:TST/HISTO/0",  "": "Query specifying where the objects to be checked and stored are coming from. Use the task name as binding. The origin (e.g. TST) is used as detector name for the objects."
+      }
+    },
+    "checks": {
+```
+The "query" syntax is the same as the one used in the DPL and in the Dispatcher. It must match the output of another device, whether it is in the same workflow or in a piped one. 
+The `binding` (first part, before the colon) is used in the path of the stored objects and thus we encourage to use the task name to avoid confusion. Moreover, the `origin` (first element after the colon) is used as detectorName. 
+
+### Example 1: basic
+
+As a basic example, we are going to produce histograms with the HistoProducer and collect them with the QC. The configuration is in [basic-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/basic-external-histo.json). An external task is defined and named "External-1" (see subsection above). It is then used in the Check QCCheck : 
+```yaml
+      "QcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "ExternalTask",
+          "name": "External-1",
+          "MOs": ["hello"]
+        }]
+      }
+```
+When using this feature, make sure that the name of the MO in the Check definition matches the name of the object you are sending from the external device.
+
+To run it, do:
+```yaml
+o2-qc-run-histo-producer | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/basic-external-histo.json
+```
+
+The object is visible in the QCG or the CCDB at `qc/TST/External-1/hello_0`. In general we publish the objects of an external device at `qc/<detector>/<binding>/object`. 
+
+The check results are stored at `qc/checks/<detector>/<binding>/object`.
+
+### Example 2: advanced
+
+This second, more advanced, example mixes QC tasks and external tasks. It is defined in [advanced-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/advanced-external-histo.json). It is represented here:
+
+![alt text](images/Advanced-external.png)
+
+First, it runs 1 QC task (QC-TASK-RUNNER-QcTask) getting data from a data producer (bottom boxes, typical QC worfklow). 
+
+On top we see 3 histogram producers. `histoProducer-2` is not part of the QC, it is not an external device defined in the configuration file. The two other histogram producers are configured as external devices in the configuration file. 
+
+`histoProducer-0` produces an object that is used in a check (`QcCheck-External-1`). `histoProducer-1` objects are not used in any check but we generate one automatically to take care of the storage in the database.
+
+To run it, do: 
+```yaml
+o2-qc-run-producer | o2-qc-run-histo-producer --producers 3 --histograms 3 | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/advanced-external-histo.json 
+```
+
+### Limitations
+
+1. Objects sent by the external device must be either a TObject or a TObjArray. In the former case, the object will be sent to the checker encapsulated in a MonitorObject. In the latter case, each TObject of the TObjArray is encapsulated in a MonitorObject and is sent to the checker.
 
 ## Multi-node setups
 
@@ -131,7 +208,7 @@ However in both cases, one has to specify the machines where data should be samp
   ]
 }
 ```
-
+/
 2. Make sure that the firewalls are properly configured. If your machines block incoming/outgoing connections by
  default, you can add these rules to the firewall (run as sudo). Consider enabling only concrete ports or a small
   range of those.
@@ -182,7 +259,7 @@ As an example we take the `DataProducerExample` that you can find in the QC repo
   
 You will probably write it in your detector's O2 directory rather than in the QC repository. 
 
-## Access conditions from the CCDB
+## Access run conditions and calibrations from the CCDB 
 
 The MonitorObjects generated by Quality Control are stored in a dedicated
 repository based on CCDB. The run conditions, on the other hand, are located
@@ -237,6 +314,20 @@ Simply call `ObjectsManager::addMetadata(...)`, like in
   getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
 ```
 This metadata will end up in the QCDB.
+
+## Canvas options 
+
+The developer of a Task might perfectly know how to display a plot or a graph but cannot set these options if they belong to the Canvas. This is typically the case of `drawOptions` such as `colz` or `alp`. It is also the case for canvases' properties such as logarithmic scale and grid. These options can be set by the end user in the QCG but it is likely that the developer wants to give pertinent default options. 
+
+To do so, one can use one of the two following methods.
+* `TObjectsManager::setDefaultDrawOptions(<objectname or pointer>, string& drawOptions)`
+  
+  `drawOptions` is a space-separated list of drawing options. E.g. "colz" or "alp lego1". 
+* `TObjectsManager::setDisplayHint(<objectname or pointer>, string& hints)`
+  
+  `hints` is a space-separated list of hints on how to draw the object. E.g. "logz" or "gridy logy". 
+  
+  Currently supported by QCG: logx, logy, logz, gridx, gridy, gridz.
 
 ## Data Inspector
 

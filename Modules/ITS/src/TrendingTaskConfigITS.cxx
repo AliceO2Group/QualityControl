@@ -55,35 +55,20 @@ TrendingTaskConfigITS::TrendingTaskConfigITS(
   }
   for (const auto& dataSourceConfig :
        config.get_child("qc.postprocessing." + name + ".dataSources")) {
-    if (const auto& sourceNames =
-          dataSourceConfig.second.get_child_optional("names");
+    if (const auto& sourceNames = dataSourceConfig.second.get_child_optional("names");
         sourceNames.has_value()) {
-      const auto& sourceTypes =
-        dataSourceConfig.second.get_child_optional("types"); // take all types
-      const auto& sourcePaths =
-        dataSourceConfig.second.get_child_optional("paths"); // take all paths
-      const auto& sourceReductors = dataSourceConfig.second.get_child_optional(
-        "reductorNames"); // take all types
-      const auto& sourceModules = dataSourceConfig.second.get_child_optional(
-        "moduleNames"); // take all paths
+      const auto& sourcePaths = dataSourceConfig.second.get_child_optional("paths"); // take all paths
       ptree::const_iterator itname = sourceNames.value().begin();
-      ptree::const_iterator ittype = sourceTypes.value().begin();
       ptree::const_iterator itpath = sourcePaths.value().begin();
-      ptree::const_iterator itred = sourceReductors.value().begin();
-      ptree::const_iterator itmod = sourceModules.value().begin();
       while (itname != sourceNames.value().end() ||
-             ittype != sourceTypes.value().end() ||
-             itpath != sourcePaths.value().end() ||
-             itred != sourceReductors.value().end() ||
-             itmod != sourceModules.value().end()) {
-        dataSources.push_back({ ittype->second.data(), itpath->second.data(),
-                                itname->second.data(), itred->second.data(),
-                                itmod->second.data() });
-        ittype++;
+             itpath != sourcePaths.value().end()) {
+        dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", ""),
+                                itpath->second.data(),
+                                itname->second.data(),
+                                dataSourceConfig.second.get<std::string>("reductorName", ""),
+                                dataSourceConfig.second.get<std::string>("moduleName", "") });
         itpath++;
         itname++;
-        itred++;
-        itmod++;
       }
     } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
       // "name" : [ "something" ] would return an empty string here

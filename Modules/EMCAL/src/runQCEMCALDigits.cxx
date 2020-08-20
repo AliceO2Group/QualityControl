@@ -1,7 +1,14 @@
 #include <string>
 #include <TH1.h>
 
+#if __has_include(<Framework/DataSampling.h>)
 #include <Framework/DataSampling.h>
+using namespace o2::framework;
+// TODO bring back full namespaces after the migration
+#else
+#include <DataSampling/DataSampling.h>
+using namespace o2::utilities;
+#endif
 #include <DataFormatsEMCAL/Digit.h>
 #include <DataFormatsEMCAL/Cell.h>
 #include <EMCALWorkflow/PublisherSpec.h>
@@ -11,13 +18,13 @@
 
 void customize(std::vector<o2::framework::CompletionPolicy>& policies)
 {
-  o2::framework::DataSampling::CustomizeInfrastructure(policies);
+  DataSampling::CustomizeInfrastructure(policies);
   o2::quality_control::customizeInfrastructure(policies);
 }
 
 void customize(std::vector<o2::framework::ChannelConfigurationPolicy>& policies)
 {
-  o2::framework::DataSampling::CustomizeInfrastructure(policies);
+  DataSampling::CustomizeInfrastructure(policies);
 }
 
 void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
@@ -95,7 +102,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
     ILOG(Info) << "Creating a local QC topology." << ENDM;
 
     // Generation of Data Sampling infrastructure
-    o2::framework::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+    DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
     // Generation of the local QC topology (local QC tasks and their output proxies)
     o2::quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, config.options().get<std::string>("host"));

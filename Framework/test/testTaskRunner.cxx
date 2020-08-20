@@ -16,7 +16,12 @@
 #include "getTestDataDirectory.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/TaskRunner.h"
+#if __has_include(<Framework/DataSampling.h>)
 #include <Framework/DataSampling.h>
+#else
+#include <DataSampling/DataSampling.h>
+using namespace o2::utilities;
+#endif
 #include <Framework/DataSpecUtils.h>
 
 #define BOOST_TEST_MODULE TaskRunner test

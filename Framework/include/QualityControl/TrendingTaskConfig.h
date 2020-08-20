@@ -36,6 +36,7 @@ struct TrendingTaskConfig : PostProcessingConfig {
     std::string varexp;
     std::string selection;
     std::string option;
+    std::string graphErrors;
   };
 
   struct DataSource {

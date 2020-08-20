@@ -81,11 +81,11 @@ BOOST_AUTO_TEST_CASE(test_task)
     TrendingTask task;
     task.setName(taskName);
     task.configure(taskName, ConfigurationFactory::getConfiguration(configFilePath)->getRecursive());
-    task.initialize(Trigger::Once, services);
+    task.initialize({ TriggerType::Once }, services);
     for (size_t i = 0; i < trendTimes; i++) {
-      task.update(Trigger::Always, services);
+      task.update({ TriggerType::Always }, services);
     }
-    task.finalize(Trigger::UserOrControl, services);
+    task.finalize({ TriggerType::UserOrControl }, services);
   }
 
   // The test itself

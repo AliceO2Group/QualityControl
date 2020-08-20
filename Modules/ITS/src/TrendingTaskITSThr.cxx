@@ -9,37 +9,39 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    TrendingTaskITS.cxx
+/// \file    TrendingTaskITSThr.cxx
 /// \author  Ivan Ravasenga on the structure from Piotr Konopka
 ///
 
-#include "ITS/TrendingTaskITS.h"
+#include "ITS/TrendingTaskITSThr.h"
 #include "../../../Framework/src/RootClassFactory.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Reductor.h"
 #include <TCanvas.h>
+#include <TH1.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
-void TrendingTaskITS::configure(std::string name,
-                                const boost::property_tree::ptree& config)
+void TrendingTaskITSThr::configure(std::string name,
+                                   const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfigITS(name, config);
 }
 
-void TrendingTaskITS::initialize(Trigger,
-                                 framework::ServiceRegistry& services)
+void TrendingTaskITSThr::initialize(Trigger,
+                                    framework::ServiceRegistry& services)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we
                                       // continue trending. maybe do it
                                       // optionally?
   mTrend->SetName(PostProcessingInterface::getName().c_str());
-  mTrend->Branch("meta", &mMetaData, "runNumber/I");
+  mTrend->Branch("runNumber", &mMetaData.runNumber);
+  mTrend->Branch("ntreeentries", &ntreeentries);
   mTrend->Branch("time", &mTime);
 
   for (const auto& source : mConfig.dataSources) {
@@ -55,7 +57,7 @@ void TrendingTaskITS::initialize(Trigger,
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingTaskITS::update(Trigger, framework::ServiceRegistry&)
+void TrendingTaskITSThr::update(Trigger, framework::ServiceRegistry&)
 {
   trendValues();
 
@@ -63,13 +65,13 @@ void TrendingTaskITS::update(Trigger, framework::ServiceRegistry&)
   storeTrend();
 }
 
-void TrendingTaskITS::finalize(Trigger, framework::ServiceRegistry&)
+void TrendingTaskITSThr::finalize(Trigger, framework::ServiceRegistry&)
 {
   storePlots();
   storeTrend();
 }
 
-void TrendingTaskITS::storeTrend()
+void TrendingTaskITSThr::storeTrend()
 {
   ILOG(Info) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
@@ -79,7 +81,7 @@ void TrendingTaskITS::storeTrend()
   mDatabase->storeMO(mo);
 }
 
-void TrendingTaskITS::trendValues()
+void TrendingTaskITSThr::trendValues()
 {
   // We use current date and time. This for planned processing (not history). We
   // still might need to use the objects
@@ -89,7 +91,8 @@ void TrendingTaskITS::trendValues()
   // todo get run number when it is available. consider putting it inside
   // monitor object's metadata (this might be not
   //  enough if we trend across runs).
-  mMetaData.runNumber = -1;
+  mMetaData.runNumber = 0;
+  int count = 0;
 
   for (auto& dataSource : mConfig.dataSources) {
 
@@ -98,6 +101,12 @@ void TrendingTaskITS::trendValues()
     if (dataSource.type == "repository") {
       // auto mo = mDatabase->retrieveMO(dataSource.path, dataSource.name);
       auto mo = mDatabase->retrieveMO(dataSource.path, "");
+      if (!count) {
+        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
+        mMetaData.runNumber = std::stoi(entryMetadata["Run"]);                   //get and set run number
+        ntreeentries = (Int_t)mTrend->GetEntries() + 1;
+        runlist.push_back(std::to_string(mMetaData.runNumber));
+      }
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
         mReductors[dataSource.name]->update(obj);
@@ -110,11 +119,12 @@ void TrendingTaskITS::trendValues()
     } else {
       ILOGE << "Unknown type of data source '" << dataSource.type << "'.";
     }
+    count++;
   }
   mTrend->Fill();
 }
 
-void TrendingTaskITS::storePlots()
+void TrendingTaskITSThr::storePlots()
 {
   ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots."
              << ENDM;
@@ -134,6 +144,8 @@ void TrendingTaskITS::storePlots()
     int add = (plot.name.find("rms") != std::string::npos)
                 ? 1
                 : plot.name.find("dead") != std::string::npos ? 2 : 0;
+
+    bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
     long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(),
                               "goff"); // plot.option.c_str());
     // post processing plot
@@ -145,8 +157,8 @@ void TrendingTaskITS::storePlots()
     double ymax = plot.name.find("rms") != std::string::npos
                     ? 5.
                     : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
-    SetGraphNameAndAxes(g, plot.name, plot.title, "time", ytitles[add], ymin,
-                        ymax);
+    SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[add], ymin,
+                        ymax, runlist);
     ILOG(Info) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName,
                                               mConfig.detectorName);
@@ -193,6 +205,8 @@ void TrendingTaskITS::storePlots()
                 ? 1
                 : plot.name.find("dead") != std::string::npos ? 2 : 0;
 
+    bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
+
     c[ilay * NTRENDSTHR + add]->cd();
     c[ilay * NTRENDSTHR + add]->SetTickx();
     c[ilay * NTRENDSTHR + add]->SetTicky();
@@ -211,10 +225,21 @@ void TrendingTaskITS::storePlots()
                     : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
     SetGraphNameAndAxes(g, plot.name,
                         Form("L%d - %s trends", ilay, trendtitles[add].c_str()),
-                        "time", ytitles[add], ymin, ymax);
+                        isrun ? "run" : "time", ytitles[add], ymin, ymax, runlist);
     ILOG(Info) << " Drawing " << plot.name << ENDM;
-    g->DrawClone(!countplots ? plot.option.c_str()
-                             : Form("%s same", plot.option.c_str()));
+
+    if (!countplots && isrun) { //fake histo with runs as x-axis labels
+      int npoints = g->GetN();
+      TH1F* hfake = new TH1F("hfake", Form("%s; %s; %s", g->GetTitle(), g->GetXaxis()->GetTitle(), g->GetYaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
+      hfake->GetYaxis()->SetRangeUser(ymin, ymax);
+      hfake->GetXaxis()->SetNdivisions(505);
+      for (int ir = 0; ir < (int)runlist.size(); ir++)
+        hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
+      hfake->DrawClone();
+      delete hfake;
+    }
+
+    g->DrawClone((!countplots && !isrun) ? plot.option.c_str() : Form("%s same", plot.option.c_str()));
     if (countplots == nStaves[ilay] - 1)
       legstaves[ilay]->Draw("same");
     if (plot.name.find("dead") != std::string::npos)
@@ -233,24 +258,24 @@ void TrendingTaskITS::storePlots()
   }
 }
 
-void TrendingTaskITS::SetLegendStyle(TLegend* leg)
+void TrendingTaskITSThr::SetLegendStyle(TLegend* leg)
 {
   leg->SetTextFont(42);
   leg->SetLineColor(kWhite);
   leg->SetFillColor(0);
 }
 
-void TrendingTaskITS::SetGraphStyle(TGraph* g, int col, int mkr)
+void TrendingTaskITSThr::SetGraphStyle(TGraph* g, int col, int mkr)
 {
   g->SetLineColor(col);
   g->SetMarkerStyle(mkr);
   g->SetMarkerColor(col);
 }
 
-void TrendingTaskITS::SetGraphNameAndAxes(TGraph* g, std::string name,
-                                          std::string title, std::string xtitle,
-                                          std::string ytitle, double ymin,
-                                          double ymax)
+void TrendingTaskITSThr::SetGraphNameAndAxes(TGraph* g, std::string name,
+                                             std::string title, std::string xtitle,
+                                             std::string ytitle, double ymin,
+                                             double ymax, std::vector<std::string> runlist)
 {
   g->SetTitle(title.c_str());
   g->SetName(name.c_str());
@@ -268,9 +293,15 @@ void TrendingTaskITS::SetGraphNameAndAxes(TGraph* g, std::string name,
     g->GetXaxis()->SetTimeOffset(0.0);
     g->GetXaxis()->SetTimeFormat("%Y-%m-%d %H:%M");
   }
+  if (xtitle.find("run") != std::string::npos) {
+    g->GetXaxis()->SetNdivisions(505); // It deals with highly congested dates labels
+    for (int ipoint = 0; ipoint < g->GetN(); ipoint++) {
+      g->GetXaxis()->SetBinLabel(g->GetXaxis()->FindBin(ipoint + 1.), runlist[ipoint].c_str());
+    }
+  }
 }
 
-void TrendingTaskITS::PrepareLegend(TLegend* leg, int layer)
+void TrendingTaskITSThr::PrepareLegend(TLegend* leg, int layer)
 {
   for (int istv = 0; istv < nStaves[layer]; istv++) {
     int colidx = istv > 13 ? istv - 14 : istv > 6 ? istv - 7 : istv;

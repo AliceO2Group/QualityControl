@@ -1,0 +1,60 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "Clusters": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::Clusters",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query" : "input0:TPC/CLUSTERNATIVE/0;input1:TPC/CLUSTERNATIVE/1;input2:TPC/CLUSTERNATIVE/2;input3:TPC/CLUSTERNATIVE/3;input4:TPC/CLUSTERNATIVE/4;input5:TPC/CLUSTERNATIVE/5;input6:TPC/CLUSTERNATIVE/6;input7:TPC/CLUSTERNATIVE/7;input8:TPC/CLUSTERNATIVE/8;input9:TPC/CLUSTERNATIVE/9;input10:TPC/CLUSTERNATIVE/10;input11:TPC/CLUSTERNATIVE/11;input12:TPC/CLUSTERNATIVE/12;input13:TPC/CLUSTERNATIVE/13;input14:TPC/CLUSTERNATIVE/14;input15:TPC/CLUSTERNATIVE/15;input16:TPC/CLUSTERNATIVE/16;input17:TPC/CLUSTERNATIVE/17;input18:TPC/CLUSTERNATIVE/18;input19:TPC/CLUSTERNATIVE/19;input20:TPC/CLUSTERNATIVE/20;input21:TPC/CLUSTERNATIVE/21;input22:TPC/CLUSTERNATIVE/22;input23:TPC/CLUSTERNATIVE/23;input24:TPC/CLUSTERNATIVE/24;input25:TPC/CLUSTERNATIVE/25;input26:TPC/CLUSTERNATIVE/26;input27:TPC/CLUSTERNATIVE/27;input28:TPC/CLUSTERNATIVE/28;input29:TPC/CLUSTERNATIVE/29;input30:TPC/CLUSTERNATIVE/30;input31:TPC/CLUSTERNATIVE/31;input32:TPC/CLUSTERNATIVE/32;input33:TPC/CLUSTERNATIVE/33;input34:TPC/CLUSTERNATIVE/34;input35:TPC/CLUSTERNATIVE/35"
+        },
+        "taskParameters": {
+          "myOwnKey": "myOwnValue"
+        },
+        "location": "remote"
+      }
+    },
+    "checks": {
+      "QcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TPC",
+        "dataSource": [{
+          "type": "Task",
+          "name": "Clusters",
+          "MOs": ["example"]
+        }]
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+  ]
+}
