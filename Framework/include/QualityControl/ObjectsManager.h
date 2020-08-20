@@ -107,7 +107,7 @@ class ObjectsManager
    * See for example https://root.cern/doc/master/classTHistPainter.html#HP01
    * E.g. manager->setDefaultDRawOptions("histo1", "colz");
    * @param objectName Name of the object affected by these drawOptions.
-   * @param options The list of options.
+   * @param options The list of options, space separated.
    * @throw ObjectNotFoundError if object is not found.
    */
   void setDefaultDrawOptions(const std::string& objectName, const std::string& options);
@@ -123,7 +123,7 @@ class ObjectsManager
    * For drawOptions, use setDefaultDrawOptions, for others such as logarithmic scale or grid, use this method.
    * Currently supported by QCG: logx, logy, logz, gridx, gridy, gridz
    * @param objectName Name of the object affected by these drawOptions.
-   * @param options The list of hints.
+   * @param options The list of hints, space separated.
    * @throw ObjectNotFoundError if object is not found.
    */
   void setDisplayHint(const std::string& objectName, const std::string& hints);
