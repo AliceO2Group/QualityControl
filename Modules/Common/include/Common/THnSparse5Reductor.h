@@ -9,26 +9,26 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   THnSparseReductor.h
+/// \file   THnSparse5Reductor.h
 /// \author Ivan Ravasenga on the model from Piotr Konopka
 ///
-#ifndef QUALITYCONTROL_THNSPARSEREDUCTOR_H
-#define QUALITYCONTROL_THNSPARSEREDUCTOR_H
+#ifndef QUALITYCONTROL_THNSPARSE5REDUCTOR_H
+#define QUALITYCONTROL_THNSPARSE5REDUCTOR_H
 
 #include "QualityControl/Reductor.h"
 
 namespace o2::quality_control_modules::common
 {
 
-/// \brief A Reductor which obtains the most popular characteristics of THnSparse.
+/// \brief A Reductor which obtains the most popular characteristics of THnSparse up to 5 dimensions.
 ///
-/// A Reductor which obtains the most popular characteristics of THnSparse.
-/// It produces a branch in the format: "mean[NDIM]/D:stddev[NDIM]:entries[NDIM]"
-class THnSparseReductor : public quality_control::postprocessing::Reductor
+/// A Reductor which obtains the most popular characteristics of THnSparse up to 5 dimensions.
+/// It produces a branch in the format: "mean[NDIM]/D:stddev[NDIM]:entries[NDIM] where NDIM=5"
+class THnSparse5Reductor : public quality_control::postprocessing::Reductor
 {
  public:
-  THnSparseReductor() = default;
-  ~THnSparseReductor() = default;
+  THnSparse5Reductor() = default;
+  ~THnSparse5Reductor() = default;
 
   void* getBranchAddress() override;
   const char* getBranchLeafList() override;
@@ -45,4 +45,4 @@ class THnSparseReductor : public quality_control::postprocessing::Reductor
 
 } // namespace o2::quality_control_modules::common
 
-#endif //QUALITYCONTROL_THNSPARSEREDUCTOR_H
+#endif //QUALITYCONTROL_THNSPARSE5REDUCTOR_H

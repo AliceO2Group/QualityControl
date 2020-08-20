@@ -9,12 +9,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    TrendingTaskITS.h
+/// \file    TrendingTaskITSThr.h
 /// \author  Ivan Ravasenga on the structure from Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_TRENDINGTASKITS_H
-#define QUALITYCONTROL_TRENDINGTASKITS_H
+#ifndef QUALITYCONTROL_TRENDINGTASKITSTHR_H
+#define QUALITYCONTROL_TRENDINGTASKITSTHR_H
 
 #include "ITS/TrendingTaskConfigITS.h"
 #include "QualityControl/PostProcessingInterface.h"
@@ -49,12 +49,12 @@ namespace o2::quality_control::postprocessing
 /// configured with configuration files, see Framework/postprocessing.json as an
 /// example.
 ///
-/// \author Piotr Konopka
-class TrendingTaskITS : public PostProcessingInterface
+/// \author Ivan Ravasenga on the structure from Piotr Konopka
+class TrendingTaskITSThr : public PostProcessingInterface
 {
  public:
-  TrendingTaskITS() = default;
-  ~TrendingTaskITS() override = default;
+  TrendingTaskITSThr() = default;
+  ~TrendingTaskITSThr() override = default;
 
   void configure(std::string name,
                  const boost::property_tree::ptree& config) override;
@@ -67,7 +67,7 @@ class TrendingTaskITS : public PostProcessingInterface
   void SetGraphStyle(TGraph* g, int col, int mkr);
   void SetGraphNameAndAxes(TGraph* g, std::string name, std::string title,
                            std::string xtitle, std::string ytitle, double ymin,
-                           double ymax);
+                           double ymax, std::vector<std::string> runlist);
   void PrepareLegend(TLegend* leg, int layer);
 
  private:
@@ -83,15 +83,11 @@ class TrendingTaskITS : public PostProcessingInterface
   MetaData mMetaData;
   UInt_t mTime;
   std::unique_ptr<TTree> mTrend;
+  std::vector<std::string> runlist;
+  Int_t ntreeentries = 0;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
   repository::DatabaseInterface* mDatabase = nullptr;
 
-  /*int col[10] = {TColor::GetColor("#ff3300"), TColor::GetColor("#ec6e0a"),
-     TColor::GetColor("#daaa14"), TColor::GetColor("#c7e51e"),
-     TColor::GetColor("#85dd69"),
-               TColor::GetColor("#42d6b4"), TColor::GetColor("#00ceff"),
-     TColor::GetColor("#009adf"), TColor::GetColor("#0067c0"),
-     TColor::GetColor("#0033a1")};*/
   const int col[7] = { 1, 2, 3, 4, 5, 6, 7 };
   const int mkr[3] = { 8, 29, 34 };
   static constexpr int NLAYERS = 3;
@@ -107,4 +103,4 @@ class TrendingTaskITS : public PostProcessingInterface
 
 } // namespace o2::quality_control::postprocessing
 
-#endif // QUALITYCONTROL_TRENDINGTASKITS_H
+#endif // QUALITYCONTROL_TRENDINGTASKITSTHR_H
