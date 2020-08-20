@@ -18,7 +18,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
-#include "RootClassFactory.h"
+#include "QualityControl/RootClassFactory.h"
 #include <boost/property_tree/ptree.hpp>
 #include <TH1.h>
 #include <TCanvas.h>

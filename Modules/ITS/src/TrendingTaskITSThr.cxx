@@ -14,7 +14,7 @@
 ///
 
 #include "ITS/TrendingTaskITSThr.h"
-#include "../../../Framework/src/RootClassFactory.h"
+#include "QualityControl/RootClassFactory.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
