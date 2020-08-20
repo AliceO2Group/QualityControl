@@ -84,11 +84,11 @@ TriggerFcn triggerFactory(std::string trigger)
 Trigger tryTrigger(std::vector<TriggerFcn>& triggerFcns)
 {
   for (auto& triggerFcn : triggerFcns) {
-    if (Trigger trigger = triggerFcn()) {
+    if (auto trigger = triggerFcn()) {
       return trigger;
     }
   }
-  return Trigger::No;
+  return { TriggerType::No };
 }
 
 std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNames)
