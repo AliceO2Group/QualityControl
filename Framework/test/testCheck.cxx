@@ -16,7 +16,12 @@
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/MonitorObject.h"
 #include "getTestDataDirectory.h"
+#if __has_include(<Framework/DataSampling.h>)
 #include <Framework/DataSampling.h>
+#else
+#include <DataSampling/DataSampling.h>
+using namespace o2::utilities;
+#endif
 #include <Common/Exceptions.h>
 #include <TH1F.h>
 

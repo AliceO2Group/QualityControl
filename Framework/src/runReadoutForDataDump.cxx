@@ -33,7 +33,14 @@
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 ///
 
+#if __has_include(<Framework/DataSampling.h>)
 #include <Framework/DataSampling.h>
+#include <Framework/DataSamplingReadoutAdapter.h>
+#else
+#include <DataSampling/DataSampling.h>
+#include <DataSampling/DataSamplingReadoutAdapter.h>
+using namespace o2::utilities;
+#endif
 
 using namespace o2::framework;
 void customize(std::vector<CompletionPolicy>& policies)
@@ -45,7 +52,6 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
   DataSampling::CustomizeInfrastructure(policies);
 }
 
-#include <Framework/DataSamplingReadoutAdapter.h>
 #include <Framework/runDataProcessing.h>
 #include <QualityControl/QcInfoLogger.h>
 

@@ -30,7 +30,12 @@
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
 #include <Framework/CompletionPolicyHelpers.h>
+#if __has_include(<Framework/DataSampling.h>)
 #include <Framework/DataSampling.h>
+#else
+#include <DataSampling/DataSampling.h>
+using namespace o2::utilities;
+#endif
 #include <Framework/DataSpecUtils.h>
 #include <Framework/CompletionPolicyHelpers.h>
 #include "QualityControl/InfrastructureGenerator.h"
