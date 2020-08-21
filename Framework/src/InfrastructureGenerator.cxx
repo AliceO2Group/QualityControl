@@ -373,11 +373,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
       }
     }
   } catch (std::exception& e) {
-    // if qc.externalTasks we will get a generic exception so we have to check the what() to know that we can ignore it
-    if (string(e.what()) != ("No such node (qc.externalTasks)")) {
-      QcInfoLogger::GetInstance() << "No External Tasks defined." << ENDM;
+    // if qc.externalTasks does not exist we will get a generic exception so we have to check the what() to know that we can ignore it
+    if (string(e.what()) != string("No such node (qc.externalTasks)")) {
       throw;
-    }
+    } // else do nothing
   }
 
   // Instantiate Checks based on the configuration and build a map of checks (keyed by their inputs names)
