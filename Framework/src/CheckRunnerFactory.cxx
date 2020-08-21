@@ -32,7 +32,6 @@ using namespace o2::quality_control::checker;
 
 DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::string configurationSource, std::vector<std::string> storeVector)
 {
-  std::cout << "CheckRunnerFactory::create" << std::endl;
   CheckRunner qcCheckRunner{ checks, configurationSource };
   qcCheckRunner.setTaskStoreSet({ storeVector.begin(), storeVector.end() });
 
@@ -49,7 +48,6 @@ DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::str
 
 DataProcessorSpec CheckRunnerFactory::createSinkDevice(o2::framework::InputSpec input, std::string configurationSource)
 {
-  std::cout << "CREATESINKDEVICE" << std::endl;
   CheckRunner qcCheckRunner{ input, configurationSource };
   qcCheckRunner.setTaskStoreSet({ DataSpecUtils::label(input) });
 

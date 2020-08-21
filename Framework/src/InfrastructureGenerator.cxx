@@ -395,10 +395,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
   // For every Task output, find a Check to store the MOs in the database.
   // If none is found we create a sink device.
-  cout << "For every Task output, find a Check to store the MOs in the database." << endl;
-  cout << "tasksOutputMap: " << tasksOutputMap.size() << endl;
   for (auto& [label, inputSpec] : tasksOutputMap) { // for each task output
-    cout << "*** task output " << label << endl;
     (void)inputSpec;
     bool isStored = false;
     // Look for this task as input in the Checks' inputs, if we found it then we are done
@@ -424,11 +421,11 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     //Logging
     ILOG(Info) << ">> Inputs (" << inputNames.size() << "): ";
     for (auto& name : inputNames)
-      ILOG(Info) << name << " \n";
-    ILOG(Info) << "   Checks (" << checks.size() << "): ";
+      ILOG(Info) << name << " ";
+    ILOG(Info) << " ; Checks (" << checks.size() << "): ";
     for (auto& check : checks)
-      ILOG(Info) << check.getName() << " \n";
-    ILOG(Info) << "   Stores (" << storeVectorMap[inputNames].size() << "): ";
+      ILOG(Info) << check.getName() << " ";
+    ILOG(Info) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
     for (auto& input : storeVectorMap[inputNames])
       ILOG(Info) << input << " ";
     ILOG(Info) << ENDM;
