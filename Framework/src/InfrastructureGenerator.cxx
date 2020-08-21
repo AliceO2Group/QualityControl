@@ -360,15 +360,22 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   }
 
   // For each external task prepare the InputSpec to be stored in tasksoutputMap
-  for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
-    (void)taskName;
-    if (taskConfig.get<bool>("active", true)) {
-      auto query = taskConfig.get<std::string>("query");
-      framework::Inputs inputs = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
-      o2::framework::InputSpec taskOutput = inputs.at(0); // only consider the first one if several.
+  try {
+    for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
+      (void)taskName;
+      if (taskConfig.get<bool>("active", true)) {
+        auto query = taskConfig.get<std::string>("query");
+        framework::Inputs inputs = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
+        o2::framework::InputSpec taskOutput = inputs.at(0); // only consider the first one if several.
 
-      string label = DataSpecUtils::label(taskOutput);
-      tasksOutputMap.insert({ label, taskOutput });
+        string label = DataSpecUtils::label(taskOutput);
+        tasksOutputMap.insert({ label, taskOutput });
+      }
+    }
+  } catch (std::exception& e) {
+    // if qc.externalTasks we will get a generic exception so we have to check the what() to know that we can ignore it
+    if (e.what() != "No such node (qc.externalTasks)") {
+      throw;
     }
   }
 
