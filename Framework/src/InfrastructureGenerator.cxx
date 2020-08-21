@@ -365,8 +365,8 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
       (void)taskName;
       if (taskConfig.get<bool>("active", true)) {
         auto query = taskConfig.get<std::string>("query");
-        framework::Inputs inputs = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
-        o2::framework::InputSpec taskOutput = inputs.at(0); // only consider the first one if several.
+        Inputs inputs = DataDescriptorQueryBuilder::parse(query.c_str());
+        InputSpec taskOutput = inputs.at(0); // only consider the first one if several.
 
         string label = DataSpecUtils::label(taskOutput);
         tasksOutputMap.insert({ label, taskOutput });
