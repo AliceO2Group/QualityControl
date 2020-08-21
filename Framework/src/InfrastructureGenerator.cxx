@@ -374,7 +374,8 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     }
   } catch (std::exception& e) {
     // if qc.externalTasks we will get a generic exception so we have to check the what() to know that we can ignore it
-    if (e.what() != "No such node (qc.externalTasks)") {
+    if (string(e.what()) != ("No such node (qc.externalTasks)")) {
+      QcInfoLogger::GetInstance() << "No External Tasks defined." << ENDM;
       throw;
     }
   }
