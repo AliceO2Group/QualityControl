@@ -51,7 +51,7 @@ class PostProcessingRunner
   void reset();
   /// \brief Runs the task over selected timestamps, performing the full start, run, stop cycle.
   ///
-  /// \param t A vector with timestamps (ms since epoch). 
+  /// \param t A vector with timestamps (ms since epoch).
   ///          The first is used for task initialisation, the last for task finalisation, so at least two are required.
   void runOverTimestamps(const std::vector<uint64_t>& t);
 
