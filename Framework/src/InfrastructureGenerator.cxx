@@ -354,8 +354,22 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // Build tasksOutputMap based on active tasks in the config
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     if (taskConfig.get<bool>("active", true)) {
-      o2::framework::InputSpec checkInput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
-      tasksOutputMap.insert({ DataSpecUtils::label(checkInput), checkInput });
+      InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
+      tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
+    }
+  }
+
+  // For each external task prepare the InputSpec to be stored in tasksoutputMap
+  if (config->getRecursive("qc").count("externalTasks")) {
+    for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
+      (void)taskName;
+      if (taskConfig.get<bool>("active", true)) {
+        auto query = taskConfig.get<std::string>("query");
+        Inputs inputs = DataDescriptorQueryBuilder::parse(query.c_str());
+        for (const auto& taskOutput : inputs) {
+          tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
+        }
+      }
     }
   }
 
@@ -409,10 +423,10 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     ILOG(Info) << ">> Inputs (" << inputNames.size() << "): ";
     for (auto& name : inputNames)
       ILOG(Info) << name << " ";
-    ILOG(Info) << " checks (" << checks.size() << "): ";
+    ILOG(Info) << " ; Checks (" << checks.size() << "): ";
     for (auto& check : checks)
       ILOG(Info) << check.getName() << " ";
-    ILOG(Info) << " stores (" << storeVectorMap[inputNames].size() << "): ";
+    ILOG(Info) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
     for (auto& input : storeVectorMap[inputNames])
       ILOG(Info) << input << " ";
     ILOG(Info) << ENDM;
