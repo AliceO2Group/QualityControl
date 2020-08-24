@@ -366,17 +366,16 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
       if (taskConfig.get<bool>("active", true)) {
         auto query = taskConfig.get<std::string>("query");
         Inputs inputs = DataDescriptorQueryBuilder::parse(query.c_str());
-        InputSpec taskOutput = inputs.at(0); // only consider the first one if several.
-
-        string label = DataSpecUtils::label(taskOutput);
-        tasksOutputMap.insert({ label, taskOutput });
+        for(const auto& taskOutput : inputs) {
+          tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
+        }
       }
     }
   } catch (std::exception& e) {
     // if qc.externalTasks does not exist we will get a generic exception so we have to check the what() to know that we can ignore it
     if (string(e.what()) != string("No such node (qc.externalTasks)")) {
       throw;
-    } // else do nothing
+    } // else do nothing, we ignore the exception thrown due to externalTasks missing
   }
 
   // Instantiate Checks based on the configuration and build a map of checks (keyed by their inputs names)
