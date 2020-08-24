@@ -99,7 +99,7 @@ o2-qc-run-histo-producer | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/bas
 
 The object is visible in the QCG or the CCDB at `qc/TST/External-1/hello_0`. In general we publish the objects of an external device at `qc/<detector>/<binding>/object`. 
 
-The check results are stored at `qc/checks/<detector>/<binding>/object`.
+The check results are stored at `qc/<detector>/QO/<checkName>[/object]`.
 
 ### Example 2: advanced
 
