@@ -235,7 +235,7 @@ void TrendingTaskITSThr::storePlots()
       hfake->GetXaxis()->SetNdivisions(505);
       for (int ir = 0; ir < (int)runlist.size(); ir++)
         hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
-      hfake->DrawClone();
+      hfake->DrawCopy();
       delete hfake;
     }
 
