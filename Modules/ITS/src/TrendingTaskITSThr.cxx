@@ -14,7 +14,7 @@
 ///
 
 #include "ITS/TrendingTaskITSThr.h"
-#include "../../../Framework/src/RootClassFactory.h"
+#include "QualityControl/RootClassFactory.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -235,7 +235,7 @@ void TrendingTaskITSThr::storePlots()
       hfake->GetXaxis()->SetNdivisions(505);
       for (int ir = 0; ir < (int)runlist.size(); ir++)
         hfake->GetXaxis()->SetBinLabel(ir + 1, runlist[ir].c_str());
-      hfake->DrawClone();
+      hfake->DrawCopy();
       delete hfake;
     }
 

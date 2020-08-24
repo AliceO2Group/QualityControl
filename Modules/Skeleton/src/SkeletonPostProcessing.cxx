@@ -14,6 +14,7 @@
 ///
 
 #include "Skeleton/SkeletonPostProcessing.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace o2::quality_control::postprocessing;
 
@@ -28,8 +29,9 @@ void SkeletonPostProcessing::initialize(Trigger, framework::ServiceRegistry&)
 {
 }
 
-void SkeletonPostProcessing::update(Trigger, framework::ServiceRegistry&)
+void SkeletonPostProcessing::update(Trigger t, framework::ServiceRegistry&)
 {
+  ILOG(Info) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
 }
 
 void SkeletonPostProcessing::finalize(Trigger, framework::ServiceRegistry&)
