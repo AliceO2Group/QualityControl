@@ -360,7 +360,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   }
 
   // For each external task prepare the InputSpec to be stored in tasksoutputMap
-  if(config->getRecursive("qc").count("externalTasks")) {
+  if (config->getRecursive("qc").count("externalTasks")) {
     for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
       (void)taskName;
       if (taskConfig.get<bool>("active", true)) {
