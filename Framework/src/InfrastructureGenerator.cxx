@@ -354,28 +354,23 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // Build tasksOutputMap based on active tasks in the config
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     if (taskConfig.get<bool>("active", true)) {
-      o2::framework::InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
+      InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
       tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
     }
   }
 
   // For each external task prepare the InputSpec to be stored in tasksoutputMap
-  try {
+  if(config->getRecursive("qc").count("externalTasks")) {
     for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
       (void)taskName;
       if (taskConfig.get<bool>("active", true)) {
         auto query = taskConfig.get<std::string>("query");
         Inputs inputs = DataDescriptorQueryBuilder::parse(query.c_str());
-        for(const auto& taskOutput : inputs) {
+        for (const auto& taskOutput : inputs) {
           tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
         }
       }
     }
-  } catch (std::exception& e) {
-    // if qc.externalTasks does not exist we will get a generic exception so we have to check the what() to know that we can ignore it
-    if (string(e.what()) != string("No such node (qc.externalTasks)")) {
-      throw;
-    } // else do nothing, we ignore the exception thrown due to externalTasks missing
   }
 
   // Instantiate Checks based on the configuration and build a map of checks (keyed by their inputs names)
