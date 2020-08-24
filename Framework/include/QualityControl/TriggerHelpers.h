@@ -24,7 +24,7 @@ namespace o2::quality_control::postprocessing::trigger_helpers
 TriggerFcn triggerFactory(std::string trigger);
 /// \brief Creates a trigger function vector given trigger names
 std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNames);
-/// \brief Executes a vector of triggers functions and returns the first trigger which is not Trigger::No
+/// \brief Executes a vector of triggers functions and returns the first trigger which is not TriggerType::No
 Trigger tryTrigger(std::vector<TriggerFcn>&);
 /// \brief Checks if in a given trigger configuration vector there is a UserOrControl trigger.
 /// This is trigger cannot be checked as all the others, so we just check if it is requested in the right moments.

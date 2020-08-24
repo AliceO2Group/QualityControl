@@ -14,7 +14,7 @@
 ///
 
 #include "QualityControl/PostProcessingFactory.h"
-#include "RootClassFactory.h"
+#include "QualityControl/RootClassFactory.h"
 
 using namespace o2::quality_control::core;
 

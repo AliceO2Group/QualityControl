@@ -40,6 +40,12 @@ Interfaces to databases and other services are accesible via `ServiceRegistry`, 
  * Once - triggers only first time it is checked
  * Always - triggers each time it is checked
 
+Triggers are complemented with timestamps which correspond the time when trigger started to be valid, in form of ms
+ since epoch, just like in CCDB and QCDB. For example, the periodic trigger will provide evenly spaced timestamps
+ , even if the trigger is checked more rarely. The New Object trigger provide the timestamp of the updated object
+ . These timestamps should be used to access databases, so any Post-processing Task can be rerun with any, arbitrary
+  timestamps.
+
 Please refer to [`SkeletonPostProcessing`](https://github.com/AliceO2Group/QualityControl/blob/master/Modules/Skeleton/include/Skeleton/SkeletonPostProcessing.h) for a minimal illustration of inheriting the interface, or to [`TrendingTask`](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/include/QualityControl/TrendingTask.h) for a fully functional example. One can generate their own post-processing task by using the `o2-qc-module-configurator` helper, as described in the [Module Creation](ModulesDevelopment.md#module-creation) chapter.
 
 ## Configuration

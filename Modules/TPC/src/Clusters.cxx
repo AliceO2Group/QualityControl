@@ -151,7 +151,7 @@ void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
       return;
     }
     const int sector = sectorHeader->sector();
-    std::bitset<o2::tpc::Constants::MAXSECTOR> sectorMask(sectorHeader->sectorBits);
+    std::bitset<o2::tpc::constants::MAXSECTOR> sectorMask(sectorHeader->sectorBits);
     LOG(INFO) << "Reading TPC cluster data, sector mask is " << sectorMask;
 
     if (sector < 0) {
@@ -186,8 +186,8 @@ void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
   ClusterNativeHelper::Reader::fillIndex(clusterIndex, clusterBuffer, clustersMCBuffer,
                                          inputs, mcInputs, [&validInputs](auto& index) { return validInputs.test(index); });
 
-  for (int isector = 0; isector < o2::tpc::Constants::MAXSECTOR; ++isector) {
-    for (int irow = 0; irow < o2::tpc::Constants::MAXGLOBALPADROW; ++irow) {
+  for (int isector = 0; isector < o2::tpc::constants::MAXSECTOR; ++isector) {
+    for (int irow = 0; irow < o2::tpc::constants::MAXGLOBALPADROW; ++irow) {
       const int nClusters = clusterIndex.nClusters[isector][irow];
       for (int icl = 0; icl < nClusters; ++icl) {
         const auto& cl = *(clusterIndex.clusters[isector][irow] + icl);

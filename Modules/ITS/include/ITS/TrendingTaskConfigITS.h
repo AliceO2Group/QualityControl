@@ -10,7 +10,7 @@
 
 ///
 /// \file   TrendingTaskConfig.h
-/// \author Piotr Konopka
+/// \author Ivan Ravasenga on the model from Piotr Konopka
 ///
 
 #ifndef QUALITYCONTROL_TRENDINGTASKCONFIGITS_H
