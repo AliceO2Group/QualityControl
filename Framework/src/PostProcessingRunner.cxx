@@ -95,7 +95,7 @@ void PostProcessingRunner::start()
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
     mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers);
     if (trigger_helpers::hasUserOrControlTrigger(mConfig.initTriggers)) {
-      doInitialize(Trigger::UserOrControl);
+      doInitialize({ TriggerType::UserOrControl });
     }
   } else if (mTaskState == TaskState::Running) {
     ILOG(Info) << "Requested start, but the user task is already running - doing nothing." << ENDM;
@@ -110,7 +110,7 @@ void PostProcessingRunner::stop()
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Running) {
     if (trigger_helpers::hasUserOrControlTrigger(mConfig.stopTriggers)) {
-      doFinalize(Trigger::UserOrControl);
+      doFinalize({ TriggerType::UserOrControl });
     }
   } else if (mTaskState == TaskState::Finished) {
     ILOG(Info) << "Requested stop, but the user task is already finalized - doing nothing." << ENDM;
@@ -155,7 +155,7 @@ void PostProcessingRunner::doUpdate(Trigger trigger)
 void PostProcessingRunner::doFinalize(Trigger trigger)
 {
   ILOG(Info) << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
-  mTask->finalize(UserOrControl, mServices);
+  mTask->finalize(trigger, mServices);
   mTaskState = TaskState::Finished;
 }
 

@@ -14,7 +14,12 @@
 ///
 
 #include "QualityControl/InfrastructureGenerator.h"
+#if __has_include(<Framework/DataSampling.h>)
 #include <Framework/DataSampling.h>
+#else
+#include <DataSampling/DataSampling.h>
+using namespace o2::utilities;
+#endif
 
 using namespace o2;
 using namespace o2::framework;

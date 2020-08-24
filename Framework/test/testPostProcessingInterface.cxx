@@ -78,10 +78,10 @@ BOOST_AUTO_TEST_CASE(test_factory)
 
   o2::framework::ServiceRegistry services;
 
-  task.initialize(Trigger::No, services);
+  task.initialize({ TriggerType::No }, services);
   BOOST_CHECK_EQUAL(task.test, 2);
-  task.update(Trigger::No, services);
+  task.update({ TriggerType::No }, services);
   BOOST_CHECK_EQUAL(task.test, 3);
-  task.finalize(Trigger::No, services);
+  task.finalize({ TriggerType::No }, services);
   BOOST_CHECK_EQUAL(task.test, 4);
 }
