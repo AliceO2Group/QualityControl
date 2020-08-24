@@ -16,7 +16,7 @@
 #include "QualityControl/TaskFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include "RootClassFactory.h"
+#include "QualityControl/RootClassFactory.h"
 
 namespace o2::quality_control::core
 {
