@@ -180,7 +180,7 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
       return nullptr;
     }
   }
-  ILOG(Debug) << "Retrieved object " << path << ENDM;
+  ILOG(Debug) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
   return object;
 }
 
