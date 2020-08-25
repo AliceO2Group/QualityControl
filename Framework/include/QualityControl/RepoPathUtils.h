@@ -29,7 +29,7 @@ class RepoPathUtils
  public:
   /**
    * Compute and return the path to the MonitorObject.
-   * Current algorithm does qc/<detectorCode>/<taskName>/<moName>
+   * Current algorithm does qc/<detectorCode>/MO/<taskName>/<moName>
    * @param detectorCode
    * @param taskName
    * @param moName
@@ -39,13 +39,13 @@ class RepoPathUtils
                                const std::string& taskName,
                                const std::string& moName)
   {
-    std::string path = "qc/" + detectorCode + "/" + taskName + "/" + moName;
+    std::string path = "qc/" + detectorCode + "/MO/" + taskName + "/" + moName;
     return path;
   }
 
   /**
-   * Compute and return the path to the MonitorObject. 
-   * Current algorithm does qc/<detectorCode>/<taskName>/<moName>
+   * Compute and return the path to the MonitorObject.
+   * Current algorithm does qc/<detectorCode>/MO/<taskName>/<moName>
    * @param mo
    * @return the path to the MonitorObject
    */
@@ -56,7 +56,7 @@ class RepoPathUtils
 
   /**
    * Compute and return the path to the QualityObject.
-   * Current algorithm does qc/checks/<detectorCode>/<checkName>[/<moName>].
+   * Current algorithm does  qc/<detectorCode>/QO/<checkName>[/<moName>].
    * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.
    * @param detectorCode
    * @param checkName
@@ -69,7 +69,7 @@ class RepoPathUtils
                                const std::string& policyName = "",
                                const std::vector<std::string>& monitorObjectsNames = std::vector<std::string>())
   {
-    std::string path = "qc/checks/" + detectorCode + "/" + checkName;
+    std::string path = "qc/" + detectorCode + "/QO/" + checkName;
     if (policyName == "OnEachSeparately") {
       if (monitorObjectsNames.empty()) {
         BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details("getQoPath: The vector of monitorObjectsNames is empty."));
@@ -81,8 +81,8 @@ class RepoPathUtils
 
   /**
    * Compute and return the path to the QualityObject.
-   * Current algorithm does qc/checks/<detectorCode>/<checkName>[/<moName>].
-   * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.
+   * Current algorithm does  qc/<detectorCode>/QO/<checkName>[/<moName>].
+   * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.    
    * @param qo
    * @return the path to the QualityObject
    */

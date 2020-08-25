@@ -11,7 +11,7 @@
 ///
 /// \file   testCcdbDatabase.cxx
 /// \author Adam Wegrzynek
-/// \author Bartheley von Haller
+/// \author Barthelemy von Haller
 ///
 
 #include <unordered_map>
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   std::string path = RepoPathUtils::getMoPath(detector, task, object);
   std::cout << "[json retrieve]: " << path << std::endl;
   auto json = f.backend->retrieveJson(path, -1, f.metadata);
-  auto json2 = f.backend->retrieveMOJson("qc/TST/" + task, object);
+  auto json2 = f.backend->retrieveMOJson("qc/TST/MO/" + task, object);
 
   BOOST_CHECK(!json.empty());
   BOOST_CHECK_EQUAL(json, json2);

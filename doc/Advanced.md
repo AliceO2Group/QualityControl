@@ -97,9 +97,9 @@ To run it, do:
 o2-qc-run-histo-producer | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/basic-external-histo.json
 ```
 
-The object is visible in the QCG or the CCDB at `qc/TST/External-1/hello_0`. In general we publish the objects of an external device at `qc/<detector>/<binding>/object`. 
+The object is visible in the QCG or the CCDB at `qc/TST/MO/External-1/hello_0`. In general we publish the objects of an external device at `qc/<detector>/MO/<binding>/object`. 
 
-The check results are stored at `qc/<detector>/QO/<checkName>[/object]`.
+The check results are stored at `qc/<detector>/QO/<binding>/object`.
 
 ### Example 2: advanced
 
@@ -236,8 +236,8 @@ o2-qc-run-producer | o2-qc --config json:/${QUALITYCONTROL_ROOT}/etc/multiNode.j
 o2-qc --config json:/${QUALITYCONTROL_ROOT}/etc/multiNode.json --remote
 ```
 
-If there are no problems, on QCG you should see the `example` histogram updated under the paths `qc/TST/MultiNodeLocal`
-and `qc/TST/MultiNodeRemote`, and corresponding Checks under the path `qc/checks/TST/`.
+If there are no problems, on QCG you should see the `example` histogram updated under the paths `qc/TST/MO/MultiNodeLocal`
+and `qc/TST/MO/MultiNodeRemote`, and corresponding Checks under the path `qc/TST/QO/`.
 
 ## Writing a DPL data producer 
 
@@ -313,7 +313,7 @@ Simply call `ObjectsManager::addMetadata(...)`, like in
   // add a metadata on histogram mHistogram, key is "custom" and value "34"
   getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
 ```
-This metadata will end up in the CCDB.
+This metadata will end up in the QCDB.
 
 ## Canvas options 
 
@@ -379,7 +379,7 @@ and `$QUALITYCONTROL_ROOT/etc/dataDump.json`.
 Each MonitorObject is stored as a TFile in the CCDB. 
 It is therefore possible to easily open it with ROOT when loaded with alienv. It also seamlessly supports class schema evolution. 
 
-The objects are stored at a path which is enforced by the qc framework : `/qc/<detector name>/<task name>/object/name`
+The MonitorObjects are stored at a path which is enforced by the qc framework : `/qc/<detector code>/MO/<task name>/object/name`
 Note that the name of the object can contain slashes (`/`) in order to build a sub-tree visible in the GUI. 
 The detector name and the taskname are set in the config file : 
 ```json

@@ -46,14 +46,14 @@
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TST/QcTask",
+            "path": "qc/TST/MO/QcTask",
             "names": [ "example" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
-            "path": "qc/checks/TST",
+            "path": "qc/TST/QO",
             "names": [ "QcCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
