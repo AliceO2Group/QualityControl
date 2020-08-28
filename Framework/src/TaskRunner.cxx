@@ -33,7 +33,6 @@ using namespace o2::utilities;
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
-//#include <Framework/RawDeviceService.h>
 #include <Framework/ConfigParamRegistry.h>
 
 #include "QualityControl/QcInfoLogger.h"
@@ -79,7 +78,6 @@ void TaskRunner::init(InitContext& iCtx)
   ILOG(Info) << "initializing TaskRunner" << ENDM;
 
   // registering state machine callbacks
-//  string runNumber = iCtx.options().get<string>("runNUmber"); // --> inexistent key, fine
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &options = iCtx.options()]() { start(options); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
