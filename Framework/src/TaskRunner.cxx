@@ -207,11 +207,11 @@ void TaskRunner::start(const ConfigParamRegistry &options)
 {
   try {
     mRunNumber = options.get<int>("runNUmber");
+    ILOG(Info) << "Run number found in options: " << mRunNumber << ENDM;
   } catch (std::invalid_argument &ia) {
-    cout << "run number not found, using 0 instead" << endl;
+    ILOG(Info) << "Run number not found in options, using 0 instead." << ENDM;
     mRunNumber = 0;
   }
-  cout << "run number : " << mRunNumber << endl;
 
   startOfActivity();
 
