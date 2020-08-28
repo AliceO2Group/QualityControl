@@ -352,7 +352,9 @@ void TaskRunner::startOfActivity()
   mTimerTotalDurationActivity.reset();
   mTotalNumberObjectsPublished = 0;
 
-  Activity activity(mRunNumber,
+  // We take the run number as set from the FairMQ options if it is there, otherwise the one from the config file
+  int run = mRunNumber > 0 ? mRunNumber : mConfigFile->get<int>("qc.config.Activity.number");
+  Activity activity(run,
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
