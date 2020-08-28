@@ -233,6 +233,7 @@ void TaskRunner::stop()
   }
   endOfActivity();
   mTask->reset();
+  mRunNumber = 0;
 }
 
 void TaskRunner::reset()
@@ -240,6 +241,7 @@ void TaskRunner::reset()
   mTask.reset();
   mCollector.reset();
   mObjectsManager.reset();
+  mRunNumber = 0;
 }
 
 std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs(const framework::InputRecord& inputs)
