@@ -17,6 +17,8 @@
 #ifndef QC_CORE_TASKRUNNER_H
 #define QC_CORE_TASKRUNNER_H
 
+#include <boost/property_tree/ptree.hpp>
+
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>
@@ -27,8 +29,6 @@
 // QC
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/TaskInterface.h"
-
-//namespace ba = boost::accumulators;
 
 namespace o2::configuration
 {
@@ -109,7 +109,8 @@ class TaskRunner : public framework::Task
   void reset();
 
   std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
-  void populateConfig(std::string taskName, int id = 0);
+  void loadTaskConfig();
+  void loadTopologyConfig();
   void startOfActivity();
   void endOfActivity();
   void startCycle();
@@ -119,8 +120,6 @@ class TaskRunner : public framework::Task
 
  private:
   std::string mDeviceName;
-  std::string mTaskName;
-  size_t mId; // subSpecification for taskRunner's OutputSpec
   TaskConfig mTaskConfig;
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<monitoring::Monitoring> mCollector;
@@ -128,7 +127,8 @@ class TaskRunner : public framework::Task
   bool mResetAfterPublish = false;
   std::shared_ptr<ObjectsManager> mObjectsManager;
 
-  std::string validateDetectorName(std::string name);
+  std::string validateDetectorName(std::string name) const;
+  boost::property_tree::ptree getTaskConfigTree() const;
 
   // consider moving these to TaskConfig
   framework::Inputs mInputSpecs;
