@@ -203,12 +203,12 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::start(const ConfigParamRegistry &options)
+void TaskRunner::start(const ConfigParamRegistry& options)
 {
   try {
     mRunNumber = options.get<int>("runNUmber");
     ILOG(Info) << "Run number found in options: " << mRunNumber << ENDM;
-  } catch (std::invalid_argument &ia) {
+  } catch (std::invalid_argument& ia) {
     ILOG(Info) << "Run number not found in options, using 0 instead." << ENDM;
     mRunNumber = 0;
   }
