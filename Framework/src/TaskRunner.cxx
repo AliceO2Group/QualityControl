@@ -56,6 +56,8 @@ using namespace AliceO2::Common;
 
 TaskRunner::TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id)
   : mDeviceName(createTaskRunnerIdString() + "-" + taskName),
+    mTaskName(taskName),
+    mId(id),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
   // setup configuration
@@ -72,7 +74,16 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
 
 void TaskRunner::init(InitContext& iCtx)
 {
-  ILOG(Info) << "initializing TaskRunner" << ENDM;
+  ILOG(Info) << "Initializing TaskRunner" << ENDM;
+//  ILOG(Info) << "Loading configuration" << ENDM;
+//  try {
+//    populateConfig(mTaskName, mId);
+//  } catch (...) {
+//    // catch the configuration exception and print it to avoid losing it
+//    ILOG(Fatal) << "Unexpected exception during configuration:\n"
+//                << current_diagnostic(true);
+//    throw;
+//  }
 
   // registering state machine callbacks
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this]() { start(); });

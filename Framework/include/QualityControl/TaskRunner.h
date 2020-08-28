@@ -119,6 +119,8 @@ class TaskRunner : public framework::Task
 
  private:
   std::string mDeviceName;
+  std::string mTaskName;
+  size_t mId; // subSpecification for taskRunner's OutputSpec
   TaskConfig mTaskConfig;
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<monitoring::Monitoring> mCollector;
