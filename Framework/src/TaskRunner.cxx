@@ -65,10 +65,10 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     loadTopologyConfig();
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
-    ILOG(Fatal) << "Unexpected exception during configuration:\n" << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during configuration:\n"
+                << current_diagnostic(true) << ENDM;
     throw;
   }
-
 }
 
 void TaskRunner::init(InitContext& iCtx)
@@ -79,7 +79,8 @@ void TaskRunner::init(InitContext& iCtx)
     loadTaskConfig();
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
-    ILOG(Fatal) << "Unexpected exception during configuration:\n" << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during configuration:\n"
+                << current_diagnostic(true) << ENDM;
     throw;
   }
 
