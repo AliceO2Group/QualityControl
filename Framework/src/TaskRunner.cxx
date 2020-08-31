@@ -58,21 +58,17 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   : mDeviceName(createTaskRunnerIdString() + "-" + taskName),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
-  mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-  mTaskConfig.taskName = taskName;
-  mTaskConfig.parallelTaskID = id;
-  // setup configuration
-//  try {
-//    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-//    loadTaskConfig(taskName, id);
-//  } catch (...) {
-//    // catch the configuration exception and print it to avoid losing it
-//    ILOG(Fatal) << "Unexpected exception during configuration:\n"
-//                << current_diagnostic(true);
-//    throw;
-//  }
+  try {
+    mTaskConfig.taskName = taskName;
+    mTaskConfig.parallelTaskID = id;
+    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
+    loadTopologyConfig();
+  } catch (...) {
+    // catch the configuration exception and print it to avoid losing it
+    ILOG(Fatal) << "Unexpected exception during configuration:\n" << current_diagnostic(true) << ENDM;
+    throw;
+  }
 
-  loadTopologyConfig();
 }
 
 void TaskRunner::init(InitContext& iCtx)
@@ -83,8 +79,7 @@ void TaskRunner::init(InitContext& iCtx)
     loadTaskConfig();
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
-    ILOG(Fatal) << "Unexpected exception during configuration:\n"
-                << current_diagnostic(true);
+    ILOG(Fatal) << "Unexpected exception during configuration:\n" << current_diagnostic(true) << ENDM;
     throw;
   }
 
