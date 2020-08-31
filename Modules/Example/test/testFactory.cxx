@@ -51,7 +51,9 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures)
   BOOST_CHECK_EXCEPTION(factory.create(config, manager), AliceO2::Common::FatalException, is_critical);
 
   std::string addition = "lib:../../lib:../../../lib:";
-  gSystem->Setenv("LD_LIBRARY_PATH", (addition + gSystem->Getenv("LD_LIBRARY_PATH")).c_str());
+  const char *ldPath = gSystem->Getenv("LD_LIBRARY_PATH");
+  string ldPathString = ldPath == nullptr ? "" : ldPath;
+  gSystem->Setenv("LD_LIBRARY_PATH", (addition + ldPathString).c_str());
   config.taskName = "task";
   config.moduleName = "QcCommon";
   config.className = "WRONGCLASS";
