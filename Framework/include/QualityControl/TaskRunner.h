@@ -24,6 +24,7 @@
 #include <Framework/CompletionPolicy.h>
 #include <Framework/EndOfStreamContext.h>
 #include <Headers/DataHeader.h>
+#include <Framework/InitContext.h>
 // QC
 #include "QualityControl/TaskConfig.h"
 #include "QualityControl/TaskInterface.h"
@@ -102,7 +103,7 @@ class TaskRunner : public framework::Task
 
  private:
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
-  void start();
+  void start(const framework::ConfigParamRegistry& options);
   /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
   void stop();
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
@@ -125,6 +126,7 @@ class TaskRunner : public framework::Task
   std::shared_ptr<TaskInterface> mTask;
   bool mResetAfterPublish = false;
   std::shared_ptr<ObjectsManager> mObjectsManager;
+  int mRunNumber;
 
   std::string validateDetectorName(std::string name);
 
