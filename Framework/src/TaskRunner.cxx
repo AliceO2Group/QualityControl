@@ -33,12 +33,14 @@ using namespace o2::utilities;
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
+#include <Framework/ConfigParamRegistry.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
 
 #include <string>
 #include <memory>
+#include <boost/property_tree/ini_parser.hpp>
 
 using namespace std;
 
@@ -56,6 +58,7 @@ using namespace AliceO2::Common;
 
 TaskRunner::TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id)
   : mDeviceName(createTaskRunnerIdString() + "-" + taskName),
+    mRunNumber(0),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
   // setup configuration
@@ -75,7 +78,7 @@ void TaskRunner::init(InitContext& iCtx)
   ILOG << LogInfoSupport << "initializing TaskRunner" << ENDM;
 
   // registering state machine callbacks
-  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this]() { start(); });
+  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &options = iCtx.options()]() { start(options); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
 
@@ -200,8 +203,16 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::start()
+void TaskRunner::start(const ConfigParamRegistry& options)
 {
+  try {
+    mRunNumber = options.get<int>("runNumber");
+    ILOG(Info) << "Run number found in options: " << mRunNumber << ENDM;
+  } catch (std::invalid_argument& ia) {
+    ILOG(Info) << "Run number not found in options, using 0 instead." << ENDM;
+    mRunNumber = 0;
+  }
+
   startOfActivity();
 
   if (mNoMoreCycles) {
@@ -222,6 +233,7 @@ void TaskRunner::stop()
   }
   endOfActivity();
   mTask->reset();
+  mRunNumber = 0;
 }
 
 void TaskRunner::reset()
@@ -229,6 +241,7 @@ void TaskRunner::reset()
   mTask.reset();
   mCollector.reset();
   mObjectsManager.reset();
+  mRunNumber = 0;
 }
 
 std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs(const framework::InputRecord& inputs)
@@ -339,7 +352,9 @@ void TaskRunner::startOfActivity()
   mTimerTotalDurationActivity.reset();
   mTotalNumberObjectsPublished = 0;
 
-  Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
+  // We take the run number as set from the FairMQ options if it is there, otherwise the one from the config file
+  int run = mRunNumber > 0 ? mRunNumber : mConfigFile->get<int>("qc.config.Activity.number");
+  Activity activity(run,
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
@@ -347,7 +362,7 @@ void TaskRunner::startOfActivity()
 
 void TaskRunner::endOfActivity()
 {
-  Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
+  Activity activity(mRunNumber,
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->endOfActivity(activity);
   mObjectsManager->removeAllFromServiceDiscovery();

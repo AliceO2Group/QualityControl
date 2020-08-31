@@ -65,6 +65,11 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
     4. `show series`
     5. `select count(*) from cpuUsedPercentage` <-- use the correct metrics name
     6. Repeat the last command and see if the number increases. If it increases it denotes that the metrics is stored correctly in the database. If it is the case, the problem lies in your grafana.
+    
+### Monitoring setup for building the grafana dashboard
+
+Ask Adam for an account on pcald03.cern.ch:3000.
+Set the monitoring url to `"url": "influxdb-udp://flptest2.cern.ch:8089"`
 
 ### Avoid writing QC objects to a repository
 
