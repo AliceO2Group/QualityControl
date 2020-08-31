@@ -68,7 +68,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
     ILOG << LogFatalSupport << "Unexpected exception during configuration:\n"
-                << current_diagnostic(true);
+         << current_diagnostic(true);
     throw;
   }
 }
@@ -108,7 +108,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
 {
   if (mNoMoreCycles) {
     ILOG << LogInfoSupport << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
-               << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
+         << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
 
@@ -217,7 +217,7 @@ void TaskRunner::start(const ConfigParamRegistry& options)
 
   if (mNoMoreCycles) {
     ILOG << LogInfoSupport << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
-               << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
+         << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
 
@@ -339,8 +339,8 @@ std::string TaskRunner::validateDetectorName(std::string name)
     for (auto i : permitted)
       permittedString += i + ' ';
     ILOG << LogErrorSupport << "Invalid detector name : " << name << "\n"
-                << "    Placeholder 'MISC' will be used instead\n"
-                << "    Note: list of permitted detector names :" << permittedString << ENDM;
+         << "    Placeholder 'MISC' will be used instead\n"
+         << "    Note: list of permitted detector names :" << permittedString << ENDM;
     return "MISC";
   }
   return name;
@@ -396,7 +396,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
   if (mTaskConfig.maxNumberCycles == mCycleNumber) {
     ILOG << LogInfoSupport << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
-               << " The task will not do anything from now on." << ENDM;
+         << " The task will not do anything from now on." << ENDM;
   }
 }
 

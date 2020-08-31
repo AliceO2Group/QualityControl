@@ -56,7 +56,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
 {
   if (getenv("QUALITYCONTROL_ROOT") == nullptr) {
     ILOG << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
-                  << "Consequently, old data might not be readable." << ENDM;
+         << "Consequently, old data might not be readable." << ENDM;
     return;
   }
   string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
