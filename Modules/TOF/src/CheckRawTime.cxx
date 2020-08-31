@@ -75,10 +75,10 @@ Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>
         result = Quality::Good;
       } else {
         if (mRawTimePeakIntegral / mRawTimeIntegral > 0.20) {
-          ILOG(Warning) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
+          ILOG << LogWarningSupport << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
           result = Quality::Medium;
         } else {
-          ILOG(Warning) << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
+          ILOG << LogWarningSupport << Form("Raw time peak/total integral = %5.2f, mean = %5.2f ns", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
           result = Quality::Bad;
         }
       }
@@ -102,14 +102,14 @@ void CheckRawTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
-      ILOG(Info) << "Quality::Good, setting to green";
+      ILOG << LogInfoSupport << "Quality::Good, setting to green";
       msg->Clear();
       msg->AddText("Mean inside limits: OK!!!");
       msg->AddText(Form("Allowed range: %3.0f-%3.0f ns", mMinRawTime, mMaxRawTime));
       msg->SetFillColor(kGreen);
       msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info) << "Quality::Bad, setting to red";
+      ILOG << LogInfoSupport << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Call TOF on-call.");
       msg->AddText(Form("Mean outside limits (%3.0f-%3.0f ns)", mMinRawTime, mMaxRawTime));
@@ -118,7 +118,7 @@ void CheckRawTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       msg->SetFillColor(kRed);
       msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info) << "Quality::medium, setting to yellow";
+      ILOG << LogInfoSupport << "Quality::medium, setting to yellow";
       //
       msg->Clear();
       msg->AddText("No entries. If TOF in the run");
@@ -134,7 +134,7 @@ void CheckRawTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       // text->SetFillColor(kYellow);
     }
   } else {
-    ILOG(Error) << "Did not get correct histo from " << mo->GetName();
+    ILOG << LogErrorSupport << "Did not get correct histo from " << mo->GetName();
   }
 }
 

@@ -20,6 +20,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <FairLogger.h>
+#include <InfoLogger/InfoLoggerFMQ.hxx>
 
 using namespace std;
 using namespace AliceO2::InfoLogger;
@@ -40,20 +41,21 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
   // Decreasing verbosity of the code
   QcInfoLogger::GetInstance() << "1. info message" << AliceO2::InfoLogger::InfoLogger::endm;
   QcInfoLogger::GetInstance() << "2. info message" << InfoLogger::endm;
-  ILOG(Info) << "3. info message" << InfoLogger::endm;
-  ILOG(Info) << "4. info message" << ENDM;
+  ILOG << LogInfoSupport << "3. info message" << InfoLogger::endm;
+  ILOG << LogInfoSupport << "4. info message" << ENDM;
+  ILOG << "4b. not specified" << ENDM;
 
   // Complexification of the messages
-  ILOG(Error) << "5. error message" << ENDM;
-  ILOG(Error) << "6. error message" << InfoLogger::Info << " - 7. info message" << ENDM;
+  ILOG << LogErrorSupport << "5. error message" << ENDM;
+  ILOG << LogErrorSupport << "6. error message" << LogInfoSupport << " - 7. info message" << ENDM;
   ILOG_INST << InfoLogger::InfoLoggerMessageOption{ InfoLogger::Fatal, 1, 1, "asdf", 3 }
             << "8. fatal message with extra fields" << ENDM;
 
   // Different syntax
-  ILOGE << "9b. error message" << ENDM;
-  ILOGF << "9c. fatal message" << ENDM;
-  ILOGW << "9d. warning message" << ENDM;
-  ILOGI << "9e. info message" << ENDM;
+  ILOGE << "9a. error message" << ENDM;
+  ILOGF << "9b. fatal message" << ENDM;
+  ILOGW << "9c. warning message" << ENDM;
+  ILOGI << "9d. info message" << ENDM;
 
   // Using the normal functions
   ILOG_INST.logInfo("a. info message");
@@ -62,6 +64,12 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
 
   // Using fairlogger
   LOG(INFO) << "fair message in infologger";
+
+  // using different levels
+  ILOG << LogDebugDevel << "LogDebugDevel" << ENDM;
+  ILOG << LogWarningOps << "LogWarningOps" << ENDM;
+  ILOG << LogErrorSupport << "LogErrorSupport" << ENDM;
+  ILOG << LogInfoTrace << "LogInfoTrace" << ENDM;
 }
 
 } // namespace o2::quality_control::core

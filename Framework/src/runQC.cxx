@@ -78,7 +78,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   WorkflowSpec specs;
 
   const std::string qcConfigurationSource = config.options().get<std::string>("config");
-  ILOG(Info) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+  ILOG << LogInfoSupport << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // The QC infrastructure is divided into two parts:
   // - local - QC tasks which are on the same machines as the main processing. We also put Data Sampling there.
@@ -88,13 +88,13 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   // or both of them, which is the default option (no flags needed).
 
   if (!config.options().get<bool>("local") && !config.options().get<bool>("remote")) {
-    ILOG(Info) << "Creating a standalone QC topology." << ENDM;
+    ILOG << LogInfoSupport << "Creating a standalone QC topology." << ENDM;
     DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
     quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
   }
 
   if (config.options().get<bool>("local")) {
-    ILOG(Info) << "Creating a local QC topology." << ENDM;
+    ILOG << LogInfoSupport << "Creating a local QC topology." << ENDM;
 
     // Generation of Data Sampling infrastructure
     DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
@@ -106,7 +106,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, host);
   }
   if (config.options().get<bool>("remote")) {
-    ILOG(Info) << "Creating a remote QC topology." << ENDM;
+    ILOG << LogInfoSupport << "Creating a remote QC topology." << ENDM;
 
     // Generation of the remote QC topology (task for QC servers, input proxies, mergers and all check runners)
     quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);

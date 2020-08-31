@@ -30,7 +30,7 @@ PostProcessingRunner::PostProcessingRunner(std::string name) //
 
 void PostProcessingRunner::init(const boost::property_tree::ptree& config)
 {
-  ILOG(Info) << "Initializing PostProcessingRunner" << ENDM;
+  ILOG << LogInfoSupport << "Initializing PostProcessingRunner" << ENDM;
 
   mConfig = PostProcessingConfig(mName, config);
 
@@ -41,17 +41,17 @@ void PostProcessingRunner::init(const boost::property_tree::ptree& config)
     dbConfig[key] = value.get_value<std::string>();
   }
   mDatabase->connect(dbConfig);
-  ILOG(Info) << "Database that is going to be used : " << ENDM;
-  ILOG(Info) << ">> Implementation : " << config.get<std::string>("qc.config.database.implementation") << ENDM;
-  ILOG(Info) << ">> Host : " << config.get<std::string>("qc.config.database.host") << ENDM;
+  ILOG << LogInfoSupport << "Database that is going to be used : " << ENDM;
+  ILOG << LogInfoSupport << ">> Implementation : " << config.get<std::string>("qc.config.database.implementation") << ENDM;
+  ILOG << LogInfoSupport << ">> Host : " << config.get<std::string>("qc.config.database.host") << ENDM;
   mServices.registerService<DatabaseInterface>(mDatabase.get());
 
   // setup user's task
-  ILOG(Info) << "Creating a user task '" << mConfig.taskName << "'" << ENDM;
+  ILOG << LogInfoSupport << "Creating a user task '" << mConfig.taskName << "'" << ENDM;
   PostProcessingFactory f;
   mTask.reset(f.create(mConfig));
   if (mTask) {
-    ILOG(Info) << "The user task '" << mConfig.taskName << "' successfully created" << ENDM;
+    ILOG << LogInfoSupport << "The user task '" << mConfig.taskName << "' successfully created" << ENDM;
 
     mTaskState = TaskState::Created;
     mTask->setName(mConfig.taskName);
@@ -63,7 +63,7 @@ void PostProcessingRunner::init(const boost::property_tree::ptree& config)
 
 bool PostProcessingRunner::run()
 {
-  ILOG(Info) << "Checking triggers of the task '" << mTask->getName() << "'" << ENDM;
+  ILOG << LogInfoSupport << "Checking triggers of the task '" << mTask->getName() << "'" << ENDM;
 
   if (mTaskState == TaskState::Created) {
     if (Trigger trigger = trigger_helpers::tryTrigger(mInitTriggers)) {
@@ -79,7 +79,7 @@ bool PostProcessingRunner::run()
     }
   }
   if (mTaskState == TaskState::Finished) {
-    ILOG(Info) << "The user task finished." << ENDM;
+    ILOG << LogInfoSupport << "The user task finished." << ENDM;
     return false;
   }
   if (mTaskState == TaskState::INVALID) {
@@ -98,7 +98,7 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
       " given. One is for the initialization, zero or more for update, one for finalization");
   }
 
-  ILOG(Info) << "Running the task '" << mTask->getName() << "' over " << timestamps.size() << " timestamps." << ENDM;
+  ILOG << LogInfoSupport << "Running the task '" << mTask->getName() << "' over " << timestamps.size() << " timestamps." << ENDM;
 
   doInitialize({ TriggerType::UserOrControl, timestamps.front() });
   for (size_t i = 1; i < timestamps.size() - 1; i++) {
@@ -115,7 +115,7 @@ void PostProcessingRunner::start()
       doInitialize({ TriggerType::UserOrControl });
     }
   } else if (mTaskState == TaskState::Running) {
-    ILOG(Info) << "Requested start, but the user task is already running - doing nothing." << ENDM;
+    ILOG << LogInfoSupport << "Requested start, but the user task is already running - doing nothing." << ENDM;
   } else if (mTaskState == TaskState::INVALID) {
     throw std::runtime_error("The user task has INVALID state");
   } else {
@@ -130,7 +130,7 @@ void PostProcessingRunner::stop()
       doFinalize({ TriggerType::UserOrControl });
     }
   } else if (mTaskState == TaskState::Finished) {
-    ILOG(Info) << "Requested stop, but the user task is already finalized - doing nothing." << ENDM;
+    ILOG << LogInfoSupport << "Requested stop, but the user task is already finalized - doing nothing." << ENDM;
   } else if (mTaskState == TaskState::INVALID) {
     throw std::runtime_error("The user task has INVALID state");
   } else {
@@ -153,7 +153,7 @@ void PostProcessingRunner::reset()
 
 void PostProcessingRunner::doInitialize(Trigger trigger)
 {
-  ILOG(Info) << "Initializing the user task due to trigger '" << trigger << "'" << ENDM;
+  ILOG << LogInfoSupport << "Initializing the user task due to trigger '" << trigger << "'" << ENDM;
 
   mTask->initialize(trigger, mServices);
   mTaskState = TaskState::Running;
@@ -165,13 +165,13 @@ void PostProcessingRunner::doInitialize(Trigger trigger)
 
 void PostProcessingRunner::doUpdate(Trigger trigger)
 {
-  ILOG(Info) << "Updating the user task due to trigger '" << trigger << "'" << ENDM;
+  ILOG << LogInfoSupport << "Updating the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->update(trigger, mServices);
 }
 
 void PostProcessingRunner::doFinalize(Trigger trigger)
 {
-  ILOG(Info) << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
+  ILOG << LogInfoSupport << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->finalize(trigger, mServices);
   mTaskState = TaskState::Finished;
 }

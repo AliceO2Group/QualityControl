@@ -31,7 +31,7 @@ void SkeletonPostProcessing::initialize(Trigger, framework::ServiceRegistry&)
 
 void SkeletonPostProcessing::update(Trigger t, framework::ServiceRegistry&)
 {
-  ILOG(Info) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
+  ILOG << LogInfoSupport << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
 }
 
 void SkeletonPostProcessing::finalize(Trigger, framework::ServiceRegistry&)

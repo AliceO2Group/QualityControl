@@ -17,6 +17,7 @@
 #define QC_CORE_QCINFOLOGGER_H
 
 #include <InfoLogger/InfoLogger.hxx>
+#include <InfoLogger/InfoLoggerMacros.hxx>
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time
 typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;
@@ -34,6 +35,7 @@ namespace o2::quality_control::core
 ///           ILOGI << "info message" << ENDM;      // shorter
 ///           ILOG_INST << InfoLogger::InfoLoggerMessageOption{ InfoLogger::Fatal, 1, 1, "asdf", 3 }
 ///                     << "fatal message with extra fields" << ENDM; // complex version
+///           ILOG << LogInfoOps << "Test message with severity Info and level Ops, see InfoLoggerMacros.hxx" << ENDM;
 ///
 /// \author Barthelemy von Haller
 class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
@@ -58,10 +60,9 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
 
 } // namespace o2::quality_control::core
 
-// Define the ILOG() macro.
-// Unfortunately it is not possible to have a zero argument MACRO here without generating warnings
+// Define shortcuts to our instance using macros.
 #define ILOG_INST o2::quality_control::core::QcInfoLogger::GetInstance()
-#define ILOG(severity) ILOG_INST << AliceO2::InfoLogger::InfoLogger::Severity::severity
+#define ILOG ILOG_INST
 #define ILOGI ILOG_INST << AliceO2::InfoLogger::InfoLogger::Info
 #define ILOGW ILOG_INST << AliceO2::InfoLogger::InfoLogger::Warning
 #define ILOGE ILOG_INST << AliceO2::InfoLogger::InfoLogger::Error

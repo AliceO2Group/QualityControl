@@ -71,7 +71,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   const std::string qcConfigurationSource =
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/readoutForDataDump.json";
-  ILOG(Info) << "Using config file '" << qcConfigurationSource << "'";
+  ILOG << LogInfoSupport << "Using config file '" << qcConfigurationSource << "'";
 
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 

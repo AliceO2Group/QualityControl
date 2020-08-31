@@ -62,10 +62,10 @@ void SkeletonCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     if (checkResult == Quality::Good) {
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info) << "Quality::Bad, setting to red";
+      ILOG << LogInfoSupport << "Quality::Bad, setting to red";
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info) << "Quality::medium, setting to orange";
+      ILOG << LogInfoSupport << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);

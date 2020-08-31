@@ -250,7 +250,7 @@ void Check::init()
   // See QC-299 for details
   if (mNumberOfTaskSources > 1) {
     mBeautify = false;
-    ILOG(Warning) << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.checkName << ")" << ENDM;
+    ILOG << LogWarningSupport << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.checkName << ")" << ENDM;
   }
 
   // Print setting

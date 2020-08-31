@@ -41,7 +41,7 @@ ObjectsManager::ObjectsManager(TaskConfig& taskConfig, bool noDiscovery) : mTask
     std::string uniqueTaskID = taskConfig.taskName + "_" + std::to_string(mTaskConfig.parallelTaskID);
     mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName, uniqueTaskID);
   } else {
-    ILOG(Info) << "Service Discovery disabled" << ENDM;
+    ILOG << LogInfoSupport << "Service Discovery disabled" << ENDM;
     mServiceDiscovery = nullptr;
   }
 }
@@ -51,7 +51,7 @@ ObjectsManager::~ObjectsManager() = default;
 void ObjectsManager::startPublishing(TObject* object)
 {
   if (mMonitorObjects->FindObject(object->GetName()) != 0) {
-    ILOG(Warning) << "Object already being published (" << object->GetName() << ")" << ENDM;
+    ILOG << LogWarningSupport << "Object already being published (" << object->GetName() << ")" << ENDM;
     BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
   }
   auto* newObject = new MonitorObject(object, mTaskConfig.taskName, mTaskConfig.detectorName);
@@ -105,7 +105,7 @@ MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
 {
   TObject* object = mMonitorObjects->FindObject(objectName.c_str());
   if (object == nullptr) {
-    ILOG(Error) << "ObjectsManager: Unable to find object \"" << objectName << "\"" << ENDM;
+    ILOG << LogErrorSupport << "ObjectsManager: Unable to find object \"" << objectName << "\"" << ENDM;
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(objectName));
   }
   return dynamic_cast<MonitorObject*>(object);
@@ -120,7 +120,7 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
 {
   MonitorObject* mo = getMonitorObject(objectName);
   mo->addMetadata(key, value);
-  ILOG(Info) << "Added metadata on " << objectName << " : " << key << " -> " << value << ENDM;
+  ILOG << LogInfoSupport << "Added metadata on " << objectName << " : " << key << " -> " << value << ENDM;
 }
 
 int ObjectsManager::getNumberPublishedObjects()

@@ -37,11 +37,11 @@ BasicTrackQcTask::~BasicTrackQcTask()
 
 void BasicTrackQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize BasicTrackQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG << LogInfoSupport << "initialize BasicTrackQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+    ILOG << LogInfoSupport << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
   mMFT_xy_H = std::make_unique<TH2F>("mMFT_xy_H", "mMFT_xy_H", 22, -10.5, 10.5, 22, -10.5, 10.5);
@@ -63,7 +63,7 @@ void BasicTrackQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void BasicTrackQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG << LogInfoSupport << "startOfActivity" << ENDM;
 
   mMFT_xy_H->Reset();
   mMFT_pos_phi_H->Reset();
@@ -72,7 +72,7 @@ void BasicTrackQcTask::startOfActivity(Activity& /*activity*/)
 
 void BasicTrackQcTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG << LogInfoSupport << "startOfCycle" << ENDM;
 }
 
 void BasicTrackQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -97,19 +97,19 @@ void BasicTrackQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void BasicTrackQcTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG << LogInfoSupport << "endOfCycle" << ENDM;
 }
 
 void BasicTrackQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG << LogInfoSupport << "endOfActivity" << ENDM;
 }
 
 void BasicTrackQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG << LogInfoSupport << "Resetting the histogram" << ENDM;
 
   mMFT_xy_H->Reset();
   mMFT_pos_phi_H->Reset();

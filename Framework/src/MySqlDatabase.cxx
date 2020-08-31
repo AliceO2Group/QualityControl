@@ -61,7 +61,7 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
     }
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(s));
   } else {
-    ILOG(Info) << "Connected to the database" << ENDM;
+    ILOG << LogInfoSupport << "Connected to the database" << ENDM;
   }
 }
 
@@ -88,7 +88,7 @@ void MySqlDatabase::prepareTable(std::string table_name)
   if (!execute(query)) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to create data table"));
   } else {
-    ILOG(Info) << "Create data table " << table_name << ENDM;
+    ILOG << LogInfoSupport << "Create data table " << table_name << ENDM;
   }
 }
 
@@ -116,7 +116,7 @@ void MySqlDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorOb
 
 void MySqlDatabase::storeQueue()
 {
-  ILOG(Info) << "Database queue will now be processed (" << queueSize << " objects)"
+  ILOG << LogInfoSupport << "Database queue will now be processed (" << queueSize << " objects)"
              << ENDM;
 
   for (auto& kv : mMonitorObjectsQueue) {
@@ -191,8 +191,8 @@ void MySqlDatabase::storeForMonitorObject(std::string name)
     return;
   }
 
-  ILOG(Info) << "** Store for task " << name << ENDM;
-  ILOG(Info) << "        # objects : " << objects.size() << ENDM;
+  ILOG << LogInfoSupport << "** Store for task " << name << ENDM;
+  ILOG << LogInfoSupport << "        # objects : " << objects.size() << ENDM;
 
   // build statement string
   string table_name = "data_" + name;
@@ -346,7 +346,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> MySqlDatabase::retriev
     try {
       mo = std::shared_ptr<MonitorObject>((MonitorObject*)(mess.ReadObjectAny(mess.GetClass())));
     } catch (...) {
-      ILOG(Info) << "Node: unable to parse TObject from MySQL" << ENDM;
+      ILOG << LogInfoSupport << "Node: unable to parse TObject from MySQL" << ENDM;
       throw;
     }
   }
@@ -406,7 +406,7 @@ void MySqlDatabase::addIndex(string table, string column)
   if (res) {
     delete (res);
   } else {
-    ILOG(Error) << "Couldn't create the index on table " << table << " on column " << column << ENDM;
+    ILOG << LogErrorSupport << "Couldn't create the index on table " << table << " on column " << column << ENDM;
   }
 }
 
@@ -457,7 +457,7 @@ void MySqlDatabase::truncate(std::string taskName, std::string objectName)
     string s = string("Failed to delete object ") + objectName + " from task " + taskName;
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(s));
   } else {
-    ILOG(Info) << "Delete object " << objectName << " from task " << taskName << ENDM;
+    ILOG << LogInfoSupport << "Delete object " << objectName << " from task " << taskName << ENDM;
   }
 }
 

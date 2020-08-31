@@ -66,7 +66,7 @@ Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       if ((timeMean > mMinRawToT) && (timeMean < mMaxRawToT)) {
         result = Quality::Good;
       } else {
-        ILOG(Warning) << Form("ToT mean = %5.2f ns", timeMean);
+        ILOG << LogWarningSupport << Form("ToT mean = %5.2f ns", timeMean);
         result = Quality::Bad;
       }
     }
@@ -89,14 +89,14 @@ void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
-      ILOG(Info) << "Quality::Good, setting to green";
+      ILOG << LogInfoSupport << "Quality::Good, setting to green";
       msg->Clear();
       msg->AddText("Mean inside limits: OK!!!");
       msg->AddText(Form("Allowed range: %3.1f-%3.1f ns", mMinRawToT, mMaxRawToT));
       msg->SetFillColor(kGreen);
       msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info) << "Quality::Bad, setting to red";
+      ILOG << LogInfoSupport << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText(Form("Mean outside limits (%3.1f-%3.1f ns)", mMinRawToT, mMaxRawToT));
       msg->AddText("If NOT a technical run,");
@@ -104,14 +104,14 @@ void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       msg->SetFillColor(kRed);
       msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info) << "Quality::medium, setting to yellow";
+      ILOG << LogInfoSupport << "Quality::medium, setting to yellow";
       msg->Clear();
       msg->AddText("No entries. Check TOF TWiki");
       msg->SetFillColor(kYellow);
       msg->SetTextColor(kBlack);
     }
   } else {
-    ILOG(Error) << "Did not get correct histo from " << mo->GetName();
+    ILOG << LogErrorSupport << "Did not get correct histo from " << mo->GetName();
   }
 }
 

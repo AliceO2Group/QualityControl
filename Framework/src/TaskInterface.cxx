@@ -44,7 +44,7 @@ void TaskInterface::loadCcdb(std::string url)
 
   mCcdbApi->init(url);
   if (!mCcdbApi->isHostReachable()) {
-    ILOG(Warning) << "CCDB at URL '" << url << "' is not reachable." << ENDM;
+    ILOG << LogWarningSupport << "CCDB at URL '" << url << "' is not reachable." << ENDM;
   }
 }
 
@@ -58,7 +58,7 @@ TObject* TaskInterface::retrieveCondition(std::string path, std::map<std::string
   if (mCcdbApi) {
     return mCcdbApi->retrieve(path, metadata, timestamp);
   } else {
-    ILOG(Error) << "Trying to retrieve a condition, but CCDB API is not constructed." << ENDM;
+    ILOG << LogErrorSupport << "Trying to retrieve a condition, but CCDB API is not constructed." << ENDM;
     return nullptr;
   }
 }

@@ -64,7 +64,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     populateConfig(taskName, id);
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
-    ILOG(Fatal) << "Unexpected exception during configuration:\n"
+    ILOG << LogFatalSupport << "Unexpected exception during configuration:\n"
                 << current_diagnostic(true);
     throw;
   }
@@ -72,7 +72,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
 
 void TaskRunner::init(InitContext& iCtx)
 {
-  ILOG(Info) << "initializing TaskRunner" << ENDM;
+  ILOG << LogInfoSupport << "initializing TaskRunner" << ENDM;
 
   // registering state machine callbacks
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this]() { start(); });
@@ -104,7 +104,7 @@ void TaskRunner::init(InitContext& iCtx)
 void TaskRunner::run(ProcessingContext& pCtx)
 {
   if (mNoMoreCycles) {
-    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
+    ILOG << LogInfoSupport << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
                << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
@@ -195,7 +195,7 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
 
 void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 {
-  ILOG(Info) << "Received an EndOfStream, finishing the current cycle" << ENDM;
+  ILOG << LogInfoSupport << "Received an EndOfStream, finishing the current cycle" << ENDM;
   finishCycle(eosContext.outputs());
   mNoMoreCycles = true;
 }
@@ -205,7 +205,7 @@ void TaskRunner::start()
   startOfActivity();
 
   if (mNoMoreCycles) {
-    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
+    ILOG << LogInfoSupport << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
                << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
@@ -275,7 +275,7 @@ void TaskRunner::populateConfig(std::string taskName, int id)
   try {
     mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + taskName + ".taskParameters");
   } catch (...) {
-    ILOG(Info) << "No custom parameters for " << taskName << ENDM;
+    ILOG << LogInfoSupport << "No custom parameters for " << taskName << ENDM;
   }
   mTaskConfig.parallelTaskID = id;
 
@@ -287,7 +287,7 @@ void TaskRunner::populateConfig(std::string taskName, int id)
 
   if (type == "dataSamplingPolicy") {
     auto policyName = dataSourceTree.get<std::string>("name");
-    ILOG(Info) << "policyName : " << policyName << ENDM;
+    ILOG << LogInfoSupport << "policyName : " << policyName << ENDM;
     mInputSpecs = DataSampling::InputSpecsForPolicy(config, policyName);
   } else if (type == "direct") {
     auto inputsQuery = dataSourceTree.get<std::string>("query");
@@ -300,12 +300,12 @@ void TaskRunner::populateConfig(std::string taskName, int id)
   mInputSpecs.emplace_back(InputSpec{ "timer-cycle", createTaskDataOrigin(), createTaskDataDescription("TIMER-" + taskName), 0, Lifetime::Timer });
   mOptions.push_back({ "period-timer-cycle", framework::VariantType::Int, static_cast<int>(mTaskConfig.cycleDurationSeconds * 1000000), { "timer period" } });
 
-  ILOG(Info) << "Configuration loaded : " << ENDM;
-  ILOG(Info) << ">> Task name : " << mTaskConfig.taskName << ENDM;
-  ILOG(Info) << ">> Module name : " << mTaskConfig.moduleName << ENDM;
-  ILOG(Info) << ">> Detector name : " << mTaskConfig.detectorName << ENDM;
-  ILOG(Info) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << ENDM;
-  ILOG(Info) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << ENDM;
+  ILOG << LogInfoSupport << "Configuration loaded : " << ENDM;
+  ILOG << LogInfoSupport << ">> Task name : " << mTaskConfig.taskName << ENDM;
+  ILOG << LogInfoSupport << ">> Module name : " << mTaskConfig.moduleName << ENDM;
+  ILOG << LogInfoSupport << ">> Detector name : " << mTaskConfig.detectorName << ENDM;
+  ILOG << LogInfoSupport << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << ENDM;
+  ILOG << LogInfoSupport << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << ENDM;
 }
 
 std::string TaskRunner::validateDetectorName(std::string name)
@@ -325,7 +325,7 @@ std::string TaskRunner::validateDetectorName(std::string name)
     std::string permittedString;
     for (auto i : permitted)
       permittedString += i + ' ';
-    ILOG(Error) << "Invalid detector name : " << name << "\n"
+    ILOG << LogErrorSupport << "Invalid detector name : " << name << "\n"
                 << "    Placeholder 'MISC' will be used instead\n"
                 << "    Note: list of permitted detector names :" << permittedString << ENDM;
     return "MISC";
@@ -380,7 +380,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   mCycleOn = false;
 
   if (mTaskConfig.maxNumberCycles == mCycleNumber) {
-    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
+    ILOG << LogInfoSupport << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
                << " The task will not do anything from now on." << ENDM;
   }
 }
@@ -409,7 +409,7 @@ void TaskRunner::publishCycleStats()
 
 int TaskRunner::publish(DataAllocator& outputs)
 {
-  ILOG(Info) << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << ENDM;
+  ILOG << LogInfoSupport << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << ENDM;
   AliceO2::Common::Timer publicationDurationTimer;
 
   auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);

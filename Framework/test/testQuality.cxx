@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(quality_test)
   BOOST_CHECK_EQUAL(myQuality.getLevel(), Quality::NullLevel);
   BOOST_CHECK_EQUAL(myQuality.getName(), "Null");
 
-  ILOG(Info) << "test quality output : " << myQuality << ENDM;
+  ILOG << LogInfoSupport << "test quality output : " << myQuality << ENDM;
 
   BOOST_CHECK(Quality::Bad.isWorseThan(Quality::Medium));
   BOOST_CHECK(Quality::Bad.isWorseThan(Quality::Good));

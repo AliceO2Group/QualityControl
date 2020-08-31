@@ -50,10 +50,10 @@ int main(int argc, const char* argv[])
     notify(vm);
 
     if (vm.count("help")) {
-      ILOG(Info) << desc << ENDM;
+      ILOG << LogInfoSupport << desc << ENDM;
       return 0;
     } else if (vm.count("name") == 0 && vm.count("config") == 0) {
-      ILOG(Error) << "No name and/or config parameters provided" << ENDM;
+      ILOG << LogErrorSupport << "No name and/or config parameters provided" << ENDM;
       return 1;
     }
 
@@ -84,10 +84,10 @@ int main(int argc, const char* argv[])
     runner.stop();
     return 0;
   } catch (const bpo::error& ex) {
-    ILOG(Error) << "Exception caught: " << ex.what() << ENDM;
+    ILOG << LogErrorSupport << "Exception caught: " << ex.what() << ENDM;
     return 1;
   } catch (const boost::exception& ex) {
-    ILOG(Error) << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
+    ILOG << LogErrorSupport << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
     return 1;
   }
 

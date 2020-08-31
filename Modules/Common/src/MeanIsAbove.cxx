@@ -38,7 +38,7 @@ void MeanIsAbove::configure(std::string /*name*/)
   //  try {
   //    auto configFile = ConfigurationFactory::getConfiguration("file:../example.ini"); // not ok...
   //  } catch (string &exception) {
-  //    ILOG(Info) << "error getting config file in MeanIsAbove : " << exception << ENDM;
+  //    ILOG << LogInfoSupport << "error getting config file in MeanIsAbove : " << exception << ENDM;
   //    mThreshold = 1.0f;
   //    return;
   //  }
@@ -67,7 +67,7 @@ void MeanIsAbove::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   // Its colour depends on the quality.
 
   if (!this->isObjectCheckable(mo)) {
-    ILOG(Error) << "object not checkable" << ENDM;
+    ILOG << LogErrorSupport << "object not checkable" << ENDM;
     return;
   }
 

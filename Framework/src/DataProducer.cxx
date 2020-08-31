@@ -64,7 +64,7 @@ AlgorithmSpec getDataProducerAlgorithm(ConcreteDataMatcher output, size_t minSiz
 
         // checking if we have reached the maximum amount of messages
         if (amount != 0 && messageCounter >= amount) {
-          ILOG(Info) << "Reached the maximum number of messages, requesting to quit the producer and sending an EndOfStream" << ENDM;
+          ILOG << LogInfoSupport << "Reached the maximum number of messages, requesting to quit the producer and sending an EndOfStream" << ENDM;
           processingContext.services().get<ControlService>().endOfStream();
           processingContext.services().get<ControlService>().readyToQuit(QuitRequest::Me);
           return;

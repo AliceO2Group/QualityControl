@@ -91,13 +91,13 @@ void ServiceDiscovery::_register(const std::string& objects)
   boost::property_tree::json_parser::write_json(ss, pt);
 
   send("/v1/agent/service/register", ss.str());
-  ILOG(Info) << "Registration to ServiceDiscovery: " << objects << ENDM;
+  ILOG << LogInfoSupport << "Registration to ServiceDiscovery: " << objects << ENDM;
 }
 
 void ServiceDiscovery::deregister()
 {
   send("/v1/agent/service/deregister/" + mId, "");
-  ILOG(Info) << "Deregistration from ServiceDiscovery" << ENDM;
+  ILOG << LogInfoSupport << "Deregistration from ServiceDiscovery" << ENDM;
 }
 
 void ServiceDiscovery::runHealthServer(unsigned int port)
@@ -124,7 +124,7 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
     }
   } catch (std::exception& e) {
     mThreadRunning = false;
-    ILOG(Error) << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
+    ILOG << LogErrorSupport << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
   }
 }
 
@@ -145,10 +145,10 @@ void ServiceDiscovery::send(const std::string& path, std::string&& post)
   response = curl_easy_perform(curl);
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
   if (response != CURLE_OK) {
-    ILOG(Error) << "ServiceDiscovery: " << curl_easy_strerror(response) << ": " << uri << ENDM;
+    ILOG << LogErrorSupport << "ServiceDiscovery: " << curl_easy_strerror(response) << ": " << uri << ENDM;
   }
   if (responseCode < 200 || responseCode > 206) {
-    ILOG(Error) << "ServiceDiscovery: Response code: " << responseCode << ENDM;
+    ILOG << LogErrorSupport << "ServiceDiscovery: Response code: " << responseCode << ENDM;
   }
 }
 } // namespace o2::quality_control::core
