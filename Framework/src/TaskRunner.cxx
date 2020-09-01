@@ -163,9 +163,9 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   }
 
   ILOG << LogDebugDevel << "Completion policy callback. "
-             << "Total inputs possible: " << inputs.size()
-             << ", data inputs: " << dataInputsPresent
-             << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
+       << "Total inputs possible: " << inputs.size()
+       << ", data inputs: " << dataInputsPresent
+       << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
 
   if (dataInputsPresent == dataInputsExpected) {
     action = CompletionPolicy::CompletionOp::Consume;
