@@ -26,7 +26,16 @@ QcInfoLogger::QcInfoLogger()
   context.setField(infoContext::FieldName::System, "QC");
   this->setContext(context);
   //  setFMQLogsToInfoLogger(this); // disabled, see https://github.com/AliceO2Group/QualityControl/pull/222
-  *this << "QC infologger initialized" << infologger::endm;
+  *this << "QC infologger initialized" << ENDM;
+}
+
+void QcInfoLogger::setFacility(const std::string& facility)
+{
+  *this << LogDebugDevel << "Setting facility to " << facility << ENDM;
+  infoContext context;
+  context.setField(infoContext::FieldName::Facility, facility);
+  this->setContext(context);
+  *this << LogDebugDevel << "Facility set to " << facility << ENDM;
 }
 
 } // namespace o2::quality_control::core

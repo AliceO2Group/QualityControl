@@ -49,6 +49,8 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
     return foo;
   }
 
+  void setFacility(const std::string& facility);
+
  private:
   QcInfoLogger();
   ~QcInfoLogger() override = default;
