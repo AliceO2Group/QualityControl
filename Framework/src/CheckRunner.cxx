@@ -139,6 +139,7 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
     mTotalNumberQOStored(0),
     mTotalNumberMOStored(0)
 {
+  ILOG.setFacility("Check");
   try {
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   } catch (...) {

@@ -62,7 +62,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
   ILOG.setFacility("Task");
-  
+
   // setup configuration
   try {
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);

@@ -26,6 +26,7 @@ namespace o2::quality_control::postprocessing
 PostProcessingRunner::PostProcessingRunner(std::string name) //
   : mName(name)
 {
+  ILOG.setFacility("PostProcessing");
 }
 
 void PostProcessingRunner::init(const boost::property_tree::ptree& config)

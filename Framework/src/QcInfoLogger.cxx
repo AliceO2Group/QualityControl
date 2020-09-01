@@ -31,9 +31,9 @@ QcInfoLogger::QcInfoLogger()
 
 void QcInfoLogger::setFacility(const std::string& facility)
 {
-  *this << LogDebugDevel << "Setting facility to " << facility << ENDM;
   infoContext context;
   context.setField(infoContext::FieldName::Facility, facility);
+  context.setField(infoContext::FieldName::System, "QC");
   this->setContext(context);
   *this << LogDebugDevel << "Facility set to " << facility << ENDM;
 }
