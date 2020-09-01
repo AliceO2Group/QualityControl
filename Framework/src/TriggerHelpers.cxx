@@ -40,10 +40,10 @@ std::optional<double> string2Seconds(std::string str)
       return {};
     }
   } catch (std::invalid_argument& ex) {
-    ILOG << LogErrorSupport << "Unexpected format of string describing time '" << str << "'" << ENDM;
+    ILOG << LogErrorOps << "Unexpected format of string describing time '" << str << "'" << ENDM;
     throw ex;
   } catch (std::out_of_range& ex) {
-    ILOG << LogErrorSupport << "Trying to convert time, which is out of supported range '" << str << "'" << ENDM;
+    ILOG << LogErrorOps << "Trying to convert time, which is out of supported range '" << str << "'" << ENDM;
     throw ex;
   }
 }

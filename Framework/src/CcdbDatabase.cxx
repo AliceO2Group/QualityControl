@@ -55,7 +55,7 @@ CcdbDatabase::~CcdbDatabase() { disconnect(); }
 void CcdbDatabase::loadDeprecatedStreamerInfos()
 {
   if (getenv("QUALITYCONTROL_ROOT") == nullptr) {
-    ILOG << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
+    ILOG << LogWarningSupport <<  "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
          << "Consequently, old data might not be readable." << ENDM;
     return;
   }
@@ -63,7 +63,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
   vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
   for (auto filename : filenames) {
     string localPath = path + filename;
-    ILOG << LogInfoSupport << "Loading streamerinfos from : " << localPath << ENDM;
+    ILOG << LogInfoDevel << "Loading streamerinfos from : " << localPath << ENDM;
     TFile file(localPath.data(), "READ");
     if (file.IsZombie()) {
       string s = string("Cannot find ") + localPath;
@@ -81,7 +81,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
       string stringRepresentation = si->GetName() + si->GetClassVersion();
       if (alreadySeen.count(stringRepresentation) == 0) {
         alreadySeen.emplace(stringRepresentation);
-        ILOG << LogDebugSupport << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
+        ILOG << LogDebugDevel << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
         si->BuildCheck();
       }
     }
@@ -194,26 +194,26 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   // no object found
   if (obj == nullptr) {
     if (headers.count("Error") > 0) {
-      ILOGE << headers["Error"] << ENDM;
+      ILOG << LogErrorSupport << headers["Error"] << ENDM;
     }
     return nullptr;
   }
 
   // retrieve headers to determine the version of the QC framework
   Version objectVersion(headers["qc_version"]);
-  ILOG << LogDebugSupport << "Version of object is " << objectVersion << ENDM;
+  ILOG << LogDebugDevel << "Version of object is " << objectVersion << ENDM;
 
   std::shared_ptr<MonitorObject> mo;
   if (objectVersion == Version("0.0.0") || objectVersion < Version("0.25")) {
-    ILOG << LogDebugSupport << "Version of object " << taskName << "/" << objectName << " is < 0.25" << ENDM;
+    ILOG << LogDebugDevel << "Version of object " << taskName << "/" << objectName << " is < 0.25" << ENDM;
     // The object is either in a TFile or is a blob but it was stored with storeAsTFile as a full MO
     mo.reset(dynamic_cast<MonitorObject*>(obj));
     if (mo == nullptr) {
-      ILOG << LogErrorSupport << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
+      ILOG << LogErrorDevel << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
     }
   } else {
     // Version >= 0.25 -> the object is stored directly unencapsulated
-    ILOG << LogDebugSupport << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
+    ILOG << LogDebugDevel << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
     mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"]);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
@@ -228,7 +228,7 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
   TObject* obj = retrieveTObject(qoPath, metadata, timestamp, &headers);
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {
-    ILOG << LogErrorSupport << "Could not cast the object " << qoPath << " to QualityObject" << ENDM;
+    ILOG << LogErrorDevel << "Could not cast the object " << qoPath << " to QualityObject" << ENDM;
   } else {
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     qo->addMetadata(headers);
@@ -393,7 +393,7 @@ long CcdbDatabase::getCurrentTimestamp()
 
 void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 {
-  ILOG << LogInfoSupport << "truncating data for " << taskName << "/" << objectName << ENDM;
+  ILOG << LogInfoSupport << "Truncating data for " << taskName << "/" << objectName << ENDM;
 
   ccdbApi.truncate(taskName + "/" + objectName);
 }

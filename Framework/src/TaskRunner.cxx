@@ -67,7 +67,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     populateConfig(taskName, id);
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
-    ILOG << LogFatalSupport << "Unexpected exception during configuration:\n"
+    ILOG << LogFatalOps << "Unexpected exception during configuration:\n"
          << current_diagnostic(true);
     throw;
   }
@@ -160,16 +160,16 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
     }
   }
 
-  LOG(DEBUG) << "Completion policy callback. "
+  ILOG << LogDebugDevel << "Completion policy callback. "
              << "Total inputs possible: " << inputs.size()
              << ", data inputs: " << dataInputsPresent
-             << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume);
+             << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
 
   if (dataInputsPresent == dataInputsExpected) {
     action = CompletionPolicy::CompletionOp::Consume;
   }
 
-  LOG(DEBUG) << "Action: " << action;
+  ILOG << LogDebugDevel << "Action: " << action;
 
   return action;
 }
@@ -207,11 +207,12 @@ void TaskRunner::start(const ConfigParamRegistry& options)
 {
   try {
     mRunNumber = options.get<int>("runNumber");
-    ILOG(Info) << "Run number found in options: " << mRunNumber << ENDM;
+    ILOG << LogInfoSupport << "Run number found in options: " << mRunNumber << ENDM;
   } catch (std::invalid_argument& ia) {
-    ILOG(Info) << "Run number not found in options, using 0 instead." << ENDM;
+    ILOG << LogInfoSupport << "Run number not found in options, using 0 instead." << ENDM;
     mRunNumber = 0;
   }
+  ILOG << LogInfoOps << "Starting run " << mRunNumber << ENDM;
 
   startOfActivity();
 
@@ -288,7 +289,7 @@ void TaskRunner::populateConfig(std::string taskName, int id)
   try {
     mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + taskName + ".taskParameters");
   } catch (...) {
-    ILOG << LogInfoSupport << "No custom parameters for " << taskName << ENDM;
+    ILOG << LogDebugSupport << "No custom parameters for " << taskName << ENDM;
   }
   mTaskConfig.parallelTaskID = id;
 
@@ -424,7 +425,7 @@ void TaskRunner::publishCycleStats()
 
 int TaskRunner::publish(DataAllocator& outputs)
 {
-  ILOG << LogInfoSupport << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << ENDM;
+  ILOG << LogDebugSupport << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << ENDM;
   AliceO2::Common::Timer publicationDurationTimer;
 
   auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);

@@ -393,9 +393,9 @@ void CheckRunner::initDatabase()
 {
   mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
   mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
-  LOG(INFO) << "Database that is going to be used : ";
-  LOG(INFO) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation");
-  LOG(INFO) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
+  ILOG << LogInfoSupport << "Database that is going to be used : " << ENDM;
+  ILOG << LogInfoSupport << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation") << ENDM;
+  ILOG << LogInfoSupport << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host") << ENDM;
 }
 
 void CheckRunner::initMonitoring()
@@ -413,7 +413,7 @@ void CheckRunner::initServiceDiscovery()
   auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
-  LOG(INFO) << "ServiceDiscovery initialized";
+  ILOG << LogInfoSupport << "ServiceDiscovery initialized" << ENDM;
 }
 
 } // namespace o2::quality_control::checker

@@ -65,8 +65,8 @@ Check::Check(std::string checkName, std::string configurationSource)
     initConfig(checkName);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
+    ILOG << LogErrorOps << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic << ENDM;
     throw;
   }
 }
@@ -235,8 +235,8 @@ void Check::init()
     mCheckInterface->configure(mCheckConfig.checkName);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
-    LOG(ERROR) << "Unexpected exception, diagnostic information follows:\n"
-               << diagnostic;
+    ILOG << LogErrorOps << "Unexpected exception, diagnostic information follows:\n"
+               << diagnostic << ENDM;
     throw;
   }
 
@@ -250,7 +250,7 @@ void Check::init()
   // See QC-299 for details
   if (mNumberOfTaskSources > 1) {
     mBeautify = false;
-    ILOG << LogWarningSupport << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.checkName << ")" << ENDM;
+    ILOG << LogWarningDevel << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.checkName << ")" << ENDM;
   }
 
   // Print setting

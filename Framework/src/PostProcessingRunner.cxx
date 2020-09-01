@@ -51,7 +51,7 @@ void PostProcessingRunner::init(const boost::property_tree::ptree& config)
   PostProcessingFactory f;
   mTask.reset(f.create(mConfig));
   if (mTask) {
-    ILOG << LogInfoSupport << "The user task '" << mConfig.taskName << "' successfully created" << ENDM;
+    ILOG << LogInfoSupport << "The user task '" << mConfig.taskName << "' has been successfully created" << ENDM;
 
     mTaskState = TaskState::Created;
     mTask->setName(mConfig.taskName);
@@ -63,7 +63,7 @@ void PostProcessingRunner::init(const boost::property_tree::ptree& config)
 
 bool PostProcessingRunner::run()
 {
-  ILOG << LogInfoSupport << "Checking triggers of the task '" << mTask->getName() << "'" << ENDM;
+  ILOG << LogDebugDevel << "Checking triggers of the task '" << mTask->getName() << "'" << ENDM;
 
   if (mTaskState == TaskState::Created) {
     if (Trigger trigger = trigger_helpers::tryTrigger(mInitTriggers)) {
@@ -79,7 +79,7 @@ bool PostProcessingRunner::run()
     }
   }
   if (mTaskState == TaskState::Finished) {
-    ILOG << LogInfoSupport << "The user task finished." << ENDM;
+    ILOG << LogDebugDevel << "The user task finished." << ENDM;
     return false;
   }
   if (mTaskState == TaskState::INVALID) {
@@ -115,7 +115,7 @@ void PostProcessingRunner::start()
       doInitialize({ TriggerType::UserOrControl });
     }
   } else if (mTaskState == TaskState::Running) {
-    ILOG << LogInfoSupport << "Requested start, but the user task is already running - doing nothing." << ENDM;
+    ILOG << LogDebugDevel << "Requested start, but the user task is already running - doing nothing." << ENDM;
   } else if (mTaskState == TaskState::INVALID) {
     throw std::runtime_error("The user task has INVALID state");
   } else {
@@ -130,7 +130,7 @@ void PostProcessingRunner::stop()
       doFinalize({ TriggerType::UserOrControl });
     }
   } else if (mTaskState == TaskState::Finished) {
-    ILOG << LogInfoSupport << "Requested stop, but the user task is already finalized - doing nothing." << ENDM;
+    ILOG << LogDebugDevel << "Requested stop, but the user task is already finalized - doing nothing." << ENDM;
   } else if (mTaskState == TaskState::INVALID) {
     throw std::runtime_error("The user task has INVALID state");
   } else {

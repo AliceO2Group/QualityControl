@@ -18,6 +18,7 @@
 #include <TH1F.h>
 #include <QualityControl/MonitorObjectCollection.h>
 #include <string>
+#include <QualityControl/QcInfoLogger.h>
 
 using namespace o2::framework;
 
@@ -70,7 +71,7 @@ framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatche
           TH1F& th1f = processingContext.outputs().make<TH1F>({ output.origin, output.description, output.subSpec }, "hello", "fromHistoProducer", 100, -3, 3);
           allHistos[0]->FillRandom("gaus", 100);
           th1f.Add(allHistos[0]);
-          LOG(INFO) << "sending 1 histo named `hello`.";
+          ILOG << LogInfoDevel << "sending 1 histo named `hello`." << ENDM;
           return;
         }
 
@@ -81,7 +82,7 @@ framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatche
           allHistos[i]->FillRandom("gaus", 100);
           monitorObjects.Add(allHistos[i]);
         }
-        LOG(INFO) << "Sending a TObjArray with " << nbHistograms << " histos named `hello_<index>`.";
+        ILOG << LogInfoDevel << "Sending a TObjArray with " << nbHistograms << " histos named `hello_<index>`.";
       };
     }
   };
@@ -99,12 +100,12 @@ DataProcessorSpec getHistoPrinterSpec(size_t subspec)
 
 void printHisto(shared_ptr<const TH1F>& histo)
 {
-  LOG(INFO) << "histo : " << histo->GetName() << " : " << histo->GetTitle();
+  ILOG << LogInfoDevel << "histo : " << histo->GetName() << " : " << histo->GetTitle() << ENDM;
   std::string bins = "BINS:";
   for (int i = 1; i <= histo->GetNbinsX(); i++) {
     bins += " " + std::to_string((int)histo->GetBinContent(i));
   }
-  LOG(INFO) << bins;
+  ILOG << LogInfoDevel << bins << ENDM;
 }
 
 framework::AlgorithmSpec getHistoPrinterAlgorithm()

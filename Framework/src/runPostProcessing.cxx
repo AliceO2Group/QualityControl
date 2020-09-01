@@ -84,10 +84,10 @@ int main(int argc, const char* argv[])
     runner.stop();
     return 0;
   } catch (const bpo::error& ex) {
-    ILOG << LogErrorSupport << "Exception caught: " << ex.what() << ENDM;
+    ILOG << LogErrorOps << "Exception caught: " << ex.what() << ENDM;
     return 1;
   } catch (const boost::exception& ex) {
-    ILOG << LogErrorSupport << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
+    ILOG << LogErrorOps << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
     return 1;
   }
 

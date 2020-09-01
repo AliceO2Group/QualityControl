@@ -69,7 +69,7 @@ void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
 
 void TrendingTask::storeTrend()
 {
-  ILOG << LogInfoSupport << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
+  ILOG << LogInfoDevel << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), mConfig.detectorName);
   mo->setIsOwner(false);
@@ -100,7 +100,7 @@ void TrendingTask::trendValues()
         mReductors[dataSource.name]->update(qo.get());
       }
     } else {
-      ILOGE << "Unknown type of data source '" << dataSource.type << "'.";
+      ILOG << LogErrorSupport << "Unknown type of data source '" << dataSource.type << "'.";
     }
   }
 
@@ -154,7 +154,7 @@ void TrendingTask::storePlots()
         // It will have an effect only after invoking Draw again.
         title->Draw();
       } else {
-        ILOG << LogErrorSupport << "Could not get the title TPaveText of the plot '" << plot.name << "'." << ENDM;
+        ILOG << LogErrorDevel << "Could not get the title TPaveText of the plot '" << plot.name << "'." << ENDM;
       }
 
       // We have to explicitly configure showing time on x axis.
@@ -171,7 +171,7 @@ void TrendingTask::storePlots()
       // so we have to do it here.
       histo->BufferEmpty();
     } else {
-      ILOG << LogErrorSupport << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
+      ILOG << LogErrorDevel << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
     }
 
     auto mo = std::make_shared<MonitorObject>(c, mConfig.taskName, mConfig.detectorName);

@@ -95,7 +95,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  ILOG << LogInfoOps << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);

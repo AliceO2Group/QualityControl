@@ -39,6 +39,7 @@ using namespace o2::utilities;
 #include <Framework/DataSpecUtils.h>
 #include <Framework/CompletionPolicyHelpers.h>
 #include "QualityControl/InfrastructureGenerator.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -108,8 +109,8 @@ WorkflowSpec processingTopology(SubSpecificationType subspec)
     Outputs{},
     AlgorithmSpec{
       (AlgorithmSpec::ProcessCallback)[](ProcessingContext & ctx) {
-        LOG(DEBUG) << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0];
-        LOG(DEBUG) << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0];
+        ILOG << LogDebugDevel << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0] << ENDM;
+        ILOG << LogDebugDevel << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0] << ENDM;
       }
     }
   };
@@ -122,7 +123,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
   const std::string qcConfigurationSource =
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/advanced.json";
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  ILOG << LogInfoSupport << "Using config file '" << qcConfigurationSource << "'";
 
   WorkflowSpec specs;
   // here we pretend to spawn topologies on three processing machines
