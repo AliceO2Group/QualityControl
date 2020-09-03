@@ -50,8 +50,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory_failures)
   config.className = "o2::quality_control_modules::example::ExampleTask";
   BOOST_CHECK_EXCEPTION(factory.create(config, manager), AliceO2::Common::FatalException, is_critical);
 
-  std::string addition = "lib:../../lib:../../../lib:";
-  gSystem->Setenv("LD_LIBRARY_PATH", (addition + gSystem->Getenv("LD_LIBRARY_PATH")).c_str());
+  gSystem->AddDynamicPath("lib:../../lib:../../../lib:"); // add local paths for the test
   config.taskName = "task";
   config.moduleName = "QcCommon";
   config.className = "WRONGCLASS";

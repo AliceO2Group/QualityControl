@@ -129,3 +129,9 @@ What are the QC integration tests in the FLP Pipeline doing?
 
 Those object names are configurable from Ansible so that we do not have to release a new QCG rpm if we need to update the objects we check. So, if you know something will change 
 modify the following file: https://gitlab.cern.ch/AliceO2Group/system-configuration/-/blob/dev/ansible/roles/flp-deployment-checks/templates/qcg-test-config.js.j2
+
+### Check the logs of the QCG
+
+```
+journalctl -u o2-qcg
+```
