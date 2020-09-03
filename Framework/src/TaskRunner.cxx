@@ -146,7 +146,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   CompletionPolicy::CompletionOp action = CompletionPolicy::CompletionOp::Wait;
 
   for (auto& input : inputs) {
-    if (input.header == nullptr || input.payload == nullptr) {
+    if (input.header == nullptr) {
       continue;
     }
 
@@ -250,7 +250,7 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   bool timerReady = false;
 
   for (auto& input : inputs) {
-    if (input.header != nullptr && input.payload != nullptr) {
+    if (input.header != nullptr) {
 
       const auto* dataHeader = get<DataHeader*>(input.header);
       assert(dataHeader);
