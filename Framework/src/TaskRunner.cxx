@@ -86,7 +86,7 @@ void TaskRunner::init(InitContext& iCtx)
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
     ILOG << LogFatalOps << "Unexpected exception during configuration:\n"
-                << current_diagnostic(true) << ENDM;
+         << current_diagnostic(true) << ENDM;
     throw;
   }
 
