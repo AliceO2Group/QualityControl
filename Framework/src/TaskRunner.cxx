@@ -333,7 +333,7 @@ void TaskRunner::loadTaskConfig()
   try {
     mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + mTaskConfig.taskName + ".taskParameters");
   } catch (...) {
-    ILOG(Info) << "No custom parameters for " << mTaskConfig.taskName << ENDM;
+    ILOG << LogDebugSupport << "No custom parameters for " << mTaskConfig.taskName << ENDM;
   }
 
   ILOG << LogInfoSupport << "Configuration loaded : " << ENDM;
