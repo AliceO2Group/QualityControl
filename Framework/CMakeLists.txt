@@ -41,6 +41,7 @@ add_library(QualityControl
             src/CheckRunner.cxx
             src/CheckRunnerFactory.cxx
             src/CheckInterface.cxx
+            src/AggregatorInterface.cxx
             src/DatabaseFactory.cxx
             src/CcdbDatabase.cxx
             src/QcInfoLogger.cxx
@@ -112,6 +113,7 @@ add_root_dictionary(QualityControl
                     HEADERS
                             include/QualityControl/CheckInterface.h
                             include/QualityControl/TaskInterface.h
+                            include/QualityControl/AggregatorInterface.h
                             include/QualityControl/PostProcessingInterface.h
                             include/QualityControl/TrendingTask.h
                             include/QualityControl/MonitorObjectCollection.h
@@ -224,6 +226,7 @@ set(TEST_SRCS
     test/testTaskInterface.cxx
     test/testTaskRunner.cxx
     test/testCheckInterface.cxx
+    test/testAggregatorInterface.cxx
     test/testCheckRunner.cxx
     test/testCheck.cxx
     test/testQuality.cxx
@@ -246,6 +249,7 @@ set(TEST_SRCS
   )
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""

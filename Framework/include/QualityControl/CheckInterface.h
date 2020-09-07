@@ -35,6 +35,7 @@ namespace o2::quality_control::checker
 ///    same object several times in a row and call the methods in whatever order.
 ///    One could think that the methods should be static but then we would not be able
 ///    to use polymorphism.
+/// TODO ↑ Is that still true ?
 ///
 /// \author Barthelemy von Haller
 class CheckInterface
