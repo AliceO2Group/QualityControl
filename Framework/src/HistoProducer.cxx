@@ -18,6 +18,7 @@
 #include <TH1F.h>
 #include <QualityControl/MonitorObjectCollection.h>
 #include <string>
+#include <fairlogger/Logger.h>
 
 using namespace o2::framework;
 
