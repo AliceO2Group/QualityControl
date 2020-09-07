@@ -18,6 +18,8 @@ here. It is not sanitized or organized. Just a brain dump.
 3. change version in CMakeLists and commit
 5. tag, e.g. `git tag -a v0.26.2 -m "v0.26.2"`
 4. push the tag upstream, e.g. `git push upstream v0.26.2`
+6. Release in github
+4. A PR is automatically created in alidist
 
 ### Where and how to configure the repo_cleaner of the ccdb-test
 
