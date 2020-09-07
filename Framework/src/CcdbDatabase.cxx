@@ -135,7 +135,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
     from = getCurrentTimestamp();
   }
   if (to == -1) {
-    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years from the start of validity
+    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
 
   // extract object and metadata from MonitorObject
@@ -169,7 +169,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObj
     from = getCurrentTimestamp();
   }
   if (to == -1) {
-    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years from the start of validity
+    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
 
   ILOG(Debug) << "Storing object " << path << ENDM;
