@@ -35,6 +35,9 @@ using namespace o2::utilities;
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/ConfigParamRegistry.h>
 
+// Fairlogger
+#include <fairlogger/Logger.h>
+
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
 

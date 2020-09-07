@@ -27,6 +27,9 @@
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 
+// Fairlogger includes
+#include <fairlogger/Logger.h>
+
 namespace o2::quality_control_modules::tof
 {
 
