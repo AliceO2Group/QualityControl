@@ -67,16 +67,16 @@ void TrendingTask::finalize(Trigger, framework::ServiceRegistry& services)
   storeTrend(*services.get<repository::DatabaseInterface>());
 }
 
-void TrendingTask::storeTrend(repository::DatabaseInterface* qcdb->
+void TrendingTask::storeTrend(repository::DatabaseInterface& qcdb)
 {
   ILOG(Info) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), mConfig.detectorName);
   mo->setIsOwner(false);
-  qcdb->storeMO(mo);
+  qcdb.storeMO(mo);
 }
 
-void TrendingTask::trendValues(repository::DatabaseInterface* qcdb->
+void TrendingTask::trendValues(repository::DatabaseInterface& qcdb)
 {
   // We use current date and time. This for planned processing (not history). We still might need to use the objects
   // timestamps in the end, but this would become ambiguous if there is more than one data source.
@@ -89,13 +89,13 @@ void TrendingTask::trendValues(repository::DatabaseInterface* qcdb->
 
     // todo: make it agnostic to MOs, QOs or other objects. Let the reductor cast to whatever it needs.
     if (dataSource.type == "repository") {
-      auto mo = qcdb->retrieveMO(dataSource.path, dataSource.name);
+      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
         mReductors[dataSource.name]->update(obj);
       }
     } else if (dataSource.type == "repository-quality") {
-      auto qo = qcdb->retrieveQO(dataSource.path + "/" + dataSource.name);
+      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name);
       if (qo) {
         mReductors[dataSource.name]->update(qo.get());
       }
@@ -107,7 +107,7 @@ void TrendingTask::trendValues(repository::DatabaseInterface* qcdb->
   mTrend->Fill();
 }
 
-void TrendingTask::storePlots(repository::DatabaseInterface* qcdb->
+void TrendingTask::storePlots(repository::DatabaseInterface& qcdb)
 {
   ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
 
@@ -176,7 +176,7 @@ void TrendingTask::storePlots(repository::DatabaseInterface* qcdb->
 
     auto mo = std::make_shared<MonitorObject>(c, mConfig.taskName, mConfig.detectorName);
     mo->setIsOwner(false);
-    qcdb->storeMO(mo);
+    qcdb.storeMO(mo);
 
     // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
     delete c;
