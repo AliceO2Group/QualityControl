@@ -59,7 +59,8 @@ void TrendingTaskITSFhr::initialize(Trigger, framework::ServiceRegistry&)
 
 // We need this temporary mechanism to support both old and new ServiceRegistry API. TODO remove after the change.
 template <typename T>
-repository::DatabaseInterface& adaptDatabaseService(const T& services) {
+repository::DatabaseInterface& adaptDatabaseService(const T& services)
+{
   if constexpr (std::is_same<repository::DatabaseInterface&, decltype(services.template get<repository::DatabaseInterface>())>::value) {
     return services.template get<repository::DatabaseInterface>();
   } else {
