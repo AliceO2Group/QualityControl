@@ -9,14 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckDiagnostic.cxx
+/// \file   CheckCompressedData.cxx
 /// \author Nicolo' Jacazio
+/// \brief  Checker for the raw compressed data for TOF
 ///
 
 // QC
-#include "TOF/TOFCheckDiagnostic.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
+#include "TOF/CheckCompressedData.h"
 #include "QualityControl/QcInfoLogger.h"
 
 // ROOT
@@ -30,42 +29,52 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-TOFCheckDiagnostic::TOFCheckDiagnostic()
+void CheckCompressedData::configure(std::string)
 {
+  mDiagnosticThresholdPerSlot = 0;
+  if (auto param = mCustomParameters.find("DiagnosticThresholdPerSlot"); param != mCustomParameters.end()) {
+    mDiagnosticThresholdPerSlot = ::atof(param->second.c_str());
+  }
 }
 
-TOFCheckDiagnostic::~TOFCheckDiagnostic() {}
-
-void TOFCheckDiagnostic::configure(std::string) {}
-
-Quality TOFCheckDiagnostic::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality CheckCompressedData::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
 
   Quality result = Quality::Null;
-  ILOG(Info) << "Checking quality of diagnostic histogram" << ENDM;
+  ILOG(Info) << "Checking quality of compressed data";
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
     if (mo->getName() == "hDiagnostic") {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
-      if (h->GetEntries() == 0) {
-        result = Quality::Medium;
+      result = Quality::Good;
+      for (int i = 1; i < h->GetNbinsX(); i++) {
+        for (int j = 1; j < h->GetNbinsY(); j++) {
+          const float content = h->GetBinContent(i, j);
+          if (content > mDiagnosticThresholdPerSlot) { // If above threshold
+            result = Quality::Bad;
+          } else if (content > 0) { // If larger than zero
+            result = Quality::Medium;
+          }
+        }
       }
     }
   }
   return result;
 }
 
-std::string TOFCheckDiagnostic::getAcceptedType() { return "TH2F"; }
+std::string CheckCompressedData::getAcceptedType() { return "TH2F"; }
 
-void TOFCheckDiagnostic::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  ILOG(Info) << "USING BEAUTIFY";
   if (mo->getName() == "hDiagnostic") {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+    TPaveText* msg = new TPaveText(0.9, 0.1, 1.0, 0.5, "blNDC");
     h->GetListOfFunctions()->Add(msg);
-    msg->Draw();
+    msg->SetBorderSize(1);
+    msg->SetTextColor(kWhite);
+    msg->SetFillColor(kBlack);
+    msg->AddText("Default message for hDiagnostic");
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
@@ -73,32 +82,24 @@ void TOFCheckDiagnostic::beautify(std::shared_ptr<MonitorObject> mo, Quality che
       msg->Clear();
       msg->AddText("OK!");
       msg->SetFillColor(kGreen);
-      //
-      h->SetFillColor(kGreen);
+      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Bad) {
       ILOG(Info) << "Quality::Bad, setting to red";
-      //
       msg->Clear();
-      msg->AddText("No TOF hits for all events.");
-      msg->AddText("Call TOF on-call.");
+      msg->AddText("Diagnostics");
+      msg->AddText("above");
+      msg->AddText(Form("threshold (%.0f)", mDiagnosticThresholdPerSlot));
       msg->SetFillColor(kRed);
-      //
-      h->SetFillColor(kRed);
+      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info) << "Quality::medium, setting to orange";
-      //
+      ILOG(Info) << "Quality::medium, setting to yellow";
       msg->Clear();
-      msg->AddText("No entries. IF TOF IN RUN");
-      msg->AddText("check the TOF TWiki");
+      msg->AddText("Diagnostics above zero");
       msg->SetFillColor(kYellow);
-      //
-      h->SetFillColor(kOrange);
-    } else {
-      ILOG(Info) << "Quality::Null, setting to black background";
-      msg->SetFillColor(kBlack);
+      msg->SetTextColor(kBlack);
     }
-  } else
+  } else {
     ILOG(Error) << "Did not get correct histo from " << mo->GetName();
+  }
 }
-
 } // namespace o2::quality_control_modules::tof

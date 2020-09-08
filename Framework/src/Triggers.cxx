@@ -17,19 +17,33 @@
 #include "QualityControl/QcInfoLogger.h"
 
 #include <Common/Timer.h>
+#include <chrono>
+#include <ostream>
 
+using namespace std::chrono;
 using namespace o2::quality_control::core;
 namespace o2::quality_control::postprocessing
 {
+
+std::ostream& operator<<(std::ostream& out, const Trigger& t)
+{
+  out << "triggerType: " << t.triggerType << ", timestamp: " << t.timestamp;
+  return out;
+}
+
+uint64_t Trigger::msSinceEpoch()
+{
+  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
 
 namespace triggers
 {
 
 TriggerFcn NotImplemented(std::string triggerName)
 {
-  ILOG(Warning) << "Trigger '" << triggerName << "' is not implemented yet. It will always return Trigger::No" << ENDM;
+  ILOG(Warning) << "TriggerType '" << triggerName << "' is not implemented yet. It will always return TriggerType::No" << ENDM;
   return [triggerName]() mutable -> Trigger {
-    return Trigger::No;
+    return { TriggerType::No };
   };
 }
 
@@ -41,7 +55,7 @@ TriggerFcn StartOfRun()
   //  bool runStarted = false; // runOngoing();
   //  int runNumber = false;   // getRunNumber();
   //
-  //  return [runStarted, runNumber]() mutable -> Trigger {
+  //  return [runStarted, runNumber]() mutable -> TriggerType {
   //    bool trigger = false;
 
   // trigger if:
@@ -53,7 +67,7 @@ TriggerFcn StartOfRun()
   //    runStarted = runOngoing();
   //    runNumber = getRunNumber();
   //
-  //    return trigger ? Trigger::StartOfRun : Trigger::No;
+  //    return trigger ? TriggerType::StartOfRun : TriggerType::No;
   //  };
 }
 
@@ -61,10 +75,10 @@ TriggerFcn Once()
 {
   return [hasTriggered = false]() mutable -> Trigger {
     if (hasTriggered) {
-      return Trigger::No;
+      return { TriggerType::No };
     } else {
       hasTriggered = true;
-      return Trigger::Once;
+      return { TriggerType::Once };
     }
   };
 }
@@ -72,14 +86,14 @@ TriggerFcn Once()
 TriggerFcn Always()
 {
   return []() mutable -> Trigger {
-    return Trigger::Always;
+    return { TriggerType::Always };
   };
 }
 
 TriggerFcn Never()
 {
   return []() mutable -> Trigger {
-    return Trigger::No;
+    return { TriggerType::No };
   };
 }
 
@@ -105,14 +119,16 @@ TriggerFcn Periodic(double seconds)
 
   return [timer]() mutable -> Trigger {
     if (timer.isTimeout()) {
+      // We calculate the exact time when timer has passed
+      uint64_t timestamp = Trigger::msSinceEpoch() + static_cast<int>(timer.getRemainingTime() * 1000);
       // increment until it is cleared (in case that more than one cycle has passed)
       // let's hope there is no bug, which would make us stay in that loop forever
       while (timer.isTimeout()) {
         timer.increment();
       }
-      return Trigger::Periodic;
+      return { TriggerType::Periodic, timestamp };
     } else {
-      return Trigger::No;
+      return { TriggerType::No };
     }
   };
 }

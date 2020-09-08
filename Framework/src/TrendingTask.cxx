@@ -18,11 +18,13 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Reductor.h"
-#include "RootClassFactory.h"
+#include "QualityControl/RootClassFactory.h"
 #include <boost/property_tree/ptree.hpp>
 #include <TH1.h>
 #include <TCanvas.h>
 #include <TPaveText.h>
+#include <TDatime.h>
+#include "TGraphErrors.h"
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
@@ -113,6 +115,11 @@ void TrendingTask::storePlots()
   // why generate and store plots in the same function? because it is easier to handle the lifetime of pointers to the ROOT objects
   for (const auto& plot : mConfig.plots) {
 
+    // we determine the order of the plot, i.e. if it is a histogram (1), graph (2), or any higher dimension.
+    const size_t plotOrder = std::count(plot.varexp.begin(), plot.varexp.end(), ':') + 1;
+    // we have to delete the graph errors after the plot is saved, unfortunately the canvas does not take its ownership
+    TGraphErrors* graphErrors = nullptr;
+
     TCanvas* c = new TCanvas();
 
     mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(), plot.option.c_str());
@@ -120,8 +127,22 @@ void TrendingTask::storePlots()
     c->SetName(plot.name.c_str());
     c->SetTitle(plot.title.c_str());
 
+    // For graphs we allow to draw errors if they are specified.
+    if (!plot.graphErrors.empty()) {
+      if (plotOrder != 2) {
+        ILOG(Error) << "Non empty graphErrors seen for the plot '" << plot.name << "', which is not a graph, ignoring." << ENDM;
+      } else {
+        // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars
+        std::string varexpWithErrors(plot.varexp + ":" + plot.graphErrors);
+        mTrend->Draw(varexpWithErrors.c_str(), plot.selection.c_str(), "goff");
+        graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0), mTrend->GetVal(2), mTrend->GetVal(3));
+        // We draw on the same plot as the main graph, but only error bars
+        graphErrors->Draw("SAME E");
+      }
+    }
+
     // Postprocessing the plot - adding specified titles, configuring time-based plots, flushing buffers.
-    // Notice that axes and title is drawn using a histogram, even in the case of graphs.
+    // Notice that axes and title are drawn using a histogram, even in the case of graphs.
     if (auto histo = dynamic_cast<TH1*>(c->GetPrimitive("htemp"))) {
       // The title of histogram is printed, not the title of canvas => we set it as well.
       histo->SetTitle(plot.title.c_str());
@@ -134,7 +155,7 @@ void TrendingTask::storePlots()
         // It will have an effect only after invoking Draw again.
         title->Draw();
       } else {
-        ILOG(Info) << "Could not get the title TPaveText of the plot '" << plot.name << "'." << ENDM;
+        ILOG(Error) << "Could not get the title TPaveText of the plot '" << plot.name << "'." << ENDM;
       }
 
       // We have to explicitly configure showing time on x axis.
@@ -151,7 +172,7 @@ void TrendingTask::storePlots()
       // so we have to do it here.
       histo->BufferEmpty();
     } else {
-      ILOG(Info) << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
+      ILOG(Error) << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
     }
 
     auto mo = std::make_shared<MonitorObject>(c, mConfig.taskName, mConfig.detectorName);
@@ -160,5 +181,7 @@ void TrendingTask::storePlots()
 
     // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
     delete c;
+    // ...but it does not delete graphErrors
+    delete graphErrors;
   }
 }

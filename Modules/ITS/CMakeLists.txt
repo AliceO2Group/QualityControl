@@ -1,13 +1,15 @@
 # ---- Library ----
 
-
 add_library(QcITSRawTask
             src/ITSRawTask.cxx
-            src/TrendingTaskITS.cxx
+            src/TrendingTaskITSThr.cxx
+            src/TrendingTaskITSFhr.cxx
             src/TrendingTaskConfigITS.cxx
-            src/ITSOnlineTask.cxx)
+            src/TH2XlineReductor.cxx
+            src/ITSOnlineTask.cxx
+            )
 
-target_sources(QcITSRawTask PRIVATE)
+target_sources(QcITSRawTask PRIVATE src/TH2XlineReductor.cxx)
 
 target_include_directories(
   QcITSRawTask
@@ -28,7 +30,9 @@ install(TARGETS QcITSRawTask
 
 add_root_dictionary(QcITSRawTask
                     HEADERS include/ITS/ITSRawTask.h
-                            include/ITS/TrendingTaskITS.h
+                            include/ITS/TrendingTaskITSThr.h
+                            include/ITS/TrendingTaskITSFhr.h
+                            include/ITS/TH2XlineReductor.h
                             include/ITS/ITSOnlineTask.h
                     LINKDEF include/ITS/LinkDef.h
                     BASENAME QcITSRawTask)
@@ -77,7 +81,8 @@ install(
 
 install(FILES
         its.json
-        itsQCTrending.json
+        itsQCTrendingThr.json
+        itsQCTrendingFhr.json
         DESTINATION etc)
 
 get_property(dirs

@@ -40,6 +40,12 @@ Interfaces to databases and other services are accesible via `ServiceRegistry`, 
  * Once - triggers only first time it is checked
  * Always - triggers each time it is checked
 
+Triggers are complemented with timestamps which correspond the time when trigger started to be valid, in form of ms
+ since epoch, just like in CCDB and QCDB. For example, the periodic trigger will provide evenly spaced timestamps
+ , even if the trigger is checked more rarely. The New Object trigger provide the timestamp of the updated object
+ . These timestamps should be used to access databases, so any Post-processing Task can be rerun with any, arbitrary
+  timestamps.
+
 Please refer to [`SkeletonPostProcessing`](https://github.com/AliceO2Group/QualityControl/blob/master/Modules/Skeleton/include/Skeleton/SkeletonPostProcessing.h) for a minimal illustration of inheriting the interface, or to [`TrendingTask`](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/include/QualityControl/TrendingTask.h) for a fully functional example. One can generate their own post-processing task by using the `o2-qc-module-configurator` helper, as described in the [Module Creation](ModulesDevelopment.md#module-creation) chapter.
 
 ## Configuration
@@ -87,7 +93,7 @@ Each of the three methods can be invoked by one or more triggers. Below are list
  * `"sof"` or `"startoffill"` - Start Of Fill
  * `"eof"` or `"endoffill"` - End Of Fill
  * `"<x><sec/min/hour>"` - Periodic - triggers when a specified period of time passes. For example: "5min", "0.001 seconds", "10sec", "2hours".
- * `"newobject:<path>"` - New Object - triggers when an object in QCDB is updated. For example: `"newobject:/qc/TST/QcTask/Example"`
+ * `"newobject:<path>"` - New Object - triggers when an object in QCDB is updated. For example: `"newobject:/qc/TST/MO/QcTask/Example"`
  * `"once"` - Once - triggers only first time it is checked
  * `"always"` - Always - triggers each time it is checked
 
@@ -102,6 +108,10 @@ o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/etc/postprocessi
 ```
 
 As it is configured to invoke each method only `"once"`, you will see it initializing, entering the update method, then finalizing the task and exiting.
+
+This executable also allows to run a Post-processing task in batch mode, i.e. with selected timestamps (see the
+ `--timestamps` argument). This way, one can rerun a task over old data, if such a task actually respects given
+  timestamps.
 
 To have more control over the state transitions or to run a post-processing task in production, one should use `o2-qc-run-postprocessing-occ`. It is run almost exactly as the previously mentioned application, however one has to use [`peanut`](https://github.com/AliceO2Group/Control/tree/master/occ#single-process-control-with-peanut) to drive its state transitions and push the configuration.
 
@@ -175,14 +185,14 @@ Data sources are defined by filling the corresponding structure, as in the examp
         "dataSources": [
           {
             "type": "repository",
-            "path": "qc/TST/QcTask",
+            "path": "qc/TST/MO/QcTask",
             "names": [ "example" ],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           },
           {
             "type": "repository-quality",
-            "path": "qc/checks",
+            "path": "qc/TST/QO",
             "names": [ "QcCheck" ],
             "reductorName": "o2::quality_control_modules::common::QualityReductor",
             "moduleName": "QcCommon"
@@ -192,8 +202,10 @@ Data sources are defined by filling the corresponding structure, as in the examp
 }
 ```
 
-Similarly, plots are defined by adding proper structures to the `"plots"` list, as shown below. The plot will be stored under the `"name"` value and it will have the `"title"` value shown on the top. The `"varexp"`, `"selection"` and `"option"` fields correspond to the arguments of the [`TTree::Draw`](https://root.cern/doc/master/classTTree.html#a73450649dc6e54b5b94516c468523e45) method.
-
+Similarly, plots are defined by adding proper structures to the `"plots"` list, as shown below. The plot will be
+ stored under the `"name"` value and it will have the `"title"` value shown on the top. The `"varexp"`, `"selection"` and `"option"` fields correspond to the arguments of the [`TTree::Draw`](https://root.cern/doc/master/classTTree.html#a73450649dc6e54b5b94516c468523e45) method.
+Optionally, one can use `"graphError"` to add x and y error bars to a graph, as in the first plot example.
+The `"name"` and `"varexp"` are the only compulsory arguments, others can be omitted to reduce configuration files size.
 ``` json
 {
         ...
@@ -203,7 +215,8 @@ Similarly, plots are defined by adding proper structures to the `"plots"` list, 
             "title": "Mean trend of the example histogram",
             "varexp": "example.mean:time",
             "selection": "",
-            "option": "*L"
+            "option": "*L",
+            "graphErrors": "5:example.stddev"
           },
           {
             "name": "histogram_of_means",

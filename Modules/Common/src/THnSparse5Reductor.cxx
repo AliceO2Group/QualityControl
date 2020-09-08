@@ -9,28 +9,28 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   THnSparseReductor.cxx
+/// \file   THnSparse5Reductor.cxx
 /// \author Ivan Ravasenga from the model by Piotr Konopka
 ///
 
 #include <THnSparse.h>
 #include <TH1.h>
-#include "Common/THnSparseReductor.h"
+#include "Common/THnSparse5Reductor.h"
 
 namespace o2::quality_control_modules::common
 {
 
-void* THnSparseReductor::getBranchAddress()
+void* THnSparse5Reductor::getBranchAddress()
 {
   return &mStats;
 }
 
-const char* THnSparseReductor::getBranchLeafList()
+const char* THnSparse5Reductor::getBranchLeafList()
 {
   return Form("mean[%i]/D:stddev[%i]:entries[%i]", NDIM, NDIM, NDIM);
 }
 
-void THnSparseReductor::update(TObject* obj)
+void THnSparse5Reductor::update(TObject* obj)
 {
   // todo: use GetStats() instead?
   auto sparsehisto = dynamic_cast<THnSparse*>(obj);

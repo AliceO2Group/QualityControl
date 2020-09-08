@@ -9,8 +9,9 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckRawsMulti.h
+/// \file   CheckRawMultiplicity.h
 /// \author Nicolo' Jacazio
+/// \brief  Checker for the raw hit multiplicity obtained with the TaskDigits
 ///
 
 #ifndef QC_MODULE_TOF_TOFCHECKRAWSMULTI_H
@@ -25,13 +26,13 @@ namespace o2::quality_control_modules::tof
 /// \brief  Check whether a plot is empty or not.
 ///
 /// \author Nicolo' Jacazio
-class TOFCheckRawsMulti : public o2::quality_control::checker::CheckInterface
+class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  TOFCheckRawsMulti();
+  CheckRawMultiplicity() = default;
   /// Destructor
-  ~TOFCheckRawsMulti() override;
+  ~CheckRawMultiplicity() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -39,30 +40,29 @@ class TOFCheckRawsMulti : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
-  /// Minimum value of TOF raw hit multiplicity
-  Float_t minTOFrawhits;
-  /// Maximum value of TOF raw hit multiplicity
-  Float_t maxTOFrawhits;
-  /// Fraction of the total integral which are considered Ok at 0 mult
-  const Float_t fracAtZeroMult = 0.75;
-  /// Fraction of the total integral which are considered Ok at low mult
-  const Float_t fracAtLowMult = 0.75;
-  /// Maximum average TOF raw hit multiplicity in Pb-Pb
-  const Float_t maxTOFrawhitsPbPb = 500;
-
  private:
+  /// Minimum value of TOF raw hit multiplicity
+  float mMinRawHits;
+  /// Maximum value of TOF raw hit multiplicity
+  float mMaxRawHits;
+  /// Fraction of the total integral which are considered Ok at 0 mult
+  const float mFractAtZeroMult = 0.75;
+  /// Fraction of the total integral which are considered Ok at low mult
+  const float mFractAtLowMult = 0.75;
+  /// Maximum average TOF raw hit multiplicity in Pb-Pb
+  const float mMaxTOFRawHitsPbPb = 500;
   /// Mean of the TOF hit multiplicity histogram
-  Float_t multiMean;
+  float mRawHitsMean = 0.f;
   /// Number of events with 0 TOF hits
-  Float_t zeroBinIntegral;
+  float mRawHitsZeroMultIntegral = 0.f;
   /// Number of events with low TOF hits multiplicity
-  Float_t lowMIntegral;
+  float mRawHitsLowMultIntegral = 0.f;
   /// Number of events with TOF hits multiplicity > 0
-  Float_t totIntegral;
+  float mRawHitsIntegral = 0.f;
   /// Message to print
   TString shifter_msg = "";
 
-  ClassDefOverride(TOFCheckRawsMulti, 1);
+  ClassDefOverride(CheckRawMultiplicity, 1);
 };
 
 } // namespace o2::quality_control_modules::tof

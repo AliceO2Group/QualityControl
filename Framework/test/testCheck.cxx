@@ -9,14 +9,19 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    testCheckRunner.cxx
+/// \file    testCheck.cxx
 /// \author  Rafal Pacholek
 ///
 
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/MonitorObject.h"
 #include "getTestDataDirectory.h"
+#if __has_include(<Framework/DataSampling.h>)
 #include <Framework/DataSampling.h>
+#else
+#include <DataSampling/DataSampling.h>
+using namespace o2::utilities;
+#endif
 #include <Common/Exceptions.h>
 #include <TH1F.h>
 
@@ -207,15 +212,15 @@ BOOST_AUTO_TEST_CASE(test_check_policy_oneachseparately)
   std::map<std::string, std::shared_ptr<MonitorObject>> moMap1 = { { moName1, mo1 } };
   auto qos1 = check.check(moMap1);
   BOOST_REQUIRE_EQUAL(qos1.size(), 1);
-  BOOST_CHECK_EQUAL(qos1[0]->getPath(), "qc/checks/DET/checkOnEachSeparately/abcTask/test1");
+  BOOST_CHECK_EQUAL(qos1[0]->getPath(), "qc/DET/QO/checkOnEachSeparately/abcTask/test1");
 
   std::map<std::string, unsigned int> revisionMap2 = { { moName1, 10 }, { moName2, 13 } };
   BOOST_CHECK(check.isReady(revisionMap2));
   std::map<std::string, std::shared_ptr<MonitorObject>> moMap2 = { { moName1, mo1 }, { moName2, mo2 } };
   auto qos2 = check.check(moMap2);
   BOOST_REQUIRE_EQUAL(qos2.size(), 2);
-  BOOST_CHECK_EQUAL(qos2[0]->getPath(), "qc/checks/DET/checkOnEachSeparately/abcTask/test1");
-  BOOST_CHECK_EQUAL(qos2[1]->getPath(), "qc/checks/DET/checkOnEachSeparately/abcTask/test2");
+  BOOST_CHECK_EQUAL(qos2[0]->getPath(), "qc/DET/QO/checkOnEachSeparately/abcTask/test1");
+  BOOST_CHECK_EQUAL(qos2[1]->getPath(), "qc/DET/QO/checkOnEachSeparately/abcTask/test2");
 }
 
 /*

@@ -38,15 +38,15 @@
           "blocking": "true"
         },
         "taskParameters": {
-          "nothing": "myOwnValue"
+          "DecoderCONET": "True"
         },
         "location": "remote"
       }
     },
     "checks": {
-      "checkFromTOF-CompressedCounters": {
+      "CheckDiagnostics": {
           "active": "true",
-          "className": "o2::quality_control_modules::tof::TOFCheckCompressedCounter",
+          "className": "o2::quality_control_modules::tof::CheckDiagnostics",
           "moduleName": "QcTOF",
           "detectorName": "TOF",
           "policy": "OnAny",

@@ -18,6 +18,8 @@ here. It is not sanitized or organized. Just a brain dump.
 3. change version in CMakeLists and commit
 5. tag, e.g. `git tag -a v0.26.2 -m "v0.26.2"`
 4. push the tag upstream, e.g. `git push upstream v0.26.2`
+6. Release in github
+4. A PR is automatically created in alidist
 
 ### Where and how to configure the repo_cleaner of the ccdb-test
 
@@ -65,6 +67,11 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
     4. `show series`
     5. `select count(*) from cpuUsedPercentage` <-- use the correct metrics name
     6. Repeat the last command and see if the number increases. If it increases it denotes that the metrics is stored correctly in the database. If it is the case, the problem lies in your grafana.
+    
+### Monitoring setup for building the grafana dashboard
+
+Ask Adam for an account on pcald03.cern.ch:3000.
+Set the monitoring url to `"url": "influxdb-udp://flptest2.cern.ch:8089"`
 
 ### Avoid writing QC objects to a repository
 
@@ -124,3 +131,9 @@ What are the QC integration tests in the FLP Pipeline doing?
 
 Those object names are configurable from Ansible so that we do not have to release a new QCG rpm if we need to update the objects we check. So, if you know something will change 
 modify the following file: https://gitlab.cern.ch/AliceO2Group/system-configuration/-/blob/dev/ansible/roles/flp-deployment-checks/templates/qcg-test-config.js.j2
+
+### Check the logs of the QCG
+
+```
+journalctl -u o2-qcg
+```

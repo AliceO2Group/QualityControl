@@ -40,11 +40,11 @@ class MySqlDatabase : public DatabaseInterface
   void connect(std::string host, std::string database, std::string username, std::string password) override;
   void connect(const std::unordered_map<std::string, std::string>& config) override;
   // MonitorObject
-  void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> q) override;
+  void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> q, long from, long to) override;
   std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) override;
   std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = -1) override;
   // QualityObject
-  void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> q) override;
+  void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> q, long from, long to) override;
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1) override;
   std::string retrieveQOJson(std::string qoPath, long timestamp = -1) override;
   // General

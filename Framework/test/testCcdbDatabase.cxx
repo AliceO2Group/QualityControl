@@ -11,10 +11,9 @@
 ///
 /// \file   testCcdbDatabase.cxx
 /// \author Adam Wegrzynek
-/// \author Bartheley von Haller
+/// \author Barthelemy von Haller
 ///
 
-#include "QualityControl/DatabaseFactory.h"
 #include <unordered_map>
 #include "QualityControl/CcdbDatabase.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -27,6 +26,8 @@
 #include <boost/test/unit_test.hpp>
 #include <TH1F.h>
 #include "rapidjson/document.h"
+#include "QualityControl/RepoPathUtils.h"
+#include "QualityControl/testUtils.h"
 
 namespace utf = boost::unit_test;
 
@@ -81,15 +82,23 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "my/task", "TST");
   mo2->addMetadata("my_meta", "is_good");
 
+  TH1F* h3 = new TH1F("short", "asdf", 100, 0, 99);
+  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, "my/task", "TST");
+
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, "test-ccdb-check", "TST", "OnAll", vector{ string("input1"), string("input2") });
   shared_ptr<QualityObject> qo2 = make_shared<QualityObject>(Quality::Null, "metadata", "TST", "OnAll", vector{ string("input1") });
   qo2->addMetadata("my_meta", "is_good");
+  shared_ptr<QualityObject> qo3 = make_shared<QualityObject>(Quality::Good, "short", "TST", "OnAll", vector{ string("input1") });
 
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->storeMO(mo1);
   f.backend->storeMO(mo2);
   f.backend->storeQO(qo1);
   f.backend->storeQO(qo2);
+
+  // with timestamps
+  f.backend->storeMO(mo3, 10000, 20000);
+  f.backend->storeQO(qo3, 10000, 20000);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
@@ -113,8 +122,21 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "quarantine");
-  BOOST_CHECK_NE(mo, nullptr);
+  BOOST_REQUIRE_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getName(), "quarantine");
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_timestamps, *utf::depends_on("ccdb_store"))
+{
+  test_fixture f;
+
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/MO/my/task", "short", 15000);
+  BOOST_REQUIRE_NE(mo, nullptr);
+  BOOST_CHECK_EQUAL(mo->getName(), "short");
+
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", "short"), 15000);
+  BOOST_REQUIRE_NE(qo, nullptr);
+  BOOST_CHECK_EQUAL(qo->getName(), "short");
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_inexisting_mo)
@@ -184,7 +206,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_026)
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
-  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO("qc/checks/TST/test-ccdb-check");
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", "test-ccdb-check"));
   BOOST_CHECK_NE(qo, nullptr);
   Quality q = qo->getQuality();
   BOOST_CHECK_EQUAL(q.getLevel(), 3);
@@ -194,16 +216,20 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
 
-  std::string task = "qc/TST/my/task";
+  std::string task = "my/task";
   std::string object = "quarantine";
-  std::cout << "[json retrieve]: " << task << "/" << object << std::endl;
-  auto json = f.backend->retrieveJson(task + "/" + object, -1, f.metadata);
-  auto json2 = f.backend->retrieveMOJson(task, object);
+  std::string detector = "TST";
+
+  std::string path = RepoPathUtils::getMoPath(detector, task, object);
+  std::cout << "[json retrieve]: " << path << std::endl;
+  auto json = f.backend->retrieveJson(path, -1, f.metadata);
+  auto json2 = f.backend->retrieveMOJson("qc/TST/MO/" + task, object);
 
   BOOST_CHECK(!json.empty());
   BOOST_CHECK_EQUAL(json, json2);
 
-  string qualityPath = "qc/checks/TST/test-ccdb-check";
+  std::string checkName = "test-ccdb-check";
+  string qualityPath = RepoPathUtils::getQoPath(detector, checkName);
   std::cout << "[json retrieve]: " << qualityPath << std::endl;
   auto json3 = f.backend->retrieveJson(qualityPath, -1, f.metadata);
   auto json4 = f.backend->retrieveQOJson(qualityPath);
@@ -220,29 +246,21 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   BOOST_CHECK(metadataNode.FindMember("qc_task_name") != jsonDocument.MemberEnd());
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo_json, *utf::depends_on("ccdb_store"))
-{
-  test_fixture f;
-  std::string task = "qc/TST/my/task";
-  std::string object = "quarantine";
-  auto jsonMO = f.backend->retrieveMOJson(task, object);
-
-  BOOST_CHECK(!jsonMO.empty());
-
-  std::string qoPath = "qc/checks/TST/test-ccdb-check";
-  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(qoPath);
-  auto jsonQO = f.backend->retrieveQOJson(qoPath);
-
-  BOOST_CHECK(!jsonQO.empty());
-}
-
 BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
+
+  std::string task = "my/task";
+  std::string detector = "TST";
+  std::string pathQuarantine = RepoPathUtils::getMoPath(detector, task, "quarantine");
+  std::string pathMetadata = RepoPathUtils::getMoPath(detector, task, "metadata");
+  std::string pathQuality = RepoPathUtils::getQoPath(detector, "test-ccdb-check");
+  std::string pathQualityMetadata = RepoPathUtils::getQoPath(detector, "metadata");
+
   std::map<std::string, std::string> headers1;
   std::map<std::string, std::string> headers2;
-  TObject* obj1 = f.backend->retrieveTObject("qc/TST/my/task/quarantine", f.metadata, -1, &headers1);
-  TObject* obj2 = f.backend->retrieveTObject("qc/TST/my/task/metadata", f.metadata, -1, &headers2);
+  TObject* obj1 = f.backend->retrieveTObject(pathQuarantine, f.metadata, -1, &headers1);
+  TObject* obj2 = f.backend->retrieveTObject(pathMetadata, f.metadata, -1, &headers2);
   BOOST_CHECK_NE(obj1, nullptr);
   BOOST_CHECK_NE(obj2, nullptr);
   BOOST_CHECK(headers1.size() > 0);
@@ -261,8 +279,8 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(obj2a->getMetadataMap().count("my_meta"), 1);
   BOOST_CHECK_EQUAL(obj2a->getMetadataMap().at("my_meta"), "is_good");
 
-  auto obj3 = f.backend->retrieveQO("qc/checks/TST/test-ccdb-check");
-  auto obj4 = f.backend->retrieveQO("qc/checks/TST/metadata");
+  auto obj3 = f.backend->retrieveQO(pathQuality);
+  auto obj4 = f.backend->retrieveQO(pathQualityMetadata);
   BOOST_CHECK_NE(obj3, nullptr);
   BOOST_CHECK_NE(obj4, nullptr);
   BOOST_CHECK(obj3->getMetadataMap().size() > 0);

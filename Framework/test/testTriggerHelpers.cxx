@@ -32,17 +32,17 @@ BOOST_AUTO_TEST_CASE(test_factory)
 
   // check if it creates correct triggers
   auto once = trigger_helpers::triggerFactory("once");
-  BOOST_CHECK_EQUAL(once(), Trigger::Once);
-  BOOST_CHECK_EQUAL(once(), Trigger::No);
-  BOOST_CHECK_EQUAL(once(), Trigger::No);
-  BOOST_CHECK_EQUAL(once(), Trigger::No);
-  BOOST_CHECK_EQUAL(once(), Trigger::No);
+  BOOST_CHECK_EQUAL(once(), TriggerType::Once);
+  BOOST_CHECK_EQUAL(once(), TriggerType::No);
+  BOOST_CHECK_EQUAL(once(), TriggerType::No);
+  BOOST_CHECK_EQUAL(once(), TriggerType::No);
+  BOOST_CHECK_EQUAL(once(), TriggerType::No);
   auto always = trigger_helpers::triggerFactory("always");
-  BOOST_CHECK_EQUAL(always(), Trigger::Always);
-  BOOST_CHECK_EQUAL(always(), Trigger::Always);
-  BOOST_CHECK_EQUAL(always(), Trigger::Always);
-  BOOST_CHECK_EQUAL(always(), Trigger::Always);
-  BOOST_CHECK_EQUAL(always(), Trigger::Always);
+  BOOST_CHECK_EQUAL(always(), TriggerType::Always);
+  BOOST_CHECK_EQUAL(always(), TriggerType::Always);
+  BOOST_CHECK_EQUAL(always(), TriggerType::Always);
+  BOOST_CHECK_EQUAL(always(), TriggerType::Always);
+  BOOST_CHECK_EQUAL(always(), TriggerType::Always);
 
   // unknown trigger
   BOOST_CHECK_THROW(trigger_helpers::triggerFactory("adsfzxcvadsf"), std::invalid_argument);

@@ -35,10 +35,18 @@ int main(int argc, const char* argv[])
       ("help,h", "Help screen")                                                                              //
       ("config", bpo::value<std::string>(), "Absolute path to a configuration file, preceded with backend.") //
       ("name", bpo::value<std::string>(), "Name of a post processing task to run")                           //
-      ("period", bpo::value<double>()->default_value(10.0), "Cycle period of checking triggers in seconds");
+      ("period", bpo::value<double>()->default_value(10.0), "Cycle period of checking triggers in seconds")  //
+      ("timestamps,t", bpo::value<std::vector<uint64_t>>()->composing(),
+       "Space-separated timestamps (ms since epoch) which should be given to the post processing task."
+       " Effectively, it ignores triggers declared in the configuration file and replaces them with"
+       " TriggerType::Manual with given timestamps. The first value is used for initalization trigger, the last for"
+       " finalization, so at least two are required.");
+
+    bpo::positional_options_description positionalArgs;
+    positionalArgs.add("timestamps", -1);
 
     bpo::variables_map vm;
-    store(parse_command_line(argc, argv, desc), vm);
+    store(bpo::command_line_parser(argc, argv).options(desc).positional(positionalArgs).run(), vm);
     notify(vm);
 
     if (vm.count("help")) {
@@ -50,26 +58,36 @@ int main(int argc, const char* argv[])
     }
 
     int periodUs = static_cast<int>(1000000 * vm["period"].as<double>());
+
     PostProcessingRunner runner(vm["name"].as<std::string>());
 
     auto config = ConfigurationFactory::getConfiguration(vm["config"].as<std::string>());
 
     runner.init(config->getRecursive());
-    runner.start();
 
-    Timer timer;
-    timer.reset(periodUs);
+    if (vm.count("timestamps")) {
+      // running the PP task on a set of timestamps
+      runner.runOverTimestamps(vm["timestamps"].as<std::vector<uint64_t>>());
+    } else {
+      // running the PP task with an event loop
+      runner.start();
 
-    while (runner.run()) {
-      while (timer.getRemainingTime() < 0) {
-        timer.increment();
+      Timer timer;
+      timer.reset(periodUs);
+      while (runner.run()) {
+        while (timer.getRemainingTime() < 0) {
+          timer.increment();
+        }
+        usleep(1000000.0 * timer.getRemainingTime());
       }
-      usleep(1000000.0 * timer.getRemainingTime());
     }
     runner.stop();
     return 0;
   } catch (const bpo::error& ex) {
     ILOG(Error) << "Exception caught: " << ex.what() << ENDM;
+    return 1;
+  } catch (const boost::exception& ex) {
+    ILOG(Error) << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
     return 1;
   }
 

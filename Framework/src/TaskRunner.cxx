@@ -22,18 +22,28 @@
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Monitoring/MonitoringFactory.h>
+#if __has_include(<Framework/DataSampling.h>)
 #include <Framework/DataSampling.h>
+#else
+#include <DataSampling/DataSampling.h>
+using namespace o2::utilities;
+#endif
 #include <Framework/CallbackService.h>
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
+#include <Framework/ConfigParamRegistry.h>
+
+// Fairlogger
+#include <fairlogger/Logger.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
 
 #include <string>
 #include <memory>
+#include <boost/property_tree/ini_parser.hpp>
 
 using namespace std;
 
@@ -51,26 +61,37 @@ using namespace AliceO2::Common;
 
 TaskRunner::TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id)
   : mDeviceName(createTaskRunnerIdString() + "-" + taskName),
+    mRunNumber(0),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
-  // setup configuration
   try {
+    mTaskConfig.taskName = taskName;
+    mTaskConfig.parallelTaskID = id;
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-    populateConfig(taskName, id);
+    loadTopologyConfig();
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
     ILOG(Fatal) << "Unexpected exception during configuration:\n"
-                << current_diagnostic(true);
+                << current_diagnostic(true) << ENDM;
     throw;
   }
 }
 
 void TaskRunner::init(InitContext& iCtx)
 {
-  ILOG(Info) << "initializing TaskRunner" << ENDM;
+  ILOG(Info) << "Initializing TaskRunner" << ENDM;
+  ILOG(Info) << "Loading configuration" << ENDM;
+  try {
+    loadTaskConfig();
+  } catch (...) {
+    // catch the configuration exception and print it to avoid losing it
+    ILOG(Fatal) << "Unexpected exception during configuration:\n"
+                << current_diagnostic(true) << ENDM;
+    throw;
+  }
 
   // registering state machine callbacks
-  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this]() { start(); });
+  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &options = iCtx.options()]() { start(options); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
 
@@ -138,7 +159,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   CompletionPolicy::CompletionOp action = CompletionPolicy::CompletionOp::Wait;
 
   for (auto& input : inputs) {
-    if (input.header == nullptr || input.payload == nullptr) {
+    if (input.header == nullptr) {
       continue;
     }
 
@@ -195,8 +216,16 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::start()
+void TaskRunner::start(const ConfigParamRegistry& options)
 {
+  try {
+    mRunNumber = stoi(options.get<std::string>("runNumber"));
+    ILOG(Info) << "Run number found in options: " << mRunNumber << ENDM;
+  } catch (std::invalid_argument& ia) {
+    ILOG(Info) << "Run number not found in options, using 0 instead." << ENDM;
+    mRunNumber = 0;
+  }
+
   startOfActivity();
 
   if (mNoMoreCycles) {
@@ -217,6 +246,7 @@ void TaskRunner::stop()
   }
   endOfActivity();
   mTask->reset();
+  mRunNumber = 0;
 }
 
 void TaskRunner::reset()
@@ -224,6 +254,7 @@ void TaskRunner::reset()
   mTask.reset();
   mCollector.reset();
   mObjectsManager.reset();
+  mRunNumber = 0;
 }
 
 std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs(const framework::InputRecord& inputs)
@@ -232,7 +263,7 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   bool timerReady = false;
 
   for (auto& input : inputs) {
-    if (input.header != nullptr && input.payload != nullptr) {
+    if (input.header != nullptr) {
 
       const auto* dataHeader = get<DataHeader*>(input.header);
       assert(dataHeader);
@@ -249,36 +280,14 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   return { dataReady, timerReady };
 }
 
-void TaskRunner::populateConfig(std::string taskName, int id)
+void TaskRunner::loadTopologyConfig()
 {
-  auto tasksConfigList = mConfigFile->getRecursive("qc.tasks");
-  auto taskConfigTree = tasksConfigList.find(taskName);
-  if (taskConfigTree == tasksConfigList.not_found()) {
-    std::string message = "No configuration found for task \"" + taskName + "\"";
-    BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
-  }
-
-  mTaskConfig.taskName = taskName;
-  string test = taskConfigTree->second.get<std::string>("detectorName", "MISC");
-  mTaskConfig.detectorName = validateDetectorName(taskConfigTree->second.get<std::string>("detectorName", "MISC"));
-  mTaskConfig.moduleName = taskConfigTree->second.get<std::string>("moduleName");
-  mTaskConfig.className = taskConfigTree->second.get<std::string>("className");
-  mTaskConfig.cycleDurationSeconds = taskConfigTree->second.get<int>("cycleDurationSeconds", 10);
-  mTaskConfig.maxNumberCycles = taskConfigTree->second.get<int>("maxNumberCycles", -1);
-  mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
-  mTaskConfig.conditionUrl = mConfigFile->get<std::string>("qc.config.conditionDB.url", "http://ccdb-test.cern.ch:8080");
-  try {
-    mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + taskName + ".taskParameters");
-  } catch (...) {
-    ILOG(Info) << "No custom parameters for " << taskName << ENDM;
-  }
-  mTaskConfig.parallelTaskID = id;
-
+  auto taskConfigTree = getTaskConfigTree();
   auto policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
   ConfigurationInterface* config = policiesFilePath.empty() ? mConfigFile.get() : ConfigurationFactory::getConfiguration(policiesFilePath).get();
   auto policiesTree = config->getRecursive("dataSamplingPolicies");
-  auto dataSourceTree = taskConfigTree->second.get_child("dataSource");
-  std::string type = dataSourceTree.get<std::string>("type");
+  auto dataSourceTree = taskConfigTree.get_child("dataSource");
+  auto type = dataSourceTree.get<std::string>("type");
 
   if (type == "dataSamplingPolicy") {
     auto policyName = dataSourceTree.get<std::string>("name");
@@ -292,8 +301,39 @@ void TaskRunner::populateConfig(std::string taskName, int id)
     BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
   }
 
-  mInputSpecs.emplace_back(InputSpec{ "timer-cycle", createTaskDataOrigin(), createTaskDataDescription("TIMER-" + taskName), 0, Lifetime::Timer });
+  mInputSpecs.emplace_back(InputSpec{ "timer-cycle", createTaskDataOrigin(), createTaskDataDescription("TIMER-" + mTaskConfig.taskName), 0, Lifetime::Timer });
+
+  // needed to avoid having looping at the maximum speed
+  mTaskConfig.cycleDurationSeconds = taskConfigTree.get<int>("cycleDurationSeconds", 10);
   mOptions.push_back({ "period-timer-cycle", framework::VariantType::Int, static_cast<int>(mTaskConfig.cycleDurationSeconds * 1000000), { "timer period" } });
+}
+
+boost::property_tree::ptree TaskRunner::getTaskConfigTree() const
+{
+  auto tasksConfigList = mConfigFile->getRecursive("qc.tasks");
+  auto taskConfigTree = tasksConfigList.find(mTaskConfig.taskName);
+  if (taskConfigTree == tasksConfigList.not_found()) {
+    std::string message = "No configuration found for task \"" + mTaskConfig.taskName + "\"";
+    BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
+  }
+  return taskConfigTree->second;
+}
+
+void TaskRunner::loadTaskConfig()
+{
+  auto taskConfigTree = getTaskConfigTree();
+  string test = taskConfigTree.get<std::string>("detectorName", "MISC");
+  mTaskConfig.detectorName = validateDetectorName(taskConfigTree.get<std::string>("detectorName", "MISC"));
+  mTaskConfig.moduleName = taskConfigTree.get<std::string>("moduleName");
+  mTaskConfig.className = taskConfigTree.get<std::string>("className");
+  mTaskConfig.maxNumberCycles = taskConfigTree.get<int>("maxNumberCycles", -1);
+  mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+  mTaskConfig.conditionUrl = mConfigFile->get<std::string>("qc.config.conditionDB.url", "http://ccdb-test.cern.ch:8080");
+  try {
+    mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + mTaskConfig.taskName + ".taskParameters");
+  } catch (...) {
+    ILOG(Info) << "No custom parameters for " << mTaskConfig.taskName << ENDM;
+  }
 
   ILOG(Info) << "Configuration loaded : " << ENDM;
   ILOG(Info) << ">> Task name : " << mTaskConfig.taskName << ENDM;
@@ -303,7 +343,7 @@ void TaskRunner::populateConfig(std::string taskName, int id)
   ILOG(Info) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << ENDM;
 }
 
-std::string TaskRunner::validateDetectorName(std::string name)
+std::string TaskRunner::validateDetectorName(std::string name) const
 {
   // name must be a detector code from DetID or one of the few allowed general names
   int nDetectors = 16;
@@ -334,7 +374,9 @@ void TaskRunner::startOfActivity()
   mTimerTotalDurationActivity.reset();
   mTotalNumberObjectsPublished = 0;
 
-  Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
+  // We take the run number as set from the FairMQ options if it is there, otherwise the one from the config file
+  int run = mRunNumber > 0 ? mRunNumber : mConfigFile->get<int>("qc.config.Activity.number");
+  Activity activity(run,
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
@@ -342,7 +384,7 @@ void TaskRunner::startOfActivity()
 
 void TaskRunner::endOfActivity()
 {
-  Activity activity(mConfigFile->get<int>("qc.config.Activity.number"),
+  Activity activity(mRunNumber,
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->endOfActivity(activity);
   mObjectsManager->removeAllFromServiceDiscovery();

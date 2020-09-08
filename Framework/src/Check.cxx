@@ -24,7 +24,9 @@
 // QC
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/InputUtils.h"
-#include "RootClassFactory.h"
+#include "QualityControl/RootClassFactory.h"
+// Fairlogger
+#include <fairlogger/Logger.h>
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;

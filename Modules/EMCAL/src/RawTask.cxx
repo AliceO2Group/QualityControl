@@ -21,6 +21,7 @@
 #include <cfloat>
 
 #include "QualityControl/QcInfoLogger.h"
+#include "DetectorsRaw/RDHUtils.h"
 #include "EMCAL/RawTask.h"
 #include "Headers/RAWDataHeader.h"
 #include "EMCALReconstruction/AltroDecoder.h"
@@ -246,7 +247,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTotalDataVolume->Fill(1., header->payloadSize);
 
       // try decoding payload
-      o2::emcal::RawReaderMemory<o2::header::RAWDataHeaderV4> rawreader(gsl::span(input.payload, header->payloadSize));
+      o2::emcal::RawReaderMemory rawreader(gsl::span(input.payload, header->payloadSize));
       uint64_t currentTrigger(0);
       bool first = true; //for the first event
       short int maxADCSM[20];
@@ -260,26 +261,28 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         auto payLoadSize = rawreader.getPayloadSize(); //payloadsize in byte;
 
         auto headerR = rawreader.getRawHeader();
-        mPayloadSizePerDDL->Fill(headerR.feeId, payLoadSize / 1024.);
+        auto feeID = o2::raw::RDHUtils::getFEEID(headerR);
+        auto triggerBC = o2::raw::RDHUtils::getTriggerBC(headerR);
+        mPayloadSizePerDDL->Fill(feeID, payLoadSize / 1024.);
 
         //fill histograms with max ADC for each supermodules and reset cache
-        if (!first) {                               // check if it is the first event in the payload
-          if (headerR.triggerBC > currentTrigger) { //new event
+        if (!first) {                       // check if it is the first event in the payload
+          if (triggerBC > currentTrigger) { // new event
             for (int sm = 0; sm < 20; sm++) {
               mRawAmplitudeEMCAL[sm]->Fill(maxADCSM[sm]);
               maxADCSM[sm] = 0;
               //initialize
               minADCSM[sm] = SHRT_MAX;
             } //sm loop
-            currentTrigger = headerR.triggerBC;
+            currentTrigger = triggerBC;
           }      //new event
         } else { //first
-          currentTrigger = headerR.triggerBC;
+          currentTrigger = triggerBC;
           first = false;
         }
-        if (headerR.feeId > 40)
-          continue;                                                      //skip STU ddl
-        o2::emcal::AltroDecoder<decltype(rawreader)> decoder(rawreader); //(atrodecoder in Detectors/Emcal/reconstruction/src)
+        if (feeID > 40)
+          continue;                                 //skip STU ddl
+        o2::emcal::AltroDecoder decoder(rawreader); //(atrodecoder in Detectors/Emcal/reconstruction/src)
         //check the words of the payload exception in altrodecoder
         try {
           decoder.decode();
@@ -323,14 +326,14 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             default:
               break;
           }
-          errormessage << " in Supermodule " << headerR.feeId;
+          errormessage << " in Supermodule " << feeID;
           QcInfoLogger::GetInstance() << QcInfoLogger::Error << " EMCAL raw task: " << errormessage.str() << AliceO2::InfoLogger::InfoLogger::endm;
           //fill histograms  with error types
-          mErrorTypeAltro->Fill(headerR.feeId, errornum);
+          mErrorTypeAltro->Fill(feeID, errornum);
           continue;
         }
-        int j = headerR.feeId / 2; //SM id
-        auto& mapping = mMappings->getMappingForDDL(headerR.feeId);
+        int j = feeID / 2; //SM id
+        auto& mapping = mMappings->getMappingForDDL(feeID);
         int col;
 
         int row;

@@ -7,4 +7,6 @@
 #pragma link C++ class o2::quality_control_modules::tpc::Tracks+;
 #pragma link C++ class o2::quality_control_modules::tpc::PIDClusterCheck+;
 #pragma link C++ class o2::quality_control_modules::tpc::TrackClusterCheck+;
+#pragma link C++ class o2::quality_control_modules::tpc::ROCReductor+;
+#pragma link C++ class o2::quality_control_modules::tpc::Clusters+;
 #endif

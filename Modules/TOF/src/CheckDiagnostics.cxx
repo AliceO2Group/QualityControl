@@ -9,12 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   TOFCheckCompressedCounter.cxx
+/// \file   CheckDiagnostics.cxx
 /// \author Nicolo' Jacazio
+/// \brief  Checker dedicated to the study of low level raw data diagnostics words
 ///
 
 // QC
-#include "TOF/TOFCheckCompressedCounter.h"
+#include "TOF/CheckDiagnostics.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -30,18 +31,18 @@ using namespace std;
 namespace o2::quality_control_modules::tof
 {
 
-void TOFCheckCompressedCounter::configure(std::string) {}
+void CheckDiagnostics::configure(std::string) {}
 
-Quality TOFCheckCompressedCounter::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
 
   Quality result = Quality::Null;
-  ILOG(Info) << "Checking quality of diagnostic histogram" << ENDM;
+  ILOG(Info) << "Checking quality of diagnostic words";
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
-    if (mo->getName() == "RDHCounterCrate0") {
-      auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    if (mo->getName() == "DRMCounter") {
+      auto* h = dynamic_cast<TH2F*>(mo->getObject());
       if (h->GetEntries() == 0) {
         result = Quality::Medium;
       }
@@ -50,12 +51,12 @@ Quality TOFCheckCompressedCounter::check(std::map<std::string, std::shared_ptr<M
   return result;
 }
 
-std::string TOFCheckCompressedCounter::getAcceptedType() { return "TH1F"; }
+std::string CheckDiagnostics::getAcceptedType() { return "TH1F"; }
 
-void TOFCheckCompressedCounter::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   ILOG(Info) << "USING BEAUTIFY";
-  if (mo->getName() == "RDHCounterCrate0") {
+  if (mo->getName() == "DRMCounter") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
@@ -89,6 +90,7 @@ void TOFCheckCompressedCounter::beautify(std::shared_ptr<MonitorObject> mo, Qual
       h->SetFillColor(kOrange);
     } else {
       ILOG(Info) << "Quality::Null, setting to black background";
+      msg->SetTextColor(kWhite);
       msg->SetFillColor(kBlack);
     }
   } else

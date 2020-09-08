@@ -20,14 +20,9 @@
          * [Configuration](#configuration)
          * [Implementation](#implementation)
       * [Committing code](#committing-code)
-      * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
-         * [Configuration](#configuration-1)
-         * [Example](#example)
-         * [Limitations](#limitations)
       * [Raw data source](#raw-data-source)
 
-<!-- Added by: barth, at: Lun 15 jui 2020 16:36:24 CEST -->
-
+<!-- Added by: barth, at: Lun 17 aoû 2020 14:57:50 CEST -->
 <!--te-->
 
 [← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Post-processing →](PostProcessing.md)
@@ -40,7 +35,7 @@ Before developing a module, one should have a bare idea of what the QualityContr
 
 ![alt text](images/Architecture.png)
 
-The main data flow is represented in blue. Data samples are selected by the Data Sampling (not represented) and sent to the QC tasks, either on the same machines or on other machines. The tasks produce TObjects, usually histograms, that are merged (if needed) and then checked. The checkers output the received TObject along with a quality flag. The TObject can be modified by the Checker. Finally the TObject and its quality are stored in the repository.
+The main data flow is represented in blue. Data samples are selected by the Data Sampling (not represented) and sent to the QC tasks, either on the same machines or on other machines. The tasks produce TObjects encapsulated in a MonitorObject, usually histograms, that are merged (if needed) and then checked. The checkers output the received MonitorObject along with a QualityObject. The MonitorObject can be modified by the Checker. Finally the MonitorObject and the QualityObject(s) are stored in the repository.
 
 ### DPL
 
@@ -152,6 +147,17 @@ The Quality Control uses _plugins_ to load the actual code to be executed by the
 
 The same code, the same class, can be run many times in parallel. It means that you can run several qc tasks (no uppercase, i.e. processes) in parallel, each executing the same code defined in the same Task (uppercase, the class). Similarly, one Check can be executed against different Monitor Objects and Tasks.
 
+### Repository
+
+QC results (MonitorObjects and QualityObjects) are stored in a repository that we usually call the QCDB. Indeed, the underlying technology is the one of the CCDB (Condition and Calibration DataBase). As a matter of fact we use the test instance of the CCDB for the tests and development (ccdb-test.cern.ch:8080). In production, we will have a different instance distinct from the CCDB. 
+
+#### Paths
+
+We use a consistent system of path for the objects we store in the QCDB:
+* MonitorObjects: ```qc/<detectorCode>/MO/<taskName>/<moName>```
+* QualityObjects: ```qc/<detectorCode>/QO/<checkName>[/<moName>]```  
+The last, optional, part depends on the policy (read more about that [later](#Check)).
+
 ## Module creation
 
 Before starting to develop the code, one should create a new module if it does not exist yet. Typically each detector team should prepare a module.
@@ -232,7 +238,7 @@ Now we can run it
 o2-qc-run-producer | o2-qc --config json://$HOME/alice/QualityControl/Modules/TST/basic-tst.json
 ```
 
-You should see an object `example` in `/qc/TST/MyRawDataQcTask` at qcg-test.cern.ch.
+You should see an object `example` in `/qc/TST/MO/MyRawDataQcTask` at qcg-test.cern.ch.
 
 ## Modification of the Task
 
@@ -321,78 +327,6 @@ To commit your new or modified code, please follow this procedure
 For a new feature, just create a new branch for it and use the same procedure. Do not fork again. You can work on several features at the same time by having parallel branches.
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
-
-## Production of QC objects outside this framework
-QC objects (e.g. histograms) are typically produced in a QC task. 
-This is however not the only way. Some processing tasks such as the calibration 
-might have already processed the data and produced histograms that should be 
-monitored. Instead of re-processing and doing twice the work, one can simply
-push this QC object to the QC framework where it will be checked and stored.
-
-### Configuration
-
-Let be a device in the main data flow that produces a histogram on a channel defined as `TST/HISTO/0`. To get this histogram in the QC and check it, add to the configuration file an "external device": 
-```yaml
-    "externalTasks": {
-      "External-1": {
-        "active": "true",
-        "query": "External-1:TST/HISTO/0",  "": "Query specifying where the objects to be checked and stored are coming from. Use the task name as binding. The origin (e.g. TST) is used as detector name for the objects."
-      }
-    },
-    "checks": {
-```
-The "query" syntax is the same as the one used in the DPL and in the Dispatcher. It must match the output of another device, whether it is in the same workflow or in a piped one. 
-The `binding` (first part, before the colon) is used in the path of the stored objects and thus we encourage to use the task name to avoid confusion. Moreover, the `origin` (first element after the colon) is used as detectorName. 
-
-### Example 1: basic
-
-As a basic example, we are going to produce histograms with the HistoProducer and collect them with the QC. The configuration is in [basic-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/basic-external-histo.json). An external task is defined and named "External-1" (see subsection above). It is then used in the Check QCCheck : 
-```yaml
-      "QcCheck": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "OnAny",
-        "detectorName": "TST",
-        "dataSource": [{
-          "type": "ExternalTask",
-          "name": "External-1",
-          "MOs": ["hello"]
-        }]
-      }
-```
-When using this feature, make sure that the name of the MO in the Check definition matches the name of the object you are sending from the external device.
-
-To run it, do:
-```yaml
-o2-qc-run-histo-producer | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/basic-external-histo.json
-```
-
-The object is visible in the QCG or the CCDB at `qc/TST/External-1/hello_0`. In general we publish the objects of an external device at `qc/<detector>/<binding>/object`. 
-
-The check results are stored at `qc/checks/<detector>/<binding>/object`.
-
-### Example 2: advanced
-
-This second, more advanced, example mixes QC tasks and external tasks. It is defined in [advanced-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/advanced-external-histo.json). It is represented here:
-
-![alt text](images/Advanced-external.png)
-
-First, it runs 1 QC task (QC-TASK-RUNNER-QcTask) getting data from a data producer (bottom boxes, typical QC worfklow). 
-
-On top we see 3 histogram producers. `histoProducer-2` is not part of the QC, it is not an external device defined in the configuration file. The two other histogram producers are configured as external devices in the configuration file. 
-
-`histoProducer-0` produces an object that is used in a check (`QcCheck-External-1`). `histoProducer-1` objects are not used in any check but we generate one automatically to take care of the storage in the database.
-
-To run it, do: 
-```yaml
-o2-qc-run-producer | o2-qc-run-histo-producer --producers 3 --histograms 3 | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/advanced-external-histo.json 
-```
-
-### Limitations
-
-1. Objects sent by the external device must be either a TObject or a TObjArray. In the former case, the object will be sent to the checker encapsulated in a MonitorObject. In the latter case, each TObject of the TObjArray is encapsulated in a MonitorObject and is sent to the checker.
-2. Although we use a query syntax in the external task configuration, we only consider the first element defined there. If there are several sources we ignore all but the first one.
 
 ## Raw data source
 

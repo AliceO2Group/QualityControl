@@ -54,12 +54,12 @@ class Quality
   friend std::ostream& operator<<(std::ostream& out, const Quality& q); // output
 
   /**
-   * \brief Checks whether this quality object is worst than another one.
+   * \brief Checks whether this quality object is worse than another one.
    * If compared to Null it returns false.
    * @param quality
    * @return true if it is worse, false otherwise or if compared to Quality::Null.
    */
-  bool isWorstThan(const Quality& quality) const { return this->mLevel > quality.getLevel(); }
+  bool isWorseThan(const Quality& quality) const { return this->mLevel > quality.getLevel(); }
   /**
    * \brief Checks whether this quality object is better than another one.
    * If compared to Null it returns false.

@@ -44,10 +44,10 @@ BOOST_AUTO_TEST_CASE(quality_test)
 
   ILOG(Info) << "test quality output : " << myQuality << ENDM;
 
-  BOOST_CHECK(Quality::Bad.isWorstThan(Quality::Medium));
-  BOOST_CHECK(Quality::Bad.isWorstThan(Quality::Good));
-  BOOST_CHECK(!Quality::Bad.isWorstThan(Quality::Null));
-  BOOST_CHECK(!Quality::Bad.isWorstThan(Quality::Bad));
+  BOOST_CHECK(Quality::Bad.isWorseThan(Quality::Medium));
+  BOOST_CHECK(Quality::Bad.isWorseThan(Quality::Good));
+  BOOST_CHECK(!Quality::Bad.isWorseThan(Quality::Null));
+  BOOST_CHECK(!Quality::Bad.isWorseThan(Quality::Bad));
 
   BOOST_CHECK(Quality::Good.isBetterThan(Quality::Medium));
   BOOST_CHECK(Quality::Good.isBetterThan(Quality::Bad));

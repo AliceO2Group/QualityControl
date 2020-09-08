@@ -90,12 +90,29 @@ bool PostProcessingRunner::run()
   return true;
 }
 
+void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timestamps)
+{
+  if (timestamps.size() < 2) {
+    throw std::runtime_error(
+      "At least two timestamps should be specified, " + std::to_string(timestamps.size()) +
+      " given. One is for the initialization, zero or more for update, one for finalization");
+  }
+
+  ILOG(Info) << "Running the task '" << mTask->getName() << "' over " << timestamps.size() << " timestamps." << ENDM;
+
+  doInitialize({ TriggerType::UserOrControl, timestamps.front() });
+  for (size_t i = 1; i < timestamps.size() - 1; i++) {
+    doUpdate({ TriggerType::UserOrControl, timestamps[i] });
+  }
+  doFinalize({ TriggerType::UserOrControl, timestamps.back() });
+}
+
 void PostProcessingRunner::start()
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
     mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers);
     if (trigger_helpers::hasUserOrControlTrigger(mConfig.initTriggers)) {
-      doInitialize(Trigger::UserOrControl);
+      doInitialize({ TriggerType::UserOrControl });
     }
   } else if (mTaskState == TaskState::Running) {
     ILOG(Info) << "Requested start, but the user task is already running - doing nothing." << ENDM;
@@ -110,7 +127,7 @@ void PostProcessingRunner::stop()
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Running) {
     if (trigger_helpers::hasUserOrControlTrigger(mConfig.stopTriggers)) {
-      doFinalize(Trigger::UserOrControl);
+      doFinalize({ TriggerType::UserOrControl });
     }
   } else if (mTaskState == TaskState::Finished) {
     ILOG(Info) << "Requested stop, but the user task is already finalized - doing nothing." << ENDM;
@@ -155,7 +172,7 @@ void PostProcessingRunner::doUpdate(Trigger trigger)
 void PostProcessingRunner::doFinalize(Trigger trigger)
 {
   ILOG(Info) << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
-  mTask->finalize(UserOrControl, mServices);
+  mTask->finalize(trigger, mServices);
   mTaskState = TaskState::Finished;
 }
 

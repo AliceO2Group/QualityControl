@@ -117,4 +117,14 @@ BOOST_AUTO_TEST_CASE(metadata)
   BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 4);
 }
 
+BOOST_AUTO_TEST_CASE(path)
+{
+  string objectName = "asdf";
+  TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
+  o2::quality_control::core::MonitorObject obj(&h, "task");
+  obj.setIsOwner(false);
+  string path = obj.getPath();
+  BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
+}
+
 } // namespace o2::quality_control::core
