@@ -10,15 +10,14 @@
 
 ///
 /// \file   AggregatorRunnerFactory.cxx
-/// \author Piotr Konopka
+/// \author Barthelemy von Haller
 ///
+
 #include <utility>
 #include <vector>
-#include <unordered_set>
 
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/DeviceSpec.h>
-#include <Framework/DataProcessorSpec.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/CompletionPolicyHelpers.h>
 
@@ -26,11 +25,10 @@
 #include "QualityControl/AggregatorRunnerFactory.h"
 
 using namespace std;
+using namespace o2::framework;
 
 namespace o2::quality_control::checker
 {
-
-using namespace o2::framework;
 
 DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& checkerRunnerOutputs, std::string configurationSource)
 {

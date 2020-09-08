@@ -16,7 +16,7 @@
 #ifndef QC_AGGREGATORRUNNERFACTORY_H
 #define QC_AGGREGATORRUNNERFACTORY_H
 
-#include "Framework/DataProcessorSpec.h"
+#include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
 
 namespace o2::framework

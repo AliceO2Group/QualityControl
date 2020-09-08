@@ -16,11 +16,8 @@
 #ifndef QC_CHECKER_CHECKINTERFACE_H
 #define QC_CHECKER_CHECKINTERFACE_H
 
-#include <string>
-#include <map>
 #include <unordered_map>
 
-#include <Rtypes.h>
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 

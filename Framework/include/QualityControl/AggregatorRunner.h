@@ -8,40 +8,32 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   AggregatorRunner.h
 /// \author Barthelemy von Haller
-/// \author Piotr Konopka
 ///
 
 #ifndef QC_CHECKER_AGGREGATORRUNNER_H
 #define QC_CHECKER_AGGREGATORRUNNER_H
 
-// std & boost
-#include <chrono>
-#include <memory>
-#include <string>
-#include <map>
-#include <vector>
-#include <unordered_set>
 // O2
-#include <Common/Timer.h>
 #include <Framework/Task.h>
-#include <Headers/DataHeader.h>
-#include <Monitoring/MonitoringFactory.h>
-#include <Configuration/ConfigurationInterface.h>
 #include <Framework/DataProcessorSpec.h>
-#include <type_traits>
+#include <Configuration/ConfigurationInterface.h>
 // QC
 #include "QualityControl/AggregatorInterface.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
-
-namespace o2::quality_control::core
-{
-class ServiceDiscovery;
-}
 
 namespace o2::framework
 {

@@ -11,38 +11,22 @@
 ///
 /// \file   AggregatorRunner.cxx
 /// \author Barthelemy von Haller
-/// \author Piotr Konopka
-/// \author Rafal Pacholek
 ///
 
 #include "QualityControl/AggregatorRunner.h"
 
-#include <utility>
-#include <memory>
-#include <algorithm>
-// ROOT
-#include <TClass.h>
-#include <TSystem.h>
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataSpecUtils.h>
-#include <Monitoring/MonitoringFactory.h>
-#include <Monitoring/Monitoring.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
-#include "QualityControl/TaskRunner.h"
-#include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/QcInfoLogger.h"
-// Fairlogger
-#include <fairlogger/Logger.h>
 
-using namespace std::chrono;
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
 using namespace o2::framework;
 using namespace o2::configuration;
-using namespace o2::monitoring;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
@@ -84,19 +68,9 @@ AggregatorRunner::AggregatorRunner(std::string configurationSource, const vector
   // prepare list of all inputs
   int i = 0;
   for(const auto& spec: checkerRunnerOutputs) {
-    cout << "output : " << DataSpecUtils::describe(spec) << endl;
-    cout << "output : " << spec.binding.value << endl;
     auto input = DataSpecUtils::matchingInput(spec);
     input.binding = "checkerOutput" + to_string(i); // TODO check if that name is fine
     mInputs.emplace_back(input);
-    cout << "input : " << DataSpecUtils::describe(input) << endl;
-    cout << "input : " << input.binding << endl;
-
-    const auto *concrete = std::get_if<ConcreteDataMatcher>(&spec.matcher);
-    cout << "concrete description : " << concrete->description.str << endl;
-    cout << "concrete origin : " << concrete->origin.str << endl;
-
-//    mInputs.emplace_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
   }
 }
 

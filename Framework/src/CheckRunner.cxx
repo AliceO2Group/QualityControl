@@ -17,12 +17,6 @@
 
 #include "QualityControl/CheckRunner.h"
 
-#include <utility>
-#include <memory>
-#include <algorithm>
-// ROOT
-#include <TClass.h>
-#include <TSystem.h>
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>

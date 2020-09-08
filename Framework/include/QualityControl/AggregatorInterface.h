@@ -16,11 +16,8 @@
 #ifndef QC_CHECKER_AGGREGATORINTERFACE_H
 #define QC_CHECKER_AGGREGATORINTERFACE_H
 
-#include <string>
-#include <map>
 #include <unordered_map>
 
-#include <Rtypes.h>
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/Quality.h"
 
