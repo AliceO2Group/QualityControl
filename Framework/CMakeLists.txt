@@ -39,7 +39,9 @@ add_root_dictionary(QualityControlTypes
 add_library(QualityControl
             src/ObjectsManager.cxx
             src/CheckRunner.cxx
+            src/AggregatorRunner.cxx
             src/CheckRunnerFactory.cxx
+            src/AggregatorRunnerFactory.cxx
             src/CheckInterface.cxx
             src/AggregatorInterface.cxx
             src/DatabaseFactory.cxx
@@ -228,6 +230,7 @@ set(TEST_SRCS
     test/testCheckInterface.cxx
     test/testAggregatorInterface.cxx
     test/testCheckRunner.cxx
+    test/testAggregatorRunner.cxx
     test/testCheck.cxx
     test/testQuality.cxx
     test/testQualityObject.cxx
@@ -249,6 +252,7 @@ set(TEST_SRCS
   )
 
 set(TEST_ARGS
+    ""
     ""
     ""
     ""

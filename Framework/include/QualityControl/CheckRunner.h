@@ -14,8 +14,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_CHECKER_CHECKER_H
-#define QC_CHECKER_CHECKER_H
+#ifndef QC_CHECKER_CHECKRUNNER_H
+#define QC_CHECKER_CHECKRUNNER_H
 
 // std & boost
 #include <chrono>
@@ -224,4 +224,4 @@ class CheckRunner : public framework::Task
 
 } // namespace o2::quality_control::checker
 
-#endif // QC_CHECKER_CHECKER_H
+#endif // QC_CHECKER_CHECKRUNNER_H

@@ -17,6 +17,7 @@
 
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskRunnerFactory.h"
+#include "QualityControl/AggregatorRunnerFactory.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/CheckRunnerFactory.h"
@@ -435,10 +436,11 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
   // Create CheckRunners: 1 per set of inputs
   CheckRunnerFactory checkRunnerFactory;
+  vector<framework::OutputSpec> checkRunnerOutputs; // needed later for the aggregators
   for (auto& [inputNames, checks] : checksMap) {
     //Logging
     ILOG(Info, Devel) << ">> Inputs (" << inputNames.size() << "): ";
-    for (auto& name : inputNames)
+    for (const auto& name : inputNames)
       ILOG(Info, Devel) << name << " ";
     ILOG(Info, Devel) << " ; Checks (" << checks.size() << "): ";
     for (auto& check : checks)
@@ -449,11 +451,26 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     ILOG(Info, Devel) << ENDM;
 
     if (!checks.empty()) { // Create a CheckRunner for the grouped checks
-      workflow.emplace_back(checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));
+      DataProcessorSpec spec = checkRunnerFactory.create(checks, configurationSource);
+      workflow.emplace_back(spec);
+      checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
+      cout << "spec.outputs.begin() : " << spec.outputs.begin()->binding.value << endl;
     } else { // If there are no checks, create a sink CheckRunner
-      workflow.emplace_back(checkRunnerFactory.createSinkDevice(tasksOutputMap.find(inputNames[0])->second, configurationSource));
+      DataProcessorSpec spec = checkRunnerFactory.createSinkDevice(tasksOutputMap.find(inputNames[0])->second, configurationSource);
+      workflow.emplace_back(spec);
+      checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
     }
   }
+
+  ILOG(Info) << ">> Outputs (" << checkRunnerOutputs.size() << "): ";
+  for (const auto& output : checkRunnerOutputs)
+    ILOG(Info) << DataSpecUtils::describe(output) << " ";
+  ILOG(Info) << ENDM;
+
+  // as we need information about the checkRunners we do it here instead of a separate static method
+  AggregatorRunnerFactory aggregatorRunnerFactory;
+  DataProcessorSpec spec = aggregatorRunnerFactory.create(checkRunnerOutputs, configurationSource);
+  workflow.emplace_back(spec);
 }
 
 void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, std::string configurationSource)

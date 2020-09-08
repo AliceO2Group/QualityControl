@@ -28,7 +28,6 @@ namespace o2::quality_control::checker
 {
 
 using namespace o2::framework;
-using namespace o2::quality_control::checker;
 
 DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::string configurationSource, std::vector<std::string> storeVector)
 {

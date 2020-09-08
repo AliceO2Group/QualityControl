@@ -13,8 +13,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_CHECKERFACTORY_H
-#define QC_CHECKERFACTORY_H
+#ifndef QC_CHECKRUNNERFACTORY_H
+#define QC_CHECKRUNNERFACTORY_H
 
 #include <string>
 
@@ -54,4 +54,4 @@ class CheckRunnerFactory
 
 } // namespace o2::quality_control::checker
 
-#endif // QC_CHECKERFACTORY_H
+#endif // QC_CHECKRUNNERFACTORY_H

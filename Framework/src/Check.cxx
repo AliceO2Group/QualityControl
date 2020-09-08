@@ -59,6 +59,16 @@ Check::Check(std::string checkName, std::string configurationSource)
     mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 },
     mBeautify(true)
 {
+  cout << "Check::Check: validate " << framework::DataSpecUtils::validate(mOutputSpec) << endl;
+//  cout << "Check::Check: empty " << mOutputSpec.binding.empty() << endl;
+  cout << "Check::Check: " << mOutputSpec.binding.value << endl;
+
+  mPolicy = [](std::map<std::string, unsigned int>) {
+    // Prevent from using of uninitiated policy
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Policy not initiated: try to run Check::init() first"));
+    return false;
+  };
+
   try {
     initConfig(checkName);
   } catch (...) {

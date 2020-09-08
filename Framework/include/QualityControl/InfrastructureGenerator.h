@@ -147,9 +147,9 @@ class InfrastructureGenerator
   static void generatePostProcessing(framework::WorkflowSpec& workflow, std::string configurationSource);
 };
 
-} // namespace core
+} const // namespace core
 
-// exposing the class above as a main QC interface, syntactic sugar
+// exposin&g the class above as a main QC interface, syntactic sugar
 
 inline framework::WorkflowSpec generateStandaloneInfrastructure(std::string configurationSource)
 {
