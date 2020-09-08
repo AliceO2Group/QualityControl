@@ -65,7 +65,6 @@ class TrendingTask : public PostProcessingInterface
   UInt_t mTime;
   std::unique_ptr<TTree> mTrend;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
-  // o2::framework::service_ptr<o2::quality_control::repository::DatabaseInterface, o2::framework::NoLocking> mDatabase; // = nullptr;
 };
 
 } // namespace o2::quality_control::postprocessing
