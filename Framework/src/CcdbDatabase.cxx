@@ -107,7 +107,7 @@ void CcdbDatabase::init()
 }
 
 // Monitor object
-void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
+void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo, long from, long to)
 {
   if (mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
     BOOST_THROW_EXCEPTION(DatabaseException()
@@ -131,8 +131,12 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
 
   // other attributes
   string path = mo->getPath();
-  long from = getCurrentTimestamp();
-  long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
+  if (from == -1) {
+    from = getCurrentTimestamp();
+  }
+  if (to == -1) {
+    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
+  }
 
   // extract object and metadata from MonitorObject
   TObject* obj = mo->getObject();
@@ -144,7 +148,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
 }
 
-void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
+void CcdbDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo, long from, long to)
 {
   // metadata
   map<string, string> metadata;
@@ -161,8 +165,12 @@ void CcdbDatabase::storeQO(std::shared_ptr<QualityObject> qo)
 
   // other attributes
   string path = qo->getPath();
-  long from = getCurrentTimestamp();
-  long to = getFutureTimestamp(60 * 60 * 24 * 365 * 10);
+  if (from == -1) {
+    from = getCurrentTimestamp();
+  }
+  if (to == -1) {
+    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
+  }
 
   ILOG(Debug) << "Storing object " << path << ENDM;
   ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
