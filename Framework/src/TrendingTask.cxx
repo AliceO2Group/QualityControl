@@ -34,7 +34,7 @@ void TrendingTask::configure(std::string name, const boost::property_tree::ptree
   mConfig = TrendingTaskConfig(name, config);
 }
 
-void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
+void TrendingTask::initialize(Trigger, framework::ServiceRegistry&)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we continue trending. maybe do it optionally?
@@ -47,24 +47,35 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
+}
 
-  // Setting up services
-//  mDatabase = services.get<repository::DatabaseInterface>();
+// We need this temporary mechanism to support both old and new ServiceRegistry API. TODO remove after the change.
+template <typename T>
+repository::DatabaseInterface& adaptDatabaseService(const T& services) {
+  if constexpr (std::is_same<repository::DatabaseInterface&, decltype(services.template get<repository::DatabaseInterface>())>::value) {
+    return services.template get<repository::DatabaseInterface>();
+  } else {
+    return *services.template get<repository::DatabaseInterface>();
+  }
 }
 
 //todo: see if OptimizeBaskets() indeed helps after some time
 void TrendingTask::update(Trigger, framework::ServiceRegistry& services)
 {
-  trendValues(*services.get<repository::DatabaseInterface>());
+  auto& qcdb = adaptDatabaseService(services);
 
-  storePlots(*services.get<repository::DatabaseInterface>());
-  storeTrend(*services.get<repository::DatabaseInterface>());
+  trendValues(qcdb);
+
+  storePlots(qcdb);
+  storeTrend(qcdb);
 }
 
 void TrendingTask::finalize(Trigger, framework::ServiceRegistry& services)
 {
-  storePlots(*services.get<repository::DatabaseInterface>());
-  storeTrend(*services.get<repository::DatabaseInterface>());
+  auto& qcdb = adaptDatabaseService(services);
+
+  storePlots(qcdb);
+  storeTrend(qcdb);
 }
 
 void TrendingTask::storeTrend(repository::DatabaseInterface& qcdb)

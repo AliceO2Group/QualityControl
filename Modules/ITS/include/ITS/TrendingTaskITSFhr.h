@@ -76,9 +76,9 @@ class TrendingTaskITSFhr : public PostProcessingInterface
     Int_t runNumber = 0;
   };
 
-  void trendValues();
-  void storePlots();
-  void storeTrend();
+  void trendValues(repository::DatabaseInterface& qcdb);
+  void storePlots(repository::DatabaseInterface& qcdb);
+  void storeTrend(repository::DatabaseInterface& qcdb);
 
   TrendingTaskConfigITS mConfig;
   MetaData mMetaData;
@@ -87,7 +87,6 @@ class TrendingTaskITSFhr : public PostProcessingInterface
   std::vector<std::string> runlist;
   std::unique_ptr<TTree> mTrend;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
-  repository::DatabaseInterface* mDatabase = nullptr;
 
   const int col[7] = { 1, 2, 3, 4, 5, 6, 7 };
   const int mkr[3] = { 8, 29, 34 };
