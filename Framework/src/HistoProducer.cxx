@@ -120,7 +120,7 @@ framework::AlgorithmSpec getHistoPrinterAlgorithm()
         shared_ptr<const TH1F> th1f = nullptr;
         try {
           array = processingContext.inputs().get<TObjArray*>("in");
-        } catch (runtime_error& e) {
+        } catch (std::runtime_error& e) {
           // we failed to get the TObjArray, let's try a TH1F. If it fails it will throw.
           th1f = processingContext.inputs().get<TH1F*>("in");
         }
