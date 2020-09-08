@@ -57,21 +57,10 @@ void TrendingTaskITSFhr::initialize(Trigger, framework::ServiceRegistry&)
   }
 }
 
-// We need this temporary mechanism to support both old and new ServiceRegistry API. TODO remove after the change.
-template <typename T>
-repository::DatabaseInterface& adaptDatabaseService(const T& services)
-{
-  if constexpr (std::is_same<repository::DatabaseInterface&, decltype(services.template get<repository::DatabaseInterface>())>::value) {
-    return services.template get<repository::DatabaseInterface>();
-  } else {
-    return *services.template get<repository::DatabaseInterface>();
-  }
-}
-
 // todo: see if OptimizeBaskets() indeed helps after some time
 void TrendingTaskITSFhr::update(Trigger, framework::ServiceRegistry& services)
 {
-  auto& qcdb = adaptDatabaseService(services);
+  auto& qcdb = services.get<repository::DatabaseInterface>();
 
   trendValues(qcdb);
 
@@ -81,7 +70,7 @@ void TrendingTaskITSFhr::update(Trigger, framework::ServiceRegistry& services)
 
 void TrendingTaskITSFhr::finalize(Trigger, framework::ServiceRegistry& services)
 {
-  auto& qcdb = adaptDatabaseService(services);
+  auto& qcdb = services.get<repository::DatabaseInterface>();
 
   storePlots(qcdb);
   storeTrend(qcdb);
