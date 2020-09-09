@@ -54,6 +54,7 @@ add_library(QualityControl
             src/RepositoryBenchmark.cxx
             src/InfrastructureGenerator.cxx
             src/Check.cxx
+            src/Aggregator.cxx
             src/ServiceDiscovery.cxx
             src/Triggers.cxx
             src/TriggerHelpers.cxx
@@ -392,6 +393,7 @@ install(FILES example-default.json
               alfa.json
               dataDump.json
               basic.json
+              basic-aggregator.json
               basic-external-histo.json
               basic-no-sampling.json
               advanced.json

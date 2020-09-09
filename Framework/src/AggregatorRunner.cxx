@@ -19,9 +19,12 @@
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataSpecUtils.h>
+#include <Monitoring/MonitoringFactory.h>
+#include <Monitoring/Monitoring.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/ServiceDiscovery.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -30,27 +33,12 @@ using namespace o2::configuration;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
+using namespace o2::monitoring;
 
 const auto current_diagnostic = boost::current_exception_diagnostic_information;
 
 namespace o2::quality_control::checker
 {
-
-// TODO duplicated from CheckRunner
-std::size_t AggregatorRunner::hash(std::string inputString)
-{
-  // BSD aggregatorsum
-  const int mode = 16;
-  std::size_t aggregatorsum = 0;
-
-  const std::size_t mask = (1 << (mode + 1)) - 1;
-  for (char c : inputString) {
-    // Rotate the sum
-    aggregatorsum = (aggregatorsum >> 1) + ((aggregatorsum & 1) << (mode - 1));
-    aggregatorsum = (aggregatorsum + (std::size_t)c) & mask;
-  }
-  return aggregatorsum;
-}
 
 AggregatorRunner::AggregatorRunner(std::string configurationSource, const vector<framework::OutputSpec> checkerRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
@@ -88,10 +76,18 @@ header::DataDescription AggregatorRunner::createAggregatorRunnerDataDescription(
   return description;
 }
 
+std::string AggregatorRunner::createAggregatorRunnerName()
+{
+  return "QUALITY-AGGREGATOR";
+}
+
 void AggregatorRunner::init(framework::InitContext&)
 {
   try {
     initDatabase();
+    initMonitoring();
+    initServiceDiscovery();
+    initAggregators();
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
     ILOG(Fatal) << "Unexpected exception during initialization:\n"
@@ -173,9 +169,51 @@ void AggregatorRunner::initDatabase()
   LOG(INFO) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation");
   LOG(INFO) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
 }
-std::string AggregatorRunner::createAggregatorRunnerName()
+
+void AggregatorRunner::initMonitoring()
 {
-  return "QUALITY-AGGREGATOR";
+  auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
+  mCollector = MonitoringFactory::Get(monitoringUrl);
+  mCollector->enableProcessMonitoring();
+  mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
+  mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
+  mTimer.reset(1000000); // 10 s.
+}
+
+void AggregatorRunner::initServiceDiscovery()
+{
+  auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
+  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
+    LOG(INFO) << "ServiceDiscovery initialized";
+}
+
+void AggregatorRunner::initAggregators()
+{
+  // Build aggregators based on the configurationd
+  if (mConfigFile->getRecursive("qc").count("aggregators")) {
+    // For every aggregator definition, create a Check
+    for (const auto& [aggregatorName, aggregatorCheck] : mConfigFile->getRecursive("qc.aggregators")) {
+      ILOG(Info) << ">> Aggregator name : " << aggregatorName << ENDM;
+      if (aggregatorCheck.get<bool>("active", true)) {
+
+        // create Aggregator and store it.
+        auto aggregator = Aggregator(aggregatorName, mConfigFile);
+
+//        auto check = Check(aggregatorName, configurationSource);
+//        InputNames inputNames;
+//
+//        for (auto& inputSpec : check.getInputs()) {
+//          auto name = DataSpecUtils::label(inputSpec);
+//          inputNames.push_back(name);
+//        }
+//        // Create a grouping key - sorted vector of stringified InputSpecs
+//        std::sort(inputNames.begin(), inputNames.end());
+//        // Group checks
+//        checksMap[inputNames].push_back(check);
+      }
+    }
+  }
 }
 
 } // namespace o2::quality_control::aggregatorer

@@ -30,21 +30,28 @@
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Configuration/ConfigurationInterface.h>
+#include <Common/Timer.h>
 // QC
 #include "QualityControl/AggregatorInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/Aggregator.h"
 
 namespace o2::framework
 {
 struct InputSpec;
 struct OutputSpec;
 class DataAllocator;
-} // namespace o2::framework
+}
 
 namespace o2::monitoring
 {
 class Monitoring;
+}
+
+namespace o2::quality_control::core
+{
+class ServiceDiscovery;
 }
 
 class TClass;
@@ -119,22 +126,26 @@ class AggregatorRunner : public framework::Task
   void send(QualityObjectsType& qualityObjects, framework::DataAllocator& allocator);
 
   inline void initDatabase();
-
-  /**
-   * \brief BSD aggregatorsum algorithm.
-   *
-   * \param input_string String intended to be hashed
-   */
-  static std::size_t hash(std::string input_string);
+  inline void initMonitoring();
+  inline void initServiceDiscovery();
+  inline void initAggregators();
 
   // General state
   std::string mDeviceName;
+  std::map<std::string, Aggregator> aggregatorsMap;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
 
   // DPL
   o2::framework::Inputs mInputs;
   framework::OutputSpec mOutput;
+
+  // monitoring
+  std::shared_ptr<o2::monitoring::Monitoring> mCollector;
+  AliceO2::Common::Timer mTimer;
+
+  // Service discovery
+  std::shared_ptr<ServiceDiscovery> mServiceDiscovery;
 };
 
 } // namespace o2::quality_control::aggregatorer

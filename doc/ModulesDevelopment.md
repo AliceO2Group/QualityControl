@@ -325,6 +325,10 @@ The `check` function is called whenever the _policy_ is satisfied. It gets a map
 
 The `beautify` function is called after the `check` function if there is a single `dataSource` of type `Task` in the configuration of the check. If there is more than one, the `beautify()` is not called in this check. 
 
+### Aggregation
+
+o2-qc-run-basic --config-path /Users/barth/alice/sw/osx_x86-64/QualityControl/empty-payload-1/etc/basic-aggregator.json
+
 ## Committing code
 
 To commit your new or modified code, please follow this procedure

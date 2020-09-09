@@ -43,7 +43,7 @@ class AggregatorInterface
   /// ROOT needs an argument-less constructor when streaming it. We use this method
   /// to configure the object. The name might be used to ask the configuration system
   /// for specific parameters.
-  virtual void configure(std::string name) = 0;
+  virtual void configure(std::string d) = 0;
 
   /// \brief Returns new qualities (usually fewer) based on the input qualities
   ///
