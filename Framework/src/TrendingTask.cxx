@@ -110,7 +110,7 @@ void TrendingTask::trendValues()
 
 void TrendingTask::storePlots()
 {
-  ILOG(Info)<< LogInfoSupport << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
+  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
 
   // why generate and store plots in the same function? because it is easier to handle the lifetime of pointers to the ROOT objects
   for (const auto& plot : mConfig.plots) {

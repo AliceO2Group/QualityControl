@@ -144,7 +144,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   metadata["qc_task_name"] = mo->getTaskName();
   metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
 
-  ILOG(Info)<< LogDebugSupport << "Storing MonitorObject " << path << ENDM;
+  ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
   ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
 }
 
@@ -172,7 +172,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObj
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
 
-  ILOG(Info)<< LogDebugSupport << "Storing object " << path << ENDM;
+  ILOG(Debug, Support) << "Storing object " << path << ENDM;
   ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
 }
 
@@ -188,7 +188,7 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
       return nullptr;
     }
   }
-  ILOG(Info)<< LogDebugSupport << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
+  ILOG(Debug, Support) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
   return object;
 }
 
@@ -401,7 +401,7 @@ long CcdbDatabase::getCurrentTimestamp()
 
 void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 {
-  ILOG(Info)<< LogInfoSupport << "Truncating data for " << taskName << "/" << objectName << ENDM;
+  ILOG(Info, Support) << "Truncating data for " << taskName << "/" << objectName << ENDM;
 
   ccdbApi.truncate(taskName + "/" + objectName);
 }
