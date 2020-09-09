@@ -38,7 +38,7 @@ void TrendingTask::configure(std::string name, const boost::property_tree::ptree
   mConfig = TrendingTaskConfig(name, config);
 }
 
-void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
+void TrendingTask::initialize(Trigger, framework::ServiceRegistry&)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we continue trending. maybe do it optionally?
@@ -51,36 +51,37 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistry& services)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
-
-  // Setting up services
-  mDatabase = &services.get<repository::DatabaseInterface>();
 }
 
 //todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingTask::update(Trigger t, framework::ServiceRegistry&)
+void TrendingTask::update(Trigger t, framework::ServiceRegistry& services)
 {
-  trendValues(t.timestamp);
+  auto& qcdb = services.get<repository::DatabaseInterface>();
 
-  storePlots(t.timestamp);
-  storeTrend(t.timestamp);
+  trendValues(t.timestamp, qcdb);
+
+  storePlots(t.timestamp, qcdb);
+  storeTrend(t.timestamp, qcdb);
 }
 
-void TrendingTask::finalize(Trigger t, framework::ServiceRegistry&)
+void TrendingTask::finalize(Trigger t, framework::ServiceRegistry& services)
 {
-  storePlots(t.timestamp);
-  storeTrend(t.timestamp);
+  auto& qcdb = services.get<repository::DatabaseInterface>();
+
+  storePlots(t.timestamp, qcdb);
+  storeTrend(t.timestamp, qcdb);
 }
 
-void TrendingTask::storeTrend(uint64_t timestamp)
+void TrendingTask::storeTrend(uint64_t timestamp, repository::DatabaseInterface& qcdb)
 {
   ILOG(Info) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), mConfig.detectorName);
   mo->setIsOwner(false);
-  mDatabase->storeMO(mo, timestamp, timestamp + objectValidity);
+  qcdb.storeMO(mo, timestamp, timestamp + objectValidity);
 }
 
-void TrendingTask::trendValues(uint64_t timestamp)
+void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface& qcdb)
 {
   mTime = timestamp;
   // todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not
@@ -91,13 +92,13 @@ void TrendingTask::trendValues(uint64_t timestamp)
 
     // todo: make it agnostic to MOs, QOs or other objects. Let the reductor cast to whatever it needs.
     if (dataSource.type == "repository") {
-      auto mo = mDatabase->retrieveMO(dataSource.path, dataSource.name, timestamp);
+      auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, timestamp);
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
         mReductors[dataSource.name]->update(obj);
       }
     } else if (dataSource.type == "repository-quality") {
-      auto qo = mDatabase->retrieveQO(dataSource.path + "/" + dataSource.name, timestamp);
+      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, timestamp);
       if (qo) {
         mReductors[dataSource.name]->update(qo.get());
       }
@@ -109,7 +110,7 @@ void TrendingTask::trendValues(uint64_t timestamp)
   mTrend->Fill();
 }
 
-void TrendingTask::storePlots(uint64_t timestamp)
+void TrendingTask::storePlots(uint64_t timestamp, repository::DatabaseInterface& qcdb)
 {
   ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
 
@@ -178,7 +179,8 @@ void TrendingTask::storePlots(uint64_t timestamp)
 
     auto mo = std::make_shared<MonitorObject>(c, mConfig.taskName, mConfig.detectorName);
     mo->setIsOwner(false);
-    mDatabase->storeMO(mo, timestamp, timestamp + objectValidity);
+
+    qcdb.storeMO(mo, timestamp, timestamp + objectValidity);
 
     // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
     delete c;

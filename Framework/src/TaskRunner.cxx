@@ -159,7 +159,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   CompletionPolicy::CompletionOp action = CompletionPolicy::CompletionOp::Wait;
 
   for (auto& input : inputs) {
-    if (input.header == nullptr || input.payload == nullptr) {
+    if (input.header == nullptr) {
       continue;
     }
 
@@ -219,7 +219,7 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 void TaskRunner::start(const ConfigParamRegistry& options)
 {
   try {
-    mRunNumber = options.get<int>("runNumber");
+    mRunNumber = stoi(options.get<std::string>("runNumber"));
     ILOG(Info) << "Run number found in options: " << mRunNumber << ENDM;
   } catch (std::invalid_argument& ia) {
     ILOG(Info) << "Run number not found in options, using 0 instead." << ENDM;
@@ -263,7 +263,7 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   bool timerReady = false;
 
   for (auto& input : inputs) {
-    if (input.header != nullptr && input.payload != nullptr) {
+    if (input.header != nullptr) {
 
       const auto* dataHeader = get<DataHeader*>(input.header);
       assert(dataHeader);
