@@ -56,16 +56,15 @@ class TrendingTask : public PostProcessingInterface
     Int_t runNumber = 0;
   };
 
-  void trendValues();
-  void storePlots();
-  void storeTrend();
+  void trendValues(repository::DatabaseInterface&);
+  void storePlots(repository::DatabaseInterface&);
+  void storeTrend(repository::DatabaseInterface&);
 
   TrendingTaskConfig mConfig;
   MetaData mMetaData;
   UInt_t mTime;
   std::unique_ptr<TTree> mTrend;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
-  repository::DatabaseInterface* mDatabase = nullptr;
 };
 
 } // namespace o2::quality_control::postprocessing
