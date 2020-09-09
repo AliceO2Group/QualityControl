@@ -60,7 +60,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   const std::string qcConfigurationSource = std::string("json://") + getTestDataDirectory() + "testWorkflow.json";
 
-  ILOG << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+  ILOG(Info)<< "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
@@ -80,12 +80,12 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
         auto qo = pctx.inputs().get<QualityObject*>("checked-mo");
         if (!qo) {
-          ILOG << LogErrorDevel << "Quality Object is a NULL" << ENDM;
+          ILOG(Error, Devel) << "Quality Object is a NULL" << ENDM;
           pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);
           return;
         }
 
-        ILOG << qo->getName() << " - quality: " << qo->getQuality();
+        ILOG(Info)<< qo->getName() << " - quality: " << qo->getQuality();
 
         // We ask to shut the topology down, returning 0 if there were no ERROR logs.
         pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);

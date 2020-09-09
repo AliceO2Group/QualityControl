@@ -78,7 +78,7 @@ void TrendingTaskITSFhr::finalize(Trigger, framework::ServiceRegistry&)
 
 void TrendingTaskITSFhr::storeTrend()
 {
-  ILOG << LogInfoSupport << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
+  ILOG(Info, Support) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(),
                                                   mConfig.detectorName);
@@ -130,7 +130,7 @@ void TrendingTaskITSFhr::trendValues()
 
 void TrendingTaskITSFhr::storePlots()
 {
-  ILOG << LogInfoSupport << "Generating and storing " << mConfig.plots.size() << " plots."
+  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
        << ENDM;
   //
   // Create and save trends for each stave
@@ -165,7 +165,7 @@ void TrendingTaskITSFhr::storePlots()
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
     SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
-    ILOG << LogInfoSupport << " Saving " << plot.name << " to CCDB " << ENDM;
+    ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, mConfig.detectorName);
     mo->setIsOwner(false);
     mDatabase->storeMO(mo);
@@ -231,7 +231,7 @@ void TrendingTaskITSFhr::storePlots()
     SetGraphNameAndAxes(g, plot.name,
                         Form("L%d - %s trends", ilay, trendtitles[index].c_str()),
                         isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
-    ILOG << LogInfoSupport << " Drawing " << plot.name << ENDM;
+    ILOG(Info, Support) << " Drawing " << plot.name << ENDM;
 
     if (!countplots && isrun) { //fake histo with runs as x-axis labels
       int npoints = g->GetN();
@@ -251,7 +251,7 @@ void TrendingTaskITSFhr::storePlots()
       countplots++;
   } // end loop on plots
   for (int idx = 0; idx < NLAYERS * NTRENDSFHR; idx++) {
-    ILOG << LogInfoSupport << " Saving canvas for layer " << idx / NTRENDSFHR << " to CCDB "
+    ILOG(Info, Support) << " Saving canvas for layer " << idx / NTRENDSFHR << " to CCDB "
          << ENDM;
     auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName,
                                               mConfig.detectorName);

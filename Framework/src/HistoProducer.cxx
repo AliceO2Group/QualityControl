@@ -71,7 +71,7 @@ framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatche
           TH1F& th1f = processingContext.outputs().make<TH1F>({ output.origin, output.description, output.subSpec }, "hello", "fromHistoProducer", 100, -3, 3);
           allHistos[0]->FillRandom("gaus", 100);
           th1f.Add(allHistos[0]);
-          ILOG << LogInfoDevel << "sending 1 histo named `hello`." << ENDM;
+          ILOG(Info, Devel) << "sending 1 histo named `hello`." << ENDM;
           return;
         }
 
@@ -82,7 +82,7 @@ framework::AlgorithmSpec getHistoProducerAlgorithm(framework::ConcreteDataMatche
           allHistos[i]->FillRandom("gaus", 100);
           monitorObjects.Add(allHistos[i]);
         }
-        ILOG << LogInfoDevel << "Sending a TObjArray with " << nbHistograms << " histos named `hello_<index>`.";
+        ILOG(Info, Devel) << "Sending a TObjArray with " << nbHistograms << " histos named `hello_<index>`.";
       };
     }
   };
@@ -100,12 +100,12 @@ DataProcessorSpec getHistoPrinterSpec(size_t subspec)
 
 void printHisto(shared_ptr<const TH1F>& histo)
 {
-  ILOG << LogInfoDevel << "histo : " << histo->GetName() << " : " << histo->GetTitle() << ENDM;
+  ILOG(Info, Devel) << "histo : " << histo->GetName() << " : " << histo->GetTitle() << ENDM;
   std::string bins = "BINS:";
   for (int i = 1; i <= histo->GetNbinsX(); i++) {
     bins += " " + std::to_string((int)histo->GetBinContent(i));
   }
-  ILOG << LogInfoDevel << bins << ENDM;
+  ILOG(Info, Devel) << bins << ENDM;
 }
 
 framework::AlgorithmSpec getHistoPrinterAlgorithm()

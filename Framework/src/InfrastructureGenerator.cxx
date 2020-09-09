@@ -420,16 +420,16 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   CheckRunnerFactory checkRunnerFactory;
   for (auto& [inputNames, checks] : checksMap) {
     //Logging
-    ILOG << LogInfoDevel << ">> Inputs (" << inputNames.size() << "): ";
+    ILOG(Info, Devel) << ">> Inputs (" << inputNames.size() << "): ";
     for (auto& name : inputNames)
-      ILOG << LogInfoDevel << name << " ";
-    ILOG << LogInfoDevel << " ; Checks (" << checks.size() << "): ";
+      ILOG(Info, Devel) << name << " ";
+    ILOG(Info, Devel) << " ; Checks (" << checks.size() << "): ";
     for (auto& check : checks)
-      ILOG << LogInfoDevel << check.getName() << " ";
-    ILOG << LogInfoDevel << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
+      ILOG(Info, Devel) << check.getName() << " ";
+    ILOG(Info, Devel) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
     for (auto& input : storeVectorMap[inputNames])
-      ILOG << LogInfoDevel << input << " ";
-    ILOG << LogInfoDevel << ENDM;
+      ILOG(Info, Devel) << input << " ";
+    ILOG(Info, Devel) << ENDM;
 
     if (!checks.empty()) { // Create a CheckRunner for the grouped checks
       workflow.emplace_back(checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));

@@ -51,10 +51,10 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
       auto config = properties.count(qcConfigurationKey) > 0 ? properties.get_child(qcConfigurationKey) : properties;
       mRunner->init(config);
     } catch (const std::exception& ex) {
-      ILOG << LogErrorSupport << "Exception caught: " << ex.what() << ENDM;
+      ILOG(Error, Support) << "Exception caught: " << ex.what() << ENDM;
       success = false;
     } catch (...) {
-      ILOG << LogErrorSupport << "Unknown exception";
+      ILOG(Error, Support) << "Unknown exception";
       success = false;
     }
     return !success;
@@ -70,10 +70,10 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
     try {
       mRunner->reset();
     } catch (const std::exception& ex) {
-      ILOG << LogErrorSupport << "Exception caught: " << ex.what() << ENDM;
+      ILOG(Error, Support) << "Exception caught: " << ex.what() << ENDM;
       success = false;
     } catch (...) {
-      ILOG << LogErrorSupport << "Unknown exception";
+      ILOG(Error, Support) << "Unknown exception";
       success = false;
     }
     return !success;
@@ -91,10 +91,10 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
     try {
       mRunner->start();
     } catch (const std::exception& ex) {
-      ILOG << LogErrorSupport << "Exception caught: " << ex.what() << ENDM;
+      ILOG(Error, Support) << "Exception caught: " << ex.what() << ENDM;
       success = false;
     } catch (...) {
-      ILOG << LogErrorSupport << "Unknown exception";
+      ILOG(Error, Support) << "Unknown exception";
       success = false;
     }
 
@@ -112,10 +112,10 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
     try {
       mRunner->stop();
     } catch (const std::exception& ex) {
-      ILOG << LogErrorSupport << "Exception caught: " << ex.what() << ENDM;
+      ILOG(Error, Support) << "Exception caught: " << ex.what() << ENDM;
       success = false;
     } catch (...) {
-      ILOG << LogErrorSupport << "Unknown exception";
+      ILOG(Error, Support) << "Unknown exception";
       success = false;
     }
     return !success;
@@ -134,7 +134,7 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
 
   int executeExit() final
   {
-    ILOG << LogInfoSupport << "executeExit" << ENDM;
+    ILOG(Info, Support) << "executeExit" << ENDM;
     mRunner = nullptr;
     return 0;
   }
@@ -150,10 +150,10 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
     try {
       continueRunning = mRunner->run();
     } catch (const std::exception& ex) {
-      ILOG << LogErrorSupport << "Exception caught: " << ex.what() << ENDM;
+      ILOG(Error, Support) << "Exception caught: " << ex.what() << ENDM;
       success = false;
     } catch (...) {
-      ILOG << LogErrorSupport << "Unknown exception";
+      ILOG(Error, Support) << "Unknown exception";
       success = false;
     }
 
@@ -197,10 +197,10 @@ int main(int argc, const char* argv[])
     notify(vm);
 
     if (vm.count("help")) {
-      ILOG << LogInfoSupport << desc << ENDM;
+      ILOG(Info, Support) << desc << ENDM;
       return 0;
     } else if (vm.count("name") == 0) {
-      ILOG << LogErrorSupport << "No 'name' parameter provided" << ENDM;
+      ILOG(Error, Support) << "No 'name' parameter provided" << ENDM;
       return 1;
     }
 
@@ -210,10 +210,10 @@ int main(int argc, const char* argv[])
     return 0;
 
   } catch (const bpo::error& ex) {
-    ILOG << LogErrorSupport << ex.what() << ENDM;
+    ILOG(Error, Support) << ex.what() << ENDM;
     return 1;
   } catch (const boost::exception& ex) {
-    ILOG << LogErrorSupport << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
+    ILOG(Error, Support) << "Exception caught: " << boost::current_exception_diagnostic_information(true) << ENDM;
     return 1;
   }
 

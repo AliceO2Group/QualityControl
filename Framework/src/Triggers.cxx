@@ -41,7 +41,7 @@ namespace triggers
 
 TriggerFcn NotImplemented(std::string triggerName)
 {
-  ILOG << LogWarningSupport << "TriggerType '" << triggerName << "' is not implemented yet. It will always return TriggerType::No" << ENDM;
+  ILOG(Warning, Support) << "TriggerType '" << triggerName << "' is not implemented yet. It will always return TriggerType::No" << ENDM;
   return [triggerName]() mutable -> Trigger {
     return { TriggerType::No };
   };

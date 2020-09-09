@@ -41,13 +41,13 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
   // Decreasing verbosity of the code
   QcInfoLogger::GetInstance() << "1. info message" << AliceO2::InfoLogger::InfoLogger::endm;
   QcInfoLogger::GetInstance() << "2. info message" << InfoLogger::endm;
-  ILOG << LogInfoSupport << "3. info message" << InfoLogger::endm;
-  ILOG << LogInfoSupport << "4. info message" << ENDM;
-  ILOG << "4b. not specified" << ENDM;
+  ILOG(Info, Support) << "3. info message for support" << InfoLogger::endm;
+  ILOG(Info, Devel) << "4. info message for devel" << ENDM;
+  ILOG(Info) << "4b. info MEssage for default level" << ENDM;
 
   // Complexification of the messages
-  ILOG << LogErrorSupport << "5. error message" << ENDM;
-  ILOG << LogErrorSupport << "6. error message" << LogInfoSupport << " - 7. info message" << ENDM;
+  ILOG(Error) << "5. error message" << ENDM;
+  ILOG(Error) << "6. error message" << LogInfoSupport << " - 7. info message" << ENDM;
   ILOG_INST << InfoLogger::InfoLoggerMessageOption{ InfoLogger::Fatal, 1, 1, "asdf", 3 }
             << "8. fatal message with extra fields" << ENDM;
 
@@ -66,10 +66,10 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
   LOG(INFO) << "fair message in infologger";
 
   // using different levels
-  ILOG << LogDebugDevel << "LogDebugDevel" << ENDM;
-  ILOG << LogWarningOps << "LogWarningOps" << ENDM;
-  ILOG << LogErrorSupport << "LogErrorSupport" << ENDM;
-  ILOG << LogInfoTrace << "LogInfoTrace" << ENDM;
+  ILOG(Debug, Devel) << "LogDebugDevel" << ENDM;
+  ILOG(Warning, Ops) << "LogWarningOps" << ENDM;
+  ILOG(Error, Support) << "LogErrorSupport" << ENDM;
+  ILOG(Info, Trace) << "LogInfoTrace" << ENDM;
 }
 
 } // namespace o2::quality_control::core

@@ -37,7 +37,7 @@ Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObj
 {
 
   Quality result = Quality::Null;
-  ILOG << LogInfoSupport << "Checking quality of diagnostic words";
+  ILOG(Info, Support) << "Checking quality of diagnostic words";
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
@@ -55,7 +55,7 @@ std::string CheckDiagnostics::getAcceptedType() { return "TH1F"; }
 
 void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  ILOG << LogInfoSupport << "USING BEAUTIFY";
+  ILOG(Info, Support) << "USING BEAUTIFY";
   if (mo->getName() == "DRMCounter") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
@@ -64,14 +64,14 @@ void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality check
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
-      ILOG << LogInfoSupport << "Quality::Good, setting to green";
+      ILOG(Info, Support) << "Quality::Good, setting to green";
       msg->Clear();
       msg->AddText("OK!");
       msg->SetFillColor(kGreen);
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG << LogInfoSupport << "Quality::Bad, setting to red";
+      ILOG(Info, Support) << "Quality::Bad, setting to red";
       //
       msg->Clear();
       msg->AddText("No TOF hits for all events.");
@@ -80,7 +80,7 @@ void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality check
       //
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG << LogInfoSupport << "Quality::medium, setting to orange";
+      ILOG(Info, Support) << "Quality::medium, setting to orange";
       //
       msg->Clear();
       msg->AddText("No entries. IF TOF IN RUN");
@@ -89,12 +89,12 @@ void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality check
       //
       h->SetFillColor(kOrange);
     } else {
-      ILOG << LogInfoSupport << "Quality::Null, setting to black background";
+      ILOG(Info, Support) << "Quality::Null, setting to black background";
       msg->SetTextColor(kWhite);
       msg->SetFillColor(kBlack);
     }
   } else
-    ILOG << LogErrorSupport << "Did not get correct histo from " << mo->GetName();
+    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
 }
 
 } // namespace o2::quality_control_modules::tof

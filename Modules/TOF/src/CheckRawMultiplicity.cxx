@@ -185,13 +185,13 @@ void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality c
       msg->SetFillColor(kRed);
       msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
-      ILOG << LogInfoSupport << "Quality::medium, setting to yellow";
+      ILOG(Info, Support) << "Quality::medium, setting to yellow";
       msg->AddText("IF TOF IN RUN check the TOF TWiki");
       msg->SetFillColor(kYellow);
       msg->SetTextColor(kBlack);
     }
   } else {
-    ILOG << LogErrorSupport << "Did not get correct histo from " << mo->GetName();
+    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
   }
 }
 

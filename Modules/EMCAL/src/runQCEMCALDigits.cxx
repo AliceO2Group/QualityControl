@@ -94,12 +94,12 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
   if (!config.options().get<bool>("local") && !config.options().get<bool>("remote")) {
-    ILOG << LogInfoSupport << "Creating a standalone QC topology." << ENDM;
+    ILOG(Info, Support) << "Creating a standalone QC topology." << ENDM;
     o2::quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
   }
 
   if (config.options().get<bool>("local")) {
-    ILOG << LogInfoSupport << "Creating a local QC topology." << ENDM;
+    ILOG(Info, Support) << "Creating a local QC topology." << ENDM;
 
     // Generation of Data Sampling infrastructure
     DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
@@ -108,7 +108,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
     o2::quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, config.options().get<std::string>("host"));
   }
   if (config.options().get<bool>("remote")) {
-    ILOG << LogInfoSupport << "Creating a remote QC topology." << ENDM;
+    ILOG(Info, Support) << "Creating a remote QC topology." << ENDM;
 
     // Generation of the remote QC topology (task for QC servers, input proxies, mergers and all check runners)
     o2::quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);

@@ -86,10 +86,10 @@ class Receiver : public framework::Task
       if (pctx.inputs().isValid(checkName)) {
         auto qo = pctx.inputs().get<QualityObject*>(checkName);
         if (!qo) {
-          ILOG << LogErrorDevel << qo->getName() << " - quality is NULL" << ENDM;
+          ILOG(Error, Devel) << qo->getName() << " - quality is NULL" << ENDM;
           pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);
         } else {
-          ILOG << LogDebugDevel << qo->getName() << " - quality: " << qo->getQuality() << ENDM;
+          ILOG(Debug, Devel) << qo->getName() << " - quality: " << qo->getQuality() << ENDM;
           namesToErase.emplace_back(checkName);
         }
       }
@@ -103,7 +103,7 @@ class Receiver : public framework::Task
       // We ask to shut the topology down, returning 0 if there were no ERROR logs.
       pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);
     }
-    ILOG << LogDebugDevel << "Requires " << mNames.size() << " quality objects" << ENDM;
+    ILOG(Debug, Devel) << "Requires " << mNames.size() << " quality objects" << ENDM;
   }
 
   Inputs getInputs()
@@ -139,7 +139,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   const std::string qcConfigurationSource = std::string("json://") + getTestDataDirectory() + "testCheckWorkflow.json";
 
-  ILOG << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+  ILOG(Info)<< "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);

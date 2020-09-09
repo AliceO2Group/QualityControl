@@ -51,7 +51,7 @@ struct test_fixture {
   {
     backend = DatabaseFactory::create("CCDB");
     backend->connect(CCDB_ENDPOINT, "", "", "");
-    ILOG << LogInfoSupport << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
+    ILOG(Info, Support) << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
   }
 
   ~test_fixture() = default;
@@ -67,13 +67,13 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
 {
   test_fixture f;
   for (auto const& [task, object] : Objects) {
-    ILOG << LogInfoSupport << "[RETRIEVE]: " << task << object << ENDM;
+    ILOG(Info, Support) << "[RETRIEVE]: " << task << object << ENDM;
     auto mo = f.backend->retrieveMO(task, object);
     if (mo == nullptr) {
-      ILOG << LogInfoSupport << "No object found (" << task << object << ")" << ENDM;
+      ILOG(Info, Support) << "No object found (" << task << object << ")" << ENDM;
       continue;
     }
-    ILOG << LogInfoSupport << "name of encapsulated object : " << mo->getObject()->GetName() << ENDM; // just to test it
+    ILOG(Info, Support) << "name of encapsulated object : " << mo->getObject()->GetName() << ENDM; // just to test it
   }
 }
 
@@ -82,10 +82,10 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
 {
   test_fixture f;
   for (auto const& [task, object] : Objects) {
-    ILOG << LogInfoSupport << "[JSON RETRIEVE]: " << task << "/" << object << ENDM;
+    ILOG(Info, Support) << "[JSON RETRIEVE]: " << task << "/" << object << ENDM;
     auto json = f.backend->retrieveMOJson(task, object);
     if (json.empty()) {
-      ILOG << LogInfoSupport << "skipping empty object..." << ENDM;
+      ILOG(Info, Support) << "skipping empty object..." << ENDM;
       continue;
     }
     std::stringstream ss;
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json)
 
   string json = f.backend->retrieveMOJson("qc/TST/my/task", "asdf/asdf");
   BOOST_CHECK(!json.empty());
-  ILOG << LogInfoSupport << json << ENDM;
+  ILOG(Info, Support) << json << ENDM;
   std::stringstream ss;
   ss << json;
   boost::property_tree::ptree pt;
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json)
 
   json = f.backend->retrieveQOJson("qc/checks/TST/checkName");
   BOOST_CHECK(!json.empty());
-  ILOG << LogInfoSupport << json << ENDM;
+  ILOG(Info, Support) << json << ENDM;
   std::stringstream ss2;
   ss2 << json;
   boost::property_tree::ptree pt2;
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(ccdb_getobjects_name)
   test_fixture f;
 
   CcdbDatabase* ccdb = static_cast<CcdbDatabase*>(f.backend.get());
-  ILOG << LogInfoSupport << "getListing()" << ENDM;
+  ILOG(Info, Support) << "getListing()" << ENDM;
   auto tasks = ccdb->getListing("/qc");
   BOOST_CHECK_GT(tasks.size(), 0); // we know that there are a few
   // print but only for TST

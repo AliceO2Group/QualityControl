@@ -34,7 +34,7 @@ BenchmarkTask::~BenchmarkTask() = default;
 
 void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG << LogInfoSupport << "initialize benchmarktask \"" << getName() << "\""
+  ILOG(Info, Support) << "initialize benchmarktask \"" << getName() << "\""
        << ENDM;
 
   mConfigFile = ConfigurationFactory::getConfiguration("file:./example.ini");
@@ -60,12 +60,12 @@ void BenchmarkTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void BenchmarkTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG << LogInfoSupport << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
 }
 
 void BenchmarkTask::startOfCycle()
 {
-  ILOG << LogInfoSupport << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void BenchmarkTask::monitorData(o2::framework::ProcessingContext& /*ctx*/)
@@ -79,14 +79,14 @@ void BenchmarkTask::endOfCycle()
     histo->Reset();
     histo->FillRandom("gaus", 1000);
   }
-  ILOG << LogInfoSupport << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void BenchmarkTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG << LogInfoSupport << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
-void BenchmarkTask::reset() { ILOG << LogInfoSupport << "Reset" << ENDM; }
+void BenchmarkTask::reset() { ILOG(Info, Support) << "Reset" << ENDM; }
 
 } // namespace o2::quality_control_modules::example

@@ -41,7 +41,7 @@ Quality CheckCompressedData::check(std::map<std::string, std::shared_ptr<Monitor
 {
 
   Quality result = Quality::Null;
-  ILOG << LogInfoSupport << "Checking quality of compressed data";
+  ILOG(Info, Support) << "Checking quality of compressed data";
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
@@ -78,13 +78,13 @@ void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     msg->SetName(Form("%s_msg", mo->GetName()));
 
     if (checkResult == Quality::Good) {
-      ILOG << LogInfoSupport << "Quality::Good, setting to green";
+      ILOG(Info, Support) << "Quality::Good, setting to green";
       msg->Clear();
       msg->AddText("OK!");
       msg->SetFillColor(kGreen);
       msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Bad) {
-      ILOG << LogInfoSupport << "Quality::Bad, setting to red";
+      ILOG(Info, Support) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Diagnostics");
       msg->AddText("above");
@@ -92,14 +92,14 @@ void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->SetFillColor(kRed);
       msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
-      ILOG << LogInfoSupport << "Quality::medium, setting to yellow";
+      ILOG(Info, Support) << "Quality::medium, setting to yellow";
       msg->Clear();
       msg->AddText("Diagnostics above zero");
       msg->SetFillColor(kYellow);
       msg->SetTextColor(kBlack);
     }
   } else {
-    ILOG << LogErrorSupport << "Did not get correct histo from " << mo->GetName();
+    ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
   }
 }
 } // namespace o2::quality_control_modules::tof

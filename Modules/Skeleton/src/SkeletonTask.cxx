@@ -31,11 +31,11 @@ SkeletonTask::~SkeletonTask()
 
 void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG << LogInfoSupport << "initialize SkeletonTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "initialize SkeletonTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG << LogInfoDevel << "Custom parameter - myOwnKey: " << param->second << ENDM;
+    ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
@@ -46,19 +46,19 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
     // some methods can throw exceptions, it is indicated in their doxygen.
     // In case it is recoverable, it is recommended to catch them and do something meaningful.
     // Here we don't care that the metadata was not added and just log the event.
-    ILOG << LogWarningSupport << "Metadata could not be added to " << mHistogram->GetName() << ENDM;
+    ILOG(Warning, Support) << "Metadata could not be added to " << mHistogram->GetName() << ENDM;
   }
 }
 
 void SkeletonTask::startOfActivity(Activity& activity)
 {
-  ILOG << LogInfoSupport << "startOfActivity" << activity.mId << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << activity.mId << ENDM;
   mHistogram->Reset();
 }
 
 void SkeletonTask::startOfCycle()
 {
-  ILOG << LogInfoSupport << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -118,19 +118,19 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void SkeletonTask::endOfCycle()
 {
-  ILOG << LogInfoSupport << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void SkeletonTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG << LogInfoSupport << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void SkeletonTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG << LogInfoSupport << "Resetting the histogram" << ENDM;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mHistogram->Reset();
 }
 

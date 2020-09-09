@@ -109,8 +109,8 @@ WorkflowSpec processingTopology(SubSpecificationType subspec)
     Outputs{},
     AlgorithmSpec{
       (AlgorithmSpec::ProcessCallback)[](ProcessingContext & ctx) {
-        ILOG << LogDebugDevel << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0] << ENDM;
-        ILOG << LogDebugDevel << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0] << ENDM;
+        ILOG(Debug, Devel) << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0] << ENDM;
+        ILOG(Debug, Devel) << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0] << ENDM;
       }
     }
   };
@@ -123,7 +123,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
   const std::string qcConfigurationSource =
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/advanced.json";
-  ILOG << LogInfoSupport << "Using config file '" << qcConfigurationSource << "'";
+  ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'";
 
   WorkflowSpec specs;
   // here we pretend to spawn topologies on three processing machines
