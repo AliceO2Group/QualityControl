@@ -100,7 +100,7 @@ void TrendingTask::trendValues()
         mReductors[dataSource.name]->update(qo.get());
       }
     } else {
-      ILOG << LogErrorSupport << "Unknown type of data source '" << dataSource.type << "'.";
+      ILOG << LogErrorSupport << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
     }
   }
 

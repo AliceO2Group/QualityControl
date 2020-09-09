@@ -124,7 +124,7 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
     }
   } catch (std::exception& e) {
     mThreadRunning = false;
-    std::cerr << "ServiceDiscovery::runHealthServer - " << e.what() << std::endl;
+    ILOG << LogErrorSupport << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
   }
 }
 

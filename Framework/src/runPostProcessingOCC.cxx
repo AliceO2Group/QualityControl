@@ -51,10 +51,10 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
       auto config = properties.count(qcConfigurationKey) > 0 ? properties.get_child(qcConfigurationKey) : properties;
       mRunner->init(config);
     } catch (const std::exception& ex) {
-      ILOG << LogErrorOps << "Exception caught: " << ex.what() << ENDM;
+      ILOG << LogErrorSupport << "Exception caught: " << ex.what() << ENDM;
       success = false;
     } catch (...) {
-      ILOG << LogErrorOps << "Unknown exception";
+      ILOG << LogErrorSupport << "Unknown exception";
       success = false;
     }
     return !success;
@@ -70,10 +70,10 @@ class PostProcessingOCCStateMachine : public RuntimeControlledObject
     try {
       mRunner->reset();
     } catch (const std::exception& ex) {
-      ILOG << LogErrorOps << "Exception caught: " << ex.what() << ENDM;
+      ILOG << LogErrorSupport << "Exception caught: " << ex.what() << ENDM;
       success = false;
     } catch (...) {
-      ILOG << LogErrorOps << "Unknown exception";
+      ILOG << LogErrorSupport << "Unknown exception";
       success = false;
     }
     return !success;

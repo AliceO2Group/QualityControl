@@ -144,7 +144,7 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG << LogFatalSupport << "Unexpected exception during initialization:\n"
+    ILOG << LogFatalOps << "Unexpected exception during initialization:\n"
          << boost::current_exception_diagnostic_information(true) << ENDM;
     throw;
   }
@@ -189,7 +189,7 @@ void CheckRunner::init(framework::InitContext&)
     }
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG << LogFatalSupport << "Unexpected exception during initialization:\n"
+    ILOG << LogFatalOps << "Unexpected exception during initialization:\n"
          << current_diagnostic(true) << ENDM;
     throw;
   }
