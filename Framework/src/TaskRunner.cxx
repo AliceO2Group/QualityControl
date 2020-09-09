@@ -35,6 +35,9 @@ using namespace o2::utilities;
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/ConfigParamRegistry.h>
 
+// Fairlogger
+#include <fairlogger/Logger.h>
+
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
 
@@ -159,7 +162,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   CompletionPolicy::CompletionOp action = CompletionPolicy::CompletionOp::Wait;
 
   for (auto& input : inputs) {
-    if (input.header == nullptr || input.payload == nullptr) {
+    if (input.header == nullptr) {
       continue;
     }
 
@@ -219,8 +222,8 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 void TaskRunner::start(const ConfigParamRegistry& options)
 {
   try {
-    mRunNumber = options.get<int>("runNumber");
-    ILOG(Info)<< LogInfoSupport << "Run number found in options: " << mRunNumber << ENDM;
+    mRunNumber = stoi(options.get<std::string>("runNumber"));
+    ILOG(Info, Support) << "Run number found in options: " << mRunNumber << ENDM;
   } catch (std::invalid_argument& ia) {
     ILOG(Info)<< LogInfoSupport << "Run number not found in options, using 0 instead." << ENDM;
     mRunNumber = 0;
@@ -264,7 +267,7 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   bool timerReady = false;
 
   for (auto& input : inputs) {
-    if (input.header != nullptr && input.payload != nullptr) {
+    if (input.header != nullptr) {
 
       const auto* dataHeader = get<DataHeader*>(input.header);
       assert(dataHeader);

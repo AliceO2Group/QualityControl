@@ -33,6 +33,8 @@
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/ServiceDiscovery.h"
+// Fairlogger
+#include <fairlogger/Logger.h>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;

@@ -18,6 +18,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <TCanvas.h>
 #include <TDatime.h>
+#include <TObjString.h>
 #include <TGraph.h>
 #include <TH1.h>
 #include <TPaveText.h>

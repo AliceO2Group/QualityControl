@@ -82,15 +82,23 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "my/task", "TST");
   mo2->addMetadata("my_meta", "is_good");
 
+  TH1F* h3 = new TH1F("short", "asdf", 100, 0, 99);
+  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, "my/task", "TST");
+
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, "test-ccdb-check", "TST", "OnAll", vector{ string("input1"), string("input2") });
   shared_ptr<QualityObject> qo2 = make_shared<QualityObject>(Quality::Null, "metadata", "TST", "OnAll", vector{ string("input1") });
   qo2->addMetadata("my_meta", "is_good");
+  shared_ptr<QualityObject> qo3 = make_shared<QualityObject>(Quality::Good, "short", "TST", "OnAll", vector{ string("input1") });
 
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->storeMO(mo1);
   f.backend->storeMO(mo2);
   f.backend->storeQO(qo1);
   f.backend->storeQO(qo2);
+
+  // with timestamps
+  f.backend->storeMO(mo3, 10000, 20000);
+  f.backend->storeQO(qo3, 10000, 20000);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
@@ -114,8 +122,21 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/my/task", "quarantine");
-  BOOST_CHECK_NE(mo, nullptr);
+  BOOST_REQUIRE_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getName(), "quarantine");
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_timestamps, *utf::depends_on("ccdb_store"))
+{
+  test_fixture f;
+
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO("qc/TST/MO/my/task", "short", 15000);
+  BOOST_REQUIRE_NE(mo, nullptr);
+  BOOST_CHECK_EQUAL(mo->getName(), "short");
+
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", "short"), 15000);
+  BOOST_REQUIRE_NE(qo, nullptr);
+  BOOST_CHECK_EQUAL(qo->getName(), "short");
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_inexisting_mo)

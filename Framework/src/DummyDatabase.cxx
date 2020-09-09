@@ -28,7 +28,7 @@ void DummyDatabase::connect(const std::unordered_map<std::string, std::string>&)
 {
 }
 
-void DummyDatabase::storeMO(std::shared_ptr<MonitorObject>)
+void DummyDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject>, long, long)
 {
 }
 
@@ -42,7 +42,7 @@ std::string DummyDatabase::retrieveMOJson(std::string, std::string, long)
   return std::string();
 }
 
-void DummyDatabase::storeQO(std::shared_ptr<QualityObject>)
+void DummyDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObject>, long, long)
 {
 }
 

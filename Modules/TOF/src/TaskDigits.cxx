@@ -26,6 +26,9 @@
 #include "TOFBase/Digit.h"
 #include "TOFBase/Geo.h"
 
+// Fairlogger includes
+#include <fairlogger/Logger.h>
+
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TOF/TaskDigits.h"

@@ -25,6 +25,9 @@
 #include "Headers/RAWDataHeader.h"
 #include "DetectorsRaw/HBFUtils.h"
 
+// Fairlogger includes
+#include <fairlogger/Logger.h>
+
 using namespace o2::framework;
 
 // QC includes
