@@ -130,11 +130,17 @@ class AggregatorRunner : public framework::Task
   inline void initServiceDiscovery();
   inline void initAggregators();
 
+  /**
+ * Send metrics to the monitoring system if the time has come.
+ */
+  void sendPeriodicMonitoring();
+
   // General state
   std::string mDeviceName;
-  std::map<std::string, std::shared_ptr<Aggregator>> aggregatorsMap;
+  std::map<std::string, std::shared_ptr<Aggregator>> mAggregatorsMap;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
+  std::map<std::string, std::shared_ptr<const QualityObject>> mQualityObjects; // where we cache the incoming data
 
   // DPL
   o2::framework::Inputs mInputs;
@@ -143,6 +149,7 @@ class AggregatorRunner : public framework::Task
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
   AliceO2::Common::Timer mTimer;
+  int mTotalNumberObjectsReceived;
 
   // Service discovery
   std::shared_ptr<ServiceDiscovery> mServiceDiscovery;

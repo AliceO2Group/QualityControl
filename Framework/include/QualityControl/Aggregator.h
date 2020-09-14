@@ -62,7 +62,7 @@ class Aggregator
    * Update the revision number with the latest global revision.
    * Expected to be changed after invoke of `aggregator(moMap)` or revision number overflow.
    */
-//  void updateRevision(unsigned int revision);
+//  void updateGlobalRevision(unsigned int revision);
 
   /**
    * \brief Return true if the Monitor Objects were changed accordingly to the policy

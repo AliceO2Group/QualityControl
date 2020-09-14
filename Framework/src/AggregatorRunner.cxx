@@ -22,6 +22,7 @@
 #include <Framework/DataSpecUtils.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
+#include <Framework/InputRecordWalker.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -44,6 +45,7 @@ namespace o2::quality_control::checker
 AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkerRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
     mOutput({ "qo" }, createAggregatorRunnerDataDescription(mDeviceName), 0)
+      mTotalNumberObjectsReceived(0)
 {
   try {
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
@@ -104,9 +106,20 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
 {
   // get data
   framework::InputRecord& inputs = ctx.inputs();
-  for (auto& input : inputs) {
-    if (input.header != nullptr ) {
+  for (auto const& ref : InputRecordWalker(inputs)) { // InputRecordWalker because the output of CheckRunner can be multi-part
+    if (ref.header != nullptr ) {
       ILOG(Info) << "Received data !" << ENDM;
+      shared_ptr<const QualityObject> qo = inputs.get<QualityObject*>(ref);
+      if(qo != nullptr ) {
+        ILOG(Info) << "it is a qo: " << qo->getName() << ENDM;
+        mQualityObjects[qo->getName()] = qo;
+//        mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
+        mTotalNumberObjectsReceived++;
+//
+//        if (store) { // Monitor Object will be stored later, after possible beautification
+//          mMonitorObjectStoreVector.push_back(mo);
+//        }
+      }
     }
   }
 
@@ -120,10 +133,10 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
 
 QualityObjectsType AggregatorRunner::aggregate()
 {
-//  ILOG(Info) << "Trying " << mAggregators.size() << " aggregators for " << moMap.size() << " monitor objects"
-//          << ENDM;
+  ILOG(Info) << "Aggregate called, MOs in cache: " << mQualityObjects.size() << ENDM;
 
   QualityObjectsType allQOs;
+//  for (auto& aggregator : mAggregatorsMap) {
 
   // for the sake of a test
 //  QualityObject qo(Quality::Bad, );
@@ -193,7 +206,7 @@ void AggregatorRunner::initMonitoring()
   mCollector = MonitoringFactory::Get(monitoringUrl);
   mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
-  mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
+  mCollector->addGlobalTag("AggregatorRunnerName", mDeviceName);
   mTimer.reset(1000000); // 10 s.
 }
 
@@ -202,7 +215,7 @@ void AggregatorRunner::initServiceDiscovery()
   auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
-    LOG(INFO) << "ServiceDiscovery initialized";
+  LOG(INFO) << "ServiceDiscovery initialized";
 }
 
 void AggregatorRunner::initAggregators()
@@ -210,26 +223,23 @@ void AggregatorRunner::initAggregators()
   // Build aggregators based on the configurationd
   if (mConfigFile->getRecursive("qc").count("aggregators")) {
     // For every aggregator definition, create a Check
-    for (const auto& [aggregatorName, aggregatorCheck] : mConfigFile->getRecursive("qc.aggregators")) {
+    for (const auto& [aggregatorName, aggregatorConfig] : mConfigFile->getRecursive("qc.aggregators")) {
       ILOG(Info) << ">> Aggregator name : " << aggregatorName << ENDM;
-      if (aggregatorCheck.get<bool>("active", true)) {
+      if (aggregatorConfig.get<bool>("active", true)) {
 
         // create Aggregator and store it.
-        auto aggregator = Aggregator(aggregatorName, mConfigFile);
-
-//        auto check = Check(aggregatorName, configurationSource);
-//        InputNames inputNames;
-//
-//        for (auto& inputSpec : check.getInputs()) {
-//          auto name = DataSpecUtils::label(inputSpec);
-//          inputNames.push_back(name);
-//        }
-//        // Create a grouping key - sorted vector of stringified InputSpecs
-//        std::sort(inputNames.begin(), inputNames.end());
-//        // Group checks
-//        checksMap[inputNames].push_back(check);
+        auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
+        mAggregatorsMap[aggregatorName] = aggregator;
       }
     }
+  }
+}
+
+void AggregatorRunner::sendPeriodicMonitoring()
+{
+  if (mTimer.isTimeout()) {
+    mTimer.reset(1000000); // 10 s.
+    mCollector->send({ mTotalNumberObjectsReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
   }
 }
 
