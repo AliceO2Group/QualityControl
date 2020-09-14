@@ -25,16 +25,12 @@
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
-#if __has_include(<Framework/DataSamplingReadoutAdapter.h>)
-#include <Framework/DataSamplingReadoutAdapter.h>
-#else
 #include <DataSampling/DataSamplingReadoutAdapter.h>
-using namespace o2::utilities;
-#endif
 #include <Framework/runDataProcessing.h>
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::utilities;
 
 WorkflowSpec defineDataProcessing(ConfigContext const&)
 {

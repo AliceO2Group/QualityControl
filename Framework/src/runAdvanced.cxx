@@ -30,18 +30,14 @@
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
 #include <Framework/CompletionPolicyHelpers.h>
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
-#include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include <Framework/DataSpecUtils.h>
 #include <Framework/CompletionPolicyHelpers.h>
+#include <DataSampling/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::utilities;
 
 // Additional configuration of the topology, which is done by implementing `customize` functions and placing them
 // before `runDataProcessing.h` header. In this case, both Dispatcher and Merger are configured to accept incoming

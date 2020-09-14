@@ -13,16 +13,12 @@
 /// \author  Piotr Konopka
 ///
 
-#include "QualityControl/InfrastructureGenerator.h"
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
+#include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::utilities;
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
