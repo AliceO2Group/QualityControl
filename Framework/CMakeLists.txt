@@ -64,7 +64,8 @@ add_library(QualityControl
             src/DataProducer.cxx
             src/HistoProducer.cxx
             src/DataProducerExample.cxx
-            src/MonitorObjectCollection.cxx)
+            src/MonitorObjectCollection.cxx
+            src/PolicyManager.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -120,6 +121,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/TrendingTask.h
                             include/QualityControl/Reductor.h
                             include/QualityControl/MonitorObjectCollection.h
+                            include/QualityControl/PolicyManager.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 
@@ -241,6 +243,7 @@ set(TEST_SRCS
     test/testWorkflow.cxx
     test/testVersion.cxx
     test/testRepoPathUtils.cxx
+    test/testPolicyManager.cxx
   )
 
 set(TEST_ARGS
@@ -268,6 +271,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
     ""
   )

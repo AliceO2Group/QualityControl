@@ -37,6 +37,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Check.h"
+#include "QualityControl/PolicyManager.h"
 
 namespace o2::quality_control::core
 {
@@ -131,7 +132,7 @@ class CheckRunner : public framework::Task
    * @param mo The MonitorObject to evaluate and whose quality will be set according
    *        to the worse quality encountered while running the Check's.
    */
-  QualityObjectsType check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap);
+  QualityObjectsType check();
 
   /**
    * \brief Store the QualityObjects in the database.
@@ -170,7 +171,7 @@ class CheckRunner : public framework::Task
    * It is assigned to an MO on receiving and is stored in mMonitorObjectRevision.
    * This function function should be called at the end of the receiving MOs.
    */
-  void updateRevision();
+//  void updateGlobalRevision();
 
   /**
    * Update the list of objects this TaskRunner is sending out.
@@ -205,11 +206,12 @@ class CheckRunner : public framework::Task
   std::vector<Check> mChecks;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-  std::map<std::string, unsigned int> mMonitorObjectRevision;
-  unsigned int mGlobalRevision = 1;
+//  std::map<std::string, unsigned int> mMonitorObjectRevision;
+//  unsigned int mGlobalRevision = 1;
   std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
+  PolicyManager policyManager;
 
   // DPL
   o2::framework::Inputs mInputs;

@@ -57,11 +57,15 @@ Check::Check(std::string checkName, std::string configurationSource)
     mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 },
     mBeautify(true)
 {
-  mPolicy = [](std::map<std::string, unsigned int>) {
-    // Prevent from using of uninitiated policy
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Policy not initiated: try to run Check::init() first"));
-    return false;
-  };
+  cout << "Check::Check: validate " << framework::DataSpecUtils::validate(mOutputSpec) << endl;
+//  cout << "Check::Check: empty " << mOutputSpec.binding.empty() << endl;
+  cout << "Check::Check: " << mOutputSpec.binding.value << endl;
+
+//  mPolicy = [](std::map<std::string, unsigned int>) {
+//    // Prevent from using of uninitiated policy
+//    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Policy not initiated: try to run Check::init() first"));
+//    return false;
+//  };
 
   try {
     initConfig(checkName);
@@ -138,96 +142,96 @@ void Check::initConfig(std::string checkName)
   mCheckConfig.detectorName = checkConfig.get<std::string>("detectorName", "DET");
 }
 
-void Check::initPolicy(std::string policyType)
-{
-  if (policyType == "OnAll") {
-    /** 
-     * Run check if all MOs are updated 
-     */
-
-    mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
-      for (const auto& moname : mCheckConfig.moNames) {
-        if (revisionMap[moname] <= mMORevision) {
-          // Expect: revisionMap[notExistingKey] == 0
-          return false;
-        }
-      }
-      return true;
-    };
-  } else if (policyType == "OnAnyNonZero") {
-    /**
-     * Return true if any declared MOs were updated
-     * Guarantee that all declared MOs are available
-     */
-    mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
-      if (!mPolicyHelper) {
-        // Check if all monitor objects are available
-        for (const auto& moname : mCheckConfig.moNames) {
-          if (!revisionMap.count(moname)) {
-            return false;
-          }
-        }
-        // From now on all MOs are available
-        mPolicyHelper = true;
-      }
-
-      for (const auto& moname : mCheckConfig.moNames) {
-        if (revisionMap[moname] > mMORevision) {
-          return true;
-        }
-      }
-      return false;
-    };
-
-  } else if (policyType == "OnEachSeparately") {
-    /**
-     * Return true if any declared MOs were updated
-     * This is the same behaviour as OnAny, but we should pass
-     * only one MO to a check at once.
-     */
-    mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
-      if (mCheckConfig.allMOs) {
-        return true;
-      }
-
-      for (const auto& moname : mCheckConfig.moNames) {
-        if (revisionMap.count(moname) && revisionMap[moname] > mMORevision) {
-          return true;
-        }
-      }
-      return false;
-    };
-
-  } else if (policyType == "_OnGlobalAny") {
-    /**
-     * Return true if any MOs were updated.
-     * Inner policy - used for `"MOs": "all"`
-     * Might return true even if MO is not used in Check
-     */
-
-    mPolicy = [](std::map<std::string, unsigned int>& revisionMap) {
-      // Expecting check of this policy only if any change
-      (void)revisionMap; // Suppress Unused warning
-      return true;
-    };
-
-  } else /* if (policyType == "OnAny") */ {
-    /**
-     * Default behaviour
-     *
-     * Run check if any declared MOs are updated
-     * Does not guarantee to contain all declared MOs 
-     */
-    mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
-      for (const auto& moname : mCheckConfig.moNames) {
-        if (revisionMap.count(moname) && revisionMap[moname] > mMORevision) {
-          return true;
-        }
-      }
-      return false;
-    };
-  }
-}
+//void Check::initPolicy(std::string policyType)
+//{
+//  if (policyType == "OnAll") {
+//    /**
+//     * Run check if all MOs are updated
+//     */
+//
+//    mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
+//      for (const auto& moname : mCheckConfig.moNames) {
+//        if (revisionMap[moname] <= mMORevision) {
+//          // Expect: revisionMap[notExistingKey] == 0
+//          return false;
+//        }
+//      }
+//      return true;
+//    };
+//  } else if (policyType == "OnAnyNonZero") {
+//    /**
+//     * Return true if any declared MOs were updated
+//     * Guarantee that all declared MOs are available
+//     */
+//    mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
+//      if (!mPolicyHelper) {
+//        // Check if all monitor objects are available
+//        for (const auto& moname : mCheckConfig.moNames) {
+//          if (!revisionMap.count(moname)) {
+//            return false;
+//          }
+//        }
+//        // From now on all MOs are available
+//        mPolicyHelper = true;
+//      }
+//
+//      for (const auto& moname : mCheckConfig.moNames) {
+//        if (revisionMap[moname] > mMORevision) {
+//          return true;
+//        }
+//      }
+//      return false;
+//    };
+//
+//  } else if (policyType == "OnEachSeparately") {
+//    /**
+//     * Return true if any declared MOs were updated
+//     * This is the same behaviour as OnAny, but we should pass
+//     * only one MO to a check at once.
+//     */
+//    mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
+//      if (mCheckConfig.allMOs) {
+//        return true;
+//      }
+//
+//      for (const auto& moname : mCheckConfig.moNames) {
+//        if (revisionMap.count(moname) && revisionMap[moname] > mMORevision) {
+//          return true;
+//        }
+//      }
+//      return false;
+//    };
+//
+//  } else if (policyType == "_OnGlobalAny") {
+//    /**
+//     * Return true if any MOs were updated.
+//     * Inner policy - used for `"MOs": "all"`
+//     * Might return true even if MO is not used in Check
+//     */
+//
+//    mPolicy = [](std::map<std::string, unsigned int>& revisionMap) {
+//      // Expecting check of this policy only if any change
+//      (void)revisionMap; // Suppress Unused warning
+//      return true;
+//    };
+//
+//  } else /* if (policyType == "OnAny") */ {
+//    /**
+//     * Default behaviour
+//     *
+//     * Run check if any declared MOs are updated
+//     * Does not guarantee to contain all declared MOs
+//     */
+//    mPolicy = [&](std::map<std::string, unsigned int>& revisionMap) {
+//      for (const auto& moname : mCheckConfig.moNames) {
+//        if (revisionMap.count(moname) && revisionMap[moname] > mMORevision) {
+//          return true;
+//        }
+//      }
+//      return false;
+//    };
+//  }
+//}
 
 void Check::init()
 {
@@ -246,7 +250,7 @@ void Check::init()
    * The policy needs to be here. If running in constructor, the lambda gets wrong reference
    * and runs into SegmentationFault.
    */
-  initPolicy(mCheckConfig.policyType);
+//  initPolicy(mCheckConfig.policyType);
 
   // Determine whether we can beautify
   // See QC-299 for details
@@ -266,15 +270,15 @@ void Check::init()
   }
 }
 
-bool Check::isReady(std::map<std::string, unsigned int>& revisionMap)
-{
-  return mPolicy(revisionMap);
-}
-
-void Check::updateRevision(unsigned int revision)
-{
-  mMORevision = revision;
-}
+//bool Check::isReady(std::map<std::string, unsigned int>& revisionMap)
+//{
+//  return mPolicy(revisionMap);
+//}
+//
+//void Check::updateRevision(unsigned int revision)
+//{
+//  mMORevision = revision;
+//}
 
 QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
 {
@@ -347,4 +351,19 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
   for (auto const& item : moMap) {
     mCheckInterface->beautify(item.second /*mo*/, quality);
   }
+}
+
+std::string Check::getPolicyName() const
+{
+  return mCheckConfig.policyType;
+}
+
+std::vector<std::string> Check::getObjectsNames() const
+{
+  return mCheckConfig.moNames;
+}
+
+bool Check::getAllObjects() const
+{
+  return mCheckConfig.allMOs;
 }
