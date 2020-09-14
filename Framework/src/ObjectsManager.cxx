@@ -31,7 +31,7 @@ namespace o2::quality_control::core
 const std::string ObjectsManager::gDrawOptionsKey = "drawOptions";
 const std::string ObjectsManager::gDisplayHintsKey = "displayHints";
 
-ObjectsManager::ObjectsManager(TaskConfig& taskConfig, bool noDiscovery) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
+ObjectsManager::ObjectsManager(const TaskConfig& taskConfig, bool noDiscovery) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects = std::make_unique<MonitorObjectCollection>();
   mMonitorObjects->SetOwner(true);

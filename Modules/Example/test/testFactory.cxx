@@ -31,10 +31,14 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
   config.taskName = "task";
   config.moduleName = "QcCommon";
   config.className = "o2::quality_control_modules::example::ExampleTask";
+  cout << "Create ObjectsManager" << endl;
   auto manager = make_shared<ObjectsManager>(config);
+  cout << "Done ObjectsManager" << endl;
   try {
     gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local paths for the test
+    cout << "Create Task" << endl;
     factory.create(config, manager);
+    cout << "Done Task" << endl;
   } catch (...) {
     BOOST_TEST_FAIL(boost::current_exception_diagnostic_information());
   }
