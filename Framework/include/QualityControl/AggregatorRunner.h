@@ -132,7 +132,7 @@ class AggregatorRunner : public framework::Task
 
   // General state
   std::string mDeviceName;
-  std::map<std::string, Aggregator> aggregatorsMap;
+  std::map<std::string, std::shared_ptr<Aggregator>> aggregatorsMap;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
 

@@ -65,6 +65,9 @@ AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const
 
 AggregatorRunner::~AggregatorRunner()
 {
+  if (mServiceDiscovery != nullptr) {
+    mServiceDiscovery->deregister();
+  }
 }
 
 header::DataDescription AggregatorRunner::createAggregatorRunnerDataDescription(const std::string& aggregatorName)
@@ -99,6 +102,14 @@ void AggregatorRunner::init(framework::InitContext&)
 
 void AggregatorRunner::run(framework::ProcessingContext& ctx)
 {
+  // get data
+  framework::InputRecord& inputs = ctx.inputs();
+  for (auto& input : inputs) {
+    if (input.header != nullptr ) {
+      ILOG(Info) << "Received data !" << ENDM;
+    }
+  }
+
   auto qualityObjects = aggregate();
 
   store(qualityObjects);
@@ -191,12 +202,12 @@ void AggregatorRunner::initServiceDiscovery()
   auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
-  ILOG(Info) << "ServiceDiscovery initialized" << ENDM;
+    LOG(INFO) << "ServiceDiscovery initialized";
 }
 
 void AggregatorRunner::initAggregators()
 {
-  // Build aggregators based on the configuration
+  // Build aggregators based on the configurationd
   if (mConfigFile->getRecursive("qc").count("aggregators")) {
     // For every aggregator definition, create a Check
     for (const auto& [aggregatorName, aggregatorCheck] : mConfigFile->getRecursive("qc.aggregators")) {

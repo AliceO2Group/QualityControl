@@ -16,7 +16,7 @@
 #include <Configuration/ConfigurationInterface.h>
 #include "QualityControl/Aggregator.h"
 
-o2::quality_control::checker::Aggregator::Aggregator(std::string aggregatorName, std::shared_ptr<o2::configuration::ConfigurationInterface> configuration)
+o2::quality_control::checker::Aggregator::Aggregator(std::string aggregatorName, boost::property_tree::ptree configuration)
 {
 }
 void o2::quality_control::checker::Aggregator::init()

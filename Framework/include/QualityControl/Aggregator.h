@@ -19,6 +19,7 @@
 #include <string>
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/CheckConfig.h"
+#include <boost/property_tree/ptree.hpp>
 
 namespace o2::configuration
 {
@@ -46,7 +47,7 @@ class Aggregator
    * @param aggregatorName Aggregator name that must exist in the configuration
    * @param configurationSource Path to configuration
    */
-  Aggregator(std::string aggregatorName, std::shared_ptr<configuration::ConfigurationInterface> configuration);
+  Aggregator(std::string aggregatorName, boost::property_tree::ptree configuration);
 
   /**
    * \brief Initialize the aggregator
