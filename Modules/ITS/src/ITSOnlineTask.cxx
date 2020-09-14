@@ -295,7 +295,7 @@ void ITSOnlineTask::monitorData(o2::framework::ProcessingContext& ctx)
   while ((mChipDataBuffer = mDecoder->getNextChipData(mChipsBuffer))) {
     if (mChipDataBuffer) {
       const auto& pixels = mChipDataBuffer->getData();
-      int chipHitNumber[2][7][14] = { 0 }; //substave, module
+      int chipHitNumber[2][7][14] = { { 0 } }; //substave, module
       for (auto& pixel : pixels) {
         mGeom->getChipId(mChipDataBuffer->getChipID(), lay, sta, ssta, mod, chip);
         mHitNumberOfChip[lay][sta][ssta][mod][chip]++;

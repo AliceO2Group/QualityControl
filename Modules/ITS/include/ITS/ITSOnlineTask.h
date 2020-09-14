@@ -89,7 +89,7 @@ class ITSOnlineTask final : public TaskInterface
   const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   const int nHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
   const int nChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
-  const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
+  //const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const int ReduceFraction = 4; //TODO: move to Config file to define this number
 
@@ -101,7 +101,7 @@ class ITSOnlineTask final : public TaskInterface
   o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
   ChipPixelData* mChipDataBuffer = nullptr;
   std::vector<ChipPixelData> mChipsBuffer;
-  int mHitNumberOfChip[7][48][2][14][14] = { 0 }; //layer, stave, substave, hic, chip
+  int mHitNumberOfChip[7][48][2][14][14] = { { 0 } }; //layer, stave, substave, hic, chip
   int mTimeFrameId = 0;
   uint32_t mTriggerTypeCount[13] = { 0 };
 
