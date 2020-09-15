@@ -25,14 +25,10 @@
 
 #include <THnSparse.h>
 #include <TText.h>
-
-#include <ITSMFTReconstruction/RawPixelReader.h>
-
 #include <TH2.h>
 #include <TH2I.h>
 #include <THnSparse.h>
 #include <TPaveText.h>
-#include <pthread.h>
 
 class TH2I;
 class TH1F;

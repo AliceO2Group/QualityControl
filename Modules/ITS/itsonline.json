@@ -23,7 +23,7 @@
             }
         },
         "tasks": {
-            "daqTask": {
+            "FHRTask": {
                 "active": "true",
                 "className": "o2::quality_control_modules::its::ITSOnlineTask",
                 "moduleName": "QcITSRawTask",

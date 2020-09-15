@@ -17,10 +17,6 @@
 #include "ITS/ITSOnlineTask.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include <DataFormatsITSMFT/Digit.h>
-#include <DataFormatsITSMFT/ROFRecord.h>
-#include <ITSMFTReconstruction/GBTLink.h>
-#include <Common/DataBlock.h>
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
 #include <TCanvas.h>
@@ -29,7 +25,6 @@
 #include <TH1.h>
 #include <TPaveText.h>
 #include <TPaveStats.h>
-#include <Framework/InputRecordWalker.h>
 
 #include <time.h>
 
