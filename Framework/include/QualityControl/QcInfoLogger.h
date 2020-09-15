@@ -74,8 +74,9 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
 #define NUM_ARGS(...) NUM_ARGS_(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0)
 #define CONCATENATE(X, Y) X##Y
 #define CONCATE(MACRO, NUMBER) CONCATENATE(MACRO, NUMBER)
-#define VA_MACRO(MACRO, ...) CONCATE(MACRO, NUM_ARGS(__VA_ARGS__)) \
-(__VA_ARGS__)
+#define VA_MACRO(MACRO, ...)            \
+  CONCATE(MACRO, NUM_ARGS(__VA_ARGS__)) \
+  (__VA_ARGS__)
 
 #define ILOG(...) VA_MACRO(ILOG, void, void, __VA_ARGS__)
 // TODO understand why the zero argument does not work.
