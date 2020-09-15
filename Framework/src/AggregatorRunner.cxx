@@ -15,6 +15,7 @@
 
 #include "QualityControl/AggregatorRunner.h"
 
+#include <fairlogger/Logger.h>
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
@@ -112,6 +113,11 @@ QualityObjectsType AggregatorRunner::aggregate()
 //          << ENDM;
 
   QualityObjectsType allQOs;
+
+  // for the sake of a test
+//  QualityObject qo(Quality::Bad, );
+
+
 //  for (auto& aggregator : mAggregators) {
 //    if (aggregator.isReady(mMonitorObjectRevision)) {
 //      auto newQOs = aggregator.aggregator(moMap);
@@ -120,7 +126,7 @@ QualityObjectsType AggregatorRunner::aggregate()
 //      allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
 //      newQOs.clear();
 //
-//      // Was aggregatored, update latest revision
+//      // Was aggregated, update latest revision
 //      aggregator.updateRevision(mGlobalRevision);
 //    } else {
 //      ILOG(Info) << "Monitor Objects for the aggregator '" << aggregator.getName() << "' are not ready, ignoring" << ENDM;
@@ -185,7 +191,7 @@ void AggregatorRunner::initServiceDiscovery()
   auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
-    LOG(INFO) << "ServiceDiscovery initialized";
+  ILOG(Info) << "ServiceDiscovery initialized" << ENDM;
 }
 
 void AggregatorRunner::initAggregators()
