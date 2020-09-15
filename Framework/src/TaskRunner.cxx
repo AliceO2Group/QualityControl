@@ -22,12 +22,8 @@
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Monitoring/MonitoringFactory.h>
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
+
 #include <Framework/CallbackService.h>
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/TimesliceIndex.h>
@@ -43,7 +39,6 @@ using namespace o2::utilities;
 
 #include <string>
 #include <memory>
-#include <boost/property_tree/ini_parser.hpp>
 
 using namespace std;
 
@@ -56,6 +51,7 @@ using namespace o2::framework;
 using namespace o2::header;
 using namespace o2::configuration;
 using namespace o2::monitoring;
+using namespace o2::utilities;
 using namespace std::chrono;
 using namespace AliceO2::Common;
 
