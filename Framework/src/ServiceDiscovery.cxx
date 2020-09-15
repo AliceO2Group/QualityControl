@@ -27,12 +27,15 @@ namespace o2::quality_control::core
 ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& name, const std::string& id, const std::string& healthEndpoint)
   : curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mName(name), mId(id), mHealthEndpoint(healthEndpoint)
 {
+  ILOG(Info) << "Service Discovery constructor" << ENDM;
   // parameter check
   if (mHealthEndpoint.find(':') == std::string::npos) {
     mHealthEndpoint = GetDefaultUrl();
   }
 
+  ILOG(Info) << "Thread health creation" << ENDM;
   mHealthThread = std::thread([=] { runHealthServer(std::stoi(mHealthEndpoint.substr(mHealthEndpoint.find(":") + 1))); });
+  ILOG(Info) << "ready to register" << ENDM;
   _register("");
 }
 
@@ -102,6 +105,9 @@ void ServiceDiscovery::deregister()
 
 void ServiceDiscovery::runHealthServer(unsigned int port)
 {
+  std::cout << "cout in runHealthServer" << std::endl;
+  ILOG(Info) << "ServiceDiscovery::runHealthServer - ILOG " << ENDM;
+  std::cout << "cout in runHealthServer 2" << std::endl;
   using boost::asio::ip::tcp;
   mThreadRunning = true;
   try {

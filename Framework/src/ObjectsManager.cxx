@@ -39,7 +39,9 @@ ObjectsManager::ObjectsManager(const TaskConfig& taskConfig, bool noDiscovery) :
   // register with the discovery service
   if (!noDiscovery) {
     std::string uniqueTaskID = taskConfig.taskName + "_" + std::to_string(mTaskConfig.parallelTaskID);
+    ILOG(Info) << "Creation of Service Discovery with id " << uniqueTaskID << ENDM;
     mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName, uniqueTaskID);
+    ILOG(Info) << "Finished creation SD " << ENDM;
   } else {
     ILOG(Info) << "Service Discovery disabled" << ENDM;
     mServiceDiscovery = nullptr;
