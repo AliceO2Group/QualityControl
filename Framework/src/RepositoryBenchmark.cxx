@@ -86,7 +86,7 @@ void RepositoryBenchmark::InitTask()
   } catch (boost::exception& exc) {
     string diagnostic = boost::current_exception_diagnostic_information();
     ILOG(Error, Support) << "Unexpected exception, diagnostic information follows:\n"
-         << diagnostic << ENDM;
+                         << diagnostic << ENDM;
     if (diagnostic == "No diagnostic information available.") {
       throw;
     }

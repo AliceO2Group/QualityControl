@@ -132,7 +132,7 @@ void TrendingTaskITSFhr::trendValues()
 void TrendingTaskITSFhr::storePlots()
 {
   ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
-       << ENDM;
+                      << ENDM;
   //
   // Create and save trends for each stave
   //
@@ -253,7 +253,7 @@ void TrendingTaskITSFhr::storePlots()
   } // end loop on plots
   for (int idx = 0; idx < NLAYERS * NTRENDSFHR; idx++) {
     ILOG(Info, Support) << " Saving canvas for layer " << idx / NTRENDSFHR << " to CCDB "
-         << ENDM;
+                        << ENDM;
     auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName,
                                               mConfig.detectorName);
     mo->setIsOwner(false);

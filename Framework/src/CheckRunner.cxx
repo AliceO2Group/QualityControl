@@ -147,7 +147,7 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
     ILOG(Fatal, Ops) << "Unexpected exception during initialization:\n"
-         << boost::current_exception_diagnostic_information(true) << ENDM;
+                     << boost::current_exception_diagnostic_information(true) << ENDM;
     throw;
   }
 }
@@ -168,7 +168,7 @@ CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
     ILOG(Fatal, Ops) << "Unexpected exception during initialization:\n"
-         << boost::current_exception_diagnostic_information(true) << ENDM;
+                     << boost::current_exception_diagnostic_information(true) << ENDM;
     throw;
   }
 }
@@ -192,7 +192,7 @@ void CheckRunner::init(framework::InitContext&)
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
     ILOG(Fatal, Ops) << "Unexpected exception during initialization:\n"
-         << current_diagnostic(true) << ENDM;
+                     << current_diagnostic(true) << ENDM;
     throw;
   }
 }

@@ -75,7 +75,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
     ILOG(Fatal, Ops) << "Unexpected exception during configuration:\n"
-         << current_diagnostic(true) << ENDM;
+                     << current_diagnostic(true) << ENDM;
     throw;
   }
 }
@@ -89,7 +89,7 @@ void TaskRunner::init(InitContext& iCtx)
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
     ILOG(Fatal, Ops) << "Unexpected exception during configuration:\n"
-         << current_diagnostic(true) << ENDM;
+                     << current_diagnostic(true) << ENDM;
     throw;
   }
 
@@ -124,7 +124,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
 {
   if (mNoMoreCycles) {
     ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
-         << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
+                        << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
 
@@ -177,9 +177,9 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   }
 
   ILOG(Debug, Devel) << "Completion policy callback. "
-       << "Total inputs possible: " << inputs.size()
-       << ", data inputs: " << dataInputsPresent
-       << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
+                     << "Total inputs possible: " << inputs.size()
+                     << ", data inputs: " << dataInputsPresent
+                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
 
   if (dataInputsPresent == dataInputsExpected) {
     action = CompletionPolicy::CompletionOp::Consume;
@@ -234,7 +234,7 @@ void TaskRunner::start(const ConfigParamRegistry& options)
 
   if (mNoMoreCycles) {
     ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
-         << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
+                        << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
 
@@ -365,8 +365,8 @@ std::string TaskRunner::validateDetectorName(std::string name) const
     for (auto i : permitted)
       permittedString += i + ' ';
     ILOG(Error, Support) << "Invalid detector name : " << name << "\n"
-         << "    Placeholder 'MISC' will be used instead\n"
-         << "    Note: list of permitted detector names :" << permittedString << ENDM;
+                         << "    Placeholder 'MISC' will be used instead\n"
+                         << "    Note: list of permitted detector names :" << permittedString << ENDM;
     return "MISC";
   }
   return name;
@@ -422,7 +422,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
   if (mTaskConfig.maxNumberCycles == mCycleNumber) {
     ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
-         << " The task will not do anything from now on." << ENDM;
+                        << " The task will not do anything from now on." << ENDM;
   }
 }
 

@@ -139,7 +139,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   const std::string qcConfigurationSource = std::string("json://") + getTestDataDirectory() + "testCheckWorkflow.json";
 
-  ILOG(Info)<< "Using config file '" << qcConfigurationSource << "'" << ENDM;
+  ILOG(Info) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
