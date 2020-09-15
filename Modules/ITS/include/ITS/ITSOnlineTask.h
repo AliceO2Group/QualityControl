@@ -101,7 +101,7 @@ class ITSOnlineTask final : public TaskInterface
   o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
   ChipPixelData* mChipDataBuffer = nullptr;
   std::vector<ChipPixelData> mChipsBuffer;
-  int mHitNumberOfChip[7][48][2][14][14] = { { 0 } }; //layer, stave, substave, hic, chip
+  int mHitNumberOfChip[7][48][2][14][14] = { { { { { 0 } } } } }; //layer, stave, substave, hic, chip
   int mTimeFrameId = 0;
   uint32_t mTriggerTypeCount[13] = { 0 };
 

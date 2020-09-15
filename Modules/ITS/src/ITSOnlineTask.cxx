@@ -48,12 +48,21 @@ ITSOnlineTask::ITSOnlineTask()
 ITSOnlineTask::~ITSOnlineTask()
 {
   delete mDecoder;
+  delete mChipDataBuffer;
   delete mTFInfo;
   delete mErrorPlots;
+  delete mErrorVsFeeid;
   delete mTriggerPlots;
+  delete mTriggerVsFeeid;
+  //delete mInfoCanvas;
+  delete mInfoCanvasComm;
+  delete mTextForShifter;
+  delete mTextForShifter2;
+
   for (int ilayer = 0; ilayer < 7; ilayer++) {
     delete mChipStaveOccupancy[ilayer];
     delete mOccupancyPlot[ilayer];
+    delete mChipStaveEventHitCheck[ilayer];
     for (int istave = 0; istave < 48; istave++) {
       for (int isubstave = 0; isubstave < 2; isubstave++) {
         for (int ihic = 0; ihic < 14; ihic++) {
@@ -295,7 +304,7 @@ void ITSOnlineTask::monitorData(o2::framework::ProcessingContext& ctx)
   while ((mChipDataBuffer = mDecoder->getNextChipData(mChipsBuffer))) {
     if (mChipDataBuffer) {
       const auto& pixels = mChipDataBuffer->getData();
-      int chipHitNumber[2][7][14] = { { 0 } }; //substave, module
+      int chipHitNumber[2][7][14] = { { { 0 } } }; //substave, module
       for (auto& pixel : pixels) {
         mGeom->getChipId(mChipDataBuffer->getChipID(), lay, sta, ssta, mod, chip);
         mHitNumberOfChip[lay][sta][ssta][mod][chip]++;
