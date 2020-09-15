@@ -27,7 +27,7 @@ struct DataProcessorSpec;
 namespace o2::quality_control::checker
 {
 
-/// \brief Factory in charge of creating DataProcessorSpec of QC AggregatorRunner
+/// \brief Factory in charge of creating the AggregatorRunners and their corresponding DataProcessorSpec.
 class AggregatorRunnerFactory
 {
  public:

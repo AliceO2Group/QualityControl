@@ -30,9 +30,10 @@ namespace o2::quality_control::checker
 
 class AggregatorInterface;
 
-/// \brief An aggregator as found in a configuration.
+/// \brief An aggregator as found in the configuration.
 ///
-/// A Aggregator is in charge of loading/instantiating the single aggregator from module, configure them and tell whenever the aggregator policy is fulfilled.
+/// A Aggregator is in charge of loading/instantiating the single aggregator from module,
+/// configure them and tell whenever the aggregator policy is fulfilled.
 class Aggregator
 {
  public:

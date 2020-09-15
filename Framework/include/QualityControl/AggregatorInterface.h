@@ -26,7 +26,7 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control::checker
 {
 
-/// \brief  Skeleton of a quality aggregator.
+/// \brief  Skeleton of a quality aggregator user algorithm.
 ///
 /// \author Barthelemy von Haller
 class AggregatorInterface

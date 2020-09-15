@@ -40,9 +40,9 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(std::string configurationSource, const vector<framework::OutputSpec> checkerRunnerOutputs)
+AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkerRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
-    mOutput({ "mo" }, createAggregatorRunnerDataDescription(mDeviceName), 0)
+    mOutput({ "qo" }, createAggregatorRunnerDataDescription(mDeviceName), 0)
 {
   try {
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
@@ -190,7 +190,7 @@ void AggregatorRunner::initServiceDiscovery()
 
 void AggregatorRunner::initAggregators()
 {
-  // Build aggregators based on the configurationd
+  // Build aggregators based on the configuration
   if (mConfigFile->getRecursive("qc").count("aggregators")) {
     // For every aggregator definition, create a Check
     for (const auto& [aggregatorName, aggregatorCheck] : mConfigFile->getRecursive("qc.aggregators")) {
