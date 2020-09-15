@@ -56,9 +56,10 @@ class TrendingTask : public PostProcessingInterface
     Int_t runNumber = 0;
   };
 
-  void trendValues(repository::DatabaseInterface&);
-  void storePlots(repository::DatabaseInterface&);
-  void storeTrend(repository::DatabaseInterface&);
+  // the three worker methods require a timestamp (ms since epoch) of objects to trend and store.
+  void trendValues(uint64_t timestamp, repository::DatabaseInterface&);
+  void storePlots(uint64_t timestamp, repository::DatabaseInterface&);
+  void storeTrend(uint64_t timestamp, repository::DatabaseInterface&);
 
   TrendingTaskConfig mConfig;
   MetaData mMetaData;
