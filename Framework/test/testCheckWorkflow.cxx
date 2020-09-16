@@ -12,18 +12,15 @@
 /// \file    testCheckWorkflow.cxx
 /// \author  Rafal Pacholek
 ///
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
+
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DeviceSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::utilities;
 
 const std::string receiverName = "Receiver";
 

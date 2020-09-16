@@ -26,17 +26,13 @@
 /// generates both local and remote topologies, as it is the usual use-case for local development.
 
 #include <boost/asio/ip/host_name.hpp>
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::utilities;
 
 // The customize() functions are used to declare the executable arguments and to specify custom completion and channel
 // configuration policies. They have to be above `#include "Framework/runDataProcessing.h"` - that header checks if
