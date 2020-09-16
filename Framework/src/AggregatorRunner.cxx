@@ -44,7 +44,7 @@ namespace o2::quality_control::checker
 
 AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkerRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
-    mOutput({ "qo" }, createAggregatorRunnerDataDescription(mDeviceName), 0)
+    mOutput({ "qo" }, createAggregatorRunnerDataDescription(mDeviceName), 0),
       mTotalNumberObjectsReceived(0)
 {
   try {
