@@ -290,7 +290,6 @@ QualityObjectsType CheckRunner::check()
   QualityObjectsType allQOs;
   for (auto& check : mChecks) {
     if (policyManager.isReady(check.getName())) {
-      //    if (check.isReady(mMonitorObjectRevision)) {
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
 
@@ -299,7 +298,6 @@ QualityObjectsType CheckRunner::check()
 
       // Was checked, update latest revision
       policyManager.updateActorRevision(check.getName());
-      //      check.updateRevision(mGlobalRevision);
     } else {
       mLogger << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
     }
@@ -382,19 +380,6 @@ void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObject
   objects.pop_back(); // remove last comma
   mServiceDiscovery->_register(objects);
 }
-
-//void CheckRunner::updateGlobalRevision()
-//{
-//  ++mGlobalRevision;
-//  if (mGlobalRevision == 0) {
-//    // mGlobalRevision cannot be 0
-//    // 0 means overflow, increment and update all check revisions to 0
-//    ++mGlobalRevision;
-//    for (auto& check : mChecks) {
-//      check.updateRevision(0);
-//    }
-//  }
-//}
 
 void CheckRunner::initDatabase()
 {

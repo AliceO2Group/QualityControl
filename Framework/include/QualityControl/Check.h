@@ -84,11 +84,9 @@ class Check
   std::string getPolicyName() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjects() const;
-  //  bool getPolicyHelper() const;
 
  private:
   void initConfig(std::string checkName);
-  //  void initPolicy(std::string policyType);
 
   void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality);
 
@@ -104,11 +102,6 @@ class Check
   o2::framework::OutputSpec mOutputSpec;
 
   bool mBeautify = true;
-
-  // Policy
-  //  std::function<bool(std::map<std::string, unsigned int>&)> mPolicy;
-  //  unsigned int mMORevision = 0;
-  //  bool mPolicyHelper = false; // Depending on policy, the purpose might change
 };
 
 } // namespace o2::quality_control::checker

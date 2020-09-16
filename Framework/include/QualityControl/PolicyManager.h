@@ -47,7 +47,7 @@ struct Policy {
  *   - a `policy` determines whether something is ready to be done or not. It is a glorified function returning
  *     a boolean.
  *   - an `actor` (e.g. Check or Aggregator) is in charge of executing something when a policy is fulfilled. There
- *     can be several actors for a caller.
+ *     can be several actors for a caller. The actor is not aware of the policyManager.
  *   - the `objects` are received by the caller. They are processed by the actors and their status (e.g. freshly received)
  *     is used by some policies.
  *   - a revision is a number associated to each object to determine when it was received and associated to
@@ -123,9 +123,9 @@ class PolicyManager
   bool isReady(const std::string& actorName);
 
  private:
-  std::map<std::string /* Actor name */, Policy> mPoliciesByName;
+  std::map<std::string /* Actor name */, Policy> mPoliciesByActor;
   RevisionType mGlobalRevision = 1;
-  std::map<std::string, RevisionType> mObjectsRevision; // object name -> revision
+  std::map<std::string /* Object name */, RevisionType> mObjectsRevision;
 };
 
 } // namespace o2::quality_control::checker

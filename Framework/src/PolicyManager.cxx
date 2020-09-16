@@ -30,7 +30,7 @@ void PolicyManager::updateGlobalRevision()
     // mGlobalRevision cannot be 0
     // 0 means overflow, increment and update all check revisions to 0
     ++mGlobalRevision;
-    for (auto& actor : mPoliciesByName) {
+    for (auto& actor : mPoliciesByActor) {
       updateActorRevision(actor.second.actorName, 0);
     }
   }
@@ -38,13 +38,13 @@ void PolicyManager::updateGlobalRevision()
 
 void PolicyManager::updateActorRevision(const std::string& actorName, RevisionType revision)
 {
-  for (auto actor : mPoliciesByName) {
+  for (auto actor : mPoliciesByActor) {
   }
-  if (mPoliciesByName.count(actorName) == 0) {
+  if (mPoliciesByActor.count(actorName) == 0) {
     ILOG(Error) << "Cannot update revision for " << actorName << " : object not found" << ENDM;
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(actorName));
   }
-  mPoliciesByName.at(actorName).revision = revision;
+  mPoliciesByActor.at(actorName).revision = revision;
 }
 
 void PolicyManager::updateActorRevision(std::string actorName)
@@ -75,8 +75,8 @@ void PolicyManager::addPolicy(std::string actorName, std::string policyType, std
      * Run check if all MOs are updated 
      */
     policy = [&, actorName]() {
-      for (const auto& objectName : mPoliciesByName.at(actorName).inputObjects) {
-        if (mObjectsRevision[objectName] <= mPoliciesByName.at(actorName).revision) {
+      for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
+        if (mObjectsRevision[objectName] <= mPoliciesByActor.at(actorName).revision) {
           // Expect: mObjectsRevision[notExistingKey] == 0
           return false;
         }
@@ -89,19 +89,19 @@ void PolicyManager::addPolicy(std::string actorName, std::string policyType, std
      * Guarantee that all declared MOs are available
      */
     policy = [&, actorName]() {
-      if (!mPoliciesByName.at(actorName).policyHelper) {
+      if (!mPoliciesByActor.at(actorName).policyHelper) {
         // Check if all monitor objects are available
-        for (const auto& objectName : mPoliciesByName.at(actorName).inputObjects) {
+        for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
           if (!mObjectsRevision.count(objectName)) {
             return false;
           }
         }
         // From now on all MOs are available
-        mPoliciesByName.at(actorName).policyHelper = true;
+        mPoliciesByActor.at(actorName).policyHelper = true;
       }
 
-      for (const auto& objectName : mPoliciesByName.at(actorName).inputObjects) {
-        if (mObjectsRevision[objectName] > mPoliciesByName.at(actorName).revision) {
+      for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
+        if (mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
           return true;
         }
       }
@@ -114,12 +114,12 @@ void PolicyManager::addPolicy(std::string actorName, std::string policyType, std
      * This is the same behaviour as OnAny.
      */
     policy = [&, actorName]() {
-      if (mPoliciesByName.at(actorName).allInputObjects) {
+      if (mPoliciesByActor.at(actorName).allInputObjects) {
         return true;
       }
 
-      for (const auto& objectName : mPoliciesByName.at(actorName).inputObjects) {
-        if (mObjectsRevision.count(objectName) && mObjectsRevision[objectName] > mPoliciesByName.at(actorName).revision) {
+      for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
+        if (mObjectsRevision.count(objectName) && mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
           return true;
         }
       }
@@ -146,8 +146,8 @@ void PolicyManager::addPolicy(std::string actorName, std::string policyType, std
      * Does not guarantee to contain all declared MOs 
      */
     policy = [&, actorName]() {
-      for (const auto& objectName : mPoliciesByName.at(actorName).inputObjects) {
-        if (mObjectsRevision.count(objectName) && mObjectsRevision[objectName] > mPoliciesByName.at(actorName).revision) {
+      for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
+        if (mObjectsRevision.count(objectName) && mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
           return true;
         }
       }
@@ -158,16 +158,16 @@ void PolicyManager::addPolicy(std::string actorName, std::string policyType, std
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("No policy named '" + policyType + "'"));
   }
 
-  mPoliciesByName[actorName] = { actorName, policy, objectNames, allObjects, policyHelper };
+  mPoliciesByActor[actorName] = { actorName, policy, objectNames, allObjects, policyHelper };
 }
 
 bool PolicyManager::isReady(const std::string& actorName)
 {
-  if (mPoliciesByName.count(actorName) == 0) {
+  if (mPoliciesByActor.count(actorName) == 0) {
     ILOG(Error) << "Cannot check if " << actorName << " is ready : object not found" << ENDM;
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(actorName));
   }
-  return mPoliciesByName.at(actorName).isReady();
+  return mPoliciesByActor.at(actorName).isReady();
 }
 
 } // namespace o2::quality_control::checker
