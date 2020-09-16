@@ -87,7 +87,7 @@ void ITSOnlineTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder = new o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>();
   mDecoder->init();
   mDecoder->setNThreads(mNThreads);
-  mDecoder->setFormat(GBTLink::OldFormat);               //set old format rdh v4
+  mDecoder->setFormat(GBTLink::OldFormat);               //set old format rdh v4, will be changed to RDHv6 (NewFormat)
   mDecoder->setUserDataOrigin(header::DataOrigin("DS")); //set user data origin in dpl
   mChipsBuffer.resize(mGeom->getNumberOfChips());
 }
