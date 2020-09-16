@@ -128,6 +128,6 @@ class PolicyManager
   std::map<std::string, RevisionType> mObjectsRevision; // object name -> revision
 };
 
-}
+} // namespace o2::quality_control::checker
 
 #endif // QC_CHECKER_POLICYMANAGER_H

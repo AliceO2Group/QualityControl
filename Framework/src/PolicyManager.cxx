@@ -40,7 +40,7 @@ void PolicyManager::updateActorRevision(const std::string& actorName, RevisionTy
 {
   for (auto actor : mPoliciesByName) {
   }
-  if(mPoliciesByName.count(actorName) == 0){
+  if (mPoliciesByName.count(actorName) == 0) {
     ILOG(Error) << "Cannot update revision for " << actorName << " : object not found" << ENDM;
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(actorName));
   }
@@ -55,10 +55,10 @@ void PolicyManager::updateActorRevision(std::string actorName)
 
 void PolicyManager::updateObjectRevision(std::string objectName, RevisionType revision)
 {
-//  if(mActors.count(actorName) == 0){
-//    ILOG(Error) << "Cannot update revision for " << actorName << " : object not found" << ENDM;
-//    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(actorName));
-//  }
+  //  if(mActors.count(actorName) == 0){
+  //    ILOG(Error) << "Cannot update revision for " << actorName << " : object not found" << ENDM;
+  //    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(actorName));
+  //  }
   mObjectsRevision[objectName] = revision;
 }
 
@@ -138,7 +138,7 @@ void PolicyManager::addPolicy(std::string actorName, std::string policyType, std
       return true;
     };
 
-  } else if (policyType == "OnAny" ) {
+  } else if (policyType == "OnAny") {
     /**
      * Default behaviour
      *
@@ -155,19 +155,19 @@ void PolicyManager::addPolicy(std::string actorName, std::string policyType, std
     };
   } else {
     ILOG(Fatal) << "No policy named '" << policyType << "'" << ENDM;
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("No policy named '"+policyType + "'"));
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("No policy named '" + policyType + "'"));
   }
 
-  mPoliciesByName[actorName] = {actorName, policy, objectNames, allObjects, policyHelper};
+  mPoliciesByName[actorName] = { actorName, policy, objectNames, allObjects, policyHelper };
 }
 
 bool PolicyManager::isReady(const std::string& actorName)
 {
-  if(mPoliciesByName.count(actorName) == 0){
+  if (mPoliciesByName.count(actorName) == 0) {
     ILOG(Error) << "Cannot check if " << actorName << " is ready : object not found" << ENDM;
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(actorName));
   }
   return mPoliciesByName.at(actorName).isReady();
 }
 
-}
+} // namespace o2::quality_control::checker

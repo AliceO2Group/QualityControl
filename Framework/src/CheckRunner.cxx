@@ -208,7 +208,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
   send(qualityObjects, ctx.outputs());
 
-//  updateGlobalRevision();
+  //  updateGlobalRevision();
   policyManager.updateGlobalRevision();
 
   sendPeriodicMonitoring();
@@ -258,7 +258,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 
         if (mo) {
           mMonitorObjects[mo->getFullName()] = mo;
-//          mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
+          //          mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
           policyManager.updateObjectRevision(mo->getFullName());
           mTotalNumberObjectsReceived++;
 
@@ -290,7 +290,7 @@ QualityObjectsType CheckRunner::check()
   QualityObjectsType allQOs;
   for (auto& check : mChecks) {
     if (policyManager.isReady(check.getName())) {
-//    if (check.isReady(mMonitorObjectRevision)) {
+      //    if (check.isReady(mMonitorObjectRevision)) {
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
 
@@ -299,7 +299,7 @@ QualityObjectsType CheckRunner::check()
 
       // Was checked, update latest revision
       policyManager.updateActorRevision(check.getName());
-//      check.updateRevision(mGlobalRevision);
+      //      check.updateRevision(mGlobalRevision);
     } else {
       mLogger << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
     }

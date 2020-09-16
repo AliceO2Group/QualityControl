@@ -58,14 +58,14 @@ Check::Check(std::string checkName, std::string configurationSource)
     mBeautify(true)
 {
   cout << "Check::Check: validate " << framework::DataSpecUtils::validate(mOutputSpec) << endl;
-//  cout << "Check::Check: empty " << mOutputSpec.binding.empty() << endl;
+  //  cout << "Check::Check: empty " << mOutputSpec.binding.empty() << endl;
   cout << "Check::Check: " << mOutputSpec.binding.value << endl;
 
-//  mPolicy = [](std::map<std::string, unsigned int>) {
-//    // Prevent from using of uninitiated policy
-//    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Policy not initiated: try to run Check::init() first"));
-//    return false;
-//  };
+  //  mPolicy = [](std::map<std::string, unsigned int>) {
+  //    // Prevent from using of uninitiated policy
+  //    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Policy not initiated: try to run Check::init() first"));
+  //    return false;
+  //  };
 
   try {
     initConfig(checkName);
@@ -250,7 +250,7 @@ void Check::init()
    * The policy needs to be here. If running in constructor, the lambda gets wrong reference
    * and runs into SegmentationFault.
    */
-//  initPolicy(mCheckConfig.policyType);
+  //  initPolicy(mCheckConfig.policyType);
 
   // Determine whether we can beautify
   // See QC-299 for details

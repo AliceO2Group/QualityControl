@@ -35,13 +35,12 @@ using namespace o2::framework;
 using namespace o2::header;
 using namespace AliceO2::Common;
 
-
 BOOST_AUTO_TEST_CASE(test_basic_isready)
 {
   PolicyManager policyManager;
 
   // init
-  policyManager.addPolicy("actor1", "OnAny", {"object1"}, false, false);
+  policyManager.addPolicy("actor1", "OnAny", { "object1" }, false, false);
 
   // this is like 1 iteration of the run() :
   // get new data
@@ -68,8 +67,8 @@ BOOST_AUTO_TEST_CASE(test_basic_isready2)
   // init
   policyManager.addPolicy("actor1", "OnAny", { "object1", "object2" }, false, false);
   policyManager.addPolicy("actor2", "OnAny", { "object2", "object3" }, false, false);
-  policyManager.addPolicy("actor3", "OnAny", { }, false, false); // no objects listed
-  policyManager.addPolicy("actor4", "OnAny", { }, true, false); // allMOs set
+  policyManager.addPolicy("actor3", "OnAny", {}, false, false); // no objects listed
+  policyManager.addPolicy("actor4", "OnAny", {}, true, false);  // allMOs set
 
   // this is like 1 iteration of the run() :
   // get new data
@@ -121,8 +120,8 @@ BOOST_AUTO_TEST_CASE(test_check_policy_OnAll)
   // init
   policyManager.addPolicy("actor1", "OnAll", { "object1", "object2" }, false, false);
   policyManager.addPolicy("actor2", "OnAll", { "object2", "object3" }, false, false);
-//  policyManager.addPolicy("actor3", "OnAll", { }, false, false);
-//  policyManager.addPolicy("actor4", "OnAll", { }, true, false);
+  //  policyManager.addPolicy("actor3", "OnAll", { }, false, false);
+  //  policyManager.addPolicy("actor4", "OnAll", { }, true, false);
 
   // iteration 1 of run() : get object1
   // get new data
@@ -130,8 +129,8 @@ BOOST_AUTO_TEST_CASE(test_check_policy_OnAll)
   // check whether data is ready
   BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
   BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-//  BOOST_CHECK_EQUAL(policyManager.isReady("actor3"), true);
-//  BOOST_CHECK_EQUAL(policyManager.isReady("actor4"), true);
+  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor3"), true);
+  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor4"), true);
   policyManager.updateGlobalRevision();
 
   // iteration 2 of run() : get object2
@@ -140,14 +139,14 @@ BOOST_AUTO_TEST_CASE(test_check_policy_OnAll)
   // check the policy
   BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
   BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-//  BOOST_CHECK_EQUAL(policyManager.isReady("actor3"), true);
-//  BOOST_CHECK_EQUAL(policyManager.isReady("actor4"), true);
+  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor3"), true);
+  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor4"), true);
   // update
   policyManager.updateActorRevision("actor1");
   BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
   BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-//  BOOST_CHECK_EQUAL(policyManager.isReady("actor3"), true);
-//  BOOST_CHECK_EQUAL(policyManager.isReady("actor4"), true);
+  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor3"), true);
+  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor4"), true);
   policyManager.updateGlobalRevision();
 
   // iteration 3 of run() : get object3
@@ -354,7 +353,7 @@ BOOST_AUTO_TEST_CASE(test_errors)
 
   // init
   BOOST_CHECK_THROW(
-  policyManager.addPolicy("actor1", "OnTheMoon", { "object1", "object2" }, false, false), FatalException);
+    policyManager.addPolicy("actor1", "OnTheMoon", { "object1", "object2" }, false, false), FatalException);
   policyManager.addPolicy("actor2", "OnEachSeparately", { "object2", "object3" }, false, false);
 
   // get new data

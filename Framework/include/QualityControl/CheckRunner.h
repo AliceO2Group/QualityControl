@@ -171,7 +171,7 @@ class CheckRunner : public framework::Task
    * It is assigned to an MO on receiving and is stored in mMonitorObjectRevision.
    * This function function should be called at the end of the receiving MOs.
    */
-//  void updateGlobalRevision();
+  //  void updateGlobalRevision();
 
   /**
    * Update the list of objects this TaskRunner is sending out.
@@ -206,8 +206,8 @@ class CheckRunner : public framework::Task
   std::vector<Check> mChecks;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-//  std::map<std::string, unsigned int> mMonitorObjectRevision;
-//  unsigned int mGlobalRevision = 1;
+  //  std::map<std::string, unsigned int> mMonitorObjectRevision;
+  //  unsigned int mGlobalRevision = 1;
   std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
