@@ -106,7 +106,7 @@ void ServiceDiscovery::deregister()
 void ServiceDiscovery::runHealthServer(unsigned int port)
 {
   std::cout << "cout in runHealthServer" << std::endl;
-  ILOG(Info) << "ServiceDiscovery::runHealthServer - ILOG " << ENDM;
+//  ILOG(Info) << "ServiceDiscovery::runHealthServer - ILOG " << ENDM;
   std::cout << "cout in runHealthServer 2" << std::endl;
   using boost::asio::ip::tcp;
   mThreadRunning = true;
@@ -130,7 +130,7 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
     }
   } catch (std::exception& e) {
     mThreadRunning = false;
-    ILOG(Error) << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
+    std::cerr << "ServiceDiscovery::runHealthServer - " << e.what() << std::endl;
   }
 }
 
