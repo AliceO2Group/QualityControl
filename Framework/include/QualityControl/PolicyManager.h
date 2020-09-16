@@ -26,13 +26,16 @@ namespace o2::quality_control::checker
 using PolicyType = std::function<bool()>;
 typedef uint32_t RevisionType;
 
+/**
+ * A PolicyActor has 1 policy
+ */
 struct PolicyActor {
   std::string name;
   PolicyType policy;
   std::vector<std::string> objects;
   bool allObjects;
   // TODO this line makes me think that lambdas are not enough because we actually need to store a state...
-  bool policyHelper; // Depending on policy, the purpose might change
+  bool policyHelper; // the purpose might change depending on policy,
   RevisionType revision = 0;
 };
 
@@ -82,7 +85,7 @@ class PolicyManager
    * @param actorName
    * @param revision
    */
-  void updateActorRevision(std::string actorName, RevisionType revision);
+  void updateActorRevision(const std::string& actorName, RevisionType revision);
   void updateActorRevision(std::string actorName);
   /**
    * \brief Update the revision number associated with an object.
@@ -97,6 +100,9 @@ class PolicyManager
    * Add a policy for the given actor.
    * @param actorName
    * @param policyType One of the policy names: OnAll, OnAnyNonZero, OnEachSeparately, OnAny
+   * @param objectNames
+   * @param allObjects
+   * @param policyHelper
    */
   void addPolicy(std::string actorName, std::string policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper);
   /**
@@ -104,7 +110,7 @@ class PolicyManager
    * @param actorName
    * @return
    */
-  bool isReady(std::string actorName);
+  bool isReady(const std::string& actorName);
 
  private:
   std::map<std::string, PolicyActor> mActors; // actor name -> struct
