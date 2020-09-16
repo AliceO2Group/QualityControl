@@ -165,15 +165,6 @@ class CheckRunner : public framework::Task
   inline void initServiceDiscovery();
 
   /**
-   * \brief Increase the revision number for the Monitor Object.
-   *
-   * The revision number is an timeslot id for the monitor object.
-   * It is assigned to an MO on receiving and is stored in mMonitorObjectRevision.
-   * This function function should be called at the end of the receiving MOs.
-   */
-  //  void updateGlobalRevision();
-
-  /**
    * Update the list of objects this TaskRunner is sending out.
    * @param qualityObjects
    */
@@ -206,8 +197,6 @@ class CheckRunner : public framework::Task
   std::vector<Check> mChecks;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-  //  std::map<std::string, unsigned int> mMonitorObjectRevision;
-  //  unsigned int mGlobalRevision = 1;
   std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;

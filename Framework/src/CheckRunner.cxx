@@ -208,7 +208,6 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
   send(qualityObjects, ctx.outputs());
 
-  //  updateGlobalRevision();
   policyManager.updateGlobalRevision();
 
   sendPeriodicMonitoring();
@@ -258,7 +257,6 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 
         if (mo) {
           mMonitorObjects[mo->getFullName()] = mo;
-          //          mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
           policyManager.updateObjectRevision(mo->getFullName());
           mTotalNumberObjectsReceived++;
 

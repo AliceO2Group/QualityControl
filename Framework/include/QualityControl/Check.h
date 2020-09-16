@@ -66,11 +66,6 @@ class Check
    */
   void updateRevision(unsigned int revision);
 
-  /**
-   * \brief Return true if the Monitor Objects were changed accordingly to the policy
-   */
-  //  bool isReady(std::map<std::string, unsigned int>& revisionMap);
-
   const std::string& getName() const { return mCheckConfig.checkName; };
   o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
   o2::framework::Inputs getInputs() const { return mInputs; };

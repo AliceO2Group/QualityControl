@@ -49,16 +49,11 @@ void PolicyManager::updateActorRevision(const std::string& actorName, RevisionTy
 
 void PolicyManager::updateActorRevision(std::string actorName)
 {
-  // TODO perhaps make sure we are ok to update to a new revision ?
   updateActorRevision(actorName, mGlobalRevision);
 }
 
 void PolicyManager::updateObjectRevision(std::string objectName, RevisionType revision)
 {
-  //  if(mActors.count(actorName) == 0){
-  //    ILOG(Error) << "Cannot update revision for " << actorName << " : object not found" << ENDM;
-  //    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(actorName));
-  //  }
   mObjectsRevision[objectName] = revision;
 }
 
