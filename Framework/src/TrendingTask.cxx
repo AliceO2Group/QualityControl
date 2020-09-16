@@ -53,7 +53,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistry&)
 //todo: see if OptimizeBaskets() indeed helps after some time
 void TrendingTask::update(Trigger, framework::ServiceRegistry& services)
 {
-  auto& qcdb = services.get<repository::DatabaseInterface>();
+  auto& qcdb = repository::adaptDatabaseService(services);
 
   trendValues(qcdb);
 
@@ -63,7 +63,7 @@ void TrendingTask::update(Trigger, framework::ServiceRegistry& services)
 
 void TrendingTask::finalize(Trigger, framework::ServiceRegistry& services)
 {
-  auto& qcdb = services.get<repository::DatabaseInterface>();
+  auto& qcdb = repository::adaptDatabaseService(services);
 
   storePlots(qcdb);
   storeTrend(qcdb);

@@ -144,6 +144,18 @@ class DatabaseInterface
   virtual void truncate(std::string taskName, std::string objectName) = 0;
 };
 
+// We need this temporary mechanism to support both old and new ServiceRegistry API. TODO remove
+// after the change.
+template <typename T>
+DatabaseInterface& adaptDatabaseService(const T& services) {
+  if constexpr (std::is_same<repository::DatabaseInterface&, decltype(services.template
+    get<repository::DatabaseInterface>())>::value) {
+    return services.template get<repository::DatabaseInterface>();
+  } else {
+    return *services.template get<repository::DatabaseInterface>();
+  }
+}
+
 } // namespace o2::quality_control::repository
 
 #endif /* QC_REPOSITORY_DATABASEINTERFACE_H */
