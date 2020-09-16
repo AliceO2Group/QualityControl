@@ -46,7 +46,7 @@ namespace o2::quality_control_modules::its
 {
 
 /// \brief ITS Fake-hit rate real-time data processing task
-/// Working with the chain of "Detector -> RU -> CRU -> Readout -> STFB -> raw-proxy ->  QC"
+/// Working with the chain of "Detector -> RU -> CRU -> Readout -> STFB -> o2-dpl-raw-proxy ->  QC"
 class ITSOnlineTask final : public TaskInterface
 {
   using ChipPixelData = o2::itsmft::ChipPixelData;
