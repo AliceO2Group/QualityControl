@@ -23,30 +23,47 @@
 namespace o2::quality_control::checker
 {
 
-using PolicyType = std::function<bool()>;
+using FunctionType = std::function<bool()>;
 typedef uint32_t RevisionType;
 
 /**
- * A PolicyActor has 1 policy
+ * Represents 1 policy and all its associated elements.
  */
-struct PolicyActor {
-  std::string name;
-  PolicyType policy;
-  std::vector<std::string> objects;
-  bool allObjects;
+struct Policy {
+  std::string actorName;
+  FunctionType isReady;
+  std::vector<std::string> inputObjects;
+  bool allInputObjects;
   // TODO this line makes me think that lambdas are not enough because we actually need to store a state...
   bool policyHelper; // the purpose might change depending on policy,
   RevisionType revision = 0;
 };
 
 /**
- * The PolicyManager is in charge of keeping track of all the policies needed by the various actors (Check, Aggregator).
+ * The PolicyManager is in charge of instantiating and keeping track of policies.
  *
- * A policy defines when to trigger an action (`isReady()` returns true) for an actor (e.g. Check or Aggregator) based on a list of objects.
- * The caller (e.g. CheckRunner or AggregatorRunner) should call the methods like this:
+ * Naming:
+ *   - a `caller` (e.g. CheckRunner or AggregatorRunner) holds an instance of the PolicyManager and drives it.
+ *   - a `policy` determines whether something is ready to be done or not. It is a glorified function returning
+ *     a boolean.
+ *   - an `actor` (e.g. Check or Aggregator) is in charge of executing something when a policy is fulfilled. There
+ *     can be several actors for a caller.
+ *   - the `objects` are received by the caller. They are processed by the actors and their status (e.g. freshly received)
+ *     is used by some policies.
+ *   - a revision is a number associated to each object to determine when it was received and associated to
+ *     each actor to determine when it was last time triggered.
+ *
+ * The following policies are available:
+ *   - OnAny: triggers when an object is received that matches ANY object listed as a data source of the policy.
+ *   - OnAnyNonZero: triggers only if all objects have been received at least once, then trigger the same way as onAny.
+ *   - onAll: triggers when ALL objects listed as data source of the policy have been updated at least once.
+ *   - onEachSeparately: synonym of 'onEach'.
+ * If "all" is specified as list of object, or the list is empty, we always trigger.
+ *
+ * A typical caller code looks like this:
  * \code{.cpp}
  *  // when initializing
- * policyManager.addPolicy("actor1", "OnAny", {"object1"}, false, false);*
+ * policyManager.addPolicy("actor1", "OnAny", {"object1"}, false, false);
  *
  *  // in run() loop :
  *  // upon receiving new data, i.e. object1
@@ -61,13 +78,6 @@ struct PolicyActor {
  *  // end run() loop
  * \endcode
  *
- * The following policies are available:
- *    - OnAny: triggers when an object is received that matches ANY object listed as a data source of the policy.
- *    - OnAnyNonZero: triggers only if all objects have been received at least once, then trigger the same way as onAny.
- *    - onAll: triggers when ALL objects listed as data source of the policy have been updated at least once.
- *    - onEachSeparately: synonym of 'onEach'.
- *
- * If "all" is specified as list of object, or the list is empty, we always trigger.
  */
 class PolicyManager
 {
@@ -106,14 +116,14 @@ class PolicyManager
    */
   void addPolicy(std::string actorName, std::string policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper);
   /**
-   * Checks whether the given actor is ready or not based on its policy and the revisions.
+   * Checks whether the given actor is ready or not.
    * @param actorName
    * @return
    */
   bool isReady(const std::string& actorName);
 
  private:
-  std::map<std::string, PolicyActor> mActors; // actor name -> struct
+  std::map<std::string /* Actor name */, Policy> mPoliciesByName;
   RevisionType mGlobalRevision = 1;
   std::map<std::string, RevisionType> mObjectsRevision; // object name -> revision
 };
