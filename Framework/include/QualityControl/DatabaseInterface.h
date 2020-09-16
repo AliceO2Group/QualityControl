@@ -21,6 +21,8 @@
 #include <vector>
 #include <unordered_map>
 
+#include <Framework/ServiceRegistry.h>
+
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/MonitorObject.h"
 
@@ -33,6 +35,8 @@ namespace o2::quality_control::repository
 class DatabaseInterface
 {
  public:
+  constexpr static framework::ServiceKind service_kind = framework::ServiceKind::Global;
+
   /// Default constructor
   DatabaseInterface() = default;
   /// Destructor
