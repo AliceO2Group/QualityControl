@@ -6,6 +6,7 @@ add_library(QcITSRawTask
             src/TrendingTaskITSFhr.cxx
             src/TrendingTaskConfigITS.cxx
             src/TH2XlineReductor.cxx
+            src/ITSOnlineTask.cxx
             )
 
 target_sources(QcITSRawTask PRIVATE src/TH2XlineReductor.cxx)
@@ -32,6 +33,7 @@ add_root_dictionary(QcITSRawTask
                             include/ITS/TrendingTaskITSThr.h
                             include/ITS/TrendingTaskITSFhr.h
                             include/ITS/TH2XlineReductor.h
+                            include/ITS/ITSOnlineTask.h
                     LINKDEF include/ITS/LinkDef.h
                     BASENAME QcITSRawTask)
 
