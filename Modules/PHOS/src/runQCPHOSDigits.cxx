@@ -61,7 +61,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
   if (config.options().get<bool>("local") && config.options().get<bool>("remote")) {
-    ILOG(Info) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
+    ILOG(Info, Support) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
   }
 
   if (config.options().get<bool>("local") || !config.options().get<bool>("remote")) {

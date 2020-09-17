@@ -254,13 +254,13 @@ void TaskDiagnostics::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TaskDiagnostics::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   reset();
 }
 
 void TaskDiagnostics::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void TaskDiagnostics::monitorData(o2::framework::ProcessingContext& ctx)
@@ -279,7 +279,7 @@ void TaskDiagnostics::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TaskDiagnostics::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
   for (Int_t i = 0; i < DiagnosticsCounter::ncrates; i++) { // Filling histograms only at the end of the cycle
     mDecoderCounter.mDRMCounter[i].FillHistogram(mDRMHisto.get(), i + 1);
     mDecoderCounter.mLTMCounter[i].FillHistogram(mLTMHisto.get(), i + 1);
@@ -294,14 +294,14 @@ void TaskDiagnostics::endOfCycle()
 
 void TaskDiagnostics::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void TaskDiagnostics::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mDRMHisto->Reset();
   for (Int_t j = 0; j < DiagnosticsCounter::ntrms; j++) {
     mTRMHisto[j]->Reset();

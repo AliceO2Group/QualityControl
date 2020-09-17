@@ -122,7 +122,7 @@ TaskDigits::~TaskDigits()
 
 void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize TaskDigits" << ENDM;
+  ILOG(Info, Support) << "initialize TaskDigits" << ENDM;
 
   mTOFRawsMulti.reset(new TH1I("TOFRawsMulti", "TOF raw hit multiplicity; TOF raw hits number; Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity));
   getObjectsManager()->startPublishing(mTOFRawsMulti.get());
@@ -239,7 +239,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
 void TaskDigits::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   mTOFRawsMulti->Reset();
   mTOFRawsMultiIA->Reset();
   mTOFRawsMultiOA->Reset();
@@ -277,7 +277,7 @@ void TaskDigits::startOfActivity(Activity& /*activity*/)
 
 void TaskDigits::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
@@ -416,19 +416,19 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
 void TaskDigits::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void TaskDigits::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void TaskDigits::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mTOFRawsMulti->Reset();
   mTOFRawsMultiIA->Reset();
   mTOFRawsMultiOA->Reset();

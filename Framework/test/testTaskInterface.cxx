@@ -74,43 +74,43 @@ class TestTask : public TaskInterface
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& /*ctx*/) override
   {
-    ILOG(Info) << "initialize" << ENDM;
+    ILOG(Info, Support) << "initialize" << ENDM;
     test = 1;
   }
 
   void startOfActivity(Activity& /*activity*/) override
   {
-    ILOG(Info) << "startOfActivity" << ENDM;
+    ILOG(Info, Support) << "startOfActivity" << ENDM;
     test = 2;
   }
 
   void startOfCycle() override
   {
-    ILOG(Info) << "startOfCycle" << ENDM;
+    ILOG(Info, Support) << "startOfCycle" << ENDM;
     test = 3;
   }
 
   void monitorData(o2::framework::ProcessingContext& /*ctx*/) override
   {
-    ILOG(Info) << "monitorData" << ENDM;
+    ILOG(Info, Support) << "monitorData" << ENDM;
     test = 4;
   }
 
   void endOfCycle() override
   {
-    ILOG(Info) << "endOfCycle" << ENDM;
+    ILOG(Info, Support) << "endOfCycle" << ENDM;
     test = 5;
   }
 
   void endOfActivity(Activity& /*activity*/) override
   {
-    ILOG(Info) << "endOfActivity" << ENDM;
+    ILOG(Info, Support) << "endOfActivity" << ENDM;
     test = 6;
   }
 
   void reset() override
   {
-    ILOG(Info) << "reset" << ENDM;
+    ILOG(Info, Support) << "reset" << ENDM;
     test = 7;
   }
 

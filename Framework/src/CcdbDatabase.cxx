@@ -55,19 +55,19 @@ CcdbDatabase::~CcdbDatabase() { disconnect(); }
 void CcdbDatabase::loadDeprecatedStreamerInfos()
 {
   if (getenv("QUALITYCONTROL_ROOT") == nullptr) {
-    ILOG(Warning) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
-                  << "Consequently, old data might not be readable." << ENDM;
+    ILOG(Warning, Support) << "QUALITYCONTROL_ROOT is not set thus the the streamerinfo ROOT file can't be found.\n"
+                           << "Consequently, old data might not be readable." << ENDM;
     return;
   }
   string path = string(getenv("QUALITYCONTROL_ROOT")) + "/etc/";
   vector<string> filenames = { "streamerinfos.root", "streamerinfos_v017.root" };
   for (auto filename : filenames) {
     string localPath = path + filename;
-    ILOG(Info) << "Loading streamerinfos from : " << localPath << ENDM;
+    ILOG(Info, Devel) << "Loading streamerinfos from : " << localPath << ENDM;
     TFile file(localPath.data(), "READ");
     if (file.IsZombie()) {
       string s = string("Cannot find ") + localPath;
-      ILOG(Error) << s << ENDM;
+      ILOG(Error, Support) << s << ENDM;
       BOOST_THROW_EXCEPTION(DatabaseException() << errinfo_details(s));
     }
     TIter next(file.GetListOfKeys());
@@ -81,7 +81,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
       string stringRepresentation = si->GetName() + si->GetClassVersion();
       if (alreadySeen.count(stringRepresentation) == 0) {
         alreadySeen.emplace(stringRepresentation);
-        ILOG(Debug) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
+        ILOG(Debug, Devel) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << ENDM;
         si->BuildCheck();
       }
     }
@@ -144,7 +144,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   metadata["qc_task_name"] = mo->getTaskName();
   metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
 
-  ILOG(Debug) << "Storing MonitorObject " << path << ENDM;
+  ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
   ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
 }
 
@@ -172,7 +172,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObj
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
 
-  ILOG(Debug) << "Storing object " << path << ENDM;
+  ILOG(Debug, Support) << "Storing object " << path << ENDM;
   ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
 }
 
@@ -184,11 +184,11 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
     // We could not open a TFile we should now try to open an object directly serialized
     object = ccdbApi.retrieve(path, metadata, timestamp);
     if (object == nullptr) {
-      ILOG(Error) << "We could NOT retrieve the object " << path << "." << ENDM;
+      ILOG(Error, Support) << "We could NOT retrieve the object " << path << "." << ENDM;
       return nullptr;
     }
   }
-  ILOG(Debug) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
+  ILOG(Debug, Support) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
   return object;
 }
 
@@ -202,26 +202,26 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   // no object found
   if (obj == nullptr) {
     if (headers.count("Error") > 0) {
-      ILOGE << headers["Error"] << ENDM;
+      ILOG(Error, Support) << headers["Error"] << ENDM;
     }
     return nullptr;
   }
 
   // retrieve headers to determine the version of the QC framework
   Version objectVersion(headers["qc_version"]);
-  ILOG(Debug) << "Version of object is " << objectVersion << ENDM;
+  ILOG(Debug, Devel) << "Version of object is " << objectVersion << ENDM;
 
   std::shared_ptr<MonitorObject> mo;
   if (objectVersion == Version("0.0.0") || objectVersion < Version("0.25")) {
-    ILOG(Debug) << "Version of object " << taskName << "/" << objectName << " is < 0.25" << ENDM;
+    ILOG(Debug, Devel) << "Version of object " << taskName << "/" << objectName << " is < 0.25" << ENDM;
     // The object is either in a TFile or is a blob but it was stored with storeAsTFile as a full MO
     mo.reset(dynamic_cast<MonitorObject*>(obj));
     if (mo == nullptr) {
-      ILOG(Error) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
+      ILOG(Error, Devel) << "Could not cast the object " << taskName << "/" << objectName << " to MonitorObject" << ENDM;
     }
   } else {
     // Version >= 0.25 -> the object is stored directly unencapsulated
-    ILOG(Debug) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
+    ILOG(Debug, Devel) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
     mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"]);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
@@ -236,7 +236,7 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
   TObject* obj = retrieveTObject(qoPath, metadata, timestamp, &headers);
   std::shared_ptr<QualityObject> qo(dynamic_cast<QualityObject*>(obj));
   if (qo == nullptr) {
-    ILOG(Error) << "Could not cast the object " << qoPath << " to QualityObject" << ENDM;
+    ILOG(Error, Devel) << "Could not cast the object " << qoPath << " to QualityObject" << ENDM;
   } else {
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     qo->addMetadata(headers);
@@ -280,7 +280,7 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
     toConvert = tobj;
   }
   if (toConvert == nullptr) {
-    ILOG(Error) << "Unable to get the object to convert" << ENDM;
+    ILOG(Error, Support) << "Unable to get the object to convert" << ENDM;
     return std::string();
   }
   TString json = TBufferJSON::ConvertToJSON(toConvert);
@@ -288,7 +288,7 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
 
   // Prepare JSON document and add metadata
   if (jsonDocument.Parse(json.Data()).HasParseError()) {
-    ILOG(Error) << "Unable to parse the JSON returned by TBufferJSON for object " << path << ENDM;
+    ILOG(Error, Support) << "Unable to parse the JSON returned by TBufferJSON for object " << path << ENDM;
     return std::string();
   }
   rapidjson::Document::AllocatorType& allocator = jsonDocument.GetAllocator();
@@ -401,7 +401,7 @@ long CcdbDatabase::getCurrentTimestamp()
 
 void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 {
-  ILOG(Info) << "truncating data for " << taskName << "/" << objectName << ENDM;
+  ILOG(Info, Support) << "Truncating data for " << taskName << "/" << objectName << ENDM;
 
   ccdbApi.truncate(taskName + "/" + objectName);
 }

@@ -74,7 +74,7 @@ void TrendingTaskITSThr::finalize(Trigger, framework::ServiceRegistry& services)
 
 void TrendingTaskITSThr::storeTrend(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
+  ILOG(Info, Support) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(),
                                                   mConfig.detectorName);
@@ -127,8 +127,8 @@ void TrendingTaskITSThr::trendValues(repository::DatabaseInterface& qcdb)
 
 void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots."
-             << ENDM;
+  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
+                      << ENDM;
   //
   // Create and save trends for each stave
   //
@@ -160,7 +160,7 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
                     : plot.name.find("dead") != std::string::npos ? 5e3 : 14.;
     SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[add], ymin,
                         ymax, runlist);
-    ILOG(Info) << " Saving " << plot.name << " to CCDB " << ENDM;
+    ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName,
                                               mConfig.detectorName);
     mo->setIsOwner(false);
@@ -227,7 +227,7 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
     SetGraphNameAndAxes(g, plot.name,
                         Form("L%d - %s trends", ilay, trendtitles[add].c_str()),
                         isrun ? "run" : "time", ytitles[add], ymin, ymax, runlist);
-    ILOG(Info) << " Drawing " << plot.name << ENDM;
+    ILOG(Info, Support) << " Drawing " << plot.name << ENDM;
 
     if (!countplots && isrun) { //fake histo with runs as x-axis labels
       int npoints = g->GetN();
@@ -247,8 +247,8 @@ void TrendingTaskITSThr::storePlots(repository::DatabaseInterface& qcdb)
       countplots++;
   } // end loop on plots
   for (int idx = 0; idx < NLAYERS * NTRENDSTHR; idx++) {
-    ILOG(Info) << " Saving canvas for layer " << idx / NTRENDSTHR << " to CCDB "
-               << ENDM;
+    ILOG(Info, Support) << " Saving canvas for layer " << idx / NTRENDSTHR << " to CCDB "
+                        << ENDM;
     auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName,
                                               mConfig.detectorName);
     mo->setIsOwner(false);

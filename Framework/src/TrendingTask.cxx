@@ -74,7 +74,7 @@ void TrendingTask::finalize(Trigger t, framework::ServiceRegistry& services)
 
 void TrendingTask::storeTrend(uint64_t timestamp, repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
+  ILOG(Info, Devel) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), mConfig.detectorName);
   mo->setIsOwner(false);
@@ -103,7 +103,7 @@ void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface
         mReductors[dataSource.name]->update(qo.get());
       }
     } else {
-      ILOGE << "Unknown type of data source '" << dataSource.type << "'.";
+      ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
     }
   }
 
@@ -112,7 +112,7 @@ void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface
 
 void TrendingTask::storePlots(uint64_t timestamp, repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
+  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
 
   // why generate and store plots in the same function? because it is easier to handle the lifetime of pointers to the ROOT objects
   for (const auto& plot : mConfig.plots) {
@@ -132,7 +132,7 @@ void TrendingTask::storePlots(uint64_t timestamp, repository::DatabaseInterface&
     // For graphs we allow to draw errors if they are specified.
     if (!plot.graphErrors.empty()) {
       if (plotOrder != 2) {
-        ILOG(Error) << "Non empty graphErrors seen for the plot '" << plot.name << "', which is not a graph, ignoring." << ENDM;
+        ILOG(Error, Support) << "Non empty graphErrors seen for the plot '" << plot.name << "', which is not a graph, ignoring." << ENDM;
       } else {
         // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars
         std::string varexpWithErrors(plot.varexp + ":" + plot.graphErrors);
@@ -157,7 +157,7 @@ void TrendingTask::storePlots(uint64_t timestamp, repository::DatabaseInterface&
         // It will have an effect only after invoking Draw again.
         title->Draw();
       } else {
-        ILOG(Error) << "Could not get the title TPaveText of the plot '" << plot.name << "'." << ENDM;
+        ILOG(Error, Devel) << "Could not get the title TPaveText of the plot '" << plot.name << "'." << ENDM;
       }
 
       // We have to explicitly configure showing time on x axis.
@@ -174,7 +174,7 @@ void TrendingTask::storePlots(uint64_t timestamp, repository::DatabaseInterface&
       // so we have to do it here.
       histo->BufferEmpty();
     } else {
-      ILOG(Error) << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
+      ILOG(Error, Devel) << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
     }
 
     auto mo = std::make_shared<MonitorObject>(c, mConfig.taskName, mConfig.detectorName);

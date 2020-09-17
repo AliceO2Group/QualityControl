@@ -141,12 +141,13 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
     mTotalNumberQOStored(0),
     mTotalNumberMOStored(0)
 {
+  ILOG_INST.setFacility("Check");
   try {
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n"
-                << boost::current_exception_diagnostic_information(true) << ENDM;
+    ILOG(Fatal, Ops) << "Unexpected exception during initialization:\n"
+                     << boost::current_exception_diagnostic_information(true) << ENDM;
     throw;
   }
 }
@@ -166,8 +167,8 @@ CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n"
-                << boost::current_exception_diagnostic_information(true) << ENDM;
+    ILOG(Fatal, Ops) << "Unexpected exception during initialization:\n"
+                     << boost::current_exception_diagnostic_information(true) << ENDM;
     throw;
   }
 }
@@ -190,8 +191,8 @@ void CheckRunner::init(framework::InitContext&)
     }
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n"
-                << current_diagnostic(true) << ENDM;
+    ILOG(Fatal, Ops) << "Unexpected exception during initialization:\n"
+                     << current_diagnostic(true) << ENDM;
     throw;
   }
 }
@@ -395,9 +396,9 @@ void CheckRunner::initDatabase()
 {
   mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
   mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
-  LOG(INFO) << "Database that is going to be used : ";
-  LOG(INFO) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation");
-  LOG(INFO) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
+  ILOG(Info, Support) << "Database that is going to be used : " << ENDM;
+  ILOG(Info, Support) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation") << ENDM;
+  ILOG(Info, Support) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host") << ENDM;
 }
 
 void CheckRunner::initMonitoring()
@@ -415,7 +416,7 @@ void CheckRunner::initServiceDiscovery()
   auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
-  LOG(INFO) << "ServiceDiscovery initialized";
+  ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
 }
 
 } // namespace o2::quality_control::checker

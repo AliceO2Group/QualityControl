@@ -52,7 +52,7 @@ struct test_fixture {
   {
     backend = std::make_unique<CcdbDatabase>();
     backend->connect(CCDB_ENDPOINT, "", "", "");
-    ILOG(Info) << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
+    ILOG(Info, Support) << "*** " << boost::unit_test::framework::current_test_case().p_name << " ***" << ENDM;
   }
 
   ~test_fixture() = default;

@@ -42,9 +42,9 @@ BOOST_AUTO_TEST_CASE(mo_save)
   string objectName = "asdf";
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
   o2::quality_control::core::MonitorObject obj(&h, "task");
-  ILOG(Info) << "getName : '" << obj.getName() << "'" << ENDM;
-  ILOG(Info) << "GetName : '" << obj.GetName() << "'" << ENDM;
-  ILOG(Info) << "title : '" << obj.GetTitle() << "'" << ENDM;
+  ILOG(Info, Support) << "getName : '" << obj.getName() << "'" << ENDM;
+  ILOG(Info, Support) << "GetName : '" << obj.GetName() << "'" << ENDM;
+  ILOG(Info, Support) << "title : '" << obj.GetTitle() << "'" << ENDM;
   BOOST_CHECK_EQUAL(obj.getName(), "asdf");
   BOOST_CHECK_EQUAL(obj.GetName(), "asdf");
   BOOST_CHECK_EQUAL(obj.GetTitle(), "");
@@ -57,15 +57,15 @@ BOOST_AUTO_TEST_CASE(mo_save)
   obj.Write(obj.getName().data());
   file.Close();
 
-  ILOG(Info) << "***" << ENDM;
+  ILOG(Info, Support) << "***" << ENDM;
   TFile file2(filename.data());
   auto* mo = dynamic_cast<o2::quality_control::core::MonitorObject*>(file2.Get(objectName.data()));
   BOOST_CHECK_NE(mo, nullptr);
-  ILOG(Info) << "mo : " << mo << ENDM;
+  ILOG(Info, Support) << "mo : " << mo << ENDM;
   BOOST_CHECK_EQUAL(mo->GetName(), objectName);
   BOOST_CHECK_EQUAL(mo->getName(), objectName);
-  ILOG(Info) << "name : " << mo->GetName() << ENDM;
-  ILOG(Info) << "name : " << mo->getName() << ENDM;
+  ILOG(Info, Support) << "name : " << mo->GetName() << ENDM;
+  ILOG(Info, Support) << "name : " << mo->getName() << ENDM;
   gSystem->Unlink(filename.data());
 }
 
