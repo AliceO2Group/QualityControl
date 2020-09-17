@@ -436,7 +436,7 @@ void ITSOnlineTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
   //Fill the Trigger plots end
 
-  //calculate the part id dependent the lay(if there are multiple layer enabled it will confuse)	TODO: maybe we need to make it work?
+  //Calculate the part id dependent the lay(if there are multiple layer enabled it will confuse)	TODO: maybe we need to make it work?
   int part = -1;                                            //which part in this layer. For layer 0, 1: 0-1 -> ibt; 2-3 -> ibb
   if (lay == 2) {                                           //                              layer 2: 0 -> ibt-a; 1 -> ibt-b
     part = (int)(4 * (((double)istavemax) / NStaves[lay])); //                              layer 2: 2 -> ibb-a; 3 -> ibb-b
