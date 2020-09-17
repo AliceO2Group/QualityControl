@@ -60,7 +60,7 @@ ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
 
   void EverIncreasingGraph::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
   {
-    ILOG(Info) << "Beautify" << ENDM;
+    ILOG(Info, Support) << "Beautify" << ENDM;
 
     if (checkResult == Quality::Null || checkResult == Quality::Medium) {
       return;
@@ -68,7 +68,7 @@ ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
 
     auto* g = dynamic_cast<TGraph*>(mo->getObject());
     if (!g) {
-      ILOG(Error) << "MO should be a graph" << ENDM;
+      ILOG(Error, Support) << "MO should be a graph" << ENDM;
       return;
     }
 

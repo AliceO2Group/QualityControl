@@ -13,12 +13,12 @@ here. It is not sanitized or organized. Just a brain dump.
 ### Create a fix version
 1. checkout last tagged version, e.g. `git checkout v0.26.1`
 2. branch, e.g. `git checkout -b branch_v0.26.2`
-2. push the branch upstream, e.g. `git push upstream -u branch_v0.26.2`
 2. cherry-pick the commit from master, e.g. `git cherry-pick b187ddbe52058d53a9bbf3cbdd53121c6b936cd8`
+2. push the branch upstream, e.g. `git push upstream -u branch_v0.26.2`
 3. change version in CMakeLists and commit
 5. tag, e.g. `git tag -a v0.26.2 -m "v0.26.2"`
 4. push the tag upstream, e.g. `git push upstream v0.26.2`
-6. Release in github
+6. Release in github using this tag 
 4. A PR is automatically created in alidist
 
 ### Where and how to configure the repo_cleaner of the ccdb-test

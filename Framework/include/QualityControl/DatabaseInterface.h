@@ -21,6 +21,8 @@
 #include <vector>
 #include <unordered_map>
 
+#include <Framework/ServiceRegistry.h>
+
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/MonitorObject.h"
 
@@ -33,6 +35,8 @@ namespace o2::quality_control::repository
 class DatabaseInterface
 {
  public:
+  constexpr static framework::ServiceKind service_kind = framework::ServiceKind::Global;
+
   /// Default constructor
   DatabaseInterface() = default;
   /// Destructor
@@ -58,14 +62,18 @@ class DatabaseInterface
   /**
    * Stores the serialized MonitorObject in the database.
    * @param mo The MonitorObject to serialize and store.
+   * @param from The timestamp indicating the start of object's validity (ms since epoch).
+   * @param to The timestamp indicating the end of object's validity (ms since epoch).
    */
-  virtual void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo) = 0;
+  virtual void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo, long from = -1, long to = -1) = 0;
 
   /**
    * Stores the serialized QualityObject in the database.
    * @param qo The QualityObject to serialize and store.
+   * @param from The timestamp indicating the start of object's validity (ms since epoch).
+   * @param to The timestamp indicating the end of object's validity (ms since epoch).
    */
-  virtual void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo) = 0;
+  virtual void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo, long from = -1, long to = -1) = 0;
 
   /**
    * \brief Look up a monitor object and return it.

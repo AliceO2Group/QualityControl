@@ -57,8 +57,8 @@ class CcdbDatabase : public DatabaseInterface
   void connect(const std::unordered_map<std::string, std::string>& config) override;
 
   // storage
-  void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> q) override;
-  void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> q) override;
+  void storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> q, long from = -1, long to = -1) override;
+  void storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> q, long from = -1, long to = -1) override;
 
   // retrieval - MO - deprecated
   std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) override;

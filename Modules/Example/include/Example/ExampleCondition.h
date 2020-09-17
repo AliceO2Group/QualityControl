@@ -17,11 +17,7 @@
 #define QC_MODULE_EXAMPLE_EXAMPLECONDITION_H
 
 #include "QualityControl/TaskInterface.h"
-#if __has_include(<Framework/DataSamplingCondition.h>)
-#include <Framework/DataSamplingCondition.h>
-#else
 #include <DataSampling/DataSamplingCondition.h>
-#endif
 
 namespace o2::quality_control_modules::example
 {
@@ -31,11 +27,7 @@ namespace o2::quality_control_modules::example
 
 /// \brief A DataSamplingCondition which approves messages which have their first byte in the payload higher than
 /// specified value.
-#if __has_include(<Framework/DataSamplingCondition.h>)
-class ExampleCondition : public o2::framework::DataSamplingCondition
-#else
 class ExampleCondition : public o2::utilities::DataSamplingCondition
-#endif
 {
  public:
   /// \brief Constructor.

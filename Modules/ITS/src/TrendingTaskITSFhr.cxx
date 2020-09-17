@@ -37,8 +37,7 @@ void TrendingTaskITSFhr::configure(std::string name,
   mConfig = TrendingTaskConfigITS(name, config);
 }
 
-void TrendingTaskITSFhr::initialize(Trigger,
-                                    framework::ServiceRegistry& services)
+void TrendingTaskITSFhr::initialize(Trigger, framework::ServiceRegistry&)
 {
   // Preparing data structure of TTree
   mTrend = std::make_unique<TTree>(); // todo: retrieve last TTree, so we
@@ -57,37 +56,38 @@ void TrendingTaskITSFhr::initialize(Trigger,
                    reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
-
-  // Setting up services
-  mDatabase = &services.get<repository::DatabaseInterface>();
 }
 
 // todo: see if OptimizeBaskets() indeed helps after some time
-void TrendingTaskITSFhr::update(Trigger, framework::ServiceRegistry&)
+void TrendingTaskITSFhr::update(Trigger, framework::ServiceRegistry& services)
 {
-  trendValues();
+  auto& qcdb = services.get<repository::DatabaseInterface>();
 
-  storePlots();
-  storeTrend();
+  trendValues(qcdb);
+
+  storePlots(qcdb);
+  storeTrend(qcdb);
 }
 
-void TrendingTaskITSFhr::finalize(Trigger, framework::ServiceRegistry&)
+void TrendingTaskITSFhr::finalize(Trigger, framework::ServiceRegistry& services)
 {
-  storePlots();
-  storeTrend();
+  auto& qcdb = services.get<repository::DatabaseInterface>();
+
+  storePlots(qcdb);
+  storeTrend(qcdb);
 }
 
-void TrendingTaskITSFhr::storeTrend()
+void TrendingTaskITSFhr::storeTrend(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
+  ILOG(Info, Support) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(),
                                                   mConfig.detectorName);
   mo->setIsOwner(false);
-  mDatabase->storeMO(mo);
+  qcdb.storeMO(mo);
 }
 
-void TrendingTaskITSFhr::trendValues()
+void TrendingTaskITSFhr::trendValues(repository::DatabaseInterface& qcdb)
 {
   // We use current date and time. This for planned processing (not history). We
   // still might need to use the objects
@@ -104,8 +104,8 @@ void TrendingTaskITSFhr::trendValues()
     // todo: make it agnostic to MOs, QOs or other objects. Let the reductor
     // cast to whatever it needs.
     if (dataSource.type == "repository") {
-      // auto mo = mDatabase->retrieveMO(dataSource.path, dataSource.name);
-      auto mo = mDatabase->retrieveMO(dataSource.path, "");
+      // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
+      auto mo = qcdb.retrieveMO(dataSource.path, "");
       if (!count) {
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
         mMetaData.runNumber = std::stoi(entryMetadata["Run"]);                   //get and set run number
@@ -117,7 +117,7 @@ void TrendingTaskITSFhr::trendValues()
         mReductors[dataSource.name]->update(obj);
       }
     } else if (dataSource.type == "repository-quality") {
-      auto qo = mDatabase->retrieveQO(dataSource.path + "/" + dataSource.name);
+      auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name);
       if (qo) {
         mReductors[dataSource.name]->update(qo.get());
       }
@@ -129,10 +129,10 @@ void TrendingTaskITSFhr::trendValues()
   mTrend->Fill();
 }
 
-void TrendingTaskITSFhr::storePlots()
+void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
 {
-  ILOG(Info) << "Generating and storing " << mConfig.plots.size() << " plots."
-             << ENDM;
+  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots."
+                      << ENDM;
   //
   // Create and save trends for each stave
   //
@@ -166,10 +166,10 @@ void TrendingTaskITSFhr::storePlots()
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
     SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
-    ILOG(Info) << " Saving " << plot.name << " to CCDB " << ENDM;
+    ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
     auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, mConfig.detectorName);
     mo->setIsOwner(false);
-    mDatabase->storeMO(mo);
+    qcdb.storeMO(mo);
     // It should delete everything inside. Confirmed by trying to delete histo
     // after and getting a segfault.
     delete g;
@@ -232,7 +232,7 @@ void TrendingTaskITSFhr::storePlots()
     SetGraphNameAndAxes(g, plot.name,
                         Form("L%d - %s trends", ilay, trendtitles[index].c_str()),
                         isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
-    ILOG(Info) << " Drawing " << plot.name << ENDM;
+    ILOG(Info, Support) << " Drawing " << plot.name << ENDM;
 
     if (!countplots && isrun) { //fake histo with runs as x-axis labels
       int npoints = g->GetN();
@@ -252,12 +252,12 @@ void TrendingTaskITSFhr::storePlots()
       countplots++;
   } // end loop on plots
   for (int idx = 0; idx < NLAYERS * NTRENDSFHR; idx++) {
-    ILOG(Info) << " Saving canvas for layer " << idx / NTRENDSFHR << " to CCDB "
-               << ENDM;
+    ILOG(Info, Support) << " Saving canvas for layer " << idx / NTRENDSFHR << " to CCDB "
+                        << ENDM;
     auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName,
                                               mConfig.detectorName);
     mo->setIsOwner(false);
-    mDatabase->storeMO(mo);
+    qcdb.storeMO(mo);
     if (idx % NTRENDSFHR == NTRENDSFHR - 1)
       delete legstaves[idx / NTRENDSFHR];
     delete c[idx];

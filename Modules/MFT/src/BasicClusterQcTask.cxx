@@ -35,11 +35,11 @@ BasicClusterQcTask::~BasicClusterQcTask()
 
 void BasicClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize BasicClusterQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "initialize BasicClusterQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+    ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
   mMFT_nPix_H = std::make_unique<TH1F>("mMFT_nPix", "mMFT_nPix", 50, -0.5, 49.5);
@@ -49,13 +49,13 @@ void BasicClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void BasicClusterQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   mMFT_nPix_H->Reset();
 }
 
 void BasicClusterQcTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void BasicClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -72,19 +72,19 @@ void BasicClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void BasicClusterQcTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void BasicClusterQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void BasicClusterQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mMFT_nPix_H->Reset();
 }
 

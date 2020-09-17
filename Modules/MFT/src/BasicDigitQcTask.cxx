@@ -35,11 +35,11 @@ BasicDigitQcTask::~BasicDigitQcTask()
 
 void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize BasicDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "initialize BasicDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+    ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
   mMFT_chip_index_H = std::make_unique<TH1F>("mMFT_chip_index_H", "mMFT_chip_index_H", 936, -0.5, 935.5);
@@ -49,13 +49,13 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void BasicDigitQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   mMFT_chip_index_H->Reset();
 }
 
 void BasicDigitQcTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -72,19 +72,19 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void BasicDigitQcTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void BasicDigitQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void BasicDigitQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mMFT_chip_index_H->Reset();
 }
 

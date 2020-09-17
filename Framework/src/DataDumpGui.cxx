@@ -265,7 +265,7 @@ bool DataDumpGui::ConditionalRun()
 bool DataDumpGui::handleParts(FairMQParts& parts)
 {
   if (parts.Size() != 2) {
-    ILOG(Debug) << "number of parts must be 2" << ENDM;
+    ILOG(Warning, Support) << "number of parts must be 2" << ENDM;
     return false;
   }
 

@@ -30,18 +30,15 @@
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
 
 #include <Framework/CompletionPolicyHelpers.h>
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
-#include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include <Framework/DataSpecUtils.h>
 #include <Framework/CompletionPolicyHelpers.h>
+#include <DataSampling/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::utilities;
 
 // Additional configuration of the topology, which is done by implementing `customize` functions and placing them
 // before `runDataProcessing.h` header. In this case, both Dispatcher and Merger are configured to accept incoming
@@ -108,8 +105,8 @@ WorkflowSpec processingTopology(SubSpecificationType subspec)
     Outputs{},
     AlgorithmSpec{
       (AlgorithmSpec::ProcessCallback)[](ProcessingContext & ctx) {
-        LOG(DEBUG) << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0];
-        LOG(DEBUG) << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0];
+        ILOG(Debug, Devel) << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0] << ENDM;
+        ILOG(Debug, Devel) << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0] << ENDM;
       }
     }
   };
@@ -122,7 +119,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
   const std::string qcConfigurationSource =
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/advanced.json";
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'";
 
   WorkflowSpec specs;
   // here we pretend to spawn topologies on three processing machines

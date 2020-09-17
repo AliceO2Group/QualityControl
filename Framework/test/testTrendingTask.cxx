@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(test_task)
 
   // The test itself
   {
-    auto treeMO = repository->retrieveMO("qc/TST/" + taskName, taskName); //the tree is stored under the same name as task
+    auto treeMO = repository->retrieveMO("qc/TST/MO/" + taskName, taskName); //the tree is stored under the same name as task
     TTree* tree = dynamic_cast<TTree*>(treeMO->getObject());
 
     BOOST_REQUIRE(tree != nullptr);

@@ -24,23 +24,19 @@
 #include "QualityControl/QcInfoLogger.h"
 
 #include <Configuration/ConfigurationFactory.h>
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
-#include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include <Framework/DataSpecUtils.h>
 #include <Framework/ExternalFairMQDeviceProxy.h>
+#include <Framework/DataDescriptorQueryBuilder.h>
 #include <Mergers/MergerInfrastructureBuilder.h>
 #include <Mergers/MergerBuilder.h>
-#include <Framework/DataDescriptorQueryBuilder.h>
+#include <DataSampling/DataSampling.h>
 
 #include <algorithm>
 
 using namespace o2::framework;
 using namespace o2::configuration;
 using namespace o2::mergers;
+using namespace o2::utilities;
 using namespace o2::quality_control::checker;
 using boost::property_tree::ptree;
 using SubSpec = o2::header::DataHeader::SubSpecificationType;
@@ -420,16 +416,16 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   CheckRunnerFactory checkRunnerFactory;
   for (auto& [inputNames, checks] : checksMap) {
     //Logging
-    ILOG(Info) << ">> Inputs (" << inputNames.size() << "): ";
+    ILOG(Info, Devel) << ">> Inputs (" << inputNames.size() << "): ";
     for (auto& name : inputNames)
-      ILOG(Info) << name << " ";
-    ILOG(Info) << " ; Checks (" << checks.size() << "): ";
+      ILOG(Info, Devel) << name << " ";
+    ILOG(Info, Devel) << " ; Checks (" << checks.size() << "): ";
     for (auto& check : checks)
-      ILOG(Info) << check.getName() << " ";
-    ILOG(Info) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
+      ILOG(Info, Devel) << check.getName() << " ";
+    ILOG(Info, Devel) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
     for (auto& input : storeVectorMap[inputNames])
-      ILOG(Info) << input << " ";
-    ILOG(Info) << ENDM;
+      ILOG(Info, Devel) << input << " ";
+    ILOG(Info, Devel) << ENDM;
 
     if (!checks.empty()) { // Create a CheckRunner for the grouped checks
       workflow.emplace_back(checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));

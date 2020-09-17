@@ -12,18 +12,15 @@
 /// \file    testCheckWorkflow.cxx
 /// \author  Rafal Pacholek
 ///
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
+
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DeviceSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::utilities;
 
 const std::string receiverName = "Receiver";
 
@@ -86,10 +83,10 @@ class Receiver : public framework::Task
       if (pctx.inputs().isValid(checkName)) {
         auto qo = pctx.inputs().get<QualityObject*>(checkName);
         if (!qo) {
-          LOG(ERROR) << qo->getName() << " - quality is NULL";
+          ILOG(Error, Devel) << qo->getName() << " - quality is NULL" << ENDM;
           pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);
         } else {
-          LOG(DEBUG) << qo->getName() << " - quality: " << qo->getQuality();
+          ILOG(Debug, Devel) << qo->getName() << " - quality: " << qo->getQuality() << ENDM;
           namesToErase.emplace_back(checkName);
         }
       }
@@ -103,7 +100,7 @@ class Receiver : public framework::Task
       // We ask to shut the topology down, returning 0 if there were no ERROR logs.
       pctx.services().get<ControlService>().readyToQuit(QuitRequest::All);
     }
-    LOG(DEBUG) << "Requires " << mNames.size() << " quality objects";
+    ILOG(Debug, Devel) << "Requires " << mNames.size() << " quality objects" << ENDM;
   }
 
   Inputs getInputs()
@@ -139,7 +136,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
 
   const std::string qcConfigurationSource = std::string("json://") + getTestDataDirectory() + "testCheckWorkflow.json";
 
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  ILOG(Info) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure
   DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);

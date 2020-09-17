@@ -1,14 +1,7 @@
 #include <string>
 #include <TH1.h>
 
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-using namespace o2::framework;
-// TODO bring back full namespaces after the migration
-#else
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include <DataFormatsPHOS/Digit.h>
 #include <PHOSWorkflow/PublisherSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
@@ -17,13 +10,13 @@ using namespace o2::utilities;
 
 void customize(std::vector<o2::framework::CompletionPolicy>& policies)
 {
-  DataSampling::CustomizeInfrastructure(policies);
+  o2::utilities::DataSampling::CustomizeInfrastructure(policies);
   o2::quality_control::customizeInfrastructure(policies);
 }
 
 void customize(std::vector<o2::framework::ChannelConfigurationPolicy>& policies)
 {
-  DataSampling::CustomizeInfrastructure(policies);
+  o2::utilities::DataSampling::CustomizeInfrastructure(policies);
 }
 
 void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
@@ -68,13 +61,13 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
   if (config.options().get<bool>("local") && config.options().get<bool>("remote")) {
-    ILOG(Info) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
+    ILOG(Info, Support) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
   }
 
   if (config.options().get<bool>("local") || !config.options().get<bool>("remote")) {
 
     // Generation of Data Sampling infrastructure
-    DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+    o2::utilities::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
 
     // Generation of the local QC topology (local QC tasks)
     o2::quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, config.options().get<std::string>("host"));

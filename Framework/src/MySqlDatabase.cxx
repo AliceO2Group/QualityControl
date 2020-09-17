@@ -61,7 +61,7 @@ void MySqlDatabase::connect(std::string host, std::string database, std::string 
     }
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(s));
   } else {
-    ILOG(Info) << "Connected to the database" << ENDM;
+    ILOG(Info, Support) << "Connected to the database" << ENDM;
   }
 }
 
@@ -88,11 +88,11 @@ void MySqlDatabase::prepareTable(std::string table_name)
   if (!execute(query)) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to create data table"));
   } else {
-    ILOG(Info) << "Create data table " << table_name << ENDM;
+    ILOG(Info, Support) << "Create data table " << table_name << ENDM;
   }
 }
 
-void MySqlDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo)
+void MySqlDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo, long, long)
 {
   // TODO we take ownership here to delete later -> clearly to be improved
   // we execute grouped insertions. Here we just register that we should keep this mo in memory.
@@ -103,7 +103,7 @@ void MySqlDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityOb
   }
 }
 
-void MySqlDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo)
+void MySqlDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo, long, long)
 {
   // TODO we take ownership here to delete later -> clearly to be improved
   // we execute grouped insertions. Here we just register that we should keep this mo in memory.
@@ -116,8 +116,8 @@ void MySqlDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorOb
 
 void MySqlDatabase::storeQueue()
 {
-  ILOG(Info) << "Database queue will now be processed (" << queueSize << " objects)"
-             << ENDM;
+  ILOG(Info, Support) << "Database queue will now be processed (" << queueSize << " objects)"
+                      << ENDM;
 
   for (auto& kv : mMonitorObjectsQueue) {
     storeForMonitorObject(kv.first);
@@ -191,8 +191,8 @@ void MySqlDatabase::storeForMonitorObject(std::string name)
     return;
   }
 
-  ILOG(Info) << "** Store for task " << name << ENDM;
-  ILOG(Info) << "        # objects : " << objects.size() << ENDM;
+  ILOG(Info, Support) << "** Store for task " << name << ENDM;
+  ILOG(Info, Support) << "        # objects : " << objects.size() << ENDM;
 
   // build statement string
   string table_name = "data_" + name;
@@ -346,7 +346,7 @@ std::shared_ptr<o2::quality_control::core::MonitorObject> MySqlDatabase::retriev
     try {
       mo = std::shared_ptr<MonitorObject>((MonitorObject*)(mess.ReadObjectAny(mess.GetClass())));
     } catch (...) {
-      ILOG(Info) << "Node: unable to parse TObject from MySQL" << ENDM;
+      ILOG(Info, Support) << "Node: unable to parse TObject from MySQL" << ENDM;
       throw;
     }
   }
@@ -406,7 +406,7 @@ void MySqlDatabase::addIndex(string table, string column)
   if (res) {
     delete (res);
   } else {
-    ILOG(Error) << "Couldn't create the index on table " << table << " on column " << column << ENDM;
+    ILOG(Error, Support) << "Couldn't create the index on table " << table << " on column " << column << ENDM;
   }
 }
 
@@ -457,7 +457,7 @@ void MySqlDatabase::truncate(std::string taskName, std::string objectName)
     string s = string("Failed to delete object ") + objectName + " from task " + taskName;
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(s));
   } else {
-    ILOG(Info) << "Delete object " << objectName << " from task " << taskName << ENDM;
+    ILOG(Info, Support) << "Delete object " << objectName << " from task " << taskName << ENDM;
   }
 }
 

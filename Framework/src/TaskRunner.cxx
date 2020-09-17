@@ -22,12 +22,8 @@
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Monitoring/MonitoringFactory.h>
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
+
 #include <Framework/CallbackService.h>
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/TimesliceIndex.h>
@@ -43,7 +39,6 @@ using namespace o2::utilities;
 
 #include <string>
 #include <memory>
-#include <boost/property_tree/ini_parser.hpp>
 
 using namespace std;
 
@@ -56,6 +51,7 @@ using namespace o2::framework;
 using namespace o2::header;
 using namespace o2::configuration;
 using namespace o2::monitoring;
+using namespace o2::utilities;
 using namespace std::chrono;
 using namespace AliceO2::Common;
 
@@ -64,6 +60,9 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     mRunNumber(0),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
+  ILOG_INST.setFacility("Task");
+
+  // setup configuration
   try {
     mTaskConfig.taskName = taskName;
     mTaskConfig.parallelTaskID = id;
@@ -71,22 +70,22 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     loadTopologyConfig();
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
-    ILOG(Fatal) << "Unexpected exception during configuration:\n"
-                << current_diagnostic(true) << ENDM;
+    ILOG(Fatal, Ops) << "Unexpected exception during configuration:\n"
+                     << current_diagnostic(true) << ENDM;
     throw;
   }
 }
 
 void TaskRunner::init(InitContext& iCtx)
 {
-  ILOG(Info) << "Initializing TaskRunner" << ENDM;
-  ILOG(Info) << "Loading configuration" << ENDM;
+  ILOG(Info, Support) << "initializing TaskRunner" << ENDM;
+  ILOG(Info, Support) << "Loading configuration" << ENDM;
   try {
     loadTaskConfig();
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
-    ILOG(Fatal) << "Unexpected exception during configuration:\n"
-                << current_diagnostic(true) << ENDM;
+    ILOG(Fatal, Ops) << "Unexpected exception during configuration:\n"
+                     << current_diagnostic(true) << ENDM;
     throw;
   }
 
@@ -120,8 +119,8 @@ void TaskRunner::init(InitContext& iCtx)
 void TaskRunner::run(ProcessingContext& pCtx)
 {
   if (mNoMoreCycles) {
-    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
-               << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
+    ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
+                        << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
 
@@ -159,7 +158,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   CompletionPolicy::CompletionOp action = CompletionPolicy::CompletionOp::Wait;
 
   for (auto& input : inputs) {
-    if (input.header == nullptr || input.payload == nullptr) {
+    if (input.header == nullptr) {
       continue;
     }
 
@@ -173,16 +172,16 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
     }
   }
 
-  LOG(DEBUG) << "Completion policy callback. "
-             << "Total inputs possible: " << inputs.size()
-             << ", data inputs: " << dataInputsPresent
-             << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume);
+  ILOG(Debug, Devel) << "Completion policy callback. "
+                     << "Total inputs possible: " << inputs.size()
+                     << ", data inputs: " << dataInputsPresent
+                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
 
   if (dataInputsPresent == dataInputsExpected) {
     action = CompletionPolicy::CompletionOp::Consume;
   }
 
-  LOG(DEBUG) << "Action: " << action;
+  ILOG(Debug, Devel) << "Action: " << action;
 
   return action;
 }
@@ -211,7 +210,7 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
 
 void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 {
-  ILOG(Info) << "Received an EndOfStream, finishing the current cycle" << ENDM;
+  ILOG(Info, Support) << "Received an EndOfStream, finishing the current cycle" << ENDM;
   finishCycle(eosContext.outputs());
   mNoMoreCycles = true;
 }
@@ -219,18 +218,19 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 void TaskRunner::start(const ConfigParamRegistry& options)
 {
   try {
-    mRunNumber = options.get<int>("runNumber");
-    ILOG(Info) << "Run number found in options: " << mRunNumber << ENDM;
+    mRunNumber = stoi(options.get<std::string>("runNumber"));
+    ILOG(Info, Support) << "Run number found in options: " << mRunNumber << ENDM;
   } catch (std::invalid_argument& ia) {
-    ILOG(Info) << "Run number not found in options, using 0 instead." << ENDM;
+    ILOG(Info, Support) << "Run number not found in options, using 0 instead." << ENDM;
     mRunNumber = 0;
   }
+  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
 
   startOfActivity();
 
   if (mNoMoreCycles) {
-    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
-               << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
+    ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
+                        << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
     return;
   }
 
@@ -263,7 +263,7 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   bool timerReady = false;
 
   for (auto& input : inputs) {
-    if (input.header != nullptr && input.payload != nullptr) {
+    if (input.header != nullptr) {
 
       const auto* dataHeader = get<DataHeader*>(input.header);
       assert(dataHeader);
@@ -291,7 +291,7 @@ void TaskRunner::loadTopologyConfig()
 
   if (type == "dataSamplingPolicy") {
     auto policyName = dataSourceTree.get<std::string>("name");
-    ILOG(Info) << "policyName : " << policyName << ENDM;
+    ILOG(Info, Support) << "policyName : " << policyName << ENDM;
     mInputSpecs = DataSampling::InputSpecsForPolicy(config, policyName);
   } else if (type == "direct") {
     auto inputsQuery = dataSourceTree.get<std::string>("query");
@@ -332,15 +332,15 @@ void TaskRunner::loadTaskConfig()
   try {
     mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + mTaskConfig.taskName + ".taskParameters");
   } catch (...) {
-    ILOG(Info) << "No custom parameters for " << mTaskConfig.taskName << ENDM;
+    ILOG(Debug, Support) << "No custom parameters for " << mTaskConfig.taskName << ENDM;
   }
 
-  ILOG(Info) << "Configuration loaded : " << ENDM;
-  ILOG(Info) << ">> Task name : " << mTaskConfig.taskName << ENDM;
-  ILOG(Info) << ">> Module name : " << mTaskConfig.moduleName << ENDM;
-  ILOG(Info) << ">> Detector name : " << mTaskConfig.detectorName << ENDM;
-  ILOG(Info) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << ENDM;
-  ILOG(Info) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << ENDM;
+  ILOG(Info, Support) << "Configuration loaded : " << ENDM;
+  ILOG(Info, Support) << ">> Task name : " << mTaskConfig.taskName << ENDM;
+  ILOG(Info, Support) << ">> Module name : " << mTaskConfig.moduleName << ENDM;
+  ILOG(Info, Support) << ">> Detector name : " << mTaskConfig.detectorName << ENDM;
+  ILOG(Info, Support) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << ENDM;
+  ILOG(Info, Support) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << ENDM;
 }
 
 std::string TaskRunner::validateDetectorName(std::string name) const
@@ -360,9 +360,9 @@ std::string TaskRunner::validateDetectorName(std::string name) const
     std::string permittedString;
     for (auto i : permitted)
       permittedString += i + ' ';
-    ILOG(Error) << "Invalid detector name : " << name << "\n"
-                << "    Placeholder 'MISC' will be used instead\n"
-                << "    Note: list of permitted detector names :" << permittedString << ENDM;
+    ILOG(Error, Support) << "Invalid detector name : " << name << "\n"
+                         << "    Placeholder 'MISC' will be used instead\n"
+                         << "    Note: list of permitted detector names :" << permittedString << ENDM;
     return "MISC";
   }
   return name;
@@ -417,8 +417,8 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   mCycleOn = false;
 
   if (mTaskConfig.maxNumberCycles == mCycleNumber) {
-    ILOG(Info) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
-               << " The task will not do anything from now on." << ENDM;
+    ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
+                        << " The task will not do anything from now on." << ENDM;
   }
 }
 
@@ -446,7 +446,7 @@ void TaskRunner::publishCycleStats()
 
 int TaskRunner::publish(DataAllocator& outputs)
 {
-  ILOG(Info) << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << ENDM;
+  ILOG(Debug, Support) << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << ENDM;
   AliceO2::Common::Timer publicationDurationTimer;
 
   auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);

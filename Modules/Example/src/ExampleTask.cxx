@@ -39,7 +39,7 @@ ExampleTask::~ExampleTask()
 
 void ExampleTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize ExampleTask" << ENDM;
+  ILOG(Info, Support) << "initialize ExampleTask" << ENDM;
 
   for (int i = 0; i < 24; i++) {
     publishHisto(i);
@@ -59,7 +59,7 @@ void ExampleTask::publishHisto(int i)
 
 void ExampleTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   for (auto& mHisto : mHistos) {
     if (mHisto) {
       mHisto->Reset();
@@ -69,7 +69,7 @@ void ExampleTask::startOfActivity(Activity& /*activity*/)
 
 void ExampleTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void ExampleTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -90,7 +90,7 @@ void ExampleTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ExampleTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
   mNumberCycles++;
 
   // Add one more object just to show that we can do it
@@ -101,9 +101,9 @@ void ExampleTask::endOfCycle()
 
 void ExampleTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
-void ExampleTask::reset() { ILOG(Info) << "Reset" << ENDM; }
+void ExampleTask::reset() { ILOG(Info, Support) << "Reset" << ENDM; }
 
 } // namespace o2::quality_control_modules::example
