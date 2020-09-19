@@ -16,20 +16,15 @@
 #include "ITS/ITSFeeTask.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include <ITSMFTReconstruction/GBTWord.h>
-
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
 #include <TCanvas.h>
 #include <TDatime.h>
 #include <TGraph.h>
-#include <TH1.h>
 #include <TPaveText.h>
 #include <TPaveStats.h>
 
 #include <time.h>
-
-using namespace std;
 
 namespace o2::quality_control_modules::its
 {
@@ -37,8 +32,6 @@ namespace o2::quality_control_modules::its
 ITSFeeTask::ITSFeeTask()
   : TaskInterface()
 {
-  o2::base::GeometryManager::loadGeometry();
-  mGeom = o2::its::GeometryTGeo::Instance();
 }
 
 ITSFeeTask::~ITSFeeTask()
@@ -47,13 +40,11 @@ ITSFeeTask::~ITSFeeTask()
   delete mTriggerPlots;
   delete mTriggerVsFeeid;
   //delete mInfoCanvas;
-
-  delete mGeom;
 }
 
 void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize ITSFeeTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "Initializing the ITSFeeTask" << AliceO2::InfoLogger::InfoLogger::endm;
   getEnableLayers();
   int barrel = 0;
   if (mEnableLayers[0] or mEnableLayers[1] or mEnableLayers[2]) {
@@ -78,7 +69,6 @@ void ITSFeeTask::createErrorTriggerPlots()
 void ITSFeeTask::createGeneralPlots(int barrel = 0)
 {
 
-
   createErrorTriggerPlots();
 
   mTFInfo = new TH1F("General/TFInfo", "TF vs count", 15000, 0, 15000);
@@ -100,7 +90,6 @@ void ITSFeeTask::createGeneralPlots(int barrel = 0)
   } else if (barrel == 3) { //create for All	TODO:create the Error/Trigger vs feeid plots
   }
 }
-
 
 void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
 {
@@ -126,7 +115,6 @@ void ITSFeeTask::setPlotsFormat()
       mTriggerVsFeeid->GetYaxis()->SetBinLabel(i + 1, mTriggerType[i]);
     }
   }
-
 }
 
 void ITSFeeTask::startOfActivity(Activity& /*activity*/)
@@ -144,8 +132,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-
-
   //Fill the Trigger plots
   DPLRawParser parser(ctx.inputs());
   int StaveStart = 0;
@@ -158,12 +144,15 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
     istave += StaveStart;
 
-    int stopbit = (int)(rdh->stop);
-    std::cout << "stopbit is: " << stopbit  << std::endl;
-        
-    auto const* ddw = reinterpret_cast<const o2::itsmft::GBTDataTrailer*>(rdh)+4;
-    ddw->printX();    
-
+    if ((int)(rdh->stop)) {
+      ILOG(Debug) << "Stopbit : " << (int)rdh->stop << ", Payload size: " << it.size() << ENDM;
+      auto const* ddw = reinterpret_cast<const GBTDdw*>(it.data());
+      if (it.size()) {
+        LOGF(INFO, "0x: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+             ddw->ddwBits.data8[15], ddw->ddwBits.data8[14], ddw->ddwBits.data8[13], ddw->ddwBits.data8[12], ddw->ddwBits.data8[11], ddw->ddwBits.data8[10],
+             ddw->ddwBits.data8[9], ddw->ddwBits.data8[8], ddw->ddwBits.data8[7], ddw->ddwBits.data8[6], ddw->ddwBits.data8[5], ddw->ddwBits.data8[4], ddw->ddwBits.data8[3], ddw->ddwBits.data8[2], ddw->ddwBits.data8[1], ddw->ddwBits.data8[0]);
+      }
+    }
     for (int i = 0; i < 13; i++) {
       if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
         mTriggerPlots->Fill(i + 1);
@@ -171,13 +160,8 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
-  //Fill the Trigger plots end
 
-
-
-  //get the Time Frame ID
   mTimeFrameId = ctx.inputs().get<int>("G");
-  //get the Time Frame ID end
 
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
@@ -201,7 +185,7 @@ void ITSFeeTask::endOfCycle()
 {
   std::ifstream runNumberFile("/home/its/QC_Online/workdir/infiles/RunNumber.dat"); //catching ITS run number in commissioning
   if (runNumberFile) {
-    string runNumber;
+    std::string runNumber;
     runNumberFile >> runNumber;
     ILOG(Info) << "runNumber : " << runNumber << ENDM;
     if (runNumber == mRunNumber) {

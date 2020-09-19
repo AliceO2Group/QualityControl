@@ -52,20 +52,6 @@
                 }
             ],
             "blocking": "false"
-        },
-        {
-            "id": "RAWDATA1",
-            "active": "true",
-            "machines": [],
-            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME",
-            "samplingConditions": [
-                {
-                    "condition": "random",
-                    "fraction": "0.01",
-                    "seed": "1441"
-                }
-            ],
-            "blocking": "false"
         }
     ]
 }
