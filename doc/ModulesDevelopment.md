@@ -13,6 +13,8 @@
          * [Code Organization](#code-organization)
          * [Developing with aliBuild/alienv](#developing-with-alibuildalienv)
          * [User-defined modules](#user-defined-modules)
+         * [Repository](#repository)
+            * [Paths](#paths)
       * [Module creation](#module-creation)
       * [Test run](#test-run)
       * [Modification of the Task](#modification-of-the-task)
@@ -20,9 +22,12 @@
          * [Configuration](#configuration)
          * [Implementation](#implementation)
       * [Committing code](#committing-code)
-      * [Raw data source](#raw-data-source)
+      * [Data sources](#data-sources)
+         * [Readout](#readout)
+         * [DPL workflow](#dpl-workflow)
 
-<!-- Added by: barth, at: Lun 17 aoû 2020 14:57:50 CEST -->
+<!-- Added by: bvonhall, at:  -->
+
 <!--te-->
 
 [← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Post-processing →](PostProcessing.md)
@@ -328,9 +333,77 @@ For a new feature, just create a new branch for it and use the same procedure. D
 
 General ALICE Git guidelines can be accessed [here](https://alisw.github.io/git-tutorial/).
 
-## Raw data source
+## Data sources
 
-To read a raw data file, one can use the O2's [RawFileReader](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader). On the same page, there are instructions to write such file from Simulation. 
+In the final system, the qc gets real data from the DPL devices or the readout processes. During development a number of possibilities are available for the detector teams to develop their QC. We list them below. 
+
+### Readout
+
+When connecting the QC directly to the readout using the `o2-qc-run-readout` proxy, remember to add this consumer to the config file of the readout and to enable it: 
+```json
+[consumer-data-sampling]
+consumerType=DataSampling
+enabled=1
+```
+
+__Random data__
+
+Add one or several dummy equipments:
+```
+[equipment-dummy-1]
+name=dummy-1
+equipmentType=dummy
+enabled=1
+eventMaxSize=200
+eventMinSize=100
+memoryPoolNumberOfPages=100
+memoryPoolPageSize=128k
+fillData=1
+```
+
+__Live detector data__
+
+If a part or the whole detector is ready and connected to 1 or several CRUs in the FLP, configure the readout to get data from there. The exact configuration items should be discussed with the readout experts. 
+
+This is the most realistic test one can do but it is also not very practical as you have to control the data taking and be on the machine equipped with a CRU. See the next section to alleviate this situation.
+
+__Detector data file__
+
+To record a data file with readout while getting data from a CRU, add the following piece to the readout configuration file:
+```
+[consumer-rec]
+enabled=1
+consumerType=fileRecorder
+fileName=/tmp/dataRecorder_flp1.raw
+```
+
+To read it back with readout, for instance on another machine, add: 
+```
+[equipment-player-1]
+equipmentType=player
+memoryPoolPageSize=1M
+memoryPoolNumberOfPages=1000
+filePath=/path/to/dataRecorder_flp1.raw 
+autoChunk=1
+```
+
+### DPL workflow
+
+When plugging the QC on a DPL workflow to monitor the output of one or several devices, one should of course have some data producer in the workflow itself. Several options exist, listed below. 
+
+__Random data__
+
+As shown earlier in this documentation we provide a random data generator. The binary is called `o2-qc-run-producer` and many options are available (use `--help` to see them).
+
+__Data file__
+
+To write and read data files in the DPL, please refer to the [RawFileWriter](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilewriter) and [RawFileReader](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader).
+
+On the same page, there are instructions to write such file from Simulation. 
+
+__Live detector data__
+
+If the detector is ready and connected to the CRU(s), one can of course start the full data taking workflow, including the SubTimeFrameBuilder and the DPL processing and plug the QC onto it.
 
 ---
 
