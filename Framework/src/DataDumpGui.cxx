@@ -16,6 +16,7 @@
 
 #include "QualityControl/DataDumpGui.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/stringUtils.h"
 #include "imgui/BaseGui.h"
 #include "imgui/imgui.h"
 #include <Headers/DataHeader.h>
@@ -29,36 +30,6 @@ namespace o2::quality_control::core
 
 GUIState DataDumpGui::guiState;
 void* DataDumpGui::window = nullptr;
-
-vector<string> getBinRepresentation(unsigned char* data, size_t size)
-{
-  stringstream ss;
-  vector<string> result;
-  result.reserve(size);
-
-  for (size_t i = 0; i < size; i++) {
-    std::bitset<16> x(data[i]);
-    ss << x << " ";
-    result.push_back(ss.str());
-    ss.str(std::string());
-  }
-  return result;
-}
-
-vector<string> getHexRepresentation(unsigned char* data, size_t size)
-{
-  stringstream ss;
-  vector<string> result;
-  result.reserve(size);
-  ss << std::hex << std::setfill('0');
-
-  for (size_t i = 0; i < size; i++) {
-    ss << std::setw(2) << static_cast<unsigned>(data[i]) << " ";
-    result.push_back(ss.str());
-    ss.str(std::string());
-  }
-  return result;
-}
 
 void DataDumpGui::InitTask() { window = initGUI("O2 Data Inspector"); }
 

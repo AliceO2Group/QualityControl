@@ -34,7 +34,11 @@
           "type": "dataSamplingPolicy",
           "name": "readout"
         },
-        "location": "remote"
+        "location": "remote",
+        "taskParameters": {
+          "printHeaders": "0",               "": "set to 1 to print all headers, it will slow down the QC",
+          "printPayload": "no",              "": "hex or bin (anything else means no), it will slow down the QC"
+        }
       }
     }
   },

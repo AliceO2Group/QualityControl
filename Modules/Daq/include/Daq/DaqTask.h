@@ -29,8 +29,10 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::daq
 {
 
-/// \brief Example Quality Control Task
-/// It is final because there is no reason to derive from it. Just remove it if needed.
+/// \brief Dataflow task
+/// It does only look at the header and plots sizes (e.g. payload).
+/// It also can print the headers and the payloads by setting printHeaders to "1"
+/// and printPayload to "hex" or "bin" in the config file under "taskParameters".
 /// \author Barthelemy von Haller
 class DaqTask final : public TaskInterface
 {
@@ -56,9 +58,6 @@ class DaqTask final : public TaskInterface
   TH1F* mNumberSubblocks;
   TH1F* mSubPayloadSize;
   //  UInt_t mTimeLastRecord;
-  TObjString* mObjString;
-  TCanvas* mCanvas;
-  TPaveText* mPaveText;
 };
 
 } // namespace o2::quality_control_modules::daq
