@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
   config.className = "o2::quality_control_modules::example::ExampleTask";
   auto manager = make_shared<ObjectsManager>(config);
   try {
-    gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local paths for the test
+    gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local  paths for the test
     factory.create(config, manager);
   } catch (...) {
     BOOST_TEST_FAIL(boost::current_exception_diagnostic_information());
