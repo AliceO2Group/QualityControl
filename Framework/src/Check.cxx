@@ -245,7 +245,7 @@ std::vector<std::string> Check::getObjectsNames() const
   return mCheckConfig.moNames;
 }
 
-bool Check::getAllObjects() const
+bool Check::getAllObjectsOption() const
 {
   return mCheckConfig.allMOs;
 }

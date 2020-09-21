@@ -9,7 +9,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   PolicyManager.h
+/// \file   UpdatePolicyManager.h
 /// \author Barthelemy von Haller
 ///
 
@@ -24,31 +24,31 @@
 namespace o2::quality_control::checker
 {
 
-using FunctionType = std::function<bool()>;
+using UpdatePolicyFunctionType = std::function<bool()>;
 typedef uint32_t RevisionType;
 
 /**
- * Represents 1 policy and all its associated elements.
+ * Represents a policy and all its associated elements.
  */
-struct Policy {
+struct UpdatePolicy {
   std::string actorName;
-  FunctionType isReady;
+  UpdatePolicyFunctionType isReady;
   std::vector<std::string> inputObjects;
   bool allInputObjects;
   // TODO this line makes me think that lambdas are not enough because we actually need to store a state...
-  bool policyHelper; // the purpose might change depending on policy,
+  bool policyHelperFlag; // the purpose might change depending on policy,
   RevisionType revision = 0;
 };
 
 /**
- * The PolicyManager is in charge of instantiating and keeping track of policies.
+ * The UpdatePolicyManager is in charge of instantiating and keeping track of policies.
  *
  * Naming:
- *   - a `caller` (e.g. CheckRunner or AggregatorRunner) holds an instance of the PolicyManager and drives it.
- *   - a `policy` determines whether something is ready to be done or not. It is a glorified function returning
+ *   - a `caller` (e.g. CheckRunner or AggregatorRunner) holds an instance of the UpdatePolicyManager and drives it.
+ *   - a `policy` determines whether something is ready to be done or not. It is a  function returning
  *     a boolean.
  *   - an `actor` (e.g. Check or Aggregator) is in charge of executing something when a policy is fulfilled. There
- *     can be several actors for a caller. The actor is not aware of the policyManager.
+ *     can be several actors for a caller. The actor is not aware of the UpdatePolicyManager.
  *   - the `objects` are received by the caller. They are processed by the actors and their status (e.g. freshly received)
  *     is used by some policies.
  *   - a revision is a number associated to each object to determine when it was received and associated to
@@ -58,29 +58,29 @@ struct Policy {
  *   - OnAny: triggers when an object is received that matches ANY object listed as a data source of the policy.
  *   - OnAnyNonZero: triggers only if all objects have been received at least once, then trigger the same way as onAny.
  *   - onAll: triggers when ALL objects listed as data source of the policy have been updated at least once.
- *   - onEachSeparately: synonym of 'onEach'.
+ *   - onEachSeparately: synonym of 'onAny'.
  * If "all" is specified as list of object, or the list is empty, we always trigger.
  *
  * A typical caller code looks like this:
  * \code{.cpp}
  *  // when initializing
- * policyManager.addPolicy("actor1", "OnAny", {"object1"}, false, false);
+ * UpdatePolicyManager.addPolicy("actor1", "OnAny", {"object1"}, false, false);
  *
  *  // in run() loop :
  *  // upon receiving new data, i.e. object1
- *  policyManager.updateObjectRevision("object1");
+ *  UpdatePolicyManager.updateObjectRevision("object1");
  *  // check if we should do something
- *  if (policyManager.isReady("object1") {
+ *  if (UpdatePolicyManager.isReady("object1") {
  *    doSomething();
- *    policyManager.updateActorRevision("actor1");
+ *    UpdatePolicyManager.updateActorRevision("actor1");
  *  }
  *
- *  policyManager.updateGlobalRevision();
+ *  UpdatePolicyManager.updateGlobalRevision();
  *  // end run() loop
  * \endcode
  *
  */
-class PolicyManager
+class UpdatePolicyManager
 {
  public:
   /**
@@ -124,7 +124,7 @@ class PolicyManager
   bool isReady(const std::string& actorName);
 
  private:
-  std::map<std::string /* Actor name */, Policy> mPoliciesByActor;
+  std::map<std::string /* Actor name */, UpdatePolicy> mPoliciesByActor;
   RevisionType mGlobalRevision = 1;
   std::map<std::string /* Object name */, RevisionType> mObjectsRevision;
 };

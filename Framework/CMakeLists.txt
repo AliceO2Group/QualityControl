@@ -65,7 +65,7 @@ add_library(QualityControl
             src/HistoProducer.cxx
             src/DataProducerExample.cxx
             src/MonitorObjectCollection.cxx
-            src/PolicyManager.cxx)
+  src/UpdatePolicyManager.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -121,7 +121,7 @@ add_root_dictionary(QualityControl
                             include/QualityControl/TrendingTask.h
                             include/QualityControl/Reductor.h
                             include/QualityControl/MonitorObjectCollection.h
-                            include/QualityControl/PolicyManager.h
+  include/QualityControl/UpdatePolicyManager.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 

@@ -187,7 +187,7 @@ void CheckRunner::init(framework::InitContext&)
     initServiceDiscovery();
     for (auto& check : mChecks) {
       check.init();
-      policyManager.addPolicy(check.getName(), check.getPolicyName(), check.getObjectsNames(), check.getAllObjects(), false);
+      updatePolicyManager.addPolicy(check.getName(), check.getPolicyName(), check.getObjectsNames(), check.getAllObjectsOption(), false);
     }
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
@@ -208,7 +208,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 
   send(qualityObjects, ctx.outputs());
 
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateGlobalRevision();
 
   sendPeriodicMonitoring();
 }
@@ -257,7 +257,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 
         if (mo) {
           mMonitorObjects[mo->getFullName()] = mo;
-          policyManager.updateObjectRevision(mo->getFullName());
+          updatePolicyManager.updateObjectRevision(mo->getFullName());
           mTotalNumberObjectsReceived++;
 
           if (store) { // Monitor Object will be stored later, after possible beautification
@@ -287,7 +287,7 @@ QualityObjectsType CheckRunner::check()
 
   QualityObjectsType allQOs;
   for (auto& check : mChecks) {
-    if (policyManager.isReady(check.getName())) {
+    if (updatePolicyManager.isReady(check.getName())) {
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
 
@@ -295,7 +295,7 @@ QualityObjectsType CheckRunner::check()
       newQOs.clear();
 
       // Was checked, update latest revision
-      policyManager.updateActorRevision(check.getName());
+      updatePolicyManager.updateActorRevision(check.getName());
     } else {
       mLogger << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
     }

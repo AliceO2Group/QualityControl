@@ -9,11 +9,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   PolicyManager.cxx
+/// \file   UpdatePolicyManager.cxx
 /// \author Barthelemy von Haller
 ///
 
-#include "QualityControl/PolicyManager.h"
+#include "QualityControl/UpdatePolicyManager.h"
 
 #include "QualityControl/QcInfoLogger.h"
 #include "Common/Exceptions.h"
@@ -23,7 +23,7 @@ using namespace AliceO2::Common;
 namespace o2::quality_control::checker
 {
 
-void PolicyManager::updateGlobalRevision()
+void UpdatePolicyManager::updateGlobalRevision()
 {
   ++mGlobalRevision;
   if (mGlobalRevision == 0) {
@@ -36,10 +36,8 @@ void PolicyManager::updateGlobalRevision()
   }
 }
 
-void PolicyManager::updateActorRevision(const std::string& actorName, RevisionType revision)
+void UpdatePolicyManager::updateActorRevision(const std::string& actorName, RevisionType revision)
 {
-  for (auto actor : mPoliciesByActor) {
-  }
   if (mPoliciesByActor.count(actorName) == 0) {
     ILOG(Error) << "Cannot update revision for " << actorName << " : object not found" << ENDM;
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(actorName));
@@ -47,24 +45,24 @@ void PolicyManager::updateActorRevision(const std::string& actorName, RevisionTy
   mPoliciesByActor.at(actorName).revision = revision;
 }
 
-void PolicyManager::updateActorRevision(std::string actorName)
+void UpdatePolicyManager::updateActorRevision(std::string actorName)
 {
   updateActorRevision(actorName, mGlobalRevision);
 }
 
-void PolicyManager::updateObjectRevision(std::string objectName, RevisionType revision)
+void UpdatePolicyManager::updateObjectRevision(std::string objectName, RevisionType revision)
 {
   mObjectsRevision[objectName] = revision;
 }
 
-void PolicyManager::updateObjectRevision(std::string objectName)
+void UpdatePolicyManager::updateObjectRevision(std::string objectName)
 {
   updateObjectRevision(objectName, mGlobalRevision);
 }
 
-void PolicyManager::addPolicy(std::string actorName, std::string policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper)
+void UpdatePolicyManager::addPolicy(std::string actorName, std::string policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper)
 {
-  FunctionType policy;
+  UpdatePolicyFunctionType policy;
   if (policyType == "OnAll") {
     /** 
      * Run check if all MOs are updated 
@@ -84,7 +82,7 @@ void PolicyManager::addPolicy(std::string actorName, std::string policyType, std
      * Guarantee that all declared MOs are available
      */
     policy = [&, actorName]() {
-      if (!mPoliciesByActor.at(actorName).policyHelper) {
+      if (!mPoliciesByActor.at(actorName).policyHelperFlag) {
         // Check if all monitor objects are available
         for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
           if (!mObjectsRevision.count(objectName)) {
@@ -92,7 +90,7 @@ void PolicyManager::addPolicy(std::string actorName, std::string policyType, std
           }
         }
         // From now on all MOs are available
-        mPoliciesByActor.at(actorName).policyHelper = true;
+        mPoliciesByActor.at(actorName).policyHelperFlag = true;
       }
 
       for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
@@ -156,7 +154,7 @@ void PolicyManager::addPolicy(std::string actorName, std::string policyType, std
   mPoliciesByActor[actorName] = { actorName, policy, objectNames, allObjects, policyHelper };
 }
 
-bool PolicyManager::isReady(const std::string& actorName)
+bool UpdatePolicyManager::isReady(const std::string& actorName)
 {
   if (mPoliciesByActor.count(actorName) == 0) {
     ILOG(Error) << "Cannot check if " << actorName << " is ready : object not found" << ENDM;

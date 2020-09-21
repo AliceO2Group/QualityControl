@@ -280,8 +280,7 @@ void TaskRunner::loadTopologyConfig()
 {
   auto taskConfigTree = getTaskConfigTree();
   auto policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
-  ConfigurationInterface* config = policiesFilePath.empty() ? mConfigFile.get() : ConfigurationFactory::getConfiguration(policiesFilePath).get();
-  auto policiesTree = config->getRecursive("dataSamplingPolicies");
+  ConfigurationInterface* config = policiesFilePath.empty() ? mConfigFile.get() : ConfigurationFactory::getConfiguration(policiesFilePath).get(); // todo make sure that it is ok to use the internal pointer of the unique_ptr
   auto dataSourceTree = taskConfigTree.get_child("dataSource");
   auto type = dataSourceTree.get<std::string>("type");
 

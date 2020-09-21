@@ -78,7 +78,7 @@ class Check
 
   std::string getPolicyName() const;
   std::vector<std::string> getObjectsNames() const;
-  bool getAllObjects() const;
+  bool getAllObjectsOption() const;
 
  private:
   void initConfig(std::string checkName);

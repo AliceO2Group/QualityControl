@@ -13,9 +13,8 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "QualityControl/PolicyManager.h"
+#include "QualityControl/UpdatePolicyManager.h"
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
 #include <Common/Exceptions.h>
 #include <TH1F.h>
 
@@ -33,333 +32,333 @@ using namespace AliceO2::Common;
 
 BOOST_AUTO_TEST_CASE(test_basic_isready)
 {
-  PolicyManager policyManager;
+  UpdatePolicyManager updatePolicyManager;
 
   // init
-  policyManager.addPolicy("actor1", "OnAny", { "object1" }, false, false);
+  updatePolicyManager.addPolicy("actor1", "OnAny", { "object1" }, false, false);
 
   // this is like 1 iteration of the run() :
   // get new data
-  policyManager.updateObjectRevision("object1");
+  updatePolicyManager.updateObjectRevision("object1");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
   // update
-  policyManager.updateActorRevision("actor1");
+  updatePolicyManager.updateActorRevision("actor1");
   // policy must be false now because we have already processed this actor
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
 
-  policyManager.updateGlobalRevision();
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
+  updatePolicyManager.updateGlobalRevision();
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
 
   // get new data
-  policyManager.updateObjectRevision("object1");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
+  updatePolicyManager.updateObjectRevision("object1");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
 }
 
 BOOST_AUTO_TEST_CASE(test_basic_isready2)
 {
-  PolicyManager policyManager;
+  UpdatePolicyManager updatePolicyManager;
 
   // init
-  policyManager.addPolicy("actor1", "OnAny", { "object1", "object2" }, false, false);
-  policyManager.addPolicy("actor2", "OnAny", { "object2", "object3" }, false, false);
-  policyManager.addPolicy("actor3", "OnAny", {}, false, false); // no objects listed
-  policyManager.addPolicy("actor4", "OnAny", {}, true, false);  // allMOs set
+  updatePolicyManager.addPolicy("actor1", "OnAny", { "object1", "object2" }, false, false);
+  updatePolicyManager.addPolicy("actor2", "OnAny", { "object2", "object3" }, false, false);
+  updatePolicyManager.addPolicy("actor3", "OnAny", {}, false, false); // no objects listed
+  updatePolicyManager.addPolicy("actor4", "OnAny", {}, true, false);  // allMOs set
 
   // this is like 1 iteration of the run() :
   // get new data
-  policyManager.updateObjectRevision("object1");
+  updatePolicyManager.updateObjectRevision("object1");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor3"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor4"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor3"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor4"), false);
   // update
-  policyManager.updateActorRevision("actor1");
-  policyManager.updateActorRevision("actor3");
-  policyManager.updateActorRevision("actor4");
+  updatePolicyManager.updateActorRevision("actor1");
+  updatePolicyManager.updateActorRevision("actor3");
+  updatePolicyManager.updateActorRevision("actor4");
   // policy must be false now because we have already processed this actor
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  policyManager.updateGlobalRevision();
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // this is like 1 iteration of the run() :
   // get new data
-  policyManager.updateObjectRevision("object2");
+  updatePolicyManager.updateObjectRevision("object2");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor1");
-  policyManager.updateActorRevision("actor2");
+  updatePolicyManager.updateActorRevision("actor1");
+  updatePolicyManager.updateActorRevision("actor2");
   // policy must be false now because we have already processed this actor
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // this is like 1 iteration of the run() :
   // get new data
-  policyManager.updateObjectRevision("object3");
+  updatePolicyManager.updateObjectRevision("object3");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 }
 
 BOOST_AUTO_TEST_CASE(test_check_policy_OnAll)
 {
-  PolicyManager policyManager;
+  UpdatePolicyManager updatePolicyManager;
 
   // init
-  policyManager.addPolicy("actor1", "OnAll", { "object1", "object2" }, false, false);
-  policyManager.addPolicy("actor2", "OnAll", { "object2", "object3" }, false, false);
-  //  policyManager.addPolicy("actor3", "OnAll", { }, false, false);
-  //  policyManager.addPolicy("actor4", "OnAll", { }, true, false);
+  updatePolicyManager.addPolicy("actor1", "OnAll", { "object1", "object2" }, false, false);
+  updatePolicyManager.addPolicy("actor2", "OnAll", { "object2", "object3" }, false, false);
+  //  updatePolicyManager.addPolicy("actor3", "OnAll", { }, false, false);
+  //  updatePolicyManager.addPolicy("actor4", "OnAll", { }, true, false);
 
   // iteration 1 of run() : get object1
   // get new data
-  policyManager.updateObjectRevision("object1");
+  updatePolicyManager.updateObjectRevision("object1");
   // check whether data is ready
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor3"), true);
-  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor4"), true);
-  policyManager.updateGlobalRevision();
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  //  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor3"), true);
+  //  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor4"), true);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 2 of run() : get object2
   // get new data
-  policyManager.updateObjectRevision("object2");
+  updatePolicyManager.updateObjectRevision("object2");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor3"), true);
-  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor4"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  //  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor3"), true);
+  //  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor4"), true);
   // update
-  policyManager.updateActorRevision("actor1");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor3"), true);
-  //  BOOST_CHECK_EQUAL(policyManager.isReady("actor4"), true);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor1");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  //  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor3"), true);
+  //  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor4"), true);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 3 of run() : get object3
   // get new data
-  policyManager.updateObjectRevision("object3");
+  updatePolicyManager.updateObjectRevision("object3");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 4 of run() : get object1, 2, 3
   // get new data
-  policyManager.updateObjectRevision("object1");
-  policyManager.updateObjectRevision("object2");
-  policyManager.updateObjectRevision("object3");
+  updatePolicyManager.updateObjectRevision("object1");
+  updatePolicyManager.updateObjectRevision("object2");
+  updatePolicyManager.updateObjectRevision("object3");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor1");
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor1");
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 }
 
 BOOST_AUTO_TEST_CASE(test_check_policy_OnAny)
 {
-  PolicyManager policyManager;
+  UpdatePolicyManager updatePolicyManager;
 
   // init
-  policyManager.addPolicy("actor1", "OnAny", { "object1", "object2" }, false, false);
-  policyManager.addPolicy("actor2", "OnAny", { "object2", "object3" }, false, false);
+  updatePolicyManager.addPolicy("actor1", "OnAny", { "object1", "object2" }, false, false);
+  updatePolicyManager.addPolicy("actor2", "OnAny", { "object2", "object3" }, false, false);
 
   // iteration 1 of run() : get object1
   // get new data
-  policyManager.updateObjectRevision("object1");
+  updatePolicyManager.updateObjectRevision("object1");
   // check whether data is ready
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 2 of run() : get object2
   // get new data
-  policyManager.updateObjectRevision("object2");
+  updatePolicyManager.updateObjectRevision("object2");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor1");
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor1");
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 3 of run() : get object3
   // get new data
-  policyManager.updateObjectRevision("object3");
+  updatePolicyManager.updateObjectRevision("object3");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 4 of run() : get object1, 2, 3
   // get new data
-  policyManager.updateObjectRevision("object1");
-  policyManager.updateObjectRevision("object2");
-  policyManager.updateObjectRevision("object3");
+  updatePolicyManager.updateObjectRevision("object1");
+  updatePolicyManager.updateObjectRevision("object2");
+  updatePolicyManager.updateObjectRevision("object3");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor1");
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor1");
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 }
 
 BOOST_AUTO_TEST_CASE(test_check_policy_OnAnyNonZero)
 {
-  PolicyManager policyManager;
+  UpdatePolicyManager updatePolicyManager;
 
   // init
-  policyManager.addPolicy("actor1", "OnAnyNonZero", { "object1", "object2" }, false, false);
-  policyManager.addPolicy("actor2", "OnAnyNonZero", { "object2", "object3" }, false, false);
+  updatePolicyManager.addPolicy("actor1", "OnAnyNonZero", { "object1", "object2" }, false, false);
+  updatePolicyManager.addPolicy("actor2", "OnAnyNonZero", { "object2", "object3" }, false, false);
 
   // iteration 1 of run() : get object1
   // get new data
-  policyManager.updateObjectRevision("object1");
+  updatePolicyManager.updateObjectRevision("object1");
   // check whether data is ready
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 2 of run() : get object2
   // get new data
-  policyManager.updateObjectRevision("object2");
+  updatePolicyManager.updateObjectRevision("object2");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
   // update
-  policyManager.updateActorRevision("actor1");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor1");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 3 of run() : get object3
   // get new data
-  policyManager.updateObjectRevision("object3");
+  updatePolicyManager.updateObjectRevision("object3");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 4 of run() : get object1, 2, 3
   // get new data
-  policyManager.updateObjectRevision("object1");
-  policyManager.updateObjectRevision("object2");
-  policyManager.updateObjectRevision("object3");
+  updatePolicyManager.updateObjectRevision("object1");
+  updatePolicyManager.updateObjectRevision("object2");
+  updatePolicyManager.updateObjectRevision("object3");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor1");
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor1");
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 }
 
 BOOST_AUTO_TEST_CASE(test_check_policy_OnEachSeparately)
 {
-  PolicyManager policyManager;
+  UpdatePolicyManager updatePolicyManager;
 
   // init
-  policyManager.addPolicy("actor1", "OnEachSeparately", { "object1", "object2" }, false, false);
-  policyManager.addPolicy("actor2", "OnEachSeparately", { "object2", "object3" }, false, false);
+  updatePolicyManager.addPolicy("actor1", "OnEachSeparately", { "object1", "object2" }, false, false);
+  updatePolicyManager.addPolicy("actor2", "OnEachSeparately", { "object2", "object3" }, false, false);
 
   // iteration 1 of run() : get object1
   // get new data
-  policyManager.updateObjectRevision("object1");
+  updatePolicyManager.updateObjectRevision("object1");
   // check whether data is ready
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 2 of run() : get object2
   // get new data
-  policyManager.updateObjectRevision("object2");
+  updatePolicyManager.updateObjectRevision("object2");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor1");
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor1");
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 3 of run() : get object3
   // get new data
-  policyManager.updateObjectRevision("object3");
+  updatePolicyManager.updateObjectRevision("object3");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 
   // iteration 4 of run() : get object1, 2, 3
   // get new data
-  policyManager.updateObjectRevision("object1");
-  policyManager.updateObjectRevision("object2");
-  policyManager.updateObjectRevision("object3");
+  updatePolicyManager.updateObjectRevision("object1");
+  updatePolicyManager.updateObjectRevision("object2");
+  updatePolicyManager.updateObjectRevision("object3");
   // check the policy
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), true);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), true);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  policyManager.updateActorRevision("actor1");
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor1"), false);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  updatePolicyManager.updateActorRevision("actor1");
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor1"), false);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 }
 
 BOOST_AUTO_TEST_CASE(test_errors)
 {
-  PolicyManager policyManager;
+  UpdatePolicyManager updatePolicyManager;
 
   // init
   BOOST_CHECK_THROW(
-    policyManager.addPolicy("actor1", "OnTheMoon", { "object1", "object2" }, false, false), FatalException);
-  policyManager.addPolicy("actor2", "OnEachSeparately", { "object2", "object3" }, false, false);
+    updatePolicyManager.addPolicy("actor1", "OnTheMoon", { "object1", "object2" }, false, false), FatalException);
+  updatePolicyManager.addPolicy("actor2", "OnEachSeparately", { "object2", "object3" }, false, false);
 
   // get new data
-  policyManager.updateObjectRevision("object3");
+  updatePolicyManager.updateObjectRevision("object3");
   // check the policy
-  BOOST_CHECK_THROW(policyManager.isReady("actor1"), ObjectNotFoundError);
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), true);
+  BOOST_CHECK_THROW(updatePolicyManager.isReady("actor1"), ObjectNotFoundError);
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), true);
   // update
-  BOOST_CHECK_THROW(policyManager.updateActorRevision("actor1"), ObjectNotFoundError);
-  policyManager.updateActorRevision("actor2");
-  BOOST_CHECK_EQUAL(policyManager.isReady("actor2"), false);
-  policyManager.updateGlobalRevision();
+  BOOST_CHECK_THROW(updatePolicyManager.updateActorRevision("actor1"), ObjectNotFoundError);
+  updatePolicyManager.updateActorRevision("actor2");
+  BOOST_CHECK_EQUAL(updatePolicyManager.isReady("actor2"), false);
+  updatePolicyManager.updateGlobalRevision();
 }

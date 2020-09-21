@@ -37,7 +37,7 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Check.h"
-#include "QualityControl/PolicyManager.h"
+#include "QualityControl/UpdatePolicyManager.h"
 
 namespace o2::quality_control::core
 {
@@ -200,7 +200,7 @@ class CheckRunner : public framework::Task
   std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
-  PolicyManager policyManager;
+  UpdatePolicyManager updatePolicyManager;
 
   // DPL
   o2::framework::Inputs mInputs;
