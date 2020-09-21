@@ -33,7 +33,7 @@ namespace o2::quality_control::checker
 /// \brief The class in charge of providing single check for a given map of MonitorObjects.
 ///
 /// A Check is in charge of loading/instantiating the single check from module, configure them and manage the check process:
-/// shadow not required MonitorObjects, invoke beautify process if needed.
+/// shadow not required MonitorObjects, invoke  beautify process if needed.
 ///
 /// \author Rafal Pacholek
 class Check
