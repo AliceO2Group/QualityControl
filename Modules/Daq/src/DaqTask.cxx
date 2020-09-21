@@ -103,20 +103,20 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (mCustomParameters.count("printHeaders") > 0 && mCustomParameters["printHeaders"] == "true") {
         header->print();
       }
-      if(mCustomParameters.count("printPayload") > 0) {
+      if (mCustomParameters.count("printPayload") > 0) {
         std::vector<std::string> representation;
-        if(mCustomParameters["printPayload"] == "hex"){
+        if (mCustomParameters["printPayload"] == "hex") {
           representation = getHexRepresentation((unsigned char*)payload, header->payloadSize);
         } else if (mCustomParameters["printPayload"] == "bin") {
           representation = getBinRepresentation((unsigned char*)payload, header->payloadSize);
         }
 
-        for(size_t i = 0 ; i < representation.size() ; ) {
+        for (size_t i = 0; i < representation.size();) {
           ILOG(Info) << std::setw(4) << i << " : ";
-          for (size_t col = 0 ; col < 4 ; col++) {
-            for(size_t word = 0 ; word < 2 ; word++) {
-              if(i+col*2+word < representation.size()) {
-                ILOG(Info) << representation[i+col*2+word];
+          for (size_t col = 0; col < 4; col++) {
+            for (size_t word = 0; word < 2; word++) {
+              if (i + col * 2 + word < representation.size()) {
+                ILOG(Info) << representation[i + col * 2 + word];
               } else {
                 ILOG(Info) << "   ";
               }
@@ -124,7 +124,7 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
             ILOG(Info) << " | ";
           }
           ILOG(Info) << ENDM;
-          i = i+8;
+          i = i + 8;
         }
       }
     }
