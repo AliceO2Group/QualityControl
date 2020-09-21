@@ -13,6 +13,8 @@
          * [Code Organization](#code-organization)
          * [Developing with aliBuild/alienv](#developing-with-alibuildalienv)
          * [User-defined modules](#user-defined-modules)
+         * [Repository](#repository)
+            * [Paths](#paths)
       * [Module creation](#module-creation)
       * [Test run](#test-run)
       * [Modification of the Task](#modification-of-the-task)
@@ -20,9 +22,12 @@
          * [Configuration](#configuration)
          * [Implementation](#implementation)
       * [Committing code](#committing-code)
-      * [Raw data source](#raw-data-source)
+      * [Data sources](#data-sources)
+         * [Readout](#readout)
+         * [DPL workflow](#dpl-workflow)
 
-<!-- Added by: barth, at: Lun 17 aoû 2020 14:57:50 CEST -->
+<!-- Added by: bvonhall, at:  -->
+
 <!--te-->
 
 [← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Post-processing →](PostProcessing.md)
