@@ -48,33 +48,58 @@ std::optional<double> string2Seconds(std::string str)
   }
 }
 
-TriggerFcn triggerFactory(std::string trigger)
+TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& config)
 {
   // todo: should we accept many versions of trigger names?
-  boost::algorithm::to_lower(trigger);
+  std::string triggerLowerCase = trigger;
+  boost::algorithm::to_lower(triggerLowerCase);
 
-  if (trigger == "once") {
+  if (triggerLowerCase == "once") {
     return triggers::Once();
-  } else if (trigger == "always") {
+  } else if (triggerLowerCase == "always") {
     return triggers::Always();
-  } else if (trigger == "sor" || trigger == "startofrun") {
+  } else if (triggerLowerCase == "sor" || triggerLowerCase == "startofrun") {
     return triggers::StartOfRun();
-  } else if (trigger == "eor" || trigger == "endofrun") {
+  } else if (triggerLowerCase == "eor" || triggerLowerCase == "endofrun") {
     return triggers::EndOfRun();
-  } else if (trigger == "sof" || trigger == "startoffill") {
+  } else if (triggerLowerCase == "sof" || triggerLowerCase == "startoffill") {
     return triggers::StartOfFill();
-  } else if (trigger == "eof" || trigger == "endoffill") {
+  } else if (triggerLowerCase == "eof" || triggerLowerCase == "endoffill") {
     return triggers::EndOfFill();
-  } else if (trigger.find("newobject") != std::string::npos) {
-    // todo: extract object path
-    //  it might be in a form of "newobject:/qc/ASDF/ZXCV"
-    return triggers::NewObject("");
-  } else if (auto seconds = string2Seconds(trigger); seconds.has_value()) {
+  } else if (triggerLowerCase.find("newobject") != std::string::npos) {
+    // we expect the config string to be:
+    // newobject:[qcdb/ccdb]:qc/path/to/object
+    std::vector<std::string> tokens;
+    boost::split(tokens, trigger, boost::is_any_of(":"));
+
+    if (tokens.size() != 3) {
+      throw std::invalid_argument(
+        "The new object trigger is configured incorrectly. The expected format is "
+        "'newobject:[qcdb/ccdb]:qc/path/to/object', received `" +
+        trigger + "'");
+    }
+
+    std::string dbUrl;
+    boost::algorithm::to_lower(tokens[1]);
+    if (tokens[1] == "qcdb") {
+      dbUrl = config.qcdbUrl;
+    } else if (tokens[1] == "ccdb") {
+      dbUrl = config.ccdbUrl;
+    } else {
+      throw std::invalid_argument("The second token in '" + trigger + "' should be either qcdb or ccdb");
+    }
+
+    if (tokens[2].empty()) {
+      throw std::invalid_argument("The third token in '" + trigger + "' is empty, but it should contain the object path");
+    }
+
+    return triggers::NewObject(dbUrl, tokens[2]);
+  } else if (auto seconds = string2Seconds(triggerLowerCase); seconds.has_value()) {
     if (seconds.value() < 0) {
       throw std::invalid_argument("negative number of seconds in trigger '" + trigger + "'");
     }
     return triggers::Periodic(seconds.value());
-  } else if (trigger.find("user") != std::string::npos || trigger.find("control") != std::string::npos) {
+  } else if (triggerLowerCase.find("user") != std::string::npos || triggerLowerCase.find("control") != std::string::npos) {
     return triggers::Never();
   } else {
     throw std::invalid_argument("unknown trigger: " + trigger);
@@ -91,11 +116,12 @@ Trigger tryTrigger(std::vector<TriggerFcn>& triggerFcns)
   return { TriggerType::No };
 }
 
-std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNames)
+std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNames, const PostProcessingConfig& config)
 {
   std::vector<TriggerFcn> triggerFcns;
+  triggerFcns.reserve(triggerNames.size());
   for (const auto& triggerName : triggerNames) {
-    triggerFcns.push_back(triggerFactory(triggerName));
+    triggerFcns.push_back(triggerFactory(triggerName, config));
   }
   return triggerFcns;
 }
