@@ -19,6 +19,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <iomanip>
 
 namespace o2::quality_control::core
 {
