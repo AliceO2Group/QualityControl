@@ -19,6 +19,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <functional>
 
 namespace o2::quality_control::checker
 {
