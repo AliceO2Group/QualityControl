@@ -100,7 +100,7 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
       totalPayloadSize += size;
 
       // printing
-      if (mCustomParameters.count("printHeaders") > 0 && mCustomParameters["printHeaders"] == "1") {
+      if (mCustomParameters.count("printHeaders") > 0 && mCustomParameters["printHeaders"] == "true") {
         header->print();
       }
       if(mCustomParameters.count("printPayload") > 0) {
@@ -112,18 +112,18 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
 
         for(size_t i = 0 ; i < representation.size() ; ) {
-          cout << std::setw(4) << i << " : ";
+          ILOG(Info) << std::setw(4) << i << " : ";
           for (size_t col = 0 ; col < 4 ; col++) {
             for(size_t word = 0 ; word < 2 ; word++) {
               if(i+col*2+word < representation.size()) {
-                cout << representation[i+col*2+word];
+                ILOG(Info) << representation[i+col*2+word];
               } else {
-                cout << "   ";
+                ILOG(Info) << "   ";
               }
             }
-            cout << " | ";
+            ILOG(Info) << " | ";
           }
-          cout << endl;
+          ILOG(Info) << ENDM;
           i = i+8;
         }
       }
