@@ -20,6 +20,7 @@
 #include <sstream>
 #include <vector>
 #include <iomanip>
+#include <bitset>
 
 namespace o2::quality_control::core
 {
