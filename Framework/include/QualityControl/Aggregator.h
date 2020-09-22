@@ -62,22 +62,22 @@ class Aggregator
    * Update the revision number with the latest global revision.
    * Expected to be changed after invoke of `aggregator(moMap)` or revision number overflow.
    */
-//  void updateGlobalRevision(unsigned int revision);
+  //  void updateGlobalRevision(unsigned int revision);
 
   /**
    * \brief Return true if the Monitor Objects were changed accordingly to the policy
    */
-//  bool isReady(std::map<std::string, unsigned int>& revisionMap);
+  //  bool isReady(std::map<std::string, unsigned int>& revisionMap);
 
   const std::string& getName() const { return mAggregatorConfig.checkName; };
-//  o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
-//  o2::framework::Inputs getInputs() const { return mInputs; };
+  //  o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
+  //  o2::framework::Inputs getInputs() const { return mInputs; };
 
   //TODO: Unique Input string
-//  static o2::header::DataDescription createAggregatorerDataDescription(const std::string taskName);
+  //  static o2::header::DataDescription createAggregatorerDataDescription(const std::string taskName);
 
   // For testing purpose
-//  void setAggregatorInterface(AggregatorInterface* aggregatorInterface) { mAggregatorInterface = aggregatorInterface; };
+  //  void setAggregatorInterface(AggregatorInterface* aggregatorInterface) { mAggregatorInterface = aggregatorInterface; };
 
  private:
   void initConfig(std::string aggregatorName);
@@ -87,9 +87,9 @@ class Aggregator
   AggregatorInterface* mAggregatorInterface = nullptr;
 
   // Policy
-//  std::function<bool(std::map<std::string, unsigned int>&)> mPolicy;
-//  unsigned int mMORevision = 0;
-//  bool mPolicyHelper = false; // Depending on policy, the purpose might change
+  //  std::function<bool(std::map<std::string, unsigned int>&)> mPolicy;
+  //  unsigned int mMORevision = 0;
+  //  bool mPolicyHelper = false; // Depending on policy, the purpose might change
 };
 
 } // namespace o2::quality_control::checker

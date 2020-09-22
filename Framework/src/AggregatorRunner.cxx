@@ -45,7 +45,7 @@ namespace o2::quality_control::checker
 AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkerRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
     mOutput({ "qo" }, createAggregatorRunnerDataDescription(mDeviceName), 0),
-      mTotalNumberObjectsReceived(0)
+    mTotalNumberObjectsReceived(0)
 {
   try {
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
@@ -58,7 +58,7 @@ AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const
 
   // prepare list of all inputs
   int i = 0;
-  for(const auto& spec: checkerRunnerOutputs) {
+  for (const auto& spec : checkerRunnerOutputs) {
     auto input = DataSpecUtils::matchingInput(spec);
     input.binding = "checkerOutput" + to_string(i); // TODO check if that name is fine
     mInputs.emplace_back(input);
@@ -107,18 +107,18 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
   // get data
   framework::InputRecord& inputs = ctx.inputs();
   for (auto const& ref : InputRecordWalker(inputs)) { // InputRecordWalker because the output of CheckRunner can be multi-part
-    if (ref.header != nullptr ) {
+    if (ref.header != nullptr) {
       ILOG(Info) << "Received data !" << ENDM;
       shared_ptr<const QualityObject> qo = inputs.get<QualityObject*>(ref);
-      if(qo != nullptr ) {
+      if (qo != nullptr) {
         ILOG(Info) << "it is a qo: " << qo->getName() << ENDM;
         mQualityObjects[qo->getName()] = qo;
-//        mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
+        //        mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
         mTotalNumberObjectsReceived++;
-//
-//        if (store) { // Monitor Object will be stored later, after possible beautification
-//          mMonitorObjectStoreVector.push_back(mo);
-//        }
+        //
+        //        if (store) { // Monitor Object will be stored later, after possible beautification
+        //          mMonitorObjectStoreVector.push_back(mo);
+        //        }
       }
     }
   }
@@ -130,32 +130,30 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
   send(qualityObjects, ctx.outputs());
 }
 
-
 QualityObjectsType AggregatorRunner::aggregate()
 {
   ILOG(Info) << "Aggregate called, MOs in cache: " << mQualityObjects.size() << ENDM;
 
   QualityObjectsType allQOs;
-//  for (auto& aggregator : mAggregatorsMap) {
+  //  for (auto& aggregator : mAggregatorsMap) {
 
   // for the sake of a test
-//  QualityObject qo(Quality::Bad, );
+  //  QualityObject qo(Quality::Bad, );
 
-
-//  for (auto& aggregator : mAggregators) {
-//    if (aggregator.isReady(mMonitorObjectRevision)) {
-//      auto newQOs = aggregator.aggregator(moMap);
-//      mTotalNumberAggregatorExecuted += newQOs.size();
-//
-//      allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
-//      newQOs.clear();
-//
-//      // Was aggregated, update latest revision
-//      aggregator.updateRevision(mGlobalRevision);
-//    } else {
-//      ILOG(Info) << "Monitor Objects for the aggregator '" << aggregator.getName() << "' are not ready, ignoring" << ENDM;
-//    }
-//  }
+  //  for (auto& aggregator : mAggregators) {
+  //    if (aggregator.isReady(mMonitorObjectRevision)) {
+  //      auto newQOs = aggregator.aggregator(moMap);
+  //      mTotalNumberAggregatorExecuted += newQOs.size();
+  //
+  //      allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
+  //      newQOs.clear();
+  //
+  //      // Was aggregated, update latest revision
+  //      aggregator.updateRevision(mGlobalRevision);
+  //    } else {
+  //      ILOG(Info) << "Monitor Objects for the aggregator '" << aggregator.getName() << "' are not ready, ignoring" << ENDM;
+  //    }
+  //  }
   return allQOs;
 }
 
@@ -165,7 +163,7 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
   try {
     for (auto& qo : qualityObjects) {
       mDatabase->storeQO(qo);
-//      mTotalNumberQOStored++;
+      //      mTotalNumberQOStored++;
     }
   } catch (boost::exception& e) {
     ILOG(Info) << "Unable to " << diagnostic_information(e) << ENDM;
@@ -180,14 +178,14 @@ void AggregatorRunner::send(QualityObjectsType& qualityObjects, framework::DataA
   ILOG(Info) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
   for (const auto& qo : qualityObjects) {
 
-//    const auto& correspondingAggregator = std::find_if(mAggregators.begin(), mAggregators.end(), [aggregatorName = qo->getAggregatorName()](const auto& aggregator) {
-//      return aggregator.getName() == aggregatorName;
-//    });
+    //    const auto& correspondingAggregator = std::find_if(mAggregators.begin(), mAggregators.end(), [aggregatorName = qo->getAggregatorName()](const auto& aggregator) {
+    //      return aggregator.getName() == aggregatorName;
+    //    });
 
-//    auto outputSpec = correspondingAggregator->getOutputSpec();
-//    auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
-//    allocator.snapshot(
-//      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
+    //    auto outputSpec = correspondingAggregator->getOutputSpec();
+    //    auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
+    //    allocator.snapshot(
+    //      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
   }
 }
 
@@ -243,4 +241,4 @@ void AggregatorRunner::sendPeriodicMonitoring()
   }
 }
 
-} // namespace o2::quality_control::aggregatorer
+} // namespace o2::quality_control::checker

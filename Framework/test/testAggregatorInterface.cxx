@@ -52,17 +52,16 @@ class SimpleTestAggregator : public checker::AggregatorInterface
   std::vector<Quality> aggregate(QualityObjectsType* qos) override
   {
     std::vector<Quality> result;
-    switch(qos->size())
-    {
+    switch (qos->size()) {
       case 1:
         result.push_back(Quality::Good);
-      break;
+        break;
       case 2:
         result.push_back(Quality::Medium);
         break;
       case 3:
         result.push_back(Quality::Bad);
-      break;
+        break;
       default:
         result.push_back(Quality::Null);
         break;
@@ -105,5 +104,4 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   vector<Quality> result4 = testAggregator.aggregate(&input);
   BOOST_CHECK_EQUAL(result4.size(), 1);
   BOOST_CHECK_EQUAL(result4.at(0), Quality::Bad);
-
 }

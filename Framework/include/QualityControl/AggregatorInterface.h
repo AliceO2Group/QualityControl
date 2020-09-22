@@ -62,6 +62,6 @@ class AggregatorInterface
   ClassDef(AggregatorInterface, 1)
 };
 
-} // namespace o2::quality_control::aggregatorer
+} // namespace o2::quality_control::checker
 
 #endif /* QC_CHECKER_AGGREGATORINTERFACE_H */

@@ -26,14 +26,14 @@ namespace o2::quality_control_modules::skeleton
 
 /// \brief  Example QC quality aggregator
 /// \author My Name
-class SkeletonAggregator: public o2::quality_control::checker::AggregatorInterface
+class SkeletonAggregator : public o2::quality_control::checker::AggregatorInterface
 {
  public:
   // Override interface
   void configure(std::string name) override;
   std::vector<Quality> aggregate(QualityObjectsType* qos) override;
 
- ClassDefOverride(SkeletonAggregator, 1);
+  ClassDefOverride(SkeletonAggregator, 1);
 };
 
 } // namespace o2::quality_control_modules::skeleton

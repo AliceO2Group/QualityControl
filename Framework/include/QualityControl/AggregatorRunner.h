@@ -42,7 +42,7 @@ namespace o2::framework
 struct InputSpec;
 struct OutputSpec;
 class DataAllocator;
-}
+} // namespace o2::framework
 
 namespace o2::monitoring
 {
@@ -155,6 +155,6 @@ class AggregatorRunner : public framework::Task
   std::shared_ptr<ServiceDiscovery> mServiceDiscovery;
 };
 
-} // namespace o2::quality_control::aggregatorer
+} // namespace o2::quality_control::checker
 
 #endif // QC_CHECKER_AGGREGATORRUNNER_H
