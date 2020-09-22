@@ -399,6 +399,11 @@ To write and read data files in the DPL, please refer to the [RawFileWriter](htt
 
 On the same page, there are instructions to write such file from Simulation. 
 
+Another option to read a raw data file, produced by Simulation or recorded with `readout.exe` per instance, is to use directly the program `o2-raw-file-reader-workflow` in O2 as described [here](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#raw-data-file-reader-workflow) (the config file is described [earlier in the page](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader)). 
+```
+o2-raw-file-reader-workflow --conf myConf.cfg | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
+```
+
 __Live detector data__
 
 If the detector is ready and connected to the CRU(s), one can of course start the full data taking workflow, including the SubTimeFrameBuilder and the DPL processing and plug the QC onto it.
