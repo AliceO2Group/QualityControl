@@ -16,14 +16,15 @@
 #define QUALITYCONTROL_TRIGGERHELPERS_H
 
 #include "QualityControl/Triggers.h"
+#include "QualityControl/PostProcessingConfig.h"
 
 namespace o2::quality_control::postprocessing::trigger_helpers
 {
 
 /// \brief  Creates a trigger function by taking its corresponding name.
-TriggerFcn triggerFactory(std::string trigger);
+TriggerFcn triggerFactory(std::string trigger, const PostProcessingConfig& config);
 /// \brief Creates a trigger function vector given trigger names
-std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNames);
+std::vector<TriggerFcn> createTriggers(const std::vector<std::string>& triggerNames, const PostProcessingConfig& config);
 /// \brief Executes a vector of triggers functions and returns the first trigger which is not TriggerType::No
 Trigger tryTrigger(std::vector<TriggerFcn>&);
 /// \brief Checks if in a given trigger configuration vector there is a UserOrControl trigger.

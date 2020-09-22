@@ -75,7 +75,7 @@ TriggerFcn EndOfFill();
 /// \brief Triggers when a period of time passes
 TriggerFcn Periodic(double seconds);
 /// \brief Triggers when it detect a new object in QC repository with given name
-TriggerFcn NewObject(std::string name);
+TriggerFcn NewObject(std::string databaseUrl, std::string objectPath);
 /// \brief Triggers only first time it is executed
 TriggerFcn Once();
 /// \brief Triggers always

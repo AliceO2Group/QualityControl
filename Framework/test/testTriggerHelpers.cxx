@@ -14,6 +14,7 @@
 ///
 
 #include "QualityControl/TriggerHelpers.h"
+#include "QualityControl/PostProcessingConfig.h"
 
 #define BOOST_TEST_MODULE TriggerHelpers test
 #define BOOST_TEST_MAIN
@@ -22,22 +23,24 @@
 #include <boost/test/unit_test.hpp>
 
 using namespace o2::quality_control::postprocessing;
+const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
 
 BOOST_AUTO_TEST_CASE(test_factory)
 {
+  PostProcessingConfig dummyConfig;
   // check if it ignores letter case
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("once"));
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("Once"));
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("ONCE"));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("once", dummyConfig));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("Once", dummyConfig));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("ONCE", dummyConfig));
 
   // check if it creates correct triggers
-  auto once = trigger_helpers::triggerFactory("once");
+  auto once = trigger_helpers::triggerFactory("once", dummyConfig);
   BOOST_CHECK_EQUAL(once(), TriggerType::Once);
   BOOST_CHECK_EQUAL(once(), TriggerType::No);
   BOOST_CHECK_EQUAL(once(), TriggerType::No);
   BOOST_CHECK_EQUAL(once(), TriggerType::No);
   BOOST_CHECK_EQUAL(once(), TriggerType::No);
-  auto always = trigger_helpers::triggerFactory("always");
+  auto always = trigger_helpers::triggerFactory("always", dummyConfig);
   BOOST_CHECK_EQUAL(always(), TriggerType::Always);
   BOOST_CHECK_EQUAL(always(), TriggerType::Always);
   BOOST_CHECK_EQUAL(always(), TriggerType::Always);
@@ -45,37 +48,56 @@ BOOST_AUTO_TEST_CASE(test_factory)
   BOOST_CHECK_EQUAL(always(), TriggerType::Always);
 
   // unknown trigger
-  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("adsfzxcvadsf"), std::invalid_argument);
-  BOOST_CHECK_THROW(trigger_helpers::triggerFactory(""), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("adsfzxcvadsf", dummyConfig), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("", dummyConfig), std::invalid_argument);
 
   // generating periodic trigger
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("1sec"));
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("1.23sec"));
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("123 seconds"));
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("2min"));
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("2mins"));
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("2mins"));
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("2minutes"));
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("3hour"));
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("3hours"));
-  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("-1sec"), std::invalid_argument);
-  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("sec"), std::invalid_argument);
-  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("asec"), std::invalid_argument);
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("1sec", dummyConfig));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("1.23sec", dummyConfig));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("123 seconds", dummyConfig));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("2min", dummyConfig));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("2mins", dummyConfig));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("2mins", dummyConfig));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("2minutes", dummyConfig));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("3hour", dummyConfig));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("3hours", dummyConfig));
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("-1sec", dummyConfig), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("sec", dummyConfig), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("asec", dummyConfig), std::invalid_argument);
+
+  // generating new object trigger
+  PostProcessingConfig configWithDBs;
+  configWithDBs.qcdbUrl = CCDB_ENDPOINT;
+  configWithDBs.ccdbUrl = CCDB_ENDPOINT;
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("newobject:qcdb:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("newobject:ccdb:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("newobject:QCDB:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("newobject:CCDB:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("NewObject:QcDb:qc/asdf/vcxz", configWithDBs));
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("newobject", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("newobject:", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("newobject::", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("newobject::qc/no/db/specified", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("newobject:nodb:qc/incorrect/db/speficied", configWithDBs), std::invalid_argument);
+  BOOST_CHECK_THROW(trigger_helpers::triggerFactory("newobject:ccdb:qc/too:many tokens", configWithDBs), std::invalid_argument);
 
   // fixme: this is treated as "123 seconds", do we want to be so defensive?
-  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("123 secure code"));
+  BOOST_CHECK_NO_THROW(trigger_helpers::triggerFactory("123 secure code", dummyConfig));
 }
 
 BOOST_AUTO_TEST_CASE(test_create_trigger)
 {
-  BOOST_CHECK_EQUAL(trigger_helpers::createTriggers({}).size(), 0);
-  BOOST_CHECK_EQUAL(trigger_helpers::createTriggers({ "once", "always" }).size(), 2);
+  PostProcessingConfig dummyConfig;
+
+  BOOST_CHECK_EQUAL(trigger_helpers::createTriggers({}, dummyConfig).size(), 0);
+  BOOST_CHECK_EQUAL(trigger_helpers::createTriggers({ "once", "always" }, dummyConfig).size(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(test_try_triggers)
 {
+  PostProcessingConfig dummyConfig;
   {
-    auto triggers = trigger_helpers::createTriggers({});
+    auto triggers = trigger_helpers::createTriggers({}, dummyConfig);
     BOOST_CHECK(!trigger_helpers::tryTrigger(triggers));
     BOOST_CHECK(!trigger_helpers::tryTrigger(triggers));
     BOOST_CHECK(!trigger_helpers::tryTrigger(triggers));
@@ -84,7 +106,7 @@ BOOST_AUTO_TEST_CASE(test_try_triggers)
   }
 
   {
-    auto triggers = trigger_helpers::createTriggers({ "once" });
+    auto triggers = trigger_helpers::createTriggers({ "once" }, dummyConfig);
     BOOST_CHECK(trigger_helpers::tryTrigger(triggers));
     BOOST_CHECK(!trigger_helpers::tryTrigger(triggers));
     BOOST_CHECK(!trigger_helpers::tryTrigger(triggers));
@@ -93,7 +115,7 @@ BOOST_AUTO_TEST_CASE(test_try_triggers)
   }
 
   {
-    auto triggers = trigger_helpers::createTriggers({ "once", "once", "once" });
+    auto triggers = trigger_helpers::createTriggers({ "once", "once", "once" }, dummyConfig);
     BOOST_CHECK(trigger_helpers::tryTrigger(triggers));
     BOOST_CHECK(trigger_helpers::tryTrigger(triggers));
     BOOST_CHECK(trigger_helpers::tryTrigger(triggers));
