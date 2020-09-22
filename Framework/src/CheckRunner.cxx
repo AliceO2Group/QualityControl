@@ -188,6 +188,7 @@ void CheckRunner::init(framework::InitContext&)
     initServiceDiscovery();
     for (auto& check : mChecks) {
       check.init();
+      updatePolicyManager.addPolicy(check.getName(), check.getPolicyName(), check.getObjectsNames(), check.getAllObjectsOption(), false);
     }
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
@@ -201,14 +202,14 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
 {
   prepareCacheData(ctx.inputs());
 
-  auto qualityObjects = check(mMonitorObjects);
+  auto qualityObjects = check();
 
   store(qualityObjects);
   store(mMonitorObjectStoreVector);
 
   send(qualityObjects, ctx.outputs());
 
-  updateRevision();
+  updatePolicyManager.updateGlobalRevision();
 
   sendPeriodicMonitoring();
 }
@@ -257,7 +258,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 
         if (mo) {
           mMonitorObjects[mo->getFullName()] = mo;
-          mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
+          updatePolicyManager.updateObjectRevision(mo->getFullName());
           mTotalNumberObjectsReceived++;
 
           if (store) { // Monitor Object will be stored later, after possible beautification
@@ -280,22 +281,22 @@ void CheckRunner::sendPeriodicMonitoring()
   }
 }
 
-QualityObjectsType CheckRunner::check(std::map<std::string, std::shared_ptr<MonitorObject>> moMap)
+QualityObjectsType CheckRunner::check()
 {
-  mLogger << "Trying " << mChecks.size() << " checks for " << moMap.size() << " monitor objects"
+  mLogger << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
           << ENDM;
 
   QualityObjectsType allQOs;
   for (auto& check : mChecks) {
-    if (check.isReady(mMonitorObjectRevision)) {
-      auto newQOs = check.check(moMap);
+    if (updatePolicyManager.isReady(check.getName())) {
+      auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
 
       // Was checked, update latest revision
-      check.updateRevision(mGlobalRevision);
+      updatePolicyManager.updateActorRevision(check.getName());
     } else {
       mLogger << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
     }
@@ -377,19 +378,6 @@ void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObject
   }
   objects.pop_back(); // remove last comma
   mServiceDiscovery->_register(objects);
-}
-
-void CheckRunner::updateRevision()
-{
-  ++mGlobalRevision;
-  if (mGlobalRevision == 0) {
-    // mGlobalRevision cannot be 0
-    // 0 means overflow, increment and update all check revisions to 0
-    ++mGlobalRevision;
-    for (auto& check : mChecks) {
-      check.updateRevision(0);
-    }
-  }
 }
 
 void CheckRunner::initDatabase()

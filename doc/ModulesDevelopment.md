@@ -287,17 +287,15 @@ A Check is a function that determines the quality of the Monitor Objects produce
 }
 ```
 
-* __active__ - Boolean value whether the checker is active or not
-* __moduleName__ - The module which implements the check class (like in tasks)
-* __className__ - Class inside the module with the namespace path (like in tasks)
-* __policy__ - Policy for triggering the _check_ function inside the module
-    * _OnAny_ (default) - if any of the declared monitor objects change, might trigger even if not all are ready
-    * _OnAnyNonZero_ - if any of the declared monitor objects change with assurance that there are all MOs
-    * _OnAll_ - if all of the monitor objects updated at least once
-    * _OnEachSeparately_ - if MOs from any task are updated, runs the same check separately on each of them,
-     obtaining one Quality per one MO. Note that if any source Task updates their MOs, all of them will be checked
-      again. Prefer to assign one Check per one Task to avoid this behaviour.
-    * if the MOs are not declared or _MO_: "all" in one or more dataSources, the above policy don't apply, the `check` will be triggered whenever a new MonitorObject is received from one of the inputs
+* __active__ - Boolean to indicate whether the checker is active or not
+* __moduleName__ - Name of the module which implements the check class (like in tasks)
+* __className__ - Name and namespace of the class, which is part of the module specified above (like in tasks)
+* __policy__ - Policy for triggering the _check_ function defined in the class:
+    * _OnAny_ (default) - Triggers if ANY of the listed monitor objects changes.
+    * _OnAnyNonZero_ - Triggers if ANY of the declared monitor objects changes, but only after all listed objects have been received at least once.
+    * _OnAll_ - Triggers if ALL the listed monitor objects have changed.
+    * _OnEachSeparately_ - Triggers separately for EACH of the listed objects whenever one of them changes.
+    * In case the list of monitor objects is empty or is replaced by the keyword "all", the policy is simply ignored and the `check` will be triggered whenever a new MonitorObject is received.
 * __dataSource__ - declaration of the `check` input
     * _type_ - currently only supported is _Task_
     * _name_ - name of the _Task_
