@@ -24,8 +24,6 @@ namespace o2::quality_control_modules::example
 
 BOOST_AUTO_TEST_CASE(Task_Factory)
 {
-  cout << "Start of test Task_Factory" << endl;
-
   TaskFactory factory;
   TaskConfig config;
   config.taskName = "task";
@@ -33,7 +31,7 @@ BOOST_AUTO_TEST_CASE(Task_Factory)
   config.className = "o2::quality_control_modules::example::ExampleTask";
   auto manager = make_shared<ObjectsManager>(config);
   try {
-    gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local paths for the test
+    gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local  paths for the test
     factory.create(config, manager);
   } catch (...) {
     BOOST_TEST_FAIL(boost::current_exception_diagnostic_information());
@@ -44,8 +42,6 @@ bool is_critical(AliceO2::Common::FatalException const&) { return true; }
 
 BOOST_AUTO_TEST_CASE(Task_Factory_failures, *utf::depends_on("Task_Factory") /* make sure we don't run both tests at the same time */)
 {
-  cout << "Start of test Task_Factory_failures" << endl;
-
   TaskFactory factory;
   TaskConfig config;
   auto manager = make_shared<ObjectsManager>(config);

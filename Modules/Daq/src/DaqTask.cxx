@@ -16,12 +16,9 @@
 #include "Daq/DaqTask.h"
 
 #include "QualityControl/QcInfoLogger.h"
-#include <TCanvas.h>
-#include <TDatime.h>
-#include <TObjString.h>
+#include "QualityControl/stringUtils.h"
 #include <TGraph.h>
 #include <TH1.h>
-#include <TPaveText.h>
 
 using namespace std;
 
@@ -34,18 +31,12 @@ DaqTask::DaqTask()
     mIds(nullptr),
     mNPoints(0),
     mNumberSubblocks(nullptr),
-    mSubPayloadSize(nullptr),
-    mObjString(nullptr),
-    mCanvas(nullptr),
-    mPaveText(nullptr)
+    mSubPayloadSize(nullptr)
 {
 }
 
 DaqTask::~DaqTask()
 {
-  delete mPaveText;
-  delete mCanvas;
-  delete mObjString;
   delete mPayloadSize;
   delete mIds;
   delete mNumberSubblocks;
@@ -76,18 +67,6 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
   mIds->GetXaxis()->SetLabelSize(0.02);
   mIds->GetYaxis()->SetLabelSize(0.02);
   getObjectsManager()->startPublishing(mIds);
-
-  mObjString = new TObjString("hello");
-  getObjectsManager()->startPublishing(mObjString);
-
-  mCanvas = new TCanvas();
-  mCanvas->cd();
-  getObjectsManager()->startPublishing(mCanvas);
-
-  mPaveText = new TPaveText(0.1, 0.1, 0.9, 0.9);
-  mPaveText->AddText("hello");
-  mPaveText->SetName("hello_pavetext"); // Remember to always set a name to objects that we publish
-  getObjectsManager()->startPublishing(mPaveText);
 }
 
 void DaqTask::startOfActivity(Activity& /*activity*/)
@@ -111,11 +90,43 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
   // in a loop
   uint32_t totalPayloadSize = 0;
   for (auto&& input : ctx.inputs()) {
-    if (input.header != nullptr && input.payload != nullptr) {
+    if (input.header != nullptr) {
       const auto* header = o2::header::get<header::DataHeader*>(input.header);
+      const char* payload = input.payload;
+
+      // payload size
       uint32_t size = header->payloadSize;
       mSubPayloadSize->Fill(size);
       totalPayloadSize += size;
+
+      // printing
+      if (mCustomParameters.count("printHeaders") > 0 && mCustomParameters["printHeaders"] == "true") {
+        header->print();
+      }
+      if (mCustomParameters.count("printPayload") > 0) {
+        std::vector<std::string> representation;
+        if (mCustomParameters["printPayload"] == "hex") {
+          representation = getHexRepresentation((unsigned char*)payload, header->payloadSize);
+        } else if (mCustomParameters["printPayload"] == "bin") {
+          representation = getBinRepresentation((unsigned char*)payload, header->payloadSize);
+        }
+
+        for (size_t i = 0; i < representation.size();) {
+          ILOG(Info) << std::setw(4) << i << " : ";
+          for (size_t col = 0; col < 4; col++) {
+            for (size_t word = 0; word < 2; word++) {
+              if (i + col * 2 + word < representation.size()) {
+                ILOG(Info) << representation[i + col * 2 + word];
+              } else {
+                ILOG(Info) << "   ";
+              }
+            }
+            ILOG(Info) << " | ";
+          }
+          ILOG(Info) << ENDM;
+          i = i + 8;
+        }
+      }
     }
   }
 

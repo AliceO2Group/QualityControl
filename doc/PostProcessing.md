@@ -93,7 +93,8 @@ Each of the three methods can be invoked by one or more triggers. Below are list
  * `"sof"` or `"startoffill"` - Start Of Fill
  * `"eof"` or `"endoffill"` - End Of Fill
  * `"<x><sec/min/hour>"` - Periodic - triggers when a specified period of time passes. For example: "5min", "0.001 seconds", "10sec", "2hours".
- * `"newobject:<path>"` - New Object - triggers when an object in QCDB is updated. For example: `"newobject:/qc/TST/MO/QcTask/Example"`
+ * `"newobject:[qcdb/ccdb]:<path>"` - New Object - triggers when an object in QCDB or CCDB is updated. For example
+ : `"newobject:qcdb:qc/TST/MO/QcTask/Example"`
  * `"once"` - Once - triggers only first time it is checked
  * `"always"` - Always - triggers each time it is checked
 

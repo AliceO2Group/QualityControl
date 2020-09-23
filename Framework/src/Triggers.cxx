@@ -16,6 +16,7 @@
 #include "QualityControl/Triggers.h"
 #include "QualityControl/QcInfoLogger.h"
 
+#include <CCDB/CcdbApi.h>
 #include <Common/Timer.h>
 #include <chrono>
 #include <ostream>
@@ -133,9 +134,45 @@ TriggerFcn Periodic(double seconds)
   };
 }
 
-TriggerFcn NewObject(std::string /*name*/)
+TriggerFcn NewObject(std::string databaseUrl, std::string objectPath)
 {
-  return NotImplemented("NewObject");
+  // Key names in the header map.
+  constexpr auto md5key = "Content-MD5";
+  constexpr auto timestampKey = "Valid-From";
+
+  // We support only CCDB here.
+  auto db = std::make_shared<o2::ccdb::CcdbApi>();
+  db->init(databaseUrl);
+  if (!db->isHostReachable()) {
+    ILOG(Error, Support) << "CCDB at URL '" << databaseUrl << "' is not reachable." << ENDM;
+  }
+
+  // We rely on changing MD5 - if the object has changed, it should have a different check sum.
+  // If someone reuploaded an old object, it should not have an influence.
+  std::string lastMD5;
+  if (auto headers = db->retrieveHeaders(objectPath, {}); headers.count(md5key)) {
+    lastMD5 = headers[md5key];
+  } else {
+    // We don't make a fuss over it, because we might be just waiting for the first version of such object.
+    // It should not happen often though, so having a warning makes sense.
+    ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
+  }
+
+  return [db, databaseUrl = std::move(databaseUrl), objectPath = std::move(objectPath), lastMD5]() mutable -> Trigger {
+    if (auto headers = db->retrieveHeaders(objectPath, {}); headers.count(md5key)) {
+      auto newMD5 = headers[md5key];
+      if (lastMD5 != newMD5) {
+        lastMD5 = newMD5;
+        return { TriggerType::NewObject, std::stoull(headers[timestampKey]) };
+      }
+    } else {
+      // We don't make a fuss over it, because we might be just waiting for the first version of such object.
+      // It should not happen often though, so having a warning makes sense.
+      ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
+    }
+
+    return TriggerType::No;
+  };
 }
 
 } // namespace triggers

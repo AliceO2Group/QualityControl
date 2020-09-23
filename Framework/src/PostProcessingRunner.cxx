@@ -111,7 +111,7 @@ void PostProcessingRunner::runOverTimestamps(const std::vector<uint64_t>& timest
 void PostProcessingRunner::start()
 {
   if (mTaskState == TaskState::Created || mTaskState == TaskState::Finished) {
-    mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers);
+    mInitTriggers = trigger_helpers::createTriggers(mConfig.initTriggers, mConfig);
     if (trigger_helpers::hasUserOrControlTrigger(mConfig.initTriggers)) {
       doInitialize({ TriggerType::UserOrControl });
     }
@@ -160,8 +160,8 @@ void PostProcessingRunner::doInitialize(Trigger trigger)
   mTaskState = TaskState::Running;
 
   // We create the triggers just after task init (and not any sooner), so the timer triggers work as expected.
-  mUpdateTriggers = trigger_helpers::createTriggers(mConfig.updateTriggers);
-  mStopTriggers = trigger_helpers::createTriggers(mConfig.stopTriggers);
+  mUpdateTriggers = trigger_helpers::createTriggers(mConfig.updateTriggers, mConfig);
+  mStopTriggers = trigger_helpers::createTriggers(mConfig.stopTriggers, mConfig);
 }
 
 void PostProcessingRunner::doUpdate(Trigger trigger)

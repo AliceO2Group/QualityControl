@@ -46,7 +46,7 @@ class ObjectsManager
    * @param taskConfig The configuration of the task for which we are building this object manager
    * @param noDiscovery If true disables the use of ServiceDiscovery
    */
-  explicit ObjectsManager(TaskConfig& taskConfig, bool noDiscovery = false);
+  explicit ObjectsManager(const TaskConfig& taskConfig, bool noDiscovery = false);
   virtual ~ObjectsManager();
 
   static const std::string gDrawOptionsKey;
@@ -154,7 +154,7 @@ class ObjectsManager
 
  private:
   std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
-  TaskConfig& mTaskConfig;
+  TaskConfig mTaskConfig;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;
 };

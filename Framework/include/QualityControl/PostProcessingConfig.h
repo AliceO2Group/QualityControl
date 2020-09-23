@@ -37,6 +37,8 @@ struct PostProcessingConfig {
   std::vector<std::string> initTriggers = {};
   std::vector<std::string> updateTriggers = {};
   std::vector<std::string> stopTriggers = {};
+  std::string qcdbUrl = "";
+  std::string ccdbUrl = "";
 };
 
 } // namespace o2::quality_control::postprocessing
