@@ -76,7 +76,6 @@ class ITSFeeTask final : public TaskInterface
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   std::array<bool, NLayer> mEnableLayers = { false };
   int mTimeFrameId = 0;
-  uint32_t mErrorTypeCount[13] = { 0 };
   int mNTrigger = 13;
   static constexpr int NError = 13;
   TString mErrorType[NError] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" }; //TODO: replace by defined error flags
