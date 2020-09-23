@@ -11,6 +11,7 @@
 ///
 /// \file   ITSFeeTask.h
 /// \author Jian Liu
+/// \author Liang Zhang
 ///
 
 #ifndef QC_MODULE_ITS_ITSFEETASK_H
@@ -24,7 +25,7 @@
 #include <TPaveText.h>
 
 class TH2I;
-class TH1F;
+class TH1I;
 
 using namespace o2::quality_control::core;
 using namespace o2::framework;
@@ -46,7 +47,7 @@ class ITSFeeTask final : public TaskInterface
         uint64_t id : 8;      /// 72:79  0xe0; Header Status Word (HSW) identifier
       } payload;
 
-      uint8_t data8[16]; // 80 bits GBT word + optional padding to 128 bits
+      uint8_t data8[16]; // 80 bits GBT word +  padding to 128 bits
     } ddwBits;
   };
 
@@ -56,7 +57,6 @@ class ITSFeeTask final : public TaskInterface
   /// Destructor
   ~ITSFeeTask() override;
 
-  // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(Activity& activity) override;
   void startOfCycle() override;
@@ -67,8 +67,7 @@ class ITSFeeTask final : public TaskInterface
 
  private:
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
-  void createGeneralPlots(int barrel); //create General PLots for ITS barrels
-  void createErrorTriggerPlots();
+  void createErrorTFPlots(int barrel);
   void setPlotsFormat();
   void getEnableLayers();
   void resetGeneralPlots();
@@ -77,13 +76,14 @@ class ITSFeeTask final : public TaskInterface
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   std::array<bool, NLayer> mEnableLayers = { false };
   int mTimeFrameId = 0;
-  uint32_t mTriggerTypeCount[13] = { 0 };
+  uint32_t mErrorTypeCount[13] = { 0 };
   int mNTrigger = 13;
-  static constexpr int NTrigger = 13;
-  TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
-  TH1F* mTFInfo; //count vs TF ID
-  TH2I* mTriggerVsFeeid;
-  TH1D* mTriggerPlots;
+  static constexpr int NError = 13;
+  TString mErrorType[NError] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" }; //TODO: replace by defined error flags
+
+  TH1I* mTFInfo; //count vs TF ID
+  TH2I* mErrorFlagVsFeeId;
+  TH1I* mErrorFlag;
   //TH1D* mInfoCanvas;//TODO: default, not implemented yet
   std::string mRunNumberPath;
   std::string mRunNumber = "000000";

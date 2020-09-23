@@ -11,6 +11,7 @@
 ///
 /// \file   ITSFeeTask.cxx
 /// \author Jian Liu
+/// \author Liang Zhang
 ///
 
 #include "ITS/ITSFeeTask.h"
@@ -19,10 +20,6 @@
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
 #include <TCanvas.h>
-#include <TDatime.h>
-#include <TGraph.h>
-#include <TPaveText.h>
-#include <TPaveStats.h>
 
 #include <time.h>
 
@@ -37,8 +34,8 @@ ITSFeeTask::ITSFeeTask()
 ITSFeeTask::~ITSFeeTask()
 {
   delete mTFInfo;
-  delete mTriggerPlots;
-  delete mTriggerVsFeeid;
+  delete mErrorFlag;
+  delete mErrorFlagVsFeeId;
   //delete mInfoCanvas;
 }
 
@@ -53,41 +50,32 @@ void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (mEnableLayers[3] or mEnableLayers[4] or mEnableLayers[5] or mEnableLayers[6]) {
     barrel += 2;
   }
-  createGeneralPlots(barrel);
+  createErrorTFPlots(barrel);
   setPlotsFormat();
 }
 
-void ITSFeeTask::createErrorTriggerPlots()
+void ITSFeeTask::createErrorTFPlots(int barrel)
 {
+  mErrorFlag = new TH1I("ErrorTF/ErrorFlag", "FEE Decoding Errors", mNTrigger, 0.5, mNTrigger + 0.5);
+  mErrorFlag->SetMinimum(0);
+  mErrorFlag->SetFillColor(kBlue);
+  getObjectsManager()->startPublishing(mErrorFlag); //mErrorFlag
 
-  mTriggerPlots = new TH1D("General/TriggerPlots", "Decoding Triggers", mNTrigger, 0.5, mNTrigger + 0.5);
-  mTriggerPlots->SetMinimum(0);
-  mTriggerPlots->SetFillColor(kBlue);
-  getObjectsManager()->startPublishing(mTriggerPlots); //mTriggerPlots
-}
-
-void ITSFeeTask::createGeneralPlots(int barrel = 0)
-{
-
-  createErrorTriggerPlots();
-
-  mTFInfo = new TH1F("General/TFInfo", "TF vs count", 15000, 0, 15000);
+  mTFInfo = new TH1I("ErrorTF/TFInfo", "TF vs count", 15000, 0, 15000);
   getObjectsManager()->startPublishing(mTFInfo); //mTFInfo
 
   if (barrel == 0) { //No Need to create
-    QcInfoLogger::GetInstance() << "No General Plots need to create, Please check you config file of QC" << AliceO2::InfoLogger::InfoLogger::endm;
+    QcInfoLogger::GetInstance() << "No Error/TF Plots need to create, Please check you config file of QC" << AliceO2::InfoLogger::InfoLogger::endm;
   } else if (barrel == 1) { //create for IB
-    mTriggerVsFeeid = new TH2I("General/TriggerVsFeeid", "Trigger count vs Trigger id and Fee id", 3 * StaveBoundary[3], 0, 3 * StaveBoundary[3], mNTrigger, 0.5, mNTrigger + 0.5);
-    mTriggerVsFeeid->SetMinimum(0);
-    mTriggerVsFeeid->SetStats(0);
-    getObjectsManager()->startPublishing(mTriggerVsFeeid);
-  } else if (barrel == 2) { //create for OB		TODO:create the Error/Trigger vs feeid plots
-    mTriggerVsFeeid = new TH2I("General/TriggerVsFeeid", "Trigger count vs Trigger id and Fee id", 3 * StaveBoundary[3], 0, 3 * StaveBoundary[3], mNTrigger, 0.5, mNTrigger + 0.5);
-    mTriggerVsFeeid->SetMinimum(0);
-    mTriggerVsFeeid->SetStats(0); //create for OB		TODO: now I am just copy the code from IB to make it will not crash
-    getObjectsManager()->startPublishing(mTriggerVsFeeid);
-
-  } else if (barrel == 3) { //create for All	TODO:create the Error/Trigger vs feeid plots
+    mErrorFlagVsFeeId = new TH2I("ErrorTF/ErrorFlagVsFeeid", "Error count vs Error id and Fee id", 3 * StaveBoundary[3], 0, 3 * StaveBoundary[3], mNTrigger, 0.5, mNTrigger + 0.5);
+    mErrorFlagVsFeeId->SetMinimum(0);
+    mErrorFlagVsFeeId->SetStats(0);
+    getObjectsManager()->startPublishing(mErrorFlagVsFeeId);
+  } else if (barrel == 2) { //create for OB
+    mErrorFlagVsFeeId = new TH2I("ErrorTF/ErrorFlagVsFeeid", "Error count vs Error id and Fee id", 3 * (StaveBoundary[7] - StaveBoundary[3]), 0, 3 * (StaveBoundary[7] - StaveBoundary[3]), mNTrigger, 0.5, mNTrigger + 0.5);
+    mErrorFlagVsFeeId->SetMinimum(0);
+    mErrorFlagVsFeeId->SetStats(0); //create for OB
+    getObjectsManager()->startPublishing(mErrorFlagVsFeeId);
   }
 }
 
@@ -99,20 +87,19 @@ void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitl
 
 void ITSFeeTask::setPlotsFormat()
 {
-  //set general plots format
-  if (mTriggerPlots) {
-    setAxisTitle(mTriggerPlots, "Trigger ID", "Counts");
+  if (mErrorFlag) {
+    setAxisTitle(mErrorFlag, "Error Flag ID", "Counts");
     for (int i = 0; i < mNTrigger; i++) {
-      mTriggerPlots->GetXaxis()->SetBinLabel(i + 1, mTriggerType[i]);
+      mErrorFlag->GetXaxis()->SetBinLabel(i + 1, mErrorType[i]);
     }
   }
   if (mTFInfo) {
     setAxisTitle(mTFInfo, "TF ID", "Counts");
   }
-  if (mTriggerVsFeeid) {
-    setAxisTitle(mTriggerVsFeeid, "FeeID", "Trigger ID");
+  if (mErrorFlagVsFeeId) {
+    setAxisTitle(mErrorFlagVsFeeId, "FeeID", "Error Flag ID");
     for (int i = 0; i < mNTrigger; i++) {
-      mTriggerVsFeeid->GetYaxis()->SetBinLabel(i + 1, mTriggerType[i]);
+      mErrorFlagVsFeeId->GetYaxis()->SetBinLabel(i + 1, mErrorType[i]);
     }
   }
 }
@@ -126,37 +113,31 @@ void ITSFeeTask::startOfCycle() { QcInfoLogger::GetInstance() << "startOfCycle" 
 
 void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // in a loop
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-  //Fill the Trigger plots
   DPLRawParser parser(ctx.inputs());
-  int StaveStart = 0;
+  int staveStart = 0;
   for (int i = 0; !mEnableLayers[i]; i++) {
-    StaveStart = StaveBoundary[i + 1];
+    staveStart = StaveBoundary[i + 1];
   }
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
     int istave = (int)(rdh->feeId & 0x00ff);
     int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
-    istave += StaveStart;
+    istave += staveStart;
 
-    if ((int)(rdh->stop)) {
-      ILOG(Debug) << "Stopbit : " << (int)rdh->stop << ", Payload size: " << it.size() << ENDM;
+    if ((int)(rdh->stop) && it.size()) { //looking into the Stop RDH
+      ILOG(Info) << "Stopbit : " << (int)rdh->stop << ", Payload size: " << it.size() << ENDM;
       auto const* ddw = reinterpret_cast<const GBTDdw*>(it.data());
-      if (it.size()) {
-        LOGF(INFO, "0x: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
-             ddw->ddwBits.data8[15], ddw->ddwBits.data8[14], ddw->ddwBits.data8[13], ddw->ddwBits.data8[12], ddw->ddwBits.data8[11], ddw->ddwBits.data8[10],
-             ddw->ddwBits.data8[9], ddw->ddwBits.data8[8], ddw->ddwBits.data8[7], ddw->ddwBits.data8[6], ddw->ddwBits.data8[5], ddw->ddwBits.data8[4], ddw->ddwBits.data8[3], ddw->ddwBits.data8[2], ddw->ddwBits.data8[1], ddw->ddwBits.data8[0]);
-      }
+      LOGF(INFO, "DDW header 0x: %02x", ddw->ddwBits.data8[9]);
     }
-    for (int i = 0; i < 13; i++) {
+    for (int i = 0; i < 13; i++) { //filling trigger types to debug the program for the moment
       if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
-        mTriggerPlots->Fill(i + 1);
-        mTriggerVsFeeid->Fill((istave * 3) + ilink, i + 1);
+        mErrorFlag->Fill(i + 1);
+        mErrorFlagVsFeeId->Fill((istave * 3) + ilink, i + 1);
       }
     }
   }
@@ -166,7 +147,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  ILOG(Info) << "time until thread all end is " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
+  ILOG(Info) << "Processing time: " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
 }
 
 void ITSFeeTask::getEnableLayers()
@@ -175,7 +156,7 @@ void ITSFeeTask::getEnableLayers()
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     configFile >> mEnableLayers[ilayer];
     if (mEnableLayers[ilayer]) {
-      ILOG(Info) << "enable layer : " << ilayer << ENDM;
+      ILOG(Info) << "Enable layer : " << ilayer << ENDM;
     }
   }
   configFile >> mRunNumberPath;
@@ -192,8 +173,8 @@ void ITSFeeTask::endOfCycle()
       goto pass;
     }
     getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", runNumber);
-    getObjectsManager()->addMetadata(mTriggerVsFeeid->GetName(), "Run", runNumber);
-    getObjectsManager()->addMetadata(mTriggerPlots->GetName(), "Run", runNumber);
+    getObjectsManager()->addMetadata(mErrorFlagVsFeeId->GetName(), "Run", runNumber);
+    getObjectsManager()->addMetadata(mErrorFlag->GetName(), "Run", runNumber);
     mRunNumber = runNumber;
   pass:;
   }
@@ -208,8 +189,8 @@ void ITSFeeTask::endOfActivity(Activity& /*activity*/)
 void ITSFeeTask::resetGeneralPlots()
 {
   mTFInfo->Reset();
-  mTriggerVsFeeid->Reset();
-  mTriggerPlots->Reset();
+  mErrorFlagVsFeeId->Reset();
+  mErrorFlag->Reset();
 }
 void ITSFeeTask::reset()
 {
