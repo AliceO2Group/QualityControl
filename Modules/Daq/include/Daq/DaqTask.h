@@ -18,6 +18,8 @@
 
 #include <DPLUtils/DPLRawParser.h>
 #include "QualityControl/TaskInterface.h"
+#include <Headers/DAQID.h>
+#include <map>
 
 class TH1F;
 class TGraph;
@@ -29,6 +31,12 @@ using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::daq
 {
+
+//class MyDAQID{
+// public:
+//  // the following constexpr should probably go to DAQID.h or DataHeader.h in O2.
+//  static constexpr o2::header::DAQID::ID NSYSTEMS = 19;
+//};
 
 /// \brief Dataflow task
 /// It does only look at the header and plots sizes (e.g. payload).
@@ -57,19 +65,28 @@ class DaqTask final : public TaskInterface
   void printPage(const o2::framework::DPLRawParser::Iterator<const framework::DataRef>& data);
   void monitorBlocks(o2::framework::InputRecord& inputRecord);
   void monitorRDHs(o2::framework::InputRecord& inputRecord);
+
+  // ** general information
+
+  std::map<o2::header::DAQID::ID, std::string> mSystems;
+
   // ** objects we publish **
 
   // Message related
   // Block = the whole InputRecord, i.e. the thing we receive and analyse in monitorData(...)
   // SubBlock = a single input of the InputRecord
-  TH1F* mBlockSize;  // filled with the sum of the payload size of all the inputs of an inputrecord
-  TH1F* mNumberSubBlocks; // filled with the number of inputs in each InputRecord we encounter
-  TH1F* mSubBlockSize; // filled with the number of inputs in each InputRecord we encounter
+  TH1F* mInputRecordPayloadSize;  // filled with the sum of the payload size of all the inputs of an inputrecord
+  TH1F* mNumberInputs; // filled with the number of inputs in each InputRecord we encounter
+  TH1F* mInputSize; // filled with the number of inputs in each InputRecord we encounter
+  TH1F* mNumberRDHs; // filled with the number of RDHs found in each InputRecord we encounter
 
   // Per link information
 
   // Per detector information
-
+  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsTotalSizes; // filled with the sum of RDH memory sizes per InputRecord
+  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhSizes; // filled with the RDH memory sizes for each RDH
+  // todo : for the next one we need to know the number of links per detector.
+  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhHits; // hits per link split by detector
 };
 
 } // namespace o2::quality_control_modules::daq

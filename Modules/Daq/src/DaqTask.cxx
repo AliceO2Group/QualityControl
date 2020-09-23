@@ -26,56 +26,87 @@
 using namespace std;
 using namespace o2::raw;
 using namespace o2::framework;
+using namespace o2::header;
 
 namespace o2::quality_control_modules::daq
 {
 
 DaqTask::DaqTask()
   : TaskInterface(),
-    mBlockSize(nullptr),
-    mNumberSubBlocks(nullptr),
-    mSubBlockSize(nullptr)
+    mInputRecordPayloadSize(nullptr),
+    mNumberInputs(nullptr),
+    mInputSize(nullptr)
 {
 }
 
 DaqTask::~DaqTask()
 {
-  delete mBlockSize;
-  delete mNumberSubBlocks;
-  delete mSubBlockSize;
+  delete mInputRecordPayloadSize;
+  delete mNumberInputs;
+  delete mInputSize;
 }
 
 void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize DaqTask" << ENDM;
+  ILOG(Info, Support) << "Initializiation of DaqTask" << ENDM;
 
-  mBlockSize = new TH1F("payloadSize", "Payload size of blocks;bytes", 2048, 0, 2047);
-  mBlockSize->SetCanExtend(TH1::kXaxis);
-  getObjectsManager()->startPublishing(mBlockSize);
+  // blocks plots
+  mInputRecordPayloadSize = new TH1F("inputRecordSize", "Total payload size per InputRecord;bytes", 128, 0, 2047);
+  mInputRecordPayloadSize->SetCanExtend(TH1::kXaxis);
+  getObjectsManager()->startPublishing(mInputRecordPayloadSize);
+  mNumberInputs = new TH1F("numberInputs", "Number of inputs per InputRecords", 100, 1, 100);
+  getObjectsManager()->startPublishing(mNumberInputs);
+  mInputSize = new TH1F("payloadSizeInputs", "Payload size of the inputs;bytes", 128, 0, 2047);
+  mInputSize->SetCanExtend(TH1::kXaxis);
+  getObjectsManager()->startPublishing(mInputSize);
+  mNumberRDHs = new TH1F("numberRDHs", "Number of RDHs per InputRecord", 100, 1, 100);
+  mNumberRDHs->SetCanExtend(TH1::kXaxis);
+  getObjectsManager()->startPublishing(mNumberRDHs);
 
-  mNumberSubBlocks = new TH1F("numberSubBlocks", "Number of subblocks", 100, 1, 100);
-  getObjectsManager()->startPublishing(mNumberSubBlocks);
-  mSubBlockSize = new TH1F("PayloadSizeSubBlocks", "Payload size of subblocks;bytes", 2048, 0, 2047);
-  mSubBlockSize->SetCanExtend(TH1::kXaxis);
-  getObjectsManager()->startPublishing(mSubBlockSize);
+  // initialize a map for the subsystems (id, name)
+  for(int i = DAQID::MINDAQ ; i < DAQID::MAXDAQ+1 ; i++) {
+    DataOrigin origin = DAQID::DAQtoO2(i);
+    if(origin != gDataOriginInvalid) {
+      mSystems[i] = origin.str;
+    }
+  }
+
+  // subsystems plots
+  for(const auto& system : mSystems)  {
+    string name = system.second + "/totalRdhSize";
+    string title = "Sum of RDH sizes per InputRecord for " + system.second + ";bytes";
+    mSubSystemsTotalSizes[system.first] = new TH1F(name.c_str(), title.c_str(), 128, 0, 2047);
+    mSubSystemsTotalSizes[system.first]->SetCanExtend(TH1::kXaxis);
+    getObjectsManager()->startPublishing(mSubSystemsTotalSizes[system.first]);
+
+    name = system.second + "/RdhSizes";
+    title = "RDH sizes for " + system.second + ";bytes";
+    mSubSystemsRdhSizes[system.first] = new TH1F(name.c_str(), title.c_str(), 128, 0, 2047);
+    mSubSystemsRdhSizes[system.first]->SetCanExtend(TH1::kXaxis);
+    getObjectsManager()->startPublishing(mSubSystemsRdhSizes[system.first]);
+  }
 }
 
 void DaqTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity: " << activity.mId << ENDM;
-  mBlockSize->Reset();
-  mNumberSubBlocks->Reset();
-  mSubBlockSize->Reset();
+  mInputRecordPayloadSize->Reset();
+  mNumberInputs->Reset();
+  mInputSize->Reset();
+  // TODO all plots
 }
 
 void DaqTask::startOfCycle() {
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
-
+//int i = 0 ;
 void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+//  if(i < 2) {
   monitorBlocks(ctx.inputs());
   monitorRDHs(ctx.inputs());
+//  i++;
+//  }
 }
 
 void DaqTask::endOfCycle() {
@@ -89,6 +120,7 @@ void DaqTask::endOfActivity(Activity& /*activity*/)
 
 void DaqTask::reset() {
   ILOG(Info, Support) << "Reset" << ENDM;
+  // todo probably all plots
 }
 
 void DaqTask::printInputPayload(const header::DataHeader* header, const char* payload)
@@ -127,7 +159,7 @@ void DaqTask::monitorBlocks(InputRecord& inputRecord)
 
       // payload size
       uint32_t size = header->payloadSize;
-      mSubBlockSize->Fill(size);
+      mInputSize->Fill(size);
       totalPayloadSize += size;
 
       // printing
@@ -141,14 +173,20 @@ void DaqTask::monitorBlocks(InputRecord& inputRecord)
       ILOG(Warning, Support) << "Received an input with an empty header" << ENDM;
     }
   }
-  mBlockSize->Fill(totalPayloadSize);
-  mNumberSubBlocks->Fill(inputRecord.size());
+  mInputRecordPayloadSize->Fill(totalPayloadSize);
+  // for the number of subblocks, never use inputRecord.size() because it would just return
+  // the number of inputs declared, not the ones valid and ready now.
+  size_t numberValidBlocks = std::distance(inputRecord.begin(), inputRecord.end());
+  mNumberInputs->Fill(numberValidBlocks);
 }
 
 void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
 {
   // Now, use the DPLRawParser to get information about the Pages and RDHs stored there
   o2::framework::DPLRawParser parser(inputRecord);
+  size_t rdhCounter = 0;
+  size_t totalSize = 0;
+  DAQID::ID rdhSource = DAQID::INVALID;
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     // TODO for some reason this does not work
     //    ILOG(Info, Ops) << "Header: " << ENDM;
@@ -173,7 +211,28 @@ void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
       ILOG(Info, Ops) << "RDH: " << ENDM;
       RDHUtils::printRDH(rdh);
     }
+
+    // RDH plots
+    // DAQID::DAQtoO2(rdh.sourceID).str
+//    uint8_t sourceId = RDHUtils::getSourceID(rdh);
+//    cout << "detector : " << unsigned(sourceId) << endl;
+//    cout << DAQID::DAQtoO2(sourceId).str << endl;
+//    cout << mSystems.at(sourceId) << endl;
+    rdhSource = RDHUtils::getSourceID(rdh);
+    totalSize += RDHUtils::getMemorySize(rdh);
+    rdhCounter++;
+    mSubSystemsRdhSizes.at(RDHUtils::getSourceID(rdh))->Fill(RDHUtils::getMemorySize(rdh));
+//    mSystemSizes[sourceId].Fill(); // should I fill with the page's payload size ? the page size ? the rdh payload declared ?
   }
+
+  cout << "total rdh size: " << totalSize << endl;
+  cout << "detector : " << unsigned(rdhSource) << endl;
+  cout << "name of plot : " << mSubSystemsTotalSizes.at(rdhSource)->GetName() << endl;
+
+  mSubSystemsTotalSizes.at(rdhSource)->Fill(totalSize);
+    // TODO why is the payload size reported by the dataref.header->print() different than the one from the sum
+  //      of the RDH memory size + dataref header size ? a few hundreds bytes difference.
+  mNumberRDHs->Fill(rdhCounter);
 }
 
 void DaqTask::printPage(const DPLRawParser::Iterator<const DataRef>& data)

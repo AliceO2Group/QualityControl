@@ -37,7 +37,7 @@
         "location": "remote",
         "taskParameters": {
           "": "All the printing options might significantly slow down your QC",
-          "printInputHeader": "true",         "": "set to true to print all headers",
+          "printInputHeader": "false",        "": "set to true to print all headers",
           "printInputPayload": "false",       "": "hex or bin (anything else means no)",
           "printPageInfo": "false",           "": "set to true to print information about pages",
           "printRDH": "false",                "": "set to true to print the RDHs"
@@ -54,7 +54,7 @@
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "0.1",
+          "fraction": "1",
           "seed": "1441"
         }
       ],
