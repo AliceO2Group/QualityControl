@@ -16,6 +16,7 @@
 #ifndef QC_MODULE_DAQ_DAQTASK_H
 #define QC_MODULE_DAQ_DAQTASK_H
 
+#include <DPLUtils/DPLRawParser.h>
 #include "QualityControl/TaskInterface.h"
 
 class TH1F;
@@ -52,12 +53,23 @@ class DaqTask final : public TaskInterface
   void reset() override;
 
  private:
-  TH1F* mPayloadSize;
-  TGraph* mIds;
-  int mNPoints;
-  TH1F* mNumberSubblocks;
-  TH1F* mSubPayloadSize;
-  //  UInt_t mTimeLastRecord;
+  void printInputPayload(const header::DataHeader* header, const char* payload);
+  void printPage(const o2::framework::DPLRawParser::Iterator<const framework::DataRef>& data);
+  void monitorBlocks(o2::framework::InputRecord& inputRecord);
+  void monitorRDHs(o2::framework::InputRecord& inputRecord);
+  // ** objects we publish **
+
+  // Message related
+  // Block = the whole InputRecord, i.e. the thing we receive and analyse in monitorData(...)
+  // SubBlock = a single input of the InputRecord
+  TH1F* mBlockSize;  // filled with the sum of the payload size of all the inputs of an inputrecord
+  TH1F* mNumberSubBlocks; // filled with the number of inputs in each InputRecord we encounter
+  TH1F* mSubBlockSize; // filled with the number of inputs in each InputRecord we encounter
+
+  // Per link information
+
+  // Per detector information
+
 };
 
 } // namespace o2::quality_control_modules::daq
