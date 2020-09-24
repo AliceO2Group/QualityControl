@@ -43,6 +43,7 @@ void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "Initializing the ITSFeeTask" << AliceO2::InfoLogger::InfoLogger::endm;
   getEnableLayers();
+  getRunNumber();
   int barrel = 0;
   if (mEnableLayers[0] or mEnableLayers[1] or mEnableLayers[2]) {
     barrel += 1;
@@ -162,22 +163,21 @@ void ITSFeeTask::getEnableLayers()
   configFile >> mRunNumberPath;
 }
 
+void ITSFeeTask::getRunNumber()
+{
+  std::ifstream runNumberFile(mRunNumberPath);
+  if (runNumberFile) {
+    mRunNumber = "";
+    runNumberFile >> mRunNumber;
+    ILOG(Info) << "runNumber : " << mRunNumber << ENDM;
+  }
+}
+
 void ITSFeeTask::endOfCycle()
 {
-  std::ifstream runNumberFile("/home/its/QC_Online/workdir/infiles/RunNumber.dat"); //catching ITS run number in commissioning
-  if (runNumberFile) {
-    std::string runNumber;
-    runNumberFile >> runNumber;
-    ILOG(Info) << "runNumber : " << runNumber << ENDM;
-    if (runNumber == mRunNumber) {
-      goto pass;
-    }
-    getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", runNumber);
-    getObjectsManager()->addMetadata(mErrorFlagVsFeeId->GetName(), "Run", runNumber);
-    getObjectsManager()->addMetadata(mErrorFlag->GetName(), "Run", runNumber);
-    mRunNumber = runNumber;
-  pass:;
-  }
+  getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", mRunNumber);
+  getObjectsManager()->addMetadata(mErrorFlagVsFeeId->GetName(), "Run", mRunNumber);
+  getObjectsManager()->addMetadata(mErrorFlag->GetName(), "Run", mRunNumber);
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 
