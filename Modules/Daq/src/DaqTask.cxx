@@ -46,6 +46,12 @@ DaqTask::~DaqTask()
   delete mInputSize;
 }
 
+// TODO remove this function once the equivalent is available in O2 DAQID
+bool isDetIdValid(DAQID::ID id)
+{
+  return (id < DAQID::MAXDAQ+1) && (DAQID::DAQtoO2(id) != gDataOriginInvalid);
+}
+
 void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "Initializiation of DaqTask" << ENDM;
@@ -70,10 +76,11 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
       mSystems[i] = origin.str;
     }
   }
+  mSystems[DAQID::INVALID] = "UNKNOWN"; // to store RDH info for unknown detectors
 
   // subsystems plots
   for(const auto& system : mSystems)  {
-    string name = system.second + "/totalRdhSize";
+    string name = system.second + "/sumRdhSizesPerInputRecord";
     string title = "Sum of RDH sizes per InputRecord for " + system.second + ";bytes";
     mSubSystemsTotalSizes[system.first] = new TH1F(name.c_str(), title.c_str(), 128, 0, 2047);
     mSubSystemsTotalSizes[system.first]->SetCanExtend(TH1::kXaxis);
@@ -238,15 +245,20 @@ void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
 //    cout << DAQID::DAQtoO2(sourceId).str << endl;
 //    cout << mSystems.at(sourceId) << endl;
     rdhSource = RDHUtils::getSourceID(rdh);
+    if(!isDetIdValid(rdhSource)) {
+      rdhSource = DAQID::INVALID;
+      ILOG(Warning, Support) << "Unknown detector id: " << unsigned(rdhSource) << ENDM;
+    }
     totalSize += RDHUtils::getMemorySize(rdh);
     rdhCounter++;
-    mSubSystemsRdhSizes.at(RDHUtils::getSourceID(rdh))->Fill(RDHUtils::getMemorySize(rdh));
+    cout << "b4 " << endl;
+    mSubSystemsRdhSizes.at(rdhSource)->Fill(RDHUtils::getMemorySize(rdh));
+    cout << "after" << endl;
 //    mSystemSizes[sourceId].Fill(); // should I fill with the page's payload size ? the page size ? the rdh payload declared ?
   }
 
   cout << "total rdh size: " << totalSize << endl;
   cout << "detector : " << unsigned(rdhSource) << endl;
-  cout << "name of plot : " << mSubSystemsTotalSizes.at(rdhSource)->GetName() << endl;
 
   mSubSystemsTotalSizes.at(rdhSource)->Fill(totalSize);
     // TODO why is the payload size reported by the dataref.header->print() different than the one from the sum
