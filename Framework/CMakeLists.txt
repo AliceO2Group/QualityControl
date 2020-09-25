@@ -106,22 +106,12 @@ target_compile_definitions(QualityControl PRIVATE
                            $<$<BOOL:${ENABLE_MYSQL}>:_WITH_MYSQL>)
 
 add_root_dictionary(QualityControl
-                    HEADERS include/QualityControl/Check.h
+                    HEADERS
                             include/QualityControl/CheckInterface.h
-                            include/QualityControl/CheckRunner.h
-                            include/QualityControl/CheckRunnerFactory.h
-                            include/QualityControl/DatabaseInterface.h
-                            include/QualityControl/CcdbDatabase.h
-                            include/QualityControl/ServiceDiscovery.h
-                            include/QualityControl/TaskRunner.h
-                            include/QualityControl/TaskRunnerFactory.h
-                            include/QualityControl/InfrastructureGenerator.h
-                            include/QualityControl/InputUtils.h
+                            include/QualityControl/TaskInterface.h
                             include/QualityControl/PostProcessingInterface.h
                             include/QualityControl/TrendingTask.h
-                            include/QualityControl/Reductor.h
                             include/QualityControl/MonitorObjectCollection.h
-                            include/QualityControl/UpdatePolicyManager.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
 
