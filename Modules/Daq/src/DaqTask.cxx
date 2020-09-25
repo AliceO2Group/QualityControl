@@ -176,8 +176,27 @@ void DaqTask::monitorBlocks(InputRecord& inputRecord)
   mInputRecordPayloadSize->Fill(totalPayloadSize);
   // for the number of subblocks, never use inputRecord.size() because it would just return
   // the number of inputs declared, not the ones valid and ready now.
+  // When released in O2, use InputRecord::countValidInputs()
   size_t numberValidBlocks = std::distance(inputRecord.begin(), inputRecord.end());
   mNumberInputs->Fill(numberValidBlocks);
+}
+
+void printPage(const DPLRawParser::Iterator<const DataRef>& data)
+{
+  // retrieving the raw pointer of the page
+  auto const* raw = data.raw();
+  // retrieving payload pointer of the page
+  auto const* rawPayload = data.data();
+  // size of payload
+  size_t rawPayloadSize = data.size();
+  // offset of payload in the raw page
+  size_t offset = data.offset();
+
+  ILOG(Info, Ops) << "Page: " << ENDM;
+  ILOG(Info, Ops) << "    payloadSize: " << rawPayloadSize << ENDM;
+  ILOG(Info, Ops) << "    raw pointer of the page:           " << (void*)raw << ENDM;
+  ILOG(Info, Ops) << "    payload pointer of the page:       " << (void*)rawPayload << ENDM;
+  ILOG(Info, Ops) << "    offset of payload in the raw page: " << (void*)offset << ENDM;
 }
 
 void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
@@ -233,24 +252,6 @@ void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
     // TODO why is the payload size reported by the dataref.header->print() different than the one from the sum
   //      of the RDH memory size + dataref header size ? a few hundreds bytes difference.
   mNumberRDHs->Fill(rdhCounter);
-}
-
-void DaqTask::printPage(const DPLRawParser::Iterator<const DataRef>& data)
-{
-  // retrieving the raw pointer of the page
-  auto const* raw = data.raw();
-  // retrieving payload pointer of the page
-  auto const* rawPayload = data.data();
-  // size of payload
-  size_t rawPayloadSize = data.size();
-  // offset of payload in the raw page
-  size_t offset = data.offset();
-
-  ILOG(Info, Ops) << "Page: " << ENDM;
-  ILOG(Info, Ops) << "    payloadSize: " << rawPayloadSize << ENDM;
-  ILOG(Info, Ops) << "    raw pointer of the page:           " << (void*)raw << ENDM;
-  ILOG(Info, Ops) << "    payload pointer of the page:       " << (void*)rawPayload << ENDM;
-  ILOG(Info, Ops) << "    offset of payload in the raw page: " << (void*)offset << ENDM;
 }
 
 } // namespace o2::quality_control_modules::daq

@@ -16,7 +16,6 @@
 #ifndef QC_MODULE_DAQ_DAQTASK_H
 #define QC_MODULE_DAQ_DAQTASK_H
 
-#include <DPLUtils/DPLRawParser.h>
 #include "QualityControl/TaskInterface.h"
 #include <Headers/DAQID.h>
 #include <map>
@@ -62,7 +61,6 @@ class DaqTask final : public TaskInterface
 
  private:
   void printInputPayload(const header::DataHeader* header, const char* payload);
-  void printPage(const o2::framework::DPLRawParser::Iterator<const framework::DataRef>& data);
   void monitorBlocks(o2::framework::InputRecord& inputRecord);
   void monitorRDHs(o2::framework::InputRecord& inputRecord);
 

@@ -8,7 +8,8 @@ target_include_directories(
   QcDaq
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
 target_link_libraries(QcDaq PUBLIC QualityControl PRIVATE ROOT::Gpad O2::DetectorsRaw)
 
