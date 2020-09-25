@@ -76,16 +76,13 @@ BOOST_AUTO_TEST_CASE(test_trigger_once)
   BOOST_CHECK_EQUAL(once(), TriggerType::No);
 }
 
-// fixme: this might fail when invoked concurrently.
-//  I keep it here as disabled, it can be used when needed,
-//  but ideally we should find a way to test it continuously.
-/*
 BOOST_AUTO_TEST_CASE(test_trigger_new_object)
 {
   // Setup and initialise objects
+  const std::string pid = std::to_string(getpid());
   const std::string detectorCode = "TST";
   const std::string taskName = "testTriggersNewObject";
-  const std::string objectName = "test_object";
+  const std::string objectName = "test_object" + pid;
 
   TH1I* obj = new TH1I(objectName.c_str(), objectName.c_str(), 10, 0, 10.0);
   obj->Fill(4);
@@ -94,20 +91,34 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
   const std::string objectPath = RepoPathUtils::getMoPath(mo.get());
   auto newObjectTrigger = triggers::NewObject(CCDB_ENDPOINT, objectPath);
 
-  // Check before update
+  // Check before update - no objects expected
   BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
   BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
   BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
 
-  // Update the object
+  // Send the object
   std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
   repository->connect(CCDB_ENDPOINT, "", "", "");
   auto currentTimestamp = CcdbDatabase::getCurrentTimestamp();
   repository->storeMO(mo, currentTimestamp);
 
-  // Check after update
+  // Check after sending
   BOOST_CHECK_EQUAL(newObjectTrigger(), Trigger(TriggerType::NewObject, currentTimestamp));
   BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
   BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+
+  // Update the object
+  obj->Fill(10);
+  repository->storeMO(mo, currentTimestamp);
+
+  // Check after the update
+  BOOST_CHECK_EQUAL(newObjectTrigger(), Trigger(TriggerType::NewObject, currentTimestamp));
+  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+
+  // Clean up remaining objects
+  auto directDBAPI = std::make_shared<o2::ccdb::CcdbApi>();
+  directDBAPI->init(CCDB_ENDPOINT);
+  BOOST_REQUIRE(directDBAPI->isHostReachable());
+  directDBAPI->truncate(objectPath);
 }
-*/
