@@ -62,18 +62,18 @@ class DaqTask final : public TaskInterface
   // Message related
   // Block = the whole InputRecord, i.e. the thing we receive and analyse in monitorData(...)
   // SubBlock = a single input of the InputRecord
-  TH1F* mInputRecordPayloadSize;  // filled with the sum of the payload size of all the inputs of an inputrecord
-  TH1F* mNumberInputs; // filled with the number of inputs in each InputRecord we encounter
-  TH1F* mInputSize; // filled with the number of inputs in each InputRecord we encounter
-  TH1F* mNumberRDHs; // filled with the number of RDHs found in each InputRecord we encounter
+  TH1F* mInputRecordPayloadSize; // filled with the sum of the payload size of all the inputs of an inputrecord
+  TH1F* mNumberInputs;           // filled with the number of inputs in each InputRecord we encounter
+  TH1F* mInputSize;              // filled with the number of inputs in each InputRecord we encounter
+  TH1F* mNumberRDHs;             // filled with the number of RDHs found in each InputRecord we encounter
 
   // Per link information
 
   // Per detector information
   std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsTotalSizes; // filled with the sum of RDH memory sizes per InputRecord
-  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhSizes; // filled with the RDH memory sizes for each RDH
+  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhSizes;   // filled with the RDH memory sizes for each RDH
   // todo : for the next one we need to know the number of links per detector.
-//  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhHits; // hits per link split by detector
+  //  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhHits; // hits per link split by detector
   // todo we could add back the graph for the IDs using the TFID
 };
 

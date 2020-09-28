@@ -29,55 +29,55 @@ using namespace std;
 
 namespace o2::quality_control_modules::common
 {
-  void EverIncreasingGraph::configure(std::string /*name*/) {}
+void EverIncreasingGraph::configure(std::string /*name*/) {}
 
-  Quality EverIncreasingGraph::check(std::map<std::string, std::shared_ptr<MonitorObject>> * moMap)
-  {
-    auto mo = moMap->begin()->second;
-    Quality result = Quality::Good;
-    auto* g = dynamic_cast<TGraph*>(mo->getObject());
+Quality EverIncreasingGraph::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+{
+  auto mo = moMap->begin()->second;
+  Quality result = Quality::Good;
+  auto* g = dynamic_cast<TGraph*>(mo->getObject());
 
-    // simplistic and inefficient way to check that points are always increasing
-    int nbPoints = g->GetN();
-    double lastY = -DBL_MAX;
-    for (int i = 1; i < nbPoints; i++) {
-      double x, y;
-      g->GetPoint(i, x, y);
-      if (y < lastY) {
-        result = Quality::Bad;
-        break;
-      }
-      lastY = y;
+  // simplistic and inefficient way to check that points are always increasing
+  int nbPoints = g->GetN();
+  double lastY = -DBL_MAX;
+  for (int i = 1; i < nbPoints; i++) {
+    double x, y;
+    g->GetPoint(i, x, y);
+    if (y < lastY) {
+      result = Quality::Bad;
+      break;
     }
-
-    return result;
+    lastY = y;
   }
 
-  std::string EverIncreasingGraph::getAcceptedType() { return "TGraph"; }
+  return result;
+}
 
-  void EverIncreasingGraph::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
-  {
-    ILOG(Info, Support) << "Beautify" << ENDM;
+std::string EverIncreasingGraph::getAcceptedType() { return "TGraph"; }
 
-    if (checkResult == Quality::Null || checkResult == Quality::Medium) {
-      return;
-    }
+void EverIncreasingGraph::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+{
+  ILOG(Info, Support) << "Beautify" << ENDM;
 
-    auto* g = dynamic_cast<TGraph*>(mo->getObject());
-    if (!g) {
-      ILOG(Error, Support) << "MO should be a graph" << ENDM;
-      return;
-    }
-
-    auto* paveText = new TPaveText(0.3, 0.8, 0.7, 0.95, "NDC");
-    if (checkResult == Quality::Good) {
-      paveText->SetFillColor(kGreen);
-      paveText->AddText("No anomalies");
-    } else if (checkResult == Quality::Bad) {
-      paveText->SetFillColor(kRed);
-      paveText->AddText("Block IDs are not always increasing");
-    }
-    g->GetListOfFunctions()->AddLast(paveText);
+  if (checkResult == Quality::Null || checkResult == Quality::Medium) {
+    return;
   }
+
+  auto* g = dynamic_cast<TGraph*>(mo->getObject());
+  if (!g) {
+    ILOG(Error, Support) << "MO should be a graph" << ENDM;
+    return;
+  }
+
+  auto* paveText = new TPaveText(0.3, 0.8, 0.7, 0.95, "NDC");
+  if (checkResult == Quality::Good) {
+    paveText->SetFillColor(kGreen);
+    paveText->AddText("No anomalies");
+  } else if (checkResult == Quality::Bad) {
+    paveText->SetFillColor(kRed);
+    paveText->AddText("Block IDs are not always increasing");
+  }
+  g->GetListOfFunctions()->AddLast(paveText);
+}
 
 } // namespace o2::quality_control_modules::common

@@ -53,7 +53,7 @@ DaqTask::~DaqTask()
 // TODO remove this function once the equivalent is available in O2 DAQID
 bool isDetIdValid(DAQID::ID id)
 {
-  return (id < DAQID::MAXDAQ+1) && (DAQID::DAQtoO2(id) != gDataOriginInvalid);
+  return (id < DAQID::MAXDAQ + 1) && (DAQID::DAQtoO2(id) != gDataOriginInvalid);
 }
 
 void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -74,16 +74,16 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mNumberRDHs);
 
   // initialize a map for the subsystems (id, name)
-  for(int i = DAQID::MINDAQ ; i < DAQID::MAXDAQ+1 ; i++) {
+  for (int i = DAQID::MINDAQ; i < DAQID::MAXDAQ + 1; i++) {
     DataOrigin origin = DAQID::DAQtoO2(i);
-    if(origin != gDataOriginInvalid) {
+    if (origin != gDataOriginInvalid) {
       mSystems[i] = origin.str;
     }
   }
   mSystems[DAQID::INVALID] = "UNKNOWN"; // to store RDH info for unknown detectors
 
   // subsystems plots: distribution of rdh size, distribution of the sum of rdh in each message.
-  for(const auto& system : mSystems)  {
+  for (const auto& system : mSystems) {
     string name = system.second + "/sumRdhSizesPerInputRecord";
     string title = "Sum of RDH sizes per InputRecord for " + system.second + ";bytes";
     mSubSystemsTotalSizes[system.first] = new TH1F(name.c_str(), title.c_str(), 128, 0, 2047);
@@ -104,7 +104,8 @@ void DaqTask::startOfActivity(Activity& activity)
   reset(); // TODO make sure this is what we want actually, but most probably it is
 }
 
-void DaqTask::startOfCycle() {
+void DaqTask::startOfCycle()
+{
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
@@ -114,7 +115,8 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
   monitorRDHs(ctx.inputs());
 }
 
-void DaqTask::endOfCycle() {
+void DaqTask::endOfCycle()
+{
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
@@ -123,7 +125,8 @@ void DaqTask::endOfActivity(Activity& /*activity*/)
   ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
-void DaqTask::reset() {
+void DaqTask::reset()
+{
   ILOG(Info, Support) << "Reset" << ENDM;
 
   // TODO if the number of plots grows we should probably have a container with pointers/references to all of them.
@@ -134,7 +137,7 @@ void DaqTask::reset() {
   mInputSize->Reset();
   mNumberRDHs->Reset();
 
-  for(const auto& system : mSystems)  {
+  for (const auto& system : mSystems) {
     mSubSystemsRdhSizes.at(system.first)->Reset();
     mSubSystemsTotalSizes.at(system.first)->Reset();
   }
@@ -196,10 +199,10 @@ void DaqTask::monitorInputRecord(InputRecord& inputRecord)
 
 void printPage(const DPLRawParser::Iterator<const DataRef>& data)
 {
-  auto const* raw = data.raw(); // retrieving the raw pointer of the page
+  auto const* raw = data.raw();         // retrieving the raw pointer of the page
   auto const* rawPayload = data.data(); // retrieving payload pointer of the page
-  size_t rawPayloadSize = data.size(); // size of payload
-  size_t offset = data.offset(); // offset of payload in the raw page
+  size_t rawPayloadSize = data.size();  // size of payload
+  size_t offset = data.offset();        // offset of payload in the raw page
 
   ILOG(Info, Ops) << "Page: " << ENDM;
   ILOG(Info, Ops) << "    payloadSize: " << rawPayloadSize << ENDM;
@@ -242,7 +245,7 @@ void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
 
     // RDH plots
     rdhSource = RDHUtils::getSourceID(rdh);
-    if(!isDetIdValid(rdhSource)) {
+    if (!isDetIdValid(rdhSource)) {
       rdhSource = DAQID::INVALID;
       ILOG(Warning, Support) << "Unknown detector id: " << unsigned(rdhSource) << ENDM;
     }
@@ -252,7 +255,7 @@ void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
   }
 
   mSubSystemsTotalSizes.at(rdhSource)->Fill(totalSize);
-    // TODO why is the payload size reported by the dataref.header->print() different than the one from the sum
+  // TODO why is the payload size reported by the dataref.header->print() different than the one from the sum
   //      of the RDH memory size + dataref header size ? a few hundreds bytes difference.
   mNumberRDHs->Fill(rdhCounter);
 }
