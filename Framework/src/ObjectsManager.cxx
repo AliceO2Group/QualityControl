@@ -31,15 +31,16 @@ namespace o2::quality_control::core
 const std::string ObjectsManager::gDrawOptionsKey = "drawOptions";
 const std::string ObjectsManager::gDisplayHintsKey = "displayHints";
 
-ObjectsManager::ObjectsManager(const TaskConfig& taskConfig, bool noDiscovery) : mTaskConfig(taskConfig), mUpdateServiceDiscovery(false)
+ObjectsManager::ObjectsManager(std::string taskName, std::string detectorName, std::string consulUrl, int parallelTaskID, bool noDiscovery)
+  : mTaskName(taskName), mDetectorName(detectorName), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects = std::make_unique<MonitorObjectCollection>();
   mMonitorObjects->SetOwner(true);
 
   // register with the discovery service
   if (!noDiscovery) {
-    std::string uniqueTaskID = taskConfig.taskName + "_" + std::to_string(mTaskConfig.parallelTaskID);
-    mServiceDiscovery = std::make_unique<ServiceDiscovery>(taskConfig.consulUrl, taskConfig.taskName, uniqueTaskID);
+    std::string uniqueTaskID = taskName + "_" + std::to_string(parallelTaskID);
+    mServiceDiscovery = std::make_unique<ServiceDiscovery>(consulUrl, taskName, uniqueTaskID);
   } else {
     ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
     mServiceDiscovery = nullptr;
@@ -54,7 +55,7 @@ void ObjectsManager::startPublishing(TObject* object)
     ILOG(Warning, Support) << "Object is already being published (" << object->GetName() << ")" << ENDM;
     BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
   }
-  auto* newObject = new MonitorObject(object, mTaskConfig.taskName, mTaskConfig.detectorName);
+  auto* newObject = new MonitorObject(object, mTaskName, mDetectorName);
   newObject->setIsOwner(false);
   mMonitorObjects->Add(newObject);
   mUpdateServiceDiscovery = true;

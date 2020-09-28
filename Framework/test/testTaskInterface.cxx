@@ -124,7 +124,8 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 {
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
   TaskConfig taskConfig;
-  ObjectsManager* objectsManager = new ObjectsManager(taskConfig, true);
+  ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
+
   test::TestTask testTask(objectsManager);
   BOOST_CHECK_EQUAL(testTask.test, 0);
 
@@ -141,7 +142,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   testTask.startOfCycle();
   BOOST_CHECK_EQUAL(testTask.test, 3);
 
-  // creating a valid ProcessingContex is almost impossible outside of the framework
+  // creating a valid ProcessingContext is almost impossible outside of the framework
   // testTask.monitorData(pctx);
   // BOOST_CHECK_EQUAL(testTask.test, 4);
 
@@ -166,7 +167,7 @@ BOOST_AUTO_TEST_CASE(test_task_factory)
     "http://consul-test.cern.ch:8500"
   };
 
-  auto objectsManager = make_shared<ObjectsManager>(config);
+  auto objectsManager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl);
 
   TaskFactory taskFactory;
   auto task = taskFactory.create(config, objectsManager);
