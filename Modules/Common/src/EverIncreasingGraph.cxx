@@ -13,7 +13,7 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "Daq/EverIncreasingGraph.h"
+#include "Common/EverIncreasingGraph.h"
 
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
@@ -27,11 +27,8 @@
 
 using namespace std;
 
-ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
-
-  namespace o2::quality_control_modules::daq
+namespace o2::quality_control_modules::common
 {
-
   void EverIncreasingGraph::configure(std::string /*name*/) {}
 
   Quality EverIncreasingGraph::check(std::map<std::string, std::shared_ptr<MonitorObject>> * moMap)
@@ -83,4 +80,4 @@ ClassImp(o2::quality_control_modules::daq::EverIncreasingGraph)
     g->GetListOfFunctions()->AddLast(paveText);
   }
 
-} // namespace daq::quality_control_modules::daq
+} // namespace o2::quality_control_modules::common

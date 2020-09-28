@@ -2,7 +2,7 @@
 
 add_library(QcDaq)
 
-target_sources(QcDaq PRIVATE src/DaqTask.cxx src/EverIncreasingGraph.cxx)
+target_sources(QcDaq PRIVATE src/DaqTask.cxx)
 
 target_include_directories(
   QcDaq
@@ -15,7 +15,6 @@ target_link_libraries(QcDaq PUBLIC QualityControl PRIVATE ROOT::Gpad O2::Detecto
 
 add_root_dictionary(QcDaq
                     HEADERS include/Daq/DaqTask.h
-                            include/Daq/EverIncreasingGraph.h
                     LINKDEF include/Daq/LinkDef.h
                     BASENAME QcDaq)
 

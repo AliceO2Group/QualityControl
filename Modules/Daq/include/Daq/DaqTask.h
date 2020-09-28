@@ -21,22 +21,11 @@
 #include <map>
 
 class TH1F;
-class TGraph;
-class TObjString;
-class TCanvas;
-class TPaveText;
 
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::daq
 {
-
-//class MyDAQID{
-// public:
-//  // the following constexpr should probably go to DAQID.h or DataHeader.h in O2.
-//  static constexpr o2::header::DAQID::ID NSYSTEMS = 19;
-//};
-
 /// \brief Dataflow task
 /// It does only look at the header and plots sizes (e.g. payload).
 /// It also can print the headers and the payloads by setting printHeaders to "1"
@@ -61,7 +50,7 @@ class DaqTask final : public TaskInterface
 
  private:
   void printInputPayload(const header::DataHeader* header, const char* payload);
-  void monitorBlocks(o2::framework::InputRecord& inputRecord);
+  void monitorInputRecord(o2::framework::InputRecord& inputRecord);
   void monitorRDHs(o2::framework::InputRecord& inputRecord);
 
   // ** general information
@@ -84,7 +73,8 @@ class DaqTask final : public TaskInterface
   std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsTotalSizes; // filled with the sum of RDH memory sizes per InputRecord
   std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhSizes; // filled with the RDH memory sizes for each RDH
   // todo : for the next one we need to know the number of links per detector.
-  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhHits; // hits per link split by detector
+//  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhHits; // hits per link split by detector
+  // todo we could add back the graph for the IDs using the TFID
 };
 
 } // namespace o2::quality_control_modules::daq
