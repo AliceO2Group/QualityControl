@@ -70,8 +70,10 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
     
 ### Monitoring setup for building the grafana dashboard
 
-Ask Adam for an account on pcald03.cern.ch:3000.
-Set the monitoring url to `"url": "influxdb-udp://flptest2.cern.ch:8089"`
+1. Ask Adam for an account on pcald03.cern.ch:3000.
+3. Ask Adam for a copy of the QC dashboard that you can edit. 
+2. Set the monitoring url to `"url": "influxdb-udp://flptest2.cern.ch:8089"`
+4. Once the dashboard is ready, tell Adam. 
 
 ### Avoid writing QC objects to a repository
 
