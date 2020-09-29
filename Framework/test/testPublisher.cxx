@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(publisher_test)
 {
   TaskConfig config;
   config.taskName = "test";
-  ObjectsManager objectsManager(config, true);
+  ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
   TObjString s("content");
   objectsManager.startPublishing(&s);
 
