@@ -83,7 +83,7 @@ void TrendingTask::storeTrend(uint64_t timestamp, repository::DatabaseInterface&
 
 void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface& qcdb)
 {
-  mTime = timestamp;
+  mTime = timestamp / 1000; // ROOT expects seconds since epoch
   // todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not
   //  enough if we trend across runs).
   mMetaData.runNumber = -1;
