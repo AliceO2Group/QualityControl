@@ -36,7 +36,7 @@ Quality EverIncreasingGraph::check(std::map<std::string, std::shared_ptr<Monitor
   auto mo = moMap->begin()->second;
   Quality result = Quality::Good;
   auto* g = dynamic_cast<TGraph*>(mo->getObject());
-  if(g== nullptr) {
+  if (g == nullptr) {
     return Quality::Null;
   }
 
