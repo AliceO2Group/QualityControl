@@ -30,9 +30,6 @@ using namespace o2::quality_control;
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
-// 10 years. Should be updated when we have proper timestamping rules.
-constexpr long objectValidity = 1000l * 60 * 60 * 24 * 365 * 10;
-
 void TrendingTask::configure(std::string name, const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfig(name, config);
@@ -51,6 +48,7 @@ void TrendingTask::initialize(Trigger, framework::ServiceRegistry&)
     mTrend->Branch(source.name.c_str(), reductor->getBranchAddress(), reductor->getBranchLeafList());
     mReductors[source.name] = std::move(reductor);
   }
+  getObjectsManager()->startPublishing(mTrend.get());
 }
 
 //todo: see if OptimizeBaskets() indeed helps after some time
@@ -59,26 +57,12 @@ void TrendingTask::update(Trigger t, framework::ServiceRegistry& services)
   auto& qcdb = services.get<repository::DatabaseInterface>();
 
   trendValues(t.timestamp, qcdb);
-
-  storePlots(t.timestamp, qcdb);
-  storeTrend(t.timestamp, qcdb);
+  generatePlots();
 }
 
-void TrendingTask::finalize(Trigger t, framework::ServiceRegistry& services)
+void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
 {
-  auto& qcdb = services.get<repository::DatabaseInterface>();
-
-  storePlots(t.timestamp, qcdb);
-  storeTrend(t.timestamp, qcdb);
-}
-
-void TrendingTask::storeTrend(uint64_t timestamp, repository::DatabaseInterface& qcdb)
-{
-  ILOG(Info, Devel) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
-
-  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), mConfig.detectorName);
-  mo->setIsOwner(false);
-  qcdb.storeMO(mo, timestamp, timestamp + objectValidity);
+  generatePlots();
 }
 
 void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface& qcdb)
@@ -110,12 +94,19 @@ void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface
   mTrend->Fill();
 }
 
-void TrendingTask::storePlots(uint64_t timestamp, repository::DatabaseInterface& qcdb)
+void TrendingTask::generatePlots()
 {
-  ILOG(Info, Support) << "Generating and storing " << mConfig.plots.size() << " plots." << ENDM;
+  ILOG(Info, Support) << "Generating " << mConfig.plots.size() << " plots." << ENDM;
 
   // why generate and store plots in the same function? because it is easier to handle the lifetime of pointers to the ROOT objects
   for (const auto& plot : mConfig.plots) {
+
+    // Before we generate any new plots, we have to delete existing under the same names.
+    // It seems that ROOT cannot handle an existence of two canvases with a common name in the same process.
+    if (mPlots.count(plot.name)) {
+      getObjectsManager()->stopPublishing(plot.name);
+      delete mPlots[plot.name];
+    }
 
     // we determine the order of the plot, i.e. if it is a histogram (1), graph (2), or any higher dimension.
     const size_t plotOrder = std::count(plot.varexp.begin(), plot.varexp.end(), ':') + 1;
@@ -140,6 +131,12 @@ void TrendingTask::storePlots(uint64_t timestamp, repository::DatabaseInterface&
         graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0), mTrend->GetVal(2), mTrend->GetVal(3));
         // We draw on the same plot as the main graph, but only error bars
         graphErrors->Draw("SAME E");
+        // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
+        if (auto* pad = c->GetPad(0)) {
+          if (auto* primitives = pad->GetListOfPrimitives()) {
+            primitives->Add(graphErrors);
+          }
+        }
       }
     }
 
@@ -177,14 +174,7 @@ void TrendingTask::storePlots(uint64_t timestamp, repository::DatabaseInterface&
       ILOG(Error, Devel) << "Could not get the htemp histogram of the plot '" << plot.name << "'." << ENDM;
     }
 
-    auto mo = std::make_shared<MonitorObject>(c, mConfig.taskName, mConfig.detectorName);
-    mo->setIsOwner(false);
-
-    qcdb.storeMO(mo, timestamp, timestamp + objectValidity);
-
-    // It should delete everything inside. Confirmed by trying to delete histo after and getting a segfault.
-    delete c;
-    // ...but it does not delete graphErrors
-    delete graphErrors;
+    mPlots[plot.name] = c;
+    getObjectsManager()->startPublishing(c);
   }
 }

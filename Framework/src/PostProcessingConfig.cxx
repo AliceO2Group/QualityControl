@@ -25,7 +25,8 @@ PostProcessingConfig::PostProcessingConfig(std::string name, const boost::proper
     className(config.get<std::string>("qc.postprocessing." + name + ".className")),
     detectorName(config.get<std::string>("qc.postprocessing." + name + ".detectorName", "MISC")),
     qcdbUrl(config.get<std::string>("qc.config.database.implementation") == "CCDB" ? config.get<std::string>("qc.config.database.host") : ""),
-    ccdbUrl(config.get<std::string>("qc.config.conditionDB.url", ""))
+    ccdbUrl(config.get<std::string>("qc.config.conditionDB.url", "")),
+    consulUrl(config.get<std::string>("qc.config.consul.url", ""))
 {
   for (const auto& initTrigger : config.get_child("qc.postprocessing." + name + ".initTrigger")) {
     initTriggers.push_back(initTrigger.second.get_value<std::string>());

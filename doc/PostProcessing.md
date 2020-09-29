@@ -45,6 +45,10 @@ Triggers are complemented with timestamps which correspond the time when trigger
  , even if the trigger is checked more rarely. The New Object trigger provide the timestamp of the updated object
  . These timestamps should be used to access databases, so any Post-processing Task can be rerun with any, arbitrary
   timestamps.
+  
+MonitorObjects may be saved by registering them in ObjectManager, similarly to normal QC Tasks (recommended, see
+ examples linked below), or by using DatabaseInterface directly. Please note, that created objects have to
+  registered in ObjectManager to make them accessible by Checks.
 
 Please refer to [`SkeletonPostProcessing`](https://github.com/AliceO2Group/QualityControl/blob/master/Modules/Skeleton/include/Skeleton/SkeletonPostProcessing.h) for a minimal illustration of inheriting the interface, or to [`TrendingTask`](https://github.com/AliceO2Group/QualityControl/blob/master/Framework/include/QualityControl/TrendingTask.h) for a fully functional example. One can generate their own post-processing task by using the `o2-qc-module-configurator` helper, as described in the [Module Creation](ModulesDevelopment.md#module-creation) chapter.
 
