@@ -31,7 +31,7 @@ namespace o2::quality_control_modules::daq
 /// It also can print the headers and the payloads by setting printHeaders to "1"
 /// and printPayload to "hex" or "bin" in the config file under "taskParameters".
 /// \author Barthelemy von Haller
-class DaqTask final : public TaskInterface
+class DaqTask final : public o2::quality_control::core::TaskInterface
 {
  public:
   /// \brief Constructor
@@ -41,11 +41,11 @@ class DaqTask final : public TaskInterface
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
-  void startOfActivity(Activity& activity) override;
+  void startOfActivity(o2::quality_control::core::Activity& activity) override;
   void startOfCycle() override;
   void monitorData(o2::framework::ProcessingContext& ctx) override;
   void endOfCycle() override;
-  void endOfActivity(Activity& activity) override;
+  void endOfActivity(o2::quality_control::core::Activity& activity) override;
   void reset() override;
 
  private:
@@ -62,10 +62,10 @@ class DaqTask final : public TaskInterface
   // Message related
   // Block = the whole InputRecord, i.e. the thing we receive and analyse in monitorData(...)
   // SubBlock = a single input of the InputRecord
-  TH1F* mInputRecordPayloadSize; // filled with the sum of the payload size of all the inputs of an inputrecord
-  TH1F* mNumberInputs;           // filled with the number of inputs in each InputRecord we encounter
-  TH1F* mInputSize;              // filled with the number of inputs in each InputRecord we encounter
-  TH1F* mNumberRDHs;             // filled with the number of RDHs found in each InputRecord we encounter
+  TH1F* mInputRecordPayloadSize = nullptr; // filled w/ the sum of the payload size of all the inputs of an inputrecord
+  TH1F* mNumberInputs = nullptr;           // filled w/ the number of inputs in each InputRecord we encounter
+  TH1F* mInputSize = nullptr;              // filled w/ the size of the inputs in each InputRecord we encounter
+  TH1F* mNumberRDHs = nullptr;             // filled w/ the number of RDHs found in each InputRecord we encounter
 
   // Per link information
 

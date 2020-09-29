@@ -34,11 +34,7 @@ namespace o2::quality_control_modules::daq
 {
 
 DaqTask::DaqTask()
-  : TaskInterface(),
-    mInputRecordPayloadSize(nullptr),
-    mNumberInputs(nullptr),
-    mInputSize(nullptr),
-    mNumberRDHs(nullptr)
+  : TaskInterface()
 {
 }
 
@@ -101,7 +97,7 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
 void DaqTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity: " << activity.mId << ENDM;
-  reset(); // TODO make sure this is what we want actually, but most probably it is
+  reset();
 }
 
 void DaqTask::startOfCycle()
@@ -153,18 +149,18 @@ void DaqTask::printInputPayload(const header::DataHeader* header, const char* pa
   }
 
   for (size_t i = 0; i < representation.size();) {
-    ILOG(Info) << std::setw(4) << i << " : ";
+    ILOG(Info, Ops) << std::setw(4) << i << " : ";
     for (size_t col = 0; col < 4; col++) {
       for (size_t word = 0; word < 2; word++) {
         if (i + col * 2 + word < representation.size()) {
-          ILOG(Info) << representation[i + col * 2 + word];
+          ILOG(Info, Ops) << representation[i + col * 2 + word];
         } else {
-          ILOG(Info) << "   ";
+          ILOG(Info, Ops) << "   ";
         }
       }
-      ILOG(Info) << " | ";
+      ILOG(Info, Ops) << " | ";
     }
-    ILOG(Info) << ENDM;
+    ILOG(Info, Ops) << ENDM;
     i = i + 8;
   }
 }

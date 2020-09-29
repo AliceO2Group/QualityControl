@@ -36,10 +36,13 @@ Quality EverIncreasingGraph::check(std::map<std::string, std::shared_ptr<Monitor
   auto mo = moMap->begin()->second;
   Quality result = Quality::Good;
   auto* g = dynamic_cast<TGraph*>(mo->getObject());
+  if(g== nullptr) {
+    return Quality::Null;
+  }
 
   // simplistic and inefficient way to check that points are always increasing
   int nbPoints = g->GetN();
-  double lastY = -DBL_MAX;
+  double lastY = std::numeric_limits<double>::lowest();
   for (int i = 1; i < nbPoints; i++) {
     double x, y;
     g->GetPoint(i, x, y);
@@ -57,7 +60,7 @@ std::string EverIncreasingGraph::getAcceptedType() { return "TGraph"; }
 
 void EverIncreasingGraph::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  ILOG(Info, Support) << "Beautify" << ENDM;
+  ILOG(Info, Support) << "EverIncreasingGraph::Beautify" << ENDM;
 
   if (checkResult == Quality::Null || checkResult == Quality::Medium) {
     return;
@@ -75,7 +78,7 @@ void EverIncreasingGraph::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     paveText->AddText("No anomalies");
   } else if (checkResult == Quality::Bad) {
     paveText->SetFillColor(kRed);
-    paveText->AddText("Block IDs are not always increasing");
+    paveText->AddText("Values are not always increasing");
   }
   g->GetListOfFunctions()->AddLast(paveText);
 }
