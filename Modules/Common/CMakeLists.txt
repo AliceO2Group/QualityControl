@@ -15,7 +15,8 @@ target_sources(QcCommon
                        src/TH1Reductor.cxx
                        src/TH2Reductor.cxx
                        src/THnSparse5Reductor.cxx
-                       src/QualityReductor.cxx)
+                       src/QualityReductor.cxx
+                       src/EverIncreasingGraph.cxx)
 
 target_include_directories(
   QcCommon
@@ -37,6 +38,7 @@ add_root_dictionary(QcCommon
                             include/Common/TH2Reductor.h
                             include/Common/THnSparse5Reductor.h
                             include/Common/QualityReductor.h
+                            include/Common/EverIncreasingGraph.h
                     LINKDEF include/Common/LinkDef.h
                     BASENAME QcCommon)
 
