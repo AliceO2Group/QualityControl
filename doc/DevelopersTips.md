@@ -139,3 +139,8 @@ modify the following file: https://gitlab.cern.ch/AliceO2Group/system-configurat
 ```
 journalctl -u o2-qcg
 ```
+
+### Deploy a modified version of the ansible recipes
+
+When working on the ansible recipes and deploying with o2-flp-setup, the recipes to modify are in 
+`.local/share/o2-flp-setup/system-configuration/`. 
