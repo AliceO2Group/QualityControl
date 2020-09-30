@@ -172,10 +172,10 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
     }
   }
 
-  ILOG(Debug, Devel) << "Completion policy callback. "
-                     << "Total inputs possible: " << inputs.size()
-                     << ", data inputs: " << dataInputsPresent
-                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
+  //  ILOG(Debug, Trace) << "Completion policy callback. "
+  //                     << "Total inputs possible: " << inputs.size()
+  //                     << ", data inputs: " << dataInputsPresent
+  //                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
 
   if (dataInputsPresent == dataInputsExpected) {
     action = CompletionPolicy::CompletionOp::Consume;
