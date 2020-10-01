@@ -243,7 +243,6 @@ void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
     rdhSource = RDHUtils::getSourceID(rdh);
     if (!isDetIdValid(rdhSource)) {
       rdhSource = DAQID::INVALID;
-      ILOG(Warning, Support) << "Unknown detector id: " << unsigned(rdhSource) << ENDM;
     }
     totalSize += RDHUtils::getMemorySize(rdh);
     rdhCounter++;
