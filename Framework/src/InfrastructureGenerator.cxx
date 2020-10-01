@@ -20,6 +20,7 @@
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/PostProcessingDevice.h"
 #include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
 
@@ -38,6 +39,7 @@ using namespace o2::configuration;
 using namespace o2::mergers;
 using namespace o2::utilities;
 using namespace o2::quality_control::checker;
+using namespace o2::quality_control::postprocessing;
 using boost::property_tree::ptree;
 using SubSpec = o2::header::DataHeader::SubSpecificationType;
 
@@ -59,6 +61,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
     }
   }
   generateCheckRunners(workflow, configurationSource);
+  generatePostProcessing(workflow, configurationSource);
 
   return workflow;
 }
@@ -209,6 +212,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   }
 
   generateCheckRunners(workflow, configurationSource);
+  generatePostProcessing(workflow, configurationSource);
 
   return workflow;
 }
@@ -439,6 +443,33 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
       workflow.emplace_back(checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));
     } else { // If there are no checks, create a sink CheckRunner
       workflow.emplace_back(checkRunnerFactory.createSinkDevice(tasksOutputMap.find(inputNames[0])->second, configurationSource));
+    }
+  }
+}
+
+void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, std::string configurationSource)
+{
+  auto config = ConfigurationFactory::getConfiguration(configurationSource);
+  if (config->getRecursive("qc").count("postprocessing") == 0) {
+    ILOG(Warning, Devel) << "No \"postprocessing\" structure found in the config file. If no postprocessing is expected, then it is completely fine." << ENDM;
+    return;
+  }
+  for (const auto& [ppTaskName, ppTaskConfig] : config->getRecursive("qc.postprocessing")) {
+    if (ppTaskConfig.get<bool>("active", true)) {
+
+      PostProcessingDevice ppTask{ ppTaskName, configurationSource };
+
+      DataProcessorSpec ppTaskSpec{
+        ppTask.getDeviceName(),
+        ppTask.getInputsSpecs(),
+        ppTask.getOutputSpecs(),
+        {},
+        ppTask.getOptions()
+      };
+
+      ppTaskSpec.algorithm = std::move(adaptFromTask<PostProcessingDevice>(std::move(ppTask)));
+
+      workflow.emplace_back(std::move(ppTaskSpec));
     }
   }
 }
