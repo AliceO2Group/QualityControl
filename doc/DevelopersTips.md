@@ -5,6 +5,7 @@ here. It is not sanitized or organized. Just a brain dump.
 
 ### Release procedure / check list
 1. Update the version number in [CMakeLists.txt](../CMakeLists.txt), commit and push
+2. Release in JIRA
 2. Prepare the release notes using the commits since the last release in github (see [this template](ReleaseNotesTemplate.md)).
 3. Release in github, paste the release notes
 4. A PR is automatically created in alidist
