@@ -16,6 +16,8 @@
 #include "Skeleton/SkeletonPostProcessing.h"
 #include "QualityControl/QcInfoLogger.h"
 
+#include <TH1F.h>
+
 using namespace o2::quality_control::postprocessing;
 
 namespace o2::quality_control_modules::skeleton
@@ -23,19 +25,25 @@ namespace o2::quality_control_modules::skeleton
 
 SkeletonPostProcessing::~SkeletonPostProcessing()
 {
+  delete mHistogram;
 }
 
 void SkeletonPostProcessing::initialize(Trigger, framework::ServiceRegistry&)
 {
+  mHistogram = new TH1F("example", "example", 20, 0, 30000);
+  getObjectsManager()->startPublishing(mHistogram);
 }
 
 void SkeletonPostProcessing::update(Trigger t, framework::ServiceRegistry&)
 {
   ILOG(Info, Support) << "Trigger type is: " << t.triggerType << ", the timestamp is " << t.timestamp << ENDM;
+  mHistogram->Fill(t.timestamp % 30000);
 }
 
 void SkeletonPostProcessing::finalize(Trigger, framework::ServiceRegistry&)
 {
+  // Only if you don't want it to be published after finalisation.
+  getObjectsManager()->stopPublishing(mHistogram);
 }
 
 } // namespace o2::quality_control_modules::skeleton

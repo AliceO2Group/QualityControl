@@ -17,15 +17,25 @@
 #define QUALITYCONTROL_POSTPROCESSINGRUNNER_H
 
 #include <memory>
+#include <functional>
 #include <Framework/ServiceRegistry.h>
 #include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingConfig.h"
 #include "QualityControl/Triggers.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "QualityControl/ObjectsManager.h"
+#include "QualityControl/MonitorObjectCollection.h"
+
+namespace o2::framework
+{
+class DataAllocator;
+} // namespace o2::framework
 
 namespace o2::quality_control::postprocessing
 {
+
+using MOCPublicationCallback = std::function<void(const o2::quality_control::core::MonitorObjectCollection*, long from, long to)>;
 
 /// \brief A class driving the execution of a post-processing task
 ///
@@ -55,6 +65,11 @@ class PostProcessingRunner
   ///          The first is used for task initialisation, the last for task finalisation, so at least two are required.
   void runOverTimestamps(const std::vector<uint64_t>& t);
 
+  /// \brief Set how objects should be published. If not used, objects will be stored in repository.
+  ///
+  /// \param callback MonitorObjectCollection publication callback
+  void setPublicationCallback(MOCPublicationCallback callback);
+
  private:
   void doInitialize(Trigger trigger);
   void doUpdate(Trigger trigger);
@@ -73,12 +88,18 @@ class PostProcessingRunner
 
   std::unique_ptr<PostProcessingInterface> mTask;
   framework::ServiceRegistry mServices;
+  std::shared_ptr<o2::quality_control::core::ObjectsManager> mObjectManager;
+  // TODO in a longer run, we should store from/to in the MonitorObject itself and use them.
+  std::function<void(const o2::quality_control::core::MonitorObjectCollection*, long /*from*/, long /*to*/)> mPublicationCallback = nullptr;
 
   std::string mName = "";
   std::string mConfigPath = "";
   PostProcessingConfig mConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
 };
+
+MOCPublicationCallback publishToDPL(o2::framework::DataAllocator&, std::string outputBinding);
+MOCPublicationCallback publishToRepository(o2::quality_control::repository::DatabaseInterface&);
 
 } // namespace o2::quality_control::postprocessing
 
