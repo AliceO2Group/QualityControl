@@ -59,15 +59,15 @@ struct test_fixture {
   ~test_fixture() = default;
 
   // shorthands to get the paths to the objects and their containing folder
-  std::string getQoPath(string checkName)
+  std::string getQoPath(const string& checkName) const
   {
     return RepoPathUtils::getQoPath(detector, taskName + "/" + checkName);
   }
-  std::string getMoPath(string objectName)
+  std::string getMoPath(const string& objectName) const
   {
     return RepoPathUtils::getMoPath(detector, taskName, objectName);
   }
-  std::string getMoFolder(string objectName)
+  std::string getMoFolder(const string& objectName) const
   {
     string fullMoPath = getMoPath(objectName);
     return fullMoPath.substr(0, fullMoPath.find_last_of('/'));
@@ -79,6 +79,17 @@ struct test_fixture {
   std::string detector = "TST";
   std::string taskName = "Test/pid"+pid;
 };
+
+struct MyGlobalFixture {
+  void teardown() {
+    std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
+    backend->connect(CCDB_ENDPOINT, "", "", "");
+    // cannot use the test_fixture because we are tearing down
+    backend->truncate("qc/TST/MO/Test/pid", "*");
+    backend->truncate("qc/TST/QO/Test/pid", "*");
+  }
+};
+BOOST_TEST_GLOBAL_FIXTURE( MyGlobalFixture );
 
 long oldTimestamp;
 
@@ -299,16 +310,6 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(obj3->getMetadataMap().count("my_meta"), 0);
   BOOST_CHECK_EQUAL(obj4->getMetadataMap().count("my_meta"), 1);
   BOOST_CHECK_EQUAL(obj4->getMetadataMap().at("my_meta"), "is_good");
-}
-
-BOOST_AUTO_TEST_CASE(ccdb_truncate)
-{
-  test_fixture f;
-
-  f.backend->truncate(f.getQoPath(""), "*");
-  f.backend->truncate(f.getMoFolder("whatever"), "*");
-  cout << "f.getQoPath(): " << f.getQoPath("") << endl;
-  cout << "f.getMoPath(\"whatever\"): " << f.getMoFolder("whatever") << endl;
 }
 
 } // namespace
