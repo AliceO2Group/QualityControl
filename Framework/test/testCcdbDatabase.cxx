@@ -88,8 +88,8 @@ struct MyGlobalFixture {
     std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
     backend->connect(CCDB_ENDPOINT, "", "", "");
     // cannot use the test_fixture because we are tearing down
-    backend->truncate("qc/TST/MO/Test/pid"+std::to_string(getpid()), "*");
-    backend->truncate("qc/TST/QO/Test/pid"+ std::to_string(getpid()), "*");
+    backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
+    backend->truncate("qc/TST/QO/Test/pid" + std::to_string(getpid()), "*");
   }
 };
 BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
