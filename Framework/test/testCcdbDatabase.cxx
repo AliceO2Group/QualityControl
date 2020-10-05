@@ -52,6 +52,8 @@ struct test_fixture {
   {
     backend = std::make_unique<CcdbDatabase>();
     backend->connect(CCDB_ENDPOINT, "", "", "");
+    pid = std::to_string(getpid());
+    taskName = "Test/pid" + pid;
     ILOG(Info, Support) << "*** " << boost::unit_test::framework::current_test_case().p_name << " (" << pid
                         << ") ***" << ENDM;
   }
@@ -75,9 +77,9 @@ struct test_fixture {
 
   std::unique_ptr<CcdbDatabase> backend;
   map<string, string> metadata;
-  const std::string pid = std::to_string(getpid());
-  std::string detector = "TST";
-  std::string taskName = "Test/pid" + pid;
+  std::string pid;
+  const std::string detector = "TST";
+  std::string taskName;
 };
 
 struct MyGlobalFixture {
@@ -86,8 +88,8 @@ struct MyGlobalFixture {
     std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
     backend->connect(CCDB_ENDPOINT, "", "", "");
     // cannot use the test_fixture because we are tearing down
-    backend->truncate("qc/TST/MO/Test/pid", "*");
-    backend->truncate("qc/TST/QO/Test/pid", "*");
+    backend->truncate("qc/TST/MO/Test/pid"+std::to_string(getpid()), "*");
+    backend->truncate("qc/TST/QO/Test/pid"+ std::to_string(getpid()), "*");
   }
 };
 BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
