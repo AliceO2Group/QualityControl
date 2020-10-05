@@ -188,3 +188,23 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
     });
   BOOST_REQUIRE_EQUAL(checkRunnerCount, 3);
 }
+
+BOOST_AUTO_TEST_CASE(qc_factory_empty_config)
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testEmptyConfig.json";
+  {
+    WorkflowSpec workflow;
+    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateStandaloneInfrastructure(workflow, configFilePath));
+    BOOST_CHECK_EQUAL(workflow.size(), 0);
+  }
+  {
+    WorkflowSpec workflow;
+    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateLocalInfrastructure(workflow, configFilePath, "asdf"));
+    BOOST_CHECK_EQUAL(workflow.size(), 0);
+  }
+  {
+    WorkflowSpec workflow;
+    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateRemoteInfrastructure(workflow, configFilePath));
+    BOOST_CHECK_EQUAL(workflow.size(), 0);
+  }
+}

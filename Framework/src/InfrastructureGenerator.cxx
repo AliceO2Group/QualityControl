@@ -51,12 +51,13 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
   printVersion();
 
   TaskRunnerFactory taskRunnerFactory;
-  for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
-    if (taskConfig.get<bool>("active", true)) {
-      workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
+  if (config->getRecursive("qc").count("tasks")) {
+    for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
+      if (taskConfig.get<bool>("active", true)) {
+        workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
+      }
     }
   }
-
   generateCheckRunners(workflow, configurationSource);
 
   return workflow;
@@ -75,6 +76,10 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   std::unordered_set<std::string> samplingPoliciesUsed;
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
   printVersion();
+
+  if (config->getRecursive("qc").count("tasks") == 0) {
+    return workflow;
+  }
 
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
     if (taskConfig.get<bool>("active")) {
@@ -143,48 +148,50 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
   printVersion();
 
-  TaskRunnerFactory taskRunnerFactory;
-  for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
-    if (taskConfig.get<bool>("active", true)) {
+  if (config->getRecursive("qc").count("tasks")) {
+    TaskRunnerFactory taskRunnerFactory;
+    for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
+      if (taskConfig.get<bool>("active", true)) {
 
-      if (taskConfig.get<std::string>("location") == "local") {
-        // if tasks are LOCAL, generate input proxies + mergers + checkers
+        if (taskConfig.get<std::string>("location") == "local") {
+          // if tasks are LOCAL, generate input proxies + mergers + checkers
 
-        size_t numberOfLocalMachines = taskConfig.get_child("localMachines").size() > 1 ? taskConfig.get_child("localMachines").size() : 1;
+          size_t numberOfLocalMachines = taskConfig.get_child("localMachines").size() > 1 ? taskConfig.get_child("localMachines").size() : 1;
 
-        // Generate an input proxy
-        // These should be removed when we are able to declare dangling inputs in normal DPL devices
-        generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, taskConfig.get<std::string>("remotePort"));
+          // Generate an input proxy
+          // These should be removed when we are able to declare dangling inputs in normal DPL devices
+          generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, taskConfig.get<std::string>("remotePort"));
 
-        // Generate a Merger only when there is a need to merge something - there is more than one machine with the QC Task
-        // I don't expect the list of machines to be reconfigured - all of them should be declared beforehand,
-        // even if some of them will be on standby.
-        if (numberOfLocalMachines > 1) {
-          generateMergers(workflow, taskName, numberOfLocalMachines, taskConfig.get<double>("cycleDurationSeconds"));
+          // Generate a Merger only when there is a need to merge something - there is more than one machine with the QC Task
+          // I don't expect the list of machines to be reconfigured - all of them should be declared beforehand,
+          // even if some of them will be on standby.
+          if (numberOfLocalMachines > 1) {
+            generateMergers(workflow, taskName, numberOfLocalMachines, taskConfig.get<double>("cycleDurationSeconds"));
+          }
+
+        } else if (taskConfig.get<std::string>("location") == "remote") {
+
+          // -- if tasks are REMOTE, generate dispatcher proxies + tasks + checkers
+          // (for the time being we don't foresee parallel tasks on QC servers, so no mergers here)
+
+          // fixme: ideally we should check if we are on the right remote machine, but now we support only n -> 1 setups,
+          //  so there is no point. Also, I expect that we should be able to generate one big topology or its parts
+          //  and we would place it among QC servers using AliECS, not by configuration files.
+
+          // Collecting Data Sampling Policies
+          auto dataSourceTree = taskConfig.get_child("dataSource");
+          std::string type = dataSourceTree.get<std::string>("type");
+          if (type == "dataSamplingPolicy") {
+            samplingPoliciesUsed.insert(dataSourceTree.get<std::string>("name"));
+          } else if (type == "direct") {
+            throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
+          } else {
+            throw std::runtime_error("Configuration error: dataSource type unknown : " + type);
+          }
+
+          // Creating the remote task
+          workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
         }
-
-      } else if (taskConfig.get<std::string>("location") == "remote") {
-
-        // -- if tasks are REMOTE, generate dispatcher proxies + tasks + checkers
-        // (for the time being we don't foresee parallel tasks on QC servers, so no mergers here)
-
-        // fixme: ideally we should check if we are on the right remote machine, but now we support only n -> 1 setups,
-        //  so there is no point. Also, I expect that we should be able to generate one big topology or its parts
-        //  and we would place it among QC servers using AliECS, not by configuration files.
-
-        // Collecting Data Sampling Policies
-        auto dataSourceTree = taskConfig.get_child("dataSource");
-        std::string type = dataSourceTree.get<std::string>("type");
-        if (type == "dataSamplingPolicy") {
-          samplingPoliciesUsed.insert(dataSourceTree.get<std::string>("name"));
-        } else if (type == "direct") {
-          throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
-        } else {
-          throw std::runtime_error("Configuration error: dataSource type unknown : " + type);
-        }
-
-        // Creating the remote task
-        workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
       }
     }
   }
@@ -347,11 +354,12 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
 
-  // Build tasksOutputMap based on active tasks in the config
-  for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
-    if (taskConfig.get<bool>("active", true)) {
-      InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
-      tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
+  if (config->getRecursive("qc").count("tasks")) {
+    for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
+      if (taskConfig.get<bool>("active", true)) {
+        InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
+        tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
+      }
     }
   }
 
