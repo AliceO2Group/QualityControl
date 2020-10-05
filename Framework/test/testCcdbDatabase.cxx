@@ -77,11 +77,12 @@ struct test_fixture {
   map<string, string> metadata;
   const std::string pid = std::to_string(getpid());
   std::string detector = "TST";
-  std::string taskName = "Test/pid"+pid;
+  std::string taskName = "Test/pid" + pid;
 };
 
 struct MyGlobalFixture {
-  void teardown() {
+  void teardown()
+  {
     std::unique_ptr<CcdbDatabase> backend = std::make_unique<CcdbDatabase>();
     backend->connect(CCDB_ENDPOINT, "", "", "");
     // cannot use the test_fixture because we are tearing down
@@ -89,7 +90,7 @@ struct MyGlobalFixture {
     backend->truncate("qc/TST/QO/Test/pid", "*");
   }
 };
-BOOST_TEST_GLOBAL_FIXTURE( MyGlobalFixture );
+BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
 
 long oldTimestamp;
 
@@ -108,7 +109,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   TH1F* h3 = new TH1F("short", "asdf", 100, 0, 99);
   shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, f.taskName, "TST");
 
-  shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, f.taskName + "/test-ccdb-check" , "TST", "OnAll", vector{ string("input1"), string("input2") });
+  shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, f.taskName + "/test-ccdb-check", "TST", "OnAll", vector{ string("input1"), string("input2") });
   shared_ptr<QualityObject> qo2 = make_shared<QualityObject>(Quality::Null, f.taskName + "/metadata", "TST", "OnAll", vector{ string("input1") });
   qo2->addMetadata("my_meta", "is_good");
   shared_ptr<QualityObject> qo3 = make_shared<QualityObject>(Quality::Good, f.taskName + "/short", "TST", "OnAll", vector{ string("input1") });
@@ -157,7 +158,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_timestamps, *utf::depends_on("ccdb_store"))
   BOOST_REQUIRE_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getName(), "short");
 
-  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(f.getQoPath( "short"), 15000);
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(f.getQoPath("short"), 15000);
   BOOST_REQUIRE_NE(qo, nullptr);
   BOOST_CHECK_EQUAL(qo->getName(), f.taskName + "/short");
 }
@@ -275,8 +276,8 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
 
   std::string pathQuarantine = f.getMoPath("quarantine");
   std::string pathMetadata = f.getMoPath("metadata");
-  std::string pathQuality = f.getQoPath( "test-ccdb-check");
-  std::string pathQualityMetadata = f.getQoPath( "metadata");
+  std::string pathQuality = f.getQoPath("test-ccdb-check");
+  std::string pathQualityMetadata = f.getQoPath("metadata");
 
   std::map<std::string, std::string> headers1;
   std::map<std::string, std::string> headers2;
