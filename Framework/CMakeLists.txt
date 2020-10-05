@@ -401,6 +401,7 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py scr
 
 set(TEST_FILES
   "testSharedConfig.json"
+  "testEmptyConfig.json"
   "testCheckWorkflow.json"
   "testTrendingTask.json"
   "testWorkflow.json")
