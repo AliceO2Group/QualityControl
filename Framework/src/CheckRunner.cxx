@@ -212,6 +212,7 @@ void CheckRunner::run(framework::ProcessingContext& ctx)
   updatePolicyManager.updateGlobalRevision();
 
   sendPeriodicMonitoring();
+  updateServiceDiscovery(qualityObjects);
 }
 
 void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
