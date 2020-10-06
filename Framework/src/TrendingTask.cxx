@@ -96,6 +96,11 @@ void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface
 
 void TrendingTask::generatePlots()
 {
+  if (mTrend->GetEntries() < 1) {
+    ILOG(Info, Support) << "No entries in the trend so far, won't generate any plots." << ENDM;
+    return;
+  }
+
   ILOG(Info, Support) << "Generating " << mConfig.plots.size() << " plots." << ENDM;
 
   // why generate and store plots in the same function? because it is easier to handle the lifetime of pointers to the ROOT objects
