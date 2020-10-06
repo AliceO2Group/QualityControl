@@ -52,11 +52,9 @@ void PostProcessingDevice::init(framework::InitContext& ctx)
 
 void PostProcessingDevice::run(framework::ProcessingContext& ctx)
 {
-  // todo: enable once check runners can store the results.
-  //  Now we still choose the default option - storing data directly to the repo.
   // we set the publication callback each time, because we cannot be sure that
   // the reference to DataAllocator does not change
-  // mRunner.setPublicationCallback(publishToDPL(ctx.outputs(), outputBinding));
+  mRunner->setPublicationCallback(publishToDPL(ctx.outputs(), outputBinding));
 
   // When run returns false, it has done its processing.
   if (!mRunner->run()) {

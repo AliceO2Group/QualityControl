@@ -367,6 +367,15 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     }
   }
 
+  if (config->getRecursive("qc").count("postprocessing")) {
+    for (const auto& [ppTaskName, ppTaskConfig] : config->getRecursive("qc.postprocessing")) {
+      if (ppTaskConfig.get<bool>("active", true)) {
+        InputSpec taskOutput{ ppTaskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(ppTaskName) };
+        tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
+      }
+    }
+  }
+
   // For each external task prepare the InputSpec to be stored in tasksoutputMap
   if (config->getRecursive("qc").count("externalTasks")) {
     for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
@@ -467,7 +476,7 @@ void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, std
         ppTask.getOptions()
       };
 
-      ppTaskSpec.algorithm = std::move(adaptFromTask<PostProcessingDevice>(std::move(ppTask)));
+      ppTaskSpec.algorithm = adaptFromTask<PostProcessingDevice>(std::move(ppTask));
 
       workflow.emplace_back(std::move(ppTaskSpec));
     }

@@ -25,6 +25,7 @@
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/InputUtils.h"
 #include "QualityControl/RootClassFactory.h"
+#include "QualityControl/PostProcessingDevice.h"
 // Fairlogger
 #include <fairlogger/Logger.h>
 
@@ -34,6 +35,7 @@ using namespace o2::configuration;
 
 using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
+using namespace o2::quality_control::postprocessing;
 using namespace std;
 
 /// Static functions
@@ -88,12 +90,15 @@ void Check::initConfig(std::string checkName)
   mNumberOfTaskSources = 0;
   for (const auto& [_key, dataSource] : checkConfig.get_child("dataSource")) {
     (void)_key;
-    if (dataSource.get<std::string>("type") == "Task" || dataSource.get<std::string>("type") == "ExternalTask") {
+    if (auto sourceType = dataSource.get<std::string>("type");
+        sourceType == "Task" || sourceType == "ExternalTask" || sourceType == "PostProcessing") {
       auto taskName = dataSource.get<std::string>("name");
       mNumberOfTaskSources++;
 
       if (dataSource.get<std::string>("type") == "Task") {
         mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
+      } else if (dataSource.get<std::string>("type") == "PostProcessing") {
+        mInputs.push_back({ taskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(taskName) });
       } else if (dataSource.get<std::string>("type") == "ExternalTask") {
         auto query = config->getString("qc.externalTasks." + taskName + ".query").get();
         framework::Inputs input = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());

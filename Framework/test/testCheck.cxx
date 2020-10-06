@@ -116,3 +116,22 @@ BOOST_AUTO_TEST_CASE(test_check_dont_invoke_beautify)
   // Beautify should not run - more than one MO declared
   BOOST_CHECK(!testCheck.mBeautify);
 }
+
+BOOST_AUTO_TEST_CASE(test_check_postprocessing)
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+
+  Check check("checkAnyPP", configFilePath);
+  check.init();
+
+  TestCheck testCheck;
+  check.setCheckInterface(dynamic_cast<CheckInterface*>(&testCheck));
+
+  std::map<std::string, std::shared_ptr<MonitorObject>> moMap = { { "SkeletonPostProcessing/example", std::shared_ptr<MonitorObject>(new MonitorObject()) } };
+
+  check.check(moMap);
+  // Check should run
+  BOOST_CHECK(testCheck.mCheck);
+  // Beautify should run - single MO declared
+  BOOST_CHECK(testCheck.mBeautify);
+}
