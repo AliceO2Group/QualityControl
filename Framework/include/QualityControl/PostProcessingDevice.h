@@ -16,7 +16,6 @@
 #ifndef QUALITYCONTROL_POSTPROCESSINGDEVICE_H
 #define QUALITYCONTROL_POSTPROCESSINGDEVICE_H
 
-
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Headers/DataHeader.h>
@@ -74,6 +73,6 @@ class PostProcessingDevice : public framework::Task
   std::string mConfigSource;
 };
 
-} // namespace o2::quality_control::core
+} // namespace o2::quality_control::postprocessing
 
 #endif //QUALITYCONTROL_POSTPROCESSINGDEVICE_H
