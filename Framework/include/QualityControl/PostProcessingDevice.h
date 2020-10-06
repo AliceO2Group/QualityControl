@@ -38,13 +38,12 @@ class PostProcessingDevice : public framework::Task
   ///
   /// \param taskName - name of the task, which exists in tasks list in the configuration file
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
-  /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
   PostProcessingDevice(const std::string& taskName, const std::string& configurationSource);
   ~PostProcessingDevice() override = default;
 
-  /// \brief TaskRunner's init callback
+  /// \brief PostProcessingDevice's init callback
   void init(framework::InitContext&) override;
-  /// \brief TaskRunner's process callback
+  /// \brief PostProcessingDevice's process callback
   void run(framework::ProcessingContext&) override;
 
   const std::string& getDeviceName();
@@ -52,11 +51,11 @@ class PostProcessingDevice : public framework::Task
   framework::Outputs getOutputSpecs();
   framework::Options getOptions();
 
-  /// \brief ID string for all TaskRunner devices
+  /// \brief ID string for all PostProcessingDevices
   static std::string createPostProcessingIdString();
-  /// \brief Unified DataOrigin for Quality Control tasks
+  /// \brief Unified DataOrigin for Post-processing tasks
   static header::DataOrigin createPostProcessingDataOrigin();
-  /// \brief Unified DataDescription naming scheme for all tasks
+  /// \brief Unified DataDescription naming scheme for all Post-processing tasks
   static header::DataDescription createPostProcessingDataDescription(const std::string& taskName);
 
  private:
