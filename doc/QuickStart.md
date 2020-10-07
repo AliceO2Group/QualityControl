@@ -127,7 +127,7 @@ This workflow is a bit different from the basic one. The _Readout_ is not a DPL,
 
 The first thing is to load the environment for the readout in a new terminal: `alienv enter Readout/latest`. 
 
-Then enable the data sampling channel in readout by opening the readout config file located at `$READOUT_ROOT/etc/readout.cfg` and make sure that the following properties are correct:
+Then enable the data sampling channel in readout by opening the readout config file located at `$READOUT_ROOT/etc/readout-qc.cfg` and make sure that the following properties are correct:
 
 ```
 # First make sure we never exit
@@ -144,7 +144,7 @@ enabled=1
 
 Start Readout in a terminal:
 ```
-readout.exe file://$READOUT_ROOT/etc/readout.cfg
+readout.exe file://$READOUT_ROOT/etc/readout-qc.cfg
 ```
 
 Start in another terminal the proxy, DataSampling and QC workflows:
