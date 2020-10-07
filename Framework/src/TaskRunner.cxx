@@ -181,7 +181,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
     action = CompletionPolicy::CompletionOp::Consume;
   }
 
-  ILOG(Debug, Devel) << "Action: " << action;
+  //  ILOG(Debug, Trace) << "Action: " << action << ENDM;
 
   return action;
 }
