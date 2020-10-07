@@ -161,14 +161,12 @@ void DaqTask::printInputPayload(const header::DataHeader* header, const char* pa
         } else {
           ILOG(Info, Ops) << "   ";
         }
-        //        if(i + col * 2 + word > limit) {
-        //          return;
-        //        }
       }
       ILOG(Info, Ops) << " | ";
     }
     ILOG(Info, Ops) << ENDM;
     i = i + 8;
+    // limit output but we don't troncate the lines.
     if (i > limit) {
       return;
     }
