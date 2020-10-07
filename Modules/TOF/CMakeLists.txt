@@ -13,6 +13,8 @@ target_sources(QcTOF
                       src/CheckRawMultiplicity.cxx
                       src/CheckRawTime.cxx
                       src/CheckRawToT.cxx
+                      # PostProcessing
+                      src/PostProcessDiagnosticPerCrate.cxx
                       # Utilities
                 )
 
@@ -48,6 +50,8 @@ add_root_dictionary(QcTOF
                             include/TOF/CheckRawMultiplicity.h
                             include/TOF/CheckRawTime.h
                             include/TOF/CheckRawToT.h
+                            # PostProcessing
+                            include/TOF/PostProcessDiagnosticPerCrate.h
                             # Utilities
                             include/Base/Counter.h
                     LINKDEF include/TOF/LinkDef.h
@@ -82,6 +86,7 @@ set_tests_properties(testQcTOF PROPERTIES TIMEOUT 20)
 install(FILES tof.json
               tofcompressed.json
               tofdiagnostics.json
+              tofpostprocessdiagnosticpercrate.json
         DESTINATION etc)
 
 get_property(dirs
