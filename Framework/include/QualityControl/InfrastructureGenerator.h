@@ -144,6 +144,7 @@ class InfrastructureGenerator
                               size_t numberOfLocalMachines,
                               double cycleDurationSeconds);
   static void generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource);
+  static void generatePostProcessing(framework::WorkflowSpec& workflow, std::string configurationSource);
 };
 
 } // namespace core

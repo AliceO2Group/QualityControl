@@ -193,6 +193,10 @@ void PostProcessingRunner::doFinalize(Trigger trigger)
   mPublicationCallback(mObjectManager->getNonOwningArray(), trigger.timestamp, trigger.timestamp + objectValidity);
   mTaskState = TaskState::Finished;
 }
+const std::string& PostProcessingRunner::getName()
+{
+  return mName;
+}
 
 MOCPublicationCallback publishToDPL(framework::DataAllocator& allocator, std::string outputBinding)
 {

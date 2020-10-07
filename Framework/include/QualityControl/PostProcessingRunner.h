@@ -70,6 +70,8 @@ class PostProcessingRunner
   /// \param callback MonitorObjectCollection publication callback
   void setPublicationCallback(MOCPublicationCallback callback);
 
+  const std::string& getName();
+
  private:
   void doInitialize(Trigger trigger);
   void doUpdate(Trigger trigger);

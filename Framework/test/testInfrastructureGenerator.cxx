@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
 
   // the infrastructure should consist of a proxy, merger and checker for the 'skeletonTask' (its taskRunner is declared to be
   // local) and also taskRunner and checker for the 'abcTask' and 'xyzTask'.
-  BOOST_REQUIRE_EQUAL(workflow.size(), 8);
+  BOOST_REQUIRE_EQUAL(workflow.size(), 9);
 
   auto tcpclustProxy = std::find_if(
     workflow.begin(), workflow.end(),
@@ -143,6 +143,15 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
              d.inputs.size() == 1;
     });
   BOOST_REQUIRE_EQUAL(checkRunnerCount, 3);
+
+  auto postprocessingTask = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "PP-TASK-RUNNER-SkeletonPostProcessing" &&
+             d.inputs.size() == 1 &&
+             d.outputs.size() == 1;
+    });
+  BOOST_CHECK(postprocessingTask != workflow.end());
 }
 
 BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
@@ -150,8 +159,8 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   auto workflow = InfrastructureGenerator::generateStandaloneInfrastructure(configFilePath);
 
-  // the infrastructure should consist of 3 TaskRunners, 3 CheckRunners
-  BOOST_REQUIRE_EQUAL(workflow.size(), 6);
+  // the infrastructure should consist of 3 TaskRunners, 3 CheckRunners, 1 PostProcessingRunner
+  BOOST_REQUIRE_EQUAL(workflow.size(), 7);
 
   auto taskRunnerSkeleton = std::find_if(
     workflow.begin(), workflow.end(),
@@ -187,6 +196,15 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
              d.inputs.size() == 1;
     });
   BOOST_REQUIRE_EQUAL(checkRunnerCount, 3);
+
+  auto postprocessingTask = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "PP-TASK-RUNNER-SkeletonPostProcessing" &&
+             d.inputs.size() == 1 &&
+             d.outputs.size() == 1;
+    });
+  BOOST_CHECK(postprocessingTask != workflow.end());
 }
 
 BOOST_AUTO_TEST_CASE(qc_factory_empty_config)
