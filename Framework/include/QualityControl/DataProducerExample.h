@@ -23,7 +23,7 @@ namespace o2::quality_control::core
 
 /// \brief Returns a random data producer specification which publishes on {"TST", "RAWDATA", <index>}
 ///
-/// \param myParam  The value the producer should produce.
+/// \param myParam  The value the producer should produce
 /// \return         A fixed number producer specification
 framework::DataProcessorSpec getDataProducerExampleSpec(size_t myParam);
 
