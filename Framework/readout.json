@@ -38,7 +38,7 @@
         "taskParameters": {
           "": "All the printing options might significantly slow down your QC",
           "printInputHeader": "false",        "": "set to true to print all headers",
-          "printInputPayload": "hex",        "": "hex or bin (anything else means no)",
+          "printInputPayload": "false",        "": "hex or bin (anything else means no)",
           "printInputPayloadLimit": "-1",    "": "only print the X first words (-1 means no limit)",
           "printPageInfo": "false",           "": "set to true to print information about pages",
           "printRDH": "false",                "": "set to true to print the RDHs"
