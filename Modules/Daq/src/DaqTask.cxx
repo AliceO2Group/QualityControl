@@ -147,6 +147,10 @@ void DaqTask::printInputPayload(const header::DataHeader* header, const char* pa
   } else if (mCustomParameters["printInputPayload"] == "bin") {
     representation = getBinRepresentation((unsigned char*)payload, header->payloadSize);
   }
+  size_t limit = std::numeric_limits<size_t>::max();
+  if(mCustomParameters.count("printInputPayloadLimit") > 0) {
+    limit = std::stoi(mCustomParameters["printInputPayloadLimit"]);
+  }
 
   for (size_t i = 0; i < representation.size();) {
     ILOG(Info, Ops) << std::setw(4) << i << " : ";
@@ -157,11 +161,17 @@ void DaqTask::printInputPayload(const header::DataHeader* header, const char* pa
         } else {
           ILOG(Info, Ops) << "   ";
         }
+//        if(i + col * 2 + word > limit) {
+//          return;
+//        }
       }
       ILOG(Info, Ops) << " | ";
     }
     ILOG(Info, Ops) << ENDM;
     i = i + 8;
+    if(i > limit) {
+      return;
+    }
   }
 }
 
