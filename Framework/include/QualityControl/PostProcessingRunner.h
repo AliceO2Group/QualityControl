@@ -71,7 +71,6 @@ class PostProcessingRunner
   void setPublicationCallback(MOCPublicationCallback callback);
 
   const std::string& getName();
-  double getPeriod();
 
  private:
   void doInitialize(Trigger trigger);
