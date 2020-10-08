@@ -74,7 +74,7 @@ Quality RawQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
 }
 
 std::string RawQcCheck::getAcceptedType() { return "TH1"; }
- 
+
 void RawQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName() == "mDetElemID") {
@@ -92,5 +92,5 @@ void RawQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
     h->SetLineColor(kBlack);
   }
 }
- 
+
 } // namespace o2::quality_control_modules::mid

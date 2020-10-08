@@ -37,7 +37,6 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info) << "initialize RawQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
   mDetElemID = new TH1F("mDetElemID", "Id of detector element", 81, -0.5, 80.5);
   getObjectsManager()->startPublishing(mDetElemID);
-
 }
 
 void RawQcTask::startOfActivity(Activity& /*activity*/)
