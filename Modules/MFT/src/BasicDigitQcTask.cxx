@@ -12,6 +12,7 @@
 /// \file   BasicDigitQcTask.cxx
 /// \author Tomas Herman
 /// \author Guillermo Contreras
+/// \author Katarina Krizkova Gajdosova 
 ///
 
 // ROOT
@@ -62,8 +63,8 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   for(int iHitMap = 0; iHitMap<nhitmaps; iHitMap++)
   {
     //  generate folder and histogram name using the mapping table
-    TString FolderName;
-    TString HistogramName;
+    TString FolderName = "";
+    TString HistogramName = "";
     getChipName(FolderName, HistogramName, iHitMap);
   
     auto chiphitmap = std::make_unique<TH2F>(
@@ -81,22 +82,19 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   for(int iChipID = 0; iChipID < nchip; iChipID++)
   {
     //  generate folder and histogram name using the mapping table
-    TString FolderName;
-    TString HistogramName;
+    TString FolderName = "";
+    TString HistogramName = "";
     getPixelName(FolderName, HistogramName, iChipID);
-
+    
     //  create pixel hit map
     auto pxlhitmap = std::make_unique<TH2F>(
       FolderName, HistogramName,
       gPixelHitMapsMaxBinX/gPixelHitMapsBinWidth, gPixelHitMapsMinBin, gPixelHitMapsMaxBinX,
       gPixelHitMapsMaxBinY/gPixelHitMapsBinWidth, gPixelHitMapsMinBin, gPixelHitMapsMaxBinY);
-    //pxlhitmap->SetStats(0);
+    pxlhitmap->SetStats(0);
     mMFTPixelHitMap.push_back(std::move(pxlhitmap));
-    if(HistogramName == "h0-d0-f0-z2-l6-s0-tr5")
-    {
-      getObjectsManager()->startPublishing(mMFTPixelHitMap[iChipID].get());
-      getObjectsManager()->addMetadata(mMFTPixelHitMap[iChipID]->GetName(), "custom", "34");
-    }
+    getObjectsManager()->startPublishing(mMFTPixelHitMap[iChipID].get());
+    getObjectsManager()->addMetadata(mMFTPixelHitMap[iChipID]->GetName(), "custom", "34");
   }
 }
 
