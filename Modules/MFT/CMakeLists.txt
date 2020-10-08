@@ -38,10 +38,12 @@ add_root_dictionary(QcMFT
 
 set(EXE_SRCS 
      src/runDigitsRootFileReaderMFT.cxx 
+     src/runDigitsHotPixelRootFileReaderMFT.cxx 
      src/runClustersRootFileReaderMFT.cxx
      src/runTracksRootFileReaderMFT.cxx)
 set(EXE_NAMES 
      o2-qc-run-digits-root-file-reader-mft
+     o2-qc-run-digits-hot-pixel-root-file-reader-mft
      o2-qc-run-clusters-root-file-reader-mft
      o2-qc-run-tracks-root-file-reader-mft)
 
@@ -56,6 +58,7 @@ endforeach()
 
 install(
   TARGETS o2-qc-run-digits-root-file-reader-mft
+          o2-qc-run-digits-hot-pixel-root-file-reader-mft
           o2-qc-run-clusters-root-file-reader-mft
           o2-qc-run-tracks-root-file-reader-mft
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
