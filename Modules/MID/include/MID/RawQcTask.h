@@ -10,7 +10,7 @@
 
 ///
 /// \file   RawQcTask.h
-/// \author My Name
+/// \author Bogdan Vulpescu / Xavier Lopez
 ///
 
 #ifndef QC_MODULE_MID_MIDRAWQCTASK_H
@@ -25,8 +25,8 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::mid
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
+/// \brief Count number of digits per detector elements
+
 class RawQcTask final : public TaskInterface
 {
  public:

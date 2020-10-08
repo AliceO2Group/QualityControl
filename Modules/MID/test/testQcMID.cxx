@@ -10,7 +10,7 @@
 
 ///
 /// \file   testMID.cxx
-/// \author My Name
+/// \author Xavier Lopez
 ///
 
 #include "QualityControl/TaskFactory.h"

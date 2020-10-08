@@ -1,28 +1,28 @@
 # ---- Library ----
 
-add_library(QcMIDRaw)
+add_library(QcMID)
 
-target_sources(QcMIDRaw PRIVATE src/RawQcCheck.cxx  src/RawQcTask.cxx )
+target_sources(QcMID PRIVATE src/RawQcCheck.cxx  src/RawQcTask.cxx )
 
 target_include_directories(
-  QcMIDRaw
+  QcMID
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(QcMIDRaw PUBLIC QualityControl)
+target_link_libraries(QcMID PUBLIC QualityControl)
 
-install(TARGETS QcMIDRaw
+install(TARGETS QcMID
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_root_dictionary(QcMIDRaw
+add_root_dictionary(QcMID
                     HEADERS
 		    include/MID/RawQcCheck.h
 		    include/MID/RawQcTask.h
                     LINKDEF include/MID/LinkDef.h
-                    BASENAME QcMIDRaw)
+                    BASENAME QcMID)
 
 # ---- Test(s) ----
 

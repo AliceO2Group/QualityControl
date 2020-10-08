@@ -10,7 +10,7 @@
 
 ///
 /// \file   RawQcTask.cxx
-/// \author My Name
+/// \author Bogdan Vulpescu / Xavier Lopez
 ///
 
 #include <TCanvas.h>
@@ -35,22 +35,9 @@ RawQcTask::~RawQcTask()
 void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info) << "initialize RawQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - myOwnKey: " << param->second << ENDM;
-  }
-
   mDetElemID = new TH1F("mDetElemID", "Id of detector element", 81, -0.5, 80.5);
   getObjectsManager()->startPublishing(mDetElemID);
-  try {
-    getObjectsManager()->addMetadata(mDetElemID->GetName(), "custom", "34");
-  } catch (...) {
-    // some methods can throw exceptions, it is indicated in their doxygen.
-    // In case it is recoverable, it is recommended to catch them and do something meaningful.
-    // Here we don't care that the metadata was not added and just log the event.
-    ILOG(Warning) << "Metadata could not be added to " << mDetElemID->GetName() << ENDM;
-  }
+
 }
 
 void RawQcTask::startOfActivity(Activity& /*activity*/)

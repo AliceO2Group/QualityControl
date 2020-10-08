@@ -10,7 +10,7 @@
 
 ///
 /// \file   RawQcCheck.cxx
-/// \author My Name
+/// \author Bogdan Vulpescu / Xavier Lopez
 ///
 
 #include "MID/RawQcCheck.h"
@@ -74,10 +74,10 @@ Quality RawQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
 }
 
 std::string RawQcCheck::getAcceptedType() { return "TH1"; }
-
+ 
 void RawQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "example") {
+  if (mo->getName() == "mDetElemID") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
@@ -92,5 +92,5 @@ void RawQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
     h->SetLineColor(kBlack);
   }
 }
-
+ 
 } // namespace o2::quality_control_modules::mid

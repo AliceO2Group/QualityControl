@@ -26,7 +26,7 @@
       "QcTestMID": {
         "active": "true",
         "className": "o2::quality_control_modules::mid::RawQcTask",
-        "moduleName": "QcMIDRaw",
+        "moduleName": "QcMID",
         "detectorName": "MID",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
@@ -34,11 +34,7 @@
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "digits"
-        },
-        "taskParameters": {
-          "myOwnKey": "myOwnValue"
-        },
-        "location": "remote"
+        }
       }
     },
     "checks": {
@@ -50,7 +46,7 @@
           "MOs": ["mDetElemID"]
         }],
         "className": "o2::quality_control_modules::mid::RawQcCheck",
-        "moduleName": "QcMIDRaw",
+        "moduleName": "QcMID",
         "detectorName": "MID",
         "policy": "OnAny"
       }

@@ -10,7 +10,7 @@
 
 ///
 /// \file   RawQcCheck.h
-/// \author My Name
+/// \author Bogdan Vulpescu / Xavier Lopez
 ///
 
 #ifndef QC_MODULE_MID_MIDRAWQCCHECK_H
@@ -21,8 +21,8 @@
 namespace o2::quality_control_modules::mid
 {
 
-/// \brief  Example QC Check
-/// \author My Name
+/// \brief  Count number of digits per detector elements
+
 class RawQcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
