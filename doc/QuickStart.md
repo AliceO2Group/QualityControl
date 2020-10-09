@@ -29,7 +29,7 @@ Thanks!
 
 ## Requirements
 
-A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the exact supported versions.
+A CC7 machine (Mac, and in particular Ubuntu, are only supported on a best effort basis, some packages might not build properly).
 
 ## Setup
 
@@ -39,8 +39,8 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
         * Mac: `brew install glfw`
    2. Prerequisites  
         * [CC7](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-centos7.html)
-        * [Mac](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-macos.html)
-        * [Ubuntu](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-ubuntu.html)
+        * [Mac](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-macos.html) (best effort)
+        * [Ubuntu](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-ubuntu.html) (best effort)
    3. [Install aliBuild](https://alice-doc.github.io/alice-analysis-tutorial/building/custom.html#get-or-upgrade-alibuild)
    4. [Check setup and build O2](https://alice-doc.github.io/alice-analysis-tutorial/building/build.html)
 
@@ -51,11 +51,13 @@ A Linux machine (CC7 or Ubuntu) or a Mac. See the O2 instructions below for the 
     * `aliBuild build O2Suite --defaults o2`
     * At this point you might encounter a message about missing system requirements. Run `aliDoctor O2Suite` to get a full information about what is missing and how to install it.
 
-Note: on non-CC7 systems, you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages.
+Note: on non-CC7 systems, you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages. Moreover, you can build `qcg` instead of `O2Suite` if you don't plan to use the readout (remember to substitute `O2Suite` with `qcg` when loading the environment).
 
 ### Environment loading
 
-Whenever you want to work with O2 and QualityControl, do either `alienv enter O2Suite/latest` or `alienv load O2Suite/latest`.
+Whenever you want to work with O2 and QualityControl, do either `alienv enter O2Suite/latest` or `alienv load O2Suite/latest`. 
+
+You can also load a package instead of the whole O2Suite, i.e. `alienv enter QualityControl/latest` or `alienv enter qcg/latest`. 
 
 ## Execution
 

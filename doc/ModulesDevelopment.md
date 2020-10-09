@@ -146,6 +146,8 @@ cd sw/BUILD/QualityControl-latest/QualityControl
 make -j8 install # or ninja -j8 install , also adapt to the number of cores available
 ```
 
+If you need to use the QCG or Readout, load `O2Suite` instead of `QualityControl`.
+
 ### User-defined modules
 
 The Quality Control uses _plugins_ to load the actual code to be executed by the _Tasks_ and the _Checks_. A module, or plugin, can contain one or several of these classes, both Tasks and Checks. They must subclass `TaskInterface.h` and `CheckInterface.h` respectively. We use the Template Method Design Pattern.
