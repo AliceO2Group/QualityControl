@@ -24,10 +24,6 @@
 
 #include <bitset>
 
-using namespace o2::framework;
-using namespace o2::header;
-using namespace o2::tpc;
-
 // root includes
 #include <TCanvas.h>
 #include <TH1.h>
@@ -46,6 +42,11 @@ using namespace o2::tpc;
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/Clusters.h"
+
+using namespace o2::framework;
+using namespace o2::header;
+using namespace o2::tpc;
+using namespace o2::dataformats;
 
 namespace o2::quality_control_modules::tpc
 {
@@ -127,7 +128,6 @@ void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
 
   constexpr static size_t NSectors = o2::tpc::Sector::MAXSECTOR;
 
-  std::vector<decltype(std::declval<InputRecord>().get<MCLabelContainer*>(DataRef{ nullptr, nullptr, nullptr }))> mcInputs;
   std::vector<gsl::span<const char>> inputs;
   struct InputRef {
     DataRef data;
@@ -181,10 +181,11 @@ void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
 
   ClusterNativeAccess clusterIndex;
   std::unique_ptr<ClusterNative[]> clusterBuffer;
-  MCLabelContainer clustersMCBuffer;
+  ClusterNativeHelper::ConstMCLabelContainerViewWithBuffer clustersMCBufferDummy;
+  std::vector<ConstMCLabelContainerView> mcInputsDummy;
   memset(&clusterIndex, 0, sizeof(clusterIndex));
-  ClusterNativeHelper::Reader::fillIndex(clusterIndex, clusterBuffer, clustersMCBuffer,
-                                         inputs, mcInputs, [&validInputs](auto& index) { return validInputs.test(index); });
+  ClusterNativeHelper::Reader::fillIndex(clusterIndex, clusterBuffer, clustersMCBufferDummy,
+                                         inputs, mcInputsDummy, [&validInputs](auto& index) { return validInputs.test(index); });
 
   for (int isector = 0; isector < o2::tpc::constants::MAXSECTOR; ++isector) {
     for (int irow = 0; irow < o2::tpc::constants::MAXGLOBALPADROW; ++irow) {
