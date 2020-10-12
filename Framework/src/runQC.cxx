@@ -52,6 +52,8 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
                                                         " will be used" } });
   workflowOptions.push_back(
     ConfigParamSpec{ "remote", VariantType::Bool, false, { "Creates only the remote part of the QC topology." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "no-data-sampling", VariantType::Bool, false, { "Do not add Data Sampling infrastructure." } });
 }
 
 void customize(std::vector<CompletionPolicy>& policies)
@@ -85,15 +87,25 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   if (!config.options().get<bool>("local") && !config.options().get<bool>("remote")) {
     ILOG(Info, Support) << "Creating a standalone QC topology." << ENDM;
-    DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+
+    if (!config.options().get<bool>("no-data-sampling")) {
+      ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
+      DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+    } else {
+      ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
+    }
     quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
   }
 
   if (config.options().get<bool>("local")) {
     ILOG(Info, Support) << "Creating a local QC topology." << ENDM;
 
-    // Generation of Data Sampling infrastructure
-    DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+    if (!config.options().get<bool>("no-data-sampling")) {
+      ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
+      DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+    } else {
+      ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
+    }
 
     // Generation of the local QC topology (local QC tasks and their output proxies)
     auto host = config.options().get<std::string>("host").empty()
