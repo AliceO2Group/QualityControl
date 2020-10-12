@@ -81,7 +81,8 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
 
   // the infrastructure should consist of a proxy, merger and checker for the 'skeletonTask' (its taskRunner is declared to be
   // local) and also taskRunner and checker for the 'abcTask' and 'xyzTask'.
-  BOOST_REQUIRE_EQUAL(workflow.size(), 9);
+  // Post processing adds one process for the task and one for checks.
+  BOOST_REQUIRE_EQUAL(workflow.size(), 10);
 
   auto tcpclustProxy = std::find_if(
     workflow.begin(), workflow.end(),
@@ -142,7 +143,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
       return d.name.find("QC-CHECK-RUNNER") != std::string::npos &&
              d.inputs.size() == 1;
     });
-  BOOST_REQUIRE_EQUAL(checkRunnerCount, 3);
+  BOOST_REQUIRE_EQUAL(checkRunnerCount, 4);
 
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
@@ -159,8 +160,8 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   auto workflow = InfrastructureGenerator::generateStandaloneInfrastructure(configFilePath);
 
-  // the infrastructure should consist of 3 TaskRunners, 3 CheckRunners, 1 PostProcessingRunner
-  BOOST_REQUIRE_EQUAL(workflow.size(), 7);
+  // the infrastructure should consist of 3 TaskRunners, 1 PostProcessingRunner, 4 CheckRunners (including one for PP)
+  BOOST_REQUIRE_EQUAL(workflow.size(), 8);
 
   auto taskRunnerSkeleton = std::find_if(
     workflow.begin(), workflow.end(),
@@ -195,7 +196,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
       return d.name.find("QC-CHECK-RUNNER") != std::string::npos &&
              d.inputs.size() == 1;
     });
-  BOOST_REQUIRE_EQUAL(checkRunnerCount, 3);
+  BOOST_REQUIRE_EQUAL(checkRunnerCount, 4);
 
   auto postprocessingTask = std::find_if(
     workflow.begin(), workflow.end(),
