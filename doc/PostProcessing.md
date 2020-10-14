@@ -88,6 +88,28 @@ This is a snippet of a JSON structure which configures a post-processing task:
 ```
 Each task is identified by its name (`MyPostProcessingTask`). One can activate it by setting the `"active"` field to `"true"`. The task is loaded given its full `"className"` and a `"moduleName"` where it is located. The `"detectorName"` might be used by tasks to store generated data in correct paths in QCDB. The `"initTrigger"`, `"updateTrigger"` and `"stopTrigger"` lists contain triggers which should invoke corresponding interface methods.
 
+Checks can be applied to the results of Post-processing Tasks just as for normal QC Tasks. However, one should use
+ data source type of `"PostProcessing"` instead of `"Task"`:
+ 
+```
+...
+    "checks": {
+      "ExamplePPCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "PostProcessing",
+          "name": "ExampleTrend",
+          "MOs": ["mean_of_histogram"]
+        }]
+      }
+    },
+...
+```
+
 ### Triggers configuration
 
 Each of the three methods can be invoked by one or more triggers. Below are listed the possible options (case insensitive).

@@ -600,7 +600,7 @@ Below the full QC Checks configuration structure is described. Note that more th
         "policy": "OnAny",            "": ["Policy which determines when MOs should be checked. See the documentation",
                                            "of Checks for the list of available policies and their behaviour."],
         "dataSource": [{              "": "List of data source of the Check.",
-          "type": "Task",             "": "Type of the data source, only \"Task\" up to this date", 
+          "type": "Task",             "": "Type of the data source, \"Task\", \"ExternalTask\" or \"PostProcessing\"", 
           "name": "myTask_1",         "": "Name of the Task",
           "MOs": [ "example" ],       "": ["List of MOs to be checked. Use \"all\" (not as a list) to check each MO ",
                                            "which is produced by the Task"]

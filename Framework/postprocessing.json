@@ -22,6 +22,20 @@
         "url": "ccdb-test.cern.ch:8080"
       }
     },
+    "checks": {
+      "ExamplePPCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "PostProcessing",
+          "name": "ExampleTrend",
+          "MOs": ["mean_of_histogram"]
+        }]
+      }
+    },
     "postprocessing": {
       "ExamplePostprocessing": {
         "active": "true",

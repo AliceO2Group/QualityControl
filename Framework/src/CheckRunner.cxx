@@ -274,7 +274,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 void CheckRunner::sendPeriodicMonitoring()
 {
   if (mTimer.isTimeout()) {
-    mTimer.reset(1000000); // 10 s.
+    mTimer.reset(10000000); // 10 s.
     mCollector->send({ mTotalNumberObjectsReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
     mCollector->send({ mTotalNumberCheckExecuted, "qc_checks_executed" }, DerivedMetricMode::RATE);
     mCollector->send({ mTotalNumberQOStored, "qc_qo_stored" }, DerivedMetricMode::RATE);
@@ -397,7 +397,7 @@ void CheckRunner::initMonitoring()
   mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
-  mTimer.reset(1000000); // 10 s.
+  mTimer.reset(10000000); // 10 s.
 }
 
 void CheckRunner::initServiceDiscovery()
