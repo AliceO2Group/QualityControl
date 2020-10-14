@@ -87,7 +87,7 @@ The example above consists of one DPL workflow which has both the main processin
  
 ![basic-schema-2-exe](images/basic-schema-2-exe.png)
 
-This command uses two executables. The first one contains only the _Producer (see Figure above), which represents the data flow to which we want to apply the QC. The second executable generates the QC infrastructure based on the given configuration file (more details in a few sections). These two workflows are joined together using the pipe `|` character. This example illustrates how to add QC to any DPL workflow by using `o2-qc-run-qc` and passing it a configuration file. 
+This command uses two executables. The first one contains only the _Producer (see Figure above), which represents the data flow to which we want to apply the QC. The second executable generates the QC infrastructure based on the given configuration file (more details in a few sections). These two workflows are joined together using the pipe `|` character. This example illustrates how to add QC to any DPL workflow by using `o2-qc` and passing it a configuration file. 
 
 __Repository and GUI__
 
