@@ -131,7 +131,7 @@ class Counter
         LOG(FATAL) << "Filling histogram " << h->GetName() << " at position " << binx << " i.e. past its size (" << nbinsx << ")!";
       }
       if (!Tc::names[i].EqualTo(h->GetXaxis()->GetBinLabel(binx))) {
-        LOG(FATAL) << "Bin" << binx << " does not have the expected label '" << h->GetXaxis()->GetBinLabel(binx) << "' vs '" << Tc::names[i] << "'";
+        LOG(FATAL) << "Bin " << binx << " does not have the expected label '" << h->GetXaxis()->GetBinLabel(binx) << "' vs '" << Tc::names[i] << "'";
       }
       if (biny > 0) {
         if (binz > 0) {
