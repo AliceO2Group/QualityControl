@@ -37,6 +37,13 @@ class Quality
   // Copy constructor
   Quality(const Quality& q);
 
+  /// Move constructor
+  Quality(Quality&& other) /*noexcept*/ = default;
+  /// Copy assignment operator
+  Quality& operator=(const Quality& other) = default;
+  /// Move assignment operator
+  Quality& operator=(Quality&& other) /*noexcept*/ = default;
+
   unsigned int getLevel() const;
   const std::string& getName() const;
 
