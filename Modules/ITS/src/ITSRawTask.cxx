@@ -98,7 +98,7 @@ void ITSRawTask::initialize(o2::framework::InitContext& /*ctx*/)
   QcInfoLogger::GetInstance() << "initialize ITSRawTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   o2::its::GeometryTGeo* geom = o2::its::GeometryTGeo::Instance();
-  geom->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::L2G));
+  geom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
   int numOfChips = geom->getNumberOfChips();
   QcInfoLogger::GetInstance() << "numOfChips = " << numOfChips << AliceO2::InfoLogger::InfoLogger::endm;
   setNChips(numOfChips);
@@ -266,8 +266,8 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     gm->getChipId(ChipID, lay, sta, ssta, mod, chip);
     // cout << "getID : " << ChipID << ", " << lay << ", " << sta << ", " << ssta << ", " << mod << ", " << chip << endl;
-    gm->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::L2G));
-    const Point3D<float> loc(0., 0., 0.);
+    gm->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
+    const math_utils::Point3D<float> loc(0., 0., 0.);
     auto glo = gm->getMatrixL2G(ChipID)(loc);
 
     if (!mlayerEnable[lay]) {
