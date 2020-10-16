@@ -425,7 +425,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 void TaskRunner::updateMonitoringStats(ProcessingContext& pCtx)
 {
   mNumberMessagesReceivedInCycle++;
-  for (auto&& input : pCtx.inputs())    {
+  for (auto&& input : pCtx.inputs()) {
     if (input.header != nullptr) {
       const auto* header = o2::header::get<header::DataHeader*>(input.header);
       mDataReceivedInCycle += header->headerSize + header->payloadSize;
