@@ -36,6 +36,18 @@ MapSolar::~MapSolar()
 }
 
 /*
+ * Inverse Solar mapping
+ */
+MapSolarInv::MapSolarInv()
+{
+  mCruId = mCruLink = -1;
+}
+
+MapSolarInv::~MapSolarInv()
+{
+}
+
+/*
  * DualSampa mapping
  */
 MapDualSampa::MapDualSampa()
@@ -45,6 +57,18 @@ MapDualSampa::MapDualSampa()
 }
 
 MapDualSampa::~MapDualSampa()
+{
+}
+
+/*
+ * Inverse DualSampa mapping
+ */
+MapDualSampaInv::MapDualSampaInv()
+{
+  mLink = mAddress = -1;
+}
+
+MapDualSampaInv::~MapDualSampaInv()
 {
 }
 
@@ -93,6 +117,11 @@ bool MapCRU::readMapping(std::string mapFile)
       continue;
     //printf("[MapCRU::readMapping]: added %d %d -> %d\n", c, l, link_id);
     mSolarMap[c][l].mLink = link_id;
+
+    if (link_id < 0 || link_id > LINKID_MAX)
+      continue;
+    mSolarMapInv[link_id].mCruId = c;
+    mSolarMapInv[link_id].mCruLink = l;
   }
   return true;
 }
@@ -105,6 +134,18 @@ int32_t MapCRU::getLink(int32_t c, int32_t l)
   if (l < 0 || l >= 24)
     return result;
   return mSolarMap[c][l].mLink;
+}
+
+bool MapCRU::getLinkInv(uint32_t link_id, int32_t& c, int32_t& l)
+{
+  if (link_id > LINKID_MAX)
+    return false;
+  if (mSolarMapInv[link_id].mCruId < 0 || mSolarMapInv[link_id].mCruLink < 0)
+    return false;
+
+  c = mSolarMapInv[link_id].mCruId;
+  l = mSolarMapInv[link_id].mCruLink;
+  return true;
 }
 
 /*
@@ -137,6 +178,13 @@ bool MapFEC::readDSMapping(std::string mapFile)
       mDsMap[link_id][ds_addr].mDE = de;
       mDsMap[link_id][ds_addr].mIndex = ds_id[i];
       mDsMap[link_id][ds_addr].mBad = 0;
+
+      if (de < 0 || de > MCH_DE_MAX)
+        continue;
+      if (ds_id[i] < 0 || ds_id[i] > MCH_DSID_MAX)
+        continue;
+      mDsMapInv[de][ds_id[i]].mLink = link_id;
+      mDsMapInv[de][ds_id[i]].mAddress = ds_addr;
     }
   }
   return true;
@@ -149,6 +197,16 @@ bool MapFEC::getDSMapping(uint32_t link_id, uint32_t ds_addr, uint32_t& de, uint
     return false;
   de = mDsMap[link_id][ds_addr].mDE;
   dsid = mDsMap[link_id][ds_addr].mIndex;
+  return true;
+}
+
+bool MapFEC::getDSMappingInv(uint32_t de, uint32_t dsid, uint32_t& link_id, uint32_t& ds_addr)
+{
+  //printf("getPad: link_id=%d  ds_addr=%d  bad=%d\n", link_id, ds_addr, mDsMap[link_id][ds_addr].mBad);
+  if (mDsMapInv[de][dsid].mLink < 0)
+    return false;
+  link_id = mDsMapInv[de][dsid].mLink;
+  ds_addr = mDsMapInv[de][dsid].mAddress;
   return true;
 }
 

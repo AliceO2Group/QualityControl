@@ -7,8 +7,11 @@ set(SRCS
   src/Decoding.cxx
   src/GlobalHistogram.cxx
   src/PedestalsTask.cxx
-  src/PhysicsTask.cxx
+  src/PhysicsTaskDigits.cxx
+  src/PhysicsTaskPreclusters.cxx
   src/PedestalsCheck.cxx
+  src/PhysicsCheck.cxx
+  src/TH1MCHReductor.cxx
 )
 
 set(HEADERS
@@ -16,8 +19,11 @@ set(HEADERS
   include/MCH/Decoding.h
   include/MCH/GlobalHistogram.h
   include/MCH/PedestalsTask.h
-  include/MCH/PhysicsTask.h
+  include/MCH/PhysicsTaskDigits.h
+  include/MCH/PhysicsTaskPreclusters.h
   include/MCH/PedestalsCheck.h
+  include/MCH/PhysicsCheck.h
+  include/MCH/TH1MCHReductor.h
 )
 
 # ---- Library ----
@@ -31,7 +37,7 @@ target_include_directories(
 )
 
 target_link_libraries(${MODULE_NAME} PUBLIC QualityControl O2::CommonDataFormat O2::GPUCommon 
-        $<TARGET_NAME_IF_EXISTS:O2::MCHMappingFactory> O2::MCHMappingImpl3 O2::MCHMappingSegContour)
+        $<TARGET_NAME_IF_EXISTS:O2::MCHMappingFactory> O2::MCHMappingImpl3 O2::MCHMappingSegContour O2::MCHRawDecoder O2::MCHPreClustering)
 
 target_compile_definitions(${MODULE_NAME} PRIVATE $<$<TARGET_EXISTS:O2::MCHMappingFactory>:MCH_HAS_MAPPING_FACTORY>)
 
@@ -49,8 +55,11 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/Decoding.h
                             include/MCH/GlobalHistogram.h
                             include/MCH/PedestalsTask.h
-                            include/MCH/PhysicsTask.h
+                            include/MCH/PhysicsTaskDigits.h
+                            include/MCH/PhysicsTaskPreclusters.h
+                            include/MCH/PhysicsCheck.h
                             include/MCH/PedestalsCheck.h
+                            include/MCH/TH1MCHReductor.h
                             include/MCH/sampa_header.h
                     LINKDEF include/MCH/LinkDef.h)
 
