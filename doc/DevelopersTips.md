@@ -147,3 +147,28 @@ journalctl -u o2-qcg
 
 When working on the ansible recipes and deploying with o2-flp-setup, the recipes to modify are in 
 `.local/share/o2-flp-setup/system-configuration/`. 
+
+### Test with STFBuilder
+https://alice.its.cern.ch/jira/browse/O2-169
+```
+readout.exe file:///afs/cern.ch/user/b/bvonhall/dev/alice/sw/slc7_x86-64/DataDistribution/latest/config/readout_emu.cfg
+ 
+StfBuilder \
+	--id stf_builder-0 \
+	--transport shmem \
+	--detector TPC \
+	--dpl-channel-name=dpl-chan \
+	--channel-config "name=dpl-chan,type=push,method=bind,address=ipc:///tmp/stf-builder-dpl-pipe-0,transport=shmem,rateLogging=1" \
+	--channel-config "name=readout,type=pull,method=connect,address=ipc:///tmp/readout-pipe-0,transport=shmem,rateLogging=1"
+        --detector-rdh=4
+ 
+o2-dpl-raw-proxy \
+      -b \
+      --session default \
+      --dataspec "B:TPC/RAWDATA" \
+      --channel-config "name=readout-proxy,type=pull,method=connect,address=ipc:///tmp/stf-builder-dpl-pipe-0,transport=shmem,rateLogging=1" \
+ | o2-qc \
+      --config json://$PWD/datadistribution.json \
+      -b \
+      --session default
+```
