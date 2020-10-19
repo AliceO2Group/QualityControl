@@ -21,7 +21,6 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <iostream>
 // O2
 #include <Framework/InitContext.h>
 #include <Framework/ProcessingContext.h>
