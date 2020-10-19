@@ -28,6 +28,8 @@
 #include "rapidjson/document.h"
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/testUtils.h"
+//#include "rapidjson/writer.h"
+//#include "rapidjson/stringbuffer.h"
 
 namespace utf = boost::unit_test;
 
@@ -238,6 +240,24 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(q.getLevel(), 3);
 }
 
+/**
+ * Compares the two provided json string. They must be identical at the exception of
+ * the metadata "Date" that can differ. This is due to the way CCDB sets this property.
+ * @param ccdbObjectJson1
+ * @param ccdbObjectJson2
+ * @return
+ */
+bool areIdentical(std::string ccdbObjectJson1, std::string ccdbObjectJson2)
+{
+  Document jsonDocumentA;
+  Document jsonDocumentB;
+  jsonDocumentA.Parse(ccdbObjectJson1.c_str());
+  jsonDocumentB.Parse(ccdbObjectJson2.c_str());
+  jsonDocumentA["metadata"].RemoveMember("Date");
+  jsonDocumentB["metadata"].RemoveMember("Date");
+  return jsonDocumentA == jsonDocumentB;
+}
+
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
@@ -247,12 +267,9 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   std::cout << "[json retrieve]: " << path << std::endl;
   auto json = f.backend->retrieveJson(path, -1, f.metadata);
   auto json2 = f.backend->retrieveMOJson(f.getMoFolder(object), object);
-  cout << "asdf" << endl;
-  cout << json << endl;
-  cout << json2 << endl;
-
   BOOST_CHECK(!json.empty());
-  BOOST_CHECK_EQUAL(json, json2);
+  BOOST_CHECK(!json2.empty());
+  BOOST_CHECK(areIdentical(json, json2));
 
   std::string checkName = "test-ccdb-check";
   string qualityPath = f.getQoPath(checkName);
@@ -260,7 +277,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
   auto json3 = f.backend->retrieveJson(qualityPath, -1, f.metadata);
   auto json4 = f.backend->retrieveQOJson(qualityPath);
   BOOST_CHECK(!json3.empty());
-  BOOST_CHECK_EQUAL(json3, json4);
+  BOOST_CHECK(areIdentical(json3, json4));
 
   Document jsonDocument;
   jsonDocument.Parse(json.c_str());
