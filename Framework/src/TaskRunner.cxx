@@ -30,6 +30,7 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/ConfigParamRegistry.h>
+#include "Framework/InputRecordWalker.h"
 
 // Fairlogger
 #include <fairlogger/Logger.h>
@@ -425,10 +426,14 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 void TaskRunner::updateMonitoringStats(ProcessingContext& pCtx)
 {
   mNumberMessagesReceivedInCycle++;
-  for (auto&& input : pCtx.inputs()) {
+  for (const auto& input : InputRecordWalker(pCtx.inputs())) {
     if (input.header != nullptr) {
-      const auto* header = o2::header::get<header::DataHeader*>(input.header);
-      mDataReceivedInCycle += header->headerSize + header->payloadSize;
+      const auto* inputHeader = header::get<header::DataHeader*>(input.header);
+      if(inputHeader == nullptr) {
+        ILOG(Warning, Devel) << "No DataHeader found in message, ignoring this one for the statistics." << ENDM;
+        continue;
+      }
+      mDataReceivedInCycle += inputHeader->headerSize + inputHeader->payloadSize;
     }
   }
 }
