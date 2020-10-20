@@ -28,6 +28,7 @@
 // QC
 #include "QualityControl/Activity.h"
 #include "QualityControl/ObjectsManager.h"
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::ccdb
 {
@@ -111,7 +112,7 @@ T* TaskInterface::retrieveConditionAny(std::string const& path, std::map<std::st
   if (mCcdbApi) {
     return mCcdbApi->retrieveFromTFileAny<T>(path, metadata, timestamp);
   } else {
-    std::cerr << "Trying to retrieve a condition, but CCDB API is not constructed." << std::endl;
+    ILOG(Error, Support) << "Trying to retrieve a condition, but CCDB API is not constructed." << ENDM;
     return nullptr;
   }
 }
