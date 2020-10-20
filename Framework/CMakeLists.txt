@@ -296,6 +296,7 @@ endforeach()
 
 target_include_directories(testVersion PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib) 
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 60)
 set_property(TEST testWorkflow PROPERTY LABELS slow)

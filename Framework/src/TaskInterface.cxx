@@ -15,7 +15,6 @@
 ///
 
 #include "QualityControl/TaskInterface.h"
-#include "QualityControl/QcInfoLogger.h"
 #include <CCDB/CcdbApi.h>
 
 using namespace o2::ccdb;
