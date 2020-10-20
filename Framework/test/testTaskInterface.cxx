@@ -186,7 +186,6 @@ BOOST_AUTO_TEST_CASE(test_task_factory)
   delete task;
 }
 
-
 BOOST_AUTO_TEST_CASE(retrieveCondition)
 {
   // first store a condition

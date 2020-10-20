@@ -94,7 +94,7 @@ class TaskInterface
   TObject* retrieveCondition(std::string path, std::map<std::string, std::string> metadata = {}, long timestamp = -1);
   template <typename T>
   T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {},
-                          long timestamp = -1) const ;
+                          long timestamp = -1) const;
 
   std::unordered_map<std::string, std::string> mCustomParameters;
 
