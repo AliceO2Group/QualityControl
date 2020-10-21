@@ -78,3 +78,5 @@ For a general overview of our (O2) software, organization and processes, please 
 * JIRA: https://alice.its.cern.ch
 * O2 development newcomers' guide: https://aliceo2group.github.io/quickstart
 * Doxygen: https://aliceo2group.github.io/QualityControl/
+
+PLEASE DO NOT MERGE THIS CHANGE
