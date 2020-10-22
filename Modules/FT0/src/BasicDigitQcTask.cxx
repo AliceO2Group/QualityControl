@@ -44,14 +44,14 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mChargeHistogram = std::make_unique<TH1F>("Charge", "Charge", 200, 0, 200);
   mTimeHistogram = std::make_unique<TH1F>("Time", "Time", 200, 0, 200);
   mAmplitudeAndTime = std::make_unique<TH2F>("ChargeAndTime", "ChargeAndTime", 10, 0, 200, 10, 0, 200);
-  mAmplitudeByTime = std::make_unique<TMultiGraph>("MultiHisto", "Amplitude as a function of CFDTime");
+  // mAmplitudeByTime = std::make_unique<TMultiGraph>("MultiHisto", "Amplitude as a function of CFDTime");
   mTTree = std::make_unique<TTree>("EventTree", "EventTree");
 
 
   getObjectsManager()->startPublishing(mChargeHistogram.get());
   getObjectsManager()->startPublishing(mTimeHistogram.get());
   getObjectsManager()->startPublishing(mTTree.get());
-  getObjectsManager()->startPublishing(mAmplitudeByTime.get());
+  // getObjectsManager()->startPublishing(mAmplitudeByTime.get());
   getObjectsManager()->startPublishing(mAmplitudeAndTime.get());
   // try {
   //   getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
@@ -114,7 +114,7 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   EventWithChannelData event;
   mTTree->Branch("EventWithChannelData", &event);
   std::vector< TGraph* > graphs;
-  int toSaveCounter = 0;
+  // int toSaveCounter = 0;
 
   for(auto& digit : digits){
     auto currentChannels = digit.getBunchChannelData(channels);
@@ -122,42 +122,48 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     event = EventWithChannelData{digit.getEventID(), digit.getBC(), digit.getOrbit(), timestamp, std::vector<o2::ft0::ChannelData>(currentChannels.begin(), currentChannels.end()) };
     mTTree->Fill();
 
+    for(auto& channel : currentChannels)
+    {
+      mChargeHistogram->Fill(channel.QTCAmpl);
+      mTimeHistogram->Fill(channel.CFDTime);
+      mAmplitudeAndTime->Fill(channel.QTCAmpl, channel.CFDTime);
+    }
 
-    if(toSaveCounter++ < 1){
-      graphs.emplace_back( new TGraph(currentChannels.size()));
-      unsigned counter = 0;
-      for(auto& channel : currentChannels)
-      {
+
+    // if(toSaveCounter++ < 1){
+    //   graphs.emplace_back( new TGraph(currentChannels.size()));
+    //   unsigned counter = 0;
+    //   for(auto& channel : currentChannels)
+    //   {
         
-        mChargeHistogram->Fill(channel.QTCAmpl);
-        mTimeHistogram->Fill(channel.CFDTime);
-        graphs.back()->SetPoint(counter++, channel.CFDTime, channel.QTCAmpl);
-      }
-      graphs.back()->SetName(std::string("Event: " + std::to_string(digit.getEventID())).c_str());
-    }
+    //     mChargeHistogram->Fill(channel.QTCAmpl);
+    //     mTimeHistogram->Fill(channel.CFDTime);
+    //     graphs.back()->SetPoint(counter++, channel.CFDTime, channel.QTCAmpl);
+    //   }
+    //   graphs.back()->SetName(std::string("Event: " + std::to_string(digit.getEventID())).c_str());
+    // }
 
 
-    for(auto& channel : currentChannels){
-       mAmplitudeAndTime->Fill(channel.QTCAmpl, channel.CFDTime);
-
-    }
+    // for(auto& channel : currentChannels){
+    //    mAmplitudeAndTime->Fill(channel.QTCAmpl, channel.CFDTime);
+    // }
 
     
   }
   
   mTTree->Print();
-  for(auto& graph : graphs){
-    mAmplitudeByTime->Add(graph, "PL");
-  }
+  // for(auto& graph : graphs){
+  //   mAmplitudeByTime->Add(graph, "PL");
+  // }
 
-  mAmplitudeByTime->Draw("A pmc plc");
+  // mAmplitudeByTime->Draw("A pmc plc");
 
-  auto hFile = std::make_unique<TFile>("debugTree.root", "RECREATE");
-  auto treeCopy = mTTree->CloneTree();
-  treeCopy->SetEntries();
-  treeCopy->Write();
-  mTTree->Print();
-  hFile->Close();
+  // auto hFile = std::make_unique<TFile>("debugTree.root", "RECREATE");
+  // auto treeCopy = mTTree->CloneTree();
+  // treeCopy->SetEntries();
+  // treeCopy->Write();
+  // mTTree->Print();
+  // hFile->Close();
 
 
   // int dummyValue = 5;
