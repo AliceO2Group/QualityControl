@@ -429,7 +429,7 @@ void TaskRunner::updateMonitoringStats(ProcessingContext& pCtx)
   for (const auto& input : InputRecordWalker(pCtx.inputs())) {
     if (input.header != nullptr) {
       const auto* inputHeader = header::get<header::DataHeader*>(input.header);
-      if(inputHeader == nullptr) {
+      if (inputHeader == nullptr) {
         ILOG(Warning, Devel) << "No DataHeader found in message, ignoring this one for the statistics." << ENDM;
         continue;
       }
