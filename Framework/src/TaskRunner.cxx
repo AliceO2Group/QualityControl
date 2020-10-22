@@ -427,14 +427,12 @@ void TaskRunner::updateMonitoringStats(ProcessingContext& pCtx)
 {
   mNumberMessagesReceivedInCycle++;
   for (const auto& input : InputRecordWalker(pCtx.inputs())) {
-    if (input.header != nullptr) {
-      const auto* inputHeader = header::get<header::DataHeader*>(input.header);
-      if (inputHeader == nullptr) {
-        ILOG(Warning, Devel) << "No DataHeader found in message, ignoring this one for the statistics." << ENDM;
-        continue;
-      }
-      mDataReceivedInCycle += inputHeader->headerSize + inputHeader->payloadSize;
+    const auto* inputHeader = header::get<header::DataHeader*>(input.header);
+    if (inputHeader == nullptr) {
+      ILOG(Warning, Devel) << "No DataHeader found in message, ignoring this one for the statistics." << ENDM;
+      continue;
     }
+    mDataReceivedInCycle += inputHeader->headerSize + inputHeader->payloadSize;
   }
 }
 
