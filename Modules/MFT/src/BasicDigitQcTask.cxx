@@ -85,7 +85,7 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     TString FolderName = "";
     TString HistogramName = "";
     getPixelName(FolderName, HistogramName, iChipID);
-    
+
     //  create pixel hit map
     auto pxlhitmap = std::make_unique<TH2F>(
       FolderName, HistogramName,
@@ -196,7 +196,7 @@ void BasicDigitQcTask::getChipName(TString &FolderName, TString &HistogramName, 
 
 void BasicDigitQcTask::getPixelName(TString &FolderName, TString &HistogramName, int iChipID)
 {
-  FolderName = Form("PixelHitMaps/Half_%d/Disk_%d/Face_%d/Zone_%d/Ladder_%d/mMFTPixelHitMap-s%d-tr%d", 
+  FolderName = Form("PixelHitMaps/Half_%d/Disk_%d/Face_%d/Zone_%d/Ladder_%dmMFTPixelHitMap-s%d-tr%d", 
     half[iChipID], disk[iChipID], face[iChipID], zone[iChipID], ladder[iChipID], sensor[iChipID], transID[iChipID]);
 
   HistogramName = Form("h%d-d%d-f%d-z%d-l%d-s%d-tr%d",
