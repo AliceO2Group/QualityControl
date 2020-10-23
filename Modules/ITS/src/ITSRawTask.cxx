@@ -5,7 +5,7 @@
 /// \author Mario Sitta
 /// \author Jian Liu
 /// \author Liang Zhang
-/// \brief  ITS QC task for raw data analysis
+/// \brief  ITS QC task for raw data analysis 
 ///
 
 #include "QualityControl/QcInfoLogger.h"
