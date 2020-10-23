@@ -30,6 +30,7 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/ConfigParamRegistry.h>
+#include "Framework/InputRecordWalker.h"
 
 // Fairlogger
 #include <fairlogger/Logger.h>
@@ -132,7 +133,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
 
   if (dataReady) {
     mTask->monitorData(pCtx);
-    mNumberMessages++;
+    updateMonitoringStats(pCtx);
   }
 
   if (timerReady) {
@@ -396,8 +397,9 @@ void TaskRunner::startCycle()
 {
   QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << " in " << mTaskConfig.taskName << ENDM;
   mTask->startOfCycle();
-  mNumberMessages = 0;
+  mNumberMessagesReceivedInCycle = 0;
   mNumberObjectsPublishedInCycle = 0;
+  mDataReceivedInCycle = 0;
   mTimerDurationCycle.reset();
   mCycleOn = true;
 }
@@ -421,16 +423,34 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   }
 }
 
+void TaskRunner::updateMonitoringStats(ProcessingContext& pCtx)
+{
+  mNumberMessagesReceivedInCycle++;
+  for (const auto& input : InputRecordWalker(pCtx.inputs())) {
+    const auto* inputHeader = header::get<header::DataHeader*>(input.header);
+    if (inputHeader == nullptr) {
+      ILOG(Warning, Devel) << "No DataHeader found in message, ignoring this one for the statistics." << ENDM;
+      continue;
+    }
+    mDataReceivedInCycle += inputHeader->headerSize + inputHeader->payloadSize;
+  }
+}
+
 void TaskRunner::publishCycleStats()
 {
   double cycleDuration = mTimerDurationCycle.getTime();
   double rate = mNumberObjectsPublishedInCycle / (cycleDuration + mLastPublicationDuration);
+  double rateMessagesReceived = mNumberMessagesReceivedInCycle / (cycleDuration + mLastPublicationDuration);
+  double rateDataReceived = mDataReceivedInCycle / (cycleDuration + mLastPublicationDuration);
   double wholeRunRate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
   double totalDurationActivity = mTimerTotalDurationActivity.getTime();
 
-  mCollector->send({ mNumberMessages, "qc_messages_received_in_cycle" });
+  mCollector->send(Metric{ "qc_data_received" }
+                     .addValue(mNumberMessagesReceivedInCycle, "messages_in_cycle")
+                     .addValue(rateMessagesReceived, "messages_per_second")
+                     .addValue(mDataReceivedInCycle, "data_in_cycle")
+                     .addValue(rateDataReceived, "data_per_second"));
 
-  // monitoring metrics
   mCollector->send(Metric{ "qc_duration" }
                      .addValue(cycleDuration, "module_cycle")
                      .addValue(mLastPublicationDuration, "publication")
