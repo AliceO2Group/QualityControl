@@ -202,15 +202,20 @@ void TaskCompressedData::startOfCycle()
 
 void TaskCompressedData::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  /** receive input **/
-  for (auto& input : ctx.inputs()) {
-    /** input **/
-    const auto* headerIn = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(input);
-    auto payloadIn = input.payload;
-    auto payloadInSize = headerIn->payloadSize;
-    mDecoder.setDecoderBuffer(payloadIn);
-    mDecoder.setDecoderBufferSize(payloadInSize);
-    mDecoder.decode();
+  for (auto iit = ctx.inputs().begin(), iend = ctx.inputs().end(); iit != iend; ++iit) {
+    if (!iit.isValid()) {
+      continue;
+    }
+    /** loop over input parts **/
+    for (auto const& input : iit) {
+      /** input **/
+      const auto* headerIn = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(input);
+      auto payloadIn = input.payload;
+      auto payloadInSize = headerIn->payloadSize;
+      mDecoder.setDecoderBuffer(payloadIn);
+      mDecoder.setDecoderBufferSize(payloadInSize);
+      mDecoder.decode();
+    }
   }
 }
 
