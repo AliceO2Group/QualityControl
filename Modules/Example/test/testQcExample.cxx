@@ -3,11 +3,11 @@
 /// \author Barthelemy von Haller
 ///
 
-#include "../include/Example/ExampleTask.h"
+#include "Example/ExampleTask.h"
 #include "QualityControl/TaskFactory.h"
 #include <TSystem.h>
 
-#define BOOST_TEST_MODULE Publisher test
+#define BOOST_TEST_MODULE QcExample test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 

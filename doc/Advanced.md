@@ -17,6 +17,10 @@
       * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
       * [Custom QC object metadata](#custom-qc-object-metadata)
       * [Canvas options](#canvas-options)
+      * [QC with DPL Analysis](#qc-with-dpl-analysis)
+         * [Getting AODs directly](#getting-aods-directly)
+         * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
+         * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
       * [Data Inspector](#data-inspector)
          * [Prerequisite](#prerequisite)
          * [Compilation](#compilation)
@@ -336,6 +340,103 @@ To do so, one can use one of the two following methods.
   `hints` is a space-separated list of hints on how to draw the object. E.g. "logz" or "gridy logy". 
   
   Currently supported by QCG: logx, logy, logz, gridx, gridy, gridz.
+
+## QC with DPL Analysis
+
+It is possible to attach QC to the Run 3 Analysis Tasks, as they use Data Processing Layer, just as
+QC. AOD tables can be requested as direct data sources and then read by a QC task with
+TableConsumer. One can also request AOD tables directly from an AOD file.
+
+In this piece of documentation it is assumed that the users already have some idea about QC and 
+[DPL Analysis](https://aliceo2group.github.io/analysis-framework), and
+ they have an access to AOD files following the Run 3 data model.
+
+### Getting AODs directly
+
+First, let's see how to get data directly from an AOD file. To read the table, we will use TableConsumer from DPL, as in [the example of a QC analysis
+task](Modules/Example/src/AnalysisTask.cxx):
+```
+void AnalysisTask::monitorData(o2::framework::ProcessingContext& ctx)
+{
+  auto s = ctx.inputs().get<framework::TableConsumer>("aod-data");
+  auto table = s->asArrowTable();
+  ...
+}
+```
+In [our QC configuration file](Modules/Example/etc/analysisDirect.json) we will request AOD data as a direct source
+, just as normal Analysis Tasks do:
+```
+    "tasks": {
+      "AnalysisQcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::example::AnalysisTask",
+        "moduleName": "QcExample",
+        "detectorName": "TST",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "aod-data:AOD/TRACK:PAR/0"
+        },
+        "location": "remote"
+      }
+    },
+```
+Then we can run the processing with the following command:
+```
+o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/analysisDirect.json -b --aod-file AO2D.root
+```
+
+### Merging with other analysis workflows
+
+Now, let's try to subscribe to data generated in another analysis workflow - 
+[`o2-analysistutorial-tracks-combinations`](https://github.com/AliceO2Group/AliceO2/tree/dev/Analysis/Tutorials/src/tracksCombinations.cxx),
+which produces a new table with hash numbers generated out of tracks in AODs:
+```
+...
+DECLARE_SOA_TABLE(Hashes, "AOD", "HASH", hash::Bin);  
+...
+```
+Thus, in [our QC config file](Modules/Example/etc/analysisDerived.json) we should query data described as `AOD/HASH/0`:
+```
+    "tasks": {
+      "AnalysisQcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::example::AnalysisTask",
+        "moduleName": "QcExample",
+        "detectorName": "TST",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "aod-data:AOD/HASH/0"
+        },
+        "location": "remote"
+      }
+    },
+```
+
+Finally, we can run the example by merging the two workflows. Remember to specify the AOD file path in both workflows
+, even if QC does need data directly from the file.
+```
+o2-analysistutorial-tracks-combinations --aod-file AO2D.root  -b | \
+  o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/analysisDerived.json -b --aod-file AO2D.root
+```
+
+### Enabling a workflow to run on Hyperloop
+
+Hyperloop requires a workflow JSON dump in order to run it on Grid. To generate such a dump, one should use the
+ `o2_add_qc_workflow` cmake function in CMakeLists.txt of a detector library. The first argument is an arbitrary
+  workflow name, the second is the configuration file path in the installation director. For example:
+
+```
+...
+# ---- Workflows for analysis ----
+
+o2_add_qc_workflow(o2-qc-example-analysis-direct etc/analysisDirect.json)
+o2_add_qc_workflow(o2-qc-example-analysis-derived etc/analysisDerived.json)
+...
+```
 
 ## Data Inspector
 

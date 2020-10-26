@@ -8,4 +8,5 @@
 #pragma link C++ class o2::quality_control_modules::example::BenchmarkTask + ;
 #pragma link C++ class o2::quality_control_modules::example::ExampleCondition + ;
 
+#pragma link C++ class o2::quality_control_modules::example::AnalysisTask + ;
 #endif

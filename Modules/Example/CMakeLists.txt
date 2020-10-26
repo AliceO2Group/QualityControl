@@ -1,6 +1,6 @@
 # ---- Library ----
 
-add_library(QcExample src/BenchmarkTask.cxx src/ExampleTask.cxx
+add_library(QcExample src/BenchmarkTask.cxx src/ExampleTask.cxx src/AnalysisTask.cxx
                       src/FakeCheck.cxx src/ExampleCondition.cxx)
 
 target_include_directories(
@@ -13,6 +13,7 @@ target_link_libraries(QcExample PUBLIC QualityControl)
 
 add_root_dictionary(QcExample
                     HEADERS include/Example/BenchmarkTask.h
+                            include/Example/AnalysisTask.h
                             include/Example/ExampleTask.h
                             include/Example/FakeCheck.h
                             include/Example/ExampleCondition.h
@@ -23,6 +24,14 @@ install(TARGETS QcExample
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+install(FILES etc/analysisDerived.json etc/analysisDirect.json
+        DESTINATION etc)
+
+# ---- Workflows for analysis ----
+
+o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH etc/analysisDirect.json)
+o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH etc/analysisDerived.json)
 
 # ---- Tests ----
 
