@@ -5,8 +5,7 @@ add_library(QcFT0)
 target_sources(QcFT0 PRIVATE src/BasicDigitQcTask.cxx
                              src/BasicDigitQcCheck.cxx
                              src/ChannelsCheck.cxx
-                             src/DigitsCheck.cxx
-                             src/Utilities.cxx)
+                             src/DigitsCheck.cxx)
 
 target_include_directories(
   QcFT0
@@ -31,6 +30,29 @@ add_root_dictionary(QcFT0
                 include/FT0/Utilities.h
         LINKDEF include/FT0/LinkDef.h
         BASENAME QcFT0)
+
+
+# ---- Executables ----
+
+set(EXE_SRCS 
+     src/runDataProducer.cxx )
+set(EXE_NAMES 
+     o2-qc-ft0-data-producer)
+
+list(LENGTH EXE_SRCS count)
+math(EXPR count "${count}-1")
+foreach(i RANGE ${count})
+  list(GET EXE_SRCS ${i} src)
+  list(GET EXE_NAMES ${i} name)
+  add_executable(${name} ${src})
+  target_link_libraries(${name} PRIVATE QualityControl QcFT0 O2::DataFormatsFT0)
+endforeach()
+
+install(
+  TARGETS o2-qc-ft0-data-producer
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
 
 # ---- Test(s) ----
 

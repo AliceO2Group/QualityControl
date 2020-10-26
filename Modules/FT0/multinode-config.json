@@ -38,10 +38,10 @@
           "taskParameters": {},
           "location": "local",
           "localMachines": [
-            "localhost:21370",
-            "localhost:21371"
+            "2a",
+            "3a"
           ],
-          "remoteMachine": "localhost:30132",
+          "remoteMachine": "4a",
           "remotePort": "30132"
         },
         "RemoteQcTask": {
@@ -91,16 +91,13 @@
         {
         "id": "rnd-many",
         "active": "true",
-        "machines": [
-            "localhost:21370",
-            "localhost:21371"
-        ],
+        "machines": ["localhost"],
         "port": "30333",
         "query": "digits:FT0/DIGITSBC/0;channels:FT0/DIGITSCH/0",
         "samplingConditions": [
             {
             "condition": "random",
-            "fraction": "0",
+            "fraction": "1",
             "seed": "1234"
             }
         ],

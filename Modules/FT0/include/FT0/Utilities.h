@@ -11,20 +11,6 @@ namespace o2::quality_control_modules::ft0
 {
 
 
-
-struct DummyClassMF
-{
-    DummyClassMF() = default;
-    DummyClassMF(int aa, int bb){ a = aa; b = bb; }
-
-    int a = 0;
-    int b = 0;
-
-    void someFunction() const;
-    ClassDefNV(DummyClassMF, 2);
-};
-
-
 struct EventWithChannelData
 {
 

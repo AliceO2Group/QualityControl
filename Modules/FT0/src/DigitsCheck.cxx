@@ -59,31 +59,6 @@ Quality DigitsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
         }
       }
 
-
-      // ILOG(Info, Support) << "Entries: " << tree->GetEntries() << ENDM;
-
-      // std::vector<o2::ft0::Digit> digits, *pdigits = &digits;
-      // std::vector<o2::ft0::ChannelData> channels, *pchannels = &channels;
-
-      // tree->SetBranchAddress("Test_Digits", &pdigits);
-      // tree->SetBranchAddress("Test_Channels", &pchannels);
-
-      // tree->GetEntry(0);
-      
-      // gsl::span<o2::ft0::Digit> spanDigits(&digits[0], digits.size());
-      // gsl::span<o2::ft0::ChannelData> spanChannels(&channels[0], channels.size());
-
-      // ILOG(Info, Support) << "Digits: " << digits.size() << " Channels: " << channels.size() << ENDM;
-      // for(const auto& digit : digits){
-
-
-      //   ILOG(Info, Support) << "==============" << ENDM;
-      //   ILOG(Info, Support) << "EventID: " << digit.getEventID() << " BC: " << digit.getBC()  << " Orbit: " << digit.getOrbit() << ENDM;
-      //   auto currentChannelData = digit.getBunchChannelData(spanChannels);
-
-      //   ILOG(Info, Support) << "ChannelData size: " <<currentChannelData.size() << ENDM;
-      //   ILOG(Info, Support) << "==============" << ENDM;
-      // }
       return Quality::Good;
     }
   }

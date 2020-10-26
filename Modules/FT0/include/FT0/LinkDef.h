@@ -3,7 +3,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class o2::quality_control_modules::ft0::DummyClassMF+;
 #pragma link C++ class o2::quality_control_modules::ft0::EventWithChannelData+;
 
 #pragma link C++ class o2::quality_control_modules::ft0::BasicDigitQcTask+;
