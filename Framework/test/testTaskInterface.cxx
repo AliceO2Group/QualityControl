@@ -17,6 +17,8 @@
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 #include <Framework/ConfigParamRegistry.h>
+#include "EMCALCalib/BadChannelMap.h"
+#include "CCDB/CcdbApi.h"
 
 #if (__has_include(<Framework/ConfigParamStore.h>))
 #include <Framework/ConfigParamStore.h>
@@ -114,6 +116,14 @@ class TestTask : public TaskInterface
     test = 7;
   }
 
+  o2::emcal::BadChannelMap* testRetrieveCondition()
+  {
+    ILOG(Info, Support) << "testRetrieveCondition" << ENDM;
+    test = 8;
+
+    return retrieveConditionAny<o2::emcal::BadChannelMap>("qc/TST/conditions");
+  }
+
   int test;
 };
 
@@ -124,7 +134,8 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 {
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
   TaskConfig taskConfig;
-  ObjectsManager* objectsManager = new ObjectsManager(taskConfig, true);
+  ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
+
   test::TestTask testTask(objectsManager);
   BOOST_CHECK_EQUAL(testTask.test, 0);
 
@@ -141,7 +152,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   testTask.startOfCycle();
   BOOST_CHECK_EQUAL(testTask.test, 3);
 
-  // creating a valid ProcessingContex is almost impossible outside of the framework
+  // creating a valid ProcessingContext is almost impossible outside of the framework
   // testTask.monitorData(pctx);
   // BOOST_CHECK_EQUAL(testTask.test, 4);
 
@@ -166,11 +177,33 @@ BOOST_AUTO_TEST_CASE(test_task_factory)
     "http://consul-test.cern.ch:8500"
   };
 
-  auto objectsManager = make_shared<ObjectsManager>(config);
+  auto objectsManager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl);
 
   TaskFactory taskFactory;
   auto task = taskFactory.create(config, objectsManager);
 
   BOOST_REQUIRE(task != nullptr);
   delete task;
+}
+
+BOOST_AUTO_TEST_CASE(retrieveCondition)
+{
+  // first store a condition
+  o2::emcal::BadChannelMap bad;
+  bad.addBadChannel(1, o2::emcal::BadChannelMap::MaskType_t::GOOD_CELL);
+  bad.addBadChannel(2, o2::emcal::BadChannelMap::MaskType_t::BAD_CELL);
+  bad.addBadChannel(3, o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);
+  std::map<std::string, std::string> meta;
+  o2::ccdb::CcdbApi api;
+  api.init("ccdb-test.cern.ch:8080");
+  api.storeAsTFileAny<o2::emcal::BadChannelMap>(&bad, "qc/TST/conditions", meta);
+
+  // retrieve it
+  TaskConfig taskConfig;
+  ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
+  test::TestTask testTask(objectsManager);
+  testTask.loadCcdb("ccdb-test.cern.ch:8080");
+  o2::emcal::BadChannelMap* bcm = testTask.testRetrieveCondition();
+  BOOST_CHECK_EQUAL(bcm->getChannelStatus(1), o2::emcal::BadChannelMap::MaskType_t::GOOD_CELL);
+  BOOST_CHECK_EQUAL(bcm->getChannelStatus(3), o2::emcal::BadChannelMap::MaskType_t::DEAD_CELL);
 }

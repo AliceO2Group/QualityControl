@@ -30,6 +30,7 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/ConfigParamRegistry.h>
+#include "Framework/InputRecordWalker.h"
 
 // Fairlogger
 #include <fairlogger/Logger.h>
@@ -102,7 +103,7 @@ void TaskRunner::init(InitContext& iCtx)
   mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
 
   // setup publisher
-  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig);
+  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
 
   // setup user's task
   TaskFactory f;
@@ -132,7 +133,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
 
   if (dataReady) {
     mTask->monitorData(pCtx);
-    mNumberMessages++;
+    updateMonitoringStats(pCtx);
   }
 
   if (timerReady) {
@@ -172,16 +173,16 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
     }
   }
 
-  ILOG(Debug, Devel) << "Completion policy callback. "
-                     << "Total inputs possible: " << inputs.size()
-                     << ", data inputs: " << dataInputsPresent
-                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
+  //  ILOG(Debug, Trace) << "Completion policy callback. "
+  //                     << "Total inputs possible: " << inputs.size()
+  //                     << ", data inputs: " << dataInputsPresent
+  //                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
 
   if (dataInputsPresent == dataInputsExpected) {
     action = CompletionPolicy::CompletionOp::Consume;
   }
 
-  ILOG(Debug, Devel) << "Action: " << action;
+  //  ILOG(Debug, Trace) << "Action: " << action << ENDM;
 
   return action;
 }
@@ -284,15 +285,14 @@ void TaskRunner::loadTopologyConfig()
 {
   auto taskConfigTree = getTaskConfigTree();
   auto policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
-  ConfigurationInterface* config = policiesFilePath.empty() ? mConfigFile.get() : ConfigurationFactory::getConfiguration(policiesFilePath).get();
-  auto policiesTree = config->getRecursive("dataSamplingPolicies");
+  std::shared_ptr<configuration::ConfigurationInterface> config = policiesFilePath.empty() ? mConfigFile : ConfigurationFactory::getConfiguration(policiesFilePath);
   auto dataSourceTree = taskConfigTree.get_child("dataSource");
   auto type = dataSourceTree.get<std::string>("type");
 
   if (type == "dataSamplingPolicy") {
     auto policyName = dataSourceTree.get<std::string>("name");
     ILOG(Info, Support) << "policyName : " << policyName << ENDM;
-    mInputSpecs = DataSampling::InputSpecsForPolicy(config, policyName);
+    mInputSpecs = DataSampling::InputSpecsForPolicy(config.get(), policyName);
   } else if (type == "direct") {
     auto inputsQuery = dataSourceTree.get<std::string>("query");
     mInputSpecs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
@@ -397,8 +397,9 @@ void TaskRunner::startCycle()
 {
   QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << " in " << mTaskConfig.taskName << ENDM;
   mTask->startOfCycle();
-  mNumberMessages = 0;
+  mNumberMessagesReceivedInCycle = 0;
   mNumberObjectsPublishedInCycle = 0;
+  mDataReceivedInCycle = 0;
   mTimerDurationCycle.reset();
   mCycleOn = true;
 }
@@ -422,16 +423,34 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
   }
 }
 
+void TaskRunner::updateMonitoringStats(ProcessingContext& pCtx)
+{
+  mNumberMessagesReceivedInCycle++;
+  for (const auto& input : InputRecordWalker(pCtx.inputs())) {
+    const auto* inputHeader = header::get<header::DataHeader*>(input.header);
+    if (inputHeader == nullptr) {
+      ILOG(Warning, Devel) << "No DataHeader found in message, ignoring this one for the statistics." << ENDM;
+      continue;
+    }
+    mDataReceivedInCycle += inputHeader->headerSize + inputHeader->payloadSize;
+  }
+}
+
 void TaskRunner::publishCycleStats()
 {
   double cycleDuration = mTimerDurationCycle.getTime();
   double rate = mNumberObjectsPublishedInCycle / (cycleDuration + mLastPublicationDuration);
+  double rateMessagesReceived = mNumberMessagesReceivedInCycle / (cycleDuration + mLastPublicationDuration);
+  double rateDataReceived = mDataReceivedInCycle / (cycleDuration + mLastPublicationDuration);
   double wholeRunRate = mTotalNumberObjectsPublished / mTimerTotalDurationActivity.getTime();
   double totalDurationActivity = mTimerTotalDurationActivity.getTime();
 
-  mCollector->send({ mNumberMessages, "qc_messages_received_in_cycle" });
+  mCollector->send(Metric{ "qc_data_received" }
+                     .addValue(mNumberMessagesReceivedInCycle, "messages_in_cycle")
+                     .addValue(rateMessagesReceived, "messages_per_second")
+                     .addValue(mDataReceivedInCycle, "data_in_cycle")
+                     .addValue(rateDataReceived, "data_per_second"));
 
-  // monitoring metrics
   mCollector->send(Metric{ "qc_duration" }
                      .addValue(cycleDuration, "module_cycle")
                      .addValue(mLastPublicationDuration, "publication")

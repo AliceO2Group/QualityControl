@@ -58,13 +58,15 @@ add_library(QualityControl
             src/PostProcessingFactory.cxx
             src/PostProcessingConfig.cxx
             src/PostProcessingInterface.cxx
+            src/PostProcessingDevice.cxx
             src/TrendingTask.cxx
             src/TrendingTaskConfig.cxx
             src/DummyDatabase.cxx
             src/DataProducer.cxx
             src/HistoProducer.cxx
             src/DataProducerExample.cxx
-            src/MonitorObjectCollection.cxx)
+            src/MonitorObjectCollection.cxx
+            src/UpdatePolicyManager.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -105,20 +107,11 @@ target_compile_definitions(QualityControl PRIVATE
                            $<$<BOOL:${ENABLE_MYSQL}>:_WITH_MYSQL>)
 
 add_root_dictionary(QualityControl
-                    HEADERS include/QualityControl/Check.h
+                    HEADERS
                             include/QualityControl/CheckInterface.h
-                            include/QualityControl/CheckRunner.h
-                            include/QualityControl/CheckRunnerFactory.h
-                            include/QualityControl/DatabaseInterface.h
-                            include/QualityControl/CcdbDatabase.h
-                            include/QualityControl/ServiceDiscovery.h
-                            include/QualityControl/TaskRunner.h
-                            include/QualityControl/TaskRunnerFactory.h
-                            include/QualityControl/InfrastructureGenerator.h
-                            include/QualityControl/InputUtils.h
+                            include/QualityControl/TaskInterface.h
                             include/QualityControl/PostProcessingInterface.h
                             include/QualityControl/TrendingTask.h
-                            include/QualityControl/Reductor.h
                             include/QualityControl/MonitorObjectCollection.h
                     LINKDEF include/QualityControl/LinkDef.h
                     BASENAME QualityControl)
@@ -241,6 +234,7 @@ set(TEST_SRCS
     test/testWorkflow.cxx
     test/testVersion.cxx
     test/testRepoPathUtils.cxx
+    test/testPolicyManager.cxx
   )
 
 set(TEST_ARGS
@@ -268,6 +262,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
     ""
   )
@@ -301,6 +296,7 @@ endforeach()
 
 target_include_directories(testVersion PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib) 
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 60)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
@@ -407,6 +403,7 @@ install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py scr
 
 set(TEST_FILES
   "testSharedConfig.json"
+  "testEmptyConfig.json"
   "testCheckWorkflow.json"
   "testTrendingTask.json"
   "testWorkflow.json")

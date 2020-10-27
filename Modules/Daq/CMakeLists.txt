@@ -2,19 +2,19 @@
 
 add_library(QcDaq)
 
-target_sources(QcDaq PRIVATE src/DaqTask.cxx src/EverIncreasingGraph.cxx)
+target_sources(QcDaq PRIVATE src/DaqTask.cxx)
 
 target_include_directories(
   QcDaq
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
-target_link_libraries(QcDaq PUBLIC QualityControl PRIVATE ROOT::Gpad)
+target_link_libraries(QcDaq PUBLIC QualityControl PRIVATE ROOT::Gpad O2::DetectorsRaw)
 
 add_root_dictionary(QcDaq
                     HEADERS include/Daq/DaqTask.h
-                            include/Daq/EverIncreasingGraph.h
                     LINKDEF include/Daq/LinkDef.h
                     BASENAME QcDaq)
 

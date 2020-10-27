@@ -20,6 +20,7 @@
 #include <Framework/ServiceRegistry.h>
 #include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/Triggers.h"
+#include "QualityControl/ObjectsManager.h"
 
 namespace o2::quality_control::postprocessing
 {
@@ -62,13 +63,16 @@ class PostProcessingInterface
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
   virtual void finalize(Trigger trigger, framework::ServiceRegistry& services) = 0;
 
-  // todo: ccdb api which does not allow to delete?
-
+  void setObjectsManager(std::shared_ptr<core::ObjectsManager> objectsManager);
   void setName(const std::string& name);
   std::string getName() const;
 
+ protected:
+  std::shared_ptr<core::ObjectsManager> getObjectsManager();
+
  private:
   std::string mName;
+  std::shared_ptr<core::ObjectsManager> mObjectsManager;
 };
 
 } // namespace o2::quality_control::postprocessing

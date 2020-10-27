@@ -87,7 +87,7 @@ void ITSOnlineTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder = new o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>();
   mDecoder->init();
   mDecoder->setNThreads(mNThreads);
-  mDecoder->setFormat(GBTLink::OldFormat);               //set old format rdh v4, will be changed to RDHv6 (NewFormat)
+  mDecoder->setFormat(GBTLink::NewFormat);               //Using RDHv6 (NewFormat)
   mDecoder->setUserDataOrigin(header::DataOrigin("DS")); //set user data origin in dpl
   mChipsBuffer.resize(mGeom->getNumberOfChips());
 }
@@ -420,7 +420,7 @@ void ITSOnlineTask::monitorData(o2::framework::ProcessingContext& ctx)
     StaveStart = StaveBoundary[i + 1];
   }
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
-    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV4>();
+    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>(); //Decoding new data format (RDHv6)
     int istave = (int)(rdh->feeId & 0x00ff);
     int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
     istave += StaveStart;

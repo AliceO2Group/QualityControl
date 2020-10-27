@@ -104,6 +104,14 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
 {
   using boost::asio::ip::tcp;
   mThreadRunning = true;
+
+  // InfoLogger is not thread safe, we create a new instance for this thread.
+  AliceO2::InfoLogger::InfoLogger threadInfoLogger;
+  infoContext context;
+  context.setField(infoContext::FieldName::Facility, "ServiceDiscovery");
+  context.setField(infoContext::FieldName::System, "QC");
+  threadInfoLogger.setContext(context);
+
   try {
     boost::asio::io_service io_service;
     tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), port));
@@ -124,7 +132,7 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
     }
   } catch (std::exception& e) {
     mThreadRunning = false;
-    ILOG(Error, Support) << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
+    threadInfoLogger << AliceO2::InfoLogger::InfoLogger::Severity::Error << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
   }
 }
 

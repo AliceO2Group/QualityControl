@@ -30,4 +30,14 @@ void PostProcessingInterface::configure(std::string name, const boost::property_
   mName = name;
 }
 
+void PostProcessingInterface::setObjectsManager(std::shared_ptr<core::ObjectsManager> objectsManager)
+{
+  mObjectsManager = objectsManager;
+}
+
+std::shared_ptr<core::ObjectsManager> PostProcessingInterface::getObjectsManager()
+{
+  return mObjectsManager;
+}
+
 } // namespace o2::quality_control::postprocessing

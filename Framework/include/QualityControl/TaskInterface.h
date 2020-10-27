@@ -24,9 +24,11 @@
 // O2
 #include <Framework/InitContext.h>
 #include <Framework/ProcessingContext.h>
+#include <CCDB/CcdbApi.h>
 // QC
 #include "QualityControl/Activity.h"
 #include "QualityControl/ObjectsManager.h"
+#include "QualityControl/QcInfoLogger.h"
 
 namespace o2::ccdb
 {
@@ -90,6 +92,9 @@ class TaskInterface
  protected:
   std::shared_ptr<ObjectsManager> getObjectsManager();
   TObject* retrieveCondition(std::string path, std::map<std::string, std::string> metadata = {}, long timestamp = -1);
+  template <typename T>
+  T* retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata = {},
+                          long timestamp = -1) const;
 
   std::unordered_map<std::string, std::string> mCustomParameters;
 
@@ -99,6 +104,18 @@ class TaskInterface
   std::string mName;
   std::shared_ptr<o2::ccdb::CcdbApi> mCcdbApi;
 };
+
+template <typename T>
+T* TaskInterface::retrieveConditionAny(std::string const& path, std::map<std::string, std::string> const& metadata,
+                                       long timestamp) const
+{
+  if (mCcdbApi) {
+    return mCcdbApi->retrieveFromTFileAny<T>(path, metadata, timestamp);
+  } else {
+    ILOG(Error, Support) << "Trying to retrieve a condition, but CCDB API is not constructed." << ENDM;
+    return nullptr;
+  }
+}
 
 } // namespace o2::quality_control::core
 

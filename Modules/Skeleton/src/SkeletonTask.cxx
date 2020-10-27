@@ -24,9 +24,7 @@ namespace o2::quality_control_modules::skeleton
 
 SkeletonTask::~SkeletonTask()
 {
-  if (mHistogram) {
-    delete mHistogram;
-  }
+  delete mHistogram;
 }
 
 void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)

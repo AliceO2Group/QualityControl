@@ -22,6 +22,20 @@
         "url": "ccdb-test.cern.ch:8080"
       }
     },
+    "checks": {
+      "ExamplePPCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "PostProcessing",
+          "name": "ExampleTrend",
+          "MOs": ["mean_of_histogram"]
+        }]
+      }
+    },
     "postprocessing": {
       "ExamplePostprocessing": {
         "active": "true",
@@ -100,10 +114,10 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "10 seconds"
+          "newobject:qcdb:qc/TST/MO/QcTask/example"
         ],
         "stopTrigger": [
-          "userorcontrol"
+          "userorcontrol", "10 minutes"
         ]
       }
     }

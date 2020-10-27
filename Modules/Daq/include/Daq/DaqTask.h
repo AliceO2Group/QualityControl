@@ -17,22 +17,21 @@
 #define QC_MODULE_DAQ_DAQTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include <Headers/DAQID.h>
+#include <map>
 
 class TH1F;
-class TGraph;
-class TObjString;
-class TCanvas;
-class TPaveText;
 
 using namespace o2::quality_control::core;
 
 namespace o2::quality_control_modules::daq
 {
-
-/// \brief Example Quality Control Task
-/// It is final because there is no reason to derive from it. Just remove it if needed.
+/// \brief Dataflow task
+/// It does only look at the header and plots sizes (e.g. payload).
+/// It also can print the headers and the payloads by setting printHeaders to "1"
+/// and printPayload to "hex" or "bin" in the config file under "taskParameters".
 /// \author Barthelemy von Haller
-class DaqTask final : public TaskInterface
+class DaqTask final : public o2::quality_control::core::TaskInterface
 {
  public:
   /// \brief Constructor
@@ -42,23 +41,40 @@ class DaqTask final : public TaskInterface
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
-  void startOfActivity(Activity& activity) override;
+  void startOfActivity(o2::quality_control::core::Activity& activity) override;
   void startOfCycle() override;
   void monitorData(o2::framework::ProcessingContext& ctx) override;
   void endOfCycle() override;
-  void endOfActivity(Activity& activity) override;
+  void endOfActivity(o2::quality_control::core::Activity& activity) override;
   void reset() override;
 
  private:
-  TH1F* mPayloadSize;
-  TGraph* mIds;
-  int mNPoints;
-  TH1F* mNumberSubblocks;
-  TH1F* mSubPayloadSize;
-  //  UInt_t mTimeLastRecord;
-  TObjString* mObjString;
-  TCanvas* mCanvas;
-  TPaveText* mPaveText;
+  void printInputPayload(const header::DataHeader* header, const char* payload);
+  void monitorInputRecord(o2::framework::InputRecord& inputRecord);
+  void monitorRDHs(o2::framework::InputRecord& inputRecord);
+
+  // ** general information
+
+  std::map<o2::header::DAQID::ID, std::string> mSystems;
+
+  // ** objects we publish **
+
+  // Message related
+  // Block = the whole InputRecord, i.e. the thing we receive and analyse in monitorData(...)
+  // SubBlock = a single input of the InputRecord
+  TH1F* mInputRecordPayloadSize = nullptr; // filled w/ the sum of the payload size of all the inputs of an inputrecord
+  TH1F* mNumberInputs = nullptr;           // filled w/ the number of inputs in each InputRecord we encounter
+  TH1F* mInputSize = nullptr;              // filled w/ the size of the inputs in each InputRecord we encounter
+  TH1F* mNumberRDHs = nullptr;             // filled w/ the number of RDHs found in each InputRecord we encounter
+
+  // Per link information
+
+  // Per detector information
+  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsTotalSizes; // filled with the sum of RDH memory sizes per InputRecord
+  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhSizes;   // filled with the RDH memory sizes for each RDH
+  // todo : for the next one we need to know the number of links per detector.
+  //  std::map<o2::header::DAQID::ID, TH1F*> mSubSystemsRdhHits; // hits per link split by detector
+  // todo we could add back the graph for the IDs using the TFID
 };
 
 } // namespace o2::quality_control_modules::daq

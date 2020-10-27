@@ -131,6 +131,7 @@ class TaskRunner : public framework::Task
 
   std::string validateDetectorName(std::string name) const;
   boost::property_tree::ptree getTaskConfigTree() const;
+  void updateMonitoringStats(framework::ProcessingContext& pCtx);
 
   // consider moving these to TaskConfig
   framework::Inputs mInputSpecs;
@@ -142,10 +143,11 @@ class TaskRunner : public framework::Task
   int mCycleNumber = 0;
 
   // stats
-  int mNumberMessages = 0;
+  int mNumberMessagesReceivedInCycle = 0;
   int mNumberObjectsPublishedInCycle = 0;
   int mTotalNumberObjectsPublished = 0; // over a run
   double mLastPublicationDuration = 0;
+  int mDataReceivedInCycle = 0;
   AliceO2::Common::Timer mTimerTotalDurationActivity;
   AliceO2::Common::Timer mTimerDurationCycle;
 };

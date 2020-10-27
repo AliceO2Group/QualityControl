@@ -147,6 +147,19 @@
             "test2"
           ]
         }]
+      },
+      "checkAnyPP": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "PostProcessing",
+          "name": "SkeletonPostProcessing",
+          "MOs": [
+            "example"
+          ]
+        }]
       }
     },
     "postprocessing": {

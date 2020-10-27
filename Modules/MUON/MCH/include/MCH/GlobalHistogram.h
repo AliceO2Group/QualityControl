@@ -34,8 +34,11 @@ class GlobalHistogram : public TH2F
   // add the histograms of the individual detection elements
   void add(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& histNB);
 
+  // replace the contents with the histograms of the individual detection elements, including null bins
+  void set_includeNull(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& histNB);
+
   // replace the contents with the histograms of the individual detection elements
-  void set(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& histNB, bool doAverage = true);
+  void set(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& histNB, bool doAverage = true, bool includeNullBins = false);
 };
 
 } // namespace muonchambers

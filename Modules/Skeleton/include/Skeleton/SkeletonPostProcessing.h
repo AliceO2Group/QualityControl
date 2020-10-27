@@ -52,8 +52,8 @@ class SkeletonPostProcessing final : public quality_control::postprocessing::Pos
   /// \param services Interface containing optional interfaces, for example DatabaseInterface
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
-// private:
-//  TH1F* mHistogram = nullptr;
+ private:
+  TH1F* mHistogram = nullptr;
 };
 
 } // namespace o2::quality_control_modules::skeleton
