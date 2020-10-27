@@ -18,17 +18,15 @@
 #include "ITS/ITSClusterTask.h"
 
 #include <sstream>
-#include <TStopwatch.h>
 #include <TCanvas.h>
 #include <DataFormatsParameters/GRPObject.h>
-#include <DetectorsBase/GeometryManager.h>
-#include <ITSBase/GeometryTGeo.h>
 #include <ITSMFTReconstruction/DigitPixelReader.h>
 #include <DetectorsCommonDataFormats/NameConf.h>
-#include <DataFormatsITSMFT/TopologyDictionary.h>
+#include <DataFormatsITSMFT/ROFRecord.h>
+#include <ITSMFTReconstruction/ChipMappingITS.h>
+#include <DataFormatsITSMFT/ClusterTopology.h>
 
 using o2::itsmft::Digit;
-using namespace std;
 using namespace o2::itsmft;
 using namespace o2::its;
 
@@ -171,7 +169,7 @@ void ITSClusterTask::endOfCycle()
   std::ifstream runNumberFile("/home/its/QC/workdir/infiles/RunNumber.dat"); //catching ITS run number in commissioning; to be redesinged for the final version
   if (runNumberFile) {
 
-    string runNumber;
+    std::string runNumber;
     runNumberFile >> runNumber;
     if (runNumber != mRunNumber) {
       for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
@@ -283,7 +281,7 @@ void ITSClusterTask::getEnableLayers()
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     configFile >> mEnableLayers[ilayer];
     if (mEnableLayers[ilayer])
-      LOG(INFO) << "enable layer : " << ilayer << endl;
+      LOG(INFO) << "enable layer : " << ilayer;
   }
 }
 
@@ -308,7 +306,7 @@ void ITSClusterTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    LOG(INFO) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName() << endl;
+    LOG(INFO) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
   }
 }
 

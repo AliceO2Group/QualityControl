@@ -20,23 +20,13 @@
 #include "QualityControl/TaskInterface.h"
 #include <TH1.h>
 #include <TH2.h>
-#include <DataFormatsITSMFT/ROFRecord.h>
-#include <Framework/DataProcessorSpec.h>
 #include <DataFormatsITSMFT/TopologyDictionary.h>
-#include <ITSBase/GeometryTGeo.h>
-#include <DetectorsBase/GeometryManager.h>
-#include <DataFormatsITSMFT/ClusterTopology.h>
-#include <ITSMFTReconstruction/ChipMappingITS.h>
 #include <ITSBase/GeometryTGeo.h>
 
 class TH1D;
 class TH2D;
 
-using namespace std;
 using namespace o2::quality_control::core;
-using namespace o2::framework;
-using namespace o2::itsmft;
-using namespace o2::header;
 
 namespace o2::quality_control_modules::its
 {
@@ -80,7 +70,7 @@ class ITSClusterTask : public TaskInterface
 
   const int mOccUpdateFrequency = 100000;
   int mNRofs = 0;
-  string mRunNumber;
+  std::string mRunNumber;
 
   const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
