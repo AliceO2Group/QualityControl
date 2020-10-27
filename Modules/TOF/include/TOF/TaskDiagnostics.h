@@ -32,50 +32,13 @@ class TH1F;
 class TH2F;
 
 using namespace o2::quality_control::core;
+using namespace o2::tof::diagnostic;
 
 namespace o2::quality_control_modules::tof
 {
 
-// Structs for counters
 /// RDH counters: there will only be one instance of such counters per crate
-struct ERDHCounter_t {
-  /// Number of RDH counters
-  static const UInt_t size = 2;
-  /// Name of RDH counters
-  static const TString names[size];
-};
-
-/// DRM counters: there will only be one instance of such counters per crate
-struct EDRMCounter_t {
-  /// Number of DRM counters
-  static const UInt_t size = 16;
-  /// Name of DRM counters
-  static const TString names[size];
-};
-
-/// LTM counters: there will only be ten instance of such counters per crate
-struct ELTMCounter_t {
-  /// Number of LTM counters
-  static const UInt_t size = 16;
-  /// Name of LTM counters
-  static const TString names[size];
-};
-
-/// TRM counters: there will only be ten instance of such counters per crate
-struct ETRMCounter_t {
-  /// Number of TRM counters
-  static const UInt_t size = 16;
-  /// Name of TRM counters
-  static const TString names[size];
-};
-
-/// TRMChain: counters there will be 20 instances of such counters per crate
-struct ETRMChainCounter_t {
-  /// Number of TRMChain counters
-  static const UInt_t size = 32;
-  /// Name of TRMChain counters
-  static const TString names[size];
-};
+static const char* RDHDiagnosticName[2] = { "RDH_HAS_DATA", "" };
 
 /// \brief TOF Quality Control class for Decoding Compressed data for TOF Compressed data QC Task
 /// \author Nicolo' Jacazio
@@ -92,14 +55,13 @@ class DiagnosticsCounter final
   void decode();
 
   /// Counters to fill
-  static const int ncrates = 72;                                             /// Number of crates
-  static const int ntrms = 10;                                               /// Number of TRMs per crate
-  static const int ntrmschains = 2;                                          /// Number of TRMChains per TRM
-  Counter<ERDHCounter_t> mRDHCounter[ncrates];                               /// RDH Counters
-  Counter<EDRMCounter_t> mDRMCounter[ncrates];                               /// DRM Counters
-  Counter<ELTMCounter_t> mLTMCounter[ncrates];                               /// LTM Counters
-  Counter<ETRMCounter_t> mTRMCounter[ncrates][ntrms];                        /// TRM Counters
-  Counter<ETRMChainCounter_t> mTRMChainCounter[ncrates][ntrms][ntrmschains]; /// TRMChain Counters
+  static const int ncrates = 72;                                                   /// Number of crates
+  static const int ntrms = 10;                                                     /// Number of TRMs per crate
+  static const int ntrmschains = 2;                                                /// Number of TRMChains per TRM
+  Counter<2, RDHDiagnosticName> mRDHCounter[ncrates];                              /// RDH Counters
+  Counter<32, o2::tof::diagnostic::DRMDiagnosticName> mDRMCounter[ncrates];        /// DRM Counters
+  Counter<32, o2::tof::diagnostic::LTMDiagnosticName> mLTMCounter[ncrates];        /// LTM Counters
+  Counter<32, o2::tof::diagnostic::TRMDiagnosticName> mTRMCounter[ncrates][ntrms]; /// TRM Counters
 
  private:
   /** decoding handlers **/
@@ -134,11 +96,10 @@ class TaskDiagnostics    /*final*/
 
  private:
   // Histograms
-  std::shared_ptr<TH2F> mRDHHisto;                                                                  /// Words per RDH
-  std::shared_ptr<TH2F> mDRMHisto;                                                                  /// Words per DRM
-  std::shared_ptr<TH2F> mLTMHisto;                                                                  /// Words per LTM
-  std::shared_ptr<TH2F> mTRMHisto[DiagnosticsCounter::ntrms];                                       /// Words per TRM
-  std::shared_ptr<TH2F> mTRMChainHisto[DiagnosticsCounter::ntrms][DiagnosticsCounter::ntrmschains]; /// Words per TRM Chain
+  std::shared_ptr<TH2F> mRDHHisto;                            /// Words per RDH
+  std::shared_ptr<TH2F> mDRMHisto;                            /// Words per DRM
+  std::shared_ptr<TH2F> mLTMHisto;                            /// Words per LTM
+  std::shared_ptr<TH2F> mTRMHisto[DiagnosticsCounter::ntrms]; /// Words per TRM
 
   DiagnosticsCounter mDecoderCounter; /// Decoder and counter for TOF Compressed data useful for the Task
 };
