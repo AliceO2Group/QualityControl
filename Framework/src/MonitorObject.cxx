@@ -101,4 +101,14 @@ std::string MonitorObject::getPath() const
   return RepoPathUtils::getMoPath(this);
 }
 
+const string& MonitorObject::getDescription() const
+{
+  return mDescription;
+}
+
+void MonitorObject::setDescription(const string& description)
+{
+  MonitorObject::mDescription = description;
+}
+
 } // namespace o2::quality_control::core
