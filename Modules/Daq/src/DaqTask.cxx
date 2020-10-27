@@ -128,6 +128,15 @@ void DaqTask::endOfCycle()
 void DaqTask::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
+
+  for (const auto& system : mSystems) {
+    if(!getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[system.first]->GetName())) {
+      getObjectsManager()->stopPublishing(mSubSystemsTotalSizes[system.first]);
+    }
+    if(!getObjectsManager()->isBeingPublished(mSubSystemsRdhSizes[system.first]->GetName())) {
+      getObjectsManager()->stopPublishing(mSubSystemsRdhSizes[system.first]);
+    }
+  }
 }
 
 void DaqTask::reset()
