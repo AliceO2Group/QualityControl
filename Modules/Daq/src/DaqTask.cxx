@@ -115,11 +115,11 @@ void DaqTask::endOfCycle()
 
   // TODO make this optional once we are able to know the run number and the detectors included.
   //      It might still be necessary in test runs without a proper run number.
-  for(auto toBeAdded : mToBePublished) {
-    if(!getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[toBeAdded]->GetName())) {
+  for (auto toBeAdded : mToBePublished) {
+    if (!getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[toBeAdded]->GetName())) {
       getObjectsManager()->startPublishing(mSubSystemsTotalSizes[toBeAdded]);
     }
-    if(!getObjectsManager()->isBeingPublished(mSubSystemsRdhSizes[toBeAdded]->GetName())) {
+    if (!getObjectsManager()->isBeingPublished(mSubSystemsRdhSizes[toBeAdded]->GetName())) {
       getObjectsManager()->startPublishing(mSubSystemsRdhSizes[toBeAdded]);
     }
   }
@@ -130,10 +130,10 @@ void DaqTask::endOfActivity(Activity& /*activity*/)
   ILOG(Info, Support) << "endOfActivity" << ENDM;
 
   for (const auto& system : mSystems) {
-    if(!getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[system.first]->GetName())) {
+    if (!getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[system.first]->GetName())) {
       getObjectsManager()->stopPublishing(mSubSystemsTotalSizes[system.first]);
     }
-    if(!getObjectsManager()->isBeingPublished(mSubSystemsRdhSizes[system.first]->GetName())) {
+    if (!getObjectsManager()->isBeingPublished(mSubSystemsRdhSizes[system.first]->GetName())) {
       getObjectsManager()->stopPublishing(mSubSystemsRdhSizes[system.first]);
     }
   }
