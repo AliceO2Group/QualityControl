@@ -9,5 +9,7 @@
 #pragma link C++ class o2::quality_control_modules::ft0::BasicDigitQcCheck+;
 #pragma link C++ class o2::quality_control_modules::ft0::DigitsCheck+;
 #pragma link C++ class o2::quality_control_modules::ft0::ChannelsCheck+;
+#pragma link C++ class o2::quality_control_modules::ft0::MergedTreeCheck+;
+#pragma link C++ class o2::quality_control_modules::ft0::TreeReaderPostProcessing+;
 
 #endif
