@@ -23,7 +23,7 @@
       "QcTest3": {
         "active": "true",
         "className": "o2::quality_control_modules::its::ITSRawTask",
-        "moduleName": "QcITSRawTask",
+        "moduleName": "QcITS",
 	"detectorName": "ITS",
         "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
