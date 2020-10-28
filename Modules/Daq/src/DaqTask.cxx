@@ -84,13 +84,11 @@ void DaqTask::initialize(o2::framework::InitContext& /*ctx*/)
     string title = "Sum of RDH sizes per InputRecord for " + system.second + ";bytes";
     mSubSystemsTotalSizes[system.first] = new TH1F(name.c_str(), title.c_str(), 128, 0, 2047);
     mSubSystemsTotalSizes[system.first]->SetCanExtend(TH1::kXaxis);
-    getObjectsManager()->startPublishing(mSubSystemsTotalSizes[system.first]);
 
     name = system.second + "/RdhSizes";
     title = "RDH sizes for " + system.second + ";bytes";
     mSubSystemsRdhSizes[system.first] = new TH1F(name.c_str(), title.c_str(), 128, 0, 2047);
     mSubSystemsRdhSizes[system.first]->SetCanExtend(TH1::kXaxis);
-    getObjectsManager()->startPublishing(mSubSystemsRdhSizes[system.first]);
   }
 }
 
@@ -114,11 +112,31 @@ void DaqTask::monitorData(o2::framework::ProcessingContext& ctx)
 void DaqTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
+
+  // TODO make this optional once we are able to know the run number and the detectors included.
+  //      It might still be necessary in test runs without a proper run number.
+  for (auto toBeAdded : mToBePublished) {
+    if (!getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[toBeAdded]->GetName())) {
+      getObjectsManager()->startPublishing(mSubSystemsTotalSizes[toBeAdded]);
+    }
+    if (!getObjectsManager()->isBeingPublished(mSubSystemsRdhSizes[toBeAdded]->GetName())) {
+      getObjectsManager()->startPublishing(mSubSystemsRdhSizes[toBeAdded]);
+    }
+  }
 }
 
 void DaqTask::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
+
+  for (const auto& system : mSystems) {
+    if (!getObjectsManager()->isBeingPublished(mSubSystemsTotalSizes[system.first]->GetName())) {
+      getObjectsManager()->stopPublishing(mSubSystemsTotalSizes[system.first]);
+    }
+    if (!getObjectsManager()->isBeingPublished(mSubSystemsRdhSizes[system.first]->GetName())) {
+      getObjectsManager()->stopPublishing(mSubSystemsRdhSizes[system.first]);
+    }
+  }
 }
 
 void DaqTask::reset()
@@ -258,6 +276,10 @@ void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
   }
 
   mSubSystemsTotalSizes.at(rdhSource)->Fill(totalSize);
+
+  // TODO make this optional once we are able to know the run number and the detectors included.
+  mToBePublished.insert(rdhSource);
+
   // TODO why is the payload size reported by the dataref.header->print() different than the one from the sum
   //      of the RDH memory size + dataref header size ? a few hundreds bytes difference.
   mNumberRDHs->Fill(rdhCounter);

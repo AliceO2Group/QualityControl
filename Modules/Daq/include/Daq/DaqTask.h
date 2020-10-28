@@ -56,6 +56,7 @@ class DaqTask final : public o2::quality_control::core::TaskInterface
   // ** general information
 
   std::map<o2::header::DAQID::ID, std::string> mSystems;
+  std::set<o2::header::DAQID::ID> mToBePublished; // keep the list of detectors we saw this cycle and whose plots should be published
 
   // ** objects we publish **
 
