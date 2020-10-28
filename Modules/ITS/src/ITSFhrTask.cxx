@@ -20,7 +20,6 @@
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
 
-
 using namespace o2::framework;
 using namespace o2::itsmft;
 using namespace o2::header;
@@ -151,7 +150,7 @@ void ITSFhrTask::createGeneralPlots(int barrel = 0)
 }
 
 void ITSFhrTask::createOccupancyPlots() //create general plots like error, trigger, TF id plots and so on....
-                                           //create occupancy plots like chip stave occupancy, occupancy distribution, hic hit map plots and so on....
+                                        //create occupancy plots like chip stave occupancy, occupancy distribution, hic hit map plots and so on....
 {
   //create occupancy plots
   const int nDim(2);

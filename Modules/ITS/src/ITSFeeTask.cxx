@@ -23,7 +23,6 @@
 using namespace o2::framework;
 using namespace o2::header;
 
-
 namespace o2::quality_control_modules::its
 {
 
