@@ -30,7 +30,6 @@
           "detectorName": "FT0",
           "cycleDurationSeconds": "10",
           "maxNumberCycles": "-1",
-          "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
           "dataSource": {
             "type": "direct",
             "query": "digits:FT0/DIGITSBC/0;channels:FT0/DIGITSCH/0"
@@ -51,10 +50,9 @@
           "detectorName": "FT0",
           "cycleDurationSeconds": "10",
           "maxNumberCycles": "-1",
-          "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
           "dataSource": {
             "type": "dataSamplingPolicy",
-            "name": "rnd-many"
+            "name": "dummySampling"
           },
           "taskParameters": {},
           "location": "remote"
@@ -89,7 +87,7 @@
     },
     "dataSamplingPolicies": [
         {
-        "id": "rnd-many",
+        "id": "dummySampling",
         "active": "true",
         "machines": ["localhost"],
         "port": "30333",

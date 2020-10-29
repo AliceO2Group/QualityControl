@@ -13,7 +13,7 @@
           "type": "2"
         },
         "monitoring": {
-          "url": "infologger:///debug?qc"
+          "url": "infologger:///debug?METRIC"
         },
         "consul": {
           "url": "http://consul-test.cern.ch:8500"
@@ -30,13 +30,11 @@
           "detectorName": "FT0",
           "cycleDurationSeconds": "10",
           "maxNumberCycles": "-1",
-          "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-            "type": "direct",
-            "query": "digits:FT0/DIGITSBC/0;channels:FT0/DIGITSCH/0"
-          },
-          "taskParameters": {},
-          "location": "remote"
+          "dataSource": {
+              "type": "direct",
+              "query": "digits:FT0/DIGITSBC/0;channels:FT0/DIGITSCH/0"
+            },
+          "taskParameters": {}
         }
       },
       "checks": {
