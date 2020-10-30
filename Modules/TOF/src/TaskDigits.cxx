@@ -47,40 +47,7 @@ Float_t TaskDigits::fgRangeMaxTime = 620.0;         /// Range max in time plot
 Int_t TaskDigits::fgCutNmaxFiredMacropad = 50;      /// Cut on max number of fired macropad
 const Int_t TaskDigits::fgkFiredMacropadLimit = 50; /// Limit on cut on number of fired macropad
 
-TaskDigits::TaskDigits() : TaskInterface(),
-                           mTOFRawsMulti(nullptr),
-                           mTOFRawsMultiIA(nullptr),
-                           mTOFRawsMultiOA(nullptr),
-                           mTOFRawsMultiIC(nullptr),
-                           mTOFRawsMultiOC(nullptr),
-                           mTOFRawsTime(nullptr),
-                           mTOFRawsTimeIA(nullptr),
-                           mTOFRawsTimeOA(nullptr),
-                           mTOFRawsTimeIC(nullptr),
-                           mTOFRawsTimeOC(nullptr),
-                           mTOFRawsToT(nullptr),
-                           mTOFRawsToTIA(nullptr),
-                           mTOFRawsToTOA(nullptr),
-                           mTOFRawsToTIC(nullptr),
-                           mTOFRawsToTOC(nullptr),
-                           mTOFRawsLTMHits(nullptr),
-                           mTOFrefMap(nullptr),
-                           mTOFRawHitMap(nullptr),
-                           mTOFDecodingErrors(nullptr),
-                           mTOFOrphansTime(nullptr),
-                           mTOFRawTimeVsTRM035(nullptr),
-                           mTOFRawTimeVsTRM3671(nullptr),
-                           mTOFTimeVsStrip(nullptr),
-                           mTOFtimeVsBCID(nullptr),
-                           mTOFchannelEfficiencyMap(nullptr),
-                           mTOFhitsCTTM(nullptr),
-                           mTOFmacropadCTTM(nullptr),
-                           mTOFmacropadDeltaPhiTime(nullptr),
-                           mBXVsCttmBit(nullptr),
-                           mTimeVsCttmBit(nullptr),
-                           mTOFRawHitMap24(nullptr),
-                           mHitMultiVsDDL(nullptr),
-                           mNfiredMacropad(nullptr)
+TaskDigits::TaskDigits() : TaskInterface()
 {
 }
 
@@ -119,11 +86,23 @@ TaskDigits::~TaskDigits()
   mTOFRawHitMap24.reset();
   mHitMultiVsDDL.reset();
   mNfiredMacropad.reset();
+  mOrbitID.reset();
+  mTimeBC.reset();
+  mEventCounter.reset();
 }
 
 void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "initialize TaskDigits" << ENDM;
+
+  mOrbitID.reset(new TH2F("OrbitID", "OrbitID;OrbitID % 1048576;Crate", 1024, 0, 1048576, 72, 0, 72));
+  getObjectsManager()->startPublishing(mOrbitID.get());
+
+  mTimeBC.reset(new TH2F("TimeBC", "Raw BC Time;BC time (24.4 ps);Crate", 1024, 0., 1024., 72, 0, 72));
+  getObjectsManager()->startPublishing(mTimeBC.get());
+
+  mEventCounter.reset(new TH2F("EventCounter", "Event Counter;Event counter % 1000;Crate", 1000, 0., 1000., 72, 0, 72));
+  getObjectsManager()->startPublishing(mEventCounter.get());
 
   mTOFRawsMulti.reset(new TH1I("TOFRawsMulti", "TOF raw hit multiplicity; TOF raw hits number; Events ", fgNbinsMultiplicity, fgRangeMinMultiplicity, fgRangeMaxMultiplicity));
   getObjectsManager()->startPublishing(mTOFRawsMulti.get());
@@ -241,39 +220,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 void TaskDigits::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
-  mTOFRawsMulti->Reset();
-  mTOFRawsMultiIA->Reset();
-  mTOFRawsMultiOA->Reset();
-  mTOFRawsMultiIC->Reset();
-  mTOFRawsMultiOC->Reset();
-  mTOFRawsTime->Reset();
-  mTOFRawsTimeIA->Reset();
-  mTOFRawsTimeOA->Reset();
-  mTOFRawsTimeIC->Reset();
-  mTOFRawsTimeOC->Reset();
-  mTOFRawsToT->Reset();
-  mTOFRawsToTIA->Reset();
-  mTOFRawsToTOA->Reset();
-  mTOFRawsToTIC->Reset();
-  mTOFRawsToTOC->Reset();
-  mTOFRawsLTMHits->Reset();
-  mTOFrefMap->Reset();
-  mTOFRawHitMap->Reset();
-  mTOFDecodingErrors->Reset();
-  mTOFOrphansTime->Reset();
-  mTOFRawTimeVsTRM035->Reset();
-  mTOFRawTimeVsTRM3671->Reset();
-  mTOFTimeVsStrip->Reset();
-  mTOFtimeVsBCID->Reset();
-  mTOFchannelEfficiencyMap->Reset();
-  mTOFhitsCTTM->Reset();
-  mTOFmacropadCTTM->Reset();
-  mTOFmacropadDeltaPhiTime->Reset();
-  mBXVsCttmBit->Reset();
-  mTimeVsCttmBit->Reset();
-  mTOFRawHitMap24->Reset();
-  mHitMultiVsDDL->Reset();
-  mNfiredMacropad->Reset();
+  reset();
 }
 
 void TaskDigits::startOfCycle()
@@ -283,27 +230,14 @@ void TaskDigits::startOfCycle()
 
 void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // LOG(INFO) << "Monitoring in the TOF Task " << ENDM;
-  // In this function you can access data inputs specified in the JSON config file, for example:
-  //   "query": "random:ITS/RAWDATA/0"
-  // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
-  // One can also access conditions from CCDB, via separate API (see point 3)
-
-  // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
-  // One can find additional examples at:
-  // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
-
-  // Some examples:
-
   // Get TOF digits
-  auto digits = ctx.inputs().get<gsl::span<o2::tof::Digit>>("tofdigits");
+  const auto digits = ctx.inputs().get<gsl::span<o2::tof::Digit>>("tofdigits");
   // Get TOF Readout window
-  auto rows = ctx.inputs().get<std::vector<o2::tof::ReadoutWindowData>>("readoutwin");
-  LOG(INFO) << "ReadoutWindow size::: " << rows.size();
+  const auto rows = ctx.inputs().get<std::vector<o2::tof::ReadoutWindowData>>("readoutwin");
 
-  Int_t eta, phi;
-  // Int_t det[5] = { 0 }; // Coordinates
-  Int_t strip = 0; // Strip (Put it into Geo.h?)
+  Int_t eta, phi;       // Eta and phi indices
+  Int_t det[5] = { 0 }; // Coordinates
+  Int_t strip = 0;      // Strip
   Float_t tdc_time = 0;
   Float_t tot_time = 0;
   // SM in side I: 14-17, 0-4 -> 4 + 5
@@ -320,16 +254,24 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
   // Loop on readout windows
   for (const auto& row : rows) {
-    mTOFRawsMulti->Fill(row.size());                      // Number of digits inside a readout window
-    auto digits_in_row = row.getBunchChannelData(digits); // Digits inside a readout window
+    for (int i = 0; i < 72; i++) { // Loop on all crates
+      if (row.isEmptyCrate(i)) {   // Only for active crates
+        continue;
+      }
+      mOrbitID->Fill(row.mFirstIR.orbit % 1048576, i);
+      mTimeBC->Fill(row.mFirstIR.bc % 1024, i);
+      mEventCounter->Fill(row.mEventCounter % 1000, i);
+    }
+    mTOFRawsMulti->Fill(row.size()); // Number of digits inside a readout window
+
+    const auto digits_in_row = row.getBunchChannelData(digits); // Digits inside a readout window
     // Loop on digits
     for (auto const& digit : digits_in_row) {
-      strip = ((digit.getChannel() / 96) % 91); // Strip index
-      // o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
-      // LOG(INFO) << "Filling digit #" << ndigits << " in sector #" << det[0] << " and strip #" << strip;
-      Int_t ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
-      // mTOFRawHitMap->Fill(det[0], strip);
-      mTOFRawHitMap->Fill(Float_t(o2::tof::Geo::getCrateFromECH(ech)) / 4.f, strip);
+      o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
+      strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
+      const Int_t ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
+      mHitCounterPerStrip[strip].Count(o2::tof::Geo::getCrateFromECH(ech));
+      mHitCounterPerChannel.Count(digit.getChannel());
       // TDC time and ToT time
       tdc_time = digit.getTDC() * o2::tof::Geo::TDCBIN * 0.001;
       tot_time = digit.getTOT() * o2::tof::Geo::TOTBIN_NS;
@@ -370,54 +312,14 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     ndigits[2] = 0;
     ndigits[3] = 0;
   }
-
-  // LOG(INFO) << "Digits counted:::::::: " << ndigits << "stop";
-
-  // 1. In a loop
-  // for (auto&& input : ctx.inputs()) {
-  // get message header
-  //   if (input.header != nullptr && input.payload != nullptr) {
-  //     const auto* header = header::get<header::DataHeader*>(input.header);
-  // get payload of a specific input, which is a char array.
-  // const char* payload = input.payload;
-  //     LOG(INFO) << "Payload is :::::::: " << input.payload;
-  // for the sake of an example, let's fill the histogram with payload sizes
-  //     mTOFRawsMulti->Fill(header->payloadSize);
-  //   }
-  // }
-
-  // 2. Using get("<binding>")
-
-  // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
-  //   auto payload = ctx.inputs().get("random").payload;
-
-  // get payload of a specific input, which is a structure array:
-  //  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("random").header);
-  //  struct s {int a; double b;};
-  //  auto array = ctx.inputs().get<s*>("random");
-  //  for (int j = 0; j < header->payloadSize / sizeof(s); ++j) {
-  //    int i = array.get()[j].a;
-  //  }
-
-  // get payload of a specific input, which is a root object
-  //   auto h = ctx.inputs().get<TH1F*>("histos");
-  //   Double_t stats[4];
-  //   h->GetStats(stats);
-  //   auto s = ctx.inputs().get<TObjString*>("string");
-  //   LOG(INFO) << "String is " << s->GetString().Data();
-
-  // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
-  // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
-  //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
-  //   if (condition) {
-  //     LOG(INFO) << "Retrieved " << condition->ClassName();
-  //     delete condition;
-  //   }
 }
 
 void TaskDigits::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
+  for (int i = 0; i < 91; i++) {
+    mHitCounterPerStrip[i].FillHistogram(mTOFRawHitMap.get(), i + 1);
+  }
 }
 
 void TaskDigits::endOfActivity(Activity& /*activity*/)
@@ -463,6 +365,9 @@ void TaskDigits::reset()
   mTOFRawHitMap24->Reset();
   mHitMultiVsDDL->Reset();
   mNfiredMacropad->Reset();
+  mOrbitID->Reset();
+  mTimeBC->Reset();
+  mEventCounter->Reset();
 }
 
 } // namespace o2::quality_control_modules::tof
