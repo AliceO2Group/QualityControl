@@ -142,7 +142,7 @@ void CompressedDataDecoder::initHistograms()
   //
   mTest.reset(new TH2F("hTest", "Tests;slot;TDC", 24, 1., 13., 15, 0., 15.));
   //
-  mOrbitID.reset(new TH2F("hOrbitID", "OrbitID;OrbitID % 1048576;Crate", 1000, 0, 1048576, 72, 0, 72));
+  mOrbitID.reset(new TH2F("hOrbitID", "OrbitID;OrbitID % 1048576;Crate", 1024, 0, 1048576, 72, 0, 72));
   //
 }
 
