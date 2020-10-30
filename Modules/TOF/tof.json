@@ -33,7 +33,7 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "its-raw"
+          "name": "tof-digits"
         },
         "taskParameters": {
           "nothing": "rien"
@@ -442,10 +442,10 @@
   },
   "dataSamplingPolicies": [
     {
-      "id": "its-raw",
+      "id": "tof-digits",
       "active": "true",
       "machines": [],
-      "query" : "random:ITS/RAWDATA/0",
+      "query" : "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
       "samplingConditions": [
         {
           "condition": "random",
