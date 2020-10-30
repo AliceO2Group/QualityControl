@@ -266,13 +266,17 @@ void DaqTask::monitorRDHs(o2::framework::InputRecord& inputRecord)
     }
 
     // RDH plots
-    rdhSource = RDHUtils::getSourceID(rdh);
-    if (!isDetIdValid(rdhSource)) {
-      rdhSource = DAQID::INVALID;
+    try{
+      rdhSource = RDHUtils::getVersion(rdh) >= 6 ? RDHUtils::getSourceID(rdh) : DAQID::INVALID; // there is no sourceID before v6
+      if (!isDetIdValid(rdhSource)) { // if we found it , is it valid ?
+        rdhSource = DAQID::INVALID;
+      }
+      totalSize += RDHUtils::getMemorySize(rdh);
+      rdhCounter++;
+      mSubSystemsRdhSizes.at(rdhSource)->Fill(RDHUtils::getMemorySize(rdh));
+    } catch (std::runtime_error &e) {
+      ILOG(Error, Devel) << "Catched an exception when accessing the rdh fields: \n" << e.what() << ENDM;
     }
-    totalSize += RDHUtils::getMemorySize(rdh);
-    rdhCounter++;
-    mSubSystemsRdhSizes.at(rdhSource)->Fill(RDHUtils::getMemorySize(rdh));
   }
 
   mSubSystemsTotalSizes.at(rdhSource)->Fill(totalSize);
