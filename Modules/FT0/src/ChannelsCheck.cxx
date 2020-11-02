@@ -8,7 +8,10 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-
+///
+/// \file   ChannelsCheck.cxx
+/// \author Milosz Filus
+///
 
 // Fair
 #include <fairlogger/Logger.h>
@@ -33,34 +36,30 @@ void ChannelsCheck::configure(std::string) {}
 
 Quality ChannelsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  for (auto [name, obj] : *moMap)
-  {
+  for (auto [name, obj] : *moMap) {
+    (void)name;
 
-    if(obj->getName() == "EventTree"){
-      TTree* tree =  dynamic_cast<TTree*>(obj->getObject());
-      if(tree->GetEntries() == 0){
+    if (obj->getName() == "EventTree") {
+      TTree* tree = dynamic_cast<TTree*>(obj->getObject());
+      if (tree->GetEntries() == 0) {
         return Quality::Bad;
       }
 
       EventWithChannelData event, *pEvent = &event;
       tree->SetBranchAddress("EventWithChannelData", &pEvent);
-      for(unsigned int i = 0; i < tree->GetEntries(); ++i){
+      for (unsigned int i = 0; i < tree->GetEntries(); ++i) {
         tree->GetEntry(i);
         const auto& channels = event.getChannels();
-        
-        if(channels.empty()){
+
+        if (channels.empty()) {
           return Quality::Bad;
         }
 
-        for(const auto& channel : channels){
-          if(   channel.ChId == 0xff
-             || channel.ChainQTC == 0xff
-             || channel.CFDTime == -1000
-             || channel.QTCAmpl == -1000){
-               return Quality::Bad;
-             }
+        for (const auto& channel : channels) {
+          if (channel.ChId == 0xff || channel.ChainQTC == 0xff || channel.CFDTime == -1000 || channel.QTCAmpl == -1000) {
+            return Quality::Bad;
+          }
         }
-
       }
 
       return Quality::Good;
@@ -70,11 +69,10 @@ Quality ChannelsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
   return Quality::Bad;
 }
 
-std::string ChannelsCheck::getAcceptedType() { return "TH1"; }
+std::string ChannelsCheck::getAcceptedType() { return "TTree"; }
 
-void ChannelsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
-{ 
-  
+void ChannelsCheck::beautify(std::shared_ptr<MonitorObject>, Quality)
+{
 }
 
-} // namespace o2::quality_control_modules::mft
+} // namespace o2::quality_control_modules::ft0

@@ -10,8 +10,8 @@
 
 ///
 /// \file   BasicDigitQcTask.h
-/// \author My Name
-///
+/// \author Milosz Filus
+/// Example of QC Task for FT0 detector
 
 #ifndef QC_MODULE_FT0_FT0BASICDIGITQCTASK_H
 #define QC_MODULE_FT0_FT0BASICDIGITQCTASK_H
@@ -27,12 +27,9 @@
 
 using namespace o2::quality_control::core;
 
-
 namespace o2::quality_control_modules::ft0
 {
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
 class BasicDigitQcTask final : public TaskInterface
 {
  public:
@@ -51,9 +48,9 @@ class BasicDigitQcTask final : public TaskInterface
   void reset() override;
 
  private:
+  // Object which will be published
   std::unique_ptr<TH1F> mChargeHistogram;
   std::unique_ptr<TH1F> mTimeHistogram;
-  std::unique_ptr<TMultiGraph> mAmplitudeByTime;
   std::unique_ptr<TH2F> mAmplitudeAndTime;
   std::unique_ptr<TTree> mTTree;
 };

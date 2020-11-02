@@ -8,7 +8,10 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-
+///
+/// \file   DigitsCheck.cxx
+/// \author Milosz Filus
+///
 
 // Fair
 #include <fairlogger/Logger.h>
@@ -33,28 +36,19 @@ void DigitsCheck::configure(std::string) {}
 
 Quality DigitsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  for (auto [name, obj] : *moMap)
-  {
-
-    if(obj->getName() == "EventTree"){
-      TTree* tree =  dynamic_cast<TTree*>(obj->getObject());
-      if(tree->GetEntries() == 0){
+  for (auto [name, obj] : *moMap) {
+    (void)name;
+    if (obj->getName() == "EventTree") {
+      TTree* tree = dynamic_cast<TTree*>(obj->getObject());
+      if (tree->GetEntries() == 0) {
         return Quality::Bad;
       }
 
-
       EventWithChannelData event, *pEvent = &event;
       tree->SetBranchAddress("EventWithChannelData", &pEvent);
-      for(unsigned int i = 0; i < tree->GetEntries(); ++i){
+      for (unsigned int i = 0; i < tree->GetEntries(); ++i) {
         tree->GetEntry(i);
-        if(  event.getEventID() < 0
-          || event.getBC() == o2::InteractionRecord::DummyBC
-          || event.getOrbit() == o2::InteractionRecord::DummyOrbit
-          || event.getTimestamp() == 0
-          || event.getChannels().empty())
-        {
-          ILOG(Info, Support) << i << " " << event.getEventID() << " " << event.getBC() << " " << event.getOrbit() << " " << event.getTimestamp() << " " << event.getChannels().empty() << ENDM;
-
+        if (event.getEventID() < 0 || event.getBC() == o2::InteractionRecord::DummyBC || event.getOrbit() == o2::InteractionRecord::DummyOrbit || event.getTimestamp() == 0 || event.getChannels().empty()) {
           return Quality::Bad;
         }
       }
@@ -66,11 +60,10 @@ Quality DigitsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
   return Quality::Bad;
 }
 
-std::string DigitsCheck::getAcceptedType() { return "TH1"; }
+std::string DigitsCheck::getAcceptedType() { return "TTree"; }
 
-void DigitsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
-{ 
-  
+void DigitsCheck::beautify(std::shared_ptr<MonitorObject>, Quality)
+{
 }
 
-} // namespace o2::quality_control_modules::mft
+} // namespace o2::quality_control_modules::ft0

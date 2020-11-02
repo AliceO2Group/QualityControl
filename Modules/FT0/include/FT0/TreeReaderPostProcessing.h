@@ -10,8 +10,8 @@
 
 ///
 /// \file   TreeReaderPostProcessing.h
-/// \author My Name
-///
+/// \author Milosz Filus
+/// Example of post processing task for FT0 detector
 
 #ifndef QUALITYCONTROL_TREEREADERPOSTPROCESSING_H
 #define QUALITYCONTROL_TREEREADERPOSTPROCESSING_H
@@ -24,8 +24,6 @@ class TH1F;
 namespace o2::quality_control_modules::ft0
 {
 
-/// \brief Example Quality Control Postprocessing Task
-/// \author My Name
 class TreeReaderPostProcessing final : public quality_control::postprocessing::PostProcessingInterface
 {
  public:
@@ -54,10 +52,12 @@ class TreeReaderPostProcessing final : public quality_control::postprocessing::P
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
  private:
- o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
+  o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
+
+  //Objects that will be created and published in post processing
   std::unique_ptr<TH1F> mChargeHistogram;
 };
 
-} // namespace o2::quality_control_modules::skeleton
+} // namespace o2::quality_control_modules::ft0
 
 #endif //QUALITYCONTROL_TreeReaderPostProcessing_H

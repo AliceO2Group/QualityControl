@@ -3,7 +3,6 @@
 add_library(QcFT0)
 
 target_sources(QcFT0 PRIVATE src/BasicDigitQcTask.cxx
-                             src/BasicDigitQcCheck.cxx
                              src/ChannelsCheck.cxx
                              src/DigitsCheck.cxx
                              src/MergedTreeCheck.cxx
@@ -26,7 +25,6 @@ install(TARGETS QcFT0
 
 add_root_dictionary(QcFT0
         HEADERS include/FT0/BasicDigitQcTask.h
-                include/FT0/BasicDigitQcCheck.h
                 include/FT0/ChannelsCheck.h
                 include/FT0/DigitsCheck.h
                 include/FT0/Utilities.h

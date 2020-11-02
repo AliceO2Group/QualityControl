@@ -9,11 +9,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   PostProcessingInterface.cxx
-/// \author My Name
+/// \file   TreeReaderPostProcessing.cxx
+/// \author Milosz Filus
 ///
 
-#include  "FT0/TreeReaderPostProcessing.h"
+#include "FT0/TreeReaderPostProcessing.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "FT0/Utilities.h"
 
@@ -27,38 +27,32 @@ namespace o2::quality_control_modules::ft0
 
 TreeReaderPostProcessing::~TreeReaderPostProcessing()
 {
-  
 }
 
 void TreeReaderPostProcessing::initialize(Trigger, framework::ServiceRegistry& services)
 {
-  mChargeHistogram  = std::make_unique<TH1F>("ChargeHistogram", "ChargeHistogram", 100, 0, 200);
+  mChargeHistogram = std::make_unique<TH1F>("ChargeHistogram", "ChargeHistogram", 100, 0, 200);
   getObjectsManager()->startPublishing(mChargeHistogram.get());
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 }
 
-void TreeReaderPostProcessing::update(Trigger t, framework::ServiceRegistry&)
+void TreeReaderPostProcessing::update(Trigger, framework::ServiceRegistry&)
 {
   mChargeHistogram->Reset();
   auto mo = mDatabase->retrieveMO("qc/FT0/MO/BasicDigitQcTask", "EventTree");
   TTree* moTree = static_cast<TTree*>(mo ? mo->getObject() : nullptr);
 
-
-  if(moTree){
+  if (moTree) {
     EventWithChannelData event, *pEvent = &event;
     moTree->SetBranchAddress("EventWithChannelData", &pEvent);
-    for(unsigned int i = 0; i < moTree->GetEntries(); ++i){
+    for (unsigned int i = 0; i < moTree->GetEntries(); ++i) {
 
       moTree->GetEntry(i);
-      for(const auto& channel : event.getChannels()){
+      for (const auto& channel : event.getChannels()) {
         mChargeHistogram->Fill(channel.QTCAmpl);
-
       }
     }
   }
-
-
-
 }
 
 void TreeReaderPostProcessing::finalize(Trigger, framework::ServiceRegistry&)
@@ -66,4 +60,4 @@ void TreeReaderPostProcessing::finalize(Trigger, framework::ServiceRegistry&)
   getObjectsManager()->stopPublishing(mChargeHistogram.get());
 }
 
-} // namespace o2::quality_control_modules::skeleton
+} // namespace o2::quality_control_modules::ft0

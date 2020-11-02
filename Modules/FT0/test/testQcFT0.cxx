@@ -10,7 +10,7 @@
 
 ///
 /// \file   testFT0.cxx
-/// \author My Name
+/// \author Milosz Filus
 ///
 
 #include "QualityControl/TaskFactory.h"

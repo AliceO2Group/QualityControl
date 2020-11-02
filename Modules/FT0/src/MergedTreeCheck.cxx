@@ -8,7 +8,10 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-
+///
+/// \file   MergedTreeCheck.cxx
+/// \author Milosz Filus
+///
 
 // Fair
 #include <fairlogger/Logger.h>
@@ -33,17 +36,16 @@ void MergedTreeCheck::configure(std::string) {}
 
 Quality MergedTreeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  for (auto [name, obj] : *moMap)
-  {
+  for (auto [name, obj] : *moMap) {
 
-    if(obj->getName() == "ChargeHistogram"){
-      TH1* histogram =  dynamic_cast<TH1*>(obj->getObject());
+    (void)name;
+    if (obj->getName() == "ChargeHistogram") {
+      TH1* histogram = dynamic_cast<TH1*>(obj->getObject());
       auto entries = histogram->GetEntries();
-      if(entries < 1000){
+      if (entries < 1000) {
         return Quality::Bad;
-      }
-      else{
-          return Quality::Good;
+      } else {
+        return Quality::Good;
       }
     }
   }
@@ -51,11 +53,10 @@ Quality MergedTreeCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return Quality::Bad;
 }
 
-std::string MergedTreeCheck::getAcceptedType() { return "TTree"; }
+std::string MergedTreeCheck::getAcceptedType() { return "TH1"; }
 
-void MergedTreeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
-{ 
-  
+void MergedTreeCheck::beautify(std::shared_ptr<MonitorObject>, Quality)
+{
 }
 
-} // namespace o2::quality_control_modules::mft
+} // namespace o2::quality_control_modules::ft0
