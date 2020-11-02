@@ -63,7 +63,6 @@ class ITSTrackTask : public TaskInterface
   TH1D* hOccupancyROF;
   TH1D* hClusterUsage;
   TH2D* hAngularDistribution;
-  const int mOccUpdateFrequency = 100000;
   std::string mRunNumber;
 
   Int_t mNTracks = 0;
@@ -73,9 +72,6 @@ class ITSTrackTask : public TaskInterface
   Int_t mNClustersInTracks = 0;
   Int_t mNClusters = 0;
 
-  const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
-  const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
-  const int mNChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
   int mEnableLayers[7];
   o2::itsmft::TopologyDictionary mDict;
   o2::its::GeometryTGeo* mGeom;
