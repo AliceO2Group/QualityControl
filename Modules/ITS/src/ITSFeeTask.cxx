@@ -19,9 +19,9 @@
 
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
-#include <TCanvas.h>
 
-#include <time.h>
+using namespace o2::framework;
+using namespace o2::header;
 
 namespace o2::quality_control_modules::its
 {

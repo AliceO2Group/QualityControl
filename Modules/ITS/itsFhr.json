@@ -23,10 +23,10 @@
             }
         },
         "tasks": {
-            "FEE": {
+            "FHRTask": {
                 "active": "true",
-                "className": "o2::quality_control_modules::its::ITSFeeTask",
-                "moduleName": "QcITSRawTask",
+                "className": "o2::quality_control_modules::its::ITSOnlineTask",
+                "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
                 "maxNumberCycles": "-1",

@@ -9,38 +9,32 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   ITSOnlineTask.cxx
+/// \file   ITSFhrTask.cxx
 /// \author Liang Zhang
 /// \author Jian Liu
 ///
 
-#include "ITS/ITSOnlineTask.h"
+#include "ITS/ITSFhrTask.h"
 #include "QualityControl/QcInfoLogger.h"
 
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
-#include <TCanvas.h>
-#include <TDatime.h>
-#include <TGraph.h>
-#include <TH1.h>
-#include <TPaveText.h>
-#include <TPaveStats.h>
 
-#include <time.h>
-
-using namespace std;
+using namespace o2::framework;
+using namespace o2::itsmft;
+using namespace o2::header;
 
 namespace o2::quality_control_modules::its
 {
 
-ITSOnlineTask::ITSOnlineTask()
+ITSFhrTask::ITSFhrTask()
   : TaskInterface()
 {
   o2::base::GeometryManager::loadGeometry();
   mGeom = o2::its::GeometryTGeo::Instance();
 }
 
-ITSOnlineTask::~ITSOnlineTask()
+ITSFhrTask::~ITSFhrTask()
 {
   delete mDecoder;
   delete mChipDataBuffer;
@@ -70,9 +64,9 @@ ITSOnlineTask::~ITSOnlineTask()
   delete mGeom;
 }
 
-void ITSOnlineTask::initialize(o2::framework::InitContext& /*ctx*/)
+void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize ITSOnlineTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "initialize ITSFhrTask" << AliceO2::InfoLogger::InfoLogger::endm;
   getEnableLayers();
   int barrel = 0;
   if (mEnableLayers[0] or mEnableLayers[1] or mEnableLayers[2]) {
@@ -89,10 +83,11 @@ void ITSOnlineTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder->setNThreads(mNThreads);
   mDecoder->setFormat(GBTLink::NewFormat);               //Using RDHv6 (NewFormat)
   mDecoder->setUserDataOrigin(header::DataOrigin("DS")); //set user data origin in dpl
+  mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
   mChipsBuffer.resize(mGeom->getNumberOfChips());
 }
 
-void ITSOnlineTask::createErrorTriggerPlots()
+void ITSFhrTask::createErrorTriggerPlots()
 {
   mErrorPlots = new TH1D("General/ErrorPlots", "Decoding Errors", mNError, 0.5, mNError + 0.5);
   mErrorPlots->SetMinimum(0);
@@ -105,7 +100,7 @@ void ITSOnlineTask::createErrorTriggerPlots()
   getObjectsManager()->startPublishing(mTriggerPlots); //mTriggerPlots
 }
 
-void ITSOnlineTask::createGeneralPlots(int barrel = 0)
+void ITSFhrTask::createGeneralPlots(int barrel = 0)
 {
 
   mInfoCanvasComm = new TH2I("General/InfoCanvas", "InfoCanvas", 3, -0.5, 2.5, 4, -0.5, 3.5);
@@ -154,8 +149,8 @@ void ITSOnlineTask::createGeneralPlots(int barrel = 0)
   }
 }
 
-void ITSOnlineTask::createOccupancyPlots() //create general plots like error, trigger, TF id plots and so on....
-                                           //create occupancy plots like chip stave occupancy, occupancy distribution, hic hit map plots and so on....
+void ITSFhrTask::createOccupancyPlots() //create general plots like error, trigger, TF id plots and so on....
+                                        //create occupancy plots like chip stave occupancy, occupancy distribution, hic hit map plots and so on....
 {
   //create occupancy plots
   const int nDim(2);
@@ -197,7 +192,6 @@ void ITSOnlineTask::createOccupancyPlots() //create general plots like error, tr
     if (!mEnableLayers[ilayer]) {
       continue;
     }
-    cout << "pass 1" << endl;
     for (int istave = 0; istave < NStaves[ilayer]; istave++) {
       for (int isubstave = 0; isubstave < NSubStave[ilayer]; isubstave++) {
         for (int ihic = 0; ihic < (nHicPerStave[ilayer] / NSubStave[ilayer]); ihic++) {
@@ -222,13 +216,13 @@ void ITSOnlineTask::createOccupancyPlots() //create general plots like error, tr
   //create occupancy plots end
 }
 
-void ITSOnlineTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
+void ITSFhrTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
 {
   object->GetXaxis()->SetTitle(xTitle);
   object->GetYaxis()->SetTitle(yTitle);
 }
 
-void ITSOnlineTask::setPlotsFormat()
+void ITSFhrTask::setPlotsFormat()
 {
   //set general plots format
   if (mErrorPlots) {
@@ -275,14 +269,14 @@ void ITSOnlineTask::setPlotsFormat()
   }
 }
 
-void ITSOnlineTask::startOfActivity(Activity& /*activity*/)
+void ITSFhrTask::startOfActivity(Activity& /*activity*/)
 {
   QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void ITSOnlineTask::startOfCycle() { QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm; }
+void ITSFhrTask::startOfCycle() { QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm; }
 
-void ITSOnlineTask::monitorData(o2::framework::ProcessingContext& ctx)
+void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // in a loop
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
@@ -324,7 +318,7 @@ void ITSOnlineTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
         if (flag) {
-          mHitPixelID[lay][sta][mod][chip].push_back(make_pair(pixel.getCol(), pixel.getRow()));
+          mHitPixelID[lay][sta][mod][chip].push_back(std::make_pair(pixel.getCol(), pixel.getRow()));
           mPixelHitNumber[lay][sta][mod][chip].push_back(1);
         }
       }
@@ -482,7 +476,7 @@ void ITSOnlineTask::monitorData(o2::framework::ProcessingContext& ctx)
   ILOG(Info) << "time until thread all end is " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
 }
 
-void ITSOnlineTask::getEnableLayers()
+void ITSFhrTask::getEnableLayers()
 {
   std::ifstream configFile("Config/ConfigFakeRateOnline.dat");
   configFile >> mNThreads;
@@ -495,11 +489,11 @@ void ITSOnlineTask::getEnableLayers()
   configFile >> mRunNumberPath;
 }
 
-void ITSOnlineTask::endOfCycle()
+void ITSFhrTask::endOfCycle()
 {
   std::ifstream runNumberFile("/home/its/QC_Online/workdir/infiles/RunNumber.dat"); //catching ITS run number in commissioning
   if (runNumberFile) {
-    string runNumber;
+    std::string runNumber;
     runNumberFile >> runNumber;
     ILOG(Info) << "runNumber : " << runNumber << ENDM;
     mInfoCanvasComm->SetTitle(Form("run%s", runNumber.c_str()));
@@ -535,12 +529,12 @@ void ITSOnlineTask::endOfCycle()
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 
-void ITSOnlineTask::endOfActivity(Activity& /*activity*/)
+void ITSFhrTask::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info) << "endOfActivity" << ENDM;
 }
 
-void ITSOnlineTask::resetGeneralPlots()
+void ITSFhrTask::resetGeneralPlots()
 {
   mTFInfo->Reset();
   mErrorPlots->Reset();
@@ -550,7 +544,7 @@ void ITSOnlineTask::resetGeneralPlots()
   mInfoCanvasComm->Reset();
 }
 
-void ITSOnlineTask::resetOccupancyPlots()
+void ITSFhrTask::resetOccupancyPlots()
 {
   //  mHitNumberOfChip = { 0 };
   memset(mHitNumberOfChip, 0, sizeof(mHitNumberOfChip));
@@ -574,7 +568,7 @@ void ITSOnlineTask::resetOccupancyPlots()
   }
 }
 
-void ITSOnlineTask::reset()
+void ITSFhrTask::reset()
 {
   resetGeneralPlots();
   resetOccupancyPlots();

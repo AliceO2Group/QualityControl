@@ -9,13 +9,13 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   ITSOnlineTask.h
+/// \file   ITSFhrTask.h
 /// \author Liang Zhang
 /// \author Jian Liu
 ///
 
-#ifndef QC_MODULE_ITS_ITSONLINETASK_H
-#define QC_MODULE_ITS_ITSONLINETASK_H
+#ifndef QC_MODULE_ITS_ITSFHRTASK_H
+#define QC_MODULE_ITS_ITSFHRTASK_H
 
 #include "QualityControl/TaskInterface.h"
 #include <ITSMFTReconstruction/ChipMappingITS.h>
@@ -23,22 +23,15 @@
 #include <ITSBase/GeometryTGeo.h>
 #include <ITSMFTReconstruction/RawPixelDecoder.h>
 
-#include <THnSparse.h>
 #include <TText.h>
+#include <TH1.h>
 #include <TH2.h>
-#include <TH2I.h>
 #include <THnSparse.h>
-#include <TPaveText.h>
 
-class TH2I;
 class TH1F;
 class TH2;
 
 using namespace o2::quality_control::core;
-using namespace o2::framework;
-using namespace std;
-using namespace o2::itsmft;
-using namespace o2::header;
 using ChipPixelData = o2::itsmft::ChipPixelData;
 using PixelReader = o2::itsmft::PixelReader;
 
@@ -47,15 +40,15 @@ namespace o2::quality_control_modules::its
 
 /// \brief ITS Fake-hit rate real-time data processing task
 /// Working with the chain of "Detector -> RU -> CRU -> Readout -> STFB -> o2-dpl-raw-proxy ->  QC"
-class ITSOnlineTask final : public TaskInterface
+class ITSFhrTask final : public TaskInterface
 {
   using ChipPixelData = o2::itsmft::ChipPixelData;
 
  public:
   /// \brief Constructor
-  ITSOnlineTask();
+  ITSFhrTask();
   /// Destructor
-  ~ITSOnlineTask() override;
+  ~ITSFhrTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -101,9 +94,9 @@ class ITSOnlineTask final : public TaskInterface
   int mTimeFrameId = 0;
   uint32_t mTriggerTypeCount[13] = { 0 };
 
-  int mNError = 17;
+  int mNError = 19;
   int mNTrigger = 13;
-  unsigned int mErrors[17] = { 0 };
+  unsigned int mErrors[19] = { 0 };
   static constexpr int NTrigger = 13;
 
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
@@ -132,8 +125,8 @@ class ITSOnlineTask final : public TaskInterface
   TH1D* mOccupancyPlot[7];
   //Occupancy plots end
 
-  string mRunNumberPath;
-  string mRunNumber = "000000";
+  std::string mRunNumberPath;
+  std::string mRunNumber = "000000";
 
   //Geometry decoder
   //the memory address of Geometry decoder, the pointers in threads will point these address
@@ -143,4 +136,4 @@ class ITSOnlineTask final : public TaskInterface
 
 } // namespace o2::quality_control_modules::its
 
-#endif // QC_MODULE_ITS_ITSONLINETASK_H
+#endif // QC_MODULE_ITS_ITSFHRTASK_H

@@ -26,7 +26,7 @@
       "ITSClusterTask": {
         "active": "true",
         "className": "o2::quality_control_modules::its::ITSClusterTask",
-        "moduleName": "QcITSRawTask",
+        "moduleName": "QcITS",
 	"detectorName": "ITS",	
         "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
