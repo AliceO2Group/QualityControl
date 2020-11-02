@@ -106,18 +106,22 @@ class MonitorObject : public TObject
   /// \return A string containing the path.
   std::string getPath() const;
 
+  const std::string& getDescription() const;
+  void setDescription(const std::string& description);
+
  private:
   TObject* mObject;
   std::string mTaskName;
   std::string mDetectorName;
   std::map<std::string, std::string> mUserMetadata;
+  std::string mDescription;
 
   // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the
   // object.
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 6);
+  ClassDefOverride(MonitorObject, 7);
 };
 
 } // namespace o2::quality_control::core

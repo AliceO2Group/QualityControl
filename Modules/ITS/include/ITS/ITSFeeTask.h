@@ -19,17 +19,13 @@
 
 #include "QualityControl/TaskInterface.h"
 
-#include <TText.h>
 #include <TH1.h>
 #include <TH2.h>
-#include <TPaveText.h>
 
 class TH2I;
 class TH1I;
 
 using namespace o2::quality_control::core;
-using namespace o2::framework;
-using namespace o2::header;
 
 namespace o2::quality_control_modules::its
 {

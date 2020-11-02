@@ -1,48 +1,50 @@
 # ---- Library ----
 
-add_library(QcITSRawTask
+add_library(QcITS
             src/ITSRawTask.cxx
             src/TrendingTaskITSThr.cxx
             src/TrendingTaskITSFhr.cxx
             src/TrendingTaskConfigITS.cxx
             src/TH2XlineReductor.cxx
-            src/ITSOnlineTask.cxx
+            src/ITSFhrTask.cxx
             src/ITSFeeTask.cxx
+            src/ITSClusterTask.cxx
             )
 
-target_sources(QcITSRawTask PRIVATE src/TH2XlineReductor.cxx)
+target_sources(QcITS PRIVATE src/TH2XlineReductor.cxx)
 
 target_include_directories(
-  QcITSRawTask
+  QcITS
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 include_directories(${O2_ROOT}/include/GPU)
 
-target_link_libraries(QcITSRawTask PUBLIC QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist)
+target_link_libraries(QcITS PUBLIC QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist)
 
-install(TARGETS QcITSRawTask
+install(TARGETS QcITS
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # ---- ROOT dictionary  ----
 
-add_root_dictionary(QcITSRawTask
+add_root_dictionary(QcITS
                     HEADERS include/ITS/ITSRawTask.h
                             include/ITS/TrendingTaskITSThr.h
                             include/ITS/TrendingTaskITSFhr.h
                             include/ITS/TH2XlineReductor.h
-                            include/ITS/ITSOnlineTask.h
+                            include/ITS/ITSFhrTask.h
                             include/ITS/ITSFeeTask.h
+                            include/ITS/ITSClusterTask.h
                     LINKDEF include/ITS/LinkDef.h
-                    BASENAME QcITSRawTask)
+                    BASENAME QcITS)
 
 # ---- Test(s) ----
 
 add_executable(testQcITS test/testITS.cxx)
-target_link_libraries(testQcITS PRIVATE QcITSRawTask Boost::unit_test_framework O2::ITSMFTReconstruction O2::ITSBase O2::DetectorsBase QualityControl)
+target_link_libraries(testQcITS PRIVATE QcITS Boost::unit_test_framework O2::ITSMFTReconstruction O2::ITSBase O2::DetectorsBase QualityControl)
 add_test(NAME testQcITS COMMAND testQcITS)
 set_tests_properties(testQcITS PROPERTIES TIMEOUT 60)
 install(
@@ -85,6 +87,9 @@ install(FILES
         its.json
         itsQCTrendingThr.json
         itsQCTrendingFhr.json
+        itsFhr.json
+        itsFee.json
+        itsCluster.json
         DESTINATION etc)
 
 get_property(dirs

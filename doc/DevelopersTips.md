@@ -28,6 +28,8 @@ The config file is stored in git in the branch `repo_cleaner` (careful not to up
 
 The config file used to be in `aldaqci@aidrefflp01:~/alice-ccdb/config.yaml` but it is not the case any more.
 
+The different cleaning policies available at the moment are: 1_per_hour, 1_per_run, last_only, none_kept, skip
+
 The repo_cleaner is launched every 5 minutes by [Jenkins](https://alijenkins.cern.ch/job/FLP/job/CCDB%20Clean%20up/).
 
 Documentation of the repo_cleaner can be found [here](../Framework/script/RepoCleaner/README.md).
