@@ -76,6 +76,10 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   WorkflowSpec specs;
 
   const std::string qcConfigurationSource = config.options().get<std::string>("config");
+  if (qcConfigurationSource.empty()) {
+    ILOG(Info, Support) << "No configuration path specified, returning an empty workflow." << ENDM;
+    return {};
+  }
   ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // The QC infrastructure is divided into two parts:
