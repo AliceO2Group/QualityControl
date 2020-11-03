@@ -42,15 +42,13 @@ DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& chec
     AlgorithmSpec{},
     Options{}
   };
-  cout << "input : " << DataSpecUtils::describe(aggregator.getInputs().at(0)) << endl;
-  cout << "checkerRunnerOutputs : " << DataSpecUtils::describe(checkerRunnerOutputs.at(0)) << endl;
-  cout << "input validate : " << DataSpecUtils::validate(aggregator.getInputs().at(0)) << endl;
-  cout << "checkerRunnerOutputs validate  : " << DataSpecUtils::validate(checkerRunnerOutputs.at(0)) << endl;
-  cout << "input spec.binding.empty() : " << aggregator.getInputs().at(0).binding.empty() << endl;
-  cout << "input binding : " << aggregator.getInputs().at(0).binding << endl;
-  cout << "A" << endl;
+  ILOG(Info, Ops) << "input : " << DataSpecUtils::describe(aggregator.getInputs().at(0)) << ENDM;
+  ILOG(Info, Ops) << "checkerRunnerOutputs : " << DataSpecUtils::describe(checkerRunnerOutputs.at(0)) << ENDM;
+  ILOG(Info, Ops) << "input validate : " << DataSpecUtils::validate(aggregator.getInputs().at(0)) << ENDM;
+  ILOG(Info, Ops) << "checkerRunnerOutputs validate  : " << DataSpecUtils::validate(checkerRunnerOutputs.at(0)) << ENDM;
+  ILOG(Info, Ops) << "input spec.binding.empty() : " << aggregator.getInputs().at(0).binding.empty() << ENDM;
+  ILOG(Info, Ops) << "input binding : " << aggregator.getInputs().at(0).binding << ENDM;
   aggregatorSpec.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregator));
-  cout << "B" << endl;
 
   return aggregatorSpec;
 }

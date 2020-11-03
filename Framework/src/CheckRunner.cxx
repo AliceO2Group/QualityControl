@@ -119,8 +119,6 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& che
   o2::framework::Outputs outputs;
   for (auto& check : checks) {
     outputs.push_back(check.getOutputSpec());
-    cout << "CheckRunner::collectOutputs : " << DataSpecUtils::describe(check.getOutputSpec()) << endl;
-    cout << "CheckRunner::collectOutputs binding : " << check.getOutputSpec().binding.value << endl;
   }
   return outputs;
 }

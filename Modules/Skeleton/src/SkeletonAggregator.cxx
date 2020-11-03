@@ -14,20 +14,28 @@
 ///
 
 #include "Skeleton/SkeletonAggregator.h"
+
+#include <iostream>
+
 void o2::quality_control_modules::skeleton::SkeletonAggregator::configure(std::string) {}
 
-std::vector<Quality> o2::quality_control_modules::skeleton::SkeletonAggregator::aggregate(QualityObjectsType* qos)
+std::vector<Quality> o2::quality_control_modules::skeleton::SkeletonAggregator::aggregate(QualityObjectsMapType& qoMap)
 {
   std::vector<Quality> result;
 
+  std::cout << "HELLO FROM SKELETON AGGREGATOR" << std::endl;
+
+
   // we return the worse quality of all the objects we receive
   Quality current = Quality::Good;
-  for (auto qo : *qos) {
-    if (qo->getQuality().isWorseThan(current)) {
-      current = qo->getQuality();
+  for (auto qo : qoMap) {
+    std::cout << "   quality: " << qo.second->getQuality() << std::endl;
+    if (qo.second->getQuality().isWorseThan(current)) {
+      current = qo.second->getQuality();
     }
   }
 
+  std::cout << "   result: " << current << std::endl;
   result.emplace_back(current);
   return result;
 }

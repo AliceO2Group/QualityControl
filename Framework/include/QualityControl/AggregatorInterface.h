@@ -49,7 +49,7 @@ class AggregatorInterface
   ///
   /// @param aoMap A map of the the QualityObjects to aggregate and their full names.
   /// @return The quality associated with these objects.
-  virtual std::vector<Quality> aggregate(QualityObjectsType* qos) = 0; // TODO check whether we should return a Quality or a QualityObject
+  virtual std::vector<Quality> aggregate(std::map<std::string, std::shared_ptr<const o2::quality_control::core::QualityObject>>& qoMap) = 0;
 
   void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
   {

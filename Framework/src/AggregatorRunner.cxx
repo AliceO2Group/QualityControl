@@ -112,9 +112,12 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
       shared_ptr<const QualityObject> qo = inputs.get<QualityObject*>(ref);
       if (qo != nullptr) {
         ILOG(Info) << "it is a qo: " << qo->getName() << ENDM;
+//        mQualityObjects.push_back(qo);
         mQualityObjects[qo->getName()] = qo;
         //        mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
         mTotalNumberObjectsReceived++;
+        updatePolicyManager.updateObjectRevision(qo->getName());
+
         //
         //        if (store) { // Monitor Object will be stored later, after possible beautification
         //          mMonitorObjectStoreVector.push_back(mo);
@@ -128,32 +131,33 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
   store(qualityObjects);
 
   send(qualityObjects, ctx.outputs());
+
+  updatePolicyManager.updateGlobalRevision();
+
 }
 
 QualityObjectsType AggregatorRunner::aggregate()
 {
-  ILOG(Info) << "Aggregate called, MOs in cache: " << mQualityObjects.size() << ENDM;
+  ILOG(Info, Devel) << "Aggregate called in AggregatorRunner, QOs in cache: " << mQualityObjects.size() << ENDM;
 
   QualityObjectsType allQOs;
-  //  for (auto& aggregator : mAggregatorsMap) {
+  for (auto& aggregator : mAggregatorsMap) {
+    ILOG(Info, Devel) << "Processing aggregator: " << aggregator.first << ENDM;
 
-  // for the sake of a test
-  //  QualityObject qo(Quality::Bad, );
+    string name = aggregator.second->getName();
+    if (updatePolicyManager.isReady(name)) {
+      auto newQOs = aggregator.second->aggregate(mQualityObjects);
+      mTotalNumberObjectsProduced += newQOs.size();
+      mTotalNumberAggregatorExecuted++;
 
-  //  for (auto& aggregator : mAggregators) {
-  //    if (aggregator.isReady(mMonitorObjectRevision)) {
-  //      auto newQOs = aggregator.aggregator(moMap);
-  //      mTotalNumberAggregatorExecuted += newQOs.size();
-  //
-  //      allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
-  //      newQOs.clear();
-  //
-  //      // Was aggregated, update latest revision
-  //      aggregator.updateRevision(mGlobalRevision);
-  //    } else {
-  //      ILOG(Info) << "Monitor Objects for the aggregator '" << aggregator.getName() << "' are not ready, ignoring" << ENDM;
-  //    }
-  //  }
+      allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
+        newQOs.clear();
+
+      updatePolicyManager.updateActorRevision(name); // Was aggregated, update latest revision
+    } else {
+      ILOG(Info) << "Quality Objects for the aggregator '" << name << "' are not ready, ignoring" << ENDM;
+    }
+  }
   return allQOs;
 }
 
@@ -170,13 +174,13 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
   }
 }
 
-void AggregatorRunner::send(QualityObjectsType& qualityObjects, framework::DataAllocator& allocator)
+void AggregatorRunner::send(QualityObjectsType& qualityObjects, framework::DataAllocator& /*allocator*/)
 {
   // Note that we might send multiple QOs in one output, as separate parts.
   // This should be fine if they are retrieved on the other side with InputRecordWalker.
 
   ILOG(Info) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
-  for (const auto& qo : qualityObjects) {
+//  for (const auto& qo : qualityObjects) {
 
     //    const auto& correspondingAggregator = std::find_if(mAggregators.begin(), mAggregators.end(), [aggregatorName = qo->getAggregatorName()](const auto& aggregator) {
     //      return aggregator.getName() == aggregatorName;
@@ -186,7 +190,7 @@ void AggregatorRunner::send(QualityObjectsType& qualityObjects, framework::DataA
     //    auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
     //    allocator.snapshot(
     //      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
-  }
+//  }
 }
 
 void AggregatorRunner::initDatabase()
@@ -227,6 +231,8 @@ void AggregatorRunner::initAggregators()
 
         // create Aggregator and store it.
         auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
+        aggregator->init();
+        updatePolicyManager.addPolicy(aggregator->getName(), aggregator->getPolicyName(), aggregator->getObjectsNames(), aggregator->getAllObjectsOption(), false);
         mAggregatorsMap[aggregatorName] = aggregator;
       }
     }

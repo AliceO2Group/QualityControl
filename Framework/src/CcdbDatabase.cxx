@@ -107,7 +107,7 @@ void CcdbDatabase::init()
 }
 
 // Monitor object
-void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo, long from, long to)
+void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo, long from, long to)
 {
   if (mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
     BOOST_THROW_EXCEPTION(DatabaseException()
@@ -148,7 +148,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
 }
 
-void CcdbDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo, long from, long to)
+void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long from, long to)
 {
   // metadata
   map<string, string> metadata;

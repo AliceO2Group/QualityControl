@@ -53,6 +53,18 @@
           "name": "QcTask",
           "MOs": ["example"]
         }]
+      },
+      "QcCheck2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["example"]
+        }]
       }
     },
     "aggregators": {
@@ -60,11 +72,11 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
         "moduleName": "QcSkeleton",
-        "policy": "OnAny",
+        "policy": "OnAll",
         "detectorName": "TST",
         "dataSource": [{
           "type": "Checks",
-          "names": ["QcCheck"]
+          "names": ["QcCheck", "QcCheck2"]
         }]
       }
     }

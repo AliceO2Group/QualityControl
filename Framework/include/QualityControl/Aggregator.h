@@ -54,7 +54,7 @@ class Aggregator
    */
   void init();
 
-  o2::quality_control::core::QualityObjectsType aggregate(o2::quality_control::core::QualityObjectsType* qos);
+  o2::quality_control::core::QualityObjectsType aggregate(core::QualityObjectsMapType& qoMap);
 
   /**
    * \brief Change the revision.
@@ -72,6 +72,9 @@ class Aggregator
   const std::string& getName() const { return mAggregatorConfig.checkName; };
   //  o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
   //  o2::framework::Inputs getInputs() const { return mInputs; };
+  std::string getPolicyName() const;
+  std::vector<std::string> getObjectsNames() const;
+  bool getAllObjectsOption() const;
 
   //TODO: Unique Input string
   //  static o2::header::DataDescription createAggregatorerDataDescription(const std::string taskName);
@@ -83,7 +86,7 @@ class Aggregator
   void initConfig(std::string aggregatorName);
   void initPolicy(std::string policyType);
 
-  CheckConfig mAggregatorConfig;
+  CheckConfig mAggregatorConfig; // we reuse checkConfig, just consider that Check = Aggregator
   AggregatorInterface* mAggregatorInterface = nullptr;
 
   // Policy

@@ -139,9 +139,6 @@ void MySqlDatabase::storeForQualityObject(std::string name)
     return;
   }
 
-  cout << "** Store for check " << name << endl;
-  cout << "        # objects : " << objects.size() << endl;
-
   // build statement string
   string table_name = "quality_" + name;
   string query;

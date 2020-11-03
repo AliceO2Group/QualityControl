@@ -31,7 +31,7 @@ class SkeletonAggregator : public o2::quality_control::checker::AggregatorInterf
  public:
   // Override interface
   void configure(std::string name) override;
-  std::vector<Quality> aggregate(QualityObjectsType* qos) override;
+  std::vector<Quality> aggregate(QualityObjectsMapType& qoMap) override;
 
   ClassDefOverride(SkeletonAggregator, 1);
 };

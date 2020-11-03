@@ -454,7 +454,6 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
       DataProcessorSpec spec = checkRunnerFactory.create(checks, configurationSource);
       workflow.emplace_back(spec);
       checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
-      cout << "spec.outputs.begin() : " << spec.outputs.begin()->binding.value << endl;
     } else { // If there are no checks, create a sink CheckRunner
       DataProcessorSpec spec = checkRunnerFactory.createSinkDevice(tasksOutputMap.find(inputNames[0])->second, configurationSource);
       workflow.emplace_back(spec);

@@ -49,10 +49,10 @@ class SimpleTestAggregator : public checker::AggregatorInterface
   }
 
   // Returns a quality matching the number of quality objects passed as argument (1 good, 2 medium, 3 bad, otherwise null)
-  std::vector<Quality> aggregate(QualityObjectsType* qos) override
+  std::vector<Quality> aggregate(std::map<std::string, std::shared_ptr<const o2::quality_control::core::QualityObject>>& qoMap) override
   {
     std::vector<Quality> result;
-    switch (qos->size()) {
+    switch (qoMap.size()) {
       case 1:
         result.push_back(Quality::Good);
         break;
@@ -80,28 +80,28 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
   test::SimpleTestAggregator testAggregator;
 
   // prepare data
-  std::shared_ptr<QualityObject> qo_null = make_shared<QualityObject>(0, "testCheck1", "TST");
-  std::shared_ptr<QualityObject> qo_good = make_shared<QualityObject>(1, "testCheck1", "TST");
-  std::shared_ptr<QualityObject> qo_medium = make_shared<QualityObject>(2, "testCheck1", "TST");
-  std::shared_ptr<QualityObject> qo_bad = make_shared<QualityObject>(3, "testCheck1", "TST");
-  QualityObjectsType input;
+  std::shared_ptr<QualityObject> qo_null = make_shared<QualityObject>(0, "testCheckNull", "TST");
+  std::shared_ptr<QualityObject> qo_good = make_shared<QualityObject>(1, "testCheckGood", "TST");
+  std::shared_ptr<QualityObject> qo_medium = make_shared<QualityObject>(2, "testCheckMedium", "TST");
+  std::shared_ptr<QualityObject> qo_bad = make_shared<QualityObject>(3, "testCheckBad", "TST");
+  QualityObjectsMapType input;
 
-  vector<Quality> result1 = testAggregator.aggregate(&input);
+  vector<Quality> result1 = testAggregator.aggregate(input);
   BOOST_CHECK_EQUAL(result1.size(), 1);
   BOOST_CHECK_EQUAL(result1.at(0), Quality::Null); // because empty vector passed
 
-  input.push_back(qo_good);
-  vector<Quality> result2 = testAggregator.aggregate(&input);
+  input[qo_good->getName()] = qo_good;
+  vector<Quality> result2 = testAggregator.aggregate(input);
   BOOST_CHECK_EQUAL(result2.size(), 1);
   BOOST_CHECK_EQUAL(result2.at(0), Quality::Good);
 
-  input.push_back(qo_good);
-  vector<Quality> result3 = testAggregator.aggregate(&input);
+  input[qo_medium->getName()] = qo_medium;
+  vector<Quality> result3 = testAggregator.aggregate(input);
   BOOST_CHECK_EQUAL(result3.size(), 1);
   BOOST_CHECK_EQUAL(result3.at(0), Quality::Medium);
 
-  input.push_back(qo_good);
-  vector<Quality> result4 = testAggregator.aggregate(&input);
+  input[qo_bad->getName()] = qo_bad;
+  vector<Quality> result4 = testAggregator.aggregate(input);
   BOOST_CHECK_EQUAL(result4.size(), 1);
   BOOST_CHECK_EQUAL(result4.at(0), Quality::Bad);
 }

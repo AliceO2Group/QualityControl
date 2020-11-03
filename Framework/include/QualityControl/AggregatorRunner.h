@@ -36,6 +36,7 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Aggregator.h"
+#include "UpdatePolicyManager.h"
 
 namespace o2::framework
 {
@@ -140,7 +141,8 @@ class AggregatorRunner : public framework::Task
   std::map<std::string, std::shared_ptr<Aggregator>> mAggregatorsMap;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
-  std::map<std::string, std::shared_ptr<const QualityObject>> mQualityObjects; // where we cache the incoming data
+  QualityObjectsMapType mQualityObjects; // where we cache the incoming data
+  UpdatePolicyManager updatePolicyManager;
 
   // DPL
   o2::framework::Inputs mInputs;
@@ -150,6 +152,8 @@ class AggregatorRunner : public framework::Task
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
   AliceO2::Common::Timer mTimer;
   int mTotalNumberObjectsReceived;
+  int mTotalNumberAggregatorExecuted;
+  int mTotalNumberObjectsProduced;
 
   // Service discovery
   std::shared_ptr<ServiceDiscovery> mServiceDiscovery;
