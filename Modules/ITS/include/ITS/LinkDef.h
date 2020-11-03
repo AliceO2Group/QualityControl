@@ -10,5 +10,6 @@
 #pragma link C++ class o2::quality_control_modules::its::ITSFhrTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSFeeTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSClusterTask + ;
+#pragma link C++ class o2::quality_control_modules::its::ITSTrackTask + ;
 
 #endif
