@@ -189,8 +189,9 @@ void ITSTrackTask::getEnableLayers()
   std::ifstream configFile("Config/ConfigLayers.dat"); //passing enabled layers into QC for ITS commissioning
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     configFile >> mEnableLayers[ilayer];
-    if (mEnableLayers[ilayer])
+    if (mEnableLayers[ilayer]) {
       LOG(INFO) << "enable layer : " << ilayer;
+    }
   }
 }
 
@@ -199,8 +200,9 @@ void ITSTrackTask::addObject(TObject* aObject)
   if (!aObject) {
     LOG(INFO) << " ERROR: trying to add non-existent object ";
     return;
-  } else
+  } else {
     mPublishedObjects.push_back(aObject);
+  }
 }
 
 void ITSTrackTask::formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset, float yOffset)
