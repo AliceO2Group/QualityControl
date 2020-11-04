@@ -87,7 +87,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
   // We pretend to spawn topologies on three processing machines
   WorkflowSpec specs = getFullProcessingTopology();
 
-  if(!noQC) {
+  if (!noQC) {
     DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
     // Generation of the remote QC topology (for the QC servers)
     quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);

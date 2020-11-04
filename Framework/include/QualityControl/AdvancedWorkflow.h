@@ -28,8 +28,8 @@
 
 namespace o2::quality_control::core
 {
-  o2::framework::WorkflowSpec getProcessingTopology(o2::framework::DataAllocator::SubSpecificationType subspec);
-  o2::framework::WorkflowSpec getFullProcessingTopology();
+o2::framework::WorkflowSpec getProcessingTopology(o2::framework::DataAllocator::SubSpecificationType subspec);
+o2::framework::WorkflowSpec getFullProcessingTopology();
 } // namespace o2::quality_control::core
 
 #endif //QUALITYCONTROL_AdvancedWorkflow_H
