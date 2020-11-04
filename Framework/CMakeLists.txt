@@ -66,7 +66,9 @@ add_library(QualityControl
             src/HistoProducer.cxx
             src/DataProducerExample.cxx
             src/MonitorObjectCollection.cxx
-            src/UpdatePolicyManager.cxx)
+            src/UpdatePolicyManager.cxx
+            src/AdvancedWorkflow.cxx
+  )
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
