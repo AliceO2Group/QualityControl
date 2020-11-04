@@ -74,6 +74,19 @@
           "MOs": ["example"]
         }]
       }
+    },
+    "aggregators": {
+      "MyAggregator": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Checks",
+          "names": ["dataSizeCheck", "someNumbersCheck"]
+        }]
+      }
     }
   },
   "dataSamplingPolicies": [
