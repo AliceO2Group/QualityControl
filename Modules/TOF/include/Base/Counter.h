@@ -122,22 +122,26 @@ class Counter
     unsigned int histo_size = size;
     if (labels) { // Only if labels are defined
       for (unsigned int i = 0; i < size; i++) {
-        if (labels[i] && labels[i][0]) {
+        if (labels[i] && !labels[i][0]) { // If label at position i is empty
+          LOG(DEBUG) << "Skipping label '" << labels[i] << "' at position " << i << "/" << size - 1;
           histo_size--;
         }
       }
     }
     if (histo_size == 0) {
       LOG(FATAL) << "Asked to produce a histogram with size " << histo_size << ", check counter bin labels";
+    } else {
+      LOG(DEBUG) << "Asked to produce a histogram with size " << histo_size << " out of the size " << size << " due to empty labels";
     }
+
     axis->Set(histo_size, 0, histo_size);
     if (labels) { // Only if labels are defined
       unsigned int binx = 1;
       for (unsigned int i = 0; i < size; i++) {
-        if (labels[i] && labels[i][0]) {
+        if (labels[i] && !labels[i][0]) { // If label at position i is empty
           continue;
         }
-        LOG(INFO) << "Setting bin " << binx << "/" << histo_size << " to contain counter for " << labels[i] << " (index " << i << "/" << size - 1 << ")";
+        LOG(DEBUG) << "Setting bin " << binx << "/" << histo_size << " to contain counter for '" << labels[i] << "' (index " << i << "/" << size - 1 << ")";
         if (histo_size < binx) {
           LOG(FATAL) << "Making bin outside of histogram limits!";
         }
@@ -160,7 +164,7 @@ class Counter
     unsigned int binx = 1;
     const unsigned int nbinsx = h->GetNbinsX();
     for (unsigned int i = 0; i < size; i++) {
-      if (labels && labels[i] && labels[i][0]) {
+      if (labels && labels[i] && !labels[i][0]) { // Labels are defined and label is empty
         if (counter[i] > 0) {
           LOG(FATAL) << "Counter at position " << i << " was non empty (" << counter[i] << ") but was discarded because of empty labels";
         }
@@ -173,8 +177,12 @@ class Counter
         LOG(FATAL) << "Filling histogram " << h->GetName() << " at position " << binx << " i.e. past its size (" << nbinsx << ")!";
       }
       const char* bin_label = h->GetXaxis()->GetBinLabel(binx);
-      if (labels && strcmp(labels[i], bin_label) != 0) {
-        LOG(FATAL) << "Bin " << binx << " does not have the expected label '" << bin_label << "' vs '" << labels[i] << "'";
+      if (labels) {
+        if (!labels[i]) {
+          LOG(DEBUG) << "Label at position " << i << " does not exist for axis label '" << bin_label << "'";
+        } else if (strcmp(labels[i], bin_label) != 0) {
+          LOG(FATAL) << "Bin " << binx << " does not have the expected label '" << bin_label << "' vs '" << labels[i] << "'";
+        }
       }
       if (counter[i] > 0) {
         if (biny > 0) {
