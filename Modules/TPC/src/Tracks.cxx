@@ -22,6 +22,7 @@
 // O2 includes
 #include "Framework/ProcessingContext.h"
 #include "DataFormatsTPC/TrackTPC.h"
+#include "Framework/InputRecord.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"

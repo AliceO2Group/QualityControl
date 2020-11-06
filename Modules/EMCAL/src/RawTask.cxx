@@ -27,6 +27,7 @@
 #include "EMCALReconstruction/AltroDecoder.h"
 #include "EMCALReconstruction/RawReaderMemory.h"
 #include "EMCALReconstruction/RawHeaderStream.h"
+#include "Framework/InputRecord.h"
 
 using namespace o2::emcal;
 

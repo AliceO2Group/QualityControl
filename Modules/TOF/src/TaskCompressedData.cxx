@@ -24,6 +24,7 @@
 #include <Framework/DataRefUtils.h>
 #include "Headers/RAWDataHeader.h"
 #include "DetectorsRaw/HBFUtils.h"
+#include "Framework/InputRecord.h"
 
 // Fairlogger includes
 #include <fairlogger/Logger.h>

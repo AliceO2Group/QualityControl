@@ -14,6 +14,7 @@
 ///
 
 #include "Example/ExampleTask.h"
+#include "Framework/InputRecord.h"
 #include "QualityControl/QcInfoLogger.h"
 #include <TH1.h>
 

@@ -19,6 +19,7 @@
 #include <DetectorsCommonDataFormats/NameConf.h>
 #include <DataFormatsITS/TrackITS.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
+#include "Framework/InputRecord.h"
 
 using namespace o2::itsmft;
 using namespace o2::its;

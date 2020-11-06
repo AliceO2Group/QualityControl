@@ -19,6 +19,7 @@
 #include <TH1.h>
 // O2
 #include <DataFormatsITSMFT/Digit.h>
+#include "Framework/InputRecord.h"
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/BasicDigitQcTask.h"

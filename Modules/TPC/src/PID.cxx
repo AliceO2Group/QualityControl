@@ -22,6 +22,7 @@
 #include "Framework/ProcessingContext.h"
 #include "DataFormatsTPC/TrackTPC.h"
 #include "TPCQC/Helpers.h"
+#include "Framework/InputRecord.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"

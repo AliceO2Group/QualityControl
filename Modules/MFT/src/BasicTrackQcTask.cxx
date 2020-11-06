@@ -21,6 +21,7 @@
 // O2
 #include <DataFormatsMFT/TrackMFT.h>
 #include <MFTTracking/TrackCA.h>
+#include "Framework/InputRecord.h"
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/BasicTrackQcTask.h"
