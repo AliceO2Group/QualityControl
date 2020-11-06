@@ -86,6 +86,8 @@ set_tests_properties(testQcTOF PROPERTIES TIMEOUT 20)
 install(FILES tof.json
               tofcompressed.json
               tofdiagnostics.json
+              toffull.json
+              tofraw.json
               tofpostprocessdiagnosticpercrate.json
         DESTINATION etc)
 
