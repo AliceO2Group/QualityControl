@@ -13,7 +13,7 @@
 /// \author Nicolo' Jacazio
 /// \brief Task to check the diagnostic words of TOF crates received trough the TOF compressor.
 ///        Here are defined the counters to check the diagnostics words of the TOF crates obtained from the compressor.
-///        This is why the DiagnosticCounter class derives from DecoderBase: it reads data from the decoder.
+///        This is why the DiagnosticsCounter class derives from DecoderBase: it reads data from the decoder.
 ///
 
 #ifndef QC_MODULE_TOF_TASKDIAGNOSTICS_H

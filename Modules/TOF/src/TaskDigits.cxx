@@ -186,7 +186,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mTOFTimeVsStrip.reset(new TH2F("TOFTimeVsStrip", "TOF raw hit time vs. MRPC (along z axis); MRPC index along z axis; Raws TOF time (ns) ", 91, 0., 91, fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
   getObjectsManager()->startPublishing(mTOFTimeVsStrip.get());
 
-  mTOFtimeVsBCID.reset(new TH2F("TOFtimeVsBCID", "TOF time vs BCID; BCID; time (ns) ", 3564, 0., 3564., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  mTOFtimeVsBCID.reset(new TH2F("TOFtimeVsBCID", "TOF time vs BCID;BC time (24.4 ps);time (ns) ", 1024, 0., 1024., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
   getObjectsManager()->startPublishing(mTOFtimeVsBCID.get());
 
   mTOFchannelEfficiencyMap.reset(new TH2F("TOFchannelEfficiencyMap", "TOF channels (HWok && efficient && !noisy && !problematic);sector;strip", 72, 0., 18., 91, 0., 91.));
@@ -275,6 +275,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       // TDC time and ToT time
       tdc_time = digit.getTDC() * o2::tof::Geo::TDCBIN * 0.001;
       tot_time = digit.getTOT() * o2::tof::Geo::TOTBIN_NS;
+      mTOFtimeVsBCID->Fill(row.mFirstIR.bc % 1024, tdc_time);
       mTOFRawsTime->Fill(tdc_time);
       mTOFRawsToT->Fill(tot_time);
       digit.getPhiAndEtaIndex(phi, eta);

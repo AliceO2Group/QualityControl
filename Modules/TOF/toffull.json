@@ -33,7 +33,7 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "tof-rawdata"
+          "name": "tof-rawdata-diagnostics"
         },
         "taskParameters": {
           "DecoderCONET": "False"
@@ -103,11 +103,40 @@
               "MOs": ["hDiagnostic"]
           }]
       }
+    },
+    "postprocessing": {
+      "PostProcessDiagnosticPerCrate": {
+          "active": "true",
+          "className": "o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate",
+          "moduleName": "QualityControl",
+          "detectorName": "TOF",
+          "dataSources": [
+            ],
+            "plots": [
+            ],
+            "initTrigger": [ "once" ],
+            "updateTrigger": [ "5 seconds" ],
+            "stopTrigger": ["once"]
+        }
     }
   },
   "dataSamplingPolicies": [
     {
       "id": "tof-rawdata",
+      "active": "true",
+      "machines": [],
+      "query": "dataframe:TOF/CRAWDATA",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    },
+    {
+      "id": "tof-rawdata-diagnostics",
       "active": "true",
       "machines": [],
       "query": "dataframe:TOF/CRAWDATA",
