@@ -18,6 +18,7 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "Skeleton/SkeletonTask.h"
+#include <Framework/InputRecord.h>
 
 #include <Framework/InputRecord.h>
 

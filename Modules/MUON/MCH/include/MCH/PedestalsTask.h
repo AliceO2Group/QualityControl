@@ -11,6 +11,7 @@
 #include "MCH/Decoding.h"
 #include "MCHBase/Digit.h"
 #include "MCH/GlobalHistogram.h"
+#include "Framework/DataRef.h"
 
 class TH1F;
 class TH2F;

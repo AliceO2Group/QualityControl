@@ -25,6 +25,7 @@
 // O2 includes
 #include "TOFBase/Digit.h"
 #include "TOFBase/Geo.h"
+#include <Framework/InputRecord.h>
 
 // Fairlogger includes
 #include <fairlogger/Logger.h>
