@@ -18,6 +18,9 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "Skeleton/SkeletonTask.h"
+#include <Framework/InputRecord.h>
+
+#include <Framework/InputRecord.h>
 
 namespace o2::quality_control_modules::skeleton
 {

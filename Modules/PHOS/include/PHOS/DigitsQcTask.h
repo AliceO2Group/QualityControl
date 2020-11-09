@@ -8,6 +8,7 @@
 #define QC_MODULE_PHOS_DIGITSQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include <Framework/InputRecord.h>
 
 class TH1F;
 class TH2F;

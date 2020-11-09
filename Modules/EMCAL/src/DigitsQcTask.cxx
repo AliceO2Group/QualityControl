@@ -16,6 +16,7 @@
 #include "EMCALBase/Geometry.h"
 #include "EMCALCalib/BadChannelMap.h"
 #include "EMCALCalib/TimeCalibrationParams.h"
+#include <Framework/InputRecord.h>
 
 namespace o2
 {

@@ -27,6 +27,7 @@
 #include "EMCALReconstruction/AltroDecoder.h"
 #include "EMCALReconstruction/RawReaderMemory.h"
 #include "EMCALReconstruction/RawHeaderStream.h"
+#include <Framework/InputRecord.h>
 
 using namespace o2::emcal;
 
@@ -246,6 +247,12 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       mHistogram->Fill(header->payloadSize);
       mTotalDataVolume->Fill(1., header->payloadSize);
 
+      // Skip SOX headers
+      auto rdhblock = reinterpret_cast<const o2::header::RDHAny*>(input.payload);
+      if (o2::raw::RDHUtils::getHeaderSize(rdhblock) == static_cast<int>(header->payloadSize)) {
+        continue;
+      }
+
       // try decoding payload
       o2::emcal::RawReaderMemory rawreader(gsl::span(input.payload, header->payloadSize));
       uint64_t currentTrigger(0);
@@ -281,7 +288,8 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           first = false;
         }
         if (feeID > 40)
-          continue;                                 //skip STU ddl
+          continue; //skip STU ddl
+
         o2::emcal::AltroDecoder decoder(rawreader); //(atrodecoder in Detectors/Emcal/reconstruction/src)
         //check the words of the payload exception in altrodecoder
         try {
