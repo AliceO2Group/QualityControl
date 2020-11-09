@@ -42,20 +42,6 @@
           ],
           "remoteMachine": "4a",
           "remotePort": "30132"
-        },
-        "RemoteQcTask": {
-          "active": "true",
-          "className": "o2::quality_control_modules::ft0::BasicDigitQcTask",
-          "moduleName": "QcFT0",
-          "detectorName": "FT0",
-          "cycleDurationSeconds": "10",
-          "maxNumberCycles": "-1",
-          "dataSource": {
-            "type": "dataSamplingPolicy",
-            "name": "dummySampling"
-          },
-          "taskParameters": {},
-          "location": "remote"
         }
       },
       "checks": {
@@ -86,21 +72,6 @@
       }
     },
     "dataSamplingPolicies": [
-        {
-        "id": "dummySampling",
-        "active": "true",
-        "machines": ["localhost"],
-        "port": "30333",
-        "query": "digits:FT0/DIGITSBC/0;channels:FT0/DIGITSCH/0",
-        "samplingConditions": [
-            {
-            "condition": "random",
-            "fraction": "1",
-            "seed": "1234"
-            }
-        ],
-        "blocking": "false"
-        }
     ]
   }
   
