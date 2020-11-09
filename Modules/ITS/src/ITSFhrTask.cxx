@@ -295,7 +295,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   mTimeFrameId = ctx.inputs().get<int>("G");
 
   DPLRawParser parser(ctx.inputs());
-  //  int StaveStart = 0;
+
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>(); //Decoding new data format (RDHv6)
     int istave = (int)(rdh->feeId & 0x00ff);

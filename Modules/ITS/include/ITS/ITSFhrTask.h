@@ -59,7 +59,6 @@ class ITSFhrTask final : public TaskInterface
   void reset() override;
 
  private:
-  int mDebugCounter = 0;
   int mAverageProcessTime = 0;
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createGeneralPlots(int barrel); //create General PLots for IB/OB/ALL (1/2/3)
