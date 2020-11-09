@@ -34,7 +34,12 @@
                     "type": "dataSamplingPolicy",
                     "name": "RAWDATA"
                 },
-                "location": "remote"
+                "location": "remote",
+                "taskParameters": {
+                    "layer": "0100000",
+                    "decoderThreads": "1",
+                    "runNumberPath": "/data/shifts/runs/ibb2a/.run_counter"
+                }
             }
         }
     },
