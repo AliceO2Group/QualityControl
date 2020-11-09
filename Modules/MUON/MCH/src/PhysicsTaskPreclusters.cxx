@@ -22,7 +22,7 @@
 #include "MCHMappingSegContour/CathodeSegmentationContours.h"
 #include "MCHRawDecoder/PageDecoder.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "Framework/InputRecord.h"
+#include <Framework/InputRecord.h>
 
 using namespace std;
 using namespace o2::mch::raw;

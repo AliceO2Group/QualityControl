@@ -25,7 +25,7 @@
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <ITSMFTReconstruction/ChipMappingITS.h>
 #include <DataFormatsITSMFT/ClusterTopology.h>
-#include "Framework/InputRecord.h"
+#include <Framework/InputRecord.h>
 
 using o2::itsmft::Digit;
 using namespace o2::itsmft;

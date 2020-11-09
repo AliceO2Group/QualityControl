@@ -14,7 +14,7 @@
 #include "EMCAL/DigitsQcTask.h"
 #include "DataFormatsEMCAL/Cell.h"
 #include "EMCALBase/Geometry.h"
-#include "Framework/InputRecord.h"
+#include <Framework/InputRecord.h>
 
 namespace o2
 {

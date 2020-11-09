@@ -11,7 +11,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "ITS/ITSRawTask.h"
 #include "ITS/ITSTaskVariables.h"
-#include "Framework/InputRecord.h"
+#include <Framework/InputRecord.h>
 
 #include <TGaxis.h>
 #include <TStyle.h>

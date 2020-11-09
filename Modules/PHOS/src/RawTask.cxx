@@ -26,7 +26,7 @@
 //#include "PHOSReconstruction/AltroDecoder.h"
 //#include "PHOSReconstruction/RawReaderMemory.h"
 //#include "PHOSReconstruction/RawHeaderStream.h"
-#include "Framework/InputRecord.h"
+#include <Framework/InputRecord.h>
 
 //using namespace o2::phos;
 

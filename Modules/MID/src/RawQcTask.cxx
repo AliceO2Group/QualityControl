@@ -18,7 +18,7 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "MID/RawQcTask.h"
-#include "Framework/InputRecord.h"
+#include <Framework/InputRecord.h>
 
 #include "Framework/DataRefUtils.h"
 #include "DataFormatsMID/ColumnData.h"
