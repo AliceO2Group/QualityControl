@@ -68,7 +68,7 @@ add_library(QualityControl
             src/MonitorObjectCollection.cxx
             src/UpdatePolicyManager.cxx
             src/AdvancedWorkflow.cxx
-  )
+            src/Calculators.cxx)
 
 if(ENABLE_MYSQL)
   target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
@@ -131,7 +131,9 @@ set(EXE_SRCS
     src/runReadoutForDataDump.cxx
     src/runRepositoryBenchmark.cxx
     src/runPostProcessing.cxx
-    src/runPostProcessingOCC.cxx)
+    src/runPostProcessingOCC.cxx
+    src/runLocationCalculator.cxx
+    src/runMergerCalculator.cxx)
 
 set(EXE_NAMES
     o2-qc-run-producer
@@ -144,7 +146,9 @@ set(EXE_NAMES
     o2-qc-run-readout-for-data-dump
     o2-qc-repository-benchmark
     o2-qc-run-postprocessing
-    o2-qc-run-postprocessing-occ)
+    o2-qc-run-postprocessing-occ
+    o2-qc-location-calculator
+    o2-qc-merger-calculator)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
@@ -159,7 +163,9 @@ set(EXE_OLD_NAMES
     qcRunReadoutForDataDump
     repositoryBenchmark
     qcRunPostProcessing
-    qcRunPostProcessingOCC)
+    qcRunPostProcessingOCC
+    o2-qc-location-calculator
+    o2-qc-merger-calculator)
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)
