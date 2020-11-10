@@ -40,6 +40,7 @@
 
 #include <string>
 #include <memory>
+#include <TFile.h>
 
 using namespace std;
 
@@ -329,6 +330,7 @@ void TaskRunner::loadTaskConfig()
   mTaskConfig.maxNumberCycles = taskConfigTree.get<int>("maxNumberCycles", -1);
   mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
   mTaskConfig.conditionUrl = mConfigFile->get<std::string>("qc.config.conditionDB.url", "http://ccdb-test.cern.ch:8080");
+  mTaskConfig.saveToFile = taskConfigTree.get<std::string>("saveObjectsToFile", "");
   try {
     mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + mTaskConfig.taskName + ".taskParameters");
   } catch (...) {
@@ -341,6 +343,7 @@ void TaskRunner::loadTaskConfig()
   ILOG(Info, Support) << ">> Detector name : " << mTaskConfig.detectorName << ENDM;
   ILOG(Info, Support) << ">> Cycle duration seconds : " << mTaskConfig.cycleDurationSeconds << ENDM;
   ILOG(Info, Support) << ">> Max number cycles : " << mTaskConfig.maxNumberCycles << ENDM;
+  ILOG(Info, Support) << ">> Save to file : " << mTaskConfig.saveToFile << ENDM;
 }
 
 std::string TaskRunner::validateDetectorName(std::string name) const
@@ -410,6 +413,7 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
 
   mNumberObjectsPublishedInCycle += publish(outputs);
   mTotalNumberObjectsPublished += mNumberObjectsPublishedInCycle;
+  saveToFile();
 
   publishCycleStats();
   mObjectsManager->updateServiceDiscovery();
@@ -483,6 +487,16 @@ int TaskRunner::publish(DataAllocator& outputs)
 
   mLastPublicationDuration = publicationDurationTimer.getTime();
   return objectsPublished;
+}
+
+void TaskRunner::saveToFile()
+{
+  if(!mTaskConfig.saveToFile.empty()) {
+    ILOG(Debug, Support) << "Save data to file " << mTaskConfig.saveToFile << ENDM;
+    TFile f(mTaskConfig.saveToFile.c_str(), "RECREATE");
+    mObjectsManager->getNonOwningArray()->Write();
+    f.Close();
+  }
 }
 
 } // namespace o2::quality_control::core

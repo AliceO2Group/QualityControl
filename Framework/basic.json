@@ -30,7 +30,7 @@
         "detectorName": "TST",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tst-raw"
@@ -38,7 +38,8 @@
         "taskParameters": {
           "myOwnKey": "myOwnValue"
         },
-        "location": "remote"
+        "location": "remote",
+        "saveObjectsToFile": "test.root",      "": "For debugging, path to the file where to save. If empty it won't save."
       }
     },
     "checks": {
