@@ -491,7 +491,7 @@ int TaskRunner::publish(DataAllocator& outputs)
 
 void TaskRunner::saveToFile()
 {
-  if(!mTaskConfig.saveToFile.empty()) {
+  if (!mTaskConfig.saveToFile.empty()) {
     ILOG(Debug, Support) << "Save data to file " << mTaskConfig.saveToFile << ENDM;
     TFile f(mTaskConfig.saveToFile.c_str(), "RECREATE");
     mObjectsManager->getNonOwningArray()->Write();
