@@ -14,6 +14,8 @@
 #include "EMCAL/DigitsQcTask.h"
 #include "DataFormatsEMCAL/Cell.h"
 #include "EMCALBase/Geometry.h"
+#include "EMCALCalib/BadChannelMap.h"
+#include "EMCALCalib/TimeCalibrationParams.h"
 #include <Framework/InputRecord.h>
 
 namespace o2
@@ -31,7 +33,12 @@ DigitsQcTask::~DigitsQcTask()
   for (auto h : mDigitTime) {
     delete h;
   }
-
+  for (auto h : mDigitAmplitudeCalib) {
+    delete h;
+  }
+  for (auto h : mDigitTimeCalib) {
+    delete h;
+  }
   if (mDigitAmplitudeEMCAL)
     delete mDigitAmplitudeEMCAL;
   if (mDigitAmplitudeDCAL)
@@ -43,6 +50,8 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   //define histograms
   mDigitAmplitude[0] = new TH2F("digitAmplitudeHG", "Digit Amplitude (High gain)", 100, 0, 100, 20000, 0., 20000.);
   mDigitAmplitude[1] = new TH2F("digitAmplitudeLG", "Digit Amplitude (Low gain)", 100, 0, 100, 20000, 0., 20000.);
+  mDigitAmplitudeCalib[0] = new TH2F("digitAmplitudeHGCalib", "Digit Amplitude Calib (High gain)", 100, 0, 100, 20000, 0., 20000.);
+  mDigitAmplitudeCalib[1] = new TH2F("digitAmplitudeLGCalib", "Digit Amplitude Calib (Low gain)", 100, 0, 100, 20000, 0., 20000.);
 
   mDigitOccupancy = new TH2F("digitOccupancyEMC", "Digit Occupancy EMCAL", 96, -0.5, 95.5, 208, -0.5, 207.5);
   mDigitOccupancyThr = new TH2F("digitOccupancyEMCwThr", "Digit Occupancy EMCAL with E>0.5 GeV/c", 96, -0.5, 95.5, 208, -0.5, 207.5);
@@ -51,8 +60,10 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mIntegratedOccupancy->GetXaxis()->SetTitle("col");
   mIntegratedOccupancy->GetYaxis()->SetTitle("row");
 
-  mDigitTime[0] = new TH2F("digitTimeHG", "Digit Time (High gain)", 1000, 0, 1000, 20000, 0., 20000.);
-  mDigitTime[1] = new TH2F("digitTimeLG", "Digit Time (Low gain)", 1000, 0, 1000, 20000, 0., 20000.);
+  mDigitTime[0] = new TH2F("digitTimeHG", "Digit Time (High gain)", 2000, -200, 200, 20000, 0., 20000.);
+  mDigitTime[1] = new TH2F("digitTimeLG", "Digit Time (Low gain)", 2000, -200, 200, 20000, 0., 20000.);
+  mDigitTimeCalib[0] = new TH2F("digitTimeHGCalib", "Digit Time Calib (High gain)", 2000, -200, 200, 20000, 0., 20000.);
+  mDigitTimeCalib[1] = new TH2F("digitTimeLGCalib", "Digit Time Calib (Low gain)", 2000, -200, 200, 20000, 0., 20000.);
   // 1D histograms for showing the integrated spectrum
 
   mDigitAmplitudeEMCAL = new TH1F("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 100, 0., 100.);
@@ -62,8 +73,16 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   //Puglishing histograms
   for (auto h : mDigitAmplitude)
     getObjectsManager()->startPublishing(h);
+
   for (auto h : mDigitTime)
     getObjectsManager()->startPublishing(h);
+
+  for (auto h : mDigitAmplitudeCalib)
+    getObjectsManager()->startPublishing(h);
+
+  for (auto h : mDigitTimeCalib)
+    getObjectsManager()->startPublishing(h);
+
   getObjectsManager()->startPublishing(mDigitAmplitudeEMCAL);
   getObjectsManager()->startPublishing(mDigitAmplitudeDCAL);
   getObjectsManager()->startPublishing(mDigitOccupancy);
@@ -85,6 +104,14 @@ void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 void DigitsQcTask::startOfCycle()
 {
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  std::map<std::string, std::string> metadata;
+  mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>("EMC/BadChannelMap", metadata);
+  if (!mBadChannelMap)
+    QcInfoLogger::GetInstance() << "No Bad Channel Map object " << AliceO2::InfoLogger::InfoLogger::endm;
+
+  mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>("EMC/TimeCalibrationParams", metadata);
+  if (!mTimeCalib)
+    QcInfoLogger::GetInstance() << " No Time Calib object " << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -92,6 +119,8 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   //  QcInfoLogger::GetInstance() << "Start monitor data" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // check if we have payoad
+  using MaskType_t = o2::emcal::BadChannelMap::MaskType_t;
+
   auto dataref = ctx.inputs().get("emcal-digits");
   auto const* emcheader = o2::framework::DataRefUtils::getHeader<o2::emcal::EMCALBlockHeader*>(dataref);
   if (!emcheader->mHasPayload) {
@@ -112,12 +141,21 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits" << QcInfoLogger::endm;
     //gsl::span<const o2::emcal::Digit> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
     gsl::span<const o2::emcal::Cell> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
+
     for (auto digit : eventdigits) {
       int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
       if (index < 0)
         continue;
+      auto cellindices = mGeometry->GetCellIndex(digit.getTower());
 
       mDigitAmplitude[index]->Fill(digit.getEnergy(), digit.getTower());
+
+      auto timeoffset = mTimeCalib->getTimeCalibParam(digit.getTower(), digit.getLowGain());
+
+      if ((mBadChannelMap->getChannelStatus(digit.getTower()) == MaskType_t::GOOD_CELL)) {
+        mDigitAmplitudeCalib[index]->Fill(digit.getEnergy(), digit.getTower());
+        mDigitTimeCalib[index]->Fill(digit.getTimeStamp() - timeoffset, digit.getTower());
+      }
       mDigitTime[index]->Fill(digit.getTimeStamp(), digit.getTower());
 
       // get the supermodule for filling EMCAL/DCAL spectra
@@ -133,7 +171,6 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
         mIntegratedOccupancy->Fill(col, row, digit.getEnergy());
 
-        auto cellindices = mGeometry->GetCellIndex(digit.getTower());
         if (std::get<0>(cellindices) < 12)
           mDigitAmplitudeEMCAL->Fill(digit.getEnergy());
 
