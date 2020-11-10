@@ -39,7 +39,7 @@
           "myOwnKey": "myOwnValue"
         },
         "location": "remote",
-        "saveObjectsToFile": "test.root",      "": "For debugging, path to the file where to save. If empty it won't save."
+        "saveObjectsToFile": "",      "": "For debugging, path to the file where to save. If empty or missing it won't save."
       }
     },
     "checks": {
