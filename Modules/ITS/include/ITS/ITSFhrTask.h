@@ -32,7 +32,6 @@ class TH1F;
 class TH2;
 
 using namespace o2::quality_control::core;
-using ChipPixelData = o2::itsmft::ChipPixelData;
 using PixelReader = o2::itsmft::PixelReader;
 
 namespace o2::quality_control_modules::its
@@ -60,6 +59,7 @@ class ITSFhrTask final : public TaskInterface
   void reset() override;
 
  private:
+  int mAverageProcessTime = 0;
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createGeneralPlots(int barrel); //create General PLots for IB/OB/ALL (1/2/3)
   void createErrorTriggerPlots();
@@ -80,13 +80,15 @@ class ITSFhrTask final : public TaskInterface
   const int nChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
   //const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
-  const int ReduceFraction = 4; //TODO: move to Config file to define this number
+  const int ReduceFraction = 1; //TODO: move to Config file to define this number
 
   std::array<bool, NLayer> mEnableLayers = { false };
-  //detector information end
+
   int mNThreads = 0;
-  std::vector<std::pair<int, int>> mHitPixelID[7][48][14][14]; //layer, stave, hic, chip
-  std::vector<int> mPixelHitNumber[7][48][14][14];             //hit number correspond mHitPixelID
+  std::vector<std::pair<int, int>> mHitPixelID[7][48][14][14];              //layer, stave, hic, chip
+  std::unordered_map<unsigned int, int> mHitPixelID_Hash[7][48][2][14][14]; //layer, stave, substave, hic, chip
+
+  std::vector<int> mPixelHitNumber[7][48][14][14]; //hit number correspond mHitPixelID
   o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
   ChipPixelData* mChipDataBuffer = nullptr;
   std::vector<ChipPixelData> mChipsBuffer;
@@ -98,9 +100,9 @@ class ITSFhrTask final : public TaskInterface
   int mNTrigger = 13;
   unsigned int mErrors[19] = { 0 };
   static constexpr int NTrigger = 13;
+  int16_t partID = 0;
 
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
-  //  std::array<TString, mNTrigger> = {"ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT"};
 
   //General plots
   TH1F* mTFInfo; //count vs TF ID
@@ -109,31 +111,25 @@ class ITSFhrTask final : public TaskInterface
   TH2I* mTriggerVsFeeid;
   TH1D* mTriggerPlots;
   //TH1D* mInfoCanvas;//TODO: default, not implemented yet
-  TH2I* mInfoCanvasComm; //tmp object decidated to ITS commissioning
+  TH2I* mInfoCanvasComm;   //tmp object decidated to ITS commissioning
+  TH2I* mInfoCanvasOBComm; //tmp object decidated to ITS Outer Barral commissioning
+
   TText* mTextForShifter;
   TText* mTextForShifter2;
-  //General plots end
 
-  //Occupancy plots
-  //the memory address of plots, the pointers in threads will point these address
-  //memory will allocate in init() function
-  TH2I* mHicHitmapAddress[7][48][2][14];
-  THnSparseI* mHicHitmap[7][48][2][14];
-
+  //Occupancy and hit-map
+  THnSparseI* mStaveHitmap[7][48];
+  TH2I* mHitmapTmp;
   TH2D* mChipStaveOccupancy[7];
   TH2I* mChipStaveEventHitCheck[7];
   TH1D* mOccupancyPlot[7];
-  //Occupancy plots end
 
   std::string mRunNumberPath;
   std::string mRunNumber = "000000";
 
   //Geometry decoder
-  //the memory address of Geometry decoder, the pointers in threads will point these address
   o2::its::GeometryTGeo* mGeom;
-  //Geometry decoder end
 };
-
 } // namespace o2::quality_control_modules::its
 
 #endif // QC_MODULE_ITS_ITSFHRTASK_H
