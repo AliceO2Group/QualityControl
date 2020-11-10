@@ -17,10 +17,6 @@
 #ifndef QUALITYCONTROL_AdvancedWorkflow_H
 #define QUALITYCONTROL_AdvancedWorkflow_H
 
-#include <Framework/CompletionPolicyHelpers.h>
-#include <Framework/ConfigContext.h>
-#include <Framework/DataSpecUtils.h>
-#include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/WorkflowSpec.h>
 
 /// These methods can be used to build a complex processing topology. It spawns 3 separate dummy processing chains,

@@ -25,7 +25,6 @@ using namespace o2;
 using namespace o2::header;
 using namespace o2::framework;
 using SubSpecificationType = o2::header::DataHeader::SubSpecificationType;
-using SubSpec = o2::header::DataHeader::SubSpecificationType;
 
 namespace o2::quality_control::core
 {

@@ -412,7 +412,7 @@ If the detector is ready and connected to the CRU(s), one can of course start th
 
 ## A more advanced example
 
-A more complete example is available. The config file is called [advanced.json](../Framework/advanced.json). The workflow is made of 3 sources, intermediate processing steps, 3 sinks and a Dispatcher connecting two QC tasks to a number of these steps and 2 checks:
+A more complete example is available. The config file is called [advanced.json](../Framework/advanced.json). The workflow is made of 3 sources, intermediate processing steps, 3 sinks and a Dispatcher connecting two QC tasks to a number of these steps and 2 checks. The topology doesn't mean to represent any particular physics processing, it is just an example with multiple data processors.
 
 ![alt text](images/advanced.png)
 
