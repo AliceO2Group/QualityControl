@@ -494,7 +494,7 @@ void TaskRunner::saveToFile()
   if (!mTaskConfig.saveToFile.empty()) {
     ILOG(Debug, Support) << "Save data to file " << mTaskConfig.saveToFile << ENDM;
     TFile f(mTaskConfig.saveToFile.c_str(), "RECREATE");
-    for(size_t i = 0 ; i < mObjectsManager->getNumberPublishedObjects() ; i++) {
+    for (size_t i = 0; i < mObjectsManager->getNumberPublishedObjects(); i++) {
       mObjectsManager->getMonitorObject(i)->getObject()->Write();
     }
     f.Close();
