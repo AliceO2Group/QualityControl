@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "daqTask-todelete": {
+      "daqTask": {
         "active": "true",
         "className": "o2::quality_control_modules::daq::DaqTask",
         "moduleName": "QcDaq",
