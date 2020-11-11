@@ -111,11 +111,11 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   f.backend->storeQO(qo);
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_json)
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
 
-  string json = f.backend->retrieveMOJson("qc/TST/my/task", "asdf/asdf");
+  string json = f.backend->retrieveMOJson("qc/TST/MO/my/task", "asdf/asdf");
   BOOST_CHECK(!json.empty());
   ILOG(Info, Support) << json << ENDM;
   std::stringstream ss;
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_json)
   boost::property_tree::ptree pt;
   boost::property_tree::read_json(ss, pt);
 
-  json = f.backend->retrieveQOJson("qc/checks/TST/checkName");
+  json = f.backend->retrieveQOJson("qc/TST/QO/checkName");
   BOOST_CHECK(!json.empty());
   ILOG(Info, Support) << json << ENDM;
   std::stringstream ss2;
