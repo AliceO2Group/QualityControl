@@ -111,8 +111,8 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   f.backend->storeQO(qo);
 }
 
- BOOST_AUTO_TEST_CASE(ccdb_retrieve_json)
- {
+BOOST_AUTO_TEST_CASE(ccdb_retrieve_json)
+{
   test_fixture f;
 
   string json = f.backend->retrieveMOJson("qc/TST/my/task", "asdf/asdf");
