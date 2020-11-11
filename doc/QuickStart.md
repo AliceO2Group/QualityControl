@@ -132,14 +132,17 @@ The first thing is to load the environment for the readout in a new terminal: `a
 Then enable the data sampling channel in readout by opening the readout config file located at `$READOUT_ROOT/etc/readout-qc.cfg` and make sure that the following properties are correct:
 
 ```
-# First make sure we never exit
-[readout]
-(...)
-exitTimeout=-1
-(...)
-# And enable the data sampling
-[consumer-data-sampling]
-consumerType=DataSampling
+# Enable the data sampling
+[consumer-fmq-qc]
+consumerType=FairMQChannel
+enableRawFormat=1
+fmq-name=readout-qc
+fmq-address=ipc:///tmp/readout-pipe-1
+fmq-type=pub
+fmq-transport=zeromq
+unmanagedMemorySize=2G
+memoryPoolNumberOfPages=500
+memoryPoolPageSize=1M
 enabled=1
 (...)
 ```

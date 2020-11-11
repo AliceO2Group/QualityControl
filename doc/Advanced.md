@@ -351,8 +351,16 @@ the Data Sampling and the Data Inspector.
 
 First make sure that the Data Sampling is enabled in the readout :
 ```
-[consumer-data-sampling]
-consumerType=DataSampling
+[consumer-fmq-qc]
+consumerType=FairMQChannel
+enableRawFormat=1
+fmq-name=readout-qc
+fmq-address=ipc:///tmp/readout-pipe-1
+fmq-type=pub
+fmq-transport=zeromq
+unmanagedMemorySize=2G
+memoryPoolNumberOfPages=500
+memoryPoolPageSize=1M
 enabled=1
 ```
 
