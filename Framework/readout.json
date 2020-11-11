@@ -42,8 +42,7 @@
           "printInputPayloadLimit": "-1",     "": "only print the X first words (-1 means no limit)",
           "printPageInfo": "false",           "": "set to true to print information about pages",
           "printRDH": "false",                "": "set to true to print the RDHs"
-        },
-        "saveObjectsToFile": "test.root",      "": "For debugging, path to the file where to save. If empty it won't save."
+        }
       }
     }
   },
