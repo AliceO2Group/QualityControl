@@ -9,12 +9,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file    testCheckRunner.cxx
-/// \author  Piotr Konopka
+/// \file    testAggregatorRunner.cxx
+/// \author  Barthelemy von Haller
 ///
 
-#include "QualityControl/CheckRunnerFactory.h"
-#include "QualityControl/CheckRunner.h"
+#include "QualityControl/AggregatorRunnerFactory.h"
+#include "QualityControl/AggregatorRunner.h"
 
 #define BOOST_TEST_MODULE CheckRunner test
 #define BOOST_TEST_MAIN
@@ -29,7 +29,8 @@ using namespace o2::header;
 
 BOOST_AUTO_TEST_CASE(test_check_runner_static)
 {
-  BOOST_CHECK(CheckRunner::createCheckRunnerDataDescription("qwertyuiop") == DataDescription("qwertyuiop-chk"));
-  BOOST_CHECK(CheckRunner::createCheckRunnerDataDescription("012345678901234567890") == DataDescription("012345678901-chk"));
-  BOOST_CHECK_THROW(CheckRunner::createCheckRunnerDataDescription(""), AliceO2::Common::FatalException);
+  BOOST_CHECK(AggregatorRunner::createAggregatorRunnerDataDescription("qwertyuiop") == DataDescription("qwertyuiop"));
+  BOOST_CHECK(AggregatorRunner::createAggregatorRunnerDataDescription("012345678901234567890") == DataDescription("012345678901"));
+  AggregatorRunner::createAggregatorRunnerDataDescription("012345678901234567890")
+  BOOST_CHECK_THROW(AggregatorRunner::createAggregatorRunnerDataDescription(""), AliceO2::Common::FatalException);
 }
