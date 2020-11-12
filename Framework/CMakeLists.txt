@@ -67,6 +67,7 @@ add_library(QualityControl
             src/DataProducerExample.cxx
             src/MonitorObjectCollection.cxx
             src/UpdatePolicyManager.cxx
+            src/AdvancedWorkflow.cxx
             src/Calculators.cxx)
 
 if(ENABLE_MYSQL)

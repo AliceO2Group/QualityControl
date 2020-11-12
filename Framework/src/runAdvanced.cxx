@@ -11,6 +11,7 @@
 ///
 /// \file    runAdvanced.cxx
 /// \author  Piotr Konopka
+/// \author Barthelemy von Haller
 ///
 /// \brief This is an executable showing a more complicated QC topology.
 ///
@@ -28,13 +29,19 @@
 /// If you have glfw installed, you should see a window with the workflow visualization and sub-windows for each Data
 /// Processor where their logs can be seen. The processing will continue until the main window it is closed. Regardless
 /// of glfw being installed or not, in the terminal all the logs will be shown as well.
+///
+/// In case you want to run only the processing part, use the option `--no-qc`.
+/// In such case, the workflow can be piped to the QC or another workflow:
+///   \code{.sh}
+///   > o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/advanced.json
+///   \endcode
 
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/DataSpecUtils.h>
-#include <Framework/CompletionPolicyHelpers.h>
 #include <DataSampling/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/AdvancedWorkflow.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -56,82 +63,34 @@ void customize(std::vector<ChannelConfigurationPolicy>& policies)
   DataSampling::CustomizeInfrastructure(policies);
 }
 
+void customize(std::vector<ConfigParamSpec>& workflowOptions)
+{
+  workflowOptions.push_back(
+    ConfigParamSpec{ "no-qc", VariantType::Bool, false, { "Disable the QC part of this advanced workflow." } });
+}
+
 #include <Framework/runDataProcessing.h>
-#include <random>
 
 using namespace o2;
 using namespace o2::header;
+using namespace o2::quality_control::core;
 using SubSpecificationType = o2::header::DataHeader::SubSpecificationType;
 
-// clang-format off
-WorkflowSpec processingTopology(SubSpecificationType subspec)
+WorkflowSpec defineDataProcessing(ConfigContext const& config)
 {
-  DataProcessorSpec source{
-    "source-" + std::to_string(subspec),
-    Inputs{},
-    Outputs{{ "TST", "DATA",  subspec },
-            { "TST", "PARAM", subspec }},
-    AlgorithmSpec{
-      (AlgorithmSpec::ProcessCallback)
-        [generator = std::default_random_engine{ static_cast<unsigned int>(time(nullptr)) }, subspec](ProcessingContext & ctx) mutable {
-          usleep(200000);
-          auto data = ctx.outputs().make<int>(Output{ "TST", "DATA", subspec }, generator() % 10000);
-          for (auto&& item : data) {
-            item = static_cast<int>(generator());
-          }
-          ctx.outputs().make<double>(Output{ "TST", "PARAM", subspec }, 1)[0] = 1 / static_cast<double>(1 + generator());
-        }
-    }
-  };
-
-  DataProcessorSpec step{
-    "step-" + std::to_string(subspec),
-    Inputs{{ "data", "TST", "DATA", subspec }},
-    Outputs{{ "TST", "SUM", subspec }},
-    AlgorithmSpec{
-      (AlgorithmSpec::ProcessCallback)[subspec](ProcessingContext & ctx) {
-        auto data = DataRefUtils::as<int>(ctx.inputs().get("data"));
-        long long sum = 0;
-        for (auto d : data) { sum += d; }
-        ctx.outputs().snapshot(Output{ "TST", "SUM", subspec }, sum);
-      }
-    }
-  };
-
-  DataProcessorSpec sink{
-    "sink-" + std::to_string(subspec),
-    Inputs{{ "sum",   "TST", "SUM",   subspec },
-           { "param", "TST", "PARAM", subspec }},
-    Outputs{},
-    AlgorithmSpec{
-      (AlgorithmSpec::ProcessCallback)[](ProcessingContext & ctx) {
-        ILOG(Debug, Devel) << "Sum is: " << DataRefUtils::as<long long>(ctx.inputs().get("sum"))[0] << ENDM;
-        ILOG(Debug, Devel) << "Param is: " << DataRefUtils::as<double>(ctx.inputs().get("param"))[0] << ENDM;
-      }
-    }
-  };
-
-  return { source, step, sink };
-}
-// clang-format on
-
-WorkflowSpec defineDataProcessing(ConfigContext const&)
-{
+  bool noQC = config.options().get<bool>("no-qc");
   const std::string qcConfigurationSource =
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/advanced.json";
   ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'";
 
-  WorkflowSpec specs;
-  // here we pretend to spawn topologies on three processing machines
-  for (int i = 1; i < 4; i++) {
-    auto localTopology = processingTopology(i);
-    specs.insert(std::end(specs), std::begin(localTopology), std::end(localTopology));
+  // Full processing topology.
+  // We pretend to spawn topologies on three processing machines
+  WorkflowSpec specs = getFullProcessingTopology();
+
+  if (!noQC) {
+    DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+    // Generation of the remote QC topology (for the QC servers)
+    quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
   }
-
-  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
-
-  // Generation of the remote QC topology (for the QC servers)
-  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
-
   return specs;
 }
