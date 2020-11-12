@@ -41,7 +41,9 @@ Before developing a module, one should have a bare idea of what the QualityContr
 
 ![alt text](images/Architecture.png)
 
-The main data flow is represented in blue. Data samples are selected by the Data Sampling (not represented) and sent to the QC tasks, either on the same machines or on other machines. The tasks produce TObjects encapsulated in a MonitorObject, usually histograms, that are merged (if needed) and then checked. The checkers output the received MonitorObject along with a QualityObject. The MonitorObject can be modified by the Checker. Finally the MonitorObject and the QualityObject(s) are stored in the repository.
+The main data flow is represented in blue. Data samples are selected by the Data Sampling (not represented) and sent to the QC tasks, either on the same machines or on other machines. The tasks produce TObjects, usually histograms, encapsulated in a MonitorObject that are merged (if needed) and then checked. The checkers output a QualityObject along with the MonitorObjects which might have been modified. The MonitorObjects and the QualityObjects are stored in the repository. The QualityObjects can also optionally be aggregated by the Aggregators to produce additional QualityObjects that are also saved in the database. 
+
+Asynchronously, the Post-processing can retrieve MonitorObjects from the database when certain events happen (new version of an object, new run) and produce new TObjects such as a trending plot.
 
 ### DPL
 
@@ -151,9 +153,9 @@ If you need to use the QCG or Readout, load `O2Suite` instead of `QualityControl
 
 ### User-defined modules
 
-The Quality Control uses _plugins_ to load the actual code to be executed by the _Tasks_ and the _Checks_. A module, or plugin, can contain one or several of these classes, both Tasks and Checks. They must subclass `TaskInterface.h` and `CheckInterface.h` respectively. We use the Template Method Design Pattern.
+The Quality Control uses _plugins_ to load the actual code to be executed by the _Tasks_, the _Checks_, the _Aggregators_ and the _PostProcessing_. A module, or plugin, can contain one or several of these classes. They must subclass the corresponding interfaces, for example `TaskInterface.h` or `CheckInterface.h`. We use the Template Method Design Pattern.
 
-The same code, the same class, can be run many times in parallel. It means that you can run several qc tasks (no uppercase, i.e. processes) in parallel, each executing the same code defined in the same Task (uppercase, the class). Similarly, one Check can be executed against different Monitor Objects and Tasks.
+The same code, the same class, can be run many times in parallel. It means that one can run several copies of the same qc Task in parallel, each executing the same code but on different data samples, typically on different nodes. 
 
 ### Repository
 
@@ -170,12 +172,12 @@ The last, optional, part depends on the policy (read more about that [later](#Ch
 
 Before starting to develop the code, one should create a new module if it does not exist yet. Typically each detector team should prepare a module.
 
-The script `o2-qc-module-configurator.sh`, in the directory _Modules_, is able to prepare a new module or to add a new _Task_ or a new _Check_ to an existing module. It must be run from __within QualityControl/Modules__. See the help message below:
+The script `o2-qc-module-configurator.sh`, in the directory _Modules_, is able to prepare a new module or to add a new _Task_, _Check_, _Aggregator_ or PostProcessing task to an existing module. It must be run from __within QualityControl/Modules__. See the help message below:
 ```
 Usage: ./o2-qc-module-configurator.sh -m MODULE_NAME [OPTION]
 
-Generate template QC module and/or tasks, checks.
-If a module with specified name already exists, new tasks and checks are inserted to the existing one.
+Generate template QC module and/or tasks, checks, aggregators and postprocessing.
+If a module with specified name already exists, new tasks, checks, aggregators and postprocessing are inserted to the existing module.
 Please follow UpperCamelCase convention for modules', tasks' and checks' names.
 
 Example:
@@ -190,6 +192,7 @@ Options:
  -t TASK_NAME     create a task named TASK_NAME
  -c CHECK_NAME    create a check named CHECK_NAME
  -p PP_NAME       create a postprocessing task named PP_NAME
+ -a AGG_NAME      create an aggregator named AGG_NAME
 ```
 
 For example, if your detector 3-letter code is TST you might want to do
@@ -325,9 +328,74 @@ The `check` function is called whenever the _policy_ is satisfied. It gets a map
 
 The `beautify` function is called after the `check` function if there is a single `dataSource` of type `Task` in the configuration of the check. If there is more than one, the `beautify()` is not called in this check. 
 
-### Aggregation
+## Quality Aggregation
 
+The _Aggregators_ are able to collect the QualityObjects produced by the checks or other _Aggregators_ and to produce new Qualities. This is especially useful to determine the overall quality of a detector or a set of detectors. 
+
+![alt text](images/Aggregation.png)
+
+### Quick try
+
+One can try it with this simple example: 
+
+```c++
 o2-qc-run-basic --config-path /Users/barth/alice/sw/osx_x86-64/QualityControl/empty-payload-1/etc/basic-aggregator.json
+```
+
+A more complex example with a producer and the `o2-qc`: 
+
+```
+TODO (publisher | o2-qc --config)
+```
+
+### Configuration
+
+```json
+{
+  "qc": {
+    "config": {...},
+    "tasks": {...},
+    "checks": {...},
+    "aggregators": {
+      "MyAggregator": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Checks",
+          "names": ["QcCheck", "QcCheck2"]
+        }]
+      }
+    }
+  },
+  "dataSamplingPolicies": [...]
+}
+```
+
+* __active__ - Boolean to indicate whether the checker is active or not
+* __moduleName__ - Name of the module which implements the check class (like in tasks)
+* __className__ - Name and namespace of the class, which is part of the module specified above (like in tasks)
+* __policy__ - Policy for triggering the _check_ function defined in the class:
+    * _OnAny_ (default) - Triggers if ANY of the listed quality objects changes.
+    * _OnAnyNonZero_ - Triggers if ANY of the declared quality objects changes, but only after all listed objects have been received at least once.
+    * _OnAll_ - Triggers if ALL the listed quality objects have changed.
+    * In case the list of monitor objects is empty or is replaced by the keyword "all", the policy is simply ignored and the `check` will be triggered whenever a new QualityObject is received.
+* __dataSource__ - declaration of the `check` input
+    * _type_ - currently only supported are _Checks_ and _Aggregators_
+    * _names_ - name of the Checks and Aggregators 
+
+### Implementation
+
+With `o2-qc-module-configurator.sh` (see [here](#module-creation)), create a new Aggregator that can be then used in the config file. 
+
+An aggregator inherits from `AggregatorInterface` and in particular this method: 
+```c++
+  virtual std::vector<Quality> aggregate(std::map<std::string, std::shared_ptr<const o2::quality_control::core::QualityObject>>& qoMap) = 0;
+```
+
+The `aggregate` method is called whenever the _policy_ is satisfied. It gets a map with all the declared QualityObjects. It is expected to return a new Quality based on the inputs.
 
 ## Committing code
 
