@@ -94,7 +94,7 @@
       "id": "tst1",
       "active": "true",
       "machines": [],
-      "query" : "sum:TST/SUM/2;param:TST/PARAM/2",
+      "query" : "param:TST/RAWDATA/0",
       "samplingConditions": [
         {
           "condition": "random",
@@ -108,7 +108,7 @@
       "id": "tst2",
       "active": "true",
       "machines": [],
-      "query" : "data:TST/DATA",
+      "query" : "data:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "payloadSize",

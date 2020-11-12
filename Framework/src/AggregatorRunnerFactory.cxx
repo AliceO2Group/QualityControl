@@ -30,30 +30,23 @@ using namespace o2::framework;
 namespace o2::quality_control::checker
 {
 
-DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& checkerRunnerOutputs, std::string configurationSource)
+DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource)
 {
-  AggregatorRunner aggregator{ std::move(configurationSource), checkerRunnerOutputs };
+  AggregatorRunner aggregator{ configurationSource, checkerRunnerOutputs };
 
   // build DataProcessorSpec
   DataProcessorSpec aggregatorSpec{
     aggregator.getDeviceName(),
     aggregator.getInputs(),
     Outputs{ aggregator.getOutput() },
-    AlgorithmSpec{},
+    adaptFromTask<AggregatorRunner>(std::move(aggregator)),
     Options{}
   };
-  ILOG(Info, Ops) << "input : " << DataSpecUtils::describe(aggregator.getInputs().at(0)) << ENDM;
-  ILOG(Info, Ops) << "checkerRunnerOutputs : " << DataSpecUtils::describe(checkerRunnerOutputs.at(0)) << ENDM;
-  ILOG(Info, Ops) << "input validate : " << DataSpecUtils::validate(aggregator.getInputs().at(0)) << ENDM;
-  ILOG(Info, Ops) << "checkerRunnerOutputs validate  : " << DataSpecUtils::validate(checkerRunnerOutputs.at(0)) << ENDM;
-  ILOG(Info, Ops) << "input spec.binding.empty() : " << aggregator.getInputs().at(0).binding.empty() << ENDM;
-  ILOG(Info, Ops) << "input binding : " << aggregator.getInputs().at(0).binding << ENDM;
-  aggregatorSpec.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregator));
 
   return aggregatorSpec;
 }
 
-// TODO what is that ??
+// Specify a custom policy to trigger whenever something arrive regardless of the timeslice.
 void AggregatorRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
   auto matcher = [](framework::DeviceSpec const& device) {

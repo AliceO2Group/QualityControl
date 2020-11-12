@@ -141,7 +141,7 @@ class AggregatorRunner : public framework::Task
   std::map<std::string, std::shared_ptr<Aggregator>> mAggregatorsMap;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
-  QualityObjectsMapType mQualityObjects; // where we cache the incoming data
+  QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
   UpdatePolicyManager updatePolicyManager;
 
   // DPL

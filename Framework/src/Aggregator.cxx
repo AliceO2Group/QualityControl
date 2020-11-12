@@ -21,7 +21,7 @@
 using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
 
-Aggregator::Aggregator(std::string aggregatorName, boost::property_tree::ptree configuration)
+Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::ptree configuration)
 {
   mAggregatorConfig.checkName = aggregatorName;
   mAggregatorConfig.moduleName = configuration.get<std::string>("moduleName", "");
@@ -64,7 +64,7 @@ void Aggregator::init()
   ILOG(Info, Ops) << mAggregatorConfig.checkName << ": Class " << mAggregatorConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
   ILOG(Info, Ops) << mAggregatorConfig.checkName << ": Detector " << mAggregatorConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
   ILOG(Info, Ops) << mAggregatorConfig.checkName << ": Policy " << mAggregatorConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Ops) << mAggregatorConfig.checkName << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Ops) << mAggregatorConfig.checkName << ": QualityObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
   for (const auto& moname : mAggregatorConfig.moNames) {
     ILOG(Info, Ops) << mAggregatorConfig.checkName << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
   }

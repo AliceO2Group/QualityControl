@@ -62,6 +62,7 @@ AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const
     auto input = DataSpecUtils::matchingInput(spec);
     input.binding = "checkerOutput" + to_string(i); // TODO check if that name is fine
     mInputs.emplace_back(input);
+    i++;
   }
 }
 
@@ -84,16 +85,20 @@ header::DataDescription AggregatorRunner::createAggregatorRunnerDataDescription(
 
 std::string AggregatorRunner::createAggregatorRunnerName()
 {
-  return "QUALITY-AGGREGATOR";
+  return AggregatorRunner::createAggregatorRunnerIdString(); // there is only one thus we can just take the idString
 }
 
 void AggregatorRunner::init(framework::InitContext&)
 {
   try {
+    cout << "hello" << endl;
     initDatabase();
     initMonitoring();
+    cout << "*1" << endl;
     initServiceDiscovery();
+    cout << "*2" << endl;
     initAggregators();
+    cout << "*3" << endl;
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
     ILOG(Fatal) << "Unexpected exception during initialization:\n"
@@ -104,6 +109,7 @@ void AggregatorRunner::init(framework::InitContext&)
 
 void AggregatorRunner::run(framework::ProcessingContext& ctx)
 {
+  cout << "run" << endl;
   // get data
   framework::InputRecord& inputs = ctx.inputs();
   for (auto const& ref : InputRecordWalker(inputs)) { // InputRecordWalker because the output of CheckRunner can be multi-part
@@ -112,16 +118,9 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
       shared_ptr<const QualityObject> qo = inputs.get<QualityObject*>(ref);
       if (qo != nullptr) {
         ILOG(Info) << "it is a qo: " << qo->getName() << ENDM;
-//        mQualityObjects.push_back(qo);
         mQualityObjects[qo->getName()] = qo;
-        //        mMonitorObjectRevision[mo->getFullName()] = mGlobalRevision;
         mTotalNumberObjectsReceived++;
         updatePolicyManager.updateObjectRevision(qo->getName());
-
-        //
-        //        if (store) { // Monitor Object will be stored later, after possible beautification
-        //          mMonitorObjectStoreVector.push_back(mo);
-        //        }
       }
     }
   }
@@ -149,6 +148,11 @@ QualityObjectsType AggregatorRunner::aggregate()
       auto newQOs = aggregator.second->aggregate(mQualityObjects);
       mTotalNumberObjectsProduced += newQOs.size();
       mTotalNumberAggregatorExecuted++;
+      // we consider the output of the aggregators the same way we do the output of a check
+      for(const auto& qo : newQOs) {
+        mQualityObjects[qo->getName()] = qo;
+        updatePolicyManager.updateObjectRevision(qo->getName());
+      }
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
         newQOs.clear();
@@ -167,7 +171,6 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
   try {
     for (auto& qo : qualityObjects) {
       mDatabase->storeQO(qo);
-      //      mTotalNumberQOStored++;
     }
   } catch (boost::exception& e) {
     ILOG(Info) << "Unable to " << diagnostic_information(e) << ENDM;
@@ -222,9 +225,11 @@ void AggregatorRunner::initServiceDiscovery()
 
 void AggregatorRunner::initAggregators()
 {
+  cout << "init aggreg" << endl;
   // Build aggregators based on the configurationd
   if (mConfigFile->getRecursive("qc").count("aggregators")) {
-    // For every aggregator definition, create a Check
+    cout << "a" << endl;
+    // For every aggregator definition, create an Aggregator
     for (const auto& [aggregatorName, aggregatorConfig] : mConfigFile->getRecursive("qc.aggregators")) {
       ILOG(Info) << ">> Aggregator name : " << aggregatorName << ENDM;
       if (aggregatorConfig.get<bool>("active", true)) {

@@ -229,6 +229,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
   TaskRunnerFactory::customizeInfrastructure(policies);
   MergerBuilder::customizeInfrastructure(policies);
   CheckRunnerFactory::customizeInfrastructure(policies);
+  AggregatorRunnerFactory::customizeInfrastructure(policies);
 }
 
 void InfrastructureGenerator::printVersion()

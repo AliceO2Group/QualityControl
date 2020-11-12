@@ -16,9 +16,12 @@
 #ifndef QC_CHECKER_AGGREGATOR_H
 #define QC_CHECKER_AGGREGATOR_H
 
+// std
 #include <string>
+// QC
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/CheckConfig.h"
+// config
 #include <boost/property_tree/ptree.hpp>
 
 namespace o2::configuration
@@ -47,7 +50,7 @@ class Aggregator
    * @param aggregatorName Aggregator name that must exist in the configuration
    * @param configurationSource Path to configuration
    */
-  Aggregator(std::string aggregatorName, boost::property_tree::ptree configuration);
+  Aggregator(const std::string& aggregatorName, boost::property_tree::ptree configuration);
 
   /**
    * \brief Initialize the aggregator
@@ -88,11 +91,6 @@ class Aggregator
 
   CheckConfig mAggregatorConfig; // we reuse checkConfig, just consider that Check = Aggregator
   AggregatorInterface* mAggregatorInterface = nullptr;
-
-  // Policy
-  //  std::function<bool(std::map<std::string, unsigned int>&)> mPolicy;
-  //  unsigned int mMORevision = 0;
-  //  bool mPolicyHelper = false; // Depending on policy, the purpose might change
 };
 
 } // namespace o2::quality_control::checker
