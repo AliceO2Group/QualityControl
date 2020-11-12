@@ -112,6 +112,17 @@ MonitorObject* ObjectsManager::getMonitorObject(std::string objectName)
   return dynamic_cast<MonitorObject*>(object);
 }
 
+MonitorObject* ObjectsManager::getMonitorObject(size_t index)
+{
+  TObject* object = mMonitorObjects->At(index);
+  if (object == nullptr) {
+    ILOG(Error, Ops) << "ObjectsManager: Unable to find object at index \"" << index << "\"" << ENDM;
+    string fakeName = "at index " + to_string(index);
+    BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(fakeName));
+  }
+  return dynamic_cast<MonitorObject*>(object);
+}
+
 MonitorObjectCollection* ObjectsManager::getNonOwningArray() const
 {
   return new MonitorObjectCollection(*mMonitorObjects);
@@ -124,7 +135,7 @@ void ObjectsManager::addMetadata(const std::string& objectName, const std::strin
   ILOG(Debug, Devel) << "Added metadata on " << objectName << " : " << key << " -> " << value << ENDM;
 }
 
-int ObjectsManager::getNumberPublishedObjects()
+size_t ObjectsManager::getNumberPublishedObjects()
 {
   return mMonitorObjects->GetLast() + 1; // GetLast returns the index
 }

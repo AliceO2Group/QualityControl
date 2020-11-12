@@ -118,6 +118,7 @@ class TaskRunner : public framework::Task
   void finishCycle(framework::DataAllocator& outputs);
   int publish(framework::DataAllocator& outputs);
   void publishCycleStats();
+  void saveToFile();
 
  private:
   std::string mDeviceName;

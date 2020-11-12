@@ -140,7 +140,15 @@ class ObjectsManager
    * Get the number of objects that have been published.
    * @return an int with the number of objects.
    */
-  int getNumberPublishedObjects();
+  size_t getNumberPublishedObjects();
+
+  /**
+   * Returns the published MonitorObject specified by its name
+   * @param index
+   * @return A pointer to the MonitorObject.
+   * @throw ObjectNotFoundError if the object is not found.
+   */
+  MonitorObject* getMonitorObject(size_t index);
 
   /**
    * \brief Update the list of objects stored in the Service Discovery.

@@ -17,6 +17,7 @@
             * [Paths](#paths)
       * [Module creation](#module-creation)
       * [Test run](#test-run)
+         * [Saving the QC objects in a local file](#saving-the-qc-objects-in-a-local-file)
       * [Modification of the Task](#modification-of-the-task)
       * [Check](#check)
          * [Configuration](#configuration)
@@ -246,6 +247,14 @@ o2-qc-run-producer | o2-qc --config json://$HOME/alice/QualityControl/Modules/TS
 ```
 
 You should see an object `example` in `/qc/TST/MO/MyRawDataQcTask` at qcg-test.cern.ch.
+
+### Saving the QC objects in a local file
+
+When debugging and developping, and only in this case, it can be handy to save the objects being produced to a file. Simply add the parameter `saveObjectsToFile` to the task definition and set it to file name with or without a path. For example: 
+
+```
+"saveObjectsToFile": "test.root",      "": "For debugging, path to the file where to save. If empty it won't save."
+``` 
 
 ## Modification of the Task
 
