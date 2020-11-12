@@ -132,7 +132,6 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
   send(qualityObjects, ctx.outputs());
 
   updatePolicyManager.updateGlobalRevision();
-
 }
 
 QualityObjectsType AggregatorRunner::aggregate()
@@ -149,13 +148,13 @@ QualityObjectsType AggregatorRunner::aggregate()
       mTotalNumberObjectsProduced += newQOs.size();
       mTotalNumberAggregatorExecuted++;
       // we consider the output of the aggregators the same way we do the output of a check
-      for(const auto& qo : newQOs) {
+      for (const auto& qo : newQOs) {
         mQualityObjects[qo->getName()] = qo;
         updatePolicyManager.updateObjectRevision(qo->getName());
       }
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
-        newQOs.clear();
+      newQOs.clear();
 
       updatePolicyManager.updateActorRevision(name); // Was aggregated, update latest revision
     } else {
@@ -183,17 +182,17 @@ void AggregatorRunner::send(QualityObjectsType& qualityObjects, framework::DataA
   // This should be fine if they are retrieved on the other side with InputRecordWalker.
 
   ILOG(Info) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
-//  for (const auto& qo : qualityObjects) {
+  //  for (const auto& qo : qualityObjects) {
 
-    //    const auto& correspondingAggregator = std::find_if(mAggregators.begin(), mAggregators.end(), [aggregatorName = qo->getAggregatorName()](const auto& aggregator) {
-    //      return aggregator.getName() == aggregatorName;
-    //    });
+  //    const auto& correspondingAggregator = std::find_if(mAggregators.begin(), mAggregators.end(), [aggregatorName = qo->getAggregatorName()](const auto& aggregator) {
+  //      return aggregator.getName() == aggregatorName;
+  //    });
 
-    //    auto outputSpec = correspondingAggregator->getOutputSpec();
-    //    auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
-    //    allocator.snapshot(
-    //      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
-//  }
+  //    auto outputSpec = correspondingAggregator->getOutputSpec();
+  //    auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
+  //    allocator.snapshot(
+  //      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
+  //  }
 }
 
 void AggregatorRunner::initDatabase()

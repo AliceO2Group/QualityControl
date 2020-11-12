@@ -25,7 +25,6 @@ std::vector<Quality> o2::quality_control_modules::skeleton::SkeletonAggregator::
 
   std::cout << "HELLO FROM SKELETON AGGREGATOR" << std::endl;
 
-
   // we return the worse quality of all the objects we receive
   Quality current = Quality::Good;
   for (auto qo : qoMap) {

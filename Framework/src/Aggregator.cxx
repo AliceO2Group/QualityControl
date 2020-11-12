@@ -34,7 +34,7 @@ Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::
     (void)_key;
 
     if (auto sourceType = dataSource.get<std::string>("type");
-      sourceType == "Checks" || sourceType == "Aggregators") {
+        sourceType == "Checks" || sourceType == "Aggregators") {
 
       for (const auto& sourceName : dataSource.get_child("names")) {
         auto name = sourceName.second.get_value<std::string>();
@@ -48,10 +48,9 @@ Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::
 void Aggregator::init()
 {
   try {
-    ILOG(Info, Devel) << "Insantiating the user code for aggregator " << mAggregatorConfig.checkName << " (" << mAggregatorConfig.moduleName << ", " << mAggregatorConfig.className << ")" << ENDM
-    mAggregatorInterface = root_class_factory::create<AggregatorInterface>(mAggregatorConfig.moduleName, mAggregatorConfig.className);
-//    mAggregatorInterface->setCustomParameters(mAggregatorConfig.customParameters);
-//    mAggregatorInterface->configure(mAggregatorConfig.checkName);
+    ILOG(Info, Devel) << "Insantiating the user code for aggregator " << mAggregatorConfig.checkName << " (" << mAggregatorConfig.moduleName << ", " << mAggregatorConfig.className << ")" << ENDM mAggregatorInterface = root_class_factory::create<AggregatorInterface>(mAggregatorConfig.moduleName, mAggregatorConfig.className);
+    //    mAggregatorInterface->setCustomParameters(mAggregatorConfig.customParameters);
+    //    mAggregatorInterface->configure(mAggregatorConfig.checkName);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows:\n"
@@ -74,7 +73,7 @@ QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap)
 {
   std::vector<Quality> results = mAggregatorInterface->aggregate(qoMap);
   QualityObjectsType qualityObjects;
-  for(auto quality: results) {
+  for (auto quality : results) {
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
       mAggregatorConfig.checkName,
