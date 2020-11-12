@@ -19,8 +19,7 @@
 
 #include <Framework/WorkflowSpec.h>
 
-/// These methods can be used to build a complex processing topology. It spawns 3 separate dummy processing chains,
-/// each made of a
+/// These methods can be used to build a complex processing topology. It spawns 3 separate dummy processing chains.
 
 namespace o2::quality_control::core
 {
