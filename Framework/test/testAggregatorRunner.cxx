@@ -31,6 +31,5 @@ BOOST_AUTO_TEST_CASE(test_check_runner_static)
 {
   BOOST_CHECK(AggregatorRunner::createAggregatorRunnerDataDescription("qwertyuiop") == DataDescription("qwertyuiop"));
   BOOST_CHECK(AggregatorRunner::createAggregatorRunnerDataDescription("012345678901234567890") == DataDescription("012345678901"));
-  AggregatorRunner::createAggregatorRunnerDataDescription("012345678901234567890")
     BOOST_CHECK_THROW(AggregatorRunner::createAggregatorRunnerDataDescription(""), AliceO2::Common::FatalException);
 }
