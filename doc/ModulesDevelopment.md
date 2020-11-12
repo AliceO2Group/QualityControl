@@ -350,8 +350,16 @@ In the final system, the qc gets real data from the DPL devices or the readout p
 
 When connecting the QC directly to the readout using the `o2-qc-run-readout` proxy, remember to add this consumer to the config file of the readout and to enable it: 
 ```json
-[consumer-data-sampling]
-consumerType=DataSampling
+[consumer-fmq-qc]
+consumerType=FairMQChannel
+enableRawFormat=1
+fmq-name=readout-qc
+fmq-address=ipc:///tmp/readout-pipe-1
+fmq-type=pub
+fmq-transport=zeromq
+unmanagedMemorySize=2G
+memoryPoolNumberOfPages=500
+memoryPoolPageSize=1M
 enabled=1
 ```
 
