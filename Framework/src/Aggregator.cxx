@@ -20,6 +20,7 @@
 
 using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
+using namespace std;
 
 Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::ptree configuration)
 {
@@ -28,6 +29,13 @@ Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::
   mAggregatorConfig.policyType = configuration.get<std::string>("policy", "");
   mAggregatorConfig.className = configuration.get<std::string>("className", "");
   mAggregatorConfig.detectorName = configuration.get<std::string>("detectorName", "");
+
+  // Params
+  if(configuration.count("aggregatorParameters")) {
+    for (const auto& [_key, _value] : configuration.get_child("aggregatorParameters")) {
+      mAggregatorConfig.customParameters[_key] = _value.data();
+    }
+  }
 
   // Inputs
   for (const auto& [_key, dataSource] : configuration.get_child("dataSource")) {
@@ -45,12 +53,15 @@ Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::
     }
   }
 }
+
 void Aggregator::init()
 {
   try {
-    ILOG(Info, Devel) << "Insantiating the user code for aggregator " << mAggregatorConfig.checkName << " (" << mAggregatorConfig.moduleName << ", " << mAggregatorConfig.className << ")" << ENDM mAggregatorInterface = root_class_factory::create<AggregatorInterface>(mAggregatorConfig.moduleName, mAggregatorConfig.className);
-    //    mAggregatorInterface->setCustomParameters(mAggregatorConfig.customParameters);
-    //    mAggregatorInterface->configure(mAggregatorConfig.checkName);
+    ILOG(Info, Devel) << "Insantiating the user code for aggregator " << mAggregatorConfig.checkName
+                      << " (" << mAggregatorConfig.moduleName << ", " << mAggregatorConfig.className << ")" << ENDM;
+     mAggregatorInterface = root_class_factory::create<AggregatorInterface>(mAggregatorConfig.moduleName, mAggregatorConfig.className);
+     mAggregatorInterface->setCustomParameters(mAggregatorConfig.customParameters);
+     mAggregatorInterface->configure(mAggregatorConfig.checkName);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows:\n"
@@ -83,20 +94,16 @@ QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap)
   return qualityObjects;
 }
 
-void Aggregator::initConfig(std::string aggregatorName)
-{
-}
-void Aggregator::initPolicy(std::string policyType)
-{
-}
 std::string Aggregator::getPolicyName() const
 {
   return mAggregatorConfig.policyType;
 }
+
 std::vector<std::string> Aggregator::getObjectsNames() const
 {
   return mAggregatorConfig.moNames;
 }
+
 bool Aggregator::getAllObjectsOption() const
 {
   return mAggregatorConfig.allMOs;

@@ -76,7 +76,7 @@
       }
     },
     "aggregators": {
-      "MyAggregator": {
+      "MyAggregator1": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
         "moduleName": "QcSkeleton",
@@ -84,7 +84,35 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Checks",
-          "names": ["dataSizeCheck", "someNumbersCheck"]
+          "names": ["dataSizeCheck"]
+        }, {
+          "type": "Checks",
+          "names": ["someNumbersCheck"]
+        }]
+      },
+      "MyAggregator2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Checks",
+          "names": ["dataSizeCheck"]
+        }, {
+          "type": "Checks",
+          "names": ["someNumbersCheck"]
+        }]
+      },
+      "MyAggregator3": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Aggregators",
+          "names": ["MyAggregator1", "MyAggregator2"]
         }]
       }
     }
@@ -94,7 +122,7 @@
       "id": "tst1",
       "active": "true",
       "machines": [],
-      "query" : "param:TST/RAWDATA/0",
+      "query" : "sum:TST/SUM/2;param:TST/PARAM/2",
       "samplingConditions": [
         {
           "condition": "random",
@@ -108,7 +136,7 @@
       "id": "tst2",
       "active": "true",
       "machines": [],
-      "query" : "data:TST/RAWDATA",
+      "query" : "data:TST/DATA",
       "samplingConditions": [
         {
           "condition": "payloadSize",

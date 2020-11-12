@@ -345,7 +345,7 @@ o2-qc-run-basic --config-path /Users/barth/alice/sw/osx_x86-64/QualityControl/em
 A more complex example with a producer and the `o2-qc`: 
 
 ```
-TODO (publisher | o2-qc --config)
+o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/advanced-aggregator.json
 ```
 
 ### Configuration

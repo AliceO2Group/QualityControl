@@ -77,7 +77,10 @@
         "dataSource": [{
           "type": "Checks",
           "names": ["QcCheck", "QcCheck2"]
-        }]
+        }],
+        "aggregatorParameters": {
+          "myOwnKey": "myOwnValue"
+        }
       }
     }
   },

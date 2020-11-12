@@ -59,36 +59,12 @@ class Aggregator
 
   o2::quality_control::core::QualityObjectsType aggregate(core::QualityObjectsMapType& qoMap);
 
-  /**
-   * \brief Change the revision.
-   *
-   * Update the revision number with the latest global revision.
-   * Expected to be changed after invoke of `aggregator(moMap)` or revision number overflow.
-   */
-  //  void updateGlobalRevision(unsigned int revision);
-
-  /**
-   * \brief Return true if the Monitor Objects were changed accordingly to the policy
-   */
-  //  bool isReady(std::map<std::string, unsigned int>& revisionMap);
-
   const std::string& getName() const { return mAggregatorConfig.checkName; };
-  //  o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
-  //  o2::framework::Inputs getInputs() const { return mInputs; };
   std::string getPolicyName() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;
 
-  //TODO: Unique Input string
-  //  static o2::header::DataDescription createAggregatorerDataDescription(const std::string taskName);
-
-  // For testing purpose
-  //  void setAggregatorInterface(AggregatorInterface* aggregatorInterface) { mAggregatorInterface = aggregatorInterface; };
-
  private:
-  void initConfig(std::string aggregatorName);
-  void initPolicy(std::string policyType);
-
   CheckConfig mAggregatorConfig; // we reuse checkConfig, just consider that Check = Aggregator
   AggregatorInterface* mAggregatorInterface = nullptr;
 };
