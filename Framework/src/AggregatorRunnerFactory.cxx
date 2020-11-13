@@ -38,7 +38,7 @@ DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& chec
   DataProcessorSpec aggregatorSpec{
     aggregator.getDeviceName(),
     aggregator.getInputs(),
-    Outputs{ },
+    Outputs{},
     adaptFromTask<AggregatorRunner>(std::move(aggregator)),
     Options{}
   };

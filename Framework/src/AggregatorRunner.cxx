@@ -96,7 +96,8 @@ void AggregatorRunner::init(framework::InitContext&)
     initAggregators();
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n" << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during initialization:\n"
+                << current_diagnostic(true) << ENDM;
     throw;
   }
 }

@@ -25,7 +25,7 @@ std::map<std::string, Quality> o2::quality_control_modules::skeleton::SkeletonAg
 
   std::cout << "HELLO FROM SKELETON AGGREGATOR " << std::endl;
   std::cout << "received a list of size : " << qoMap.size() << std::endl;
-  for(const auto& item : qoMap) {
+  for (const auto& item : qoMap) {
     cout << "Object: " << endl;
     cout << (*item.second) << endl;
   }

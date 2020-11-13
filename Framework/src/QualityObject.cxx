@@ -51,7 +51,8 @@ QualityObject::QualityObject(
     return strdup(name.c_str());
   }
 
-  std::string QualityObject::getName() const {
+  std::string QualityObject::getName() const
+  {
     if (mPolicyName == "OnEachSeparately") {
       if (mMonitorObjectsNames.empty()) {
         BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details("getQoPath: The vector of monitorObjectsNames is empty."));
@@ -144,7 +145,7 @@ QualityObject::QualityObject(
         << "   - detectorName : " << q.getDetectorName() << "\n"
         << "   - policyName : " << q.getPolicyName() << "\n"
         << "   - monitorObjectsNames : ";
-    for(auto item : q.getMonitorObjectsNames()) {
+    for (auto item : q.getMonitorObjectsNames()) {
       out << item << ", ";
     }
     return out;

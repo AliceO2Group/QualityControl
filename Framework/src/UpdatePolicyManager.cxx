@@ -173,7 +173,7 @@ std::ostream& operator<<(std::ostream& out, const UpdatePolicy& updatePolicy) //
       << "; policyHelperFlag: " << updatePolicy.policyHelperFlag
       << "; revision: " << updatePolicy.revision
       << "; inputObjects: ";
-  for(const auto& item: updatePolicy.inputObjects) {
+  for (const auto& item : updatePolicy.inputObjects) {
     out << item << ", ";
   }
   return out;
