@@ -23,6 +23,7 @@
 #include "FT0/Utilities.h"
 #include "DataFormatsFT0/Digit.h"
 #include "DataFormatsFT0/ChannelData.h"
+#include <Framework/InputRecord.h>
 
 namespace o2::quality_control_modules::ft0
 {
