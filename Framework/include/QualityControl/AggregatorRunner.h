@@ -94,7 +94,6 @@ class AggregatorRunner : public framework::Task
   void run(framework::ProcessingContext& ctx) override;
 
   framework::Inputs getInputs() { return mInputs; };
-  framework::OutputSpec getOutput() { return mOutput; };
   std::string getDeviceName() { return mDeviceName; };
 
   static std::string createAggregatorRunnerIdString() { return "QC-AGGREGATOR-RUNNER"; };
@@ -121,11 +120,6 @@ class AggregatorRunner : public framework::Task
    */
   void store(QualityObjectsType& qualityObjects);
 
-  /**
-   * \brief Send the QualityObjects on the DataProcessor output channel.
-   */
-  void send(QualityObjectsType& qualityObjects, framework::DataAllocator& allocator);
-
   inline void initDatabase();
   inline void initMonitoring();
   inline void initServiceDiscovery();
@@ -146,7 +140,6 @@ class AggregatorRunner : public framework::Task
 
   // DPL
   o2::framework::Inputs mInputs;
-  framework::OutputSpec mOutput;
 
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;

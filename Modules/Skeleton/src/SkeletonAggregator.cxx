@@ -16,14 +16,19 @@
 #include "Skeleton/SkeletonAggregator.h"
 
 #include <iostream>
-
+using namespace std;
 void o2::quality_control_modules::skeleton::SkeletonAggregator::configure(std::string) {}
 
-std::vector<Quality> o2::quality_control_modules::skeleton::SkeletonAggregator::aggregate(QualityObjectsMapType& qoMap)
+std::map<std::string, Quality> o2::quality_control_modules::skeleton::SkeletonAggregator::aggregate(QualityObjectsMapType& qoMap)
 {
-  std::vector<Quality> result;
+  std::map<std::string, Quality> result;
 
-  std::cout << "HELLO FROM SKELETON AGGREGATOR" << std::endl;
+  std::cout << "HELLO FROM SKELETON AGGREGATOR " << std::endl;
+  std::cout << "received a list of size : " << qoMap.size() << std::endl;
+  for(const auto& item : qoMap) {
+    cout << "Object: " << endl;
+    cout << (*item.second) << endl;
+  }
 
   // we return the worse quality of all the objects we receive
   Quality current = Quality::Good;
@@ -35,6 +40,11 @@ std::vector<Quality> o2::quality_control_modules::skeleton::SkeletonAggregator::
   }
 
   std::cout << "   result: " << current << std::endl;
-  result.emplace_back(current);
+  result["newQuality"] = current;
+
+  // add one more
+  Quality plus = Quality::Medium;
+  result["another"] = plus;
+
   return result;
 }

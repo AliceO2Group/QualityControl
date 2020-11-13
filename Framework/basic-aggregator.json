@@ -58,7 +58,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
-        "policy": "OnAny",
+        "policy": "OnEachSeparately",
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
@@ -68,16 +68,16 @@
       }
     },
     "aggregators": {
-      "MyAggregator": {
+      "MyAggregator1": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
         "moduleName": "QcSkeleton",
         "policy": "OnAll",
         "detectorName": "TST",
         "dataSource": [{
-          "type": "Checks",
-          "names": ["QcCheck", "QcCheck2"]
-        }],
+            "type": "Check",   "": "for a check which produces a single result do it like that",
+            "name": "QcCheck", "": "no need to specify each object because there is only 1"
+          }],
         "aggregatorParameters": {
           "myOwnKey": "myOwnValue"
         }

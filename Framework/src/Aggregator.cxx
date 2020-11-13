@@ -31,22 +31,33 @@ Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::
   mAggregatorConfig.detectorName = configuration.get<std::string>("detectorName", "");
 
   // Params
-  if(configuration.count("aggregatorParameters")) {
+  if (configuration.count("aggregatorParameters")) {
     for (const auto& [_key, _value] : configuration.get_child("aggregatorParameters")) {
       mAggregatorConfig.customParameters[_key] = _value.data();
     }
   }
 
-  // Inputs
+  ILOG(Info, Devel) << "Creation of a new aggregator " << aggregatorName << ENDM;
   for (const auto& [_key, dataSource] : configuration.get_child("dataSource")) {
     (void)_key;
 
-    if (auto sourceType = dataSource.get<std::string>("type");
-        sourceType == "Checks" || sourceType == "Aggregators") {
+    // The aggregators are kept separated as their behaviour might evolve independently from the Checks.
+    if (auto sourceType = dataSource.get<std::string>("type"); sourceType == "Aggregator" || sourceType == "Check") {
+      auto sourceName = dataSource.get<std::string>("name");
+      ILOG(Info, Devel) << "   Found a source of type Aggregator : " << sourceName << ENDM;
 
-      for (const auto& sourceName : dataSource.get_child("names")) {
-        auto name = sourceName.second.get_value<std::string>();
-        if (std::find(mAggregatorConfig.moNames.begin(), mAggregatorConfig.moNames.end(), name) == mAggregatorConfig.moNames.end()) {
+      if (dataSource.count("QOs") == 0 || dataSource.get<std::string>("QOs") == "all") {
+        //        mAggregatorConfig.moNames.push_back(aggregatorName);
+        ILOG(Info, Devel) << "      (no QOs specified or specified as `all`)" << ENDM;
+        mAggregatorConfig.allMOs = true;
+        // fixme: this is a dirty fix. Policies should be refactored, so this check won't be needed.
+        if (mAggregatorConfig.policyType != "OnEachSeparately") {
+          mAggregatorConfig.policyType = "_OnGlobalAny";
+        }
+      } else {
+        for (const auto& qoName : dataSource.get_child("QOs")) {
+          auto name = std::string(sourceName + "/" + qoName.second.get_value<std::string>());
+          ILOG(Info, Devel) << "      - " << name << ENDM;
           mAggregatorConfig.moNames.push_back(name);
         }
       }
@@ -59,9 +70,10 @@ void Aggregator::init()
   try {
     ILOG(Info, Devel) << "Insantiating the user code for aggregator " << mAggregatorConfig.checkName
                       << " (" << mAggregatorConfig.moduleName << ", " << mAggregatorConfig.className << ")" << ENDM;
-     mAggregatorInterface = root_class_factory::create<AggregatorInterface>(mAggregatorConfig.moduleName, mAggregatorConfig.className);
-     mAggregatorInterface->setCustomParameters(mAggregatorConfig.customParameters);
-     mAggregatorInterface->configure(mAggregatorConfig.checkName);
+    mAggregatorInterface =
+      root_class_factory::create<AggregatorInterface>(mAggregatorConfig.moduleName, mAggregatorConfig.className);
+    mAggregatorInterface->setCustomParameters(mAggregatorConfig.customParameters);
+    mAggregatorInterface->configure(mAggregatorConfig.checkName);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows:\n"
@@ -82,12 +94,12 @@ void Aggregator::init()
 
 QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap)
 {
-  std::vector<Quality> results = mAggregatorInterface->aggregate(qoMap);
+  auto results = mAggregatorInterface->aggregate(qoMap);
   QualityObjectsType qualityObjects;
-  for (auto quality : results) {
+  for (auto const& [name, quality] : results) {
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
-      mAggregatorConfig.checkName,
+      mAggregatorConfig.checkName + "/" + name,
       mAggregatorConfig.detectorName,
       mAggregatorConfig.policyType));
   }

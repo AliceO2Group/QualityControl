@@ -44,7 +44,6 @@ namespace o2::quality_control::checker
 
 AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkerRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
-    mOutput({ "qo" }, createAggregatorRunnerDataDescription(mDeviceName), 0),
     mTotalNumberObjectsReceived(0)
 {
   try {
@@ -91,33 +90,26 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 void AggregatorRunner::init(framework::InitContext&)
 {
   try {
-    cout << "hello" << endl;
     initDatabase();
     initMonitoring();
-    cout << "*1" << endl;
     initServiceDiscovery();
-    cout << "*2" << endl;
     initAggregators();
-    cout << "*3" << endl;
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n"
-                << current_diagnostic(true) << ENDM;
+    ILOG(Fatal) << "Unexpected exception during initialization:\n" << current_diagnostic(true) << ENDM;
     throw;
   }
 }
 
 void AggregatorRunner::run(framework::ProcessingContext& ctx)
 {
-  cout << "run" << endl;
-  // get data
   framework::InputRecord& inputs = ctx.inputs();
   for (auto const& ref : InputRecordWalker(inputs)) { // InputRecordWalker because the output of CheckRunner can be multi-part
     if (ref.header != nullptr) {
-      ILOG(Info) << "Received data !" << ENDM;
+      ILOG(Debug, Trace) << "Received data !" << ENDM;
       shared_ptr<const QualityObject> qo = inputs.get<QualityObject*>(ref);
       if (qo != nullptr) {
-        ILOG(Info) << "it is a qo: " << qo->getName() << ENDM;
+        ILOG(Debug, Trace) << "It is a qo: " << qo->getName() << ENDM;
         mQualityObjects[qo->getName()] = qo;
         mTotalNumberObjectsReceived++;
         updatePolicyManager.updateObjectRevision(qo->getName());
@@ -126,17 +118,14 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
   }
 
   auto qualityObjects = aggregate();
-
   store(qualityObjects);
-
-  send(qualityObjects, ctx.outputs());
 
   updatePolicyManager.updateGlobalRevision();
 }
 
 QualityObjectsType AggregatorRunner::aggregate()
 {
-  ILOG(Info, Devel) << "Aggregate called in AggregatorRunner, QOs in cache: " << mQualityObjects.size() << ENDM;
+  ILOG(Debug, Trace) << "Aggregate called in AggregatorRunner, QOs in cache: " << mQualityObjects.size() << ENDM;
 
   QualityObjectsType allQOs;
   for (auto& aggregator : mAggregatorsMap) {
@@ -144,7 +133,7 @@ QualityObjectsType AggregatorRunner::aggregate()
 
     string name = aggregator.second->getName();
     if (updatePolicyManager.isReady(name)) {
-      auto newQOs = aggregator.second->aggregate(mQualityObjects);
+      auto newQOs = aggregator.second->aggregate(mQualityObjects); // we give the whole list
       mTotalNumberObjectsProduced += newQOs.size();
       mTotalNumberAggregatorExecuted++;
       // we consider the output of the aggregators the same way we do the output of a check
@@ -158,7 +147,7 @@ QualityObjectsType AggregatorRunner::aggregate()
 
       updatePolicyManager.updateActorRevision(name); // Was aggregated, update latest revision
     } else {
-      ILOG(Info) << "Quality Objects for the aggregator '" << name << "' are not ready, ignoring" << ENDM;
+      ILOG(Info, Devel) << "Quality Objects for the aggregator '" << name << "' are not ready, ignoring" << ENDM;
     }
   }
   return allQOs;
@@ -166,42 +155,23 @@ QualityObjectsType AggregatorRunner::aggregate()
 
 void AggregatorRunner::store(QualityObjectsType& qualityObjects)
 {
-  ILOG(Info) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
+  ILOG(Info, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
       mDatabase->storeQO(qo);
     }
   } catch (boost::exception& e) {
-    ILOG(Info) << "Unable to " << diagnostic_information(e) << ENDM;
+    ILOG(Info, Devel) << "Unable to " << diagnostic_information(e) << ENDM;
   }
-}
-
-void AggregatorRunner::send(QualityObjectsType& qualityObjects, framework::DataAllocator& /*allocator*/)
-{
-  // Note that we might send multiple QOs in one output, as separate parts.
-  // This should be fine if they are retrieved on the other side with InputRecordWalker.
-
-  ILOG(Info) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
-  //  for (const auto& qo : qualityObjects) {
-
-  //    const auto& correspondingAggregator = std::find_if(mAggregators.begin(), mAggregators.end(), [aggregatorName = qo->getAggregatorName()](const auto& aggregator) {
-  //      return aggregator.getName() == aggregatorName;
-  //    });
-
-  //    auto outputSpec = correspondingAggregator->getOutputSpec();
-  //    auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
-  //    allocator.snapshot(
-  //      framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
-  //  }
 }
 
 void AggregatorRunner::initDatabase()
 {
   mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
   mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
-  LOG(INFO) << "Database that is going to be used : ";
-  LOG(INFO) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation");
-  LOG(INFO) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
+  ILOG(Info, Devel) << "Database that is going to be used : ";
+  ILOG(Info, Devel) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation");
+  ILOG(Info, Devel) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
 }
 
 void AggregatorRunner::initMonitoring()
@@ -219,20 +189,21 @@ void AggregatorRunner::initServiceDiscovery()
   auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
-  LOG(INFO) << "ServiceDiscovery initialized";
+  ILOG(Info, Devel) << "ServiceDiscovery initialized";
 }
 
 void AggregatorRunner::initAggregators()
 {
-  cout << "init aggreg" << endl;
+  ILOG(Info, Devel) << "Initialization of the aggregators" << ENDM;
+
   // Build aggregators based on the configurationd
   if (mConfigFile->getRecursive("qc").count("aggregators")) {
-    cout << "a" << endl;
+
     // For every aggregator definition, create an Aggregator
     for (const auto& [aggregatorName, aggregatorConfig] : mConfigFile->getRecursive("qc.aggregators")) {
-      ILOG(Info) << ">> Aggregator name : " << aggregatorName << ENDM;
-      if (aggregatorConfig.get<bool>("active", true)) {
 
+      ILOG(Info, Devel) << ">> Aggregator name : " << aggregatorName << ENDM;
+      if (aggregatorConfig.get<bool>("active", true)) {
         // create Aggregator and store it.
         auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
         aggregator->init();

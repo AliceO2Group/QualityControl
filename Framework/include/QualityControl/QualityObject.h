@@ -53,10 +53,12 @@ class QualityObject : public TObject
   /// Move assignment operator
   QualityObject& operator=(QualityObject&& other) /*noexcept*/ = default;
 
+  friend std::ostream& operator<<(std::ostream& out, const QualityObject& q); // output
+
   /// \brief Return the name of the check.
   /// @return The name of the check.
   /// @deprecated Prefer getCheckName()
-  std::string getName() const { return mCheckName; };
+  std::string getName() const;
 
   /// \brief Return the name of the check.
   /// @return The name of the check.

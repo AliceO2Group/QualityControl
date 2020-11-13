@@ -172,7 +172,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
 
-  ILOG(Debug, Support) << "Storing object " << path << ENDM;
+  ILOG(Debug, Support) << "Storing quality object " << path << " (" << qo->getName() << ")" << ENDM;
   ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
 }
 

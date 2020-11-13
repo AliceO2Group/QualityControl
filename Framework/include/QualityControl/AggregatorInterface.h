@@ -17,6 +17,7 @@
 #define QC_CHECKER_AGGREGATORINTERFACE_H
 
 #include <unordered_map>
+#include <map>
 
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/Quality.h"
@@ -47,9 +48,9 @@ class AggregatorInterface
 
   /// \brief Returns new qualities (usually fewer) based on the input qualities
   ///
-  /// @param aoMap A map of the the QualityObjects to aggregate and their full names.
-  /// @return The quality associated with these objects.
-  virtual std::vector<Quality> aggregate(std::map<std::string, std::shared_ptr<const o2::quality_control::core::QualityObject>>& qoMap) = 0;
+  /// @param qoMap A map of the the QualityObjects to aggregate and their full names.
+  /// @return The new qualities, associated with a name.
+  virtual std::map<std::string, Quality> aggregate(std::map<std::string, std::shared_ptr<const o2::quality_control::core::QualityObject>>& qoMap) = 0;
 
   void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
   {
