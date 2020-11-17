@@ -169,7 +169,9 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
           // I don't expect the list of machines to be reconfigured - all of them should be declared beforehand,
           // even if some of them will be on standby.
           if (numberOfLocalMachines > 1) {
-            generateMergers(workflow, taskName, numberOfLocalMachines, taskConfig.get<double>("cycleDurationSeconds"));
+            generateMergers(workflow, taskName, numberOfLocalMachines,
+                            taskConfig.get<double>("cycleDurationSeconds"),
+                            taskConfig.get<std::string>("mergingMode", ""));
           }
 
         } else if (taskConfig.get<std::string>("location") == "remote") {
@@ -316,7 +318,8 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
 }
 
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName,
-                                              size_t numberOfLocalMachines, double cycleDurationSeconds)
+                                              size_t numberOfLocalMachines, double cycleDurationSeconds,
+                                              std::string mergingMode)
 {
   Inputs mergerInputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
@@ -334,10 +337,8 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
     { { "main" }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), 0 });
   MergerConfig mergerConfig;
   // if we are to change the mode to Full, disable reseting tasks after each cycle.
-  mergerConfig.inputObjectTimespan = { InputObjectsTimespan::LastDifference, 0 };
-  mergerConfig.publicationDecision = {
-    PublicationDecision::EachNSeconds, cycleDurationSeconds
-  };
+  mergerConfig.inputObjectTimespan = { (mergingMode.empty() || mergingMode == "delta") ? InputObjectsTimespan::LastDifference : InputObjectsTimespan::FullHistory };
+  mergerConfig.publicationDecision = { PublicationDecision::EachNSeconds, cycleDurationSeconds };
   mergerConfig.mergedObjectTimespan = { MergedObjectTimespan::FullHistory, 0 };
   // for now one merger should be enough, multiple layers to be supported later
   mergerConfig.topologySize = { TopologySize::NumberOfLayers, 1 };

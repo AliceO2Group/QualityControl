@@ -142,7 +142,8 @@ class InfrastructureGenerator
   static void generateMergers(framework::WorkflowSpec& workflow,
                               std::string taskName,
                               size_t numberOfLocalMachines,
-                              double cycleDurationSeconds);
+                              double cycleDurationSeconds,
+                              std::string mergingMode);
   static void generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, std::string configurationSource);
 };
