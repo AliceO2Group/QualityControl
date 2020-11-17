@@ -165,11 +165,17 @@ almost like the usual one, but with a few additional parameters. In case of a lo
           "localnode2"
         ],
         "remoteMachine": "qcnode",
-        "remotePort": "30132"
+        "remotePort": "30132",
+        "mergingMode": "delta"
       }
     },
 ```
-List the local processing machines in the `localMachines` array. `remoteMachine` should contain the host name which will serve as a QC server and `remotePort` should be a port number on which Mergers will wait for upcoming MOs. Make sure it is not used by other service. If different QC Tasks are run in parallel, use separate ports for each.
+List the local processing machines in the `localMachines` array. `remoteMachine` should contain the host name which
+ will serve as a QC server and `remotePort` should be a port number on which Mergers will wait for upcoming MOs. Make
+ sure it is not used by other service. If different QC Tasks are run in parallel, use separate ports for each. One
+ also may choose the merging mode - `delta` is the default and recommended (tasks are reset after each cycle, so they
+ send only updates), but if it is not feasible, Mergers may expect `entire` objects - tasks are not reset, they
+ always send entire objects and the latest versions are combined in Mergers.
 
 In case of a remote task, choosing `"remote"` option for the `"location"` parameter is enough.
 
@@ -576,7 +582,8 @@ Below the full QC Task configuration structure is described. Note that more than
           "o2flp2",                         "", "Hostname of a local machine."
         ],
         "remoteMachine": "o2qc1",           "": "Remote QC machine hostname. Required ony for multi-node setups.",
-        "remotePort": "30432",              "": "Remote QC machine TCP port. Required ony for multi-node setups."
+        "remotePort": "30432",              "": "Remote QC machine TCP port. Required ony for multi-node setups.",
+        "mergingMode": "delta",             "": "Merging mode, \"delta\" (default) or \"entire\" objects are expected"
       }
     }
   }
