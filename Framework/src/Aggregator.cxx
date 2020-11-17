@@ -24,7 +24,7 @@ using namespace std;
 
 Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::ptree configuration)
 {
-  mAggregatorConfig.checkName = aggregatorName;
+  mAggregatorConfig.name = aggregatorName;
   mAggregatorConfig.moduleName = configuration.get<std::string>("moduleName", "");
   mAggregatorConfig.policyType = configuration.get<std::string>("policy", "");
   mAggregatorConfig.className = configuration.get<std::string>("className", "");
@@ -38,16 +38,14 @@ Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::
   }
 
   ILOG(Info, Devel) << "Creation of a new aggregator " << aggregatorName << ENDM;
-  for (const auto& [_key, dataSource] : configuration.get_child("dataSource")) {
+  for (const auto& [_key, dataSource] : configuration.get_child("dataSource")) { // loop through data sources
     (void)_key;
 
-    // The aggregators are kept separated as their behaviour might evolve independently from the Checks.
     if (auto sourceType = dataSource.get<std::string>("type"); sourceType == "Aggregator" || sourceType == "Check") {
       auto sourceName = dataSource.get<std::string>("name");
-      ILOG(Info, Devel) << "   Found a source of type Aggregator : " << sourceName << ENDM;
+      ILOG(Info, Devel) << "   Found a source : " << sourceName << ENDM;
 
       if (dataSource.count("QOs") == 0 || dataSource.get<std::string>("QOs") == "all") {
-        //        mAggregatorConfig.moNames.push_back(aggregatorName);
         ILOG(Info, Devel) << "      (no QOs specified or specified as `all`)" << ENDM;
         mAggregatorConfig.allMOs = true;
         // fixme: this is a dirty fix. Policies should be refactored, so this check won't be needed.
@@ -68,12 +66,12 @@ Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::
 void Aggregator::init()
 {
   try {
-    ILOG(Info, Devel) << "Insantiating the user code for aggregator " << mAggregatorConfig.checkName
+    ILOG(Info, Devel) << "Insantiating the user code for aggregator " << mAggregatorConfig.name
                       << " (" << mAggregatorConfig.moduleName << ", " << mAggregatorConfig.className << ")" << ENDM;
     mAggregatorInterface =
       root_class_factory::create<AggregatorInterface>(mAggregatorConfig.moduleName, mAggregatorConfig.className);
     mAggregatorInterface->setCustomParameters(mAggregatorConfig.customParameters);
-    mAggregatorInterface->configure(mAggregatorConfig.checkName);
+    mAggregatorInterface->configure(mAggregatorConfig.name);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows:\n"
@@ -82,13 +80,13 @@ void Aggregator::init()
   }
 
   // Print setting
-  ILOG(Info, Ops) << mAggregatorConfig.checkName << ": Module " << mAggregatorConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Ops) << mAggregatorConfig.checkName << ": Class " << mAggregatorConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Ops) << mAggregatorConfig.checkName << ": Detector " << mAggregatorConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Ops) << mAggregatorConfig.checkName << ": Policy " << mAggregatorConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Ops) << mAggregatorConfig.checkName << ": QualityObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Ops) << mAggregatorConfig.name << ": Module " << mAggregatorConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Ops) << mAggregatorConfig.name << ": Class " << mAggregatorConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Ops) << mAggregatorConfig.name << ": Detector " << mAggregatorConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Ops) << mAggregatorConfig.name << ": Policy " << mAggregatorConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Ops) << mAggregatorConfig.name << ": QualityObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
   for (const auto& moname : mAggregatorConfig.moNames) {
-    ILOG(Info, Ops) << mAggregatorConfig.checkName << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Ops) << mAggregatorConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
 
@@ -99,7 +97,7 @@ QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap)
   for (auto const& [name, quality] : results) {
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
-      mAggregatorConfig.checkName + "/" + name,
+      mAggregatorConfig.name + "/" + name,
       mAggregatorConfig.detectorName,
       mAggregatorConfig.policyType));
   }

@@ -27,6 +27,7 @@
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ServiceDiscovery.h"
+#include "QualityControl/Aggregator.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -42,7 +43,7 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkerRunnerOutputs)
+AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
     mTotalNumberObjectsReceived(0)
 {
@@ -57,9 +58,9 @@ AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const
 
   // prepare list of all inputs
   int i = 0;
-  for (const auto& spec : checkerRunnerOutputs) {
+  for (const auto& spec : checkRunnerOutputs) {
     auto input = DataSpecUtils::matchingInput(spec);
-    input.binding = "checkerOutput" + to_string(i); // TODO check if that name is fine
+    input.binding = "checkerOutput" + to_string(i);
     mInputs.emplace_back(input);
     i++;
   }

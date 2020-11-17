@@ -34,7 +34,6 @@ DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& chec
 {
   AggregatorRunner aggregator{ configurationSource, checkerRunnerOutputs };
 
-  // build DataProcessorSpec
   DataProcessorSpec aggregatorSpec{
     aggregator.getDeviceName(),
     aggregator.getInputs(),

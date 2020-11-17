@@ -29,30 +29,44 @@
 // O2
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
-#include <Configuration/ConfigurationInterface.h>
 #include <Common/Timer.h>
 // QC
-#include "QualityControl/AggregatorInterface.h"
-#include "QualityControl/DatabaseInterface.h"
-#include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/Aggregator.h"
-#include "UpdatePolicyManager.h"
+#include "QualityControl/QualityObject.h"
+#include "QualityControl/UpdatePolicyManager.h"
 
 namespace o2::framework
 {
 struct InputSpec;
 struct OutputSpec;
 class DataAllocator;
-} // namespace o2::framework
+}
 
 namespace o2::monitoring
 {
 class Monitoring;
 }
 
-namespace o2::quality_control::core
+namespace o2::configuration
 {
+class ConfigurationInterface;
+}
+
+namespace AliceO2::Common
+{
+class Timer;
+}
+
+namespace o2::quality_control
+{
+namespace core{
 class ServiceDiscovery;
+}
+namespace checker{
+class Aggregator;
+}
+namespace repository {
+class DatabaseInterface;
+}
 }
 
 class TClass;
@@ -62,11 +76,12 @@ namespace o2::quality_control::checker
 
 /// \brief The class in charge of running the aggregators on the QualityObjects.
 ///
-/// A AggregatorRunner is in charge of loading/instantiating the proper aggregators, to configure it/them
-/// and to run them on the QualityObjects in order to generate new quality(ies).
+/// An AggregatorRunner is the device in charge of receiving data, handling the Aggregators and
+/// calling them when the data is ready to be processed. It also initialize a few services such
+/// as the monitoring.
 /// At the moment, the aggregatorRunner also stores these new qualities in the repository.
-///
-/// TODO Evaluate whether we should have a dedicated device to store in the database.
+/// At the moment, it is also a unique process although it could easily be updated to be able to run
+/// in parallel.
 ///
 /// \author Barthélémy von Haller
 class AggregatorRunner : public framework::Task
@@ -75,14 +90,12 @@ class AggregatorRunner : public framework::Task
   /// Constructor
   /**
    * \brief AggregatorRunner constructor
+   * Create the AggregatorRunner device.
    *
-   * Create the AggregatorRunner device that will perform aggregations.
-   *
-   * @param aggregatorName Aggregator name from the configuration
-   * @param aggregatorNames List of aggregator names, that operate on the same inputs.
    * @param configurationSource Path to configuration
+   * @param checkRunnerOutputs List of checkRunners' output that it will take as inputs.
    */
-  AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkerRunnerOutputs);
+  AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkRunnerOutputs);
 
   /// Destructor
   ~AggregatorRunner() override;
@@ -102,23 +115,20 @@ class AggregatorRunner : public framework::Task
 
  private:
   /**
-   * \brief Evaluate the quality of a MonitorObject.
+   * \brief For each aggregator, check if the data is ready and, if so, call its own aggregation method.
    *
-   * The Aggregator's associated with this MonitorObject are run and a global quality is built by
-   * taking the worse quality encountered. The MonitorObject is modified by setting its quality
-   * and by calling the "beautifying" methods of the Aggregator's.
-   *
-   * @param mo The MonitorObject to evaluate and whose quality will be set according
-   *        to the worse quality encountered while running the Aggregator's.
+   * For each aggregator, evaluate if data is ready (i.e. if its policy is fulfilled) and, if so,
+   * call its `aggregate()` method.
+   * This method is usually called upon reception of fresh inputs data.
    */
-  QualityObjectsType aggregate();
+  core::QualityObjectsType aggregate();
 
   /**
    * \brief Store the QualityObjects in the database.
    *
    * @param qualityObjects QOs to be stored in DB.
    */
-  void store(QualityObjectsType& qualityObjects);
+  void store(core::QualityObjectsType& qualityObjects);
 
   inline void initDatabase();
   inline void initMonitoring();
@@ -126,8 +136,8 @@ class AggregatorRunner : public framework::Task
   inline void initAggregators();
 
   /**
- * Send metrics to the monitoring system if the time has come.
- */
+   * Send metrics to the monitoring system if the time has come.
+   */
   void sendPeriodicMonitoring();
 
   // General state
@@ -135,7 +145,7 @@ class AggregatorRunner : public framework::Task
   std::map<std::string, std::shared_ptr<Aggregator>> mAggregatorsMap;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
-  QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
+  core::QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
   UpdatePolicyManager updatePolicyManager;
 
   // DPL
@@ -149,7 +159,7 @@ class AggregatorRunner : public framework::Task
   int mTotalNumberObjectsProduced;
 
   // Service discovery
-  std::shared_ptr<ServiceDiscovery> mServiceDiscovery;
+  std::shared_ptr<core::ServiceDiscovery> mServiceDiscovery;
 };
 
 } // namespace o2::quality_control::checker

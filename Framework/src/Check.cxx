@@ -71,10 +71,10 @@ Check::Check(std::string checkName, std::string configurationSource)
 
 void Check::initConfig(std::string checkName)
 {
-  mCheckConfig.checkName = checkName;
+  mCheckConfig.name = checkName;
 
   std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-  const auto& checkConfig = config->getRecursive("qc.checks." + mCheckConfig.checkName);
+  const auto& checkConfig = config->getRecursive("qc.checks." + mCheckConfig.name);
 
   // Params
   if (checkConfig.count("checkParameters")) {
@@ -141,7 +141,7 @@ void Check::init()
   try {
     mCheckInterface = root_class_factory::create<CheckInterface>(mCheckConfig.moduleName, mCheckConfig.className);
     mCheckInterface->setCustomParameters(mCheckConfig.customParameters);
-    mCheckInterface->configure(mCheckConfig.checkName);
+    mCheckInterface->configure(mCheckConfig.name);
   } catch (...) {
     std::string diagnostic = boost::current_exception_diagnostic_information();
     ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows:\n"
@@ -153,17 +153,17 @@ void Check::init()
   // See QC-299 for details
   if (mNumberOfTaskSources > 1) {
     mBeautify = false;
-    ILOG(Warning, Devel) << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.checkName << ")" << ENDM;
+    ILOG(Warning, Devel) << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.name << ")" << ENDM;
   }
 
   // Print setting
-  mLogger << mCheckConfig.checkName << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.checkName << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.checkName << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.checkName << ": Policy " << mCheckConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.checkName << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.name << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.name << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.name << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.name << ": Policy " << mCheckConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
+  mLogger << mCheckConfig.name << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
   for (const auto& moname : mCheckConfig.moNames) {
-    mLogger << mCheckConfig.checkName << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
+    mLogger << mCheckConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
 
@@ -214,11 +214,11 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
     boost::copy(moMapToCheck | boost::adaptors::map_keys, std::back_inserter(monitorObjectsNames));
 
     auto quality = mCheckInterface->check(&moMapToCheck);
-    mLogger << "Check '" << mCheckConfig.checkName << "', quality '" << quality << "'" << ENDM;
+    mLogger << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
-      mCheckConfig.checkName,
+      mCheckConfig.name,
       mCheckConfig.detectorName,
       mCheckConfig.policyType,
       mInputsStringified,

@@ -66,7 +66,7 @@ class Check
    */
   void updateRevision(unsigned int revision);
 
-  const std::string& getName() const { return mCheckConfig.checkName; };
+  const std::string& getName() const { return mCheckConfig.name; };
   o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
   o2::framework::Inputs getInputs() const { return mInputs; };
 

@@ -44,7 +44,9 @@ class AggregatorInterface
   /// ROOT needs an argument-less constructor when streaming it. We use this method
   /// to configure the object. The name might be used to ask the configuration system
   /// for specific parameters.
-  virtual void configure(std::string d) = 0;
+  ///
+  /// \param name The name of the aggregator.
+  virtual void configure(std::string name) = 0;
 
   /// \brief Returns new qualities (usually fewer) based on the input qualities
   ///
@@ -52,6 +54,9 @@ class AggregatorInterface
   /// @return The new qualities, associated with a name.
   virtual std::map<std::string, Quality> aggregate(std::map<std::string, std::shared_ptr<const o2::quality_control::core::QualityObject>>& qoMap) = 0;
 
+  /// \brief Set the custom parameters for this aggregator.
+  /// Set the custom parameters for this aggregator. It is usually the ones defined in the configuration.
+  /// \param parameters
   void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters)
   {
     mCustomParameters = parameters;

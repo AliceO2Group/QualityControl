@@ -36,8 +36,9 @@ class AggregatorInterface;
 
 /// \brief An aggregator as found in the configuration.
 ///
-/// A Aggregator is in charge of loading/instantiating the single aggregator from module,
-/// configure them and tell whenever the aggregator policy is fulfilled.
+/// An instance of this class represents a single aggregator as defined in the config file.
+/// It is in charge of loading/instantiating it from a module,
+/// configure it and execute the aggregation call on the underlying module.
 class Aggregator
 {
  public:
@@ -59,7 +60,7 @@ class Aggregator
 
   o2::quality_control::core::QualityObjectsType aggregate(core::QualityObjectsMapType& qoMap);
 
-  const std::string& getName() const { return mAggregatorConfig.checkName; };
+  const std::string& getName() const { return mAggregatorConfig.name; };
   std::string getPolicyName() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;

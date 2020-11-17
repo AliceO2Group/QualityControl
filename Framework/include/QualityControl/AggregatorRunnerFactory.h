@@ -19,11 +19,6 @@
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
 
-namespace o2::framework
-{
-struct DataProcessorSpec;
-}
-
 namespace o2::quality_control::checker
 {
 
@@ -34,8 +29,7 @@ class AggregatorRunnerFactory
   AggregatorRunnerFactory() = default;
   virtual ~AggregatorRunnerFactory() = default;
 
-  framework::DataProcessorSpec create(const vector<framework::OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource);
-
+  static framework::DataProcessorSpec create(const vector<framework::OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource);
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };
 

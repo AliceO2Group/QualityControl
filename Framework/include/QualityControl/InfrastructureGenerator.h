@@ -148,12 +148,10 @@ class InfrastructureGenerator
 };
 
 } // namespace core
-const // namespace core
 
-  // exposin&g the class above as a main QC interface, syntactic sugar
+// exposing the class above as a main QC interface, syntactic sugar
 
-  inline framework::WorkflowSpec
-  generateStandaloneInfrastructure(std::string configurationSource)
+inline framework::WorkflowSpec generateStandaloneInfrastructure(std::string configurationSource)
 {
   return core::InfrastructureGenerator::generateStandaloneInfrastructure(configurationSource);
 }

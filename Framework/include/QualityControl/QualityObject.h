@@ -128,7 +128,6 @@ class QualityObject : public TObject
 };
 
 using QualityObjectsType = std::vector<std::shared_ptr<QualityObject>>;
-//using QualityObjectsConstType = std::vector<std::shared_ptr<const QualityObject>>;
 using QualityObjectsMapType = std::map<std::string, std::shared_ptr<const QualityObject>>;
 
 } // namespace o2::quality_control::core
