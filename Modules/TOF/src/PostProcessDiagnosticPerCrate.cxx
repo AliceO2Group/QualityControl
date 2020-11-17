@@ -53,7 +53,7 @@ void PostProcessDiagnosticPerCrate::initialize(Trigger, framework::ServiceRegist
 
 void PostProcessDiagnosticPerCrate::update(Trigger, framework::ServiceRegistry&)
 {
-  ILOG(Debug) << "PostProcessDiagnosticPerCrate" << ENDM;
+  ILOG(Debug) << "UPDATING !" << ENDM;
   for (int slot = 0; slot < mNSlots; slot++) { // Loop over slots
     std::string moName = "DRMCounter";
     if (slot == 1) {
@@ -71,16 +71,17 @@ void PostProcessDiagnosticPerCrate::update(Trigger, framework::ServiceRegistry&)
           ILOG(Fatal) << "Crate counter is too large " << ENDM;
         }
         for (int word = 0; word < moH->GetNbinsX(); word++) { // Loop over words
-          ILOG(Debug) << "Processing word " << word << ENDM;
           if (word > mNWords) {
             ILOG(Fatal) << "Word counter is too large " << ENDM;
           }
           mCrates[crate]->SetBinContent(word + 1, slot + 1, moH->GetBinContent(word + 1, crate + 1));
         }
       }
+    } else {
+      ILOG(Warning) << "Did not find MO " << moName << " in path " << mCCDBPath << ENDM;
     }
   }
-  ILOG(Debug) << "DONE PostProcessDiagnosticPerCrate" << ENDM;
+  ILOG(Debug) << "DONE UPDATING !" << ENDM;
 }
 
 void PostProcessDiagnosticPerCrate::finalize(Trigger, framework::ServiceRegistry&)
