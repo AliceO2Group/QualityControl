@@ -19,6 +19,7 @@
 #include "QualityControl/TaskInterface.h"
 #include <Headers/DAQID.h>
 #include <map>
+#include <set>
 
 class TH1F;
 
