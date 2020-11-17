@@ -39,7 +39,7 @@ namespace o2::framework
 struct InputSpec;
 struct OutputSpec;
 class DataAllocator;
-}
+} // namespace o2::framework
 
 namespace o2::monitoring
 {
@@ -58,16 +58,19 @@ class Timer;
 
 namespace o2::quality_control
 {
-namespace core{
+namespace core
+{
 class ServiceDiscovery;
 }
-namespace checker{
+namespace checker
+{
 class Aggregator;
 }
-namespace repository {
+namespace repository
+{
 class DatabaseInterface;
 }
-}
+} // namespace o2::quality_control
 
 class TClass;
 
