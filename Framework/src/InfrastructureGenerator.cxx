@@ -98,7 +98,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
           // We spawn a task and proxy only if we are on the right machine.
           if (machine.second.get<std::string>("") == host) {
             // Generate QC Task Runner
-            bool needsResetAfterCycle = moreThanOneMachine || taskConfig.get<std::string>("mergingMode", "delta") == "delta";
+            bool needsResetAfterCycle = moreThanOneMachine && taskConfig.get<std::string>("mergingMode", "delta") == "delta";
             workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, id, needsResetAfterCycle));
             // Generate an output proxy
             // These should be removed when we are able to declare dangling output in normal DPL devices
