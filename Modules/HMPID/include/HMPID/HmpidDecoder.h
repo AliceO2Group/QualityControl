@@ -1,9 +1,18 @@
-/*
- * HmpidDecoder.h
- *
- *  Created on: 24 set 2020
- *      Author: fap
- */
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
+///
+/// \file   HmpidDecoder.h
+/// \author Antonio Franco - INFN Bari
+/// \brief Base Class to decode HMPID Raw Data stream
+///
 
 #ifndef COMMON_HMPIDDECODER_H_
 #define COMMON_HMPIDDECODER_H_
@@ -13,26 +22,33 @@
 #include <iostream>
 #include <cstring>
 
+#include "QualityControl/QcInfoLogger.h"
+
 #include "HMPID/HmpidEquipment.h"
 
 #define MAXDESCRIPTIONLENGHT 50
-
-#define DEBU(mes, ...) if(mVerbose >= 9) printf(mes, ##__VA_ARGS__)
-#define INFO(mes, ...) if(mVerbose >= 8) printf(mes, ##__VA_ARGS__)
-#define WARN(mes, ...) if(mVerbose >= 2) printf(mes, ##__VA_ARGS__)
-#define ERRO(mes, ...) if(mVerbose >= 1) printf(mes, ##__VA_ARGS__)
-#define CRIT(mes, ...) if(mVerbose >= 0) printf(mes, ##__VA_ARGS__)
 
 // ---- RDH 6  standard dimension -------
 #define RAWBLOCKDIMENSION_W 2048
 #define HEADERDIMENSION_W 16
 #define PAYLOADDIMENSION_W 2032
 
-using namespace Equipment;
+// ---- Defines for the decoding
+#define WTYPE_ROW 1
+#define WTYPE_EOS 2
+#define WTYPE_PAD 3
+#define WTYPE_EOE 4
+#define WTYPE_NONE 0
+
+
+// Hmpid Equipment class
+namespace o2::quality_control_modules::hmpid {
+
 
 class HmpidDecoder
 {
 
+  // Members
   public:
     int mVerbose;
     HmpidEquipment *mTheEquipments[MAXEQUIPMENTS];
@@ -72,6 +88,11 @@ class HmpidDecoder
     int mHeORBIT;
     int mHeTType;
 
+    int32_t *mActualStreamPtr;
+    int32_t *mEndStreamPtr;
+    int32_t *mStartStreamPtr;
+
+  // Methods
   public:
     HmpidDecoder(int *EqIds, int *CruIds, int *LinkIds, int numOfEquipments);
     HmpidDecoder(int numOfEquipments);
@@ -117,10 +138,10 @@ class HmpidDecoder
 
   protected:
     int checkType(int32_t wp, int *p1, int *p2, int *p3, int *p4);
-    bool isRowMarker(int32_t wp, int Eq, int i, int *Err, int *rowSize, int *mark);
-    bool isSegmentMarker(int32_t wp, int Eq, int i, int *Err, int *segSize, int *Seg, int *mark);
-    bool isPadWord(int32_t wp, int Eq, int i, int *Err, int *Col, int *Dilogic, int *Channel, int *Charge);
-    bool isEoEmarker(int32_t wp, int Eq, int i, int *Err, int *Col, int *Dilogic, int *Eoesize);
+    bool isRowMarker(int32_t wp, int *Err, int *rowSize, int *mark);
+    bool isSegmentMarker(int32_t wp, int *Err, int *segSize, int *Seg, int *mark);
+    bool isPadWord(int32_t wp, int *Err, int *Col, int *Dilogic, int *Channel, int *Charge);
+    bool isEoEmarker(int32_t wp, int *Err, int *Col, int *Dilogic, int *Eoesize);
     int decodeHeader(int32_t *streamPtrAdr, int *EquipIndex);
     bool decodeHmpidError(int ErrorField, char *outbuf);
     void dumpHmpidError(int ErrorField);
@@ -137,10 +158,7 @@ class HmpidDecoder
       return (mActualStreamPtr);
     }
     ;
-    int32_t *mActualStreamPtr;
-    int32_t *mEndStreamPtr;
-    int32_t *mStartStreamPtr;
 
 };
-
+}
 #endif /* COMMON_HMPIDDECODER_H_ */

@@ -100,7 +100,6 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   nCycles++;
 
-  Printf("******************IN HMPID MONITOR DATA*********************************************");
   // In this function you can access data inputs specified in the JSON config file, for example:
   //   "query": "random:ITS/RAWDATA/0"
   // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification

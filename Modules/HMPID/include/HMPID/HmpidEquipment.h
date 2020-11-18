@@ -1,9 +1,19 @@
-/*
- * HmpidEquipments.h
- *
- *  Created on: 24 set 2020
- *      Author: fap
- */
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
+///
+/// \file   HmpidEquipments.h
+/// \author Antonio Franco - INFN Bari
+/// \brief Base Class to describe HMPID Equipment for the decoding of RawData stream
+/// \version 1.0
+/// \date 24 set 2020
 
 #ifndef COMMON_HMPIDEQUIPMENT_H_
 #define COMMON_HMPIDEQUIPMENT_H_
@@ -12,9 +22,7 @@
 #include <stdint.h>
 #include <iostream>
 
-//namespace Hmpid {
-
-namespace Equipment {
+namespace o2::quality_control_modules::hmpid {
 
 const int MAXERRORS = 13;
 const int MAXHMPIDERRORS = 5;
@@ -48,6 +56,22 @@ const int N_YCOLS = 144;
 
 const int N_EQUIPMENTTOTALPADS = N_SEGMENTS * N_COLXSEGMENT * N_DILOGICS * N_CHANNELS;
 const int N_HMPIDTOTALPADS = MAXEQUIPMENTS * N_SEGMENTS * N_COLXSEGMENT * N_DILOGICS * N_CHANNELS;
+
+// ---- HMPID error def -------
+const int TH_FILENOTEXISTS = 9;
+const int TH_OPENFILE = 8;
+const int TH_CREATEFILE = 7;
+const int TH_READFILE = 6;
+const int TH_WRITEFILE = 5;
+const int TH_WRONGEQUIPINDEX = 19;
+const int TH_WRONGHEADER = 15;
+const int TH_WRONGFILELEN = 14;
+const int TH_NULLBUFFERPOINTER = 13;
+const int TH_BUFFEREMPTY = 12;
+const int TH_WRONGBUFFERDIM = 11;
+
+
+
 
 class HmpidEquipment
 {
@@ -118,6 +142,6 @@ class HmpidEquipment
 void hmpidCoordsModule2Equipment(int Mod, int Col, int Row, int *Equi, int *Colu, int *Dilo, int *Chan);
 void hmpidCoordsEquipment2Module(int Equi, int Colu, int Dilo, int Chan, int *Mod, int *Col, int *Row);
 
-} // namespace HmpidEquipment
+} // namespace o2::quality_control_modules::hmpid
 
 #endif /* COMMON_HMPIDEQUIPMENT_H_ */
