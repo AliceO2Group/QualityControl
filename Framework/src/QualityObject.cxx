@@ -60,7 +60,7 @@ QualityObject::QualityObject(
       return mCheckName + "/" + mMonitorObjectsNames[0];
     }
     return mCheckName;
-  };
+  }
 
   void QualityObject::updateQuality(Quality quality)
   {

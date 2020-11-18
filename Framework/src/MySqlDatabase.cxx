@@ -92,7 +92,7 @@ void MySqlDatabase::prepareTable(std::string table_name)
   }
 }
 
-void MySqlDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo, long, long)
+void MySqlDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long, long)
 {
   // TODO we take ownership here to delete later -> clearly to be improved
   // we execute grouped insertions. Here we just register that we should keep this mo in memory.
@@ -103,7 +103,7 @@ void MySqlDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityOb
   }
 }
 
-void MySqlDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo, long, long)
+void MySqlDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo, long, long)
 {
   // TODO we take ownership here to delete later -> clearly to be improved
   // we execute grouped insertions. Here we just register that we should keep this mo in memory.
