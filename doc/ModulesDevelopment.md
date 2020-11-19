@@ -22,10 +22,15 @@
       * [Check](#check)
          * [Configuration](#configuration)
          * [Implementation](#implementation)
+      * [Quality Aggregation](#quality-aggregation)
+         * [Quick try](#quick-try)
+         * [Configuration](#configuration-1)
+         * [Implementation](#implementation-1)
       * [Committing code](#committing-code)
       * [Data sources](#data-sources)
          * [Readout](#readout)
          * [DPL workflow](#dpl-workflow)
+      * [A more advanced example](#a-more-advanced-example)
 
 <!-- Added by: bvonhall, at:  -->
 

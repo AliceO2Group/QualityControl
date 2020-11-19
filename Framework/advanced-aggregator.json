@@ -40,6 +40,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
+        "detectorName": "TST",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "dataSource": {
@@ -84,10 +85,10 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Check",
-          "name": ["dataSizeCheck"]
+          "name": "dataSizeCheck"
         }, {
-          "type": "Check",  "": "this one is using onEachSeparately and thus it sends under a full path",
-          "name": ["someNumbersCheck"]
+          "type": "Check",
+          "name": "someNumbersCheck"
         }]
       },
       "MyAggregator2": {
@@ -98,10 +99,10 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Check",
-          "name": ["dataSizeCheck"]
+          "name": "dataSizeCheck"
         }, {
           "type": "Check", "": "this one is using onEachSeparately and thus it sends under a full path",
-          "name": ["someNumbersCheck"],
+          "name": "someNumbersCheck",
           "QOs": ["someNumbersTask/example"], "": "also possible to use \"all\" or ignore it altogether"
         }]
       },
