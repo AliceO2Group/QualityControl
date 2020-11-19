@@ -55,9 +55,8 @@ QualityObject::QualityObject(
   {
     if (mPolicyName == "OnEachSeparately") {
       if (mMonitorObjectsNames.size() != 1) {
-        BOOST_THROW_EXCEPTION(FatalException() <<
-                              errinfo_details("QualityObject::getName: "
-                                              "The vector of monitorObjectsNames must contain a single object"));
+        BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("QualityObject::getName: "
+                                                                  "The vector of monitorObjectsNames must contain a single object"));
       }
       return mCheckName + "/" + mMonitorObjectsNames[0];
     }

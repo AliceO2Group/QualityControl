@@ -54,4 +54,4 @@ std::map<std::string, Quality> SkeletonAggregator::aggregate(QualityObjectsMapTy
 
   return result;
 }
-} // o2::quality_control_modules::skeleton
+} // namespace o2::quality_control_modules::skeleton
