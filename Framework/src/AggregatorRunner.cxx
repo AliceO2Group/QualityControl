@@ -15,7 +15,6 @@
 
 #include "QualityControl/AggregatorRunner.h"
 
-#include <fairlogger/Logger.h>
 // O2
 #include <Common/Exceptions.h>
 #include <Configuration/ConfigurationFactory.h>
@@ -107,15 +106,13 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
 {
   framework::InputRecord& inputs = ctx.inputs();
   for (auto const& ref : InputRecordWalker(inputs)) { // InputRecordWalker because the output of CheckRunner can be multi-part
-    if (ref.header != nullptr) {
-      ILOG(Debug, Trace) << "Received data !" << ENDM;
-      shared_ptr<const QualityObject> qo = inputs.get<QualityObject*>(ref);
-      if (qo != nullptr) {
-        ILOG(Debug, Trace) << "It is a qo: " << qo->getName() << ENDM;
-        mQualityObjects[qo->getName()] = qo;
-        mTotalNumberObjectsReceived++;
-        updatePolicyManager.updateObjectRevision(qo->getName());
-      }
+    ILOG(Debug, Trace) << "Received data !" << ENDM;
+    shared_ptr<const QualityObject> qo = inputs.get<QualityObject*>(ref);
+    if (qo != nullptr) {
+      ILOG(Debug, Trace) << "It is a qo: " << qo->getName() << ENDM;
+      mQualityObjects[qo->getName()] = qo;
+      mTotalNumberObjectsReceived++;
+      updatePolicyManager.updateObjectRevision(qo->getName());
     }
   }
 

@@ -14,17 +14,24 @@
 ///
 
 #include "Skeleton/SkeletonAggregator.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <iostream>
-using namespace std;
-void o2::quality_control_modules::skeleton::SkeletonAggregator::configure(std::string) {}
 
-std::map<std::string, Quality> o2::quality_control_modules::skeleton::SkeletonAggregator::aggregate(QualityObjectsMapType& qoMap)
+using namespace std;
+using namespace o2::quality_control::core;
+
+namespace o2::quality_control_modules::skeleton
+{
+
+void SkeletonAggregator::configure(std::string) {}
+
+std::map<std::string, Quality> SkeletonAggregator::aggregate(QualityObjectsMapType& qoMap)
 {
   std::map<std::string, Quality> result;
 
-  std::cout << "HELLO FROM SKELETON AGGREGATOR " << std::endl;
-  std::cout << "received a list of size : " << qoMap.size() << std::endl;
+  ILOG(Info, Devel) << "Entered SkeletonAggregator::aggregate" << ENDM;
+  ILOG(Info, Devel) << "   received a list of size : " << qoMap.size() << ENDM;
   for (const auto& item : qoMap) {
     cout << "Object: " << endl;
     cout << (*item.second) << endl;
@@ -33,13 +40,12 @@ std::map<std::string, Quality> o2::quality_control_modules::skeleton::SkeletonAg
   // we return the worse quality of all the objects we receive
   Quality current = Quality::Good;
   for (auto qo : qoMap) {
-    std::cout << "   quality: " << qo.second->getQuality() << std::endl;
     if (qo.second->getQuality().isWorseThan(current)) {
       current = qo.second->getQuality();
     }
   }
 
-  std::cout << "   result: " << current << std::endl;
+  ILOG(Info, Devel) << "   result: " << current << ENDM;
   result["newQuality"] = current;
 
   // add one more
@@ -48,3 +54,4 @@ std::map<std::string, Quality> o2::quality_control_modules::skeleton::SkeletonAg
 
   return result;
 }
+} // o2::quality_control_modules::skeleton

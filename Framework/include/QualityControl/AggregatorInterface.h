@@ -22,8 +22,6 @@
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/Quality.h"
 
-using namespace o2::quality_control::core;
-
 namespace o2::quality_control::checker
 {
 
@@ -52,7 +50,7 @@ class AggregatorInterface
   ///
   /// @param qoMap A map of the the QualityObjects to aggregate and their full names.
   /// @return The new qualities, associated with a name.
-  virtual std::map<std::string, Quality> aggregate(std::map<std::string, std::shared_ptr<const o2::quality_control::core::QualityObject>>& qoMap) = 0;
+  virtual std::map<std::string, o2::quality_control::core::Quality> aggregate(std::map<std::string, std::shared_ptr<const o2::quality_control::core::QualityObject>>& qoMap) = 0;
 
   /// \brief Set the custom parameters for this aggregator.
   /// Set the custom parameters for this aggregator. It is usually the ones defined in the configuration.

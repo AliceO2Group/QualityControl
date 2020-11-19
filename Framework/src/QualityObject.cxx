@@ -54,8 +54,10 @@ QualityObject::QualityObject(
   std::string QualityObject::getName() const
   {
     if (mPolicyName == "OnEachSeparately") {
-      if (mMonitorObjectsNames.empty()) {
-        BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details("getQoPath: The vector of monitorObjectsNames is empty."));
+      if (mMonitorObjectsNames.size() != 1) {
+        BOOST_THROW_EXCEPTION(FatalException() <<
+                              errinfo_details("QualityObject::getName: "
+                                              "The vector of monitorObjectsNames must contain a single object"));
       }
       return mCheckName + "/" + mMonitorObjectsNames[0];
     }

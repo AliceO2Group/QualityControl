@@ -19,7 +19,6 @@
 #include "Common/Exceptions.h"
 
 using namespace AliceO2::Common;
-using namespace std;
 
 namespace o2::quality_control::checker
 {

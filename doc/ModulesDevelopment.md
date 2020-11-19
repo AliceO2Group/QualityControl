@@ -339,7 +339,7 @@ The _Aggregators_ are able to collect the QualityObjects produced by the checks 
 One can try it with this simple example: 
 
 ```c++
-o2-qc-run-basic --config-path /Users/barth/alice/sw/osx_x86-64/QualityControl/empty-payload-1/etc/basic-aggregator.json
+o2-qc-run-basic --config-path ${QUALITYCONTROL_ROOT}/etc/basic-aggregator.json
 ```
 
 Notice the AggregatorRunner after the CheckRunner.
@@ -367,8 +367,7 @@ o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/ad
         "detectorName": "TST",
         "dataSource": [{
           "type": "Check",
-          "name": "QcCheck",
-          "QOs": ["newQuality", "another"]
+          "name": "QcCheck", "": "If the check produces multiple objects, specify \"MOs\""
         }, 
         {
           "type": "Aggregator",
@@ -382,13 +381,13 @@ o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/ad
 }
 ```
 
-* __active__ - Boolean to indicate whether the checker is active or not
-* __moduleName__ - Name of the module which implements the check class (like in tasks)
+* __active__ - Boolean to indicate whether the aggregator is active or not
+* __moduleName__ - Name of the module which implements the aggregator class (like in tasks)
 * __className__ - Name and namespace of the class, which is part of the module specified above (like in tasks)
 * __policy__ - Policy for triggering the _check_ function defined in the class:
     * _OnAny_ (default) - Triggers if ANY of the listed quality objects changes.
     * _OnAll_ - Triggers if ALL the listed quality objects have changed.
-    * In case the list of monitor objects is empty or is replaced by the keyword "all", the policy is simply ignored and the `check` will be triggered whenever a new QualityObject is received.
+    * In case the list of QualityObject is empty or is replaced by the keyword "all", the policy is simply ignored and the `check` will be triggered whenever a new QualityObject is received.
 * __dataSource__ - declaration of the `check` input
     * _type_ - _Check_ or _Aggregator_
     * _names_ - name of the Check or Aggregator

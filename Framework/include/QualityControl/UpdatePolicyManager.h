@@ -20,7 +20,7 @@
 #include <map>
 #include <vector>
 #include <functional>
-#include <ostream>
+#include <iosfwd>
 
 namespace o2::quality_control::checker
 {

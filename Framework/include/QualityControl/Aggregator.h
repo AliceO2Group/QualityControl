@@ -22,7 +22,7 @@
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/CheckConfig.h"
 // config
-#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ptree_fwd.hpp>
 
 namespace o2::configuration
 {
@@ -51,7 +51,7 @@ class Aggregator
    * @param aggregatorName Aggregator name that must exist in the configuration
    * @param configurationSource Path to configuration
    */
-  Aggregator(const std::string& aggregatorName, boost::property_tree::ptree configuration);
+  Aggregator(const std::string& aggregatorName, const boost::property_tree::ptree& configuration);
 
   /**
    * \brief Initialize the aggregator
@@ -60,7 +60,7 @@ class Aggregator
 
   o2::quality_control::core::QualityObjectsType aggregate(core::QualityObjectsMapType& qoMap);
 
-  const std::string& getName() const { return mAggregatorConfig.name; };
+  const std::string& getName() const;
   std::string getPolicyName() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;

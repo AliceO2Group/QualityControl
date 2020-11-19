@@ -22,7 +22,7 @@ using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
 using namespace std;
 
-Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::ptree configuration)
+Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_tree::ptree& configuration)
 {
   mAggregatorConfig.name = aggregatorName;
   mAggregatorConfig.moduleName = configuration.get<std::string>("moduleName", "");
@@ -66,7 +66,7 @@ Aggregator::Aggregator(const std::string& aggregatorName, boost::property_tree::
 void Aggregator::init()
 {
   try {
-    ILOG(Info, Devel) << "Insantiating the user code for aggregator " << mAggregatorConfig.name
+    ILOG(Info, Devel) << "Instantiating the user code for aggregator " << mAggregatorConfig.name
                       << " (" << mAggregatorConfig.moduleName << ", " << mAggregatorConfig.className << ")" << ENDM;
     mAggregatorInterface =
       root_class_factory::create<AggregatorInterface>(mAggregatorConfig.moduleName, mAggregatorConfig.className);
@@ -94,14 +94,19 @@ QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap)
 {
   auto results = mAggregatorInterface->aggregate(qoMap);
   QualityObjectsType qualityObjects;
-  for (auto const& [name, quality] : results) {
+  for (auto const& [qualityName, quality] : results) {
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
-      mAggregatorConfig.name + "/" + name,
+      mAggregatorConfig.name + "/" + qualityName,
       mAggregatorConfig.detectorName,
       mAggregatorConfig.policyType));
   }
   return qualityObjects;
+}
+
+const std::string& Aggregator::getName() const
+{
+  return mAggregatorConfig.name;
 }
 
 std::string Aggregator::getPolicyName() const

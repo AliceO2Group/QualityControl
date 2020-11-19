@@ -8,16 +8,6 @@
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
-//
-// See http://alice-o2.web.cern.ch/license for full licensing information.
-//
-// In applying this license CERN does not waive the privileges and immunities
-// granted to it by virtue of its status as an Intergovernmental Organization
-// or submit itself to any jurisdiction.
-
 ///
 /// \file   AggregatorRunner.h
 /// \author Barthelemy von Haller
@@ -80,7 +70,7 @@ namespace o2::quality_control::checker
 /// \brief The class in charge of running the aggregators on the QualityObjects.
 ///
 /// An AggregatorRunner is the device in charge of receiving data, handling the Aggregators and
-/// calling them when the data is ready to be processed. It also initialize a few services such
+/// calling them when the data is ready to be processed. It also initializes a few services such
 /// as the monitoring.
 /// At the moment, the aggregatorRunner also stores these new qualities in the repository.
 /// At the moment, it is also a unique process although it could easily be updated to be able to run

@@ -28,12 +28,6 @@ namespace o2::quality_control::checker
 
 /// \brief  Skeleton of a check.
 ///
-/// Developer note (BvH) : the class is stateless and should stay so as we want to reuse the
-///    same object several times in a row and call the methods in whatever order.
-///    One could think that the methods should be static but then we would not be able
-///    to use polymorphism.
-/// TODO ↑ Is that still true ?
-///
 /// \author Barthelemy von Haller
 class CheckInterface
 {
