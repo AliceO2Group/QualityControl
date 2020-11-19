@@ -61,7 +61,8 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
       }
     }
   }
-  generateCheckRunners(workflow, configurationSource);
+  auto checkRunnerOutputs = generateCheckRunners(workflow, configurationSource);
+  generateAggregator(workflow, configurationSource, checkRunnerOutputs);
   generatePostProcessing(workflow, configurationSource);
 
   return workflow;
@@ -348,7 +349,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergersBuilder.generateInfrastructure(workflow);
 }
 
-void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource)
+vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource)
 {
   // todo have a look if this complex procedure can be simplified.
   // todo also make well defined and scoped functions to make it more readable and clearer.
@@ -467,9 +468,13 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     ILOG(Info) << DataSpecUtils::describe(output) << " ";
   ILOG(Info) << ENDM;
 
-  // as we need information about the checkRunners we do it here instead of a separate static method
-  AggregatorRunnerFactory aggregatorRunnerFactory;
-  DataProcessorSpec spec = aggregatorRunnerFactory.create(checkRunnerOutputs, configurationSource);
+  return checkRunnerOutputs;
+}
+
+void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, std::string configurationSource, vector<framework::OutputSpec>& checkRunnerOutputs)
+{
+  // TODO consider whether we should recompute checkRunnerOutputs instead of receiving it all baked.
+  DataProcessorSpec spec = AggregatorRunnerFactory::create(checkRunnerOutputs, configurationSource);
   workflow.emplace_back(spec);
 }
 
