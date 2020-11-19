@@ -30,8 +30,8 @@ struct CheckConfig {
   std::string detectorName = "MISC"; // intended to be the 3 letters code;
   std::unordered_map<std::string, std::string> customParameters = {};
   std::string policyType = "OnAny";
-  std::vector<std::string> moNames;
-  bool allMOs = false;
+  std::vector<std::string> objectNames;
+  bool allObjects = false;
 };
 
 } // namespace o2::quality_control::checker

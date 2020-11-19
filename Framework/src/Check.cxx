@@ -113,12 +113,12 @@ void Check::initConfig(std::string checkName)
         if (mCheckConfig.policyType != "OnEachSeparately") {
           mCheckConfig.policyType = "_OnGlobalAny";
         }
-        mCheckConfig.allMOs = true;
+        mCheckConfig.allObjects = true;
       } else {
         for (const auto& moName : dataSource.get_child("MOs")) {
           auto name = std::string(taskName + "/" + moName.second.get_value<std::string>());
-          if (std::find(mCheckConfig.moNames.begin(), mCheckConfig.moNames.end(), name) == mCheckConfig.moNames.end()) {
-            mCheckConfig.moNames.push_back(name);
+          if (std::find(mCheckConfig.objectNames.begin(), mCheckConfig.objectNames.end(), name) == mCheckConfig.objectNames.end()) {
+            mCheckConfig.objectNames.push_back(name);
           }
         }
       }
@@ -162,7 +162,7 @@ void Check::init()
   mLogger << mCheckConfig.name << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
   mLogger << mCheckConfig.name << ": Policy " << mCheckConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
   mLogger << mCheckConfig.name << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
-  for (const auto& moname : mCheckConfig.moNames) {
+  for (const auto& moname : mCheckConfig.objectNames) {
     mLogger << mCheckConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
@@ -175,7 +175,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
 
   std::map<std::string, std::shared_ptr<MonitorObject>> shadowMap;
   // Take only the MOs which are needed to be checked
-  if (mCheckConfig.allMOs) {
+  if (mCheckConfig.allObjects) {
     /*
      * User didn't specify the MOs.
      * All MOs are passed, no shadowing needed.
@@ -189,7 +189,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
      *
      * Implementation: Copy to different map only required MOs.
      */
-    for (auto& key : mCheckConfig.moNames) {
+    for (auto& key : mCheckConfig.objectNames) {
       // don't create empty shared_ptr
       if (moMap.count(key)) {
         shadowMap.insert({ key, moMap[key] });
@@ -247,10 +247,10 @@ std::string Check::getPolicyName() const
 
 std::vector<std::string> Check::getObjectsNames() const
 {
-  return mCheckConfig.moNames;
+  return mCheckConfig.objectNames;
 }
 
 bool Check::getAllObjectsOption() const
 {
-  return mCheckConfig.allMOs;
+  return mCheckConfig.allObjects;
 }

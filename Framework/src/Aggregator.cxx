@@ -32,8 +32,8 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
 
   // Params
   if (configuration.count("aggregatorParameters")) {
-    for (const auto& [_key, _value] : configuration.get_child("aggregatorParameters")) {
-      mAggregatorConfig.customParameters[_key] = _value.data();
+    for (const auto& [key, value] : configuration.get_child("aggregatorParameters")) {
+      mAggregatorConfig.customParameters[key] = value.data();
     }
   }
 
@@ -47,7 +47,7 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
 
       if (dataSource.count("QOs") == 0 || dataSource.get<std::string>("QOs") == "all") {
         ILOG(Info, Devel) << "      (no QOs specified or specified as `all`)" << ENDM;
-        mAggregatorConfig.allMOs = true;
+        mAggregatorConfig.allObjects = true;
         // fixme: this is a dirty fix. Policies should be refactored, so this check won't be needed.
         if (mAggregatorConfig.policyType != "OnEachSeparately") {
           mAggregatorConfig.policyType = "_OnGlobalAny";
@@ -56,7 +56,7 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
         for (const auto& qoName : dataSource.get_child("QOs")) {
           auto name = std::string(sourceName + "/" + qoName.second.get_value<std::string>());
           ILOG(Info, Devel) << "      - " << name << ENDM;
-          mAggregatorConfig.moNames.push_back(name);
+          mAggregatorConfig.objectNames.push_back(name);
         }
       }
     }
@@ -85,7 +85,7 @@ void Aggregator::init()
   ILOG(Info, Ops) << mAggregatorConfig.name << ": Detector " << mAggregatorConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
   ILOG(Info, Ops) << mAggregatorConfig.name << ": Policy " << mAggregatorConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
   ILOG(Info, Ops) << mAggregatorConfig.name << ": QualityObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
-  for (const auto& moname : mAggregatorConfig.moNames) {
+  for (const auto& moname : mAggregatorConfig.objectNames) {
     ILOG(Info, Ops) << mAggregatorConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
@@ -116,10 +116,10 @@ std::string Aggregator::getPolicyName() const
 
 std::vector<std::string> Aggregator::getObjectsNames() const
 {
-  return mAggregatorConfig.moNames;
+  return mAggregatorConfig.objectNames;
 }
 
 bool Aggregator::getAllObjectsOption() const
 {
-  return mAggregatorConfig.allMOs;
+  return mAggregatorConfig.allObjects;
 }

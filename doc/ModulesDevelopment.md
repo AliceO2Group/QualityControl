@@ -372,7 +372,7 @@ o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/ad
         "detectorName": "TST",
         "dataSource": [{
           "type": "Check",
-          "name": "QcCheck", "": "If the check produces multiple objects, specify \"MOs\""
+          "name": "QcCheck", "": "If the check produces multiple objects, specify \"QOs\""
         }, 
         {
           "type": "Aggregator",

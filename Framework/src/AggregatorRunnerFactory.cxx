@@ -34,15 +34,15 @@ DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& chec
 {
   AggregatorRunner aggregator{ configurationSource, checkerRunnerOutputs };
 
-  DataProcessorSpec aggregatorSpec{
+  DataProcessorSpec newAggregatorRunner{
     aggregator.getDeviceName(),
     aggregator.getInputs(),
     Outputs{},
-    adaptFromTask<AggregatorRunner>(std::move(aggregator)),
+    AlgorithmSpec{},
     Options{}
   };
-
-  return aggregatorSpec;
+  newAggregatorRunner.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregator));
+  return newAggregatorRunner;
 }
 
 // Specify a custom policy to trigger whenever something arrive regardless of the timeslice.

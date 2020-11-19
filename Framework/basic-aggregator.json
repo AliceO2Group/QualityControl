@@ -77,6 +77,10 @@
         "dataSource": [{
             "type": "Check",   "": "for a check which produces a single result do it like that",
             "name": "QcCheck", "": "no need to specify each object because there is only 1"
+          },
+          {
+            "type": "Check",   "": "for a check which produces a single result do it like that",
+            "name": "QcCheck2", "": "no need to specify each object because there is only 1"
           }],
         "aggregatorParameters": {
           "myOwnKey": "myOwnValue"
