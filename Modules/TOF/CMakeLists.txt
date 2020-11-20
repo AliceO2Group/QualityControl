@@ -15,6 +15,7 @@ target_sources(QcTOF
                       # PostProcessing
                       src/PostProcessDiagnosticPerCrate.cxx
                       # Utilities
+                      src/Counter.cxx
                 )
 
 target_include_directories(
