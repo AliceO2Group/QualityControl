@@ -56,12 +56,10 @@ AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const
   }
 
   // prepare list of all inputs
-  int i = 0;
   for (const auto& spec : checkRunnerOutputs) {
     auto input = DataSpecUtils::matchingInput(spec);
-    input.binding = "checkerOutput" + to_string(i);
+    input.binding = spec.binding.value;
     mInputs.emplace_back(input);
-    i++;
   }
 }
 
