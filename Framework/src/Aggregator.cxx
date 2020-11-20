@@ -46,7 +46,7 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
       ILOG(Info, Devel) << "   Found a source : " << sourceName << ENDM;
 
       cout << "dataSource.count(QOs) : " << dataSource.count("QOs") << endl;
-      if(dataSource.count("QOs") != 0)
+      if (dataSource.count("QOs") != 0)
         cout << "dataSource.get<std::string>(\"QOs\") : " << dataSource.get<std::string>("QOs") << endl;
 
       if (dataSource.count("QOs") == 0) {
