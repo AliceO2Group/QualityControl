@@ -42,7 +42,8 @@
           "localnode2"
         ],
         "remoteMachine": "qcnode1",
-        "remotePort": "30132"
+        "remotePort": "30132",
+        "mergingMode": "delta"
       },
       "MultiNodeRemote": {
         "active": "true",
