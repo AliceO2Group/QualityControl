@@ -28,19 +28,14 @@ using namespace o2::tof::compressed;
 // QC includes
 #include "QualityControl/TaskInterface.h"
 #include "Base/Counter.h"
+using namespace o2::quality_control::core;
 
 class TH1;
 class TH1F;
 class TH2F;
 
-using namespace o2::quality_control::core;
-using namespace o2::tof::diagnostic;
-
 namespace o2::quality_control_modules::tof
 {
-
-/// RDH counters: there will only be one instance of such counters per crate
-static const char* RDHDiagnosticsName[2] = { "RDH_HAS_DATA", "" };
 
 /// \brief TOF Quality Control class for Decoding Compressed data for TOF Compressed data QC Task
 /// \author Nicolo' Jacazio and Francesca Ercolessi
@@ -56,13 +51,19 @@ class RawDataDecoder final : public DecoderBase
   void decode();
 
   /// Counters to fill
-  static constexpr unsigned int ncrates = 72;                                      /// Number of crates
-  static constexpr unsigned int ntrms = 10;                                        /// Number of TRMs per crate
-  static constexpr unsigned int ntrmschains = 2;                                   /// Number of TRMChains per TRM
-  Counter<2, RDHDiagnosticsName> mRDHCounter[ncrates];                             /// RDH Counters
-  Counter<32, o2::tof::diagnostic::DRMDiagnosticName> mDRMCounter[ncrates];        /// DRM Counters
-  Counter<32, o2::tof::diagnostic::LTMDiagnosticName> mLTMCounter[ncrates];        /// LTM Counters
-  Counter<32, o2::tof::diagnostic::TRMDiagnosticName> mTRMCounter[ncrates][ntrms]; /// TRM Counters
+  static constexpr unsigned int ncrates = 72;    /// Number of crates
+  static constexpr unsigned int ntrms = 10;      /// Number of TRMs per crate
+  static constexpr unsigned int ntrmschains = 2; /// Number of TRMChains per TRM
+  // Names of diagnostic counters
+  static const char* RDHDiagnosticsName[2]; /// RDH Counter names
+  static const char* DRMDiagnosticName[32]; /// DRM Counter names
+  static const char* LTMDiagnosticName[32]; /// LTM Counter names
+  static const char* TRMDiagnosticName[32]; /// TRM Counter names
+  // Diagnostic counters
+  Counter<2, RDHDiagnosticsName> mRDHCounter[ncrates];        /// RDH Counters
+  Counter<32, DRMDiagnosticName> mDRMCounter[ncrates];        /// DRM Counters
+  Counter<32, LTMDiagnosticName> mLTMCounter[ncrates];        /// LTM Counters
+  Counter<32, TRMDiagnosticName> mTRMCounter[ncrates][ntrms]; /// TRM Counters
 
   /// Histograms to fill
   std::map<std::string, std::shared_ptr<TH1>> mHistos;
@@ -92,7 +93,7 @@ class RawDataDecoder final : public DecoderBase
 
  private:
   /** decoding handlers **/
-  void rdhHandler(const o2::header::RAWDataHeader* rdh) override{};
+  void rdhHandler(const o2::header::RAWDataHeader* /*rdh*/) override{};
   void headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit) override;
   void frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
                     const FrameHeader_t* frameHeader, const PackedHit_t* packedHits) override;

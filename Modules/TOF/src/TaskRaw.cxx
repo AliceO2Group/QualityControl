@@ -27,11 +27,11 @@
 #include "DetectorsRaw/HBFUtils.h"
 #include <Framework/InputRecord.h>
 
-// Fairlogger includes
-#include <fairlogger/Logger.h>
-
 using namespace o2::framework;
 using namespace o2::tof;
+
+// Fairlogger includes
+#include <fairlogger/Logger.h>
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -222,7 +222,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   mLTMHisto.reset(new TH2F("LTMCounter", "LTM Diagnostics;LTM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
   mDecoderRaw.mLTMCounter[0].MakeHistogram(mLTMHisto.get());
   getObjectsManager()->startPublishing(mLTMHisto.get());
-  for (int j = 0; j < RawDataDecoder::ntrms; j++) {
+  for (unsigned int j = 0; j < RawDataDecoder::ntrms; j++) {
     mTRMHisto[j].reset(new TH2F(Form("TRMCounterSlot%i", j), Form("TRM %i Diagnostics;TRM Word;Crate;Words", j), 32, 0, 32, 72, 0, 72));
     mDecoderRaw.mTRMCounter[0][j].MakeHistogram(mTRMHisto[j].get());
     getObjectsManager()->startPublishing(mTRMHisto[j].get());
@@ -279,10 +279,10 @@ void TaskRaw::monitorData(o2::framework::ProcessingContext& ctx)
 void TaskRaw::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
-  for (int i = 0; i < RawDataDecoder::ncrates; i++) { // Filling histograms only at the end of the cycle
+  for (unsigned int i = 0; i < RawDataDecoder::ncrates; i++) { // Filling histograms only at the end of the cycle
     mDecoderRaw.mDRMCounter[i].FillHistogram(mDRMHisto.get(), i + 1);
     mDecoderRaw.mLTMCounter[i].FillHistogram(mLTMHisto.get(), i + 1);
-    for (int j = 0; j < RawDataDecoder::ntrms; j++) {
+    for (unsigned int j = 0; j < RawDataDecoder::ntrms; j++) {
       mDecoderRaw.mTRMCounter[i][j].FillHistogram(mTRMHisto[j].get(), i + 1);
     }
   }
@@ -299,10 +299,117 @@ void TaskRaw::reset()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mDRMHisto->Reset();
-  for (int j = 0; j < RawDataDecoder::ntrms; j++) {
+  for (unsigned int j = 0; j < RawDataDecoder::ntrms; j++) {
     mTRMHisto[j]->Reset();
   }
   mDecoderRaw.resetHistograms();
 }
+
+const char* RawDataDecoder::RDHDiagnosticsName[2] = { "RDH_HAS_DATA", "" };
+
+const char* RawDataDecoder::DRMDiagnosticName[32] = {
+  diagnostic::DRMDiagnosticName[0],
+  diagnostic::DRMDiagnosticName[1],
+  diagnostic::DRMDiagnosticName[2],
+  diagnostic::DRMDiagnosticName[3],
+  diagnostic::DRMDiagnosticName[4],
+  diagnostic::DRMDiagnosticName[5],
+  diagnostic::DRMDiagnosticName[6],
+  diagnostic::DRMDiagnosticName[7],
+  diagnostic::DRMDiagnosticName[8],
+  diagnostic::DRMDiagnosticName[9],
+  diagnostic::DRMDiagnosticName[10],
+  diagnostic::DRMDiagnosticName[11],
+  diagnostic::DRMDiagnosticName[12],
+  diagnostic::DRMDiagnosticName[13],
+  diagnostic::DRMDiagnosticName[14],
+  diagnostic::DRMDiagnosticName[15],
+  diagnostic::DRMDiagnosticName[16],
+  diagnostic::DRMDiagnosticName[17],
+  diagnostic::DRMDiagnosticName[18],
+  diagnostic::DRMDiagnosticName[19],
+  diagnostic::DRMDiagnosticName[20],
+  diagnostic::DRMDiagnosticName[21],
+  diagnostic::DRMDiagnosticName[22],
+  diagnostic::DRMDiagnosticName[23],
+  diagnostic::DRMDiagnosticName[24],
+  diagnostic::DRMDiagnosticName[25],
+  diagnostic::DRMDiagnosticName[26],
+  diagnostic::DRMDiagnosticName[27],
+  diagnostic::DRMDiagnosticName[28],
+  diagnostic::DRMDiagnosticName[29],
+  diagnostic::DRMDiagnosticName[30],
+  diagnostic::DRMDiagnosticName[31]
+};
+
+const char* RawDataDecoder::LTMDiagnosticName[32] = {
+  diagnostic::LTMDiagnosticName[0],
+  diagnostic::LTMDiagnosticName[1],
+  diagnostic::LTMDiagnosticName[2],
+  diagnostic::LTMDiagnosticName[3],
+  diagnostic::LTMDiagnosticName[4],
+  diagnostic::LTMDiagnosticName[5],
+  diagnostic::LTMDiagnosticName[6],
+  diagnostic::LTMDiagnosticName[7],
+  diagnostic::LTMDiagnosticName[8],
+  diagnostic::LTMDiagnosticName[9],
+  diagnostic::LTMDiagnosticName[10],
+  diagnostic::LTMDiagnosticName[11],
+  diagnostic::LTMDiagnosticName[12],
+  diagnostic::LTMDiagnosticName[13],
+  diagnostic::LTMDiagnosticName[14],
+  diagnostic::LTMDiagnosticName[15],
+  diagnostic::LTMDiagnosticName[16],
+  diagnostic::LTMDiagnosticName[17],
+  diagnostic::LTMDiagnosticName[18],
+  diagnostic::LTMDiagnosticName[19],
+  diagnostic::LTMDiagnosticName[20],
+  diagnostic::LTMDiagnosticName[21],
+  diagnostic::LTMDiagnosticName[22],
+  diagnostic::LTMDiagnosticName[23],
+  diagnostic::LTMDiagnosticName[24],
+  diagnostic::LTMDiagnosticName[25],
+  diagnostic::LTMDiagnosticName[26],
+  diagnostic::LTMDiagnosticName[27],
+  diagnostic::LTMDiagnosticName[28],
+  diagnostic::LTMDiagnosticName[29],
+  diagnostic::LTMDiagnosticName[30],
+  diagnostic::LTMDiagnosticName[31]
+};
+
+const char* RawDataDecoder::TRMDiagnosticName[32] = {
+  diagnostic::TRMDiagnosticName[0],
+  diagnostic::TRMDiagnosticName[1],
+  diagnostic::TRMDiagnosticName[2],
+  diagnostic::TRMDiagnosticName[3],
+  diagnostic::TRMDiagnosticName[4],
+  diagnostic::TRMDiagnosticName[5],
+  diagnostic::TRMDiagnosticName[6],
+  diagnostic::TRMDiagnosticName[7],
+  diagnostic::TRMDiagnosticName[8],
+  diagnostic::TRMDiagnosticName[9],
+  diagnostic::TRMDiagnosticName[10],
+  diagnostic::TRMDiagnosticName[11],
+  diagnostic::TRMDiagnosticName[12],
+  diagnostic::TRMDiagnosticName[13],
+  diagnostic::TRMDiagnosticName[14],
+  diagnostic::TRMDiagnosticName[15],
+  diagnostic::TRMDiagnosticName[16],
+  diagnostic::TRMDiagnosticName[17],
+  diagnostic::TRMDiagnosticName[18],
+  diagnostic::TRMDiagnosticName[19],
+  diagnostic::TRMDiagnosticName[20],
+  diagnostic::TRMDiagnosticName[21],
+  diagnostic::TRMDiagnosticName[22],
+  diagnostic::TRMDiagnosticName[23],
+  diagnostic::TRMDiagnosticName[24],
+  diagnostic::TRMDiagnosticName[25],
+  diagnostic::TRMDiagnosticName[26],
+  diagnostic::TRMDiagnosticName[27],
+  diagnostic::TRMDiagnosticName[28],
+  diagnostic::TRMDiagnosticName[29],
+  diagnostic::TRMDiagnosticName[30],
+  diagnostic::TRMDiagnosticName[31]
+};
 
 } // namespace o2::quality_control_modules::tof
