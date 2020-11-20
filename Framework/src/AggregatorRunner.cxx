@@ -56,9 +56,11 @@ AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const
   }
 
   // prepare list of all inputs
+  // we cannot use the binding of the output because it is empty.
+  int i = 0;
   for (const auto& spec : checkRunnerOutputs) {
     auto input = DataSpecUtils::matchingInput(spec);
-    input.binding = spec.binding.value;
+    input.binding = "checkerOutput" + to_string(i++);
     mInputs.emplace_back(input);
   }
 }
@@ -125,13 +127,12 @@ QualityObjectsType AggregatorRunner::aggregate()
   ILOG(Debug, Trace) << "Aggregate called in AggregatorRunner, QOs in cache: " << mQualityObjects.size() << ENDM;
 
   QualityObjectsType allQOs;
-  for (auto& aggregator : mAggregatorsMap) {
-    ILOG(Info, Devel) << "Processing aggregator: " << aggregator.first << ENDM;
+  for (auto const& [aggregatorName, aggregator] : mAggregatorsMap) {
+    ILOG(Info, Devel) << "Processing aggregator: " << aggregatorName << ENDM;
 
-    string name = aggregator.second->getName();
-    if (updatePolicyManager.isReady(name)) {
-      ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << name << "' are  ready, aggregating" << ENDM;
-      auto newQOs = aggregator.second->aggregate(mQualityObjects); // we give the whole list
+    if (updatePolicyManager.isReady(aggregatorName)) {
+      ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << aggregatorName << "' are  ready, aggregating" << ENDM;
+      auto newQOs = aggregator->aggregate(mQualityObjects); // we give the whole list
       mTotalNumberObjectsProduced += newQOs.size();
       mTotalNumberAggregatorExecuted++;
       // we consider the output of the aggregators the same way we do the output of a check
@@ -143,9 +144,9 @@ QualityObjectsType AggregatorRunner::aggregate()
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
 
-      updatePolicyManager.updateActorRevision(name); // Was aggregated, update latest revision
+      updatePolicyManager.updateActorRevision(aggregatorName); // Was aggregated, update latest revision
     } else {
-      ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << name << "' are not ready, ignoring" << ENDM;
+      ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << aggregatorName << "' are not ready, ignoring" << ENDM;
     }
   }
   return allQOs;
