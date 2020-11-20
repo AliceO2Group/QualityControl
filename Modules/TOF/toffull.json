@@ -23,9 +23,9 @@
       }
     },
     "tasks": {
-      "TaskDiagnostics": {
+      "TaskRaw": {
         "active": "true",
-        "className": "o2::quality_control_modules::tof::TaskDiagnostics",
+        "className": "o2::quality_control_modules::tof::TaskRaw",
         "moduleName": "QcTOF",
         "detectorName": "TOF",
         "cycleDurationSeconds": "60",
@@ -33,27 +33,10 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "tof-rawdata-diagnostics"
-        },
-        "taskParameters": {
-          "DecoderCONET": "False"
-        },
-        "location": "remote"
-      },
-      "TaskCompressedData": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::TaskCompressedData",
-        "moduleName": "QcTOF",
-        "detectorName": "TOF",
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
           "name": "tof-rawdata"
         },
         "taskParameters": {
-          "nothing": "myOwnValue"
+          "DecoderCONET": "False"
         },
         "location": "remote"
       },
@@ -77,47 +60,59 @@
     },
     "checks": {
       "CheckDiagnostics": {
-          "active": "true",
-          "className": "o2::quality_control_modules::tof::CheckDiagnostics",
-          "moduleName": "QcTOF",
-          "detectorName": "TOF",
-          "policy": "OnAny",
-          "dataSource": [{
-              "type": "Task",
-              "name": "TaskDiagnostics",
-              "MOs": ["RDHCounterCrate0"]
-          }]
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckDiagnostics",
+        "moduleName": "QcTOF",
+        "detectorName": "TOF",
+        "policy": "OnAny",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskDiagnostics",
+            "MOs": [
+              "RDHCounterCrate0"
+            ]
+          }
+        ]
       },
       "CheckCompressedData": {
-          "active": "true",
-          "className": "o2::quality_control_modules::tof::CheckCompressedData",
-          "moduleName": "QcTOF",
-          "detectorName": "TOF",
-          "policy": "OnAny",
-          "checkParameters": {
-            "DiagnosticThresholdPerSlot": "10"
-          },
-          "dataSource": [{
-              "type": "Task",
-              "name": "TaskCompressedData",
-              "MOs": ["hDiagnostic"]
-          }]
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckCompressedData",
+        "moduleName": "QcTOF",
+        "detectorName": "TOF",
+        "policy": "OnAny",
+        "checkParameters": {
+          "DiagnosticThresholdPerSlot": "10"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskCompressedData",
+            "MOs": [
+              "hDiagnostic"
+            ]
+          }
+        ]
       }
     },
     "postprocessing": {
       "PostProcessDiagnosticPerCrate": {
-          "active": "true",
-          "className": "o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate",
-          "moduleName": "QualityControl",
-          "detectorName": "TOF",
-          "dataSources": [
-            ],
-            "plots": [
-            ],
-            "initTrigger": [ "once" ],
-            "updateTrigger": [ "5 seconds" ],
-            "stopTrigger": ["once"]
-        }
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate",
+        "moduleName": "QualityControl",
+        "detectorName": "TOF",
+        "dataSources": [],
+        "plots": [],
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "5 seconds"
+        ],
+        "stopTrigger": [
+          "once"
+        ]
+      }
     }
   },
   "dataSamplingPolicies": [
@@ -136,24 +131,10 @@
       "blocking": "false"
     },
     {
-      "id": "tof-rawdata-diagnostics",
-      "active": "true",
-      "machines": [],
-      "query": "dataframe:TOF/CRAWDATA",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "0.1",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    },
-    {
       "id": "tof-digits",
       "active": "true",
       "machines": [],
-      "query" : "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
+      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
       "samplingConditions": [
         {
           "condition": "random",

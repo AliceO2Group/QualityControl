@@ -23,26 +23,9 @@
       }
     },
     "tasks": {
-      "TaskCompressedData": {
+      "TaskRaw": {
         "active": "true",
-        "className": "o2::quality_control_modules::tof::TaskCompressedData",
-        "moduleName": "QcTOF",
-        "detectorName": "TOF",
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tof-raw-data"
-        },
-        "taskParameters": {
-         "DecoderCONET": "False"
-        },
-        "location": "remote"
-      },
-      "TaskDiagnostics": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::TaskDiagnostics",
+        "className": "o2::quality_control_modules::tof::TaskRaw",
         "moduleName": "QcTOF",
         "detectorName": "TOF",
         "cycleDurationSeconds": "60",
@@ -50,7 +33,7 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "tof-raw-data-diagnostics"
+          "name": "tof-rawdata"
         },
         "taskParameters": {
           "DecoderCONET": "False"
@@ -59,67 +42,46 @@
       }
     },
     "checks": {
-      "CheckCompressedData": {
-          "active": "true",
-          "className": "o2::quality_control_modules::tof::CheckCompressedData",
-          "moduleName": "QcTOF",
-          "detectorName": "TOF",
-          "policy": "OnAny",
-          "checkParameters": {
-            "DiagnosticThresholdPerSlot": "10"
-          },
-          "dataSource": [{
-              "type": "Task",
-              "name": "TaskCompressedData",
-              "MOs": ["hDiagnostic"]
-          }]
-      },
       "CheckDiagnostics": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::CheckDiagnostics",
         "moduleName": "QcTOF",
         "detectorName": "TOF",
         "policy": "OnAny",
-        "dataSource": [{
+        "dataSource": [
+          {
             "type": "Task",
-            "name": "TaskDiagnostics",
-            "MOs": ["RDHCounterCrate0"]
-        }]
+            "name": "TaskRaw",
+            "MOs": [
+              "RDHCounterCrate0"
+            ]
+          }
+        ]
+      },
+      "CheckCompressedData": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckCompressedData",
+        "moduleName": "QcTOF",
+        "detectorName": "TOF",
+        "policy": "OnAny",
+        "checkParameters": {
+          "DiagnosticThresholdPerSlot": "10"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskRaw",
+            "MOs": [
+              "hDiagnostic"
+            ]
+          }
+        ]
       }
-    },
-    "postprocessing": {
-      "PostProcessDiagnosticPerCrate": {
-          "active": "true",
-          "className": "o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate",
-          "moduleName": "QualityControl",
-          "detectorName": "TOF",
-          "dataSources": [
-            ],
-            "plots": [
-            ],
-            "initTrigger": [ "once" ],
-            "updateTrigger": [ "5 seconds" ],
-            "stopTrigger": ["once"]
-        }
     }
   },
   "dataSamplingPolicies": [
     {
-      "id": "tof-raw-data",
-      "active": "true",
-      "machines": [],
-      "query": "dataframe:TOF/CRAWDATA",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "0.1",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    },
-    {
-      "id": "tof-raw-data-diagnostics",
+      "id": "tof-rawdata",
       "active": "true",
       "machines": [],
       "query": "dataframe:TOF/CRAWDATA",
