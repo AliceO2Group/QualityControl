@@ -64,6 +64,9 @@ class RawDataDecoder final : public DecoderBase
   Counter<32, DRMDiagnosticName> mDRMCounter[ncrates];        /// DRM Counters
   Counter<32, LTMDiagnosticName> mLTMCounter[ncrates];        /// LTM Counters
   Counter<32, TRMDiagnosticName> mTRMCounter[ncrates][ntrms]; /// TRM Counters
+  // Global counters
+  Counter<172800, nullptr> mCounterIndexE; /// Counter for the single electronic index
+  Counter<1024, nullptr> mCounterTimeBC;   /// Counter for the Bunch Crossing Time
 
   /// Histograms to fill
   std::map<std::string, std::shared_ptr<TH1>> mHistos;
@@ -79,9 +82,7 @@ class RawDataDecoder final : public DecoderBase
   // Histograms filled in the decoder to be kept to the bare bone so as to increase performance
   std::shared_ptr<TH1F> mHits;         /// Number of TOF hits
   std::shared_ptr<TH1F> mTime;         /// Time
-  std::shared_ptr<TH1F> mTimeBC;       /// Time in Bunch Crossing
   std::shared_ptr<TH1F> mTOT;          /// Time-Over-Threshold
-  std::shared_ptr<TH1F> mIndexE;       /// Index in electronic
   std::shared_ptr<TH2F> mSlotPartMask; /// Participating slot
   std::shared_ptr<TH2F> mDiagnostic;   /// Diagnostic words
   std::shared_ptr<TH1F> mNErrors;      /// Number of errors
@@ -127,6 +128,8 @@ class TaskRaw final : public TaskInterface
   std::shared_ptr<TH2F> mDRMHisto;                        /// Words per DRM
   std::shared_ptr<TH2F> mLTMHisto;                        /// Words per LTM
   std::shared_ptr<TH2F> mTRMHisto[RawDataDecoder::ntrms]; /// Words per TRM
+  std::shared_ptr<TH1F> mIndexE;                          /// Index in electronic
+  std::shared_ptr<TH1F> mTimeBC;                          /// Time in Bunch Crossing
 
   RawDataDecoder mDecoderRaw; /// Decoder for TOF Compressed data useful for the Task and filler of histograms for compressed raw data
 };

@@ -81,22 +81,22 @@ void RawDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const CrateO
   // Number of hits
   mHits->Fill(frameHeader->numberOfHits);
   for (int i = 0; i < frameHeader->numberOfHits; ++i) {
-    auto packedHit = packedHits + i;
-    auto indexE = packedHit->channel +
-                  8 * packedHit->tdcID +
-                  120 * packedHit->chain +
-                  240 * (frameHeader->trmID - 3) +
-                  2400 * crateHeader->drmID;
-    int time = packedHit->time;
+    const auto packedHit = packedHits + i;
+    const auto drmID = crateHeader->drmID;                                                    // [0-71]
+    const auto trmID = frameHeader->trmID;                                                    // [3-12]
+    const auto chain = packedHit->chain;                                                      // [0-1]
+    const auto tdcID = packedHit->tdcID;                                                      // [0-14]
+    const auto channel = packedHit->channel;                                                  // [0-7]
+    const auto indexE = channel + 8 * tdcID + 120 * chain + 240 * (trmID - 3) + 2400 * drmID; // [0-172799]
+    const int time = packedHit->time + (frameHeader->frameID << 13);                          // [24.4 ps]
     const int timebc = time % 1024;
-    time += (frameHeader->frameID << 13);
 
     // Equipment index
-    mIndexE->Fill(indexE);
+    mCounterIndexE.Count(indexE);
     // Raw time
     mTime->Fill(time);
     // BC time
-    mTimeBC->Fill(timebc);
+    mCounterTimeBC.Count(timebc);
     // ToT
     mTOT->Fill(packedHit->tot);
   }
@@ -165,11 +165,7 @@ void RawDataDecoder::initHistograms() // Initialization of histograms in Decoder
   //
   mTime.reset(new TH1F("hTime", "Raw Time;Time (24.4 ps)", 2097152, 0., 2097152.));
   //
-  mTimeBC.reset(new TH1F("hTimeBC", "Raw BC Time;BC time (24.4 ps)", 1024, 0., 1024.));
-  //
   mTOT.reset(new TH1F("hTOT", "Raw ToT;ToT (48.8 ps)", 2048, 0., 2048.));
-  //
-  mIndexE.reset(new TH1F("hIndexE", "Equipment index;index EO", 172800, 0., 172800.));
   //
   mSlotPartMask.reset(new TH2F("hSlotPartMask", "Slot Participating;crate;slot", 72, 0., 72., 12, 1., 13.));
   //
@@ -193,9 +189,7 @@ void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
 {
   mHits->Reset();
   mTime->Reset();
-  mTimeBC->Reset();
   mTOT->Reset();
-  mIndexE->Reset();
   mSlotPartMask->Reset();
   mDiagnostic->Reset();
   mNErrors->Reset();
@@ -228,12 +222,17 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mTRMHisto[j].get());
   }
 
+  mIndexE.reset(new TH1F("hIndexE", "Equipment index;index EO", 172800, 0., 172800.));
+  mDecoderRaw.mCounterIndexE.MakeHistogram(mIndexE.get());
+  getObjectsManager()->startPublishing(mIndexE.get());
+  mTimeBC.reset(new TH1F("hTimeBC", "Raw BC Time;BC time (24.4 ps)", 1024, 0., 1024.));
+  mDecoderRaw.mCounterTimeBC.MakeHistogram(mTimeBC.get());
+  getObjectsManager()->startPublishing(mTimeBC.get());
+
   mDecoderRaw.initHistograms();
   getObjectsManager()->startPublishing(mDecoderRaw.mHits.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mTime.get());
-  getObjectsManager()->startPublishing(mDecoderRaw.mTimeBC.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mTOT.get());
-  getObjectsManager()->startPublishing(mDecoderRaw.mIndexE.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mSlotPartMask.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mDiagnostic.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mNErrors.get());
@@ -286,6 +285,9 @@ void TaskRaw::endOfCycle()
       mDecoderRaw.mTRMCounter[i][j].FillHistogram(mTRMHisto[j].get(), i + 1);
     }
   }
+
+  mDecoderRaw.mCounterIndexE.FillHistogram(mIndexE.get());
+  mDecoderRaw.mCounterTimeBC.FillHistogram(mTimeBC.get());
 }
 
 void TaskRaw::endOfActivity(Activity& /*activity*/)
@@ -299,9 +301,14 @@ void TaskRaw::reset()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mDRMHisto->Reset();
+  mLTMHisto->Reset();
   for (unsigned int j = 0; j < RawDataDecoder::ntrms; j++) {
     mTRMHisto[j]->Reset();
   }
+
+  mIndexE->Reset();
+  mTimeBC->Reset();
+
   mDecoderRaw.resetHistograms();
 }
 
