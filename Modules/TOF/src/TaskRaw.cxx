@@ -12,6 +12,7 @@
 /// \file   TaskRaw.cxx
 /// \author Nicolo' Jacazio and Francesca Ercolessi
 /// \brief  Task To monitor data converted from TOF compressor and diagnostic words from TOF crates
+/// \since  20-11-2020
 ///
 
 // ROOT includes
@@ -39,39 +40,45 @@ using namespace o2::tof;
 namespace o2::quality_control_modules::tof
 {
 
-void RawDataCounter::decode()
+void RawDataDecoder::decode()
 {
   DecoderBase::run();
 }
 
-void RawDataCounter::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit)
+void RawDataDecoder::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit)
 {
-  // DRM
+  // DRM Counter
   if (crateHeader->slotPartMask & 0 << 0) {
     mDRMCounter[crateHeader->drmID].Count(0);
   }
-  // LTM
+
+  // LTM Counter
   if (crateHeader->slotPartMask & 1 << 0) {
     mLTMCounter[crateHeader->drmID].Count(0);
   }
-  // TRM
+
+  // TRM Counter
   for (int i = 1; i < 11; i++) {
     if (crateHeader->slotPartMask & 1 << i) {
       mTRMCounter[crateHeader->drmID][i - 1].Count(0);
     }
   }
 
+  // Paricipating slot
   for (int ibit = 0; ibit < 11; ++ibit) {
     if (crateHeader->slotPartMask & (1 << ibit)) {
       mSlotPartMask->Fill(crateHeader->drmID, ibit + 2);
     }
   }
+
+  // Orbit ID
   mOrbitID->Fill(crateOrbit->orbitID % 1048576, crateHeader->drmID);
 }
 
-void RawDataCounter::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
-                                         const FrameHeader_t* frameHeader, const PackedHit_t* packedHits)
+void RawDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
+                                  const FrameHeader_t* frameHeader, const PackedHit_t* packedHits)
 {
+  // Number of hits
   mHits->Fill(frameHeader->numberOfHits);
   for (int i = 0; i < frameHeader->numberOfHits; ++i) {
     auto packedHit = packedHits + i;
@@ -81,51 +88,58 @@ void RawDataCounter::frameHandler(const CrateHeader_t* crateHeader, const CrateO
                   240 * (frameHeader->trmID - 3) +
                   2400 * crateHeader->drmID;
     int time = packedHit->time;
-    int timebc = time % 1024;
+    const int timebc = time % 1024;
     time += (frameHeader->frameID << 13);
 
+    // Equipment index
     mIndexE->Fill(indexE);
+    // Raw time
     mTime->Fill(time);
+    // BC time
     mTimeBC->Fill(timebc);
+    // ToT
     mTOT->Fill(packedHit->tot);
   }
 }
 
-void RawDataCounter::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
-                                        const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
-                                        const Error_t* errors)
+void RawDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
+                                    const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
+                                    const Error_t* errors)
 {
+  // Diagnostic word per slot
   const int drmID = crateHeader->drmID;
-  const unsigned int words_to_check = 32 - 4;
+  constexpr unsigned int reserved_words = 4;                   // First 4 bits are reserved
+  constexpr unsigned int words_to_check = 32 - reserved_words; // Words to check
   for (int i = 0; i < crateTrailer->numberOfDiagnostics; ++i) {
     auto diagnostic = diagnostics + i;
     const int slotID = diagnostic->slotID;
     if (slotID == 1) { // Here we have a DRM
       for (unsigned int j = 0; j < words_to_check; j++) {
         if (diagnostic->faultBits & 1 << j) {
-          mDRMCounter[drmID].Count(j + 4);
+          mDRMCounter[drmID].Count(j + reserved_words);
         }
       }
     } else if (slotID == 2) { // Here we have a LTM
       for (unsigned int j = 0; j < words_to_check; j++) {
         if (diagnostic->faultBits & 1 << j) {
-          mLTMCounter[drmID].Count(j + 4);
+          mLTMCounter[drmID].Count(j + reserved_words);
         }
       }
     } else { // Here we have a TRM
-      const int trmID = slotID - 3;
       for (unsigned int j = 0; j < words_to_check; j++) {
         if (diagnostic->faultBits & 1 << j) {
-          mTRMCounter[drmID][trmID].Count(j + 4);
+          mTRMCounter[drmID][slotID - 3].Count(j + reserved_words);
         }
       }
     }
   }
 
+  // Number of diagnostics per crate
   for (int i = 0; i < crateTrailer->numberOfDiagnostics; ++i) {
     auto diagnostic = diagnostics + i;
     mDiagnostic->Fill(crateHeader->drmID, diagnostic->slotID);
   }
+  // Errors in the TDCs
   int nError = 0, nTest = 0;
   for (int i = 0; i < crateTrailer->numberOfErrors; ++i) {
     auto error = errors + i;
@@ -145,7 +159,7 @@ void RawDataCounter::trailerHandler(const CrateHeader_t* crateHeader, const Crat
   mNTests->Fill(nTest);
 }
 
-void RawDataCounter::initHistograms()
+void RawDataDecoder::initHistograms() // Initialization of histograms in Decoder
 {
   mHits.reset(new TH1F("hHits", "Raw Hits;Hits per event", 1000, 0., 1000.));
   //
@@ -175,7 +189,7 @@ void RawDataCounter::initHistograms()
   //
 }
 
-void RawDataCounter::resetHistograms()
+void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
 {
   mHits->Reset();
   mTime->Reset();
@@ -208,7 +222,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   mLTMHisto.reset(new TH2F("LTMCounter", "LTM Diagnostics;LTM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
   mDecoderRaw.mLTMCounter[0].MakeHistogram(mLTMHisto.get());
   getObjectsManager()->startPublishing(mLTMHisto.get());
-  for (int j = 0; j < RawDataCounter::ntrms; j++) {
+  for (int j = 0; j < RawDataDecoder::ntrms; j++) {
     mTRMHisto[j].reset(new TH2F(Form("TRMCounterSlot%i", j), Form("TRM %i Diagnostics;TRM Word;Crate;Words", j), 32, 0, 32, 72, 0, 72));
     mDecoderRaw.mTRMCounter[0][j].MakeHistogram(mTRMHisto[j].get());
     getObjectsManager()->startPublishing(mTRMHisto[j].get());
@@ -228,7 +242,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDecoderRaw.mNTests.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mTest.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mOrbitID.get());
-} 
+}
 
 void TaskRaw::startOfActivity(Activity& /*activity*/)
 {
@@ -265,10 +279,10 @@ void TaskRaw::monitorData(o2::framework::ProcessingContext& ctx)
 void TaskRaw::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
-  for (int i = 0; i < RawDataCounter::ncrates; i++) { // Filling histograms only at the end of the cycle
+  for (int i = 0; i < RawDataDecoder::ncrates; i++) { // Filling histograms only at the end of the cycle
     mDecoderRaw.mDRMCounter[i].FillHistogram(mDRMHisto.get(), i + 1);
     mDecoderRaw.mLTMCounter[i].FillHistogram(mLTMHisto.get(), i + 1);
-    for (int j = 0; j < RawDataCounter::ntrms; j++) {
+    for (int j = 0; j < RawDataDecoder::ntrms; j++) {
       mDecoderRaw.mTRMCounter[i][j].FillHistogram(mTRMHisto[j].get(), i + 1);
     }
   }
@@ -285,7 +299,7 @@ void TaskRaw::reset()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mDRMHisto->Reset();
-  for (int j = 0; j < RawDataCounter::ntrms; j++) {
+  for (int j = 0; j < RawDataDecoder::ntrms; j++) {
     mTRMHisto[j]->Reset();
   }
   mDecoderRaw.resetHistograms();

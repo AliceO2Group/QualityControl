@@ -11,9 +11,10 @@
 ///
 /// \file   TaskRaw.h
 /// \author Nicolo' Jacazio and Francesca Ercolessi
-/// \brief Task To monitor data converted from TOF compressor, and check the diagnostic words of TOF crates received trough the TOF compressor.
-///        Here are defined the counters to check the diagnostics words of the TOF crates obtained from the compressor.
-///        This is why the class derives from DecoderBase: it reads data from the decoder.
+/// \brief  Task To monitor data converted from TOF compressor, and check the diagnostic words of TOF crates received trough the TOF compressor.
+///         Here are defined the counters to check the diagnostics words of the TOF crates obtained from the compressor.
+///         This is why the class derives from DecoderBase: it reads data from the decoder.
+/// \since  20-11-2020
 ///
 
 #ifndef QC_MODULE_TOF_TASKRAW_H
@@ -43,22 +44,22 @@ static const char* RDHDiagnosticsName[2] = { "RDH_HAS_DATA", "" };
 
 /// \brief TOF Quality Control class for Decoding Compressed data for TOF Compressed data QC Task
 /// \author Nicolo' Jacazio and Francesca Ercolessi
-class RawDataCounter final : public DecoderBase
+class RawDataDecoder final : public DecoderBase
 {
  public:
   /// \brief Constructor
-  RawDataCounter() = default;
+  RawDataDecoder() = default;
   /// Destructor
-  ~RawDataCounter() = default;
+  ~RawDataDecoder() = default;
 
   /// Function to run decoding
   void decode();
 
   /// Counters to fill
-  static const int ncrates = 72;                                                   /// Number of crates
-  static const int ntrms = 10;                                                     /// Number of TRMs per crate
-  static const int ntrmschains = 2;                                                /// Number of TRMChains per TRM
-  Counter<2, RDHDiagnosticsName> mRDHCounter[ncrates];                              /// RDH Counters
+  static constexpr unsigned int ncrates = 72;                                      /// Number of crates
+  static constexpr unsigned int ntrms = 10;                                        /// Number of TRMs per crate
+  static constexpr unsigned int ntrmschains = 2;                                   /// Number of TRMChains per TRM
+  Counter<2, RDHDiagnosticsName> mRDHCounter[ncrates];                             /// RDH Counters
   Counter<32, o2::tof::diagnostic::DRMDiagnosticName> mDRMCounter[ncrates];        /// DRM Counters
   Counter<32, o2::tof::diagnostic::LTMDiagnosticName> mLTMCounter[ncrates];        /// LTM Counters
   Counter<32, o2::tof::diagnostic::TRMDiagnosticName> mTRMCounter[ncrates][ntrms]; /// TRM Counters
@@ -74,7 +75,7 @@ class RawDataCounter final : public DecoderBase
   /// Function to reset histograms
   void resetHistograms();
 
-  // Histograms filled in the decoder
+  // Histograms filled in the decoder to be kept to the bare bone so as to increase performance
   std::shared_ptr<TH1F> mHits;         /// Number of TOF hits
   std::shared_ptr<TH1F> mTime;         /// Time
   std::shared_ptr<TH1F> mTimeBC;       /// Time in Bunch Crossing
@@ -91,10 +92,10 @@ class RawDataCounter final : public DecoderBase
 
  private:
   /** decoding handlers **/
-  void rdhHandler(const o2::header::RAWDataHeader*  rdh ) override {};
+  void rdhHandler(const o2::header::RAWDataHeader* rdh) override{};
   void headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit) override;
-  void frameHandler(const CrateHeader_t*  crateHeader , const CrateOrbit_t*  crateOrbit ,
-                    const FrameHeader_t*  frameHeader , const PackedHit_t*  packedHits ) override;
+  void frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
+                    const FrameHeader_t* frameHeader, const PackedHit_t* packedHits) override;
   void trailerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
                       const CrateTrailer_t* crateTrailer, const Diagnostic_t* diagnostics,
                       const Error_t* errors) override;
@@ -121,12 +122,12 @@ class TaskRaw final : public TaskInterface
 
  private:
   // Histograms
-  std::shared_ptr<TH2F> mRDHHisto;                            /// Words per RDH
-  std::shared_ptr<TH2F> mDRMHisto;                            /// Words per DRM
-  std::shared_ptr<TH2F> mLTMHisto;                            /// Words per LTM
-  std::shared_ptr<TH2F> mTRMHisto[RawDataCounter::ntrms]; /// Words per TRM
+  std::shared_ptr<TH2F> mRDHHisto;                        /// Words per RDH
+  std::shared_ptr<TH2F> mDRMHisto;                        /// Words per DRM
+  std::shared_ptr<TH2F> mLTMHisto;                        /// Words per LTM
+  std::shared_ptr<TH2F> mTRMHisto[RawDataDecoder::ntrms]; /// Words per TRM
 
-  RawDataCounter mDecoderRaw; /// Decoder for TOF Compressed data useful for the Task and filler of histograms for compressed raw data
+  RawDataDecoder mDecoderRaw; /// Decoder for TOF Compressed data useful for the Task and filler of histograms for compressed raw data
 };
 
 } // namespace o2::quality_control_modules::tof
