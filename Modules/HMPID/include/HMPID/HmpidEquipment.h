@@ -22,7 +22,8 @@
 #include <stdint.h>
 #include <iostream>
 
-namespace o2::quality_control_modules::hmpid {
+namespace o2::quality_control_modules::hmpid
+{
 
 const int MAXERRORS = 13;
 const int MAXHMPIDERRORS = 5;
@@ -70,77 +71,70 @@ const int TH_NULLBUFFERPOINTER = 13;
 const int TH_BUFFEREMPTY = 12;
 const int TH_WRONGBUFFERDIM = 11;
 
-
-
-
 class HmpidEquipment
 {
 
-  private:
+ private:
+  uint32_t mEquipmentId;
+  uint32_t mCruId;
+  uint32_t mLinkId;
 
-    uint32_t mEquipmentId;
-    uint32_t mCruId;
-    uint32_t mLinkId;
+ public:
+  uint32_t mPadSamples[N_COLUMNS][N_DILOGICS][N_CHANNELS];
+  double mPadSum[N_COLUMNS][N_DILOGICS][N_CHANNELS];
+  double mPadSquares[N_COLUMNS][N_DILOGICS][N_CHANNELS];
 
-  public:
+  int mErrors[MAXERRORS];
 
-    uint32_t mPadSamples[N_COLUMNS][N_DILOGICS][N_CHANNELS];
-    double mPadSum[N_COLUMNS][N_DILOGICS][N_CHANNELS];
-    double mPadSquares[N_COLUMNS][N_DILOGICS][N_CHANNELS];
+  int mWillBeRowMarker;
+  int mWillBeSegmentMarker;
+  int mWillBeEoE;
+  int mWillBePad;
+  int mRowSize;
+  int mSegment;
+  int mColumnCounter;
+  int mWordsPerRowCounter;
+  int mWordsPerSegCounter;
+  int mWordsPerDilogicCounter;
 
-    int mErrors[MAXERRORS];
+  int mErrorsCounter;
+  int mErrorPadsPerEvent;
 
-    int mWillBeRowMarker;
-    int mWillBeSegmentMarker;
-    int mWillBeEoE;
-    int mWillBePad;
-    int mRowSize;
-    int mSegment;
-    int mColumnCounter;
-    int mWordsPerRowCounter;
-    int mWordsPerSegCounter;
-    int mWordsPerDilogicCounter;
+  int mEventNumber;
+  int mNumberOfEvents;
+  float mEventSizeAverage;
+  int mEventSize;
 
-    int mErrorsCounter;
-    int mErrorPadsPerEvent;
+  int mSampleNumber;
+  float mPadsPerEventAverage;
 
-    int mEventNumber;
-    int mNumberOfEvents;
-    float mEventSizeAverage;
-    int mEventSize;
+  float mBusyTimeValue;
+  float mBusyTimeAverage;
+  int mBusyTimeSamples;
+  int mNumberOfEmptyEvents;
+  int mNumberOfWrongEvents;
+  int mTotalPads;
+  int mTotalErrors;
 
-    int mSampleNumber;
-    float mPadsPerEventAverage;
+ public:
+  HmpidEquipment(int Equipment, int Cru, int Link);
+  ~HmpidEquipment();
 
-    float mBusyTimeValue;
-    float mBusyTimeAverage;
-    int mBusyTimeSamples;
-    int mNumberOfEmptyEvents;
-    int mNumberOfWrongEvents;
-    int mTotalPads;
-    int mTotalErrors;
+  int getEquipmentId()
+  {
+    return (mEquipmentId);
+  };
+  int getEquipmentId(int cru, int link);
 
-  public:
-    HmpidEquipment(int Equipment, int Cru, int Link);
-    ~HmpidEquipment();
-
-    int getEquipmentId()
-    {
-      return (mEquipmentId);
-    }
-    ;
-    int getEquipmentId(int cru, int link);
-
-    void init();
-    void resetPadMap();
-    void resetErrors();
-    void setError(int ErrType);
-    void setPad(int col, int dil, int cha, int charge);
-
+  void init();
+  void resetPadMap();
+  void resetErrors();
+  void setError(int ErrType);
+  void setPad(int col, int dil, int cha, int charge);
 };
 
-void hmpidCoordsModule2Equipment(int Mod, int Col, int Row, int *Equi, int *Colu, int *Dilo, int *Chan);
-void hmpidCoordsEquipment2Module(int Equi, int Colu, int Dilo, int Chan, int *Mod, int *Col, int *Row);
+void hmpidCoordsModule2Equipment(int Mod, int Col, int Row, int* Equi, int* Colu, int* Dilo, int* Chan);
+void hmpidCoordsEquipment2Module(int Equi, int Colu, int Dilo, int Chan, int* Mod, int* Col, int* Row);
 
 } // namespace o2::quality_control_modules::hmpid
 

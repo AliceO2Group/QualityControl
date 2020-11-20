@@ -120,8 +120,8 @@ void HmpidEquipment::setError(int ErrType)
 void HmpidEquipment::setPad(int col, int dil, int cha, int charge)
 {
   mPadSamples[col][dil][cha]++;
-  mPadSum[col][dil][cha] += (double) charge;
-  mPadSquares[col][dil][cha] += (double) charge * (double) charge;
+  mPadSum[col][dil][cha] += (double)charge;
+  mPadSquares[col][dil][cha] += (double)charge * (double)charge;
   return;
 }
 
@@ -137,7 +137,8 @@ int HmpidEquipment::getEquipmentId(int cru, int link)
     return (-1);
 }
 
-namespace o2::quality_control_modules::hmpid {
+namespace o2::quality_control_modules::hmpid
+{
 
 // =================== General Purposes HMPID Functions =======================
 /// Functions to translate coordinates : from Module,Col,Row to Equipment,Col,Dilogic,Channel
@@ -148,7 +149,7 @@ namespace o2::quality_control_modules::hmpid {
 ///
 ///                    (0,0,0,0) Right Top   (1,0,0,0) Left Bottom
 ///
-void hmpidCoordsModule2Equipment(int Mod, int Col, int Row, int *Equi, int *Colu, int *Dilo, int *Chan)
+void hmpidCoordsModule2Equipment(int Mod, int Col, int Row, int* Equi, int* Colu, int* Dilo, int* Chan)
 {
   if (Row > 79) {
     *Equi = Mod * 2 + 1;
@@ -172,7 +173,7 @@ void hmpidCoordsModule2Equipment(int Mod, int Col, int Row, int *Equi, int *Colu
 ///
 ///                    (0,0,0,0) Right Top   (1,0,0,0) Left Bottom
 ///
-void hmpidCoordsEquipment2Module(int Equi, int Colu, int Dilo, int Chan, int *Mod, int *Col, int *Row)
+void hmpidCoordsEquipment2Module(int Equi, int Colu, int Dilo, int Chan, int* Mod, int* Col, int* Row)
 {
   *Mod = Equi / 2;
   *Row = Dilo * 8 + Chan / 8;
@@ -187,4 +188,4 @@ void hmpidCoordsEquipment2Module(int Equi, int Colu, int Dilo, int Chan, int *Mo
   return;
 }
 
-}
+} // namespace o2::quality_control_modules::hmpid

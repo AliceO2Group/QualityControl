@@ -27,26 +27,26 @@
 
 #include "HMPID/HmpidDecoder.h"
 
-namespace o2::quality_control_modules::hmpid {
-
-class HmpidDecodeRawMem: public HmpidDecoder
+namespace o2::quality_control_modules::hmpid
 {
-  public:
-    HmpidDecodeRawMem(int *EqIds, int *CruIds, int *LinkIds, int numOfEquipments);
-    HmpidDecodeRawMem(int numOfEquipments);
-    ~HmpidDecodeRawMem();
 
-    bool setUpStream(void *Buffer, long BufferLen);
+class HmpidDecodeRawMem : public HmpidDecoder
+{
+ public:
+  HmpidDecodeRawMem(int* EqIds, int* CruIds, int* LinkIds, int numOfEquipments);
+  HmpidDecodeRawMem(int numOfEquipments);
+  ~HmpidDecodeRawMem();
 
-  private:
-    bool getBlockFromStream(int32_t **streamPtr, uint32_t Size);
-    bool getHeaderFromStream(int32_t **streamPtr);
-    bool getWordFromStream(int32_t *word);
-    void setPad(HmpidEquipment *eq, int col, int dil, int ch, int charge);
+  bool setUpStream(void* Buffer, long BufferLen);
 
-  private:
+ private:
+  bool getBlockFromStream(int32_t** streamPtr, uint32_t Size);
+  bool getHeaderFromStream(int32_t** streamPtr);
+  bool getWordFromStream(int32_t* word);
+  void setPad(HmpidEquipment* eq, int col, int dil, int ch, int charge);
 
+ private:
 };
 
-}
+} // namespace o2::quality_control_modules::hmpid
 #endif /* COMMON_HMPIDDECODERAWFILE_H_ */

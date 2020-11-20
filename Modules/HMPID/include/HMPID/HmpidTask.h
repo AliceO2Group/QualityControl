@@ -45,10 +45,10 @@ class HmpidTask final : public TaskInterface
   void reset() override;
 
  private:
-  TH1F* hPedestalMean  = nullptr;
+  TH1F* hPedestalMean = nullptr;
   TH1F* hPedestalSigma = nullptr;
-  TH1F* hBusyTime      = nullptr;
-  TH1F* hEventSize     = nullptr; 
+  TH1F* hBusyTime = nullptr;
+  TH1F* hEventSize = nullptr;
 };
 
 } // namespace o2::quality_control_modules::hmpid

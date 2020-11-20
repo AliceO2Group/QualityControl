@@ -28,8 +28,7 @@ using namespace o2::quality_control_modules::hmpid;
 ///               normally it is equal to 14
 /// @param[in] numOfEquipments : the number of equipments to define [1..14]
 HmpidDecodeRawMem::HmpidDecodeRawMem(int numOfEquipments)
-    :
-    HmpidDecoder(numOfEquipments)
+  : HmpidDecoder(numOfEquipments)
 {
 }
 
@@ -42,9 +41,8 @@ HmpidDecodeRawMem::HmpidDecodeRawMem(int numOfEquipments)
 /// @param[in] *EqIds : the pointer to the Equipments ID array
 /// @param[in] *CruIds : the pointer to the CRU ID array
 /// @param[in] *LinkIds : the pointer to the Link ID array
-HmpidDecodeRawMem::HmpidDecodeRawMem(int *EqIds, int *CruIds, int *LinkIds, int numOfEquipments)
-    :
-    HmpidDecoder(EqIds, CruIds, LinkIds, numOfEquipments)
+HmpidDecodeRawMem::HmpidDecodeRawMem(int* EqIds, int* CruIds, int* LinkIds, int numOfEquipments)
+  : HmpidDecoder(EqIds, CruIds, LinkIds, numOfEquipments)
 {
 }
 
@@ -62,7 +60,7 @@ HmpidDecodeRawMem::~HmpidDecodeRawMem()
 /// @throws TH_NULLBUFFERPOINTER Thrown if the pointer to the buffer is NULL
 /// @throws TH_BUFFEREMPTY Thrown if the buffer is empty
 /// @throws TH_WRONGBUFFERDIM Thrown if the buffer len is less then one header
-bool HmpidDecodeRawMem::setUpStream(void *Buffer, long BufferLen)
+bool HmpidDecodeRawMem::setUpStream(void* Buffer, long BufferLen)
 {
   long wordsBufferLen = BufferLen / (sizeof(int32_t) / sizeof(char)); // Converts the len in words
   if (Buffer == nullptr) {
@@ -70,7 +68,7 @@ bool HmpidDecodeRawMem::setUpStream(void *Buffer, long BufferLen)
     throw TH_NULLBUFFERPOINTER;
   }
   if (wordsBufferLen == 0) {
-    ILOG(Error) << "Raw data buffer Empty ! " <<ENDM;
+    ILOG(Error) << "Raw data buffer Empty ! " << ENDM;
     throw TH_BUFFEREMPTY;
   }
   if (wordsBufferLen < 16) {
@@ -78,9 +76,9 @@ bool HmpidDecodeRawMem::setUpStream(void *Buffer, long BufferLen)
     throw TH_WRONGBUFFERDIM;
   }
 
-  mActualStreamPtr = (int32_t*) Buffer; // sets the pointer to the Buffer
-  mEndStreamPtr = ((int32_t*) Buffer) + wordsBufferLen; //sets the End of buffer
-  mStartStreamPtr = ((int32_t*) Buffer);
+  mActualStreamPtr = (int32_t*)Buffer;                 // sets the pointer to the Buffer
+  mEndStreamPtr = ((int32_t*)Buffer) + wordsBufferLen; //sets the End of buffer
+  mStartStreamPtr = ((int32_t*)Buffer);
 
   return (true);
 }
@@ -90,7 +88,7 @@ bool HmpidDecodeRawMem::setUpStream(void *Buffer, long BufferLen)
 /// @param[in] Size : the dimension of the chunk (words)
 /// @returns True every time
 /// @throw TH_WRONGBUFFERDIM Buffer length shorter then the requested
-bool HmpidDecodeRawMem::getBlockFromStream(int32_t **streamPtr, uint32_t Size)
+bool HmpidDecodeRawMem::getBlockFromStream(int32_t** streamPtr, uint32_t Size)
 {
   *streamPtr = mActualStreamPtr;
   mActualStreamPtr += Size;
@@ -102,7 +100,7 @@ bool HmpidDecodeRawMem::getBlockFromStream(int32_t **streamPtr, uint32_t Size)
 /// Gets the Header Block from the stream.
 /// @param[in] **streamPtr : the pointer to the memory buffer
 /// @returns True if the header is read
-bool HmpidDecodeRawMem::getHeaderFromStream(int32_t **streamPtr)
+bool HmpidDecodeRawMem::getHeaderFromStream(int32_t** streamPtr)
 {
   return (getBlockFromStream(streamPtr, 16));
 }
@@ -110,9 +108,9 @@ bool HmpidDecodeRawMem::getHeaderFromStream(int32_t **streamPtr)
 /// Gets a Word from the stream.
 /// @param[in] *word : the buffer for the read word
 /// @returns True if the operation end well
-bool HmpidDecodeRawMem::getWordFromStream(int32_t *word)
+bool HmpidDecodeRawMem::getWordFromStream(int32_t* word)
 {
-  int32_t *appo;
+  int32_t* appo;
   *word = *mActualStreamPtr;
   return (getBlockFromStream(&appo, 1));
 }
@@ -126,9 +124,8 @@ bool HmpidDecodeRawMem::getWordFromStream(int32_t *word)
 /// @param[in] dil : the dilogic [0..9]
 /// @param[in] ch : the channel [0..47]
 /// @param[in] charge : the value of the charge
-void HmpidDecodeRawMem::setPad(HmpidEquipment *eq, int col, int dil, int ch, int charge)
+void HmpidDecodeRawMem::setPad(HmpidEquipment* eq, int col, int dil, int ch, int charge)
 {
   eq->setPad(col, dil, ch, charge);
   return;
 }
-

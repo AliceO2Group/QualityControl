@@ -33,18 +33,17 @@ HmpidTask::~HmpidTask()
   if (hPedestalSigma) {
     delete hPedestalSigma;
   }
-    
+
   if (hBusyTime) {
     delete hBusyTime;
   }
-    
+
   if (hEventSize) {
     delete hEventSize;
   }
-    
 }
 
-Int_t nCycles = 0;
+Int_t NumCycles = 0;
 
 void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
@@ -56,22 +55,26 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   hPedestalMean = new TH1F("hPedestalMean", "Pedestal Mean", 2000, 0, 2000);
-  hPedestalMean->SetXTitle("Pedestal mean (ADC channel)"); hPedestalMean->SetYTitle("Entries/1 ADC");
-  
+  hPedestalMean->SetXTitle("Pedestal mean (ADC channel)");
+  hPedestalMean->SetYTitle("Entries/1 ADC");
+
   hPedestalSigma = new TH1F("hPedestalSigma", "Pedestal Sigma", 100, 0, 10);
-  hPedestalSigma->SetXTitle("Pedestal sigma (ADC channel)"); hPedestalMean->SetYTitle("Entries/0.1 ADC");
-  
+  hPedestalSigma->SetXTitle("Pedestal sigma (ADC channel)");
+  hPedestalMean->SetYTitle("Entries/0.1 ADC");
+
   hBusyTime = new TH1F("hBusyTime", "Average Busy Time", 14, 0, 14);
-  hBusyTime->SetXTitle("Equipment"); hBusyTime->SetYTitle("Busy time (#mus)");
+  hBusyTime->SetXTitle("Equipment");
+  hBusyTime->SetYTitle("Busy time (#mus)");
   hBusyTime->SetMarkerStyle(20);
-  
+
   hEventSize = new TH1F("hEventSize", "Average Event Size", 14, 0, 14);
-  hEventSize->SetXTitle("Equipment"); hEventSize->SetYTitle("Event size (kB)");
-  hEventSize->SetMarkerStyle(20);  
+  hEventSize->SetXTitle("Equipment");
+  hEventSize->SetYTitle("Event size (kB)");
+  hEventSize->SetMarkerStyle(20);
 
   getObjectsManager()->startPublishing(hPedestalMean);
   getObjectsManager()->addMetadata(hPedestalMean->GetName(), "custom", "34");
-  
+
   getObjectsManager()->startPublishing(hPedestalSigma);
   getObjectsManager()->addMetadata(hPedestalSigma->GetName(), "custom", "34");
 
@@ -79,7 +82,7 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->addMetadata(hBusyTime->GetName(), "custom", "34");
 
   getObjectsManager()->startPublishing(hEventSize);
-  getObjectsManager()->addMetadata(hEventSize->GetName(), "custom", "34");  
+  getObjectsManager()->addMetadata(hEventSize->GetName(), "custom", "34");
 }
 
 void HmpidTask::startOfActivity(Activity& /*activity*/)
@@ -98,7 +101,7 @@ void HmpidTask::startOfCycle()
 
 void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  nCycles++;
+  NumCycles++;
 
   // In this function you can access data inputs specified in the JSON config file, for example:
   //   "query": "random:ITS/RAWDATA/0"
@@ -112,17 +115,16 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Some examples:
 
   // We define an array with the Equipment Ids that will be managed from the Stream
-  int EqIdsArray[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14};
-  int CruIdsArray[] = {1,2,3,4};
-  int LinkIdsArray[] = {1,2,3,4};
+  //int EqIdsArray[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
+  //int CruIdsArray[] = { 1, 2, 3, 4 };
+  //int LinkIdsArray[] = { 1, 2, 3, 4 };
   // Get a Decoder Hinstance
-  HmpidDecodeRawMem *Decoder = new HmpidDecodeRawMem(14);
-//  HmpidDecoder *Decoder = new HmpidDecoder(EqIdsArray, 14);
+  HmpidDecodeRawMem* Decoder = new HmpidDecodeRawMem(14);
+  //  HmpidDecoder *Decoder = new HmpidDecoder(EqIdsArray, 14);
   Decoder->init();
-  Decoder->setVerbosity( 7 ); // this is for Debug 
- 
+  Decoder->setVerbosity(7); // this is for Debug
 
- // mHistogram->Fill(gRandom->Gaus(250.,100.));
+  // mHistogram->Fill(gRandom->Gaus(250.,100.));
 
   // 1. In a loop
   for (auto&& input : ctx.inputs()) {
@@ -134,38 +136,41 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       // for the sake of an example, let's fill the histogram with payload sizes
       //mHistogram->Fill(header->payloadSize);
-      int32_t *ptrToPayload = (int32_t *)(input.payload);
+      int32_t* ptrToPayload = (int32_t*)(input.payload);
 
-      Printf("chunk size = %f", header->payloadSize);
-                  
       Decoder->setUpStream(ptrToPayload, header->payloadSize);
-      
-      if( !Decoder->decodeBuffer() ) {
+
+      if (!Decoder->decodeBuffer()) {
         ILOG(Error) << "Error decoding the Superpage !" << ENDM;
       }
-      
-      for(Int_t eq = 0; eq<14; eq++) {
-        
-        if(Decoder->getAverageEventSize(eq) > 0.) {hEventSize->SetBinContent(eq+1,Decoder->getAverageEventSize(eq)/1000.); hEventSize->SetBinError(eq+1,0.0000001);}
-        if(Decoder->getAverageBusyTime(eq)  > 0.) {hBusyTime->SetBinContent(eq+1,Decoder->getAverageBusyTime(eq)*1000000); hBusyTime->SetBinError(eq+1,0.00000001);}
-        
-        Printf("eq = %i, size = %f, busy = %f",eq, Decoder->getAverageEventSize(eq), Decoder->getAverageBusyTime(eq));
-        
-        for(Int_t column = 0; column < 24; column++)
-          for(Int_t dilogic = 0; dilogic<10; dilogic++)
-            for(Int_t channel = 0; channel<48; channel++){
-        
-                Float_t mean = Decoder->getChannelSum(eq,column,dilogic,channel)/Decoder->getChannelSamples(eq,column,dilogic,channel);
-                Float_t sigma = TMath::Sqrt(Decoder->getChannelSquare(eq,column,dilogic,channel)/Decoder->getChannelSamples(eq,column,dilogic,channel) - mean*mean);
-                
-               // if(mean>1) Printf("*******************************************   mean = %f, sigma = %f **************************************",mean,sigma);
-                
-                hPedestalMean->Fill(mean);
-                hPedestalSigma->Fill(sigma);
-               }
-             }
-        
-      
+
+      for (Int_t eq = 0; eq < 14; eq++) {
+
+        if (Decoder->getAverageEventSize(eq) > 0.) {
+          hEventSize->SetBinContent(eq + 1, Decoder->getAverageEventSize(eq) / 1000.);
+          hEventSize->SetBinError(eq + 1, 0.0000001);
+        }
+        if (Decoder->getAverageBusyTime(eq) > 0.) {
+          hBusyTime->SetBinContent(eq + 1, Decoder->getAverageBusyTime(eq) * 1000000);
+          hBusyTime->SetBinError(eq + 1, 0.00000001);
+        }
+
+        Printf("eq = %i, size = %f, busy = %f", eq, Decoder->getAverageEventSize(eq), Decoder->getAverageBusyTime(eq));
+
+        for (Int_t column = 0; column < 24; column++)
+          for (Int_t dilogic = 0; dilogic < 10; dilogic++)
+            for (Int_t channel = 0; channel < 48; channel++) {
+
+              Float_t mean = Decoder->getChannelSum(eq, column, dilogic, channel) / Decoder->getChannelSamples(eq, column, dilogic, channel);
+              Float_t sigma = TMath::Sqrt(Decoder->getChannelSquare(eq, column, dilogic, channel) / Decoder->getChannelSamples(eq, column, dilogic, channel) - mean * mean);
+
+              // if(mean>1) Printf("*******************************************   mean = %f, sigma = %f **************************************",mean,sigma);
+
+              hPedestalMean->Fill(mean);
+              hPedestalSigma->Fill(sigma);
+            }
+      }
+
       /* Access the pads
       
       uint16_t   Decoder->theEquipments[0..13]->padSamples[0..23][0..9][0..47]  Number of samples
@@ -184,14 +189,16 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   float GetPadSquares(int Module, int Column, int Row);
 
       */
-      
-      
     }
   }
-  
-  if(nCycles > 50) {hPedestalMean->Reset(); hPedestalSigma->Reset(); nCycles = 0;}
- 
-  delete Decoder; 
+
+  if (NumCycles > 50) {
+    hPedestalMean->Reset();
+    hPedestalSigma->Reset();
+    NumCycles = 0;
+  }
+
+  delete Decoder;
 
   // 2. Using get("<binding>")
 
