@@ -5,8 +5,6 @@ add_library(QcTOF)
 target_sources(QcTOF 
                       # Tasks
               PRIVATE src/TaskDigits.cxx
-                      src/TaskCompressedData.cxx
-                      src/TaskDiagnostics.cxx
                       src/TaskRaw.cxx
                       # Checkers
                       src/CheckDiagnostics.cxx
@@ -43,8 +41,6 @@ install(TARGETS QcTOF
 add_root_dictionary(QcTOF
                             # Tasks
                     HEADERS include/TOF/TaskDigits.h
-                            include/TOF/TaskCompressedData.h
-                            include/TOF/TaskDiagnostics.h
                             include/TOF/TaskRaw.h
                             # Checkers
                             include/TOF/CheckCompressedData.h
@@ -85,10 +81,8 @@ set_tests_properties(testQcTOF PROPERTIES TIMEOUT 20)
 
 # ---- Extra scripts ----
 
-install(FILES tof.json
-              tofcompressed.json
-              tofdiagnostics.json
-              toffull.json
+install(FILES toffull.json
+              tofdigits.json
               tofraw.json
               tofpostprocessdiagnosticpercrate.json
         DESTINATION etc)
