@@ -45,8 +45,12 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
       auto sourceName = dataSource.get<std::string>("name");
       ILOG(Info, Devel) << "   Found a source : " << sourceName << ENDM;
 
-      if (dataSource.count("QOs") == 0 || dataSource.get<std::string>("QOs") == "all") {
-        ILOG(Info, Devel) << "      (no QOs specified or specified as `all`)" << ENDM;
+      cout << "dataSource.count(QOs) : " << dataSource.count("QOs") << endl;
+      if(dataSource.count("QOs") != 0)
+        cout << "dataSource.get<std::string>(\"QOs\") : " << dataSource.get<std::string>("QOs") << endl;
+
+      if (dataSource.count("QOs") == 0) {
+        ILOG(Info, Devel) << "      (no QOs specified, we take all)" << ENDM;
         mAggregatorConfig.allObjects = true;
         // fixme: this is a dirty fix. Policies should be refactored, so this check won't be needed.
         if (mAggregatorConfig.policyType != "OnEachSeparately") {

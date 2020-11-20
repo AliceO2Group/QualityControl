@@ -396,7 +396,7 @@ o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/ad
 * __dataSource__ - declaration of the `check` input
     * _type_ - _Check_ or _Aggregator_
     * _names_ - name of the Check or Aggregator
-    * _QOs_ - list of QualityObjects names or "all" (not as a list!), can be omitted for the same result as "all"
+    * _QOs_ - list of QualityObjects names or can be omitted to mean that all objects should be taken.
 
 ### Implementation
 
