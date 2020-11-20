@@ -455,7 +455,7 @@ vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::Work
     ILOG(Info, Devel) << ENDM;
 
     if (!checks.empty()) { // Create a CheckRunner for the grouped checks
-      DataProcessorSpec spec = checkRunnerFactory.create(checks, configurationSource);
+      DataProcessorSpec spec = checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]);
       workflow.emplace_back(spec);
       checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
     } else { // If there are no checks, create a sink CheckRunner
