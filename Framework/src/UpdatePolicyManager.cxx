@@ -69,8 +69,7 @@ void UpdatePolicyManager::addPolicy(std::string actorName, std::string policyTyp
      */
     policy = [&, actorName]() {
       for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
-        if (mObjectsRevision[objectName] <= mPoliciesByActor.at(actorName).revision) {
-          // Expect: mObjectsRevision[notExistingKey] == 0
+        if (mObjectsRevision.count(objectName) == 0 || mObjectsRevision.at(objectName) <= mPoliciesByActor.at(actorName).revision) {
           return false;
         }
       }

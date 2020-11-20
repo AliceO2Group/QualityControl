@@ -144,7 +144,6 @@ QualityObject::QualityObject(
     out << "QualityObject: " << q.getName() << ":\n"
         << "   - checkName : " << q.getCheckName() << "\n"
         << "   - detectorName : " << q.getDetectorName() << "\n"
-        << "   - policyName : " << q.getPolicyName() << "\n"
         << "   - monitorObjectsNames : ";
     for (auto item : q.getMonitorObjectsNames()) {
       out << item << ", ";

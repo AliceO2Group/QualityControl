@@ -114,11 +114,12 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Aggregator",
-          "name": "MyAggregator1", "": "no QOs parameter -> all QOs of this aggregator"
+          "name": "MyAggregator1", "": "no QOs parameter -> all QOs of this aggregator",
+          "QOs": ["newQuality"], "": "list all objects we are interested in"
         }, {
           "type": "Aggregator",
           "name": "MyAggregator2",
-          "QOs": ["newQuality", "another"], "": "list all objects we are interested in"
+          "QOs": ["newQuality", "another"], "": "if we omitted the QOs for a data source we would default to OnAny"
         }]
       }
     }

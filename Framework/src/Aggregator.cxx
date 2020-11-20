@@ -52,10 +52,7 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
       if (dataSource.count("QOs") == 0) {
         ILOG(Info, Devel) << "      (no QOs specified, we take all)" << ENDM;
         mAggregatorConfig.allObjects = true;
-        // fixme: this is a dirty fix. Policies should be refactored, so this check won't be needed.
-        if (mAggregatorConfig.policyType != "OnEachSeparately") {
-          mAggregatorConfig.policyType = "_OnGlobalAny";
-        }
+        mAggregatorConfig.policyType = "_OnGlobalAny";
       } else {
         for (const auto& qoName : dataSource.get_child("QOs")) {
           auto name = std::string(sourceName + "/" + qoName.second.get_value<std::string>());

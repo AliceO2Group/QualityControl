@@ -33,8 +33,7 @@ std::map<std::string, Quality> SkeletonAggregator::aggregate(QualityObjectsMapTy
   ILOG(Info, Devel) << "Entered SkeletonAggregator::aggregate" << ENDM;
   ILOG(Info, Devel) << "   received a list of size : " << qoMap.size() << ENDM;
   for (const auto& item : qoMap) {
-    cout << "Object: " << endl;
-    cout << (*item.second) << endl;
+    ILOG(Info, Devel) << "Object: " << (*item.second) << ENDM;
   }
 
   // we return the worse quality of all the objects we receive

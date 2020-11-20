@@ -106,10 +106,10 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
 {
   framework::InputRecord& inputs = ctx.inputs();
   for (auto const& ref : InputRecordWalker(inputs)) { // InputRecordWalker because the output of CheckRunner can be multi-part
-    ILOG(Debug, Trace) << "Received data !" << ENDM;
+    ILOG(Debug, Trace) << "AggregatorRunner received data" << ENDM;
     shared_ptr<const QualityObject> qo = inputs.get<QualityObject*>(ref);
     if (qo != nullptr) {
-      ILOG(Debug, Trace) << "It is a qo: " << qo->getName() << ENDM;
+      ILOG(Debug, Trace) << "   It is a qo: " << qo->getName() << ENDM;
       mQualityObjects[qo->getName()] = qo;
       mTotalNumberObjectsReceived++;
       updatePolicyManager.updateObjectRevision(qo->getName());
@@ -132,6 +132,7 @@ QualityObjectsType AggregatorRunner::aggregate()
 
     string name = aggregator.second->getName();
     if (updatePolicyManager.isReady(name)) {
+      ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << name << "' are  ready, aggregating" << ENDM;
       auto newQOs = aggregator.second->aggregate(mQualityObjects); // we give the whole list
       mTotalNumberObjectsProduced += newQOs.size();
       mTotalNumberAggregatorExecuted++;
@@ -146,7 +147,7 @@ QualityObjectsType AggregatorRunner::aggregate()
 
       updatePolicyManager.updateActorRevision(name); // Was aggregated, update latest revision
     } else {
-      ILOG(Info, Devel) << "Quality Objects for the aggregator '" << name << "' are not ready, ignoring" << ENDM;
+      ILOG(Info, Devel) << "   Quality Objects for the aggregator '" << name << "' are not ready, ignoring" << ENDM;
     }
   }
   return allQOs;
