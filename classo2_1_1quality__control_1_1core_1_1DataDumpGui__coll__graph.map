@@ -1,0 +1,5 @@
+<map id="o2::quality_control::core::DataDumpGui" name="o2::quality_control::core::DataDumpGui">
+<area shape="rect" id="node2" href="$classFairMQDevice.html" title="{FairMQDevice\n||}" alt="" coords="11,351,117,429"/>
+<area shape="rect" id="node3" href="$structo2_1_1quality__control_1_1core_1_1GUIState.html" title="{o2::quality_control\l::core::GUIState\n||+ GUIState()\l}" alt="" coords="141,344,269,436"/>
+<area shape="rect" id="node4" href="$structo2_1_1quality__control_1_1core_1_1Chunk.html" title="{o2::quality_control\l::core::Chunk\n||+ Chunk()\l}" alt="" coords="5,145,133,237"/>
+</map>

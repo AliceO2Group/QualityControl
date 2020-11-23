@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classo2_1_1quality__control_1_1repository_1_1DatabaseInterface.html" title="The interface to the MonitorObject&#39;s repository. " alt="" coords="5,71,208,112"/>
+<area shape="rect" id="node2" href="$classo2_1_1quality__control_1_1repository_1_1CcdbDatabase.html" title="o2::quality_control\l::repository::CcdbDatabase" alt="" coords="263,5,446,47"/>
+<area shape="rect" id="node3" href="$classo2_1_1quality__control_1_1repository_1_1DummyDatabase.html" title="Dummy database which does nothing. Use it to avoid writing to QC repository. " alt="" coords="256,71,453,112"/>
+<area shape="rect" id="node4" href="$classo2_1_1quality__control_1_1repository_1_1MySqlDatabase.html" title="Implementation of the DatabaseInterface for MySQL. " alt="" coords="261,136,449,177"/>
+</map>

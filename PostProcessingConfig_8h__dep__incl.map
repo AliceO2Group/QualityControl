@@ -1,0 +1,25 @@
+<map id="Framework/include/QualityControl/PostProcessingConfig.h" name="Framework/include/QualityControl/PostProcessingConfig.h">
+<area shape="rect" id="node2" href="$PostProcessingFactory_8h.html" title="Framework/include/Quality\lControl/PostProcessingFactory.h" alt="" coords="497,95,711,136"/>
+<area shape="rect" id="node6" href="$PostProcessingRunner_8h.html" title="Framework/include/Quality\lControl/PostProcessingRunner.h" alt="" coords="1103,95,1316,136"/>
+<area shape="rect" id="node11" href="$TrendingTaskConfig_8h.html" title="Framework/include/Quality\lControl/TrendingTaskConfig.h" alt="" coords="2089,95,2285,136"/>
+<area shape="rect" id="node16" href="$TriggerHelpers_8h.html" title="Framework/include/Quality\lControl/TriggerHelpers.h" alt="" coords="1790,95,1967,136"/>
+<area shape="rect" id="node18" href="$testTriggerHelpers_8cxx.html" title="Framework/test/testTrigger\lHelpers.cxx" alt="" coords="1969,184,2148,225"/>
+<area shape="rect" id="node19" href="$PostProcessingConfig_8cxx.html" title="Framework/src/PostProcessing\lConfig.cxx" alt="" coords="2309,95,2515,136"/>
+<area shape="rect" id="node20" href="$testPostProcessingConfig_8cxx.html" title="Framework/test/testPostProcessing\lConfig.cxx" alt="" coords="2539,95,2770,136"/>
+<area shape="rect" id="node21" href="$TrendingTaskConfigITS_8h_source.html" title="Modules/ITS/include\l/ITS/TrendingTaskConfigITS.h" alt="" coords="2795,95,2995,136"/>
+<area shape="rect" id="node3" href="$PostProcessingFactory_8cxx.html" title="Framework/src/PostProcessing\lFactory.cxx" alt="" coords="5,184,211,225"/>
+<area shape="rect" id="node5" href="$testPostProcessingInterface_8cxx.html" title="Framework/test/testPostProcessing\lInterface.cxx" alt="" coords="235,184,466,225"/>
+<area shape="rect" id="node7" href="$PostProcessingDevice_8cxx.html" title="Framework/src/PostProcessing\lDevice.cxx" alt="" coords="1221,184,1427,225"/>
+<area shape="rect" id="node8" href="$runPostProcessing_8cxx.html" title="This is a standalone executable to run postprocessing. " alt="" coords="1451,191,1699,218"/>
+<area shape="rect" id="node9" href="$runPostProcessingOCC_8cxx.html" title="This is an OCC executable to run postprocessing. " alt="" coords="490,184,713,225"/>
+<area shape="rect" id="node10" href="$testPostProcessingRunner_8cxx.html" title="Framework/test/testPostProcessing\lRunner.cxx" alt="" coords="737,184,967,225"/>
+<area shape="rect" id="node12" href="$TrendingTask_8h.html" title="Framework/include/Quality\lControl/TrendingTask.h" alt="" coords="2173,184,2350,225"/>
+<area shape="rect" id="node15" href="$TrendingTaskConfig_8cxx.html" title="Framework/src/TrendingTask\lConfig.cxx" alt="" coords="2375,184,2567,225"/>
+<area shape="rect" id="node13" href="$TrendingTask_8cxx.html" title="Framework/src/TrendingTask.cxx" alt="" coords="2031,281,2249,307"/>
+<area shape="rect" id="node14" href="$testTrendingTask_8cxx.html" title="Framework/test/testTrending\lTask.cxx" alt="" coords="2273,273,2463,315"/>
+<area shape="rect" id="node17" href="$TriggerHelpers_8cxx.html" title="Framework/src/TriggerHelpers.cxx" alt="" coords="1722,191,1945,218"/>
+<area shape="rect" id="node22" href="$TrendingTaskITSFhr_8h.html" title="Modules/ITS/include\l/ITS/TrendingTaskITSFhr.h" alt="" coords="2599,184,2780,225"/>
+<area shape="rect" id="node24" href="$TrendingTaskITSThr_8h.html" title="Modules/ITS/include\l/ITS/TrendingTaskITSThr.h" alt="" coords="2804,184,2985,225"/>
+<area shape="rect" id="node23" href="$TrendingTaskITSFhr_8cxx.html" title="Modules/ITS/src/Trending\lTaskITSFhr.cxx" alt="" coords="2603,273,2775,315"/>
+<area shape="rect" id="node25" href="$TrendingTaskITSThr_8cxx.html" title="Modules/ITS/src/Trending\lTaskITSThr.cxx" alt="" coords="2809,273,2981,315"/>
+</map>

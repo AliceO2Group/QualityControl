@@ -1,0 +1,4 @@
+<map id="o2::quality_control::checker::AggregatorInterface" name="o2::quality_control::checker::AggregatorInterface">
+<area shape="rect" id="node2" href="$classo2_1_1quality__control_1_1test_1_1SimpleTestAggregator.html" title="{o2::quality_control\l::test::SimpleTestAggregator\n|+ mValidString\l|+ SimpleTestAggregator()\l+ ~SimpleTestAggregator()\l+ configure()\l+ aggregate()\l}" alt="" coords="5,204,195,340"/>
+<area shape="rect" id="node3" href="$classo2_1_1quality__control__modules_1_1skeleton_1_1SkeletonAggregator.html" title="Example QC quality aggregator. " alt="" coords="219,204,365,340"/>
+</map>

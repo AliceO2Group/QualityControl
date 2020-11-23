@@ -1,0 +1,10 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classo2_1_1quality__control_1_1postprocessing_1_1PostProcessingInterface.html" title="Skeleton of a post&#45;processing task. " alt="" coords="5,230,224,286"/>
+<area shape="rect" id="node2" href="$classo2_1_1quality__control_1_1postprocessing_1_1TrendingTask.html" title="A post&#45;processing task which trends values, stores them in a TTree and produces plots. " alt="" coords="272,5,477,47"/>
+<area shape="rect" id="node3" href="$classo2_1_1quality__control_1_1postprocessing_1_1TrendingTaskITSFhr.html" title="A post&#45;processing task which trends values, stores them in a TTree and produces plots. " alt="" coords="287,70,463,126"/>
+<area shape="rect" id="node4" href="$classo2_1_1quality__control_1_1postprocessing_1_1TrendingTaskITSThr.html" title="A post&#45;processing task which trends values, stores them in a TTree and produces plots. " alt="" coords="287,150,463,206"/>
+<area shape="rect" id="node5" href="$classo2_1_1quality__control__modules_1_1ft0_1_1TreeReaderPostProcessing.html" title="o2::quality_control\l_modules::ft0::TreeReaderPost\lProcessing" alt="" coords="273,230,477,286"/>
+<area shape="rect" id="node6" href="$classo2_1_1quality__control__modules_1_1skeleton_1_1SkeletonPostProcessing.html" title="Example Quality Control Postprocessing Task. " alt="" coords="292,310,457,366"/>
+<area shape="rect" id="node7" href="$classo2_1_1quality__control__modules_1_1test_1_1TestTask.html" title="o2::quality_control\l_modules::test::TestTask" alt="" coords="289,389,460,431"/>
+<area shape="rect" id="node8" href="$classo2_1_1quality__control__modules_1_1tof_1_1PostProcessDiagnosticPerCrate.html" title="Post processing to rearrange TOF information at the level of the crate (maybe we should do the opposi..." alt="" coords="283,454,467,510"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="Modules/TOF/src/PostProcessDiagnosticPerCrate.cxx" name="Modules/TOF/src/PostProcessDiagnosticPerCrate.cxx">
+<area shape="rect" id="node2" href="$PostProcessDiagnosticPerCrate_8h.html" title="Post processing to rearrange TOF information at the level of the crate (maybe we should do the opposi..." alt="" coords="855,95,1045,136"/>
+<area shape="rect" id="node11" href="$MonitorObject_8h.html" title="QualityControl/MonitorObject.h" alt="" coords="184,370,385,397"/>
+<area shape="rect" id="node27" href="$QcInfoLogger_8h.html" title="QualityControl/QcInfoLogger.h" alt="" coords="1476,102,1675,129"/>
+<area shape="rect" id="node3" href="$PostProcessingInterface_8h.html" title="QualityControl/PostProcessing\lInterface.h" alt="" coords="1116,184,1317,225"/>
+<area shape="rect" id="node22" href="$DatabaseInterface_8h.html" title="QualityControl/DatabaseInterface.h" alt="" coords="482,191,709,218"/>
+<area shape="rect" id="node7" href="$Triggers_8h.html" title="QualityControl/Triggers.h" alt="" coords="1241,281,1408,307"/>
+<area shape="rect" id="node10" href="$ObjectsManager_8h.html" title="QualityControl/ObjectsManager.h" alt="" coords="1003,281,1217,307"/>
+<area shape="rect" id="node16" href="$MonitorObjectCollection_8h.html" title="QualityControl/MonitorObject\lCollection.h" alt="" coords="1693,363,1884,404"/>
+<area shape="rect" id="node19" href="$TaskConfig_8h.html" title="QualityControl/TaskConfig.h" alt="" coords="886,370,1073,397"/>
+<area shape="rect" id="node24" href="$QualityObject_8h_source.html" title="QualityControl/QualityObject.h" alt="" coords="47,281,245,307"/>
+<area shape="rect" id="node25" href="$Quality_8h.html" title="QualityControl/Quality.h" alt="" coords="409,370,571,397"/>
+</map>

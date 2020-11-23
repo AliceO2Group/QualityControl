@@ -1,0 +1,32 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classo2_1_1quality__control_1_1core_1_1TaskInterface.html" title="Skeleton of a QC task. " alt="" coords="5,933,148,975"/>
+<area shape="rect" id="node2" href="$classo2_1_1quality__control_1_1test_1_1TestTask.html" title="o2::quality_control\l::test::TestTask" alt="" coords="252,5,380,47"/>
+<area shape="rect" id="node3" href="$classo2_1_1quality__control__modules_1_1daq_1_1DaqTask.html" title="Dataflow task It does only look at the header and plots sizes (e.g. payload). It also can print the h..." alt="" coords="232,71,400,112"/>
+<area shape="rect" id="node4" href="$classo2_1_1quality__control__modules_1_1emcal_1_1DigitsQcTask.html" title="QC Task for EMCAL digits. " alt="" coords="211,136,421,177"/>
+<area shape="rect" id="node5" href="$classo2_1_1quality__control__modules_1_1emcal_1_1RawTask.html" title="Example Quality Control DPL Task It is final because there is no reason to derive from it..." alt="" coords="223,201,409,243"/>
+<area shape="rect" id="node6" href="$classo2_1_1quality__control__modules_1_1example_1_1BenchmarkTask.html" title="Quality Control Task for benchmarking It publishes a number of TH1F (configurable, see example.ini in module QualityControl). The histos are reset and refilled (1000 random) at EOC. They have 1000 bins. The monitoring of data blocks is empty (sleep 100 ms). " alt="" coords="197,267,435,308"/>
+<area shape="rect" id="node7" href="$classo2_1_1quality__control__modules_1_1example_1_1ExampleTask.html" title="Example Quality Control Task It is final because there is no reason to derive from it..." alt="" coords="205,332,427,373"/>
+<area shape="rect" id="node8" href="$classo2_1_1quality__control__modules_1_1ft0_1_1BasicDigitQcTask.html" title="o2::quality_control\l_modules::ft0::BasicDigitQcTask" alt="" coords="209,397,423,439"/>
+<area shape="rect" id="node9" href="$classo2_1_1quality__control__modules_1_1hmpid_1_1HmpidTask.html" title="Example Quality Control DPL Task. " alt="" coords="218,463,414,504"/>
+<area shape="rect" id="node10" href="$classo2_1_1quality__control__modules_1_1its_1_1ITSClusterTask.html" title="o2::quality_control\l_modules::its::ITSClusterTask" alt="" coords="216,528,416,569"/>
+<area shape="rect" id="node11" href="$classo2_1_1quality__control__modules_1_1its_1_1ITSFeeTask.html" title="ITS FEE task aiming at 100% online data integrity checking. " alt="" coords="226,593,406,635"/>
+<area shape="rect" id="node12" href="$classo2_1_1quality__control__modules_1_1its_1_1ITSFhrTask.html" title="ITS Fake&#45;hit rate real&#45;time data processing task Working with the chain of &quot;Detector &#45;&gt; RU &#45;&gt; CRU &#45;&gt; ..." alt="" coords="227,659,405,700"/>
+<area shape="rect" id="node13" href="$classo2_1_1quality__control__modules_1_1its_1_1ITSRawTask.html" title="o2::quality_control\l_modules::its::ITSRawTask" alt="" coords="223,724,409,765"/>
+<area shape="rect" id="node14" href="$classo2_1_1quality__control__modules_1_1its_1_1ITSTrackTask.html" title="o2::quality_control\l_modules::its::ITSTrackTask" alt="" coords="221,789,411,831"/>
+<area shape="rect" id="node15" href="$classo2_1_1quality__control__modules_1_1mft_1_1BasicClusterQcTask.html" title="MFT Cluster QC task. " alt="" coords="222,854,410,910"/>
+<area shape="rect" id="node16" href="$classo2_1_1quality__control__modules_1_1mft_1_1BasicDigitQcTask.html" title="MFT Digit QC task. " alt="" coords="207,933,425,975"/>
+<area shape="rect" id="node17" href="$classo2_1_1quality__control__modules_1_1mft_1_1BasicTrackQcTask.html" title="MFT Track QC task. " alt="" coords="203,999,429,1040"/>
+<area shape="rect" id="node18" href="$classo2_1_1quality__control__modules_1_1mid_1_1RawQcTask.html" title="Count number of digits per detector elements. " alt="" coords="222,1064,410,1105"/>
+<area shape="rect" id="node19" href="$classo2_1_1quality__control__modules_1_1muonchambers_1_1PedestalsTask.html" title="Quality Control Task for the analysis of MCH pedestal data. " alt="" coords="229,1129,403,1185"/>
+<area shape="rect" id="node20" href="$classo2_1_1quality__control__modules_1_1muonchambers_1_1PhysicsTaskDigits.html" title="Quality Control Task for the analysis of MCH physics data. " alt="" coords="229,1209,403,1265"/>
+<area shape="rect" id="node21" href="$classo2_1_1quality__control__modules_1_1muonchambers_1_1PhysicsTaskPreclusters.html" title="Quality Control Task for the analysis of MCH physics data. " alt="" coords="229,1289,403,1345"/>
+<area shape="rect" id="node22" href="$classo2_1_1quality__control__modules_1_1phos_1_1DigitsQcTask.html" title="QC Task for PHOS digits. " alt="" coords="215,1368,417,1409"/>
+<area shape="rect" id="node23" href="$classo2_1_1quality__control__modules_1_1phos_1_1RawTask.html" title="PHOS Quality Control DPL Task. " alt="" coords="227,1433,405,1475"/>
+<area shape="rect" id="node24" href="$classo2_1_1quality__control__modules_1_1skeleton_1_1SkeletonTask.html" title="Example Quality Control DPL Task. " alt="" coords="245,1498,387,1554"/>
+<area shape="rect" id="node25" href="$classo2_1_1quality__control__modules_1_1tof_1_1TaskCompressedData.html" title="TOF Quality Control DPL Task for TOF Compressed data. " alt="" coords="196,1577,436,1619"/>
+<area shape="rect" id="node26" href="$classo2_1_1quality__control__modules_1_1tof_1_1TaskDiagnostics.html" title="TOF Quality Control DPL Task for TOF Compressed data. " alt="" coords="213,1643,419,1684"/>
+<area shape="rect" id="node27" href="$classo2_1_1quality__control__modules_1_1tof_1_1TaskDigits.html" title="TOF Quality Control DPL Task. " alt="" coords="230,1708,402,1749"/>
+<area shape="rect" id="node28" href="$classo2_1_1quality__control__modules_1_1tpc_1_1Clusters.html" title="Example Quality Control DPL Task It is final because there is no reason to derive from it..." alt="" coords="235,1773,397,1815"/>
+<area shape="rect" id="node29" href="$classo2_1_1quality__control__modules_1_1tpc_1_1PID.html" title="TPC PID QC Task It is final because there is no reason to derive from it. Just remove it if needed..." alt="" coords="249,1839,383,1880"/>
+<area shape="rect" id="node30" href="$classo2_1_1quality__control__modules_1_1tpc_1_1Tracks.html" title="Quality Control DPL Task for QC Module TPC for track related observables. " alt="" coords="240,1904,392,1945"/>
+</map>

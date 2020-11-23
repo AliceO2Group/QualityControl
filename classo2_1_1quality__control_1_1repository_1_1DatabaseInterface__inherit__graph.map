@@ -1,0 +1,5 @@
+<map id="o2::quality_control::repository::DatabaseInterface" name="o2::quality_control::repository::DatabaseInterface">
+<area shape="rect" id="node2" href="$classo2_1_1quality__control_1_1repository_1_1CcdbDatabase.html" title="{o2::quality_control\l::repository::CcdbDatabase\n||+ CcdbDatabase()\l+ ~CcdbDatabase()\l+ connect()\l+ connect()\l+ storeMO()\l+ storeQO()\l+ retrieveMO()\l+ retrieveMOJson()\l+ retrieveQO()\l+ retrieveQOJson()\l+ retrieveJson()\l+ retrieveTObject()\l+ disconnect()\l+ prepareTaskDataContainer()\l+ getPublishedObjectNames()\l+ truncate()\l+ storeStreamerInfosToFile()\l+ getListing()\l+ getCurrentTimestamp()\l+ getFutureTimestamp()\l}" alt="" coords="5,380,204,751"/>
+<area shape="rect" id="node3" href="$classo2_1_1quality__control_1_1repository_1_1DummyDatabase.html" title="Dummy database which does nothing. Use it to avoid writing to QC repository. " alt="" coords="228,409,427,721"/>
+<area shape="rect" id="node4" href="$classo2_1_1quality__control_1_1repository_1_1MySqlDatabase.html" title="Implementation of the DatabaseInterface for MySQL. " alt="" coords="451,409,681,721"/>
+</map>

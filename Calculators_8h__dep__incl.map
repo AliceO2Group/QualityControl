@@ -1,0 +1,5 @@
+<map id="Framework/include/QualityControl/Calculators.h" name="Framework/include/QualityControl/Calculators.h">
+<area shape="rect" id="node2" href="$Calculators_8cxx.html" title="Bunch of formulas for theoretical calculations for finding optimal QC topologies. ..." alt="" coords="5,102,209,129"/>
+<area shape="rect" id="node3" href="$runLocationCalculator_8cxx.html" title="This is a calculator for the tasks cost when it is run locally and remotely. " alt="" coords="233,95,413,136"/>
+<area shape="rect" id="node4" href="$runMergerCalculator_8cxx.html" title="This is a calculator for finding an optimal reduction factor for Mergers. " alt="" coords="437,102,692,129"/>
+</map>

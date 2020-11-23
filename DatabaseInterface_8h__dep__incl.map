@@ -1,0 +1,39 @@
+<map id="Framework/include/QualityControl/DatabaseInterface.h" name="Framework/include/QualityControl/DatabaseInterface.h">
+<area shape="rect" id="node2" href="$CcdbDatabase_8h.html" title="Framework/include/Quality\lControl/CcdbDatabase.h" alt="" coords="1061,102,1238,143"/>
+<area shape="rect" id="node9" href="$CheckRunner_8h.html" title="Framework/include/Quality\lControl/CheckRunner.h" alt="" coords="3503,102,3681,143"/>
+<area shape="rect" id="node20" href="$DatabaseFactory_8h.html" title="Framework/include/Quality\lControl/DatabaseFactory.h" alt="" coords="1904,102,2083,143"/>
+<area shape="rect" id="node25" href="$DummyDatabase_8h.html" title="Framework/include/Quality\lControl/DummyDatabase.h" alt="" coords="1415,102,1596,143"/>
+<area shape="rect" id="node27" href="$MySqlDatabase_8h.html" title="Framework/include/Quality\lControl/MySqlDatabase.h" alt="" coords="5527,102,5705,143"/>
+<area shape="rect" id="node29" href="$PostProcessingRunner_8h.html" title="Framework/include/Quality\lControl/PostProcessingRunner.h" alt="" coords="5089,102,5303,143"/>
+<area shape="rect" id="node34" href="$RepositoryBenchmark_8h.html" title="Framework/src/Repository\lBenchmark.h" alt="" coords="5327,102,5503,143"/>
+<area shape="rect" id="node36" href="$TrendingTask_8cxx.html" title="Framework/src/TrendingTask.cxx" alt="" coords="5729,109,5946,136"/>
+<area shape="rect" id="node37" href="$TreeReaderPostProcessing_8h.html" title="Modules/FT0/include\l/FT0/TreeReaderPostProcessing.h" alt="" coords="5971,102,6195,143"/>
+<area shape="rect" id="node39" href="$TrendingTaskITSFhr_8cxx.html" title="Modules/ITS/src/Trending\lTaskITSFhr.cxx" alt="" coords="6219,102,6391,143"/>
+<area shape="rect" id="node40" href="$TrendingTaskITSThr_8cxx.html" title="Modules/ITS/src/Trending\lTaskITSThr.cxx" alt="" coords="6415,102,6587,143"/>
+<area shape="rect" id="node41" href="$PostProcessDiagnosticPerCrate_8h.html" title="Post processing to rearrange TOF information at the level of the crate (maybe we should do the opposi..." alt="" coords="6695,95,6889,151"/>
+<area shape="rect" id="node3" href="$CcdbDatabase_8cxx.html" title="Framework/src/CcdbDatabase.cxx" alt="" coords="281,206,506,233"/>
+<area shape="rect" id="node4" href="$DatabaseFactory_8cxx.html" title="Framework/src/DatabaseFactory.cxx" alt="" coords="1030,206,1269,233"/>
+<area shape="rect" id="node5" href="$testCcdbDatabase_8cxx.html" title="Framework/test/testCcdbDatabase.cxx" alt="" coords="5,206,256,233"/>
+<area shape="rect" id="node6" href="$testCcdbDatabaseExtra_8cxx.html" title="Framework/test/testCcdbDatabase\lExtra.cxx" alt="" coords="1293,199,1520,240"/>
+<area shape="rect" id="node7" href="$testDbFactory_8cxx.html" title="Framework/test/testDbFactory.cxx" alt="" coords="1545,206,1770,233"/>
+<area shape="rect" id="node8" href="$testTriggers_8cxx.html" title="Framework/test/testTriggers.cxx" alt="" coords="795,206,1005,233"/>
+<area shape="rect" id="node10" href="$CheckRunner_8cxx.html" title="Framework/src/CheckRunner.cxx" alt="" coords="2208,206,2427,233"/>
+<area shape="rect" id="node11" href="$CheckRunnerFactory_8cxx.html" title="Framework/src/CheckRunner\lFactory.cxx" alt="" coords="3065,199,3258,240"/>
+<area shape="rect" id="node12" href="$InfrastructureGenerator_8cxx.html" title="Framework/src/Infrastructure\lGenerator.cxx" alt="" coords="3282,199,3473,240"/>
+<area shape="rect" id="node13" href="$runBasic_8cxx.html" title="This is an executable showing QC Task&#39;s usage in Data Processing Layer. " alt="" coords="3497,206,3687,233"/>
+<area shape="rect" id="node14" href="$testCheckRunner_8cxx.html" title="Framework/test/testCheck\lRunner.cxx" alt="" coords="3711,199,3889,240"/>
+<area shape="rect" id="node15" href="$testCheckWorkflow_8cxx.html" title="Framework/test/testCheck\lWorkflow.cxx" alt="" coords="4143,199,4321,240"/>
+<area shape="rect" id="node16" href="$testWorkflow_8cxx.html" title="Framework/test/testWorkflow.cxx" alt="" coords="4545,206,4764,233"/>
+<area shape="rect" id="node21" href="$AggregatorRunner_8cxx.html" title="Framework/src/Aggregator\lRunner.cxx" alt="" coords="2008,199,2184,240"/>
+<area shape="rect" id="node23" href="$RepositoryBenchmark_8cxx.html" title="Framework/src/Repository\lBenchmark.cxx" alt="" coords="4345,199,4521,240"/>
+<area shape="rect" id="node24" href="$testTrendingTask_8cxx.html" title="Framework/test/testTrending\lTask.cxx" alt="" coords="1795,199,1984,240"/>
+<area shape="rect" id="node26" href="$DummyDatabase_8cxx.html" title="Framework/src/DummyDatabase.cxx" alt="" coords="531,206,771,233"/>
+<area shape="rect" id="node28" href="$MySqlDatabase_8cxx.html" title="Framework/src/MySqlDatabase.cxx" alt="" coords="6262,206,6493,233"/>
+<area shape="rect" id="node30" href="$PostProcessingDevice_8cxx.html" title="Framework/src/PostProcessing\lDevice.cxx" alt="" coords="5295,199,5500,240"/>
+<area shape="rect" id="node31" href="$runPostProcessing_8cxx.html" title="This is a standalone executable to run postprocessing. " alt="" coords="5524,206,5772,233"/>
+<area shape="rect" id="node32" href="$runPostProcessingOCC_8cxx.html" title="This is an OCC executable to run postprocessing. " alt="" coords="5795,199,6018,240"/>
+<area shape="rect" id="node33" href="$testPostProcessingRunner_8cxx.html" title="Framework/test/testPostProcessing\lRunner.cxx" alt="" coords="5039,199,5270,240"/>
+<area shape="rect" id="node35" href="$runRepositoryBenchmark_8cxx.html" title="Framework/src/runRepository\lBenchmark.cxx" alt="" coords="6043,199,6237,240"/>
+<area shape="rect" id="node38" href="$TreeReaderPostProcessing_8cxx.html" title="Modules/FT0/src/TreeReader\lPostProcessing.cxx" alt="" coords="6517,199,6709,240"/>
+<area shape="rect" id="node42" href="$PostProcessDiagnosticPerCrate_8cxx.html" title="Post processing to rearrange TOF information at the level of the crate (maybe we should do the opposi..." alt="" coords="6733,199,6936,240"/>
+</map>

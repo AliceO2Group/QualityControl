@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node2" href="$classo2_1_1quality__control_1_1checker_1_1CheckRunner.html" title="The class in charge of running the checks on a MonitorObject. " alt="" coords="131,5,295,47"/>
+<area shape="rect" id="node3" href="$classo2_1_1quality__control_1_1example_1_1ExamplePrinterSpec.html" title="Example DPL task to be plugged after a QC task. " alt="" coords="110,71,317,112"/>
+<area shape="rect" id="node4" href="$classo2_1_1quality__control_1_1postprocessing_1_1PostProcessingDevice.html" title="A class driving the execution of a QC PostProcessing task inside DPL. " alt="" coords="104,135,323,191"/>
+<area shape="rect" id="node5" href="$classReceiver.html" title="Receiver" alt="" coords="176,215,251,242"/>
+</map>

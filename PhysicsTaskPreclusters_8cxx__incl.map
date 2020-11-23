@@ -1,0 +1,11 @@
+<map id="Modules/MUON/MCH/src/PhysicsTaskPreclusters.cxx" name="Modules/MUON/MCH/src/PhysicsTaskPreclusters.cxx">
+<area shape="rect" id="node8" href="$PhysicsTaskPreclusters_8h.html" title="MCH/PhysicsTaskPreclusters.h" alt="" coords="510,102,721,129"/>
+<area shape="rect" id="node28" href="$QcInfoLogger_8h.html" title="QualityControl/QcInfoLogger.h" alt="" coords="809,259,1008,285"/>
+<area shape="rect" id="node10" href="$TaskInterface_8h.html" title="QualityControl/TaskInterface.h" alt="" coords="1475,184,1675,211"/>
+<area shape="rect" id="node31" href="$GlobalHistogram_8h_source.html" title="MCH/GlobalHistogram.h" alt="" coords="623,184,789,211"/>
+<area shape="rect" id="node18" href="$Activity_8h.html" title="QualityControl/Activity.h" alt="" coords="1663,259,1827,285"/>
+<area shape="rect" id="node19" href="$ObjectsManager_8h.html" title="QualityControl/ObjectsManager.h" alt="" coords="1913,259,2128,285"/>
+<area shape="rect" id="node20" href="$MonitorObject_8h.html" title="QualityControl/MonitorObject.h" alt="" coords="1620,341,1821,367"/>
+<area shape="rect" id="node24" href="$MonitorObjectCollection_8h.html" title="QualityControl/MonitorObject\lCollection.h" alt="" coords="2209,333,2400,375"/>
+<area shape="rect" id="node27" href="$TaskConfig_8h.html" title="QualityControl/TaskConfig.h" alt="" coords="1897,341,2083,367"/>
+</map>

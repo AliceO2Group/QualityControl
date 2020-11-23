@@ -1,0 +1,11 @@
+<map id="Framework/include/QualityControl/InfrastructureGenerator.h" name="Framework/include/QualityControl/InfrastructureGenerator.h">
+<area shape="rect" id="node2" href="$InfrastructureGenerator_8cxx.html" title="Framework/src/Infrastructure\lGenerator.cxx" alt="" coords="5,95,196,136"/>
+<area shape="rect" id="node3" href="$runAdvanced_8cxx.html" title="This is an executable showing a more complicated QC topology. " alt="" coords="220,102,435,129"/>
+<area shape="rect" id="node4" href="$runBasic_8cxx.html" title="This is an executable showing QC Task&#39;s usage in Data Processing Layer. " alt="" coords="459,102,649,129"/>
+<area shape="rect" id="node5" href="$runQC_8cxx.html" title="This is an executable which generates a QC topology given a configuration file. " alt="" coords="673,102,849,129"/>
+<area shape="rect" id="node6" href="$testCheckWorkflow_8cxx.html" title="Framework/test/testCheck\lWorkflow.cxx" alt="" coords="873,95,1051,136"/>
+<area shape="rect" id="node7" href="$testInfrastructureGenerator_8cxx.html" title="Framework/test/testInfrastructure\lGenerator.cxx" alt="" coords="1075,95,1291,136"/>
+<area shape="rect" id="node8" href="$testWorkflow_8cxx.html" title="Framework/test/testWorkflow.cxx" alt="" coords="1315,102,1534,129"/>
+<area shape="rect" id="node10" href="$runITS_8cxx.html" title="Modules/ITS/src/runITS.cxx" alt="" coords="1873,102,2059,129"/>
+<area shape="rect" id="node11" href="$runMID_8cxx.html" title="This is an executable to run the MID QC Task (see the ITS code). " alt="" coords="2083,102,2278,129"/>
+</map>

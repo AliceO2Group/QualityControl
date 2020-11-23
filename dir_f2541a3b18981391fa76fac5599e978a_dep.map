@@ -1,0 +1,32 @@
+<map id="Modules" name="Modules">
+<area shape="rect" id="node2" href="dir_6b8bd6c02904bc94839ef977dfbf16fd.html" title="Common" alt="" coords="1280,27,1355,75"/>
+<area shape="rect" id="node16" href="dir_bcbb2cf9a3d3d83e5515c82071a07177.html" title="Framework" alt="" coords="646,123,733,171"/>
+<area shape="rect" id="edge12-headlabel" href="dir_000004_000000.html" title="17" alt="" coords="744,144,759,159"/>
+<area shape="rect" id="node3" href="dir_b4be303506ebb37c6dc24696436a6ab8.html" title="Daq" alt="" coords="1184,27,1256,75"/>
+<area shape="rect" id="edge14-headlabel" href="dir_000007_000000.html" title="3" alt="" coords="748,142,756,157"/>
+<area shape="rect" id="node4" href="dir_ed80be2c367d80462ec6a6a3f0ad67d1.html" title="EMCAL" alt="" coords="1088,27,1160,75"/>
+<area shape="rect" id="edge6-headlabel" href="dir_000010_000000.html" title="16" alt="" coords="744,145,758,160"/>
+<area shape="rect" id="node5" href="dir_5273b6b5b4e75477d91e3579fb65d936.html" title="Example" alt="" coords="990,27,1063,75"/>
+<area shape="rect" id="edge7-headlabel" href="dir_000013_000000.html" title="11" alt="" coords="744,141,759,155"/>
+<area shape="rect" id="node6" href="dir_ac48c89599594e65270cafb6e04a1bcc.html" title="FT0" alt="" coords="893,27,965,75"/>
+<area shape="rect" id="edge4-headlabel" href="dir_000016_000000.html" title="18" alt="" coords="745,132,760,147"/>
+<area shape="rect" id="node7" href="dir_c2539499a1d5f0a04b2dc79b275506bd.html" title="HMPID" alt="" coords="797,27,869,75"/>
+<area shape="rect" id="edge11-headlabel" href="dir_000019_000000.html" title="4" alt="" coords="743,113,751,127"/>
+<area shape="rect" id="node8" href="dir_48a8cb84b7ebf8a30d1487d6c616d7f4.html" title="ITS" alt="" coords="701,27,773,75"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000022_000000.html" title="33" alt="" coords="710,103,724,118"/>
+<area shape="rect" id="node9" href="dir_83d1d206e08935b361e68569931943ec.html" title="MFT" alt="" coords="605,27,677,75"/>
+<area shape="rect" id="edge10-headlabel" href="dir_000025_000000.html" title="16" alt="" coords="669,95,684,110"/>
+<area shape="rect" id="node10" href="dir_ed72a712e51ac04ff45d8c7804f27dca.html" title="MID" alt="" coords="509,27,581,75"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000028_000000.html" title="10" alt="" coords="633,98,648,113"/>
+<area shape="rect" id="node11" href="dir_d3f38a47912c447ca68cc325fcb37be5.html" title="MUON" alt="" coords="413,27,485,75"/>
+<area shape="rect" id="edge9-headlabel" href="dir_000031_000000.html" title="18" alt="" coords="623,116,638,131"/>
+<area shape="rect" id="node12" href="dir_e5d84f0709a9c6ad9e00d771422a7ef2.html" title="PHOS" alt="" coords="317,27,389,75"/>
+<area shape="rect" id="edge5-headlabel" href="dir_000035_000000.html" title="14" alt="" coords="621,124,636,139"/>
+<area shape="rect" id="node13" href="dir_cc72967e88078b463843b5977855e60d.html" title="Skeleton" alt="" coords="219,27,293,75"/>
+<area shape="rect" id="edge8-headlabel" href="dir_000038_000000.html" title="12" alt="" coords="621,128,635,143"/>
+<area shape="rect" id="node14" href="dir_d97bc60669e70ebe18802fd5c1c1d939.html" title="TOF" alt="" coords="123,27,195,75"/>
+<area shape="rect" id="edge13-headlabel" href="dir_000041_000000.html" title="32" alt="" coords="621,125,636,140"/>
+<area shape="rect" id="node15" href="dir_1daf86e93d49a76fe0702a1348efb120.html" title="TPC" alt="" coords="27,27,99,75"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000044_000000.html" title="17" alt="" coords="621,127,635,142"/>
+<area shape="rect" id="clust1" href="dir_f2541a3b18981391fa76fac5599e978a.html" alt="" coords="16,16,1461,85"/>
+</map>

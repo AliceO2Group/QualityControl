@@ -1,0 +1,16 @@
+<map id="Framework/test/testTrendingTask.cxx" name="Framework/test/testTrendingTask.cxx">
+<area shape="rect" id="node3" href="$TrendingTask_8h.html" title="QualityControl/TrendingTask.h" alt="" coords="723,102,922,129"/>
+<area shape="rect" id="node8" href="$Triggers_8h.html" title="QualityControl/Triggers.h" alt="" coords="65,281,231,307"/>
+<area shape="rect" id="node12" href="$MonitorObject_8h.html" title="QualityControl/MonitorObject.h" alt="" coords="1695,370,1897,397"/>
+<area shape="rect" id="node28" href="$DatabaseFactory_8h.html" title="QualityControl/DatabaseFactory.h" alt="" coords="1257,102,1477,129"/>
+<area shape="rect" id="node4" href="$PostProcessingInterface_8h.html" title="QualityControl/PostProcessing\lInterface.h" alt="" coords="563,184,765,225"/>
+<area shape="rect" id="node23" href="$TrendingTaskConfig_8h.html" title="QualityControl/TrendingTask\lConfig.h" alt="" coords="351,184,539,225"/>
+<area shape="rect" id="node26" href="$Reductor_8h.html" title="QualityControl/Reductor.h" alt="" coords="880,191,1053,218"/>
+<area shape="rect" id="node11" href="$ObjectsManager_8h.html" title="QualityControl/ObjectsManager.h" alt="" coords="787,281,1002,307"/>
+<area shape="rect" id="node17" href="$MonitorObjectCollection_8h.html" title="QualityControl/MonitorObject\lCollection.h" alt="" coords="1049,363,1239,404"/>
+<area shape="rect" id="node20" href="$TaskConfig_8h.html" title="QualityControl/TaskConfig.h" alt="" coords="787,370,973,397"/>
+<area shape="rect" id="node25" href="$PostProcessingConfig_8h.html" title="QualityControl/PostProcessing\lConfig.h" alt="" coords="307,273,509,315"/>
+<area shape="rect" id="node29" href="$DatabaseInterface_8h.html" title="QualityControl/DatabaseInterface.h" alt="" coords="1179,191,1405,218"/>
+<area shape="rect" id="node30" href="$QualityObject_8h_source.html" title="QualityControl/QualityObject.h" alt="" coords="1498,281,1697,307"/>
+<area shape="rect" id="node31" href="$Quality_8h.html" title="QualityControl/Quality.h" alt="" coords="1510,370,1671,397"/>
+</map>

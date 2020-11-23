@@ -1,0 +1,13 @@
+<map id="Modules/HMPID/src/HmpidTask.cxx" name="Modules/HMPID/src/HmpidTask.cxx">
+<area shape="rect" id="node5" href="$QcInfoLogger_8h.html" title="QualityControl/QcInfoLogger.h" alt="" coords="584,229,783,256"/>
+<area shape="rect" id="node8" href="$HmpidDecodeRawMem_8h.html" title="Derived Class for decoding Raw Data Memory stream. " alt="" coords="295,80,515,107"/>
+<area shape="rect" id="node20" href="$HmpidTask_8h.html" title="HMPID/HmpidTask.h" alt="" coords="1016,80,1164,107"/>
+<area shape="rect" id="node14" href="$HmpidDecoder_8h.html" title="Base Class to decode HMPID Raw Data stream. " alt="" coords="390,155,558,181"/>
+<area shape="rect" id="node19" href="$HmpidEquipment_8h_source.html" title="HMPID/HmpidEquipment.h" alt="" coords="255,229,437,256"/>
+<area shape="rect" id="node21" href="$TaskInterface_8h.html" title="QualityControl/TaskInterface.h" alt="" coords="1327,155,1527,181"/>
+<area shape="rect" id="node29" href="$Activity_8h.html" title="QualityControl/Activity.h" alt="" coords="1515,229,1679,256"/>
+<area shape="rect" id="node30" href="$ObjectsManager_8h.html" title="QualityControl/ObjectsManager.h" alt="" coords="1893,229,2108,256"/>
+<area shape="rect" id="node31" href="$MonitorObject_8h.html" title="QualityControl/MonitorObject.h" alt="" coords="2104,311,2305,338"/>
+<area shape="rect" id="node35" href="$MonitorObjectCollection_8h.html" title="QualityControl/MonitorObject\lCollection.h" alt="" coords="2417,304,2608,345"/>
+<area shape="rect" id="node38" href="$TaskConfig_8h.html" title="QualityControl/TaskConfig.h" alt="" coords="1842,311,2029,338"/>
+</map>

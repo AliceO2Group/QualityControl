@@ -1,0 +1,4 @@
+<map id="Modules/TOF/include/Base/Counter.h" name="Modules/TOF/include/Base/Counter.h">
+<area shape="rect" id="node2" href="$TaskDiagnostics_8h.html" title="Task to check the diagnostic words of TOF crates received trough the TOF compressor. Here are defined the counters to check the diagnostics words of the TOF crates obtained from the compressor. This is why the DiagnosticCounter class derives from DecoderBase: it reads data from the decoder. " alt="" coords="48,95,213,136"/>
+<area shape="rect" id="node3" href="$TaskDiagnostics_8cxx.html" title="Task to check the diagnostic words of TOF crates. " alt="" coords="5,184,256,211"/>
+</map>

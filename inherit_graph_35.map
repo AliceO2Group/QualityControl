@@ -1,0 +1,12 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classo2_1_1quality__control_1_1postprocessing_1_1Reductor.html" title="An interface for storing data derived from QC objects into a TTree. " alt="" coords="5,259,184,301"/>
+<area shape="rect" id="node2" href="$classMyReductor.html" title="MyReductor" alt="" coords="305,5,398,32"/>
+<area shape="rect" id="node3" href="$classo2_1_1quality__control__modules_1_1common_1_1QualityReductor.html" title="A Reductor of QualityObjects, stores a name and level of a Quality. " alt="" coords="232,57,471,98"/>
+<area shape="rect" id="node4" href="$classo2_1_1quality__control__modules_1_1common_1_1TH1Reductor.html" title="A Reductor which obtains the most popular characteristics of TH1. " alt="" coords="240,122,463,163"/>
+<area shape="rect" id="node5" href="$classo2_1_1quality__control__modules_1_1common_1_1TH2Reductor.html" title="A Reductor which obtains the most popular characteristics of TH2. " alt="" coords="240,187,463,229"/>
+<area shape="rect" id="node6" href="$classo2_1_1quality__control__modules_1_1common_1_1THnSparse5Reductor.html" title="A Reductor which obtains the most popular characteristics of THnSparse up to 5 dimensions. " alt="" coords="243,252,460,308"/>
+<area shape="rect" id="node7" href="$classo2_1_1quality__control__modules_1_1emcal_1_1DigitOccupancyReductor.html" title="A Reductor which obtains the most popular characteristics of TH2. " alt="" coords="240,332,463,388"/>
+<area shape="rect" id="node8" href="$classo2_1_1quality__control__modules_1_1its_1_1TH2XlineReductor.html" title="A Reductor which obtains specific characteristics of TH2: mean and stddev of bin contents for each y ..." alt="" coords="244,411,459,453"/>
+<area shape="rect" id="node9" href="$classo2_1_1quality__control__modules_1_1muonchambers_1_1TH1MCHReductor.html" title="A Reductor which obtains the most popular characteristics of TH1. " alt="" coords="264,476,439,532"/>
+<area shape="rect" id="node10" href="$classo2_1_1quality__control__modules_1_1tpc_1_1ROCReductor.html" title="A Reductor of ROC, stores mean, standard deviation and median for each ROC. " alt="" coords="254,555,449,597"/>
+</map>

@@ -1,0 +1,12 @@
+<map id="Modules/Daq" name="Modules/Daq">
+<area shape="rect" id="node2" href="dir_b59d3577f33d6bf65ce068ab5e7e69ab.html" title="include" alt="" coords="60,159,132,207"/>
+<area shape="rect" id="node5" href="dir_bcbb2cf9a3d3d83e5515c82071a07177.html" title="Framework" alt="" coords="89,255,175,303"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000008_000000.html" title="1" alt="" coords="121,227,129,242"/>
+<area shape="rect" id="node3" href="dir_7f398a88679597239a386addfbbf7c72.html" title="src" alt="" coords="133,63,205,111"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000054_000008.html" title="1" alt="" coords="128,142,136,157"/>
+<area shape="rect" id="edge4-headlabel" href="dir_000054_000000.html" title="2" alt="" coords="146,231,154,246"/>
+<area shape="rect" id="node4" href="dir_748b2d359a669171c0031fb1d06fb0b3.html" title="test" alt="" coords="37,63,109,111"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000055_000008.html" title="1" alt="" coords="90,132,98,146"/>
+<area shape="rect" id="clust2" href="dir_b4be303506ebb37c6dc24696436a6ab8.html" alt="" coords="27,52,312,217"/>
+<area shape="rect" id="clust1" href="dir_f2541a3b18981391fa76fac5599e978a.html" title="Modules" alt="" coords="16,16,323,228"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="Modules/TOF/include/TOF/PostProcessDiagnosticPerCrate.h" name="Modules/TOF/include/TOF/PostProcessDiagnosticPerCrate.h">
+<area shape="rect" id="node2" href="$PostProcessingInterface_8h.html" title="QualityControl/PostProcessing\lInterface.h" alt="" coords="575,109,776,151"/>
+<area shape="rect" id="node21" href="$DatabaseInterface_8h.html" title="QualityControl/DatabaseInterface.h" alt="" coords="1149,117,1375,143"/>
+<area shape="rect" id="node6" href="$Triggers_8h.html" title="QualityControl/Triggers.h" alt="" coords="116,206,283,233"/>
+<area shape="rect" id="node9" href="$ObjectsManager_8h.html" title="QualityControl/ObjectsManager.h" alt="" coords="640,206,855,233"/>
+<area shape="rect" id="node10" href="$MonitorObject_8h.html" title="QualityControl/MonitorObject.h" alt="" coords="1487,295,1688,322"/>
+<area shape="rect" id="node15" href="$MonitorObjectCollection_8h.html" title="QualityControl/MonitorObject\lCollection.h" alt="" coords="192,288,383,329"/>
+<area shape="rect" id="node18" href="$TaskConfig_8h.html" title="QualityControl/TaskConfig.h" alt="" coords="785,295,971,322"/>
+<area shape="rect" id="node23" href="$QualityObject_8h_source.html" title="QualityControl/QualityObject.h" alt="" coords="1627,206,1825,233"/>
+<area shape="rect" id="node24" href="$Quality_8h.html" title="QualityControl/Quality.h" alt="" coords="1301,295,1463,322"/>
+</map>

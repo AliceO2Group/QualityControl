@@ -1,0 +1,4 @@
+<map id="FairMQDevice" name="FairMQDevice">
+<area shape="rect" id="node2" href="$classo2_1_1quality__control_1_1core_1_1DataDumpGui.html" title="{o2::quality_control\l::core::DataDumpGui\n|+ guiState\l+ window\l|+ DataDumpGui()\l+ ~DataDumpGui()\l# InitTask()\l# ConditionalRun()\l# handleParts()\l}" alt="" coords="5,138,152,303"/>
+<area shape="rect" id="node3" href="$classo2_1_1quality__control_1_1core_1_1RepositoryBenchmark.html" title="{o2::quality_control\l::core::RepositoryBenchmark\n||+ RepositoryBenchmark()\l+ ~RepositoryBenchmark()\l# InitTask()\l# ConditionalRun()\l# emptyDatabase()\l# checkTimedOut()\l# createHisto()\l}" alt="" coords="176,131,368,311"/>
+</map>

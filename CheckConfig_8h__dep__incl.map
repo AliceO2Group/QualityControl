@@ -1,0 +1,18 @@
+<map id="Framework/include/QualityControl/CheckConfig.h" name="Framework/include/QualityControl/CheckConfig.h">
+<area shape="rect" id="node2" href="$Aggregator_8h.html" title="Framework/include/Quality\lControl/Aggregator.h" alt="" coords="489,95,666,136"/>
+<area shape="rect" id="node5" href="$Check_8h_source.html" title="Framework/include/Quality\lControl/Check.h" alt="" coords="1013,95,1190,136"/>
+<area shape="rect" id="node3" href="$Aggregator_8cxx.html" title="Framework/src/Aggregator.cxx" alt="" coords="263,191,465,218"/>
+<area shape="rect" id="node4" href="$AggregatorRunner_8cxx.html" title="Framework/src/Aggregator\lRunner.cxx" alt="" coords="489,184,665,225"/>
+<area shape="rect" id="node6" href="$CheckRunner_8h.html" title="Framework/include/Quality\lControl/CheckRunner.h" alt="" coords="1013,184,1190,225"/>
+<area shape="rect" id="node9" href="$InfrastructureGenerator_8cxx.html" title="Framework/src/Infrastructure\lGenerator.cxx" alt="" coords="233,273,423,315"/>
+<area shape="rect" id="node17" href="$CheckRunnerFactory_8h.html" title="Framework/include/Quality\lControl/CheckRunnerFactory.h" alt="" coords="740,184,943,225"/>
+<area shape="rect" id="node20" href="$runITS_8cxx.html" title="Modules/ITS/src/runITS.cxx" alt="" coords="1415,191,1601,218"/>
+<area shape="rect" id="node21" href="$runMID_8cxx.html" title="This is an executable to run the MID QC Task (see the ITS code). " alt="" coords="1625,191,1820,218"/>
+<area shape="rect" id="node7" href="$CheckRunner_8cxx.html" title="Framework/src/CheckRunner.cxx" alt="" coords="2176,281,2395,307"/>
+<area shape="rect" id="node8" href="$CheckRunnerFactory_8cxx.html" title="Framework/src/CheckRunner\lFactory.cxx" alt="" coords="1263,273,1457,315"/>
+<area shape="rect" id="node10" href="$runBasic_8cxx.html" title="This is an executable showing QC Task&#39;s usage in Data Processing Layer. " alt="" coords="2419,281,2608,307"/>
+<area shape="rect" id="node11" href="$testCheckRunner_8cxx.html" title="Framework/test/testCheck\lRunner.cxx" alt="" coords="447,273,625,315"/>
+<area shape="rect" id="node12" href="$testCheckWorkflow_8cxx.html" title="Framework/test/testCheck\lWorkflow.cxx" alt="" coords="1481,273,1658,315"/>
+<area shape="rect" id="node13" href="$testWorkflow_8cxx.html" title="Framework/test/testWorkflow.cxx" alt="" coords="1683,281,1901,307"/>
+<area shape="rect" id="node18" href="$testCheck_8cxx.html" title="Framework/test/testCheck.cxx" alt="" coords="5,281,208,307"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="Modules/TOF/src/CheckRawMultiplicity.cxx" name="Modules/TOF/src/CheckRawMultiplicity.cxx">
+<area shape="rect" id="node2" href="$CheckRawMultiplicity_8h.html" title="Checker for the raw hit multiplicity obtained with the TaskDigits. " alt="" coords="273,95,464,121"/>
+<area shape="rect" id="node13" href="$QcInfoLogger_8h.html" title="QualityControl/QcInfoLogger.h" alt="" coords="488,95,687,121"/>
+<area shape="rect" id="node3" href="$CheckInterface_8h.html" title="QualityControl/CheckInterface.h" alt="" coords="116,169,325,196"/>
+<area shape="rect" id="node5" href="$MonitorObject_8h.html" title="QualityControl/MonitorObject.h" alt="" coords="325,244,527,271"/>
+<area shape="rect" id="node11" href="$Quality_8h.html" title="QualityControl/Quality.h" alt="" coords="140,244,301,271"/>
+</map>

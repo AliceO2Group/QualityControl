@@ -1,0 +1,3 @@
+<map id="o2::quality_control_modules::hmpid::HmpidDecoder" name="o2::quality_control_modules::hmpid::HmpidDecoder">
+<area shape="rect" id="node4" href="$classo2_1_1quality__control__modules_1_1hmpid_1_1HmpidEquipment.html" title="{o2::quality_control\l_modules::hmpid::HmpidEquipment\n|+ mWillBeRowMarker\l+ mWillBeSegmentMarker\l+ mRowSize\l+ mColumnCounter\l+ mWordsPerRowCounter\l+ mWordsPerSegCounter\l+ mErrorPadsPerEvent\l+ mEventNumber\l+ mEventSize\l+ mBusyTimeSamples\l+ mNumberOfEmptyEvents\l+ mTotalErrors\l|+ HmpidEquipment()\l+ ~HmpidEquipment()\l+ getEquipmentId()\l+ getEquipmentId()\l+ init()\l+ resetPadMap()\l+ resetErrors()\l+ setError()\l+ setPad()\l}" alt="" coords="257,292,486,663"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="Framework/include/QualityControl/RootClassFactory.h" name="Framework/include/QualityControl/RootClassFactory.h">
+<area shape="rect" id="node2" href="$Aggregator_8cxx.html" title="Framework/src/Aggregator.cxx" alt="" coords="5,102,207,129"/>
+<area shape="rect" id="node4" href="$PostProcessingFactory_8cxx.html" title="Framework/src/PostProcessing\lFactory.cxx" alt="" coords="431,95,637,136"/>
+<area shape="rect" id="node5" href="$TaskFactory_8cxx.html" title="Framework/src/TaskFactory.cxx" alt="" coords="661,102,871,129"/>
+<area shape="rect" id="node6" href="$TrendingTask_8cxx.html" title="Framework/src/TrendingTask.cxx" alt="" coords="896,102,1113,129"/>
+<area shape="rect" id="node7" href="$TrendingTaskITSFhr_8cxx.html" title="Modules/ITS/src/Trending\lTaskITSFhr.cxx" alt="" coords="1137,95,1309,136"/>
+<area shape="rect" id="node8" href="$TrendingTaskITSThr_8cxx.html" title="Modules/ITS/src/Trending\lTaskITSThr.cxx" alt="" coords="1333,95,1505,136"/>
+</map>

@@ -1,0 +1,24 @@
+<map id="Framework/include/QualityControl/Reductor.h" name="Framework/include/QualityControl/Reductor.h">
+<area shape="rect" id="node2" href="$TrendingTask_8h.html" title="Framework/include/Quality\lControl/TrendingTask.h" alt="" coords="152,95,329,136"/>
+<area shape="rect" id="node3" href="$TrendingTask_8cxx.html" title="Framework/src/TrendingTask.cxx" alt="" coords="5,191,223,218"/>
+<area shape="rect" id="node6" href="$QualityReductor_8h.html" title="Modules/Common/include\l/Common/QualityReductor.h" alt="" coords="595,95,783,136"/>
+<area shape="rect" id="node8" href="$testCommonReductors_8cxx.html" title="Modules/Common/test\l/testCommonReductors.cxx" alt="" coords="719,184,906,225"/>
+<area shape="rect" id="node9" href="$TH1Reductor_8h.html" title="Modules/Common/include\l/Common/TH1Reductor.h" alt="" coords="858,95,1031,136"/>
+<area shape="rect" id="node11" href="$TH2Reductor_8h.html" title="Modules/Common/include\l/Common/TH2Reductor.h" alt="" coords="1055,95,1229,136"/>
+<area shape="rect" id="node13" href="$THnSparse5Reductor_8h.html" title="Modules/Common/include\l/Common/THnSparse5Reductor.h" alt="" coords="1253,95,1473,136"/>
+<area shape="rect" id="node15" href="$DigitOccupancyReductor_8h_source.html" title="Modules/EMCAL/include\l/EMCAL/DigitOccupancyReductor.h" alt="" coords="1497,95,1731,136"/>
+<area shape="rect" id="node17" href="$TH2XlineReductor_8h.html" title="Modules/ITS/include\l/ITS/TH2XlineReductor.h" alt="" coords="1755,95,1924,136"/>
+<area shape="rect" id="node19" href="$TrendingTaskITSFhr_8cxx.html" title="Modules/ITS/src/Trending\lTaskITSFhr.cxx" alt="" coords="1952,184,2124,225"/>
+<area shape="rect" id="node20" href="$TrendingTaskITSFhr_8h.html" title="Modules/ITS/include\l/ITS/TrendingTaskITSFhr.h" alt="" coords="1999,95,2181,136"/>
+<area shape="rect" id="node21" href="$TrendingTaskITSThr_8h.html" title="Modules/ITS/include\l/ITS/TrendingTaskITSThr.h" alt="" coords="2255,95,2437,136"/>
+<area shape="rect" id="node22" href="$TrendingTaskITSThr_8cxx.html" title="Modules/ITS/src/Trending\lTaskITSThr.cxx" alt="" coords="2204,184,2376,225"/>
+<area shape="rect" id="node23" href="$TH1MCHReductor_8h.html" title="Modules/MUON/MCH/include\l/MCH/TH1MCHReductor.h" alt="" coords="2461,95,2657,136"/>
+<area shape="rect" id="node25" href="$ROCReductor_8h_source.html" title="Modules/TPC/include\l/TPC/ROCReductor.h" alt="" coords="2689,95,2840,136"/>
+<area shape="rect" id="node4" href="$testTrendingTask_8cxx.html" title="Framework/test/testTrending\lTask.cxx" alt="" coords="247,184,437,225"/>
+<area shape="rect" id="node7" href="$QualityReductor_8cxx.html" title="Modules/Common/src\l/QualityReductor.cxx" alt="" coords="544,184,695,225"/>
+<area shape="rect" id="node10" href="$TH1Reductor_8cxx.html" title="Modules/Common/src\l/TH1Reductor.cxx" alt="" coords="931,184,1081,225"/>
+<area shape="rect" id="node12" href="$TH2Reductor_8cxx.html" title="Modules/Common/src\l/TH2Reductor.cxx" alt="" coords="1105,184,1256,225"/>
+<area shape="rect" id="node14" href="$THnSparse5Reductor_8cxx.html" title="Modules/Common/src\l/THnSparse5Reductor.cxx" alt="" coords="1280,184,1457,225"/>
+<area shape="rect" id="node18" href="$TH2XlineReductor_8cxx.html" title="Modules/ITS/src/TH2Xline\lReductor.cxx" alt="" coords="1751,184,1927,225"/>
+<area shape="rect" id="node24" href="$TH1MCHReductor_8cxx.html" title="Modules/MUON/MCH/src\l/TH1MCHReductor.cxx" alt="" coords="2465,184,2638,225"/>
+</map>

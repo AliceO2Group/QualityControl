@@ -1,0 +1,17 @@
+<map id="Framework/src/TrendingTask.cxx" name="Framework/src/TrendingTask.cxx">
+<area shape="rect" id="node2" href="$TrendingTask_8h.html" title="QualityControl/TrendingTask.h" alt="" coords="1017,87,1216,114"/>
+<area shape="rect" id="node11" href="$MonitorObject_8h.html" title="QualityControl/MonitorObject.h" alt="" coords="1870,355,2072,382"/>
+<area shape="rect" id="node25" href="$Reductor_8h.html" title="QualityControl/Reductor.h" alt="" coords="1590,177,1763,203"/>
+<area shape="rect" id="node27" href="$QcInfoLogger_8h.html" title="QualityControl/QcInfoLogger.h" alt="" coords="2448,177,2646,203"/>
+<area shape="rect" id="node30" href="$DatabaseInterface_8h.html" title="QualityControl/DatabaseInterface.h" alt="" coords="1339,177,1566,203"/>
+<area shape="rect" id="node33" href="$RootClassFactory_8h.html" title="QualityControl/RootClass\lFactory.h" alt="" coords="1919,80,2090,121"/>
+<area shape="rect" id="node3" href="$PostProcessingInterface_8h.html" title="QualityControl/PostProcessing\lInterface.h" alt="" coords="784,169,985,211"/>
+<area shape="rect" id="node22" href="$TrendingTaskConfig_8h.html" title="QualityControl/TrendingTask\lConfig.h" alt="" coords="1022,169,1210,211"/>
+<area shape="rect" id="node7" href="$Triggers_8h.html" title="QualityControl/Triggers.h" alt="" coords="189,266,356,293"/>
+<area shape="rect" id="node10" href="$ObjectsManager_8h.html" title="QualityControl/ObjectsManager.h" alt="" coords="493,266,708,293"/>
+<area shape="rect" id="node16" href="$MonitorObjectCollection_8h.html" title="QualityControl/MonitorObject\lCollection.h" alt="" coords="213,348,404,389"/>
+<area shape="rect" id="node19" href="$TaskConfig_8h.html" title="QualityControl/TaskConfig.h" alt="" coords="479,355,666,382"/>
+<area shape="rect" id="node24" href="$PostProcessingConfig_8h.html" title="QualityControl/PostProcessing\lConfig.h" alt="" coords="1205,259,1406,300"/>
+<area shape="rect" id="node31" href="$QualityObject_8h_source.html" title="QualityControl/QualityObject.h" alt="" coords="2010,266,2209,293"/>
+<area shape="rect" id="node32" href="$Quality_8h.html" title="QualityControl/Quality.h" alt="" coords="1685,355,1846,382"/>
+</map>

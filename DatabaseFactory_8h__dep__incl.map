@@ -1,0 +1,10 @@
+<map id="Framework/include/QualityControl/DatabaseFactory.h" name="Framework/include/QualityControl/DatabaseFactory.h">
+<area shape="rect" id="node2" href="$AggregatorRunner_8cxx.html" title="Framework/src/Aggregator\lRunner.cxx" alt="" coords="5,95,181,136"/>
+<area shape="rect" id="node3" href="$CheckRunner_8cxx.html" title="Framework/src/CheckRunner.cxx" alt="" coords="205,102,424,129"/>
+<area shape="rect" id="node4" href="$DatabaseFactory_8cxx.html" title="Framework/src/DatabaseFactory.cxx" alt="" coords="449,102,687,129"/>
+<area shape="rect" id="node6" href="$RepositoryBenchmark_8cxx.html" title="Framework/src/Repository\lBenchmark.cxx" alt="" coords="941,95,1117,136"/>
+<area shape="rect" id="node7" href="$testCcdbDatabaseExtra_8cxx.html" title="Framework/test/testCcdbDatabase\lExtra.cxx" alt="" coords="1141,95,1368,136"/>
+<area shape="rect" id="node8" href="$testDbFactory_8cxx.html" title="Framework/test/testDbFactory.cxx" alt="" coords="1393,102,1618,129"/>
+<area shape="rect" id="node9" href="$testTrendingTask_8cxx.html" title="Framework/test/testTrending\lTask.cxx" alt="" coords="1643,95,1832,136"/>
+<area shape="rect" id="node10" href="$testTriggers_8cxx.html" title="Framework/test/testTriggers.cxx" alt="" coords="1856,102,2067,129"/>
+</map>

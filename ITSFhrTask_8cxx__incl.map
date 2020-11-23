@@ -1,0 +1,10 @@
+<map id="Modules/ITS/src/ITSFhrTask.cxx" name="Modules/ITS/src/ITSFhrTask.cxx">
+<area shape="rect" id="node2" href="$ITSFhrTask_8h.html" title="ITS/ITSFhrTask.h" alt="" coords="769,80,896,107"/>
+<area shape="rect" id="node21" href="$QcInfoLogger_8h.html" title="QualityControl/QcInfoLogger.h" alt="" coords="1901,244,2100,271"/>
+<area shape="rect" id="node3" href="$TaskInterface_8h.html" title="QualityControl/TaskInterface.h" alt="" coords="1134,162,1334,189"/>
+<area shape="rect" id="node11" href="$Activity_8h.html" title="QualityControl/Activity.h" alt="" coords="1321,244,1485,271"/>
+<area shape="rect" id="node12" href="$ObjectsManager_8h.html" title="QualityControl/ObjectsManager.h" alt="" coords="1509,244,1724,271"/>
+<area shape="rect" id="node13" href="$MonitorObject_8h.html" title="QualityControl/MonitorObject.h" alt="" coords="1505,326,1707,353"/>
+<area shape="rect" id="node17" href="$MonitorObjectCollection_8h.html" title="QualityControl/MonitorObject\lCollection.h" alt="" coords="1800,319,1991,360"/>
+<area shape="rect" id="node20" href="$TaskConfig_8h.html" title="QualityControl/TaskConfig.h" alt="" coords="1213,326,1399,353"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="Task" name="Task">
+<area shape="rect" id="node2" href="$classClustersRootFileReaderMFT.html" title="{ClustersRootFileReaderMFT\n||+ init()\l+ run()\l}" alt="" coords="5,226,195,318"/>
+<area shape="rect" id="node3" href="$classDigitsRootFileReaderMFT.html" title="{DigitsRootFileReaderMFT\n||+ init()\l+ run()\l}" alt="" coords="219,226,394,318"/>
+<area shape="rect" id="node4" href="$classo2_1_1quality__control_1_1checker_1_1AggregatorRunner.html" title="The class in charge of running the aggregators on the QualityObjects. " alt="" coords="419,153,637,391"/>
+<area shape="rect" id="node5" href="$classo2_1_1quality__control_1_1core_1_1TaskRunner.html" title="A class driving the execution of a QC task inside DPL. " alt="" coords="662,131,863,413"/>
+<area shape="rect" id="node6" href="$classo2_1_1quality__control_1_1example_1_1ExampleQualityPrinterSpec.html" title="Example DPL task to be plugged after a QC check. " alt="" coords="887,226,1134,318"/>
+<area shape="rect" id="node7" href="$classo2_1_1quality__control__modules_1_1ft0_1_1FT0DataProducer.html" title="{o2::quality_control\l_modules::ft0::FT0DataProducer\n||+ init()\l+ run()\l}" alt="" coords="1158,219,1370,325"/>
+<area shape="rect" id="node8" href="$classTracksRootFileReaderMFT.html" title="{TracksRootFileReaderMFT\n||+ init()\l+ run()\l}" alt="" coords="1394,226,1574,318"/>
+</map>
