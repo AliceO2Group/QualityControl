@@ -42,8 +42,6 @@ namespace o2::quality_control_modules::trd
   private:
 
     TH1F* mADC = nullptr;
-    TH2F* mADCperTimeBinAllDetectors = nullptr;
-    TProfile* mprofADCperTimeBinAllDetectors;
   };
 } // namespace o2::quality_control_modules::trd
 
