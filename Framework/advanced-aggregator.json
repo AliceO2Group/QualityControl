@@ -1,0 +1,157 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "dataSizeTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst2"
+        },
+        "location": "remote"
+      },
+      "someNumbersTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "TST",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst1"
+        },
+        "location": "remote"
+      }
+    },
+    "checks": {
+      "dataSizeCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "dataSizeTask",
+          "MOs": ["example"]
+        }]
+      },
+      "someNumbersCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnEachSeparately",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Task",
+          "name": "someNumbersTask",
+          "MOs": ["example"]
+        }]
+      }
+    },
+    "aggregators": {
+      "MyAggregator1": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Check",
+          "name": "dataSizeCheck"
+        }, {
+          "type": "Check",
+          "name": "someNumbersCheck"
+        }]
+      },
+      "MyAggregator2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Check",
+          "name": "dataSizeCheck"
+        }, {
+          "type": "Check", "": "this one is using onEachSeparately and thus it sends under a full path",
+          "name": "someNumbersCheck",
+          "QOs": ["someNumbersTask/example"], "": "also possible to ignore it altogether, meaning we take all objects"
+        }]
+      },
+      "MyAggregator3": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Aggregator",
+          "name": "MyAggregator1", "": "no QOs parameter -> all QOs of this aggregator",
+          "QOs": ["newQuality"], "": "list all objects we are interested in"
+        }, {
+          "type": "Aggregator",
+          "name": "MyAggregator2",
+          "QOs": ["newQuality", "another"], "": "if we omitted the QOs for a data source we would default to OnAny"
+        }]
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "tst1",
+      "active": "true",
+      "machines": [],
+      "query" : "sum:TST/SUM/2;param:TST/PARAM/2",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "32112332123"
+        }
+      ],
+      "blocking": "false"
+    },
+    {
+      "id": "tst2",
+      "active": "true",
+      "machines": [],
+      "query" : "data:TST/DATA",
+      "samplingConditions": [
+        {
+          "condition": "payloadSize",
+          "lowerLimit": "8000",
+          "upperLimit": "10000"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
+}

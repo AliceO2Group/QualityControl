@@ -10,6 +10,7 @@
 
 #include <utility>
 #include <Common/Exceptions.h>
+#include <string>
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/QualityObject.h"
 
@@ -46,7 +47,20 @@ QualityObject::QualityObject(
 
   const char* QualityObject::GetName() const
   {
-    return mCheckName.c_str();
+    std::string name = getName();
+    return strdup(name.c_str());
+  }
+
+  std::string QualityObject::getName() const
+  {
+    if (mPolicyName == "OnEachSeparately") {
+      if (mMonitorObjectsNames.size() != 1) {
+        BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("QualityObject::getName: "
+                                                                  "The vector of monitorObjectsNames must contain a single object"));
+      }
+      return mCheckName + "/" + mMonitorObjectsNames[0];
+    }
+    return mCheckName;
   }
 
   void QualityObject::updateQuality(Quality quality)
@@ -123,6 +137,18 @@ QualityObject::QualityObject(
   const std::vector<std::string> QualityObject::getMonitorObjectsNames() const
   {
     return mMonitorObjectsNames;
+  }
+
+  std::ostream& operator<<(std::ostream& out, const QualityObject& q) // output
+  {
+    out << "QualityObject: " << q.getName() << ":\n"
+        << "   - checkName : " << q.getCheckName() << "\n"
+        << "   - detectorName : " << q.getDetectorName() << "\n"
+        << "   - monitorObjectsNames : ";
+    for (auto item : q.getMonitorObjectsNames()) {
+      out << item << ", ";
+    }
+    return out;
   }
 
 } // namespace o2::quality_control::core

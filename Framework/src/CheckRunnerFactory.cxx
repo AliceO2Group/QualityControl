@@ -28,7 +28,6 @@ namespace o2::quality_control::checker
 {
 
 using namespace o2::framework;
-using namespace o2::quality_control::checker;
 
 DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::string configurationSource, std::vector<std::string> storeVector)
 {
@@ -38,11 +37,9 @@ DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::str
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
                                     qcCheckRunner.getInputs(),
                                     Outputs{ qcCheckRunner.getOutputs() },
-                                    adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
-                                    Options{},
-                                    {},
-                                    std::vector<DataProcessorLabel>{} };
-
+                                    AlgorithmSpec{},
+                                    Options{} };
+  newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
   return newCheckRunner;
 }
 

@@ -9,6 +9,7 @@
 
 #pragma link C++ class o2::quality_control::checker::CheckInterface + ;
 #pragma link C++ class o2::quality_control::core::TaskInterface + ;
+#pragma link C++ class o2::quality_control::checker::AggregatorInterface + ;
 #pragma link C++ class o2::quality_control::postprocessing::PostProcessingInterface + ;
 #pragma link C++ class o2::quality_control::postprocessing::TrendingTask + ;
 #pragma link C++ class o2::quality_control::core::MonitorObjectCollection + ;

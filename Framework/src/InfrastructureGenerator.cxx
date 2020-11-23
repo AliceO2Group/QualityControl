@@ -17,6 +17,7 @@
 
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskRunnerFactory.h"
+#include "QualityControl/AggregatorRunnerFactory.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/CheckRunnerFactory.h"
@@ -60,7 +61,8 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
       }
     }
   }
-  generateCheckRunners(workflow, configurationSource);
+  auto checkRunnerOutputs = generateCheckRunners(workflow, configurationSource);
+  generateAggregator(workflow, configurationSource, checkRunnerOutputs);
   generatePostProcessing(workflow, configurationSource);
 
   return workflow;
@@ -231,6 +233,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
   TaskRunnerFactory::customizeInfrastructure(policies);
   MergerBuilder::customizeInfrastructure(policies);
   CheckRunnerFactory::customizeInfrastructure(policies);
+  AggregatorRunnerFactory::customizeInfrastructure(policies);
 }
 
 void InfrastructureGenerator::printVersion()
@@ -348,7 +351,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergersBuilder.generateInfrastructure(workflow);
 }
 
-void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource)
+vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource)
 {
   // todo have a look if this complex procedure can be simplified.
   // todo also make well defined and scoped functions to make it more readable and clearer.
@@ -437,10 +440,11 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
 
   // Create CheckRunners: 1 per set of inputs
   CheckRunnerFactory checkRunnerFactory;
+  vector<framework::OutputSpec> checkRunnerOutputs; // needed later for the aggregators
   for (auto& [inputNames, checks] : checksMap) {
     //Logging
     ILOG(Info, Devel) << ">> Inputs (" << inputNames.size() << "): ";
-    for (auto& name : inputNames)
+    for (const auto& name : inputNames)
       ILOG(Info, Devel) << name << " ";
     ILOG(Info, Devel) << " ; Checks (" << checks.size() << "): ";
     for (auto& check : checks)
@@ -451,11 +455,29 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
     ILOG(Info, Devel) << ENDM;
 
     if (!checks.empty()) { // Create a CheckRunner for the grouped checks
-      workflow.emplace_back(checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]));
+      DataProcessorSpec spec = checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]);
+      workflow.emplace_back(spec);
+      checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
     } else { // If there are no checks, create a sink CheckRunner
-      workflow.emplace_back(checkRunnerFactory.createSinkDevice(tasksOutputMap.find(inputNames[0])->second, configurationSource));
+      DataProcessorSpec spec = checkRunnerFactory.createSinkDevice(tasksOutputMap.find(inputNames[0])->second, configurationSource);
+      workflow.emplace_back(spec);
+      checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
     }
   }
+
+  ILOG(Info) << ">> Outputs (" << checkRunnerOutputs.size() << "): ";
+  for (const auto& output : checkRunnerOutputs)
+    ILOG(Info) << DataSpecUtils::describe(output) << " ";
+  ILOG(Info) << ENDM;
+
+  return checkRunnerOutputs;
+}
+
+void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, std::string configurationSource, vector<framework::OutputSpec>& checkRunnerOutputs)
+{
+  // TODO consider whether we should recompute checkRunnerOutputs instead of receiving it all baked.
+  DataProcessorSpec spec = AggregatorRunnerFactory::create(checkRunnerOutputs, configurationSource);
+  workflow.emplace_back(spec);
 }
 
 void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, std::string configurationSource)

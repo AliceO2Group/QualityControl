@@ -70,8 +70,7 @@
         "policy": "OnAny",
         "dataSource": [{
           "type": "Task",
-          "name": "myTask_1",
-          "MOs": "all"
+          "name": "myTask_1", "": "MOs parameter is not specfied, meaning we take all objects"
         }]
       },
       "example/checkNonEmpty": {
@@ -81,8 +80,7 @@
         "policy": "OnAny",
         "dataSource": [{
           "type": "Task",
-          "name": "myTask_1",
-          "MOs": "all"
+          "name": "myTask_1", "": "MOs parameter is not specfied, meaning we take all objects"
         }]
       },
       "example/checkFromExample": {
@@ -92,8 +90,7 @@
         "policy": "OnAny",
         "dataSource": [{
           "type": "Task",
-          "name": "myTask_1",
-          "MOs": "all"
+          "name": "myTask_1", "": "MOs parameter is not specfied, meaning we take all objects"
         }]
       },
       "daq/checkNonEmpty/payloadSize": {
@@ -141,6 +138,52 @@
         }]
       }
 
+    },
+    "aggregators": {
+      "MyAggregator1": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Check",
+          "name": "dataSizeCheck"
+        }, {
+          "type": "Check",
+          "name": "someNumbersCheck"
+        }]
+      },
+      "MyAggregator2": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Check",
+          "name": "dataSizeCheck"
+        }, {
+          "type": "Check", "": "this one is using onEachSeparately and thus it sends under a full path",
+          "name": "someNumbersCheck",
+          "QOs": ["someNumbersTask/example"], "": "also possible to ignore it altogether, meaning we take all objects"
+        }]
+      },
+      "MyAggregator3": {
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonAggregator",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAll",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "Aggregator",
+          "name": "MyAggregator1", "": "no QOs parameter -> all QOs of this aggregator"
+        }, {
+          "type": "Aggregator",
+          "name": "MyAggregator2",
+          "QOs": ["newQuality", "another"], "": "list all objects we are interested in"
+        }]
+      }
     }
   },
   "dataSamplingPoliciesFile_comment": "In case that policies are stored in different file, specify its path below. When both dataSamplingPolicies and dataSamplingPoliciesFile are specified, the latter has higher priority",

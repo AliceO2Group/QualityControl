@@ -20,6 +20,7 @@
 #include <map>
 #include <vector>
 #include <functional>
+#include <iosfwd>
 
 namespace o2::quality_control::checker
 {
@@ -38,6 +39,8 @@ struct UpdatePolicy {
   // TODO this line makes me think that lambdas are not enough because we actually need to store a state...
   bool policyHelperFlag; // the purpose might change depending on policy,
   RevisionType revision = 0;
+
+  friend std::ostream& operator<<(std::ostream& out, const UpdatePolicy& updatePolicy); // output
 };
 
 /**
