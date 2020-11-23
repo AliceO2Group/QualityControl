@@ -79,6 +79,7 @@ namespace o2::quality_control_modules::trd
         ILOG(Info) << "payload size: " << (header->payloadSize) << ENDM;
         mHistogram->Fill(header->payloadSize);
 
+        //reading the digit vector
         const auto inputDigits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("random");
         std::vector<o2::trd::Digit> msgDigits(inputDigits.begin(), inputDigits.end());
         for(auto digit : msgDigits )
