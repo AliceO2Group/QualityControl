@@ -289,8 +289,7 @@ A Check is a function that determines the quality of the Monitor Objects produce
         "policy": "OnAny",
         "dataSource": [{
           "type": "Task",
-          "name": "TaskName",
-          "MOs": "all"
+          "name": "TaskName"
         },
         {
           "type": "Task",
@@ -314,11 +313,11 @@ A Check is a function that determines the quality of the Monitor Objects produce
     * _OnAnyNonZero_ - Triggers if ANY of the declared monitor objects changes, but only after all listed objects have been received at least once.
     * _OnAll_ - Triggers if ALL the listed monitor objects have changed.
     * _OnEachSeparately_ - Triggers separately for EACH of the listed objects whenever one of them changes.
-    * In case the list of monitor objects is empty or is replaced by the keyword "all", the policy is simply ignored and the `check` will be triggered whenever a new MonitorObject is received.
+    * In case the list of monitor objects is empty, the policy is simply ignored and the `check` will be triggered whenever a new MonitorObject is received.
 * __dataSource__ - declaration of the `check` input
     * _type_ - currently only supported is _Task_
     * _name_ - name of the _Task_
-    * _MOs_ - list of MonitorObjects name or "all" (not as a list!)
+    * _MOs_ - list of MonitorObjects names or can be omitted to mean that all objects should be taken.
 
 ### Implementation
 After the creation of the module described in the above section, every Check functionality requires a separate implementation. The module might implement several Check classes.
@@ -392,7 +391,7 @@ o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/ad
 * __policy__ - Policy for triggering the _check_ function defined in the class:
     * _OnAny_ (default) - Triggers if ANY of the listed quality objects changes.
     * _OnAll_ - Triggers if ALL the listed quality objects have changed.
-    * In case the list of QualityObject is empty or is replaced by the keyword "all", the policy is simply ignored and the `check` will be triggered whenever a new QualityObject is received.
+    * In case the list of QualityObject is empty, the policy is simply ignored and the `check` will be triggered whenever a new QualityObject is received.
 * __dataSource__ - declaration of the `check` input
     * _type_ - _Check_ or _Aggregator_
     * _names_ - name of the Check or Aggregator

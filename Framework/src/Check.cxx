@@ -107,8 +107,8 @@ void Check::initConfig(std::string checkName)
       }
 
       // Subscribe on predefined MOs.
-      // If "MOs" are not set or "MOs" is set to "all", the check function will be triggered whenever a new MO appears.
-      if (dataSource.count("MOs") == 0 || dataSource.get<std::string>("MOs") == "all") {
+      // If "MOs" are not set, the check function will be triggered whenever a new MO appears.
+      if (dataSource.count("MOs") == 0) {
         // fixme: this is a dirty fix. Policies should be refactored, so this check won't be needed.
         if (mCheckConfig.policyType != "OnEachSeparately") {
           mCheckConfig.policyType = "_OnGlobalAny";

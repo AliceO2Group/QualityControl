@@ -619,8 +619,8 @@ Below the full QC Checks configuration structure is described. Note that more th
         "dataSource": [{              "": "List of data source of the Check.",
           "type": "Task",             "": "Type of the data source, \"Task\", \"ExternalTask\" or \"PostProcessing\"", 
           "name": "myTask_1",         "": "Name of the Task",
-          "MOs": [ "example" ],       "": ["List of MOs to be checked. Use \"all\" (not as a list) to check each MO ",
-                                           "which is produced by the Task"]
+          "MOs": [ "example" ],       "": ["List of MOs to be checked. "
+                                            "Can be omitted to mean \"all\"."]
         }],
         "checkParameters": {          "": "User Check parameters which are then accessible as a key-value map.",
           "myOwnKey": "myOwnValue",   "": "An example of a key and a value. Nested structures are not supported"
@@ -651,7 +651,7 @@ Below the full QC Aggregators configuration structure is described. Note that mo
           "type": "Check",,           "": "Type of the data source: \"Check\" or \"Aggregator\"", 
           "name": "dataSizeCheck",    "": "Name of the Check or Aggregator",
           "QOs": ["newQuality", "another"], "": ["List of QOs to be checked.",
-                                          "Can be replaced by \"all\". Can be omitted for Checks", 
+                                          "Can be omitted for Checks", 
                                           "that publish a single Quality or to mean \"all\"."]
         }]
       }

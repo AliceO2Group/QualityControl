@@ -70,8 +70,7 @@
         "policy": "OnAny",
         "dataSource": [{
           "type": "Task",
-          "name": "myTask_1",
-          "MOs": "all"
+          "name": "myTask_1", "": "MOs parameter is not specfied, meaning we take all objects"
         }]
       },
       "example/checkNonEmpty": {
@@ -81,8 +80,7 @@
         "policy": "OnAny",
         "dataSource": [{
           "type": "Task",
-          "name": "myTask_1",
-          "MOs": "all"
+          "name": "myTask_1", "": "MOs parameter is not specfied, meaning we take all objects"
         }]
       },
       "example/checkFromExample": {
@@ -92,8 +90,7 @@
         "policy": "OnAny",
         "dataSource": [{
           "type": "Task",
-          "name": "myTask_1",
-          "MOs": "all"
+          "name": "myTask_1", "": "MOs parameter is not specfied, meaning we take all objects"
         }]
       },
       "daq/checkNonEmpty/payloadSize": {
@@ -169,7 +166,7 @@
         }, {
           "type": "Check", "": "this one is using onEachSeparately and thus it sends under a full path",
           "name": "someNumbersCheck",
-          "QOs": ["someNumbersTask/example"], "": "also possible to use \"all\" or ignore it altogether"
+          "QOs": ["someNumbersTask/example"], "": "also possible to ignore it altogether, meaning we take all objects"
         }]
       },
       "MyAggregator3": {

@@ -103,7 +103,7 @@
         }, {
           "type": "Check", "": "this one is using onEachSeparately and thus it sends under a full path",
           "name": "someNumbersCheck",
-          "QOs": ["someNumbersTask/example"], "": "also possible to use \"all\" or ignore it altogether"
+          "QOs": ["someNumbersTask/example"], "": "also possible to ignore it altogether, meaning we take all objects"
         }]
       },
       "MyAggregator3": {
