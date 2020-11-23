@@ -22,12 +22,6 @@ namespace o2::quality_control_modules::trd
     if (mADC) {
       delete mADC;
     }
-    if (mADCperTimeBinAllDetectors) {
-      delete mADCperTimeBinAllDetectors;
-    }
-    if (mprofADCperTimeBinAllDetectors) {
-      delete mprofADCperTimeBinAllDetectors;
-    }
   }
 
   void TRDDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -44,15 +38,6 @@ namespace o2::quality_control_modules::trd
     //getObjectsManager()->setDisplayHint(mADC->GetName(), "LOGY");
     getObjectsManager()->addMetadata(mADC->GetName(), "custom", "34");
 
-    mADCperTimeBinAllDetectors = new TH2F("ADCperTimeBinAllDetectors", "ADC distribution for all chambers for each time bin;Time bin;ADC", 31, -0.5, 30.5 , 1014, 0, 1023);
-    getObjectsManager()->startPublishing(mADCperTimeBinAllDetectors);
-    //getObjectsManager()->setDefaultDrawOptions(mADCperTimeBinAllDetectors->GetName(), "LEGO2");
-    getObjectsManager()->addMetadata(mADCperTimeBinAllDetectors->GetName(), "custom", "34");
-
-    mprofADCperTimeBinAllDetectors = new TProfile("profADCperTimeBinAllDetectors", " prof ADC distribution for all chambers for each time bin;Time bin;ADC", 31, -0.5, 30.5);
-    getObjectsManager()->startPublishing(mprofADCperTimeBinAllDetectors);
-    //getObjectsManager()->setDefaultDrawOptions(mprofADCperTimeBinAllDetectors->GetName(), "");
-    getObjectsManager()->addMetadata(mprofADCperTimeBinAllDetectors->GetName(), "custom", "34");
   }
 
   void TRDDigitQcTask::startOfActivity(Activity& /*activity*/)
@@ -60,8 +45,7 @@ namespace o2::quality_control_modules::trd
     ILOG(Info) << "startOfActivity" << ENDM;
 
     mADC->Reset();
-    mADCperTimeBinAllDetectors->Reset();
-    mprofADCperTimeBinAllDetectors->Reset();
+
   } //set stats/stacs
 
   void TRDDigitQcTask::startOfCycle()
@@ -77,7 +61,7 @@ namespace o2::quality_control_modules::trd
         const auto* header = header::get<header::DataHeader*>(input.header);
         // get payload of a specific input, which is a char array.
         ILOG(Info) << "payload size: " << (header->payloadSize) << ENDM;
-        mHistogram->Fill(header->payloadSize);
+        //mHistogram->Fill(header->payloadSize);
 
         //reading the digit vector
         const auto inputDigits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("random");
@@ -95,12 +79,10 @@ namespace o2::quality_control_modules::trd
               int adc = adcs[tb];
 
               mADC->Fill(adc);
-              mADCperTimeBinAllDetectors->Fill(tb, adc);
-              mprofADCperTimeBinAllDetectors->Fill(tb, adc);
+
           }
           mADC->Draw();
-          mADCperTimeBinAllDetectors->Draw();
-          mprofADCperTimeBinAllDetectors->Draw();
+
          }
        }
      }
@@ -121,7 +103,5 @@ namespace o2::quality_control_modules::trd
      // clean all the monitor objects here
      ILOG(Info) << "Resetting the histogram" << ENDM;
      mADC->Reset();
-     mADCperTimeBinAllDetectors->Reset();
-     mprofADCperTimeBinAllDetectors->Reset();
    }
  } // namespace o2::quality_control_modules::trd
