@@ -15,5 +15,4 @@
 // PostProcessing
 #pragma link C++ class o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate+;
 // Utilities
-// #pragma link C++ class o2::quality_control_modules::tof::Counter<const unsigned int, const char*>+;
 #endif
