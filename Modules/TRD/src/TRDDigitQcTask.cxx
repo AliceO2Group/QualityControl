@@ -14,6 +14,7 @@
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "TRD/TRDDigitQcTask.h"
+#include <Framework/InputRecord.h>
 
 namespace o2::quality_control_modules::trd
 {
@@ -24,14 +25,14 @@ namespace o2::quality_control_modules::trd
     }
   }
 
-  void TRDDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
+  void TRDDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/ )
   {
-    ILOG(Info) << "initialize SimpleTrdTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+    ILOG(Info) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
     // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
     if (auto param = mCustomParameters.find("trdDigits"); param != mCustomParameters.end()) {
       ILOG(Info) << "Custom parameter - trdDigits: " << param->second << ENDM;
-    }
+     }
 
     mADC = new TH1F("hADC", ";ADC value;Counts", 1024, 0, 1023);
     getObjectsManager()->startPublishing(mADC);
@@ -56,15 +57,15 @@ namespace o2::quality_control_modules::trd
   void TRDDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   {
     for (auto&& input : ctx.inputs()) {
-      // get message header
-      if (input.header != nullptr && input.payload != nullptr) {
-        const auto* header = header::get<header::DataHeader*>(input.header);
-        // get payload of a specific input, which is a char array.
-        ILOG(Info) << "payload size: " << (header->payloadSize) << ENDM;
+    //   // get message header
+       if (input.header != nullptr && input.payload != nullptr) {
+    //      const auto* header = header::get<header::DataHeader*>(input.header);
+    //   //   // get payload of a specific input, which is a char array.
+    //      ILOG(Info) << "payload size: " << (header->payloadSize) << ENDM;
         //mHistogram->Fill(header->payloadSize);
 
         //reading the digit vector
-        const auto inputDigits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("random");
+        auto inputDigits = ctx.inputs().get<gsl::span<o2::trd::Digit>>("random");
         std::vector<o2::trd::Digit> msgDigits(inputDigits.begin(), inputDigits.end());
         for(auto digit : msgDigits )
         {
