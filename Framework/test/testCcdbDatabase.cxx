@@ -28,8 +28,6 @@
 #include "rapidjson/document.h"
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/testUtils.h"
-//#include "rapidjson/writer.h"
-//#include "rapidjson/stringbuffer.h"
 #include <TROOT.h>
 
 namespace utf = boost::unit_test;
@@ -95,7 +93,7 @@ struct MyGlobalFixture {
     backend->truncate("qc/TST/QO/Test/pid" + std::to_string(getpid()), "*");
   }
 };
-//BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
+BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
 
 long oldTimestamp;
 
@@ -287,7 +285,7 @@ BOOST_AUTO_TEST_CASE(ccdb_test_thread, *utf::depends_on("ccdb_store"))
     threads.emplace_back(askObject, objectPath);
   }
 
-  for (std::thread & t : threads) {
+  for (std::thread& t : threads) {
     t.join();
   }
   threads.clear();
@@ -323,7 +321,7 @@ BOOST_AUTO_TEST_CASE(ccdb_test_thread_api, *utf::depends_on("ccdb_store"))
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
-  for (std::thread & t : threads) {
+  for (std::thread& t : threads) {
     t.join();
   }
   threads.clear();
