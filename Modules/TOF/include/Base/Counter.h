@@ -94,9 +94,6 @@ class Counter
 // #define ENABLE_COUNTER_DEBUG_MODE // Flag used to enable more printing and more debug
 // #define ENABLE_PRINT_HISTOGRAMS_MODE // Flag used to enable more printing and more debug
 
-namespace o2::quality_control_modules::tof
-{
-
 template <const unsigned int size, const char* labels[size]>
 void Counter<size, labels>::Count(const unsigned int& v)
 {
