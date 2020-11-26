@@ -127,7 +127,8 @@ QualityObjectsType AggregatorRunner::aggregate()
   ILOG(Debug, Trace) << "Aggregate called in AggregatorRunner, QOs in cache: " << mQualityObjects.size() << ENDM;
 
   QualityObjectsType allQOs;
-  for (auto const& [aggregatorName, aggregator] : mAggregatorsMap) {
+  for (auto const& aggregator : mAggregators) {
+    string aggregatorName = aggregator->getName();
     ILOG(Info, Devel) << "Processing aggregator: " << aggregatorName << ENDM;
 
     if (updatePolicyManager.isReady(aggregatorName)) {
@@ -200,14 +201,17 @@ void AggregatorRunner::initAggregators()
 
     // For every aggregator definition, create an Aggregator
     for (const auto& [aggregatorName, aggregatorConfig] : mConfigFile->getRecursive("qc.aggregators")) {
-
       ILOG(Info, Devel) << ">> Aggregator name : " << aggregatorName << ENDM;
+
       if (aggregatorConfig.get<bool>("active", true)) {
-        // create Aggregator and store it.
         auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
         aggregator->init();
-        updatePolicyManager.addPolicy(aggregator->getName(), aggregator->getPolicyName(), aggregator->getObjectsNames(), aggregator->getAllObjectsOption(), false);
-        mAggregatorsMap[aggregatorName] = aggregator;
+        updatePolicyManager.addPolicy(aggregator->getName(),
+                                      aggregator->getPolicyName(),
+                                      aggregator->getObjectsNames(),
+                                      aggregator->getAllObjectsOption(),
+                                      false);
+        mAggregators.push_back(aggregator);
       }
     }
   }

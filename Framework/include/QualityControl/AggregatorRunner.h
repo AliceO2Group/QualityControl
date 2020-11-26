@@ -135,7 +135,8 @@ class AggregatorRunner : public framework::Task
 
   // General state
   std::string mDeviceName;
-  std::map<std::string, std::shared_ptr<Aggregator>> mAggregatorsMap;
+  std::vector<std::shared_ptr<Aggregator>> mAggregators;
+//  std::map<std::string, std::shared_ptr<Aggregator>> mAggregatorsMap;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
   core::QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
