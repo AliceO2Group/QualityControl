@@ -47,27 +47,16 @@ void RawDataDecoder::decode()
 
 void RawDataDecoder::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit)
 {
-  // DRM Counter
-  if (crateHeader->slotPartMask & 0 << 0) {
-    mDRMCounter[crateHeader->drmID].Count(0);
-  }
-
-  // LTM Counter
-  if (crateHeader->slotPartMask & 1 << 0) {
-    mLTMCounter[crateHeader->drmID].Count(0);
-  }
-
-  // TRM Counter
-  for (int i = 1; i < 11; i++) {
-    if (crateHeader->slotPartMask & 1 << i) {
-      mTRMCounter[crateHeader->drmID][i - 1].Count(0);
-    }
-  }
-
-  // Paricipating slot
-  for (int ibit = 0; ibit < 11; ++ibit) {
+  //Participating slot
+  for (int ibit = 0; ibit < 11; ++ibit) {    
     if (crateHeader->slotPartMask & (1 << ibit)) {
-      mSlotPartMask->Fill(crateHeader->drmID, ibit + 2);
+      // DRM Counter
+      mDRMCounter[crateHeader->drmID].Count(0);
+      mSlotPartMask->Fill(crateHeader->drmID, ibit + 1);
+      // LTM Counter
+      if (ibit == 0) mLTMCounter[crateHeader->drmID].Count(0);
+      // TRM Counter
+      if (ibit > 0) mTRMCounter[crateHeader->drmID][ibit - 1].Count(0);
     }
   }
 
@@ -167,7 +156,7 @@ void RawDataDecoder::initHistograms() // Initialization of histograms in Decoder
   //
   mTOT.reset(new TH1F("hTOT", "Raw ToT;ToT (48.8 ps)", 2048, 0., 2048.));
   //
-  mSlotPartMask.reset(new TH2F("hSlotPartMask", "Slot Participating;crate;slot", 72, 0., 72., 12, 1., 13.));
+  mSlotPartMask.reset(new TH2F("hSlotPartMask", "Slot Participating;crate;slot", 72, 0., 72., 11, 1., 12.));
   //
   mDiagnostic.reset(new TH2F("hDiagnostic", "hDiagnostic;crate;slot", 72, 0., 72., 12, 1., 13.));
   //
