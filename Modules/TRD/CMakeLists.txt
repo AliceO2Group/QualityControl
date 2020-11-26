@@ -2,7 +2,8 @@
 
 add_library(QcTRD)
 
-target_sources(QcTRD PRIVATE src/DigitsTask.cxx )
+target_sources(QcTRD PRIVATE src/DigitsTask.cxx
+                             src/DigitsCheck.cxx)
 
 target_include_directories(
   QcTRD
@@ -20,6 +21,7 @@ install(TARGETS QcTRD
 add_root_dictionary(QcTRD
                     HEADERS
                             include/TRD/DigitsTask.h
+                            include/TRD/DigitsCheck.h
                     LINKDEF include/TRD/LinkDef.h
                     BASENAME QcTRD)
 

@@ -25,7 +25,7 @@
     "tasks": {
       "QcTask": {
         "active": "true",
-        "className": "o2::quality_control_modules::trd::DigitsQcTask",
+        "className": "o2::quality_control_modules::trd::DigitsTask",
         "moduleName": "QcTRD",
         "detectorName": "TRD",
         "cycleDurationSeconds": "10",
@@ -44,7 +44,7 @@
     "checks": {
       "QcCheck": {
         "active": "true",
-        "className": "o2::quality_control_modules::trd::SimpleTrdCheck",
+        "className": "o2::quality_control_modules::trd::DigitsCheck",
         "moduleName": "QcTRD",
         "policy": "OnAny",
         "detectorName": "TRD",
