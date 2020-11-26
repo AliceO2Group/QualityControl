@@ -137,8 +137,9 @@ std::vector<AggregatorSource> Aggregator::getSources(AggregatorSourceType type)
   return matches;
 }
 
-AggregatorSource::AggregatorSource(const std::string& t, const std::string& n) {
-  if(t == "Aggregator") {
+AggregatorSource::AggregatorSource(const std::string& t, const std::string& n)
+{
+  if (t == "Aggregator") {
     type = aggregator;
   } else if (t == "Check") {
     type = check;

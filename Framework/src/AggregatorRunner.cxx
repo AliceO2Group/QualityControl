@@ -204,7 +204,7 @@ void AggregatorRunner::initAggregators()
       ILOG(Info, Devel) << ">> Aggregator name : " << aggregatorName << ENDM;
 
       if (aggregatorConfig.get<bool>("active", true)) {
-        try{
+        try {
           auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
           aggregator->init();
           updatePolicyManager.addPolicy(aggregator->getName(),
@@ -226,13 +226,13 @@ void AggregatorRunner::initAggregators()
   reorderAggregators();
 }
 
-bool AggregatorRunner::areSourcesIn(const std::vector<AggregatorSource> &sources,
+bool AggregatorRunner::areSourcesIn(const std::vector<AggregatorSource>& sources,
                                     const std::vector<std::shared_ptr<Aggregator>>& aggregators)
 {
-  for(auto source : sources) {
+  for (auto source : sources) {
     auto it = find_if(aggregators.begin(), aggregators.end(),
                       [&](const std::shared_ptr<Aggregator>& agg) { return (agg->getName() == source.name); });
-    if(it == aggregators.end()) {
+    if (it == aggregators.end()) {
       return false;
     }
   }
@@ -259,29 +259,30 @@ void AggregatorRunner::reorderAggregators()
   std::vector<std::shared_ptr<Aggregator>> results;
   bool modificationLastIteration = true;
   // As long as there are items in original and we did some modifications in the last iteration
-  while(!originals.empty() && modificationLastIteration) {
+  while (!originals.empty() && modificationLastIteration) {
     modificationLastIteration = false;
     std::vector<std::shared_ptr<Aggregator>> toBeMoved; // we need it because we cannot modify the vectors while iterating over them
     // Loop over remaining items in the original list
-    for(const auto& orig : originals){
+    for (const auto& orig : originals) {
       // if no Aggregator dependencies or Aggregator sources are all already in result
       auto sources = orig->getSources(aggregator);
-      if(sources.empty() || areSourcesIn(sources, results)) {
+      if (sources.empty() || areSourcesIn(sources, results)) {
         // move from original to result
         toBeMoved.push_back(orig);
         modificationLastIteration = true;
       }
     }
     // move the items from one vector to the other
-    for(const auto& item: toBeMoved) {
+    for (const auto& item : toBeMoved) {
       results.push_back(item);
       originals.erase(std::remove(originals.begin(), originals.end(), item), originals.end());
     }
   }
 
-  if(!originals.empty()) {
-    string msg = "Error in the aggregators definition : either there is a cycle "
-                 "or an aggregator depends on an aggregator that does not exist.";
+  if (!originals.empty()) {
+    string msg =
+      "Error in the aggregators definition : either there is a cycle "
+      "or an aggregator depends on an aggregator that does not exist.";
     ILOG(Error, Ops) << msg << ENDM;
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(msg));
   }

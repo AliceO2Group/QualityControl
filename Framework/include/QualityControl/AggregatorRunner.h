@@ -102,7 +102,7 @@ class AggregatorRunner : public framework::Task
 
   framework::Inputs getInputs() { return mInputs; }
   std::string getDeviceName() { return mDeviceName; }
-  const std::vector<std::shared_ptr<Aggregator>>& getAggregators() const {return mAggregators;}
+  const std::vector<std::shared_ptr<Aggregator>>& getAggregators() const { return mAggregators; }
 
   static std::string createAggregatorRunnerIdString() { return "QC-AGGREGATOR-RUNNER"; };
   static std::string createAggregatorRunnerName();
@@ -142,8 +142,8 @@ class AggregatorRunner : public framework::Task
    * @param aggregators
    * @return true if all sources are found, by name, in the vector of aggregators.
    */
-  bool areSourcesIn(const std::vector<AggregatorSource> &sources,
-                                      const std::vector<std::shared_ptr<Aggregator>>& aggregators);
+  bool areSourcesIn(const std::vector<AggregatorSource>& sources,
+                    const std::vector<std::shared_ptr<Aggregator>>& aggregators);
 
   /**
    * Send metrics to the monitoring system if the time has come.

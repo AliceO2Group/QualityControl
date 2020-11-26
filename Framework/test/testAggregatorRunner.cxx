@@ -42,12 +42,12 @@ BOOST_AUTO_TEST_CASE(test_aggregator_runner_static)
 BOOST_AUTO_TEST_CASE(test_aggregator_runner)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
-  AggregatorRunner aggregatorRunner{ configFilePath, {OutputSpec{ { "mo" }, "QC", "abcTask-mo", 123 }} } ;
+  AggregatorRunner aggregatorRunner{ configFilePath, { OutputSpec{ { "mo" }, "QC", "abcTask-mo", 123 } } };
 
   std::unique_ptr<ConfigParamStore> store;
   ConfigParamRegistry cfReg(std::move(store));
   ServiceRegistry sReg;
-  InitContext initContext{cfReg, sReg};
+  InitContext initContext{ cfReg, sReg };
   aggregatorRunner.init(initContext);
 
   BOOST_CHECK_EQUAL(aggregatorRunner.getDeviceName(), "QC-AGGREGATOR-RUNNER");

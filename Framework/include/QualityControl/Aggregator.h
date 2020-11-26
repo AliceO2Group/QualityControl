@@ -33,9 +33,9 @@ namespace o2::quality_control::checker
 {
 
 class AggregatorInterface;
-enum AggregatorSourceType { check, aggregator };
-struct AggregatorSource
-{
+enum AggregatorSourceType { check,
+                            aggregator };
+struct AggregatorSource {
   AggregatorSource(const std::string& t, const std::string& n);
   AggregatorSourceType type;
   std::string name;
