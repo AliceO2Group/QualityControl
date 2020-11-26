@@ -13,19 +13,19 @@
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
-#include "TRD/TRDDigitQcTask.h"
+#include "TRD/DigitsTask.h"
 #include <Framework/InputRecord.h>
 
 namespace o2::quality_control_modules::trd
 {
-  TRDDigitQcTask::~TRDDigitQcTask()
+  DigitsTask::~DigitsTask()
   {
     if (mADC) {
       delete mADC;
     }
   }
 
-  void TRDDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/ )
+  void DigitsTask::initialize(o2::framework::InitContext& /*ctx*/ )
   {
     ILOG(Info) << "initialize TRDDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
@@ -41,7 +41,7 @@ namespace o2::quality_control_modules::trd
 
   }
 
-  void TRDDigitQcTask::startOfActivity(Activity& /*activity*/)
+  void DigitsTask::startOfActivity(Activity& /*activity*/)
   {
     ILOG(Info) << "startOfActivity" << ENDM;
 
@@ -49,12 +49,12 @@ namespace o2::quality_control_modules::trd
 
   } //set stats/stacs
 
-  void TRDDigitQcTask::startOfCycle()
+  void DigitsTask::startOfCycle()
   {
     ILOG(Info) << "startOfCycle" << ENDM;
   }
 
-  void TRDDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
+  void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
   {
     for (auto&& input : ctx.inputs()) {
     //   // get message header
@@ -89,17 +89,17 @@ namespace o2::quality_control_modules::trd
      }
    }
 
-   void TRDDigitQcTask::endOfCycle()
+   void DigitsTask::endOfCycle()
    {
      ILOG(Info) << "endOfCycle" << ENDM;
    }
 
-   void TRDDigitQcTask::endOfActivity(Activity& /*activity*/)
+   void DigitsTask::endOfActivity(Activity& /*activity*/)
    {
      ILOG(Info) << "endOfActivity" << ENDM;
    }
 
-   void TRDDigitQcTask::reset()
+   void DigitsTask::reset()
    {
      // clean all the monitor objects here
      ILOG(Info) << "Resetting the histogram" << ENDM;

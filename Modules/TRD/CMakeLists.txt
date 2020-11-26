@@ -2,7 +2,7 @@
 
 add_library(QcTRD)
 
-target_sources(QcTRD PRIVATE src/TRDDigitQcTask.cxx )
+target_sources(QcTRD PRIVATE src/DigitsTask.cxx )
 
 target_include_directories(
   QcTRD
@@ -19,7 +19,7 @@ install(TARGETS QcTRD
 
 add_root_dictionary(QcTRD
                     HEADERS
-                            include/TRD/TRDDigitQcTask.h
+                            include/TRD/DigitsTask.h
                     LINKDEF include/TRD/LinkDef.h
                     BASENAME QcTRD)
 
@@ -53,5 +53,5 @@ install(TARGETS QcTRD ${EXE_NAMES}
 
 # ---- Install config files ----
 
-install(FILES TRDDigitQcTask.json
+install(FILES DigitsTask.json
               DESTINATION etc)

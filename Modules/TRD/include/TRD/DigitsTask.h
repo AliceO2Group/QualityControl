@@ -13,8 +13,8 @@
 /// \author My Name
 ///
 
-#ifndef QC_MODULE_TRD_TRDTRDDIGITQCTASK_H
-#define QC_MODULE_TRD_TRDTRDDIGITQCTASK_H
+#ifndef QC_MODULE_TRD_DIGITSTASK_H
+#define QC_MODULE_TRD_DIGITSTASK_H
 
 #include "QualityControl/TaskInterface.h"
 
@@ -27,13 +27,13 @@ namespace o2::quality_control_modules::trd
 
 /// \brief Example Quality Control DPL Task
 /// \author My Name
-class TRDDigitQcTask final : public TaskInterface
+class DigitsTask final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  TRDDigitQcTask() = default;
+  DigitsTask() = default;
   /// Destructor
-  ~TRDDigitQcTask() override;
+  ~DigitsTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -50,4 +50,4 @@ class TRDDigitQcTask final : public TaskInterface
 
 } // namespace o2::quality_control_modules::trd
 
-#endif // QC_MODULE_TRD_TRDTRDDIGITQCTASK_H
+#endif // QC_MODULE_TRD_DIGITSTASK_H
