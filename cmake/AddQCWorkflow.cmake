@@ -58,7 +58,7 @@ function(o2_add_qc_workflow)
   endif()
   message(STATUS "o2_add_qc_workflow called with config file ${PARSED_ARGS_CONFIG_FILE_PATH} to generate ${PARSED_ARGS_WORKFLOW_NAME}")
 
-  set(jsonDumpFile ${CMAKE_INSTALL_PREFIX}/share/dpl/${PARSED_ARGS_WORKFLOW_NAME}.json)
+  set(jsonDumpFile ${CMAKE_CURRENT_SOURCE_DIR}/${PARSED_ARGS_WORKFLOW_NAME}.json)
   message(STATUS "jsonDumpFile: ${jsonDumpFile}" )
   set(qcExecutable o2-qc)
 
