@@ -58,17 +58,16 @@ function(o2_add_qc_workflow)
   endif()
   message(STATUS "o2_add_qc_workflow called with config file ${PARSED_ARGS_CONFIG_FILE_PATH} to generate ${PARSED_ARGS_WORKFLOW_NAME}")
 
-  set(jsonDumpFile ${CMAKE_CURRENT_BINARY_DIR}/${PARSED_ARGS_WORKFLOW_NAME}.json)
+  set(jsonDumpFile ${CMAKE_CURRENT_SOURCE_DIR}/${PARSED_ARGS_WORKFLOW_NAME}.json)
   message(STATUS "jsonDumpFile: ${jsonDumpFile}" )
   set(qcExecutable o2-qc)
 
   add_custom_command(
     OUTPUT ${jsonDumpFile}
     VERBATIM
-    COMMAND echo "${qcExecutable} -b --config json:/${CMAKE_INSTALL_PREFIX}/${PARSED_ARGS_CONFIG_FILE_PATH} --dump-workflow --dump-workflow-file ${jsonDumpFile}"
-    COMMAND ${qcExecutable} -b --config json:/${CMAKE_INSTALL_PREFIX}/${PARSED_ARGS_CONFIG_FILE_PATH} --dump-workflow --dump-workflow-file ${jsonDumpFile}
-    DEPENDS ${qcExecutable} ${CMAKE_INSTALL_PREFIX}/${PARSED_ARGS_CONFIG_FILE_PATH})
-  # gmake[2]: *** No rule to make target `/home/pkonopka/alice/sw/slc7_x86-64/QualityControl/latest/etc/analysisDirect.json', needed by `Modules/Example/o2-qc-example-analysis-direct.json'.  Stop.
+    COMMAND echo "${qcExecutable} -b --config json://${PARSED_ARGS_CONFIG_FILE_PATH} --dump-workflow --dump-workflow-file ${jsonDumpFile}"
+    COMMAND ${qcExecutable} -b --config json://${PARSED_ARGS_CONFIG_FILE_PATH} --dump-workflow --dump-workflow-file ${jsonDumpFile}
+    DEPENDS ${qcExecutable} ${PARSED_ARGS_CONFIG_FILE_PATH})
 
   get_filename_component(filename ${jsonDumpFile} NAME_WE)
   add_custom_target(${filename} ALL DEPENDS ${jsonDumpFile})
