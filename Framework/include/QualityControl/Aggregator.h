@@ -33,6 +33,13 @@ namespace o2::quality_control::checker
 {
 
 class AggregatorInterface;
+enum AggregatorSourceType { check, aggregator };
+struct AggregatorSource
+{
+  AggregatorSource(const std::string& t, const std::string& n);
+  AggregatorSourceType type;
+  std::string name;
+};
 
 /// \brief An aggregator as found in the configuration.
 ///
@@ -64,10 +71,13 @@ class Aggregator
   std::string getPolicyName() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;
+  std::vector<AggregatorSource> getSources();
+  std::vector<AggregatorSource> getSources(AggregatorSourceType type);
 
  private:
   CheckConfig mAggregatorConfig; // we reuse checkConfig, just consider that Check = Aggregator
   AggregatorInterface* mAggregatorInterface = nullptr;
+  std::vector<AggregatorSource> mSources;
 };
 
 } // namespace o2::quality_control::checker

@@ -17,6 +17,7 @@
 #include "QualityControl/Aggregator.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/AggregatorInterface.h"
+#include <Common/Exceptions.h>
 
 using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
@@ -44,10 +45,7 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
     if (auto sourceType = dataSource.get<std::string>("type"); sourceType == "Aggregator" || sourceType == "Check") {
       auto sourceName = dataSource.get<std::string>("name");
       ILOG(Info, Devel) << "   Found a source : " << sourceName << ENDM;
-
-      cout << "dataSource.count(QOs) : " << dataSource.count("QOs") << endl;
-      if (dataSource.count("QOs") != 0)
-        cout << "dataSource.get<std::string>(\"QOs\") : " << dataSource.get<std::string>("QOs") << endl;
+      mSources.emplace_back(sourceType, sourceName);
 
       if (dataSource.count("QOs") == 0) {
         ILOG(Info, Devel) << "      (no QOs specified, we take all)" << ENDM;
@@ -123,4 +121,29 @@ std::vector<std::string> Aggregator::getObjectsNames() const
 bool Aggregator::getAllObjectsOption() const
 {
   return mAggregatorConfig.allObjects;
+}
+
+std::vector<AggregatorSource> Aggregator::getSources()
+{
+  return mSources;
+}
+
+std::vector<AggregatorSource> Aggregator::getSources(AggregatorSourceType type)
+{
+  std::vector<AggregatorSource> matches;
+  std::copy_if(mSources.begin(), mSources.end(), std::back_inserter(matches), [&](const AggregatorSource& source) {
+    return source.type == type;
+  });
+  return matches;
+}
+
+AggregatorSource::AggregatorSource(const std::string& t, const std::string& n) {
+  if(t == "Aggregator") {
+    type = aggregator;
+  } else if (t == "Check") {
+    type = check;
+  } else {
+    BOOST_THROW_EXCEPTION(AliceO2::Common::Exception() << AliceO2::Common::errinfo_details("Unknown type of Aggregator: " + t));
+  }
+  name = n;
 }

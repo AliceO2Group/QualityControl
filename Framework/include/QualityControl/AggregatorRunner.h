@@ -66,6 +66,7 @@ class TClass;
 
 namespace o2::quality_control::checker
 {
+struct AggregatorSource;
 
 /// \brief The class in charge of running the aggregators on the QualityObjects.
 ///
@@ -99,8 +100,9 @@ class AggregatorRunner : public framework::Task
   /// \brief AggregatorRunner process callback
   void run(framework::ProcessingContext& ctx) override;
 
-  framework::Inputs getInputs() { return mInputs; };
-  std::string getDeviceName() { return mDeviceName; };
+  framework::Inputs getInputs() { return mInputs; }
+  std::string getDeviceName() { return mDeviceName; }
+  const std::vector<std::shared_ptr<Aggregator>>& getAggregators() const {return mAggregators;}
 
   static std::string createAggregatorRunnerIdString() { return "QC-AGGREGATOR-RUNNER"; };
   static std::string createAggregatorRunnerName();
@@ -129,6 +131,21 @@ class AggregatorRunner : public framework::Task
   inline void initAggregators();
 
   /**
+   * Reorder the aggregators stored in mAggregators.
+   */
+  void reorderAggregators();
+
+  /**
+   * Checks whether all sources provided are already in the aggregators vector.
+   * The match is done by name.
+   * @param sources
+   * @param aggregators
+   * @return true if all sources are found, by name, in the vector of aggregators.
+   */
+  bool areSourcesIn(const std::vector<AggregatorSource> &sources,
+                                      const std::vector<std::shared_ptr<Aggregator>>& aggregators);
+
+  /**
    * Send metrics to the monitoring system if the time has come.
    */
   void sendPeriodicMonitoring();
@@ -136,7 +153,6 @@ class AggregatorRunner : public framework::Task
   // General state
   std::string mDeviceName;
   std::vector<std::shared_ptr<Aggregator>> mAggregators;
-//  std::map<std::string, std::shared_ptr<Aggregator>> mAggregatorsMap;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
   core::QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
