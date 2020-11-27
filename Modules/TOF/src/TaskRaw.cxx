@@ -47,16 +47,20 @@ void RawDataDecoder::decode()
 
 void RawDataDecoder::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit)
 {
-  //Participating slot
-  for (int ibit = 0; ibit < 11; ++ibit) {    
-    if (crateHeader->slotPartMask & (1 << ibit)) {
-      // DRM Counter
-      mDRMCounter[crateHeader->drmID].Count(0);
-      mSlotPartMask->Fill(crateHeader->drmID, ibit + 1);
-      // LTM Counter
-      if (ibit == 0) mLTMCounter[crateHeader->drmID].Count(0);
+  
+  // DRM Counter
+  mDRMCounter[crateHeader->drmID].Count(0);
+ 
+  // LTM Counter
+  if (crateHeader->slotPartMask & (1 << 0)){
+ 	  mLTMCounter[crateHeader->drmID].Count(0);
+  }
+                 
+  // Participating slot
+  for (int ibit = 1; ibit < 11; ++ibit) {    
+    if (crateHeader->slotPartMask & (1 << ibit)) {       
       // TRM Counter
-      if (ibit > 0) mTRMCounter[crateHeader->drmID][ibit - 1].Count(0);
+      mTRMCounter[crateHeader->drmID][ibit - 1].Count(0); 
     }
   }
 
@@ -156,7 +160,7 @@ void RawDataDecoder::initHistograms() // Initialization of histograms in Decoder
   //
   mTOT.reset(new TH1F("hTOT", "Raw ToT;ToT (48.8 ps)", 2048, 0., 2048.));
   //
-  mSlotPartMask.reset(new TH2F("hSlotPartMask", "Slot Participating;crate;slot", 72, 0., 72., 11, 1., 12.));
+  mSlotPartMask.reset(new TH2F("hSlotPartMask", "Slot participating;crate;slot", 72, 0., 72., 12, 1., 13.));
   //
   mDiagnostic.reset(new TH2F("hDiagnostic", "hDiagnostic;crate;slot", 72, 0., 72., 12, 1., 13.));
   //
@@ -270,8 +274,11 @@ void TaskRaw::endOfCycle()
   for (unsigned int i = 0; i < RawDataDecoder::ncrates; i++) { // Filling histograms only at the end of the cycle
     mDecoderRaw.mDRMCounter[i].FillHistogram(mDRMHisto.get(), i + 1);
     mDecoderRaw.mLTMCounter[i].FillHistogram(mLTMHisto.get(), i + 1);
+    mDecoderRaw.mSlotPartMask->SetBinContent(i + 1, 1, mDRMHisto->GetBinContent(1, i + 1));
+    mDecoderRaw.mSlotPartMask->SetBinContent(i + 1, 2, mLTMHisto->GetBinContent(1, i + 1));
     for (unsigned int j = 0; j < RawDataDecoder::ntrms; j++) {
       mDecoderRaw.mTRMCounter[i][j].FillHistogram(mTRMHisto[j].get(), i + 1);
+      mDecoderRaw.mSlotPartMask->SetBinContent(i + 1, j + 3, mTRMHisto[j]->GetBinContent(1, i + 1));
     }
   }
 
