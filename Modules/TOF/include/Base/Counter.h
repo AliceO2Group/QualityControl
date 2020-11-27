@@ -101,7 +101,7 @@ void Counter<size, labels>::Count(const unsigned int& v)
     LOG(FATAL) << "Incrementing counter too far! " << v << "/" << size;
   }
 #ifdef ENABLE_COUNTER_DEBUG_MODE
-  LOG(DEBUG) << "Incrementing " << v << "/" << size << " to " << counter[v];
+  LOG(INFO) << "Incrementing " << v << "/" << size << " to " << counter[v];
 #endif
   counter[v]++;
 }
@@ -211,7 +211,7 @@ void Counter<size, labels>::FillHistogram(TH1* h, const unsigned int& biny, cons
       continue;
     }
 #ifdef ENABLE_COUNTER_DEBUG_MODE
-    LOG(DEBUG) << "Filling bin " << binx << " of position " << i << " of label " << labels[i] << " with " << counter[i];
+    LOG(INFO) << "Filling bin " << binx << " of position " << i << " of label " << labels[i] << " with " << counter[i];
 #endif
     if (binx > nbinsx) {
       LOG(FATAL) << "Filling histogram " << h->GetName() << " at position " << binx << " i.e. past its size (" << nbinsx << ")!";
