@@ -47,20 +47,20 @@ void RawDataDecoder::decode()
 
 void RawDataDecoder::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit)
 {
-  
+
   // DRM Counter
   mDRMCounter[crateHeader->drmID].Count(0);
- 
+
   // LTM Counter
-  if (crateHeader->slotPartMask & (1 << 0)){
- 	  mLTMCounter[crateHeader->drmID].Count(0);
+  if (crateHeader->slotPartMask & (1 << 0)) {
+    mLTMCounter[crateHeader->drmID].Count(0);
   }
-                 
+
   // Participating slot
-  for (int ibit = 1; ibit < 11; ++ibit) {    
-    if (crateHeader->slotPartMask & (1 << ibit)) {       
+  for (int ibit = 1; ibit < 11; ++ibit) {
+    if (crateHeader->slotPartMask & (1 << ibit)) {
       // TRM Counter
-      mTRMCounter[crateHeader->drmID][ibit - 1].Count(0); 
+      mTRMCounter[crateHeader->drmID][ibit - 1].Count(0);
     }
   }
 
@@ -274,11 +274,11 @@ void TaskRaw::endOfCycle()
   for (unsigned int i = 0; i < RawDataDecoder::ncrates; i++) { // Filling histograms only at the end of the cycle
     mDecoderRaw.mDRMCounter[i].FillHistogram(mDRMHisto.get(), i + 1);
     mDecoderRaw.mLTMCounter[i].FillHistogram(mLTMHisto.get(), i + 1);
-    mDecoderRaw.mSlotPartMask->SetBinContent(i + 1, 1, mDRMHisto->GetBinContent(1, i + 1));
-    mDecoderRaw.mSlotPartMask->SetBinContent(i + 1, 2, mLTMHisto->GetBinContent(1, i + 1));
+    mDecoderRaw.mSlotPartMask->SetBinContent(i + 1, 1, mDecoderRaw.mDRMCounter[i].HowMany(0));
+    mDecoderRaw.mSlotPartMask->SetBinContent(i + 1, 2, mDecoderRaw.mLTMCounter[i].HowMany(0));
     for (unsigned int j = 0; j < RawDataDecoder::ntrms; j++) {
       mDecoderRaw.mTRMCounter[i][j].FillHistogram(mTRMHisto[j].get(), i + 1);
-      mDecoderRaw.mSlotPartMask->SetBinContent(i + 1, j + 3, mTRMHisto[j]->GetBinContent(1, i + 1));
+      mDecoderRaw.mSlotPartMask->SetBinContent(i + 1, j + 3, mDecoderRaw.mTRMCounter[i][j].HowMany(0));
     }
   }
 
