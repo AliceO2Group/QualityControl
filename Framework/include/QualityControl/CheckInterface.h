@@ -16,11 +16,8 @@
 #ifndef QC_CHECKER_CHECKINTERFACE_H
 #define QC_CHECKER_CHECKINTERFACE_H
 
-#include <string>
-#include <map>
 #include <unordered_map>
 
-#include <Rtypes.h>
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
@@ -30,11 +27,6 @@ namespace o2::quality_control::checker
 {
 
 /// \brief  Skeleton of a check.
-///
-/// Developer note (BvH) : the class is stateless and should stay so as we want to reuse the
-///    same object several times in a row and call the methods in whatever order.
-///    One could think that the methods should be static but then we would not be able
-///    to use polymorphism.
 ///
 /// \author Barthelemy von Haller
 class CheckInterface

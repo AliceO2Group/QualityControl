@@ -30,7 +30,7 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/ConfigParamRegistry.h>
-#include "Framework/InputRecordWalker.h"
+#include <Framework/InputRecordWalker.h>
 
 // Fairlogger
 #include <fairlogger/Logger.h>

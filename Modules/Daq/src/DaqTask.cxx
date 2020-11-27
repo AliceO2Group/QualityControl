@@ -24,6 +24,7 @@
 #include <DPLUtils/DPLRawParser.h>
 #include <DetectorsRaw/RDHUtils.h>
 #include <Framework/InputRecord.h>
+#include <Framework/InputRecordWalker.h>
 
 using namespace std;
 using namespace o2::raw;
@@ -194,7 +195,7 @@ void DaqTask::printInputPayload(const header::DataHeader* header, const char* pa
 void DaqTask::monitorInputRecord(InputRecord& inputRecord)
 {
   uint32_t totalPayloadSize = 0;
-  for (auto&& input : inputRecord) {
+  for (const auto& input : InputRecordWalker(inputRecord)) {
     if (input.header != nullptr) {
       const auto* header = o2::header::get<header::DataHeader*>(input.header);
       const char* payload = input.payload;

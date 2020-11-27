@@ -30,8 +30,7 @@ class Quality
 {
  public:
   /// Default constructor
-  /// Not 'explicit', we allow implicit conversion from uint to Quality.
-  explicit Quality(unsigned int level = Quality::NullLevel, std::string name = "");
+  Quality(unsigned int level = Quality::NullLevel, std::string name = "");
   /// Destructor
   virtual ~Quality() = default;
   // Copy constructor

@@ -22,16 +22,16 @@
 namespace o2::quality_control::checker
 {
 
-/// \brief  Container for the configuration of a Check
+/// \brief  Container for the configuration of a Check or an Aggregator.
 struct CheckConfig {
-  std::string checkName;
+  std::string name;
   std::string moduleName;
   std::string className;
   std::string detectorName = "MISC"; // intended to be the 3 letters code;
   std::unordered_map<std::string, std::string> customParameters = {};
   std::string policyType = "OnAny";
-  std::vector<std::string> moNames;
-  bool allMOs = false;
+  std::vector<std::string> objectNames;
+  bool allObjects = false;
 };
 
 } // namespace o2::quality_control::checker

@@ -34,7 +34,8 @@
           "o2flp2"
         ],
         "remoteMachine": "o2qc01",
-        "remotePort": "30123"
+        "remotePort": "30123",
+        "mergingMode": "delta"
       },
       "abcTask": {
         "active": true,

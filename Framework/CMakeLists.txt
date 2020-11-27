@@ -39,7 +39,9 @@ add_root_dictionary(QualityControlTypes
 add_library(QualityControl
             src/ObjectsManager.cxx
             src/CheckRunner.cxx
+            src/AggregatorRunner.cxx
             src/CheckRunnerFactory.cxx
+            src/AggregatorRunnerFactory.cxx
             src/CheckInterface.cxx
             src/DatabaseFactory.cxx
             src/CcdbDatabase.cxx
@@ -51,6 +53,7 @@ add_library(QualityControl
             src/RepositoryBenchmark.cxx
             src/InfrastructureGenerator.cxx
             src/Check.cxx
+            src/Aggregator.cxx
             src/ServiceDiscovery.cxx
             src/Triggers.cxx
             src/TriggerHelpers.cxx
@@ -112,6 +115,7 @@ add_root_dictionary(QualityControl
                     HEADERS
                             include/QualityControl/CheckInterface.h
                             include/QualityControl/TaskInterface.h
+                            include/QualityControl/AggregatorInterface.h
                             include/QualityControl/PostProcessingInterface.h
                             include/QualityControl/TrendingTask.h
                             include/QualityControl/MonitorObjectCollection.h
@@ -224,7 +228,9 @@ set(TEST_SRCS
     test/testTaskInterface.cxx
     test/testTaskRunner.cxx
     test/testCheckInterface.cxx
+    test/testAggregatorInterface.cxx
     test/testCheckRunner.cxx
+    test/testAggregatorRunner.cxx
     test/testCheck.cxx
     test/testQuality.cxx
     test/testQualityObject.cxx
@@ -246,6 +252,8 @@ set(TEST_SRCS
   )
 
 set(TEST_ARGS
+    ""
+    ""
     ""
     ""
     ""
@@ -384,9 +392,11 @@ install(FILES example-default.json
               alfa.json
               dataDump.json
               basic.json
+              basic-aggregator.json
               basic-external-histo.json
               basic-no-sampling.json
               advanced.json
+              advanced-aggregator.json
               advanced-external-histo.json
               multiNode.json
               readout.json

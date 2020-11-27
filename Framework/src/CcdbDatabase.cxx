@@ -107,7 +107,7 @@ void CcdbDatabase::init()
 }
 
 // Monitor object
-void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObject> mo, long from, long to)
+void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo, long from, long to)
 {
   if (mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
     BOOST_THROW_EXCEPTION(DatabaseException()
@@ -148,7 +148,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<o2::quality_control::core::MonitorObj
   ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
 }
 
-void CcdbDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObject> qo, long from, long to)
+void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long from, long to)
 {
   // metadata
   map<string, string> metadata;
@@ -172,7 +172,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<o2::quality_control::core::QualityObj
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
 
-  ILOG(Debug, Support) << "Storing object " << path << ENDM;
+  ILOG(Debug, Support) << "Storing quality object " << path << " (" << qo->getName() << ")" << ENDM;
   ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
 }
 

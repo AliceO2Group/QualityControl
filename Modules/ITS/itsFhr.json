@@ -25,7 +25,7 @@
         "tasks": {
             "FHRTask": {
                 "active": "true",
-                "className": "o2::quality_control_modules::its::ITSOnlineTask",
+                "className": "o2::quality_control_modules::its::ITSFhrTask",
                 "moduleName": "QcITS",
                 "detectorName": "ITS",
                 "cycleDurationSeconds": "30",
@@ -41,7 +41,22 @@
                     "runNumberPath": "/data/shifts/runs/ibb2a/.run_counter"
                 }
             }
-        }
+        },
+        "checks": {
+            "FHRCheck": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSFhrCheck",
+                "moduleName": "QcITS",
+                "policy": "OnAny",
+                "detectorName": "ITS",
+                "dataSource": [{
+                    "type": "Task",
+                    "name": "FHRTask",
+                    "MOs": ["General/ErrorPlots"]
+                }]
+            }
+       }
+
     },
     "dataSamplingPolicies": [
         {

@@ -33,10 +33,12 @@
          * [Common configuration](#common-configuration)
          * [QC Tasks configuration](#qc-tasks-configuration)
          * [QC Checks configuration](#qc-checks-configuration)
+         * [QC Aggregators configuration](#qc-aggregators-configuration)
          * [QC Post-processing configuration](#qc-post-processing-configuration)
          * [External tasks configuration](#external-tasks-configuration)
 
-<!-- Added by: barth, at: Lun 17 aoû 2020 14:57:43 CEST -->
+<!-- Added by: bvonhall, at:  -->
+
 <!--te-->
 
 
@@ -165,11 +167,17 @@ almost like the usual one, but with a few additional parameters. In case of a lo
           "localnode2"
         ],
         "remoteMachine": "qcnode",
-        "remotePort": "30132"
+        "remotePort": "30132",
+        "mergingMode": "delta"
       }
     },
 ```
-List the local processing machines in the `localMachines` array. `remoteMachine` should contain the host name which will serve as a QC server and `remotePort` should be a port number on which Mergers will wait for upcoming MOs. Make sure it is not used by other service. If different QC Tasks are run in parallel, use separate ports for each.
+List the local processing machines in the `localMachines` array. `remoteMachine` should contain the host name which
+ will serve as a QC server and `remotePort` should be a port number on which Mergers will wait for upcoming MOs. Make
+ sure it is not used by other service. If different QC Tasks are run in parallel, use separate ports for each. One
+ also may choose the merging mode - `delta` is the default and recommended (tasks are reset after each cycle, so they
+ send only updates), but if it is not feasible, Mergers may expect `entire` objects - tasks are not reset, they
+ always send entire objects and the latest versions are combined in Mergers.
 
 In case of a remote task, choosing `"remote"` option for the `"location"` parameter is enough.
 
@@ -584,7 +592,8 @@ Below the full QC Task configuration structure is described. Note that more than
           "o2flp2",                         "", "Hostname of a local machine."
         ],
         "remoteMachine": "o2qc1",           "": "Remote QC machine hostname. Required ony for multi-node setups.",
-        "remotePort": "30432",              "": "Remote QC machine TCP port. Required ony for multi-node setups."
+        "remotePort": "30432",              "": "Remote QC machine TCP port. Required ony for multi-node setups.",
+        "mergingMode": "delta",             "": "Merging mode, \"delta\" (default) or \"entire\" objects are expected"
       }
     }
   }
@@ -610,12 +619,41 @@ Below the full QC Checks configuration structure is described. Note that more th
         "dataSource": [{              "": "List of data source of the Check.",
           "type": "Task",             "": "Type of the data source, \"Task\", \"ExternalTask\" or \"PostProcessing\"", 
           "name": "myTask_1",         "": "Name of the Task",
-          "MOs": [ "example" ],       "": ["List of MOs to be checked. Use \"all\" (not as a list) to check each MO ",
-                                           "which is produced by the Task"]
+          "MOs": [ "example" ],       "": ["List of MOs to be checked. "
+                                            "Can be omitted to mean \"all\"."]
         }],
         "checkParameters": {          "": "User Check parameters which are then accessible as a key-value map.",
           "myOwnKey": "myOwnValue",   "": "An example of a key and a value. Nested structures are not supported"
         }
+      }
+    }
+  }
+}
+```
+
+### QC Aggregators configuration
+
+Below the full QC Aggregators configuration structure is described. Note that more than one aggregator might be declared inside in
+ the "aggregators" path. Please also refer to [the Aggregators documentation](doc/ModulesDevelopment.md#quality-aggregation) for more details.
+
+```json
+{
+  "qc": {
+    "aggregators": {
+      "MyAggregator1": {              "": "Name of the Aggregator. Less than 12 character names are preferred.",
+        "active": "true",             "": "Activation flag. If not \"true\", the Aggregator will not be run.",
+        "className": "ns::of::Aggregator", "": "Class name of the QC Aggregator with full namespace.",
+        "moduleName": "QcCommon",     "": "Library name. It can be found in CMakeLists of the detector module.",
+        "policy": "OnAny",            "": ["Policy which determines when QOs should be aggregated. See the documentation",
+                                           "of Aggregators for the list of available policies and their behaviour."],
+        "detectorName": "TST",        "": "3-letter code of the detector.",
+        "dataSource": [{              "": "List of data source of the Aggregator.",
+          "type": "Check",,           "": "Type of the data source: \"Check\" or \"Aggregator\"", 
+          "name": "dataSizeCheck",    "": "Name of the Check or Aggregator",
+          "QOs": ["newQuality", "another"], "": ["List of QOs to be checked.",
+                                          "Can be omitted for Checks", 
+                                          "that publish a single Quality or to mean \"all\"."]
+        }]
       }
     }
   }
