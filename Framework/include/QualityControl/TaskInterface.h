@@ -25,6 +25,7 @@
 #include <Framework/InitContext.h>
 #include <Framework/ProcessingContext.h>
 #include <CCDB/CcdbApi.h>
+#include <Monitoring/Monitoring.h>
 // QC
 #include "QualityControl/Activity.h"
 #include "QualityControl/ObjectsManager.h"
@@ -87,6 +88,7 @@ class TaskInterface
   void setObjectsManager(std::shared_ptr<ObjectsManager> objectsManager);
   void setName(const std::string& name);
   void setCustomParameters(const std::unordered_map<std::string, std::string>& parameters);
+  void setMonitoring(const std::shared_ptr<o2::monitoring::Monitoring>& mMonitoring);
   const std::string& getName() const;
 
  protected:
@@ -97,11 +99,11 @@ class TaskInterface
                           long timestamp = -1) const;
 
   std::unordered_map<std::string, std::string> mCustomParameters;
+  std::shared_ptr<o2::monitoring::Monitoring> mMonitoring;
 
  private:
-  // TODO should we rather have a global/singleton for the objectsManager ?
-  std::shared_ptr<ObjectsManager> mObjectsManager;
   std::string mName;
+  std::shared_ptr<ObjectsManager> mObjectsManager;
   std::shared_ptr<o2::ccdb::CcdbApi> mCcdbApi;
 };
 

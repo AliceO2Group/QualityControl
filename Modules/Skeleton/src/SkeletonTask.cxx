@@ -19,7 +19,6 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "Skeleton/SkeletonTask.h"
 #include <Framework/InputRecord.h>
-#include <Monitoring/Monitoring.h>
 #include <Framework/ServiceRegistry.h>
 
 namespace o2::quality_control_modules::skeleton
@@ -87,9 +86,6 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
       mHistogram->Fill(header->payloadSize);
     }
   }
-
-  auto& m = ctx.services().get<o2::monitoring::Monitoring>();
-  m.send({ 1, "my/metric" });
 
   // 2. Using get("<binding>")
 
