@@ -119,7 +119,7 @@ template <const unsigned int size, const char* labels[size]>
 void Counter<size, labels>::Print()
 {
   for (unsigned int i = 0; i < size; i++) {
-    if (labels) {
+    if (labels != nullptr) {
       LOG(DEBUG) << "Bin " << i << "/" << size - 1 << " " << labels[i] << " = " << HowMany(i);
     } else {
       LOG(DEBUG) << "Bin " << i << "/" << size - 1 << " = " << HowMany(i);
@@ -163,7 +163,7 @@ void Counter<size, labels>::MakeHistogram(TH1* h) const
   }
   h->Reset();
   unsigned int histo_size = size;
-  if (labels) { // Only if labels are defined
+  if (labels != nullptr) { // Only if labels are defined
     for (unsigned int i = 0; i < size; i++) {
       if (labels[i] && !labels[i][0]) { // If label at position i is empty
         LOG(DEBUG) << "Skipping label '" << labels[i] << "' at position " << i << "/" << size - 1;
@@ -178,7 +178,7 @@ void Counter<size, labels>::MakeHistogram(TH1* h) const
   }
 
   axis->Set(histo_size, 0, histo_size);
-  if (labels) { // Only if labels are defined
+  if (labels != nullptr) { // Only if labels are defined
     unsigned int binx = 1;
     for (unsigned int i = 0; i < size; i++) {
       if (labels[i] && !labels[i][0]) { // If label at position i is empty
@@ -204,7 +204,7 @@ void Counter<size, labels>::FillHistogram(TH1* h, const unsigned int& biny, cons
   unsigned int binx = 1;
   const unsigned int nbinsx = h->GetNbinsX();
   for (unsigned int i = 0; i < size; i++) {
-    if (labels && labels[i] && !labels[i][0]) { // Labels are defined and label is empty
+    if (labels != nullptr && labels[i] && !labels[i][0]) { // Labels are defined and label is empty
       if (counter[i] > 0) {
         LOG(FATAL) << "Counter at position " << i << " was non empty (" << counter[i] << ") but was discarded because of empty labels";
       }
@@ -217,7 +217,7 @@ void Counter<size, labels>::FillHistogram(TH1* h, const unsigned int& biny, cons
       LOG(FATAL) << "Filling histogram " << h->GetName() << " at position " << binx << " i.e. past its size (" << nbinsx << ")!";
     }
     const char* bin_label = h->GetXaxis()->GetBinLabel(binx);
-    if (labels) {
+    if (labels != nullptr) {
       if (!labels[i]) {
         LOG(DEBUG) << "Label at position " << i << " does not exist for axis label '" << bin_label << "'";
       } else if (strcmp(labels[i], bin_label) != 0) {
