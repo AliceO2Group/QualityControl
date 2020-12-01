@@ -425,17 +425,19 @@ o2-analysistutorial-tracks-combinations --aod-file AO2D.root  -b | \
 
 ### Enabling a workflow to run on Hyperloop
 
-Hyperloop requires a workflow JSON dump in order to run it on Grid. To generate such a dump, one should use the
- `o2_add_qc_workflow` cmake function in CMakeLists.txt of a detector library. The first argument is an arbitrary
-  workflow name, the second is the configuration file path in the installation director. For example:
+Hyperloop requires a workflow JSON dump in order to run it on Grid. To generate such a dump, in CMakeLists.txt of a
+ detector libraryone should use `configure_file` to install the configuration files, then `o2_add_qc_workflow` to
+ declare a QC analysis workflow. The first argument is an arbitrary workflow name, the second is the configuration
+ file path in the installation directory. For example:
 
 ```
-...
+configure_file("etc/analysisDirect.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json")
+configure_file("etc/analysisDerived.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json")
+
 # ---- Workflows for analysis ----
 
-o2_add_qc_workflow(o2-qc-example-analysis-direct etc/analysisDirect.json)
-o2_add_qc_workflow(o2-qc-example-analysis-derived etc/analysisDerived.json)
-...
+o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json)
+o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json)
 ```
 
 ## Data Inspector
