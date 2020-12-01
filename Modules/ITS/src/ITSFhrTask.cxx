@@ -48,7 +48,6 @@ ITSFhrTask::~ITSFhrTask()
   delete mInfoCanvasOBComm;
   delete mTextForShifter;
   delete mTextForShifter2;
-  delete mHitmapTmp;
 
   for (int ilayer = 0; ilayer < 7; ilayer++) {
     delete mChipStaveOccupancy[ilayer];
@@ -170,8 +169,6 @@ void ITSFhrTask::createOccupancyPlots() //create general plots like error, trigg
   double Max[nDim] = { 1024, 512 };
 
   //create IB plots
-  mHitmapTmp = new TH2I("Occupancy/Tmp_histo", "Tmp histo", 7 * 1024, 0, 4 * 1024 * 7, 512, 0, 4 * 512);
-  getObjectsManager()->startPublishing(mHitmapTmp);
   for (int ilayer = 0; ilayer < NLayerIB; ilayer++) {
     if (!mEnableLayers[ilayer]) {
       continue;
@@ -354,11 +351,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
       for (auto& pixel : pixels) {
         mGeom->getChipId(mChipDataBuffer->getChipID(), lay, sta, ssta, mod, chip);
         mHitNumberOfChip[lay][sta][ssta][mod][chip]++;
-        if (lay < NLayerIB) {
-          double filltmp[2] = { (double)pixel.getCol() + (double)chip * 1024, (double)pixel.getRow() };
-          mStaveHitmap[lay][sta]->Fill(filltmp, 1);
-        } else {
-        }
         if (mHitPixelID_Hash[lay][sta][ssta][mod][chip].find(pixel.getCol() * 1000 + pixel.getRow()) == mHitPixelID_Hash[lay][sta][ssta][mod][chip].end()) {
           mHitPixelID_Hash[lay][sta][ssta][mod][chip][pixel.getCol() * 1000 + pixel.getRow()] = 1;
         } else {
@@ -387,8 +379,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   //mTriggerVsFeeid->Reset();			  Trigger is statistic by ourself so we don't need reset this plot, just use TH::Fill function
 
   //Fill Error plots and occpancy plots
-  int istavemax = 0;
-  int istavemin = 999;
   o2::itsmft::ChipMappingITS mp;
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     if (mOccupancyPlot[ilayer]) {
@@ -403,13 +393,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (!RUdecode) {
         continue;
       }
-      if (istave > istavemax) {
-        istavemax = istave;
-      }
-      if (istave < istavemin) {
-        istavemin = istave;
-      }
-
       for (int ilink = 0; ilink < RUDecodeData::MaxLinksPerRU; ilink++) {
         const auto* GBTLinkInfo = mDecoderTmp->getGBTLink(RUdecode->links[ilink]);
         if (!GBTLinkInfo) {
@@ -421,11 +404,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
               mChipStaveOccupancy[ilayer]->SetBinContent(ichip + 1, istave + 1, (mHitNumberOfChip[ilayer][istave][0][0][ichip]) / (GBTLinkInfo->statistics.nPackets * 1024. * 512.));
               std::unordered_map<unsigned int, int>::iterator iter;
               for (iter = mHitPixelID_Hash[ilayer][istave][0][0][ichip].begin(); iter != mHitPixelID_Hash[ilayer][istave][0][0][ichip].end(); iter++) {
+                int pixelPos[2] = { (int)(iter->first / 1000) + (int)ichip * 1024, (int)(iter->first % 1000) };
+                mStaveHitmap[ilayer][istave]->SetBinContent(pixelPos, (double)iter->second);
                 double pixelOccupancy = (double)iter->second;
-                if (pixelOccupancy > 0) {
-                  pixelOccupancy /= GBTLinkInfo->statistics.nPackets;
-                  mOccupancyPlot[ilayer]->Fill(log10(pixelOccupancy));
-                }
+                pixelOccupancy /= GBTLinkInfo->statistics.nPackets;
+                mOccupancyPlot[ilayer]->Fill(log10(pixelOccupancy));
               }
             }
           }
@@ -449,10 +432,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
                     int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + (nChipsPerHic[lay] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000) + 1, NRows + ((int)iter->first % 1000) + (1024 * isubstave) + 1 };
                     mStaveHitmap[ilayer][istave]->SetBinContent(pixelPos, pixelOccupancy);
                   }
-                  if (pixelOccupancy > 0) {
-                    pixelOccupancy /= GBTLinkInfo->statistics.nPackets;
-                    mOccupancyPlot[ilayer]->Fill(log10(pixelOccupancy));
-                  }
+                  pixelOccupancy /= GBTLinkInfo->statistics.nPackets;
+                  mOccupancyPlot[ilayer]->Fill(log10(pixelOccupancy));
                 }
               }
             }
@@ -464,12 +445,14 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
+          if (GBTLinkInfo->statistics.errorCounts[ierror] <= 0) {
+            continue;
+          }
           mErrorPlots->AddBinContent(ierror + 1, GBTLinkInfo->statistics.errorCounts[ierror]);
           if (ilayer < NLayerIB) {
             mErrorVsFeeid->SetBinContent((RUid * 3) + ilink + 1, ierror + 1, GBTLinkInfo->statistics.errorCounts[ierror]);
           } else {
-            RUid -= StaveBoundary[NLayerIB];
-            mErrorVsFeeid->SetBinContent((RUid * 2) + ilink + 1, ierror + 1, GBTLinkInfo->statistics.errorCounts[ierror]);
+            mErrorVsFeeid->SetBinContent(((RUid - StaveBoundary[NLayerIB]) * 2) + ilink + 1, ierror + 1, GBTLinkInfo->statistics.errorCounts[ierror]);
           }
         }
       }
@@ -504,36 +487,34 @@ void ITSFhrTask::getEnableLayers()
 
 void ITSFhrTask::endOfCycle()
 {
-  std::ifstream runNumberFile("/home/its/QC_Online/workdir/infiles/RunNumber.dat"); //catching ITS run number in commissioning
+  std::ifstream runNumberFile("infiles/RunNumber.dat"); //catching ITS run number in commissioning
   if (runNumberFile) {
     std::string runNumber;
     runNumberFile >> runNumber;
     ILOG(Info) << "runNumber : " << runNumber << ENDM;
     mInfoCanvasComm->SetTitle(Form("run%s", runNumber.c_str()));
-    if (runNumber == mRunNumber) {
-      goto pass;
-    }
-    getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", runNumber);
-    getObjectsManager()->addMetadata(mErrorPlots->GetName(), "Run", runNumber);
-    getObjectsManager()->addMetadata(mErrorVsFeeid->GetName(), "Run", runNumber);
-    getObjectsManager()->addMetadata(mTriggerVsFeeid->GetName(), "Run", runNumber);
-    getObjectsManager()->addMetadata(mTriggerPlots->GetName(), "Run", runNumber);
-    getObjectsManager()->addMetadata(mInfoCanvasComm->GetName(), "Run", runNumber);
-    for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-      if (!mEnableLayers[ilayer]) {
-        continue;
-      }
-      getObjectsManager()->addMetadata(mChipStaveOccupancy[ilayer]->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mOccupancyPlot[ilayer]->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mChipStaveEventHitCheck[ilayer]->GetName(), "Run", runNumber);
-      for (int istave = 0; istave < NStaves[ilayer]; istave++) {
-        if (mStaveHitmap[ilayer][istave]) {
-          getObjectsManager()->addMetadata(mStaveHitmap[ilayer][istave]->GetName(), "Run", runNumber);
+    if (runNumber != mRunNumber) {
+      getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", runNumber);
+      getObjectsManager()->addMetadata(mErrorPlots->GetName(), "Run", runNumber);
+      getObjectsManager()->addMetadata(mErrorVsFeeid->GetName(), "Run", runNumber);
+      getObjectsManager()->addMetadata(mTriggerVsFeeid->GetName(), "Run", runNumber);
+      getObjectsManager()->addMetadata(mTriggerPlots->GetName(), "Run", runNumber);
+      getObjectsManager()->addMetadata(mInfoCanvasComm->GetName(), "Run", runNumber);
+      for (int ilayer = 0; ilayer < NLayer; ilayer++) {
+        if (!mEnableLayers[ilayer]) {
+          continue;
+        }
+        getObjectsManager()->addMetadata(mChipStaveOccupancy[ilayer]->GetName(), "Run", runNumber);
+        getObjectsManager()->addMetadata(mOccupancyPlot[ilayer]->GetName(), "Run", runNumber);
+        getObjectsManager()->addMetadata(mChipStaveEventHitCheck[ilayer]->GetName(), "Run", runNumber);
+        for (int istave = 0; istave < NStaves[ilayer]; istave++) {
+          if (mStaveHitmap[ilayer][istave]) {
+            getObjectsManager()->addMetadata(mStaveHitmap[ilayer][istave]->GetName(), "Run", runNumber);
+          }
         }
       }
+      mRunNumber = runNumber;
     }
-    mRunNumber = runNumber;
-  pass:;
   }
   ILOG(Info) << "endOfCycle" << ENDM;
 }
