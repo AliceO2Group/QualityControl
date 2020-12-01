@@ -5,8 +5,7 @@
 
 // Tasks
 #pragma link C++ class o2::quality_control_modules::tof::TaskDigits+;
-#pragma link C++ class o2::quality_control_modules::tof::TaskCompressedData+;
-#pragma link C++ class o2::quality_control_modules::tof::TaskDiagnostics+;
+#pragma link C++ class o2::quality_control_modules::tof::TaskRaw+;
 // Checks
 #pragma link C++ class o2::quality_control_modules::tof::CheckDiagnostics+;
 #pragma link C++ class o2::quality_control_modules::tof::CheckCompressedData+;

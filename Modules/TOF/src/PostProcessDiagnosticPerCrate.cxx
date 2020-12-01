@@ -41,8 +41,8 @@ void PostProcessDiagnosticPerCrate::initialize(Trigger, framework::ServiceRegist
 {
   int counter = 0;
   for (auto& i : mCrates) {
-    i.reset(new TH2F(Form("hCrate%i", counter),
-                     Form("Crate%i;Word;Slot", counter),
+    i.reset(new TH2F(Form("hCrate%02i", counter),
+                     Form("Crate%02i;Word;Slot", counter),
                      mNWords, 0, mNWords, mNSlots, 0, mNSlots));
     counter++;
   }
@@ -53,7 +53,7 @@ void PostProcessDiagnosticPerCrate::initialize(Trigger, framework::ServiceRegist
 
 void PostProcessDiagnosticPerCrate::update(Trigger, framework::ServiceRegistry&)
 {
-  ILOG(Info) << "UPDATING !" << ENDM;
+  ILOG(Debug) << "UPDATING !" << ENDM;
   for (int slot = 0; slot < mNSlots; slot++) { // Loop over slots
     std::string moName = "DRMCounter";
     if (slot == 1) {
@@ -61,26 +61,27 @@ void PostProcessDiagnosticPerCrate::update(Trigger, framework::ServiceRegistry&)
     } else if (slot > 1) {
       moName = Form("TRMCounterSlot%i", slot);
     }
-    ILOG(Info) << "Processing slot " << slot << " from " << moName << ENDM;
+    ILOG(Debug) << "Processing slot " << slot << " from " << moName << ENDM;
     auto mo = mDatabase->retrieveMO(mCCDBPath, moName);
     TH2F* moH = static_cast<TH2F*>(mo ? mo->getObject() : nullptr);
     if (moH) {
       for (int crate = 0; crate < moH->GetNbinsY(); crate++) { // Loop over crates
-        ILOG(Info) << "Processing crate " << crate << ENDM;
+        ILOG(Debug) << "Processing crate " << crate << ENDM;
         if (static_cast<unsigned int>(crate) > mCrates.size()) {
           ILOG(Fatal) << "Crate counter is too large " << ENDM;
         }
         for (int word = 0; word < moH->GetNbinsX(); word++) { // Loop over words
-          ILOG(Info) << "Processing word " << word << ENDM;
-          if (crate > mNWords) {
+          if (word > mNWords) {
             ILOG(Fatal) << "Word counter is too large " << ENDM;
           }
           mCrates[crate]->SetBinContent(word + 1, slot + 1, moH->GetBinContent(word + 1, crate + 1));
         }
       }
+    } else {
+      ILOG(Warning) << "Did not find MO " << moName << " in path " << mCCDBPath << ENDM;
     }
   }
-  ILOG(Info) << "DONE UPDATING !" << ENDM;
+  ILOG(Debug) << "DONE UPDATING !" << ENDM;
 }
 
 void PostProcessDiagnosticPerCrate::finalize(Trigger, framework::ServiceRegistry&)

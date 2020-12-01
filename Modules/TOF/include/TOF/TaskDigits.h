@@ -18,6 +18,7 @@
 #define QC_MODULE_TOF_TOFTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "Base/Counter.h"
 
 class TH1F;
 class TH2F;
@@ -59,44 +60,56 @@ class TaskDigits final : public TaskInterface
   static const Int_t fgkFiredMacropadLimit; /// Limit on cut on number of fired macropad
 
  private:
-  std::shared_ptr<TH1I> mTOFRawsMulti;   /// TOF raw hit multiplicity per event
-  std::shared_ptr<TH1I> mTOFRawsMultiIA; /// TOF raw hit multiplicity per event - I/A side
-  std::shared_ptr<TH1I> mTOFRawsMultiOA; /// TOF raw hit multiplicity per event - O/A side
-  std::shared_ptr<TH1I> mTOFRawsMultiIC; /// TOF raw hit multiplicity per event - I/C side
-  std::shared_ptr<TH1I> mTOFRawsMultiOC; /// TOF raw hit multiplicity per event- O/C side
+  // Event info
+  std::shared_ptr<TH2F> mOrbitID = nullptr;      /// Orbits seen
+  std::shared_ptr<TH2F> mTimeBC = nullptr;       /// Bunch crossings seen
+  std::shared_ptr<TH2F> mEventCounter = nullptr; /// Event counters seen
 
-  std::shared_ptr<TH1F> mTOFRawsTime;   /// TOF Raws - Hit time (ns)
-  std::shared_ptr<TH1F> mTOFRawsTimeIA; /// TOF Raws - Hit time (ns) - I/A side
-  std::shared_ptr<TH1F> mTOFRawsTimeOA; /// TOF Raws - Hit time (ns) - O/A side
-  std::shared_ptr<TH1F> mTOFRawsTimeIC; /// TOF Raws - Hit time (ns) - I/C side
-  std::shared_ptr<TH1F> mTOFRawsTimeOC; /// TOF Raws - Hit time (ns) - O/C side
+  //  Multiplicity
+  std::shared_ptr<TH1I> mTOFRawsMulti = nullptr;   /// TOF raw hit multiplicity per event
+  std::shared_ptr<TH1I> mTOFRawsMultiIA = nullptr; /// TOF raw hit multiplicity per event - I/A side
+  std::shared_ptr<TH1I> mTOFRawsMultiOA = nullptr; /// TOF raw hit multiplicity per event - O/A side
+  std::shared_ptr<TH1I> mTOFRawsMultiIC = nullptr; /// TOF raw hit multiplicity per event - I/C side
+  std::shared_ptr<TH1I> mTOFRawsMultiOC = nullptr; /// TOF raw hit multiplicity per event- O/C side
 
-  std::shared_ptr<TH1F> mTOFRawsToT;   /// TOF Raws - Hit ToT (ns)
-  std::shared_ptr<TH1F> mTOFRawsToTIA; /// TOF Raws - Hit ToT (ns) - I/A side
-  std::shared_ptr<TH1F> mTOFRawsToTOA; /// TOF Raws - Hit ToT (ns) - O/A side
-  std::shared_ptr<TH1F> mTOFRawsToTIC; /// TOF Raws - Hit ToT (ns) - I/C side
-  std::shared_ptr<TH1F> mTOFRawsToTOC; /// TOF Raws - Hit ToT (ns) - O/C side
+  // Time
+  std::shared_ptr<TH1F> mTOFRawsTime = nullptr;   /// TOF Raws - Hit time (ns)
+  std::shared_ptr<TH1F> mTOFRawsTimeIA = nullptr; /// TOF Raws - Hit time (ns) - I/A side
+  std::shared_ptr<TH1F> mTOFRawsTimeOA = nullptr; /// TOF Raws - Hit time (ns) - O/A side
+  std::shared_ptr<TH1F> mTOFRawsTimeIC = nullptr; /// TOF Raws - Hit time (ns) - I/C side
+  std::shared_ptr<TH1F> mTOFRawsTimeOC = nullptr; /// TOF Raws - Hit time (ns) - O/C side
 
-  std::shared_ptr<TH1F> mTOFRawsLTMHits; /// LTMs OR signals
-  std::shared_ptr<TH2F> mTOFrefMap;      /// TOF enabled channel reference map
-  std::shared_ptr<TH2F> mTOFRawHitMap;   /// TOF raw hit map (1 bin = 1 FEA = 24 channels)
+  // ToT
+  std::shared_ptr<TH1F> mTOFRawsToT = nullptr;   /// TOF Raws - Hit ToT (ns)
+  std::shared_ptr<TH1F> mTOFRawsToTIA = nullptr; /// TOF Raws - Hit ToT (ns) - I/A side
+  std::shared_ptr<TH1F> mTOFRawsToTOA = nullptr; /// TOF Raws - Hit ToT (ns) - O/A side
+  std::shared_ptr<TH1F> mTOFRawsToTIC = nullptr; /// TOF Raws - Hit ToT (ns) - I/C side
+  std::shared_ptr<TH1F> mTOFRawsToTOC = nullptr; /// TOF Raws - Hit ToT (ns) - O/C side
 
-  std::shared_ptr<TH2I> mTOFDecodingErrors; /// Decoding error monitoring
+  std::shared_ptr<TH1F> mTOFRawsLTMHits = nullptr; /// LTMs OR signals
+  std::shared_ptr<TH2F> mTOFrefMap = nullptr;      /// TOF enabled channel reference map
+  std::shared_ptr<TH2F> mTOFRawHitMap = nullptr;   /// TOF raw hit map (1 bin = 1 FEA = 24 channels)
 
-  std::shared_ptr<TH1F> mTOFOrphansTime;          /// TOF Raws - Orphans time (ns)
-  std::shared_ptr<TH2F> mTOFRawTimeVsTRM035;      /// TOF raws - Hit time vs TRM - crates 0 to 35
-  std::shared_ptr<TH2F> mTOFRawTimeVsTRM3671;     /// TOF raws - Hit time vs TRM - crates 36 to 72
-  std::shared_ptr<TH2F> mTOFTimeVsStrip;          /// TOF raw hit time vs. MRPC (along z axis)
-  std::shared_ptr<TH2F> mTOFtimeVsBCID;           /// TOF time vs BCID
-  std::shared_ptr<TH2F> mTOFchannelEfficiencyMap; /// TOF channels (HWok && efficient && !noisy && !problematic)
-  std::shared_ptr<TH2F> mTOFhitsCTTM;             /// Map of hit pads according to CTTM numbering
-  std::shared_ptr<TH2F> mTOFmacropadCTTM;         /// Map of hit macropads according to CTTM numbering
-  std::shared_ptr<TH2F> mTOFmacropadDeltaPhiTime; /// #Deltat vs #Delta#Phi of hit macropads
-  std::shared_ptr<TH2I> mBXVsCttmBit;             /// BX ID in TOF matching window vs trg channel
-  std::shared_ptr<TH2F> mTimeVsCttmBit;           /// TOF raw time vs trg channel
-  std::shared_ptr<TH2F> mTOFRawHitMap24;          /// TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels)
-  std::shared_ptr<TH2I> mHitMultiVsDDL;           /// TOF raw hit multiplicity per event vs DDL
-  std::shared_ptr<TH1I> mNfiredMacropad;          /// Number of fired TOF macropads per event
+  std::shared_ptr<TH2I> mTOFDecodingErrors = nullptr; /// Decoding error monitoring
+
+  std::shared_ptr<TH1F> mTOFOrphansTime = nullptr;          /// TOF Raws - Orphans time (ns)
+  std::shared_ptr<TH2F> mTOFRawTimeVsTRM035 = nullptr;      /// TOF raws - Hit time vs TRM - crates 0 to 35
+  std::shared_ptr<TH2F> mTOFRawTimeVsTRM3671 = nullptr;     /// TOF raws - Hit time vs TRM - crates 36 to 72
+  std::shared_ptr<TH2F> mTOFTimeVsStrip = nullptr;          /// TOF raw hit time vs. MRPC (along z axis)
+  std::shared_ptr<TH2F> mTOFtimeVsBCID = nullptr;           /// TOF time vs BCID
+  std::shared_ptr<TH2F> mTOFchannelEfficiencyMap = nullptr; /// TOF channels (HWok && efficient && !noisy && !problematic)
+  std::shared_ptr<TH2F> mTOFhitsCTTM = nullptr;             /// Map of hit pads according to CTTM numbering
+  std::shared_ptr<TH2F> mTOFmacropadCTTM = nullptr;         /// Map of hit macropads according to CTTM numbering
+  std::shared_ptr<TH2F> mTOFmacropadDeltaPhiTime = nullptr; /// #Deltat vs #Delta#Phi of hit macropads
+  std::shared_ptr<TH2I> mBXVsCttmBit = nullptr;             /// BX ID in TOF matching window vs trg channel
+  std::shared_ptr<TH2F> mTimeVsCttmBit = nullptr;           /// TOF raw time vs trg channel
+  std::shared_ptr<TH2F> mTOFRawHitMap24 = nullptr;          /// TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels)
+  std::shared_ptr<TH2I> mHitMultiVsDDL = nullptr;           /// TOF raw hit multiplicity per event vs DDL
+  std::shared_ptr<TH1I> mNfiredMacropad = nullptr;          /// Number of fired TOF macropads per event
+
+  // Counters
+  Counter<72, nullptr> mHitCounterPerStrip[91];         /// Hit map counter in the crate, one per strip
+  Counter<72 * 91 * 24, nullptr> mHitCounterPerChannel; /// Hit map counter in the single channel
 };
 
 } // namespace o2::quality_control_modules::tof
