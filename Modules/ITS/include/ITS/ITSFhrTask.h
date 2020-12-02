@@ -117,7 +117,6 @@ class ITSFhrTask final : public TaskInterface
 
   //Occupancy and hit-map
   THnSparseI* mStaveHitmap[7][48];
-  TH2I* mHitmapTmp;
   TH2D* mChipStaveOccupancy[7];
   TH2I* mChipStaveEventHitCheck[7];
   TH1D* mOccupancyPlot[7];
