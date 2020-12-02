@@ -28,8 +28,7 @@
 #include "rapidjson/document.h"
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/testUtils.h"
-//#include "rapidjson/writer.h"
-//#include "rapidjson/stringbuffer.h"
+#include <TROOT.h>
 
 namespace utf = boost::unit_test;
 
@@ -256,6 +255,96 @@ bool areIdentical(std::string ccdbObjectJson1, std::string ccdbObjectJson2)
   jsonDocumentA["metadata"].RemoveMember("Date");
   jsonDocumentB["metadata"].RemoveMember("Date");
   return jsonDocumentA == jsonDocumentB;
+}
+
+unique_ptr<CcdbDatabase> backendGlobal = std::make_unique<CcdbDatabase>();
+
+void askObject(std::string objectPath)
+{
+  cout << "in askObject" << endl;
+  map<string, string> metadata;
+  map<string, string> headers;
+  auto json = backendGlobal->retrieveJson(objectPath, -1, metadata);
+  cout << "object " << json.substr(10) << endl;
+  BOOST_CHECK(!json.empty());
+  cout << "finished " << endl;
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_test_thread, *utf::depends_on("ccdb_store"))
+{
+  ROOT::EnableThreadSafety();
+  string pid = std::to_string(getpid());
+  string taskName = "Test/pid" + pid;
+  string objectPath = RepoPathUtils::getMoPath("TST", taskName, "quarantine");
+  backendGlobal->connect(CCDB_ENDPOINT, "", "", "");
+  int iterations = 10;
+  vector<std::thread> threads;
+
+  for (int i = 0; i < iterations; i++) {
+    cout << "Asking for object, iteration " << i << endl;
+    threads.emplace_back(askObject, objectPath);
+  }
+
+  for (std::thread& t : threads) {
+    t.join();
+  }
+  threads.clear();
+}
+
+unique_ptr<o2::ccdb::CcdbApi> apiGlobal = std::make_unique<o2::ccdb::CcdbApi>();
+
+void askObjectApi(std::string objectPath)
+{
+  cout << "in askObject" << endl;
+  map<string, string> metadata;
+  map<string, string> headers;
+
+  auto* object = apiGlobal->retrieveFromTFileAny<TObject>(objectPath, metadata, -1, &headers);
+  BOOST_CHECK(object != nullptr);
+  cout << "finished " << endl;
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_test_thread_api, *utf::depends_on("ccdb_store"))
+{
+  ROOT::EnableThreadSafety();
+  string pid = std::to_string(getpid());
+  string taskName = "Test/pid" + pid;
+  string objectPath = RepoPathUtils::getMoPath("TST", taskName, "quarantine");
+  cout << "objectPath: " << objectPath << endl;
+  apiGlobal->init(CCDB_ENDPOINT);
+  int iterations = 10;
+  vector<std::thread> threads;
+
+  for (int i = 0; i < iterations; i++) {
+    cout << "Asking for object, iteration " << i << endl;
+    threads.emplace_back(askObjectApi, objectPath);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  for (std::thread& t : threads) {
+    t.join();
+  }
+  threads.clear();
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_test_no_thread_api)
+{
+  unique_ptr<o2::ccdb::CcdbApi> api = std::make_unique<o2::ccdb::CcdbApi>();
+  string ccdbUrl = "http://ccdb-test.cern.ch:8080";
+  api->init(ccdbUrl);
+  cout << "ccdb url: " << ccdbUrl << endl;
+  bool hostReachable = api->isHostReachable();
+  cout << "Is host reachable ? --> " << hostReachable << endl;
+  string objectPath = "qc/DAQ/MO/daqTask/UNKNOWN/sumRdhSizesPerInputRecord";
+  int iterations = 3;
+  map<string, string> metadata;
+  map<string, string> headers;
+
+  for (int i = 0; i < iterations; i++) {
+    cout << "Asking for object, iteration " << i << endl;
+    auto* object = api->retrieveFromTFileAny<TObject>(objectPath, metadata);
+    cout << "object : " << object << endl;
+  }
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
