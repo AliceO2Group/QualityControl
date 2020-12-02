@@ -23,6 +23,9 @@ using namespace o2::quality_control::checker;
 using namespace o2::quality_control::core;
 using namespace std;
 
+namespace o2::quality_control::checker
+{
+
 Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_tree::ptree& configuration)
 {
   mAggregatorConfig.name = aggregatorName;
@@ -147,4 +150,6 @@ AggregatorSource::AggregatorSource(const std::string& t, const std::string& n)
     BOOST_THROW_EXCEPTION(AliceO2::Common::Exception() << AliceO2::Common::errinfo_details("Unknown type of Aggregator: " + t));
   }
   name = n;
+}
+
 }
