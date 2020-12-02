@@ -45,6 +45,7 @@ For a general overview of our (O2) software, organization and processes, please 
          * [Readout](doc/ModulesDevelopment.md#readout)
          * [DPL workflow](doc/ModulesDevelopment.md#dpl-workflow)
       * [A more advanced example](doc/ModulesDevelopment.md#a-more-advanced-example)
+      * [Monitoring](doc/ModulesDevelopment.md#monitoring)
    * [Post-processing](doc/PostProcessing.md)
       * [The post-processing framework](doc/PostProcessing.md#the-post-processing-framework)
          * [Post-processing interface](doc/PostProcessing.md#post-processing-interface)

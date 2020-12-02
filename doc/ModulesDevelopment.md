@@ -31,6 +31,7 @@
          * [Readout](#readout)
          * [DPL workflow](#dpl-workflow)
       * [A more advanced example](#a-more-advanced-example)
+      * [Monitoring](#monitoring)
 
 <!-- Added by: bvonhall, at:  -->
 
@@ -524,6 +525,17 @@ or
 ```
 o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/advanced.json
 ```
+
+## Monitoring
+
+The QC uses the [O2 Monitoring](https://github.com/AliceO2Group/Monitoring/) library to monitor metrics. 
+The user code has access to an instance of the Monitoring via the variable `mMonitoring`. 
+It can be used this way: 
+```
+mMonitoring->send({ 42, "my/metric" }); // send the value 42 keyed with "my/metric" 
+```
+By default the Monitoring will be printed in the terminal. If a proper Monitoring system 
+is setup, one can update the monitoring url in the config file to point to it. 
 
 ---
 

@@ -64,4 +64,9 @@ TObject* TaskInterface::retrieveCondition(std::string path, std::map<std::string
 
 std::shared_ptr<ObjectsManager> TaskInterface::getObjectsManager() { return mObjectsManager; }
 
+void TaskInterface::setMonitoring(const std::shared_ptr<o2::monitoring::Monitoring>& mMonitoring)
+{
+  TaskInterface::mMonitoring = mMonitoring;
+}
+
 } // namespace o2::quality_control::core

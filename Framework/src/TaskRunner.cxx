@@ -109,6 +109,7 @@ void TaskRunner::init(InitContext& iCtx)
   // setup user's task
   TaskFactory f;
   mTask.reset(f.create(mTaskConfig, mObjectsManager));
+  mTask->setMonitoring(mCollector);
 
   // init user's task
   mTask->loadCcdb(mTaskConfig.conditionUrl);
