@@ -1,0 +1,75 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://localhost:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "QcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::trd::DigitsTask",
+        "moduleName": "QcTRD",
+        "detectorName": "TRD",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst-raw"
+        },
+        "taskParameters": {
+          "trdDigits": "myOwnValue"
+        },
+        "location": "remote"
+      }
+    },
+    "checks": {
+      "QcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::trd::DigitsCheck",
+        "moduleName": "QcTRD",
+        "policy": "OnAny",
+        "detectorName": "TRD",
+        "dataSource": [{
+          "type": "Task",
+          "name": "QcTask",
+          "MOs": ["mADC"]
+        }]
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "tst-raw",
+      "active": "true",
+      "machines": [],
+      "query": "random:TRD/DIGITS/0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "1",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+   ]
+  }
