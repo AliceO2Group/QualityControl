@@ -54,6 +54,7 @@ namespace o2::quality_control_modules::trd
     ILOG(Info) << "startOfCycle" << ENDM;
   }
 
+
   void DigitsTask::monitorData(o2::framework::ProcessingContext& ctx)
   {
     for (auto&& input : ctx.inputs()) {
@@ -70,8 +71,8 @@ namespace o2::quality_control_modules::trd
         for(auto digit : msgDigits )
         {
           int det = digit.getDetector();
-          int row = digit.getRow();
-          int pad = digit.getPad();
+          // int row = digit.getRow();
+          // int pad = digit.getPad();
           auto adcs = digit.getADC();
 
           ILOG(Info) << " Detectors" << det <<ENDM;

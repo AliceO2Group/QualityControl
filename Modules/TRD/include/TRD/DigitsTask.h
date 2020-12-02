@@ -29,6 +29,7 @@ namespace o2::quality_control_modules::trd
 /// \author My Name
 class DigitsTask final : public TaskInterface
 {
+  
  public:
   /// \brief Constructor
   DigitsTask() = default;
