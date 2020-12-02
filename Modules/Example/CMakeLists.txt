@@ -1,6 +1,6 @@
 # ---- Library ----
 
-add_library(QcExample src/BenchmarkTask.cxx src/ExampleTask.cxx
+add_library(QcExample src/BenchmarkTask.cxx src/ExampleTask.cxx src/AnalysisTask.cxx
                       src/FakeCheck.cxx src/ExampleCondition.cxx)
 
 target_include_directories(
@@ -13,6 +13,7 @@ target_link_libraries(QcExample PUBLIC QualityControl)
 
 add_root_dictionary(QcExample
                     HEADERS include/Example/BenchmarkTask.h
+                            include/Example/AnalysisTask.h
                             include/Example/ExampleTask.h
                             include/Example/FakeCheck.h
                             include/Example/ExampleCondition.h
@@ -23,6 +24,17 @@ install(TARGETS QcExample
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# Install the config files for the analysis.
+# The command "install" cannot be used because it would be executed after o2_add_qc_workflow which relies on
+# the config files being already installed in the right place.
+configure_file("etc/analysisDirect.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json")
+configure_file("etc/analysisDerived.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json")
+
+# ---- Workflows for analysis ----
+
+o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json)
+o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json)
 
 # ---- Tests ----
 
