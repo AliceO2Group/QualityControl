@@ -127,7 +127,8 @@ QualityObjectsType AggregatorRunner::aggregate()
   ILOG(Debug, Trace) << "Aggregate called in AggregatorRunner, QOs in cache: " << mQualityObjects.size() << ENDM;
 
   QualityObjectsType allQOs;
-  for (auto const& [aggregatorName, aggregator] : mAggregatorsMap) {
+  for (auto const& aggregator : mAggregators) {
+    string aggregatorName = aggregator->getName();
     ILOG(Info, Devel) << "Processing aggregator: " << aggregatorName << ENDM;
 
     if (updatePolicyManager.isReady(aggregatorName)) {
@@ -200,17 +201,93 @@ void AggregatorRunner::initAggregators()
 
     // For every aggregator definition, create an Aggregator
     for (const auto& [aggregatorName, aggregatorConfig] : mConfigFile->getRecursive("qc.aggregators")) {
-
       ILOG(Info, Devel) << ">> Aggregator name : " << aggregatorName << ENDM;
+
       if (aggregatorConfig.get<bool>("active", true)) {
-        // create Aggregator and store it.
-        auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
-        aggregator->init();
-        updatePolicyManager.addPolicy(aggregator->getName(), aggregator->getPolicyName(), aggregator->getObjectsNames(), aggregator->getAllObjectsOption(), false);
-        mAggregatorsMap[aggregatorName] = aggregator;
+        try {
+          auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
+          aggregator->init();
+          updatePolicyManager.addPolicy(aggregator->getName(),
+                                        aggregator->getPolicyName(),
+                                        aggregator->getObjectsNames(),
+                                        aggregator->getAllObjectsOption(),
+                                        false);
+          mAggregators.push_back(aggregator);
+        } catch (...) {
+          // catch the configuration exception and print it to avoid losing it
+          ILOG(Error, Ops) << "Error creating aggregator '" << aggregatorName << "'"
+                           << current_diagnostic(true) << ENDM;
+          continue; // skip this aggregator, it might still fail fatally later if another aggregator depended on it
+        }
       }
     }
   }
+
+  reorderAggregators();
+}
+
+bool AggregatorRunner::areSourcesIn(const std::vector<AggregatorSource>& sources,
+                                    const std::vector<std::shared_ptr<Aggregator>>& aggregators)
+{
+  for (auto source : sources) {
+    auto it = find_if(aggregators.begin(), aggregators.end(),
+                      [&](const std::shared_ptr<Aggregator>& agg) { return (agg->getName() == source.name); });
+    if (it == aggregators.end()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void AggregatorRunner::reorderAggregators()
+{
+  // Implementation
+  // This is a simple, light-weight, but sub-optimal implementation.
+  // One could build a proper tree (e.g. with boost Graph) and then apply a complex algorithm to order
+  // the nodes and find cycles.
+  // Instead this implementation goes through the aggregators and for each checks whether
+  // there are no dependencies or if they are all fulfilled. If it is the case the aggregator
+  // is moved at the end of the resulting vector.
+  // In case we have looped through all the remaining aggregators and nothing has been done,
+  // ie. no aggregator has its dependencies fulfilled, we stop and raise an error.
+  // This means that there is a cycle or that one of the dependencies does not exist.
+  // Note that by "fulfilled" we mean that all the sources of an aggregator are already
+  // in the result vector.
+
+  std::vector<std::shared_ptr<Aggregator>> originals = mAggregators;
+  std::vector<std::shared_ptr<Aggregator>> results;
+  bool modificationLastIteration = true;
+  // As long as there are items in original and we did some modifications in the last iteration
+  while (!originals.empty() && modificationLastIteration) {
+    modificationLastIteration = false;
+    std::vector<std::shared_ptr<Aggregator>> toBeMoved; // we need it because we cannot modify the vectors while iterating over them
+    // Loop over remaining items in the original list
+    for (const auto& orig : originals) {
+      // if no Aggregator dependencies or Aggregator sources are all already in result
+      auto sources = orig->getSources(aggregator);
+      if (sources.empty() || areSourcesIn(sources, results)) {
+        // move from original to result
+        toBeMoved.push_back(orig);
+        modificationLastIteration = true;
+      }
+    }
+    // move the items from one vector to the other
+    for (const auto& item : toBeMoved) {
+      results.push_back(item);
+      originals.erase(std::remove(originals.begin(), originals.end(), item), originals.end());
+    }
+  }
+
+  if (!originals.empty()) {
+    string msg =
+      "Error in the aggregators definition : either there is a cycle "
+      "or an aggregator depends on an aggregator that does not exist.";
+    ILOG(Error, Ops) << msg << ENDM;
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(msg));
+  }
+  assert(results.size() != mAggregators.size());
+  mAggregators = results;
 }
 
 void AggregatorRunner::sendPeriodicMonitoring()
