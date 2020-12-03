@@ -37,7 +37,22 @@
         },
         "location": "remote"
       }
+    },
+    "checks": {
+      "ITSClusterCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::its::ITSClusterCheck",
+        "moduleName": "QcITS",
+        "policy": "OnAny",
+        "detectorName": "ITS",
+        "dataSource": [{
+          "type": "Task",
+          "name": "ITSClusterTask",
+          "MOs": ["Layer0/AverageClusterSize"]
+          }]
+        }
     }
+
    },
 
   "dataSamplingPolicies": [

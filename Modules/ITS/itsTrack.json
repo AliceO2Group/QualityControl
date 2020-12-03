@@ -28,7 +28,7 @@
         "className": "o2::quality_control_modules::its::ITSTrackTask",
         "moduleName": "QcITS",
 	"detectorName": "ITS",	
-        "cycleDurationSeconds": "120",
+        "cycleDurationSeconds": "30",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
@@ -37,7 +37,22 @@
         },
         "location": "remote"
       }
+    },
+    "checks": {
+      "ITSTrackCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::its::ITSTrackCheck",
+        "moduleName": "QcITS",
+        "policy": "OnAny",
+        "detectorName": "ITS",
+        "dataSource": [{
+          "type": "Task",
+          "name": "ITSTrackTask",
+          "MOs": ["NClusters"]
+          }]
+        }
     }
+
   },
 
 
