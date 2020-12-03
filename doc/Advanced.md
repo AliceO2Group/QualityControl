@@ -354,7 +354,7 @@ In this piece of documentation it is assumed that the users already have some id
 ### Getting AODs directly
 
 First, let's see how to get data directly from an AOD file. To read the table, we will use TableConsumer from DPL, as in [the example of a QC analysis
-task](Modules/Example/src/AnalysisTask.cxx):
+task](../Modules/Example/src/AnalysisTask.cxx):
 ```
 void AnalysisTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -363,7 +363,7 @@ void AnalysisTask::monitorData(o2::framework::ProcessingContext& ctx)
   ...
 }
 ```
-In [our QC configuration file](Modules/Example/etc/analysisDirect.json) we will request AOD data as a direct source
+In [our QC configuration file](../Modules/Example/etc/analysisDirect.json) we will request AOD data as a direct source
 , just as normal Analysis Tasks do:
 ```
     "tasks": {
@@ -397,7 +397,7 @@ which produces a new table with hash numbers generated out of tracks in AODs:
 DECLARE_SOA_TABLE(Hashes, "AOD", "HASH", hash::Bin);  
 ...
 ```
-Thus, in [our QC config file](Modules/Example/etc/analysisDerived.json) we should query data described as `AOD/HASH/0`:
+Thus, in [our QC config file](../Modules/Example/etc/analysisDerived.json) we should query data described as `AOD/HASH/0`:
 ```
     "tasks": {
       "AnalysisQcTask": {
