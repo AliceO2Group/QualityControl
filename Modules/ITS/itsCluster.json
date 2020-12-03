@@ -28,7 +28,7 @@
         "className": "o2::quality_control_modules::its::ITSClusterTask",
         "moduleName": "QcITS",
 	"detectorName": "ITS",	
-        "cycleDurationSeconds": "60",
+        "cycleDurationSeconds": "180",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
@@ -52,7 +52,6 @@
           }]
         }
     }
-
    },
 
   "dataSamplingPolicies": [

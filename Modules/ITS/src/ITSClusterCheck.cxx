@@ -57,9 +57,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   if (checkResult == Quality::Good) {
     tInfo = new TText(0.1, 0.8, "Quality::GOOD");
     tInfo->SetTextColor(kGreen);
-
   } else if (checkResult == Quality::Bad) {
-
     tInfo = new TText(0.1, 0.8, "Quality::GOOD");
     tInfo->SetTextColor(kRed);
   }

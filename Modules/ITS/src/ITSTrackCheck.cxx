@@ -11,7 +11,6 @@
 ///
 /// \file   ITSTrackCheck.cxx
 /// \author Artem Isakov
-/// \author LiAng Zhang
 /// \author Jian Liu
 ///
 
@@ -57,9 +56,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
   if (checkResult == Quality::Good) {
     tInfo = new TText(0.1, 0.8, "Quality::GOOD");
     tInfo->SetTextColor(kGreen);
-
   } else if (checkResult == Quality::Bad) {
-
     tInfo = new TText(0.1, 0.8, "Quality::GOOD");
     tInfo->SetTextColor(kRed);
   }

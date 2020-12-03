@@ -10,7 +10,6 @@
 
 ///
 /// \file   ITSTrackCheck.h
-/// \author Liang Zhang
 /// \auhtor Artem Isakov
 /// \author Jian Liu
 ///
@@ -23,7 +22,7 @@
 namespace o2::quality_control_modules::its
 {
 
-/// \brief  Check the sensor occupancy and raw data formatting errors
+/// \brief  Check the clusters on track
 
 class ITSTrackCheck : public o2::quality_control::checker::CheckInterface
 {

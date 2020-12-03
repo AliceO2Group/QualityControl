@@ -10,8 +10,8 @@
 
 ///
 /// \file   ITSClusterCheck.h
-/// \author Liang Zhang
-/// \auhtor Artem Isakov
+/// \author Artem Isakov
+/// \auhtor Liang Zhang
 /// \author Jian Liu
 ///
 
@@ -23,7 +23,7 @@
 namespace o2::quality_control_modules::its
 {
 
-/// \brief  Check the sensor occupancy and raw data formatting errors
+/// \brief  Check the average cluster size
 
 class ITSClusterCheck : public o2::quality_control::checker::CheckInterface
 {
