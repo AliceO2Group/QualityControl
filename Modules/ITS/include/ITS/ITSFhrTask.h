@@ -85,10 +85,8 @@ class ITSFhrTask final : public TaskInterface
   std::array<bool, NLayer> mEnableLayers = { false };
 
   int mNThreads = 0;
-  std::vector<std::pair<int, int>> mHitPixelID[7][48][14][14];              //layer, stave, hic, chip
   std::unordered_map<unsigned int, int> mHitPixelID_Hash[7][48][2][14][14]; //layer, stave, substave, hic, chip
 
-  std::vector<int> mPixelHitNumber[7][48][14][14]; //hit number correspond mHitPixelID
   o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>* mDecoder;
   ChipPixelData* mChipDataBuffer = nullptr;
   std::vector<ChipPixelData> mChipsBuffer;
@@ -119,7 +117,6 @@ class ITSFhrTask final : public TaskInterface
 
   //Occupancy and hit-map
   THnSparseI* mStaveHitmap[7][48];
-  TH2I* mHitmapTmp;
   TH2D* mChipStaveOccupancy[7];
   TH2I* mChipStaveEventHitCheck[7];
   TH1D* mOccupancyPlot[7];
