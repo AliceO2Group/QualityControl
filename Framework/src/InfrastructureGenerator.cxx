@@ -476,6 +476,11 @@ vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::Work
 void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, std::string configurationSource, vector<framework::OutputSpec>& checkRunnerOutputs)
 {
   // TODO consider whether we should recompute checkRunnerOutputs instead of receiving it all baked.
+  auto config = ConfigurationFactory::getConfiguration(configurationSource);
+  if (config->getRecursive("qc").count("aggregators") == 0) {
+    ILOG(Warning, Devel) << "No \"aggregators\" structure found in the config file. If no postprocessing is expected, then it is completely fine." << ENDM;
+    return;
+  }
   DataProcessorSpec spec = AggregatorRunnerFactory::create(checkRunnerOutputs, configurationSource);
   workflow.emplace_back(spec);
 }

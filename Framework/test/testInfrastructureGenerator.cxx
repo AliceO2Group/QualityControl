@@ -214,7 +214,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_empty_config)
   {
     WorkflowSpec workflow;
     BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateStandaloneInfrastructure(workflow, configFilePath));
-    BOOST_CHECK_EQUAL(workflow.size(), 1);
+    BOOST_CHECK_EQUAL(workflow.size(), 0);
   }
   {
     WorkflowSpec workflow;
