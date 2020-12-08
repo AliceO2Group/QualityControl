@@ -15,7 +15,7 @@
 ///
 
 #ifndef QC_MODULE_ITS_ITSTRACKCHECK_H
-#define QC_MODULE_ITS_ITSTRACRCHECK_H
+#define QC_MODULE_ITS_ITSTRACKCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 
