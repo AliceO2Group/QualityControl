@@ -13,6 +13,7 @@ add_library(QcITS
             src/ITSFhrCheck.cxx
             src/ITSClusterCheck.cxx
             src/ITSTrackCheck.cxx
+            src/ITSFeeCheck.cxx
             )
 
 target_sources(QcITS PRIVATE src/TH2XlineReductor.cxx)
@@ -46,6 +47,7 @@ add_root_dictionary(QcITS
                             include/ITS/ITSFhrCheck.h
                             include/ITS/ITSClusterCheck.h
                             include/ITS/ITSTrackCheck.h
+                            include/ITS/ITSFeeCheck.h
                     LINKDEF include/ITS/LinkDef.h
                     BASENAME QcITS)
 

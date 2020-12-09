@@ -33,18 +33,23 @@ namespace o2::quality_control_modules::its
 /// \brief ITS FEE task aiming at 100% online data integrity checking
 class ITSFeeTask final : public TaskInterface
 {
-
   struct GBTDdw { //GBT diagnostic word
-
-    union GBTBits {
-      struct payloadBits {
-        uint64_t flags2 : 36; /// 0:35  not defined yet
-        uint64_t flags1 : 36; /// 36:71  not defined yet
-        uint64_t id : 8;      /// 72:79  0xe0; Header Status Word (HSW) identifier
-      } payload;
-
-      uint8_t data8[16]; // 80 bits GBT word +  padding to 128 bits
-    } ddwBits;
+    union {
+      uint64_t word0 = 0x0;
+      struct {
+        uint64_t laneStatus : 56;
+        uint16_t zero0 : 8;
+      } laneBits;
+    };
+    union {
+      uint64_t word1 = 0x0;
+      struct {
+        uint8_t flag1 : 4;
+        uint8_t index : 4;
+        uint8_t id : 8;
+        uint64_t padding : 48;
+      } indexBits;
+    };
   };
 
  public:
@@ -63,23 +68,30 @@ class ITSFeeTask final : public TaskInterface
 
  private:
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
-  void createErrorTFPlots(int barrel);
+  void createFeePlots();
   void setPlotsFormat();
-  void getEnableLayers();
   void getRunNumber(); //for ITS commissioning only
   void resetGeneralPlots();
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
+  static constexpr int NLanes = 28;
+  static constexpr int NFees = 48 * 3 + 144 * 2;
+  static constexpr int NFlags = 4;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
-  std::array<bool, NLayer> mEnableLayers = { false };
   int mTimeFrameId = 0;
-  int mNTrigger = 13;
-  static constexpr int NError = 13;
-  TString mErrorType[NError] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" }; //TODO: replace by defined error flags
+  static constexpr int mNTrigger = 13;
+  TString mTriggerType[mNTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
+  std::string mLaneStatusFlag[NFlags] = { "OK", "WARNING", "ERROR", "FAULT" }; //b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
 
   TH1I* mTFInfo; //count vs TF ID
-  TH2I* mErrorFlagVsFeeId;
-  TH1I* mErrorFlag;
+  TH2I* mTriggerVsFeeId;
+  TH1I* mTrigger;
+  TH2I* mLaneInfo;
+  TH2I* mFlag1Check;    //include transmission_timeout, packet_overflow, lane_starts_violation
+  TH2I* mIndexCheck;    //should be zero
+  TH2I* mIdCheck;       //should be 0x : e4
+  TH2I* mLaneStatus[4]; //4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
+  TH1I* mProcessingTime;
   //TH1D* mInfoCanvas;//TODO: default, not implemented yet
   std::string mRunNumberPath;
   std::string mRunNumber = "000000";

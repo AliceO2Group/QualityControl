@@ -23,7 +23,7 @@
             }
         },
         "tasks": {
-            "FEE": {
+            "ITSFEE": {
                 "active": "true",
                 "className": "o2::quality_control_modules::its::ITSFeeTask",
                 "moduleName": "QcITS",
@@ -36,7 +36,22 @@
                 },
                 "location": "remote"
             }
+        },
+        "checks": {
+            "ITSFeeCheck": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSFeeCheck",
+                "moduleName": "QcITS",
+                "policy": "OnAny",
+                "detectorName": "ITS",
+                "dataSource": [{
+                    "type": "Task",
+                    "name": "ITSFEE",
+                    "MOs": ["LaneStatus/laneStatusFlagFAULT"]
+                }]
+            }
         }
+
     },
     "dataSamplingPolicies": [
         {
