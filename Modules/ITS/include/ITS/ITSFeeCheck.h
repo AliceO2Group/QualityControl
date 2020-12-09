@@ -22,7 +22,7 @@
 namespace o2::quality_control_modules::its
 {
 
-/// \brief  Check the average cluster size
+/// \brief  Check the FAULT flag for the lanes
 
 class ITSFeeCheck : public o2::quality_control::checker::CheckInterface
 {

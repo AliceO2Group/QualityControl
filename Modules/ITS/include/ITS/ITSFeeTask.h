@@ -87,10 +87,10 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mTriggerVsFeeId;
   TH1I* mTrigger;
   TH2I* mLaneInfo;
-  TH2I* mFlag1Check;    //include transmission_timeout, packet_overflow, lane_starts_violation
-  TH2I* mIndexCheck;    //should be zero
-  TH2I* mIdCheck;       //should be 0x : e4
-  TH2I* mLaneStatus[4]; //4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
+  TH2I* mFlag1Check;         //include transmission_timeout, packet_overflow, lane_starts_violation
+  TH2I* mIndexCheck;         //should be zero
+  TH2I* mIdCheck;            //should be 0x : e4
+  TH2I* mLaneStatus[NFlags]; //4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
   TH1I* mProcessingTime;
   //TH1D* mInfoCanvas;//TODO: default, not implemented yet
   std::string mRunNumberPath;

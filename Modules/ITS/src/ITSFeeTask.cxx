@@ -255,7 +255,7 @@ void ITSFeeTask::resetGeneralPlots()
 }
 void ITSFeeTask::reset()
 {
-  //  resetGeneralPlots();
+  resetGeneralPlots();
   ILOG(Info) << "Reset" << ENDM;
 }
 
