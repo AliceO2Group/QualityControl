@@ -541,6 +541,9 @@ To install and run the QCG locally, and its fellow process tobject2json, please 
 
 ## Developing QC modules on a machine with FLP suite
 
+Option 1: Rebuild everything locally and use the QC module library that is generated
+
+Simply build as you would do on your development machine with aliBuild. 
 To load a development library in a setup with FLP suite, specify its full
 path in the config file (e.g. `/etc/flp.d/qc/readout.json`):
 ```
@@ -556,7 +559,19 @@ Make sure that:
 workflow specification for AliECS
 - The library is compiled with the same QC, O2, ROOT and GCC version as the 
 ones which are installed with the FLP suite. Especially, the task and check
-interfaces have to be identical.
+interfaces have to be identical. A good way to achieve that is to use the alidist branch matching the version of flp suite (e.g. `flp-suite-v0.12.0`).
+
+Option 2: Build on your development setup and scp the library
+
+1. Switch alidist to the branch corresponding to the flp-suite you installed, e.g. `flp-suite-v0.12.0`. 
+2. Rebuild QC using alibuild
+3. Backup the library (/opt/alisw/el7/QualityControl/<version>/lib)
+3. scp from development setup alice/sw/slc7_x86-64/QualityControl/latest/lib/yourlib* to /opt/alisw/el7/QualityControl/<version>/lib on the FLP.
+4. Rebuild the aliECS environment. 
+
+Option 3: Rebuild only the QC reusing the installed software
+
+NOT WORKING YET
 
 ## Use MySQL as QC backend
 
