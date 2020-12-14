@@ -168,7 +168,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
 
     if ((int)(rdh->stop) && it.size()) { //looking into the DDW0 from the closing packet
-      auto const* ddw = reinterpret_cast<const GBTDdw*>(it.data());
+      auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
       uint64_t laneInfo = ddw->laneBits.laneStatus;
       uint8_t flag1 = ddw->indexBits.flag1;
 
@@ -224,13 +224,19 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSFeeTask::getRunNumber()
 {
   std::ifstream configFile("Config/ConfigFee.dat");
-  configFile >> mRunNumberPath;
 
-  std::ifstream runNumberFile(mRunNumberPath);
-  if (runNumberFile) {
-    mRunNumber = "";
-    runNumberFile >> mRunNumber;
-    ILOG(Info) << "runNumber : " << mRunNumber << ENDM;
+  if (configFile) {
+    configFile >> mRunNumberPath;
+    std::ifstream runNumberFile(mRunNumberPath);
+    if (runNumberFile) {
+      mRunNumber = "";
+      runNumberFile >> mRunNumber;
+      ILOG(Info) << "runNumber : " << mRunNumber << ENDM;
+    } else {
+      ILOG(Warning) << "Incorrect run number path. ITS Run number not fetched, using 000000 instead." << ENDM;
+    }
+  } else {
+    ILOG(Warning) << "Config file not found. ITS Run number not fetched, using 000000 instead." << ENDM;
   }
 }
 

@@ -33,7 +33,7 @@ namespace o2::quality_control_modules::its
 /// \brief ITS FEE task aiming at 100% online data integrity checking
 class ITSFeeTask final : public TaskInterface
 {
-  struct GBTDdw { //GBT diagnostic word
+  struct GBTDiagnosticWord { //GBT diagnostic word
     union {
       uint64_t word0 = 0x0;
       struct {
