@@ -18,6 +18,7 @@ jobs:
           COMMIT_FILES=$(git diff --name-only ${BASE_COMMIT})
           echo "between"
           COMMIT_FILES_FILTERED=$(echo ${COMMIT_FILES} | grep -E -- '\.cxx|\.h' | grep -i -v LinkDef)
+          echo "between2"
           if [ $? -eq 1 ]; then
             exit 0 ;# no files to be checked
           fi
