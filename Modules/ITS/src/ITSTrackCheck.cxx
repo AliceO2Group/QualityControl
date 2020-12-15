@@ -57,7 +57,7 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
     tInfo = new TText(0.1, 0.8, "Quality::GOOD");
     tInfo->SetTextColor(kGreen);
   } else if (checkResult == Quality::Bad) {
-    tInfo = new TText(0.1, 0.8, "Quality::GOOD");
+    tInfo = new TText(0.1, 0.8, "Quality::BAD");
     tInfo->SetTextColor(kRed);
   }
   tInfo->SetTextSize(17);

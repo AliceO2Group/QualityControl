@@ -34,50 +34,58 @@ ITSFeeTask::ITSFeeTask()
 ITSFeeTask::~ITSFeeTask()
 {
   delete mTFInfo;
-  delete mErrorFlag;
-  delete mErrorFlagVsFeeId;
+  delete mTrigger;
+  delete mTriggerVsFeeId;
+  delete mLaneInfo;
+  delete mFlag1Check;
+  delete mIndexCheck;
+  delete mIdCheck;
+  delete mProcessingTime;
+  for (int i = 0; i < NFlags; i++) {
+    delete mLaneStatus[i];
+  }
+
   //delete mInfoCanvas;
 }
 
 void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "Initializing the ITSFeeTask" << AliceO2::InfoLogger::InfoLogger::endm;
-  getEnableLayers();
   getRunNumber();
-  int barrel = 0;
-  if (mEnableLayers[0] or mEnableLayers[1] or mEnableLayers[2]) {
-    barrel += 1;
-  }
-  if (mEnableLayers[3] or mEnableLayers[4] or mEnableLayers[5] or mEnableLayers[6]) {
-    barrel += 2;
-  }
-  createErrorTFPlots(barrel);
+  createFeePlots();
   setPlotsFormat();
 }
 
-void ITSFeeTask::createErrorTFPlots(int barrel)
+void ITSFeeTask::createFeePlots()
 {
-  mErrorFlag = new TH1I("ErrorTF/ErrorFlag", "FEE Decoding Errors", mNTrigger, 0.5, mNTrigger + 0.5);
-  mErrorFlag->SetMinimum(0);
-  mErrorFlag->SetFillColor(kBlue);
-  getObjectsManager()->startPublishing(mErrorFlag); //mErrorFlag
+  mTrigger = new TH1I("TriggerFlag", "Trigger vs counts", mNTrigger, 0.5, mNTrigger + 0.5);
+  getObjectsManager()->startPublishing(mTrigger); //mTrigger
 
-  mTFInfo = new TH1I("ErrorTF/TFInfo", "TF vs count", 15000, 0, 15000);
+  mTFInfo = new TH1I("STFInfo", "STF vs count", 15000, 0, 15000);
   getObjectsManager()->startPublishing(mTFInfo); //mTFInfo
 
-  if (barrel == 0) { //No Need to create
-    QcInfoLogger::GetInstance() << "No Error/TF Plots need to create, Please check you config file of QC" << AliceO2::InfoLogger::InfoLogger::endm;
-  } else if (barrel == 1) { //create for IB
-    mErrorFlagVsFeeId = new TH2I("ErrorTF/ErrorFlagVsFeeid", "Error count vs Error id and Fee id", 3 * StaveBoundary[3], 0, 3 * StaveBoundary[3], mNTrigger, 0.5, mNTrigger + 0.5);
-    mErrorFlagVsFeeId->SetMinimum(0);
-    mErrorFlagVsFeeId->SetStats(0);
-    getObjectsManager()->startPublishing(mErrorFlagVsFeeId);
-  } else if (barrel == 2) { //create for OB
-    mErrorFlagVsFeeId = new TH2I("ErrorTF/ErrorFlagVsFeeid", "Error count vs Error id and Fee id", 3 * (StaveBoundary[7] - StaveBoundary[3]), 0, 3 * (StaveBoundary[7] - StaveBoundary[3]), mNTrigger, 0.5, mNTrigger + 0.5);
-    mErrorFlagVsFeeId->SetMinimum(0);
-    mErrorFlagVsFeeId->SetStats(0); //create for OB
-    getObjectsManager()->startPublishing(mErrorFlagVsFeeId);
+  mLaneInfo = new TH2I("LaneInfo", "Lane Information", NLanes, -.5, NLanes - 0.5, NFlags, -.5, NFlags - 0.5);
+  getObjectsManager()->startPublishing(mLaneInfo); //mLaneInfo
+
+  mProcessingTime = new TH1I("ProcessingTime", "Processing Time", 10000, 0, 10000);
+  getObjectsManager()->startPublishing(mProcessingTime); //mProcessingTime
+
+  mTriggerVsFeeId = new TH2I("TriggerVsFeeid", "Trigger count vs Trigger ID and Fee ID", NFees, 0, NFees, mNTrigger, 0.5, mNTrigger + 0.5);
+  getObjectsManager()->startPublishing(mTriggerVsFeeId); //mTriggervsFeeId
+
+  for (int i = 0; i < NFlags; i++) {
+    mLaneStatus[i] = new TH2I(Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flag : %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanes, 0, NLanes);
+    getObjectsManager()->startPublishing(mLaneStatus[i]); //mlaneStatus
   }
+
+  mFlag1Check = new TH2I("Flag1Check", "Flag 1 Check", NFees, 0, NFees, 3, 0, 3); // Row 1 : transmission_timeout, Row 2 : packet_overflow, Row 3 : lane_starts_violation
+  getObjectsManager()->startPublishing(mFlag1Check);                              //mFlag1Check
+
+  mIndexCheck = new TH2I("IndexCheck", "Index Check", NFees, 0, NFees, 4, 0, 4);
+  getObjectsManager()->startPublishing(mIndexCheck); //mIndexCheck
+
+  mIdCheck = new TH2I("IdCheck", "Id Check", NFees, 0, NFees, 8, 0, 8);
+  getObjectsManager()->startPublishing(mIdCheck); //mIdCheck
 }
 
 void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
@@ -88,20 +96,52 @@ void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitl
 
 void ITSFeeTask::setPlotsFormat()
 {
-  if (mErrorFlag) {
-    setAxisTitle(mErrorFlag, "Error Flag ID", "Counts");
+  if (mTrigger) {
+    setAxisTitle(mTrigger, "Trigger ID", "Counts");
+    mTrigger->SetMinimum(0);
+    mTrigger->SetFillColor(kBlue);
     for (int i = 0; i < mNTrigger; i++) {
-      mErrorFlag->GetXaxis()->SetBinLabel(i + 1, mErrorType[i]);
+      mTrigger->GetXaxis()->SetBinLabel(i + 1, mTriggerType[i]);
     }
   }
+
   if (mTFInfo) {
-    setAxisTitle(mTFInfo, "TF ID", "Counts");
+    setAxisTitle(mTFInfo, "STF ID", "Counts");
   }
-  if (mErrorFlagVsFeeId) {
-    setAxisTitle(mErrorFlagVsFeeId, "FeeID", "Error Flag ID");
+
+  if (mTriggerVsFeeId) {
+    setAxisTitle(mTriggerVsFeeId, "FeeID", "Trigger ID");
+    mTriggerVsFeeId->SetMinimum(0);
+    mTriggerVsFeeId->SetStats(0);
     for (int i = 0; i < mNTrigger; i++) {
-      mErrorFlagVsFeeId->GetYaxis()->SetBinLabel(i + 1, mErrorType[i]);
+      mTriggerVsFeeId->GetYaxis()->SetBinLabel(i + 1, mTriggerType[i]);
     }
+  }
+
+  if (mLaneInfo) {
+    setAxisTitle(mLaneInfo, "Lane", "Flag");
+  }
+
+  if (mProcessingTime) {
+    setAxisTitle(mProcessingTime, "STF", "Time (us)");
+  }
+
+  for (int i = 0; i < NFlags; i++) {
+    if (mLaneStatus[i]) {
+      setAxisTitle(mLaneStatus[i], "FEEID", "Lane");
+    }
+  }
+
+  if (mFlag1Check) {
+    setAxisTitle(mFlag1Check, "FEEID", "Flag");
+  }
+
+  if (mIndexCheck) {
+    setAxisTitle(mIndexCheck, "FEEID", "Flag");
+  }
+
+  if (mIdCheck) {
+    setAxisTitle(mIdCheck, "FEEID", "Flag");
   }
 }
 
@@ -120,25 +160,54 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   start = std::chrono::high_resolution_clock::now();
 
   DPLRawParser parser(ctx.inputs());
-  int staveStart = 0;
-  for (int i = 0; !mEnableLayers[i]; i++) {
-    staveStart = StaveBoundary[i + 1];
-  }
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
     int istave = (int)(rdh->feeId & 0x00ff);
     int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
-    istave += staveStart;
+    int ilayer = (int)((rdh->feeId & 0xf000) >> 12);
+    int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
 
-    if ((int)(rdh->stop) && it.size()) { //looking into the Stop RDH
-      ILOG(Info) << "Stopbit : " << (int)rdh->stop << ", Payload size: " << it.size() << ENDM;
-      auto const* ddw = reinterpret_cast<const GBTDdw*>(it.data());
-      LOGF(INFO, "DDW header 0x: %02x", ddw->ddwBits.data8[9]);
+    if ((int)(rdh->stop) && it.size()) { //looking into the DDW0 from the closing packet
+      auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
+      uint64_t laneInfo = ddw->laneBits.laneStatus;
+      uint8_t flag1 = ddw->indexBits.flag1;
+
+      for (int i = 0; i < 3; i++) {
+        if (flag1 >> i & 0x1) {
+          mFlag1Check->Fill(ifee, i);
+        }
+      }
+
+      uint8_t index = ddw->indexBits.index;
+      if (index != 0) {
+        for (int i = 0; i < 4; i++) {
+          if (index >> i & 0x1) {
+            mIndexCheck->Fill(ifee, i);
+          }
+        }
+      }
+
+      uint8_t id = ddw->indexBits.id;
+      if (id != 0xe4) {
+        for (int i = 0; i < 8; i++) {
+          if (id >> i & 0x1) {
+            mIdCheck->Fill(ifee, i);
+          }
+        }
+      }
+
+      for (int i = 0; i < NLanes; i++) {
+        int laneValue = laneInfo >> (2 * i) & 0x3;
+        if (laneValue) {
+          mLaneStatus[laneValue]->Fill(ifee, i);
+        }
+      }
     }
-    for (int i = 0; i < 13; i++) { //filling trigger types to debug the program for the moment
+
+    for (int i = 0; i < 13; i++) {
       if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
-        mErrorFlag->Fill(i + 1);
-        mErrorFlagVsFeeId->Fill((istave * 3) + ilink, i + 1);
+        mTrigger->Fill(i + 1);
+        mTriggerVsFeeId->Fill(ifee, i + 1);
       }
     }
   }
@@ -149,35 +218,33 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   ILOG(Info) << "Processing time: " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
-}
-
-void ITSFeeTask::getEnableLayers()
-{
-  std::ifstream configFile("Config/ConfigFakeRateFee.dat");
-  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-    configFile >> mEnableLayers[ilayer];
-    if (mEnableLayers[ilayer]) {
-      ILOG(Info) << "Enable layer : " << ilayer << ENDM;
-    }
-  }
-  configFile >> mRunNumberPath;
+  mProcessingTime->SetBinContent(mTimeFrameId, difference);
 }
 
 void ITSFeeTask::getRunNumber()
 {
-  std::ifstream runNumberFile(mRunNumberPath);
-  if (runNumberFile) {
-    mRunNumber = "";
-    runNumberFile >> mRunNumber;
-    ILOG(Info) << "runNumber : " << mRunNumber << ENDM;
+  std::ifstream configFile("Config/ConfigFee.dat");
+
+  if (configFile) {
+    configFile >> mRunNumberPath;
+    std::ifstream runNumberFile(mRunNumberPath);
+    if (runNumberFile) {
+      mRunNumber = "";
+      runNumberFile >> mRunNumber;
+      ILOG(Info) << "runNumber : " << mRunNumber << ENDM;
+    } else {
+      ILOG(Warning) << "Incorrect run number path. ITS Run number not fetched, using 000000 instead." << ENDM;
+    }
+  } else {
+    ILOG(Warning) << "Config file not found. ITS Run number not fetched, using 000000 instead." << ENDM;
   }
 }
 
 void ITSFeeTask::endOfCycle()
 {
   getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", mRunNumber);
-  getObjectsManager()->addMetadata(mErrorFlagVsFeeId->GetName(), "Run", mRunNumber);
-  getObjectsManager()->addMetadata(mErrorFlag->GetName(), "Run", mRunNumber);
+  getObjectsManager()->addMetadata(mTriggerVsFeeId->GetName(), "Run", mRunNumber);
+  getObjectsManager()->addMetadata(mTrigger->GetName(), "Run", mRunNumber);
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 
@@ -189,8 +256,8 @@ void ITSFeeTask::endOfActivity(Activity& /*activity*/)
 void ITSFeeTask::resetGeneralPlots()
 {
   mTFInfo->Reset();
-  mErrorFlagVsFeeId->Reset();
-  mErrorFlag->Reset();
+  mTriggerVsFeeId->Reset();
+  mTrigger->Reset();
 }
 void ITSFeeTask::reset()
 {

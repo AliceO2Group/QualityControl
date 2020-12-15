@@ -9,13 +9,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   ITSClusterCheck.cxx
-/// \author Artem Isakov
+/// \file   ITSFeeCheck.cxx
 /// \author LiAng Zhang
 /// \author Jian Liu
 ///
 
-#include "ITS/ITSClusterCheck.h"
+#include "ITS/ITSFeeCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
@@ -27,17 +26,17 @@
 namespace o2::quality_control_modules::its
 {
 
-void ITSClusterCheck::configure(std::string) {}
+void ITSFeeCheck::configure(std::string) {}
 
-Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   auto mo = moMap->begin()->second;
   Quality result = Quality::Null;
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
   for (iter = moMap->begin(); iter != moMap->end(); iter++) {
-    if (iter->second->getName() == "Layer0/AverageClusterSize") {
-      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
-      if (h->GetMaximum() > 30) {
+    if (iter->second->getName() == "LaneStatus/laneStatusFlagFAULT") {
+      auto* h = dynamic_cast<TH2I*>(iter->second->getObject());
+      if (h->GetMaximum() > 0) {
         result = Quality::Bad;
       } else {
         result = Quality::Good;
@@ -47,11 +46,11 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-std::string ITSClusterCheck::getAcceptedType() { return "TH2D"; }
+std::string ITSFeeCheck::getAcceptedType() { return "TH2I"; }
 
-void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto* h = dynamic_cast<TH2D*>(mo->getObject());
+  auto* h = dynamic_cast<TH2I*>(mo->getObject());
   TText* tInfo;
 
   if (checkResult == Quality::Good) {
