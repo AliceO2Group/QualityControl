@@ -18,7 +18,6 @@
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 
-#include <fairlogger/Logger.h>
 #include <TList.h>
 #include <TH1.h>
 #include <TText.h>
@@ -30,10 +29,9 @@ void ITSTrackCheck::configure(std::string) {}
 
 Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  auto mo = moMap->begin()->second;
   Quality result = Quality::Null;
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
-  for (iter = moMap->begin(); iter != moMap->end(); iter++) {
+  for (iter = moMap->begin(); iter != moMap->end(); ++iter) {
     if (iter->second->getName() == "NClusters") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
       if (h->GetMean() > 8) {
@@ -51,13 +49,13 @@ std::string ITSTrackCheck::getAcceptedType() { return "TH1D"; }
 void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* h = dynamic_cast<TH1D*>(mo->getObject());
-  TText* tInfo;
+  auto* tInfo = new TText();
 
   if (checkResult == Quality::Good) {
-    tInfo = new TText(0.1, 0.8, "Quality::GOOD");
+    tInfo->SetText(0.1, 0.8, "Quality::GOOD");
     tInfo->SetTextColor(kGreen);
   } else if (checkResult == Quality::Bad) {
-    tInfo = new TText(0.1, 0.8, "Quality::BAD");
+    tInfo->SetText(0.1, 0.8, "Quality::BAD");
     tInfo->SetTextColor(kRed);
   }
   tInfo->SetTextSize(17);
