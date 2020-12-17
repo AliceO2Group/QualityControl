@@ -22,6 +22,11 @@
 #include <TH1.h>
 #include <TH2.h>
 
+// TODO actually fix the problem instead of disabling the warning
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Wnested-anon-types"
+#endif
+
 class TH2I;
 class TH1I;
 
