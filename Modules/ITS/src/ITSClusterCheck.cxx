@@ -31,10 +31,9 @@ void ITSClusterCheck::configure(std::string) {}
 
 Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  auto mo = moMap->begin()->second;
   Quality result = Quality::Null;
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
-  for (iter = moMap->begin(); iter != moMap->end(); iter++) {
+  for (iter = moMap->begin(); iter != moMap->end(); ++iter) {
     if (iter->second->getName() == "Layer0/AverageClusterSize") {
       auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
       if (h->GetMaximum() > 30) {
@@ -52,13 +51,13 @@ std::string ITSClusterCheck::getAcceptedType() { return "TH2D"; }
 void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* h = dynamic_cast<TH2D*>(mo->getObject());
-  TText* tInfo;
+  auto* tInfo = new TText();
 
   if (checkResult == Quality::Good) {
-    tInfo = new TText(0.1, 0.8, "Quality::GOOD");
+    tInfo->SetText(0.1, 0.8, "Quality::GOOD");
     tInfo->SetTextColor(kGreen);
   } else if (checkResult == Quality::Bad) {
-    tInfo = new TText(0.1, 0.8, "Quality::BAD");
+    tInfo->SetText(0.1, 0.8, "Quality::BAD");
     tInfo->SetTextColor(kRed);
   }
   tInfo->SetTextSize(17);

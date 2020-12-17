@@ -30,10 +30,9 @@ void ITSFhrCheck::configure(std::string) {}
 
 Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  auto mo = moMap->begin()->second;
   Quality result = Quality::Null;
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
-  for (iter = moMap->begin(); iter != moMap->end(); iter++) {
+  for (iter = moMap->begin(); iter != moMap->end(); ++iter) {
     if (iter->second->getName() == "General/ErrorPlots") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
       if (h->GetMaximum() > 0) {
@@ -51,7 +50,7 @@ std::string ITSFhrCheck::getAcceptedType() { return "TH1"; }
 void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   auto* h = dynamic_cast<TH1D*>(mo->getObject());
-  TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+  auto* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
   msg->SetName(Form("%s_msg", mo->GetName()));
   if (checkResult == Quality::Good) {
     msg->Clear();
