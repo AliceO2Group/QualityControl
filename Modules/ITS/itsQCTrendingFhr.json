@@ -141,7 +141,7 @@
                       "Fhr_l2t",
                       "Fhr_l2b"],
             "reductorName": "o2::quality_control_modules::its::TH2XlineReductor",
-            "moduleName": "QcITSRawTask"
+            "moduleName": "QcITS"
           }
         ],
         "plots": [
@@ -486,7 +486,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "10 seconds"
+          "newobject:qcdb:qc/ITS/MO/ITSFHR/FinishedObjects/General/ErrorPlots"
         ],
         "stopTrigger": [
           "userorcontrol"
