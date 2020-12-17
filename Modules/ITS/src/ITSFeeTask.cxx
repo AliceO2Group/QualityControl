@@ -169,8 +169,8 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     if ((int)(rdh->stop) && it.size()) { //looking into the DDW0 from the closing packet
       auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
-      uint64_t laneInfo = ddw->laneBits.laneStatus;
-      uint8_t flag1 = ddw->indexBits.flag1;
+      uint64_t laneInfo = ddw->laneWord.laneBits.laneStatus;
+      uint8_t flag1 = ddw->indexWord.indexBits.flag1;
 
       for (int i = 0; i < 3; i++) {
         if (flag1 >> i & 0x1) {
@@ -178,7 +178,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
 
-      uint8_t index = ddw->indexBits.index;
+      uint8_t index = ddw->indexWord.indexBits.index;
       if (index != 0) {
         for (int i = 0; i < 4; i++) {
           if (index >> i & 0x1) {
@@ -187,7 +187,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
 
-      uint8_t id = ddw->indexBits.id;
+      uint8_t id = ddw->indexWord.indexBits.id;
       if (id != 0xe4) {
         for (int i = 0; i < 8; i++) {
           if (id >> i & 0x1) {

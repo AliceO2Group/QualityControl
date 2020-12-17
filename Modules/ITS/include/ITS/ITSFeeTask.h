@@ -40,7 +40,7 @@ class ITSFeeTask final : public TaskInterface
         uint64_t laneStatus : 56;
         uint16_t zero0 : 8;
       } laneBits;
-    };
+    } laneWord;
     union {
       uint64_t word1 = 0x0;
       struct {
@@ -49,7 +49,7 @@ class ITSFeeTask final : public TaskInterface
         uint8_t id : 8;
         uint64_t padding : 48;
       } indexBits;
-    };
+    } indexWord;
   };
 
  public:
