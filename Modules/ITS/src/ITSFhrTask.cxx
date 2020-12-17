@@ -362,7 +362,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           mChipStaveEventHitCheck[lay]->Fill(chip, sta);
         }
       } else {
-        if (pixels.size() > 0) {
+        if (pixels.size() > 100) {
           mChipStaveEventHitCheck[lay]->Fill(mod + (ssta * (nHicPerStave[lay] / 2)), sta);
         }
       }
@@ -400,14 +400,14 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
         if (ilayer < NLayerIB) {
           for (int ichip = 0 + (ilink * 3); ichip < (ilink * 3) + 3; ichip++) {
-            if ((GBTLinkInfo->statistics.nPackets > 0) and (mHitNumberOfChip[ilayer][istave][0][0][ichip] >= 0)) {
-              mChipStaveOccupancy[ilayer]->SetBinContent(ichip + 1, istave + 1, (mHitNumberOfChip[ilayer][istave][0][0][ichip]) / (GBTLinkInfo->statistics.nPackets * 1024. * 512.));
+            if ((GBTLinkInfo->statistics.nTriggers > 0) and (mHitNumberOfChip[ilayer][istave][0][0][ichip] >= 0)) {
+              mChipStaveOccupancy[ilayer]->SetBinContent(ichip + 1, istave + 1, (mHitNumberOfChip[ilayer][istave][0][0][ichip]) / (GBTLinkInfo->statistics.nTriggers * 1024. * 512.));
               std::unordered_map<unsigned int, int>::iterator iter;
               for (iter = mHitPixelID_Hash[ilayer][istave][0][0][ichip].begin(); iter != mHitPixelID_Hash[ilayer][istave][0][0][ichip].end(); iter++) {
                 int pixelPos[2] = { (int)(iter->first / 1000) + (int)ichip * 1024, (int)(iter->first % 1000) };
                 mStaveHitmap[ilayer][istave]->SetBinContent(pixelPos, (double)iter->second);
                 double pixelOccupancy = (double)iter->second;
-                pixelOccupancy /= GBTLinkInfo->statistics.nPackets;
+                pixelOccupancy /= GBTLinkInfo->statistics.nTriggers;
                 mOccupancyPlot[ilayer]->Fill(log10(pixelOccupancy));
               }
             }
@@ -418,7 +418,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
             double chipOccupancy = 0;
             for (int ichip = 0; ichip < nChipsPerHic[ilayer]; ichip++) {
               chipOccupancy += mHitNumberOfChip[ilayer][istave][isubstave][ihic][ichip];
-              if ((GBTLinkInfo->statistics.nPackets > 0) and (mHitNumberOfChip[ilayer][istave][ilink][ihic][ichip] >= 0)) {
+              if ((GBTLinkInfo->statistics.nTriggers > 0) and (mHitNumberOfChip[ilayer][istave][ilink][ihic][ichip] >= 0)) {
                 if (mHitPixelID_Hash[ilayer][istave][ilink][ihic][ichip].size() == 0) {
                   continue;
                 }
@@ -432,12 +432,12 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
                     int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + (nChipsPerHic[lay] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000) + 1, NRows + ((int)iter->first % 1000) + (1024 * isubstave) + 1 };
                     mStaveHitmap[ilayer][istave]->SetBinContent(pixelPos, pixelOccupancy);
                   }
-                  pixelOccupancy /= GBTLinkInfo->statistics.nPackets;
+                  pixelOccupancy /= GBTLinkInfo->statistics.nTriggers;
                   mOccupancyPlot[ilayer]->Fill(log10(pixelOccupancy));
                 }
               }
             }
-            chipOccupancy = chipOccupancy / (GBTLinkInfo->statistics.nPackets * 1024. * 512.);
+            chipOccupancy = chipOccupancy / (GBTLinkInfo->statistics.nTriggers * 1024. * 512.);
             if (chipOccupancy == 0) {
               continue;
             }
