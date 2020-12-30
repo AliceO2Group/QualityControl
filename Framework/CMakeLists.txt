@@ -94,6 +94,7 @@ target_link_libraries(QualityControl
                              AliceO2::Monitoring
                              AliceO2::Configuration
                              AliceO2::Occ
+                             AliceO2::DebugGUI
                              ROOT::Net
                              Boost::container
                              O2::Framework
