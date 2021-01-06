@@ -17,8 +17,8 @@
 #include "QualityControl/DataDumpGui.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/stringUtils.h"
-#include "imgui/BaseGui.h"
-#include "imgui/imgui.h"
+#include <DebugGUI/DebugGUI.h>
+#include <DebugGUI/imgui.h>
 #include <Headers/DataHeader.h>
 #include <iomanip>
 
