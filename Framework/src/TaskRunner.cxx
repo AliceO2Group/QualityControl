@@ -308,7 +308,7 @@ void TaskRunner::loadTopologyConfig()
   // needed to avoid having looping at the maximum speed
   mTaskConfig.cycleDurationSeconds = taskConfigTree.get<int>("cycleDurationSeconds", 10);
   mOptions.push_back({ "period-timer-cycle", framework::VariantType::Int, static_cast<int>(mTaskConfig.cycleDurationSeconds * 1000000), { "timer period" } });
-  mOptions.push_back({"runNumber", framework::VariantType::String, { "Run number" }});
+  mOptions.push_back({ "runNumber", framework::VariantType::String, { "Run number" } });
 }
 
 boost::property_tree::ptree TaskRunner::getTaskConfigTree() const
