@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
 
   BOOST_CHECK(taskRunner.algorithm.onInit != nullptr);
 
-  BOOST_REQUIRE_EQUAL(taskRunner.options.size(), 1);
+  BOOST_REQUIRE_EQUAL(taskRunner.options.size(), 2);
   BOOST_CHECK_EQUAL(taskRunner.options[0].name, "period-timer-cycle");
 }
 
