@@ -17,6 +17,7 @@
 #include "EMCALCalib/BadChannelMap.h"
 #include "EMCALCalib/TimeCalibrationParams.h"
 #include <Framework/InputRecord.h>
+#include <CommonConstants/Triggers.h>
 
 namespace o2
 {
@@ -27,17 +28,25 @@ namespace emcal
 
 DigitsQcTask::~DigitsQcTask()
 {
-  for (auto h : mDigitAmplitude) {
-    delete h;
+  for (auto& [trg, histos] : mDigitAmplitude) {
+    for (auto h : histos) {
+      delete h;
+    }
   }
-  for (auto h : mDigitTime) {
-    delete h;
+  for (auto& [trg, histos] : mDigitTime) {
+    for (auto h : histos) {
+      delete h;
+    }
   }
-  for (auto h : mDigitAmplitudeCalib) {
-    delete h;
+  for (auto& [trg, histos] : mDigitAmplitudeCalib) {
+    for (auto h : histos) {
+      delete h;
+    }
   }
-  for (auto h : mDigitTimeCalib) {
-    delete h;
+  for (auto& [trg, histos] : mDigitTimeCalib) {
+    for (auto h : histos) {
+      delete h;
+    }
   }
   if (mDigitAmplitudeEMCAL)
     delete mDigitAmplitudeEMCAL;
@@ -48,10 +57,32 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize DigitsQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
   //define histograms
-  mDigitAmplitude[0] = new TH2F("digitAmplitudeHG", "Digit Amplitude (High gain)", 100, 0, 100, 20000, 0., 20000.);
-  mDigitAmplitude[1] = new TH2F("digitAmplitudeLG", "Digit Amplitude (Low gain)", 100, 0, 100, 20000, 0., 20000.);
-  mDigitAmplitudeCalib[0] = new TH2F("digitAmplitudeHGCalib", "Digit Amplitude Calib (High gain)", 100, 0, 100, 20000, 0., 20000.);
-  mDigitAmplitudeCalib[1] = new TH2F("digitAmplitudeLGCalib", "Digit Amplitude Calib (Low gain)", 100, 0, 100, 20000, 0., 20000.);
+
+  std::array<std::string, 2> triggers = { { "CAL", "PHYS" } };
+  for (const auto& trg : triggers) {
+
+    std::array<TH2*, 2> histosDigitAmplitude;
+    std::array<TH2*, 2> histosDigitAmplitudeCalib;
+    std::array<TH2*, 2> histosDigitTime;
+    std::array<TH2*, 2> histosDigitTimeCalib;
+
+    histosDigitAmplitude[0] = new TH2F(Form("digitAmplitudeHG_%s", trg.data()), Form("Digit Amplitude (High gain) %s", trg.data()), 100, 0, 100, 20000, 0., 20000.);
+    histosDigitAmplitude[1] = new TH2F(Form("digitAmplitudeHG_%s", trg.data()), Form("Digit Amplitude (Low gain) %s", trg.data()), 100, 0, 100, 20000, 0., 20000.);
+
+    histosDigitAmplitudeCalib[0] = new TH2F(Form("digitAmplitudeHG_%s", trg.data()), Form("Digit Amplitude (High gain) %s", trg.data()), 100, 0, 100, 20000, 0., 20000.);
+    histosDigitAmplitudeCalib[1] = new TH2F(Form("digitAmplitudeLG_%s", trg.data()), Form("Digit Amplitude (Low gain) %s", trg.data()), 100, 0, 100, 20000, 0., 20000.);
+
+    histosDigitTime[0] = new TH2F(Form("digitTimeHG_%s", trg.data()), Form("Digit Time (High gain) %s", trg.data()), 2000, -200, 200, 20000, 0., 20000.);
+    histosDigitTime[1] = new TH2F(Form("digitTimeLG_%s", trg.data()), Form("Digit Time (Low gain) %s", trg.data()), 2000, -200, 200, 20000, 0., 20000.);
+
+    histosDigitTimeCalib[0] = new TH2F(Form("digitTimeHGCalib_%s", trg.data()), Form("Digit Time Calib (High gain) %s", trg.data()), 2000, -200, 200, 20000, 0., 20000.);
+    histosDigitTimeCalib[1] = new TH2F(Form("digitTimeLGCalib_%s", trg.data()), Form("Digit Time Calib (Low gain) %s", trg.data()), 2000, -200, 200, 20000, 0., 20000.);
+
+    mDigitAmplitude[trg] = histosDigitAmplitude;
+    mDigitAmplitude[trg] = histosDigitAmplitudeCalib;
+    mDigitTime[trg] = histosDigitTime;
+    mDigitTimeCalib[trg] = histosDigitTimeCalib;
+  } //trigger type
 
   mDigitOccupancy = new TH2F("digitOccupancyEMC", "Digit Occupancy EMCAL", 96, -0.5, 95.5, 208, -0.5, 207.5);
   mDigitOccupancyThr = new TH2F("digitOccupancyEMCwThr", "Digit Occupancy EMCAL with E>0.5 GeV/c", 96, -0.5, 95.5, 208, -0.5, 207.5);
@@ -59,11 +90,6 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mIntegratedOccupancy = new TProfile2D("digitOccupancyInt", "Digit Occupancy Integrated", 96, -0.5, 95.5, 208, -0.5, 207.5);
   mIntegratedOccupancy->GetXaxis()->SetTitle("col");
   mIntegratedOccupancy->GetYaxis()->SetTitle("row");
-
-  mDigitTime[0] = new TH2F("digitTimeHG", "Digit Time (High gain)", 2000, -200, 200, 20000, 0., 20000.);
-  mDigitTime[1] = new TH2F("digitTimeLG", "Digit Time (Low gain)", 2000, -200, 200, 20000, 0., 20000.);
-  mDigitTimeCalib[0] = new TH2F("digitTimeHGCalib", "Digit Time Calib (High gain)", 2000, -200, 200, 20000, 0., 20000.);
-  mDigitTimeCalib[1] = new TH2F("digitTimeLGCalib", "Digit Time Calib (Low gain)", 2000, -200, 200, 20000, 0., 20000.);
   // 1D histograms for showing the integrated spectrum
 
   mDigitAmplitudeEMCAL = new TH1F("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 100, 0., 100.);
@@ -71,17 +97,28 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mnumberEvents = new TH1F("NumberOfEvents", "Number Of Events", 1, 0.5, 1.5);
 
   //Puglishing histograms
-  for (auto h : mDigitAmplitude)
-    getObjectsManager()->startPublishing(h);
+  for (auto& [trg, histos] : mDigitAmplitude) {
+    for (auto h : histos) {
+      getObjectsManager()->startPublishing(h);
+    }
+  }
 
-  for (auto h : mDigitTime)
-    getObjectsManager()->startPublishing(h);
+  for (auto& [trg, histos] : mDigitTime) {
+    for (auto h : histos) {
+      getObjectsManager()->startPublishing(h);
+    }
+  }
+  for (auto& [trg, histos] : mDigitAmplitudeCalib) {
+    for (auto h : histos) {
+      getObjectsManager()->startPublishing(h);
+    }
+  }
 
-  for (auto h : mDigitAmplitudeCalib)
-    getObjectsManager()->startPublishing(h);
-
-  for (auto h : mDigitTimeCalib)
-    getObjectsManager()->startPublishing(h);
+  for (auto& [trg, histos] : mDigitTimeCalib) {
+    for (auto h : histos) {
+      getObjectsManager()->startPublishing(h);
+    }
+  }
 
   getObjectsManager()->startPublishing(mDigitAmplitudeEMCAL);
   getObjectsManager()->startPublishing(mDigitAmplitudeDCAL);
@@ -142,21 +179,34 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     //gsl::span<const o2::emcal::Digit> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
     gsl::span<const o2::emcal::Cell> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
 
+    //trigger type
+    auto triggertype = trg.getTriggerBits();
+    bool isPhysTrigger = triggertype & o2::trigger::PhT, isCalibTrigger = triggertype & o2::trigger::Cal;
+    std::string trgClass;
+    if (isPhysTrigger)
+      trgClass = "PHYS";
+    else if (isCalibTrigger)
+      trgClass = "CAL";
+    else {
+      QcInfoLogger::GetInstance() << QcInfoLogger::Error << " Unmonitored trigger class requested " << AliceO2::InfoLogger::InfoLogger::endm;
+      continue;
+    }
+
     for (auto digit : eventdigits) {
       int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
       if (index < 0)
         continue;
       auto cellindices = mGeometry->GetCellIndex(digit.getTower());
 
-      mDigitAmplitude[index]->Fill(digit.getEnergy(), digit.getTower());
+      mDigitAmplitude[trgClass][index]->Fill(digit.getEnergy(), digit.getTower());
 
       auto timeoffset = mTimeCalib->getTimeCalibParam(digit.getTower(), digit.getLowGain());
 
       if ((mBadChannelMap->getChannelStatus(digit.getTower()) == MaskType_t::GOOD_CELL)) {
-        mDigitAmplitudeCalib[index]->Fill(digit.getEnergy(), digit.getTower());
-        mDigitTimeCalib[index]->Fill(digit.getTimeStamp() - timeoffset, digit.getTower());
+        mDigitAmplitudeCalib[trgClass][index]->Fill(digit.getEnergy(), digit.getTower());
+        mDigitTimeCalib[trgClass][index]->Fill(digit.getTimeStamp() - timeoffset, digit.getTower());
       }
-      mDigitTime[index]->Fill(digit.getTimeStamp(), digit.getTower());
+      mDigitTime[trgClass][index]->Fill(digit.getTimeStamp(), digit.getTower());
 
       // get the supermodule for filling EMCAL/DCAL spectra
 
@@ -200,10 +250,16 @@ void DigitsQcTask::reset()
   // clean all the monitor objects here
 
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
-  for (auto h : mDigitAmplitude)
-    h->Reset();
-  for (auto h : mDigitTime)
-    h->Reset();
+  for (auto& [trg, histos] : mDigitAmplitude) {
+    for (auto h : histos) {
+      h->Reset();
+    }
+  }
+  for (auto& [trg, histos] : mDigitTime) {
+    for (auto h : histos) {
+      h->Reset();
+    }
+  }
 
   mDigitAmplitudeEMCAL->Reset();
   mDigitAmplitudeDCAL->Reset();
