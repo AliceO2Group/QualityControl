@@ -19,30 +19,6 @@ include_guard()
 # under share/dpl directory
 #
 
-#function(o2_add_qc_workflow workflowName configurationFile)
-#
-#  set(jsonDumpFile ${workflowName}.json)
-#  set(qcExecutable o2-qc)
-#
-#  install(CODE "message(\"Generating a workflow dump with the command: ${CMAKE_INSTALL_PREFIX}/bin/${qcExecutable} -b --config json:/${CMAKE_INSTALL_PREFIX}/${configurationFile} --dump-workflow --dump-workflow-file ${CMAKE_CURRENT_BINARY_DIR}/${jsonDumpFile}\")")
-#  install(CODE "execute_process(
-#    COMMAND ${CMAKE_INSTALL_PREFIX}/bin/${qcExecutable} -b --config json:/${CMAKE_INSTALL_PREFIX}/${configurationFile} --dump-workflow --dump-workflow-file ${CMAKE_CURRENT_BINARY_DIR}/${jsonDumpFile}
-#    )")
-##  install(CODE "execute_process(
-##    COMMAND echo 'QUALITYCONTROL_ROOT: ${QUALITYCONTROL_ROOT}'
-##  )")
-##  install(CODE "execute_process(
-##    COMMAND pwd
-##  )")
-##  install(CODE "execute_process(
-##    COMMAND which bin/o2-qc
-##  )")
-#  install(
-#    FILES ${CMAKE_CURRENT_BINARY_DIR}/${jsonDumpFile}
-#    DESTINATION ${CMAKE_INSTALL_DATADIR}/dpl)
-#
-#endfunction()
-
 function(o2_add_qc_workflow)
 
   cmake_parse_arguments(
@@ -73,7 +49,6 @@ function(o2_add_qc_workflow)
   add_custom_target(${filename} ALL DEPENDS ${jsonDumpFile})
 
   # will install the rootmap and pcm files alongside the target's lib
-  install(FILES ${jsonDumpFile}
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/dpl)
+  install(FILES ${jsonDumpFile} DESTINATION ${CMAKE_INSTALL_DATADIR}/dpl)
 
 endfunction()

@@ -28,13 +28,16 @@ install(TARGETS QcExample
 # Install the config files for the analysis.
 # The command "install" cannot be used because it would be executed after o2_add_qc_workflow which relies on
 # the config files being already installed in the right place.
-configure_file("etc/analysisDirect.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json")
-configure_file("etc/analysisDerived.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json")
-
+MESSAGE("hi")
+configure_file("etc/analysisDirect.json" "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/analysisDirect.json")
+configure_file("etc/analysisDerived.json" "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/analysisDerived.json")
+MESSAGE("configured : ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/analysisDerived.json")
 # ---- Workflows for analysis ----
 
-o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json)
-o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json)
+o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/analysisDirect.json)
+o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/analysisDerived.json)
+
+message ("ASDF: ${CMAKE_INSTALL_SYSCONFDIR}" )
 
 # ---- Tests ----
 
