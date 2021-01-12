@@ -27,19 +27,8 @@ install(TARGETS QcExample
 
 # ---- Workflows for analysis ----
 
-# Install the config files for the analysis.
-# The command "install" cannot be used because it would be executed after o2_add_qc_workflow which relies on
-# the config files being already installed in the right place.
-MESSAGE(STATUS "Configuration of the files etc/analysisDirect.json and etc/analysisDerived.json")
-set(ANALYSIS_DIRECT_JSON "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/analysisDirect.json")
-set(ANALYSIS_DERIVED_JSON "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_SYSCONFDIR}/analysisDerived.json")
-configure_file("etc/analysisDirect.json" "${ANALYSIS_DIRECT_JSON}")
-configure_file("etc/analysisDerived.json" "${ANALYSIS_DERIVED_JSON}")
-MESSAGE(STATUS "- Configured : ${ANALYSIS_DIRECT_JSON}")
-MESSAGE(STATUS "- Configured : ${ANALYSIS_DERIVED_JSON}")
-
-o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${ANALYSIS_DIRECT_JSON})
-o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${ANALYSIS_DERIVED_JSON})
+o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/etc/analysisDirect.json)
+o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/etc/analysisDerived.json)
 
 # ---- Tests ----
 
