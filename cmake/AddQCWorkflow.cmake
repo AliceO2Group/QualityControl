@@ -32,10 +32,8 @@ function(o2_add_qc_workflow)
   if(NOT PARSED_ARGS_WORKFLOW_NAME OR NOT PARSED_ARGS_CONFIG_FILE_PATH)
     message(FATAL_ERROR "You must provide a workflow name and a config file path")
   endif()
-  message(STATUS "o2_add_qc_workflow called with config file ${PARSED_ARGS_CONFIG_FILE_PATH} to generate ${PARSED_ARGS_WORKFLOW_NAME}")
-
-  set(jsonDumpFile ${CMAKE_CURRENT_SOURCE_DIR}/${PARSED_ARGS_WORKFLOW_NAME}.json)
-  message(STATUS "jsonDumpFile: ${jsonDumpFile}" )
+  set(jsonDumpFile ${CMAKE_CURRENT_BINARY_DIR}/${PARSED_ARGS_WORKFLOW_NAME}.json)
+  message(STATUS "o2_add_qc_workflow called with config file ${PARSED_ARGS_CONFIG_FILE_PATH} to generate ${jsonDumpFile}")
   set(qcExecutable o2-qc)
 
   add_custom_command(
