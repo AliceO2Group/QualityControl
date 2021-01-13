@@ -193,8 +193,8 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
       histosRawAmplEMCALSM[ism]->GetYaxis()->SetTitle("Counts");
       getObjectsManager()->startPublishing(histosRawAmplEMCALSM[ism]);
 
-      histosRawAmplMaxEMCALSM[ism] = new TH1F(Form("RawAmplMaxEMCAL_sm%d_%s", ism, trg.data()), Form(" RawAmplMaxEMCAL_sm%d_%s", ism, trg.data()), 100, 0., 100.);
-      histosRawAmplMaxEMCALSM[ism]->GetXaxis()->SetTitle("Max Raw Amplitude");
+      histosRawAmplMaxEMCALSM[ism] = new TH1F(Form("RawAmplMaxEMCAL_sm%d_%s", ism, trg.data()), Form(" RawAmplMaxEMCAL_sm%d_%s", ism, trg.data()), 500, 0., 500.);
+      histosRawAmplMaxEMCALSM[ism]->GetXaxis()->SetTitle("Max Raw Amplitude [ADC]");
       histosRawAmplMaxEMCALSM[ism]->GetYaxis()->SetTitle("Counts");
       getObjectsManager()->startPublishing(histosRawAmplMaxEMCALSM[ism]);
 
