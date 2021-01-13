@@ -60,6 +60,11 @@ class BasicDigitQcTask final : public TaskInterface
 
   const int nhitmaps = 20;
   const int nchip = 936;
+
+  int FLP;
+  int minChipID;
+  int maxChipID;
+
   int half[936] = { 0 };
   int disk[936] = { 0 };
   int face[936] = { 0 };

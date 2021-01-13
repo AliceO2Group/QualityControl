@@ -43,8 +43,11 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize BasicDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
+  if (auto param = mCustomParameters.find("FLP"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+    FLP = stoi(param->second);
+    minChipID = (FLP - 1) * nchip / 4;
+    maxChipID = FLP * nchip / 4;
   }
 
   //  -------------------
@@ -90,8 +93,11 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       gPixelHitMapsMaxBinY / gPixelHitMapsBinWidth, gPixelHitMapsMinBin, gPixelHitMapsMaxBinY);
     pxlhitmap->SetStats(0);
     mMFTPixelHitMap.push_back(std::move(pxlhitmap));
-    getObjectsManager()->startPublishing(mMFTPixelHitMap[iChipID].get());
-    getObjectsManager()->addMetadata(mMFTPixelHitMap[iChipID]->GetName(), "custom", "34");
+
+    if ((iChipID >= minChipID) && (iChipID < maxChipID)) {
+      getObjectsManager()->startPublishing(mMFTPixelHitMap[iChipID].get());
+      getObjectsManager()->addMetadata(mMFTPixelHitMap[iChipID]->GetName(), "custom", "34");
+    }
   }
 }
 
@@ -135,9 +141,9 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   //  fill the chip hit maps
-  for (auto iChip = 0; iChip < 936; iChip++) {
-    int nEntries = mMFTPixelHitMap[iChip]->GetEntries();
-    mMFTChipHitMap[layer[iChip] + half[iChip] * 10]->SetBinContent(binx[iChip], biny[iChip], nEntries);
+  for (int iChipID = 0; iChipID < nchip; iChipID++) {
+    int nEntries = mMFTPixelHitMap[iChipID]->GetEntries();
+    mMFTChipHitMap[layer[iChipID] + half[iChipID] * 10]->SetBinContent(binx[iChipID], biny[iChipID], nEntries);
   }
 }
 
