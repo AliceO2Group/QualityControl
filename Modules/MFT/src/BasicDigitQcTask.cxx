@@ -132,8 +132,7 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto& one_digit : digits) 
   {
     int chipIndex = one_digit.getChipIndex();
-    chipHitCounter.push_back(chipIndex);
-
+    
     //  fill pixel hit maps
     mMFTPixelHitMap[chipIndex]->Fill(one_digit.getColumn(),one_digit.getRow());
     // fill number of entries and standard dev for all chips
