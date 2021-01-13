@@ -113,20 +113,21 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
   std::unique_ptr<TFile> mFile = nullptr;
   unsigned long currentROF = 0;
 
-  void AddHotPixel(std::vector<o2::itsmft::Digit> *DigitsInROF, int chipID, int col, int row, int charge)
+  void AddHotPixel(std::vector<o2::itsmft::Digit>* DigitsInROF, int chipID, int col, int row, int charge)
   {
     o2::itsmft::Digit NoisyPixel;
     NoisyPixel.setChipIndex(chipID);
-    NoisyPixel.setPixelIndex(row,col);
+    NoisyPixel.setPixelIndex(row, col);
     NoisyPixel.setCharge(charge);
 
     auto check = 1;
-    for (auto& one_digit : *DigitsInROF) 
-    {
-      if ( (one_digit.getChipIndex() == chipID) && (one_digit.getColumn() == col) && (one_digit.getRow() == row) ) check = 0;
+    for (auto& one_digit : *DigitsInROF) {
+      if ((one_digit.getChipIndex() == chipID) && (one_digit.getColumn() == col) && (one_digit.getRow() == row))
+        check = 0;
     }
 
-    if (check) DigitsInROF->push_back(NoisyPixel);
+    if (check)
+      DigitsInROF->push_back(NoisyPixel);
   }
 
 }; // end class definition

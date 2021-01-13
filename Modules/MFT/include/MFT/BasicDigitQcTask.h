@@ -12,7 +12,7 @@
 /// \file   BasicDigitQcTask.h
 /// \author Tomas Herman
 /// \author Guillermo Contreras
-/// \author Katarina Krizkova Gajdosova 
+/// \author Katarina Krizkova Gajdosova
 ///
 
 #ifndef QC_MODULE_MFT_MFTBasicDIGITQCTASK_H
@@ -60,53 +60,53 @@ class BasicDigitQcTask final : public TaskInterface
 
   const int nhitmaps = 20;
   const int nchip = 936;
-  int half[936] = {0};
-  int disk[936] = {0};
-  int face[936] = {0};
-  int zone[936] = {0};
-  int ladder[936] = {0};
-  int sensor[936] = {0};
-  int transID[936] = {0};
-  int layer[936] = {0};
-  double x[936] = {0};
-  double y[936] = {0};
-  double z[936] = {0};
-  double binx[936] = {0};
-  double biny[936] = {0};
+  int half[936] = { 0 };
+  int disk[936] = { 0 };
+  int face[936] = { 0 };
+  int zone[936] = { 0 };
+  int ladder[936] = { 0 };
+  int sensor[936] = { 0 };
+  int transID[936] = { 0 };
+  int layer[936] = { 0 };
+  double x[936] = { 0 };
+  double y[936] = { 0 };
+  double z[936] = { 0 };
+  double binx[936] = { 0 };
+  double biny[936] = { 0 };
 
   //  bin numbers for chip hit maps
   double binsChipHitMaps[20][6] = {
     // half0
-    {12, -10, 10, 4, -12, 0},// disk0, face 0
-    {12, -10, 10, 4, -12, 0},// disk0, face 1
-    
-    {12, -10, 10, 4, -12, 0},
-    {12, -10, 10, 4, -12, 0},
-    
-    {13, -11, 10, 4, -12, 0},
-    {13, -10, 11, 4, -12, 0},
-    
-    {16, -13, 14, 5, -15, 0},
-    {16, -14, 13, 5, -15, 0},
-    
-    {17, -14, 14, 5, -15, 0},
-    {17, -14, 14, 5, -15, 0},
+    { 12, -10, 10, 4, -12, 0 }, // disk0, face 0
+    { 12, -10, 10, 4, -12, 0 }, // disk0, face 1
+
+    { 12, -10, 10, 4, -12, 0 },
+    { 12, -10, 10, 4, -12, 0 },
+
+    { 13, -11, 10, 4, -12, 0 },
+    { 13, -10, 11, 4, -12, 0 },
+
+    { 16, -13, 14, 5, -15, 0 },
+    { 16, -14, 13, 5, -15, 0 },
+
+    { 17, -14, 14, 5, -15, 0 },
+    { 17, -14, 14, 5, -15, 0 },
 
     // half1
-    {12, -10, 10, 4, 0, 12},
-    {12, -10, 10, 4, 0, 12},
+    { 12, -10, 10, 4, 0, 12 },
+    { 12, -10, 10, 4, 0, 12 },
 
-    {12, -10, 10, 4, 0, 12},
-    {12, -10, 10, 4, 0, 12},
+    { 12, -10, 10, 4, 0, 12 },
+    { 12, -10, 10, 4, 0, 12 },
 
-    {13, -10, 11, 4, 0, 12},
-    {13, -11, 10, 4, 0, 12},
-    
-    {16, -14, 13, 5, 0, 15},
-    {16, -13, 14, 5, 0, 15},
-    
-    {17, -14, 14, 5, 0, 15},
-    {17, -14, 14, 5, 0, 15},
+    { 13, -10, 11, 4, 0, 12 },
+    { 13, -11, 10, 4, 0, 12 },
+
+    { 16, -14, 13, 5, 0, 15 },
+    { 16, -13, 14, 5, 0, 15 },
+
+    { 17, -14, 14, 5, 0, 15 },
+    { 17, -14, 14, 5, 0, 15 },
   };
 
   std::unique_ptr<TH1F> mMFT_chip_index_H = nullptr;
@@ -114,12 +114,11 @@ class BasicDigitQcTask final : public TaskInterface
 
   std::vector<std::unique_ptr<TH2F>> mMFTChipHitMap;
   std::vector<std::unique_ptr<TH2F>> mMFTPixelHitMap;
-  
+
   //  functions
   void readTable();
-  void getChipName(TString &FolderName, TString &HistogramName, int iHitMap);
-  void getPixelName(TString &FolderName, TString &HistogramName, int iChipID);
-
+  void getChipName(TString& FolderName, TString& HistogramName, int iHitMap);
+  void getPixelName(TString& FolderName, TString& HistogramName, int iChipID);
 };
 
 } // namespace o2::quality_control_modules::mft

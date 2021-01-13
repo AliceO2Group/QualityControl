@@ -12,7 +12,7 @@
 /// \file   BasicDigitQcTask.cxx
 /// \author Tomas Herman
 /// \author Guillermo Contreras
-/// \author Katarina Krizkova Gajdosova 
+/// \author Katarina Krizkova Gajdosova
 ///
 
 // ROOT
@@ -43,8 +43,7 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize BasicDigitQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) 
-  {
+  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
     ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
@@ -60,15 +59,14 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   //==============================================
   //  chip hit maps
   readTable();
-  for(int iHitMap = 0; iHitMap<nhitmaps; iHitMap++)
-  {
+  for (int iHitMap = 0; iHitMap < nhitmaps; iHitMap++) {
     //  generate folder and histogram name using the mapping table
     TString FolderName = "";
     TString HistogramName = "";
     getChipName(FolderName, HistogramName, iHitMap);
-  
+
     auto chiphitmap = std::make_unique<TH2F>(
-      FolderName, HistogramName, 
+      FolderName, HistogramName,
       binsChipHitMaps[iHitMap][0], binsChipHitMaps[iHitMap][1], binsChipHitMaps[iHitMap][2],
       binsChipHitMaps[iHitMap][3], binsChipHitMaps[iHitMap][4], binsChipHitMaps[iHitMap][5]);
     chiphitmap->SetStats(0);
@@ -79,8 +77,7 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   //==============================================
   //  pixel hit maps
-  for(int iChipID = 0; iChipID < nchip; iChipID++)
-  {
+  for (int iChipID = 0; iChipID < nchip; iChipID++) {
     //  generate folder and histogram name using the mapping table
     TString FolderName = "";
     TString HistogramName = "";
@@ -89,8 +86,8 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     //  create pixel hit map
     auto pxlhitmap = std::make_unique<TH2F>(
       FolderName, HistogramName,
-      gPixelHitMapsMaxBinX/gPixelHitMapsBinWidth, gPixelHitMapsMinBin, gPixelHitMapsMaxBinX,
-      gPixelHitMapsMaxBinY/gPixelHitMapsBinWidth, gPixelHitMapsMinBin, gPixelHitMapsMaxBinY);
+      gPixelHitMapsMaxBinX / gPixelHitMapsBinWidth, gPixelHitMapsMinBin, gPixelHitMapsMaxBinX,
+      gPixelHitMapsMaxBinY / gPixelHitMapsBinWidth, gPixelHitMapsMinBin, gPixelHitMapsMaxBinY);
     pxlhitmap->SetStats(0);
     mMFTPixelHitMap.push_back(std::move(pxlhitmap));
     getObjectsManager()->startPublishing(mMFTPixelHitMap[iChipID].get());
@@ -105,13 +102,11 @@ void BasicDigitQcTask::startOfActivity(Activity& /*activity*/)
   mMFT_chip_index_H->Reset();
   mMFT_chip_std_dev_H->Reset();
 
-  for(int iHitMap = 0; iHitMap < nhitmaps; iHitMap++)
-  {
+  for (int iHitMap = 0; iHitMap < nhitmaps; iHitMap++) {
     mMFTChipHitMap[iHitMap]->Reset();
   }
 
-  for(int iChipID = 0; iChipID < nchip; iChipID ++)
-  { 
+  for (int iChipID = 0; iChipID < nchip; iChipID++) {
     mMFTPixelHitMap[iChipID]->Reset();
   }
 }
@@ -129,24 +124,21 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     return;
 
   // fill the histograms
-  for (auto& one_digit : digits) 
-  {
+  for (auto& one_digit : digits) {
     int chipIndex = one_digit.getChipIndex();
-    
+
     //  fill pixel hit maps
-    mMFTPixelHitMap[chipIndex]->Fill(one_digit.getColumn(),one_digit.getRow());
+    mMFTPixelHitMap[chipIndex]->Fill(one_digit.getColumn(), one_digit.getRow());
     // fill number of entries and standard dev for all chips
     mMFT_chip_index_H->SetBinContent(chipIndex, mMFTPixelHitMap[chipIndex]->GetEntries());
     mMFT_chip_std_dev_H->SetBinContent(chipIndex, mMFTPixelHitMap[chipIndex]->GetStdDev(1));
   }
 
   //  fill the chip hit maps
-  for(auto iChip = 0; iChip < 936; iChip++)
-  {
+  for (auto iChip = 0; iChip < 936; iChip++) {
     int nEntries = mMFTPixelHitMap[iChip]->GetEntries();
-    mMFTChipHitMap[layer[iChip]+half[iChip]*10]->SetBinContent(binx[iChip], biny[iChip], nEntries);
+    mMFTChipHitMap[layer[iChip] + half[iChip] * 10]->SetBinContent(binx[iChip], biny[iChip], nEntries);
   }
-
 }
 
 void BasicDigitQcTask::endOfCycle()
@@ -167,33 +159,31 @@ void BasicDigitQcTask::reset()
   mMFT_chip_index_H->Reset();
   mMFT_chip_std_dev_H->Reset();
 
-  for(int iHitMap = 0; iHitMap < nhitmaps; iHitMap++)
-  {
+  for (int iHitMap = 0; iHitMap < nhitmaps; iHitMap++) {
     mMFTChipHitMap[iHitMap]->Reset();
   }
 
-  for(int iChipID = 0; iChipID < nchip; iChipID ++)
-  { 
+  for (int iChipID = 0; iChipID < nchip; iChipID++) {
     mMFTPixelHitMap[iChipID]->Reset();
   }
 }
 
-void BasicDigitQcTask::getChipName(TString &FolderName, TString &HistogramName, int iHitMap)
+void BasicDigitQcTask::getChipName(TString& FolderName, TString& HistogramName, int iHitMap)
 {
-  FolderName = Form("ChipHitMaps/Half_%d/Disk_%d/Face_%d/mMFTChipHitMap", 
-    int(iHitMap/10), int((iHitMap%10)/2), (iHitMap%10)%2);
+  FolderName = Form("ChipHitMaps/Half_%d/Disk_%d/Face_%d/mMFTChipHitMap",
+                    int(iHitMap / 10), int((iHitMap % 10) / 2), (iHitMap % 10) % 2);
 
   HistogramName = Form("h%d-d%d-f%d;x (cm);y (cm)",
-    int(iHitMap/10), int((iHitMap%10)/2), (iHitMap%10)%2);
+                       int(iHitMap / 10), int((iHitMap % 10) / 2), (iHitMap % 10) % 2);
 }
 
-void BasicDigitQcTask::getPixelName(TString &FolderName, TString &HistogramName, int iChipID)
+void BasicDigitQcTask::getPixelName(TString& FolderName, TString& HistogramName, int iChipID)
 {
-  FolderName = Form("PixelHitMaps/Half_%d/Disk_%d/Face_%d/mMFTPixelHitMap-z%d-l%d-s%d-tr%d",  
-    half[iChipID], disk[iChipID], face[iChipID], zone[iChipID], ladder[iChipID], sensor[iChipID], transID[iChipID]);
+  FolderName = Form("PixelHitMaps/Half_%d/Disk_%d/Face_%d/mMFTPixelHitMap-z%d-l%d-s%d-tr%d",
+                    half[iChipID], disk[iChipID], face[iChipID], zone[iChipID], ladder[iChipID], sensor[iChipID], transID[iChipID]);
 
   HistogramName = Form("h%d-d%d-f%d-z%d-l%d-s%d-tr%d",
-    half[iChipID], disk[iChipID], face[iChipID], zone[iChipID], ladder[iChipID], sensor[iChipID], transID[iChipID]);
+                       half[iChipID], disk[iChipID], face[iChipID], zone[iChipID], ladder[iChipID], sensor[iChipID], transID[iChipID]);
 }
 
 void BasicDigitQcTask::readTable()
@@ -201,18 +191,17 @@ void BasicDigitQcTask::readTable()
   //const int nchip = 936;
 
   //  reset arrays
-  for (int i = 0; i < nchip; i++)
-  {
+  for (int i = 0; i < nchip; i++) {
     half[i] = 0;
     disk[i] = 0;
-    face[i] = 0;  
+    face[i] = 0;
     zone[i] = 0;
     ladder[i] = 0;
     sensor[i] = 0;
     transID[i] = 0;
     layer[i] = 0;
     x[i] = 0;
-    y[i] = 0;     
+    y[i] = 0;
     z[i] = 0;
     binx[i] = 0;
     biny[i] = 0;
@@ -222,17 +211,17 @@ void BasicDigitQcTask::readTable()
   std::ifstream read_table;
   read_table.open("./table_file_binidx.txt");
   for (int i = 0; i < nchip; ++i) {
-    read_table >> half[i]; 
-    read_table >> disk[i]; 
-    read_table >> face[i]; 
-    read_table >> zone[i]; 
-    read_table >> ladder[i]; 
-    read_table >> sensor[i]; 
-    read_table >> transID[i]; 
-    read_table >> layer[i]; 
-    read_table >> x[i]; 
-    read_table >> y[i]; 
-    read_table >> z[i]; 
+    read_table >> half[i];
+    read_table >> disk[i];
+    read_table >> face[i];
+    read_table >> zone[i];
+    read_table >> ladder[i];
+    read_table >> sensor[i];
+    read_table >> transID[i];
+    read_table >> layer[i];
+    read_table >> x[i];
+    read_table >> y[i];
+    read_table >> z[i];
     read_table >> binx[i];
     read_table >> biny[i];
   }
