@@ -36,7 +36,10 @@
           "name": "tof-rawdata"
         },
         "taskParameters": {
-          "DecoderCONET": "False"
+          "DecoderCONET": "False",
+          "TimeWindowMin": "4096",
+          "TimeWindowMax": "36864",
+          "NoiseThreshold": "1000"
         },
         "location": "remote"
       }

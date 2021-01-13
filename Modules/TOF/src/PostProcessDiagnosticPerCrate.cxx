@@ -29,7 +29,7 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::tof
 {
 
-const std::string PostProcessDiagnosticPerCrate::mCCDBPath = "qc/TOF/MO/TaskDiagnostics/";
+const std::string PostProcessDiagnosticPerCrate::mCCDBPath = "qc/TOF/MO/TaskRaw/";
 const int PostProcessDiagnosticPerCrate::mNWords = 32;
 const int PostProcessDiagnosticPerCrate::mNSlots = 14;
 
