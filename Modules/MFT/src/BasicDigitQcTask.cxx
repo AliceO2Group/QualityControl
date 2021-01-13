@@ -128,9 +128,6 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (digits.size() < 1)
     return;
 
-// counter to check, which chip was hit
-  std::vector<int> chipHitCounter;
-
   // fill the histograms
   for (auto& one_digit : digits) 
   {
@@ -144,11 +141,8 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mMFT_chip_std_dev_H->SetBinContent(chipIndex, mMFTPixelHitMap[chipIndex]->GetStdDev(1));
   }
 
-  //  loop over the vector, but first sort it and remove duplicates (some chips may be hit more times)
-  std::sort(chipHitCounter.begin(), chipHitCounter.end());
-  chipHitCounter.erase(std::unique(chipHitCounter.begin(),chipHitCounter.end()), chipHitCounter.end());
-
-  for(auto & iChip : chipHitCounter)
+  //  fill the chip hit maps
+  for(auto iChip = 0; iChip < 936; iChip++)
   {
     int nEntries = mMFTPixelHitMap[iChip]->GetEntries();
     mMFTChipHitMap[layer[iChip]+half[iChip]*10]->SetBinContent(binx[iChip], biny[iChip], nEntries);
@@ -196,7 +190,7 @@ void BasicDigitQcTask::getChipName(TString &FolderName, TString &HistogramName, 
 
 void BasicDigitQcTask::getPixelName(TString &FolderName, TString &HistogramName, int iChipID)
 {
-  FolderName = Form("PixelHitMaps/Half_%d/Disk_%d/Face_%d/Zone_%d/Ladder_%dmMFTPixelHitMap-s%d-tr%d", 
+  FolderName = Form("PixelHitMaps/Half_%d/Disk_%d/Face_%d/mMFTPixelHitMap-z%d-l%d-s%d-tr%d",  
     half[iChipID], disk[iChipID], face[iChipID], zone[iChipID], ladder[iChipID], sensor[iChipID], transID[iChipID]);
 
   HistogramName = Form("h%d-d%d-f%d-z%d-l%d-s%d-tr%d",
