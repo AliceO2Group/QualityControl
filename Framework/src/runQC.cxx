@@ -41,7 +41,7 @@ using namespace o2::utilities;
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
-    ConfigParamSpec{ "config", VariantType::String, "", { "Path to QC and Data Sampling configuration file." } });
+    ConfigParamSpec{ "config", VariantType::String, "", { "Absolute path to QC and Data Sampling configuration file." } });
 
   workflowOptions.push_back(
     ConfigParamSpec{ "local", VariantType::Bool, false, { "Creates only the local part of the QC topology." } });
@@ -77,51 +77,58 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   const std::string qcConfigurationSource = config.options().get<std::string>("config");
   if (qcConfigurationSource.empty()) {
-    ILOG(Info, Support) << "No configuration path specified, returning an empty workflow." << ENDM;
+    ILOG(Warning, Support) << "No configuration path specified, returning an empty workflow." << ENDM;
     return {};
   }
   ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
-  // The QC infrastructure is divided into two parts:
-  // - local - QC tasks which are on the same machines as the main processing. We also put Data Sampling there.
-  // - remote - QC tasks, mergers and checkers that reside on QC servers
-  //
-  // The user can specify to create either one of these parts by selecting corresponding option,
-  // or both of them, which is the default option (no flags needed).
+  try {
 
-  if (!config.options().get<bool>("local") && !config.options().get<bool>("remote")) {
-    ILOG(Info, Support) << "Creating a standalone QC topology." << ENDM;
+    // The QC infrastructure is divided into two parts:
+    // - local - QC tasks which are on the same machines as the main processing. We also put Data Sampling there.
+    // - remote - QC tasks, mergers and checkers that reside on QC servers
+    //
+    // The user can specify to create either one of these parts by selecting corresponding option,
+    // or both of them, which is the default option (no flags needed).
 
-    if (!config.options().get<bool>("no-data-sampling")) {
-      ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-      DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
-    } else {
-      ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
-    }
-    quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
-  }
+    if (!config.options().get<bool>("local") && !config.options().get<bool>("remote")) {
+      ILOG(Info, Support) << "Creating a standalone QC topology." << ENDM;
 
-  if (config.options().get<bool>("local")) {
-    ILOG(Info, Support) << "Creating a local QC topology." << ENDM;
-
-    if (!config.options().get<bool>("no-data-sampling")) {
-      ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-      DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
-    } else {
-      ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
+      if (!config.options().get<bool>("no-data-sampling")) {
+        ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
+        DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+      } else {
+        ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
+      }
+      quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
     }
 
-    // Generation of the local QC topology (local QC tasks and their output proxies)
-    auto host = config.options().get<std::string>("host").empty()
-                  ? boost::asio::ip::host_name()
-                  : config.options().get<std::string>("host");
-    quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, host);
-  }
-  if (config.options().get<bool>("remote")) {
-    ILOG(Info, Support) << "Creating a remote QC topology." << ENDM;
+    if (config.options().get<bool>("local")) {
+      ILOG(Info, Support) << "Creating a local QC topology." << ENDM;
 
-    // Generation of the remote QC topology (task for QC servers, input proxies, mergers and all check runners)
-    quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+      if (!config.options().get<bool>("no-data-sampling")) {
+        ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
+        DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+      } else {
+        ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
+      }
+
+      // Generation of the local QC topology (local QC tasks and their output proxies)
+      auto host = config.options().get<std::string>("host").empty()
+                    ? boost::asio::ip::host_name()
+                    : config.options().get<std::string>("host");
+      quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, host);
+    }
+
+    if (config.options().get<bool>("remote")) {
+      ILOG(Info, Support) << "Creating a remote QC topology." << ENDM;
+
+      // Generation of the remote QC topology (task for QC servers, input proxies, mergers and all check runners)
+      quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+    }
+  } catch (const std::runtime_error& re) {
+    ILOG(Fatal, Ops) << "Failed to build the workflow: " << re.what() << ENDM;
+    return {};
   }
 
   return specs;
