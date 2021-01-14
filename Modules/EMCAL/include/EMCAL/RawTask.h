@@ -57,21 +57,21 @@ class RawTask final : public TaskInterface
   TH1* mMessageCounter = nullptr;
   TH1* mNumberOfSuperpagesPerMessage;
   TH1* mNumberOfPagesPerMessage;
-  TH1* mSuperpageCounter = nullptr;                     ///< Counter for number of superpages
-  TH1* mPageCounter = nullptr;                          ///< Counter for number of pages (headers)
-  TH1* mTotalDataVolume = nullptr;                      ///< Total data volume
-  std::array<TH1*, 20> mRawAmplitudeEMCAL;              ///< Raw amplitude in EMCAL
-  std::array<TH1*, 20> mRawAmplMaxEMCAL;                ///< Max Raw amplitude in EMCAL per cell
-  std::array<TH1*, 20> mRawAmplMinEMCAL;                ///< Min Raw amplitude in EMCAL per cell
-  std::unique_ptr<o2::emcal::MappingHandler> mMappings; ///< Mappings Hardware address -> Channel
-  std::array<TProfile2D*, 20> mRMSperSM;                ///< ADC rms per SM
-  std::array<TProfile2D*, 20> mMEANperSM;               ///< ADC mean per SM
-  std::array<TProfile2D*, 20> mMAXperSM;                ///< ADC max per SM
-  std::array<TProfile2D*, 20> mMINperSM;                ///< ADC min per SM
-  TH2F* mErrorTypeAltro = nullptr;                      ///< Error from AltroDecoder
-  TH2F* mPayloadSizePerDDL = nullptr;                   ///< Payload size per ddl
-  Int_t mNumberOfSuperpages = 0;                        ///< Simple total superpage counter
-  Int_t mNumberOfPages = 0;                             ///< Simple total number of superpages counter
+  TH1* mSuperpageCounter = nullptr;                               ///< Counter for number of superpages
+  TH1* mPageCounter = nullptr;                                    ///< Counter for number of pages (headers)
+  TH1* mTotalDataVolume = nullptr;                                ///< Total data volume
+  std::map<std::string, std::array<TH1*, 20>> mRawAmplitudeEMCAL; /////< Raw amplitude in EMCAL
+  std::map<std::string, std::array<TH1*, 20>> mRawAmplMaxEMCAL;   ///< Max Raw amplitude in EMCAL per cell
+  std::map<std::string, std::array<TH1*, 20>> mRawAmplMinEMCAL;   ///< Min Raw amplitude in EMCAL per cell
+  std::map<std::string, std::array<TProfile2D*, 20>> mRMSperSM;   ///< ADC rms per SM
+  std::map<std::string, std::array<TProfile2D*, 20>> mMEANperSM;  ///< ADC mean per SM
+  std::map<std::string, std::array<TProfile2D*, 20>> mMAXperSM;   ///< ADC max per SM
+  std::map<std::string, std::array<TProfile2D*, 20>> mMINperSM;   ///< ADC min per SM
+  std::unique_ptr<o2::emcal::MappingHandler> mMappings;           ///< Mappings Hardware address -> Channel
+  TH2F* mErrorTypeAltro = nullptr;                                ///< Error from AltroDecoder
+  TH2F* mPayloadSizePerDDL = nullptr;                             ///< Payload size per ddl
+  Int_t mNumberOfSuperpages = 0;                                  ///< Simple total superpage counter
+  Int_t mNumberOfPages = 0;                                       ///< Simple total number of superpages counter
   Int_t mNumberOfMessages = 0;
 };
 
