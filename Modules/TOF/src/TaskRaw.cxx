@@ -204,8 +204,8 @@ void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
 
 void RawDataDecoder::estimateNoise(std::shared_ptr<TH2F> hFeaStripNoise)
 {
-  int FeaCounter[nsectors][nstrips][4] = { { 0 } };
-  double IntegratedTimeFea[nsectors][nstrips][4] = { { 0. } };
+  int FeaCounter[nsectors][nstrips][4] = { { { 0 } } };
+  double IntegratedTimeFea[nsectors][nstrips][4] = { { { 0. } } };
   double IntegratedTime[nsectors][nstrips] = { { 0. } };
 
   for (unsigned int i = 0; i < 172800; ++i) {
