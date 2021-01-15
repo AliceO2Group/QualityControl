@@ -28,6 +28,7 @@
 #include "EMCALReconstruction/RawReaderMemory.h"
 #include "EMCALReconstruction/RawHeaderStream.h"
 #include <Framework/InputRecord.h>
+#include <CommonConstants/Triggers.h>
 
 using namespace o2::emcal;
 
@@ -61,32 +62,45 @@ RawTask::~RawTask()
     delete mErrorTypeAltro;
   }
 
-  for (auto h : mRawAmplitudeEMCAL) {
-    delete h;
+  for (auto& histos : mRawAmplitudeEMCAL) {
+    for (auto h : histos.second) {
+
+      delete h;
+    }
   }
 
-  for (auto h : mRawAmplMaxEMCAL) {
-    delete h;
+  for (auto& histos : mRawAmplMaxEMCAL) {
+    for (auto h : histos.second) {
+      delete h;
+    }
   }
 
-  for (auto h : mRawAmplMinEMCAL) {
-    delete h;
+  for (auto& histos : mRawAmplMinEMCAL) {
+    for (auto h : histos.second) {
+      delete h;
+    }
+  }
+  for (auto& histos : mRMSperSM) {
+    for (auto h : histos.second) {
+      delete h;
+    }
   }
 
-  for (auto h : mRMSperSM) {
-    delete h;
+  for (auto& histos : mMEANperSM) {
+    for (auto h : histos.second) {
+      delete h;
+    }
   }
 
-  for (auto h : mMEANperSM) {
-    delete h;
+  for (auto& histos : mMAXperSM) {
+    for (auto h : histos.second) {
+      delete h;
+    }
   }
-
-  for (auto h : mMAXperSM) {
-    delete h;
-  }
-
-  for (auto h : mMINperSM) {
-    delete h;
+  for (auto& histos : mMINperSM) {
+    for (auto h : histos.second) {
+      delete h;
+    }
   }
 }
 void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -103,7 +117,6 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
     QcInfoLogger::GetInstance() << "Custom parameter - myOwnKey : " << param->second << AliceO2::InfoLogger::InfoLogger::endm;
   }
-
   mMappings = std::unique_ptr<o2::emcal::MappingHandler>(new o2::emcal::MappingHandler); //initialize the unique pointer to Mapper
 
   // Statistics histograms
@@ -162,42 +175,63 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mErrorTypeAltro);
 
   //histos per SM
-  for (Int_t i = 0; i < 20; i++) {
-    mRawAmplitudeEMCAL[i] = new TH1F(Form("RawAmplitudeEMCAL_sm%d", i), Form(" RawAmplitudeEMCAL%d", i), 100, 0., 100.);
-    mRawAmplitudeEMCAL[i]->GetXaxis()->SetTitle("Raw Amplitude");
-    mRawAmplitudeEMCAL[i]->GetYaxis()->SetTitle("Counts");
-    getObjectsManager()->startPublishing(mRawAmplitudeEMCAL[i]);
 
-    mRawAmplMaxEMCAL[i] = new TH1F(Form("RawAmplMaxEMCAL_sm%d", i), Form(" RawAmpMaxEMCAL%d", i), 100, 0., 100.);
-    mRawAmplMaxEMCAL[i]->GetXaxis()->SetTitle("Max Raw Amplitude");
-    mRawAmplMaxEMCAL[i]->GetYaxis()->SetTitle("Counts");
-    getObjectsManager()->startPublishing(mRawAmplMaxEMCAL[i]);
+  std::array<std::string, 2> triggers = { { "CAL", "PHYS" } };
+  for (const auto& trg : triggers) {
+    std::array<TH1*, 20> histosRawAmplEMCALSM;
+    std::array<TH1*, 20> histosRawAmplMaxEMCALSM;
+    std::array<TH1*, 20> histosRawAmplMinEMCALSM;
+    std::array<TProfile2D*, 20> histosRawAmplRmsSM;
+    std::array<TProfile2D*, 20> histosRawAmplMeanSM;
+    std::array<TProfile2D*, 20> histosRawAmplMaxSM;
+    std::array<TProfile2D*, 20> histosRawAmplMinSM;
 
-    mRawAmplMinEMCAL[i] = new TH1F(Form("RawAmplMinEMCAL_sm%d", i), Form(" RawAmpMinEMCAL%d", i), 100, 0., 100.);
-    mRawAmplMinEMCAL[i]->GetXaxis()->SetTitle("Min Raw Amplitude");
-    mRawAmplMinEMCAL[i]->GetYaxis()->SetTitle("Counts");
-    getObjectsManager()->startPublishing(mRawAmplMinEMCAL[i]);
+    for (auto ism = 0; ism < 20; ism++) {
 
-    mRMSperSM[i] = new TProfile2D(Form("RMSADCperSM%d", i), Form("RMSperSM%d", i), 48, 0, 48, 24, 0, 24);
-    mRMSperSM[i]->GetXaxis()->SetTitle("col");
-    mRMSperSM[i]->GetYaxis()->SetTitle("row");
-    getObjectsManager()->startPublishing(mRMSperSM[i]);
+      histosRawAmplEMCALSM[ism] = new TH1F(Form("RawAmplitudeEMCAL_sm%d_%s", ism, trg.data()), Form(" RawAmplitudeEMCAL%d, %s", ism, trg.data()), 100, 0., 100.);
+      histosRawAmplEMCALSM[ism]->GetXaxis()->SetTitle("Raw Amplitude");
+      histosRawAmplEMCALSM[ism]->GetYaxis()->SetTitle("Counts");
+      getObjectsManager()->startPublishing(histosRawAmplEMCALSM[ism]);
 
-    mMEANperSM[i] = new TProfile2D(Form("MeanADCperSM%d", i), Form("MeanADCperSM%d", i), 48, 0, 48, 24, 0, 24);
-    mMEANperSM[i]->GetXaxis()->SetTitle("col");
-    mMEANperSM[i]->GetYaxis()->SetTitle("row");
-    getObjectsManager()->startPublishing(mMEANperSM[i]);
+      histosRawAmplMaxEMCALSM[ism] = new TH1F(Form("RawAmplMaxEMCAL_sm%d_%s", ism, trg.data()), Form(" RawAmplMaxEMCAL_sm%d_%s", ism, trg.data()), 500, 0., 500.);
+      histosRawAmplMaxEMCALSM[ism]->GetXaxis()->SetTitle("Max Raw Amplitude [ADC]");
+      histosRawAmplMaxEMCALSM[ism]->GetYaxis()->SetTitle("Counts");
+      getObjectsManager()->startPublishing(histosRawAmplMaxEMCALSM[ism]);
 
-    mMAXperSM[i] = new TProfile2D(Form("MaxADCperSM%d", i), Form("MaxADCperSM%d", i), 48, 0, 47, 24, 0, 23);
-    mMAXperSM[i]->GetXaxis()->SetTitle("col");
-    mMAXperSM[i]->GetYaxis()->SetTitle("row");
-    getObjectsManager()->startPublishing(mMAXperSM[i]);
+      histosRawAmplMinEMCALSM[ism] = new TH1F(Form("RawAmplMinEMCAL_sm%d_%s", ism, trg.data()), Form("RawAmplMinEMCAL_sm%d_%s", ism, trg.data()), 100, 0., 100.);
+      histosRawAmplMinEMCALSM[ism]->GetXaxis()->SetTitle("Min Raw Amplitude");
+      histosRawAmplMinEMCALSM[ism]->GetYaxis()->SetTitle("Counts");
+      getObjectsManager()->startPublishing(histosRawAmplMinEMCALSM[ism]);
 
-    mMINperSM[i] = new TProfile2D(Form("MinADCperSM%d", i), Form("MinADCperSM%d", i), 48, 0, 47, 24, 0, 23);
-    mMINperSM[i]->GetXaxis()->SetTitle("col");
-    mMINperSM[i]->GetYaxis()->SetTitle("row");
-    getObjectsManager()->startPublishing(mMINperSM[i]);
-  }
+      histosRawAmplRmsSM[ism] = new TProfile2D(Form("RMSADCperSM%d_%s", ism, trg.data()), Form("RMSperSM%d_%s", ism, trg.data()), 48, 0, 48, 24, 0, 24);
+      histosRawAmplRmsSM[ism]->GetXaxis()->SetTitle("col");
+      histosRawAmplRmsSM[ism]->GetYaxis()->SetTitle("row");
+      getObjectsManager()->startPublishing(histosRawAmplRmsSM[ism]);
+
+      histosRawAmplMeanSM[ism] = new TProfile2D(Form("MeanADCperSM%d_%s", ism, trg.data()), Form("MeanADCperSM%d_%s", ism, trg.data()), 48, 0, 48, 24, 0, 24);
+      histosRawAmplMeanSM[ism]->GetXaxis()->SetTitle("col");
+      histosRawAmplMeanSM[ism]->GetYaxis()->SetTitle("row");
+      getObjectsManager()->startPublishing(histosRawAmplMeanSM[ism]);
+
+      histosRawAmplMaxSM[ism] = new TProfile2D(Form("MaxADCperSM%d_%s", ism, trg.data()), Form("MaxADCperSM%d_%s", ism, trg.data()), 48, 0, 47, 24, 0, 23);
+      histosRawAmplMaxSM[ism]->GetXaxis()->SetTitle("col");
+      histosRawAmplMaxSM[ism]->GetYaxis()->SetTitle("row");
+      getObjectsManager()->startPublishing(histosRawAmplMaxSM[ism]);
+
+      histosRawAmplMinSM[ism] = new TProfile2D(Form("MinADCperSM%d_%s", ism, trg.data()), Form("MinADCperSM%d_%s", ism, trg.data()), 48, 0, 47, 24, 0, 23);
+      histosRawAmplMinSM[ism]->GetXaxis()->SetTitle("col");
+      histosRawAmplMinSM[ism]->GetYaxis()->SetTitle("raw");
+      getObjectsManager()->startPublishing(histosRawAmplMinSM[ism]);
+    } //loop SM
+    mRawAmplitudeEMCAL[trg] = histosRawAmplEMCALSM;
+    mRawAmplMaxEMCAL[trg] = histosRawAmplMaxEMCALSM;
+    mRawAmplMinEMCAL[trg] = histosRawAmplMinEMCALSM;
+    mRMSperSM[trg] = histosRawAmplRmsSM;
+    mMEANperSM[trg] = histosRawAmplMeanSM;
+    mMAXperSM[trg] = histosRawAmplMaxSM;
+    mMINperSM[trg] = histosRawAmplMinSM;
+
+  } //loop trigger case
 }
 
 void RawTask::startOfActivity(Activity& /*activity*/)
@@ -272,11 +306,26 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         auto triggerBC = o2::raw::RDHUtils::getTriggerBC(headerR);
         mPayloadSizePerDDL->Fill(feeID, payLoadSize / 1024.);
 
+        //trigger type
+        auto triggertype = o2::raw::RDHUtils::getTriggerType(headerR);
+        bool isPhysTrigger = triggertype & o2::trigger::PhT, isCalibTrigger = triggertype & o2::trigger::Cal;
+        std::string trgClass;
+        if (isPhysTrigger)
+          trgClass = "PHYS";
+        else if (isCalibTrigger)
+          trgClass = "CAL";
+        else {
+          QcInfoLogger::GetInstance() << QcInfoLogger::Error << " Unmonitored trigger class requested " << AliceO2::InfoLogger::InfoLogger::endm;
+          continue;
+        }
+
         //fill histograms with max ADC for each supermodules and reset cache
         if (!first) {                       // check if it is the first event in the payload
           if (triggerBC > currentTrigger) { // new event
             for (int sm = 0; sm < 20; sm++) {
-              mRawAmplitudeEMCAL[sm]->Fill(maxADCSM[sm]);
+
+              mRawAmplitudeEMCAL[trgClass][sm]->Fill(maxADCSM[sm]);
+
               maxADCSM[sm] = 0;
               //initialize
               minADCSM[sm] = SHRT_MAX;
@@ -364,26 +413,25 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             auto maxADCbunch = *max_element(adcs.begin(), adcs.end());
             if (maxADCbunch > maxADC)
               maxADC = maxADCbunch;
-            mRawAmplMaxEMCAL[j]->Fill(maxADCbunch); // max for each cell
+            mRawAmplMaxEMCAL[trgClass][j]->Fill(maxADCbunch); //max for each cell
 
             auto minADCbunch = *min_element(adcs.begin(), adcs.end());
             if (minADCbunch < minADC)
               minADC = minADCbunch;
-            mRawAmplMinEMCAL[j]->Fill(minADCbunch); // min for each cell
+            mRawAmplMinEMCAL[trgClass][j]->Fill(minADCbunch); // min for each cell
 
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());
-            mRMSperSM[j]->Fill(col, row, rmsADC);
-            mMEANperSM[j]->Fill(col, row, meanADC);
+            mRMSperSM[trgClass][j]->Fill(col, row, rmsADC);
+            mMEANperSM[trgClass][j]->Fill(col, row, meanADC);
           }
           if (maxADC > maxADCSM[j])
             maxADCSM[j] = maxADC;
-          mMAXperSM[j]->Fill(col, row, maxADC);
+          mMAXperSM[trgClass][j]->Fill(col, row, maxADC);
 
           if (minADC < minADCSM[j])
             minADCSM[j] = minADC;
-          mMINperSM[j]->Fill(col, row, minADC);
-
+          mMINperSM[trgClass][j]->Fill(col, row, minADC);
         } //channels
       }   //new page
     }     //header
@@ -410,14 +458,17 @@ void RawTask::reset()
 
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   mHistogram->Reset();
-  for (Int_t i = 0; i < 20; i++) {
-    mRawAmplitudeEMCAL[i]->Reset();
-    mRawAmplMaxEMCAL[i]->Reset();
-    mRawAmplMinEMCAL[i]->Reset();
-    mRMSperSM[i]->Reset();
-    mMEANperSM[i]->Reset();
-    mMAXperSM[i]->Reset();
-    mMINperSM[i]->Reset();
+  std::array<std::string, 2> triggers = { { "CAL", "PHYS" } };
+  for (const auto& trg : triggers) {
+    for (Int_t i = 0; i < 20; i++) {
+      mRawAmplitudeEMCAL[trg][i]->Reset();
+      mRawAmplMaxEMCAL[trg][i]->Reset();
+      mRawAmplMinEMCAL[trg][i]->Reset();
+      mRMSperSM[trg][i]->Reset();
+      mMEANperSM[trg][i]->Reset();
+      mMAXperSM[trg][i]->Reset();
+      mMINperSM[trg][i]->Reset();
+    }
   }
   mPayloadSizePerDDL->Reset();
   mHistogram->Reset();
