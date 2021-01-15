@@ -92,6 +92,11 @@ void RawDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const CrateO
     mCounterTimeBC.Count(timebc);
     // ToT
     mTOT->Fill(packedHit->tot);
+    // Equipment index for noise analysis
+    if (time < mTimeMin || time >= mTimeMax) {
+      continue;
+    }
+    mCounterIndexENoise.Count(indexE);
   }
 }
 
@@ -143,8 +148,9 @@ void RawDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, const Crat
       nError++;
       mError->Fill(error->slotID + 0.5 * error->chain, error->tdcID);
       for (int ibit = 0; ibit < 15; ++ibit) {
-        if (error->errorFlags & (1 << ibit))
+        if (error->errorFlags & (1 << ibit)) {
           mErrorBits->Fill(ibit);
+        }
       }
     }
   }
@@ -176,6 +182,8 @@ void RawDataDecoder::initHistograms() // Initialization of histograms in Decoder
   //
   mOrbitID.reset(new TH2F("hOrbitID", "OrbitID;OrbitID % 1048576;Crate", 1024, 0, 1048576, 72, 0, 72));
   //
+  mFeaStripNoise.reset(new TH2F("hFeaStripNoise", "Noisy channels x Fea;sector;strip", 72, 0., 18., 91, 0, 91));
+  //
 }
 
 void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
@@ -191,6 +199,86 @@ void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
   mNTests->Reset();
   mTest->Reset();
   mOrbitID->Reset();
+  mFeaStripNoise->Reset();
+}
+
+void RawDataDecoder::estimateNoise(std::shared_ptr<TH2F> hFeaStripNoise)
+{
+  int FeaCounter[nsectors][nstrips][4] = { { { 0 } } };
+  double IntegratedTimeFea[nsectors][nstrips][4] = { { { 0. } } };
+  double IntegratedTime[nsectors][nstrips] = { { 0. } };
+
+  for (unsigned int i = 0; i < 172800; ++i) {
+    const auto indexcounter = mCounterIndexENoise.HowMany(i);
+    const unsigned int crate = i / 2400;
+    const auto time_window = (mTimeMax - mTimeMin) * tdc_width;
+    const auto time = mDRMCounter[crate + 1].HowMany(0) * time_window;
+
+    // start measure time from 1 micro second
+    if (time < 1.e-6) {
+      continue;
+    }
+    // check if this channel was active
+    if (indexcounter == 0) {
+      continue;
+    }
+
+    const auto rate = (float)indexcounter / time;
+
+    if (rate < RawDataDecoder::max_noise) {
+      continue;
+    }
+
+    const int crate_ = i % 2400;
+    const int slot = crate_ / 240;
+    const int slot_ = crate_ % 240;
+    const int chain = slot_ / 120;
+    const int chain_ = slot_ % 120;
+    const int tdc = chain_ / 8;
+    const int tdc_ = chain_ % 8;
+    const int channel = tdc_;
+
+    const auto eIndex = o2::tof::Geo::getECHFromIndexes(crate, slot + 3, chain, tdc, channel);
+    const auto dIndex = o2::tof::Geo::getCHFromECH(eIndex);
+    if (dIndex < 0) {
+      continue;
+    }
+    const auto sector = dIndex / 8736;
+    const auto sector_ = dIndex % 8736;
+    const auto strip = sector_ / 96;
+    const auto strip_ = sector_ % 96;
+    const auto strrow_ = strip_ % 48;
+    const auto fea = strrow_ / 12;
+
+    IntegratedTime[sector][strip] += time;
+    FeaCounter[sector][strip][fea] += indexcounter;
+    IntegratedTimeFea[sector][strip][fea] += time;
+  } // end loop over index
+
+  for (unsigned int isector = 0; isector < nsectors; isector++) {
+    for (unsigned int istrip = 0; istrip < nstrips; istrip++) {
+      const auto itime = IntegratedTime[isector][istrip];
+
+      // start measure time from 1 micro second
+      if (itime < 1.e-6) {
+        continue;
+      }
+
+      for (int iFea = 0; iFea < 4; iFea++) {
+        const auto indexcounterFea = FeaCounter[isector][istrip][iFea];
+        const auto timeFea = IntegratedTimeFea[isector][istrip][iFea];
+
+        // start measure time from 1 micro second
+        if (timeFea < 1.e-6) {
+          continue;
+        }
+
+        const auto rateFea = (float)indexcounterFea / timeFea;
+
+        hFeaStripNoise->SetBinContent(isector * 4 + (3 - iFea) + 1, istrip + 1, rateFea);
+      } // end loop over Feas
+    }   // end loop over strips
+  }     // end loop over sectors
 }
 
 // Implement the Task
@@ -201,6 +289,15 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
       LOG(INFO) << "Rig for DecoderCONET";
       mDecoderRaw.setDecoderCONET(kTRUE);
     }
+  }
+  if (auto param = mCustomParameters.find("TimeWindowMin"); param != mCustomParameters.end()) {
+    mDecoderRaw.setTimeMin(param->second);
+  }
+  if (auto param = mCustomParameters.find("TimeWindowMax"); param != mCustomParameters.end()) {
+    mDecoderRaw.setTimeMax(param->second);
+  }
+  if (auto param = mCustomParameters.find("NoiseThreshold"); param != mCustomParameters.end()) {
+    mDecoderRaw.setMaxNoise(param->second);
   }
 
   mDRMHisto.reset(new TH2F("DRMCounter", "DRM Diagnostics;DRM Word;Crate;Words", 32, 0, 32, 72, 0, 72));
@@ -218,6 +315,9 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   mIndexE.reset(new TH1F("hIndexE", "Equipment index;index EO", 172800, 0., 172800.));
   mDecoderRaw.mCounterIndexE.MakeHistogram(mIndexE.get());
   getObjectsManager()->startPublishing(mIndexE.get());
+  mIndexENoise.reset(new TH1F("hIndexENoise", "Equipment index for noise analysis;index EO", 172800, 0., 172800.));
+  mDecoderRaw.mCounterIndexENoise.MakeHistogram(mIndexENoise.get());
+  getObjectsManager()->startPublishing(mIndexENoise.get());
   mTimeBC.reset(new TH1F("hTimeBC", "Raw BC Time;BC time (24.4 ps)", 1024, 0., 1024.));
   mDecoderRaw.mCounterTimeBC.MakeHistogram(mTimeBC.get());
   getObjectsManager()->startPublishing(mTimeBC.get());
@@ -234,6 +334,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mDecoderRaw.mNTests.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mTest.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mOrbitID.get());
+  getObjectsManager()->startPublishing(mDecoderRaw.mFeaStripNoise.get());
 }
 
 void TaskRaw::startOfActivity(Activity& /*activity*/)
@@ -259,8 +360,8 @@ void TaskRaw::monitorData(o2::framework::ProcessingContext& ctx)
     for (auto const& input : iit) {
       /** input **/
       const auto* headerIn = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(input);
-      auto payloadIn = input.payload;
-      auto payloadInSize = headerIn->payloadSize;
+      const auto payloadIn = input.payload;
+      const auto payloadInSize = headerIn->payloadSize;
       mDecoderRaw.setDecoderBuffer(payloadIn);
       mDecoderRaw.setDecoderBufferSize(payloadInSize);
       mDecoderRaw.decode();
@@ -283,7 +384,9 @@ void TaskRaw::endOfCycle()
   }
 
   mDecoderRaw.mCounterIndexE.FillHistogram(mIndexE.get());
+  mDecoderRaw.mCounterIndexENoise.FillHistogram(mIndexENoise.get());
   mDecoderRaw.mCounterTimeBC.FillHistogram(mTimeBC.get());
+  mDecoderRaw.estimateNoise(mDecoderRaw.mFeaStripNoise);
 }
 
 void TaskRaw::endOfActivity(Activity& /*activity*/)
@@ -303,6 +406,7 @@ void TaskRaw::reset()
   }
 
   mIndexE->Reset();
+  mIndexENoise->Reset();
   mTimeBC->Reset();
 
   mDecoderRaw.resetHistograms();

@@ -23,29 +23,9 @@
       }
     },
     "tasks": {
-      "TaskRaw": {
+      "TaskRawLocal": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskRaw",
-        "moduleName": "QcTOF",
-        "detectorName": "TOF",
-        "cycleDurationSeconds": "60",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tof-rawdata"
-        },
-        "taskParameters": {
-          "DecoderCONET": "False",
-          "TimeWindowMin": "4096",
-          "TimeWindowMax": "36864",
-          "NoiseThreshold": "1000"
-        },
-        "location": "remote"
-      },
-      "TaskDigits": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::TaskDigits",
         "moduleName": "QcTOF",
         "detectorName": "TOF",
         "cycleDurationSeconds": "10",
@@ -53,7 +33,31 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "tof-digits"
+          "name": "raw-many"
+        },
+        "taskParameters": {
+          "nothing": "rien"
+        },
+        "location": "local",
+        "localMachines": [
+          "localhost",
+          "localhost1"
+        ],
+        "remoteMachine": "localhost",
+        "remotePort": "30132",
+        "mergingMode": "delta"
+      },
+      "TaskRawRemote": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::TaskRaw",
+        "moduleName": "QcTOF",
+        "detectorName": "TOF",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "raw-little"
         },
         "taskParameters": {
           "nothing": "rien"
@@ -62,7 +66,7 @@
       }
     },
     "checks": {
-      "CheckDiagnostics": {
+      "CheckDiagnosticsLocal": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::CheckDiagnostics",
         "moduleName": "QcTOF",
@@ -71,14 +75,14 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskRaw",
+            "name": "TaskRawLocal",
             "MOs": [
               "RDHCounterCrate0"
             ]
           }
         ]
       },
-      "CheckCompressedData": {
+      "CheckCompressedDataLocal": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::CheckCompressedData",
         "moduleName": "QcTOF",
@@ -90,39 +94,58 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskRaw",
+            "name": "TaskRawLocal",
+            "MOs": [
+              "hDiagnostic"
+            ]
+          }
+        ]
+      },
+      "CheckDiagnosticsRemote": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckDiagnostics",
+        "moduleName": "QcTOF",
+        "detectorName": "TOF",
+        "policy": "OnAny",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskRawRemote",
+            "MOs": [
+              "RDHCounterCrate0"
+            ]
+          }
+        ]
+      },
+      "CheckCompressedDataRemote": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckCompressedData",
+        "moduleName": "QcTOF",
+        "detectorName": "TOF",
+        "policy": "OnAny",
+        "checkParameters": {
+          "DiagnosticThresholdPerSlot": "10"
+        },
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskRawRemote",
             "MOs": [
               "hDiagnostic"
             ]
           }
         ]
       }
-    },
-    "postprocessing": {
-      "PostProcessDiagnosticPerCrate": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate",
-        "moduleName": "QualityControl",
-        "detectorName": "TOF",
-        "dataSources": [],
-        "plots": [],
-        "initTrigger": [
-          "once"
-        ],
-        "updateTrigger": [
-          "5 seconds"
-        ],
-        "stopTrigger": [
-          "once"
-        ]
-      }
     }
   },
   "dataSamplingPolicies": [
     {
-      "id": "tof-rawdata",
+      "id": "raw-many",
       "active": "true",
-      "machines": [],
+      "machines": [
+        "localhost",
+        "localhost1"
+      ],
       "query": "dataframe:TOF/CRAWDATA",
       "samplingConditions": [
         {
@@ -134,10 +157,13 @@
       "blocking": "false"
     },
     {
-      "id": "tof-digits",
+      "id": "raw-little",
       "active": "true",
-      "machines": [],
-      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
+      "machines": [
+        "localhost"
+      ],
+      "port": "30333",
+      "query": "dataframe:TOF/CRAWDATA",
       "samplingConditions": [
         {
           "condition": "random",
