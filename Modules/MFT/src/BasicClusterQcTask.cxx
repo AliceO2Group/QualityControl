@@ -19,6 +19,7 @@
 #include <TH1.h>
 // O2
 #include <DataFormatsITSMFT/Cluster.h>
+#include <DataFormatsITSMFT/CompCluster.h>
 #include <Framework/InputRecord.h>
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
@@ -43,15 +44,15 @@ void BasicClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
-  mMFT_nPix_H = std::make_unique<TH1F>("mMFT_nPix", "mMFT_nPix", 50, -0.5, 49.5);
-  getObjectsManager()->startPublishing(mMFT_nPix_H.get());
-  getObjectsManager()->addMetadata(mMFT_nPix_H->GetName(), "custom", "34");
+  mMFT_ClusterSensorID_H = std::make_unique<TH1F>("mMFT_ClusterSensorID_H", "mMFT_ClusterSensorID_H", 936, -0.5, 935.5);
+  getObjectsManager()->startPublishing(mMFT_ClusterSensorID_H.get());
+  getObjectsManager()->addMetadata(mMFT_ClusterSensorID_H->GetName(), "custom", "34");
 }
 
 void BasicClusterQcTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
-  mMFT_nPix_H->Reset();
+  mMFT_ClusterSensorID_H->Reset();
 }
 
 void BasicClusterQcTask::startOfCycle()
@@ -62,12 +63,12 @@ void BasicClusterQcTask::startOfCycle()
 void BasicClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // get the clusters
-  const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::Cluster>>("randomcluster");
+  const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("randomcluster");
   if (clusters.size() < 1)
     return;
   // fill the histograms
   for (auto& one_cluster : clusters) {
-    mMFT_nPix_H->Fill(one_cluster.getNPix());
+    mMFT_ClusterSensorID_H->Fill(one_cluster.getSensorID());
   }
 }
 
@@ -86,7 +87,7 @@ void BasicClusterQcTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-  mMFT_nPix_H->Reset();
+  mMFT_ClusterSensorID_H->Reset();
 }
 
 } // namespace o2::quality_control_modules::mft

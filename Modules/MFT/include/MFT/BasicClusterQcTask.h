@@ -47,7 +47,7 @@ class BasicClusterQcTask /*final*/ : public TaskInterface // todo add back the "
   void reset() override;
 
  private:
-  std::unique_ptr<TH1F> mMFT_nPix_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_ClusterSensorID_H = nullptr;
 };
 
 } // namespace o2::quality_control_modules::mft
