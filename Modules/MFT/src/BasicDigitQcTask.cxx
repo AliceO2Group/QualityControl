@@ -51,11 +51,11 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   //  -------------------
-  mMFT_chip_index_H = std::make_unique<TH1F>("mMFT_chip_index_H", "mMFT_chip_index_H", 936, -0.5, 935.5);
+  mMFT_chip_index_H = std::make_unique<TH1F>("ChipHitMaps/mMFT_chip_index_H", "mMFT_chip_index_H", 936, -0.5, 935.5);
   getObjectsManager()->startPublishing(mMFT_chip_index_H.get());
   getObjectsManager()->addMetadata(mMFT_chip_index_H->GetName(), "custom", "34");
 
-  mMFT_chip_std_dev_H = std::make_unique<TH1F>("mMFT_chip_std_dev_H", "mMFT_chip_std_dev_H", 936, -0.5, 935.5);
+  mMFT_chip_std_dev_H = std::make_unique<TH1F>("ChipHitMaps/mMFT_chip_std_dev_H", "mMFT_chip_std_dev_H", 936, -0.5, 935.5);
   getObjectsManager()->startPublishing(mMFT_chip_std_dev_H.get());
   getObjectsManager()->addMetadata(mMFT_chip_std_dev_H->GetName(), "custom", "34");
 
