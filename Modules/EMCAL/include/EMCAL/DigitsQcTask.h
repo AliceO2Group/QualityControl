@@ -40,6 +40,26 @@ namespace emcal
 class DigitsQcTask final : public TaskInterface
 {
  public:
+  struct DigitsHistograms {
+    std::string mTriggerClass;
+    std::array<TH2*, 2> mDigitAmplitude;      ///< Digit amplitude
+    std::array<TH2*, 2> mDigitTime;           ///< Digit time
+    std::array<TH2*, 2> mDigitAmplitudeCalib; ///< Digit amplitude calibrated
+    std::array<TH2*, 2> mDigitTimeCalib;      ///< Digit time calibrated
+
+    TH2* mDigitOccupancy = nullptr;             ///< Digit occupancy EMCAL and DCAL
+    TH2* mDigitOccupancyThr = nullptr;          ///< Digit occupancy EMCAL and DCAL with Energy trheshold
+    TProfile2D* mIntegratedOccupancy = nullptr; ///< Digit integrated occupancy
+    TH1* mDigitAmplitudeEMCAL = nullptr;        ///< Digit amplitude in EMCAL
+    TH1* mDigitAmplitudeDCAL = nullptr;         ///< Digit amplitude in DCAL
+    TH1* mnumberEvents = nullptr;               ///< Number of Events for normalization
+
+    void initForTrigger(const char* trigger);
+    void startPublishing();
+    void reset();
+    void clean();
+  };
+
   /// \brief Constructor
   DigitsQcTask() = default;
   /// Destructor
@@ -55,22 +75,16 @@ class DigitsQcTask final : public TaskInterface
   void reset() override;
 
   void setThreshold(Double_t threshold) { mCellThreshold = threshold; }
+  void setEndOfPayloadCheck(Bool_t doCheck) { mDoEndOfPayloadCheck = doCheck; }
 
  private:
-  Double_t mCellThreshold = 0.5;                ///< energy cell threshold
-  std::array<TH2*, 2> mDigitAmplitude;          ///< Digit amplitude
-  std::array<TH2*, 2> mDigitTime;               ///< Digit time
-  std::array<TH2*, 2> mDigitAmplitudeCalib;     ///< Digit amplitude calibrated
-  std::array<TH2*, 2> mDigitTimeCalib;          ///< Digit time calibrated
-  TH2* mDigitOccupancy = nullptr;               ///< Digit occupancy EMCAL and DCAL
-  TH2* mDigitOccupancyThr = nullptr;            ///< Digit occupancy EMCAL and DCAL with Energy trheshold
-  TProfile2D* mIntegratedOccupancy = nullptr;   ///< Digit integrated occupancy
-  TH1* mDigitAmplitudeEMCAL = nullptr;          ///< Digit amplitude in EMCAL
-  TH1* mDigitAmplitudeDCAL = nullptr;           ///< Digit amplitude in DCAL
-  TH1* mnumberEvents = nullptr;                 ///< Number of Events for normalization
-  o2::emcal::Geometry* mGeometry = nullptr;     ///< EMCAL geometry
-  o2::emcal::BadChannelMap* mBadChannelMap;     ///< EMCAL channel map
-  o2::emcal::TimeCalibrationParams* mTimeCalib; ///< EMCAL time calib
+  void startPublishing(DigitsHistograms& histos);
+  Double_t mCellThreshold = 0.5;                               ///< energy cell threshold
+  Bool_t mDoEndOfPayloadCheck = false;                         ///< Do old style end-of-payload check
+  std::map<std::string, DigitsHistograms> mHistogramContainer; ///< Container with histograms per trigger class
+  o2::emcal::Geometry* mGeometry = nullptr;                    ///< EMCAL geometry
+  o2::emcal::BadChannelMap* mBadChannelMap;                    ///< EMCAL channel map
+  o2::emcal::TimeCalibrationParams* mTimeCalib;                ///< EMCAL time calib
 };
 
 } // namespace emcal
