@@ -409,6 +409,8 @@ An aggregator inherits from `AggregatorInterface` and in particular this method:
 
 The `aggregate` method is called whenever the _policy_ is satisfied. It gets a map with all the declared QualityObjects. It is expected to return a new Quality based on the inputs.
 
+Note: the `aggregate` method receives a map with more objects than requested. In particular, it contains the objects produced by the aggregator itself. This is probably going to change in the future. For the time being make sure you query the map with the correct name and not blindly loop over all elements. 
+
 ## Committing code
 
 To commit your new or modified code, please follow this procedure
