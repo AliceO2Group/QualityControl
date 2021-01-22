@@ -34,6 +34,7 @@
 #include <Framework/runDataProcessing.h>
 #include <Framework/Task.h>
 #include <DataFormatsITSMFT/Cluster.h>
+#include <DataFormatsITSMFT/CompCluster.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 
 using namespace o2;
@@ -87,15 +88,15 @@ class ClustersRootFileReaderMFT : public o2::framework::Task
 
     // get the clusters in current ROF
     // --> get cluster branch
-    std::vector<o2::itsmft::Cluster> clusters, *pclusters = &clusters;
-    tree->SetBranchAddress("MFTCluster", &pclusters);
+    std::vector<o2::itsmft::CompClusterExt> clusters, *pclusters = &clusters;
+    tree->SetBranchAddress("MFTClusterComp", &pclusters);
     tree->GetEntry(0);
     // --> find the ranges
     int index = rof.getFirstEntry();        // first cluster position
     int nClustersInROF = rof.getNEntries(); // number of clusters
     int lastIndex = index + nClustersInROF;
     // --> fill in the corresponding clusters
-    std::vector<o2::itsmft::Cluster>* ClustersInROF = new std::vector<o2::itsmft::Cluster>();
+    std::vector<o2::itsmft::CompClusterExt>* ClustersInROF = new std::vector<o2::itsmft::CompClusterExt>();
     std::copy(clusters.begin() + index, clusters.begin() + lastIndex, std::back_inserter(*ClustersInROF));
 
     // fill in the message
