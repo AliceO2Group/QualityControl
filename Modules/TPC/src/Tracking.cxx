@@ -28,10 +28,8 @@
 #include "SimulationDataFormat/MCCompLabel.h"
 #include "SimulationDataFormat/MCTruthContainer.h"
 #include "SimulationDataFormat/ConstMCTruthContainer.h"
-#include "DataFormatsTPC/TPCSectorHeader.h"
-#include "DataFormatsTPC/ClusterGroupAttribute.h"
 #include "DataFormatsTPC/ClusterNative.h"
-#include "DataFormatsTPC/ClusterNativeHelper.h"
+#include "DataFormatsTPC/WorkflowHelper.h"
 #include "TPCQC/Helpers.h"
 #include "GPUO2InterfaceQA.h"
 
@@ -92,85 +90,10 @@ void Tracking::monitorData(o2::framework::ProcessingContext& ctx)
   auto tracks = ctx.inputs().get<std::vector<o2::tpc::TrackTPC>>("inputTracks");
   auto trackLabels = ctx.inputs().get<std::vector<o2::MCCompLabel>>("inputTrackLabels");
   auto clusRefs = ctx.inputs().get<std::vector<o2::tpc::TPCClRefElem>>("inputClusRefs");
+  const auto& inputsTPCclusters = o2::tpc::getWorkflowTPCInput(ctx, 0, true);
 
-  constexpr unsigned long tpcSectorMask = 0xFFFFFFFFFul;
-  ClusterNativeAccess clusterIndex;
-  std::unique_ptr<ClusterNative[]> clusterBuffer;
-  ClusterNativeHelper::ConstMCLabelContainerViewWithBuffer clustersMCBuffer;
-  std::vector<gsl::span<const char>> inputs;
-  std::vector<ConstMCLabelContainerView> mcInputs;
-  struct InputRef {
-    DataRef data;
-    DataRef labels;
-  };
-  std::map<int, InputRef> inputrefs;
-  {
-    std::vector<InputSpec> filter = {
-      { "check", ConcreteDataTypeMatcher{ gDataOriginTPC, "CLNATIVEMCLBL" }, Lifetime::Timeframe }
-    };
-    unsigned long recvMask = 0;
-    for (auto const& ref : InputRecordWalker(ctx.inputs(), filter)) {
-      auto const* sectorHeader = DataRefUtils::getHeader<TPCSectorHeader*>(ref);
-      if (sectorHeader == nullptr) {
-        LOG(ERROR) << "sector header missing on header stack";
-        return;
-      }
-      const int sector = sectorHeader->sector();
-      if (sector < 0) {
-        continue;
-      }
-      if (recvMask & sectorHeader->sectorBits) {
-        throw std::runtime_error("can only have one MC data set per sector");
-      }
-      recvMask |= sectorHeader->sectorBits;
-      inputrefs[sector].labels = ref;
-    }
-    if (recvMask != tpcSectorMask) {
-      throw std::runtime_error("Incomplete set of MC labels received");
-    }
-  }
-
-  {
-    std::vector<InputSpec> filter = {
-      { "check", ConcreteDataTypeMatcher{ gDataOriginTPC, "CLUSTERNATIVE" }, Lifetime::Timeframe }
-    };
-    unsigned long recvMask = 0;
-    for (auto const& ref : InputRecordWalker(ctx.inputs(), filter)) {
-      auto const* sectorHeader = DataRefUtils::getHeader<TPCSectorHeader*>(ref);
-      if (sectorHeader == nullptr) {
-        throw std::runtime_error("sector header missing on header stack");
-      }
-      const int sector = sectorHeader->sector();
-      if (sector < 0) {
-        continue;
-      }
-      if (recvMask & sectorHeader->sectorBits) {
-        throw std::runtime_error("can only have one cluster data set per sector");
-      }
-      recvMask |= sectorHeader->sectorBits;
-      inputrefs[sector].data = ref;
-    }
-    if (recvMask != tpcSectorMask) {
-      throw std::runtime_error("Incomplete set of clusters/digits received");
-    }
-  }
-
-  for (auto const& refentry : inputrefs) {
-    auto& ref = refentry.second.data;
-    if (ref.payload == nullptr) {
-      // skip zero-length message
-      continue;
-    }
-    if (refentry.second.labels.header != nullptr && refentry.second.labels.payload != nullptr) {
-      mcInputs.emplace_back(ConstMCLabelContainerView(ctx.inputs().get<gsl::span<char>>(refentry.second.labels)));
-    }
-    inputs.emplace_back(gsl::span(ref.payload, DataRefUtils::getPayloadSize(ref)));
-  }
-  memset(&clusterIndex, 0, sizeof(clusterIndex));
-  ClusterNativeHelper::Reader::fillIndex(clusterIndex, clusterBuffer, clustersMCBuffer, inputs, mcInputs, [&](auto& index) { return tpcSectorMask & (1ul << index); });
-
-  LOG(INFO) << "RECEIVED tracks " << tracks.size() << " (MC " << trackLabels.size() << ", ClusRefs " << clusRefs.size() << ") clusters " << clusterIndex.nClustersTotal << " (MC " << clusterIndex.clustersMCTruth->getNElements() << ")";
-  mQCTracking.processTracks(&tracks, &trackLabels, &clusterIndex);
+  LOG(INFO) << "RECEIVED tracks " << tracks.size() << " (MC " << trackLabels.size() << ", ClusRefs " << clusRefs.size() << ") clusters " << inputsTPCclusters->clusterIndex.nClustersTotal << " (MC " << inputsTPCclusters->clusterIndex.clustersMCTruth->getNElements() << ")";
+  mQCTracking.processTracks(&tracks, &trackLabels, &inputsTPCclusters->clusterIndex);
 }
 
 void Tracking::endOfCycle()
