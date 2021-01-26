@@ -390,7 +390,8 @@ int HmpidDecoder::decodeHeader(int32_t* streamPtrAdr, int* EquipIndex)
 void HmpidDecoder::updateStatistics(HmpidEquipment* eq)
 {
   eq->mPadsPerEventAverage = ((eq->mPadsPerEventAverage * (float)(eq->mNumberOfEvents - 1)) +
-                              (float)eq->mSampleNumber) / (float)(eq->mNumberOfEvents);
+                              (float)eq->mSampleNumber) /
+                             (float)(eq->mNumberOfEvents);
   eq->mEventSizeAverage = ((eq->mEventSizeAverage * (float)(eq->mNumberOfEvents - 1)) + eq->mEventSize) / (float)(eq->mNumberOfEvents);
   eq->mBusyTimeSamples++;
   eq->mBusyTimeAverage = ((eq->mBusyTimeAverage * (float)eq->mBusyTimeSamples) + eq->mBusyTimeValue) / (float)(eq->mBusyTimeSamples);
