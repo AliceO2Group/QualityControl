@@ -389,13 +389,17 @@ int HmpidDecoder::decodeHeader(int32_t* streamPtrAdr, int* EquipIndex)
 /// @param[in] *eq : the pointer to the Equipment Object
 void HmpidDecoder::updateStatistics(HmpidEquipment* eq)
 {
-  eq->mPadsPerEventAverage = ((eq->mPadsPerEventAverage * (eq->mNumberOfEvents - 1)) + eq->mSampleNumber) / (eq->mNumberOfEvents);
-  eq->mEventSizeAverage = ((eq->mEventSizeAverage * (eq->mNumberOfEvents - 1)) + eq->mEventSize) / (eq->mNumberOfEvents);
-  eq->mBusyTimeAverage = ((eq->mBusyTimeAverage * eq->mBusyTimeSamples) + eq->mBusyTimeValue) / (++(eq->mBusyTimeSamples));
-  if (eq->mSampleNumber == 0)
+  eq->mPadsPerEventAverage = ((eq->mPadsPerEventAverage * (float)(eq->mNumberOfEvents - 1)) +
+                              (float)eq->mSampleNumber) / (float)(eq->mNumberOfEvents);
+  eq->mEventSizeAverage = ((eq->mEventSizeAverage * (float)(eq->mNumberOfEvents - 1)) + eq->mEventSize) / (float)(eq->mNumberOfEvents);
+  eq->mBusyTimeSamples++;
+  eq->mBusyTimeAverage = ((eq->mBusyTimeAverage * (float)eq->mBusyTimeSamples) + eq->mBusyTimeValue) / (float)(eq->mBusyTimeSamples);
+  if (eq->mSampleNumber == 0) {
     eq->mNumberOfEmptyEvents += 1;
-  if (eq->mErrorsCounter > 0)
+  }
+  if (eq->mErrorsCounter > 0) {
     eq->mNumberOfWrongEvents += 1;
+  }
   eq->mTotalPads += eq->mSampleNumber;
   eq->mTotalErrors += eq->mErrorsCounter;
   return;

@@ -16,6 +16,7 @@
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TMath.h>
+#include <Framework/InputRecord.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "HMPID/HmpidDecodeRawMem.h"
@@ -119,10 +120,10 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   //int CruIdsArray[] = { 1, 2, 3, 4 };
   //int LinkIdsArray[] = { 1, 2, 3, 4 };
   // Get a Decoder Hinstance
-  HmpidDecodeRawMem* Decoder = new HmpidDecodeRawMem(14);
+  HmpidDecodeRawMem decoder(14);
   //  HmpidDecoder *Decoder = new HmpidDecoder(EqIdsArray, 14);
-  Decoder->init();
-  Decoder->setVerbosity(7); // this is for Debug
+  decoder.init();
+  decoder.setVerbosity(7); // this is for Debug
 
   // mHistogram->Fill(gRandom->Gaus(250.,100.));
 
@@ -138,31 +139,31 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       //mHistogram->Fill(header->payloadSize);
       int32_t* ptrToPayload = (int32_t*)(input.payload);
 
-      Decoder->setUpStream(ptrToPayload, header->payloadSize);
+      decoder.setUpStream(ptrToPayload, header->payloadSize);
 
-      if (!Decoder->decodeBuffer()) {
+      if (!decoder.decodeBuffer()) {
         ILOG(Error) << "Error decoding the Superpage !" << ENDM;
       }
 
       for (Int_t eq = 0; eq < 14; eq++) {
 
-        if (Decoder->getAverageEventSize(eq) > 0.) {
-          hEventSize->SetBinContent(eq + 1, Decoder->getAverageEventSize(eq) / 1000.);
+        if (decoder.getAverageEventSize(eq) > 0.) {
+          hEventSize->SetBinContent(eq + 1, decoder.getAverageEventSize(eq) / 1000.);
           hEventSize->SetBinError(eq + 1, 0.0000001);
         }
-        if (Decoder->getAverageBusyTime(eq) > 0.) {
-          hBusyTime->SetBinContent(eq + 1, Decoder->getAverageBusyTime(eq) * 1000000);
+        if (decoder.getAverageBusyTime(eq) > 0.) {
+          hBusyTime->SetBinContent(eq + 1, decoder.getAverageBusyTime(eq) * 1000000);
           hBusyTime->SetBinError(eq + 1, 0.00000001);
         }
 
-        Printf("eq = %i, size = %f, busy = %f", eq, Decoder->getAverageEventSize(eq), Decoder->getAverageBusyTime(eq));
+        Printf("eq = %i, size = %f, busy = %f", eq, decoder.getAverageEventSize(eq), decoder.getAverageBusyTime(eq));
 
         for (Int_t column = 0; column < 24; column++)
           for (Int_t dilogic = 0; dilogic < 10; dilogic++)
             for (Int_t channel = 0; channel < 48; channel++) {
 
-              Float_t mean = Decoder->getChannelSum(eq, column, dilogic, channel) / Decoder->getChannelSamples(eq, column, dilogic, channel);
-              Float_t sigma = TMath::Sqrt(Decoder->getChannelSquare(eq, column, dilogic, channel) / Decoder->getChannelSamples(eq, column, dilogic, channel) - mean * mean);
+              Float_t mean = decoder.getChannelSum(eq, column, dilogic, channel) / decoder.getChannelSamples(eq, column, dilogic, channel);
+              Float_t sigma = TMath::Sqrt(decoder.getChannelSquare(eq, column, dilogic, channel) / decoder.getChannelSamples(eq, column, dilogic, channel) - mean * mean);
 
               // if(mean>1) Printf("*******************************************   mean = %f, sigma = %f **************************************",mean,sigma);
 
@@ -173,9 +174,9 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       /* Access the pads
       
-      uint16_t   Decoder->theEquipments[0..13]->padSamples[0..23][0..9][0..47]  Number of samples
-      float      Decoder->theEquipments[0..13]->padSum[0..23][0..9][0..47]      Sum of the charge of all samples
-      float      Decoder->theEquipments[0..13]->padSquares[0..23][0..9][0..47]  Sum of the charge squares of all samples
+      uint16_t   decoder.theEquipments[0..13]->padSamples[0..23][0..9][0..47]  Number of samples
+      float      decoder.theEquipments[0..13]->padSum[0..23][0..9][0..47]      Sum of the charge of all samples
+      float      decoder.theEquipments[0..13]->padSquares[0..23][0..9][0..47]  Sum of the charge squares of all samples
 
     Methods to access pads
 
@@ -197,8 +198,6 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
     hPedestalSigma->Reset();
     NumCycles = 0;
   }
-
-  delete Decoder;
 
   // 2. Using get("<binding>")
 
