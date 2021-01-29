@@ -9,12 +9,27 @@ It is `repoCleaner.py`. See the long comment at the beginning.
 ```
 
 ## Configuration
-The file `config.yaml` contains the rules to be followed to clean up the database.
-It also contains the CCDB url.
+The file `config.yaml` contains the CCDB URL and the rules to be followed to clean up the database. An example is provided along this README (`config.yaml`).
+A typical rule in the config file looks like:
+```
+  - object_path: qc/ITS/.*
+    delay: 240
+    policy: 1_per_hour
+```
+There can be any number of these rules. The order is important as we use the first matching rule for each element in the QCDB. 
+- `object_path`: a pattern to be matched to know if the rule applies
+- `delay`: the duration in minutes of the grace period during which an object is not removed, even if it matches the above path. 
+- `policy`: the name of a policy to apply on the matching objects. Here are the currently available policies (full description in the corresponding files):
+   - `1_per_hour`: keep the first and extend its validity to 1 hour, remove everything in the next hour, repeat.
+   - `1_per_run`: requires the "run" metadata to be set. Keep only the most recent version of an object for a given run. 
+   - `last_only`: keep only the last version, remove everything else.
+   - `none_kept`: keep none, remove everything
+   - `skip`: keep everything
+- `xyz`: any extra argument necessary for a given policy. This is the case of the argument `delete_when_no_run` required by the policy `1_per_run`. 
 
 The configuration for ccdb-test is described [here](../../../doc/DevelopersTips.md). 
 
-## Test
+## Unit Tests
 `cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
 
 To run just one of the rules, do `python3 1_per_run.py`.
