@@ -43,11 +43,11 @@
     },
     "checks": {
       "BasicClusterQcCheck": {
-        "active": "true",
+        "active": "false",
         "dataSource": [{
           "type": "Task",
           "name": "BasicClusterQcTask",
-          "MOs": ["mMFT_nPix"]
+          "MOs": ["mMFT_ClusterSensorID_H"]
         }],
         "className": "o2::quality_control_modules::mft::BasicClusterQcCheck",
         "moduleName": "QcMFT",

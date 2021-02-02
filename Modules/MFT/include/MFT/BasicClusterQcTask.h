@@ -48,6 +48,7 @@ class BasicClusterQcTask /*final*/ : public TaskInterface // todo add back the "
 
  private:
   std::unique_ptr<TH1F> mMFT_ClusterSensorID_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_ClusterPatternID_H = nullptr;
 };
 
 } // namespace o2::quality_control_modules::mft

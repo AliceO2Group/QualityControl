@@ -47,12 +47,17 @@ void BasicClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMFT_ClusterSensorID_H = std::make_unique<TH1F>("mMFT_ClusterSensorID_H", "mMFT_ClusterSensorID_H", 936, -0.5, 935.5);
   getObjectsManager()->startPublishing(mMFT_ClusterSensorID_H.get());
   getObjectsManager()->addMetadata(mMFT_ClusterSensorID_H->GetName(), "custom", "34");
+
+  mMFT_ClusterPatternID_H = std::make_unique<TH1F>("mMFT_ClusterPatternID_H", "mMFT_ClusterPatternID_H", 2048, -0.5, 2047.5);
+  getObjectsManager()->startPublishing(mMFT_ClusterPatternID_H.get());
+  getObjectsManager()->addMetadata(mMFT_ClusterPatternID_H->GetName(), "custom", "34");
 }
 
 void BasicClusterQcTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
   mMFT_ClusterSensorID_H->Reset();
+  mMFT_ClusterPatternID_H->Reset();
 }
 
 void BasicClusterQcTask::startOfCycle()
@@ -69,6 +74,7 @@ void BasicClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // fill the histograms
   for (auto& one_cluster : clusters) {
     mMFT_ClusterSensorID_H->Fill(one_cluster.getSensorID());
+    mMFT_ClusterPatternID_H->Fill(one_cluster.getPatternID());
   }
 }
 
@@ -88,6 +94,8 @@ void BasicClusterQcTask::reset()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mMFT_ClusterSensorID_H->Reset();
+  mMFT_ClusterPatternID_H->Reset();
+
 }
 
 } // namespace o2::quality_control_modules::mft
