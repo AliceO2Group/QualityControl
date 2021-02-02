@@ -71,7 +71,6 @@ void BasicTrackQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMFT_tang_lambda_H = std::make_unique<TH1F>("mMFT_tang_lambda_H", "mMFT_tang_lambda_H", 100, -25, 0);
   getObjectsManager()->startPublishing(mMFT_tang_lambda_H.get());
   getObjectsManager()->addMetadata(mMFT_tang_lambda_H->GetName(), "custom", "34");
-
 }
 
 void BasicTrackQcTask::startOfActivity(Activity& /*activity*/)
@@ -111,7 +110,6 @@ void BasicTrackQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (one_track.getCharge() == -1)
       mMFT_neg_phi_H->Fill(one_track.getPhi());
   }
-
 }
 
 void BasicTrackQcTask::endOfCycle()

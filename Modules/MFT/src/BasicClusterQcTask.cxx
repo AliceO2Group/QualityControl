@@ -95,7 +95,6 @@ void BasicClusterQcTask::reset()
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mMFT_ClusterSensorID_H->Reset();
   mMFT_ClusterPatternID_H->Reset();
-
 }
 
 } // namespace o2::quality_control_modules::mft
