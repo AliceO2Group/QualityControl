@@ -67,7 +67,7 @@ case "$(uname -s)" in
      ;;
 
    Linux)
-     sed -i 's/VERSION [0-9]+\.[0-9]+\.[0-9]+/VERSION $patchVersionNumbers/g' CMakeLists.txt
+     sed -r -i 's/VERSION [0-9]+\.[0-9]+\.[0-9]+/VERSION '"${patchVersionNumbers}"'/g' CMakeLists.txt
      ;;
 
     *)
