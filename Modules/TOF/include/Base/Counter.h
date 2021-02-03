@@ -43,8 +43,10 @@ class Counter
   /// Destructor
   ~Counter() = default;
 
-  /// Function to increment a counter
-  /// @param v Index in the counter array to increment
+  /// Functions to increment a counter
+  /// @param v Index in the counter array to increment, @param weight weight to add to the array element
+  void Add(const unsigned int& v, const unsigned int& weight);
+
   void Count(const unsigned int& v);
 
   /// Function to reset counters to zero
@@ -95,15 +97,21 @@ class Counter
 // #define ENABLE_PRINT_HISTOGRAMS_MODE // Flag used to enable more printing and more debug
 
 template <const unsigned int size, const char* labels[size]>
-void Counter<size, labels>::Count(const unsigned int& v)
+void Counter<size, labels>::Add(const unsigned int& v, const unsigned int& weight)
 {
   if (v > size) {
     LOG(FATAL) << "Incrementing counter too far! " << v << "/" << size;
   }
 #ifdef ENABLE_COUNTER_DEBUG_MODE
-  LOG(INFO) << "Incrementing " << v << "/" << size << " to " << counter[v];
+  LOG(INFO) << "Incrementing " << v << "/" << size << " of " << weight << " to " << counter[v];
 #endif
-  counter[v]++;
+  counter[v] += weight;
+}
+
+template <const unsigned int size, const char* labels[size]>
+void Counter<size, labels>::Count(const unsigned int& v)
+{
+  Add(v, 1);
 }
 
 template <const unsigned int size, const char* labels[size]>
