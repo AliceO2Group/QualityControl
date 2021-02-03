@@ -16,7 +16,6 @@
 #include "Benchmark/EmptyPPTask.h"
 #include "QualityControl/QcInfoLogger.h"
 
-
 using namespace o2::quality_control::postprocessing;
 
 namespace o2::quality_control_modules::benchmark

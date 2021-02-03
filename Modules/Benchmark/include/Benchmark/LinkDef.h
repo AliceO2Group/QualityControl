@@ -5,5 +5,5 @@
 
 #pragma link C++ class o2::quality_control_modules::benchmark::TH1FTask + ;
 #pragma link C++ class o2::quality_control_modules::benchmark::AlwaysGoodCheck + ;
-#pragma link C++ class o2::quality_control_modules::benchmark::EmptyPPTask+;
+#pragma link C++ class o2::quality_control_modules::benchmark::EmptyPPTask + ;
 #endif
