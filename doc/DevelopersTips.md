@@ -12,6 +12,13 @@ here. It is not sanitized or organized. Just a brain dump.
 5. Once merged, send an email to alice-o2-wp7@cern.ch, alice-o2-qc-contact@cern.ch and alice-dpg-qa-tools@cern.ch to announce the new release. Use the email for the previous release as a template.
 
 ### Create a fix version
+
+One can use the script `createPatch.sh` : 
+```shell
+createPatch.sh v1.9.1 # current version
+```
+
+Alternatively do it manually:
 1. checkout last tagged version, e.g. `git checkout v0.26.1`
 2. branch, e.g. `git checkout -b branch_v0.26.2`
 2. cherry-pick the commit from master, e.g. `git cherry-pick b187ddbe52058d53a9bbf3cbdd53121c6b936cd8`

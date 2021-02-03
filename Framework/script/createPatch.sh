@@ -26,7 +26,7 @@ echo "Patched version: $patchVersion";
 
 
 # check
-read -p "Are you sure? " -n 1 -r
+read -p "Do we continue ? " -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
@@ -36,26 +36,60 @@ fi
 
 # checkout last tagged version
 cd /tmp
+echo "cloning in /tmp/QualityControl if not already there"
 if [[ ! -d "/tmp/QualityControl" ]];
 then
   git clone https://github.com/AliceO2Group/QualityControl.git
 fi
 cd QualityControl
+read -p "Github user ? " user
+git remote rename origin upstream
+git remote add origin https://github.com/user/QualityControl.git
+
+
+echo "branch"
 git checkout $currentVersion
-
-
-# branch
 git checkout -b branch_$patchVersion
 
 
-# cherry-pick the commit from master
+echo "cherry-pick the commit from master"
 read -p "Hash to cherry-pick? " hash
 echo
-
 git cherry-pick $hash
 
-# change version in CMakeLists and commit
-# push the branch upstream, e.g. git push upstream -u branch_v0.26.2
-# tag, e.g. git tag -a v0.26.2 -m "v0.26.2"
-# push the tag upstream, e.g. git push upstream v0.26.2
+
+echo "change version in CMakeLists and commit"
+patchVersionNumbers="${patchVersion:1}"
+echo "patchVersionNumbers: $patchVersionNumbers"
+case "$(uname -s)" in
+   Darwin)
+     sed -E -i '' 's/VERSION [0-9]+\.[0-9]+\.[0-9]+/VERSION '"${patchVersionNumbers}"'/g' CMakeLists.txt
+     ;;
+
+   Linux)
+     sed -i 's/VERSION [0-9]+\.[0-9]+\.[0-9]+/VERSION $patchVersionNumbers/g' CMakeLists.txt
+     ;;
+
+    *)
+     echo 'Unknown OS'
+     exit 4
+     ;;
+esac
+git add CMakeLists.txt
+git commit -m "$patchVersion"
+
+
+echo "push the branch upstream"
+git push upstream -u branch_$patchVersion
+
+
+echo "tag"
+git tag -a $patchVersion -m "$patchVersion"
+
+
+echo "push the tag upstream"
+git push upstream $patchVersion
+
+
 # Release in github using this tag
+echo "It is done, now go to github and release using this tag"
