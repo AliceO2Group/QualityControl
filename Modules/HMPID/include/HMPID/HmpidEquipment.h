@@ -122,9 +122,9 @@ class HmpidEquipment
 
   int getEquipmentId()
   {
-    return (mEquipmentId);
+    return mEquipmentId;
   };
-  int getEquipmentId(int cru, int link);
+  int getEquipmentId(uint32_t cru, uint32_t link);
 
   void init();
   void resetPadMap();

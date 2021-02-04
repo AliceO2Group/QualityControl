@@ -129,12 +129,13 @@ void HmpidEquipment::setPad(int col, int dil, int cha, int charge)
 /// @param[in] cru : FLP CRU Id [0..3]
 /// @param[in] link : CRU Link Id [0..3]
 /// @returns the Equipment Id
-int HmpidEquipment::getEquipmentId(int cru, int link)
+int HmpidEquipment::getEquipmentId(uint32_t cru, uint32_t link)
 {
-  if (cru == mCruId && link == mLinkId)
+  if (cru == mCruId && link == mLinkId) {
     return (mEquipmentId);
-  else
-    return (-1);
+  } else {
+    return -1;
+  }
 }
 
 namespace o2::quality_control_modules::hmpid
