@@ -229,35 +229,53 @@ void TaskRunner::start(const ConfigParamRegistry& options)
   }
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
 
-  startOfActivity();
+  try{
+    startOfActivity();
 
-  if (mNoMoreCycles) {
-    ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
-                        << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
-    return;
+    if (mNoMoreCycles) {
+      ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached"
+                          << " or the device has received an EndOfStream signal. Won't start a new cycle." << ENDM;
+      return;
+    }
+
+    startCycle();
+  } catch (...) {
+    // we catch here because we don't know where it will go in DPL's CallbackService
+    ILOG(Error, Support) << "Error caught in start() :\n" << current_diagnostic(true) << ENDM;
+    throw;
   }
-
-  startCycle();
 }
 
 void TaskRunner::stop()
 {
-  if (mCycleOn) {
-    mTask->endOfCycle();
-    mCycleNumber++;
-    mCycleOn = false;
+  try {
+    if (mCycleOn) {
+      mTask->endOfCycle();
+      mCycleNumber++;
+      mCycleOn = false;
+    }
+    endOfActivity();
+    mTask->reset();
+    mRunNumber = 0;
+  } catch (...) {
+    // we catch here because we don't know where it will go in DPL's CallbackService
+    ILOG(Error, Support) << "Error caught in stop() :\n" << current_diagnostic(true) << ENDM;
+    throw;
   }
-  endOfActivity();
-  mTask->reset();
-  mRunNumber = 0;
 }
 
 void TaskRunner::reset()
 {
-  mTask.reset();
-  mCollector.reset();
-  mObjectsManager.reset();
-  mRunNumber = 0;
+  try {
+    mTask.reset();
+    mCollector.reset();
+    mObjectsManager.reset();
+    mRunNumber = 0;
+  } catch (...) {
+    // we catch here because we don't know where it will go in DPL's CallbackService
+    ILOG(Error, Support) << "Error caught in reset() :\n" << current_diagnostic(true) << ENDM;
+    throw;
+  }
 }
 
 std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs(const framework::InputRecord& inputs)
