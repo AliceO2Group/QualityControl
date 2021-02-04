@@ -288,7 +288,7 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
                               remoteHost + ":" + remotePort + ",rateLogging=60,transport=zeromq";
 
   workflow.emplace_back(
-    specifyFairMQDeviceOutputProxy(
+    specifyFairMQDeviceMultiOutputProxy(
       proxyName.c_str(),
       { proxyInput },
       channelConfig.c_str()));
