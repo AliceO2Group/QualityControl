@@ -229,7 +229,7 @@ void TaskRunner::start(const ConfigParamRegistry& options)
   }
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
 
-  try{
+  try {
     startOfActivity();
 
     if (mNoMoreCycles) {
@@ -241,7 +241,8 @@ void TaskRunner::start(const ConfigParamRegistry& options)
     startCycle();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in start() :\n" << current_diagnostic(true) << ENDM;
+    ILOG(Error, Support) << "Error caught in start() :\n"
+                         << current_diagnostic(true) << ENDM;
     throw;
   }
 }
@@ -259,7 +260,8 @@ void TaskRunner::stop()
     mRunNumber = 0;
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in stop() :\n" << current_diagnostic(true) << ENDM;
+    ILOG(Error, Support) << "Error caught in stop() :\n"
+                         << current_diagnostic(true) << ENDM;
     throw;
   }
 }
@@ -273,7 +275,8 @@ void TaskRunner::reset()
     mRunNumber = 0;
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
-    ILOG(Error, Support) << "Error caught in reset() :\n" << current_diagnostic(true) << ENDM;
+    ILOG(Error, Support) << "Error caught in reset() :\n"
+                         << current_diagnostic(true) << ENDM;
     throw;
   }
 }
