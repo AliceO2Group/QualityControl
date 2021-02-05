@@ -46,6 +46,8 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
   workflowOptions.push_back(
     ConfigParamSpec{ "producers", VariantType::Int, 1, { "Number of producers. Each will have unique SubSpec, counting from 0." } });
   workflowOptions.push_back(
+    ConfigParamSpec{ "timepipeline", VariantType::Int, 1, { "Timepipeline parameter, i.e. how many copies of each producer. See the DPL documentation for explanation." } });
+  workflowOptions.push_back(
     ConfigParamSpec{ "monitoring-url", VariantType::String, "", { "URL of the Monitoring backend." } });
 }
 
@@ -62,11 +64,12 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   double rate = config.options().get<double>("message-rate");
   uint64_t amount = config.options().get<int>("message-amount");
   size_t producers = config.options().get<int>("producers");
+  size_t timepipeline = config.options().get<int>("timepipeline");
   std::string monitoringUrl = config.options().get<std::string>("monitoring-url");
 
   WorkflowSpec specs;
   for (size_t i = 0; i < producers; i++) {
-    specs.push_back(getDataProducerSpec(minSize, maxSize, rate, amount, i, monitoringUrl, fill));
+    specs.push_back(getDataProducerSpec(minSize, maxSize, rate, amount, i, monitoringUrl, fill, timepipeline));
   }
   return specs;
 }

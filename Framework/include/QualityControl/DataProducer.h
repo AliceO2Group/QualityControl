@@ -34,7 +34,7 @@ namespace o2::quality_control::core
 /// \return         A random data producer specification
 framework::DataProcessorSpec
   getDataProducerSpec(size_t minSize, size_t maxSize, double rate, uint64_t amount = 0, size_t index = 0,
-                      std::string monitoringUrl = "", bool fill = true);
+                      std::string monitoringUrl = "", bool fill = true, size_t timepipeline = 1);
 
 /// \brief Returns an algorithm generating random messages
 ///

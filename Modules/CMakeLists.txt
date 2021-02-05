@@ -3,6 +3,7 @@
 add_subdirectory(Common)
 add_subdirectory(Daq)
 add_subdirectory(Example)
+add_subdirectory(Benchmark)
 add_subdirectory(Skeleton)
 add_subdirectory(TOF)
 add_subdirectory(EMCAL)

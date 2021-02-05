@@ -30,9 +30,9 @@ namespace o2::quality_control::core
 {
 
 DataProcessorSpec getDataProducerSpec(size_t minSize, size_t maxSize, double rate, uint64_t amount, size_t index,
-                                      std::string monitoringUrl, bool fill)
+                                      std::string monitoringUrl, bool fill, size_t timepipeline)
 {
-  return DataProcessorSpec{
+  DataProcessorSpec spec{
     "producer-" + std::to_string(index),
     Inputs{},
     Outputs{
@@ -40,6 +40,9 @@ DataProcessorSpec getDataProducerSpec(size_t minSize, size_t maxSize, double rat
     getDataProducerAlgorithm({ "TST", "RAWDATA", static_cast<SubSpec>(index) }, minSize, maxSize, rate, amount,
                              monitoringUrl, fill)
   };
+  spec.maxInputTimeslices = timepipeline;
+
+  return spec;
 }
 
 AlgorithmSpec getDataProducerAlgorithm(ConcreteDataMatcher output, size_t minSize, size_t maxSize, double rate,
