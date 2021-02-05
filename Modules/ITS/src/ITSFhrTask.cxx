@@ -30,8 +30,8 @@ namespace o2::quality_control_modules::its
 ITSFhrTask::ITSFhrTask()
   : TaskInterface()
 {
-  o2::base::GeometryManager::loadGeometry();
-  mGeom = o2::its::GeometryTGeo::Instance();
+//  o2::base::GeometryManager::loadGeometry();
+//  mGeom = o2::its::GeometryTGeo::Instance();
 }
 
 ITSFhrTask::~ITSFhrTask()
@@ -62,8 +62,14 @@ ITSFhrTask::~ITSFhrTask()
 
 void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
+//	o2::base::GeometryManager::loadGeometry();
+//	mGeom = o2::its::GeometryTGeo::Instance();
   QcInfoLogger::GetInstance() << "initialize ITSFhrTask" << AliceO2::InfoLogger::InfoLogger::endm;
   getEnableLayers();
+	o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+//	o2::base::GeometryManager::loadGeometry();
+	mGeom = o2::its::GeometryTGeo::Instance();
+	std::cout << "geom path == " << mGeomPath << std::endl;
   int barrel = 0;
   if (mEnableLayers[0] or mEnableLayers[1] or mEnableLayers[2]) {
     barrel += 1;
@@ -81,6 +87,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder->setUserDataOrigin(header::DataOrigin("DS")); //set user data origin in dpl
   mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
   mChipsBuffer.resize(mGeom->getNumberOfChips());
+	std::cout << "checking Geometry number of chip == " << mGeom->getNumberOfChips() << std::endl;
 }
 
 void ITSFhrTask::createErrorTriggerPlots()
@@ -344,6 +351,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
+	mGeom->getChipId(0, lay, sta, ssta, mod, chip);
+	std::cout << "lay == " << lay << " chip == " << chip << std::endl;
   //decode the raw data and fill hit-map
   while ((mChipDataBuffer = mDecoder->getNextChipData(mChipsBuffer))) {
     if (mChipDataBuffer) {
@@ -475,6 +484,7 @@ void ITSFhrTask::getEnableLayers()
 {
   mNThreads = std::stoi(mCustomParameters["decoderThreads"]);
   mRunNumberPath = mCustomParameters["runNumberPath"];
+	mGeomPath = mCustomParameters["geomPath"];
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     if (mCustomParameters["layer"][ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
