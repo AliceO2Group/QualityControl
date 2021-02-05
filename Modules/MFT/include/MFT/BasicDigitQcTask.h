@@ -32,6 +32,7 @@ namespace o2::quality_control_modules::mft
 
 /// \brief MFT Digit QC task
 ///
+/// \author Katarina Krizkova Gajdosova
 /// \author Tomas Herman
 /// \author Guillermo Contreras
 class BasicDigitQcTask final : public TaskInterface
@@ -56,14 +57,13 @@ class BasicDigitQcTask final : public TaskInterface
   const double gPixelHitMapsMaxBinX = 1023.5;
   const double gPixelHitMapsMaxBinY = 511.5;
   const double gPixelHitMapsMinBin = -0.5;
-  const int gPixelHitMapsBinWidth = 8;
+  const int gPixelHitMapsBinWidth = 1;
 
-  const int nhitmaps = 20;
-  const int nchip = 936;
+  const int nHitmaps = 20;
+  const int nChip = 936;
 
   int FLP;
-  int minChipID;
-  int maxChipID;
+  int nMaps[5] = { 132, 132, 164, 236, 272 };
 
   int half[936] = { 0 };
   int disk[936] = { 0 };
@@ -122,8 +122,10 @@ class BasicDigitQcTask final : public TaskInterface
 
   //  functions
   void readTable();
+  int getVectorIndex(int chipID);
+  int getChipIndex(int vectorID);
   void getChipName(TString& FolderName, TString& HistogramName, int iHitMap);
-  void getPixelName(TString& FolderName, TString& HistogramName, int iChipID);
+  void getPixelName(TString& FolderName, TString& HistogramName, int iVectorID);
 };
 
 } // namespace o2::quality_control_modules::mft

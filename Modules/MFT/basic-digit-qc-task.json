@@ -28,7 +28,7 @@
         "className": "o2::quality_control_modules::mft::BasicDigitQcTask",
         "moduleName": "QcMFT",
         "detectorName": "MFT",
-        "cycleDurationSeconds": "60",
+        "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
@@ -46,13 +46,12 @@
         "active": "true",
         "dataSource": [{
           "type": "Task",
-          "name": "BasicDigitQcTask",
-          "MOs": ["ChipHitMaps/mMFT_chip_index_H"]
+          "name": "BasicDigitQcTask"
         }],
         "className": "o2::quality_control_modules::mft::BasicDigitQcCheck",
         "moduleName": "QcMFT",
         "detectorName": "MFT",
-        "policy": "OnAny"
+        "policy": "OnEachSeparately"
       }
     }    
   },
@@ -65,7 +64,7 @@
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "0.2",
+          "fraction": "1",
           "seed": "1234"
         }
       ],
