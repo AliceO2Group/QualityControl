@@ -57,6 +57,8 @@ class RawDataDecoder final : public DecoderBase
   static constexpr unsigned int ntrmschains = 2; /// Number of TRMChains per TRM
   static constexpr unsigned int nsectors = 18;   /// Number of sectors
   static constexpr unsigned int nstrips = 91;    /// Number of strips per sector
+  static constexpr unsigned int nwords = 32;     /// Number of diagnostic words of a slot card
+  static constexpr unsigned int nslots = 12;     /// Number of slots in a crate
 
   /// Initialize noise analysis variables
   Int_t mTimeMin = 0, mTimeMax = -1;
@@ -68,15 +70,15 @@ class RawDataDecoder final : public DecoderBase
   void setMaxNoise(std::string thresholdnoise) { max_noise = atoi(thresholdnoise.c_str()); }
 
   // Names of diagnostic counters
-  static const char* RDHDiagnosticsName[2]; /// RDH Counter names
-  static const char* DRMDiagnosticName[32]; /// DRM Counter names
-  static const char* LTMDiagnosticName[32]; /// LTM Counter names
-  static const char* TRMDiagnosticName[32]; /// TRM Counter names
+  static const char* RDHDiagnosticsName[2];     /// RDH Counter names
+  static const char* DRMDiagnosticName[nwords]; /// DRM Counter names
+  static const char* LTMDiagnosticName[nwords]; /// LTM Counter names
+  static const char* TRMDiagnosticName[nwords]; /// TRM Counter names
   // Diagnostic counters
-  Counter<2, RDHDiagnosticsName> mRDHCounter[ncrates];        /// RDH Counters
-  Counter<32, DRMDiagnosticName> mDRMCounter[ncrates];        /// DRM Counters
-  Counter<32, LTMDiagnosticName> mLTMCounter[ncrates];        /// LTM Counters
-  Counter<32, TRMDiagnosticName> mTRMCounter[ncrates][ntrms]; /// TRM Counters
+  Counter<2, RDHDiagnosticsName> mRDHCounter[ncrates];            /// RDH Counters
+  Counter<nwords, DRMDiagnosticName> mDRMCounter[ncrates];        /// DRM Counters
+  Counter<nwords, LTMDiagnosticName> mLTMCounter[ncrates];        /// LTM Counters
+  Counter<nwords, TRMDiagnosticName> mTRMCounter[ncrates][ntrms]; /// TRM Counters
   // Global counters
   Counter<172800, nullptr> mCounterIndexE;      /// Counter for the single electronic index
   Counter<172800, nullptr> mCounterIndexENoise; /// Counter for the single electronic index for noise analysis
@@ -112,7 +114,7 @@ class RawDataDecoder final : public DecoderBase
 
  private:
   /** decoding handlers **/
-  void rdhHandler(const o2::header::RAWDataHeader* /*rdh*/) override{};
+  void rdhHandler(const o2::header::RAWDataHeader* /*rdh*/) override;
   void headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit) override;
   void frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit,
                     const FrameHeader_t* frameHeader, const PackedHit_t* packedHits) override;
@@ -142,13 +144,19 @@ class TaskRaw final : public TaskInterface
 
  private:
   // Histograms
-  std::shared_ptr<TH2F> mRDHHisto;                        /// Words per RDH
-  std::shared_ptr<TH2F> mDRMHisto;                        /// Words per DRM
-  std::shared_ptr<TH2F> mLTMHisto;                        /// Words per LTM
-  std::shared_ptr<TH2F> mTRMHisto[RawDataDecoder::ntrms]; /// Words per TRM
-  std::shared_ptr<TH1F> mIndexE;                          /// Index in electronic
-  std::shared_ptr<TH1F> mIndexENoise;                     /// Index in electronic for noise analysis
-  std::shared_ptr<TH1F> mTimeBC;                          /// Time in Bunch Crossing
+  // Diagnostic words
+  std::shared_ptr<TH2F> mRDHHisto;                            /// Words per RDH
+  std::shared_ptr<TH2F> mDRMHisto;                            /// Words per DRM
+  std::shared_ptr<TH2F> mLTMHisto;                            /// Words per LTM
+  std::shared_ptr<TH2F> mTRMHisto[RawDataDecoder::ntrms];     /// Words per TRM
+  std::shared_ptr<TH2F> mCrateHisto[RawDataDecoder::ncrates]; /// Words of each slot in a crate
+
+  // Indices in the electronic scheme
+  std::shared_ptr<TH1F> mIndexE;      /// Index in electronic
+  std::shared_ptr<TH1F> mIndexENoise; /// Index in electronic for noise analysis
+
+  // Other observables
+  std::shared_ptr<TH1F> mTimeBC; /// Time in Bunch Crossing
 
   RawDataDecoder mDecoderRaw; /// Decoder for TOF Compressed data useful for the Task and filler of histograms for compressed raw data
 };
