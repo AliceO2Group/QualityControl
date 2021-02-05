@@ -30,8 +30,6 @@ namespace o2::quality_control_modules::its
 ITSFhrTask::ITSFhrTask()
   : TaskInterface()
 {
-//  o2::base::GeometryManager::loadGeometry();
-//  mGeom = o2::its::GeometryTGeo::Instance();
 }
 
 ITSFhrTask::~ITSFhrTask()
@@ -62,19 +60,15 @@ ITSFhrTask::~ITSFhrTask()
 
 void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-//	o2::base::GeometryManager::loadGeometry();
-//	mGeom = o2::its::GeometryTGeo::Instance();
   QcInfoLogger::GetInstance() << "initialize ITSFhrTask" << AliceO2::InfoLogger::InfoLogger::endm;
   getEnableLayers();
-	o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
-//	o2::base::GeometryManager::loadGeometry();
-	mGeom = o2::its::GeometryTGeo::Instance();
-	std::cout << "geom path == " << mGeomPath << std::endl;
+  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  mGeom = o2::its::GeometryTGeo::Instance();
   int barrel = 0;
-  if (mEnableLayers[0] or mEnableLayers[1] or mEnableLayers[2]) {
+  if (mEnableLayers[0] || mEnableLayers[1] || mEnableLayers[2]) {
     barrel += 1;
   }
-  if (mEnableLayers[3] or mEnableLayers[4] or mEnableLayers[5] or mEnableLayers[6]) {
+  if (mEnableLayers[3] || mEnableLayers[4] || mEnableLayers[5] || mEnableLayers[6]) {
     barrel += 2;
   }
   createGeneralPlots(barrel);
@@ -87,7 +81,6 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder->setUserDataOrigin(header::DataOrigin("DS")); //set user data origin in dpl
   mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
   mChipsBuffer.resize(mGeom->getNumberOfChips());
-	std::cout << "checking Geometry number of chip == " << mGeom->getNumberOfChips() << std::endl;
 }
 
 void ITSFhrTask::createErrorTriggerPlots()
@@ -326,7 +319,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  if (mTriggerPlots->GetBinContent(10) or mTriggerPlots->GetBinContent(8)) {
+  if (mTriggerPlots->GetBinContent(10) || mTriggerPlots->GetBinContent(8)) {
     if (partID / 100 < 2) {
       mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 1, 1);
       mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 2, 1);
@@ -340,7 +333,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  if (mTriggerPlots->GetBinContent(11) or mTriggerPlots->GetBinContent(9)) {
+  if (mTriggerPlots->GetBinContent(11) || mTriggerPlots->GetBinContent(9)) {
     if (partID / 100 < 2) {
       mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 1, 2);
       mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 2, 2);
@@ -351,8 +344,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-	mGeom->getChipId(0, lay, sta, ssta, mod, chip);
-	std::cout << "lay == " << lay << " chip == " << chip << std::endl;
   //decode the raw data and fill hit-map
   while ((mChipDataBuffer = mDecoder->getNextChipData(mChipsBuffer))) {
     if (mChipDataBuffer) {
@@ -409,7 +400,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
         if (ilayer < NLayerIB) {
           for (int ichip = 0 + (ilink * 3); ichip < (ilink * 3) + 3; ichip++) {
-            if ((GBTLinkInfo->statistics.nTriggers > 0) and (mHitNumberOfChip[ilayer][istave][0][0][ichip] >= 0)) {
+            if ((GBTLinkInfo->statistics.nTriggers > 0) && (mHitNumberOfChip[ilayer][istave][0][0][ichip] >= 0)) {
               mChipStaveOccupancy[ilayer]->SetBinContent(ichip + 1, istave + 1, (mHitNumberOfChip[ilayer][istave][0][0][ichip]) / (GBTLinkInfo->statistics.nTriggers * 1024. * 512.));
               std::unordered_map<unsigned int, int>::iterator iter;
               for (iter = mHitPixelID_Hash[ilayer][istave][0][0][ichip].begin(); iter != mHitPixelID_Hash[ilayer][istave][0][0][ichip].end(); iter++) {
@@ -427,7 +418,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
             double chipOccupancy = 0;
             for (int ichip = 0; ichip < nChipsPerHic[ilayer]; ichip++) {
               chipOccupancy += mHitNumberOfChip[ilayer][istave][isubstave][ihic][ichip];
-              if ((GBTLinkInfo->statistics.nTriggers > 0) and (mHitNumberOfChip[ilayer][istave][ilink][ihic][ichip] >= 0)) {
+              if ((GBTLinkInfo->statistics.nTriggers > 0) && (mHitNumberOfChip[ilayer][istave][ilink][ihic][ichip] >= 0)) {
                 if (mHitPixelID_Hash[ilayer][istave][ilink][ihic][ichip].size() == 0) {
                   continue;
                 }
@@ -484,7 +475,7 @@ void ITSFhrTask::getEnableLayers()
 {
   mNThreads = std::stoi(mCustomParameters["decoderThreads"]);
   mRunNumberPath = mCustomParameters["runNumberPath"];
-	mGeomPath = mCustomParameters["geomPath"];
+  mGeomPath = mCustomParameters["geomPath"];
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
     if (mCustomParameters["layer"][ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
