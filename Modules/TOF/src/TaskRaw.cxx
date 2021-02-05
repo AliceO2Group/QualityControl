@@ -166,31 +166,18 @@ void RawDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, const Crat
 void RawDataDecoder::initHistograms() // Initialization of histograms in Decoder
 {
   mHits.reset(new TH1F("hHits", "Raw Hits;Hits per event", 1000, 0., 1000.));
-  //
   mTime.reset(new TH1F("hTime", "Raw Time;Time (24.4 ps)", 2097152, 0., 2097152.));
-  //
   mTOT.reset(new TH1F("hTOT", "Raw ToT;ToT (48.8 ps)", 2048, 0., 2048.));
-  //
   mSlotPartMask.reset(new TH2F("hSlotPartMask", "Slot participating;Crate;Slot", ncrates, 0., ncrates, nslots, 1, nslots + 1));
-  //
   mDiagnostic.reset(new TH2F("hDiagnostic", "hDiagnostic;Crate;Slot", ncrates, 0., ncrates, nslots, 1, nslots + 1));
-  //
   mNErrors.reset(new TH1F("hNErrors", "Error numbers;Number of errors", 1000, 0., 1000.));
-  //
   mErrorBits.reset(new TH1F("hErrorBit", "Error Bit;TDC error bit", 15, 0., 15.));
-  //
   mError.reset(new TH2F("hError", "Errors;slot;TDC", 24, 1., 13., 15, 0., 15.));
-  //
   mNTests.reset(new TH1F("hNTests", "Test numbers;Number of errors", 1000, 0., 1000.));
-  //
   mTest.reset(new TH2F("hTest", "Tests;slot;TDC", 24, 1., 13., 15, 0., 15.));
-  //
   mOrbitID.reset(new TH2F("hOrbitID", "OrbitID;OrbitID % 1048576;Crate", 1024, 0, 1048576, ncrates, 0, ncrates));
-  //
-  mNoiseMap.reset(new TH2F("hNoiseMap", "Noise Map; crate; Fea x strip", ncrates, 0., ncrates., 364, 0., nstrips));
-  //
+  mNoiseMap.reset(new TH2F("hNoiseMap", "Noise Map; crate; Fea x strip", ncrates, 0., ncrates, 364, 0., nstrips));
   mIndexEquipmentHitRate.reset(new TH1F("hIndexEquipmentHitRate", "Hit Rate (Hz); index EO", 172800, 0., 172800.));
-  //
 }
 
 void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
@@ -210,7 +197,7 @@ void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
   mIndexEquipmentHitRate->Reset();
 }
 
-void RawDataDecoder::estimateNoise(std::shared_ptr<TH2F> hNoiseMap, std::shared_ptr<TH1F> hIndexEquipmentHitRate, std::shared_ptr<TH1F> hIndexEquipmentIsNoise)
+void RawDataDecoder::estimateNoise(std::shared_ptr<TH1F> hIndexEquipmentIsNoise)
 {
   double IntegratedTimeFea[nstrips][ncrates][4] = { { { 0. } } };
   double IntegratedTime[nstrips][ncrates] = { { 0. } };
@@ -233,7 +220,7 @@ void RawDataDecoder::estimateNoise(std::shared_ptr<TH2F> hNoiseMap, std::shared_
     const auto rate = (float)indexcounter / time;
 
     // Fill noise rate histogram
-    hIndexEquipmentHitRate->SetBinContent(i + 1, rate);
+    mIndexEquipmentHitRate->SetBinContent(i + 1, rate);
 
     // Noise condition
     if (rate < RawDataDecoder::max_noise) {
@@ -287,7 +274,7 @@ void RawDataDecoder::estimateNoise(std::shared_ptr<TH2F> hNoiseMap, std::shared_
         }
 
         // Fill noise map
-        hNoiseMap->SetBinContent(icrate + 1, istrip * 4 + (3 - iFea) + 1, indexcounterFea);
+        mNoiseMap->SetBinContent(icrate + 1, istrip * 4 + (3 - iFea) + 1, indexcounterFea);
       } // end loop over Feas
     }   // end loop over strips
   }     // end loop over sectors
@@ -420,7 +407,7 @@ void TaskRaw::endOfCycle()
   mDecoderRaw.mCounterIndexEquipment.FillHistogram(mIndexEquipment.get());
   mDecoderRaw.mCounterIndexEquipmentInTimeWin.FillHistogram(mIndexEquipmentInTimeWin.get());
   mDecoderRaw.mCounterTimeBC.FillHistogram(mTimeBC.get());
-  mDecoderRaw.estimateNoise(mDecoderRaw.mNoiseMap, mDecoderRaw.mIndexEquipmentHitRate, mIndexEquipmentIsNoise);
+  mDecoderRaw.estimateNoise(mIndexEquipmentIsNoise);
 
   // Reshuffling information from the cards to the whole crate
   for (unsigned int slot = 0; slot < RawDataDecoder::nslots; slot++) { // Loop over slots

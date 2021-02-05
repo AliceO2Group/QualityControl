@@ -98,7 +98,7 @@ class RawDataDecoder final : public DecoderBase
   void resetHistograms();
 
   // Function for noise estimation
-  void estimateNoise(std::shared_ptr<TH2F> hNoiseMap, std::shared_ptr<TH1F> hIndexEquipmentHitRate, std::shared_ptr<TH1F> hIndexEquipmentIsNoise);
+  void estimateNoise(std::shared_ptr<TH1F> hIndexEquipmentIsNoise);
 
   // Histograms filled in the decoder to be kept to the bare bone so as to increase performance
   std::shared_ptr<TH1F> mHits;                  /// Number of TOF hits
