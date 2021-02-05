@@ -94,13 +94,12 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
           throw std::runtime_error("No local machines specified for task " + taskName + " in its configuration");
         }
 
-        bool moreThanOneMachine = taskConfig.get_child("localMachines").size() > 1;
-        size_t id = moreThanOneMachine ? 1 : 0;
+        size_t id = 1;
         for (const auto& machine : taskConfig.get_child("localMachines")) {
           // We spawn a task and proxy only if we are on the right machine.
           if (machine.second.get<std::string>("") == host) {
             // Generate QC Task Runner
-            bool needsResetAfterCycle = moreThanOneMachine && taskConfig.get<std::string>("mergingMode", "delta") == "delta";
+            bool needsResetAfterCycle = taskConfig.get<std::string>("mergingMode", "delta") == "delta";
             workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, id, needsResetAfterCycle));
             // Generate an output proxy
             // These should be removed when we are able to declare dangling output in normal DPL devices
@@ -163,19 +162,13 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
           // if tasks are LOCAL, generate input proxies + mergers + checkers
 
           size_t numberOfLocalMachines = taskConfig.get_child("localMachines").size() > 1 ? taskConfig.get_child("localMachines").size() : 1;
-
           // Generate an input proxy
           // These should be removed when we are able to declare dangling inputs in normal DPL devices
           generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, taskConfig.get<std::string>("remotePort"));
 
-          // Generate a Merger only when there is a need to merge something - there is more than one machine with the QC Task
-          // I don't expect the list of machines to be reconfigured - all of them should be declared beforehand,
-          // even if some of them will be on standby.
-          if (numberOfLocalMachines > 1) {
-            generateMergers(workflow, taskName, numberOfLocalMachines,
-                            taskConfig.get<double>("cycleDurationSeconds"),
-                            taskConfig.get<std::string>("mergingMode", "delta"));
-          }
+          generateMergers(workflow, taskName, numberOfLocalMachines,
+                          taskConfig.get<double>("cycleDurationSeconds"),
+                          taskConfig.get<std::string>("mergingMode", "delta"));
 
         } else if (taskConfig.get<std::string>("location") == "remote") {
 
@@ -301,14 +294,9 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   std::string channelName = taskName + "-proxy";
 
   Outputs proxyOutputs;
-  if (numberOfLocalMachines > 1) {
-    for (size_t id = 1; id <= numberOfLocalMachines; id++) {
-      proxyOutputs.emplace_back(
-        OutputSpec{ { channelName }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) });
-    }
-  } else {
+  for (size_t id = 1; id <= numberOfLocalMachines; id++) {
     proxyOutputs.emplace_back(
-      OutputSpec{ { channelName }, { TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) } });
+      OutputSpec{ { channelName }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) });
   }
 
   std::string channelConfig = "name=" + channelName + ",type=pull,method=bind,address=tcp://*:" + remotePort +
