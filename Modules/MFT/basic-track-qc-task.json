@@ -43,11 +43,11 @@
     },
     "checks": {
       "BasicTrackQcCheck": {
-        "active": "true",
+        "active": "false",
         "dataSource": [{
           "type": "Task",
           "name": "BasicTrackQcTask",
-          "MOs": ["mMFT_xy_H"]
+          "MOs": ["mMFT_charge_H"]
         }],
         "className": "o2::quality_control_modules::mft::BasicTrackQcCheck",
         "moduleName": "QcMFT",

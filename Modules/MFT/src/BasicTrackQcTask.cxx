@@ -15,7 +15,6 @@
 ///
 
 // ROOT
-#include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
 // O2
@@ -45,30 +44,46 @@ void BasicTrackQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
-  mMFT_xy_H = std::make_unique<TH2F>("mMFT_xy_H", "mMFT_xy_H", 22, -10.5, 10.5, 22, -10.5, 10.5);
-  getObjectsManager()->startPublishing(mMFT_xy_H.get());
-  getObjectsManager()->addMetadata(mMFT_xy_H->GetName(), "custom", "34");
+  mMFT_number_of_clusters_per_track_H = std::make_unique<TH1F>("mMFT_number_of_clusters_per_track_H", "mMFT_number_of_clusters_per_track_H", 16, -0.5, 15.5);
+  getObjectsManager()->startPublishing(mMFT_number_of_clusters_per_track_H.get());
+  getObjectsManager()->addMetadata(mMFT_number_of_clusters_per_track_H->GetName(), "custom", "34");
 
-  mMFT_pos_phi_H = std::make_unique<TH1F>("mMFT_pos_phi_H", "mMFT_pos_phi_H", 100, -3.145, 3.145);
+  mMFT_track_chi2_H = std::make_unique<TH1F>("mMFT_track_chi2_H", "mMFT_track_chi2_H", 81, -0.5, 80.5);
+  getObjectsManager()->startPublishing(mMFT_track_chi2_H.get());
+  getObjectsManager()->addMetadata(mMFT_track_chi2_H->GetName(), "custom", "34");
+
+  mMFT_charge_H = std::make_unique<TH1F>("mMFT_charge_H", "mMFT_charge_H", 3, -1.5, 1.5);
+  getObjectsManager()->startPublishing(mMFT_charge_H.get());
+  getObjectsManager()->addMetadata(mMFT_charge_H->GetName(), "custom", "34");
+
+  mMFT_pos_phi_H = std::make_unique<TH1F>("mMFT_pos_phi_H", "mMFT_pos_phi_H", 100, -3.2, 3.2);
   getObjectsManager()->startPublishing(mMFT_pos_phi_H.get());
   getObjectsManager()->addMetadata(mMFT_pos_phi_H->GetName(), "custom", "34");
 
-  mMFT_neg_phi_H = std::make_unique<TH1F>("mMFT_neg_phi_H", "mMFT_neg_phi_H", 100, -3.145, 3.145);
+  mMFT_neg_phi_H = std::make_unique<TH1F>("mMFT_neg_phi_H", "mMFT_neg_phi_H", 100, -3.2, 3.2);
   getObjectsManager()->startPublishing(mMFT_neg_phi_H.get());
   getObjectsManager()->addMetadata(mMFT_neg_phi_H->GetName(), "custom", "34");
 
-  mMFT_xy_C = std::make_unique<TCanvas>("mMFT_xy_C", "mMFT_xy_C", 400, 550);
-  getObjectsManager()->startPublishing(mMFT_xy_C.get());
-  getObjectsManager()->addMetadata(mMFT_xy_C->GetName(), "custom", "34");
+  mMFT_eta_H = std::make_unique<TH1F>("mMFT_eta_H", "mMFT_eta_H", 100, -5, -1);
+  getObjectsManager()->startPublishing(mMFT_eta_H.get());
+  getObjectsManager()->addMetadata(mMFT_eta_H->GetName(), "custom", "34");
+
+  mMFT_tang_lambda_H = std::make_unique<TH1F>("mMFT_tang_lambda_H", "mMFT_tang_lambda_H", 100, -25, 0);
+  getObjectsManager()->startPublishing(mMFT_tang_lambda_H.get());
+  getObjectsManager()->addMetadata(mMFT_tang_lambda_H->GetName(), "custom", "34");
 }
 
 void BasicTrackQcTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
 
-  mMFT_xy_H->Reset();
+  mMFT_number_of_clusters_per_track_H->Reset();
+  mMFT_track_chi2_H->Reset();
+  mMFT_charge_H->Reset();
   mMFT_pos_phi_H->Reset();
   mMFT_neg_phi_H->Reset();
+  mMFT_eta_H->Reset();
+  mMFT_tang_lambda_H->Reset();
 }
 
 void BasicTrackQcTask::startOfCycle()
@@ -84,16 +99,17 @@ void BasicTrackQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     return;
   // fill the histograms
   for (auto& one_track : tracks) {
-    mMFT_xy_H->Fill(one_track.getX(), one_track.getY());
+    mMFT_number_of_clusters_per_track_H->Fill(one_track.getNumberOfPoints());
+    mMFT_track_chi2_H->Fill(one_track.getTrackChi2());
+    mMFT_charge_H->Fill(one_track.getCharge());
+    mMFT_eta_H->Fill(one_track.getEta());
+    mMFT_tang_lambda_H->Fill(one_track.getTanl());
+
     if (one_track.getCharge() == +1)
       mMFT_pos_phi_H->Fill(one_track.getPhi());
     if (one_track.getCharge() == -1)
       mMFT_neg_phi_H->Fill(one_track.getPhi());
   }
-
-  // Draw the canvas
-  mMFT_xy_C->cd();
-  mMFT_xy_H->Draw("text colz");
 }
 
 void BasicTrackQcTask::endOfCycle()
@@ -112,9 +128,13 @@ void BasicTrackQcTask::reset()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
 
-  mMFT_xy_H->Reset();
+  mMFT_number_of_clusters_per_track_H->Reset();
+  mMFT_track_chi2_H->Reset();
+  mMFT_charge_H->Reset();
   mMFT_pos_phi_H->Reset();
   mMFT_neg_phi_H->Reset();
+  mMFT_eta_H->Reset();
+  mMFT_tang_lambda_H->Reset();
 }
 
 } // namespace o2::quality_control_modules::mft

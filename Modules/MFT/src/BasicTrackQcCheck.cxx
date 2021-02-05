@@ -36,12 +36,12 @@ Quality BasicTrackQcCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "mMFT_nPoints") {
+    if (mo->getName() == "mMFT_charge_H") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
       result = Quality::Good;
 
       // test it
-      if (h->GetBinContent(401) == 0) {
+      if (h->GetBinContent(0) == 0) {
         result = Quality::Bad;
       }
     }
@@ -53,7 +53,7 @@ std::string BasicTrackQcCheck::getAcceptedType() { return "TH1"; }
 
 void BasicTrackQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "mMFT_nPoints") {
+  if (mo->getName() == "mMFT_charge_H") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
@@ -62,7 +62,7 @@ void BasicTrackQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
       LOG(INFO) << "Quality::Bad, setting to red";
       h->SetLineColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
+      LOG(INFO) << "Quality::Medium, setting to orange";
       h->SetLineColor(kOrange);
     }
     h->SetLineColor(kBlack);
