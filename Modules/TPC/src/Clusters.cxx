@@ -13,40 +13,15 @@
 /// \author Thomas Klemenz
 ///
 
-#include "Framework/PartRef.h"
-#include "Framework/WorkflowSpec.h" // o2::framework::mergeInputs
-#include "Framework/DataRefUtils.h"
-#include "Framework/DataSpecUtils.h"
-#include "Framework/ControlService.h"
-#include "Framework/ConfigParamRegistry.h"
-#include "Framework/InputRecordWalker.h"
-#include "DataFormatsTPC/TPCSectorHeader.h"
-
-#include <bitset>
-
-// root includes
-#include <TCanvas.h>
-#include <TH1.h>
-#include <TH2.h>
-
 // O2 includes
 #include "Framework/ProcessingContext.h"
-#include "DataFormatsTPC/Defs.h"
-//#include "TPCQC/Helpers.h"
-#include "TPCBase/Painter.h"
 #include "DataFormatsTPC/ClusterNative.h"
-#include "DataFormatsTPC/ClusterNativeHelper.h"
-#include "SimulationDataFormat/MCTruthContainer.h"
-#include "DataFormatsTPC/Constants.h"
+#include "TPCBase/Painter.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/Clusters.h"
-
-using namespace o2::framework;
-using namespace o2::header;
-using namespace o2::tpc;
-using namespace o2::dataformats;
+#include "TPC/Utility.h"
 
 namespace o2::quality_control_modules::tpc
 {
@@ -61,48 +36,16 @@ Clusters::Clusters() : TaskInterface()
   mWrapperVector.emplace_back(&mQCClusters.getTimeBin());
 }
 
-Clusters::~Clusters()
-{
-}
-
 void Clusters::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize TPC Clusters QC task" << AliceO2::InfoLogger::InfoLogger::endm;
 
-  o2::tpc::Side ASide{ o2::tpc::Side::A };
-  o2::tpc::Side CSide{ o2::tpc::Side::C };
-
-  auto clusAHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getNClusters(), ASide));
-  auto clusCHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getNClusters(), CSide));
-  auto qMaxAHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getQMax(), ASide));
-  auto qMaxCHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getQMax(), CSide));
-  auto qTotAHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getQTot(), ASide));
-  auto qTotCHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getQTot(), CSide));
-  auto sigmaTimeAHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getSigmaTime(), ASide));
-  auto sigmaTimeCHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getSigmaTime(), CSide));
-  auto sigmaPadAHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getSigmaPad(), ASide));
-  auto sigmaPadCHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getSigmaPad(), CSide));
-  auto timeBinAHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getTimeBin(), ASide));
-  auto timeBinCHisto = static_cast<TH2F*>(o2::tpc::painter::getHistogram2D(mQCClusters.getTimeBin(), CSide));
-
-  mHistoVector.emplace_back(clusAHisto);
-  mHistoVector.emplace_back(clusCHisto);
-  mHistoVector.emplace_back(qMaxAHisto);
-  mHistoVector.emplace_back(qMaxCHisto);
-  mHistoVector.emplace_back(qTotAHisto);
-  mHistoVector.emplace_back(qTotCHisto);
-  mHistoVector.emplace_back(sigmaTimeAHisto);
-  mHistoVector.emplace_back(sigmaTimeCHisto);
-  mHistoVector.emplace_back(sigmaPadAHisto);
-  mHistoVector.emplace_back(sigmaPadCHisto);
-  mHistoVector.emplace_back(timeBinAHisto);
-  mHistoVector.emplace_back(timeBinCHisto);
-
-  for (auto& histPtr : mHistoVector) {
-    auto hist = histPtr.get();
-    getObjectsManager()->startPublishing(hist);
-    getObjectsManager()->addMetadata(hist->GetName(), "custom", "34");
-  }
+  addAndPublish(getObjectsManager(), mNClustersCanvasVec, { "c_Sides_N_Clusters", "c_ROCs_N_Clusters_1D", "c_ROCs_N_Clusters_2D" });
+  addAndPublish(getObjectsManager(), mQMaxCanvasVec, { "c_Sides_Q_Max", "c_ROCs_Q_Max_1D", "c_ROCs_Q_Max_2D" });
+  addAndPublish(getObjectsManager(), mQTotCanvasVec, { "c_Sides_Q_Tot", "c_ROCs_Q_Tot_1D", "c_ROCs_Q_Tot_2D" });
+  addAndPublish(getObjectsManager(), mSigmaTimeCanvasVec, { "c_Sides_Sigma_Time", "c_ROCs_Sigma_Time_1D", "c_ROCs_Sigma_Time_2D" });
+  addAndPublish(getObjectsManager(), mSigmaPadCanvasVec, { "c_Sides_Sigma_Pad", "c_ROCs_Sigma_Pad_1D", "c_ROCs_Sigma_Pad_2D" });
+  addAndPublish(getObjectsManager(), mTimeBinCanvasVec, { "c_Sides_Time_Bin", "c_ROCs_Time_Bin_1D", "c_ROCs_Time_Bin_2D" });
 
   for (auto& wrapper : mWrapperVector) {
     getObjectsManager()->startPublishing(&wrapper);
@@ -117,75 +60,12 @@ void Clusters::startOfActivity(Activity& /*activity*/)
 
 void Clusters::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCyclesdfs" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
-  o2::tpc::Side ASide{ o2::tpc::Side::A };
-  o2::tpc::Side CSide{ o2::tpc::Side::C };
-
-  constexpr static size_t NSectors = o2::tpc::Sector::MAXSECTOR;
-
-  std::vector<gsl::span<const char>> inputs;
-  struct InputRef {
-    DataRef data;
-    DataRef labels;
-  };
-  std::map<int, InputRef> inputrefs;
-
-  std::bitset<NSectors> validInputs = 0;
-
-  int operation = 0;
-  std::vector<int> inputIds(36);
-  std::iota(inputIds.begin(), inputIds.end(), 0);
-  std::vector<InputSpec> filter = {
-    { "check", ConcreteDataTypeMatcher{ gDataOriginTPC, "CLUSTERNATIVE" }, Lifetime::Timeframe },
-  };
-  for (auto const& ref : InputRecordWalker(ctx.inputs(), filter)) {
-    auto const* sectorHeader = DataRefUtils::getHeader<o2::tpc::TPCSectorHeader*>(ref);
-    if (sectorHeader == nullptr) {
-      // FIXME: think about error policy
-      LOG(ERROR) << "sector header missing on header stack";
-      return;
-    }
-    const int sector = sectorHeader->sector();
-    std::bitset<o2::tpc::constants::MAXSECTOR> sectorMask(sectorHeader->sectorBits);
-    LOG(INFO) << "Reading TPC cluster data, sector mask is " << sectorMask;
-
-    if (sector < 0) {
-      if (operation < 0 && operation != sector) {
-        // we expect the same operation on all inputs
-        LOG(ERROR) << "inconsistent lane operation, got " << sector << ", expecting " << operation;
-      } else if (operation == 0) {
-        // store the operation
-        operation = sector;
-      }
-      continue;
-    }
-    if ((validInputs & sectorMask).any()) {
-      // have already data for this sector, this should not happen in the current
-      // sequential implementation, for parallel path merged at the tracker stage
-      // multiple buffers need to be handled
-      throw std::runtime_error("can only have one cluster data set per sector");
-    }
-    validInputs |= sectorMask;
-    inputrefs[sector].data = ref;
-  }
-  for (auto const& refentry : inputrefs) {
-    //auto& sector = refentry.first;
-    auto& ref = refentry.second.data;
-    inputs.emplace_back(gsl::span(ref.payload, DataRefUtils::getPayloadSize(ref)));
-  }
-
-  ClusterNativeAccess clusterIndex;
-  std::unique_ptr<ClusterNative[]> clusterBuffer;
-  ClusterNativeHelper::ConstMCLabelContainerViewWithBuffer clustersMCBufferDummy;
-  std::vector<ConstMCLabelContainerView> mcInputsDummy;
-  memset(&clusterIndex, 0, sizeof(clusterIndex));
-  ClusterNativeHelper::Reader::fillIndex(clusterIndex, clusterBuffer, clustersMCBufferDummy,
-                                         inputs, mcInputsDummy, [&validInputs](auto& index) { return validInputs.test(index); });
+  o2::tpc::ClusterNativeAccess clusterIndex = clusterHandler(ctx.inputs());
 
   for (int isector = 0; isector < o2::tpc::constants::MAXSECTOR; ++isector) {
     for (int irow = 0; irow < o2::tpc::constants::MAXGLOBALPADROW; ++irow) {
@@ -199,17 +79,23 @@ void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
 
   mQCClusters.analyse();
 
-  int histIter = 0;
-  for (auto& calPadWrapper : mWrapperVector) {
-    auto& histA = *mHistoVector[histIter].get();
-    auto& histC = *mHistoVector[histIter + 1].get();
-    const auto& calPad = calPadWrapper.getObj();
+  auto vecPtrNClusters = toVector(mNClustersCanvasVec);
+  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getNClusters(), 300, 0, 0, true, &vecPtrNClusters);
 
-    o2::tpc::painter::fillHistogram2D(histA, *calPad, ASide);
-    o2::tpc::painter::fillHistogram2D(histC, *calPad, CSide);
+  auto vecPtrQMax = toVector(mQMaxCanvasVec);
+  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getQMax(), 300, 0, 0, true, &vecPtrQMax);
 
-    histIter += 2;
-  }
+  auto vecPtrQTot = toVector(mQTotCanvasVec);
+  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getQTot(), 300, 0, 0, true, &vecPtrQTot);
+
+  auto vecPtrSigmaTime = toVector(mSigmaTimeCanvasVec);
+  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getSigmaTime(), 300, 0, 0, true, &vecPtrSigmaTime);
+
+  auto vecPtrSigmaPad = toVector(mSigmaPadCanvasVec);
+  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getSigmaPad(), 300, 0, 0, true, &vecPtrSigmaPad);
+
+  auto vecPtrTimeBin = toVector(mTimeBinCanvasVec);
+  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getTimeBin(), 300, 0, 0, true, &vecPtrTimeBin);
 }
 
 void Clusters::endOfCycle()
