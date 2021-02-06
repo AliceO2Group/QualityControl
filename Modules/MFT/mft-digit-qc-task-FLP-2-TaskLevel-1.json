@@ -28,7 +28,7 @@
         "className": "o2::quality_control_modules::mft::BasicDigitQcTask",
         "moduleName": "QcMFT",
         "detectorName": "MFT",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
@@ -36,7 +36,8 @@
           "name": "mft-digits"
         },
         "taskParameters": {
-          "FLP": "1"
+          "FLP": "2",
+          "TaskLevel": "1"
         },
         "location": "remote"
       }
@@ -64,7 +65,7 @@
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "1",
+          "fraction": "0.1",
           "seed": "1234"
         }
       ],

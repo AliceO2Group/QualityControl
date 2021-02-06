@@ -30,7 +30,7 @@ add_root_dictionary(QcMFT
                     include/MFT/BasicClusterQcCheck.h
                     include/MFT/BasicClusterQcTask.h
                     include/MFT/BasicTrackQcCheck.h
-                    include/MFT/BasicTrackQcTask.h  
+                    include/MFT/BasicTrackQcTask.h 
                     LINKDEF include/MFT/LinkDef.h
                     BASENAME QcMFT)
                     
@@ -83,7 +83,32 @@ endforeach()
 
 # ---- Install config files and scripts ----
 
-install(FILES basic-digit-qc-task.json
+install(FILES mft-digit-qc-task-FLP-0-TaskLevel-0.json
+              mft-digit-qc-task-FLP-0-TaskLevel-1.json
+              mft-digit-qc-task-FLP-0-TaskLevel-2.json
+              mft-digit-qc-task-FLP-0-TaskLevel-3.json
+              mft-digit-qc-task-FLP-0-TaskLevel-4.json
+              mft-digit-qc-task-FLP-1-TaskLevel-0.json
+              mft-digit-qc-task-FLP-1-TaskLevel-1.json
+              mft-digit-qc-task-FLP-1-TaskLevel-2.json
+              mft-digit-qc-task-FLP-1-TaskLevel-3.json
+              mft-digit-qc-task-FLP-1-TaskLevel-4.json
+              mft-digit-qc-task-FLP-2-TaskLevel-0.json
+              mft-digit-qc-task-FLP-2-TaskLevel-1.json
+              mft-digit-qc-task-FLP-2-TaskLevel-2.json
+              mft-digit-qc-task-FLP-2-TaskLevel-3.json
+              mft-digit-qc-task-FLP-2-TaskLevel-4.json
+              mft-digit-qc-task-FLP-3-TaskLevel-0.json
+              mft-digit-qc-task-FLP-3-TaskLevel-1.json
+              mft-digit-qc-task-FLP-3-TaskLevel-2.json
+              mft-digit-qc-task-FLP-3-TaskLevel-3.json
+              mft-digit-qc-task-FLP-3-TaskLevel-4.json
+              mft-digit-qc-task-FLP-4-TaskLevel-0.json
+              mft-digit-qc-task-FLP-4-TaskLevel-1.json
+              mft-digit-qc-task-FLP-4-TaskLevel-2.json
+              mft-digit-qc-task-FLP-4-TaskLevel-3.json
+              mft-digit-qc-task-FLP-4-TaskLevel-4.json
+              basic-digit-qc-task.json
               basic-cluster-qc-task.json
               basic-track-qc-task.json
         DESTINATION etc)

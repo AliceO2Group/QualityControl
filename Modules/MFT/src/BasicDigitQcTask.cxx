@@ -25,6 +25,7 @@
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/BasicDigitQcTask.h"
+#include "MFT/BasicDigitQcTaskConversionTable.h" // Temporary header file with mapping table
 // C++
 #include <fstream>
 
@@ -47,15 +48,21 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "Custom parameter - FLP: " << param->second << ENDM;
     FLP = stoi(param->second);
   }
+  if (auto param = mCustomParameters.find("TaskLevel"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Custom parameter - TaskLevel: " << param->second << ENDM;
+    TaskLevel = stoi(param->second);
+  }
 
-  // Read table with variables for hit maps - temporary solution
-  readTable();
+  // // Read table with variables for hit maps - temporary solution
+  // readTable();
   //  -------------------
   mMFT_chip_index_H = std::make_unique<TH1F>("ChipHitMaps/mMFT_chip_index_H", "mMFT_chip_index_H;Chip ID;#Entries", 936, -0.5, 935.5);
-  getObjectsManager()->startPublishing(mMFT_chip_index_H.get());
+  if (TaskLevel == 3 || TaskLevel == 4)
+    getObjectsManager()->startPublishing(mMFT_chip_index_H.get());
 
   mMFT_chip_std_dev_H = std::make_unique<TH1F>("ChipHitMaps/mMFT_chip_std_dev_H", "mMFT_chip_std_dev_H;Chip ID;#Entries", 936, -0.5, 935.5);
-  getObjectsManager()->startPublishing(mMFT_chip_std_dev_H.get());
+  if (TaskLevel == 3 || TaskLevel == 4)
+    getObjectsManager()->startPublishing(mMFT_chip_std_dev_H.get());
 
   //==============================================
   //  chip hit maps
@@ -72,9 +79,10 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       FolderName, HistogramName,
       binsChipHitMaps[iHitMap][0], binsChipHitMaps[iHitMap][1], binsChipHitMaps[iHitMap][2],
       binsChipHitMaps[iHitMap][3], binsChipHitMaps[iHitMap][4], binsChipHitMaps[iHitMap][5]);
-    chiphitmap->SetStats(0);
+    // chiphitmap->SetStats(0);
     mMFTChipHitMap.push_back(std::move(chiphitmap));
-    getObjectsManager()->startPublishing(mMFTChipHitMap[iVectorHitMap].get());
+    if (TaskLevel == 0 || TaskLevel == 1 || TaskLevel == 4)
+      getObjectsManager()->startPublishing(mMFTChipHitMap[iVectorHitMap].get());
   }
 
   //==============================================
@@ -93,7 +101,8 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       gPixelHitMapsMaxBinY / gPixelHitMapsBinWidth, gPixelHitMapsMinBin, gPixelHitMapsMaxBinY);
     pxlhitmap->SetStats(0);
     mMFTPixelHitMap.push_back(std::move(pxlhitmap));
-    // getObjectsManager()->startPublishing(mMFTPixelHitMap[iVectorID].get());
+    if (TaskLevel == 2 || TaskLevel == 4)
+      getObjectsManager()->startPublishing(mMFTPixelHitMap[iVectorID].get());
   }
 }
 
