@@ -64,7 +64,9 @@ class BasicDigitQcTask final : public TaskInterface
 
   int FLP;
   int TaskLevel;
-  int nMaps[5] = { 132, 132, 164, 236, 272 };
+  int nMapsH0[5] = { 66, 66, 82, 118, 136 };
+  int nMapsH1[5] = { 136, 118, 82, 66, 66 };
+  int nMaps[5] = { 66, 66, 82, 118, 136 };
 
   // int half[936] = { 0 };
   // int disk[936] = { 0 };
