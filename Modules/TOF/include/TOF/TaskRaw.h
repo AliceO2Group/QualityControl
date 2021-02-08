@@ -80,9 +80,11 @@ class RawDataDecoder final : public DecoderBase
   Counter<nwords, LTMDiagnosticName> mLTMCounter[ncrates];        /// LTM Counters
   Counter<nwords, TRMDiagnosticName> mTRMCounter[ncrates][ntrms]; /// TRM Counters
   // Global counters
-  Counter<172800, nullptr> mCounterIndexE;      /// Counter for the single electronic index
-  Counter<172800, nullptr> mCounterIndexENoise; /// Counter for the single electronic index for noise analysis
-  Counter<1024, nullptr> mCounterTimeBC;        /// Counter for the Bunch Crossing Time
+  Counter<172800, nullptr> mCounterIndexEquipment;          /// Counter for the single electronic index
+  Counter<172800, nullptr> mCounterIndexEquipmentInTimeWin; /// Counter for the single electronic index for noise analysis
+  Counter<172800, nullptr> mCounterNoisyChannels;           /// Counter for noisy channels
+  Counter<1024, nullptr> mCounterTimeBC;                    /// Counter for the Bunch Crossing Time
+  Counter<91, nullptr> mCounterNoiseMap[ncrates][4];        /// Counter for the Noise Hit Map
 
   /// Histograms to fill
   std::map<std::string, std::shared_ptr<TH1>> mHistos;
@@ -96,21 +98,22 @@ class RawDataDecoder final : public DecoderBase
   void resetHistograms();
 
   // Function for noise estimation
-  void estimateNoise(std::shared_ptr<TH2F> hFeaStripNoise);
+  void estimateNoise(std::shared_ptr<TH1F> hIndexEquipmentIsNoise);
 
   // Histograms filled in the decoder to be kept to the bare bone so as to increase performance
-  std::shared_ptr<TH1F> mHits;          /// Number of TOF hits
-  std::shared_ptr<TH1F> mTime;          /// Time
-  std::shared_ptr<TH1F> mTOT;           /// Time-Over-Threshold
-  std::shared_ptr<TH2F> mSlotPartMask;  /// Participating slot
-  std::shared_ptr<TH2F> mDiagnostic;    /// Diagnostic words
-  std::shared_ptr<TH1F> mNErrors;       /// Number of errors
-  std::shared_ptr<TH1F> mErrorBits;     /// Bits of errors
-  std::shared_ptr<TH2F> mError;         /// Errors in slot and TDC
-  std::shared_ptr<TH1F> mNTests;        /// Number of tests
-  std::shared_ptr<TH2F> mTest;          /// Tests in slot and TDC
-  std::shared_ptr<TH2F> mOrbitID;       /// Orbit ID for the header and trailer words
-  std::shared_ptr<TH2F> mFeaStripNoise; /// Noise map per FEA cards
+  std::shared_ptr<TH1F> mHits;                  /// Number of TOF hits
+  std::shared_ptr<TH1F> mTime;                  /// Time
+  std::shared_ptr<TH1F> mTOT;                   /// Time-Over-Threshold
+  std::shared_ptr<TH2F> mSlotPartMask;          /// Participating slot
+  std::shared_ptr<TH2F> mDiagnostic;            /// Diagnostic words
+  std::shared_ptr<TH1F> mNErrors;               /// Number of errors
+  std::shared_ptr<TH1F> mErrorBits;             /// Bits of errors
+  std::shared_ptr<TH2F> mError;                 /// Errors in slot and TDC
+  std::shared_ptr<TH1F> mNTests;                /// Number of tests
+  std::shared_ptr<TH2F> mTest;                  /// Tests in slot and TDC
+  std::shared_ptr<TH2F> mOrbitID;               /// Orbit ID for the header and trailer words
+  std::shared_ptr<TH2F> mNoiseMap;              /// Noise map per FEA cards
+  std::shared_ptr<TH1F> mIndexEquipmentHitRate; /// Noise rate x channel
 
  private:
   /** decoding handlers **/
@@ -152,8 +155,9 @@ class TaskRaw final : public TaskInterface
   std::shared_ptr<TH2F> mCrateHisto[RawDataDecoder::ncrates]; /// Words of each slot in a crate
 
   // Indices in the electronic scheme
-  std::shared_ptr<TH1F> mIndexE;      /// Index in electronic
-  std::shared_ptr<TH1F> mIndexENoise; /// Index in electronic for noise analysis
+  std::shared_ptr<TH1F> mIndexEquipment;          /// Index in electronic
+  std::shared_ptr<TH1F> mIndexEquipmentInTimeWin; /// Index in electronic for noise analysis
+  std::shared_ptr<TH1F> mIndexEquipmentIsNoise;   /// Noise hit map x channel
 
   // Other observables
   std::shared_ptr<TH1F> mTimeBC; /// Time in Bunch Crossing
