@@ -240,13 +240,18 @@ Change the lines as indicated below :
     "className": "o2::quality_control_modules::abc::RawDataQcTask",
     "moduleName": "QcTST",
     "detectorName": "TST",
+    ...
 ```
 and 
 ```
-        "detectorName": "TST",
-        "dataSource": [{
-          "type": "Task",
-          "name": "MyRawDataQcTask",
+"checks": {
+  "QcCheck": {
+     ...
+     "detectorName": "TST",
+     "dataSource": [{
+       "type": "Task",
+       "name": "MyRawDataQcTask",
+     ...
 ```
 
 Now we can run it
