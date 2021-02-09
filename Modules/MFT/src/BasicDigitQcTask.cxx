@@ -139,7 +139,7 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     int chipIndex = one_digit.getChipIndex();
 
     // Simulate QC task on specific FLP (i.e. only digits from  half 0 disk X and half 1 dsik 4-X will arrive); this can be removed once the code is on FLP
-    // if ((disk[chipIndex] == 0 && half[chipIndex] == 0) || (disk[chipIndex] == 4 && half[chipIndex] == 1)) { // corresponds to FLP 0 (FLP=(0,1,2,3,4))
+    // if ((disk[chipIndex] == 0 && half[chipIndex] == 0) || (disk[chipIndex] == 4 && half[chipIndex] == 1)) {
     int vectorIndex = getVectorIndex(chipIndex);
 
     // fill pixel hit maps
