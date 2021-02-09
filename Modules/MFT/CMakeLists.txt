@@ -108,7 +108,6 @@ install(FILES mft-digit-qc-task-FLP-0-TaskLevel-0.json
               mft-digit-qc-task-FLP-4-TaskLevel-2.json
               mft-digit-qc-task-FLP-4-TaskLevel-3.json
               mft-digit-qc-task-FLP-4-TaskLevel-4.json
-              basic-digit-qc-task.json
               basic-cluster-qc-task.json
               basic-track-qc-task.json
         DESTINATION etc)

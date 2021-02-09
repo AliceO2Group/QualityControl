@@ -59,7 +59,7 @@ class BasicDigitQcTask final : public TaskInterface
   const double gPixelHitMapsMinBin = -0.5;
   const int gPixelHitMapsBinWidth = 1;
 
-  const int nHitmaps = 20;
+  const int nHitMaps = 20;
   const int nChip = 936;
 
   int FLP;
@@ -124,11 +124,13 @@ class BasicDigitQcTask final : public TaskInterface
   std::vector<std::unique_ptr<TH2F>> mMFTPixelHitMap;
 
   //  functions
-  void readTable();
+  // void readTable();
+  int getVectorHitMapIndex(int HitMapID);
+  int getHitMapIndex(int VectorHitMapID);
   int getVectorIndex(int chipID);
   int getChipIndex(int vectorID);
-  void getChipName(TString& FolderName, TString& HistogramName, int iHitMap);
-  void getPixelName(TString& FolderName, TString& HistogramName, int iVectorID);
+  void getChipName(TString& FolderName, TString& HistogramName, int iHitMapID);
+  void getPixelName(TString& FolderName, TString& HistogramName, int iChipID);
 };
 
 } // namespace o2::quality_control_modules::mft
