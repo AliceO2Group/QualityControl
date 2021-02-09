@@ -59,7 +59,7 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (TaskLevel == 3 || TaskLevel == 4)
     getObjectsManager()->startPublishing(mMFT_chip_index_H.get());
 
-  mMFT_chip_std_dev_H = std::make_unique<TH1F>("ChipHitMaps/mMFT_chip_std_dev_H", "mMFT_chip_std_dev_H;Chip ID;#Entries", 936, -0.5, 935.5);
+  mMFT_chip_std_dev_H = std::make_unique<TH1F>("ChipHitMaps/mMFT_chip_std_dev_H", "mMFT_chip_std_dev_H;Chip ID;Chip std dev", 936, -0.5, 935.5);
   if (TaskLevel == 3 || TaskLevel == 4)
     getObjectsManager()->startPublishing(mMFT_chip_std_dev_H.get());
 
