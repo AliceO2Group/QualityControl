@@ -84,9 +84,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto rofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
 
-  for (int iROF = 0; iROF < rofArr.size(); iROF++) {
-
-    auto& ROF = rofArr[iROF];
+  for (const auto& ROF : rofArr) {
     for (int itrack = ROF.getFirstEntry(); itrack < ROF.getFirstEntry() + ROF.getNEntries(); itrack++) {
 
       auto& track = trackArr[itrack];

@@ -113,9 +113,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
   int lay, sta, ssta, mod, chip;
-  for (int iROF = 0; iROF < clusRofArr.size(); iROF++) {
-
-    auto& ROF = clusRofArr[iROF];
+  for (const auto& ROF : clusRofArr) {
     for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
 
       auto& cluster = clusArr[icl];
