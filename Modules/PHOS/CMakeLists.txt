@@ -1,26 +1,26 @@
 # ---- Library ---- 
 
-add_library(QcPHOS)
+add_library(O2QcPHOS)
 
-target_sources(QcPHOS PRIVATE src/RawQcTask.cxx src/RawCheck.cxx src/ClusterQcTask.cxx src/ClusterCheck.cxx)
+target_sources(O2QcPHOS PRIVATE src/RawQcTask.cxx src/RawCheck.cxx src/ClusterQcTask.cxx src/ClusterCheck.cxx)
 
 target_include_directories(
-  QcPHOS
+  O2QcPHOS
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(QcPHOS PUBLIC QualityControl O2::PHOSBase O2::PHOSReconstruction)
+target_link_libraries(O2QcPHOS PUBLIC O2QualityControl O2::PHOSBase O2::PHOSReconstruction)
 
-add_root_dictionary(QcPHOS
+add_root_dictionary(O2QcPHOS
                     HEADERS include/PHOS/ClusterQcTask.h
 		            include/PHOS/ClusterCheck.h
                             include/PHOS/RawQcTask.h
                             include/PHOS/RawCheck.h
                     LINKDEF include/PHOS/LinkDef.h
-                    BASENAME QcPHOS)
+                    BASENAME O2QcPHOS)
 
-install(TARGETS QcPHOS
+install(TARGETS O2QcPHOS
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -32,7 +32,7 @@ install (
 # ---- Executables ----
 
 add_executable(o2-qc-run-phos-raw src/runQCPHOSRaw.cxx)
-target_link_libraries(o2-qc-run-phos-raw PUBLIC QualityControl QcPHOS O2::DataFormatsPHOS O2::PHOSBase O2::PHOSWorkflow)
+target_link_libraries(o2-qc-run-phos-raw PUBLIC O2QualityControl O2QcPHOS O2::DataFormatsPHOS O2::PHOSBase O2::PHOSWorkflow)
 install(
   TARGETS o2-qc-run-phos-raw
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

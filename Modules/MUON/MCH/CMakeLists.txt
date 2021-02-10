@@ -36,7 +36,7 @@ target_include_directories(
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(${MODULE_NAME} PUBLIC QualityControl O2::CommonDataFormat O2::GPUCommon 
+target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2::CommonDataFormat O2::GPUCommon
         $<TARGET_NAME_IF_EXISTS:O2::MCHMappingFactory> O2::MCHMappingImpl3 O2::MCHMappingSegContour O2::MCHRawDecoder O2::MCHPreClustering)
 
 target_compile_definitions(${MODULE_NAME} PRIVATE $<$<TARGET_EXISTS:O2::MCHMappingFactory>:MCH_HAS_MAPPING_FACTORY>)

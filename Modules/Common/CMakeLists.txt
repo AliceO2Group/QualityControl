@@ -7,9 +7,9 @@ configure_file("include/Common/Version.h.in"
 # ---- Library ----
 
 
-add_library(QcCommon)
+add_library(O2QcCommon)
 
-target_sources(QcCommon
+target_sources(O2QcCommon
                PRIVATE src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
@@ -19,19 +19,19 @@ target_sources(QcCommon
                        src/EverIncreasingGraph.cxx)
 
 target_include_directories(
-  QcCommon
+  O2QcCommon
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(QcCommon PUBLIC QualityControl PRIVATE ROOT::Graf)
+target_link_libraries(O2QcCommon PUBLIC O2QualityControl PRIVATE ROOT::Graf)
 
-install(TARGETS QcCommon
+install(TARGETS O2QcCommon
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_root_dictionary(QcCommon
+add_root_dictionary(O2QcCommon
                     HEADERS include/Common/NonEmpty.h
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Reductor.h
@@ -40,7 +40,7 @@ add_root_dictionary(QcCommon
                             include/Common/QualityReductor.h
                             include/Common/EverIncreasingGraph.h
                     LINKDEF include/Common/LinkDef.h
-                    BASENAME QcCommon)
+                    BASENAME O2QcCommon)
 
 # ---- Tests ----
 
@@ -52,7 +52,7 @@ foreach(test ${TEST_SRCS})
 
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name}
-                        PRIVATE QcCommon Boost::unit_test_framework)
+                        PRIVATE O2QcCommon Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_property(TARGET ${test_name}
     PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)

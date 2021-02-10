@@ -1,26 +1,26 @@
 # ---- Library ----
 
-add_library(QcExample src/BenchmarkTask.cxx src/ExampleTask.cxx src/AnalysisTask.cxx
+add_library(O2QcExample src/BenchmarkTask.cxx src/ExampleTask.cxx src/AnalysisTask.cxx
                       src/FakeCheck.cxx src/ExampleCondition.cxx)
 
 target_include_directories(
-  QcExample
+  O2QcExample
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(QcExample PUBLIC QualityControl)
+target_link_libraries(O2QcExample PUBLIC O2QualityControl)
 
-add_root_dictionary(QcExample
+add_root_dictionary(O2QcExample
                     HEADERS include/Example/BenchmarkTask.h
                             include/Example/AnalysisTask.h
                             include/Example/ExampleTask.h
                             include/Example/FakeCheck.h
                             include/Example/ExampleCondition.h
                     LINKDEF include/Example/LinkDef.h
-                    BASENAME QcExample)
+                    BASENAME O2QcExample)
 
-install(TARGETS QcExample
+install(TARGETS O2QcExample
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -50,7 +50,7 @@ foreach(test ${TEST_SRCS})
   string(REGEX REPLACE ".cxx" "" test_name ${test_name})
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name}
-                        PRIVATE QcExample Boost::unit_test_framework)
+                        PRIVATE O2QcExample Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_property(TARGET ${test_name}
                PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
