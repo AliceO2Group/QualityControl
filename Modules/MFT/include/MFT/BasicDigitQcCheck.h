@@ -12,7 +12,7 @@
 /// \file   BasicDigitQcCheck.h
 /// \author Tomas Herman
 /// \author Guillermo Contreras
-///
+/// \author Katarina Krizkova Gajdosova
 
 #ifndef QC_MODULE_MFT_MFTBasicDIGITQCCHECK_H
 #define QC_MODULE_MFT_MFTBasicDIGITQCCHECK_H
