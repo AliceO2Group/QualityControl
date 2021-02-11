@@ -70,7 +70,11 @@ void ObjectsManager::updateServiceDiscovery()
   string objects;
   for (auto tobj : *mMonitorObjects) {
     MonitorObject* mo = dynamic_cast<MonitorObject*>(tobj);
-    objects += mo->getPath() + ",";
+    if(mo) {
+      objects += mo->getPath() + ",";
+    } else {
+      ILOG(Error, Devel) << "ObjectsManager::updateServiceDiscovery : dynamic_cast returned nullptr." << ENDM;
+    }
   }
   objects.pop_back();
   mServiceDiscovery->_register(objects);
