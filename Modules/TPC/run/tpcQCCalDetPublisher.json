@@ -28,6 +28,20 @@
         "className": "o2::quality_control_modules::tpc::CalDetPublisher",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
+        "outputList": [
+          "Pedestal",
+          "Noise"
+        ],
+        "metaData": [
+          {
+            "keys": [ "key1", "key2" ],
+            "values": [ "value1", "value2" ]
+          },
+          {
+            "keys": [ "key" ],
+            "values": [ "value" ]
+          }
+        ],
         "initTrigger": [
           "once"
         ],

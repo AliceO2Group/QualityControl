@@ -31,15 +31,13 @@ namespace o2::quality_control_modules::tpc
 /// \param objectsManager ObjectsManager of the underlying PostProcessingInterface
 /// \param canVec Vector which holds TCanvas pointers persisting for the entire runtime of the task
 /// \param canvNames Names of the canvases
-/// \param Optional std::map to set meta data for the publishing
+/// \param metaData Optional std::map to set meta data for the publishing
 auto addAndPublish = [](std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager, auto& canVec, std::vector<std::string_view> canvNames, const std::map<std::string, std::string>& metaData = std::map<std::string, std::string>()) {
   for (const auto& canvName : canvNames) {
     canVec.emplace_back(std::make_unique<TCanvas>(canvName.data()));
     auto canvas = canVec.back().get();
     objectsManager->startPublishing(canvas);
-    if (metaData.size() == 0) {
-      objectsManager->addMetadata(canvas->GetName(), "custom", "42");
-    } else {
+    if (metaData.size() != 0) {
       for (const auto& [key, value] : metaData) {
         objectsManager->addMetadata(canvas->GetName(), key, value);
       }
