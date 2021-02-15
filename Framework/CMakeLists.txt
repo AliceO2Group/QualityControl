@@ -94,7 +94,6 @@ target_link_libraries(QualityControl
                              AliceO2::Monitoring
                              AliceO2::Configuration
                              AliceO2::Occ
-                             AliceO2::DebugGUI
                              ROOT::Net
                              Boost::container
                              O2::Framework
@@ -108,6 +107,10 @@ target_link_libraries(QualityControl
                               $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
                               $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL> ROOT::Gui
                               CURL::libcurl)
+
+if (TARGET AliceO2::DebugGUI) 
+  target_link_libraries(QualityControl PUBLIC AliceO2::DebugGUI)
+endif()
 
 target_compile_definitions(QualityControl PRIVATE
                            $<$<BOOL:${ENABLE_MYSQL}>:_WITH_MYSQL>)
