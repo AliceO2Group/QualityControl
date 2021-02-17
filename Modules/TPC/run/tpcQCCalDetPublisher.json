@@ -1,0 +1,57 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "PadCalibration": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::CalDetPublisher",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "outputList": [
+          "Pedestal",
+          "Noise"
+        ],
+        "metaData": [
+          {
+            "keys": [ "key1", "key2" ],
+            "values": [ "value1", "value2" ]
+          },
+          {
+            "keys": [ "key" ],
+            "values": [ "value" ]
+          }
+        ],
+        "initTrigger": [
+          "once"
+        ],
+        "updateTrigger": [
+          "once"
+        ],
+        "stopTrigger": [
+          "once"
+        ]
+      }
+    }
+  }
+}
