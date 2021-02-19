@@ -81,13 +81,13 @@ set_tests_properties(testQcTOF PROPERTIES TIMEOUT 20)
 
 # ---- Extra scripts ----
 
-install(FILES toffull.json
-              tofdigits.json
-              tofraw.json
-              toffull_multinode.json
+install(FILES tofdigits.json
               tofdigits_multinode.json
-              tofraw_multinode.json
+              toffull.json
+              toffull_multinode.json
               tofpostprocessdiagnosticpercrate.json
+              tofraw.json
+              tofraw_multinode.json
         DESTINATION etc)
 
 get_property(dirs
