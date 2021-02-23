@@ -18,12 +18,10 @@
 #include <iostream>
 #include <Common/Exceptions.h>
 
-ClassImp(o2::quality_control::core::Quality)
+ClassImp(o2::quality_control::core::Quality) //
 
-  // clang-format off
-namespace o2::quality_control::core
+  namespace o2::quality_control::core
 {
-  // clang-format on
 
   // could be changed if needed but I don't see why we would need more than 10 levels
   const unsigned int Quality::NullLevel = 10;
@@ -75,13 +73,18 @@ namespace o2::quality_control::core
     addMetadata(pairs);
   }
 
-  const std::string Quality::getMetadata(std::string key)
+  std::string Quality::getMetadata(std::string key)
   {
     if (mUserMetadata.count(key) == 0) {
       std::cerr << "Could not get the metadata with key \"" << key << "\"" << std::endl;
       BOOST_THROW_EXCEPTION(AliceO2::Common::ObjectNotFoundError() << AliceO2::Common::errinfo_object_name(key));
     }
     return mUserMetadata.at(key);
+  }
+
+  std::string Quality::getMetadata(std::string key, std::string defaultValue)
+  {
+    return mUserMetadata.count(key) > 0 ? mUserMetadata.at(key) : defaultValue;
   }
 
 } // namespace o2::quality_control::core

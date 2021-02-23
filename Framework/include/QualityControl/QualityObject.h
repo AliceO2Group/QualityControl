@@ -98,7 +98,10 @@ class QualityObject : public TObject
   /// \brief Get a metadata
   /// \return the value corresponding to the key if it was found.
   /// \throw ObjectNotFoundError in case the key is not found.
-  const std::string getMetadata(std::string key);
+  std::string getMetadata(std::string key);
+  /// \brief Get a metadata
+  /// \return the value corresponding to the key if it was found, default value otherwise
+  std::string getMetadata(std::string key, std::string defaultValue);
 
   /// \brief Build the path to this object.
   /// Build the path to this object as it will appear in the GUI.
