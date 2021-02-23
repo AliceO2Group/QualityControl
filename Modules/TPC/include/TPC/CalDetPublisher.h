@@ -20,16 +20,25 @@
 #include "QualityControl/PostProcessingInterface.h"
 
 #include <boost/property_tree/ptree_fwd.hpp>
+#include <map>
 
 class TCanvas;
+class TPaveText;
 
 namespace o2::quality_control_modules::tpc
 {
 
 /// \brief Valid CalDet objects
 /// This struct contains the valid CalDet objects to be fetched from the CCDB
-enum struct outputType { Pedestal,
-                         Noise
+enum struct outputCalPad { Pedestal,
+                           Noise
+};
+
+/// \brief Valid vectors of CalDet objects
+/// This struct contains the valid std::unordered_maps of CalDet objects to be fetched from the CCDB
+enum struct outputCalPadMap { NoPe,
+                              Pulser,
+                              CE
 };
 
 /// \brief Quality Control task for the calibration data of the TPC
@@ -68,9 +77,30 @@ class CalDetPublisher final : public quality_control::postprocessing::PostProces
 
  private:
   std::vector<std::string> mOutputList{};                                ///< list of CalDet objects to be processed
+  std::vector<std::string> mOutputListMap{};                             ///< list of vectors of CalDet objects to be processed
   std::vector<std::vector<std::unique_ptr<TCanvas>>> mCalDetCanvasVec{}; ///< vector containing a vector of summary canvases for every CalDet object
-  std::vector<std::vector<std::string>> mMetaKeys{};                     ///< vector containing metaData keys; objects can have more than one key
-  std::vector<std::vector<std::string>> mMetaValues{};                   ///< vector containing metaData values
+  std::vector<long> mTimestamps{};                                       ///< timestamps to look for specific data in the CCDB
+  std::vector<std::map<std::string, std::string>> mLookupMaps{};         ///< meta data to look for data in the CCDB
+  std::vector<std::map<std::string, std::string>> mStoreMaps{};          ///< meta data to be stored with the output in the QCDB
+  bool mCheckZSCalib;                                                    ///< shall the calib data used for ZS be compared to the latest pedestal and noise files
+  bool mCheckZSPrereq = true;                                            ///< is pedestal and noise in the outputList in the config file
+  std::unique_ptr<o2::tpc::CalDet<float>> mRefPedestal;                  ///< reference pedestal file used for ZS at the moment
+  std::unique_ptr<o2::tpc::CalDet<float>> mRefNoise;                     ///< reference noise file used for ZS at the moment
+  long mInitRefCalibTimestamp;                                           ///< timestamp of the pedestal/noise map used at init of the task
+  long mInitRefPedestalTimestamp;                                        ///< timestamp of the pedestal data used at init of the task
+  long mInitRefNoiseTimestamp;                                           ///< timestamp of the noise data used at init of the task
+  TPaveText* mNewZSCalibMsg = nullptr;                                   ///< badge to indicate the necessity to upload new calibration data for ZS
+
+  std::unordered_map<std::string, std::vector<int>> mRanges{ ///< histogram ranges configurable via config file
+                                                             { "Pedestals", {} },
+                                                             { "Noise", {} },
+                                                             { "PulserQtot", {} },
+                                                             { "PulserT0", {} },
+                                                             { "PulserWidth", {} },
+                                                             { "CEQtot", {} },
+                                                             { "CET0", {} },
+                                                             { "CEWidth", {} }
+  };
 };
 
 } // namespace o2::quality_control_modules::tpc
