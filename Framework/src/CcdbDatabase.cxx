@@ -360,6 +360,29 @@ std::vector<std::string> CcdbDatabase::getListing(std::string subpath)
   return result;
 }
 
+std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(std::string path)
+{
+  std::stringstream listingAsStringStream{ getListingAsString(path, "application/json") };
+  //  std::cout << "listingAsString: " << listingAsStringStream.str() << std::endl;
+
+  boost::property_tree::ptree listingAsTree;
+  boost::property_tree::read_json(listingAsStringStream, listingAsTree);
+
+  std::vector<uint64_t> timestamps;
+  const auto& objects = listingAsTree.get_child("objects");
+  timestamps.reserve(objects.size());
+
+  // As for today, we receive objects in the order of the newest to the oldest.
+  // We prefer the other order here.
+  for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
+    timestamps.emplace_back(rit->second.get<uint64_t>("Valid-From"));
+  }
+
+  // we make sure it is sorted. If it is already, it shouldn't cost much.
+  std::sort(timestamps.begin(), timestamps.end());
+  return timestamps;
+}
+
 std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskName)
 {
   std::vector<string> result;

@@ -86,6 +86,13 @@ class CcdbDatabase : public DatabaseInterface
   */
   std::vector<std::string> getListing(std::string subpath = "");
 
+  /**
+   * \brief Returns a vector of all 'valid from' timestamps for an object.
+   * \path Path on an object.
+   * \return A vector of all 'valid from' timestamps for an object in non-descending order.
+   */
+  std::vector<uint64_t> getTimestampsForObject(std::string path);
+
  private:
   /**
    * \brief Load StreamerInfos from a ROOT file.
