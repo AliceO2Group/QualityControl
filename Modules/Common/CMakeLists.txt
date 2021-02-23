@@ -10,7 +10,9 @@ configure_file("include/Common/Version.h.in"
 add_library(QcCommon)
 
 target_sources(QcCommon
-               PRIVATE src/NonEmpty.cxx
+               PRIVATE src/TRFCollectionTask.cxx
+               PRIVATE src/TRFCollectionTaskConfig.cxx
+                       src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
                        src/TH2Reductor.cxx
@@ -24,7 +26,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(QcCommon PUBLIC QualityControl PRIVATE ROOT::Graf)
+target_link_libraries(QcCommon PUBLIC QualityControl O2::DataFormatsQualityControl PRIVATE ROOT::Graf)
 
 install(TARGETS QcCommon
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -33,6 +35,7 @@ install(TARGETS QcCommon
 
 add_root_dictionary(QcCommon
                     HEADERS include/Common/NonEmpty.h
+                            include/Common/TRFCollectionTask.h
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Reductor.h
                             include/Common/TH2Reductor.h
@@ -41,6 +44,9 @@ add_root_dictionary(QcCommon
                             include/Common/EverIncreasingGraph.h
                     LINKDEF include/Common/LinkDef.h
                     BASENAME QcCommon)
+
+install(FILES etc/trfcollection-example.json
+  DESTINATION Modules/Common)
 
 # ---- Tests ----
 
