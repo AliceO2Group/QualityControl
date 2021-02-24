@@ -44,10 +44,13 @@ class Counter
   ~Counter() = default;
 
   /// Functions to increment a counter
-  /// @param v Index in the counter array to increment, @param weight weight to add to the array element
-  void Add(const unsigned int& v, const unsigned int& weight);
+  /// @param index Index in the counter array to increment
+  /// @param weight weight to add to the array element
+  void Add(const unsigned int& index, const uint32_t& weight);
 
-  void Count(const unsigned int& v);
+  /// Functions to count a single event
+  /// @param index Index in the counter array to increment by one
+  void Count(const unsigned int& index) { Add(index, 1); }
 
   /// Function to reset counters to zero
   void Reset();
@@ -97,21 +100,15 @@ class Counter
 // #define ENABLE_PRINT_HISTOGRAMS_MODE // Flag used to enable more printing and more debug
 
 template <const unsigned int size, const char* labels[size]>
-void Counter<size, labels>::Add(const unsigned int& v, const unsigned int& weight)
+void Counter<size, labels>::Add(const unsigned int& index, const uint32_t& weight)
 {
-  if (v > size) {
-    LOG(FATAL) << "Incrementing counter too far! " << v << "/" << size;
+  if (index > size) {
+    LOG(FATAL) << "Incrementing counter too far! " << index << "/" << size;
   }
 #ifdef ENABLE_COUNTER_DEBUG_MODE
-  LOG(INFO) << "Incrementing " << v << "/" << size << " of " << weight << " to " << counter[v];
+  LOG(INFO) << "Incrementing " << index << "/" << size << " of " << weight << " to " << counter[index];
 #endif
-  counter[v] += weight;
-}
-
-template <const unsigned int size, const char* labels[size]>
-void Counter<size, labels>::Count(const unsigned int& v)
-{
-  Add(v, 1);
+  counter[index] += weight;
 }
 
 template <const unsigned int size, const char* labels[size]>
