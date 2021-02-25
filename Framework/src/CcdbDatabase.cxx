@@ -226,6 +226,7 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
   }
+  mo->setIsOwner(true);
   return mo;
 }
 

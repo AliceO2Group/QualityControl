@@ -252,6 +252,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
         }
 
         if (mo) {
+          mo->setIsOwner(true);
           mMonitorObjects[mo->getFullName()] = mo;
           updatePolicyManager.updateObjectRevision(mo->getFullName());
           mTotalNumberObjectsReceived++;
