@@ -539,9 +539,13 @@ At the moment, the description of the REST api can be found in this document : h
 
 To install and run the QCG locally, and its fellow process tobject2json, please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#run-qcg-locally
 
-## Developing QC modules on a machine with FLP suite
+## FLP Suite
 
-Option 1: Rebuild everything locally and use the QC module library that is generated
+The QC is part of the FLP Suite. The Suite is installed on FLPs through RPMs and is configured with ansible. As a consequence a few things are different in this context compared to a pure development setup. 
+
+### Developing QC modules on a machine with FLP suite
+
+__Option 1__: Rebuild everything locally and use the QC module library that is generated
 
 Simply build as you would do on your development machine with aliBuild. 
 To load a development library in a setup with FLP suite, specify its full
@@ -561,7 +565,7 @@ workflow specification for AliECS
 ones which are installed with the FLP suite. Especially, the task and check
 interfaces have to be identical. A good way to achieve that is to use the alidist branch matching the version of flp suite (e.g. `flp-suite-v0.12.0`).
 
-Option 2: Build on your development setup and scp the library
+__Option 2__: Build on your development setup and scp the library
 
 1. Switch alidist to the branch corresponding to the flp-suite you installed, e.g. `flp-suite-v0.12.0`. 
 2. Rebuild QC using alibuild
@@ -569,9 +573,19 @@ Option 2: Build on your development setup and scp the library
 3. scp from development setup alice/sw/slc7_x86-64/QualityControl/latest/lib/yourlib* to /opt/alisw/el7/QualityControl/<version>/lib on the FLP.
 4. Rebuild the aliECS environment. 
 
-Option 3: Rebuild only the QC reusing the installed software
+__Option 3__: Rebuild only the QC reusing the installed software
 
-NOT WORKING YET
+NOT WORKING YET, follow it up here: https://alice.its.cern.ch/jira/browse/O2-1896
+
+### Switch detector in the workflow _readout-dataflow_
+
+The workflow readout-dataflow has an issue. The proxy filters out everything but TPC data. To run with another detector (e.g. EMC) do:
+
+1. Change all instances of "TPC" in the file /etc/flp.d/qc/stfb-qc.dpl.json to `EMC`.
+2. Change all instances of "TPC" in the QC config file in consul.
+2. Set these variables in aliECS:
+    * detector: EMC
+    * stfb_dataspec: B:EMC/RAWDATA
 
 ## Use MySQL as QC backend
 
