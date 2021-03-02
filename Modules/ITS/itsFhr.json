@@ -39,6 +39,7 @@
                     "layer": "0100000",
                     "decoderThreads": "1",
                     "runNumberPath": "/data/shifts/runs/ibb2a/.run_counter"
+                    "geomPath": "/tmp/qc_tmp/o2sim"
                 }
             }
         },
