@@ -39,7 +39,7 @@ void UpdatePolicyManager::updateGlobalRevision()
 void UpdatePolicyManager::updateActorRevision(const std::string& actorName, RevisionType revision)
 {
   if (mPoliciesByActor.count(actorName) == 0) {
-    ILOG(Error) << "Cannot update revision for " << actorName << " : object not found" << ENDM;
+    ILOG(Error, Support) << "Cannot update revision for " << actorName << " : object not found" << ENDM;
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(actorName));
   }
   mPoliciesByActor.at(actorName).revision = revision;
@@ -146,7 +146,7 @@ void UpdatePolicyManager::addPolicy(std::string actorName, std::string policyTyp
       return false;
     };
   } else {
-    ILOG(Fatal) << "No policy named '" << policyType << "'" << ENDM;
+    ILOG(Fatal, Ops) << "No policy named '" << policyType << "'" << ENDM;
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("No policy named '" + policyType + "'"));
   }
 
@@ -158,7 +158,7 @@ void UpdatePolicyManager::addPolicy(std::string actorName, std::string policyTyp
 bool UpdatePolicyManager::isReady(const std::string& actorName)
 {
   if (mPoliciesByActor.count(actorName) == 0) {
-    ILOG(Error) << "Cannot check if " << actorName << " is ready : object not found" << ENDM;
+    ILOG(Error, Support) << "Cannot check if " << actorName << " is ready : object not found" << ENDM;
     BOOST_THROW_EXCEPTION(ObjectNotFoundError() << errinfo_object_name(actorName));
   }
   return mPoliciesByActor.at(actorName).isReady();

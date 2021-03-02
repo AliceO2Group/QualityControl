@@ -51,19 +51,19 @@ void AnalysisTask::startOfCycle()
 
 void AnalysisTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  ILOG(Info) << "Monitor data" << ENDM;
+  ILOG(Info, Devel) << "Monitor data" << ENDM;
   auto s = ctx.inputs().get<framework::TableConsumer>("aod-data");
 
   auto table = s->asArrowTable();
   if (table->num_rows() == 0) {
-    ILOG(Error) << "The arrow table is empty" << table->num_rows() << ENDM;
+    ILOG(Error, Support) << "The arrow table is empty" << table->num_rows() << ENDM;
     return;
   }
-  ILOG(Info) << "The arrow table has " << table->num_rows() << " rows" << ENDM;
+  ILOG(Info, Devel) << "The arrow table has " << table->num_rows() << " rows" << ENDM;
   mHistogram->Fill(table->num_rows());
 
   if (table->num_columns() == 0) {
-    ILOG(Error) << "No columns in the arrow table" << table->num_columns() << ENDM;
+    ILOG(Error, Support) << "No columns in the arrow table" << table->num_columns() << ENDM;
     return;
   }
   ILOG(Info) << "The arrow table has " << table->num_columns() << " columns" << ENDM;
