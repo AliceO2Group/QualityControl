@@ -23,7 +23,7 @@
 #include "TPC/Utility.h"
 
 // external includes
-#include <FairLogger.h>
+#include <Framework/Logger.h>
 #include <bitset>
 
 namespace o2::quality_control_modules::tpc
