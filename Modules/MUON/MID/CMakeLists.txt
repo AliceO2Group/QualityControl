@@ -2,7 +2,10 @@
 
 add_library(O2QcMID)
 
-target_sources(O2QcMID PRIVATE src/RawQcCheck.cxx  src/RawQcTask.cxx )
+target_sources(O2QcMID PUBLIC
+                src/RawQcCheck.cxx
+                src/RawQcTask.cxx
+                )
 
 target_include_directories(
   O2QcMID
@@ -10,7 +13,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcMID PUBLIC O2QualityControl)
+target_link_libraries(O2QcMID PUBLIC O2QualityControl O2::MIDRaw)
 
 install(TARGETS O2QcMID
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -19,8 +22,8 @@ install(TARGETS O2QcMID
 
 add_root_dictionary(O2QcMID
                     HEADERS
-		    include/MID/RawQcCheck.h
-		    include/MID/RawQcTask.h
+		            include/MID/RawQcCheck.h
+		            include/MID/RawQcTask.h
                     LINKDEF include/MID/LinkDef.h
                     BASENAME O2QcMID)
 
@@ -53,7 +56,7 @@ foreach(i RANGE ${count})
   list(GET EXE_SRCS ${i} src)
   list(GET EXE_NAMES ${i} name)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl O2::MIDWorkflow O2::DetectorsBase)
+  target_link_libraries(${name} PRIVATE O2QualityControl O2QcMID CURL::libcurl O2::MIDWorkflow O2::DetectorsBase)
 endforeach()
 
 install(
