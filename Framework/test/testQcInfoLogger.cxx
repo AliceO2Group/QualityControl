@@ -19,7 +19,7 @@
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
-#include <FairLogger.h>
+#include <fairlogger/Logger.h>
 #include <InfoLogger/InfoLoggerFMQ.hxx>
 
 using namespace std;
