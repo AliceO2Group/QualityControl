@@ -18,8 +18,8 @@
 /// \since  20-11-2020
 ///
 
-#ifndef QC_MODULE_TOF_TASKRAW_H
-#define QC_MODULE_TOF_TASKRAW_H
+#ifndef QC_MODULE_TOF_TASK_RAW_H
+#define QC_MODULE_TOF_TASK_RAW_H
 
 // O2 includes
 #include "TOFReconstruction/DecoderBase.h"
@@ -167,4 +167,4 @@ class TaskRaw final : public TaskInterface
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TASKRAW_H
+#endif // QC_MODULE_TOF_TASK_RAW_H

@@ -1,0 +1,80 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "TaskCosmics": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::TaskCosmics",
+        "moduleName": "QcTOF",
+        "detectorName": "TOF",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tof-cosmics"
+        },
+        "taskParameters": {
+          "SelDeltaTSignalRegion": "50000",
+          "SelDeltaTBackgroundRegion": "100000"
+        },
+        "location": "remote"
+      }
+    },
+    "checks": {
+      "TOFRawsMulti": {
+        "active": "false",
+        "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
+        "moduleName": "QcTOF",
+        "policy": "OnAny",
+        "detectorName": "TOF",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskCosmics",
+            "MOs": [
+              "Crate1"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "tof-cosmics",
+      "active": "true",
+      "machines": [],
+      "query": "infocosmics:TOF/INFOCOSMICS/0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "1",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
+}
