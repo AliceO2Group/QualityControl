@@ -69,24 +69,32 @@ class Counter
 
   /// Function to get how many counts where observed
   /// @return Returns the number of counts observed for a particular index
-  uint32_t HowMany(const unsigned int& pos) const { return counter[pos]; }
+  uint32_t HowMany(const unsigned int& index) const { return counter[index]; }
 
-  /// Function to make a histogram out of the counters
-  /// @param h histogram to shape in order to have room for the counter size
-  void MakeHistogram(TH1* h) const;
+  /// Function to check if the counter has a label at position index
+  /// @param index Index in the counter array to be checked
+  /// @return Returns if the counter has label corresponding to a particular index. Returns false if the label is not there or is empty.
+  constexpr bool HasLabel(const unsigned int& index) const;
+
+  /// Function to make a histogram out of the counters. If a counter has labels defined these are used as axis labels, if not this will not be done.
+  /// @param histogram histogram to shape in order to have room for the counter size
+  /// @returns Returns 0 if everything went OK
+  int MakeHistogram(TH1* histogram) const;
 
   /// Function to fill a histogram with the counters
-  /// @param h The histogram to fill
+  /// @param histogram The histogram to fill
   /// @param biny Y offset to fill to histogram, useful for TH2 and TH3
   /// @param binz Z offset to fill to histogram, useful for TH3
-  void FillHistogram(TH1* h, const unsigned int& biny = 0, const unsigned int& binz = 0) const;
+  /// @returns Returns 0 if everything went OK
+  int FillHistogram(TH1* histogram, const unsigned int& biny = 0, const unsigned int& binz = 0) const;
 
   /// Getter for the size
   /// @return Returns the size of the counter
   unsigned int Size() const { return size; }
 
  private:
-  // static_assert((sizeof(labels) / sizeof(const char*)) == size, "size of the counter and the one of the labels must coincide");
+  static_assert(size > 0, "size of the counter cannot be 0!");
+  // static_assert(((labels == nullptr) || (sizeof(labels) / sizeof(const char*)) == size), "size of the counter and the one of the labels must coincide");
   /// Containers to fill
   std::array<uint32_t, size> counter = { 0 };
   uint32_t mTotal = 0;
@@ -96,8 +104,7 @@ class Counter
 // Implementation //
 ////////////////////
 
-// #define ENABLE_COUNTER_DEBUG_MODE // Flag used to enable more printing and more debug
-// #define ENABLE_PRINT_HISTOGRAMS_MODE // Flag used to enable more printing and more debug
+// #define ENABLE_BIN_SHIFT // Flag used to enable different binning in counter and histograms
 
 template <const unsigned int size, const char* labels[size]>
 void Counter<size, labels>::Add(const unsigned int& index, const uint32_t& weight)
@@ -105,9 +112,7 @@ void Counter<size, labels>::Add(const unsigned int& index, const uint32_t& weigh
   if (index > size) {
     LOG(FATAL) << "Incrementing counter too far! " << index << "/" << size;
   }
-#ifdef ENABLE_COUNTER_DEBUG_MODE
-  LOG(INFO) << "Incrementing " << index << "/" << size << " of " << weight << " to " << counter[index];
-#endif
+  LOG(DEBUG) << "Incrementing " << index << "/" << size << " of " << weight << " to " << counter[index];
   counter[index] += weight;
 }
 
@@ -121,13 +126,22 @@ void Counter<size, labels>::Reset()
 }
 
 template <const unsigned int size, const char* labels[size]>
+constexpr bool Counter<size, labels>::HasLabel(const unsigned int& index) const
+{
+  if constexpr (labels != nullptr) {
+    return (labels[index] && labels[index][0]);
+  }
+  return false;
+}
+
+template <const unsigned int size, const char* labels[size]>
 void Counter<size, labels>::Print()
 {
   for (unsigned int i = 0; i < size; i++) {
     if (labels != nullptr) {
-      LOG(DEBUG) << "Bin " << i << "/" << size - 1 << " " << labels[i] << " = " << HowMany(i);
+      LOG(INFO) << "Bin " << i << "/" << size - 1 << " '" << labels[i] << "' = " << HowMany(i);
     } else {
-      LOG(DEBUG) << "Bin " << i << "/" << size - 1 << " = " << HowMany(i);
+      LOG(INFO) << "Bin " << i << "/" << size - 1 << " = " << HowMany(i);
     }
   }
 }
@@ -159,18 +173,31 @@ uint32_t Counter<size, labels>::TotalAndReset()
 }
 
 template <const unsigned int size, const char* labels[size]>
-void Counter<size, labels>::MakeHistogram(TH1* h) const
+int Counter<size, labels>::MakeHistogram(TH1* histogram) const
 {
-  LOG(DEBUG) << "Making Histogram " << h->GetName() << " to accomodate counter of size " << size;
-  TAxis* axis = h->GetXaxis();
+  LOG(DEBUG) << "Making Histogram " << histogram->GetName() << " to accomodate counter of size " << size;
+  TAxis* axis = histogram->GetXaxis();
   if (static_cast<unsigned int>(axis->GetNbins()) < size) {
     LOG(FATAL) << "The histogram size (" << axis->GetNbins() << ") is not large enough to accomodate the counter size (" << size << ")";
+    return 1;
   }
-  h->Reset();
+  histogram->Reset();
+
+#ifndef ENABLE_BIN_SHIFT
+  LOG(DEBUG) << "Asked to produce a histogram with size " << size << " out of the size " << size << " due to " << size - size << " empty labels";
+  axis->Set(size, 0, size);
+  for (unsigned int i = 0; i < size; i++) {
+    if (!HasLabel(i)) { // If label at position i is empty
+      continue;
+    }
+    LOG(DEBUG) << "Setting bin " << i + 1 << "/" << size << " to contain counter for '" << labels[i] << "' (index " << i << "/" << size - 1 << ")";
+    axis->SetBinLabel(i + 1, labels[i]);
+  }
+#else
   unsigned int histo_size = size;
   if (labels != nullptr) { // Only if labels are defined
     for (unsigned int i = 0; i < size; i++) {
-      if (labels[i] && !labels[i][0]) { // If label at position i is empty
+      if (!HasLabel(i)) { // If label at position i is empty or does not exist
         LOG(DEBUG) << "Skipping label '" << labels[i] << "' at position " << i << "/" << size - 1;
         histo_size--;
       }
@@ -178,73 +205,107 @@ void Counter<size, labels>::MakeHistogram(TH1* h) const
   }
   if (histo_size == 0) {
     LOG(FATAL) << "Asked to produce a histogram with size " << histo_size << ", check counter bin labels";
+    return 1;
   } else {
-    LOG(DEBUG) << "Asked to produce a histogram with size " << histo_size << " out of the size " << size << " due to empty labels";
+    LOG(DEBUG) << "Asked to produce a histogram with size " << histo_size << " out of the size " << size << " due to " << size - histo_size << " empty labels";
   }
 
   axis->Set(histo_size, 0, histo_size);
   if (labels != nullptr) { // Only if labels are defined
     unsigned int binx = 1;
     for (unsigned int i = 0; i < size; i++) {
-      if (labels[i] && !labels[i][0]) { // If label at position i is empty
+      if (!HasLabel(i)) { // If label at position i is empty
         continue;
       }
-      LOG(DEBUG) << "Setting bin " << binx << "/" << histo_size << " to contain counter for '" << labels[i] << "' (index " << i << "/" << size - 1 << ")";
       if (histo_size < binx) {
         LOG(FATAL) << "Making bin outside of histogram limits!";
+        return 1;
       }
+      LOG(DEBUG) << "Setting bin " << binx << "/" << histo_size << " to contain counter for '" << labels[i] << "' (index " << i << "/" << size - 1 << ")";
       axis->SetBinLabel(binx++, labels[i]);
     }
   }
-  h->Reset();
-#ifdef ENABLE_PRINT_HISTOGRAMS_MODE
-  h->Print("All");
 #endif
+  histogram->Reset();
+  return 0;
 }
 
 template <const unsigned int size, const char* labels[size]>
-void Counter<size, labels>::FillHistogram(TH1* h, const unsigned int& biny, const unsigned int& binz) const
+int Counter<size, labels>::FillHistogram(TH1* histogram, const unsigned int& biny, const unsigned int& binz) const
 {
-  LOG(DEBUG) << "Filling Histogram " << h->GetName() << " with counter contents";
-  unsigned int binx = 1;
-  const unsigned int nbinsx = h->GetNbinsX();
-  for (unsigned int i = 0; i < size; i++) {
-    if (labels != nullptr && labels[i] && !labels[i][0]) { // Labels are defined and label is empty
-      if (counter[i] > 0) {
-        LOG(FATAL) << "Counter at position " << i << " was non empty (" << counter[i] << ") but was discarded because of empty labels";
-      }
-      continue;
-    }
-#ifdef ENABLE_COUNTER_DEBUG_MODE
-    LOG(INFO) << "Filling bin " << binx << " of position " << i << " of label " << labels[i] << " with " << counter[i];
-#endif
-    if (binx > nbinsx) {
-      LOG(FATAL) << "Filling histogram " << h->GetName() << " at position " << binx << " i.e. past its size (" << nbinsx << ")!";
-    }
-    const char* bin_label = h->GetXaxis()->GetBinLabel(binx);
-    if (labels != nullptr) {
-      if (!labels[i]) {
-        LOG(DEBUG) << "Label at position " << i << " does not exist for axis label '" << bin_label << "'";
-      } else if (strcmp(labels[i], bin_label) != 0) {
-        LOG(FATAL) << "Bin " << binx << " does not have the expected label '" << bin_label << "' vs '" << labels[i] << "'";
-      }
-    }
-    if (counter[i] > 0) {
+  auto fillIt = [&](const unsigned int& bin, const unsigned int& index) {
+    if (counter[index] > 0) {
       if (biny > 0) {
         if (binz > 0) {
-          h->SetBinContent(binx, biny, binz, counter[i]);
+          histogram->SetBinContent(bin, biny, binz, counter[index]);
         } else {
-          h->SetBinContent(binx, biny, counter[i]);
+          histogram->SetBinContent(bin, biny, counter[index]);
         }
       } else {
-        h->SetBinContent(binx, counter[i]);
+        histogram->SetBinContent(bin, counter[index]);
       }
     }
-    binx++;
+  };
+
+  LOG(DEBUG) << "Filling Histogram " << histogram->GetName() << " with counter contents";
+#ifndef ENABLE_BIN_SHIFT
+  if (size != (histogram->GetNbinsX())) {
+    LOG(FATAL) << "Counter of size " << size << " does not fit in histogram " << histogram->GetName() << " with size " << histogram->GetNbinsX() - 1;
+    return 1;
   }
-#ifdef ENABLE_PRINT_HISTOGRAMS_MODE
-  h->Print("All");
+  for (unsigned int i = 0; i < size; i++) {
+    LOG(DEBUG) << "Filling bin " << i + 1 << " with counter at position " << i;
+    if (HasLabel(i) && strcmp(labels[i], histogram->GetXaxis()->GetBinLabel(i + 1)) != 0) { // If it has a label check its consistency!
+      LOG(FATAL) << "Bin " << i + 1 << " does not have the expected label '" << histogram->GetXaxis()->GetBinLabel(i + 1) << "' vs '" << labels[i] << "'";
+      return 1;
+    }
+    fillIt(i + 1, i);
+  }
+#else
+  const unsigned int nbinsx = histogram->GetNbinsX();
+  if constexpr (labels == nullptr) { // Fill without labels
+    if (nbinsx < size) {
+      LOG(FATAL) << "Counter size " << size << " is too large to fit in histogram " << histogram->GetName() << " with size " << nbinsx;
+      return 1;
+    }
+    for (unsigned int i = 0; i < size; i++) {
+      LOG(DEBUG) << "Filling bin " << i + 1 << " with position " << i << " with " << counter[i];
+      fillIt(i + 1, i);
+    }
+  } else { // Fill with labels
+    unsigned int binx = 1;
+    for (unsigned int i = 0; i < size; i++) {
+      if (!HasLabel(i)) { // Labels are defined and label is empty
+        if (counter[i] > 0) {
+          LOG(FATAL) << "Counter at position " << i << " was non empty (" << counter[i] << ") but was discarded because of empty labels";
+          return 1;
+        }
+        continue;
+      }
+      LOG(DEBUG) << "Filling bin " << binx << " with position " << i << " of label " << labels[i] << " with " << counter[i];
+      if (binx > nbinsx) {
+        LOG(FATAL) << "Filling histogram " << histogram->GetName() << " at position " << binx << " i.e. past its size (" << nbinsx << ")!";
+        return 1;
+      }
+      const char* bin_label = histogram->GetXaxis()->GetBinLabel(binx);
+      if (!HasLabel(i) && counter[i] > 0) {
+        LOG(FATAL) << "Label at position " << i << " does not exist for axis label '" << bin_label << "' but counter is *non* empty!";
+        return 1;
+      } else if (strcmp(labels[i], bin_label) != 0) {
+        LOG(FATAL) << "Bin " << binx << " does not have the expected label '" << bin_label << "' vs '" << labels[i] << "'";
+        return 1;
+      }
+      fillIt(binx, i);
+      binx++;
+    }
+    if (binx != nbinsx + 1) {
+      LOG(FATAL) << "Did not fully fill histogram " << histogram->GetName() << ", filled " << binx << " out of " << nbinsx;
+      return 1;
+    }
+  }
 #endif
+
+  return 0;
 }
 
 } // namespace o2::quality_control_modules::tof
