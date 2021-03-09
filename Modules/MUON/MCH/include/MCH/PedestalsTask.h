@@ -7,11 +7,10 @@
 #define QC_MODULE_MUONCHAMBERS_PEDESTALSTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "MCH/Mapping.h"
-#include "MCH/Decoding.h"
-#include "MCHBase/Digit.h"
+#include "MCHRawElecMap/Mapper.h"
 #include "MCH/GlobalHistogram.h"
 #include "Framework/DataRef.h"
+#include "MCHCalibration/MCHChannelCalibrator.h"
 
 class TH1F;
 class TH2F;
@@ -36,30 +35,28 @@ class PedestalsTask final : public TaskInterface
   void initialize(o2::framework::InitContext& ctx) override;
   void startOfActivity(Activity& activity) override;
   void startOfCycle() override;
-  void monitorDataReadout(o2::framework::ProcessingContext& ctx);
-  void monitorDataDigits(const o2::framework::DataRef& input);
   void monitorData(o2::framework::ProcessingContext& ctx) override;
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
  private:
-  Decoder mDecoder;
-  uint64_t nhits[MCH_MAX_CRU_IN_FLP][24][40][64];
-  double pedestal[MCH_MAX_CRU_IN_FLP][24][40][64];
-  double noise[MCH_MAX_CRU_IN_FLP][24][40][64];
+  o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
+  o2::mch::raw::Elec2DetMapper mElec2DetMapper;
+
+  /// helper class that performs the actual computation of the pedestals from the input digits
+  o2::mch::calibration::PedestalProcessor mPedestalProcessor;
 
   //Matrices [de][padid], stated an upper value for de# and padid#
 
-  uint64_t nhitsDigits[1100][1500];
-  double pedestalDigits[1100][1500];
-  double noiseDigits[1100][1500];
+  //uint64_t nhitsDigits[1100][1500];
+  //double pedestalDigits[1100][1500];
+  //double noiseDigits[1100][1500];
 
-  MapCRU mMapCRU[MCH_MAX_CRU_IN_FLP];
   TH2F* mHistogramPedestals;
   TH2F* mHistogramNoise;
 
-  std::vector<int> DEs;
+  //std::vector<int> DEs;
   //MapFEC mMapFEC;
   std::map<int, TH2F*> mHistogramPedestalsDE;
   std::map<int, TH2F*> mHistogramNoiseDE;
@@ -73,6 +70,11 @@ class PedestalsTask final : public TaskInterface
 
   int mPrintLevel;
 
+  void monitorDataDigits(o2::framework::ProcessingContext& ctx);
+  void monitorDataPedestals(o2::framework::ProcessingContext& ctx);
+
+  void PlotPedestal(uint16_t solarID, uint8_t dsID, uint8_t channel, double mean, double rms);
+  void PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t channel, double mean, double rms);
   void fill_noise_distributions();
   void save_histograms();
 };
