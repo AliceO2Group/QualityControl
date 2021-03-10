@@ -56,10 +56,13 @@ if (DOXYGEN_FOUND)
 
     message("selected2: ${selected}")
     foreach ( file ${selected} )
+      message(${file})
       get_filename_component( dir ${file} DIRECTORY )
-      if(${file} MATCHES "\.\./.*")
-        string(REGEX REPLACE "\.\./([^;]*;?)" "\\1" file2 "${file}") # remove ../
-        install( FILES ${file2} DESTINATION ${CMAKE_INSTALL_DOCDIR}/${dir} COMPONENT doc)
+      if(${file} MATCHES "^\\.\\./.*")
+        message("above : ${dir}")
+        string(REGEX REPLACE "\\.\\./([^;]*;?)" "\\1" dir "${dir}") # remove ../
+        string(REGEX REPLACE "\\.\\.([^;]*;?)" "\\1" dir "${dir}") # remove .. (in case of README.md stupid CMake)
+        install( FILES ${file} DESTINATION ${CMAKE_INSTALL_DOCDIR}/${dir} COMPONENT doc)
       else()
         install( FILES ${file} DESTINATION ${CMAKE_INSTALL_DOCDIR}/doc/${dir} COMPONENT doc)
       endif()
