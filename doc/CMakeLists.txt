@@ -3,6 +3,7 @@
 find_package(Doxygen OPTIONAL_COMPONENTS dot)
 
 if (DOXYGEN_FOUND)
+  message(AAAAAAAAAA)
 
   # Configure the doxygen config file with current settings
   set(DOXYGEN_EXCLUDE "${CMAKE_SOURCE_DIR}/Framework/src/imgui")
@@ -30,15 +31,16 @@ if (DOXYGEN_FOUND)
           ${CMAKE_SOURCE_DIR}/Framework/include
           ${CMAKE_SOURCE_DIR}/doc
           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-          DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+          DOXYGEN_OUTPUT_DIRECTORY ${DOC_BUILD_DIR}
           COMMENT "Generating doxygen documentation for ${PROJECT_NAME}"
   )
+  message(AAAAAAbAAAA)
 
   # installation
   option(DOC_INSTALL "Install the documentation when calling \"make install\"" OFF)
   if(DOC_INSTALL)
     message(STATUS "Documentation will be installed but you *must* run `make doc`")
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc/${PROJECT_NAME} COMPONENT doc)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${DOC_BUILD_DIR} COMPONENT doc)
   endif(DOC_INSTALL)
 
 endif(DOXYGEN_FOUND)
