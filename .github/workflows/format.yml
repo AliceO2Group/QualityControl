@@ -24,7 +24,7 @@ jobs:
           git fetch origin ${{ github.event.pull_request.base.ref }}
           git fetch origin pull/${{ github.event.pull_request.number }}/head:${{ github.event.pull_request.head.ref }}
           BASE_COMMIT=$(git rev-parse ${{ github.event.pull_request.base.sha }})
-          COMMIT_FILES=$(git diff --name-only ${BASE_COMMIT} | grep -E -- '\.cxx|\.h' | grep -i -v LinkDef) || true ;# avoid failures if nothing is greped
+          COMMIT_FILES=$(git diff --diff-filter=d --name-only ${BASE_COMMIT} | grep -E -- '\.cxx|\.h' | grep -i -v LinkDef) || true ;# avoid failures if nothing is greped
           if [ "$COMMIT_FILES" == "" ]; then
             exit 0 ;# nothing to check
           fi
