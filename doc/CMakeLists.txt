@@ -40,7 +40,16 @@ if (DOXYGEN_FOUND)
   option(DOC_INSTALL "Install the documentation when calling \"make install\"" OFF)
   if(DOC_INSTALL)
     message(STATUS "Documentation will be installed but you *must* run `make doc`")
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc/${PROJECT_NAME} COMPONENT doc)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT doc)
   endif(DOC_INSTALL)
+
+  message(STATUS "Documentation will be built in ${CMAKE_CURRENT_BINARY_DIR}")
+  message(STATUS "Documentation will be installed in ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DOCDIR}")
+
+  install(
+    DIRECTORY .
+    TYPE DOC
+    FILES_MATCHING PATTERN "*.md" PATTERN "*.png"
+  )
 
 endif(DOXYGEN_FOUND)
