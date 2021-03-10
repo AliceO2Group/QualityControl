@@ -30,6 +30,7 @@ if (DOXYGEN_FOUND)
           ${CMAKE_SOURCE_DIR}/Framework/include
           ${CMAKE_SOURCE_DIR}/doc
           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+          DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
           COMMENT "Generating doxygen documentation for ${PROJECT_NAME}"
   )
 
