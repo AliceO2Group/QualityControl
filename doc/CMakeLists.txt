@@ -40,18 +40,38 @@ if (DOXYGEN_FOUND)
     message(STATUS "Documentation will be installed but you *must* run `make doc`")
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT doc)
 
-    install(
-      DIRECTORY ${CMAKE_SOURCE_DIR}
-      DESTINATION ${CMAKE_INSTALL_DOCDIR}
-      COMPONENT doc
-      FILES_MATCHING PATTERN "*.md" PATTERN "*.png" PATTERN "*.json"
-      PATTERN "doc"
-      PATTERN "Framework"
-      PATTERN "Modules"
-      PATTERN ".idea" EXCLUDE
-      PATTERN ".git" EXCLUDE
-      PATTERN "cmake*" EXCLUDE
-    )
+
+    file(GLOB_RECURSE selected  RELATIVE ${CMAKE_SOURCE_DIR}/doc "../*.md" "../*.png" ) # "../*.json"
+    message("selected: ${selected}")
+
+#    string(REGEX REPLACE "\.\./([^;]*;?)" "\\1" selected "${selected}") # remove ../
+#
+#    message("selected2: ${selected}")
+
+
+    string(REGEX REPLACE "\.\./.idea/[^;]+;?" "" selected "${selected}")
+    string(REGEX REPLACE "\.\./.git/[^;]+;?" "" selected "${selected}")
+    string(REGEX REPLACE "\.\./cmake[^/]*/[^;]+;?" "" selected "${selected}")
+    string(REGEX REPLACE "\.\./build[^/]*/[^;]+;?" "" selected "${selected}")
+
+    message("selected2: ${selected}")
+    foreach ( file ${selected} )
+      get_filename_component( dir ${file} DIRECTORY )
+      install( FILES ${file} DESTINATION ${CMAKE_INSTALL_DOCDIR}/${dir} COMPONENT doc)
+    endforeach()
+
+#    install(
+#      DIRECTORY ${CMAKE_SOURCE_DIR}
+#      DESTINATION ${CMAKE_INSTALL_DOCDIR}
+#      COMPONENT doc
+#      FILES_MATCHING PATTERN "*.md" PATTERN "*.png" PATTERN "*.json"
+#      PATTERN "doc"
+#      PATTERN "Framework"
+#      PATTERN "Modules"
+#      PATTERN ".idea" EXCLUDE
+#      PATTERN ".git" EXCLUDE
+#      PATTERN "cmake*" EXCLUDE
+#    )
   endif(DOC_INSTALL)
 
   message(STATUS "Documentation will be built in ${CMAKE_CURRENT_BINARY_DIR}")
