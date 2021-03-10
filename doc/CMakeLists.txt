@@ -48,7 +48,6 @@ if (DOXYGEN_FOUND)
     string(REGEX REPLACE "\.\./build[^/]*/[^;]+;?" "" selected "${selected}")
     # prepare each item for installation
     foreach ( file ${selected} )
-      message(${file})
       get_filename_component( dir ${file} DIRECTORY )
       if(${file} MATCHES "^\\.\\./.*")
         string(REGEX REPLACE "\\.\\./([^;]*;?)" "\\1" dir "${dir}") # remove ../
