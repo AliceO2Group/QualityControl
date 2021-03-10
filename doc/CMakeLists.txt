@@ -41,7 +41,7 @@ if (DOXYGEN_FOUND)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT doc)
 
 
-    file(GLOB_RECURSE selected  RELATIVE ${CMAKE_SOURCE_DIR}/doc "../*.md" "../*.png" ) # "../*.json"
+    file(GLOB_RECURSE selected  RELATIVE ${CMAKE_SOURCE_DIR}/doc "../*.md" "../*.png" "../*.json") #
     message("selected: ${selected}")
 
 #    string(REGEX REPLACE "\.\./([^;]*;?)" "\\1" selected "${selected}") # remove ../
