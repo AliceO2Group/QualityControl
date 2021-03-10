@@ -348,8 +348,8 @@ void PhysicsTaskPreclusters::printPreclusters(gsl::span<const o2::mch::PreCluste
       float X = segment.padPositionX(d.getPadID());
       float Y = segment.padPositionY(d.getPadID());
       bool bend = !segment.isBendingPad(d.getPadID());
-      QcInfoLogger::GetInstance() << fmt::format("  DE {:4d}  PAD {:5d}  ADC {:6d}  TIME ({} {} {:4d})",
-                                                 d.getDetID(), d.getPadID(), d.getADC(), d.getTime().orbit, d.getTime().bunchCrossing, d.getTime().sampaTime)
+      QcInfoLogger::GetInstance() << fmt::format("  DE {:4d}  PAD {:5d}  ADC {:6d}  TIME (XXX)",
+                                                 d.getDetID(), d.getPadID(), d.getADC())
                                   << "\n"
                                   << fmt::format("  CATHODE {}  PAD_XY {:+2.2f} , {:+2.2f}", (int)bend, X, Y) << AliceO2::InfoLogger::InfoLogger::endm;
     }
