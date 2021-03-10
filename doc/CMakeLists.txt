@@ -48,7 +48,7 @@ if (DOXYGEN_FOUND)
 #
 #    message("selected2: ${selected}")
 
-
+    # remove unwanted stuff
     string(REGEX REPLACE "\.\./.idea/[^;]+;?" "" selected "${selected}")
     string(REGEX REPLACE "\.\./.git/[^;]+;?" "" selected "${selected}")
     string(REGEX REPLACE "\.\./cmake[^/]*/[^;]+;?" "" selected "${selected}")
@@ -57,7 +57,12 @@ if (DOXYGEN_FOUND)
     message("selected2: ${selected}")
     foreach ( file ${selected} )
       get_filename_component( dir ${file} DIRECTORY )
-      install( FILES ${file} DESTINATION ${CMAKE_INSTALL_DOCDIR}/${dir} COMPONENT doc)
+      if(${file} MATCHES "\.\./.*")
+        string(REGEX REPLACE "\.\./([^;]*;?)" "\\1" file2 "${file}") # remove ../
+        install( FILES ${file2} DESTINATION ${CMAKE_INSTALL_DOCDIR}/${dir} COMPONENT doc)
+      else()
+        install( FILES ${file} DESTINATION ${CMAKE_INSTALL_DOCDIR}/doc/${dir} COMPONENT doc)
+      endif()
     endforeach()
 
 #    install(
