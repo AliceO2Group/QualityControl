@@ -17,6 +17,11 @@ project(QualityControl
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES CXX)
 
+if(ONLYDOC)
+  add_subdirectory(doc)
+  return()
+endif()
+
 # Set CMAKE_INSTALL_LIBDIR explicitly to lib (to avoid lib64 on CC7)
 set(CMAKE_INSTALL_LIBDIR lib)
 
