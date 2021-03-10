@@ -22,16 +22,16 @@ if (DOXYGEN_FOUND)
   set(DOXYGEN_DOT_TRANSPARENT YES)
   set(DOXYGEN_INPUT_FILTER "${CMAKE_SOURCE_DIR}/doc/scripts/filter_for_doxygen.sh")
   set(DOXYGEN_FILTER_PATTERNS "*.md")
+  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
   # add target "doc"
   doxygen_add_docs(doc
-#          ${CMAKE_SOURCE_DIR}/README.md
+          ${CMAKE_SOURCE_DIR}/README.md
 #          ${CMAKE_SOURCE_DIR}/Framework
 #          ${CMAKE_SOURCE_DIR}/Modules/
 #          ${CMAKE_SOURCE_DIR}/Framework/include
-          ${CMAKE_SOURCE_DIR}/doc
+#          ${CMAKE_SOURCE_DIR}/doc
           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-          DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
           COMMENT "Generating doxygen documentation for ${PROJECT_NAME}"
   )
   message(AAAAAAbAAAA)
