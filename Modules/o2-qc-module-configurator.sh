@@ -131,11 +131,11 @@ function create_class() {
   ' ${DONOR}'/src/'${DONOR}${typename}'.cxx' >$modulename'/src/'$classname'.cxx'
 
   # the sources are on the same line as the PRIVATE
-  inplace_sed '/target_sources(Qc'$modulename' PRIVATE/ s_PRIVATE_PRIVATE src/'$classname'.cxx _' $modulename/CMakeLists.txt
+  inplace_sed '/target_sources(O2Qc'$modulename' PRIVATE/ s_PRIVATE_PRIVATE src/'$classname'.cxx _' $modulename/CMakeLists.txt
 
   # the PRIVATE is on its own line (because there are more sources than
   # what fits on a single line)
-  inplace_sed '/target_sources(Qc'$modulename'$/ { 
+  inplace_sed '/target_sources(O2Qc'$modulename'$/ {
   N
   /PRIVATE/ {
     s_PRIVATE_PRIVATE src/'$classname'.cxx _
