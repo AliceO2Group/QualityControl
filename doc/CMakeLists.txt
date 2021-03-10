@@ -24,7 +24,7 @@ if (DOXYGEN_FOUND)
 
   # add target "doc"
   doxygen_add_docs(doc
-          ${CMAKE_SOURCE_DIR}/README.md
+#          ${CMAKE_SOURCE_DIR}/README.md
           ${CMAKE_SOURCE_DIR}/Framework
           ${CMAKE_SOURCE_DIR}/Modules/
           ${CMAKE_SOURCE_DIR}/Framework/include
@@ -32,5 +32,12 @@ if (DOXYGEN_FOUND)
           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
           COMMENT "Generating doxygen documentation for ${PROJECT_NAME}"
   )
+
+  # installation
+  option(DOC_INSTALL "Install the documentation when calling \"make install\"" OFF)
+  if(DOC_INSTALL)
+    message(STATUS "Documentation will be installed but you *must* run `make doc`")
+    install(DIRECTORY ${DOXYGEN_OUTPUT_DIRECTORY}/html DESTINATION share/doc/${PROJECT_NAME} COMPONENT doc)
+  endif(DOC_INSTALL)
 
 endif(DOXYGEN_FOUND)
