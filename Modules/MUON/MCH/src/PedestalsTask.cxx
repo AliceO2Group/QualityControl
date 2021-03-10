@@ -69,11 +69,9 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
     TH2F* hPedDE = new TH2F(TString::Format("QcMuonChambers_Pedestals_DE%03d", de),
                             TString::Format("QcMuonChambers - Pedestals (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
     mHistogramPedestalsDE.insert(make_pair(de, hPedDE));
-    //getObjectsManager()->startPublishing(hPedDE);
     TH2F* hNoiseDE = new TH2F(TString::Format("QcMuonChambers_Noise_DE%03d", de),
                               TString::Format("QcMuonChambers - Noise (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
     mHistogramNoiseDE.insert(make_pair(de, hNoiseDE));
-    //getObjectsManager()->startPublishing(hNoiseDE);
 
     for (int pi = 0; pi < 5; pi++) {
       TH1F* hNoiseDE = new TH1F(TString::Format("QcMuonChambers_Noise_Distr_DE%03d_b_%d", de, pi),
@@ -92,21 +90,17 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
       TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYb_%03d", de),
                               TString::Format("QcMuonChambers - Pedestals XY (DE%03d B)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
       mHistogramPedestalsXY[0].insert(make_pair(de, hPedXY));
-      //getObjectsManager()->startPublishing(hPedXY);
       TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYb_%03d", de),
                                 TString::Format("QcMuonChambers - Noise XY (DE%03d B)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
       mHistogramNoiseXY[0].insert(make_pair(de, hNoiseXY));
-      //getObjectsManager()->startPublishing(hNoiseXY);
     }
     {
       TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYnb_%03d", de),
                               TString::Format("QcMuonChambers - Pedestals XY (DE%03d NB)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
       mHistogramPedestalsXY[1].insert(make_pair(de, hPedXY));
-      //getObjectsManager()->startPublishing(hPedXY);
       TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYnb_%03d", de),
                                 TString::Format("QcMuonChambers - Noise XY (DE%03d NB)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
       mHistogramNoiseXY[1].insert(make_pair(de, hNoiseXY));
-      //getObjectsManager()->startPublishing(hNoiseXY);
     }
   }
 
@@ -323,7 +317,6 @@ void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
     auto dsID = dsChID.getDsId();
     auto channel = dsChID.getChannel();
 
-    //std::cout << (int)solarID << "  " << (int)dsID << "  "<< (int)channel << "  " << (int)mean << "  " << (int)rms << std::endl;
     PlotPedestal(solarID, dsID, channel, mean, rms);
   }
 }
@@ -345,8 +338,6 @@ void PedestalsTask::monitorDataDigits(o2::framework::ProcessingContext& ctx)
           continue;
         }
 
-        //std::cout << (int)p.first << "  " << (int)dsId << "  "<< (int)ch << "  "
-        //    << pRecord.mEntries << "  " << pRecord.mPedestal << "  " << pRecord.getRms() << std::endl;
         PlotPedestal(p.first, dsId, ch, pRecord.mPedestal, pRecord.getRms());
       }
     }
@@ -356,7 +347,6 @@ void PedestalsTask::monitorDataDigits(o2::framework::ProcessingContext& ctx)
 void PedestalsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   for (auto&& input : ctx.inputs()) {
-    //QcInfoLogger::GetInstance() << "run PedestalsTask: input " << input.spec->binding << AliceO2::InfoLogger::InfoLogger::endm;
     if (input.spec->binding == "pedestals")
       monitorDataPedestals(ctx);
     if (input.spec->binding == "digits")

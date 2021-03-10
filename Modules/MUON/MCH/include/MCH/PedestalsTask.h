@@ -47,17 +47,9 @@ class PedestalsTask final : public TaskInterface
   /// helper class that performs the actual computation of the pedestals from the input digits
   o2::mch::calibration::PedestalProcessor mPedestalProcessor;
 
-  //Matrices [de][padid], stated an upper value for de# and padid#
-
-  //uint64_t nhitsDigits[1100][1500];
-  //double pedestalDigits[1100][1500];
-  //double noiseDigits[1100][1500];
-
   TH2F* mHistogramPedestals;
   TH2F* mHistogramNoise;
 
-  //std::vector<int> DEs;
-  //MapFEC mMapFEC;
   std::map<int, TH2F*> mHistogramPedestalsDE;
   std::map<int, TH2F*> mHistogramNoiseDE;
   std::map<int, TH2F*> mHistogramPedestalsXY[2];
