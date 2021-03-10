@@ -1,27 +1,27 @@
 # ---- Library ---- 
 
-add_library(QcEMCAL)
+add_library(O2QcEMCAL)
 
-target_sources(QcEMCAL PRIVATE src/RawTask.cxx src/RawCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/DigitOccupancyReductor.cxx)
+target_sources(O2QcEMCAL PRIVATE src/RawTask.cxx src/RawCheck.cxx src/DigitsQcTask.cxx src/DigitCheck.cxx src/DigitOccupancyReductor.cxx)
 
 target_include_directories(
-  QcEMCAL
+  O2QcEMCAL
   PUBLIC $<INSTALL_INTERFACE:include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
   )
 
-target_link_libraries(QcEMCAL PUBLIC QualityControl O2::EMCALBase O2::EMCALReconstruction O2::CCDB O2::EMCALCalib)
+target_link_libraries(O2QcEMCAL PUBLIC O2QualityControl O2::EMCALBase O2::EMCALReconstruction O2::CCDB O2::EMCALCalib)
 
-add_root_dictionary(QcEMCAL
+add_root_dictionary(O2QcEMCAL
   HEADERS include/EMCAL/DigitsQcTask.h
   include/EMCAL/DigitCheck.h
   include/EMCAL/RawTask.h
   include/EMCAL/RawCheck.h
   include/EMCAL/DigitOccupancyReductor.h
   LINKDEF include/EMCAL/LinkDef.h
-  BASENAME QcEMCAL)
+  BASENAME O2QcEMCAL)
 
-install(TARGETS QcEMCAL
+install(TARGETS O2QcEMCAL
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -33,7 +33,7 @@ install (
 # ---- Executables ----
 
 add_executable(qcRunEmcalDigit src/runQCEMCALDigits.cxx)
-target_link_libraries(qcRunEmcalDigit PUBLIC QualityControl QcEMCAL O2::DataFormatsEMCAL O2::EMCALBase O2::EMCALWorkflow O2::CCDB O2::EMCALCalib)
+target_link_libraries(qcRunEmcalDigit PUBLIC O2QualityControl O2QcEMCAL O2::DataFormatsEMCAL O2::EMCALBase O2::EMCALWorkflow O2::CCDB O2::EMCALCalib)
 install(
   TARGETS qcRunEmcalDigit
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

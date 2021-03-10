@@ -1,8 +1,8 @@
 # ---- Library ----
 
-add_library(QcMFT)
+add_library(O2QcMFT)
 
-target_sources(QcMFT PRIVATE 
+target_sources(O2QcMFT PRIVATE
                src/BasicDigitQcCheck.cxx
                src/BasicDigitQcTask.cxx
                src/BasicClusterQcCheck.cxx
@@ -11,19 +11,19 @@ target_sources(QcMFT PRIVATE
                src/BasicTrackQcTask.cxx)
 
 target_include_directories(
-  QcMFT
+  O2QcMFT
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(QcMFT PUBLIC QualityControl O2::DataFormatsITSMFT) 
+target_link_libraries(O2QcMFT PUBLIC O2QualityControl O2::DataFormatsITSMFT)
 
-install(TARGETS QcMFT
+install(TARGETS O2QcMFT
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_root_dictionary(QcMFT
+add_root_dictionary(O2QcMFT
                     HEADERS
                     include/MFT/BasicDigitQcCheck.h
                     include/MFT/BasicDigitQcTask.h
@@ -32,7 +32,7 @@ add_root_dictionary(QcMFT
                     include/MFT/BasicTrackQcCheck.h
                     include/MFT/BasicTrackQcTask.h 
                     LINKDEF include/MFT/LinkDef.h
-                    BASENAME QcMFT)
+                    BASENAME O2QcMFT)
                     
 # ---- Executables ----
 
@@ -53,7 +53,7 @@ foreach(i RANGE ${count})
   list(GET EXE_SRCS ${i} src)
   list(GET EXE_NAMES ${i} name)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE QualityControl QcMFT O2::ITSMFTBase)
+  target_link_libraries(${name} PRIVATE O2QualityControl O2QcMFT O2::ITSMFTBase)
 endforeach()
 
 install(
@@ -74,7 +74,7 @@ foreach(test ${TEST_SRCS})
 
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name}
-                        PRIVATE QcMFT Boost::unit_test_framework)
+                        PRIVATE O2QcMFT Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_property(TARGET ${test_name}
     PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
