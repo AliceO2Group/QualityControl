@@ -38,7 +38,7 @@ if (DOXYGEN_FOUND)
   option(DOC_INSTALL "Install the documentation when calling \"make install\"" OFF)
   if(DOC_INSTALL)
     message(STATUS "Documentation will be installed but you *must* run `make doc`")
-    install(DIRECTORY ${DOXYGEN_OUTPUT_DIRECTORY}/html DESTINATION share/doc/${PROJECT_NAME} COMPONENT doc)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc/${PROJECT_NAME} COMPONENT doc)
   endif(DOC_INSTALL)
 
 endif(DOXYGEN_FOUND)
