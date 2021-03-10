@@ -46,7 +46,7 @@ T* create(std::string moduleName, std::string className)
   QcInfoLogger& logger = QcInfoLogger::GetInstance();
 
   // Load the library
-  std::string library = bfs::path(moduleName).is_absolute() ? moduleName : "lib" + moduleName;
+  std::string library = bfs::path(moduleName).is_absolute() ? moduleName : "libO2" + moduleName;
   logger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
   int libLoaded = gSystem->Load(library.c_str(), "", true);
   if (libLoaded < 0) {
