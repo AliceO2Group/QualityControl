@@ -25,11 +25,9 @@ if (DOXYGEN_FOUND)
 
   # add target "doc"
   doxygen_add_docs(doc
-          ${CMAKE_SOURCE_DIR}/README.md
-#          ${CMAKE_SOURCE_DIR}/Framework
-#          ${CMAKE_SOURCE_DIR}/Modules/
-#          ${CMAKE_SOURCE_DIR}/Framework/include
-#          ${CMAKE_SOURCE_DIR}/doc
+          ${CMAKE_SOURCE_DIR}/Framework
+          ${CMAKE_SOURCE_DIR}/Modules/
+          ${CMAKE_SOURCE_DIR}/Framework/include
           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
           COMMENT "Generating doxygen documentation for ${PROJECT_NAME}"
   )
@@ -37,29 +35,22 @@ if (DOXYGEN_FOUND)
   # installation
   option(DOC_INSTALL "Install the documentation when calling \"make install\"" OFF)
   if(DOC_INSTALL)
+    # doxygen
     message(STATUS "Documentation will be installed but you *must* run `make doc`")
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT doc)
 
-
+    # all the rest
     file(GLOB_RECURSE selected  RELATIVE ${CMAKE_SOURCE_DIR}/doc "../*.md" "../*.png" "../*.json") #
-    message("selected: ${selected}")
-
-#    string(REGEX REPLACE "\.\./([^;]*;?)" "\\1" selected "${selected}") # remove ../
-#
-#    message("selected2: ${selected}")
-
     # remove unwanted stuff
     string(REGEX REPLACE "\.\./.idea/[^;]+;?" "" selected "${selected}")
     string(REGEX REPLACE "\.\./.git/[^;]+;?" "" selected "${selected}")
     string(REGEX REPLACE "\.\./cmake[^/]*/[^;]+;?" "" selected "${selected}")
     string(REGEX REPLACE "\.\./build[^/]*/[^;]+;?" "" selected "${selected}")
-
-    message("selected2: ${selected}")
+    # prepare each item for installation
     foreach ( file ${selected} )
       message(${file})
       get_filename_component( dir ${file} DIRECTORY )
       if(${file} MATCHES "^\\.\\./.*")
-        message("above : ${dir}")
         string(REGEX REPLACE "\\.\\./([^;]*;?)" "\\1" dir "${dir}") # remove ../
         string(REGEX REPLACE "\\.\\.([^;]*;?)" "\\1" dir "${dir}") # remove .. (in case of README.md stupid CMake)
         install( FILES ${file} DESTINATION ${CMAKE_INSTALL_DOCDIR}/${dir} COMPONENT doc)
@@ -68,18 +59,6 @@ if (DOXYGEN_FOUND)
       endif()
     endforeach()
 
-#    install(
-#      DIRECTORY ${CMAKE_SOURCE_DIR}
-#      DESTINATION ${CMAKE_INSTALL_DOCDIR}
-#      COMPONENT doc
-#      FILES_MATCHING PATTERN "*.md" PATTERN "*.png" PATTERN "*.json"
-#      PATTERN "doc"
-#      PATTERN "Framework"
-#      PATTERN "Modules"
-#      PATTERN ".idea" EXCLUDE
-#      PATTERN ".git" EXCLUDE
-#      PATTERN "cmake*" EXCLUDE
-#    )
   endif(DOC_INSTALL)
 
   message(STATUS "Documentation will be built in ${CMAKE_CURRENT_BINARY_DIR}")
