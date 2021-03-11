@@ -22,6 +22,7 @@ if (DOXYGEN_FOUND)
   set(DOXYGEN_INPUT_FILTER "${CMAKE_SOURCE_DIR}/doc/scripts/filter_for_doxygen.sh")
   set(DOXYGEN_FILTER_PATTERNS "*.md")
   set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+  set(HTML_TIMESTAMP NO)
 
   # add target "doc"
   doxygen_add_docs(doc
