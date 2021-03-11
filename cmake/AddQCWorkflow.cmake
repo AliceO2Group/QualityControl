@@ -40,8 +40,8 @@ function(o2_add_qc_workflow)
   add_custom_command(
     OUTPUT ${jsonDumpFile}
     VERBATIM
-    COMMAND echo "${qcExecutable} -b --config json://${PARSED_ARGS_CONFIG_FILE_PATH} --dump-workflow --dump-workflow-file ${jsonDumpFile} || true"
-    COMMAND ${qcExecutable}  -b --config json://${PARSED_ARGS_CONFIG_FILE_PATH} --dump-workflow --dump-workflow-file ${jsonDumpFile} || true
+    COMMAND echo "${qcExecutable} -b --config json://${PARSED_ARGS_CONFIG_FILE_PATH} --dump-workflow --dump-workflow-file ${jsonDumpFile} || touch ${jsonDumpFile}"
+    COMMAND ${qcExecutable}  -b --config json://${PARSED_ARGS_CONFIG_FILE_PATH} --dump-workflow --dump-workflow-file ${jsonDumpFile} || touch ${jsonDumpFile}
     DEPENDS ${qcExecutable} ${PARSED_ARGS_CONFIG_FILE_PATH})
 
   get_filename_component(filename ${jsonDumpFile} NAME_WE)
