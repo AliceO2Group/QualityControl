@@ -1,8 +1,8 @@
 # ---- Library ----
 
-add_library(QcTOF)
+add_library(O2QcTOF)
 
-target_sources(QcTOF 
+target_sources(O2QcTOF
                       # Tasks
               PRIVATE src/TaskDigits.cxx
                       src/TaskRaw.cxx
@@ -18,27 +18,27 @@ target_sources(QcTOF
                 )
 
 target_include_directories(
-  QcTOF
+  O2QcTOF
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
          )
 
-target_link_libraries(QcTOF PUBLIC QualityControl
+target_link_libraries(O2QcTOF PUBLIC O2QualityControl
                                     O2::TOFBase
                                     O2::TOFWorkflow
                                     O2::DataFormatsTOF
                                     O2::TOFCompression
                                     O2::TOFReconstruction)
 
-install(TARGETS QcTOF
+install(TARGETS O2QcTOF
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 # ---- ROOT dictionary ----
 
-add_root_dictionary(QcTOF
+add_root_dictionary(O2QcTOF
                             # Tasks
                     HEADERS include/TOF/TaskDigits.h
                             include/TOF/TaskRaw.h
@@ -53,12 +53,12 @@ add_root_dictionary(QcTOF
                             # Utilities
                             include/Base/Counter.h
                     LINKDEF include/TOF/LinkDef.h
-                    BASENAME QcTOF)
+                    BASENAME O2QcTOF)
 
 # ---- Test(s) ----
 
 add_executable(testQcTOF test/testTOF.cxx)
-target_link_libraries(testQcTOF PRIVATE QcTOF Boost::unit_test_framework)
+target_link_libraries(testQcTOF PRIVATE O2QcTOF Boost::unit_test_framework)
 add_test(NAME testQcTOF COMMAND testQcTOF)
 set_property(TARGET ${test_name}
   PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
@@ -76,18 +76,18 @@ set_tests_properties(testQcTOF PROPERTIES TIMEOUT 20)
 #  list(GET EXE_SRCS ${i} src)
 #  list(GET EXE_NAMES ${i} name)
 #  add_executable(${name} ${src})
-#  target_link_libraries(${name} PRIVATE QualityControl CURL::libcurl)
+#  target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl)
 #endforeach()
 
 # ---- Extra scripts ----
 
-install(FILES toffull.json
-              tofdigits.json
-              tofraw.json
-              toffull_multinode.json
+install(FILES tofdigits.json
               tofdigits_multinode.json
-              tofraw_multinode.json
+              toffull.json
+              toffull_multinode.json
               tofpostprocessdiagnosticpercrate.json
+              tofraw.json
+              tofraw_multinode.json
         DESTINATION etc)
 
 get_property(dirs

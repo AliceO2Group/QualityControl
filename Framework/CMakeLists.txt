@@ -7,84 +7,84 @@ configure_file("include/QualityControl/Version.h.in"
 
 # ---- Library for the types ----
 
-add_library(QualityControlTypes
+add_library(O2QualityControlTypes
   src/MonitorObject.cxx
   src/QualityObject.cxx
   src/Quality.cxx
 )
 
 target_include_directories(
-  QualityControlTypes
+  O2QualityControlTypes
   PUBLIC $<INSTALL_INTERFACE:include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(QualityControlTypes
+target_link_libraries(O2QualityControlTypes
   PUBLIC
   ROOT::Hist
   AliceO2::Common
 )
 
-add_root_dictionary(QualityControlTypes
+add_root_dictionary(O2QualityControlTypes
   HEADERS include/QualityControl/MonitorObject.h
   include/QualityControl/QualityObject.h
   include/QualityControl/Quality.h
   LINKDEF include/QualityControl/TypesLinkDef.h
-  BASENAME QualityControlTypes
+  BASENAME O2QualityControlTypes
   )
 
 # ---- Library ----
 
-add_library(QualityControl
-            src/ObjectsManager.cxx
-            src/CheckRunner.cxx
-            src/AggregatorRunner.cxx
-            src/CheckRunnerFactory.cxx
-            src/AggregatorRunnerFactory.cxx
-            src/CheckInterface.cxx
-            src/DatabaseFactory.cxx
-            src/CcdbDatabase.cxx
-            src/QcInfoLogger.cxx
-            src/TaskFactory.cxx
-            src/TaskRunner.cxx
-            src/TaskRunnerFactory.cxx
-            src/TaskInterface.cxx
-            src/RepositoryBenchmark.cxx
-            src/InfrastructureGenerator.cxx
-            src/Check.cxx
-            src/Aggregator.cxx
-            src/ServiceDiscovery.cxx
-            src/Triggers.cxx
-            src/TriggerHelpers.cxx
-            src/PostProcessingRunner.cxx
-            src/PostProcessingFactory.cxx
-            src/PostProcessingConfig.cxx
-            src/PostProcessingInterface.cxx
-            src/PostProcessingDevice.cxx
-            src/TrendingTask.cxx
-            src/TrendingTaskConfig.cxx
-            src/DummyDatabase.cxx
-            src/DataProducer.cxx
-            src/HistoProducer.cxx
-            src/DataProducerExample.cxx
-            src/MonitorObjectCollection.cxx
-            src/UpdatePolicyManager.cxx
-            src/AdvancedWorkflow.cxx
-            src/Calculators.cxx)
+add_library(O2QualityControl
+  src/ObjectsManager.cxx
+  src/CheckRunner.cxx
+  src/AggregatorRunner.cxx
+  src/CheckRunnerFactory.cxx
+  src/AggregatorRunnerFactory.cxx
+  src/CheckInterface.cxx
+  src/DatabaseFactory.cxx
+  src/CcdbDatabase.cxx
+  src/QcInfoLogger.cxx
+  src/TaskFactory.cxx
+  src/TaskRunner.cxx
+  src/TaskRunnerFactory.cxx
+  src/TaskInterface.cxx
+  src/RepositoryBenchmark.cxx
+  src/InfrastructureGenerator.cxx
+  src/Check.cxx
+  src/Aggregator.cxx
+  src/ServiceDiscovery.cxx
+  src/Triggers.cxx
+  src/TriggerHelpers.cxx
+  src/PostProcessingRunner.cxx
+  src/PostProcessingFactory.cxx
+  src/PostProcessingConfig.cxx
+  src/PostProcessingInterface.cxx
+  src/PostProcessingDevice.cxx
+  src/TrendingTask.cxx
+  src/TrendingTaskConfig.cxx
+  src/DummyDatabase.cxx
+  src/DataProducer.cxx
+  src/HistoProducer.cxx
+  src/DataProducerExample.cxx
+  src/MonitorObjectCollection.cxx
+  src/UpdatePolicyManager.cxx
+  src/AdvancedWorkflow.cxx
+  src/Calculators.cxx)
 
 if(ENABLE_MYSQL)
-  target_sources(QualityControl PRIVATE src/MySqlDatabase.cxx)
+  target_sources(O2QualityControl PRIVATE src/MySqlDatabase.cxx)
 endif()
 
 target_include_directories(
-  QualityControl
+  O2QualityControl
   PUBLIC $<INSTALL_INTERFACE:include>
-         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
-          $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 
-target_link_libraries(QualityControl
+target_link_libraries(O2QualityControl
                       PUBLIC Boost::boost
                              FairLogger::FairLogger
                              FairMQ::FairMQ
@@ -94,14 +94,13 @@ target_link_libraries(QualityControl
                              AliceO2::Monitoring
                              AliceO2::Configuration
                              AliceO2::Occ
-                             AliceO2::DebugGUI
                              ROOT::Net
                              Boost::container
                              O2::Framework
                              O2::CCDB
                              O2::MCHBase
                              ms_gsl::ms_gsl
-                             QualityControlTypes
+                             O2QualityControlTypes
                              O2::Mergers
                              O2::DataSampling
                       PRIVATE Boost::system
@@ -109,76 +108,80 @@ target_link_libraries(QualityControl
                               $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL> ROOT::Gui
                               CURL::libcurl)
 
-target_compile_definitions(QualityControl PRIVATE
+if (TARGET AliceO2::DebugGUI)
+  target_link_libraries(O2QualityControl PUBLIC AliceO2::DebugGUI)
+endif()
+
+target_compile_definitions(O2QualityControl PRIVATE
                            $<$<BOOL:${ENABLE_MYSQL}>:_WITH_MYSQL>)
 
-add_root_dictionary(QualityControl
-                    HEADERS
-                            include/QualityControl/CheckInterface.h
-                            include/QualityControl/TaskInterface.h
-                            include/QualityControl/AggregatorInterface.h
-                            include/QualityControl/PostProcessingInterface.h
-                            include/QualityControl/TrendingTask.h
-                            include/QualityControl/MonitorObjectCollection.h
-                    LINKDEF include/QualityControl/LinkDef.h
-                    BASENAME QualityControl)
+add_root_dictionary(O2QualityControl
+  HEADERS
+  include/QualityControl/CheckInterface.h
+  include/QualityControl/TaskInterface.h
+  include/QualityControl/AggregatorInterface.h
+  include/QualityControl/PostProcessingInterface.h
+  include/QualityControl/TrendingTask.h
+  include/QualityControl/MonitorObjectCollection.h
+  LINKDEF include/QualityControl/LinkDef.h
+  BASENAME O2QualityControl)
 
 # ---- Executables ----
 
 set(EXE_SRCS
-    src/runDataProducer.cxx
-    src/runDataProducerExample.cxx
-    src/runHistoProducer.cxx
-    src/runQC.cxx
-    src/runBasic.cxx
-    src/runAdvanced.cxx
-    src/runReadout.cxx
-    src/runReadoutForDataDump.cxx
-    src/runRepositoryBenchmark.cxx
-    src/runPostProcessing.cxx
-    src/runPostProcessingOCC.cxx
-    src/runLocationCalculator.cxx
-    src/runMergerCalculator.cxx)
+  src/runDataProducer.cxx
+  src/runDataProducerExample.cxx
+  src/runHistoProducer.cxx
+  src/runQC.cxx
+  src/runBasic.cxx
+  src/runAdvanced.cxx
+  src/runReadout.cxx
+  src/runReadoutForDataDump.cxx
+  src/runRepositoryBenchmark.cxx
+  src/runPostProcessing.cxx
+  src/runPostProcessingOCC.cxx
+  src/runLocationCalculator.cxx
+  src/runMergerCalculator.cxx)
 
 set(EXE_NAMES
-    o2-qc-run-producer
-    o2-qc-run-producer-basic
-    o2-qc-run-histo-producer
-    o2-qc
-    o2-qc-run-basic
-    o2-qc-run-advanced
-    o2-qc-run-readout
-    o2-qc-run-readout-for-data-dump
-    o2-qc-repository-benchmark
-    o2-qc-run-postprocessing
-    o2-qc-run-postprocessing-occ
-    o2-qc-location-calculator
-    o2-qc-merger-calculator)
+  o2-qc-run-producer
+  o2-qc-run-producer-basic
+  o2-qc-run-histo-producer
+  o2-qc
+  o2-qc-run-basic
+  o2-qc-run-advanced
+  o2-qc-run-readout
+  o2-qc-run-readout-for-data-dump
+  o2-qc-repository-benchmark
+  o2-qc-run-postprocessing
+  o2-qc-run-postprocessing-occ
+  o2-qc-location-calculator
+  o2-qc-merger-calculator)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
 set(EXE_OLD_NAMES
-    qcRunProducer
-    o2-qc-run-producer-basic
-    o2-qc-run-histo-producer
-    o2-qc-run-qc
-    qcRunBasic
-    qcRunAdvanced
-    qcRunReadout
-    qcRunReadoutForDataDump
-    repositoryBenchmark
-    qcRunPostProcessing
-    qcRunPostProcessingOCC
-    o2-qc-location-calculator
-    o2-qc-merger-calculator)
+  qcRunProducer
+  o2-qc-run-producer-basic
+  o2-qc-run-histo-producer
+  o2-qc-run-qc
+  qcRunBasic
+  qcRunAdvanced
+  qcRunReadout
+  qcRunReadoutForDataDump
+  repositoryBenchmark
+  qcRunPostProcessing
+  qcRunPostProcessingOCC
+  o2-qc-location-calculator
+  o2-qc-merger-calculator)
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)
   install(DIRECTORY DESTINATION bin) # just in case it is not there yet
   install(
     CODE
-      "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})"
-    )
+    "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${filepath} ${sympath})"
+  )
   install(CODE "message(\"-- Created symlink: ${sympath} -> ${filepath}\")")
 endmacro(install_symlink)
 
@@ -189,7 +192,7 @@ foreach(i RANGE ${count})
   list(GET EXE_NAMES ${i} name)
   list(GET EXE_OLD_NAMES ${i} oldname)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE QualityControl CURL::libcurl ROOT::Tree)
+  target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl ROOT::Tree)
   install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
 
@@ -203,7 +206,7 @@ if(TARGET AliceO2::DebugGUI)
 
   add_executable(${DATADUMP} ${GUI_SRCS})
 
-  target_link_libraries(${DATADUMP} PRIVATE QualityControl AliceO2::DebugGUI)
+  target_link_libraries(${DATADUMP} PRIVATE O2QualityControl AliceO2::DebugGUI)
 else()
   message(STATUS "DebugGUI not found, ${DATADUMP} will not be built")
 endif()
@@ -288,7 +291,7 @@ foreach(i RANGE ${count})
   set_property(TARGET ${test_name}
                PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
   target_link_libraries(${test_name}
-                        PRIVATE QualityControl Boost::unit_test_framework)
+                        PRIVATE O2QualityControl Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name} ${arg})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
@@ -305,9 +308,9 @@ target_include_directories(testVersion PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib) 
 
-set_property(TEST testWorkflow PROPERTY TIMEOUT 60)
+set_property(TEST testWorkflow PROPERTY TIMEOUT 20)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
-set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 60)
+set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 20)
 set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 20)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
@@ -322,13 +325,13 @@ configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-function
 add_test(NAME functional_test COMMAND o2-qc-functional-test.sh)
 set_tests_properties(functional_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
 set_property(TEST functional_test PROPERTY LABELS slow)
-set_property(TEST functional_test PROPERTY TIMEOUT 60)
+set_property(TEST functional_test PROPERTY TIMEOUT 20)
 
 # disable some tests in the CI to avoid un-expected failures.
 # to be removed when it is fixed / understood
-set_property(TEST functional_test PROPERTY LABELS manual)
-set_property(TEST testWorkflow PROPERTY LABELS manual)
-set_property(TEST testCheckWorkflow PROPERTY LABELS manual)
+#set_property(TEST functional_test PROPERTY LABELS manual)
+#set_property(TEST testWorkflow PROPERTY LABELS manual)
+#set_property(TEST testCheckWorkflow PROPERTY LABELS manual)
 
 # ---- Install ----
 
@@ -346,7 +349,7 @@ endif()
 unset(isSystemDir)
 
 # Install library and binaries
-install(TARGETS QualityControl QualityControlTypes ${EXE_NAMES} ${DATADUMP}
+install(TARGETS O2QualityControl O2QualityControlTypes ${EXE_NAMES} ${DATADUMP}
         EXPORT QualityControlTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

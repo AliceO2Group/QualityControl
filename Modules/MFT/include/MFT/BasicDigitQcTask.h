@@ -32,6 +32,7 @@ namespace o2::quality_control_modules::mft
 
 /// \brief MFT Digit QC task
 ///
+/// \author Katarina Krizkova Gajdosova
 /// \author Tomas Herman
 /// \author Guillermo Contreras
 class BasicDigitQcTask final : public TaskInterface
@@ -56,28 +57,28 @@ class BasicDigitQcTask final : public TaskInterface
   const double gPixelHitMapsMaxBinX = 1023.5;
   const double gPixelHitMapsMaxBinY = 511.5;
   const double gPixelHitMapsMinBin = -0.5;
-  const int gPixelHitMapsBinWidth = 8;
+  const int gPixelHitMapsBinWidth = 1;
 
-  const int nhitmaps = 20;
-  const int nchip = 936;
+  const int nHitMaps = 20;
+  const int nChip = 936;
 
   int FLP;
-  int minChipID;
-  int maxChipID;
+  int TaskLevel;
+  int nMaps[5] = { 66, 66, 82, 118, 136 };
 
-  int half[936] = { 0 };
-  int disk[936] = { 0 };
-  int face[936] = { 0 };
-  int zone[936] = { 0 };
-  int ladder[936] = { 0 };
-  int sensor[936] = { 0 };
-  int transID[936] = { 0 };
-  int layer[936] = { 0 };
-  double x[936] = { 0 };
-  double y[936] = { 0 };
-  double z[936] = { 0 };
-  double binx[936] = { 0 };
-  double biny[936] = { 0 };
+  // int half[936] = { 0 };
+  // int disk[936] = { 0 };
+  // int face[936] = { 0 };
+  // int zone[936] = { 0 };
+  // int ladder[936] = { 0 };
+  // int sensor[936] = { 0 };
+  // int transID[936] = { 0 };
+  // int layer[936] = { 0 };
+  // double x[936] = { 0 };
+  // double y[936] = { 0 };
+  // double z[936] = { 0 };
+  // double binx[936] = { 0 };
+  // double biny[936] = { 0 };
 
   //  bin numbers for chip hit maps
   double binsChipHitMaps[20][6] = {
@@ -121,8 +122,12 @@ class BasicDigitQcTask final : public TaskInterface
   std::vector<std::unique_ptr<TH2F>> mMFTPixelHitMap;
 
   //  functions
-  void readTable();
-  void getChipName(TString& FolderName, TString& HistogramName, int iHitMap);
+  // void readTable();
+  int getVectorHitMapIndex(int HitMapID);
+  int getHitMapIndex(int VectorHitMapID);
+  int getVectorIndex(int chipID);
+  int getChipIndex(int vectorID);
+  void getChipName(TString& FolderName, TString& HistogramName, int iHitMapID);
   void getPixelName(TString& FolderName, TString& HistogramName, int iChipID);
 };
 

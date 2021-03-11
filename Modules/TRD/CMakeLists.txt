@@ -1,29 +1,29 @@
 # ---- Library ----
 
-add_library(QcTRD)
+add_library(O2QcTRD)
 
-target_sources(QcTRD PRIVATE src/DigitsTask.cxx
+target_sources(O2QcTRD PRIVATE src/DigitsTask.cxx
                              src/DigitsCheck.cxx)
 
 target_include_directories(
-  QcTRD
+  O2QcTRD
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(QcTRD PUBLIC QualityControl)
+target_link_libraries(O2QcTRD PUBLIC O2QualityControl)
 
-install(TARGETS QcTRD
+install(TARGETS O2QcTRD
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_root_dictionary(QcTRD
+add_root_dictionary(O2QcTRD
                     HEADERS
                             include/TRD/DigitsTask.h
                             include/TRD/DigitsCheck.h
                     LINKDEF include/TRD/LinkDef.h
-                    BASENAME QcTRD)
+                    BASENAME O2QcTRD)
 
 # ---- Test(s) ----
 
@@ -36,7 +36,7 @@ foreach(test ${TEST_SRCS})
 
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name}
-                        PRIVATE QcTRD Boost::unit_test_framework)
+                        PRIVATE O2QcTRD Boost::unit_test_framework)
 
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_property(TARGET ${test_name}
@@ -48,7 +48,7 @@ endforeach()
 
 # ---- Install ----
 
-install(TARGETS QcTRD ${EXE_NAMES}
+install(TARGETS O2QcTRD ${EXE_NAMES}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

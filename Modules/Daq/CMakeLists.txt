@@ -1,24 +1,24 @@
 # ---- Library ----
 
-add_library(QcDaq)
+add_library(O2QcDaq)
 
-target_sources(QcDaq PRIVATE src/DaqTask.cxx)
+target_sources(O2QcDaq PRIVATE src/DaqTask.cxx)
 
 target_include_directories(
-  QcDaq
+  O2QcDaq
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-target_link_libraries(QcDaq PUBLIC QualityControl PRIVATE ROOT::Gpad O2::DetectorsRaw)
+target_link_libraries(O2QcDaq PUBLIC O2QualityControl PRIVATE ROOT::Gpad O2::DetectorsRaw)
 
-add_root_dictionary(QcDaq
+add_root_dictionary(O2QcDaq
                     HEADERS include/Daq/DaqTask.h
                     LINKDEF include/Daq/LinkDef.h
-                    BASENAME QcDaq)
+                    BASENAME O2QcDaq)
 
-install(TARGETS QcDaq
+install(TARGETS O2QcDaq
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -33,7 +33,7 @@ foreach(test ${TEST_SRCS})
 
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name}
-                        PRIVATE QcDaq Boost::unit_test_framework)
+                        PRIVATE O2QcDaq Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_property(TARGET ${test_name}
     PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)

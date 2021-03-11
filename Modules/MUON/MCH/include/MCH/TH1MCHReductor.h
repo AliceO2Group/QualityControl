@@ -16,6 +16,7 @@
 #define QUALITYCONTROL_TH1MCHREDUCTOR_H
 
 #include "QualityControl/Reductor.h"
+#include <array>
 
 namespace o2::quality_control_modules::muonchambers
 {

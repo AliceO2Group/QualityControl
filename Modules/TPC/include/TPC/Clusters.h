@@ -24,7 +24,7 @@
 // QC includes
 #include "QualityControl/TaskInterface.h"
 
-#include "TH2F.h"
+class TCanvas;
 
 using namespace o2::quality_control::core;
 
@@ -40,8 +40,8 @@ class Clusters /*final*/ : public TaskInterface // todo add back the "final" whe
  public:
   /// \brief Constructor
   Clusters();
-  /// Destructor
-  ~Clusters() override;
+  /// \brief Destructor
+  ~Clusters() = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -53,9 +53,14 @@ class Clusters /*final*/ : public TaskInterface // todo add back the "final" whe
   void reset() override;
 
  private:
-  o2::tpc::qc::Clusters mQCClusters{};                      ///< O2 Cluster task to perform actions on cluster objects
-  std::vector<std::unique_ptr<TH2F>> mHistoVector{};        ///< vector holding TH2F showing average Cluster properties; published on QCG
-  std::vector<o2::tpc::qc::CalPadWrapper> mWrapperVector{}; ///< vector holding CalPad objects wrapped as TObjects; published on QCG; will be non-wrapped CalPad objects in the future
+  o2::tpc::qc::Clusters mQCClusters{};                         ///< O2 Cluster task to perform actions on cluster objects
+  std::vector<o2::tpc::qc::CalPadWrapper> mWrapperVector{};    ///< vector holding CalPad objects wrapped as TObjects; published on QCG; will be non-wrapped CalPad objects in the future
+  std::vector<std::unique_ptr<TCanvas>> mNClustersCanvasVec{}; ///< summary canvases of the NClusters object
+  std::vector<std::unique_ptr<TCanvas>> mQMaxCanvasVec{};      ///< summary canvases of the QMax object
+  std::vector<std::unique_ptr<TCanvas>> mQTotCanvasVec{};      ///< summary canvases of the QTot object
+  std::vector<std::unique_ptr<TCanvas>> mSigmaTimeCanvasVec{}; ///< summary canvases of the SigmaTime object
+  std::vector<std::unique_ptr<TCanvas>> mSigmaPadCanvasVec{};  ///< summary canvases of the SigmaPad object
+  std::vector<std::unique_ptr<TCanvas>> mTimeBinCanvasVec{};   ///< summary canvases of the TimeBin object
 };
 
 } // namespace o2::quality_control_modules::tpc

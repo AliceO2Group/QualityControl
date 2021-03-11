@@ -36,23 +36,23 @@
           "name": "mft-digits"
         },
         "taskParameters": {
-          "FLP": "1"
+          "FLP": "0",
+          "TaskLevel": "0"
         },
         "location": "remote"
       }
     },
     "checks": {
       "BasicDigitQcCheck": {
-        "active": "true",
+        "active": "false",
         "dataSource": [{
           "type": "Task",
-          "name": "BasicDigitQcTask",
-          "MOs": ["ChipHitMaps/mMFT_chip_index_H"]
+          "name": "BasicDigitQcTask"
         }],
         "className": "o2::quality_control_modules::mft::BasicDigitQcCheck",
         "moduleName": "QcMFT",
         "detectorName": "MFT",
-        "policy": "OnAny"
+        "policy": "OnEachSeparately"
       }
     }    
   },
@@ -65,7 +65,7 @@
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "0.2",
+          "fraction": "0.1",
           "seed": "1234"
         }
       ],

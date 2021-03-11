@@ -3,7 +3,7 @@
 
 #include <DataSampling/DataSampling.h>
 // #include <DataFormatsPHOS/Digit.h>
-#include <PHOSWorkflow/PublisherSpec.h>
+#include <PHOSWorkflow/ReaderSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"

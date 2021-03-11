@@ -24,7 +24,8 @@
 #include <TCanvas.h>
 #include <TPaveText.h>
 #include <TDatime.h>
-#include "TGraphErrors.h"
+#include <TGraphErrors.h>
+#include <TPoint.h>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;

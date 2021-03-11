@@ -33,15 +33,16 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "raw-many"
+          "name": "raw-local"
         },
         "taskParameters": {
           "nothing": "rien"
         },
         "location": "local",
         "localMachines": [
-          "localhost",
-          "localhost1"
+          "localnode1",
+          "localnode2",
+          "localnode3"
         ],
         "remoteMachine": "localhost",
         "remotePort": "30132",
@@ -57,7 +58,7 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "raw-little"
+          "name": "raw-remote"
         },
         "taskParameters": {
           "nothing": "rien"
@@ -140,24 +141,25 @@
   },
   "dataSamplingPolicies": [
     {
-      "id": "raw-many",
+      "id": "raw-local",
       "active": "true",
       "machines": [
-        "localhost",
-        "localhost1"
+        "localnode1",
+        "localnode2",
+        "localnode3"
       ],
       "query": "dataframe:TOF/CRAWDATA",
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "0.1",
+          "fraction": "1.0",
           "seed": "1234"
         }
       ],
       "blocking": "false"
     },
     {
-      "id": "raw-little",
+      "id": "raw-remote",
       "active": "true",
       "machines": [
         "localhost"

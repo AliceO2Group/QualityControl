@@ -21,6 +21,7 @@
 #include <fairlogger/Logger.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TLine.h>
 #include <TList.h>
 #include <TMath.h>
 #include <TPaveText.h>
