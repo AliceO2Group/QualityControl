@@ -21,6 +21,7 @@
 
 // ROOT includes
 #include "TH1.h"
+#include "TMath.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
@@ -238,11 +239,14 @@ int Counter<size, labels>::FillHistogram(TH1* histogram, const unsigned int& bin
       if (biny > 0) {
         if (binz > 0) {
           histogram->SetBinContent(bin, biny, binz, counter[index]);
+          histogram->SetBinError(bin, biny, binz, TMath::Sqrt(counter[index]));
         } else {
           histogram->SetBinContent(bin, biny, counter[index]);
+          histogram->SetBinError(bin, biny, TMath::Sqrt(counter[index]));
         }
       } else {
         histogram->SetBinContent(bin, counter[index]);
+        histogram->SetBinError(bin, TMath::Sqrt(counter[index]));
       }
     }
   };

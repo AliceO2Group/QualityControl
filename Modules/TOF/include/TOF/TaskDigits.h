@@ -14,8 +14,8 @@
 /// \brief  Task to monitor quantities in TOF digits in both data and MC
 ///
 
-#ifndef QC_MODULE_TOF_TOFTASK_H
-#define QC_MODULE_TOF_TOFTASK_H
+#ifndef QC_MODULE_TOF_TASK_DIGITS_H
+#define QC_MODULE_TOF_TASK_DIGITS_H
 
 #include "QualityControl/TaskInterface.h"
 #include "Base/Counter.h"
@@ -114,4 +114,4 @@ class TaskDigits final : public TaskInterface
 
 } // namespace o2::quality_control_modules::tof
 
-#endif // QC_MODULE_TOF_TOFTASK_H
+#endif // QC_MODULE_TOF_TASK_DIGITS_H

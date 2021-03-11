@@ -5,6 +5,7 @@ add_library(O2QcTOF)
 target_sources(O2QcTOF
                       # Tasks
               PRIVATE src/TaskDigits.cxx
+                      src/TaskCosmics.cxx
                       src/TaskRaw.cxx
                       # Checkers
                       src/CheckDiagnostics.cxx
@@ -41,6 +42,7 @@ install(TARGETS O2QcTOF
 add_root_dictionary(O2QcTOF
                             # Tasks
                     HEADERS include/TOF/TaskDigits.h
+                            include/TOF/TaskCosmics.h
                             include/TOF/TaskRaw.h
                             # Checkers
                             include/TOF/CheckCompressedData.h
@@ -88,6 +90,7 @@ install(FILES tofdigits.json
               tofpostprocessdiagnosticpercrate.json
               tofraw.json
               tofraw_multinode.json
+              tofcosmics.json
         DESTINATION etc)
 
 get_property(dirs
