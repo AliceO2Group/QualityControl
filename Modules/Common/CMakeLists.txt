@@ -10,7 +10,9 @@ configure_file("include/Common/Version.h.in"
 add_library(O2QcCommon)
 
 target_sources(O2QcCommon
-               PRIVATE src/NonEmpty.cxx
+               PRIVATE src/TRFCollectionTask.cxx
+                       src/TRFCollectionTaskConfig.cxx
+                       src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
                        src/TH1Reductor.cxx
                        src/TH2Reductor.cxx
@@ -24,7 +26,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcCommon PUBLIC O2QualityControl PRIVATE ROOT::Graf)
+target_link_libraries(O2QcCommon PUBLIC O2QualityControl O2::DataFormatsQualityControl PRIVATE ROOT::Graf)
 
 install(TARGETS O2QcCommon
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -33,6 +35,7 @@ install(TARGETS O2QcCommon
 
 add_root_dictionary(O2QcCommon
                     HEADERS include/Common/NonEmpty.h
+                            include/Common/TRFCollectionTask.h
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Reductor.h
                             include/Common/TH2Reductor.h
@@ -41,6 +44,9 @@ add_root_dictionary(O2QcCommon
                             include/Common/EverIncreasingGraph.h
                     LINKDEF include/Common/LinkDef.h
                     BASENAME O2QcCommon)
+
+install(FILES etc/trfcollection-example.json
+  DESTINATION Modules/Common)
 
 # ---- Tests ----
 

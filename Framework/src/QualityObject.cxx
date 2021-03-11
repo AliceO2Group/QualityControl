@@ -37,118 +37,123 @@ QualityObject::QualityObject(
   mQuality.overwriteMetadata(metadata);
 }
 
-  QualityObject::~QualityObject() = default;
+QualityObject::~QualityObject() = default;
 
-  const std::string anonChecker = "anonymousChecker";
-  QualityObject::QualityObject()
-    : QualityObject(Quality(), anonChecker)
-  {
-  }
+const std::string anonChecker = "anonymousChecker";
+QualityObject::QualityObject()
+  : QualityObject(Quality(), anonChecker)
+{
+}
 
-  const char* QualityObject::GetName() const
-  {
-    std::string name = getName();
-    return strdup(name.c_str());
-  }
+const char* QualityObject::GetName() const
+{
+  std::string name = getName();
+  return strdup(name.c_str());
+}
 
-  std::string QualityObject::getName() const
-  {
-    if (mPolicyName == "OnEachSeparately") {
-      if (mMonitorObjectsNames.size() != 1) {
-        BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("QualityObject::getName: "
-                                                                  "The vector of monitorObjectsNames must contain a single object"));
-      }
-      return mCheckName + "/" + mMonitorObjectsNames[0];
+std::string QualityObject::getName() const
+{
+  if (mPolicyName == "OnEachSeparately") {
+    if (mMonitorObjectsNames.size() != 1) {
+      BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("QualityObject::getName: "
+                                                                "The vector of monitorObjectsNames must contain a single object"));
     }
-    return mCheckName;
+    return mCheckName + "/" + mMonitorObjectsNames[0];
   }
+  return mCheckName;
+}
 
-  void QualityObject::updateQuality(Quality quality)
-  {
-    //TODO: Update timestamp
-    mQuality = quality;
-  }
-  Quality QualityObject::getQuality() const
-  {
-    return mQuality;
-  }
+void QualityObject::updateQuality(Quality quality)
+{
+  //TODO: Update timestamp
+  mQuality = quality;
+}
+Quality QualityObject::getQuality() const
+{
+  return mQuality;
+}
 
-  void QualityObject::addMetadata(std::string key, std::string value)
-  {
-    mQuality.addMetadata(key, value);
-  }
+void QualityObject::addMetadata(std::string key, std::string value)
+{
+  mQuality.addMetadata(key, value);
+}
 
-  void QualityObject::addMetadata(std::map<std::string, std::string> pairs)
-  {
-    mQuality.addMetadata(pairs);
-  }
+void QualityObject::addMetadata(std::map<std::string, std::string> pairs)
+{
+  mQuality.addMetadata(pairs);
+}
 
-  const std::map<std::string, std::string>& QualityObject::getMetadataMap() const
-  {
-    return mQuality.getMetadataMap();
-  }
+const std::map<std::string, std::string>& QualityObject::getMetadataMap() const
+{
+  return mQuality.getMetadataMap();
+}
 
-  void QualityObject::updateMetadata(std::string key, std::string value)
-  {
-    mQuality.updateMetadata(key, value);
-  }
+void QualityObject::updateMetadata(std::string key, std::string value)
+{
+  mQuality.updateMetadata(key, value);
+}
 
-  const std::string QualityObject::getMetadata(std::string key)
-  {
-    return mQuality.getMetadata(key);
-  }
+std::string QualityObject::getMetadata(std::string key)
+{
+  return mQuality.getMetadata(key);
+}
 
-  std::string QualityObject::getPath() const
-  {
-    std::string path;
-    try {
-      path = RepoPathUtils::getQoPath(this);
-    } catch (FatalException& fe) {
-      fe << errinfo_details("Only one MO should be assigned to one QO With the policy OnEachSeparatety"); // update error info
-      throw;
-    }
-    return path;
-  }
+std::string QualityObject::getMetadata(std::string key, std::string defaultValue)
+{
+  return mQuality.getMetadata(key, defaultValue);
+}
 
-  const std::string& QualityObject::getDetectorName() const
-  {
-    return mDetectorName;
+std::string QualityObject::getPath() const
+{
+  std::string path;
+  try {
+    path = RepoPathUtils::getQoPath(this);
+  } catch (FatalException& fe) {
+    fe << errinfo_details("Only one MO should be assigned to one QO With the policy OnEachSeparatety"); // update error info
+    throw;
   }
+  return path;
+}
 
-  void QualityObject::setDetectorName(const std::string& detectorName)
-  {
-    QualityObject::mDetectorName = detectorName;
-  }
+const std::string& QualityObject::getDetectorName() const
+{
+  return mDetectorName;
+}
 
-  void QualityObject::setQuality(const Quality& quality)
-  {
-    updateQuality(quality);
-  }
-  const std::string& QualityObject::getCheckName() const
-  {
-    return mCheckName;
-  }
+void QualityObject::setDetectorName(const std::string& detectorName)
+{
+  QualityObject::mDetectorName = detectorName;
+}
 
-  const std::string& QualityObject::getPolicyName() const
-  {
-    return mPolicyName;
-  }
+void QualityObject::setQuality(const Quality& quality)
+{
+  updateQuality(quality);
+}
+const std::string& QualityObject::getCheckName() const
+{
+  return mCheckName;
+}
 
-  const std::vector<std::string> QualityObject::getMonitorObjectsNames() const
-  {
-    return mMonitorObjectsNames;
-  }
+const std::string& QualityObject::getPolicyName() const
+{
+  return mPolicyName;
+}
 
-  std::ostream& operator<<(std::ostream& out, const QualityObject& q) // output
-  {
-    out << "QualityObject: " << q.getName() << ":\n"
-        << "   - checkName : " << q.getCheckName() << "\n"
-        << "   - detectorName : " << q.getDetectorName() << "\n"
-        << "   - monitorObjectsNames : ";
-    for (auto item : q.getMonitorObjectsNames()) {
-      out << item << ", ";
-    }
-    return out;
+const std::vector<std::string> QualityObject::getMonitorObjectsNames() const
+{
+  return mMonitorObjectsNames;
+}
+
+std::ostream& operator<<(std::ostream& out, const QualityObject& q) // output
+{
+  out << "QualityObject: " << q.getName() << ":\n"
+      << "   - checkName : " << q.getCheckName() << "\n"
+      << "   - detectorName : " << q.getDetectorName() << "\n"
+      << "   - monitorObjectsNames : ";
+  for (auto item : q.getMonitorObjectsNames()) {
+    out << item << ", ";
   }
+  return out;
+}
 
 } // namespace o2::quality_control::core
