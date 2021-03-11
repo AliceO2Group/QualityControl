@@ -38,7 +38,8 @@ if (DOXYGEN_FOUND)
   if(DOC_INSTALL)
     # doxygen
     message(STATUS "Documentation will be installed but you *must* run `make doc`")
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT doc)
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION ${CMAKE_INSTALL_DOCDIR} COMPONENT doc
+      PATTERN "*.md5" EXCLUDE PATTERN "*.map" EXCLUDE)
 
     # all the rest
     file(GLOB_RECURSE selected  RELATIVE ${CMAKE_SOURCE_DIR}/doc "../*.md" "../*.png" "../*.json") #
