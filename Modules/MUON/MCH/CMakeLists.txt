@@ -3,8 +3,6 @@ set(MODULE_NAME "QcMuonChambers")
 # ---- Files ----
 
 set(SRCS
-  src/Mapping.cxx
-  src/Decoding.cxx
   src/GlobalHistogram.cxx
   src/PedestalsTask.cxx
   src/PhysicsTaskDigits.cxx
@@ -15,8 +13,6 @@ set(SRCS
 )
 
 set(HEADERS
-  include/MCH/Mapping.h
-  include/MCH/Decoding.h
   include/MCH/GlobalHistogram.h
   include/MCH/PedestalsTask.h
   include/MCH/PhysicsTaskDigits.h
@@ -37,7 +33,7 @@ target_include_directories(
 )
 
 target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2::CommonDataFormat O2::GPUCommon
-        $<TARGET_NAME_IF_EXISTS:O2::MCHMappingFactory> O2::MCHMappingImpl3 O2::MCHMappingSegContour O2::MCHRawDecoder O2::MCHPreClustering)
+        $<TARGET_NAME_IF_EXISTS:O2::MCHMappingFactory> O2::MCHMappingImpl4 O2::MCHMappingSegContour O2::MCHBase O2::DataFormatsMCH O2::MCHRawDecoder O2::MCHCalibration O2::MCHPreClustering)
 
 target_compile_definitions(${MODULE_NAME} PRIVATE $<$<TARGET_EXISTS:O2::MCHMappingFactory>:MCH_HAS_MAPPING_FACTORY>)
 
@@ -51,9 +47,7 @@ install(
 # ---- ROOT dictionary ----
 
 add_root_dictionary(${MODULE_NAME}
-                    HEADERS include/MCH/Mapping.h
-                            include/MCH/Decoding.h
-                            include/MCH/GlobalHistogram.h
+                    HEADERS include/MCH/GlobalHistogram.h
                             include/MCH/PedestalsTask.h
                             include/MCH/PhysicsTaskDigits.h
                             include/MCH/PhysicsTaskPreclusters.h
