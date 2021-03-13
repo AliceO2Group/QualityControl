@@ -53,6 +53,7 @@ class RawQcTask final : public TaskInterface
  protected:
   static constexpr short kNhist1D = 21;
   enum histos1D { kTotalDataVolume,
+                  kMessageCounter,
                   kHGmeanSummaryM1,
                   kHGmeanSummaryM2,
                   kHGmeanSummaryM3,
@@ -78,7 +79,6 @@ class RawQcTask final : public TaskInterface
   static constexpr short kNhist2D = 35;
   enum histos2D { kErrorType,
                   kPayloadSizePerDDL,
-                  kMessageCounter,
                   kHGmeanM1,
                   kHGmeanM2,
                   kHGmeanM3,
@@ -95,6 +95,14 @@ class RawQcTask final : public TaskInterface
                   kLGrmsM2,
                   kLGrmsM3,
                   kLGrmsM4,
+                  kHGoccupM1,
+                  kHGoccupM2,
+                  kHGoccupM3,
+                  kHGoccupM4,
+                  kLGoccupM1,
+                  kLGoccupM2,
+                  kLGoccupM3,
+                  kLGoccupM4,
                   kCellOccupM1,
                   kCellOccupM2,
                   kCellOccupM3,

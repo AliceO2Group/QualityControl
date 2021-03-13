@@ -123,6 +123,18 @@ void RawQcTask::startOfActivity(Activity& /*activity*/)
 void RawQcTask::startOfCycle()
 {
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  if (mMode == 1) { //Pedestals
+    for (Int_t mod = 0; mod < 4; mod++) {
+      if (mHist2D[kHGmeanM1 + mod]) {
+        mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+        mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+      }
+      if (mHist2D[kLGmeanM1 + mod]) {
+        mHist2D[kLGmeanM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+        mHist2D[kLGrmsM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+      }
+    }
+  }
 }
 
 void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -183,6 +195,68 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 void RawQcTask::endOfCycle()
 {
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  if (mMode == 1) { //Pedestals
+    for (Int_t mod = 0; mod < 4; mod++) {
+      if (mHist2D[kHGmeanM1 + mod]) {
+        mHist2D[kHGmeanM1 + mod]->Divide(mHist2D[kHGoccupM1 + mod]);
+        mHist2D[kHGrmsM1 + mod]->Divide(mHist2D[kHGoccupM1 + mod]);
+        mHist1D[kHGmeanSummaryM1 + mod]->Reset();
+        mHist1D[kHGrmsSummaryM1 + mod]->Reset();
+        double occMin = 1.e+9;
+        double occMax = 0.;
+        for (int iz = 1; iz <= 64; iz++) {
+          for (int ix = 1; ix <= 56; ix++) {
+            float a = mHist2D[kHGmeanM1 + mod]->GetBinContent(iz, ix);
+            if (a > 0) {
+              mHist1D[kHGmeanSummaryM1 + mod]->Fill(a);
+            }
+            a = mHist2D[kHGrmsM1 + mod]->GetBinContent(iz, ix);
+            if (a > 0) {
+              mHist1D[kHGrmsSummaryM1 + mod]->Fill(a);
+            }
+            a = mHist2D[kHGoccupM1 + mod]->GetBinContent(iz, ix);
+            if (a > 0) {
+              if (a < occMin)
+                occMin = a;
+              if (a > occMax)
+                occMax = a;
+            }
+          }
+        }
+        mHist2D[kHGoccupM1 + mod]->SetMinimum(occMin);
+        mHist2D[kHGoccupM1 + mod]->SetMaximum(occMax);
+      }
+      if (mHist2D[kLGmeanM1 + mod]) {
+        mHist2D[kLGmeanM1 + mod]->Divide(mHist2D[kLGoccupM1 + mod]);
+        mHist2D[kLGrmsM1 + mod]->Divide(mHist2D[kLGoccupM1 + mod]);
+        mHist1D[kLGmeanSummaryM1 + mod]->Reset();
+        mHist1D[kLGrmsSummaryM1 + mod]->Reset();
+        double occMin = 1.e+9;
+        double occMax = 0.;
+        for (int iz = 1; iz <= 64; iz++) {
+          for (int ix = 1; ix <= 56; ix++) {
+            float a = mHist2D[kLGmeanM1 + mod]->GetBinContent(iz, ix);
+            if (a > 0) {
+              mHist1D[kLGmeanSummaryM1 + mod]->Fill(a);
+            }
+            a = mHist2D[kLGrmsM1 + mod]->GetBinContent(iz, ix);
+            if (a > 0) {
+              mHist1D[kLGrmsSummaryM1 + mod]->Fill(a);
+            }
+            a = mHist2D[kLGoccupM1 + mod]->GetBinContent(iz, ix);
+            if (a > 0) {
+              if (a < occMin)
+                occMin = a;
+              if (a > occMax)
+                occMax = a;
+            }
+          }
+        }
+        mHist2D[kLGoccupM1 + mod]->SetMinimum(occMin);
+        mHist2D[kLGoccupM1 + mod]->SetMaximum(occMax);
+      }
+    }
+  }
 }
 
 void RawQcTask::endOfActivity(Activity& /*activity*/)
@@ -229,7 +303,6 @@ void RawQcTask::FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cel
         if (n > 0) {
           emean = (e + mHist2D[kCellEM1 + relid[0]]->GetBinContent(ibin) * n) / (n + 1);
         }
-        printf("time = %e \n", c.getTime());
         mHist2D[kCellEM1 + relid[0]]->SetBinContent(ibin, emean);
         mHist2D[kCellOccupM1 + relid[0]]->AddBinContent(ibin);
         mHist2D[kTimeEM1 + relid[0]]->Fill(e, c.getTime());
@@ -253,13 +326,11 @@ void RawQcTask::FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& ce
       if (c.getHighGain()) {
         mHist2D[kHGmeanM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
         mHist2D[kHGrmsM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime()); //to store in Cells format
-        mHist1D[kHGmeanSummaryM1 + relid[0]]->Fill(c.getEnergy());
-        mHist1D[kHGrmsSummaryM1 + relid[0]]->Fill(1.e+7 * c.getTime());
+        mHist2D[kHGoccupM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5);
       } else {
         mHist2D[kLGmeanM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
         mHist2D[kLGrmsM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime());
-        mHist1D[kLGmeanSummaryM1 + relid[0]]->Fill(c.getEnergy());
-        mHist1D[kLGrmsSummaryM1 + relid[0]]->Fill(1.e+7 * c.getTime());
+        mHist2D[kLGoccupM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5);
       }
     }
   }
@@ -271,7 +342,7 @@ void RawQcTask::CreatePedestalHistograms()
 
   for (Int_t mod = 0; mod < 4; mod++) {
     if (!mHist2D[kHGmeanM1 + mod]) {
-      mHist2D[kHGmeanM1 + mod] = new TH2F(Form("PedHGmean%d", mod), Form("Pedestal mean High Gain, mod %d", mod), 64, 0., 64., 56, 0., 56.);
+      mHist2D[kHGmeanM1 + mod] = new TH2F(Form("PedHGmean%d", mod + 1), Form("Pedestal mean High Gain, mod %d", mod), 64, 0., 64., 56, 0., 56.);
       mHist2D[kHGmeanM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
       mHist2D[kHGmeanM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
       mHist2D[kHGmeanM1 + mod]->GetXaxis()->SetTitle("x, cells");
@@ -295,6 +366,17 @@ void RawQcTask::CreatePedestalHistograms()
       getObjectsManager()->startPublishing(mHist2D[kHGrmsM1 + mod]);
     } else {
       mHist2D[kHGrmsM1 + mod]->Reset();
+    }
+    if (!mHist2D[kHGoccupM1 + mod]) {
+      mHist2D[kHGoccupM1 + mod] = new TH2F(Form("HGOccupancyM%d", mod + 1), Form("High Gain occupancy, mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
+      mHist2D[kHGoccupM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
+      mHist2D[kHGoccupM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
+      mHist2D[kHGoccupM1 + mod]->GetXaxis()->SetTitle("x, cells");
+      mHist2D[kHGoccupM1 + mod]->GetYaxis()->SetTitle("z, cells");
+      mHist2D[kHGoccupM1 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mHist2D[kHGoccupM1 + mod]);
+    } else {
+      mHist2D[kHGoccupM1 + mod]->Reset();
     }
     if (!mHist2D[kLGmeanM1 + mod]) {
       mHist2D[kLGmeanM1 + mod] = new TH2F(Form("PedLGmean%d", mod + 1), Form("Pedestal mean Low Gain, mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
@@ -322,10 +404,21 @@ void RawQcTask::CreatePedestalHistograms()
     } else {
       mHist2D[kLGrmsM1 + mod]->Reset();
     }
+    if (!mHist2D[kLGoccupM1 + mod]) {
+      mHist2D[kLGoccupM1 + mod] = new TH2F(Form("LGOccupancyM%d", mod + 1), Form("Low Gain occupancy, mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
+      mHist2D[kLGoccupM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
+      mHist2D[kLGoccupM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
+      mHist2D[kLGoccupM1 + mod]->GetXaxis()->SetTitle("x, cells");
+      mHist2D[kLGoccupM1 + mod]->GetYaxis()->SetTitle("z, cells");
+      mHist2D[kLGoccupM1 + mod]->SetStats(0);
+      getObjectsManager()->startPublishing(mHist2D[kLGoccupM1 + mod]);
+    } else {
+      mHist2D[kLGoccupM1 + mod]->Reset();
+    }
     if (!mHist1D[kHGmeanSummaryM1 + mod]) {
       mHist1D[kHGmeanSummaryM1 + mod] = new TH1F(Form("PedHGMeanSum%d", mod + 1), Form("Pedestal HG mean summary, mod %d", mod + 1), 100, 0., 100.);
       mHist1D[kHGmeanSummaryM1 + mod]->GetXaxis()->SetTitle("ADC channels");
-      mHist1D[kHGmeanSummaryM1 + mod]->SetStats(0);
+      // mHist1D[kHGmeanSummaryM1 + mod]->SetStats(0);
       mHist1D[kHGmeanSummaryM1 + mod]->SetMinimum(0);
       getObjectsManager()->startPublishing(mHist1D[kHGmeanSummaryM1 + mod]);
     } else {
@@ -334,7 +427,7 @@ void RawQcTask::CreatePedestalHistograms()
     if (!mHist1D[kHGrmsSummaryM1 + mod]) {
       mHist1D[kHGrmsSummaryM1 + mod] = new TH1F(Form("PedHGRMSSum%d", mod + 1), Form("Pedestal HG RMS summary, mod %d", mod + 1), 100, 0., 10.);
       mHist1D[kHGrmsSummaryM1 + mod]->GetXaxis()->SetTitle("ADC channels");
-      mHist1D[kHGrmsSummaryM1 + mod]->SetStats(0);
+      // mHist1D[kHGrmsSummaryM1 + mod]->SetStats(0);
       mHist1D[kHGrmsSummaryM1 + mod]->SetMinimum(0);
       getObjectsManager()->startPublishing(mHist1D[kHGrmsSummaryM1 + mod]);
     } else {
@@ -343,7 +436,7 @@ void RawQcTask::CreatePedestalHistograms()
     if (!mHist1D[kLGmeanSummaryM1 + mod]) {
       mHist1D[kLGmeanSummaryM1 + mod] = new TH1F(Form("PedLGMeanSum%d", mod + 1), Form("Pedestal LG mean summary, mod %d", mod + 1), 100, 0., 100.);
       mHist1D[kLGmeanSummaryM1 + mod]->GetXaxis()->SetTitle("ADC channels");
-      mHist1D[kLGmeanSummaryM1 + mod]->SetStats(0);
+      // mHist1D[kLGmeanSummaryM1 + mod]->SetStats(0);
       mHist1D[kLGmeanSummaryM1 + mod]->SetMinimum(0);
       getObjectsManager()->startPublishing(mHist1D[kLGmeanSummaryM1 + mod]);
     } else {
@@ -352,7 +445,7 @@ void RawQcTask::CreatePedestalHistograms()
     if (!mHist1D[kLGrmsSummaryM1 + mod]) {
       mHist1D[kLGrmsSummaryM1 + mod] = new TH1F(Form("PedLGRMSSum%d", mod + 1), Form("Pedestal LG RMS summary, mod %d", mod + 1), 100, 0., 10.);
       mHist1D[kLGrmsSummaryM1 + mod]->GetXaxis()->SetTitle("ADC channels");
-      mHist1D[kLGrmsSummaryM1 + mod]->SetStats(0);
+      // mHist1D[kLGrmsSummaryM1 + mod]->SetStats(0);
       mHist1D[kLGrmsSummaryM1 + mod]->SetMinimum(0);
       getObjectsManager()->startPublishing(mHist1D[kLGrmsSummaryM1 + mod]);
     } else {
