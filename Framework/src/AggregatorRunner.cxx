@@ -89,6 +89,7 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 
 void AggregatorRunner::init(framework::InitContext&)
 {
+  ILOG_INST.setFacility("Aggregator");
   try {
     initDatabase();
     initMonitoring();

@@ -62,8 +62,6 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     mRunNumber(0),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
-  ILOG_INST.setFacility("Task");
-
   // setup configuration
   try {
     mTaskConfig.taskName = taskName;
@@ -80,6 +78,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
 
 void TaskRunner::init(InitContext& iCtx)
 {
+  ILOG_INST.setFacility("Task");
   ILOG(Info, Support) << "initializing TaskRunner" << ENDM;
   ILOG(Info, Support) << "Loading configuration" << ENDM;
   try {

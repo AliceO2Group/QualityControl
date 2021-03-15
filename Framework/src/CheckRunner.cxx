@@ -135,7 +135,6 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
     mTotalNumberQOStored(0),
     mTotalNumberMOStored(0)
 {
-  ILOG_INST.setFacility("Check");
   try {
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
   } catch (...) {
@@ -176,6 +175,7 @@ CheckRunner::~CheckRunner()
 
 void CheckRunner::init(framework::InitContext&)
 {
+  ILOG_INST.setFacility("Check");
   try {
     initDatabase();
     initMonitoring();
