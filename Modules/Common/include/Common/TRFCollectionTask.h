@@ -13,8 +13,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QUALITYCONTROL_SKELETONPOSTPROCESSING_H
-#define QUALITYCONTROL_SKELETONPOSTPROCESSING_H
+#ifndef QUALITYCONTROL_TRFCOLLECTIONTASK_H
+#define QUALITYCONTROL_TRFCOLLECTIONTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "Common/TRFCollectionTaskConfig.h"
@@ -50,9 +50,8 @@ class TRFCollectionTask final : public quality_control::postprocessing::PostProc
  private:
   TRFCollectionTaskConfig mConfig;
   uint64_t mLastTimestampLimitStart = 0;
-  //  o2::analysis::TimeRangeFlagCollection mTRFCollection;
 };
 
 } // namespace o2::quality_control_modules::common
 
-#endif //QUALITYCONTROL_SKELETONPOSTPROCESSING_H
+#endif //QUALITYCONTROL_TRFCOLLECTIONTASK_H

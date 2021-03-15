@@ -92,10 +92,10 @@ class Quality
   /// \brief Get metadata
   /// \return the value corresponding to the key if it was found.
   /// \throw ObjectNotFoundError in case the key is not found.
-  std::string getMetadata(std::string key);
+  std::string getMetadata(std::string key) const;
   /// \brief Get metadata
   /// \return the value corresponding to the key if it was found, default value otherwise
-  std::string getMetadata(std::string key, std::string defaultValue);
+  std::string getMetadata(std::string key, std::string defaultValue) const;
 
  private:
   unsigned int mLevel; /// 0 is no quality, 1 is best quality, then it only goes downhill...
