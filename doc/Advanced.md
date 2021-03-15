@@ -579,13 +579,10 @@ NOT WORKING YET, follow it up here: https://alice.its.cern.ch/jira/browse/O2-189
 
 ### Switch detector in the workflow _readout-dataflow_
 
-The workflow readout-dataflow has an issue. The proxy filters out everything but TPC data. To run with another detector (e.g. EMC) do:
+The workflow readout-dataflow works by default with the detector code TST. To run with another detector (e.g. EMC) do:
 
-1. Change all instances of "TPC" in the file /etc/flp.d/qc/stfb-qc.dpl.json to `EMC`.
-2. Change all instances of "TPC" in the QC config file in consul.
-2. Set these variables in aliECS:
-    * detector: EMC
-    * stfb_dataspec: B:EMC/RAWDATA
+2. Replace all instances of `TST` in the QC config file in consul with the one of the detector (e.g. `EMC`).
+2. Set the variable `detector` in aliECS the detector (e.g. `EMC`).
 
 ## Use MySQL as QC backend
 
