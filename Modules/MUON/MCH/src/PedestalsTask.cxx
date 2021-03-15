@@ -26,7 +26,7 @@
 using namespace std;
 using namespace o2::framework;
 
-#define QC_MCH_SAVE_TEMP_ROOTFILE 1
+//#define QC_MCH_SAVE_TEMP_ROOTFILE 1
 
 #define MCH_FFEID_MAX (31 * 2 + 1)
 

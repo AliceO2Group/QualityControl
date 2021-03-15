@@ -1,4 +1,4 @@
-set(MODULE_NAME "QcMuonChambers")
+set(MODULE_NAME "O2QcMuonChambers")
 
 # ---- Files ----
 
