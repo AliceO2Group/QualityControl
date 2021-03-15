@@ -33,6 +33,7 @@
 #include <Framework/InputRecordWalker.h>
 #include <Framework/RawDeviceService.h>
 
+#include <fairlogger/Logger.h>
 #include <FairMQDevice.h>
 
 #include "QualityControl/QcInfoLogger.h"
