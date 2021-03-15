@@ -221,11 +221,11 @@ void TaskRunner::start(const ServiceRegistry& services)
 {
   try {
     auto temp = services.get<RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
-    ILOG(Info, Devel) << "Got from RawDeviceService: " << temp << ENDM;
+    ILOG(Info, Devel) << "Got this property runNuymber from RawDeviceService: " << temp << ENDM;
     mRunNumber = stoi(temp);
     ILOG(Info, Support) << "Run number found in options: " << mRunNumber << ENDM;
   } catch (std::invalid_argument& ia) {
-    ILOG(Info, Support) << "Run number not found in options, using 0 instead." << ENDM;
+    ILOG(Info, Support) << "Run number not found in options or not a number, using 0 instead." << ENDM;
     mRunNumber = 0;
   }
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
