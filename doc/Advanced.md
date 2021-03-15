@@ -582,7 +582,7 @@ NOT WORKING YET, follow it up here: https://alice.its.cern.ch/jira/browse/O2-189
 The workflow readout-dataflow works by default with the detector code TST. To run with another detector (e.g. EMC) do:
 
 2. Replace all instances of `TST` in the QC config file in consul with the one of the detector (e.g. `EMC`).
-2. Set the variable `detector` in aliECS the detector (e.g. `EMC`).
+2. Set the variable `detector` in aliECS to the detector (e.g. `EMC`).
 
 ## Use MySQL as QC backend
 
