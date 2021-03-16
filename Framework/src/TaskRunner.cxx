@@ -31,15 +31,15 @@
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/RawDeviceService.h>
 
-// Fairlogger
 #include <fairlogger/Logger.h>
+#include <FairMQDevice.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
 
 #include <string>
-#include <memory>
 #include <TFile.h>
 
 using namespace std;
@@ -92,7 +92,7 @@ void TaskRunner::init(InitContext& iCtx)
   }
 
   // registering state machine callbacks
-  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &options = iCtx.options()]() { start(options); });
+  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
 
@@ -218,13 +218,15 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::start(const ConfigParamRegistry& options)
+void TaskRunner::start(const ServiceRegistry& services)
 {
   try {
-    mRunNumber = stoi(options.get<std::string>("runNumber"));
+    auto temp = services.get<RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
+    ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: " << temp << ENDM;
+    mRunNumber = stoi(temp);
     ILOG(Info, Support) << "Run number found in options: " << mRunNumber << ENDM;
   } catch (std::invalid_argument& ia) {
-    ILOG(Info, Support) << "Run number not found in options, using 0 instead." << ENDM;
+    ILOG(Info, Support) << "Run number not found in options or is not a number, using 0 instead." << ENDM;
     mRunNumber = 0;
   }
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
