@@ -194,7 +194,12 @@ Don't forget to install the CERN CA (see the troubleshooting at the bottom).
 * `export REQUESTS_CA_BUNDLE=$PWD/ca-bundle.crt`
 * `aurora task ssh -l root build/mesosci/prod/ci_alisw_slc8-gpu-builder_latest/1`
 
+You might also have to ask Costin to install you public key. 
+
 Then 
 * `docker ps` to see what is running
 * `docker exec -it id /bin/bash` to enter the environment
+* stuff is in `alice`
+
+The problem is that builds continuously happen in the machine. So you cannot just do `cd sw/BUILD/O2-latest/O2/` and `make`
 
