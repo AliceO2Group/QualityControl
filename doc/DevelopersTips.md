@@ -181,3 +181,15 @@ o2-dpl-raw-proxy \
       -b \
       --session default
 ```
+
+
+### How to connect to one of the builder nodes used in GH PRs 
+
+Install aurora. 
+https://alisw.github.io/infrastructure-aurora
+The only one that worked for me was the precompiled macos binary. 
+
+Don't forget to install the CERN CA (see the troubleshooting at the bottom).
+* `scp lxplus.cern.ch:/etc/ssl/certs/ca-bundle.crt ca-bundle.crt`
+* `export REQUESTS_CA_BUNDLE=$PWD/ca-bundle.crt`
+* `aurora task ssh -l root build/mesosci/prod/ci_alisw_slc8-gpu-builder_latest/1`
