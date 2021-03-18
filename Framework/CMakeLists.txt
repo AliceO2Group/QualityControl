@@ -325,7 +325,7 @@ configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-function
 add_test(NAME functional_test COMMAND o2-qc-functional-test.sh)
 set_tests_properties(functional_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
 set_property(TEST functional_test PROPERTY LABELS slow)
-set_property(TEST functional_test PROPERTY TIMEOUT 20)
+set_property(TEST functional_test PROPERTY TIMEOUT 30)
 
 # disable some tests in the CI to avoid un-expected failures.
 # to be removed when it is fixed / understood
