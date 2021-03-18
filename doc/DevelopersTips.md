@@ -194,12 +194,17 @@ Don't forget to install the CERN CA (see the troubleshooting at the bottom).
 * `export REQUESTS_CA_BUNDLE=$PWD/ca-bundle.crt`
 * `aurora task ssh -l root build/mesosci/prod/ci_alisw_slc8-gpu-builder_latest/1`
 
-You might also have to ask Costin to install you public key. 
+You might also have to ask Costin to install your public key if it a node prepared by him. 
 
 Then 
 * `docker ps` to see what is running
-* `docker exec -it id /bin/bash` to enter the environment
-* stuff is in `alice`
+* `docker exec -it id /bin/bash` to enter the environment "id"
+* `cd /mnt/mesos/sandbox/sandbox/`
+* `cd [check-name]`
+* `WORK_DIR=$PWD/sw source sw/slc7_x86-64/QualityControl/latest/etc/profile.d/init.sh `
+* `cd sw/BUILD/QualityControl-latest/QualityControl/tests/`
+* run the test
+
 
 The problem is that builds continuously happen in the machine. So you cannot just do `cd sw/BUILD/O2-latest/O2/` and `make`
 
