@@ -59,20 +59,13 @@ class CcdbDatabase : public DatabaseInterface
   // storage
   void storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> q, long from = -1, long to = -1) override;
   void storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> q, long from = -1, long to = -1) override;
-  /**
-    * Store an object of type `typeInfo` (which needs to have a ROOT dictionary).
-    * Example usage: `storeAny(reinterpret_cast<const void*>(obj), typeid(T), path, metadata, "TST", "taskname", from, to);`
-    *
-    * @param obj Raw pointer to the object to store.
-    * @param path The path where the object is going to be stored.
-    * @param metadata Key-values representing the metadata for this object.
-    * @param detectorName The name of the detector (will appear in the metadata, not used in the path)
-    * @param taskName The name of the task (will appear in the metadata, not used in the path)
-    * @param from Start of validity. If omitted, current timestamp is used.
-    * @param to End of validity. If omitted, current timestamp + 1 year is used.
-    */
   void storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
                 std::string const& detectorName, std::string const& taskName, long from = -1, long to = -1) override;
+
+  void* retrieveAny(std::type_info const& tinfo, std::string const& path,
+                                   std::map<std::string, std::string> const& metadata, long timestamp = -1,
+                                   std::map<std::string, std::string>* headers = nullptr, std::string const& etag = "",
+                                   const std::string& createdNotAfter = "", const std::string& createdNotBefore = "");
 
   // retrieval - MO - deprecated
   std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) override;

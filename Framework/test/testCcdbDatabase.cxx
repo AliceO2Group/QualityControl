@@ -421,7 +421,7 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(obj4->getMetadataMap().at("my_meta"), "is_good");
 }
 
-BOOST_AUTO_TEST_CASE(ccdb_store_any)
+BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_any)
 {
   test_fixture f;
 
@@ -432,7 +432,13 @@ BOOST_AUTO_TEST_CASE(ccdb_store_any)
 
   f.backend->storeAny(h1, typeid(TH1F), /*f.getMoPath("quarantine")*/"qc/TST/MO/Test/storeAny", meta, "TST", "testStoreAny");
 
-  
+  meta.clear();
+  void* rawResult = f.backend->retrieveAny(typeid(TH1F), "qc/TST/MO/Test/storeAny", meta);
+  auto h1_back = static_cast<TH1F*>(rawResult);
+  BOOST_CHECK(rawResult != nullptr);
+  BOOST_CHECK(h1_back != nullptr);
+  BOOST_CHECK(h1_back->GetNbinsX() == 100);
+  BOOST_CHECK(h1_back->GetEntries() > 0);
 }
 
 } // namespace
