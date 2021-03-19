@@ -88,4 +88,9 @@ std::string DummyDatabase::retrieveJson(std::string, long, const std::map<std::s
   return std::string();
 }
 
+void* DummyDatabase::retrieveAny(const std::type_info& , const std::string& , const std::map<std::string, std::string>& , long , std::map<std::string, std::string>* , const std::string& , const std::string& , const std::string& )
+{
+  return nullptr;
+}
+
 } // namespace o2::quality_control::repository
