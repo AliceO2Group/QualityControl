@@ -99,9 +99,9 @@ class DatabaseInterface
    * @return the object, or nullptr if none were found or type does not match serialized type.
    */
   virtual void* retrieveAny(std::type_info const& tinfo, std::string const& path,
-                    std::map<std::string, std::string> const& metadata, long timestamp = -1,
-                    std::map<std::string, std::string>* headers = nullptr, std::string const& etag = "",
-                    const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") = 0;
+                            std::map<std::string, std::string> const& metadata, long timestamp = -1,
+                            std::map<std::string, std::string>* headers = nullptr, std::string const& etag = "",
+                            const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") = 0;
 
   /**
    * Stores the serialized MonitorObject in the database.

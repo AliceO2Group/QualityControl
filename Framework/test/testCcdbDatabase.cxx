@@ -429,7 +429,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_any)
   TH1F* h1 = new TH1F("quarantine", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
 
-  f.backend->storeAny(h1, typeid(TH1F), f.getMoPath("storeAny") , meta, "TST", "testStoreAny");
+  f.backend->storeAny(h1, typeid(TH1F), f.getMoPath("storeAny"), meta, "TST", "testStoreAny");
 
   meta.clear();
   void* rawResult = f.backend->retrieveAny(typeid(TH1F), f.getMoPath("storeAny"), meta);
