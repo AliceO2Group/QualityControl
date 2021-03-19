@@ -28,8 +28,8 @@ void DummyDatabase::connect(const std::unordered_map<std::string, std::string>&)
 {
 }
 
-void DummyDatabase::storeAny(const void* , std::type_info const& , std::string const& , std::map<std::string, std::string> const& ,
-              std::string const& , std::string const& , long , long )
+void DummyDatabase::storeAny(const void*, std::type_info const&, std::string const&, std::map<std::string, std::string> const&,
+                             std::string const&, std::string const&, long, long)
 {
 }
 

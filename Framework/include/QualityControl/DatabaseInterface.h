@@ -74,7 +74,7 @@ class DatabaseInterface
   * @param to End of validity. If omitted, current timestamp + 1 year is used.
   */
   virtual void storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
-                std::string const& detectorName, std::string const& taskName, long from = -1, long to = -1) = 0;
+                        std::string const& detectorName, std::string const& taskName, long from = -1, long to = -1) = 0;
 
   /**
    * Stores the serialized MonitorObject in the database.

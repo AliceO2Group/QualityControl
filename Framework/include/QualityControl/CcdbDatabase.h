@@ -63,9 +63,9 @@ class CcdbDatabase : public DatabaseInterface
                 std::string const& detectorName, std::string const& taskName, long from = -1, long to = -1) override;
 
   void* retrieveAny(std::type_info const& tinfo, std::string const& path,
-                                   std::map<std::string, std::string> const& metadata, long timestamp = -1,
-                                   std::map<std::string, std::string>* headers = nullptr, std::string const& etag = "",
-                                   const std::string& createdNotAfter = "", const std::string& createdNotBefore = "");
+                    std::map<std::string, std::string> const& metadata, long timestamp = -1,
+                    std::map<std::string, std::string>* headers = nullptr, std::string const& etag = "",
+                    const std::string& createdNotAfter = "", const std::string& createdNotBefore = "");
 
   // retrieval - MO - deprecated
   std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) override;

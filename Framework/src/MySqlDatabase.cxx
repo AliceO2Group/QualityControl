@@ -93,11 +93,10 @@ void MySqlDatabase::prepareTable(std::string table_name)
 }
 
 void MySqlDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
-              std::string const& detectorName, std::string const& taskName, long from, long to)
+                             std::string const& detectorName, std::string const& taskName, long from, long to)
 {
   // TODO
 }
-
 
 void MySqlDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long, long)
 {

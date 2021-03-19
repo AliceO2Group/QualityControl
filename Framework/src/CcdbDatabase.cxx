@@ -109,19 +109,19 @@ void CcdbDatabase::init()
 }
 
 void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
-              std::string const& detectorName, std::string const& taskName, long from, long to)
+                            std::string const& detectorName, std::string const& taskName, long from, long to)
 {
-  if(obj == nullptr) {
+  if (obj == nullptr) {
     BOOST_THROW_EXCEPTION(DatabaseException()
-                            << errinfo_details("Cannot store a null pointer."));
+                          << errinfo_details("Cannot store a null pointer."));
   }
   if (path.length() == 0) {
     BOOST_THROW_EXCEPTION(DatabaseException()
-                            << errinfo_details("Object and task names can't be empty. Do not store."));
+                          << errinfo_details("Object and task names can't be empty. Do not store."));
   }
   if (path.find_first_of("\t\n ") != string::npos) {
     BOOST_THROW_EXCEPTION(DatabaseException()
-                            << errinfo_details("Object and task names can't contain white spaces. Do not store."));
+                          << errinfo_details("Object and task names can't contain white spaces. Do not store."));
   }
 
   // metadata
