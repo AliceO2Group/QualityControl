@@ -60,6 +60,23 @@ class DatabaseInterface
   virtual void connect(const std::unordered_map<std::string, std::string>& config) = 0;
 
   /**
+  * Store an object of type `typeInfo` (which needs to have a ROOT dictionary).
+  * Example usage: `storeAny(reinterpret_cast<const void*>(obj), typeid(T), path, metadata, "TST", "taskname", from, to);`
+   *
+   * Note that we cannot have a more elegant templated signature due to the fact that it is a virtual method.
+  *
+  * @param obj Raw pointer to the object to store.
+  * @param path The path where the object is going to be stored.
+  * @param metadata Key-values representing the metadata for this object.
+  * @param detectorName The name of the detector (will appear in the metadata, not used in the path)
+  * @param taskName The name of the task (will appear in the metadata, not used in the path)
+  * @param from Start of validity. If omitted, current timestamp is used.
+  * @param to End of validity. If omitted, current timestamp + 1 year is used.
+  */
+  virtual void storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
+                std::string const& detectorName, std::string const& taskName, long from = -1, long to = -1) = 0;
+
+  /**
    * Stores the serialized MonitorObject in the database.
    * @param mo The MonitorObject to serialize and store.
    * @param from The timestamp indicating the start of object's validity (ms since epoch).

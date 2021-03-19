@@ -421,5 +421,19 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(obj4->getMetadataMap().at("my_meta"), "is_good");
 }
 
+BOOST_AUTO_TEST_CASE(ccdb_store_any)
+{
+  test_fixture f;
+
+  std::map<std::string, std::string> meta;
+  TH1F* h1 = new TH1F("quarantine", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10000);
+//  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, f.taskName, "TST");
+
+  f.backend->storeAny(h1, typeid(TH1F), /*f.getMoPath("quarantine")*/"qc/TST/MO/Test/storeAny", meta, "TST", "testStoreAny");
+
+  
+}
+
 } // namespace
 } // namespace o2::quality_control::core
