@@ -29,7 +29,6 @@ constexpr long objectValidity = 1000l * 60 * 60 * 24 * 365 * 10;
 PostProcessingRunner::PostProcessingRunner(std::string name) //
   : mName(name)
 {
-  ILOG_INST.setFacility("PostProcessing");
 }
 
 void PostProcessingRunner::setPublicationCallback(MOCPublicationCallback callback)
@@ -42,6 +41,11 @@ void PostProcessingRunner::init(const boost::property_tree::ptree& config)
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   mConfig = PostProcessingConfig(mName, config);
+
+  // configuration of the infologger
+  bool discardDebug = config.get<bool>("qc.config.infologger.filterDiscardDebug", false);
+  int discardLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", -1);
+  ILOG_INST.init("PostProcessing", discardDebug, discardLevel );
 
   // configuration of the database
   mDatabase = DatabaseFactory::create(config.get<std::string>("qc.config.database.implementation"));

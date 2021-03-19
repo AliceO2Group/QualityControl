@@ -50,6 +50,7 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
   }
 
   void setFacility(const std::string& facility);
+  void init(const std::string & facility, bool discardDebug = false, int discardFromLevel = -1);
 
  private:
   QcInfoLogger();

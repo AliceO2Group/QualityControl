@@ -90,6 +90,7 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 void AggregatorRunner::init(framework::InitContext&)
 {
   try {
+    initInfologger();
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -190,6 +191,13 @@ void AggregatorRunner::initServiceDiscovery()
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
   ILOG(Info, Devel) << "ServiceDiscovery initialized";
+}
+
+void AggregatorRunner::initInfologger()
+{
+  bool discardDebug = mConfigFile->get<bool>("qc.config.infologger.filterDiscardDebug", false);
+  int discardLevel = mConfigFile->get<int>("qc.config.infologger.filterDiscardLevel", -1);
+  ILOG_INST.init("Check", discardDebug, discardLevel );
 }
 
 void AggregatorRunner::initAggregators()

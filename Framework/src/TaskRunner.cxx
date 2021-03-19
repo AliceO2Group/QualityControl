@@ -62,13 +62,12 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     mRunNumber(0),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
-  ILOG_INST.setFacility("Task");
-
   // setup configuration
   try {
     mTaskConfig.taskName = taskName;
     mTaskConfig.parallelTaskID = id;
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
+    loadInfologgerConfig();
     loadTopologyConfig();
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
@@ -304,6 +303,13 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   bool dataReady = dataInputsPresent == inputs.size() - 1;
 
   return { dataReady, timerReady };
+}
+
+void TaskRunner::loadInfologgerConfig()
+{
+  bool discardDebug = mConfigFile->get<bool>("qc.config.infologger.filterDiscardDebug", false);
+  int discardLevel = mConfigFile->get<int>("qc.config.infologger.filterDiscardLevel", -1);
+  ILOG_INST.init(mTaskConfig.taskName, discardDebug, discardLevel );
 }
 
 void TaskRunner::loadTopologyConfig()

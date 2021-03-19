@@ -683,6 +683,10 @@ This is how a typical "config" structure looks like. Each configuration element 
       "conditionDB": {                    "": ["Configuration of the Conditions and Calibration DataBase (CCDB).",
                                                "Do not mistake with the CCDB which is used as QC repository."],
         "url": "ccdb-test.cern.ch:8080",  "": "URL of a CCDB"
+      },
+      "infologger": {                     "": "Configuration of the Infologger (optional).",
+        "filterDiscardDebug": "0",        "": "Set to 1 to discard debug and trace messages (default: 0)",
+        "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: -1)" 
       }
     }
   }

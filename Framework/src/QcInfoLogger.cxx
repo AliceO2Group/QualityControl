@@ -15,6 +15,7 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include <InfoLogger/InfoLoggerFMQ.hxx>
+//#
 
 namespace o2::quality_control::core
 {
@@ -35,7 +36,24 @@ void QcInfoLogger::setFacility(const std::string& facility)
   context.setField(infoContext::FieldName::Facility, facility);
   context.setField(infoContext::FieldName::System, "QC");
   this->setContext(context);
-  *this << LogDebugDevel << "Facility set to " << facility << ENDM;
+  *this << LogDebugDevel << "Facility set to old " << facility << ENDM;
+}
+
+void QcInfoLogger::init(const std::string& facility, bool discardDebug, int discardFromLevel)
+{
+  // facility
+  infoContext context;
+  context.setField(infoContext::FieldName::Facility, facility);
+  context.setField(infoContext::FieldName::System, "QC");
+  this->setContext(context);
+  *this << LogDebugDevel << "Facility set to new " << facility << ENDM;
+
+  // discard
+  ILOG_INST.filterDiscardDebug(discardDebug);
+  ILOG_INST.filterDiscardLevel(discardFromLevel);
+  // we use cout because we might have just muted ourselves
+  std::cout << "Discard debug ? " << discardDebug << std::endl;
+  std::cout << "Discard from level " << discardFromLevel << std::endl;
 }
 
 } // namespace o2::quality_control::core
