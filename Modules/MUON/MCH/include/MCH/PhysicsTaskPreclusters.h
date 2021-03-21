@@ -13,7 +13,11 @@
 #include <TH2.h>
 #include "QualityControl/TaskInterface.h"
 #include "MCH/GlobalHistogram.h"
+#if HAVE_DIGIT_IN_DATAFORMATS
+#include "DataFormatsMCH/Digit.h"
+#else
 #include "MCHBase/Digit.h"
+#endif
 #include "MCHBase/PreCluster.h"
 
 namespace o2
