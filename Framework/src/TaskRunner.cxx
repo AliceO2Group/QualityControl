@@ -309,7 +309,7 @@ void TaskRunner::loadInfologgerConfig()
 {
   bool discardDebug = mConfigFile->get<bool>("qc.config.infologger.filterDiscardDebug", false);
   int discardLevel = mConfigFile->get<int>("qc.config.infologger.filterDiscardLevel", -1);
-  ILOG_INST.init(mTaskConfig.taskName, discardDebug, discardLevel );
+  ILOG_INST.init(mTaskConfig.taskName, discardDebug, discardLevel);
 }
 
 void TaskRunner::loadTopologyConfig()

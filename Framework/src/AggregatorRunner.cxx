@@ -197,7 +197,7 @@ void AggregatorRunner::initInfologger()
 {
   bool discardDebug = mConfigFile->get<bool>("qc.config.infologger.filterDiscardDebug", false);
   int discardLevel = mConfigFile->get<int>("qc.config.infologger.filterDiscardLevel", -1);
-  ILOG_INST.init("Check", discardDebug, discardLevel );
+  ILOG_INST.init("Check", discardDebug, discardLevel);
 }
 
 void AggregatorRunner::initAggregators()
