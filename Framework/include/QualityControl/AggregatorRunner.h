@@ -129,7 +129,6 @@ class AggregatorRunner : public framework::Task
   inline void initMonitoring();
   inline void initServiceDiscovery();
   inline void initAggregators();
-  inline void initInfologger();
 
   /**
    * Reorder the aggregators stored in mAggregators.

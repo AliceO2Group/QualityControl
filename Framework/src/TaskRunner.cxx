@@ -67,7 +67,6 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     mTaskConfig.taskName = taskName;
     mTaskConfig.parallelTaskID = id;
     mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-    loadInfologgerConfig();
     loadTopologyConfig();
   } catch (...) {
     // catch the configuration exception and print it to avoid losing it
@@ -79,6 +78,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
 
 void TaskRunner::init(InitContext& iCtx)
 {
+  ILOG_INST.init(mConfigFile->getRecursive());
   ILOG(Info, Support) << "initializing TaskRunner" << ENDM;
   ILOG(Info, Support) << "Loading configuration" << ENDM;
   try {
@@ -174,16 +174,16 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
     }
   }
 
-  //  ILOG(Debug, Trace) << "Completion policy callback. "
-  //                     << "Total inputs possible: " << inputs.size()
-  //                     << ", data inputs: " << dataInputsPresent
-  //                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
+    ILOG(Debug, Trace) << "Completion policy callback. "
+                       << "Total inputs possible: " << inputs.size()
+                       << ", data inputs: " << dataInputsPresent
+                       << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
 
   if (dataInputsPresent == dataInputsExpected) {
     action = CompletionPolicy::CompletionOp::Consume;
   }
 
-  //  ILOG(Debug, Trace) << "Action: " << action << ENDM;
+    ILOG(Debug, Trace) << "Action: " << action << ENDM;
 
   return action;
 }
@@ -303,13 +303,6 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   bool dataReady = dataInputsPresent == inputs.size() - 1;
 
   return { dataReady, timerReady };
-}
-
-void TaskRunner::loadInfologgerConfig()
-{
-  bool discardDebug = mConfigFile->get<bool>("qc.config.infologger.filterDiscardDebug", false);
-  int discardLevel = mConfigFile->get<int>("qc.config.infologger.filterDiscardLevel", -1);
-  ILOG_INST.init(mTaskConfig.taskName, discardDebug, discardLevel);
 }
 
 void TaskRunner::loadTopologyConfig()

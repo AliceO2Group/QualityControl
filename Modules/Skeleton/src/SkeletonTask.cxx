@@ -71,6 +71,16 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   // One can find additional examples at:
   // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
 
+  std::cout << "asdf" << std::endl;
+  ILOG(Info, Support) << "Info" << ENDM;    // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Support) << "Debug" << ENDM;  // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Error, Support) << "Error" << ENDM;  // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Ops) << "Ops" << ENDM;         // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "Support" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Devel) << "Devel" << ENDM;     // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Trace) << "Trace" << ENDM;     // QcInfoLogger is used. FairMQ logs will go to there as well.
+
+
   // Some examples:
 
   // 1. In a loop

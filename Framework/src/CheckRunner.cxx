@@ -176,7 +176,7 @@ CheckRunner::~CheckRunner()
 void CheckRunner::init(framework::InitContext&)
 {
   try {
-    initInfologger();
+    ILOG_INST.init(mConfigFile->getRecursive());
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -401,13 +401,6 @@ void CheckRunner::initServiceDiscovery()
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
-}
-
-void CheckRunner::initInfologger()
-{
-  bool discardDebug = mConfigFile->get<bool>("qc.config.infologger.filterDiscardDebug", false);
-  int discardLevel = mConfigFile->get<int>("qc.config.infologger.filterDiscardLevel", -1);
-  ILOG_INST.init("Check", discardDebug, discardLevel);
 }
 
 } // namespace o2::quality_control::checker

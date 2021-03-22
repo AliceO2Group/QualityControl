@@ -56,4 +56,11 @@ void QcInfoLogger::init(const std::string& facility, bool discardDebug, int disc
   std::cout << "Discard from level " << discardFromLevel << std::endl;
 }
 
+void QcInfoLogger::init(const boost::property_tree::ptree& config)
+{
+  bool discardDebug = config.get<bool>("qc.config.infologger.filterDiscardDebug", false);
+  int discardLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);
+  init("PostProcessing", discardDebug, discardLevel);
+}
+
 } // namespace o2::quality_control::core

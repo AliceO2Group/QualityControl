@@ -163,7 +163,6 @@ class CheckRunner : public framework::Task
   inline void initDatabase();
   inline void initMonitoring();
   inline void initServiceDiscovery();
-  inline void initInfologger();
 
   /**
    * Update the list of objects this TaskRunner is sending out.

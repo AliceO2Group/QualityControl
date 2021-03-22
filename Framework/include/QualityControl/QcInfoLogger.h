@@ -18,6 +18,7 @@
 
 #include <InfoLogger/InfoLogger.hxx>
 #include <InfoLogger/InfoLoggerMacros.hxx>
+#include <boost/property_tree/ptree.hpp>
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time
 typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;
@@ -50,7 +51,8 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
   }
 
   void setFacility(const std::string& facility);
-  void init(const std::string& facility, bool discardDebug = false, int discardFromLevel = -1);
+  void init(const std::string& facility, bool discardDebug = false, int discardFromLevel = 21 /* Discard Trace */);
+  void init(const boost::property_tree::ptree& config);
 
  private:
   QcInfoLogger();

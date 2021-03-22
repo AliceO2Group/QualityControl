@@ -111,7 +111,6 @@ class TaskRunner : public framework::Task
 
   std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
   void loadTaskConfig();
-  void loadInfologgerConfig();
   void loadTopologyConfig();
   void startOfActivity();
   void endOfActivity();

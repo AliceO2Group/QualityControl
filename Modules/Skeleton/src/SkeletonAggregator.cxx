@@ -30,6 +30,16 @@ std::map<std::string, Quality> SkeletonAggregator::aggregate(QualityObjectsMapTy
 {
   std::map<std::string, Quality> result;
 
+  std::cout << "asdf" << std::endl;
+  ILOG(Info, Support) << "Info" << ENDM;    // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Debug, Support) << "Debug" << ENDM;  // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Error, Support) << "Error" << ENDM;  // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Ops) << "Ops" << ENDM;         // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "Support" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Devel) << "Devel" << ENDM;     // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Trace) << "Trace" << ENDM;     // QcInfoLogger is used. FairMQ logs will go to there as well.
+
+
   ILOG(Info, Devel) << "Entered SkeletonAggregator::aggregate" << ENDM;
   ILOG(Info, Devel) << "   received a list of size : " << qoMap.size() << ENDM;
   for (const auto& item : qoMap) {
