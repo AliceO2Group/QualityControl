@@ -31,15 +31,6 @@ Quality SkeletonCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 {
   Quality result = Quality::Null;
 
-//  std::cout << "asdf" << std::endl;
-//  ILOG(Info, Support) << "Info" << ENDM;    // QcInfoLogger is used. FairMQ logs will go to there as well.
-//  ILOG(Debug, Support) << "Debug" << ENDM;  // QcInfoLogger is used. FairMQ logs will go to there as well.
-//  ILOG(Error, Support) << "Error" << ENDM;  // QcInfoLogger is used. FairMQ logs will go to there as well.
-//  ILOG(Info, Ops) << "Ops" << ENDM;         // QcInfoLogger is used. FairMQ logs will go to there as well.
-//  ILOG(Info, Support) << "Support" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-//  ILOG(Info, Devel) << "Devel" << ENDM;     // QcInfoLogger is used. FairMQ logs will go to there as well.
-//  ILOG(Info, Trace) << "Trace" << ENDM;     // QcInfoLogger is used. FairMQ logs will go to there as well.
-
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
