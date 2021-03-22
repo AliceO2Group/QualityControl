@@ -38,7 +38,7 @@ void PostProcessingRunner::setPublicationCallback(MOCPublicationCallback callbac
 
 void PostProcessingRunner::init(const boost::property_tree::ptree& config)
 {
-  ILOG_INST.init(config);
+  ILOG_INST.init("post/"+mName, config);
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   mConfig = PostProcessingConfig(mName, config);

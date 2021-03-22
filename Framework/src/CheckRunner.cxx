@@ -176,7 +176,7 @@ CheckRunner::~CheckRunner()
 void CheckRunner::init(framework::InitContext&)
 {
   try {
-    ILOG_INST.init(mConfigFile->getRecursive());
+    ILOG_INST.init("check/"+mDeviceName, mConfigFile->getRecursive());
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
