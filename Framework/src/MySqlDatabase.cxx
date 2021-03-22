@@ -92,8 +92,8 @@ void MySqlDatabase::prepareTable(std::string table_name)
   }
 }
 
-void MySqlDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
-                             std::string const& detectorName, std::string const& taskName, long from, long to)
+void MySqlDatabase::storeAny(const void* , std::type_info const& , std::string const& , std::map<std::string,
+                             std::string> const& , std::string const& , std::string const& , long , long)
 {
   // TODO
 }

@@ -64,7 +64,7 @@ class CcdbDatabase : public DatabaseInterface
 
   void* retrieveAny(std::type_info const& tinfo, std::string const& path,
                     std::map<std::string, std::string> const& metadata, long timestamp = -1,
-                    std::map<std::string, std::string>* headers = nullptr, std::string const& etag = "",
+                    std::map<std::string, std::string>* headers = nullptr,
                     const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") override;
 
   // retrieval - MO - deprecated

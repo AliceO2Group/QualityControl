@@ -74,8 +74,9 @@ class DatabaseInterface
    * @param from Start of validity. If omitted, current timestamp is used.
    * @param to End of validity. If omitted, current timestamp + 1 year is used.
    */
-  virtual void storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
-                        std::string const& detectorName, std::string const& taskName, long from = -1, long to = -1) = 0;
+  virtual void storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path,
+                        std::map<std::string, std::string> const& metadata, std::string const& detectorName,
+                        std::string const& taskName, long from = -1, long to = -1) = 0;
 
   /**
    * Retrieve an object of type tinfo at the given path for the given timestamp.
@@ -93,14 +94,13 @@ class DatabaseInterface
    * @param metadata Key-values representing the metadata to filter out objects.
    * @param timestamp Timestamp of the object to retrieve. If omitted, current timestamp is used.
    * @param optional headers Map to be populated with the headers we received, if it is not null.
-   * @param optional etag from previous call
    * @param optional createdNotAfter upper time limit for the object creation timestamp (TimeMachine mode)
    * @param optional createdNotBefore lower time limit for the object creation timestamp (TimeMachine mode)
    * @return the object, or nullptr if none were found or type does not match serialized type.
    */
   virtual void* retrieveAny(std::type_info const& tinfo, std::string const& path,
                             std::map<std::string, std::string> const& metadata, long timestamp = -1,
-                            std::map<std::string, std::string>* headers = nullptr, std::string const& etag = "",
+                            std::map<std::string, std::string>* headers = nullptr,
                             const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") = 0;
 
   /**

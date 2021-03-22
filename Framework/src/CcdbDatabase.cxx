@@ -230,9 +230,9 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
   return object;
 }
 
-void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, const map<std::string, std::string>& metadata, long timestamp, std::map<std::string, std::string>* headers, const string& etag, const string& createdNotAfter, const string& createdNotBefore)
+void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, const map<std::string, std::string>& metadata, long timestamp, std::map<std::string, std::string>* headers, const string& createdNotAfter, const string& createdNotBefore)
 {
-  auto* object = ccdbApi.retrieveFromTFile(tinfo, path, metadata, timestamp, headers, etag, createdNotAfter, createdNotBefore);
+  auto* object = ccdbApi.retrieveFromTFile(tinfo, path, metadata, timestamp, headers, "", createdNotAfter, createdNotBefore);
   if (object == nullptr) {
     ILOG(Error, Support) << "We could NOT retrieve the object " << path << "." << ENDM;
     return nullptr;
