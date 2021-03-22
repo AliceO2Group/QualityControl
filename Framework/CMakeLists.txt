@@ -73,10 +73,6 @@ add_library(O2QualityControl
   src/AdvancedWorkflow.cxx
   src/Calculators.cxx)
 
-if(ENABLE_MYSQL)
-  target_sources(O2QualityControl PRIVATE src/MySqlDatabase.cxx)
-endif()
-
 target_include_directories(
   O2QualityControl
   PUBLIC $<INSTALL_INTERFACE:include>
@@ -104,16 +100,12 @@ target_link_libraries(O2QualityControl
                              O2::Mergers
                              O2::DataSampling
                       PRIVATE Boost::system
-                              $<$<BOOL:${ENABLE_MYSQL}>:MySQL::MySQL>
-                              $<$<BOOL:${ENABLE_MYSQL}>:ROOT::RMySQL> ROOT::Gui
+                              ROOT::Gui
                               CURL::libcurl)
 
 if (TARGET AliceO2::DebugGUI)
   target_link_libraries(O2QualityControl PUBLIC AliceO2::DebugGUI)
 endif()
-
-target_compile_definitions(O2QualityControl PRIVATE
-                           $<$<BOOL:${ENABLE_MYSQL}>:_WITH_MYSQL>)
 
 add_root_dictionary(O2QualityControl
   HEADERS
@@ -410,7 +402,7 @@ install(FILES example-default.json
 
 install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/skip.py
                  script/RepoCleaner/repoCleaner.py script/RepoCleaner/1_per_run.py script/RepoCleaner/none_kept.py
-                 script/o2-qc-database-setup.sh script/o2-qc-functional-test.sh
+  script/o2-qc-functional-test.sh
         DESTINATION bin)
 
 # ---- Copy test files ----
