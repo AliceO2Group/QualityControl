@@ -92,6 +92,11 @@ void MySqlDatabase::prepareTable(std::string table_name)
   }
 }
 
+void MySqlDatabase::storeAny(const void*, std::type_info const&, std::string const&, std::map<std::string, std::string> const&, std::string const&, std::string const&, long, long)
+{
+  // TODO
+}
+
 void MySqlDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long, long)
 {
   // TODO we take ownership here to delete later -> clearly to be improved
@@ -468,4 +473,8 @@ std::string MySqlDatabase::retrieveJson(std::string, long, const std::map<std::s
   return std::string(); // TODO
 }
 
+void* MySqlDatabase::retrieveAny(const type_info&, const string&, const map<std::string, std::string>&, long, std::map<std::string, std::string>*, const string&, const string&)
+{
+  return nullptr; // TODO
+}
 } // namespace o2::quality_control::repository

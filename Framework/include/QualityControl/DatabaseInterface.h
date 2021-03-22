@@ -60,6 +60,50 @@ class DatabaseInterface
   virtual void connect(const std::unordered_map<std::string, std::string>& config) = 0;
 
   /**
+   * Store an object of type `typeInfo` (which needs to have a ROOT dictionary).
+   * Example usage: `storeAny(reinterpret_cast<const void*>(obj), typeid(T), path, metadata, "TST", "taskname", from, to);`
+   *
+   * Note that we cannot have a more elegant templated signature due to the fact that it is a virtual method.
+   *
+   * @param obj Raw pointer to the object to store.
+   * @param typeInfo The type of the object.
+   * @param path The path where the object is going to be stored.
+   * @param metadata Key-values representing the metadata for this object.
+   * @param detectorName The name of the detector (will appear in the metadata, not used in the path)
+   * @param taskName The name of the task (will appear in the metadata, not used in the path)
+   * @param from Start of validity. If omitted, current timestamp is used.
+   * @param to End of validity. If omitted, current timestamp + 1 year is used.
+   */
+  virtual void storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path,
+                        std::map<std::string, std::string> const& metadata, std::string const& detectorName,
+                        std::string const& taskName, long from = -1, long to = -1) = 0;
+
+  /**
+   * Retrieve an object of type tinfo at the given path for the given timestamp.
+   * Example usage:
+   * ```
+   *   std::map<std::string, std::string> meta;
+   *   void* rawResult = f.backend->retrieveAny(typeid(TH1F), "/qc/TST/asdf", meta);
+   *   auto h1_back = static_cast<TH1F*>(rawResult);
+   * ```
+   *
+   * Note that we cannot have a more elegant templated signature due to the fact that it is a virtual method.
+   *
+   * @param typeInfo The type of the object.
+   * @param path The path where the object is to be found.
+   * @param metadata Key-values representing the metadata to filter out objects.
+   * @param timestamp Timestamp of the object to retrieve. If omitted, current timestamp is used.
+   * @param optional headers Map to be populated with the headers we received, if it is not null.
+   * @param optional createdNotAfter upper time limit for the object creation timestamp (TimeMachine mode)
+   * @param optional createdNotBefore lower time limit for the object creation timestamp (TimeMachine mode)
+   * @return the object, or nullptr if none were found or type does not match serialized type.
+   */
+  virtual void* retrieveAny(std::type_info const& tinfo, std::string const& path,
+                            std::map<std::string, std::string> const& metadata, long timestamp = -1,
+                            std::map<std::string, std::string>* headers = nullptr,
+                            const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") = 0;
+
+  /**
    * Stores the serialized MonitorObject in the database.
    * @param mo The MonitorObject to serialize and store.
    * @param from The timestamp indicating the start of object's validity (ms since epoch).

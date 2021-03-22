@@ -39,6 +39,8 @@ class MySqlDatabase : public DatabaseInterface
 
   void connect(std::string host, std::string database, std::string username, std::string password) override;
   void connect(const std::unordered_map<std::string, std::string>& config) override;
+  void storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
+                std::string const& detectorName, std::string const& taskName, long from = -1, long to = -1) override;
   // MonitorObject
   void storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo, long from, long to) override;
   std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) override;
@@ -48,6 +50,10 @@ class MySqlDatabase : public DatabaseInterface
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1) override;
   std::string retrieveQOJson(std::string qoPath, long timestamp = -1) override;
   // General
+  void* retrieveAny(std::type_info const& tinfo, std::string const& path,
+                    std::map<std::string, std::string> const& metadata, long timestamp = -1,
+                    std::map<std::string, std::string>* headers = nullptr,
+                    const std::string& createdNotAfter = "", const std::string& createdNotBefore = "") override;
   std::string retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata) override;
   TObject* retrieveTObject(std::string path, const std::map<std::string, std::string>& metadata, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) override;
 
