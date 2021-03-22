@@ -1,5 +1,6 @@
 set(MODULE_NAME "O2QcMuonChambers")
 
+
 # ---- Files ----
 
 set(SRCS
@@ -36,6 +37,18 @@ target_link_libraries(${MODULE_NAME} PUBLIC O2QualityControl O2::CommonDataForma
         $<TARGET_NAME_IF_EXISTS:O2::MCHMappingFactory> O2::MCHMappingImpl4 O2::MCHMappingSegContour O2::MCHBase O2::DataFormatsMCH O2::MCHRawDecoder O2::MCHCalibration O2::MCHPreClustering)
 
 target_compile_definitions(${MODULE_NAME} PRIVATE $<$<TARGET_EXISTS:O2::MCHMappingFactory>:MCH_HAS_MAPPING_FACTORY>)
+
+# Digit.h is moving from MCHBase to DataFormatsMCH : let's handle both
+# gracefully for the moment...
+get_target_property(O2_INCLUDE_DIRS O2::CommonDataFormat INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(ROOT_INCLUDE_DIRS ROOT::Core INTERFACE_INCLUDE_DIRECTORIES)
+
+set(CMAKE_REQUIRED_INCLUDES ${O2_INCLUDE_DIRS} ${ROOT_INCLUDE_DIRS})
+check_include_file_cxx("DataFormatsMCH/Digit.h" HAVE_DIGIT_IN_DATAFORMATS)
+
+if(HAVE_DIGIT_IN_DATAFORMATS)
+    target_compile_definitions(${MODULE_NAME} PRIVATE HAVE_DIGIT_IN_DATAFORMATS)
+endif()
 
 install(
         TARGETS ${MODULE_NAME}
