@@ -473,7 +473,7 @@ std::string MySqlDatabase::retrieveJson(std::string, long, const std::map<std::s
   return std::string(); // TODO
 }
 
-void* MySqlDatabase::retrieveAny(const type_info&, const string&, const map<std::string, std::string>&, long, std::map<std::string, std::string>*, const string&, const string&, const string&)
+void* MySqlDatabase::retrieveAny(const type_info&, const string&, const map<std::string, std::string>&, long, std::map<std::string, std::string>*, const string&, const string&)
 {
   return nullptr; // TODO
 }
