@@ -46,10 +46,15 @@ void BasicReadoutHeaderQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
+  // Defining histograms
+  //==============================================
   mMFT_LaneStatus_H = std::make_unique<TH1F>("mMFT_LaneStatus_H", "mMFT_LaneStatus_H", 5, -0.5, 4.5);
   getObjectsManager()->startPublishing(mMFT_LaneStatus_H.get());
-  getObjectsManager()->addMetadata(mMFT_LaneStatus_H->GetName(), "custom", "34");
-
+  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(0, "Missing data");
+  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(1, "Warning");
+  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(2, "Error");
+  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(3, "Fault");
+  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(4, "#Entries");
 }
 
 void BasicReadoutHeaderQcTask::startOfActivity(Activity& /*activity*/)
@@ -74,14 +79,18 @@ void BasicReadoutHeaderQcTask::monitorData(o2::framework::ProcessingContext& ctx
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
     // get detector field
     uint64_t SummaryLaneStatus = rdh->detectorField;
-    // fill histogram bin counting all cases
+    // fill histogram bin with #entries
     mMFT_LaneStatus_H->Fill(4);
     // fill status if set
-    if (SummaryLaneStatus & (1<<0)) mMFT_LaneStatus_H->Fill(0); // missing data
-    if (SummaryLaneStatus & (1<<1)) mMFT_LaneStatus_H->Fill(1); // warning
-    if (SummaryLaneStatus & (1<<2)) mMFT_LaneStatus_H->Fill(2); // error
-    if (SummaryLaneStatus & (1<<3)) mMFT_LaneStatus_H->Fill(3); // fault        
-  } // end loop over input
+    if (SummaryLaneStatus & (1 << 0))
+      mMFT_LaneStatus_H->Fill(0); // missing data
+    if (SummaryLaneStatus & (1 << 1))
+      mMFT_LaneStatus_H->Fill(1); // warning
+    if (SummaryLaneStatus & (1 << 2))
+      mMFT_LaneStatus_H->Fill(2); // error
+    if (SummaryLaneStatus & (1 << 3))
+      mMFT_LaneStatus_H->Fill(3); // fault
+  }                               // end loop over input
 }
 
 void BasicReadoutHeaderQcTask::endOfCycle()

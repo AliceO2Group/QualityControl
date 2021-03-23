@@ -38,16 +38,18 @@ Quality BasicReadoutHeaderQcCheck::check(std::map<std::string, std::shared_ptr<M
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
+
     if (mo->getName() == "mMFT_LaneStatus_H") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
       // test it: if entries in bins 1 to 4
-      int not_ok_status = h->GetBinContent(1) + h->GetBinContent(2)
-	+ h->GetBinContent(3) + h->GetBinContent(4);
-      if (not_ok_status) result = Quality::Bad;
-      else  result = Quality::Good;
+      int not_ok_status = h->GetBinContent(1) + h->GetBinContent(2) + h->GetBinContent(3) + h->GetBinContent(4);
+      if (not_ok_status)
+        result = Quality::Bad;
+      else
+        result = Quality::Good;
     } // end of getting histogram by name
-  } // end of loop over MO
+  }   // end of loop over MO
   return result;
 }
 
