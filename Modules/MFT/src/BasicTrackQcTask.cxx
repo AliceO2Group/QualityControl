@@ -46,7 +46,6 @@ void BasicTrackQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mMFT_number_of_clusters_per_track_H = std::make_unique<TH1F>("mMFT_number_of_clusters_per_track_H", "mMFT_number_of_clusters_per_track_H", 10, -0.5, 9.5);
   getObjectsManager()->startPublishing(mMFT_number_of_clusters_per_track_H.get());
-  getObjectsManager()->addMetadata(mMFT_number_of_clusters_per_track_H->GetName(), "custom", "34");
 
   mMFT_number_of_clusters_per_CA_track_H = std::make_unique<TH1F>("mMFT_number_of_clusters_per_CA_track_H", "mMFT_number_of_clusters_per_CA_track_H", 10, -0.5, 9.5);
   getObjectsManager()->startPublishing(mMFT_number_of_clusters_per_CA_track_H.get());
