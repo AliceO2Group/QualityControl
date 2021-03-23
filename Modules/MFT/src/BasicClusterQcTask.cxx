@@ -46,11 +46,9 @@ void BasicClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mMFT_ClusterSensorID_H = std::make_unique<TH1F>("mMFT_ClusterSensorID_H", "mMFT_ClusterSensorID_H", 936, -0.5, 935.5);
   getObjectsManager()->startPublishing(mMFT_ClusterSensorID_H.get());
-  getObjectsManager()->addMetadata(mMFT_ClusterSensorID_H->GetName(), "custom", "34");
 
   mMFT_ClusterPatternID_H = std::make_unique<TH1F>("mMFT_ClusterPatternID_H", "mMFT_ClusterPatternID_H", 2048, -0.5, 2047.5);
   getObjectsManager()->startPublishing(mMFT_ClusterPatternID_H.get());
-  getObjectsManager()->addMetadata(mMFT_ClusterPatternID_H->GetName(), "custom", "34");
 }
 
 void BasicClusterQcTask::startOfActivity(Activity& /*activity*/)
