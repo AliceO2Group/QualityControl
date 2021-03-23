@@ -50,11 +50,11 @@ void BasicReadoutHeaderQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   //==============================================
   mMFT_LaneStatus_H = std::make_unique<TH1F>("mMFT_LaneStatus_H", "mMFT_LaneStatus_H", 5, -0.5, 4.5);
   getObjectsManager()->startPublishing(mMFT_LaneStatus_H.get());
-  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(0, "Missing data");
-  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(1, "Warning");
-  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(2, "Error");
-  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(3, "Fault");
-  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(4, "#Entries");
+  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(1, "Missing data");
+  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(2, "Warning");
+  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(3, "Error");
+  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(4, "Fault");
+  mMFT_LaneStatus_H->GetXaxis()->SetBinLabel(5, "#Entries");
 }
 
 void BasicReadoutHeaderQcTask::startOfActivity(Activity& /*activity*/)

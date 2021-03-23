@@ -44,15 +44,15 @@
     "checks": {
       "BasicReadoutHeaderQcCheck": {
         "active": "true",
-        "dataSource": [{
-          "type": "Task",
-          "name": "BasicReadoutHeaderQcCheck",
-          "MOs": ["mMFT_LaneStatus_H"]
-        }],
         "className": "o2::quality_control_modules::mft::BasicReadoutHeaderQcCheck",
         "moduleName": "QcMFT",
         "detectorName": "MFT",
-        "policy": "OnAny"
+        "policy": "OnAny",
+        "dataSource": [{
+          "type": "Task",
+          "name": "BasicReadoutHeaderQcTask",
+          "MOs": ["mMFT_LaneStatus_H"]
+        }]
       }
     }    
   },
