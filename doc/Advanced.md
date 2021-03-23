@@ -685,7 +685,7 @@ This is how a typical "config" structure looks like. Each configuration element 
         "url": "ccdb-test.cern.ch:8080",  "": "URL of a CCDB"
       },
       "infologger": {                     "": "Configuration of the Infologger (optional).",
-        "filterDiscardDebug": "0",        "": "Set to 1 to discard debug and trace messages (default: 0)",
+        "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
         "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: 21 - Trace)" 
       }
     }

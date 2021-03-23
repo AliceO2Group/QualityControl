@@ -18,7 +18,7 @@
 
 #include <InfoLogger/InfoLogger.hxx>
 #include <InfoLogger/InfoLoggerMacros.hxx>
-#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ptree_fwd.hpp>
 
 typedef AliceO2::InfoLogger::InfoLogger infologger; // not to have to type the full stuff each time
 typedef AliceO2::InfoLogger::InfoLoggerContext infoContext;

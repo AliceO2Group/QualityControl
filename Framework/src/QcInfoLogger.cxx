@@ -15,6 +15,7 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include <InfoLogger/InfoLoggerFMQ.hxx>
+#include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control::core
 {
@@ -57,7 +58,8 @@ void QcInfoLogger::init(const std::string& facility, bool discardDebug, int disc
 
 void QcInfoLogger::init(const std::string& facility, const boost::property_tree::ptree& config)
 {
-  bool discardDebug = config.get<bool>("qc.config.infologger.filterDiscardDebug", false);
+  std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "false");
+  bool discardDebug = discardDebugStr == "true" ? 1 : 0;
   int discardLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);
   init(facility, discardDebug, discardLevel);
 }
