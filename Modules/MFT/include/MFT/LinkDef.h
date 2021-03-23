@@ -9,4 +9,6 @@
 #pragma link C++ class o2::quality_control_modules::mft::BasicClusterQcCheck + ;
 #pragma link C++ class o2::quality_control_modules::mft::BasicTrackQcTask + ;
 #pragma link C++ class o2::quality_control_modules::mft::BasicTrackQcCheck + ;
+#pragma link C++ class o2::quality_control_modules::mft::BasicReadoutHeaderQcCheck + ;
+#pragma link C++ class o2::quality_control_modules::mft::BasicReadoutHeaderQcTask + ;
 #endif
