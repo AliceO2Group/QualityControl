@@ -90,6 +90,7 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 void AggregatorRunner::init(framework::InitContext&)
 {
   try {
+    ILOG_INST.init("aggregator", mConfigFile->getRecursive());
     initDatabase();
     initMonitoring();
     initServiceDiscovery();

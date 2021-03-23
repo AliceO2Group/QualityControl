@@ -29,7 +29,6 @@ constexpr long objectValidity = 1000l * 60 * 60 * 24 * 365 * 10;
 PostProcessingRunner::PostProcessingRunner(std::string name) //
   : mName(name)
 {
-  ILOG_INST.setFacility("PostProcessing");
 }
 
 void PostProcessingRunner::setPublicationCallback(MOCPublicationCallback callback)
@@ -39,6 +38,7 @@ void PostProcessingRunner::setPublicationCallback(MOCPublicationCallback callbac
 
 void PostProcessingRunner::init(const boost::property_tree::ptree& config)
 {
+  ILOG_INST.init("post/" + mName, config);
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   mConfig = PostProcessingConfig(mName, config);

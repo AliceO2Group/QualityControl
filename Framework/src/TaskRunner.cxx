@@ -62,8 +62,6 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     mRunNumber(0),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
-  ILOG_INST.setFacility("Task");
-
   // setup configuration
   try {
     mTaskConfig.taskName = taskName;
@@ -80,6 +78,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
 
 void TaskRunner::init(InitContext& iCtx)
 {
+  ILOG_INST.init("task/" + mTaskConfig.taskName, mConfigFile->getRecursive());
   ILOG(Info, Support) << "initializing TaskRunner" << ENDM;
   ILOG(Info, Support) << "Loading configuration" << ENDM;
   try {
@@ -97,7 +96,7 @@ void TaskRunner::init(InitContext& iCtx)
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
 
   // setup monitoring
-  std::string monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
+  auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
   mCollector = MonitoringFactory::Get(monitoringUrl);
   mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
@@ -175,16 +174,16 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
     }
   }
 
-  //  ILOG(Debug, Trace) << "Completion policy callback. "
-  //                     << "Total inputs possible: " << inputs.size()
-  //                     << ", data inputs: " << dataInputsPresent
-  //                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
+  ILOG(Debug, Trace) << "Completion policy callback. "
+                     << "Total inputs possible: " << inputs.size()
+                     << ", data inputs: " << dataInputsPresent
+                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
 
   if (dataInputsPresent == dataInputsExpected) {
     action = CompletionPolicy::CompletionOp::Consume;
   }
 
-  //  ILOG(Debug, Trace) << "Action: " << action << ENDM;
+  ILOG(Debug, Trace) << "Action: " << action << ENDM;
 
   return action;
 }
