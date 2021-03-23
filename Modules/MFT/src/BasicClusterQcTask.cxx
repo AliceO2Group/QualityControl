@@ -73,8 +73,8 @@ void BasicClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     return;
   // fill the histograms
   for (auto& one_cluster : clusters) {
-    mMFT_ClusterSensorID_H->Fill(one_cluster.getSensorID());
-    mMFT_ClusterPatternID_H->Fill(one_cluster.getPatternID());
+    mMFT_ClusterSensorID_H->Fill(one_cluster.getSensorID() + 1);
+    mMFT_ClusterPatternID_H->Fill(one_cluster.getPatternID() + 1);
   }
 }
 
