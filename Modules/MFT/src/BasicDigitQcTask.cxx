@@ -97,8 +97,8 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
     auto pxlhitmap = std::make_unique<TH2F>(
       FolderName, HistogramName,
-      gPixelHitMapsMaxBinX / gPixelHitMapsBinWidth, gPixelHitMapsMinBin-gPixelHitMapsShift, gPixelHitMapsMaxBinX-gPixelHitMapsShift,
-      gPixelHitMapsMaxBinY / gPixelHitMapsBinWidth, gPixelHitMapsMinBin-gPixelHitMapsShift, gPixelHitMapsMaxBinY-gPixelHitMapsShift);
+      gPixelHitMapsMaxBinX / gPixelHitMapsBinWidth, gPixelHitMapsMinBin - gPixelHitMapsShift, gPixelHitMapsMaxBinX - gPixelHitMapsShift,
+      gPixelHitMapsMaxBinY / gPixelHitMapsBinWidth, gPixelHitMapsMinBin - gPixelHitMapsShift, gPixelHitMapsMaxBinY - gPixelHitMapsShift);
     pxlhitmap->SetStats(0);
     mMFTPixelHitMap.push_back(std::move(pxlhitmap));
     if (TaskLevel == 2 || TaskLevel == 4)
@@ -145,8 +145,8 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     // fill pixel hit maps
     mMFTPixelHitMap[vectorIndex]->Fill(one_digit.getColumn(), one_digit.getRow());
     // fill overview histograms
-    mMFT_chip_index_H->SetBinContent(chipIndex+1, mMFTPixelHitMap[vectorIndex]->GetEntries());
-    mMFT_chip_std_dev_H->SetBinContent(chipIndex+1, mMFTPixelHitMap[vectorIndex]->GetStdDev(1));
+    mMFT_chip_index_H->SetBinContent(chipIndex + 1, mMFTPixelHitMap[vectorIndex]->GetEntries());
+    mMFT_chip_std_dev_H->SetBinContent(chipIndex + 1, mMFTPixelHitMap[vectorIndex]->GetStdDev(1));
     // }
   }
 
