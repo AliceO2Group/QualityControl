@@ -57,56 +57,83 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
     }
+
+    // get the tree
+    mTree = (TTree*) mFile->Get("o2sim");
+    mTree->SetBranchAddress("MFTDigit", &pdigits);
+    mTree->SetBranchAddress("MFTDigitROF", &profs);
+
+    // check that it has entries
+    nTFs = mTree->GetEntries();
+    if (nTFs == 0) {
+      LOG(ERROR) << "DigitsRootFileReaderMFT::init. No TFs ";
+      ic.services().get<ControlService>().endOfStream();
+      ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
+      return;
+    }
+    LOG(INFO) << " oooooooooooo In DigitsRootFileReaderMFT::init ... nTFs = " << nTFs;
+    
   }
 
   //_________________________________________________________________________________________________
 
   void run(framework::ProcessingContext& pc)
-  {
-    // get vector of ROF
-    std::unique_ptr<TTree> tree((TTree*)mFile->Get("o2sim"));
-    std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;
-    tree->SetBranchAddress("MFTDigitROF", &profs);
-    tree->GetEntry(0);
-
-    // Check if there is a new ROF
-    auto nROFs = rofs.size();
-    if (currentROF >= nROFs) {
-      // if (currentROF >= 50) {
+  {    
+    // Check if this is the last TF
+    if (currentTF == nTFs) {
       LOG(INFO) << " DigitsRootFileReaderMFT::run. End of file reached";
       pc.services().get<ControlService>().endOfStream();
       pc.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
     }
+
+    // check if we need to read a new TF
+    if (currentROF == nROFs) {
+      mTree->GetEntry(currentTF); // get new TF
+      currentTF++;
+      nROFs = rofs.size(); // get number of ROFs in this TF
+      currentROF = 0;
+      LOG(INFO) << " oooooooooooo Reading TF " << currentTF << " from " << nTFs
+    << " with " << nROFs << " ROFs";      
+    }
+
     // prepare the rof output
     std::vector<o2::itsmft::ROFRecord>* oneROFvec = new std::vector<o2::itsmft::ROFRecord>();
     std::copy(rofs.begin() + currentROF, rofs.begin() + currentROF + 1, std::back_inserter(*oneROFvec));
-    // get the current ROF
-    auto& rof = rofs[currentROF];
-    currentROF++;
-
+    
     // get the digits in current ROF
-    // --> get digit branch
-    std::vector<o2::itsmft::Digit> digits, *pdigits = &digits;
-    tree->SetBranchAddress("MFTDigit", &pdigits);
-    tree->GetEntry(0);
+    // --> get the current ROF
+    auto& rof = rofs[currentROF];
     // --> find the ranges
     int index = rof.getFirstEntry();      // first digit position
     int nDigitsInROF = rof.getNEntries(); // number of digits
     int lastIndex = index + nDigitsInROF;
+    
     // --> fill in the corresponding digits
-    std::vector<o2::itsmft::Digit>* DigitsInROF = new std::vector<o2::itsmft::Digit>();
+    std::vector<o2::itsmft::DigitHW>* DigitsInROF = new std::vector<o2::itsmft::DigitHW>();
     std::copy(digits.begin() + index, digits.begin() + lastIndex, std::back_inserter(*DigitsInROF));
 
     // fill in the message
     // LOG(INFO) << " DigitsRootFileReaderMFT::run. In this ROF there are  " << DigitsInROF.size() << " digits";
     pc.outputs().snapshot(Output{ "MFT", "DIGITS", 0, Lifetime::Timeframe }, *DigitsInROF);
     pc.outputs().snapshot(Output{ "MFT", "MFTDigitROF", 0, Lifetime::Timeframe }, *oneROFvec);
+
+    // update the ROF counter
+    currentROF++;
+    // usleep(100);
+
   }
 
  private:
-  std::unique_ptr<TFile> mFile = nullptr;
-  unsigned long currentROF = 0;
+  std::unique_ptr<TFile> mFile = nullptr; // file to be read
+  TTree *mTree = nullptr; // tree inside the file 
+  std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs; // pointer to ROF branch
+  std::vector<o2::itsmft::DigitHW> digits, *pdigits = &digits; // pointer to digit branch
+
+  unsigned long nTFs = 0; // number of TF
+  unsigned long nROFs = 0; // number of ROFs in current TF
+  unsigned long currentROF = 0; // idx of current ROF
+  unsigned long currentTF = 0; // idx of current TF
 
 }; // end class definition
 
