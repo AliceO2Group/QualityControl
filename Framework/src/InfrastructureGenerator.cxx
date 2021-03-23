@@ -232,7 +232,7 @@ void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::Com
 void InfrastructureGenerator::printVersion()
 {
   // Log the version number
-  QcInfoLogger::GetInstance() << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << infologger::endm;
+  ILOG(Info, Support) << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << ENDM;
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyLocalProxy(framework::WorkflowSpec& workflow,
@@ -387,7 +387,7 @@ vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::Work
   if (config->getRecursive("qc").count("checks")) {
     // For every check definition, create a Check
     for (const auto& [checkName, checkConfig] : config->getRecursive("qc.checks")) {
-      QcInfoLogger::GetInstance() << ">> Check name : " << checkName << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Debug, Devel) << ">> Check name : " << checkName << ENDM;
       if (checkConfig.get<bool>("active", true)) {
         auto check = Check(checkName, configurationSource);
         InputNames inputNames;
@@ -466,7 +466,7 @@ void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, std::st
   // TODO consider whether we should recompute checkRunnerOutputs instead of receiving it all baked.
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
   if (config->getRecursive("qc").count("aggregators") == 0) {
-    ILOG(Warning, Devel) << "No \"aggregators\" structure found in the config file. If no postprocessing is expected, then it is completely fine." << ENDM;
+    ILOG(Debug, Devel) << "No \"aggregators\" structure found in the config file. If no quality aggregation is expected, then it is completely fine." << ENDM;
     return;
   }
   DataProcessorSpec spec = AggregatorRunnerFactory::create(checkRunnerOutputs, configurationSource);
@@ -477,7 +477,7 @@ void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, std
 {
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
   if (config->getRecursive("qc").count("postprocessing") == 0) {
-    ILOG(Warning, Devel) << "No \"postprocessing\" structure found in the config file. If no postprocessing is expected, then it is completely fine." << ENDM;
+    ILOG(Debug, Devel) << "No \"postprocessing\" structure found in the config file. If no postprocessing is expected, then it is completely fine." << ENDM;
     return;
   }
   for (const auto& [ppTaskName, ppTaskConfig] : config->getRecursive("qc.postprocessing")) {
