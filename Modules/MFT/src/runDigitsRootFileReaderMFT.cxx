@@ -59,7 +59,7 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
     }
 
     // get the tree
-    mTree = (TTree*) mFile->Get("o2sim");
+    mTree = (TTree*)mFile->Get("o2sim");
     mTree->SetBranchAddress("MFTDigit", &pdigits);
     mTree->SetBranchAddress("MFTDigitROF", &profs);
 
@@ -72,13 +72,12 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
       return;
     }
     LOG(INFO) << " oooooooooooo In DigitsRootFileReaderMFT::init ... nTFs = " << nTFs;
-    
   }
 
   //_________________________________________________________________________________________________
 
   void run(framework::ProcessingContext& pc)
-  {    
+  {
     // Check if this is the last TF
     if (currentTF == nTFs) {
       LOG(INFO) << " DigitsRootFileReaderMFT::run. End of file reached";
@@ -94,13 +93,13 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
       nROFs = rofs.size(); // get number of ROFs in this TF
       currentROF = 0;
       LOG(INFO) << " oooooooooooo Reading TF " << currentTF << " from " << nTFs
-    << " with " << nROFs << " ROFs";      
+                << " with " << nROFs << " ROFs";
     }
 
     // prepare the rof output
     std::vector<o2::itsmft::ROFRecord>* oneROFvec = new std::vector<o2::itsmft::ROFRecord>();
     std::copy(rofs.begin() + currentROF, rofs.begin() + currentROF + 1, std::back_inserter(*oneROFvec));
-    
+
     // get the digits in current ROF
     // --> get the current ROF
     auto& rof = rofs[currentROF];
@@ -108,7 +107,7 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
     int index = rof.getFirstEntry();      // first digit position
     int nDigitsInROF = rof.getNEntries(); // number of digits
     int lastIndex = index + nDigitsInROF;
-    
+
     // --> fill in the corresponding digits
     std::vector<o2::itsmft::DigitHW>* DigitsInROF = new std::vector<o2::itsmft::DigitHW>();
     std::copy(digits.begin() + index, digits.begin() + lastIndex, std::back_inserter(*DigitsInROF));
@@ -121,19 +120,18 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
     // update the ROF counter
     currentROF++;
     // usleep(100);
-
   }
 
  private:
-  std::unique_ptr<TFile> mFile = nullptr; // file to be read
-  TTree *mTree = nullptr; // tree inside the file 
-  std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs; // pointer to ROF branch
+  std::unique_ptr<TFile> mFile = nullptr;                      // file to be read
+  TTree* mTree = nullptr;                                      // tree inside the file
+  std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;     // pointer to ROF branch
   std::vector<o2::itsmft::DigitHW> digits, *pdigits = &digits; // pointer to digit branch
 
-  unsigned long nTFs = 0; // number of TF
-  unsigned long nROFs = 0; // number of ROFs in current TF
+  unsigned long nTFs = 0;       // number of TF
+  unsigned long nROFs = 0;      // number of ROFs in current TF
   unsigned long currentROF = 0; // idx of current ROF
-  unsigned long currentTF = 0; // idx of current TF
+  unsigned long currentTF = 0;  // idx of current TF
 
 }; // end class definition
 
