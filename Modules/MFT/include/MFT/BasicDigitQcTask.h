@@ -54,9 +54,10 @@ class BasicDigitQcTask final : public TaskInterface
 
  private:
   //  variables
-  const double gPixelHitMapsMaxBinX = 1023.5;
-  const double gPixelHitMapsMaxBinY = 511.5;
-  const double gPixelHitMapsMinBin = -0.5;
+  const double gPixelHitMapsMaxBinX = 1024;
+  const double gPixelHitMapsMaxBinY = 512;
+  const double gPixelHitMapsMinBin = 0;
+  const double gPixelHitMapsShift = 0.5;
   const int gPixelHitMapsBinWidth = 1;
 
   const int nHitMaps = 20;
