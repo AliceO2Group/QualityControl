@@ -44,13 +44,13 @@ void BasicTrackQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
-  mMFT_number_of_clusters_per_track_H = std::make_unique<TH1F>("mMFT_number_of_clusters_per_track_H", "mMFT_number_of_clusters_per_track_H", 10, -0.5, 9.5);
+  mMFT_number_of_clusters_per_track_H = std::make_unique<TH1F>("mMFT_number_of_clusters_per_track_H", "mMFT_number_of_clusters_per_track_H", 10, 0.5, 10.5);
   getObjectsManager()->startPublishing(mMFT_number_of_clusters_per_track_H.get());
 
-  mMFT_number_of_clusters_per_CA_track_H = std::make_unique<TH1F>("mMFT_number_of_clusters_per_CA_track_H", "mMFT_number_of_clusters_per_CA_track_H", 10, -0.5, 9.5);
+  mMFT_number_of_clusters_per_CA_track_H = std::make_unique<TH1F>("mMFT_number_of_clusters_per_CA_track_H", "mMFT_number_of_clusters_per_CA_track_H", 10, 0.5, 10.5);
   getObjectsManager()->startPublishing(mMFT_number_of_clusters_per_CA_track_H.get());
 
-  mMFT_number_of_clusters_per_LTF_track_H = std::make_unique<TH1F>("mMFT_number_of_clusters_per_LTF_track_H", "mMFT_number_of_clusters_per_LTF_track_H", 10, -0.5, 9.5);
+  mMFT_number_of_clusters_per_LTF_track_H = std::make_unique<TH1F>("mMFT_number_of_clusters_per_LTF_track_H", "mMFT_number_of_clusters_per_LTF_track_H", 10, 0.5, 10.5);
   getObjectsManager()->startPublishing(mMFT_number_of_clusters_per_LTF_track_H.get());
 
   mMFT_track_inv_qpt_H = std::make_unique<TH1F>("mMFT_track_inv_qpt_H", "mMFT_track_inv_qpt_H", 100, -5, 5);
