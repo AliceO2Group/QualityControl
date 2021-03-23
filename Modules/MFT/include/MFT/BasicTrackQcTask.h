@@ -12,7 +12,7 @@
 /// \file   BasicTrackQcTask.h
 /// \author Tomas Herman
 /// \author Guillermo Contreras
-///
+/// \author Diana Maria Krupova
 
 #ifndef QC_MODULE_MFT_MFTBasicTrackQcTask_H
 #define QC_MODULE_MFT_MFTBasicTrackQcTask_H
@@ -51,11 +51,17 @@ class BasicTrackQcTask /*final*/ : public TaskInterface // todo add back the "fi
 
  private:
   std::unique_ptr<TH1F> mMFT_number_of_clusters_per_track_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_number_of_clusters_per_CA_track_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_number_of_clusters_per_LTF_track_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_track_inv_qpt_H = nullptr;
   std::unique_ptr<TH1F> mMFT_track_chi2_H = nullptr;
   std::unique_ptr<TH1F> mMFT_charge_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_phi_H = nullptr;
   std::unique_ptr<TH1F> mMFT_pos_phi_H = nullptr;
   std::unique_ptr<TH1F> mMFT_neg_phi_H = nullptr;
-  std::unique_ptr<TH1F> mMFT_eta_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_eta_track_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_eta_CA_track_H = nullptr;
+  std::unique_ptr<TH1F> mMFT_eta_LTF_track_H = nullptr;
   std::unique_ptr<TH1F> mMFT_tang_lambda_H = nullptr;
 };
 
