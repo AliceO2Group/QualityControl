@@ -8,7 +8,9 @@ target_sources(O2QcMFT PRIVATE
                src/BasicClusterQcCheck.cxx
                src/BasicClusterQcTask.cxx
                src/BasicTrackQcCheck.cxx
-               src/BasicTrackQcTask.cxx)
+               src/BasicTrackQcTask.cxx
+               src/BasicReadoutHeaderQcCheck.cxx
+               src/BasicReadoutHeaderQcTask.cxx)
 
 target_include_directories(
   O2QcMFT
@@ -31,6 +33,8 @@ add_root_dictionary(O2QcMFT
                     include/MFT/BasicClusterQcTask.h
                     include/MFT/BasicTrackQcCheck.h
                     include/MFT/BasicTrackQcTask.h 
+                    include/MFT/BasicReadoutHeaderQcCheck.h
+                    include/MFT/BasicReadoutHeaderQcTask.h
                     LINKDEF include/MFT/LinkDef.h
                     BASENAME O2QcMFT)
                     
@@ -110,4 +114,5 @@ install(FILES mft-digit-qc-task-FLP-0-TaskLevel-0.json
               mft-digit-qc-task-FLP-4-TaskLevel-4.json
               basic-cluster-qc-task.json
               basic-track-qc-task.json
+              mft-basic-readout-header-qc-task.json
         DESTINATION etc)
