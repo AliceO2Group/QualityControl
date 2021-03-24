@@ -133,6 +133,7 @@ class TaskRunner : public framework::Task
   std::string validateDetectorName(std::string name) const;
   boost::property_tree::ptree getTaskConfigTree() const;
   void updateMonitoringStats(framework::ProcessingContext& pCtx);
+  void computeRunNumber(const framework::ServiceRegistry& services);
 
   // consider moving these to TaskConfig
   framework::Inputs mInputSpecs;
