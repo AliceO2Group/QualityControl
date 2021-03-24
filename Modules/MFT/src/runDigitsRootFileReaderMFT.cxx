@@ -123,9 +123,9 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
   }
 
  private:
-  std::unique_ptr<TFile> mFile = nullptr;                      // file to be read
-  TTree* mTree = nullptr;                                      // tree inside the file
-  std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;     // pointer to ROF branch
+  std::unique_ptr<TFile> mFile = nullptr;                    // file to be read
+  TTree* mTree = nullptr;                                    // tree inside the file
+  std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;   // pointer to ROF branch
   std::vector<o2::itsmft::Digit> digits, *pdigits = &digits; // pointer to digit branch
 
   unsigned long nTFs = 0;       // number of TF
