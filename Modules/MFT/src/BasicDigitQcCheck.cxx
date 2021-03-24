@@ -66,7 +66,7 @@ void BasicDigitQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
   if (mo->getName().find("mMFTChipHitMap") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
 
-    TPaveText* message = new TPaveText(0.3, 0.8, 0.75, 0.9, "NDC");
+    TPaveText* message = new TPaveText(0.35, 0.9, 0.65, 0.95, "NDC");
     h->GetListOfFunctions()->Add(message);
     message->SetBorderSize(1);
 

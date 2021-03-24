@@ -97,8 +97,8 @@ void BasicDigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
     auto pxlhitmap = std::make_unique<TH2F>(
       FolderName, HistogramName,
-      gPixelHitMapsMaxBinX / gPixelHitMapsBinWidth, gPixelHitMapsMinBin, gPixelHitMapsMaxBinX,
-      gPixelHitMapsMaxBinY / gPixelHitMapsBinWidth, gPixelHitMapsMinBin, gPixelHitMapsMaxBinY);
+      gPixelHitMapsMaxBinX / gPixelHitMapsBinWidth, gPixelHitMapsMinBin - gPixelHitMapsShift, gPixelHitMapsMaxBinX - gPixelHitMapsShift,
+      gPixelHitMapsMaxBinY / gPixelHitMapsBinWidth, gPixelHitMapsMinBin - gPixelHitMapsShift, gPixelHitMapsMaxBinY - gPixelHitMapsShift);
     pxlhitmap->SetStats(0);
     mMFTPixelHitMap.push_back(std::move(pxlhitmap));
     if (TaskLevel == 2 || TaskLevel == 4)
@@ -145,8 +145,8 @@ void BasicDigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     // fill pixel hit maps
     mMFTPixelHitMap[vectorIndex]->Fill(one_digit.getColumn(), one_digit.getRow());
     // fill overview histograms
-    mMFT_chip_index_H->SetBinContent(chipIndex, mMFTPixelHitMap[vectorIndex]->GetEntries());
-    mMFT_chip_std_dev_H->SetBinContent(chipIndex, mMFTPixelHitMap[vectorIndex]->GetStdDev(1));
+    mMFT_chip_index_H->SetBinContent(chipIndex + 1, mMFTPixelHitMap[vectorIndex]->GetEntries());
+    mMFT_chip_std_dev_H->SetBinContent(chipIndex + 1, mMFTPixelHitMap[vectorIndex]->GetStdDev(1));
     // }
   }
 
@@ -266,45 +266,5 @@ int BasicDigitQcTask::getChipIndex(int vectorID)
 
   return chipID;
 }
-
-// void BasicDigitQcTask::readTable()
-// {
-//   //  reset arrays
-//   for (int i = 0; i < nChip; i++) {
-//     half[i] = 0;
-//     disk[i] = 0;
-//     face[i] = 0;
-//     zone[i] = 0;
-//     ladder[i] = 0;
-//     sensor[i] = 0;
-//     transID[i] = 0;
-//     layer[i] = 0;
-//     x[i] = 0;
-//     y[i] = 0;
-//     z[i] = 0;
-//     binx[i] = 0;
-//     biny[i] = 0;
-//   }
-
-//   // read file
-//   std::ifstream read_table;
-//   read_table.open("./table_file_binidx.txt");
-//   for (int i = 0; i < nChip; ++i) {
-//     read_table >> half[i];
-//     read_table >> disk[i];
-//     read_table >> face[i];
-//     read_table >> zone[i];
-//     read_table >> ladder[i];
-//     read_table >> sensor[i];
-//     read_table >> transID[i];
-//     read_table >> layer[i];
-//     read_table >> x[i];
-//     read_table >> y[i];
-//     read_table >> z[i];
-//     read_table >> binx[i];
-//     read_table >> biny[i];
-//   }
-//   read_table.close();
-// }
 
 } // namespace o2::quality_control_modules::mft
