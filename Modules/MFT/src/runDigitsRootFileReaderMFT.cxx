@@ -109,7 +109,7 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
     int lastIndex = index + nDigitsInROF;
 
     // --> fill in the corresponding digits
-    std::vector<o2::itsmft::DigitHW>* DigitsInROF = new std::vector<o2::itsmft::DigitHW>();
+    std::vector<o2::itsmft::Digit>* DigitsInROF = new std::vector<o2::itsmft::Digit>();
     std::copy(digits.begin() + index, digits.begin() + lastIndex, std::back_inserter(*DigitsInROF));
 
     // fill in the message
@@ -126,7 +126,7 @@ class DigitsRootFileReaderMFT : public o2::framework::Task
   std::unique_ptr<TFile> mFile = nullptr;                      // file to be read
   TTree* mTree = nullptr;                                      // tree inside the file
   std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;     // pointer to ROF branch
-  std::vector<o2::itsmft::DigitHW> digits, *pdigits = &digits; // pointer to digit branch
+  std::vector<o2::itsmft::Digit> digits, *pdigits = &digits; // pointer to digit branch
 
   unsigned long nTFs = 0;       // number of TF
   unsigned long nROFs = 0;      // number of ROFs in current TF
