@@ -28,7 +28,7 @@
         "className": "o2::quality_control_modules::mft::BasicReadoutHeaderQcTask",
         "moduleName": "QcMFT",
         "detectorName": "MFT",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
