@@ -17,6 +17,7 @@
 #define QC_MODULE_HMPID_HMPIDHMPIDTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "HMPIDReconstruction/HmpidDecoder2.h"
 
 class TH1F;
 
@@ -49,6 +50,7 @@ class HmpidTask final : public TaskInterface
   TH1F* hPedestalSigma = nullptr;
   TH1F* hBusyTime = nullptr;
   TH1F* hEventSize = nullptr;
+  o2::hmpid::HmpidDecoder2* mDecoder = nullptr;
 };
 
 } // namespace o2::quality_control_modules::hmpid
