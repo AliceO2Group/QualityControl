@@ -36,11 +36,7 @@ namespace o2::quality_control_modules::its
 
 ITSClusterTask::ITSClusterTask() : TaskInterface()
 {
-
-  getEnableLayers();
-  createAllHistos();
-
-  o2::base::GeometryManager::loadGeometry();
+  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   mGeom = o2::its::GeometryTGeo::Instance();
 }
 
@@ -84,13 +80,17 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
   QcInfoLogger::GetInstance() << "initialize ITSClusterTask" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  getJsonParameters();
+  createAllHistos();
+
   publishHistos();
-  std::string dictfile = o2::base::NameConf::getDictionaryFileName(o2::detectors::DetID::ITS, "", ".bin");
-  std::ifstream file(dictfile.c_str());
+  //std::string dictfile = o2::base::NameConf::getDictionaryFileName(o2::detectors::DetID::ITS, "", ".bin");
+  std::ifstream file(mDictPath.c_str());
 
   if (file.good()) {
-    LOG(INFO) << "Running with dictionary: " << dictfile.c_str();
-    mDict.readBinaryFile(dictfile);
+    LOG(INFO) << "Running with dictionary: " << mDictPath;
+    mDict.readBinaryFile(mDictPath);
   } else {
     LOG(INFO) << "Running without dictionary !";
   }
@@ -165,9 +165,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSClusterTask::endOfCycle()
 {
 
-  std::ifstream runNumberFile("/home/its/QC/workdir/infiles/RunNumber.dat"); //catching ITS run number in commissioning; to be redesinged for the final version
+  std::ifstream runNumberFile(mRunNumberPath.c_str()); //catching ITS run number in commissioning; to be redesinged for the final version
   if (runNumberFile) {
-
     std::string runNumber;
     runNumberFile >> runNumber;
     if (runNumber != mRunNumber) {
@@ -274,13 +273,20 @@ void ITSClusterTask::createAllHistos()
   }
 }
 
-void ITSClusterTask::getEnableLayers()
+void ITSClusterTask::getJsonParameters()
 {
-  std::ifstream configFile("Config/ConfigLayers.dat"); //temporarily used for the commissioning
+  mDictPath = mCustomParameters["clusterDictionaryPath"];
+  mRunNumberPath = mCustomParameters["runNumberPath"];
+  mGeomPath = mCustomParameters["geomPath"];
+
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-    configFile >> mEnableLayers[ilayer];
-    if (mEnableLayers[ilayer])
+
+    if (mCustomParameters["layer"][ilayer] != '0') {
+      mEnableLayers[ilayer] = 1;
       LOG(INFO) << "enable layer : " << ilayer;
+    } else {
+      mEnableLayers[ilayer] = 0;
+    }
   }
 }
 

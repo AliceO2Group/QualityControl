@@ -50,7 +50,7 @@ class ITSClusterTask : public TaskInterface
   void publishHistos();
   void formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset = 1., float yOffset = 1.);
   void addObject(TObject* aObject);
-  void getEnableLayers();
+  void getJsonParameters();
   void createAllHistos();
 
   static constexpr int NLayer = 7;
@@ -70,7 +70,10 @@ class ITSClusterTask : public TaskInterface
 
   const int mOccUpdateFrequency = 100000;
   int mNRofs = 0;
-  std::string mRunNumber;
+  std::string mDictPath;
+  std::string mRunNumberPath;
+  std::string mGeomPath;
+  std::string mRunNumber = "000000";
 
   const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
