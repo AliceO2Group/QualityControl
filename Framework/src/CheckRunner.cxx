@@ -173,10 +173,10 @@ CheckRunner::~CheckRunner()
   }
 }
 
-void CheckRunner::init(framework::InitContext&)
+void CheckRunner::init(framework::InitContext& iCtx)
 {
   try {
-    ILOG_INST.init("check/" + mDeviceName, mConfigFile->getRecursive());
+    ILOG_INST.init("check/" + mDeviceName, mConfigFile->getRecursive(), &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>());
     initDatabase();
     initMonitoring();
     initServiceDiscovery();

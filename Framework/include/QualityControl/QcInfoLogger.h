@@ -51,8 +51,8 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
   }
 
   void setFacility(const std::string& facility);
-  void init(const std::string& facility, bool discardDebug = false, int discardFromLevel = 21 /* Discard Trace */);
-  void init(const std::string& facility, const boost::property_tree::ptree& config);
+  void init(const std::string& facility, bool discardDebug = false, int discardFromLevel = 21 /* Discard Trace */, AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr);
+  void init(const std::string& facility, const boost::property_tree::ptree& config, AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr);
 
  private:
   QcInfoLogger();

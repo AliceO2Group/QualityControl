@@ -14,7 +14,6 @@
 ///
 
 #include "QualityControl/QcInfoLogger.h"
-#include <InfoLogger/InfoLoggerFMQ.hxx>
 #include <boost/property_tree/ptree.hpp>
 
 namespace o2::quality_control::core
@@ -26,7 +25,6 @@ QcInfoLogger::QcInfoLogger()
   context.setField(infoContext::FieldName::Facility, "QC");
   context.setField(infoContext::FieldName::System, "QC");
   this->setContext(context);
-  //  setFMQLogsToInfoLogger(this); // disabled, see https://github.com/AliceO2Group/QualityControl/pull/222
   *this << "QC infologger initialized" << ENDM;
 }
 
@@ -39,16 +37,18 @@ void QcInfoLogger::setFacility(const std::string& facility)
   *this << LogDebugDevel << "Facility set to old " << facility << ENDM;
 }
 
-void QcInfoLogger::init(const std::string& facility, bool discardDebug, int discardFromLevel)
+void QcInfoLogger::init(const std::string& facility, bool discardDebug, int discardFromLevel, AliceO2::InfoLogger::InfoLoggerContext* dplContext)
 {
-  // facility
+  // Set Facility and System
   infoContext context;
   context.setField(infoContext::FieldName::Facility, facility);
+  dplContext->setField(infoContext::FieldName::Facility, facility);
   context.setField(infoContext::FieldName::System, "QC");
+  dplContext->setField(infoContext::FieldName::System, "QC");
   this->setContext(context);
-  *this << LogDebugDevel << "Facility set to new " << facility << ENDM;
+  *this << LogDebugDevel << "Facility set to " << facility << ENDM;
 
-  // discard
+  // Set the proper discard filters
   ILOG_INST.filterDiscardDebug(discardDebug);
   ILOG_INST.filterDiscardLevel(discardFromLevel);
   // we use cout because we might have just muted ourselves
@@ -56,12 +56,12 @@ void QcInfoLogger::init(const std::string& facility, bool discardDebug, int disc
   std::cout << "Discard from level " << discardFromLevel << std::endl;
 }
 
-void QcInfoLogger::init(const std::string& facility, const boost::property_tree::ptree& config)
+void QcInfoLogger::init(const std::string& facility, const boost::property_tree::ptree& config, AliceO2::InfoLogger::InfoLoggerContext* dplContext)
 {
   std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "false");
   bool discardDebug = discardDebugStr == "true" ? 1 : 0;
   int discardLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);
-  init(facility, discardDebug, discardLevel);
+  init(facility, discardDebug, discardLevel, dplContext);
 }
 
 } // namespace o2::quality_control::core

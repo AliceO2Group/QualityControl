@@ -87,10 +87,10 @@ std::string AggregatorRunner::createAggregatorRunnerName()
   return AggregatorRunner::createAggregatorRunnerIdString(); // there is only one thus we can just take the idString
 }
 
-void AggregatorRunner::init(framework::InitContext&)
+void AggregatorRunner::init(framework::InitContext& iCtx)
 {
   try {
-    ILOG_INST.init("aggregator", mConfigFile->getRecursive());
+    ILOG_INST.init("aggregator", mConfigFile->getRecursive(), &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>());
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
