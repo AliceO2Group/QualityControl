@@ -22,6 +22,8 @@
 #ifdef MCH_HAS_MAPPING_FACTORY
 #include "MCHMappingFactory/CreateSegmentation.h"
 #endif
+#include "MCHCalibration/PedestalDigit.h"
+//#include "MCHCalibration/PedestalCalibrator.h"
 
 using namespace std;
 using namespace o2::framework;
@@ -303,9 +305,9 @@ void PedestalsTask::PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t chann
 }
 
 void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
-{
+{/*
   QcInfoLogger::GetInstance() << "Plotting pedestals" << AliceO2::InfoLogger::InfoLogger::endm;
-  using ChannelPedestal = o2::mch::calibration::MCHChannelCalibrator::ChannelPedestal;
+  using ChannelPedestal = o2::mch::calibration::PedestalCalibrator::ChannelPedestal;
 
   auto pedestals = ctx.inputs().get<gsl::span<ChannelPedestal>>("pedestals");
   for (auto& p : pedestals) {
@@ -318,7 +320,7 @@ void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
     auto channel = dsChID.getChannel();
 
     PlotPedestal(solarID, dsID, channel, mean, rms);
-  }
+  }*/
 }
 
 void PedestalsTask::monitorDataDigits(o2::framework::ProcessingContext& ctx)

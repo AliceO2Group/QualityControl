@@ -10,7 +10,6 @@
 #include "MCHRawElecMap/Mapper.h"
 #include "MCH/GlobalHistogram.h"
 #include "Framework/DataRef.h"
-#include "MCHCalibration/MCHChannelCalibrator.h"
 
 class TH1F;
 class TH2F;
