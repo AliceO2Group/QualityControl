@@ -152,7 +152,10 @@ class Ccdb:
         :param data: the actual data to send. E.g.:{'somekey': 'somevalue'}
         :return A list of ObjectVersion.
         '''
-        full_path=self.url + "/" + version.path + "/" + str(version.validFrom) + "/" + str(version.validTo)
+        full_path=self.url + "/" + version.path + "/" + str(version.validFrom) + "/" + str(version.validTo) + "/"
+        if version.metadata is not None:
+            for key in version.metadata:
+                full_path += key + "=" + version.metadata[key] + "/"
         logging.debug(f"fullpath: {full_path}")
         r = requests.post(full_path, files=data)
         if r.ok:
@@ -167,7 +170,8 @@ def main():
     ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
 
     data = {'somekey': 'somevalue'}
-    version_info = ObjectVersion(path="qc/TST/MO/repo/test", validFrom=1605091858183, validTo=1920451858183)
+    metadata = {'run': '213564', 'test': 'on'}
+    version_info = ObjectVersion(path="qc/TST/MO/repo/test", validFrom=1605091858183, validTo=1920451858183, metadata=metadata)
     ccdb.putVersion(version_info, data)
 
 

@@ -1,8 +1,7 @@
-from datetime import datetime
-from datetime import timedelta
 import logging
 from typing import Dict
 from collections import defaultdict
+import time
 
 from Ccdb import Ccdb, ObjectVersion
 
@@ -84,11 +83,21 @@ def main():
 
     ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
     extra = {"delay_first_trimming": "25", "period_btw_versions_first": "11", "delay_final_trimming": "179", "period_btw_versions_final": "62"}
+    path = "qc/TST/MO/repo/test"
+    run = 123456
 
+    # Prepare test data
+    current_timestamp = int(time.time() * 1000)
+    data = {'somekey': 'somevalue'}
+    metadata = {'run': str(run)}
+    # 1 version every 1 minutes starting 1 hour ago
+    for x in range(60):
+        from_ts = current_timestamp - (60-x)*60*1000
+        to_ts = from_ts + 24*60*60*1000 # a day
+        version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
+        ccdb.putVersion(version=version_info, data=data)
 
-
-
-    process(ccdb, "qc/TST/MO/task1/example", 60, extra)
+    process(ccdb, path, 60, extra)
 
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.
