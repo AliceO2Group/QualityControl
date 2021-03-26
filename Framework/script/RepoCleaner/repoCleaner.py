@@ -36,7 +36,8 @@ from Ccdb import Ccdb
 class Rule:
     """A class to hold information about a "rule" defined in the config file."""
 
-    def __init__(self, object_path=None, delay=None, policy=None, all_params=None):
+    def __init__(self, object_path=None, delay=None, policy=None, #migration=None,
+                 all_params=None):
         '''
         Constructor.
         :param object_path: path to the object, or pattern, to which a rule will apply.
@@ -48,13 +49,18 @@ class Rule:
         self.object_path = object_path
         self.delay = delay
         self.policy = policy
+        # self.migration = migration
+
         self.extra_params = all_params
-        self.extra_params.pop("object_path")
-        self.extra_params.pop("delay")
-        self.extra_params.pop("policy")
+        if all_params is not None:
+            self.extra_params.pop("object_path")
+            self.extra_params.pop("delay")
+            self.extra_params.pop("policy")
+            # self.extra_params.pop("migration")
 
     def __repr__(self):
-        return 'Rule(object_path={.object_path}, delay={.delay}, policy={.policy}, extra_params={.extra_params})'.format(self, self, self, self)
+        # return 'Rule(object_path={.object_path}, delay={.delay}, policy={.policy}, migration={.migration}, extra_params={.extra_params})'.format(self, self, self, self, self)
+        return 'Rule(object_path={.object_path}, delay={.delay}, policy={.policy}, extra_params={.extra_params})'.format(self, self, self, self, self)
 
 
 def parseArgs():
@@ -94,7 +100,8 @@ def parseConfig(config_file_path):
     rules = []
     logging.debug("Rules found in the config file:")
     for rule_yaml in config_content["Rules"]:
-        rule = Rule(rule_yaml["object_path"], rule_yaml["delay"], rule_yaml["policy"], rule_yaml)
+        rule = Rule(rule_yaml["object_path"], rule_yaml["delay"], rule_yaml["policy"], #rule_yaml["migration"],
+                    rule_yaml)
         rules.append(rule)
         logging.debug(f"   * {rule}")
 
@@ -208,7 +215,8 @@ def main():
              
         # Apply rule on object (find the plug-in script and apply)
         module = __import__(rule.policy)
-        stats = module.process(ccdb, object_path, int(rule.delay), rule.extra_params)
+        stats = module.process(ccdb, object_path, int(rule.delay), #rule.migration == "True",
+                               rule.extra_params)
         logging.info(f"{rule.policy} applied on {object_path}: {stats}")
     
     logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")

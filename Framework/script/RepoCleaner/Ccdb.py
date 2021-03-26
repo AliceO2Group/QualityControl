@@ -20,12 +20,12 @@ class ObjectVersion:
         Construct an ObjectVersion.
         :param path: path to the object
         :param uuid: unique id of the object
-        :param validFromAsDatetime: validity range smaller limit (in ms)
+        :param validFrom: validity range smaller limit (in ms)
         :param validTo: validity range bigger limit (in ms)
         '''
         self.path = path
         self.uuid = uuid
-        self.validFromAsDatetime = datetime.datetime.fromtimestamp(validFrom / 1000)  # /1000 because we get ms 
+        self.validFromAsDatetime = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
         self.validFrom = validFrom
         self.validTo = validTo
         self.metadata = metadata
@@ -135,7 +135,16 @@ class Ccdb:
         except requests.exceptions.RequestException as e:  
             print(e)
             sys.exit(1)  # really ? 
-        
+
+    @dryable.Dryable()
+    def setMetadata(self, key: str, value: str):
+        '''
+
+        :param key:
+        :param value:
+        :return:
+        '''
+        logging.debug(f"Set key {key} to {value}")
     
 def main():
     ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
