@@ -1,0 +1,10 @@
+0) alienv enter qcg/latest
+
+1) start raw file reader with command
+      o2-raw-file-reader-workflow --input-conf CPVraw.cfg 
+
+2) raw data stream is produced by previous command. Try to connect to it with raw to digit converter:
+      o2-raw-file-reader-workflow --input-conf CPVraw.cfg | o2-cpv-reco-workflow --input-type raw --output-type digits --disable-mc --pedestal=on --disable-root-output
+
+3) connect qc:
+      o2-raw-file-reader-workflow --input-conf CPVraw.cfg | o2-cpv-reco-workflow --input-type raw --output-type digits --disable-mc --pedestal=on --disable-root-output | o2-qc --config json://pedestal-task-no-sampling.json
