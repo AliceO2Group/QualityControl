@@ -89,8 +89,15 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
+  InfoLoggerContext *ilContext = nullptr;
   try {
-    ILOG_INST.init("aggregator", mConfigFile->getRecursive(), &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>());
+    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+  } catch (const RuntimeErrorRef &err) {
+    ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
+  }
+
+  try {
+    ILOG_INST.init("aggregator", mConfigFile->getRecursive(), ilContext);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();

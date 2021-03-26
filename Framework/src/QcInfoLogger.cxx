@@ -42,9 +42,11 @@ void QcInfoLogger::init(const std::string& facility, bool discardDebug, int disc
   // Set Facility and System
   infoContext context;
   context.setField(infoContext::FieldName::Facility, facility);
-  dplContext->setField(infoContext::FieldName::Facility, facility);
   context.setField(infoContext::FieldName::System, "QC");
-  dplContext->setField(infoContext::FieldName::System, "QC");
+  if(dplContext) {
+    dplContext->setField(infoContext::FieldName::System, "QC");
+    dplContext->setField(infoContext::FieldName::Facility, facility);
+  }
   this->setContext(context);
   *this << LogDebugDevel << "Facility set to " << facility << ENDM;
 
