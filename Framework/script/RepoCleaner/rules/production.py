@@ -18,14 +18,15 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
          - Delete half the versions after 30 minutes (configurable: delay_first_trimming)
            !!! this is actually very difficult to implement as the tool is stateless. We would have to store some
            metadata for each version to know whether it should be deleted or not after the first delay.
-           It is perhaps easier to keep 1 per X minutes.
-         - Delete all versions but 1 per 1 hour (configurable: period_btw_versions) + first and last at EOR+3h (configurable: delay_last_trimming)
+           It is perhaps easier to keep 1 per 10 minutes (configurable: period_btw_versions_first).
+         - Delete all versions but 1 per 1 hour (configurable: period_btw_versions_final) + first and last at EOR+3h (configurable: delay_final_trimming)
          - What has not been deleted at this stage is marked to be migrated (preservation = true)
 
     Extra parameters:
       - delay_first_trimming: Delay in minutes before first trimming.
-      - period_btw_versions: Period in minutes between the versions we will keep.
-      - delay_last_trimming: Delay in minutes, counted from the EOR, before we do the final cleanup and mark for migration.
+      - period_btw_versions_first: Period in minutes between the versions we will keep after first trimming.
+      - delay_final_trimming: Delay in minutes, counted from the EOR, before we do the final cleanup and mark for migration.
+      - period_btw_versions_final: Period in minutes between the versions we will migrate.
 
     Implementation :
       - Go through all objects:
@@ -44,6 +45,11 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     '''
     
     logging.debug(f"Plugin 'production' processing {object_path}")
+
+    preservation_list: List[ObjectVersion] = []
+    deletion_list: List[ObjectVersion] = []
+    update_list: List[ObjectVersion] = []
+    runs_dict: DefaultDict[str, List[ObjectVersion]] = defaultdict(list)
         
     return {"deleted" : 0, "preserved": 0}
 
