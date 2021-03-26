@@ -15,7 +15,7 @@ class ObjectVersion:
     This class represents a single version. 
     '''
 
-    def __init__(self, path, uuid, validFrom, validTo, metadata):
+    def __init__(self, path, validFrom, validTo, uuid=None, metadata=None):
         '''
         Construct an ObjectVersion.
         :param path: path to the object
@@ -145,11 +145,30 @@ class Ccdb:
         :return:
         '''
         logging.debug(f"Set key {key} to {value}")
-    
+
+    def putVersion(self, version: ObjectVersion, data):
+        '''
+        :param version: An ObjectVersion that describes the data to be uploaded.
+        :param data: the actual data to send. E.g.:{'somekey': 'somevalue'}
+        :return A list of ObjectVersion.
+        '''
+        full_path=self.url + "/" + version.path + "/" + str(version.validFrom) + "/" + str(version.validTo)
+        logging.debug(f"fullpath: {full_path}")
+        r = requests.post(full_path, files=data)
+        if r.ok:
+            logging.debug(f"Version pushed to {version.path}")
+        else:
+            logging.error(f"Could not post a new version of {version.path}: {r.text}")
+
 def main():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+    logging.getLogger().setLevel(int(10))
+
     ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
-    objectsList = ccdb.getObjectsList()
-    print(f"{objectsList}")
+
+    data = {'somekey': 'somevalue'}
+    version_info = ObjectVersion(path="qc/TST/MO/repo/test", validFrom=1605091858183, validTo=1920451858183)
+    ccdb.putVersion(version_info, data)
 
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.
