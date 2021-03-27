@@ -304,7 +304,7 @@ void PedestalsTask::PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t chann
   }
 }
 
-void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
+void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& /*ctx*/)
 { /*
   QcInfoLogger::GetInstance() << "Plotting pedestals" << AliceO2::InfoLogger::InfoLogger::endm;
   using ChannelPedestal = o2::mch::calibration::PedestalCalibrator::ChannelPedestal;
