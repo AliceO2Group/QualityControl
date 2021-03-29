@@ -219,15 +219,7 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 
 void TaskRunner::start(const ServiceRegistry& services)
 {
-  try {
-    auto temp = services.get<RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
-    ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: " << temp << ENDM;
-    mRunNumber = stoi(temp);
-    ILOG(Info, Support) << "Run number found in options: " << mRunNumber << ENDM;
-  } catch (std::invalid_argument& ia) {
-    ILOG(Info, Support) << "Run number not found in options or is not a number, using 0 instead." << ENDM;
-    mRunNumber = 0;
-  }
+  computeRunNumber(services);
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
 
   try {
@@ -246,6 +238,21 @@ void TaskRunner::start(const ServiceRegistry& services)
                          << current_diagnostic(true) << ENDM;
     throw;
   }
+}
+
+void TaskRunner::computeRunNumber(const ServiceRegistry& services)
+{ // Determine run number
+  mRunNumber = 0;
+  try {
+    auto temp = services.get<RawDeviceService>().device()->fConfig->GetProperty<string>("runNumber", "unspecified");
+    ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: '" << temp << "'" << ENDM;
+    mRunNumber = stoi(temp);
+    ILOG(Info, Support) << "   Run number found in options: " << mRunNumber << ENDM;
+  } catch (invalid_argument& ia) {
+    ILOG(Info, Support) << "   Run number not found in options or is not a number, \n"
+                           "   using the one from the config file or 0 as a last resort." << ENDM;
+  }
+  mRunNumber = mRunNumber > 0 /* found it in service */ ? mRunNumber : mConfigFile->get<int>("qc.config.Activity.number", 0);
 }
 
 void TaskRunner::stop()
@@ -401,12 +408,12 @@ void TaskRunner::startOfActivity()
   mTimerTotalDurationActivity.reset();
   mTotalNumberObjectsPublished = 0;
 
-  // We take the run number as set from the FairMQ options if it is there, otherwise the one from the config file
-  int run = mRunNumber > 0 ? mRunNumber : mConfigFile->get<int>("qc.config.Activity.number");
-  Activity activity(run,
+  // Start activity in module's stask and update objectsManager
+  Activity activity(mRunNumber,
                     mConfigFile->get<int>("qc.config.Activity.type"));
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
+  mObjectsManager->updateRunNumber(mRunNumber);
 }
 
 void TaskRunner::endOfActivity()

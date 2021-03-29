@@ -26,18 +26,20 @@ ClassImp(o2::quality_control::core::MonitorObject)
 namespace o2::quality_control::core
 {
 
-MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mDetectorName(""), mIsOwner(true) {}
+MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mDetectorName(""), mRunNumber(0), mIsOwner(true)
+{
+}
+
+MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName, int runNumber)
+  : TObject(), mObject(object), mTaskName(taskName), mDetectorName(detectorName), mRunNumber(runNumber), mIsOwner(true)
+{
+}
 
 MonitorObject::~MonitorObject()
 {
   if (mIsOwner && mObject != nullptr) {
     delete mObject;
   }
-}
-
-MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName)
-  : TObject(), mObject(object), mTaskName(taskName), mDetectorName(detectorName), mIsOwner(true)
-{
 }
 
 void MonitorObject::Draw(Option_t* option) { mObject->Draw(option); }
@@ -109,6 +111,16 @@ const string& MonitorObject::getDescription() const
 void MonitorObject::setDescription(const string& description)
 {
   MonitorObject::mDescription = description;
+}
+
+int MonitorObject::getRunNumber() const
+{
+  return mRunNumber;
+}
+
+void MonitorObject::setRunNumber(int runNumber)
+{
+  MonitorObject::mRunNumber = runNumber;
 }
 
 } // namespace o2::quality_control::core
