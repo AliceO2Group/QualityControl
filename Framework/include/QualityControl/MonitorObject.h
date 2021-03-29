@@ -125,7 +125,7 @@ class MonitorObject : public TObject
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 7);
+  ClassDefOverride(MonitorObject, 8);
 };
 
 } // namespace o2::quality_control::core

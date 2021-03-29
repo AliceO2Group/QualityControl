@@ -191,6 +191,8 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
 {
   // metadata
   map<string, string> metadata;
+  metadata["Run"] = std::to_string(qo->getRunNumber());
+  metadata["ObjectType"] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   // QC metadata (prefix qc_)
   metadata["qc_version"] = Version::GetQcVersion().getString();
   metadata["qc_quality"] = std::to_string(qo->getQuality().getLevel());
