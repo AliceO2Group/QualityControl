@@ -19,6 +19,9 @@
 #include <string>
 #include <Configuration/ConfigurationFactory.h>
 #include <Common/Exceptions.h>
+#include <Framework/RawDeviceService.h>
+#include <FairMQDevice.h>
+#include <Framework/ConfigParamRegistry.h>
 
 namespace o2::quality_control::core
 {
@@ -30,7 +33,7 @@ namespace o2::quality_control::core
  * @param config
  * @return The name of the first task in the config file.
  */
-std::string getFirstTaskName(std::string configurationSource)
+inline std::string getFirstTaskName(std::string configurationSource)
 {
   auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
 
@@ -41,7 +44,7 @@ std::string getFirstTaskName(std::string configurationSource)
   throw;
 }
 
-std::string getFirstCheckName(std::string configurationSource)
+inline std::string getFirstCheckName(std::string configurationSource)
 {
   auto config = o2::configuration::ConfigurationFactory::getConfiguration(configurationSource);
 
@@ -54,10 +57,26 @@ std::string getFirstCheckName(std::string configurationSource)
   BOOST_THROW_EXCEPTION(AliceO2::Common::ObjectNotFoundError() << AliceO2::Common::errinfo_details("No checks defined"));
 }
 
-bool hasChecks(std::string configSource)
+inline bool hasChecks(std::string configSource)
 {
   auto config = o2::configuration::ConfigurationFactory::getConfiguration(configSource);
   return config->getRecursive("qc").count("checks") > 0;
+}
+
+inline int computeRunNumber(const framework::ServiceRegistry& services, const boost::property_tree::ptree& config)
+{ // Determine run number
+  int run = 0;
+  try {
+    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
+    ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: '" << temp << "'" << ENDM;
+    run = stoi(temp);
+    ILOG(Info, Support) << "   Run number found in options: " << run << ENDM;
+  } catch (std::invalid_argument& ia) {
+    ILOG(Info, Support) << "   Run number not found in options or is not a number, \n"
+                           "   using the one from the config file or 0 as a last resort." << ENDM;
+  }
+  run = run > 0 /* found it in service */ ? run : config.get<int>("qc.config.Activity.number", 0);
+  return run;
 }
 
 } // namespace o2::quality_control::core

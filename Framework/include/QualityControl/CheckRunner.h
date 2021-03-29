@@ -192,9 +192,13 @@ class CheckRunner : public framework::Task
    */
   void sendPeriodicMonitoring();
 
+  /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
+  void start(const framework::ServiceRegistry& services);
+
   // General state
   std::string mDeviceName;
   std::vector<Check> mChecks;
+  int mRunNumber;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::unordered_set<std::string> mInputStoreSet;

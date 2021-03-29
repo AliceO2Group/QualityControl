@@ -29,15 +29,11 @@
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
-#include <Framework/ConfigParamRegistry.h>
 #include <Framework/InputRecordWalker.h>
-#include <Framework/RawDeviceService.h>
-
-#include <fairlogger/Logger.h>
-#include <FairMQDevice.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
+#include "QualityControl/runnerUtils.h"
 
 #include <string>
 #include <TFile.h>
@@ -219,7 +215,7 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 
 void TaskRunner::start(const ServiceRegistry& services)
 {
-  computeRunNumber(services);
+  mRunNumber = computeRunNumber(services, mConfigFile->getRecursive());
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
 
   try {
@@ -238,21 +234,6 @@ void TaskRunner::start(const ServiceRegistry& services)
                          << current_diagnostic(true) << ENDM;
     throw;
   }
-}
-
-void TaskRunner::computeRunNumber(const ServiceRegistry& services)
-{ // Determine run number
-  mRunNumber = 0;
-  try {
-    auto temp = services.get<RawDeviceService>().device()->fConfig->GetProperty<string>("runNumber", "unspecified");
-    ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: '" << temp << "'" << ENDM;
-    mRunNumber = stoi(temp);
-    ILOG(Info, Support) << "   Run number found in options: " << mRunNumber << ENDM;
-  } catch (invalid_argument& ia) {
-    ILOG(Info, Support) << "   Run number not found in options or is not a number, \n"
-                           "   using the one from the config file or 0 as a last resort." << ENDM;
-  }
-  mRunNumber = mRunNumber > 0 /* found it in service */ ? mRunNumber : mConfigFile->get<int>("qc.config.Activity.number", 0);
 }
 
 void TaskRunner::stop()
