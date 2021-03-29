@@ -94,7 +94,7 @@ o2::tpc::ClusterNativeAccess clusterHandler(o2::framework::InputRecord& input)
   std::vector<o2::dataformats::ConstMCLabelContainerView> mcInputsDummy;
   memset(&clusterIndex, 0, sizeof(clusterIndex));
   ClusterNativeHelper::Reader::fillIndex(clusterIndex, clusterBuffer, clustersMCBufferDummy,
-                                         inputs, mcInputsDummy, [&validInputs](auto& index) { return validInputs.test(index); });
+                                         inputs, mcInputsDummy);
 
   return clusterIndex;
 }
