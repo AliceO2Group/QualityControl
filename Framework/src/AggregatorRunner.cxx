@@ -27,6 +27,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/Aggregator.h"
+#include "QualityControl/runnerUtils.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -44,6 +45,7 @@ namespace o2::quality_control::checker
 
 AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
+    mRunNumber(0),
     mTotalNumberObjectsReceived(0)
 {
   try {
@@ -87,8 +89,11 @@ std::string AggregatorRunner::createAggregatorRunnerName()
   return AggregatorRunner::createAggregatorRunnerIdString(); // there is only one thus we can just take the idString
 }
 
-void AggregatorRunner::init(framework::InitContext&)
+void AggregatorRunner::init(framework::InitContext& iCtx)
 {
+  // registering state machine callbacks
+  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+
   try {
     ILOG_INST.init("aggregator", mConfigFile->getRecursive());
     initDatabase();
@@ -121,6 +126,8 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
   store(qualityObjects);
 
   updatePolicyManager.updateGlobalRevision();
+
+  sendPeriodicMonitoring();
 }
 
 QualityObjectsType AggregatorRunner::aggregate()
@@ -142,6 +149,8 @@ QualityObjectsType AggregatorRunner::aggregate()
         mQualityObjects[qo->getName()] = qo;
         updatePolicyManager.updateObjectRevision(qo->getName());
       }
+      // set the run number on all objects
+      for_each(newQOs.begin(), newQOs.end(), [&mRunNumber = mRunNumber](std::shared_ptr<QualityObject>& qo) -> void {qo->setRunNumber(mRunNumber);});
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
@@ -297,6 +306,12 @@ void AggregatorRunner::sendPeriodicMonitoring()
     mTimer.reset(1000000); // 10 s.
     mCollector->send({ mTotalNumberObjectsReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
   }
+}
+
+void AggregatorRunner::start(const ServiceRegistry& services)
+{
+  mRunNumber = computeRunNumber(services, mConfigFile->getRecursive());
+  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
 }
 
 } // namespace o2::quality_control::checker
