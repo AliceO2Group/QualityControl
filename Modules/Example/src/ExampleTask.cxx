@@ -58,9 +58,9 @@ void ExampleTask::publishHisto(int i)
   getObjectsManager()->startPublishing(mHistos[i]);
 }
 
-void ExampleTask::startOfActivity(Activity& /*activity*/)
+void ExampleTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
   for (auto& mHisto : mHistos) {
     if (mHisto) {
       mHisto->Reset();

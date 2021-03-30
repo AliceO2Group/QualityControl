@@ -518,6 +518,27 @@ __Live detector data__
 
 If the detector is ready and connected to the CRU(s), one can of course start the full data taking workflow, including the SubTimeFrameBuilder and the DPL processing and plug the QC onto it.
 
+## Run number
+
+When running with the aliECS the run number is automatically provided to the modules' code: 
+```c++
+void ExampleTask::startOfActivity(Activity& activity)
+{
+  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+```
+
+To set a run number in an "uncontrolled" environment such as a development setup, one can set it in the config file. Note that we call it `Activity` and not `Run` in this context: 
+```yaml
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+```
+The way we compute it is :
+1. Pick the run number from aliECS, if it is not there
+2. Pick the run number from the config file, if it is not there
+3. Set it to `0`
+
 ## A more advanced example
 
 A more complete example is available. The config file is called [advanced.json](../Framework/advanced.json). The workflow is made of 3 sources, intermediate processing steps, 3 sinks and a Dispatcher connecting two QC tasks to a number of these steps and 2 checks. The topology doesn't mean to represent any particular physics processing, it is just an example with multiple data processors.
