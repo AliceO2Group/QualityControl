@@ -33,8 +33,7 @@ class ObjectVersion:
     def __repr__(self):
         if "Run" in self.metadata or "RunNumber" in self.metadata:
             run_number = self.metadata["Run"] if "Run" in self.metadata else self.metadata["RunNumber"]
-            return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, " \
-                   f"ts {self.validFrom}), run {run_number}"
+            return f"Version of object {self.path} valid from {self.validFromAsDatetime}, run {run_number}"
         else:
             return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, " \
                    f"ts {self.validFrom})"
@@ -116,20 +115,25 @@ class Ccdb:
             sys.exit(1)  # really ? 
         
     @dryable.Dryable()
-    def updateValidity(self, version: ObjectVersion, validFrom: int, validTo: int):
+    def updateValidity(self, version: ObjectVersion, valid_from: int, valid_to: int, metadata=None):
         '''
         Update the validity range of the specified version of an object.
         :param version: The ObjectVersion to update.
-        :param validFrom: The new "from" validity.
-        :param validTo: The new "to" validity.
+        :param valid_from: The new "from" validity.
+        :param valid_to: The new "to" validity.
+        :param metadata: Add or modify metadata
         '''
-        if version.validTo == validTo:
+        if version.validTo == valid_to:
             logging.debug("The new timestamp for validTo is identical to the existing one. Skipping.")
             return
-        url_update_validity = self.url + '/' + version.path + '/' + str(validFrom) + '/' + str(validTo)
-        logging.debug(f"Update end limit validity of {version.path} from {version.validTo} to {validTo}")
+        full_path = self.url + '/' + version.path + '/' + str(valid_from) + '/' + str(valid_to) + '/' + str(version.uuid) + '?'
+        logging.debug(f"Update end limit validity of {version.path} ({version.uuid}) from {version.validTo} to {valid_to}")
+        if metadata is not None:
+            logging.debug(f"{metadata}")
+            for key in metadata:
+                full_path += key + "=" + metadata[key] + "&"
         try:
-            r = requests.put(url_update_validity)
+            r = requests.put(full_path)
             r.raise_for_status()
             self.counter_validity_updated += 1
         except requests.exceptions.RequestException as e:  

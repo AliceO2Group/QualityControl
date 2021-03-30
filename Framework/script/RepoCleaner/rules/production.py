@@ -1,9 +1,15 @@
 import logging
 from typing import Dict
 from collections import defaultdict
+from datetime import datetime
 import time
+from datetime import timedelta, date
 
 from Ccdb import Ccdb, ObjectVersion
+
+
+def in_grace_period(version: ObjectVersion, delay: int):
+    return not (version.validFromAsDatetime < datetime.now() - timedelta(minutes=delay))
 
 
 def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, str]):
@@ -43,7 +49,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     :param extra_params: a dictionary containing extra parameters for this rule.
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
     '''
-    
+
     logging.debug(f"Plugin 'production' processing {object_path}")
 
     # Variables
@@ -51,53 +57,154 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     deletion_list: List[ObjectVersion] = []
     update_list: List[ObjectVersion] = []
     runs_dict: DefaultDict[str, List[ObjectVersion]] = defaultdict(list)
+    now = datetime.now()
 
     # Extra parameters
-    delay_first_trimming = extra_params.get("delay_first_trimming", 30)
+    delay_first_trimming = int(extra_params.get("delay_first_trimming", 30))
     logging.debug(f"delay_first_trimming : {delay_first_trimming}")
-    period_btw_versions_first = extra_params.get("period_btw_versions_first", 10)
+    period_btw_versions_first = int(extra_params.get("period_btw_versions_first", 10))
     logging.debug(f"period_btw_versions_first : {period_btw_versions_first}")
-    delay_final_trimming = extra_params.get("delay_final_trimming", 180)
+    delay_final_trimming = int(extra_params.get("delay_final_trimming", 180))
     logging.debug(f"delay_final_trimming : {delay_final_trimming}")
-    period_btw_versions_final = extra_params.get("period_btw_versions_final", 60)
+    period_btw_versions_final = int(extra_params.get("period_btw_versions_final", 60))
     logging.debug(f"period_btw_versions_final : {period_btw_versions_final}")
 
     # Find all the runs and group the versions
     versions = ccdb.getVersionsList(object_path)
+    logging.debug(f"Dispatching versions to runs")
     for v in versions:
-        logging.debug(f"Processing {v}")
         if "Run" in v.metadata:
             runs_dict[v.metadata['Run']].append(v)
         else:
-            runs_dict[-1].append(v) # the ones with no run specified
+            runs_dict[-1].append(v)  # the ones with no run specified
+    logging.debug(f"   Number of runs : {len(runs_dict)}")
+    logging.debug(f"   Number of versions without runs : {len(runs_dict[-1])}")
 
-    logging.debug(f"Number of runs : {len(runs_dict)}")
-    logging.debug(f"Number of versions without runs : {len(runs_dict[-1])}")
+    # Versions without runs: spare if more recent than the delay
+    logging.debug(f"Eliminating versions without runs if older than the grace period")
+    for run_version in runs_dict[-1]:
+        if in_grace_period(run_version, delay):
+            preservation_list.append(run_version)
+        else:
+            logging.debug(f"   delete {run_version}")
+            deletion_list.append(run_version)
+            ccdb.deleteVersion(run_version)
+    del runs_dict[-1];  # remove this "run" from the list
 
-    return {"deleted" : len(deletion_list), "preserved": len(preservation_list), "updated" : len(update_list)}
+    # For each run
+    logging.debug(f"Trimming the versions with a run number")
+    for run, run_versions in runs_dict.items():
+        logging.debug(f"   Processing run {run}")
+        # TODO get the EOR if it happened, meanwhile we do first object 15 hours
+        eor = run_versions[0].validFromAsDatetime + timedelta(hours=1)
+        logging.debug(f"   EOR : {eor}")
+        limit_first_trimming = now - timedelta(minutes=delay_first_trimming)
 
-    
+        # run is finished for long enough
+        if eor is not None and now > eor + timedelta(minutes=delay_final_trimming):
+            logging.debug("      Run is over for long enough, let's do the final trimming")
+            # go through the whole run, keep only one version every period_btw_versions_final minutes
+            last_preserved: ObjectVersion = None
+            for v in run_versions:
+                logging.debug(f"      Processing {v} ")
+                # if it is the first or if the last_preserved is older than `period_btw_versions_final`
+                if last_preserved is None \
+                        or last_preserved.validFromAsDatetime < v.validFromAsDatetime - timedelta(minutes=period_btw_versions_final)\
+                        or v == run_versions[-1]:  # v is last element, which we must preserve
+                    if last_preserved is not None:  # first extend validity of the previous preserved and set flag
+                        ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1))
+                        update_list.append(last_preserved)
+                        logging.debug(f"      Extention of {last_preserved}")
+                    last_preserved = v
+                    preservation_list.append(v)
+                else:  # too close to the previous one, delete
+                    deletion_list.append(v)
+                    logging.debug(f"      Deletion of {v}")
+                    ccdb.deleteVersion(v)
+
+        else:  # trim the versions as the run is ongoing or too fresh
+            logging.debug("      Run is too fresh or still ongoing, we do the light trimming")
+            first_trimming(ccdb, limit_first_trimming, period_btw_versions_first, run_versions,
+                           preservation_list, update_list, deletion_list)
+
+    # Print result
+    logging.debug("*** Results ***")
+    logging.debug(f"deleted ({len(deletion_list)}) : ")
+    for v in deletion_list:
+        logging.debug(f"   {v}")
+    logging.debug(f"preserved ({len(preservation_list)}) : ")
+    for v in preservation_list:
+        logging.debug(f"   {v}")
+    logging.debug(f"updated ({len(update_list)}) : ")
+    for v in update_list:
+        logging.debug(f"   {v}")
+
+    return {"deleted": len(deletion_list), "preserved": len(preservation_list), "updated": len(update_list)}
+
+
+def first_trimming(ccdb, limit_first_trimming, period_btw_versions_first, run_versions, preservation_list,
+                   update_list, deletion_list):
+    last_preserved: ObjectVersion = None
+    metadata={'trim1': 'done'}
+    for v in run_versions:
+        logging.debug(f"      Processing {v} ")
+
+        if 'trim1' in v.metadata:  # check if it is already in the cache
+            logging.debug(f"         Already processed - skip")
+            last_preserved = v
+            continue
+
+        if v.validFromAsDatetime < limit_first_trimming:
+            # if it is the first or if the last_preserved is older than `period_btw_versions_first`
+            if last_preserved is None or last_preserved.validFromAsDatetime < v.validFromAsDatetime - timedelta(
+                    minutes=period_btw_versions_first):
+                if last_preserved is not None:  # first extend validity of the previous preserved and set flag
+                    ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1), metadata)
+                    update_list.append(last_preserved)
+                    logging.debug(f"      Extention of {last_preserved}")
+                last_preserved = v
+                preservation_list.append(v)
+            else:  # too close to the previous one, delete
+                deletion_list.append(v)
+                logging.debug(f"      Deletion of {v}")
+                ccdb.deleteVersion(v)
+
+
 def main():
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
+                        datefmt='%d-%b-%y %H:%M:%S')
     logging.getLogger().setLevel(int(10))
 
     ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
-    extra = {"delay_first_trimming": "25", "period_btw_versions_first": "11", "delay_final_trimming": "179", "period_btw_versions_final": "62"}
+    extra = {"delay_first_trimming": "25", "period_btw_versions_first": "11", "delay_final_trimming": "179",
+             "period_btw_versions_final": "15"}
     path = "qc/TST/MO/repo/test"
     run = 123456
 
-    # Prepare test data
+    prepare_test_data(ccdb, path, run)
+
+    process(ccdb, path, 15, extra)
+
+
+def prepare_test_data(ccdb, path, run):
     current_timestamp = int(time.time() * 1000)
     data = {'somekey': 'somevalue'}
-    metadata = {'run': str(run)}
+    metadata = {'Run': str(run)}
     # 1 version every 1 minutes starting 1 hour ago
     for x in range(60):
-        from_ts = current_timestamp - (60-x)*60*1000
-        to_ts = from_ts + 24*60*60*1000 # a day
+        from_ts = current_timestamp - (60 - x) * 60 * 1000
+        to_ts = from_ts + 24 * 60 * 60 * 1000  # a day
         version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
         ccdb.putVersion(version=version_info, data=data)
-
-    process(ccdb, path, 60, extra)
+    # metadata = {}
+    # 1 version every 1 minutes starting 1/2 hour ago WITHOUT run
+    current_timestamp = int(time.time() * 1000)
+    metadata = {}
+    for x in range(30):
+        from_ts = current_timestamp - (60 - x) * 60 * 1000
+        to_ts = from_ts + 24 * 60 * 60 * 1000  # a day
+        version_info = ObjectVersion(path=path, validFrom=from_ts, validTo=to_ts, metadata=metadata)
+        ccdb.putVersion(version=version_info, data=data)
 
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.
