@@ -293,7 +293,7 @@ QualityObjectsType CheckRunner::check()
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
       // set the run number on all objects
-      for_each(newQOs.begin(), newQOs.end(), [&mRunNumber = mRunNumber](std::shared_ptr<QualityObject>& qo) -> void {qo->setRunNumber(mRunNumber);});
+      for_each(newQOs.begin(), newQOs.end(), [&mRunNumber = mRunNumber](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mRunNumber); });
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();

@@ -33,7 +33,7 @@ QualityObject::QualityObject(
     mDetectorName{ std::move(detectorName) },
     mPolicyName{ std::move(policyName) },
     mInputs{ std::move(inputs) },
-    mMonitorObjectsNames{ std::move(monitorObjectsNames)},
+    mMonitorObjectsNames{ std::move(monitorObjectsNames) },
     mRunNumber(runNumber)
 {
   mQuality.overwriteMetadata(metadata);
