@@ -2,9 +2,9 @@
 
 add_library(O2QcHMPID)
 
-target_sources(O2QcHMPID PRIVATE src/HmpidEquipment.cxx)
-target_sources(O2QcHMPID PRIVATE src/HmpidDecoder.cxx)
-target_sources(O2QcHMPID PRIVATE src/HmpidDecodeRawMem.cxx)
+#target_sources(O2QcHMPID PRIVATE src/HmpidEquipment.cxx)
+#target_sources(O2QcHMPID PRIVATE src/HmpidDecoder.cxx)
+#target_sources(O2QcHMPID PRIVATE src/HmpidDecodeRawMem.cxx)
 target_sources(O2QcHMPID PRIVATE src/HmpidTask.cxx)
 
 target_include_directories(
@@ -22,9 +22,9 @@ install(TARGETS O2QcHMPID
 
 add_root_dictionary(O2QcHMPID
                     HEADERS
- # include/HMPIDReconstruction/HmpidEquipment.h
- # include/HMPIDReconstruction/HmpidDecoder2.h
- # include/HMPIDBase/Geo.h
+#  include/HMPIDReconstruction/HmpidEquipment.h
+#  include/HMPIDReconstruction/HmpidDecoder2.h
+#  include/HMPIDBase/Geo.h
   include/HMPID/HmpidTask.h
                     LINKDEF include/HMPID/LinkDef.h
                     BASENAME O2QcHMPID)
