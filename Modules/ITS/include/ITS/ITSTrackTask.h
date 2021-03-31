@@ -50,7 +50,6 @@ class ITSTrackTask : public TaskInterface
   void publishHistos();
   void formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset = 1., float yOffset = 1.);
   void addObject(TObject* aObject);
-  void getEnableLayers();
   void createAllHistos();
 
   static constexpr int NLayer = 7;
@@ -72,7 +71,6 @@ class ITSTrackTask : public TaskInterface
   Int_t mNClustersInTracks = 0;
   Int_t mNClusters = 0;
 
-  int mEnableLayers[7];
   o2::itsmft::TopologyDictionary mDict;
   o2::its::GeometryTGeo* mGeom;
 };
