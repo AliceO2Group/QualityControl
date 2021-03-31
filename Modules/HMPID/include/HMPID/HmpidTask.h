@@ -17,7 +17,7 @@
 #define QC_MODULE_HMPID_HMPIDHMPIDTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "HMPID/HmpidDecoder2.h"
+#include "HMPIDReconstruction/HmpidDecoder2.h"
 
 class TH1F;
 
