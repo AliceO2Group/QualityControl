@@ -102,7 +102,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     for run, run_versions in runs_dict.items():
         logging.debug(f"   Processing run {run}")
         # TODO get the EOR if it happened, meanwhile we use `eor_dict` or compute first object time + 15 hours
-        eor = eor_dict.get(run, run_versions[0].validFromAsDt + timedelta(hours=15))
+        eor = eor_dict.get(int(run), run_versions[0].validFromAsDt + timedelta(hours=15))
         logging.debug(f"   EOR : {eor}")
 
         # run is finished for long enough
