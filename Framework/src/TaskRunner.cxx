@@ -217,18 +217,22 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::start(const ServiceRegistry& services)
+void TaskRunner::computeRunNumber(const ServiceRegistry& services)
 {
   try {
-    auto temp = services.get<RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
+    auto temp = services.get<RawDeviceService>().device()->fConfig->GetProperty<string>("runNumber", "unspecified");
     ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: " << temp << ENDM;
     mRunNumber = stoi(temp);
     ILOG(Info, Support) << "Run number found in options: " << mRunNumber << ENDM;
-  } catch (std::invalid_argument& ia) {
-    ILOG(Info, Support) << "Run number not found in options or is not a number, using 0 instead." << ENDM;
-    mRunNumber = 0;
+  } catch (invalid_argument& ia) {
+    ILOG(Info, Support) << "Run number not found in options or is not a number, using the one from the config file instead." << ENDM;
+    mRunNumber = mConfigFile->get<int>("qc.config.Activity.number", 0);
   }
-  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+}
+
+void TaskRunner::start(const ServiceRegistry& services)
+{
+  computeRunNumber(services);
 
   try {
     startOfActivity();
@@ -405,6 +409,8 @@ void TaskRunner::startOfActivity()
   int run = mRunNumber > 0 ? mRunNumber : mConfigFile->get<int>("qc.config.Activity.number");
   Activity activity(run,
                     mConfigFile->get<int>("qc.config.Activity.type"));
+  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+  mCollector->setRunNumber(run);
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
 }
