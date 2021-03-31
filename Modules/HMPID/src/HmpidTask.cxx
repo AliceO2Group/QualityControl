@@ -21,8 +21,8 @@
 #include "QualityControl/QcInfoLogger.h"
 //#include "HMPID/HmpidDecodeRawMem.h"
 #include "HMPID/HmpidTask.h"
-#include "HMPIDReconstruction/HmpidEquipment.h"
-#include "HMPIDReconstruction/HmpidDecoder2.h"
+#include "HMPID/HmpidEquipment.h"
+#include "HMPID/HmpidDecoder2.h"
 
 namespace o2::quality_control_modules::hmpid
 {
