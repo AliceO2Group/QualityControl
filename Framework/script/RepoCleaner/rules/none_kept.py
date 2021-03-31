@@ -26,7 +26,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     deletion_list: List[ObjectVersion] = []
 
     for v in versions:
-        if v.validFromAsDatetime < datetime.now() - timedelta(minutes=delay):
+        if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):
             logging.debug(f"not in the grace period, we delete {v}")
             deletion_list.append(v)
             ccdb.deleteVersion(v)

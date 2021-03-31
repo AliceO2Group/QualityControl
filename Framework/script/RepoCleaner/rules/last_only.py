@@ -28,7 +28,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     deletion_list: List[ObjectVersion] = []
     # find the earliest
     for v in versions:
-        if earliest == None or v.validFromAsDatetime > earliest.validFromAsDatetime:
+        if earliest == None or v.validFromAsDt > earliest.validFromAsDatetime:
             earliest = v
     logging.debug(f"earliest : {earliest}")
             
@@ -38,7 +38,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
             preservation_list.append(v)
             continue
         
-        if v.validFromAsDatetime < datetime.now() - timedelta(minutes=delay):
+        if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):
             deletion_list.append(v)
             ccdb.deleteVersion(v)
         else:

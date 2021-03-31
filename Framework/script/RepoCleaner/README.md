@@ -32,7 +32,10 @@ The configuration for ccdb-test is described [here](../../../doc/DevelopersTips.
 ## Unit Tests
 `cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
 
-To run just one of the rules, do `python3 1_per_run.py`.
+In particular there is a test for the `production` rule that is pretty extensive. It hits the ccdb though.
+
+## Other tests
+Most of the classes and Rules have a main to help test them. To run do `python3 1_per_run.py`.
 
 ## Installation
 CMake will install the python scripts in bin and the config file in etc.

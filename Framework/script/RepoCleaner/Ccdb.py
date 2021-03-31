@@ -25,7 +25,7 @@ class ObjectVersion:
         '''
         self.path = path
         self.uuid = uuid
-        self.validFromAsDatetime = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
+        self.validFromAsDt = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
         self.validFrom = validFrom
         self.validTo = validTo
         self.metadata = metadata
@@ -33,9 +33,9 @@ class ObjectVersion:
     def __repr__(self):
         if "Run" in self.metadata or "RunNumber" in self.metadata:
             run_number = self.metadata["Run"] if "Run" in self.metadata else self.metadata["RunNumber"]
-            return f"Version of object {self.path} valid from {self.validFromAsDatetime}, run {run_number}"
+            return f"Version of object {self.path} valid from {self.validFromAsDt}, run {run_number}"
         else:
-            return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, " \
+            return f"Version of object {self.path} valid from {self.validFromAsDt} (uuid {self.uuid}, " \
                    f"ts {self.validFrom})"
 
 
