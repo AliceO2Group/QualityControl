@@ -135,7 +135,7 @@ void BasicReadoutHeaderQcTask::monitorData(o2::framework::ProcessingContext& ctx
           // get the two bits corresponding to the lane i
           int laneStatus = ((ddw_laneStatus >> (i * 2)) & (3));
           // fill the status in the histogram
-          mMFT_IndividualLaneStatus_vH[RUidMap[RUid]]->Fill(i, laneStatus + 1);
+          mMFT_IndividualLaneStatus_vH[RUidMap[RUid]]->Fill(i, laneStatus);
         }
       } // end if is a DDW
     }   // end if rdh->stop
