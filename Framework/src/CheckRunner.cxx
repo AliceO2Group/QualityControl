@@ -175,10 +175,10 @@ CheckRunner::~CheckRunner()
 
 void CheckRunner::init(framework::InitContext& iCtx)
 {
-  InfoLoggerContext *ilContext = nullptr;
+  InfoLoggerContext* ilContext = nullptr;
   try {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-  } catch (const RuntimeErrorRef &err) {
+  } catch (const RuntimeErrorRef& err) {
     ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
   }
 

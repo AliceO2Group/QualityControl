@@ -78,10 +78,10 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
 
 void TaskRunner::init(InitContext& iCtx)
 {
-  AliceO2::InfoLogger::InfoLoggerContext *ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
   try {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-  } catch (const RuntimeErrorRef &err) {
+  } catch (const RuntimeErrorRef& err) {
     ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
   }
   ILOG_INST.init("task/" + mTaskConfig.taskName, mConfigFile->getRecursive(), ilContext);
