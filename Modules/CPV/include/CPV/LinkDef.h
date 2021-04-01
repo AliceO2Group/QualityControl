@@ -4,4 +4,5 @@
 #pragma link off all functions;
 
 #pragma link C++ class o2::quality_control_modules::cpv::PedestalTask+;
+#pragma link C++ class o2::quality_control_modules::cpv::PedestalCheck+;
 #endif

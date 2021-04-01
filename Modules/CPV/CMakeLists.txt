@@ -2,7 +2,7 @@
 
 add_library(QcCPV)
 
-target_sources(QcCPV PRIVATE src/PedestalTask.cxx )
+target_sources(QcCPV PRIVATE src/PedestalCheck.cxx  src/PedestalTask.cxx )
 
 target_include_directories(
   QcCPV
@@ -10,7 +10,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(QcCPV PUBLIC QualityControl O2::CPVBase)
+target_link_libraries(QcCPV PUBLIC QualityControl O2::CPVBase ROOT::Spectrum)
 
 install(TARGETS QcCPV
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -19,6 +19,7 @@ install(TARGETS QcCPV
 
 add_root_dictionary(QcCPV
                     HEADERS
+  include/CPV/PedestalCheck.h
   include/CPV/PedestalTask.h
                     LINKDEF include/CPV/LinkDef.h
                     BASENAME QcCPV)
