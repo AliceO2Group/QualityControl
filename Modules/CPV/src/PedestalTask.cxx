@@ -381,7 +381,7 @@ void PedestalTask::fillHistograms()
   double *xPeaks, yPeaks[5];                  // arrays of x-position of the peaks and their heights
 
   //first, reset pedestal histograms
-  for (int mod = 0; mod < 3; mod++){
+  for (int mod = 0; mod < 3; mod++) {
     mHist2D[H2DPedestalNPeaksMapM2 + mod]->Reset();
     mHist2D[H2DPedestalValueMapM2 + mod]->Reset();
     mHist2D[H2DPedestalSigmaMapM2 + mod]->Reset();
@@ -389,7 +389,6 @@ void PedestalTask::fillHistograms()
     mHist1D[H1DPedestalValueM2 + mod]->Reset();
     mHist1D[H1DPedestalSigmaM2 + mod]->Reset();
     mHist1D[H1DPedestalEfficiencyM2 + mod]->Reset();
-
   }
 
   //then fill them with actual values
@@ -424,8 +423,8 @@ void PedestalTask::fillHistograms()
     } else {
       if (numberOfPeaks > 1) { // >1 peaks, no fit. Just use mean and stddev as ped value & sigma
         pedestalValue = mHistAmplitudes[channel]->GetMean();
-	if(pedestalValue > 0)
-	  pedestalValue = -pedestalValue;//let it be negative so we can know it's bad later
+        if (pedestalValue > 0)
+          pedestalValue = -pedestalValue; //let it be negative so we can know it's bad later
         pedestalSigma = mHistAmplitudes[channel]->GetStdDev();
         //let's publish this bad amplitude
         if (!getObjectsManager()->isBeingPublished(mHistAmplitudes[channel]->GetName())) {
@@ -436,7 +435,7 @@ void PedestalTask::fillHistograms()
         if (!getObjectsManager()->isBeingPublished(mHistAmplitudes[channel]->GetName())) {
           getObjectsManager()->startPublishing(mHistAmplitudes[channel]);
         }
-	continue;
+        continue;
       }
     }
 
