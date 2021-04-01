@@ -31,15 +31,15 @@
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/RawDeviceService.h>
 
-// Fairlogger
 #include <fairlogger/Logger.h>
+#include <FairMQDevice.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
 
 #include <string>
-#include <memory>
 #include <TFile.h>
 
 using namespace std;
@@ -62,8 +62,6 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
     mRunNumber(0),
     mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
 {
-  ILOG_INST.setFacility("Task");
-
   // setup configuration
   try {
     mTaskConfig.taskName = taskName;
@@ -80,6 +78,7 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
 
 void TaskRunner::init(InitContext& iCtx)
 {
+  ILOG_INST.init("task/" + mTaskConfig.taskName, mConfigFile->getRecursive());
   ILOG(Info, Support) << "initializing TaskRunner" << ENDM;
   ILOG(Info, Support) << "Loading configuration" << ENDM;
   try {
@@ -92,12 +91,12 @@ void TaskRunner::init(InitContext& iCtx)
   }
 
   // registering state machine callbacks
-  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &options = iCtx.options()]() { start(options); });
+  iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
 
   // setup monitoring
-  std::string monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
+  auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
   mCollector = MonitoringFactory::Get(monitoringUrl);
   mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
@@ -175,16 +174,16 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
     }
   }
 
-  //  ILOG(Debug, Trace) << "Completion policy callback. "
-  //                     << "Total inputs possible: " << inputs.size()
-  //                     << ", data inputs: " << dataInputsPresent
-  //                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
+  ILOG(Debug, Trace) << "Completion policy callback. "
+                     << "Total inputs possible: " << inputs.size()
+                     << ", data inputs: " << dataInputsPresent
+                     << ", timer inputs: " << (action == CompletionPolicy::CompletionOp::Consume) << ENDM;
 
   if (dataInputsPresent == dataInputsExpected) {
     action = CompletionPolicy::CompletionOp::Consume;
   }
 
-  //  ILOG(Debug, Trace) << "Action: " << action << ENDM;
+  ILOG(Debug, Trace) << "Action: " << action << ENDM;
 
   return action;
 }
@@ -218,16 +217,22 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::start(const ConfigParamRegistry& options)
+void TaskRunner::computeRunNumber(const ServiceRegistry& services)
 {
   try {
-    mRunNumber = stoi(options.get<std::string>("runNumber"));
+    auto temp = services.get<RawDeviceService>().device()->fConfig->GetProperty<string>("runNumber", "unspecified");
+    ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: " << temp << ENDM;
+    mRunNumber = stoi(temp);
     ILOG(Info, Support) << "Run number found in options: " << mRunNumber << ENDM;
-  } catch (std::invalid_argument& ia) {
-    ILOG(Info, Support) << "Run number not found in options, using 0 instead." << ENDM;
-    mRunNumber = 0;
+  } catch (invalid_argument& ia) {
+    ILOG(Info, Support) << "Run number not found in options or is not a number, using the one from the config file instead." << ENDM;
+    mRunNumber = mConfigFile->get<int>("qc.config.Activity.number", 0);
   }
-  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+}
+
+void TaskRunner::start(const ServiceRegistry& services)
+{
+  computeRunNumber(services);
 
   try {
     startOfActivity();
@@ -404,6 +409,8 @@ void TaskRunner::startOfActivity()
   int run = mRunNumber > 0 ? mRunNumber : mConfigFile->get<int>("qc.config.Activity.number");
   Activity activity(run,
                     mConfigFile->get<int>("qc.config.Activity.type"));
+  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+  mCollector->setRunNumber(run);
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
 }

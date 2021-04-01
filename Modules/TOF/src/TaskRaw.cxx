@@ -439,12 +439,14 @@ void TaskRaw::endOfCycle()
       diagnosticHisto = mHistoTRM[slot - 2].get();
     }
     if (diagnosticHisto) {
-      for (unsigned int crate = 0; crate < RawDataDecoder::ncrates; crate++) { // Loop over crates
-        for (unsigned int word = 0; word < RawDataDecoder::nwords; word++) {   // Loop over words
-          mHistoCrate[crate]->SetBinContent(word + 1, slot + 2,
+      for (int crate = 0; crate < diagnosticHisto->GetNbinsX(); crate++) { // Loop over crates
+        for (int word = 0; word < diagnosticHisto->GetNbinsY(); word++) {  // Loop over words
+          mHistoCrate[crate]->SetBinContent(word + 1, slot + 2,            // Shift position 1 to make room for the RDH
                                             diagnosticHisto->GetBinContent(word + 1, crate + 1));
         }
       }
+    } else {
+      LOG(WARNING) << "Did not find diagnostic histogram for slot " << slot << " for reshuffling";
     }
   }
   for (unsigned int crate = 0; crate < RawDataDecoder::ncrates; crate++) { // Loop over crates for how many RDH read

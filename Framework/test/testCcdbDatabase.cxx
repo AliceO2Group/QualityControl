@@ -421,5 +421,24 @@ BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(obj4->getMetadataMap().at("my_meta"), "is_good");
 }
 
+BOOST_AUTO_TEST_CASE(ccdb_store_retrieve_any)
+{
+  test_fixture f;
+
+  std::map<std::string, std::string> meta;
+  TH1F* h1 = new TH1F("quarantine", "asdf", 100, 0, 99);
+  h1->FillRandom("gaus", 10000);
+
+  f.backend->storeAny(h1, typeid(TH1F), f.getMoPath("storeAny"), meta, "TST", "testStoreAny");
+
+  meta.clear();
+  void* rawResult = f.backend->retrieveAny(typeid(TH1F), f.getMoPath("storeAny"), meta);
+  auto h1_back = static_cast<TH1F*>(rawResult);
+  BOOST_CHECK(rawResult != nullptr);
+  BOOST_CHECK(h1_back != nullptr);
+  BOOST_CHECK(h1_back->GetNbinsX() == 100);
+  BOOST_CHECK(h1_back->GetEntries() > 0);
+}
+
 } // namespace
 } // namespace o2::quality_control::core

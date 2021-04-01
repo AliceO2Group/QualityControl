@@ -56,6 +56,7 @@ For a general overview of our (O2) software, organization and processes, please 
       * [Convenience classes](doc/PostProcessing.md#convenience-classes)
          * [The TrendingTask class](doc/PostProcessing.md#the-trendingtask-class)
             * [TrendingTask configuration](doc/PostProcessing.md#trendingtask-configuration)
+         * [The TRFCollectionTask class](doc/PostProcessing.md#the-trfcollectiontask-class)
    * [Advanced topics](doc/Advanced.md)
       * [Plugging the QC to an existing DPL workflow](doc/Advanced.md#plugging-the-qc-to-an-existing-dpl-workflow)
       * [Production of QC objects outside this framework](doc/Advanced.md#production-of-qc-objects-outside-this-framework)

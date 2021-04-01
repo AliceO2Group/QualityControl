@@ -10,7 +10,11 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "MCHRawElecMap/Mapper.h"
+#ifdef HAVE_DIGIT_IN_DATAFORMATS
+#include "DataFormatsMCH/Digit.h"
+#else
 #include "MCHBase/Digit.h"
+#endif
 #include "MCH/GlobalHistogram.h"
 
 class TH1F;

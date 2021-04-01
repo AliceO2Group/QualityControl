@@ -31,7 +31,6 @@
       * [Local CCDB setup](#local-ccdb-setup)
       * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
       * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
-      * [Use MySQL as QC backend](#use-mysql-as-qc-backend)
       * [Configuration files details](#configuration-files-details)
          * [Global configuration structure](#global-configuration-structure)
          * [Common configuration](#common-configuration)
@@ -579,31 +578,10 @@ NOT WORKING YET, follow it up here: https://alice.its.cern.ch/jira/browse/O2-189
 
 ### Switch detector in the workflow _readout-dataflow_
 
-The workflow readout-dataflow has an issue. The proxy filters out everything but TPC data. To run with another detector (e.g. EMC) do:
+The workflow readout-dataflow works by default with the detector code TST. To run with another detector (e.g. EMC) do:
 
-1. Change all instances of "TPC" in the file /etc/flp.d/qc/stfb-qc.dpl.json to `EMC`.
-2. Change all instances of "TPC" in the QC config file in consul.
-2. Set these variables in aliECS:
-    * detector: EMC
-    * stfb_dataspec: B:EMC/RAWDATA
-
-## Use MySQL as QC backend
-
-WARNING. We do not actively support MySQL as QC database anymore. The interface might not work as expected anymore.
-
-1. Install the MySQL/MariaDB development package
-       * CC7 : `sudo yum install mariadb-server`
-       * Mac (or download the dmg from Oracle) : `brew install mysql`
-
-2. Rebuild the QualityControl (so that the mysql backend classes are compiled)
-
-3. Start and populate database :
-
-   ```
-   sudo systemctl start mariadb # for CC7, check for your specific OS
-   alienv enter qcg/latest
-   o2-qc-database-setup.sh
-   ```
+2. Replace all instances of `TST` in the QC config file in consul with the one of the detector (e.g. `EMC`).
+2. Set the variable `detector` in aliECS to the detector (e.g. `EMC`).
 
 ## Configuration files details
 
@@ -686,6 +664,10 @@ This is how a typical "config" structure looks like. Each configuration element 
       "conditionDB": {                    "": ["Configuration of the Conditions and Calibration DataBase (CCDB).",
                                                "Do not mistake with the CCDB which is used as QC repository."],
         "url": "ccdb-test.cern.ch:8080",  "": "URL of a CCDB"
+      },
+      "infologger": {                     "": "Configuration of the Infologger (optional).",
+        "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
+        "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: 21 - Trace)" 
       }
     }
   }

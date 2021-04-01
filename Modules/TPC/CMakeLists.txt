@@ -1,8 +1,8 @@
 # ---- Library ----
 
-add_library(QcTPC)
+add_library(O2QcTPC)
 
-target_sources(QcTPC PRIVATE src/PID.cxx
+target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/Tracking.cxx
                              src/Tracks.cxx
                              src/PIDClusterCheck.cxx
@@ -13,19 +13,19 @@ target_sources(QcTPC PRIVATE src/PID.cxx
                              src/Utility.cxx)
 
 target_include_directories(
-  QcTPC
+  O2QcTPC
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
           ${O2_ROOT}/include/GPU)
 
-target_link_libraries(QcTPC
-                      PUBLIC QualityControl
+target_link_libraries(O2QcTPC
+                      PUBLIC O2QualityControl
                              O2::TPCQC)
 
 
 
-add_root_dictionary(QcTPC
+add_root_dictionary(O2QcTPC
                     HEADERS include/TPC/PID.h
                             include/TPC/Tracking.h
                             include/TPC/Tracks.h
@@ -36,7 +36,7 @@ add_root_dictionary(QcTPC
                             include/TPC/CalDetPublisher.h
                             include/TPC/Utility.h
                     LINKDEF include/TPC/LinkDef.h
-                    BASENAME QcTPC)
+                    BASENAME O2QcTPC)
 
 # ---- Test(s) ----
 
@@ -48,7 +48,7 @@ foreach(test ${TEST_SRCS})
 
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name}
-                        PUBLIC QcTPC
+                        PUBLIC O2QcTPC
                         PRIVATE Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 60)
@@ -68,12 +68,12 @@ foreach(i RANGE ${count})
   list(GET EXE_SRCS ${i} src)
   list(GET EXE_NAMES ${i} name)
   add_executable(${name} ${src})
-  target_link_libraries(${name} PRIVATE QcTPC ROOT::Tree)
+  target_link_libraries(${name} PRIVATE O2QcTPC ROOT::Tree)
 endforeach()
 
 # ---- Install ----
 
-install(TARGETS QcTPC ${EXE_NAMES}
+install(TARGETS O2QcTPC ${EXE_NAMES}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

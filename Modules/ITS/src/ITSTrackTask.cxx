@@ -29,8 +29,6 @@ namespace o2::quality_control_modules::its
 
 ITSTrackTask::ITSTrackTask() : TaskInterface()
 {
-
-  getEnableLayers();
   createAllHistos();
 
   o2::base::GeometryManager::loadGeometry();
@@ -181,17 +179,6 @@ void ITSTrackTask::createAllHistos()
   hClusterUsage->SetTitle("Fraction of clusters used in tracking");
   addObject(hClusterUsage);
   formatAxes(hClusterUsage, "", "nCluster in track / Total cluster", 1, 1.10);
-}
-
-void ITSTrackTask::getEnableLayers()
-{
-  std::ifstream configFile("Config/ConfigLayers.dat"); //passing enabled layers into QC for ITS commissioning
-  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-    configFile >> mEnableLayers[ilayer];
-    if (mEnableLayers[ilayer]) {
-      LOG(INFO) << "enable layer : " << ilayer;
-    }
-  }
 }
 
 void ITSTrackTask::addObject(TObject* aObject)

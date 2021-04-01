@@ -18,6 +18,8 @@
 #include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "Common/Exceptions.h"
+// O2
+#include <CommonUtils/MemFileHelper.h>
 // ROOT
 #include <TBufferJSON.h>
 #include <TH1F.h>
@@ -81,7 +83,7 @@ void CcdbDatabase::loadDeprecatedStreamerInfos()
       string stringRepresentation = si->GetName() + si->GetClassVersion();
       if (alreadySeen.count(stringRepresentation) == 0) {
         alreadySeen.emplace(stringRepresentation);
-        ILOG(Debug, Devel) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << "'" << ENDM;
+        ILOG(Debug, Trace) << "importing streamer info version " << si->GetClassVersion() << " for '" << si->GetName() << "'" << ENDM;
         si->BuildCheck();
       }
     }
@@ -104,6 +106,42 @@ void CcdbDatabase::init()
 {
   ccdbApi.init(mUrl);
   loadDeprecatedStreamerInfos();
+}
+
+void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std::string const& path, std::map<std::string, std::string> const& metadata,
+                            std::string const& detectorName, std::string const& taskName, long from, long to)
+{
+  if (obj == nullptr) {
+    BOOST_THROW_EXCEPTION(DatabaseException()
+                          << errinfo_details("Cannot store a null pointer."));
+  }
+  if (path.length() == 0) {
+    BOOST_THROW_EXCEPTION(DatabaseException()
+                          << errinfo_details("Object and task names can't be empty. Do not store."));
+  }
+  if (path.find_first_of("\t\n ") != string::npos) {
+    BOOST_THROW_EXCEPTION(DatabaseException()
+                          << errinfo_details("Object and task names can't contain white spaces. Do not store."));
+  }
+
+  // metadata
+  map<string, string> fullMetadata(metadata);
+  // QC metadata (prefix qc_)
+  fullMetadata["qc_version"] = Version::GetQcVersion().getString();
+  fullMetadata["qc_detector_name"] = detectorName;
+  fullMetadata["qc_task_name"] = taskName;
+  fullMetadata["ObjectType"] = o2::utils::MemFileHelper::getClassName(typeInfo);
+
+  // other attributes
+  if (from == -1) {
+    from = getCurrentTimestamp();
+  }
+  if (to == -1) {
+    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
+  }
+
+  ILOG(Debug, Support) << "Storing object " << path << " of type " << fullMetadata["ObjectType"] << ENDM;
+  ccdbApi.storeAsTFile_impl(obj, typeInfo, path, fullMetadata, from, to);
 }
 
 // Monitor object
@@ -187,6 +225,17 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
       ILOG(Error, Support) << "We could NOT retrieve the object " << path << "." << ENDM;
       return nullptr;
     }
+  }
+  ILOG(Debug, Support) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
+  return object;
+}
+
+void* CcdbDatabase::retrieveAny(const type_info& tinfo, const string& path, const map<std::string, std::string>& metadata, long timestamp, std::map<std::string, std::string>* headers, const string& createdNotAfter, const string& createdNotBefore)
+{
+  auto* object = ccdbApi.retrieveFromTFile(tinfo, path, metadata, timestamp, headers, "", createdNotAfter, createdNotBefore);
+  if (object == nullptr) {
+    ILOG(Error, Support) << "We could NOT retrieve the object " << path << "." << ENDM;
+    return nullptr;
   }
   ILOG(Debug, Support) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
   return object;
@@ -359,6 +408,29 @@ std::vector<std::string> CcdbDatabase::getListing(std::string subpath)
   }
 
   return result;
+}
+
+std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(std::string path)
+{
+  std::stringstream listingAsStringStream{ getListingAsString(path, "application/json") };
+  //  std::cout << "listingAsString: " << listingAsStringStream.str() << std::endl;
+
+  boost::property_tree::ptree listingAsTree;
+  boost::property_tree::read_json(listingAsStringStream, listingAsTree);
+
+  std::vector<uint64_t> timestamps;
+  const auto& objects = listingAsTree.get_child("objects");
+  timestamps.reserve(objects.size());
+
+  // As for today, we receive objects in the order of the newest to the oldest.
+  // We prefer the other order here.
+  for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
+    timestamps.emplace_back(rit->second.get<uint64_t>("Valid-From"));
+  }
+
+  // we make sure it is sorted. If it is already, it shouldn't cost much.
+  std::sort(timestamps.begin(), timestamps.end());
+  return timestamps;
 }
 
 std::vector<std::string> CcdbDatabase::getPublishedObjectNames(std::string taskName)

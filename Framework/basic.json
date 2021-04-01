@@ -20,6 +20,10 @@
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
+      },
+      "infologger": {                     "": "Configuration of the Infologger (optional).",
+        "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
+        "filterDiscardLevel": "21",       "": "Message at this level or above are discarded (default: 21 - Trace)"
       }
     },
     "tasks": {

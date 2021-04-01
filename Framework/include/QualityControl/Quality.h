@@ -89,10 +89,13 @@ class Quality
   const std::map<std::string, std::string>& getMetadataMap() const;
   /// \brief Overwrite the existing metadata.
   void overwriteMetadata(std::map<std::string, std::string> pairs);
-  /// \brief Get a metadata
+  /// \brief Get metadata
   /// \return the value corresponding to the key if it was found.
   /// \throw ObjectNotFoundError in case the key is not found.
-  const std::string getMetadata(std::string key);
+  std::string getMetadata(std::string key) const;
+  /// \brief Get metadata
+  /// \return the value corresponding to the key if it was found, default value otherwise
+  std::string getMetadata(std::string key, std::string defaultValue) const;
 
  private:
   unsigned int mLevel; /// 0 is no quality, 1 is best quality, then it only goes downhill...

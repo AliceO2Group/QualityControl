@@ -43,18 +43,17 @@ template <typename T>
 T* create(std::string moduleName, std::string className)
 {
   T* result = nullptr;
-  QcInfoLogger& logger = QcInfoLogger::GetInstance();
 
   // Load the library
-  std::string library = bfs::path(moduleName).is_absolute() ? moduleName : "lib" + moduleName;
-  logger << "Loading library " << library << AliceO2::InfoLogger::InfoLogger::endm;
+  std::string library = bfs::path(moduleName).is_absolute() ? moduleName : "libO2" + moduleName;
+  ILOG(Info, Devel) << "Loading library " << library << ENDM;
   int libLoaded = gSystem->Load(library.c_str(), "", true);
   if (libLoaded < 0) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Failed to load Detector Publisher Library"));
   }
 
   // Get the class and instantiate
-  logger << "Loading class " << className << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Devel) << "Loading class " << className << ENDM;
   TClass* cl = TClass::GetClass(className.c_str());
   std::string tempString("Failed to instantiate Quality Control Module");
   if (!cl) {
@@ -63,13 +62,12 @@ T* create(std::string moduleName, std::string className)
     tempString += "\" could be retrieved";
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
   }
-  logger << "Instantiating class " << className << " (" << cl << ")"
-         << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Devel) << "Instantiating class " << className << " (" << cl << ")" << ENDM;
   result = static_cast<T*>(cl->New());
   if (!result) {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details(tempString));
   }
-  logger << "QualityControl Module " << moduleName << " loaded " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Devel) << "QualityControl Module " << moduleName << " loaded " << ENDM;
 
   return result;
 }

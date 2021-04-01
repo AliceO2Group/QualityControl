@@ -9,6 +9,7 @@
    * [Convenience classes](#convenience-classes)
       * [The TrendingTask class](#the-trendingtask-class)
          * [TrendingTask configuration](#trendingtask-configuration)
+      * [The TRFCollectionTask class](#the-trfcollectiontask-class)
 
 
 
@@ -277,5 +278,48 @@ The `"name"` and `"varexp"` are the only compulsory arguments, others can be omi
         ...
 }
 ```
+
+## The TRFCollectionTask class
+
+This task allows to transform a set of QualityObjects stored QCDB across certain timespan (usually for the duration of a data acquisition run) into a TimeRangeFlagCollection.
+It is meant to be run after for each detector/subsystem separately and when all QualityObjects for a run are generated.
+After generating timestamps, final data tags can be computed as the next step.
+The data formats for tagging data quality are described [here](https://github.com/AliceO2Group/AliceO2/tree/dev/DataFormats/QualityControl/README.md).
+
+The task should be run asynchronously to data-taking and should be given the start and end of a time range to process.
+For example:
+
+```bash
+o2-qc-run-postprocessing --config json://${QUALITYCONTROL_ROOT}/Modules/Common/etc/trfcollection-example.json \
+                         --name TRFCollectionQcCheck --timestamps 1612707603626 1613999652000
+```
+
+The task is configured as follows:
+```json
+{
+  "qc": {
+    "config": {
+      "": "The usual global configuration variables"
+    },
+    "postprocessing": {
+      "TRFCollectionQcCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::common::TRFCollectionTask",
+        "moduleName": "QcCommon",
+        "detectorName": "TST",    "": "One task should concatenate Qualities from detector, defined here.",
+        "initTrigger": [],        "": "The triggers can be left empty,",
+        "updateTrigger": [],      "": "because we run the task with a defined set of timestamps.",
+        "stopTrigger": [],
+                                  "": "The list of Quality Object to process.",
+        "QOs": [
+          "QcCheck"
+        ]
+      }
+    }
+  }
+}
+```
+
+TimeRangeFlagCollections are meant to be used as a base to derive Data Tags for analysis (WIP).
 
 [← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Advanced Topics →](Advanced.md)

@@ -13,9 +13,14 @@ include(AddQCWorkflow)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 1.11.0 #  TODO update this automatically when there are new releases
+        VERSION 1.14.1 #  TODO update this automatically when there are new releases
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES CXX)
+
+if(ONLYDOC)
+  add_subdirectory(doc)
+  return()
+endif()
 
 # Set CMAKE_INSTALL_LIBDIR explicitly to lib (to avoid lib64 on CC7)
 set(CMAKE_INSTALL_LIBDIR lib)
@@ -91,7 +96,6 @@ find_package(Boost 1.58
 find_package(Git QUIET)
 find_package(Configuration REQUIRED)
 find_package(Monitoring REQUIRED)
-find_package(MySQL)
 find_package(Common REQUIRED)
 find_package(InfoLogger REQUIRED)
 find_package(O2 CONFIG REQUIRED)
@@ -101,15 +105,6 @@ find_package(FairMQ REQUIRED)
 find_package(FairLogger REQUIRED)
 find_package(Occ REQUIRED)
 find_package(ROOT 6.06.02 COMPONENTS RHTTP Gui REQUIRED)
-
-set(ENABLE_MYSQL ON)
-if(NOT (MYSQL_FOUND AND TARGET ROOT::RMySQL))
-  set(ENABLE_MYSQL OFF)
-  message(
-    STATUS
-      "MySQL or ROOT::RMySQL not found, the corresponding classes won't be built."
-    )
-endif()
 
 configure_file(getTestDataDirectory.cxx.in getTestDataDirectory.cxx)
 
