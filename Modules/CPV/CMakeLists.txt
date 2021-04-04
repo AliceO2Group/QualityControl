@@ -10,7 +10,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(QcCPV PUBLIC QualityControl O2::CPVBase ROOT::Spectrum)
+target_link_libraries(QcCPV PUBLIC O2QualityControl O2::CPVBase ROOT::Spectrum)
 
 install(TARGETS QcCPV
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
