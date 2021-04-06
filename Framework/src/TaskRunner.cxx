@@ -74,9 +74,15 @@ TaskRunner::TaskRunner(const std::string& taskName, const std::string& configura
 
 void TaskRunner::init(InitContext& iCtx)
 {
-  ILOG_INST.init("task/" + mTaskConfig.taskName, mConfigFile->getRecursive());
-  ILOG(Info, Support) << "initializing TaskRunner" << ENDM;
-  ILOG(Info, Support) << "Loading configuration" << ENDM;
+  AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
+  try {
+    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+  } catch (const RuntimeErrorRef& err) {
+    ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
+  }
+  ILOG_INST.init("task/" + mTaskConfig.taskName, mConfigFile->getRecursive(), ilContext);
+
+  ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
   try {
     loadTaskConfig();
   } catch (...) {
@@ -346,6 +352,8 @@ boost::property_tree::ptree TaskRunner::getTaskConfigTree() const
 
 void TaskRunner::loadTaskConfig()
 {
+  ILOG(Info, Support) << "Loading configuration" << ENDM;
+
   auto taskConfigTree = getTaskConfigTree();
   string test = taskConfigTree.get<std::string>("detectorName", "MISC");
   mTaskConfig.detectorName = validateDetectorName(taskConfigTree.get<std::string>("detectorName", "MISC"));
