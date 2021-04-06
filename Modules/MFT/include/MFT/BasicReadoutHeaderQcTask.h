@@ -31,6 +31,25 @@ namespace o2::quality_control_modules::mft
 /// \author Guillermo Contreras
 class BasicReadoutHeaderQcTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
+  // addapted from ITSFeeTask
+  struct MFTDDW { //GBT diagnostic word
+    union {
+      uint64_t word0 = 0x0;
+      struct {
+        uint64_t laneStatus : 50;
+        uint16_t someInfo : 14;
+      } laneBits;
+    } laneWord;
+    union {
+      uint64_t word1 = 0x0;
+      struct {
+        uint16_t someInfo2 : 8;
+        uint16_t id : 8;
+        uint64_t padding : 48;
+      } indexBits;
+    } indexWord;
+  };
+
  public:
   /// \brief Constructor
   BasicReadoutHeaderQcTask() = default;
@@ -47,7 +66,16 @@ class BasicReadoutHeaderQcTask /*final*/ : public TaskInterface // todo add back
   void reset() override;
 
  private:
-  std::unique_ptr<TH1F> mMFT_LaneStatus_H = nullptr;
+  const int knRU = 80;      // number of RU
+  const int kmaxRUid = 104; // max number to identify a RU
+  int RUidMap[104];         // id start from zero
+  std::unique_ptr<TH1F> mMFT_SummaryLaneStatus_H = nullptr;
+  std::vector<std::unique_ptr<TH2F>> mMFT_IndividualLaneStatus_vH;
+
+  // maps RUid into an idx for histograms
+  void generateRUidMap();
+  // unpacks RU ID into geometry information needed to name histograms
+  void unpackRUid(int RUid, int& zone, int& plane, int& disc, int& half);
 };
 
 } // namespace o2::quality_control_modules::mft
