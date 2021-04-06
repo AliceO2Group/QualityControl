@@ -181,7 +181,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   metadata["qc_detector_name"] = mo->getDetectorName();
   metadata["qc_task_name"] = mo->getTaskName();
   metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
-  metadata["Run"] = std::to_string(mo->getRunNumber());
+  metadata["RunNumber"] = std::to_string(mo->getRunNumber());
 
   ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
   ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
@@ -191,7 +191,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
 {
   // metadata
   map<string, string> metadata;
-  metadata["Run"] = std::to_string(qo->getRunNumber());
+  metadata["RunNumber"] = std::to_string(qo->getRunNumber());
   metadata["ObjectType"] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   // QC metadata (prefix qc_)
   metadata["qc_version"] = Version::GetQcVersion().getString();

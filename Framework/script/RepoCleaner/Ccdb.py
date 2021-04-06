@@ -31,11 +31,13 @@ class ObjectVersion:
         self.metadata = metadata
         
     def __repr__(self):
-        if "Run" in self.metadata:
+        if "Run" in self.metadata or "RunNumber" in self.metadata:
+            run_number = self.metadata["Run"] if "Run" in self.metadata else self.metadata["RunNumber"]
             return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, " \
-               f"ts {self.validFrom}), run {self.metadata['Run']}"
+                   f"ts {self.validFrom}), run {run_number}"
         else:
-            return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, ts {self.validFrom})"
+            return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, " \
+                   f"ts {self.validFrom})"
 
 
 class Ccdb:

@@ -110,7 +110,7 @@ const string& MonitorObject::getDescription() const
 
 void MonitorObject::setDescription(const string& description)
 {
-  MonitorObject::mDescription = description;
+  mDescription = description;
 }
 
 int MonitorObject::getRunNumber() const
@@ -120,7 +120,7 @@ int MonitorObject::getRunNumber() const
 
 void MonitorObject::setRunNumber(int runNumber)
 {
-  MonitorObject::mRunNumber = runNumber;
+  mRunNumber = runNumber;
 }
 
 } // namespace o2::quality_control::core
