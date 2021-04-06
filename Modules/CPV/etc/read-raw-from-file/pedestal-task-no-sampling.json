@@ -1,0 +1,106 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "CPVPedestalTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::cpv::PedestalTask",
+        "moduleName": "QcCPV",
+        "detectorName": "CPV",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "direct",
+          "query": "digits:CPV/DIGITS/0;dtrigrec:CPV/DIGITTRIGREC/0"
+        },
+        "taskParameters": {
+          "cutOnMinAmplitude": "0"
+        },
+        "location": "remote",
+        "saveObjectsToFile": "MOs.root",      "": "For debugging, path to the file where to save. If empty or missing it won't save."
+      }
+    },
+    "checks": {
+	"CPVPedestalCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::cpv::PedestalCheck",
+        "moduleName": "QcCPV",
+        "policy": "OnAny",
+        "detectorName": "CPV",
+        "dataSource": [{
+          "type": "Task",
+          "name": "CPVPedestalTask",
+          "MOs": [
+	    "PedestalValueM2",
+	    "PedestalValueM3",
+	    "PedestalValueM4",
+	    "PedestalSigmaM2",
+	    "PedestalSigmaM3",
+	    "PedestalSigmaM4",
+	    "PedestalEfficiencyM2",
+	    "PedestalEfficiencyM3",
+	    "PedestalEfficiencyM4"
+	  ]
+        }],
+        "checkParameters": {
+            "mMinGoodPedestalValueM2": "1",
+	    "mMinGoodPedestalValueM3": "1",
+	    "mMinGoodPedestalValueM4": "1",
+	    "": "",
+	    "mMaxGoodPedestalSigmaM2": "2",
+	    "mMaxGoodPedestalSigmaM3": "5",
+	    "mMaxGoodPedestalSigmaM4": "2",
+	    "": "",
+	    "mMinGoodPedestalEfficiencyM2": "0.75",
+	    "mMinGoodPedestalEfficiencyM3": "0.75",
+	    "mMinGoodPedestalEfficiencyM4": "0.75",
+	    "": "",
+	    "mMaxGoodPedestalEfficiencyM2": "1.0",
+	    "mMaxGoodPedestalEfficiencyM3": "1.0",
+	    "mMaxGoodPedestalEfficiencyM4": "1.0",
+	    "": "",
+	    "mToleratedBadPedestalValueChannelsM2": "100",
+	    "mToleratedBadPedestalValueChannelsM3": "200",
+	    "mToleratedBadPedestalValueChannelsM4": "100",
+	    "": "",
+	    "mToleratedBadPedestalSigmaChannelsM2": "300",
+	    "mToleratedBadPedestalSigmaChannelsM3": "400",
+	    "mToleratedBadPedestalSigmaChannelsM4": "500",
+	    "": "",
+	    "mToleratedBadChannelsM2": "200",
+	    "mToleratedBadChannelsM3": "200",
+	    "mToleratedBadChannelsM4": "200",
+	    "": "",
+	    "mToleratedBadPedestalEfficiencyChannelsM2": "100",
+	    "mToleratedBadPedestalEfficiencyChannelsM3": "100",
+	    "mToleratedBadPedestalEfficiencyChannelsM4": "100"
+        }
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+
+  ]
+}
