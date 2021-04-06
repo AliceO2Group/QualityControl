@@ -23,6 +23,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
 
     What it does:
       - Versions without run number -> delete after the `delay`
+         - (The run number is set in "RunNumber" metadata)
       - For a given run
          - Keep everything for 30 minutes (configurable: delay_first_trimming)
          - Keep 1 per 10 minutes (configurable: period_btw_versions_first) after this delay.
@@ -79,8 +80,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     versions = ccdb.getVersionsList(object_path)
     logging.debug(f"Dispatching versions to runs")
     for v in versions:
-        if "Run" in v.metadata:
-            runs_dict[v.metadata['Run']].append(v)
+        if "RunNumber" in v.metadata:
+            runs_dict[v.metadata['RunNumber']].append(v)
         else:
             runs_dict[-1].append(v)  # the ones with no run specified
     logging.debug(f"   Number of runs : {len(runs_dict)}")
@@ -204,7 +205,7 @@ def main():
 def prepare_test_data(ccdb, path, run):
     current_timestamp = int(time.time() * 1000)
     data = {'part': 'part'}
-    metadata = {'Run': str(run)}
+    metadata = {'RunNumber': str(run)}
     # 1 version every 1 minutes starting 1 hour ago
     for x in range(60):
         from_ts = current_timestamp - (60 - x) * 60 * 1000

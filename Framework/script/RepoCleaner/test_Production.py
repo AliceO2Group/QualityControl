@@ -117,7 +117,7 @@ class TestProduction(unittest.TestCase):
         current_timestamp = int(time.time() * 1000)
         sor = current_timestamp - minutes_since_sor * 60 * 1000
         data = {'part': 'part'}
-        metadata = {'Run': str(self.run), 'trim1': 'true'}
+        metadata = {'RunNumber': str(self.run), 'trim1': 'true'}
         cursor = sor
 
         # 1 version every 10 minutes starting at sor and finishing 30 minutes after with trim1 flag set
@@ -134,7 +134,7 @@ class TestProduction(unittest.TestCase):
         # 1 version every 1 minutes starting after and lasting `minutes_second_part` minutes
         if not skip_second_part:
             current_timestamp = int(time.time() * 1000)
-            metadata = {'Run': str(self.run)}
+            metadata = {'RunNumber': str(self.run)}
             for x in range(minutes_second_part):
                 from_ts = cursor + x * 60 * 1000
                 if from_ts > current_timestamp:

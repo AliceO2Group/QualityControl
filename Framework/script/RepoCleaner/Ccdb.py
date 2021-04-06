@@ -174,7 +174,7 @@ def main():
     ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
 
     data = {'somekey': 'somevalue'}
-    metadata = {'run': '213564', 'test': 'on'}
+    metadata = {'RunNumber': '213564', 'test': 'on'}
     version_info = ObjectVersion(path="qc/TST/MO/repo/test", validFrom=1605091858183, validTo=1920451858183, metadata=metadata)
     ccdb.putVersion(version_info, data)
 
