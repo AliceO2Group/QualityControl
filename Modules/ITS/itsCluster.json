@@ -35,7 +35,14 @@
           "type": "dataSamplingPolicy",
           "name": "compclus"
         },
-        "location": "remote"
+        "location": "remote",
+        "taskParameters": {
+                    "layer": "1111111",
+                    "clusterDictionaryPath": "/home/its/aisakov/workdir/ITSdictionary.bin",
+                    "runNumberPath": "/home/its/QC/workdir/infiles/RunNumber.dat",
+                    "geomPath": "/home/its/aisakov/workdir/o2sim_geometry.root"  
+        }
+
       }
     },
     "checks": {

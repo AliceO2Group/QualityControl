@@ -25,6 +25,7 @@
 #include <DetectorsRaw/RDHUtils.h>
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
+#include <Headers/DataHeaderHelpers.h>
 
 using namespace std;
 using namespace o2::raw;
@@ -207,7 +208,7 @@ void DaqTask::monitorInputRecord(InputRecord& inputRecord)
 
       // printing
       if (mCustomParameters.count("printInputHeader") > 0 && mCustomParameters["printInputHeader"] == "true") {
-        header->print();
+        std::cout << fmt::format("{}", *header) << std::endl;
       }
       if (mCustomParameters.count("printInputPayload") > 0) {
         printInputPayload(header, payload);
