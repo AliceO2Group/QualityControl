@@ -413,7 +413,7 @@ void TaskRunner::startOfActivity()
   Activity activity(mRunNumber,
                     mConfigFile->get<int>("qc.config.Activity.type"));
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
-  mCollector->setRunNumber(run);
+  mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
   mObjectsManager->updateRunNumber(mRunNumber);
