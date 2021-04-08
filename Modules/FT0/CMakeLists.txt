@@ -3,6 +3,7 @@
 add_library(O2QcFT0)
 
 target_sources(O2QcFT0 PRIVATE src/BasicDigitQcTask.cxx
+                             src/DigitQcTask.cxx
                              src/ChannelsCheck.cxx
                              src/DigitsCheck.cxx
                              src/MergedTreeCheck.cxx
@@ -25,6 +26,7 @@ install(TARGETS O2QcFT0
 
 add_root_dictionary(O2QcFT0
         HEADERS include/FT0/BasicDigitQcTask.h
+                include/FT0/DigitQcTask.h
                 include/FT0/ChannelsCheck.h
                 include/FT0/DigitsCheck.h
                 include/FT0/Utilities.h
