@@ -160,7 +160,7 @@ When working on the ansible recipes and deploying with o2-flp-setup, the recipes
 ### Test with STFBuilder
 https://alice.its.cern.ch/jira/browse/O2-169
 ```
-readout.exe file:///afs/cern.ch/user/b/bvonhall/dev/alice/sw/slc7_x86-64/DataDistribution/latest/config/readout_emu.cfg
+o2-o2-readout-exe file:///afs/cern.ch/user/b/bvonhall/dev/alice/sw/slc7_x86-64/DataDistribution/latest/config/readout_emu.cfg
  
 StfBuilder \
 	--id stf_builder-0 \
