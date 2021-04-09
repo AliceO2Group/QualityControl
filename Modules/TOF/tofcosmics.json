@@ -37,7 +37,8 @@
         },
         "taskParameters": {
           "SelDeltaTSignalRegion": "50000",
-          "SelDeltaTBackgroundRegion": "100000"
+          "SelDeltaTBackgroundRegion": "100000",
+          "SelMinLength": "500"
         },
         "location": "remote"
       }
