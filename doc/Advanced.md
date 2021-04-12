@@ -476,7 +476,7 @@ enabled=1
 
 In 3 separate terminals, do respectively
 
-1. `readout.exe file:///absolute/path/to/config.cfg`
+1. `o2-readout-exe file:///absolute/path/to/config.cfg`
 2. `o2-qc-run-readout-for-data-dump --batch`
 3. `o2-qc-data-dump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static`
 

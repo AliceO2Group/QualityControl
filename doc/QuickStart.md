@@ -149,7 +149,7 @@ enabled=1
 
 Start Readout in a terminal:
 ```
-readout.exe file://$READOUT_ROOT/etc/readout-qc.cfg
+o2-readout-exe file://$READOUT_ROOT/etc/readout-qc.cfg
 ```
 
 Start in another terminal the proxy, DataSampling and QC workflows:
