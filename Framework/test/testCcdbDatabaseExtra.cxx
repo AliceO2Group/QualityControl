@@ -78,22 +78,22 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
 }
 
 // It depends on what is in the database.
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
-{
-  test_fixture f;
-  for (auto const& [task, object] : Objects) {
-    ILOG(Info, Support) << "[JSON RETRIEVE]: " << task << "/" << object << ENDM;
-    auto json = f.backend->retrieveMOJson(task, object);
-    if (json.empty()) {
-      ILOG(Info, Support) << "skipping empty object..." << ENDM;
-      continue;
-    }
-    std::stringstream ss;
-    ss << json;
-    boost::property_tree::ptree pt;
-    boost::property_tree::read_json(ss, pt);
-  }
-}
+//BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
+//{
+//  test_fixture f;
+//  for (auto const& [task, object] : Objects) {
+//    ILOG(Info, Support) << "[JSON RETRIEVE]: " << task << "/" << object << ENDM;
+//    auto json = f.backend->retrieveMOJson(task, object);
+//    if (json.empty()) {
+//      ILOG(Info, Support) << "skipping empty object..." << ENDM;
+//      continue;
+//    }
+//    std::stringstream ss;
+//    ss << json;
+//    boost::property_tree::ptree pt;
+//    boost::property_tree::read_json(ss, pt);
+//  }
+//}
 
 long oldTimestamp;
 
@@ -109,27 +109,6 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 
   shared_ptr<QualityObject> qo = make_shared<QualityObject>(Quality::Bad, "checkName", "TST", "OnAll");
   f.backend->storeQO(qo);
-}
-
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
-{
-  test_fixture f;
-
-  string json = f.backend->retrieveMOJson("qc/TST/MO/my/task", "asdf/asdf");
-  BOOST_CHECK(!json.empty());
-  ILOG(Info, Support) << json << ENDM;
-  std::stringstream ss;
-  ss << json;
-  boost::property_tree::ptree pt;
-  boost::property_tree::read_json(ss, pt);
-
-  json = f.backend->retrieveQOJson("qc/TST/QO/checkName");
-  BOOST_CHECK(!json.empty());
-  ILOG(Info, Support) << json << ENDM;
-  std::stringstream ss2;
-  ss2 << json;
-  boost::property_tree::ptree pt2;
-  boost::property_tree::read_json(ss2, pt2);
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store"))

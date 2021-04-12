@@ -42,11 +42,6 @@ std::shared_ptr<MonitorObject> DummyDatabase::retrieveMO(std::string, std::strin
   return std::shared_ptr<MonitorObject>();
 }
 
-std::string DummyDatabase::retrieveMOJson(std::string, std::string, long)
-{
-  return std::string();
-}
-
 void DummyDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject>, long, long)
 {
 }
@@ -54,11 +49,6 @@ void DummyDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qua
 std::shared_ptr<QualityObject> DummyDatabase::retrieveQO(std::string, long)
 {
   return std::shared_ptr<QualityObject>();
-}
-
-std::string DummyDatabase::retrieveQOJson(std::string, long)
-{
-  return std::string();
 }
 
 void DummyDatabase::disconnect()
