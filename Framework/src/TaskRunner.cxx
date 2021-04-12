@@ -219,22 +219,9 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::computeRunNumber(const ServiceRegistry& services)
-{
-  try {
-    auto temp = services.get<RawDeviceService>().device()->fConfig->GetProperty<string>("runNumber", "unspecified");
-    ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: " << temp << ENDM;
-    mRunNumber = stoi(temp);
-    ILOG(Info, Support) << "Run number found in options: " << mRunNumber << ENDM;
-  } catch (invalid_argument& ia) {
-    ILOG(Info, Support) << "Run number not found in options or is not a number, using the one from the config file instead." << ENDM;
-    mRunNumber = mConfigFile->get<int>("qc.config.Activity.number", 0);
-  }
-}
-
 void TaskRunner::start(const ServiceRegistry& services)
 {
-  computeRunNumber(services);
+  o2::quality_control::core::computeRunNumber(services, mConfigFile->getRecursive());
 
   try {
     startOfActivity();
