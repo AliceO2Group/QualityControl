@@ -25,8 +25,6 @@
 
 #include <boost/test/unit_test.hpp>
 #include <TH1F.h>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 namespace utf = boost::unit_test;
 
@@ -76,24 +74,6 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_all)
     ILOG(Info, Support) << "name of encapsulated object : " << mo->getObject()->GetName() << ENDM; // just to test it
   }
 }
-
-// It depends on what is in the database.
-//BOOST_AUTO_TEST_CASE(ccdb_retrieve_all_json)
-//{
-//  test_fixture f;
-//  for (auto const& [task, object] : Objects) {
-//    ILOG(Info, Support) << "[JSON RETRIEVE]: " << task << "/" << object << ENDM;
-//    auto json = f.backend->retrieveMOJson(task, object);
-//    if (json.empty()) {
-//      ILOG(Info, Support) << "skipping empty object..." << ENDM;
-//      continue;
-//    }
-//    std::stringstream ss;
-//    ss << json;
-//    boost::property_tree::ptree pt;
-//    boost::property_tree::read_json(ss, pt);
-//  }
-//}
 
 long oldTimestamp;
 

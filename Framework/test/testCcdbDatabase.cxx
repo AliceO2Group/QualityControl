@@ -25,7 +25,6 @@
 
 #include <boost/test/unit_test.hpp>
 #include <TH1F.h>
-#include "rapidjson/document.h"
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/testUtils.h"
 #include <TROOT.h>
@@ -174,62 +173,6 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_inexisting_mo)
   BOOST_CHECK(mo == nullptr);
 }
 
-//BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_024)
-//{
-//  // test whether we can read data from version 0.24
-//  test_fixture f;
-//  map<string, string> filter = { { "qc_version", "0.24.0" } };
-//  long timestamp = CcdbDatabase::getFutureTimestamp(60 * 60 * 24 * 365 * 5); // target 5 years in the future as we store with validity of 10 years
-//
-//  auto* mo = dynamic_cast<MonitorObject*>(f.backend->retrieveTObject("qc/TST_KEEP/task/to_be_kept", filter, timestamp));
-//  BOOST_CHECK_NE(mo, nullptr);
-//  BOOST_CHECK_EQUAL(mo->getName(), "to_be_kept");
-//  BOOST_CHECK_EQUAL(dynamic_cast<TH1F*>(mo->getObject())->GetEntries(), 12345);
-//
-//  auto* qo = dynamic_cast<QualityObject*>(f.backend->retrieveTObject("qc/checks/TST_KEEP/check", filter, timestamp));
-//  BOOST_CHECK_NE(qo, nullptr);
-//  BOOST_CHECK_EQUAL(qo->getName(), "check");
-//  BOOST_CHECK_EQUAL(qo->getQuality(), o2::quality_control::core::Quality::Bad);
-//
-//  auto jsonMO = f.backend->retrieveJson("qc/TST_KEEP/task/to_be_kept", timestamp, filter);
-//  BOOST_CHECK(!jsonMO.empty());
-//
-//  auto jsonQO = f.backend->retrieveJson("qc/checks/TST_KEEP/check", timestamp, filter);
-//  BOOST_CHECK(!jsonQO.empty());
-//}
-//
-//BOOST_AUTO_TEST_CASE(ccdb_retrieve_data_026)
-//{
-//  // test whether we can read data from version 0.26
-//  test_fixture f;
-//  map<string, string> filter = { { "qc_version", "0.26.0" } };
-//  long timestamp = CcdbDatabase::getFutureTimestamp(60 * 60 * 24 * 365 * 5); // target 5 years in the future as we store with validity of 10 years
-//
-//  auto* tobj = f.backend->retrieveTObject("qc/TST_KEEP/task/to_be_kept", filter, timestamp);
-//  BOOST_CHECK_NE(tobj, nullptr);
-//  BOOST_CHECK_EQUAL(tobj->GetName(), "to_be_kept");
-//  BOOST_CHECK_EQUAL(dynamic_cast<TH1F*>(tobj)->GetEntries(), 12345);
-//
-//  std::map<std::string, std::string> headers;
-//  auto* qo = dynamic_cast<QualityObject*>(f.backend->retrieveTObject("qc/checks/TST_KEEP/check", filter, timestamp, &headers));
-//  BOOST_CHECK_NE(qo, nullptr);
-//  BOOST_CHECK_EQUAL(qo->getName(), "check");
-//  BOOST_CHECK_EQUAL(qo->getQuality(), o2::quality_control::core::Quality::Bad);
-//  BOOST_CHECK(headers.count("Valid-From") > 0);
-//  string validityQO = headers["Valid-From"];
-//
-//  auto qo2 = f.backend->retrieveQO("qc/checks/TST_KEEP/check", std::stol(validityQO));
-//  string run = qo2->getMetadata("Run");
-//  cout << "Run : " << run << endl;
-//  BOOST_CHECK(run == "0.26.0");
-//
-//  auto jsonMO = f.backend->retrieveJson("qc/TST_KEEP/task/to_be_kept", timestamp, filter);
-//  BOOST_CHECK(!jsonMO.empty());
-//
-//  auto jsonQO = f.backend->retrieveJson("qc/checks/TST_KEEP/check", timestamp, filter);
-//  BOOST_CHECK(!jsonQO.empty());
-//}
-
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
 {
   test_fixture f;
@@ -328,37 +271,6 @@ BOOST_AUTO_TEST_CASE(ccdb_test_no_thread_api)
     cout << "object : " << object << endl;
   }
 }
-
-//BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
-//{
-//  test_fixture f;
-//
-//  std::string object = "quarantine";
-//  std::string path = f.getMoPath(object);
-//  std::cout << "[json retrieve]: " << path << std::endl;
-//  auto json = f.backend->retrieveJson(path, -1, f.metadata);
-//  auto json2 = f.backend->retrieveMOJson(f.getMoFolder(object), object);
-//  BOOST_CHECK(!json.empty());
-//  BOOST_CHECK(!json2.empty());
-//  BOOST_CHECK(areIdentical(json, json2));
-//
-//  std::string checkName = "test-ccdb-check";
-//  string qualityPath = f.getQoPath(checkName);
-//  std::cout << "[json retrieve]: " << qualityPath << std::endl;
-//  auto json3 = f.backend->retrieveJson(qualityPath, -1, f.metadata);
-//  auto json4 = f.backend->retrieveQOJson(qualityPath);
-//  BOOST_CHECK(!json3.empty());
-//  BOOST_CHECK(areIdentical(json3, json4));
-//
-//  Document jsonDocument;
-//  jsonDocument.Parse(json.c_str());
-//  BOOST_CHECK(jsonDocument["_typename"].IsString());
-//  BOOST_CHECK_EQUAL(jsonDocument["_typename"].GetString(), "TH1F");
-//  BOOST_CHECK(jsonDocument.FindMember("metadata") != jsonDocument.MemberEnd());
-//  const Value& metadataNode = jsonDocument["metadata"];
-//  BOOST_CHECK(metadataNode.IsObject());
-//  BOOST_CHECK(metadataNode.FindMember("qc_task_name") != jsonDocument.MemberEnd());
-//}
 
 BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))
 {
