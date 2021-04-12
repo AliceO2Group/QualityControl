@@ -19,8 +19,10 @@
 #include <Framework/InputRecord.h>
 
 #include "QualityControl/QcInfoLogger.h"
-#include "HMPID/HmpidDecodeRawMem.h"
+//#include "HMPID/HmpidDecodeRawMem.h"
 #include "HMPID/HmpidTask.h"
+#include "HMPIDReconstruction/HmpidEquipment.h"
+#include "HMPIDReconstruction/HmpidDecoder2.h"
 
 namespace o2::quality_control_modules::hmpid
 {
@@ -93,6 +95,10 @@ void HmpidTask::startOfActivity(Activity& /*activity*/)
   hPedestalSigma->Reset();
   hBusyTime->Reset();
   hEventSize->Reset();
+
+  mDecoder = new o2::hmpid::HmpidDecoder2(14);
+  mDecoder->init();
+  mDecoder->setVerbosity(2); // this is for Debug
 }
 
 void HmpidTask::startOfCycle()
@@ -103,92 +109,54 @@ void HmpidTask::startOfCycle()
 void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   NumCycles++;
+  mDecoder->init();
+  mDecoder->setVerbosity(2); // this is for Debug
 
-  // In this function you can access data inputs specified in the JSON config file, for example:
-  //   "query": "random:ITS/RAWDATA/0"
-  // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
-  // One can also access conditions from CCDB, via separate API (see point 3)
-
-  // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
-  // One can find additional examples at:
-  // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
-
-  // Some examples:
-
-  // We define an array with the Equipment Ids that will be managed from the Stream
-  //int EqIdsArray[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
-  //int CruIdsArray[] = { 1, 2, 3, 4 };
-  //int LinkIdsArray[] = { 1, 2, 3, 4 };
-  // Get a Decoder Hinstance
-  HmpidDecodeRawMem decoder(14);
-  //  HmpidDecoder *Decoder = new HmpidDecoder(EqIdsArray, 14);
-  decoder.init();
-  decoder.setVerbosity(7); // this is for Debug
-
-  // mHistogram->Fill(gRandom->Gaus(250.,100.));
-
-  // 1. In a loop
   for (auto&& input : ctx.inputs()) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
       const auto* header = header::get<header::DataHeader*>(input.header);
-      // get payload of a specific input, which is a char array.
-      // const char* payload = input.payload;
-
-      // for the sake of an example, let's fill the histogram with payload sizes
-      //mHistogram->Fill(header->payloadSize);
       int32_t* ptrToPayload = (int32_t*)(input.payload);
 
-      decoder.setUpStream(ptrToPayload, header->payloadSize);
-
-      if (!decoder.decodeBuffer()) {
+      if (header->payloadSize < 80) {
+        continue;
+      }
+      mDecoder->setUpStream(ptrToPayload, (long int)header->payloadSize);
+      if (!mDecoder->decodeBufferFast()) {
         ILOG(Error) << "Error decoding the Superpage !" << ENDM;
       }
-
       for (Int_t eq = 0; eq < 14; eq++) {
-
-        if (decoder.getAverageEventSize(eq) > 0.) {
-          hEventSize->SetBinContent(eq + 1, decoder.getAverageEventSize(eq) / 1000.);
+        if (mDecoder->getAverageEventSize(eq) > 0.) {
+          hEventSize->SetBinContent(eq + 1, mDecoder->getAverageEventSize(eq) / 1000.);
           hEventSize->SetBinError(eq + 1, 0.0000001);
         }
-        if (decoder.getAverageBusyTime(eq) > 0.) {
-          hBusyTime->SetBinContent(eq + 1, decoder.getAverageBusyTime(eq) * 1000000);
+        if (mDecoder->getAverageBusyTime(eq) > 0.) {
+          hBusyTime->SetBinContent(eq + 1, mDecoder->getAverageBusyTime(eq) * 1000000);
           hBusyTime->SetBinError(eq + 1, 0.00000001);
         }
-
-        Printf("eq = %i, size = %f, busy = %f", eq, decoder.getAverageEventSize(eq), decoder.getAverageBusyTime(eq));
-
-        for (Int_t column = 0; column < 24; column++)
-          for (Int_t dilogic = 0; dilogic < 10; dilogic++)
+        Printf("eq = %i, size = %f, busy = %f", eq, mDecoder->getAverageEventSize(eq), mDecoder->getAverageBusyTime(eq));
+        for (Int_t column = 0; column < 24; column++) {
+          for (Int_t dilogic = 0; dilogic < 10; dilogic++) {
             for (Int_t channel = 0; channel < 48; channel++) {
-
-              Float_t mean = decoder.getChannelSum(eq, column, dilogic, channel) / decoder.getChannelSamples(eq, column, dilogic, channel);
-              Float_t sigma = TMath::Sqrt(decoder.getChannelSquare(eq, column, dilogic, channel) / decoder.getChannelSamples(eq, column, dilogic, channel) - mean * mean);
-
-              // if(mean>1) Printf("*******************************************   mean = %f, sigma = %f **************************************",mean,sigma);
-
+              Float_t mean = mDecoder->getChannelSum(eq, column, dilogic, channel) / mDecoder->getChannelSamples(eq, column, dilogic, channel);
+              Float_t sigma = TMath::Sqrt(mDecoder->getChannelSquare(eq, column, dilogic, channel) / mDecoder->getChannelSamples(eq, column, dilogic, channel) - mean * mean);
               hPedestalMean->Fill(mean);
               hPedestalSigma->Fill(sigma);
             }
+          }
+        }
       }
 
       /* Access the pads
-      
       uint16_t   decoder.theEquipments[0..13]->padSamples[0..23][0..9][0..47]  Number of samples
       float      decoder.theEquipments[0..13]->padSum[0..23][0..9][0..47]      Sum of the charge of all samples
       float      decoder.theEquipments[0..13]->padSquares[0..23][0..9][0..47]  Sum of the charge squares of all samples
-
-    Methods to access pads
-
-  void ConvertCoords(int Mod, int Col, int Row, int *Equi, int *Colu, int *Dilo, int *Chan);
-
-  uint16_t GetChannelSamples(int Equipment, int Column, int Dilogic, int Channel);
-  float GetChannelSum(int Equipment, int Column, int Dilogic, int Channel);
-  float GetChannelSquare(int Equipment, int Column, int Dilogic, int Channel);
-  uint16_t GetPadSamples(int Module, int Column, int Row);
-  float GetPadSum(int Module, int Column, int Row);
-  float GetPadSquares(int Module, int Column, int Row);
-
+'     uint16_t GetChannelSamples(int Equipment, int Column, int Dilogic, int Channel);
+      float GetChannelSum(int Equipment, int Column, int Dilogic, int Channel);
+      float GetChannelSquare(int Equipment, int Column, int Dilogic, int Channel);
+      uint16_t GetPadSamples(int Module, int Column, int Row);
+      float GetPadSum(int Module, int Column, int Row);
+      float GetPadSquares(int Module, int Column, int Row);
       */
     }
   }
@@ -198,34 +166,6 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
     hPedestalSigma->Reset();
     NumCycles = 0;
   }
-
-  // 2. Using get("<binding>")
-
-  // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
-  //   auto payload = ctx.inputs().get("random").payload;
-
-  // get payload of a specific input, which is a structure array:
-  //  const auto* header = header::get<header::DataHeader*>(ctx.inputs().get("random").header);
-  //  struct s {int a; double b;};
-  //  auto array = ctx.inputs().get<s*>("random");
-  //  for (int j = 0; j < header->payloadSize / sizeof(s); ++j) {
-  //    int i = array.get()[j].a;
-  //  }
-
-  // get payload of a specific input, which is a root object
-  //   auto h = ctx.inputs().get<TH1F*>("histos");
-  //   Double_t stats[4];
-  //   h->GetStats(stats);
-  //   auto s = ctx.inputs().get<TObjString*>("string");
-  //   LOG(INFO) << "String is " << s->GetString().Data();
-
-  // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
-  // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
-  //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
-  //   if (condition) {
-  //     LOG(INFO) << "Retrieved " << condition->ClassName();
-  //     delete condition;
-  //   }
 }
 
 void HmpidTask::endOfCycle()
