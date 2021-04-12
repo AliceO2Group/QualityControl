@@ -67,6 +67,10 @@ void TaskCosmics::initialize(o2::framework::InitContext& /*ctx*/)
     mSelDeltaTBackgroundRegion = atoi(param->second.c_str());
     LOG(INFO) << "Set SelDeltaTBackgroundRegion to " << mSelDeltaTBackgroundRegion << " ps";
   }
+  if (auto param = mCustomParameters.find("SelMinLength"); param != mCustomParameters.end()) {
+    mSelMinLength = atoi(param->second.c_str());
+    LOG(INFO) << "Set SelMinLength to " << mSelMinLength << " cm";
+  }
 
   mHistoCrate1.reset(new TH1F("Crate1", "Crate1;Crate of first hit;Counts", 72, 0, 72));
   getObjectsManager()->startPublishing(mHistoCrate1.get());
@@ -80,9 +84,9 @@ void TaskCosmics::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistoToT1.get());
   mHistoToT2.reset(new TH1F("ToT2", "ToT2;ToT (ns);Counts", 100, 0., 48.8));
   getObjectsManager()->startPublishing(mHistoToT2.get());
-  mHistoLength.reset(new TH1F("Length", "Length;Length (cm);Counts", 100, 500.f, 1000.f));
+  mHistoLength.reset(new TH1F("Length", "Length;Length (cm);Counts", 100, mSelMinLength, 1000.f));
   getObjectsManager()->startPublishing(mHistoLength.get());
-  mHistoDeltaTLength.reset(new TH2F("DeltaTLength", "DeltaT vs Length;Length (cm);#DeltaT (ps);Counts", 100, 500.f, 1000.f, 1000, -1e6, 1e6));
+  mHistoDeltaTLength.reset(new TH2F("DeltaTLength", "DeltaT vs Length;Length (cm);#DeltaT (ps);Counts", 100, mSelMinLength, 1000.f, 1000, -1e6, 1e6));
   getObjectsManager()->startPublishing(mHistoDeltaTLength.get());
   mHistoCosmicRate.reset(new TH1F("CosmicRate", "CosmicRate;Crate;Cosmic rate (Hz)", 72, 0., 72));
   mCounterPeak.MakeHistogram(mHistoCosmicRate.get());
@@ -104,21 +108,32 @@ void TaskCosmics::monitorData(o2::framework::ProcessingContext& ctx)
 {
   mCounterTF.Count(0);
   const auto cosmics = ctx.inputs().get<std::vector<o2::tof::CosmicInfo>>("infocosmics");
-  for (auto i : cosmics) {
-    const int crate1 = o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(i.getCH1()));
-    const int crate2 = o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(i.getCH2()));
+
+  for (unsigned int i = 0; i < cosmics.size(); i++) {
+    if (cosmics.size() > i + 2) {
+      if (fabs(cosmics[i].getT1() - cosmics[i + 2].getT1()) < 2E3) {
+        continue;
+      }
+    }
+
+    const o2::tof::CosmicInfo cosmic = cosmics[i];
+    if (cosmic.getL() < mSelMinLength) {
+      continue;
+    }
+    const int crate1 = o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(cosmic.getCH1()));
+    const int crate2 = o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(cosmic.getCH2()));
     mHistoCrate1->Fill(crate1);
     mHistoCrate2->Fill(crate2);
     mHistoCrate1VsCrate2->Fill(crate1, crate2);
-    mHistoDeltaT->Fill(i.getDeltaTime());
-    mHistoToT1->Fill(i.getTOT1());
-    mHistoToT2->Fill(i.getTOT2());
-    mHistoLength->Fill(i.getL());
-    mHistoDeltaTLength->Fill(i.getL(), i.getDeltaTime());
-    if (abs(i.getDeltaTime()) < mSelDeltaTSignalRegion) {
+    mHistoDeltaT->Fill(cosmic.getDeltaTime());
+    mHistoToT1->Fill(cosmic.getTOT1());
+    mHistoToT2->Fill(cosmic.getTOT2());
+    mHistoLength->Fill(cosmic.getL());
+    mHistoDeltaTLength->Fill(cosmic.getL(), cosmic.getDeltaTime());
+    if (abs(cosmic.getDeltaTime()) < mSelDeltaTSignalRegion) {
       mCounterPeak.Count(crate1);
       mCounterPeak.Count(crate2);
-    } else if (abs(i.getDeltaTime()) < mSelDeltaTBackgroundRegion) {
+    } else if (abs(cosmic.getDeltaTime()) < mSelDeltaTBackgroundRegion) {
       mCounterPeak.Add(crate1, -1);
       mCounterPeak.Add(crate2, -1);
     }
