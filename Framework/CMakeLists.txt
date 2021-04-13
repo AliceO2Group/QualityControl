@@ -400,8 +400,8 @@ install(FILES example-default.json
               streamerinfos_v017.root
         DESTINATION etc)
 
-install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/skip.py
-                 script/RepoCleaner/repoCleaner.py script/RepoCleaner/1_per_run.py script/RepoCleaner/none_kept.py
+install(PROGRAMS script/RepoCleaner/rules/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/rules/skip.py
+                 script/RepoCleaner/repoCleaner.py script/RepoCleaner/rules/1_per_run.py script/RepoCleaner/rules/none_kept.py
   script/o2-qc-functional-test.sh
         DESTINATION bin)
 

@@ -36,7 +36,8 @@ from Ccdb import Ccdb
 class Rule:
     """A class to hold information about a "rule" defined in the config file."""
 
-    def __init__(self, object_path=None, delay=None, policy=None, all_params=None):
+    def __init__(self, object_path=None, delay=None, policy=None,  # migration=None,
+                 all_params=None):
         '''
         Constructor.
         :param object_path: path to the object, or pattern, to which a rule will apply.
@@ -48,13 +49,18 @@ class Rule:
         self.object_path = object_path
         self.delay = delay
         self.policy = policy
+        # self.migration = migration
+
         self.extra_params = all_params
-        self.extra_params.pop("object_path")
-        self.extra_params.pop("delay")
-        self.extra_params.pop("policy")
+        if all_params is not None:
+            self.extra_params.pop("object_path")
+            self.extra_params.pop("delay")
+            self.extra_params.pop("policy")
+            # self.extra_params.pop("migration")
 
     def __repr__(self):
-        return 'Rule(object_path={.object_path}, delay={.delay}, policy={.policy}, extra_params={.extra_params})'.format(self, self, self, self)
+        return 'Rule(object_path={.object_path}, delay={.delay}, policy={.policy}, extra_params={.extra_params})'.format(
+            self, self, self, self, self)
 
 
 def parseArgs():
@@ -86,7 +92,7 @@ def parseConfig(config_file_path):
     :param config_file_path: Path to the config file
     :raises yaml.YAMLError If the config file does not contain a valid yaml.
     """
-    
+
     logging.info(f"Parsing config file {config_file_path}")
     with open(config_file_path, 'r') as stream:
         config_content = yaml.safe_load(stream)
@@ -94,13 +100,15 @@ def parseConfig(config_file_path):
     rules = []
     logging.debug("Rules found in the config file:")
     for rule_yaml in config_content["Rules"]:
-        rule = Rule(rule_yaml["object_path"], rule_yaml["delay"], rule_yaml["policy"], rule_yaml)
+        rule = Rule(rule_yaml["object_path"], rule_yaml["delay"], rule_yaml["policy"],  # rule_yaml["migration"],
+                    rule_yaml)
         rules.append(rule)
         logging.debug(f"   * {rule}")
 
     ccdb_url = config_content["Ccdb"]["Url"]
 
     return {'rules': rules, 'ccdb_url': ccdb_url}
+
 
 def downloadConfigFromGit():
     """
@@ -110,7 +118,8 @@ def downloadConfigFromGit():
     """
 
     logging.debug("Get it from git")
-    r = requests.get('https://raw.github.com/AliceO2Group/QualityControl/repo_cleaner/Framework/script/RepoCleaner/config.yaml')
+    r = requests.get(
+        'https://raw.github.com/AliceO2Group/QualityControl/repo_cleaner/Framework/script/RepoCleaner/config.yaml')
     logging.debug(f"config file from git : \n{r.text}")
     path = "/tmp/config.yaml"
     with open(path, 'w') as f:
@@ -121,13 +130,13 @@ def downloadConfigFromGit():
 
 def findMatchingRule(rules, object_path):
     """Return the first matching rule for the given path or None if none is found."""
-    
+
     logging.debug(f"findMatchingRule for {object_path}")
-    
+
     if object_path == None:
         logging.error(f"findMatchingRule: object_path is None")
         return None
-    
+
     for rule in rules:
         pattern = re.compile(rule.object_path)
         result = pattern.match(object_path)
@@ -137,8 +146,10 @@ def findMatchingRule(rules, object_path):
     logging.debug("   No rule found, skipping.")
     return None
 
+
 filepath = tempfile.gettempdir() + "/repoCleaner.txt"
 currentTimeStamp = int(time.time() * 1000)
+
 
 def getTimestampLastExecution():
     """
@@ -155,6 +166,7 @@ def getTimestampLastExecution():
     logging.info(f"Timestamp retrieved from {filepath}: {timestamp}")
     f.close()
     return timestamp
+
 
 def storeSavedTimestamp():
     """
@@ -175,8 +187,9 @@ def storeSavedTimestamp():
 
 def main():
     # Logging (you can use funcName in the template)
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
-    
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s',
+                        datefmt='%d-%b-%y %H:%M:%S')
+
     # Parse arguments 
     args = parseArgs()
     logging.getLogger().setLevel(int(args.log_level))
@@ -205,14 +218,17 @@ def main():
         rule = findMatchingRule(rules, object_path);
         if rule == None:
             continue
-             
+
         # Apply rule on object (find the plug-in script and apply)
         module = __import__(rule.policy)
-        stats = module.process(ccdb, object_path, int(rule.delay), rule.extra_params)
+        stats = module.process(ccdb, object_path, int(rule.delay),  # rule.migration == "True",
+                               rule.extra_params)
         logging.info(f"{rule.policy} applied on {object_path}: {stats}")
-    
-    logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
+
+    logging.info(
+        f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
     storeSavedTimestamp()
+
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.
     main()

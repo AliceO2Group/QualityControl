@@ -6,7 +6,8 @@ from typing import Dict
 from Ccdb import Ccdb, ObjectVersion
 
 
-def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, str]):
+def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
+            extra_params: Dict[str, str]):
     '''
     Process this deletion rule on the object. We use the CCDB passed by argument.
     Objects who have been created recently are spared (delay is expressed in minutes).
@@ -17,6 +18,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     :param ccdb: the ccdb in which objects are cleaned up.
     :param object_path: path to the object, or pattern, to which a rule will apply.
     :param delay: the grace period during which a new object is never deleted.
+    :param migration: whether the objects that have not been deleted should be migrated to the Grid. It does not apply to the objects spared because they are recent (see delay).
+    :param extra_params: a dictionary containing extra parameters for this rule.
     :return a dictionary with the number of deleted, preserved and updated versions. Total = deleted+preserved.
     '''
     
@@ -29,7 +32,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     deletion_list: List[ObjectVersion] = []
     update_list: List[ObjectVersion] = []
     for v in versions:
-        if last_preserved == None or last_preserved.validFromAsDatetime < v.validFromAsDatetime - timedelta(hours=1):
+        if last_preserved == None or last_preserved.validFromAsDatetime < v.validFromAsDt - timedelta(hours=1):
             # first extend validity of the previous preserved (should we take into account the run ?)
             if last_preserved != None:
                 ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1))
@@ -38,7 +41,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
             preservation_list.append(v)
         else:
             deletion_list.append(v)
-            if v.validFromAsDatetime < datetime.now() - timedelta(minutes=delay):
+            if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):
                 logging.debug(f"not in the grace period, we delete {v}")
                 ccdb.deleteVersion(v)
 
