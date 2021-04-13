@@ -25,8 +25,9 @@ class ObjectVersion:
         '''
         self.path = path
         self.uuid = uuid
-        self.validFromAsDt = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
         self.validFrom = validFrom
+        # precomputed Datetime ("Dt") of the timestamp `validFrom`
+        self.validFromAsDt = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
         self.validTo = validTo
         self.metadata = metadata
         
@@ -139,16 +140,6 @@ class Ccdb:
         except requests.exceptions.RequestException as e:  
             print(e)
             sys.exit(1)  # really ? 
-
-    @dryable.Dryable()
-    def setMetadata(self, key: str, value: str):
-        '''
-
-        :param key:
-        :param value:
-        :return:
-        '''
-        logging.debug(f"Set key {key} to {value}")
 
     def putVersion(self, version: ObjectVersion, data):
         '''

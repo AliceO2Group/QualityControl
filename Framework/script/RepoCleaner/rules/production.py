@@ -9,8 +9,7 @@ from Ccdb import Ccdb, ObjectVersion
 
 
 def in_grace_period(version: ObjectVersion, delay: int):
-    return not (version.validFromAsDt < datetime.now() - timedelta(minutes=delay))
-
+    return version.validFromAsDt + timedelta(minutes=delay) > datetime.now()
 
 eor_dict = {}  # to have fake eor numbers
 
@@ -110,7 +109,6 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
         if eor is not None and datetime.now() > eor + timedelta(minutes=delay_final_trimming):
             logging.debug("      Run is over for long enough, let's do the final trimming")
             final_trimming(ccdb, period_btw_versions_final, run_versions, preservation_list, update_list, deletion_list)
-
         else:  # trim the versions as the run is ongoing or too fresh
             logging.debug("      Run is too fresh or still ongoing, we do the light trimming")
             first_trimming(ccdb, delay_first_trimming, period_btw_versions_first, run_versions,
@@ -177,7 +175,7 @@ def final_trimming(ccdb, period_btw_versions_final, run_versions, preservation_l
             if last_preserved is not None:  # first extend validity of the previous preserved and set flag
                 ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1), metadata)
                 update_list.append(last_preserved)
-                logging.debug(f"      Extention of {last_preserved}")
+                logging.debug(f"      Extension of {last_preserved}")
             last_preserved = v
             preservation_list.append(v)
         else:  # too close to the previous one, delete
