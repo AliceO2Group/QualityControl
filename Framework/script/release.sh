@@ -3,6 +3,15 @@ set -e ;# exit on error
 set -u ;# exit when using undeclared variable
 
 
+# Check that we have `jq`
+if ! command -v jq &> /dev/null
+then
+    echo "jq could not be found, please install it."
+    exit
+fi
+exit
+
+
 # Parameter: if there we check that it is a proper version number, if not we propose a new one
 if [ "$#" -gt 0 ]; then
     newVersion=$1
@@ -77,7 +86,7 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
     exit 3
 fi
-#git push
+git push
 
 
 read -p "Go to JIRA and release this version : https://alice.its.cern.ch/jira/projects/QC?selectedItem=com.atlassian.jira.jira-projects-plugin%3Arelease-page&status=released-unreleased
