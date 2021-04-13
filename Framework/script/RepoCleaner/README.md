@@ -21,7 +21,7 @@ There can be any number of these rules. The order is important as we use the fir
 - `delay`: the duration in minutes of the grace period during which an object is not removed, even if it matches the above path. 
 - `policy`: the name of a policy to apply on the matching objects. Here are the currently available policies (full description in the corresponding files):
    - `1_per_hour`: keep the first and extend its validity to 1 hour, remove everything in the next hour, repeat.
-   - `1_per_run`: requires the "run" metadata to be set. Keep only the most recent version of an object for a given run. 
+   - `1_per_run`: requires the "Run" or "RunNumber" metadata to be set. Keep only the most recent version of an object for a given run. 
    - `last_only`: keep only the last version, remove everything else.
    - `none_kept`: keep none, remove everything
    - `skip`: keep everything

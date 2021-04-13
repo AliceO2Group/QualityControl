@@ -26,13 +26,15 @@ QualityObject::QualityObject(
   std::string policyName,
   std::vector<std::string> inputs,
   std::vector<std::string> monitorObjectsNames,
-  std::map<std::string, std::string> metadata)
+  std::map<std::string, std::string> metadata,
+  int runNumber)
   : mQuality{ quality },
     mCheckName{ std::move(checkName) },
     mDetectorName{ std::move(detectorName) },
     mPolicyName{ std::move(policyName) },
     mInputs{ std::move(inputs) },
-    mMonitorObjectsNames{ std::move(monitorObjectsNames) }
+    mMonitorObjectsNames{ std::move(monitorObjectsNames) },
+    mRunNumber(runNumber)
 {
   mQuality.overwriteMetadata(metadata);
 }
@@ -144,11 +146,22 @@ const std::vector<std::string> QualityObject::getMonitorObjectsNames() const
   return mMonitorObjectsNames;
 }
 
+int QualityObject::getRunNumber() const
+{
+  return mRunNumber;
+}
+
+void QualityObject::setRunNumber(int runNumber)
+{
+  QualityObject::mRunNumber = runNumber;
+}
+
 std::ostream& operator<<(std::ostream& out, const QualityObject& q) // output
 {
   out << "QualityObject: " << q.getName() << ":\n"
       << "   - checkName : " << q.getCheckName() << "\n"
       << "   - detectorName : " << q.getDetectorName() << "\n"
+      << "   - runNumber : " << q.getRunNumber() << "\n"
       << "   - monitorObjectsNames : ";
   for (auto item : q.getMonitorObjectsNames()) {
     out << item << ", ";

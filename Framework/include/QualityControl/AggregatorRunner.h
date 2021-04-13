@@ -150,8 +150,12 @@ class AggregatorRunner : public framework::Task
    */
   void sendPeriodicMonitoring();
 
+  /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
+  void start(const framework::ServiceRegistry& services);
+
   // General state
   std::string mDeviceName;
+  int mRunNumber;
   std::vector<std::shared_ptr<Aggregator>> mAggregators;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;

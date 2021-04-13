@@ -43,8 +43,9 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
     versions = ccdb.getVersionsList(object_path)
     for v in versions:
         logging.debug(f"Processing {v}")
-        if "Run" in v.metadata:
-            runs_dict[v.metadata['Run']].append(v)
+        if {'Run', 'RunNumber'} & set(v.metadata):
+            run_number = v.metadata["Run"] if "Run" in v.metadata else v.metadata["RunNumber"]
+            runs_dict[run_number].append(v)
         else:
             runs_dict[-1].append(v) # the ones with no run specified
 

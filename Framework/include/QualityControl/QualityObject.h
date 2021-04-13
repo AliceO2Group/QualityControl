@@ -39,7 +39,8 @@ class QualityObject : public TObject
     std::string policyName = "",
     std::vector<std::string> inputs = {},
     std::vector<std::string> monitorObjectsNames = {},
-    std::map<std::string, std::string> metadata = {});
+    std::map<std::string, std::string> metadata = {},
+    int runNumber = 0);
 
   /// Destructor
   ~QualityObject() override;
@@ -111,13 +112,12 @@ class QualityObject : public TObject
 
   const std::string& getDetectorName() const;
   void setDetectorName(const std::string& detectorName);
-
   void setQuality(const Quality& quality);
   const std::string& getCheckName() const;
-
   const std::string& getPolicyName() const;
-
   const std::vector<std::string> getMonitorObjectsNames() const;
+  int getRunNumber() const;
+  void setRunNumber(int mRunNumber);
 
  private:
   Quality mQuality;
@@ -126,8 +126,9 @@ class QualityObject : public TObject
   std::string mPolicyName;
   std::vector<std::string> mInputs;
   std::vector<std::string> mMonitorObjectsNames;
+  int mRunNumber;
 
-  ClassDefOverride(QualityObject, 3);
+  ClassDefOverride(QualityObject, 4);
 };
 
 using QualityObjectsType = std::vector<std::shared_ptr<QualityObject>>;

@@ -25,8 +25,8 @@
 #include <Monitoring/Monitoring.h>
 // QC
 #include "QualityControl/DatabaseFactory.h"
-#include "QualityControl/TaskRunner.h"
 #include "QualityControl/ServiceDiscovery.h"
+#include "QualityControl/runnerUtils.h"
 // Fairlogger
 #include <fairlogger/Logger.h>
 
@@ -126,6 +126,7 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& che
 CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
   : mDeviceName(createCheckRunnerName(checks)),
     mChecks{ checks },
+    mRunNumber(0),
     mLogger(QcInfoLogger::GetInstance()),
     /* All checks have the same Input */
     mInputs(checks.front().getInputs()),
@@ -148,6 +149,7 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
 CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
   : mDeviceName(createSinkCheckRunnerName(input)),
     mChecks{},
+    mRunNumber(0),
     mLogger(QcInfoLogger::GetInstance()),
     mInputs{ input },
     mOutputs{},
@@ -294,6 +296,8 @@ QualityObjectsType CheckRunner::check()
     if (updatePolicyManager.isReady(check.getName())) {
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
+      // set the run number on all objects
+      for_each(newQOs.begin(), newQOs.end(), [&mRunNumber = mRunNumber](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mRunNumber); });
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
@@ -408,6 +412,12 @@ void CheckRunner::initServiceDiscovery()
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
+}
+
+void CheckRunner::start(const ServiceRegistry& services)
+{
+  mRunNumber = computeRunNumber(services, mConfigFile->getRecursive());
+  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
 }
 
 } // namespace o2::quality_control::checker
