@@ -40,7 +40,6 @@ namespace
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
-using namespace rapidjson;
 
 const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
 
