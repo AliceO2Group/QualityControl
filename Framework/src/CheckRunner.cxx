@@ -409,7 +409,7 @@ void CheckRunner::initMonitoring()
 void CheckRunner::initServiceDiscovery()
 {
   auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "");
-  if(consulUrl.empty()) {
+  if (consulUrl.empty()) {
     mServiceDiscovery = nullptr;
     ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
     return;
