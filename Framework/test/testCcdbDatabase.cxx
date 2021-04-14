@@ -25,7 +25,6 @@
 
 #include <boost/test/unit_test.hpp>
 #include <TH1F.h>
-#include "rapidjson/document.h"
 #include "QualityControl/RepoPathUtils.h"
 #include "QualityControl/testUtils.h"
 #include <TROOT.h>
@@ -41,7 +40,6 @@ namespace
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::repository;
 using namespace std;
-using namespace rapidjson;
 
 const std::string CCDB_ENDPOINT = "ccdb-test.cern.ch:8080";
 
@@ -183,24 +181,6 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(q.getLevel(), 3);
 }
 
-/**
- * Compares the two provided json string. They must be identical at the exception of
- * the metadata "Date" that can differ. This is due to the way CCDB sets this property.
- * @param ccdbObjectJson1
- * @param ccdbObjectJson2
- * @return
- */
-bool areIdentical(std::string ccdbObjectJson1, std::string ccdbObjectJson2)
-{
-  Document jsonDocumentA;
-  Document jsonDocumentB;
-  jsonDocumentA.Parse(ccdbObjectJson1.c_str());
-  jsonDocumentB.Parse(ccdbObjectJson2.c_str());
-  jsonDocumentA["metadata"].RemoveMember("Date");
-  jsonDocumentB["metadata"].RemoveMember("Date");
-  return jsonDocumentA == jsonDocumentB;
-}
-
 unique_ptr<CcdbDatabase> backendGlobal = std::make_unique<CcdbDatabase>();
 
 void askObject(std::string objectPath)
@@ -289,37 +269,6 @@ BOOST_AUTO_TEST_CASE(ccdb_test_no_thread_api)
     auto* object = api->retrieveFromTFileAny<TObject>(objectPath, metadata);
     cout << "object : " << object << endl;
   }
-}
-
-BOOST_AUTO_TEST_CASE(ccdb_retrieve_json, *utf::depends_on("ccdb_store"))
-{
-  test_fixture f;
-
-  std::string object = "quarantine";
-  std::string path = f.getMoPath(object);
-  std::cout << "[json retrieve]: " << path << std::endl;
-  auto json = f.backend->retrieveJson(path, -1, f.metadata);
-  auto json2 = f.backend->retrieveMOJson(f.getMoFolder(object), object);
-  BOOST_CHECK(!json.empty());
-  BOOST_CHECK(!json2.empty());
-  BOOST_CHECK(areIdentical(json, json2));
-
-  std::string checkName = "test-ccdb-check";
-  string qualityPath = f.getQoPath(checkName);
-  std::cout << "[json retrieve]: " << qualityPath << std::endl;
-  auto json3 = f.backend->retrieveJson(qualityPath, -1, f.metadata);
-  auto json4 = f.backend->retrieveQOJson(qualityPath);
-  BOOST_CHECK(!json3.empty());
-  BOOST_CHECK(areIdentical(json3, json4));
-
-  Document jsonDocument;
-  jsonDocument.Parse(json.c_str());
-  BOOST_CHECK(jsonDocument["_typename"].IsString());
-  BOOST_CHECK_EQUAL(jsonDocument["_typename"].GetString(), "TH1F");
-  BOOST_CHECK(jsonDocument.FindMember("metadata") != jsonDocument.MemberEnd());
-  const Value& metadataNode = jsonDocument["metadata"];
-  BOOST_CHECK(metadataNode.IsObject());
-  BOOST_CHECK(metadataNode.FindMember("qc_task_name") != jsonDocument.MemberEnd());
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_metadata, *utf::depends_on("ccdb_store"))

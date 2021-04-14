@@ -297,19 +297,6 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
   return qo;
 }
 
-std::string CcdbDatabase::retrieveQOJson(std::string qoPath, long timestamp)
-{
-  map<string, string> metadata;
-  return retrieveJson(qoPath, timestamp, metadata);
-}
-
-std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objectName, long timestamp)
-{
-  string path = taskName + "/" + objectName;
-  map<string, string> metadata;
-  return retrieveJson(path, timestamp, metadata);
-}
-
 std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata)
 {
   map<string, string> headers;

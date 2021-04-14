@@ -142,20 +142,6 @@ class DatabaseInterface
   virtual TObject* retrieveTObject(std::string path, const std::map<std::string, std::string>& metadata, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) = 0;
 
   /**
-   * \brief Look up a monitor object and return it in JSON format.
-   * Look up a monitor object and return it in JSON format if found or an empty string if not.
-   * The headers associated with the object are added to the JSON object under the key "metadata".
-   * @deprecated
-   */
-  virtual std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = -1) = 0;
-  /**
-   * \brief Look up a quality object and return it in JSON format.
-   * Look up a quality object and return it in JSON format if found or an empty string if not.
-   * The headers associated with the object are added to the JSON object under the key "metadata".
-   * @deprecated
-   */
-  virtual std::string retrieveQOJson(std::string qoPath, long timestamp = -1) = 0;
-  /**
    * \brief Look up an object and return it in JSON format.
    * Look up an object and return it in JSON format if found or an empty string if not.
    * The headers associated with the object are added to the JSON object under the key "metadata".
@@ -164,6 +150,7 @@ class DatabaseInterface
    * \param metadata filters under the form of key-value pairs to select data
    */
   virtual std::string retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata) = 0;
+
   /**
    * \brief Look up an object and return it in JSON format.
    * Look up an object and return it in JSON format if found or an empty string if not.
