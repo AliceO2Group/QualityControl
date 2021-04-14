@@ -347,7 +347,7 @@ void TaskRunner::loadTaskConfig()
   mTaskConfig.moduleName = taskConfigTree.get<std::string>("moduleName");
   mTaskConfig.className = taskConfigTree.get<std::string>("className");
   mTaskConfig.maxNumberCycles = taskConfigTree.get<int>("maxNumberCycles", -1);
-  mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+  mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "");
   mTaskConfig.conditionUrl = mConfigFile->get<std::string>("qc.config.conditionDB.url", "http://ccdb-test.cern.ch:8080");
   mTaskConfig.saveToFile = taskConfigTree.get<std::string>("saveObjectsToFile", "");
   try {
