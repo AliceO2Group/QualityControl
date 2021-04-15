@@ -344,6 +344,7 @@ void TaskRunner::loadTaskConfig()
   auto taskConfigTree = getTaskConfigTree();
   string test = taskConfigTree.get<std::string>("detectorName", "MISC");
   mTaskConfig.detectorName = validateDetectorName(taskConfigTree.get<std::string>("detectorName", "MISC"));
+  ILOG_INST.setDetector(mTaskConfig.detectorName);
   mTaskConfig.moduleName = taskConfigTree.get<std::string>("moduleName");
   mTaskConfig.className = taskConfigTree.get<std::string>("className");
   mTaskConfig.maxNumberCycles = taskConfigTree.get<int>("maxNumberCycles", -1);

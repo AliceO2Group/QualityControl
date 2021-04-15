@@ -109,6 +109,8 @@ We use the infologger. There is a utility class, `QcInfoLogger`, that can be use
 
 Related issues : https://alice.its.cern.ch/jira/browse/QC-224
 
+To have the full details of what is sent to the logs, do `export INFOLOGGER_MODE=raw`.
+
 ### Service Discovery (Online mode)
 
 Service discovery (Online mode) is used to list currently published objects by running QC tasks and checkers. It uses Consul to store:

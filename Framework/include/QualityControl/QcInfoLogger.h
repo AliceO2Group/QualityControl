@@ -51,6 +51,7 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
   }
 
   void setFacility(const std::string& facility);
+  void setDetector(const std::string& detector);
   void init(const std::string& facility,
             bool discardDebug = false,
             int discardFromLevel = 21 /* Discard Trace */,
@@ -66,6 +67,10 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
   // Disallow copying
   QcInfoLogger& operator=(const QcInfoLogger&) = delete;
   QcInfoLogger(const QcInfoLogger&) = delete;
+
+  // remember the contexts
+  AliceO2::InfoLogger::InfoLoggerContext* mContext = nullptr;
+  AliceO2::InfoLogger::InfoLoggerContext* mDplContext = nullptr;
 };
 
 } // namespace o2::quality_control::core
