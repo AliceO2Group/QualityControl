@@ -53,7 +53,7 @@ void QcInfoLogger::setDetector(const std::string& detector)
 void QcInfoLogger::init(const std::string& facility, bool discardDebug, int discardFromLevel,
                         AliceO2::InfoLogger::InfoLoggerContext* dplContext)
 {
-  mDplContext=dplContext;
+  mDplContext = dplContext;
   setFacility(facility);
 
   // Set the proper discard filters
