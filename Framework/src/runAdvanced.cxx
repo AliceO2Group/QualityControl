@@ -67,6 +67,8 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
   workflowOptions.push_back(
     ConfigParamSpec{ "no-qc", VariantType::Bool, false, { "Disable the QC part of this advanced workflow." } });
+  workflowOptions.push_back(
+    ConfigParamSpec{ "no-debug-output", VariantType::Bool, false, { "Disable the Debug output." } });
 }
 
 #include <Framework/runDataProcessing.h>
@@ -79,9 +81,11 @@ using SubSpecificationType = o2::header::DataHeader::SubSpecificationType;
 WorkflowSpec defineDataProcessing(ConfigContext const& config)
 {
   bool noQC = config.options().get<bool>("no-qc");
+  bool noDebug = config.options().get<bool>("no-debug-output");
   const std::string qcConfigurationSource =
     std::string("json://") + getenv("QUALITYCONTROL_ROOT") + "/etc/advanced.json";
   ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'";
+  ILOG_INST.filterDiscardDebug(noDebug);
 
   // Full processing topology.
   // We pretend to spawn topologies on three processing machines

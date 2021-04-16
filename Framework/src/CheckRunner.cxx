@@ -408,7 +408,12 @@ void CheckRunner::initMonitoring()
 
 void CheckRunner::initServiceDiscovery()
 {
-  auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+  auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "");
+  if (consulUrl.empty()) {
+    mServiceDiscovery = nullptr;
+    ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
+    return;
+  }
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;

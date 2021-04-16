@@ -302,7 +302,7 @@ target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib)
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 30)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
-set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 30)
+set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 30)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)

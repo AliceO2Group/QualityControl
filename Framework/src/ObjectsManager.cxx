@@ -38,7 +38,7 @@ ObjectsManager::ObjectsManager(std::string taskName, std::string detectorName, s
   mMonitorObjects->SetOwner(true);
 
   // register with the discovery service
-  if (!noDiscovery) {
+  if (!noDiscovery && !consulUrl.empty()) {
     std::string uniqueTaskID = taskName + "_" + std::to_string(parallelTaskID);
     mServiceDiscovery = std::make_unique<ServiceDiscovery>(consulUrl, taskName, uniqueTaskID);
   } else {

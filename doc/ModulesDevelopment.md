@@ -356,8 +356,8 @@ Notice the AggregatorRunner after the CheckRunner.
 
 A more complex example with a producer and the `o2-qc`: 
 
-```
-o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/advanced-aggregator.json
+```c++
+o2-qc-run-advanced --no-qc --no-debug-output | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/advanced-aggregator.json
 ```
 
 ### Configuration
