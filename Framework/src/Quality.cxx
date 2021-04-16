@@ -30,7 +30,7 @@ const Quality Quality::Bad(3, "Bad");
 const Quality Quality::Null(NullLevel, "Null"); // we consider it the worst of the worst
 
 Quality::Quality(unsigned int level, std::string name) : mLevel(level), mName(name), mUserMetadata{} {}
-Quality::Quality(const Quality& q) : mLevel(q.mLevel), mName(q.mName), mUserMetadata{} {}
+Quality::Quality(const Quality& q) : mLevel(q.mLevel), mName(q.mName), mUserMetadata{ q.mUserMetadata } {}
 
 unsigned int Quality::getLevel() const { return mLevel; }
 
