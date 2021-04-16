@@ -104,6 +104,9 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
     initMonitoring();
     initServiceDiscovery();
     initAggregators();
+
+    // registering state machine callbacks
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
     ILOG(Fatal) << "Unexpected exception during initialization:\n"

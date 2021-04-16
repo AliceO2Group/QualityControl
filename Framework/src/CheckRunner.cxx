@@ -189,6 +189,10 @@ void CheckRunner::init(framework::InitContext& iCtx)
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
+
+    // registering state machine callbacks
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+
     for (auto& check : mChecks) {
       check.init();
       updatePolicyManager.addPolicy(check.getName(), check.getPolicyName(), check.getObjectsNames(), check.getAllObjectsOption(), false);
