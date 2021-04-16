@@ -141,7 +141,7 @@ def downloadConfigFromConsul(consul_url, consul_port):
     logging.debug(f"config file from consul : \n{data['Value']}")
     text = data["Value"].decode()
     logging.debug(f"config file from consul : \n{text}")
-    path = "/tmp/config.yaml"
+    path = "/tmp/repoCleanerConfig.yaml"
     with open(path, 'w') as f:
         f.write(text)
     logging.info(f"Config path : {path}")
