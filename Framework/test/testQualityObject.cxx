@@ -26,7 +26,44 @@ using namespace std;
 using namespace o2::quality_control::test;
 using namespace o2::quality_control::core;
 
-BOOST_AUTO_TEST_CASE(quality_object_test)
+BOOST_AUTO_TEST_CASE(quality_object_test_constructors)
+{
+  QualityObject qo(Quality::Medium,
+                   "xyzCheck",
+                   "TST",
+                   "",
+                   { "qc/TST/testTask/mo1", "qc/TST/testTask/mo2" },
+                   {},
+                   { { "probability", "0.45" }, { "threshold_medium", "0.42" } });
+
+  BOOST_CHECK_EQUAL(qo.getName(), "xyzCheck");
+  BOOST_CHECK(strcmp(qo.GetName(), "xyzCheck") == 0);
+  BOOST_CHECK_EQUAL(qo.getDetectorName(), "TST");
+  BOOST_CHECK_EQUAL(qo.getQuality(), Quality::Medium);
+  BOOST_REQUIRE_EQUAL(qo.getInputs().size(), 2);
+  BOOST_CHECK_EQUAL(qo.getInputs()[0], "qc/TST/testTask/mo1");
+  BOOST_CHECK_EQUAL(qo.getInputs()[1], "qc/TST/testTask/mo2");
+  BOOST_REQUIRE_EQUAL(qo.getMetadataMap().count("probability"), 1);
+  BOOST_CHECK_EQUAL(qo.getMetadataMap().at("probability"), "0.45");
+  BOOST_REQUIRE_EQUAL(qo.getMetadataMap().count("threshold_medium"), 1);
+  BOOST_CHECK_EQUAL(qo.getMetadataMap().at("threshold_medium"), "0.42");
+
+  auto qo2 = qo;
+
+  BOOST_CHECK_EQUAL(qo2.getName(), "xyzCheck");
+  BOOST_CHECK(strcmp(qo2.GetName(), "xyzCheck") == 0);
+  BOOST_CHECK_EQUAL(qo2.getDetectorName(), "TST");
+  BOOST_CHECK_EQUAL(qo2.getQuality(), Quality::Medium);
+  BOOST_REQUIRE_EQUAL(qo2.getInputs().size(), 2);
+  BOOST_CHECK_EQUAL(qo2.getInputs()[0], "qc/TST/testTask/mo1");
+  BOOST_CHECK_EQUAL(qo2.getInputs()[1], "qc/TST/testTask/mo2");
+  BOOST_REQUIRE_EQUAL(qo2.getMetadataMap().count("probability"), 1);
+  BOOST_CHECK_EQUAL(qo2.getMetadataMap().at("probability"), "0.45");
+  BOOST_REQUIRE_EQUAL(qo2.getMetadataMap().count("threshold_medium"), 1);
+  BOOST_CHECK_EQUAL(qo2.getMetadataMap().at("threshold_medium"), "0.42");
+}
+
+BOOST_AUTO_TEST_CASE(quality_object_test_setters)
 {
   QualityObject qo(Quality::Null, "xyzCheck");
   qo.setDetectorName("INVALID");

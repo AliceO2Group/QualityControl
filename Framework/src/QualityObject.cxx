@@ -36,7 +36,7 @@ QualityObject::QualityObject(
     mMonitorObjectsNames{ std::move(monitorObjectsNames) },
     mRunNumber(runNumber)
 {
-  mQuality.overwriteMetadata(metadata);
+  mQuality.overwriteMetadata(std::move(metadata));
 }
 
 QualityObject::~QualityObject() = default;
@@ -95,12 +95,12 @@ void QualityObject::updateMetadata(std::string key, std::string value)
   mQuality.updateMetadata(key, value);
 }
 
-std::string QualityObject::getMetadata(std::string key)
+std::string QualityObject::getMetadata(std::string key) const
 {
   return mQuality.getMetadata(key);
 }
 
-std::string QualityObject::getMetadata(std::string key, std::string defaultValue)
+std::string QualityObject::getMetadata(std::string key, std::string defaultValue) const
 {
   return mQuality.getMetadata(key, defaultValue);
 }
