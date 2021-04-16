@@ -113,7 +113,7 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
   try {
     // registering state machine callbacks
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
-  } catch (o2::framework::RuntimeErrorRef &ref) {
+  } catch (o2::framework::RuntimeErrorRef& ref) {
     ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
   }
 }
