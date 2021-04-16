@@ -20,7 +20,7 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 #include <fairlogger/Logger.h>
-#include <InfoLogger/InfoLoggerFMQ.hxx>
+#include <cstdlib>
 
 using namespace std;
 using namespace AliceO2::InfoLogger;
@@ -70,6 +70,15 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
   ILOG(Warning, Ops) << "LogWarningOps" << ENDM;
   ILOG(Error, Support) << "LogErrorSupport" << ENDM;
   ILOG(Info, Trace) << "LogInfoTrace" << ENDM;
+}
+
+BOOST_AUTO_TEST_CASE(qc_info_logger_fields)
+{
+  ILOG(Info, Support) << "No fields set, facility=QC, system=QC, detector=<none>" << ENDM;
+  ILOG_INST.setDetector("ITS");
+  ILOG(Info, Support) << "Detector ITS set, facility=QC, system=QC, detector=ITS" << ENDM;
+  ILOG_INST.setFacility("Test");
+  ILOG(Info, Support) << "Facility Test set, facility=Test, system=QC, detector=ITS" << ENDM;
 }
 
 } // namespace o2::quality_control::core
