@@ -104,14 +104,17 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
     initMonitoring();
     initServiceDiscovery();
     initAggregators();
-
-    // registering state machine callbacks
-    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
   } catch (...) {
-    // catch the exceptions and print it (the ultimate caller might not know how to display it)
     ILOG(Fatal) << "Unexpected exception during initialization:\n"
                 << current_diagnostic(true) << ENDM;
     throw;
+  }
+
+  try {
+    // registering state machine callbacks
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+  } catch (o2::framework::RuntimeErrorRef &ref) {
+    ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
   }
 }
 
