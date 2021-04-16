@@ -69,7 +69,7 @@ class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
   QcInfoLogger(const QcInfoLogger&) = delete;
 
   // remember the contexts
-  AliceO2::InfoLogger::InfoLoggerContext* mContext = nullptr;
+  std::shared_ptr<AliceO2::InfoLogger::InfoLoggerContext> mContext = nullptr;
   AliceO2::InfoLogger::InfoLoggerContext* mDplContext = nullptr;
 };
 

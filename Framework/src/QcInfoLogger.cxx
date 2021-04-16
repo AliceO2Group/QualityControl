@@ -21,7 +21,7 @@ namespace o2::quality_control::core
 
 QcInfoLogger::QcInfoLogger()
 {
-  mContext = new AliceO2::InfoLogger::InfoLoggerContext();
+  mContext = std::make_shared<AliceO2::InfoLogger::InfoLoggerContext>();
   mContext->setField(infoContext::FieldName::Facility, "QC");
   mContext->setField(infoContext::FieldName::System, "QC");
   this->setContext(*mContext);
