@@ -222,12 +222,8 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
   // we try first to load a TFile
   auto* object = ccdbApi.retrieveFromTFileAny<TObject>(path, metadata, timestamp, headers);
   if (object == nullptr) {
-    // We could not open a TFile we should now try to open an object directly serialized
-    object = ccdbApi.retrieve(path, metadata, timestamp);
-    if (object == nullptr) {
-      ILOG(Error, Support) << "We could NOT retrieve the object " << path << "." << ENDM;
-      return nullptr;
-    }
+    ILOG(Error, Support) << "We could NOT retrieve the object " << path << "." << ENDM;
+    return nullptr;
   }
   ILOG(Debug, Support) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
   return object;
