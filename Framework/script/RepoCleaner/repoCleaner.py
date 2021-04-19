@@ -29,6 +29,7 @@ import tempfile
 import dryable
 import yaml
 import time
+import consul
 
 from Ccdb import Ccdb
 
@@ -49,14 +50,12 @@ class Rule:
         self.object_path = object_path
         self.delay = delay
         self.policy = policy
-        # self.migration = migration
 
         self.extra_params = all_params
         if all_params is not None:
             self.extra_params.pop("object_path")
             self.extra_params.pop("delay")
             self.extra_params.pop("policy")
-            # self.extra_params.pop("migration")
 
     def __repr__(self):
         return 'Rule(object_path={.object_path}, delay={.delay}, policy={.policy}, extra_params={.extra_params})'.format(
@@ -71,6 +70,9 @@ def parseArgs():
                         help='Path to the config file')
     parser.add_argument('--config-git', action='store_true',
                         help='Check out the config file from git (branch repo_cleaner), ignore --config.')
+    parser.add_argument('--config-consul', action='store',
+                        help='Specify the consul url and port in the form of <url>:<port>, if specified'
+                             'ignore both --config and --config-git.')
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--dry-run', action='store_true',
@@ -113,7 +115,6 @@ def parseConfig(config_file_path):
 def downloadConfigFromGit():
     """
     Download a config file from git.
-    :param config_git: True if the file must be downloaded from git.
     :return: the path to the config file
     """
 
@@ -124,6 +125,25 @@ def downloadConfigFromGit():
     path = "/tmp/config.yaml"
     with open(path, 'w') as f:
         f.write(r.text)
+    logging.info(f"Config path : {path}")
+    return path
+
+
+def downloadConfigFromConsul(consul_url, consul_port):
+    """
+    Download a config file from consul.
+    :return: the path to the config file
+    """
+
+    logging.debug("Get it from consul")
+    consul_server = consul.Consul(host=consul_url, port=consul_port)
+    index, data = consul_server.kv.get(key='folder/blabla')
+    logging.debug(f"config file from consul : \n{data['Value']}")
+    text = data["Value"].decode()
+    logging.debug(f"config file from consul : \n{text}")
+    path = "/tmp/repoCleanerConfig.yaml"
+    with open(path, 'w') as f:
+        f.write(text)
     logging.info(f"Config path : {path}")
     return path
 
@@ -196,7 +216,11 @@ def main():
 
     # Read configuration
     path = args.config
-    if args.config_git:
+    if args.config_consul:
+        items = args.config_consul.split(':')
+        path = downloadConfigFromConsul(items[0], items[1])
+        exit(0)
+    elif args.config_git:
         path = downloadConfigFromGit()
     config = parseConfig(path)
     rules: List[Rule] = config['rules']
