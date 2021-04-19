@@ -71,6 +71,7 @@ add_library(O2QualityControl
   src/MonitorObjectCollection.cxx
   src/UpdatePolicyManager.cxx
   src/AdvancedWorkflow.cxx
+  src/QualitiesToTRFCollectionConverter.cxx
   src/Calculators.cxx)
 
 target_include_directories(
@@ -99,6 +100,7 @@ target_link_libraries(O2QualityControl
                              O2QualityControlTypes
                              O2::Mergers
                              O2::DataSampling
+                             O2::DataFormatsQualityControl
                       PRIVATE Boost::system
                               ROOT::Gui
                               CURL::libcurl)
@@ -235,6 +237,7 @@ set(TEST_SRCS
     test/testVersion.cxx
     test/testRepoPathUtils.cxx
     test/testPolicyManager.cxx
+    test/testQualitiesToTRFCollectionConverter.cxx
   )
 
 set(TEST_ARGS
@@ -264,6 +267,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
     ""
     ""
