@@ -51,7 +51,6 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
       AggregatorSource source(sourceType, sourceName);
 
       // Get the QOs for this source (if any)
-      vector<string> qos;
       if (dataSource.count("QOs") == 0) {
         ILOG(Info, Devel) << "      (no QOs specified, we take all)" << ENDM;
         mAggregatorConfig.allObjects = true;
