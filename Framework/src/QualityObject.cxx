@@ -162,6 +162,7 @@ std::ostream& operator<<(std::ostream& out, const QualityObject& q) // output
       << "   - checkName : " << q.getCheckName() << "\n"
       << "   - detectorName : " << q.getDetectorName() << "\n"
       << "   - runNumber : " << q.getRunNumber() << "\n"
+      << "   - quality : " << q.getQuality() << "\n"
       << "   - monitorObjectsNames : ";
   for (auto item : q.getMonitorObjectsNames()) {
     out << item << ", ";

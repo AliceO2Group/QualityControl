@@ -17,6 +17,8 @@
 #include "QualityControl/AggregatorRunnerFactory.h"
 #include "QualityControl/AggregatorRunner.h"
 #include "QualityControl/Aggregator.h"
+#include "QualityControl/MonitorObject.h"
+#include <Configuration/ConfigurationFactory.h>
 #include <Framework/InitContext.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/ConfigParamStore.h>
@@ -31,6 +33,7 @@ using namespace o2::quality_control::checker;
 using namespace std;
 using namespace o2::framework;
 using namespace o2::header;
+using namespace o2::quality_control::core;
 
 BOOST_AUTO_TEST_CASE(test_aggregator_runner_static)
 {
@@ -58,4 +61,91 @@ BOOST_AUTO_TEST_CASE(test_aggregator_runner)
   BOOST_CHECK(aggregators.at(1)->getName() == "MyAggregatorC" || aggregators.at(1)->getName() == "MyAggregatorB");
   BOOST_CHECK(aggregators.at(2)->getName() == "MyAggregatorA");
   BOOST_CHECK(aggregators.at(3)->getName() == "MyAggregatorD");
+}
+
+std::string indent(int level)
+{
+  std::string s;
+  for (int i = 0; i < level; i++)
+    s += "  ";
+  return s;
+}
+
+void printTree(boost::property_tree::ptree& pt, int level)
+{
+  if (pt.empty()) {
+    std::cout << "\"" << pt.data() << "\"";
+  }
+
+  else {
+    if (level)
+      std::cout << std::endl;
+
+    std::cout << indent(level) << "{" << std::endl;
+
+    for (boost::property_tree::ptree::iterator pos = pt.begin(); pos != pt.end();) {
+      std::cout << indent(level + 1) << "\"" << pos->first << "\": ";
+
+      printTree(pos->second, level + 1);
+      ++pos;
+      if (pos != pt.end()) {
+        std::cout << ",";
+      }
+      std::cout << std::endl;
+    }
+
+    std::cout << indent(level) << " }";
+  }
+  std::cout << std::endl;
+  return;
+}
+
+Quality getQualityForCheck(QualityObjectsType qos, string checkName)
+{
+  auto it = find_if(qos.begin(), qos.end(), [&checkName](const shared_ptr<QualityObject> obj) { return obj->getCheckName() == checkName; });
+  if (it != qos.end()) {
+    return (*it)->getQuality();
+  } else {
+    return Quality::Null;
+  }
+}
+
+BOOST_AUTO_TEST_CASE(test_aggregator_quality_filter)
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+  std::shared_ptr<o2::configuration::ConfigurationInterface> configFile = o2::configuration::ConfigurationFactory::getConfiguration(configFilePath);
+  boost::property_tree::ptree config = configFile->getRecursive("qc.aggregators.MyAggregatorB");
+  auto aggregator = make_shared<Aggregator>("MyAggregatorB", config);
+  aggregator->init();
+
+  // empty list -> Good
+  QualityObjectsMapType qoMap;
+  QualityObjectsType result = aggregator->aggregate(qoMap);
+  BOOST_CHECK_EQUAL(getQualityForCheck(result, "MyAggregatorB/newQuality"), Quality::Good);
+
+  // Add dataSizeCheck1/q1=good and dataSizeCheck1/q2=medium -> return medium
+  qoMap["dataSizeCheck1/q1"] = make_shared<QualityObject>(Quality::Good, "dataSizeCheck1/q1");
+  qoMap["dataSizeCheck1/q2"] = make_shared<QualityObject>(Quality::Medium, "dataSizeCheck1/q2");
+  result = aggregator->aggregate(qoMap);
+  BOOST_CHECK_EQUAL(getQualityForCheck(result, "MyAggregatorB/newQuality"), Quality::Medium);
+
+  // Add whatever/q1=bad -> return medium because it is filtered out (not in config file)
+  qoMap["whatever/q1"] = make_shared<QualityObject>(Quality::Bad, "whatever/q1");
+  result = aggregator->aggregate(qoMap);
+  BOOST_CHECK_EQUAL(getQualityForCheck(result, "MyAggregatorB/newQuality"), Quality::Medium);
+
+  // Add someNumbersCheck/example=bad return bad
+  qoMap["dataSizeCheck2/someNumbersTask/example"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example");
+  result = aggregator->aggregate(qoMap);
+  BOOST_CHECK_EQUAL(getQualityForCheck(result, "MyAggregatorB/newQuality"), Quality::Bad);
+
+  // reset and add dataSizeCheck/q1=good and dataSizeCheck/q2=medium and someNumbersCheck/example=medium and someNumbersCheck/whatever=bad
+  // Return medium because someNumbersTask/whatever is filtered out
+  qoMap.clear();
+  qoMap["dataSizeCheck1/q1"] = make_shared<QualityObject>(Quality::Good, "dataSizeCheck1/q1");
+  qoMap["dataSizeCheck1/q2"] = make_shared<QualityObject>(Quality::Medium, "dataSizeCheck1/q2");
+  qoMap["dataSizeCheck2/someNumbersTask/example"] = make_shared<QualityObject>(Quality::Medium, "dataSizeCheck2/someNumbersTask/example");
+  qoMap["dataSizeCheck2/someNumbersTask/example2"] = make_shared<QualityObject>(Quality::Bad, "dataSizeCheck2/someNumbersTask/example2");
+  result = aggregator->aggregate(qoMap);
+  BOOST_CHECK_EQUAL(getQualityForCheck(result, "MyAggregatorB/newQuality"), Quality::Medium);
 }

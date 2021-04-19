@@ -237,10 +237,10 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Check",
-          "name": "dataSizeCheck"
+          "name": "dataSizeCheck1"
         }, {
           "type": "Check", "": "this one is using onEachSeparately and thus it sends under a full path",
-          "name": "someNumbersCheck",
+          "name": "dataSizeCheck2",
           "QOs": ["someNumbersTask/example"], "": "also possible to ignore it altogether, meaning we take all objects"
         }]
       }

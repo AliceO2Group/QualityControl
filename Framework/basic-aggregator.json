@@ -84,7 +84,8 @@
           },
           {
             "type": "Check",   "": "for a check which produces a single result do it like that",
-            "name": "QcCheck2", "": "no need to specify each object because there is only 1"
+            "name": "QcCheck2", "": "no need to specify each object because there is only 1",
+            "QOs": ["QcTask/example"], "": "also possible to ignore it altogether, meaning we take all objects"
           }],
         "aggregatorParameters": {
           "myOwnKey": "myOwnValue"

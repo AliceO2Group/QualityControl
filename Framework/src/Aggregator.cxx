@@ -48,8 +48,10 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
     if (auto sourceType = dataSource.get<std::string>("type"); sourceType == "Aggregator" || sourceType == "Check") {
       auto sourceName = dataSource.get<std::string>("name");
       ILOG(Info, Devel) << "   Found a source : " << sourceName << ENDM;
-      mSources.emplace_back(sourceType, sourceName);
+      AggregatorSource source(sourceType, sourceName);
 
+      // Get the QOs for this source (if any)
+      vector<string> qos;
       if (dataSource.count("QOs") == 0) {
         ILOG(Info, Devel) << "      (no QOs specified, we take all)" << ENDM;
         mAggregatorConfig.allObjects = true;
@@ -59,8 +61,10 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
           auto name = std::string(sourceName + "/" + qoName.second.get_value<std::string>());
           ILOG(Info, Devel) << "      - " << name << ENDM;
           mAggregatorConfig.objectNames.push_back(name);
+          source.objects.push_back(name);
         }
       }
+      mSources.emplace_back(source); // keep track of the sources
     }
   }
 }
@@ -92,9 +96,44 @@ void Aggregator::init()
   }
 }
 
+QualityObjectsMapType Aggregator::filter(QualityObjectsMapType& qoMap)
+{
+  // This is a basic implementation, if it needs to be more efficient it will have to be rethought.
+  // for each qo in the list we receive, check if a source of this aggregator contains it (or rather
+  // contains the first part of its checkName before `/`).
+
+  QualityObjectsMapType result;
+  for (auto const& [name, qo] : qoMap) {
+
+    // find the source for this qo
+    shared_ptr<const QualityObject> local = qo;
+    auto it = std::find_if(mSources.begin(), mSources.end(),
+                           [&local](const AggregatorSource source) {
+                             std::string token = local->getCheckName().substr(0, local->getCheckName().find("/"));
+                             return token == source.name;
+                           });
+
+    // if no source found, it is not here
+    if (it == mSources.end()) {
+      continue;
+    }
+
+    // search the qo in the objects of the source, if found we accept it.
+    // if the source has no qos specified we accept it.
+    auto source = *it;
+    if (source.objects.empty() ||
+        find(source.objects.begin(), source.objects.end(), name) != source.objects.end()) { // no qo specified, we accept all
+      result[name] = qo;
+    }
+  }
+
+  return result;
+}
+
 QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap)
 {
-  auto results = mAggregatorInterface->aggregate(qoMap);
+  auto filtered = filter(qoMap);
+  auto results = mAggregatorInterface->aggregate(filtered);
   QualityObjectsType qualityObjects;
   for (auto const& [qualityName, quality] : results) {
     qualityObjects.emplace_back(std::make_shared<QualityObject>(

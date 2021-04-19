@@ -39,6 +39,7 @@ void SkeletonTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mHistogram = new TH1F("example", "example", 20, 0, 30000);
   getObjectsManager()->startPublishing(mHistogram);
+  getObjectsManager()->startPublishing(new TH1F("example2", "example2", 20, 0, 30000));
   try {
     getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
   } catch (...) {
