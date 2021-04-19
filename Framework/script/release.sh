@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e ;# exit on error
 set -u ;# exit when using undeclared variable
+#set -x ;# uncomment to debug
 
 
 # Check that we have `jq`
@@ -9,7 +10,6 @@ then
     echo "jq could not be found, please install it."
     exit
 fi
-exit
 
 
 # Parameter: if there we check that it is a proper version number, if not we propose a new one
