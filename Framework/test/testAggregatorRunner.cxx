@@ -63,43 +63,6 @@ BOOST_AUTO_TEST_CASE(test_aggregator_runner)
   BOOST_CHECK(aggregators.at(3)->getName() == "MyAggregatorD");
 }
 
-std::string indent(int level)
-{
-  std::string s;
-  for (int i = 0; i < level; i++)
-    s += "  ";
-  return s;
-}
-
-void printTree(boost::property_tree::ptree& pt, int level)
-{
-  if (pt.empty()) {
-    std::cout << "\"" << pt.data() << "\"";
-  }
-
-  else {
-    if (level)
-      std::cout << std::endl;
-
-    std::cout << indent(level) << "{" << std::endl;
-
-    for (boost::property_tree::ptree::iterator pos = pt.begin(); pos != pt.end();) {
-      std::cout << indent(level + 1) << "\"" << pos->first << "\": ";
-
-      printTree(pos->second, level + 1);
-      ++pos;
-      if (pos != pt.end()) {
-        std::cout << ",";
-      }
-      std::cout << std::endl;
-    }
-
-    std::cout << indent(level) << " }";
-  }
-  std::cout << std::endl;
-  return;
-}
-
 Quality getQualityForCheck(QualityObjectsType qos, string checkName)
 {
   auto it = find_if(qos.begin(), qos.end(), [&checkName](const shared_ptr<QualityObject> obj) { return obj->getCheckName() == checkName; });
