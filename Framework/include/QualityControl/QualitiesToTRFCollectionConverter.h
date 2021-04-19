@@ -16,14 +16,19 @@
 #ifndef QUALITYCONTROL_QUALITIESTOTRFCOLLECTIONCONVERTER_H
 #define QUALITYCONTROL_QUALITIESTOTRFCOLLECTIONCONVERTER_H
 
-#include "QualityControl/QualityObject.h"
-#include <DataFormatsQualityControl/FlagReasons.h>
-#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
+#include <DataFormatsQualityControl/TimeRangeFlag.h>
 #include <memory>
 #include <optional>
 
+namespace o2::quality_control
+{
+class TimeRangeFlagCollection;
+}
+
 namespace o2::quality_control::core
 {
+
+class QualityObject;
 
 /// \brief Converts a set of chronologically provided Qualities from the same path into a TRFCollection.
 class QualitiesToTRFCollectionConverter

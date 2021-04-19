@@ -15,6 +15,9 @@
 
 #include "QualityControl/QualitiesToTRFCollectionConverter.h"
 
+#include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
+#include "QualityControl/QualityObject.h"
+
 namespace o2::quality_control::core
 {
 
@@ -26,7 +29,7 @@ QualitiesToTRFCollectionConverter::QualitiesToTRFCollectionConverter(std::string
     mQOPath(qoPath),
     mConverted(new TimeRangeFlagCollection(trfcName, detectorCode)),
     mCurrentStartTime(0),
-    mCurrentEndTime(startTimeLimit),
+    mCurrentEndTime(startTimeLimit), // this is to correctly set the missing QO time range if none were given
     mQOsIncluded(0),
     mWorseThanGoodQOs(0)
 {
@@ -61,7 +64,7 @@ void QualitiesToTRFCollectionConverter::operator()(const QualityObject& newQO)
   mCurrentStartTime = validFrom < mStartTimeLimit ? mStartTimeLimit : validFrom;
   mCurrentEndTime = validUntil > mEndTimeLimit ? mEndTimeLimit : validUntil;
 
-  if (!mCurrentTRF.has_value() && newQO.getQuality().isWorseThan(Quality::Good)) { //todo check if no QO in some period before the first one arrives
+  if (!mCurrentTRF.has_value() && newQO.getQuality().isWorseThan(Quality::Good)) {
     // There was no TRF in the previous step and the data quality is bad now.
     // We create a new TRF and we will work on it in next loop iterations.
     mCurrentTRF.emplace(mCurrentStartTime, mCurrentEndTime, FlagReasonFactory::Unknown(), newQO.getMetadata("comment", ""), newQO.getPath());
