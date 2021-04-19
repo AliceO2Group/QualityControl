@@ -4,6 +4,14 @@ This is a resource meant for the developers of the QC. Whenever we learn somethi
 here. It is not sanitized or organized. Just a brain dump.
 
 ### Release procedure / check list
+
+One can use the script `release.sh` : 
+```shell
+release.sh
+```
+It is able to work out what is the release number and will drive the user through all the steps. 
+
+Alternatively do it manually:
 1. Update the version number in [CMakeLists.txt](../CMakeLists.txt), commit and push
 2. Release in JIRA
 2. Prepare the release notes using the commits since the last release in github (see [this template](ReleaseNotesTemplate.md)).
