@@ -117,6 +117,17 @@ std::string QualityObject::getPath() const
   return path;
 }
 
+QualityObject& QualityObject::addReason(FlagReason reason, std::string comment)
+{
+  mQuality.addReason(reason, std::move(comment));
+  return *this;
+}
+
+const CommentedFlagReasons& QualityObject::getReasons() const
+{
+  return mQuality.getReasons();
+}
+
 const std::string& QualityObject::getDetectorName() const
 {
   return mDetectorName;

@@ -16,6 +16,8 @@
 #include "QualityControl/QualitiesToTRFCollectionConverter.h"
 
 #include <DataFormatsQualityControl/TimeRangeFlagCollection.h>
+
+#include <utility>
 #include "QualityControl/QualityObject.h"
 
 namespace o2::quality_control::core
@@ -26,8 +28,8 @@ const char* noQualityObjectsComment = "No Quality Objects found within the speci
 QualitiesToTRFCollectionConverter::QualitiesToTRFCollectionConverter(std::string trfcName, std::string detectorCode, uint64_t startTimeLimit, uint64_t endTimeLimit, std::string qoPath)
   : mStartTimeLimit(startTimeLimit),
     mEndTimeLimit(endTimeLimit),
-    mQOPath(qoPath),
-    mConverted(new TimeRangeFlagCollection(trfcName, detectorCode)),
+    mQOPath(std::move(qoPath)),
+    mConverted(new TimeRangeFlagCollection(std::move(trfcName), std::move(detectorCode))),
     mCurrentStartTime(0),
     mCurrentEndTime(startTimeLimit), // this is to correctly set the missing QO time range if none were given
     mQOsIncluded(0),
@@ -35,6 +37,22 @@ QualitiesToTRFCollectionConverter::QualitiesToTRFCollectionConverter(std::string
 {
 }
 
+std::vector<TimeRangeFlag> QO2TRFs(uint64_t startTime, uint64_t endTime, const QualityObject& qo)
+{
+  auto& reasons = qo.getReasons();
+  auto qoPath = qo.getPath();
+
+  if (qo.getQuality().isWorseThan(Quality::Good) && reasons.empty()) {
+    return { { startTime, endTime, FlagReasonFactory::Unknown(), {}, qoPath } };
+  } else {
+    std::vector<TimeRangeFlag> result;
+    result.reserve(reasons.size());
+    for (const auto& reason : reasons) {
+      result.emplace_back(startTime, endTime, reason.first, reason.second, qoPath);
+    }
+    return result;
+  }
+}
 void QualitiesToTRFCollectionConverter::operator()(const QualityObject& newQO)
 {
   if (mConverted->getDetector() != newQO.getDetectorName()) {
@@ -61,53 +79,41 @@ void QualitiesToTRFCollectionConverter::operator()(const QualityObject& newQO)
     mConverted->insert({ mStartTimeLimit, validFrom - 1, FlagReasonFactory::MissingQualityObject(), noQualityObjectsComment, mQOPath });
   }
 
-  mCurrentStartTime = validFrom < mStartTimeLimit ? mStartTimeLimit : validFrom;
-  mCurrentEndTime = validUntil > mEndTimeLimit ? mEndTimeLimit : validUntil;
+  mCurrentStartTime = std::max(validFrom, mStartTimeLimit);
+  mCurrentEndTime = std::min(validUntil, mEndTimeLimit);
 
-  if (!mCurrentTRF.has_value() && newQO.getQuality().isWorseThan(Quality::Good)) {
-    // There was no TRF in the previous step and the data quality is bad now.
-    // We create a new TRF and we will work on it in next loop iterations.
-    mCurrentTRF.emplace(mCurrentStartTime, mCurrentEndTime, FlagReasonFactory::Unknown(), newQO.getMetadata("comment", ""), newQO.getPath());
+  auto newTRFs = QO2TRFs(mCurrentStartTime, mCurrentEndTime, newQO);
 
-  } else if (mCurrentTRF.has_value()) {
-    // There is already a TRF. We will check if it can be merged with the new QO.
-    auto newFlag = FlagReasonFactory::Unknown(); // todo: use reasons from QOs
-    auto newComment = newQO.getMetadata("comment", "");
-
-    if (newQO.getQuality() == Quality::Good) {
-      // The data quality is not bad anymore.
-      // We trim the current TRF's time range if necessary and deposit it to the collection.
-      if (mCurrentTRF->getEnd() > validFrom) {
-        mCurrentTRF->setEnd(validFrom);
-      }
-      mConverted->insert(mCurrentTRF.value());
-      mCurrentTRF.reset();
-    } else if (mCurrentTRF->getFlag() != newFlag || mCurrentTRF->getComment() != newComment) {
-      // The data quality is still bad, but in a different way.
-      // We trim the current TRF's time range if necessary and deposit it to the collection.
-      // Then, we create a new TRF.
-      if (mCurrentTRF->getEnd() > validFrom) {
-        mCurrentTRF->setEnd(validFrom);
-      }
-      mConverted->insert(mCurrentTRF.value());
-
-      mCurrentTRF.emplace(validFrom, mCurrentEndTime, newFlag, newComment, newQO.getName());
-    } else if (mCurrentTRF->getEnd() < mCurrentEndTime) {
-      // The data quality is still bad and in the same way.
-      // We extend the duration of the current TRF.
-      mCurrentTRF->setEnd(mCurrentEndTime);
+  for (auto& newTRF : newTRFs) {
+    auto trfsOverlap = [&newTRF](const TimeRangeFlag& other) {
+      return newTRF.getFlag() == other.getFlag() &&
+             newTRF.getComment() == other.getComment() &&
+             newTRF.getStart() <= other.getEnd() + 1;
+    };
+    if (auto matchingCurrentTRF = std::find_if(mCurrentTRFs.begin(), mCurrentTRFs.end(), trfsOverlap);
+        matchingCurrentTRF != mCurrentTRFs.end()) {
+      // we broaden the range in the new one, so it covers also the old range...
+      newTRF.getInterval().update(matchingCurrentTRF->getStart());
+      newTRF.getInterval().update(matchingCurrentTRF->getEnd());
+      // ...and we delete the old one.
+      mCurrentTRFs.erase(matchingCurrentTRF);
     }
-    // If none of the above conditions was fulfilled,
-    // then mCurrentTRF covers larger time range than the new one, keep the old one.
   }
+
+  // the leftovers are TRFs which are no longer valid.
+  for (auto& outdatedTRF : mCurrentTRFs) {
+    outdatedTRF.setEnd(std::min(outdatedTRF.getEnd(), mCurrentStartTime));
+    mConverted->insert(outdatedTRF);
+  }
+  mCurrentTRFs.swap(newTRFs);
 }
 
 std::unique_ptr<TimeRangeFlagCollection> QualitiesToTRFCollectionConverter::getResult()
 {
   // handling the end of the time range
-  if (mCurrentTRF.has_value()) {
-    mConverted->insert(mCurrentTRF.value());
-    mCurrentEndTime = mCurrentTRF->getEnd();
+  for (const auto& trf : mCurrentTRFs) {
+    mConverted->insert(trf);
+    mCurrentEndTime = std::max(mCurrentEndTime, trf.getEnd());
   }
   if (mCurrentEndTime < mEndTimeLimit) {
     mConverted->insert({ mCurrentEndTime, mEndTimeLimit, FlagReasonFactory::MissingQualityObject(), noQualityObjectsComment, mQOPath });
@@ -118,7 +124,7 @@ std::unique_ptr<TimeRangeFlagCollection> QualitiesToTRFCollectionConverter::getR
 
   mCurrentStartTime = 0;
   mCurrentEndTime = mStartTimeLimit;
-  mCurrentTRF.reset();
+  mCurrentTRFs.clear();
   mQOsIncluded = 0;
   mWorseThanGoodQOs = 0;
 

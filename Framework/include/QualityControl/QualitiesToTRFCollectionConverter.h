@@ -18,7 +18,7 @@
 
 #include <DataFormatsQualityControl/TimeRangeFlag.h>
 #include <memory>
-#include <optional>
+#include <vector>
 
 namespace o2::quality_control
 {
@@ -55,7 +55,7 @@ class QualitiesToTRFCollectionConverter
 
   uint64_t mCurrentStartTime;
   uint64_t mCurrentEndTime;
-  std::optional<TimeRangeFlag> mCurrentTRF;
+  std::vector<TimeRangeFlag> mCurrentTRFs;
   size_t mQOsIncluded;
   size_t mWorseThanGoodQOs;
 };

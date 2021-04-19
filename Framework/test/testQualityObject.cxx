@@ -17,6 +17,8 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/testUtils.h"
 
+#include <DataFormatsQualityControl/FlagReasons.h>
+
 #define BOOST_TEST_MODULE QualityObject test
 #define BOOST_TEST_MAIN
 #define BOOST_TEST_DYN_LINK
@@ -25,6 +27,7 @@
 using namespace std;
 using namespace o2::quality_control::test;
 using namespace o2::quality_control::core;
+using namespace o2::quality_control;
 
 BOOST_AUTO_TEST_CASE(quality_object_test_constructors)
 {
@@ -108,4 +111,38 @@ BOOST_AUTO_TEST_CASE(qopath)
   // policy is OnEachSeparately and the vector is empty
   QualityObject qo4(Quality::Null, "xyzCheck", "DET", "OnEachSeparately", {}, {});
   BOOST_CHECK_EXCEPTION(qo4.getPath(), AliceO2::Common::FatalException, do_nothing);
+}
+
+BOOST_AUTO_TEST_CASE(qo_reasons)
+{
+  QualityObject qo1(Quality::Bad, "xyzCheck", "DET");
+  qo1.addReason(FlagReasonFactory::ProcessingError(), "exception in x");
+  qo1.addReason(FlagReasonFactory::ProcessingError(), "exception in y");
+  qo1.addReason(FlagReasonFactory::LimitedAcceptance(), "sector C off");
+
+  auto reasons1 = qo1.getReasons();
+  BOOST_CHECK_EQUAL(reasons1[0].first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(reasons1[0].second, "exception in x");
+  BOOST_CHECK_EQUAL(reasons1[1].first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(reasons1[1].second, "exception in y");
+  BOOST_CHECK_EQUAL(reasons1[2].first, FlagReasonFactory::LimitedAcceptance());
+  BOOST_CHECK_EQUAL(reasons1[2].second, "sector C off");
+
+  auto qo2 = qo1;
+  auto reasons2 = qo2.getReasons();
+  BOOST_CHECK_EQUAL(reasons2[0].first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(reasons2[0].second, "exception in x");
+  BOOST_CHECK_EQUAL(reasons2[1].first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(reasons2[1].second, "exception in y");
+  BOOST_CHECK_EQUAL(reasons2[2].first, FlagReasonFactory::LimitedAcceptance());
+  BOOST_CHECK_EQUAL(reasons2[2].second, "sector C off");
+
+  auto quality = qo1.getQuality();
+  auto reasons3 = quality.getReasons();
+  BOOST_CHECK_EQUAL(reasons3[0].first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(reasons3[0].second, "exception in x");
+  BOOST_CHECK_EQUAL(reasons3[1].first, FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(reasons3[1].second, "exception in y");
+  BOOST_CHECK_EQUAL(reasons3[2].first, FlagReasonFactory::LimitedAcceptance());
+  BOOST_CHECK_EQUAL(reasons3[2].second, "sector C off");
 }
