@@ -190,4 +190,4 @@ AggregatorSource::AggregatorSource(const std::string& t, const std::string& n)
   name = n;
 }
 
-}
+} // namespace o2::quality_control::checker
