@@ -195,3 +195,103 @@ BOOST_AUTO_TEST_CASE(test_AdjacentQOs)
   BOOST_CHECK_EQUAL(trf1.getFlag(), FlagReasonFactory::Unknown());
   BOOST_CHECK_EQUAL(trf1.getSource(), "qc/DET/QO/xyzCheck");
 }
+
+BOOST_AUTO_TEST_CASE(test_UnexplainedMediumIsBad)
+{
+  std::vector<QualityObject> qos{
+    { Quality::Medium, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "5" }, { "Valid-Until", "150" } } },
+    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "10" }, { "Valid-Until", "100" } } }
+  };
+  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  for (const auto& qo : qos) {
+    converter(qo);
+  }
+  auto trfc = converter.getResult();
+
+  BOOST_REQUIRE_EQUAL(trfc->size(), 1);
+
+  auto& trf1 = *trfc->begin();
+  BOOST_CHECK_EQUAL(trf1.getStart(), 5);
+  BOOST_CHECK_EQUAL(trf1.getEnd(), 100);
+  BOOST_CHECK_EQUAL(trf1.getFlag(), FlagReasonFactory::Unknown());
+  BOOST_CHECK_EQUAL(trf1.getSource(), "qc/DET/QO/xyzCheck");
+}
+
+BOOST_AUTO_TEST_CASE(test_KnownReasons)
+{
+  std::vector<QualityObject> qos{
+    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "5" }, { "Valid-Until", "10" } } },
+    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "10" }, { "Valid-Until", "40" } } },
+    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "30" }, { "Valid-Until", "80" } } },
+    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "50" }, { "Valid-Until", "100" } } }
+  };
+  qos[1].addReason(FlagReasonFactory::ProcessingError(), "Bug in reco");
+  qos[2].addReason(FlagReasonFactory::ProcessingError(), "Bug in reco");
+  qos[2].addReason(FlagReasonFactory::LimitedAcceptance(), "Sector C was off");
+  qos[3].addReason(FlagReasonFactory::ProcessingError(), "Bug in reco");
+
+  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  for (const auto& qo : qos) {
+    converter(qo);
+  }
+  auto trfc = converter.getResult();
+
+  BOOST_REQUIRE_EQUAL(trfc->size(), 2);
+
+  auto& trf1 = *trfc->begin();
+  BOOST_CHECK_EQUAL(trf1.getStart(), 10);
+  BOOST_CHECK_EQUAL(trf1.getEnd(), 100);
+  BOOST_CHECK_EQUAL(trf1.getFlag(), FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(trf1.getComment(), "Bug in reco");
+  BOOST_CHECK_EQUAL(trf1.getSource(), "qc/DET/QO/xyzCheck");
+
+  auto& trf2 = *(++trfc->begin());
+  BOOST_CHECK_EQUAL(trf2.getStart(), 30);
+  BOOST_CHECK_EQUAL(trf2.getEnd(), 50);
+  BOOST_CHECK_EQUAL(trf2.getFlag(), FlagReasonFactory::LimitedAcceptance());
+  BOOST_CHECK_EQUAL(trf2.getComment(), "Sector C was off");
+  BOOST_CHECK_EQUAL(trf2.getSource(), "qc/DET/QO/xyzCheck");
+}
+
+BOOST_AUTO_TEST_CASE(test_TheSameReasonsButSeparated)
+{
+  std::vector<QualityObject> qos{
+    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "5" }, { "Valid-Until", "25" } } },
+    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "10" }, { "Valid-Until", "40" } } },
+    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "30" }, { "Valid-Until", "50" } } },
+    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "80" }, { "Valid-Until", "100" } } }
+  };
+  qos[0].addReason(FlagReasonFactory::ProcessingError(), "Bug in reco");
+  qos[2].addReason(FlagReasonFactory::ProcessingError(), "Bug in reco");
+  qos[3].addReason(FlagReasonFactory::ProcessingError(), "Bug in reco");
+
+  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  for (const auto& qo : qos) {
+    converter(qo);
+  }
+  auto trfc = converter.getResult();
+
+  BOOST_REQUIRE_EQUAL(trfc->size(), 3);
+
+  auto it = trfc->begin();
+  auto& trf1 = *it;
+  BOOST_CHECK_EQUAL(trf1.getStart(), 5);
+  BOOST_CHECK_EQUAL(trf1.getEnd(), 10);
+  BOOST_CHECK_EQUAL(trf1.getFlag(), FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(trf1.getComment(), "Bug in reco");
+  BOOST_CHECK_EQUAL(trf1.getSource(), "qc/DET/QO/xyzCheck");
+
+  auto& trf2 = *(++it);
+  BOOST_CHECK_EQUAL(trf2.getStart(), 30);
+  BOOST_CHECK_EQUAL(trf2.getEnd(), 50);
+  BOOST_CHECK_EQUAL(trf2.getFlag(), FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(trf2.getComment(), "Bug in reco");
+  BOOST_CHECK_EQUAL(trf2.getSource(), "qc/DET/QO/xyzCheck");
+
+  auto& trf3 = *(++it);
+  BOOST_CHECK_EQUAL(trf3.getStart(), 80);
+  BOOST_CHECK_EQUAL(trf3.getEnd(), 100);
+  BOOST_CHECK_EQUAL(trf3.getFlag(), FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(trf3.getComment(), "Bug in reco");
+  BOOST_CHECK_EQUAL(trf3.getSource(), "qc/DET/QO/xyzCheck");
+}

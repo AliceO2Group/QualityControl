@@ -24,6 +24,7 @@ target_link_libraries(O2QualityControlTypes
   PUBLIC
   ROOT::Hist
   AliceO2::Common
+  O2::DataFormatsQualityControl
 )
 
 add_root_dictionary(O2QualityControlTypes

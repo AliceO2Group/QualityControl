@@ -110,6 +110,13 @@ class QualityObject : public TObject
   /// \return A string containing the path.
   std::string getPath() const;
 
+  /// \brief Associate the Quality with a new reason and an optional comment
+  /// \return reference to *this
+  QualityObject& addReason(FlagReason reason, std::string comment = "");
+  /// \brief Get the reasons with associated comments for the Quality
+  /// \return reason, if exists
+  const CommentedFlagReasons& getReasons() const;
+
   const std::string& getDetectorName() const;
   void setDetectorName(const std::string& detectorName);
   void setQuality(const Quality& quality);
