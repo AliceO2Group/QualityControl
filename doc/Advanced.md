@@ -544,25 +544,15 @@ The QC is part of the FLP Suite. The Suite is installed on FLPs through RPMs and
 
 ### Developing QC modules on a machine with FLP suite
 
-__Option 1__: Rebuild everything locally and use the QC module library that is generated
+__Option 1__: Rebuild everything locally and point ECS to it
 
-Simply build as you would do on your development machine with aliBuild. 
-To load a development library in a setup with FLP suite, specify its full
-path in the config file (e.g. `/etc/flp.d/qc/readout.json`):
-```
-    "tasks": {
-      "QcTask": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
-        "moduleName": "/home/myuser/alice/sw/BUILD/QualityControl-latest/QualityControl/libQcTstLibrary",
-        ...
-```
-Make sure that:
-- The name "QcTask" stays the same, as changing it might break the 
-workflow specification for AliECS
-- The library is compiled with the same QC, O2, ROOT and GCC version as the 
-ones which are installed with the FLP suite. Especially, the task and check
-interfaces have to be identical. A good way to achieve that is to use the alidist branch matching the version of flp suite (e.g. `flp-suite-v0.12.0`).
+1. Prepare the machine for aliBuild : https://alice-doc.github.io/alice-analysis-tutorial/building/custom.html
+2. `init` QualityControl
+3. Build
+4. Run alienv at least once by hand. 
+5. Copy the absolute path to `sw/MODULES/<arch>`
+6. In aliECS, add a parameter `modulepath` and set it to the absolute path copied above. 
+7. When running with aliECS, the software from your build will be used.
 
 __Option 2__: Build on your development setup and scp the library
 
