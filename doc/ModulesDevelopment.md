@@ -397,7 +397,7 @@ o2-qc-run-advanced --no-qc --no-debug-output | o2-qc --config json://${QUALITYCO
 * __policy__ - Policy for triggering the _check_ function defined in the class:
     * _OnAny_ (default) - Triggers if ANY of the listed quality objects changes.
     * _OnAll_ - Triggers if ALL the listed quality objects have changed.
-    * In case the list of QualityObject is empty, the policy is simply ignored and the `check` will be triggered whenever a new QualityObject is received.
+    * In case the list of QualityObject is empty for any of the data sources, the policy is simply ignored for all sources and the `check` will be triggered whenever a new QualityObject is received.
 * __dataSource__ - declaration of the `check` input
     * _type_ - _Check_ or _Aggregator_
     * _names_ - name of the Check or Aggregator
@@ -413,8 +413,6 @@ An aggregator inherits from `AggregatorInterface` and in particular this method:
 ```
 
 The `aggregate` method is called whenever the _policy_ is satisfied. It gets a map with all the declared QualityObjects. It is expected to return a new Quality based on the inputs.
-
-Note: the `aggregate` method receives a map with more objects than requested. In particular, it contains the objects produced by the aggregator itself. This is probably going to change in the future. For the time being make sure you query the map with the correct name and not blindly loop over all elements. 
 
 ## Committing code
 
