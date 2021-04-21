@@ -551,7 +551,7 @@ __Option 1__: Rebuild everything locally and point ECS to it
 3. You might want to switch alidist to a branch corresponding to an FLP Suite version but `master` should work as well.
 4. `aliBuild build O2Suite --defaults o2-dataflow`     
 It is necessary to build `O2Suite` and not `QualityControl`
-6. Run alienv at least once: `alienv enter O2Suite/latest`
+6. Run alienv at least once, or each time you switch branch: `alienv enter O2Suite/latest`
 7. Copy the absolute path to `sw/MODULES/<arch>`
 8. In aliECS, add a parameter `modulepath` and paste the path. 
 9. When running with aliECS, the software from your build will be used.
