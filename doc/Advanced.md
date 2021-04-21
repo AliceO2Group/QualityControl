@@ -547,12 +547,14 @@ The QC is part of the FLP Suite. The Suite is installed on FLPs through RPMs and
 __Option 1__: Rebuild everything locally and point ECS to it
 
 1. Prepare the machine for aliBuild : https://alice-doc.github.io/alice-analysis-tutorial/building/custom.html
-2. `init` QualityControl
-3. Build
-4. Run alienv at least once by hand. 
-5. Copy the absolute path to `sw/MODULES/<arch>`
-6. In aliECS, add a parameter `modulepath` and set it to the absolute path copied above. 
-7. When running with aliECS, the software from your build will be used.
+2. `aliBuild init QualityControl@master`
+3. You might want to switch alidist to a branch corresponding to an FLP Suite version but `master` should work as well.
+4. `aliBuild build O2Suite --defaults o2-dataflow`     
+It is necessary to build `O2Suite` and not `QualityControl`
+6. Run alienv at least once: `alienv enter O2Suite/latest`
+7. Copy the absolute path to `sw/MODULES/<arch>`
+8. In aliECS, add a parameter `modulepath` and paste the path. 
+9. When running with aliECS, the software from your build will be used.
 
 __Option 2__: Build on your development setup and scp the library
 
