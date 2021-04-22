@@ -324,6 +324,16 @@ set_tests_properties(functional_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BI
 set_property(TEST functional_test PROPERTY LABELS slow)
 set_property(TEST functional_test PROPERTY TIMEOUT 30)
 
+include(GenerateUniquePort)
+o2_generate_unique_port(UNIQUE_PORT_1)
+o2_generate_unique_port(UNIQUE_PORT_2)
+configure_file(multinode-test.json.in ${CMAKE_BINARY_DIR}/tests/multinode-test.json)
+add_test(NAME multinode_test COMMAND o2-qc-multinode-test.sh)
+set_tests_properties(multinode_test
+  PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_PORT_1=${UNIQUE_PORT_1};UNIQUE_PORT_2=${UNIQUE_PORT_2}")
+set_property(TEST multinode_test PROPERTY LABELS slow)
+set_property(TEST multinode_test PROPERTY TIMEOUT 60)
+
 # disable some tests in the CI to avoid un-expected failures.
 # to be removed when it is fixed / understood
 #set_property(TEST functional_test PROPERTY LABELS manual)
@@ -408,6 +418,7 @@ install(FILES example-default.json
 install(PROGRAMS script/RepoCleaner/rules/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/rules/skip.py
                  script/RepoCleaner/repoCleaner.py script/RepoCleaner/rules/1_per_run.py script/RepoCleaner/rules/none_kept.py
   script/o2-qc-functional-test.sh
+  script/o2-qc-multinode-test.sh
         DESTINATION bin)
 
 # ---- Copy test files ----
