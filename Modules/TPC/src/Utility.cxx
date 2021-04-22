@@ -29,7 +29,8 @@
 namespace o2::quality_control_modules::tpc
 {
 
-void addAndPublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager, std::vector<std::unique_ptr<TCanvas>>& canVec, std::vector<std::string_view> canvNames, const std::map<std::string, std::string>& metaData) {
+void addAndPublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager, std::vector<std::unique_ptr<TCanvas>>& canVec, std::vector<std::string_view> canvNames, const std::map<std::string, std::string>& metaData)
+{
   for (const auto& canvName : canvNames) {
     canVec.emplace_back(std::make_unique<TCanvas>(canvName.data()));
     auto canvas = canVec.back().get();
@@ -42,7 +43,8 @@ void addAndPublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> ob
   }
 }
 
-std::vector<TCanvas*> toVector(std::vector<std::unique_ptr<TCanvas>>& input) {
+std::vector<TCanvas*> toVector(std::vector<std::unique_ptr<TCanvas>>& input)
+{
   std::vector<TCanvas*> output;
   for (auto& in : input) {
     output.emplace_back(in.get());
