@@ -41,7 +41,7 @@
       }
     },
     "checks": {
-      "QcCheck": {
+      "QcCheckClusters": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
