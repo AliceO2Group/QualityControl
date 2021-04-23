@@ -28,6 +28,11 @@ include_directories(${O2_ROOT}/include/GPU)
 
 target_link_libraries(O2QcITS PUBLIC O2QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist)
 
+if (OpenMP_CXX_FOUND)
+  target_compile_definitions(O2QcITS PRIVATE WITH_OPENMP)
+  target_link_libraries(O2QcITS PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
 install(TARGETS O2QcITS
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

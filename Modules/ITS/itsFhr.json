@@ -36,8 +36,8 @@
                 },
                 "location": "remote",
                 "taskParameters": {
-                    "layer": "0100000",
-                    "decoderThreads": "1",
+                    "Layer": "2",
+                    "decoderThreads": "8",
                     "runNumberPath": "/data/shifts/runs/ibb2a/.run_counter"
                     "geomPath": "/tmp/qc_tmp/o2sim"
                 }
