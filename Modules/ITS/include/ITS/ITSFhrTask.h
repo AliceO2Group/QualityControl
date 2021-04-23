@@ -68,7 +68,7 @@ class ITSFhrTask final : public TaskInterface
   void getEnableLayers();
   void resetGeneralPlots();
   void resetOccupancyPlots();
-	void resetObject(TH1* obj);
+  void resetObject(TH1* obj);
   //detector information
   static constexpr int NCols = 1024; //column number in Alpide chip
   static constexpr int NRows = 512;  //row number in Alpide chip
@@ -101,12 +101,12 @@ class ITSFhrTask final : public TaskInterface
   unsigned int mErrors[19] = { 0 };
   static constexpr int NTrigger = 13;
   int16_t partID = 0;
-	int mLayer;
+  int mLayer;
 
-        std::unordered_map<unsigned int, int> ***mHitPixelID_InStave/* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;
-        int **mHitnumber/* = new int*[NStaves[lay]]*/;                       //IB : hitnumber[stave][chip]; OB : hitnumber[stave][hic]
-        double **mOccupancy/* = new double*[NStaves[lay]]*/;                 //IB : occupancy[stave][chip]; OB : occupancy[stave][hic]
-        int ***mErrorCount/* = new int**[NStaves[lay]]*/;                    //IB : errorcount[stave][FEE][errorid]
+  std::unordered_map<unsigned int, int>*** mHitPixelID_InStave /* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;
+  int** mHitnumber /* = new int*[NStaves[lay]]*/;       //IB : hitnumber[stave][chip]; OB : hitnumber[stave][hic]
+  double** mOccupancy /* = new double*[NStaves[lay]]*/; //IB : occupancy[stave][chip]; OB : occupancy[stave][hic]
+  int*** mErrorCount /* = new int**[NStaves[lay]]*/;    //IB : errorcount[stave][FEE][errorid]
 
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
 
