@@ -1,16 +1,18 @@
 # Post-processing
 
-   * [The post-processing framework](#the-post-processing-framework)
-      * [Post-processing interface](#post-processing-interface)
-      * [Post-processing Task configuration](#post-processing-task-configuration)
-         * [Triggers configuration](#triggers-configuration)
-      * [Running it](#running-it)
-      * [Triggers](#triggers)
-   * [Convenience classes](#convenience-classes)
-      * [The TrendingTask class](#the-trendingtask-class)
-         * [TrendingTask configuration](#trendingtask-configuration)
-      * [The TRFCollectionTask class](#the-trfcollectiontask-class)
-
+<!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
+<!--./gh-md-toc --insert /path/to/README.md-->
+<!--ts-->
+* [The post-processing framework](#the-post-processing-framework)
+   * [Post-processing interface](#post-processing-interface)
+   * [Post-processing Task configuration](#configuration)
+      * [Triggers configuration](#triggers-configuration)
+   * [Running it](#running-it)
+* [Convenience classes](#convenience-classes)
+   * [The TrendingTask class](#the-trendingtask-class)
+      * [TrendingTask Configuration](#configuration-1)
+   * [The TRFCollectionTask class](#the-trfcollectiontask-class)
+<!--te-->
 
 
 [← Go back to Modules Development](ModulesDevelopment.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Advanced Topics →](Advanced.md)

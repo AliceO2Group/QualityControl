@@ -1,20 +1,19 @@
 # QuickStart
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
-<!--./gh-md-toc --insert /path/to/README.md-->
+<!--./gh-md-toc --no-backup --hide-footer /path/to/README.md-->
 <!--ts-->
-   * [QuickStart](#quickstart)
-      * [Requirements](#requirements)
-      * [Setup](#setup)
-         * [Environment loading](#environment-loading)
-      * [Execution](#execution)
-         * [Basic workflow](#basic-workflow)
-         * [Readout chain](#readout-chain)
-            * [Getting real data from readout](#getting-real-data-from-readout)
-            * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
-         * [Post-processing example](#post-processing-example)
-<!-- Added by: bvonhall, at:  -->
-
+* [QuickStart](#quickstart)
+   * [Read this first!](#read-this-first)
+   * [Requirements](#requirements)
+   * [Setup](#setup)
+      * [Environment loading](#environment-loading)
+   * [Execution](#execution)
+      * [Basic workflow](#basic-workflow)
+      * [Readout chain](#readout-chain)
+         * [Getting real data from readout](#getting-real-data-from-readout)
+         * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
+      * [Post-processing example](#post-processing-example)
 <!--te-->
 
 [↑ Go to the Table of Content ↑](../README.md) | [Continue to Modules Development →](ModulesDevelopment.md)
