@@ -246,7 +246,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxy(framework::Wo
                               ",rateLogging=60,transport=zeromq";
 
   workflow.emplace_back(
-    specifyFairMQDeviceOutputProxy(
+    specifyFairMQDeviceMultiOutputProxy(
       proxyName.c_str(),
       inputSpecs,
       channelConfig.c_str()));
