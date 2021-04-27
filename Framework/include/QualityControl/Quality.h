@@ -53,6 +53,9 @@ class Quality
   static const Quality Bad;
   static const unsigned int NullLevel;
 
+  /// \brief Sets the Quality (without Reasons or Metadata).
+  void set(const Quality&);
+
   unsigned int getLevel() const;
   const std::string& getName() const;
 
