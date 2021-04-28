@@ -16,8 +16,6 @@
 #include "Skeleton/SkeletonAggregator.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include <iostream>
-
 using namespace std;
 using namespace o2::quality_control::core;
 
