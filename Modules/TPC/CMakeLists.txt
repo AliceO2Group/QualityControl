@@ -10,7 +10,8 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/ROCReductor.cxx
                              src/Clusters.cxx
                              src/CalDetPublisher.cxx
-                             src/Utility.cxx)
+                             src/Utility.cxx
+                             src/RawDigits.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -21,7 +22,8 @@ target_include_directories(
 
 target_link_libraries(O2QcTPC
                       PUBLIC O2QualityControl
-                             O2::TPCQC)
+                             O2::TPCQC
+                             O2::TPCWorkflow)
 
 
 
@@ -35,6 +37,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/Clusters.h
                             include/TPC/CalDetPublisher.h
                             include/TPC/Utility.h
+                            include/TPC/RawDigits.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
@@ -91,4 +94,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCClusters_direct.json
               run/tpcQCTrackingFromExternal_direct.json
               run/tpcQCCalDetPublisher.json
+              run/tpcQCRawDigits_direct.json
         DESTINATION etc)
