@@ -339,7 +339,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   //set Decoder
   mDecoder->startNewTF(ctx.inputs());
   mDecoder->setDecodeNextAuto(true);
-  std::vector<InputSpec> rawDataFilter{InputSpec{ "", ConcreteDataTypeMatcher{"DS", "RAWDATA0"}, Lifetime::Timeframe }};
+  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
   DPLRawParser parser(ctx.inputs(), rawDataFilter); //set input data
 
   //get data information from RDH(like witch layer, stave, link, trigger type)
