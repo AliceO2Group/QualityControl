@@ -27,6 +27,12 @@
 #include <DataFormatsITSMFT/ClusterTopology.h>
 #include <Framework/InputRecord.h>
 
+
+#ifdef WITH_OPENMP
+#include <omp.h>
+#endif
+
+
 using o2::itsmft::Digit;
 using namespace o2::itsmft;
 using namespace o2::its;
@@ -115,24 +121,28 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   QcInfoLogger::GetInstance() << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
-
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
-  int lay = -1, sta, ssta, mod, chip;
 
   int dictSize = mDict.getSize();
-  int ClusterID;
-  for (const auto& ROF : clusRofArr) {
-    for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
 
+   #ifdef WITH_OPENMP
+       omp_set_num_threads(mNThreads);
+   #pragma omp parallel for schedule(dynamic)
+   #endif
+   //Filling cluster histogram for each ROF by open_mp
+
+   for (unsigned int iROF=0; iROF< clusRofArr.size(); iROF++){
+     const auto &ROF = clusRofArr[iROF];
+ 
+  
+     for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
       auto& cluster = clusArr[icl];
       auto ChipID = cluster.getSensorID();
-      ClusterID = cluster.getPatternID();
-      if (ChipID != ChipIDprev || lay < 0) {
-        mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
-        mod = mod + (ssta * (mNHicPerStave[lay] / 2));
-      }
-
-      ChipIDprev = ChipID;
+      int ClusterID = cluster.getPatternID();
+      int lay, sta, ssta,mod,chip;
+      mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
+      mod = mod + (ssta * (mNHicPerStave[lay] / 2));
+      
       if (lay < 3) {
         mClasterOccupancyIB[lay][sta][chip]++;
         if (ClusterID < dictSize) {
@@ -148,6 +158,8 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
+
+
   mNRofs += clusRofArr.size();
   if (mNRofs >= mOccUpdateFrequency) {
     for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
