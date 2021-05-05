@@ -111,7 +111,7 @@
         "localhost"
       ],
       "port": "@UNIQUE_PORT_2@",
-      "query": "random:TST/RAWDATA",
+      "query": "random0:TST/RAWDATA/0;random1:TST/RAWDATA/1",
       "samplingConditions": [
         {
           "condition": "random",
