@@ -159,7 +159,8 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-  DPLRawParser parser(ctx.inputs());
+  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
+  DPLRawParser parser(ctx.inputs(), rawDataFilter);
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
     int istave = (int)(rdh->feeId & 0x00ff);
