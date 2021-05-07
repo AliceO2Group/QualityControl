@@ -308,7 +308,8 @@ void ITSClusterTask::getJsonParameters()
   mDictPath = mCustomParameters["clusterDictionaryPath"];
   mRunNumberPath = mCustomParameters["runNumberPath"];
   mGeomPath = mCustomParameters["geomPath"];
-
+  mNThreads =stoi (mCustomParameters.find("nThreads")->second);
+  LOG(INFO) << "#################### mNThreads : " <<  mNThreads;
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
 
     if (mCustomParameters["layer"][ilayer] != '0') {
