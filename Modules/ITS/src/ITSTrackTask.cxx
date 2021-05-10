@@ -53,7 +53,7 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   QcInfoLogger::GetInstance() << "initialize ITSTrackTask" << AliceO2::InfoLogger::InfoLogger::endm;
   publishHistos();
-  std::string dictfile = o2::base::NameConf::getDictionaryFileName(o2::detectors::DetID::ITS, "", ".bin");
+  std::string dictfile = o2::base::NameConf::getAlpideClusterDictionaryFileName(o2::detectors::DetID::ITS, "", ".bin");
   std::ifstream file(dictfile.c_str());
 
   if (file.good()) {

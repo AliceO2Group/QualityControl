@@ -85,7 +85,7 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   createAllHistos();
 
   publishHistos();
-  //std::string dictfile = o2::base::NameConf::getDictionaryFileName(o2::detectors::DetID::ITS, "", ".bin");
+  //std::string dictfile = o2::base::NameConf::getAlpideClusterDictionaryFileName(o2::detectors::DetID::ITS, "", ".bin");
   std::ifstream file(mDictPath.c_str());
 
   if (file.good()) {
