@@ -97,7 +97,6 @@ target_link_libraries(O2QualityControl
                              O2::Framework
                              O2::CCDB
                              O2::MCHBase
-                             ms_gsl::ms_gsl
                              O2QualityControlTypes
                              O2::Mergers
                              O2::DataSampling
