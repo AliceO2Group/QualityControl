@@ -535,7 +535,7 @@ At the moment, the description of the REST api can be found in this document : h
 
 ## Local QCG (QC GUI) setup
 
-To install and run the QCG locally, and its fellow process tobject2json, please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#run-qcg-locally
+To install and run the QCG locally please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#installation
 
 ## FLP Suite
 
