@@ -10,13 +10,19 @@
 
 ///
 /// \file   RawQcTask.h
-/// \author Bogdan Vulpescu / Xavier Lopez
-///
+/// \author Bogdan Vulpescu
+/// \author Xavier Lopez
+/// \author Guillaume Taillepied
 
 #ifndef QC_MODULE_MID_MIDRAWQCTASK_H
 #define QC_MODULE_MID_MIDRAWQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
+#include "MID/RawDataChecker.h"
+#include "MIDRaw/CrateMasks.h"
+#include "MIDRaw/Decoder.h"
+#include "MIDRaw/ElectronicsDelay.h"
+#include "MIDRaw/FEEIdConfig.h"
 
 class TH1F;
 
@@ -45,7 +51,21 @@ class RawQcTask final : public TaskInterface
   void reset() override;
 
  private:
+  TH1F* mRawDataChecker = nullptr;
   TH1F* mDetElemID = nullptr;
+
+  std::string mOutFilename;
+  std::string mFeeIdConfigFilename;
+  std::string mCrateMasksFilename;
+  std::string mElectronicsDelaysFilename;
+  bool mPerGBT;
+  bool mPerFeeId;
+
+  std::unique_ptr<o2::mid::Decoder> mDecoder{nullptr};
+  o2::quality_control_modules::mid::RawDataChecker mChecker;
+  o2::mid::FEEIdConfig mFeeIdConfig;
+  o2::mid::ElectronicsDelay mElectronicsDelay;
+  o2::mid::CrateMasks mCrateMasks;
 };
 
 } // namespace o2::quality_control_modules::mid
