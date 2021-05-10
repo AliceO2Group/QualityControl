@@ -132,7 +132,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
     std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
     for (const auto& machine : machines) {
       if (machine == host) {
-        generateDataSamplingPolicyLocalProxy(workflow, policyName, inputSpecs, port);
+        generateDataSamplingPolicyLocalProxy(workflow, policyName, inputSpecs, machine, port);
       }
     }
   }
@@ -205,7 +205,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
     Outputs outputSpecs = DataSampling::OutputSpecsForPolicy(config.get(), policyName);
     std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
     for (const auto& machine : machines) {
-      generateDataSamplingPolicyRemoteProxy(workflow, outputSpecs, machine, port);
+      generateDataSamplingPolicyRemoteProxy(workflow, policyName, outputSpecs, machine, port);
     }
   }
 
@@ -238,27 +238,33 @@ void InfrastructureGenerator::printVersion()
 void InfrastructureGenerator::generateDataSamplingPolicyLocalProxy(framework::WorkflowSpec& workflow,
                                                                    const string& policyName,
                                                                    const framework::Inputs& inputSpecs,
+                                                                   const std::string& localMachine,
                                                                    const string& localPort)
 {
   std::string proxyName = policyName + "-proxy";
-  std::string channelName = inputSpecs.at(0).binding; // channel name has to match binding name.
+  std::string channelName = policyName + "-" + localMachine;
   std::string channelConfig = "name=" + channelName + ",type=push,method=bind,address=tcp://*:" + localPort +
                               ",rateLogging=60,transport=zeromq";
+  auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<FairMQChannel>>&) {
+    return channelName;
+  };
 
   workflow.emplace_back(
     specifyFairMQDeviceMultiOutputProxy(
       proxyName.c_str(),
       inputSpecs,
-      channelConfig.c_str()));
+      channelConfig.c_str(),
+      channelSelector));
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxy(framework::WorkflowSpec& workflow,
+                                                                    const std::string& policyName,
                                                                     const Outputs& outputSpecs,
                                                                     const std::string& localMachine,
                                                                     const std::string& localPort)
 {
-  std::string channelName = outputSpecs.at(0).binding.value; // channel name has to match binding name.
-  std::string proxyName = channelName;                       // channel name has to match proxy name
+  std::string channelName = policyName + "-" + localMachine;
+  const std::string& proxyName = channelName; // channel name has to match proxy name
 
   std::string channelConfig = "name=" + channelName + ",type=pull,method=connect,address=tcp://" +
                               localMachine + ":" + localPort + ",rateLogging=60,transport=zeromq";

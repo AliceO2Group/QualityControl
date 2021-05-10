@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto tcpclustProxy = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "clusters" &&
+      return d.name == "tpcclust-o2flp1" &&
              d.inputs.size() == 0 &&
              d.outputs.size() == 1;
     });
