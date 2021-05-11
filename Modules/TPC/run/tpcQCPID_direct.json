@@ -28,7 +28,7 @@
         "className": "o2::quality_control_modules::tpc::PID",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",

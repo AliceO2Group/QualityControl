@@ -23,35 +23,21 @@
       }
     },
     "tasks": {
-      "Clusters": {
+      "RawDigits": {
         "active": "true",
-        "className": "o2::quality_control_modules::tpc::Clusters",
+        "className": "o2::quality_control_modules::tpc::RawDigits",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
         "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query" : "input:TPC/CLUSTERNATIVE"
+          "query" : "input:TPC/RAWDATA"
         },
         "taskParameters": {
           "myOwnKey": "myOwnValue"
         },
         "location": "remote"
-      }
-    },
-    "checks": {
-      "QcCheckClusters": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "OnAny",
-        "detectorName": "TPC",
-        "dataSource": [{
-          "type": "Task",
-          "name": "Clusters",
-          "MOs": ["example"]
-        }]
       }
     }
   },
