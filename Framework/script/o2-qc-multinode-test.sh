@@ -71,6 +71,8 @@ delete_data
 # store data
 o2-qc-run-producer --producers 2 --message-amount 15  --message-rate 1 -b | timeout 25s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --local --host localhost --run &
 
+sleep 3
+
 timeout 30s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run
 
 # wait until the local QC quits before moving forward
