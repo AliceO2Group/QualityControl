@@ -21,11 +21,6 @@
       * [Getting AODs directly](#getting-aods-directly)
       * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
       * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
-   * [Data Inspector](#data-inspector)
-      * [Prerequisite](#prerequisite)
-      * [Compilation](#compilation)
-      * [Execution](#execution)
-      * [Configuration](#configuration-1)
    * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
       * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
    * [Local CCDB setup](#local-ccdb-setup)
@@ -437,59 +432,6 @@ configure_file("etc/analysisDerived.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisD
 o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json)
 o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json)
 ```
-
-## Data Inspector
-
-This is a GUI to inspect the data coming out of the DataSampling, in
-particular the Readout.
-
-![alt text](images/dataDump.png)
-
-### Prerequisite
-
-If not already done, install GLFW for your platform. On CC7 install `glfw-devel` from epel repository : `sudo yum install glfw-devel --enablerepo=epel`
-
-### Compilation
-
-Build the QualityControl as usual.
-
-### Execution
-
-To monitor the readout, 3 processes have to be started : the Readout,
-the Data Sampling and the Data Inspector.
-
-First make sure that the Data Sampling is enabled in the readout :
-```
-[consumer-fmq-qc]
-consumerType=FairMQChannel
-enableRawFormat=1
-fmq-name=readout-qc
-fmq-address=ipc:///tmp/readout-pipe-1
-fmq-type=pub
-fmq-transport=zeromq
-unmanagedMemorySize=2G
-memoryPoolNumberOfPages=500
-memoryPoolPageSize=1M
-enabled=1
-```
-
-In 3 separate terminals, do respectively
-
-1. `o2-readout-exe file:///absolute/path/to/config.cfg`
-2. `o2-qc-run-readout-for-data-dump --batch`
-3. `o2-qc-data-dump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static`
-
-### Configuration
-
-__Fraction of data__
-The Data Sampling tries to take 100% of the events by default.
-Edit `$QUALITYCONTROL_ROOT/etc/readoutForDataDump.json`
-to change it. Look for the parameter `fraction` that is set to 1.
-
-__Port__
-The Data Sampling sends data to the GUI via the port `26525`.
-If this port is not free, edit the config file `$QUALITYCONTROL_ROOT/etc/readoutForDataDump.json`
-and `$QUALITYCONTROL_ROOT/etc/dataDump.json`.
 
 ## Details on the data storage format in the CCDB
 
