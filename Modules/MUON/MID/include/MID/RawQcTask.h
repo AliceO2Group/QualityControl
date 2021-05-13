@@ -18,7 +18,7 @@
 #define QC_MODULE_MID_MIDRAWQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "MID/RawDataChecker.h"
+#include "MIDQC/RawDataChecker.h"
 #include "MIDRaw/CrateMasks.h"
 #include "MIDRaw/Decoder.h"
 #include "MIDRaw/ElectronicsDelay.h"
@@ -62,7 +62,7 @@ class RawQcTask final : public TaskInterface
   bool mPerFeeId;
 
   std::unique_ptr<o2::mid::Decoder> mDecoder{nullptr};
-  o2::quality_control_modules::mid::RawDataChecker mChecker;
+  o2::mid::RawDataChecker mChecker;
   o2::mid::FEEIdConfig mFeeIdConfig;
   o2::mid::ElectronicsDelay mElectronicsDelay;
   o2::mid::CrateMasks mCrateMasks;

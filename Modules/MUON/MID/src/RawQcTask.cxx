@@ -34,7 +34,7 @@
 #include "DataFormatsMID/ROBoard.h"
 #include "DataFormatsMID/ROFRecord.h"
 #include "DPLUtils/DPLRawParser.h"
-#include "MID/RawDataChecker.h"
+#include "MIDQC/RawDataChecker.h"
 #include "MIDRaw/CrateMasks.h"
 #include "MIDRaw/Decoder.h"
 #include "MIDRaw/ElectronicsDelay.h"

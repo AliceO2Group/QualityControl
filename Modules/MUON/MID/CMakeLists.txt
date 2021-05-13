@@ -3,9 +3,6 @@
 add_library(O2QcMID)
 
 target_sources(O2QcMID PUBLIC
-                src/GBTRawDataChecker.cxx
-                src/RawCheckerSpec.cxx
-                src/RawDataChecker.cxx
                 src/RawQcCheck.cxx
                 src/RawQcTask.cxx
                 )
@@ -25,9 +22,6 @@ install(TARGETS O2QcMID
 
 add_root_dictionary(O2QcMID
                     HEADERS
-                    include/MID/GBTRawDataChecker.h
-                    include/MID/RawCheckerSpec.h
-                    include/MID/RawDataChecker.h
 		            include/MID/RawQcCheck.h
 		            include/MID/RawQcTask.h
                     LINKDEF include/MID/LinkDef.h
