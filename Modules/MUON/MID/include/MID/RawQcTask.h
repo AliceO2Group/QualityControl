@@ -61,7 +61,7 @@ class RawQcTask final : public TaskInterface
   bool mPerGBT;
   bool mPerFeeId;
 
-  std::unique_ptr<o2::mid::Decoder> mDecoder{nullptr};
+  std::unique_ptr<o2::mid::Decoder> mDecoder{ nullptr };
   o2::mid::RawDataChecker mChecker;
   o2::mid::FEEIdConfig mFeeIdConfig;
   o2::mid::ElectronicsDelay mElectronicsDelay;
