@@ -414,7 +414,7 @@ install(FILES example-default.json
               streamerinfos_v017.root
         DESTINATION etc)
 
-install(PROGRAMS script/RepoCleaner/repoCleaner.py
+install(PROGRAMS script/RepoCleaner/o2-qc-repo-cleaner
                  script/o2-qc-functional-test.sh
                  script/o2-qc-multinode-test.sh
         DESTINATION bin)
