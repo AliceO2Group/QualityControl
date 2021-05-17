@@ -148,7 +148,7 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     ILOG(Info) << "Created decoder" << ENDM;
   }
 
-  mDecoder->clear(); 
+  mDecoder->clear();
 
   int count = 0;
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
