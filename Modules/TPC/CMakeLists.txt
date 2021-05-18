@@ -10,10 +10,6 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/ROCReductor.cxx
                              src/Clusters.cxx
                              src/CalDetPublisher.cxx
-                             src/TrendingTaskTPC.cxx
-                             src/TrendingTaskConfigTPC.cxx
-			     src/TH1ReductorTPC.cxx
-			     src/TH2ReductorTPC.cxx
                              src/Utility.cxx)
 
 target_include_directories(
@@ -38,9 +34,6 @@ add_root_dictionary(O2QcTPC
                             include/TPC/ROCReductor.h
                             include/TPC/Clusters.h
                             include/TPC/CalDetPublisher.h
-                            include/TPC/TrendingTaskTPC.h
-			    include/TPC/TH1ReductorTPC.h
-			    include/TPC/TH2ReductorTPC.h
                             include/TPC/Utility.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
