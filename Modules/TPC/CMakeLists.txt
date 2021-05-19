@@ -91,6 +91,7 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCClusterChecker.json
               run/tpcQCSimpleTrending.json
               run/tpcQCTrendingClusters.json
+              run/tpcQCTrending.json
               run/tpcQCClusters_direct.json
               run/tpcQCTrackingFromExternal_direct.json
               run/tpcQCCalDetPublisher.json
