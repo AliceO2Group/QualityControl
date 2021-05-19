@@ -322,7 +322,7 @@ set_property(TEST multinode_test PROPERTY TIMEOUT 60)
 #set_property(TEST testWorkflow PROPERTY LABELS manual)
 #set_property(TEST testCheckWorkflow PROPERTY LABELS manual)
 
-# ---- Install ----
+# ---- Install ---- 
 
 # Build targets with install rpath on Mac to dramatically speed up installation
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
