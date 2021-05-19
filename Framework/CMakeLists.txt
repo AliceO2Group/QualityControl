@@ -96,7 +96,6 @@ target_link_libraries(O2QualityControl
                              Boost::container
                              O2::Framework
                              O2::CCDB
-                             O2::MCHBase
                              O2QualityControlTypes
                              O2::Mergers
                              O2::DataSampling
