@@ -168,7 +168,8 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
           generateMergers(workflow, taskName, numberOfLocalMachines,
                           taskConfig.get<double>("cycleDurationSeconds"),
-                          taskConfig.get<std::string>("mergingMode", "delta"));
+                          taskConfig.get<std::string>("mergingMode", "delta"),
+                          config->get<std::string>("qc.config.monitoring.url"));
 
         } else if (taskConfig.get<std::string>("location") == "remote") {
 
@@ -317,7 +318,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
 
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName,
                                               size_t numberOfLocalMachines, double cycleDurationSeconds,
-                                              std::string mergingMode)
+                                              std::string mergingMode, std::string monitoringUrl)
 {
   Inputs mergerInputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
@@ -340,6 +341,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergerConfig.mergedObjectTimespan = { MergedObjectTimespan::FullHistory, 0 };
   // for now one merger should be enough, multiple layers to be supported later
   mergerConfig.topologySize = { TopologySize::NumberOfLayers, 1 };
+  mergerConfig.monitoringUrl = monitoringUrl;
   mergersBuilder.setConfig(mergerConfig);
 
   mergersBuilder.generateInfrastructure(workflow);
