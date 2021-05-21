@@ -327,7 +327,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
   start = std::chrono::high_resolution_clock::now();
-
+  /* temporary disable this 
   //get TF id by dataorigin and datadescription
   const InputSpec TFIdFilter{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA1" }, Lifetime::Timeframe }; //after Data Sampling the dataorigin will become to "DS" and the datadescription will become  to "RAWDATAX"
   for (auto& input : ctx.inputs()) {
@@ -335,7 +335,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTimeFrameId = (int)*input.payload;
     }
   }
-
+*/
   //set Decoder
   mDecoder->startNewTF(ctx.inputs());
   mDecoder->setDecodeNextAuto(true);
@@ -424,7 +424,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           mHitnumber[stave][chip]++;
         } else {
           mGeom->getChipId(mChipDataBuffer->getChipID(), layer, stave, ssta, mod, chip);
-          hic = mod + ssta * 7;
+          if (lay == 3 || lay == 4) {
+            hic = mod + ssta * 4;
+          } else {
+            hic = mod + ssta * 7;
+          }
           mHitnumber[stave][hic]++;
         }
         digVec[stave][hic].emplace_back(mChipDataBuffer->getChipID(), pixel.getRow(), pixel.getCol());
@@ -557,7 +561,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
               }
             }
           }
-          mOccupancy[istave][ihic + (ilink * 7)] = mHitnumber[istave][ihic + (ilink * 7)] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay]);
+          if (lay == 3 || lay == 4) {
+            mOccupancy[istave][ihic + (ilink * 4)] = mHitnumber[istave][ihic + (ilink * 4)] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay]);
+          } else {
+            mOccupancy[istave][ihic + (ilink * 7)] = mHitnumber[istave][ihic + (ilink * 7)] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay]);
+          }
         }
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
           if (GBTLinkInfo->statistics.errorCounts[ierror] <= 0) {
@@ -613,7 +621,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     delete occupancyPlotTmp[i];
   }
   delete[] occupancyPlotTmp;
-
+  //temporarily reverting to get TFId by querying binding
+  mTimeFrameId = ctx.inputs().get<int>("G");
   //Timer LOG
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
