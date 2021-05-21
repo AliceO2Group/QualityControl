@@ -2,7 +2,7 @@
 [![JIRA](https://img.shields.io/badge/JIRA-Report%20issue-blue.svg)](https://alice.its.cern.ch/jira/secure/CreateIssue.jspa?pid=11201&issuetype=1)
 [![doxygen](https://img.shields.io/badge/doxygen-documentation-blue.svg)](https://aliceo2group.github.io/QualityControl/)
 [![Discourse](https://img.shields.io/badge/discourse-Get%20help-blue.svg)](https://alice-talk.web.cern.ch/)
-[![FLP doc](https://img.shields.io/badge/discourse-Get%20help-blue.svg)](https://alice-flp.docs.cern.ch/)
+[![FLP doc](https://img.shields.io/badge/FLP-documentation-blue.svg)](https://alice-flp.docs.cern.ch/)
 
 <!--  \endcond  --> 
 
