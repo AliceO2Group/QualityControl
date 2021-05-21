@@ -105,7 +105,6 @@ void TaskRunner::init(InitContext& iCtx)
   // setup monitoring
   auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
   mCollector = MonitoringFactory::Get(monitoringUrl);
-  mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
 
