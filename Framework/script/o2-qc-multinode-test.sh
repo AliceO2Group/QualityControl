@@ -87,7 +87,7 @@ o2-qc-run-producer --producers 2 --message-amount 15  --message-rate 1 -b | time
 
 timeout -s INT 30s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run
 
-# wait until the local QC quits before moving forward
+# wait until the local QC quits before moving forward.
 wait
 
 # check MonitorObject
