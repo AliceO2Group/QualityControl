@@ -61,7 +61,7 @@
       "id": "mft-tracks",
       "active": "true",
       "machines": [],
-      "query": "randomtrack:MFT/TRACKSMFT/0",
+      "query": "randomtrack:MFT/TRACKS/0",
       "samplingConditions": [
         {
           "condition": "random",

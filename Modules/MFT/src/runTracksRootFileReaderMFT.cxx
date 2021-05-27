@@ -87,7 +87,7 @@ class TracksRootFileReaderMFT : public o2::framework::Task
 
     // fill in the message
     // LOG(INFO) << " TracksRootFileReaderMFT::run. In this file there are  " << TracksInFile.size() << " tracks";
-    pc.outputs().snapshot(Output{ "MFT", "TRACKSMFT", 0, Lifetime::Timeframe }, *TracksInFile);
+    pc.outputs().snapshot(Output{ "MFT", "TRACKS", 0, Lifetime::Timeframe }, *TracksInFile);
   }
 
  private:
@@ -102,7 +102,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext&)
 
   // define the outputs
   std::vector<OutputSpec> outputs;
-  outputs.emplace_back("MFT", "TRACKSMFT", 0, Lifetime::Timeframe);
+  outputs.emplace_back("MFT", "TRACKS", 0, Lifetime::Timeframe);
 
   // The producer to generate some data in the workflow
   DataProcessorSpec producer{
