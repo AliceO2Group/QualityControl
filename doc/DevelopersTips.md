@@ -69,7 +69,7 @@ It will be available in doc/html, thus to open it quickly do `[xdg-]open doc/htm
 
 When we don't see the monitoring data in grafana, here is what to do to pinpoint the source of the problem.
 
-1. `ssh root@aido2mon-gpn.cern.ch`
+1. `ssh root@alio2-cr1-mvs01.cern.ch`
 2. See if the data reach the servers :
     1. `systemctl stop influxdb`
     2. `nc -u -l 8087`  <-- make sure to use the proper port (cf your monitoring url)
@@ -89,8 +89,8 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
 ### Monitoring setup for building the grafana dashboard
 
 1. Ask Adam for an account on pcald03.cern.ch:3000.
-3. Ask Adam for a copy of the QC dashboard that you can edit. 
-2. Set the monitoring url to `"url": "influxdb-udp://flptest2.cern.ch:8089"`
+3. Make a copy of the QC dashboard that you can edit. 
+2. Set the monitoring url to `"url": "influxdb-udp://alio2-cr1-mvs01.cern.ch:8089"`
 4. Once the dashboard is ready, tell Adam. 
 
 ### Avoid writing QC objects to a repository

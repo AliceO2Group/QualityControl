@@ -753,6 +753,15 @@ Below the external task configuration structure is described. Note that more tha
 }
 ```
 
+## Data Sampling monitoring
+
+To have the monitoring metrics for the Data Sampling (the Dispatcher) sent to a specific sink (like influxdb), add the option `--monitoring-backend` when launching the DPL workflow. For example:
+```shell
+--monitoring-backend 'influxdb-udp://influxdb-server.cern.ch:8086'
+```
+
+This will actually send the monitoring data of *all* DPL devices to this database.
+
 ---
 
 [← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
