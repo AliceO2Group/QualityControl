@@ -27,11 +27,9 @@
 #include <DataFormatsITSMFT/ClusterTopology.h>
 #include <Framework/InputRecord.h>
 
-
 #ifdef WITH_OPENMP
 #include <omp.h>
 #endif
-
 
 using o2::itsmft::Digit;
 using namespace o2::itsmft;
@@ -125,24 +123,23 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   int dictSize = mDict.getSize();
 
-   #ifdef WITH_OPENMP
-       omp_set_num_threads(mNThreads);
-   #pragma omp parallel for schedule(dynamic)
-   #endif
-   //Filling cluster histogram for each ROF by open_mp
+#ifdef WITH_OPENMP
+  omp_set_num_threads(mNThreads);
+#pragma omp parallel for schedule(dynamic)
+#endif
+  //Filling cluster histogram for each ROF by open_mp
 
-   for (unsigned int iROF=0; iROF< clusRofArr.size(); iROF++){
-     const auto &ROF = clusRofArr[iROF];
- 
-  
-     for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
+  for (unsigned int iROF = 0; iROF < clusRofArr.size(); iROF++) {
+    const auto& ROF = clusRofArr[iROF];
+
+    for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
       auto& cluster = clusArr[icl];
       auto ChipID = cluster.getSensorID();
       int ClusterID = cluster.getPatternID();
-      int lay, sta, ssta,mod,chip;
+      int lay, sta, ssta, mod, chip;
       mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
       mod = mod + (ssta * (mNHicPerStave[lay] / 2));
-      
+
       if (lay < 3) {
         mClasterOccupancyIB[lay][sta][chip]++;
         if (ClusterID < dictSize) {
@@ -158,7 +155,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
-
 
   mNRofs += clusRofArr.size();
   if (mNRofs >= mOccUpdateFrequency) {
@@ -308,8 +304,8 @@ void ITSClusterTask::getJsonParameters()
   mDictPath = mCustomParameters["clusterDictionaryPath"];
   mRunNumberPath = mCustomParameters["runNumberPath"];
   mGeomPath = mCustomParameters["geomPath"];
-  mNThreads =stoi (mCustomParameters.find("nThreads")->second);
-  LOG(INFO) << "#################### mNThreads : " <<  mNThreads;
+  mNThreads = stoi(mCustomParameters.find("nThreads")->second);
+  LOG(INFO) << "#################### mNThreads : " << mNThreads;
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
 
     if (mCustomParameters["layer"][ilayer] != '0') {
