@@ -1,6 +1,5 @@
 set(MODULE_NAME "O2QcMuonChambers")
 
-
 # ---- Files ----
 
 set(SRCS
@@ -8,6 +7,7 @@ set(SRCS
   src/PedestalsTask.cxx
   src/PhysicsTaskDigits.cxx
   src/PhysicsTaskPreclusters.cxx
+  src/DecodingErrorsTask.cxx
   src/PedestalsCheck.cxx
   src/PhysicsCheck.cxx
   src/TH1MCHReductor.cxx
@@ -18,6 +18,7 @@ set(HEADERS
   include/MCH/PedestalsTask.h
   include/MCH/PhysicsTaskDigits.h
   include/MCH/PhysicsTaskPreclusters.h
+  include/MCH/DecodingErrorsTask.h
   include/MCH/PedestalsCheck.h
   include/MCH/PhysicsCheck.h
   include/MCH/TH1MCHReductor.h
@@ -65,6 +66,7 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/PhysicsTaskDigits.h
                             include/MCH/PhysicsTaskPreclusters.h
                             include/MCH/PhysicsCheck.h
+                            include/MCH/DecodingErrorsTask.h
                             include/MCH/PedestalsCheck.h
                             include/MCH/TH1MCHReductor.h
                             include/MCH/sampa_header.h
