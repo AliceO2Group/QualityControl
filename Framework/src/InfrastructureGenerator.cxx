@@ -89,53 +89,55 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   }
 
   for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
-    if (taskConfig.get<bool>("active")) {
-      if (taskConfig.get<std::string>("location") == "local") {
+    if (!taskConfig.get<bool>("active")) {
+      ILOG(Info, Devel) << "Task " << taskName << " is disabled, ignoring." << ENDM;
+      continue;
+    }
 
-        if (taskConfig.get_child("localMachines").empty()) {
-          throw std::runtime_error("No local machines specified for task " + taskName + " in its configuration");
-        }
+    if (taskConfig.get<std::string>("location") == "local") {
+      if (taskConfig.get_child("localMachines").empty()) {
+        throw std::runtime_error("No local machines specified for task " + taskName + " in its configuration");
+      }
 
-        size_t id = 1;
-        for (const auto& machine : taskConfig.get_child("localMachines")) {
-          // We spawn a task and proxy only if we are on the right machine.
-          if (machine.second.get<std::string>("") == host) {
-            // Generate QC Task Runner
-            bool needsResetAfterCycle = taskConfig.get<std::string>("mergingMode", "delta") == "delta";
-            workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, id, needsResetAfterCycle));
-            // Generate an output proxy
-            // These should be removed when we are able to declare dangling output in normal DPL devices
-            auto remoteMachine = taskConfig.get_optional<std::string>("remoteMachine");
-            if (!remoteMachine.has_value()) {
-              ILOG(Warning, Devel)
-                << "No remote machine was specified for a multinode QC setup."
-                   " This is fine if running with AliECS, but it will fail in standalone mode."
-                << ENDM;
-            }
-            auto remotePort = taskConfig.get_optional<std::string>("remotePort");
-            if (!remotePort.has_value()) {
-              ILOG(Warning, Devel)
-                << "No remote port was specified for a multinode QC setup."
-                   " This is fine if running with AliECS, but it might fail in standalone mode."
-                << ENDM;
-            }
-            generateLocalTaskLocalProxy(workflow, id, taskName, remoteMachine.value_or("any"), remotePort.value_or(defaultRemotePort));
-            break;
+      size_t id = 1;
+      for (const auto& machine : taskConfig.get_child("localMachines")) {
+        // We spawn a task and proxy only if we are on the right machine.
+        if (machine.second.get<std::string>("") == host) {
+          // Generate QC Task Runner
+          bool needsResetAfterCycle = taskConfig.get<std::string>("mergingMode", "delta") == "delta";
+          workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, id, needsResetAfterCycle));
+          // Generate an output proxy
+          // These should be removed when we are able to declare dangling output in normal DPL devices
+          auto remoteMachine = taskConfig.get_optional<std::string>("remoteMachine");
+          if (!remoteMachine.has_value()) {
+            ILOG(Warning, Devel)
+              << "No remote machine was specified for a multinode QC setup."
+                 " This is fine if running with AliECS, but it will fail in standalone mode."
+              << ENDM;
           }
-          id++;
+          auto remotePort = taskConfig.get_optional<std::string>("remotePort");
+          if (!remotePort.has_value()) {
+            ILOG(Warning, Devel)
+              << "No remote port was specified for a multinode QC setup."
+                 " This is fine if running with AliECS, but it might fail in standalone mode."
+              << ENDM;
+          }
+          generateLocalTaskLocalProxy(workflow, id, taskName, remoteMachine.value_or("any"), remotePort.value_or(defaultRemotePort));
+          break;
         }
-      } else // if (taskConfig.get<std::string>("location") == "remote")
-      {
-        // Collecting Data Sampling Policies
-        auto dataSourceTree = taskConfig.get_child("dataSource");
-        std::string type = dataSourceTree.get<std::string>("type");
-        if (type == "dataSamplingPolicy") {
-          samplingPoliciesUsed.insert(dataSourceTree.get<std::string>("name"));
-        } else if (type == "direct") {
-          throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
-        } else {
-          throw std::runtime_error("Configuration error: dataSource type unknown : " + type);
-        }
+        id++;
+      }
+    } else // if (taskConfig.get<std::string>("location") == "remote")
+    {
+      // Collecting Data Sampling Policies
+      auto dataSourceTree = taskConfig.get_child("dataSource");
+      std::string type = dataSourceTree.get<std::string>("type");
+      if (type == "dataSamplingPolicy") {
+        samplingPoliciesUsed.insert(dataSourceTree.get<std::string>("name"));
+      } else if (type == "direct") {
+        throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
+      } else {
+        throw std::runtime_error("Configuration error: dataSource type unknown : " + type);
       }
     }
   }
@@ -173,48 +175,50 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
     TaskRunnerFactory taskRunnerFactory;
     for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
       if (taskConfig.get<bool>("active", true)) {
+        ILOG(Info, Devel) << "Task " << taskName << " is disabled, ignoring." << ENDM;
+        continue;
+      }
 
-        if (taskConfig.get<std::string>("location") == "local") {
-          // if tasks are LOCAL, generate input proxies + mergers + checkers
+      if (taskConfig.get<std::string>("location") == "local") {
+        // if tasks are LOCAL, generate input proxies + mergers + checkers
 
-          size_t numberOfLocalMachines = taskConfig.get_child("localMachines").size() > 1 ? taskConfig.get_child("localMachines").size() : 1;
-          // Generate an input proxy
-          // These should be removed when we are able to declare dangling inputs in normal DPL devices
-          auto remotePort = taskConfig.get_optional<std::string>("remotePort");
-          if (!remotePort.has_value()) {
-            ILOG(Warning, Devel) << "No remote port was specified for a multinode QC setup."
-                                    " This is fine if running with AliECS, but it might fail in standalone mode."
-                                 << ENDM;
-          }
-          generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, remotePort.value_or(defaultRemotePort));
-
-          generateMergers(workflow, taskName, numberOfLocalMachines,
-                          taskConfig.get<double>("cycleDurationSeconds"),
-                          taskConfig.get<std::string>("mergingMode", "delta"));
-
-        } else if (taskConfig.get<std::string>("location") == "remote") {
-
-          // -- if tasks are REMOTE, generate dispatcher proxies + tasks + checkers
-          // (for the time being we don't foresee parallel tasks on QC servers, so no mergers here)
-
-          // fixme: ideally we should check if we are on the right remote machine, but now we support only n -> 1 setups,
-          //  so there is no point. Also, I expect that we should be able to generate one big topology or its parts
-          //  and we would place it among QC servers using AliECS, not by configuration files.
-
-          // Collecting Data Sampling Policies
-          auto dataSourceTree = taskConfig.get_child("dataSource");
-          std::string type = dataSourceTree.get<std::string>("type");
-          if (type == "dataSamplingPolicy") {
-            samplingPoliciesUsed.insert(dataSourceTree.get<std::string>("name"));
-          } else if (type == "direct") {
-            throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
-          } else {
-            throw std::runtime_error("Configuration error: dataSource type unknown : " + type);
-          }
-
-          // Creating the remote task
-          workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
+        size_t numberOfLocalMachines = taskConfig.get_child("localMachines").size() > 1 ? taskConfig.get_child("localMachines").size() : 1;
+        // Generate an input proxy
+        // These should be removed when we are able to declare dangling inputs in normal DPL devices
+        auto remotePort = taskConfig.get_optional<std::string>("remotePort");
+        if (!remotePort.has_value()) {
+          ILOG(Warning, Devel) << "No remote port was specified for a multinode QC setup."
+                                  " This is fine if running with AliECS, but it might fail in standalone mode."
+                               << ENDM;
         }
+        generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, remotePort.value_or(defaultRemotePort));
+
+        generateMergers(workflow, taskName, numberOfLocalMachines,
+                        taskConfig.get<double>("cycleDurationSeconds"),
+                        taskConfig.get<std::string>("mergingMode", "delta"));
+
+      } else if (taskConfig.get<std::string>("location") == "remote") {
+
+        // -- if tasks are REMOTE, generate dispatcher proxies + tasks + checkers
+        // (for the time being we don't foresee parallel tasks on QC servers, so no mergers here)
+
+        // fixme: ideally we should check if we are on the right remote machine, but now we support only n -> 1 setups,
+        //  so there is no point. Also, I expect that we should be able to generate one big topology or its parts
+        //  and we would place it among QC servers using AliECS, not by configuration files.
+
+        // Collecting Data Sampling Policies
+        auto dataSourceTree = taskConfig.get_child("dataSource");
+        std::string type = dataSourceTree.get<std::string>("type");
+        if (type == "dataSamplingPolicy") {
+          samplingPoliciesUsed.insert(dataSourceTree.get<std::string>("name"));
+        } else if (type == "direct") {
+          throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
+        } else {
+          throw std::runtime_error("Configuration error: dataSource type unknown : " + type);
+        }
+
+        // Creating the remote task
+        workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, 0));
       }
     }
   }
@@ -445,7 +449,7 @@ vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::Work
         break;
       }
     }
-    if (!isStored) {
+    if (!isStored) { // fixme: statement is always true
       // If there is no Check for a given input, create a candidate for a sink device
       InputNames singleEntry{ label };
       // Init empty Check vector to appear in the next step
