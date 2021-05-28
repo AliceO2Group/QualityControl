@@ -84,8 +84,6 @@ class ITSFhrTask final : public TaskInterface
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const int ReduceFraction = 1; //TODO: move to Config file to define this number
 
-  std::array<bool, NLayer> mEnableLayers = { false };
-
   int mNThreads = 0;
   std::unordered_map<unsigned int, int> mHitPixelID_Hash[7][48][2][14][14]; //layer, stave, substave, hic, chip
 
