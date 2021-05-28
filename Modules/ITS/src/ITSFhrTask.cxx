@@ -337,7 +337,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   start = std::chrono::high_resolution_clock::now();
   //get TF id by dataorigin and datadescription
   const InputSpec TFIdFilter{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA1" }, Lifetime::Timeframe }; //after Data Sampling the dataorigin will become to "DS" and the datadescription will become  to "RAWDATAX"
-  if (mGetTFFromBinding) {
+  if (!mGetTFFromBinding) {
     for (auto& input : ctx.inputs()) {
       if (DataRefUtils::match(input, TFIdFilter)) {
         mTimeFrameId = (unsigned int)*input.payload;
