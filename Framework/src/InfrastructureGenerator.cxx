@@ -47,6 +47,8 @@ using SubSpec = o2::header::DataHeader::SubSpecificationType;
 namespace o2::quality_control::core
 {
 
+const char* defaultRemotePort = "36543";
+
 framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructure(std::string configurationSource)
 {
   WorkflowSpec workflow;
@@ -103,7 +105,21 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
             workflow.emplace_back(taskRunnerFactory.create(taskName, configurationSource, id, needsResetAfterCycle));
             // Generate an output proxy
             // These should be removed when we are able to declare dangling output in normal DPL devices
-            generateLocalTaskLocalProxy(workflow, id, taskName, taskConfig.get<std::string>("remoteMachine"), taskConfig.get<std::string>("remotePort"));
+            auto remoteMachine = taskConfig.get_optional<std::string>("remoteMachine");
+            if (!remoteMachine.has_value()) {
+              ILOG(Warning, Devel)
+                << "No remote machine was specified for a multinode QC setup."
+                   " This is fine if running with AliECS, but it will fail in standalone mode."
+                << ENDM;
+            }
+            auto remotePort = taskConfig.get_optional<std::string>("remotePort");
+            if (!remotePort.has_value()) {
+              ILOG(Warning, Devel)
+                << "No remote port was specified for a multinode QC setup."
+                   " This is fine if running with AliECS, but it might fail in standalone mode."
+                << ENDM;
+            }
+            generateLocalTaskLocalProxy(workflow, id, taskName, remoteMachine.value_or("any"), remotePort.value_or(defaultRemotePort));
             break;
           }
           id++;
@@ -164,7 +180,13 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
           size_t numberOfLocalMachines = taskConfig.get_child("localMachines").size() > 1 ? taskConfig.get_child("localMachines").size() : 1;
           // Generate an input proxy
           // These should be removed when we are able to declare dangling inputs in normal DPL devices
-          generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, taskConfig.get<std::string>("remotePort"));
+          auto remotePort = taskConfig.get_optional<std::string>("remotePort");
+          if (!remotePort.has_value()) {
+            ILOG(Warning, Devel) << "No remote port was specified for a multinode QC setup."
+                                    " This is fine if running with AliECS, but it might fail in standalone mode."
+                                 << ENDM;
+          }
+          generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, remotePort.value_or(defaultRemotePort));
 
           generateMergers(workflow, taskName, numberOfLocalMachines,
                           taskConfig.get<double>("cycleDurationSeconds"),
