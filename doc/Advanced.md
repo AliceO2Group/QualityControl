@@ -761,6 +761,8 @@ To have the monitoring metrics for the Data Sampling (the Dispatcher) sent to a 
 ```
 
 This will actually send the monitoring data of *all* DPL devices to this database.
+  
+__Note for mac users__: if you get a crash and the message "std::exception::what: send_to: Message too long", it means that you have to adapt a `udp` parameter. You can check the datagram size via `sudo sysctl net.inet.udp.maxdgram`. If it says something less than 64 kB, then increase size: `sudo sysctl -w net.inet.udp.maxdgram=65535`
 
 ---
 
