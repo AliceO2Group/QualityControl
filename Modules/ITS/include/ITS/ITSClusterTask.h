@@ -71,7 +71,6 @@ class ITSClusterTask : public TaskInterface
   const int mOccUpdateFrequency = 100000;
   int mNThreads = 1;
   int mNRofs = 0;
-  int ChipIDprev = 0;
   std::string mDictPath;
   std::string mRunNumberPath;
   std::string mGeomPath;
