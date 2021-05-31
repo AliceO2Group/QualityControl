@@ -38,6 +38,8 @@
                 "taskParameters": {
                     "Layer": "2",
                     "decoderThreads": "8",
+                    "HitNumberCut": "512",
+                    "GetTFFromBinding": "0",
                     "runNumberPath": "/data/shifts/runs/ibb2a/.run_counter",
                     "geomPath": "/tmp/qc_tmp/o2sim"
                 }
