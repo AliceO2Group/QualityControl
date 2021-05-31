@@ -315,7 +315,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistoLTM.get());
   // TRMs
   for (unsigned int j = 0; j < RawDataDecoder::ntrms; j++) {
-    mHistoTRM[j].reset(new TH2F(Form("TRMCounterSlot%i", j), Form("TRM %i Diagnostics;TRM Word;Crate;Words", j),
+    mHistoTRM[j].reset(new TH2F(Form("TRMCounterSlot%02i", j + 3), Form("TRM Slot %i Diagnostics;TRM Word;Crate;Words", j + 3),
                                 RawDataDecoder::nwords, 0, RawDataDecoder::nwords,
                                 RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates));
     mDecoderRaw.mCounterTRM[0][j].MakeHistogram(mHistoTRM[j].get());
@@ -331,7 +331,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
     mHistoCrate[j].get()->GetYaxis()->SetBinLabel(2, "DRM");
     mHistoCrate[j].get()->GetYaxis()->SetBinLabel(3, "LTM");
     for (int k = 0; k < 10; k++) {
-      mHistoCrate[j].get()->GetYaxis()->SetBinLabel(4 + k, Form("TRM%i", k));
+      mHistoCrate[j].get()->GetYaxis()->SetBinLabel(4 + k, Form("TRMSlot%02i", k + 3));
     }
     getObjectsManager()->startPublishing(mHistoCrate[j].get());
   }
@@ -344,7 +344,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoSlotParticipating.get()->GetYaxis()->SetBinLabel(2, "DRM");
   mHistoSlotParticipating.get()->GetYaxis()->SetBinLabel(3, "LTM");
   for (int k = 0; k < 10; k++) {
-    mHistoSlotParticipating.get()->GetYaxis()->SetBinLabel(4 + k, Form("TRM%i", k));
+    mHistoSlotParticipating.get()->GetYaxis()->SetBinLabel(4 + k, Form("TRMSlot%02i", k + 3));
   }
   getObjectsManager()->startPublishing(mHistoSlotParticipating.get());
 
