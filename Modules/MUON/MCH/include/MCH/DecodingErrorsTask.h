@@ -19,13 +19,13 @@
 
 #include <TH2.h>
 
-#include "DPLUtils/DPLRawParser.h"
+#include <DPLUtils/DPLRawParser.h>
+#include <MCHRawDecoder/PageDecoder.h>
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-#include "MCHRawDecoder/PageDecoder.h"
 
 namespace o2::quality_control_modules::muonchambers
 {
@@ -61,7 +61,7 @@ class DecodingErrorsTask /*final*/ : public TaskInterface
   void decodePage(gsl::span<const std::byte> page);
 
   // helper function for storing the histograms to a ROOT file on disk
-  void save_histograms();
+  void saveHistograms();
 
   mch::raw::Elec2DetMapper mElec2Det{ nullptr };
   mch::raw::FeeLink2SolarMapper mFee2Solar{ nullptr };

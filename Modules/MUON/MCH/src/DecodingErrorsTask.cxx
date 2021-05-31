@@ -27,8 +27,6 @@
 
 //#define QC_MCH_SAVE_TEMP_ROOTFILE 1
 
-static bool sDebug = false;
-
 namespace o2
 {
 namespace quality_control_modules
@@ -48,9 +46,7 @@ DecodingErrorsTask::DecodingErrorsTask()
 
 DecodingErrorsTask::~DecodingErrorsTask()
 {
-  if (mHistogramErrors) {
-    delete mHistogramErrors;
-  }
+  delete mHistogramErrors;
 }
 
 static void setAxisLabels(TH2F* hErrors)
@@ -144,9 +140,7 @@ void DecodingErrorsTask::decodeReadout(const o2::framework::DataRef& input)
 
 void DecodingErrorsTask::decodeBuffer(gsl::span<const std::byte> buf)
 {
-  if (sDebug) {
-    std::cout << "\n\n============================\nStart of new buffer\n";
-  }
+  ILOG(Debug) << "Start of new buffer" << ENDM;
 
   size_t bufSize = buf.size();
   size_t pageStart = 0;
@@ -167,20 +161,13 @@ void DecodingErrorsTask::decodeBuffer(gsl::span<const std::byte> buf)
 
 void DecodingErrorsTask::decodePage(gsl::span<const std::byte> page)
 {
-  auto errorHandler = [&](DsElecId dsElecId, int8_t chip, uint32_t error) {
-    if (sDebug) {
-      auto s = asString(dsElecId);
-      auto ch = fmt::format("{}-CHIP{}", s, chip);
-      std::cout << "dsElecId: " << ch << "  error: " << error << std::endl;
-    }
-
+  int nErrors = 0;
+  auto errorHandler = [&](DsElecId dsElecId, int8_t /*chip*/, uint32_t error) {
+    nErrors += 1;
     int deId{ -1 };
     if (auto opt = mElec2Det(dsElecId); opt.has_value()) {
       DsDetId dsDetId = opt.value();
       deId = dsDetId.deId();
-    }
-    if (sDebug) {
-      std::cout << "deId " << deId << std::endl;
     }
 
     if (deId < 0) {
@@ -204,14 +191,14 @@ void DecodingErrorsTask::decodePage(gsl::span<const std::byte> page)
     mDecoder = o2::mch::raw::createPageDecoder(page, handlers);
   }
   mDecoder(page);
+
+  auto& rdhAny = *reinterpret_cast<RDH*>(const_cast<std::byte*>(&(page[0])));
+  int feeId = o2::raw::RDHUtils::getFEEID(rdhAny) & 0x7F;
+  ILOG(Debug) << "Received " << nErrors << " from " << feeId << ENDM;
 }
 
 void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  if (sDebug) {
-    std::cout << "\n\n============================\nmonitorData\n";
-  }
-
   for (auto&& input : ctx.inputs()) {
     if (input.spec->binding == "readout") {
       decodeReadout(input);
@@ -222,7 +209,7 @@ void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void DecodingErrorsTask::save_histograms()
+void DecodingErrorsTask::saveHistograms()
 {
   TFile f("/tmp/qc-errors.root", "RECREATE");
 
@@ -242,7 +229,7 @@ void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)
   ILOG(Info) << "endOfActivity" << ENDM;
 
 #ifdef QC_MCH_SAVE_TEMP_ROOTFILE
-  save_histograms();
+  saveHistograms();
 #endif
 }
 
