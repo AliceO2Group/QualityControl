@@ -48,6 +48,7 @@ namespace o2::quality_control::core
 {
 
 const char* defaultRemotePort = "36543";
+uint16_t defaultPolicyPort = 42349;
 
 framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructure(std::string configurationSource)
 {
@@ -144,7 +145,8 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
 
   // Creating Data Sampling Policies proxies
   for (const auto& policyName : samplingPoliciesUsed) {
-    std::string port = std::to_string(DataSampling::PortForPolicy(config.get(), policyName));
+    // todo: leave only the new way once the return type is changed
+    std::string port = std::to_string(std::optional<uint16_t>(DataSampling::PortForPolicy(config.get(), policyName)).value_or(defaultPolicyPort));
     Inputs inputSpecs = DataSampling::InputSpecsForPolicy(config.get(), policyName);
 
     std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
@@ -227,7 +229,9 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   for (const auto& policyName : samplingPoliciesUsed) {
     // todo now we have to generate one proxy per local machine and policy, because of the proxy limitations.
     //  Use one proxy per policy when it is possible.
-    std::string port = std::to_string(DataSampling::PortForPolicy(config.get(), policyName));
+
+    // todo: leave only the new way once the return type is changed
+    std::string port = std::to_string(std::optional<uint16_t>(DataSampling::PortForPolicy(config.get(), policyName)).value_or(defaultPolicyPort));
     Outputs outputSpecs = DataSampling::OutputSpecsForPolicy(config.get(), policyName);
     std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
     for (const auto& machine : machines) {
