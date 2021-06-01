@@ -31,6 +31,7 @@
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/InputSpan.h>
 #include <Framework/RawDeviceService.h>
 
 #include <fairlogger/Logger.h>
@@ -156,7 +157,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
   }
 }
 
-CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::CompletionPolicy::InputSet inputs)
+CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs)
 {
   // fixme: we assume that there is one timer input and the rest are data inputs. If some other implicit inputs are
   //  added, this will break.
