@@ -4,44 +4,38 @@
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert /path/to/README.md-->
 <!--ts-->
-   * [Advanced topics](#advanced-topics)
-      * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
-      * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
-         * [Configuration](#configuration)
-         * [Example 1: basic](#example-1-basic)
-         * [Example 2: advanced](#example-2-advanced)
-         * [Limitations](#limitations)
-      * [Multi-node setups](#multi-node-setups)
-      * [Writing a DPL data producer](#writing-a-dpl-data-producer)
-      * [Access run conditions and calibrations from the CCDB](#access-run-conditions-and-calibrations-from-the-ccdb)
-      * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
-      * [Custom QC object metadata](#custom-qc-object-metadata)
-      * [Canvas options](#canvas-options)
-      * [QC with DPL Analysis](#qc-with-dpl-analysis)
-         * [Getting AODs directly](#getting-aods-directly)
-         * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
-         * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
-      * [Data Inspector](#data-inspector)
-         * [Prerequisite](#prerequisite)
-         * [Compilation](#compilation)
-         * [Execution](#execution)
-         * [Configuration](#configuration-1)
-      * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
-         * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
-      * [Local CCDB setup](#local-ccdb-setup)
-      * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
+* [Advanced topics](#advanced-topics)
+   * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
+   * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
+      * [Configuration](#configuration)
+      * [Example 1: basic](#example-1-basic)
+      * [Example 2: advanced](#example-2-advanced)
+      * [Limitations](#limitations)
+   * [Multi-node setups](#multi-node-setups)
+   * [Writing a DPL data producer](#writing-a-dpl-data-producer)
+   * [Access run conditions and calibrations from the CCDB](#access-run-conditions-and-calibrations-from-the-ccdb)
+   * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
+   * [Custom QC object metadata](#custom-qc-object-metadata)
+   * [Canvas options](#canvas-options)
+   * [QC with DPL Analysis](#qc-with-dpl-analysis)
+      * [Getting AODs directly](#getting-aods-directly)
+      * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
+      * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
+   * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
+      * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
+   * [Local CCDB setup](#local-ccdb-setup)
+   * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
+   * [FLP Suite](#flp-suite)
       * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
-      * [Configuration files details](#configuration-files-details)
-         * [Global configuration structure](#global-configuration-structure)
-         * [Common configuration](#common-configuration)
-         * [QC Tasks configuration](#qc-tasks-configuration)
-         * [QC Checks configuration](#qc-checks-configuration)
-         * [QC Aggregators configuration](#qc-aggregators-configuration)
-         * [QC Post-processing configuration](#qc-post-processing-configuration)
-         * [External tasks configuration](#external-tasks-configuration)
-
-<!-- Added by: bvonhall, at:  -->
-
+      * [Switch detector in the workflow <em>readout-dataflow</em>](#switch-detector-in-the-workflow-readout-dataflow)
+   * [Configuration files details](#configuration-files-details)
+      * [Global configuration structure](#global-configuration-structure)
+      * [Common configuration](#common-configuration)
+      * [QC Tasks configuration](#qc-tasks-configuration)
+      * [QC Checks configuration](#qc-checks-configuration)
+      * [QC Aggregators configuration](#qc-aggregators-configuration)
+      * [QC Post-processing configuration](#qc-post-processing-configuration)
+      * [External tasks configuration](#external-tasks-configuration)
 <!--te-->
 
 
@@ -439,59 +433,6 @@ o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH 
 o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json)
 ```
 
-## Data Inspector
-
-This is a GUI to inspect the data coming out of the DataSampling, in
-particular the Readout.
-
-![alt text](images/dataDump.png)
-
-### Prerequisite
-
-If not already done, install GLFW for your platform. On CC7 install `glfw-devel` from epel repository : `sudo yum install glfw-devel --enablerepo=epel`
-
-### Compilation
-
-Build the QualityControl as usual.
-
-### Execution
-
-To monitor the readout, 3 processes have to be started : the Readout,
-the Data Sampling and the Data Inspector.
-
-First make sure that the Data Sampling is enabled in the readout :
-```
-[consumer-fmq-qc]
-consumerType=FairMQChannel
-enableRawFormat=1
-fmq-name=readout-qc
-fmq-address=ipc:///tmp/readout-pipe-1
-fmq-type=pub
-fmq-transport=zeromq
-unmanagedMemorySize=2G
-memoryPoolNumberOfPages=500
-memoryPoolPageSize=1M
-enabled=1
-```
-
-In 3 separate terminals, do respectively
-
-1. `readout.exe file:///absolute/path/to/config.cfg`
-2. `o2-qc-run-readout-for-data-dump --batch`
-3. `o2-qc-data-dump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static`
-
-### Configuration
-
-__Fraction of data__
-The Data Sampling tries to take 100% of the events by default.
-Edit `$QUALITYCONTROL_ROOT/etc/readoutForDataDump.json`
-to change it. Look for the parameter `fraction` that is set to 1.
-
-__Port__
-The Data Sampling sends data to the GUI via the port `26525`.
-If this port is not free, edit the config file `$QUALITYCONTROL_ROOT/etc/readoutForDataDump.json`
-and `$QUALITYCONTROL_ROOT/etc/dataDump.json`.
-
 ## Details on the data storage format in the CCDB
 
 Each MonitorObject is stored as a TFile in the CCDB. 
@@ -536,7 +477,7 @@ At the moment, the description of the REST api can be found in this document : h
 
 ## Local QCG (QC GUI) setup
 
-To install and run the QCG locally, and its fellow process tobject2json, please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#run-qcg-locally
+To install and run the QCG locally please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#installation
 
 ## FLP Suite
 
@@ -544,25 +485,17 @@ The QC is part of the FLP Suite. The Suite is installed on FLPs through RPMs and
 
 ### Developing QC modules on a machine with FLP suite
 
-__Option 1__: Rebuild everything locally and use the QC module library that is generated
+__Option 1__: Rebuild everything locally and point ECS to it
 
-Simply build as you would do on your development machine with aliBuild. 
-To load a development library in a setup with FLP suite, specify its full
-path in the config file (e.g. `/etc/flp.d/qc/readout.json`):
-```
-    "tasks": {
-      "QcTask": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
-        "moduleName": "/home/myuser/alice/sw/BUILD/QualityControl-latest/QualityControl/libQcTstLibrary",
-        ...
-```
-Make sure that:
-- The name "QcTask" stays the same, as changing it might break the 
-workflow specification for AliECS
-- The library is compiled with the same QC, O2, ROOT and GCC version as the 
-ones which are installed with the FLP suite. Especially, the task and check
-interfaces have to be identical. A good way to achieve that is to use the alidist branch matching the version of flp suite (e.g. `flp-suite-v0.12.0`).
+1. Prepare the machine for aliBuild : https://alice-doc.github.io/alice-analysis-tutorial/building/custom.html
+2. `aliBuild init QualityControl@master`
+3. You might want to switch alidist to a branch corresponding to an FLP Suite version but `master` should work as well.
+4. `aliBuild build O2Suite --defaults o2-dataflow`     
+It is necessary to build `O2Suite` and not `QualityControl`
+6. Run alienv at least once, or each time you switch branch: `alienv enter O2Suite/latest`
+7. Copy the absolute path to `sw/MODULES/<arch>`
+8. In aliECS, add a parameter `modulepath` and paste the path. 
+9. When running with aliECS, the software from your build will be used.
 
 __Option 2__: Build on your development setup and scp the library
 
@@ -819,6 +752,17 @@ Below the external task configuration structure is described. Note that more tha
   }
 }
 ```
+
+## Data Sampling monitoring
+
+To have the monitoring metrics for the Data Sampling (the Dispatcher) sent to a specific sink (like influxdb), add the option `--monitoring-backend` when launching the DPL workflow. For example:
+```shell
+--monitoring-backend 'influxdb-udp://influxdb-server.cern.ch:8086'
+```
+
+This will actually send the monitoring data of *all* DPL devices to this database.
+  
+__Note for mac users__: if you get a crash and the message "std::exception::what: send_to: Message too long", it means that you have to adapt a `udp` parameter. You can check the datagram size via `sudo sysctl net.inet.udp.maxdgram`. If it says something less than 64 kB, then increase size: `sudo sysctl -w net.inet.udp.maxdgram=65535`
 
 ---
 

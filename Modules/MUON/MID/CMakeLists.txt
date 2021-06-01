@@ -13,7 +13,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcMID PUBLIC O2QualityControl O2::MIDRaw)
+target_link_libraries(O2QcMID PUBLIC O2QualityControl O2::MIDRaw O2::MIDQC)
 
 install(TARGETS O2QcMID
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -63,3 +63,5 @@ install(
   TARGETS ${EXE_NAMES}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+install(FILES mid-raw.json DESTINATION etc) 

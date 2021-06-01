@@ -2,9 +2,6 @@
 
 add_library(O2QcHMPID)
 
-target_sources(O2QcHMPID PRIVATE src/HmpidEquipment.cxx)
-target_sources(O2QcHMPID PRIVATE src/HmpidDecoder.cxx)
-target_sources(O2QcHMPID PRIVATE src/HmpidDecodeRawMem.cxx)
 target_sources(O2QcHMPID PRIVATE src/HmpidTask.cxx)
 
 target_include_directories(
@@ -13,7 +10,13 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcHMPID PUBLIC O2QualityControl)
+target_link_libraries(O2QcHMPID PUBLIC O2QualityControl O2::HMPIDReconstruction)
+
+get_target_property(O2_INCLUDE_DIRS O2::CommonDataFormat INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(ROOT_INCLUDE_DIRS ROOT::Core INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(HMPID_INCLUDE_DIRS O2::HMPIDReconstruction INTERFACE_INCLUDE_DIRECTORIES)
+
+set(CMAKE_REQUIRED_INCLUDES ${O2_INCLUDE_DIRS} ${ROOT_INCLUDE_DIRS} ${HMPID_INCLUDE_DIRS})
 
 install(TARGETS O2QcHMPID
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -21,11 +24,7 @@ install(TARGETS O2QcHMPID
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_root_dictionary(O2QcHMPID
-                    HEADERS
-  include/HMPID/HmpidEquipment.h
-  include/HMPID/HmpidDecoder.h
-  include/HMPID/HmpidDecodeRawMem.h
-  include/HMPID/HmpidTask.h
+                    HEADERS include/HMPID/HmpidTask.h
                     LINKDEF include/HMPID/LinkDef.h
                     BASENAME O2QcHMPID)
 

@@ -27,6 +27,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/Aggregator.h"
+#include "QualityControl/runnerUtils.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
@@ -44,6 +45,7 @@ namespace o2::quality_control::checker
 
 AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
+    mRunNumber(0),
     mTotalNumberObjectsReceived(0)
 {
   try {
@@ -103,10 +105,16 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
     initServiceDiscovery();
     initAggregators();
   } catch (...) {
-    // catch the exceptions and print it (the ultimate caller might not know how to display it)
     ILOG(Fatal) << "Unexpected exception during initialization:\n"
                 << current_diagnostic(true) << ENDM;
     throw;
+  }
+
+  try {
+    // registering state machine callbacks
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+  } catch (o2::framework::RuntimeErrorRef& ref) {
+    ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
   }
 }
 
@@ -128,6 +136,8 @@ void AggregatorRunner::run(framework::ProcessingContext& ctx)
   store(qualityObjects);
 
   updatePolicyManager.updateGlobalRevision();
+
+  sendPeriodicMonitoring();
 }
 
 QualityObjectsType AggregatorRunner::aggregate()
@@ -149,6 +159,8 @@ QualityObjectsType AggregatorRunner::aggregate()
         mQualityObjects[qo->getName()] = qo;
         updatePolicyManager.updateObjectRevision(qo->getName());
       }
+      // set the run number on all objects
+      for_each(newQOs.begin(), newQOs.end(), [&mRunNumber = mRunNumber](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mRunNumber); });
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
@@ -194,7 +206,12 @@ void AggregatorRunner::initMonitoring()
 
 void AggregatorRunner::initServiceDiscovery()
 {
-  auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+  auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "");
+  if (consulUrl.empty()) {
+    mServiceDiscovery = nullptr;
+    ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
+    return;
+  }
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
   ILOG(Info, Devel) << "ServiceDiscovery initialized";
@@ -304,6 +321,12 @@ void AggregatorRunner::sendPeriodicMonitoring()
     mTimer.reset(1000000); // 10 s.
     mCollector->send({ mTotalNumberObjectsReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
   }
+}
+
+void AggregatorRunner::start(const ServiceRegistry& services)
+{
+  mRunNumber = computeRunNumber(services, mConfigFile->getRecursive());
+  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
 }
 
 } // namespace o2::quality_control::checker

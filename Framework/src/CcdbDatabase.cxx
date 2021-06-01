@@ -181,6 +181,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   metadata["qc_detector_name"] = mo->getDetectorName();
   metadata["qc_task_name"] = mo->getTaskName();
   metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
+  metadata["RunNumber"] = std::to_string(mo->getRunNumber());
 
   ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
   ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
@@ -190,6 +191,8 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
 {
   // metadata
   map<string, string> metadata;
+  metadata["RunNumber"] = std::to_string(qo->getRunNumber());
+  metadata["ObjectType"] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   // QC metadata (prefix qc_)
   metadata["qc_version"] = Version::GetQcVersion().getString();
   metadata["qc_quality"] = std::to_string(qo->getQuality().getLevel());
@@ -219,12 +222,8 @@ TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, s
   // we try first to load a TFile
   auto* object = ccdbApi.retrieveFromTFileAny<TObject>(path, metadata, timestamp, headers);
   if (object == nullptr) {
-    // We could not open a TFile we should now try to open an object directly serialized
-    object = ccdbApi.retrieve(path, metadata, timestamp);
-    if (object == nullptr) {
-      ILOG(Error, Support) << "We could NOT retrieve the object " << path << "." << ENDM;
-      return nullptr;
-    }
+    ILOG(Error, Support) << "We could NOT retrieve the object " << path << "." << ENDM;
+    return nullptr;
   }
   ILOG(Debug, Support) << "Retrieved object " << path << " with timestamp " << timestamp << ENDM;
   return object;
@@ -292,19 +291,6 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
     qo->addMetadata(headers);
   }
   return qo;
-}
-
-std::string CcdbDatabase::retrieveQOJson(std::string qoPath, long timestamp)
-{
-  map<string, string> metadata;
-  return retrieveJson(qoPath, timestamp, metadata);
-}
-
-std::string CcdbDatabase::retrieveMOJson(std::string taskName, std::string objectName, long timestamp)
-{
-  string path = taskName + "/" + objectName;
-  map<string, string> metadata;
-  return retrieveJson(path, timestamp, metadata);
 }
 
 std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata)

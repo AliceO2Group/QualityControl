@@ -39,7 +39,8 @@ class QualityObject : public TObject
     std::string policyName = "",
     std::vector<std::string> inputs = {},
     std::vector<std::string> monitorObjectsNames = {},
-    std::map<std::string, std::string> metadata = {});
+    std::map<std::string, std::string> metadata = {},
+    int runNumber = 0);
 
   /// Destructor
   ~QualityObject() override;
@@ -98,10 +99,10 @@ class QualityObject : public TObject
   /// \brief Get a metadata
   /// \return the value corresponding to the key if it was found.
   /// \throw ObjectNotFoundError in case the key is not found.
-  std::string getMetadata(std::string key);
+  std::string getMetadata(std::string key) const;
   /// \brief Get a metadata
   /// \return the value corresponding to the key if it was found, default value otherwise
-  std::string getMetadata(std::string key, std::string defaultValue);
+  std::string getMetadata(std::string key, std::string defaultValue) const;
 
   /// \brief Build the path to this object.
   /// Build the path to this object as it will appear in the GUI.
@@ -109,15 +110,21 @@ class QualityObject : public TObject
   /// \return A string containing the path.
   std::string getPath() const;
 
+  /// \brief Associate the Quality with a new reason and an optional comment
+  /// \return reference to *this
+  QualityObject& addReason(FlagReason reason, std::string comment = "");
+  /// \brief Get the reasons with associated comments for the Quality
+  /// \return reason, if exists
+  const CommentedFlagReasons& getReasons() const;
+
   const std::string& getDetectorName() const;
   void setDetectorName(const std::string& detectorName);
-
   void setQuality(const Quality& quality);
   const std::string& getCheckName() const;
-
   const std::string& getPolicyName() const;
-
   const std::vector<std::string> getMonitorObjectsNames() const;
+  int getRunNumber() const;
+  void setRunNumber(int mRunNumber);
 
  private:
   Quality mQuality;
@@ -126,8 +133,9 @@ class QualityObject : public TObject
   std::string mPolicyName;
   std::vector<std::string> mInputs;
   std::vector<std::string> mMonitorObjectsNames;
+  int mRunNumber;
 
-  ClassDefOverride(QualityObject, 3);
+  ClassDefOverride(QualityObject, 4);
 };
 
 using QualityObjectsType = std::vector<std::shared_ptr<QualityObject>>;

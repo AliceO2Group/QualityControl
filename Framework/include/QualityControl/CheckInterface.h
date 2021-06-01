@@ -60,7 +60,7 @@ class CheckInterface
   /// @param checkResult The quality returned by the check. It is not the same as the quality of the mo
   ///                    as the latter represents the combination of all the checks the mo passed. This
   ///                    parameter is to be used to pass the result of the check of the same class.
-  virtual void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) = 0;
+  virtual void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) = 0;
 
   /// \brief Returns the name of the class that can be treated by this check.
   ///

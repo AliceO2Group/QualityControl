@@ -19,9 +19,12 @@
 #include <Rtypes.h>
 #include <string>
 #include <map>
+#include <vector>
+#include <DataFormatsQualityControl/FlagReasons.h>
 
 namespace o2::quality_control::core
 {
+using CommentedFlagReasons = std::vector<std::pair<FlagReason, std::string>>;
 
 /// \brief  Class representing the quality of a MonitorObject.
 ///
@@ -31,10 +34,11 @@ class Quality
  public:
   /// Default constructor
   Quality(unsigned int level = Quality::NullLevel, std::string name = "");
+
   /// Destructor
   virtual ~Quality() = default;
   // Copy constructor
-  Quality(const Quality& q);
+  Quality(const Quality& q) = default;
 
   /// Move constructor
   Quality(Quality&& other) /*noexcept*/ = default;
@@ -43,14 +47,17 @@ class Quality
   /// Move assignment operator
   Quality& operator=(Quality&& other) /*noexcept*/ = default;
 
-  unsigned int getLevel() const;
-  const std::string& getName() const;
-
   static const Quality Null;
   static const Quality Good;
   static const Quality Medium;
   static const Quality Bad;
   static const unsigned int NullLevel;
+
+  /// \brief Sets the Quality (without Reasons or Metadata).
+  void set(const Quality&);
+
+  unsigned int getLevel() const;
+  const std::string& getName() const;
 
   friend bool operator==(const Quality& lhs, const Quality& rhs)
   {
@@ -97,10 +104,18 @@ class Quality
   /// \return the value corresponding to the key if it was found, default value otherwise
   std::string getMetadata(std::string key, std::string defaultValue) const;
 
+  /// \brief Associate the Quality with a new reason and an optional comment
+  /// \return reference to *this
+  Quality& addReason(FlagReason reason, std::string comment = "");
+  /// \brief Get the reasons with associated comments for the Quality
+  /// \return reason, if exists
+  const CommentedFlagReasons& getReasons() const;
+
  private:
   unsigned int mLevel; /// 0 is no quality, 1 is best quality, then it only goes downhill...
   std::string mName;
   std::map<std::string, std::string> mUserMetadata;
+  std::vector<std::pair<FlagReason, std::string>> mReasons;
 
   ClassDef(Quality, 2);
 };

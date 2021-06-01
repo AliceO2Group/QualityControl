@@ -30,7 +30,12 @@ const Quality Quality::Bad(3, "Bad");
 const Quality Quality::Null(NullLevel, "Null"); // we consider it the worst of the worst
 
 Quality::Quality(unsigned int level, std::string name) : mLevel(level), mName(name), mUserMetadata{} {}
-Quality::Quality(const Quality& q) : mLevel(q.mLevel), mName(q.mName), mUserMetadata{} {}
+
+void Quality::set(const Quality& q)
+{
+  mLevel = q.mLevel;
+  mName = q.mName;
+}
 
 unsigned int Quality::getLevel() const { return mLevel; }
 
@@ -85,4 +90,13 @@ std::string Quality::getMetadata(std::string key, std::string defaultValue) cons
   return mUserMetadata.count(key) > 0 ? mUserMetadata.at(key) : defaultValue;
 }
 
+Quality& Quality::addReason(FlagReason reason, std::string comment)
+{
+  mReasons.emplace_back(std::move(reason), std::move(comment));
+  return *this;
+}
+const CommentedFlagReasons& Quality::getReasons() const
+{
+  return mReasons;
+}
 } // namespace o2::quality_control::core

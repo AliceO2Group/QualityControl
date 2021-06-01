@@ -1,11 +1,11 @@
 Here are the tools to clean up the CCDB of the QC.
 
 ## Entry point
-It is `repoCleaner.py`. See the long comment at the beginning.
+It is `o2-qc-repo-cleaner`. See the long comment at the beginning.
 
 ## Usage
 ```
-./repoCleaner [--dry-run] [--log-level 10] [--config config.yaml]
+./o2-qc-repo-cleaner [--dry-run] [--log-level 10] [--config config.yaml]
 ```
 
 ## Configuration
@@ -21,7 +21,7 @@ There can be any number of these rules. The order is important as we use the fir
 - `delay`: the duration in minutes of the grace period during which an object is not removed, even if it matches the above path. 
 - `policy`: the name of a policy to apply on the matching objects. Here are the currently available policies (full description in the corresponding files):
    - `1_per_hour`: keep the first and extend its validity to 1 hour, remove everything in the next hour, repeat.
-   - `1_per_run`: requires the "run" metadata to be set. Keep only the most recent version of an object for a given run. 
+   - `1_per_run`: requires the "Run" or "RunNumber" metadata to be set. Keep only the most recent version of an object for a given run. 
    - `last_only`: keep only the last version, remove everything else.
    - `none_kept`: keep none, remove everything
    - `skip`: keep everything
@@ -32,7 +32,13 @@ The configuration for ccdb-test is described [here](../../../doc/DevelopersTips.
 ## Unit Tests
 `cd QualityControl/Framework/script/RepoCleaner ; python3 -m unittest discover`
 
-To run just one of the rules, do `python3 1_per_run.py`.
+In particular there is a test for the `production` rule that is pretty extensive. It hits the ccdb though and it needs the following path to be truncated: 
+`
+qc/TST/MO/repo/test*
+`
+
+## Other tests
+Most of the classes and Rules have a main to help test them. To run do e.g. `python3 1_per_run.py`.
 
 ## Installation
 CMake will install the python scripts in bin and the config file in etc.

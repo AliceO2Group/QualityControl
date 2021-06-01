@@ -15,27 +15,29 @@ class ObjectVersion:
     This class represents a single version. 
     '''
 
-    def __init__(self, path, uuid, validFrom, validTo, metadata):
+    def __init__(self, path, validFrom, validTo, uuid=None, metadata=None):
         '''
         Construct an ObjectVersion.
         :param path: path to the object
         :param uuid: unique id of the object
-        :param validFromAsDatetime: validity range smaller limit (in ms)
+        :param validFrom: validity range smaller limit (in ms)
         :param validTo: validity range bigger limit (in ms)
         '''
         self.path = path
         self.uuid = uuid
-        self.validFromAsDatetime = datetime.datetime.fromtimestamp(validFrom / 1000)  # /1000 because we get ms 
         self.validFrom = validFrom
+        # precomputed Datetime ("Dt") of the timestamp `validFrom`
+        self.validFromAsDt = datetime.datetime.fromtimestamp(int(validFrom) / 1000)  # /1000 because we get ms
         self.validTo = validTo
         self.metadata = metadata
         
     def __repr__(self):
-        if "Run" in self.metadata:
-            return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, " \
-               f"ts {self.validFrom}), run {self.metadata['Run']}"
+        if "Run" in self.metadata or "RunNumber" in self.metadata:
+            run_number = self.metadata["Run"] if "Run" in self.metadata else self.metadata["RunNumber"]
+            return f"Version of object {self.path} valid from {self.validFromAsDt}, run {run_number}"
         else:
-            return f"Version of object {self.path} valid from {self.validFromAsDatetime} (uuid {self.uuid}, ts {self.validFrom})"
+            return f"Version of object {self.path} valid from {self.validFromAsDt} (uuid {self.uuid}, " \
+                   f"ts {self.validFrom})"
 
 
 class Ccdb:
@@ -114,31 +116,58 @@ class Ccdb:
             sys.exit(1)  # really ? 
         
     @dryable.Dryable()
-    def updateValidity(self, version: ObjectVersion, validFrom: int, validTo: int):
+    def updateValidity(self, version: ObjectVersion, valid_from: int, valid_to: int, metadata=None):
         '''
         Update the validity range of the specified version of an object.
         :param version: The ObjectVersion to update.
-        :param validFrom: The new "from" validity.
-        :param validTo: The new "to" validity.
+        :param valid_from: The new "from" validity.
+        :param valid_to: The new "to" validity.
+        :param metadata: Add or modify metadata
         '''
-        if version.validTo == validTo:
+        if version.validTo == valid_to:
             logging.debug("The new timestamp for validTo is identical to the existing one. Skipping.")
             return
-        url_update_validity = self.url + '/' + version.path + '/' + str(validFrom) + '/' + str(validTo)
-        logging.debug(f"Update end limit validity of {version.path} from {version.validTo} to {validTo}")
+        full_path = self.url + '/' + version.path + '/' + str(valid_from) + '/' + str(valid_to) + '/' + str(version.uuid) + '?'
+        logging.debug(f"Update end limit validity of {version.path} ({version.uuid}) from {version.validTo} to {valid_to}")
+        if metadata is not None:
+            logging.debug(f"{metadata}")
+            for key in metadata:
+                full_path += key + "=" + metadata[key] + "&"
         try:
-            r = requests.put(url_update_validity)
+            r = requests.put(full_path)
             r.raise_for_status()
             self.counter_validity_updated += 1
         except requests.exceptions.RequestException as e:  
             print(e)
             sys.exit(1)  # really ? 
-        
-    
+
+    def putVersion(self, version: ObjectVersion, data):
+        '''
+        :param version: An ObjectVersion that describes the data to be uploaded.
+        :param data: the actual data to send. E.g.:{'somekey': 'somevalue'}
+        :return A list of ObjectVersion.
+        '''
+        full_path=self.url + "/" + version.path + "/" + str(version.validFrom) + "/" + str(version.validTo) + "/"
+        if version.metadata is not None:
+            for key in version.metadata:
+                full_path += key + "=" + version.metadata[key] + "/"
+        logging.debug(f"fullpath: {full_path}")
+        r = requests.post(full_path, files=data)
+        if r.ok:
+            logging.debug(f"Version pushed to {version.path}")
+        else:
+            logging.error(f"Could not post a new version of {version.path}: {r.text}")
+
 def main():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
+    logging.getLogger().setLevel(int(10))
+
     ccdb = Ccdb('http://ccdb-test.cern.ch:8080')
-    objectsList = ccdb.getObjectsList()
-    print(f"{objectsList}")
+
+    data = {'somekey': 'somevalue'}
+    metadata = {'RunNumber': '213564', 'test': 'on'}
+    version_info = ObjectVersion(path="qc/TST/MO/repo/test", validFrom=1605091858183, validTo=1920451858183, metadata=metadata)
+    ccdb.putVersion(version_info, data)
 
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.

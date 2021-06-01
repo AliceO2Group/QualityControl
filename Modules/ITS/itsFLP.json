@@ -1,0 +1,120 @@
+{
+    "qc": {
+        "config": {
+            "database": {
+                "implementation": "CCDB",
+                "host": "ccdb-test.cern.ch:8080",
+                "username": "not_applicable",
+                "password": "not_applicable",
+                "name": "not_applicable"
+            },
+            "Activity": {
+                "number": "42",
+                "type": "2"
+            },
+            "monitoring": {
+                "url": "infologger:///debug?qc"
+            },
+            "consul": {
+                "url": "http://consul-test.cern.ch:8500"
+            },
+            "conditionDB": {
+                "url": "ccdb-test.cern.ch:8080"
+            }
+        },
+        "tasks": {
+            "FHRTask": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSFhrTask",
+                "moduleName": "QcITS",
+                "detectorName": "ITS",
+                "cycleDurationSeconds": "30",
+                "maxNumberCycles": "-1",
+                "dataSource": {
+                    "type": "dataSamplingPolicy",
+                    "name": "RAWDATA"
+                },
+                "location": "remote",
+                "taskParameters": {
+                    "Layer": "2",
+                    "decoderThreads": "8",
+                    "HitNumberCut": "512",
+                    "GetTFFromBinding": "0",
+                    "runNumberPath": "/data/shifts/runs/ibb2a/.run_counter",
+                    "geomPath": "/tmp/qc_tmp/o2sim"
+                }
+            },
+            "ITSFEE": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSFeeTask",
+                "moduleName": "QcITS",
+                "detectorName": "ITS",
+                "cycleDurationSeconds": "30",
+                "maxNumberCycles": "-1",
+                "dataSource": {
+                    "type": "dataSamplingPolicy",
+                    "name": "feedata"
+                },
+                "location": "remote"
+            }
+        },
+        "checks": {
+            "FHRCheck": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSFhrCheck",
+                "moduleName": "QcITS",
+                "policy": "OnAny",
+                "detectorName": "ITS",
+                "dataSource": [{
+                    "type": "Task",
+                    "name": "FHRTask",
+                    "MOs": ["General/ErrorPlots"]
+                }]
+            },
+            "ITSFeeCheck": {
+                "active": "true",
+                "className": "o2::quality_control_modules::its::ITSFeeCheck",
+                "moduleName": "QcITS",
+                "policy": "OnAny",
+                "detectorName": "ITS",
+                "dataSource": [{
+                    "type": "Task",
+                    "name": "ITSFEE",
+                    "MOs": ["LaneStatus/laneStatusFlagFAULT"]
+                }]
+            }
+       }
+
+    },
+    "dataSamplingPolicies": [
+        {
+            "id": "RAWDATA",
+            "active": "true",
+            "machines": [],
+            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME",
+            "samplingConditions": [
+                {
+                    "condition": "random",
+                    "fraction": "0.1",
+                    "seed": "1441"
+                }
+            ],
+            "blocking": "false"
+        },
+        {
+            "id": "feedata",
+            "active": "true",
+            "machines": [],
+            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME",
+            "samplingConditions": [
+                {
+                    "condition": "random",
+                    "fraction": "1",
+                    "seed": "1441"
+                }
+            ],
+            "blocking": "false"
+        }
+    ]
+}
+

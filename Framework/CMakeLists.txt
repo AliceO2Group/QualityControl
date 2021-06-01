@@ -24,6 +24,7 @@ target_link_libraries(O2QualityControlTypes
   PUBLIC
   ROOT::Hist
   AliceO2::Common
+  O2::DataFormatsQualityControl
 )
 
 add_root_dictionary(O2QualityControlTypes
@@ -71,6 +72,7 @@ add_library(O2QualityControl
   src/MonitorObjectCollection.cxx
   src/UpdatePolicyManager.cxx
   src/AdvancedWorkflow.cxx
+  src/QualitiesToTRFCollectionConverter.cxx
   src/Calculators.cxx)
 
 target_include_directories(
@@ -94,11 +96,10 @@ target_link_libraries(O2QualityControl
                              Boost::container
                              O2::Framework
                              O2::CCDB
-                             O2::MCHBase
-                             ms_gsl::ms_gsl
                              O2QualityControlTypes
                              O2::Mergers
                              O2::DataSampling
+                             O2::DataFormatsQualityControl
                       PRIVATE Boost::system
                               ROOT::Gui
                               CURL::libcurl)
@@ -128,7 +129,6 @@ set(EXE_SRCS
   src/runBasic.cxx
   src/runAdvanced.cxx
   src/runReadout.cxx
-  src/runReadoutForDataDump.cxx
   src/runRepositoryBenchmark.cxx
   src/runPostProcessing.cxx
   src/runPostProcessingOCC.cxx
@@ -143,7 +143,6 @@ set(EXE_NAMES
   o2-qc-run-basic
   o2-qc-run-advanced
   o2-qc-run-readout
-  o2-qc-run-readout-for-data-dump
   o2-qc-repository-benchmark
   o2-qc-run-postprocessing
   o2-qc-run-postprocessing-occ
@@ -188,21 +187,6 @@ foreach(i RANGE ${count})
   install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
 
-# ---- Gui ----
-
-set(DATADUMP "")
-if(TARGET AliceO2::DebugGUI)
-  set(DATADUMP "o2-qc-data-dump")
-
-  set(GUI_SRCS src/DataDumpGui.cxx src/runDataDump.cxx)
-
-  add_executable(${DATADUMP} ${GUI_SRCS})
-
-  target_link_libraries(${DATADUMP} PRIVATE O2QualityControl AliceO2::DebugGUI)
-else()
-  message(STATUS "DebugGUI not found, ${DATADUMP} will not be built")
-endif()
-
 # ---- Tests ----
 
 set(TEST_SRCS
@@ -235,6 +219,7 @@ set(TEST_SRCS
     test/testVersion.cxx
     test/testRepoPathUtils.cxx
     test/testPolicyManager.cxx
+    test/testQualitiesToTRFCollectionConverter.cxx
   )
 
 set(TEST_ARGS
@@ -264,6 +249,7 @@ set(TEST_ARGS
     ""
     "-b --run"
     "-b --run"
+    ""
     ""
     ""
     ""
@@ -302,7 +288,7 @@ target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib)
 
 set_property(TEST testWorkflow PROPERTY TIMEOUT 30)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
-set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 30)
+set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 30)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
@@ -319,13 +305,23 @@ set_tests_properties(functional_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BI
 set_property(TEST functional_test PROPERTY LABELS slow)
 set_property(TEST functional_test PROPERTY TIMEOUT 30)
 
+include(GenerateUniquePort)
+o2_generate_unique_port(UNIQUE_PORT_1)
+o2_generate_unique_port(UNIQUE_PORT_2)
+configure_file(multinode-test.json.in ${CMAKE_BINARY_DIR}/tests/multinode-test.json)
+add_test(NAME multinode_test COMMAND o2-qc-multinode-test.sh)
+set_tests_properties(multinode_test
+  PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_PORT_1=${UNIQUE_PORT_1};UNIQUE_PORT_2=${UNIQUE_PORT_2}")
+set_property(TEST multinode_test PROPERTY LABELS slow)
+set_property(TEST multinode_test PROPERTY TIMEOUT 60)
+
 # disable some tests in the CI to avoid un-expected failures.
 # to be removed when it is fixed / understood
 #set_property(TEST functional_test PROPERTY LABELS manual)
 #set_property(TEST testWorkflow PROPERTY LABELS manual)
 #set_property(TEST testCheckWorkflow PROPERTY LABELS manual)
 
-# ---- Install ----
+# ---- Install ---- 
 
 # Build targets with install rpath on Mac to dramatically speed up installation
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
@@ -341,7 +337,7 @@ endif()
 unset(isSystemDir)
 
 # Install library and binaries
-install(TARGETS O2QualityControl O2QualityControlTypes ${EXE_NAMES} ${DATADUMP}
+install(TARGETS O2QualityControl O2QualityControlTypes ${EXE_NAMES}
         EXPORT QualityControlTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -382,7 +378,6 @@ install(
 
 install(FILES example-default.json
               alfa.json
-              dataDump.json
               basic.json
               basic-aggregator.json
               basic-external-histo.json
@@ -393,17 +388,23 @@ install(FILES example-default.json
               multiNode.json
               readout.json
               readout-no-sampling.json
-              readoutForDataDump.json
               postprocessing.json
               script/RepoCleaner/config.yaml
               streamerinfos.root
               streamerinfos_v017.root
         DESTINATION etc)
 
-install(PROGRAMS script/RepoCleaner/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/skip.py
-                 script/RepoCleaner/repoCleaner.py script/RepoCleaner/1_per_run.py script/RepoCleaner/none_kept.py
-  script/o2-qc-functional-test.sh
+install(PROGRAMS script/RepoCleaner/o2-qc-repo-cleaner
+                 script/o2-qc-functional-test.sh
+                 script/o2-qc-multinode-test.sh
         DESTINATION bin)
+
+install(FILES script/RepoCleaner/rules/1_per_hour.py
+              script/RepoCleaner/Ccdb.py
+              script/RepoCleaner/rules/skip.py
+              script/RepoCleaner/rules/1_per_run.py
+              script/RepoCleaner/rules/none_kept.py
+        DESTINATION lib)
 
 # ---- Copy test files ----
 #

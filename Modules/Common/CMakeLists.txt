@@ -10,7 +10,8 @@ configure_file("include/Common/Version.h.in"
 add_library(O2QcCommon)
 
 target_sources(O2QcCommon
-               PRIVATE src/TRFCollectionTask.cxx
+               PRIVATE src/WorstOfAllAggregator.cxx
+                       src/TRFCollectionTask.cxx
                        src/TRFCollectionTaskConfig.cxx
                        src/NonEmpty.cxx
                        src/MeanIsAbove.cxx
@@ -35,6 +36,7 @@ install(TARGETS O2QcCommon
 
 add_root_dictionary(O2QcCommon
                     HEADERS include/Common/NonEmpty.h
+                            include/Common/WorstOfAllAggregator.h
                             include/Common/TRFCollectionTask.h
                             include/Common/MeanIsAbove.h
                             include/Common/TH1Reductor.h
@@ -50,7 +52,11 @@ install(FILES etc/trfcollection-example.json
 
 # ---- Tests ----
 
-set(TEST_SRCS test/testMeanIsAbove.cxx test/testNonEmpty.cxx test/testCommonReductors.cxx)
+set(TEST_SRCS
+        test/testMeanIsAbove.cxx
+        test/testNonEmpty.cxx
+        test/testCommonReductors.cxx
+        test/testWorstOfAllAggregator.cxx)
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)

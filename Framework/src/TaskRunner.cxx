@@ -29,7 +29,6 @@
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
-#include <Framework/ConfigParamRegistry.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpan.h>
 #include <Framework/RawDeviceService.h>
@@ -39,6 +38,7 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
+#include "QualityControl/runnerUtils.h"
 
 #include <string>
 #include <TFile.h>
@@ -224,22 +224,9 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
   mNoMoreCycles = true;
 }
 
-void TaskRunner::computeRunNumber(const ServiceRegistry& services)
-{
-  try {
-    auto temp = services.get<RawDeviceService>().device()->fConfig->GetProperty<string>("runNumber", "unspecified");
-    ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: " << temp << ENDM;
-    mRunNumber = stoi(temp);
-    ILOG(Info, Support) << "Run number found in options: " << mRunNumber << ENDM;
-  } catch (invalid_argument& ia) {
-    ILOG(Info, Support) << "Run number not found in options or is not a number, using the one from the config file instead." << ENDM;
-    mRunNumber = mConfigFile->get<int>("qc.config.Activity.number", 0);
-  }
-}
-
 void TaskRunner::start(const ServiceRegistry& services)
 {
-  computeRunNumber(services);
+  o2::quality_control::core::computeRunNumber(services, mConfigFile->getRecursive());
 
   try {
     startOfActivity();
@@ -362,10 +349,11 @@ void TaskRunner::loadTaskConfig()
   auto taskConfigTree = getTaskConfigTree();
   string test = taskConfigTree.get<std::string>("detectorName", "MISC");
   mTaskConfig.detectorName = validateDetectorName(taskConfigTree.get<std::string>("detectorName", "MISC"));
+  ILOG_INST.setDetector(mTaskConfig.detectorName);
   mTaskConfig.moduleName = taskConfigTree.get<std::string>("moduleName");
   mTaskConfig.className = taskConfigTree.get<std::string>("className");
   mTaskConfig.maxNumberCycles = taskConfigTree.get<int>("maxNumberCycles", -1);
-  mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "http://consul-test.cern.ch:8500");
+  mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "");
   mTaskConfig.conditionUrl = mConfigFile->get<std::string>("qc.config.conditionDB.url", "http://ccdb-test.cern.ch:8080");
   mTaskConfig.saveToFile = taskConfigTree.get<std::string>("saveObjectsToFile", "");
   try {
@@ -414,14 +402,14 @@ void TaskRunner::startOfActivity()
   mTimerTotalDurationActivity.reset();
   mTotalNumberObjectsPublished = 0;
 
-  // We take the run number as set from the FairMQ options if it is there, otherwise the one from the config file
-  int run = mRunNumber > 0 ? mRunNumber : mConfigFile->get<int>("qc.config.Activity.number");
-  Activity activity(run,
+  // Start activity in module's stask and update objectsManager
+  Activity activity(mRunNumber,
                     mConfigFile->get<int>("qc.config.Activity.type"));
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
-  mCollector->setRunNumber(run);
+  mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
+  mObjectsManager->updateRunNumber(mRunNumber);
 }
 
 void TaskRunner::endOfActivity()

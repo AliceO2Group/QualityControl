@@ -21,7 +21,7 @@
 #include "DataFormatsTPC/ClusterNative.h"
 #include "Framework/ProcessingContext.h"
 
-class TCanvas;
+#include <TCanvas.h>
 
 namespace o2::quality_control_modules::tpc
 {
@@ -32,29 +32,12 @@ namespace o2::quality_control_modules::tpc
 /// \param canVec Vector which holds TCanvas pointers persisting for the entire runtime of the task
 /// \param canvNames Names of the canvases
 /// \param metaData Optional std::map to set meta data for the publishing
-auto addAndPublish = [](std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager, auto& canVec, std::vector<std::string_view> canvNames, const std::map<std::string, std::string>& metaData = std::map<std::string, std::string>()) {
-  for (const auto& canvName : canvNames) {
-    canVec.emplace_back(std::make_unique<TCanvas>(canvName.data()));
-    auto canvas = canVec.back().get();
-    objectsManager->startPublishing(canvas);
-    if (metaData.size() != 0) {
-      for (const auto& [key, value] : metaData) {
-        objectsManager->addMetadata(canvas->GetName(), key, value);
-      }
-    }
-  }
-};
+void addAndPublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> objectsManager, std::vector<std::unique_ptr<TCanvas>>& canVec, std::vector<std::string_view> canvNames, const std::map<std::string, std::string>& metaData = std::map<std::string, std::string>());
 
 /// \brief Converts std::vector<std::unique_ptr<TCanvas>> to std::vector<TCanvas*>
 /// \param input std::vector<std::unique_ptr<TCanvas>> to be converted to std::vector<TCanvas*>
 /// \return std::vector<TCanvas*>
-auto toVector = [](auto& input) {
-  std::vector<TCanvas*> output;
-  for (auto& in : input) {
-    output.emplace_back(in.get());
-  }
-  return output;
-};
+std::vector<TCanvas*> toVector(std::vector<std::unique_ptr<TCanvas>>& input);
 
 /// \brief Converts CLUSTERNATIVE from InputRecord to ClusterNativeAccess
 /// Convenience funtion to make native clusters accessible when receiving them from the DPL

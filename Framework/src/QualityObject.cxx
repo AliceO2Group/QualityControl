@@ -26,15 +26,17 @@ QualityObject::QualityObject(
   std::string policyName,
   std::vector<std::string> inputs,
   std::vector<std::string> monitorObjectsNames,
-  std::map<std::string, std::string> metadata)
+  std::map<std::string, std::string> metadata,
+  int runNumber)
   : mQuality{ quality },
     mCheckName{ std::move(checkName) },
     mDetectorName{ std::move(detectorName) },
     mPolicyName{ std::move(policyName) },
     mInputs{ std::move(inputs) },
-    mMonitorObjectsNames{ std::move(monitorObjectsNames) }
+    mMonitorObjectsNames{ std::move(monitorObjectsNames) },
+    mRunNumber(runNumber)
 {
-  mQuality.overwriteMetadata(metadata);
+  mQuality.overwriteMetadata(std::move(metadata));
 }
 
 QualityObject::~QualityObject() = default;
@@ -93,12 +95,12 @@ void QualityObject::updateMetadata(std::string key, std::string value)
   mQuality.updateMetadata(key, value);
 }
 
-std::string QualityObject::getMetadata(std::string key)
+std::string QualityObject::getMetadata(std::string key) const
 {
   return mQuality.getMetadata(key);
 }
 
-std::string QualityObject::getMetadata(std::string key, std::string defaultValue)
+std::string QualityObject::getMetadata(std::string key, std::string defaultValue) const
 {
   return mQuality.getMetadata(key, defaultValue);
 }
@@ -113,6 +115,17 @@ std::string QualityObject::getPath() const
     throw;
   }
   return path;
+}
+
+QualityObject& QualityObject::addReason(FlagReason reason, std::string comment)
+{
+  mQuality.addReason(reason, std::move(comment));
+  return *this;
+}
+
+const CommentedFlagReasons& QualityObject::getReasons() const
+{
+  return mQuality.getReasons();
 }
 
 const std::string& QualityObject::getDetectorName() const
@@ -144,11 +157,23 @@ const std::vector<std::string> QualityObject::getMonitorObjectsNames() const
   return mMonitorObjectsNames;
 }
 
+int QualityObject::getRunNumber() const
+{
+  return mRunNumber;
+}
+
+void QualityObject::setRunNumber(int runNumber)
+{
+  QualityObject::mRunNumber = runNumber;
+}
+
 std::ostream& operator<<(std::ostream& out, const QualityObject& q) // output
 {
   out << "QualityObject: " << q.getName() << ":\n"
       << "   - checkName : " << q.getCheckName() << "\n"
       << "   - detectorName : " << q.getDetectorName() << "\n"
+      << "   - runNumber : " << q.getRunNumber() << "\n"
+      << "   - quality : " << q.getQuality() << "\n"
       << "   - monitorObjectsNames : ";
   for (auto item : q.getMonitorObjectsNames()) {
     out << item << ", ";

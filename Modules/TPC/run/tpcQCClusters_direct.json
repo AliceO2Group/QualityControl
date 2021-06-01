@@ -28,7 +28,7 @@
         "className": "o2::quality_control_modules::tpc::Clusters",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
@@ -41,7 +41,7 @@
       }
     },
     "checks": {
-      "QcCheck": {
+      "QcCheckClusters": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",

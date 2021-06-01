@@ -125,8 +125,10 @@ class InfrastructureGenerator
   static void generateDataSamplingPolicyLocalProxy(framework::WorkflowSpec& workflow,
                                                    const std::string& policyName,
                                                    const framework::Inputs& inputSpecs,
+                                                   const std::string& localMachine,
                                                    const std::string& localPort);
   static void generateDataSamplingPolicyRemoteProxy(framework::WorkflowSpec& workflow,
+                                                    const std::string& policyName,
                                                     const framework::Outputs& outputSpecs,
                                                     const std::string& localMachine,
                                                     const std::string& localPort);

@@ -56,6 +56,7 @@ class TaskCosmics final : public TaskInterface
   const float mTFDuration = ((nrow - 1) / nrow) * o2::tof::Geo::BC_TIME * o2::tof::Geo::BC_IN_ORBIT * 256 * 1E-9; /// Duration of a TF used to compute the rate of cosmics
   float mSelDeltaTSignalRegion = 50000.f;                                                                         /// Cut on the DeltaT to select signal
   float mSelDeltaTBackgroundRegion = 100000.f;                                                                    /// Cut on the DeltaT to select background
+  float mSelMinLength = 500.f;                                                                                    /// Cut on the minimum length that a track mush have [cm]
 
   // Histograms
   std::shared_ptr<TH1F> mHistoCrate1 = nullptr;         /// Crates of the first hit

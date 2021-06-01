@@ -1,8 +1,6 @@
-import logging
 import unittest
 import yaml
 
-import repoCleaner
 from repoCleaner import parseConfig, Rule, findMatchingRule
 
 

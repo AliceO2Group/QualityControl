@@ -69,11 +69,8 @@ class CcdbDatabase : public DatabaseInterface
 
   // retrieval - MO - deprecated
   std::shared_ptr<o2::quality_control::core::MonitorObject> retrieveMO(std::string taskName, std::string objectName, long timestamp = -1) override;
-  std::string retrieveMOJson(std::string taskName, std::string objectName, long timestamp = -1) override;
-
   // retrieval - QO - deprecated
   std::shared_ptr<o2::quality_control::core::QualityObject> retrieveQO(std::string qoPath, long timestamp = -1) override;
-  std::string retrieveQOJson(std::string qoPath, long timestamp = -1) override;
 
   // retrieval - general
   std::string retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata) override;

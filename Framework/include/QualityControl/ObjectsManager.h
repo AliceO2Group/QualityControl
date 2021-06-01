@@ -163,12 +163,20 @@ class ObjectsManager
    */
   void removeAllFromServiceDiscovery();
 
+  /**
+   * Set a new run number.
+   * All objects are updated and any new object gets this new run number.
+   * @param runNumber the run number.
+   */
+  void updateRunNumber(int runNumber);
+
  private:
   std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
   std::string mTaskName;
   std::string mDetectorName;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;
+  int mCurrentRunNumber = 0;
 };
 
 } // namespace o2::quality_control::core

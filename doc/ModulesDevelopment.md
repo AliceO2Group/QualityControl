@@ -3,38 +3,36 @@
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
 <!--./gh-md-toc --insert /path/to/README.md-->
 <!--ts-->
-   * [Modules development](#modules-development)
-      * [Context](#context)
-         * [QC architecture](#qc-architecture)
-         * [DPL](#dpl)
-         * [Data Sampling](#data-sampling)
-            * [Custom Data Sampling Condition](#custom-data-sampling-condition)
-            * [Bypassing the Data Sampling](#bypassing-the-data-sampling)
-         * [Code Organization](#code-organization)
-         * [Developing with aliBuild/alienv](#developing-with-alibuildalienv)
-         * [User-defined modules](#user-defined-modules)
-         * [Repository](#repository)
-            * [Paths](#paths)
-      * [Module creation](#module-creation)
-      * [Test run](#test-run)
-         * [Saving the QC objects in a local file](#saving-the-qc-objects-in-a-local-file)
-      * [Modification of the Task](#modification-of-the-task)
-      * [Check](#check)
-         * [Configuration](#configuration)
-         * [Implementation](#implementation)
-      * [Quality Aggregation](#quality-aggregation)
-         * [Quick try](#quick-try)
-         * [Configuration](#configuration-1)
-         * [Implementation](#implementation-1)
-      * [Committing code](#committing-code)
-      * [Data sources](#data-sources)
-         * [Readout](#readout)
-         * [DPL workflow](#dpl-workflow)
-      * [A more advanced example](#a-more-advanced-example)
-      * [Monitoring](#monitoring)
-
-<!-- Added by: bvonhall, at:  -->
-
+* [Modules development](#modules-development)
+   * [Context](#context)
+      * [QC architecture](#qc-architecture)
+      * [DPL](#dpl)
+      * [Data Sampling](#data-sampling)
+         * [Custom Data Sampling Condition](#custom-data-sampling-condition)
+         * [Bypassing the Data Sampling](#bypassing-the-data-sampling)
+      * [Code Organization](#code-organization)
+      * [Developing with aliBuild/alienv](#developing-with-alibuildalienv)
+      * [User-defined modules](#user-defined-modules)
+      * [Repository](#repository)
+         * [Paths](#paths)
+   * [Module creation](#module-creation)
+   * [Test run](#test-run)
+      * [Saving the QC objects in a local file](#saving-the-qc-objects-in-a-local-file)
+   * [Modification of the Task](#modification-of-the-task)
+   * [Check](#check)
+      * [Configuration](#configuration)
+      * [Implementation](#implementation)
+   * [Quality Aggregation](#quality-aggregation)
+      * [Quick try](#quick-try)
+      * [Configuration](#configuration-1)
+      * [Implementation](#implementation-1)
+   * [Committing code](#committing-code)
+   * [Data sources](#data-sources)
+      * [Readout](#readout)
+      * [DPL workflow](#dpl-workflow)
+   * [Run number](#run-number)
+   * [A more advanced example](#a-more-advanced-example)
+   * [Monitoring](#monitoring)
 <!--te-->
 
 [← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Post-processing →](PostProcessing.md)
@@ -356,8 +354,8 @@ Notice the AggregatorRunner after the CheckRunner.
 
 A more complex example with a producer and the `o2-qc`: 
 
-```
-o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/advanced-aggregator.json
+```c++
+o2-qc-run-advanced --no-qc --no-debug-output | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/advanced-aggregator.json
 ```
 
 ### Configuration
@@ -397,7 +395,7 @@ o2-qc-run-advanced --no-qc | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/ad
 * __policy__ - Policy for triggering the _check_ function defined in the class:
     * _OnAny_ (default) - Triggers if ANY of the listed quality objects changes.
     * _OnAll_ - Triggers if ALL the listed quality objects have changed.
-    * In case the list of QualityObject is empty, the policy is simply ignored and the `check` will be triggered whenever a new QualityObject is received.
+    * In case the list of QualityObject is empty for any of the data sources, the policy is simply ignored for all sources and the `check` will be triggered whenever a new QualityObject is received.
 * __dataSource__ - declaration of the `check` input
     * _type_ - _Check_ or _Aggregator_
     * _names_ - name of the Check or Aggregator
@@ -413,8 +411,6 @@ An aggregator inherits from `AggregatorInterface` and in particular this method:
 ```
 
 The `aggregate` method is called whenever the _policy_ is satisfied. It gets a map with all the declared QualityObjects. It is expected to return a new Quality based on the inputs.
-
-Note: the `aggregate` method receives a map with more objects than requested. In particular, it contains the objects produced by the aggregator itself. This is probably going to change in the future. For the time being make sure you query the map with the correct name and not blindly loop over all elements. 
 
 ## Committing code
 
@@ -509,7 +505,7 @@ To write and read data files in the DPL, please refer to the [RawFileWriter](htt
 
 On the same page, there are instructions to write such file from Simulation. 
 
-Another option to read a raw data file, produced by Simulation or recorded with `readout.exe` per instance, is to use directly the program `o2-raw-file-reader-workflow` in O2 as described [here](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#raw-data-file-reader-workflow) (the config file is described [earlier in the page](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader)). 
+Another option to read a raw data file, produced by Simulation or recorded with `o2-readout-exe` per instance, is to use directly the program `o2-raw-file-reader-workflow` in O2 as described [here](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#raw-data-file-reader-workflow) (the config file is described [earlier in the page](https://github.com/AliceO2Group/AliceO2/tree/dev/Detectors/Raw#rawfilereader)). 
 ```
 o2-raw-file-reader-workflow --conf myConf.cfg | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/readout.json
 ```
@@ -517,6 +513,27 @@ o2-raw-file-reader-workflow --conf myConf.cfg | o2-qc --config json://${QUALITYC
 __Live detector data__
 
 If the detector is ready and connected to the CRU(s), one can of course start the full data taking workflow, including the SubTimeFrameBuilder and the DPL processing and plug the QC onto it.
+
+## Run number
+
+When running with the aliECS the run number is automatically provided to the modules' code: 
+```c++
+void ExampleTask::startOfActivity(Activity& activity)
+{
+  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+```
+
+To set a run number in an "uncontrolled" environment such as a development setup, one can set it in the config file. Note that we call it `Activity` and not `Run` in this context: 
+```yaml
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+```
+The way we compute it is :
+1. Pick the run number from aliECS, if it is not there
+2. Pick the run number from the config file, if it is not there
+3. Set it to `0`
 
 ## A more advanced example
 

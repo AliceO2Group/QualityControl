@@ -4,6 +4,14 @@ This is a resource meant for the developers of the QC. Whenever we learn somethi
 here. It is not sanitized or organized. Just a brain dump.
 
 ### Release procedure / check list
+
+One can use the script `release.sh` : 
+```shell
+release.sh
+```
+It is able to work out what is the release number and will drive the user through all the steps. 
+
+Alternatively do it manually:
 1. Update the version number in [CMakeLists.txt](../CMakeLists.txt), commit and push
 2. Release in JIRA
 2. Prepare the release notes using the commits since the last release in github (see [this template](ReleaseNotesTemplate.md)).
@@ -61,7 +69,7 @@ It will be available in doc/html, thus to open it quickly do `[xdg-]open doc/htm
 
 When we don't see the monitoring data in grafana, here is what to do to pinpoint the source of the problem.
 
-1. `ssh root@aido2mon-gpn.cern.ch`
+1. `ssh root@alio2-cr1-mvs01.cern.ch`
 2. See if the data reach the servers :
     1. `systemctl stop influxdb`
     2. `nc -u -l 8087`  <-- make sure to use the proper port (cf your monitoring url)
@@ -81,8 +89,8 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
 ### Monitoring setup for building the grafana dashboard
 
 1. Ask Adam for an account on pcald03.cern.ch:3000.
-3. Ask Adam for a copy of the QC dashboard that you can edit. 
-2. Set the monitoring url to `"url": "influxdb-udp://flptest2.cern.ch:8089"`
+3. Make a copy of the QC dashboard that you can edit. 
+2. Set the monitoring url to `"url": "influxdb-udp://alio2-cr1-mvs01.cern.ch:8089"`
 4. Once the dashboard is ready, tell Adam. 
 
 ### Avoid writing QC objects to a repository
@@ -108,6 +116,8 @@ Any one in alice-member has access. We use the egroup alice-o2-qcg-access to gra
 We use the infologger. There is a utility class, `QcInfoLogger`, that can be used. It is a singleton. See [the header](../Framework/include/QualityControl/QcInfoLogger.h) for its usage.
 
 Related issues : https://alice.its.cern.ch/jira/browse/QC-224
+
+To have the full details of what is sent to the logs, do `export INFOLOGGER_MODE=raw`.
 
 ### Service Discovery (Online mode)
 
@@ -160,7 +170,7 @@ When working on the ansible recipes and deploying with o2-flp-setup, the recipes
 ### Test with STFBuilder
 https://alice.its.cern.ch/jira/browse/O2-169
 ```
-readout.exe file:///afs/cern.ch/user/b/bvonhall/dev/alice/sw/slc7_x86-64/DataDistribution/latest/config/readout_emu.cfg
+o2-o2-readout-exe file:///afs/cern.ch/user/b/bvonhall/dev/alice/sw/slc7_x86-64/DataDistribution/latest/config/readout_emu.cfg
  
 StfBuilder \
 	--id stf_builder-0 \

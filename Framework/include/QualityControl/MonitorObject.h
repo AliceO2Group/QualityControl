@@ -43,7 +43,7 @@ class MonitorObject : public TObject
  public:
   /// Default constructor
   MonitorObject();
-  MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName = "DET");
+  MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName = "DET", int runNumber = 0);
   /// Destructor
   ~MonitorObject() override;
 
@@ -82,6 +82,9 @@ class MonitorObject : public TObject
   const std::string& getDetectorName() const { return mDetectorName; }
   void setDetectorName(const std::string& detectorName) { mDetectorName = detectorName; }
 
+  int getRunNumber() const;
+  void setRunNumber(int runNumber);
+
   /// \brief Add key value pair that will end up in the database as metadata of the object
   /// Add a metadata (key value pair) to the MonitorObject. It will be stored in the database as metadata.
   /// If the key already exists the value will NOT be updated.
@@ -115,13 +118,14 @@ class MonitorObject : public TObject
   std::string mDetectorName;
   std::map<std::string, std::string> mUserMetadata;
   std::string mDescription;
+  int mRunNumber;
 
   // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the
   // object.
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 7);
+  ClassDefOverride(MonitorObject, 8);
 };
 
 } // namespace o2::quality_control::core

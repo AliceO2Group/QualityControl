@@ -28,12 +28,11 @@
         "className": "o2::quality_control_modules::tpc::PID",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "direct",
-	  "query" : "inputTracks:TPC/TRACKS/0"
+          "query" : "inputTracks:TPC/TRACKS/0"
         },
         "taskParameters": {
           "nothing": "rien"
@@ -42,7 +41,7 @@
       }
     },
     "checks": {
-      "QcCheck": {
+      "QcCheckPID": {
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",

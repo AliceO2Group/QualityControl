@@ -21,6 +21,7 @@
 // QC
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/CheckConfig.h"
+#include "QualityObject.h"
 // config
 #include <boost/property_tree/ptree_fwd.hpp>
 
@@ -33,12 +34,15 @@ namespace o2::quality_control::checker
 {
 
 class AggregatorInterface;
+
 enum AggregatorSourceType { check,
                             aggregator };
+
 struct AggregatorSource {
   AggregatorSource(const std::string& t, const std::string& n);
   AggregatorSourceType type;
   std::string name;
+  std::vector<std::string> objects;
 };
 
 /// \brief An aggregator as found in the configuration.
@@ -75,6 +79,13 @@ class Aggregator
   std::vector<AggregatorSource> getSources(AggregatorSourceType type);
 
  private:
+  /**
+   * Filter out the list of QualityObjects and keep only the ones that have to be aggregated by this aggregator.
+   * @param qoMap
+   * @return
+   */
+  core::QualityObjectsMapType filter(core::QualityObjectsMapType& qoMap);
+
   CheckConfig mAggregatorConfig; // we reuse checkConfig, just consider that Check = Aggregator
   AggregatorInterface* mAggregatorInterface = nullptr;
   std::vector<AggregatorSource> mSources;
