@@ -25,6 +25,7 @@
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
 #include <Framework/EndOfStreamContext.h>
+#include <Framework/InputSpan.h>
 #include <Headers/DataHeader.h>
 #include <Framework/InitContext.h>
 // QC
@@ -82,7 +83,7 @@ class TaskRunner : public framework::Task
   void run(framework::ProcessingContext& pCtx) override;
 
   /// \brief TaskRunner's completion policy callback
-  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::CompletionPolicy::InputSet inputs);
+  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::InputSpan const& inputs);
 
   std::string getDeviceName() { return mDeviceName; };
   const framework::Inputs& getInputsSpecs() { return mInputSpecs; };
