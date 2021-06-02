@@ -23,7 +23,7 @@ Alternatively do it manually:
 
 One can use the script `createPatch.sh` : 
 ```shell
-createPatch.sh v1.9.1 # current version
+patch.sh v1.9.1 # current version
 ```
 
 Alternatively do it manually:

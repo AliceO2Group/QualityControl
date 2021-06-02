@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -e ;# exit on error
 set -u ;# exit when using undeclared variable
-
+set -x
 
 # Parameters
 if [ "$#" -ne 1 ]; then
-    echo "A single parameter must be passed. $# provided."
+    echo "A single parameter must be passed: the version to patch. $# provided."
     exit 1
 fi
 currentVersion=$1
@@ -26,7 +26,7 @@ echo "Patched version: $patchVersion";
 
 
 # check
-read -p "Do we continue ? " -n 1 -r
+read -p "Do we continue ? [y|n]" -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Yy]$ ]]
 then
@@ -90,6 +90,11 @@ git tag -a $patchVersion -m "$patchVersion"
 echo "push the tag upstream"
 git push upstream $patchVersion
 
+echo "Go to Github https://github.com/AliceO2Group/QualityControl/releases/new?tag=v${newVersion}&title=v${newVersion}"
 
-# Release in github using this tag
-echo "It is done, now go to github and release using this tag"
+read -p "Fill in the release notes and create the new release in GitHub" -n 1 -r
+echo
+
+read -p "A PR is automatically made in alidist, go check here: https://github.com/alisw/alidist/pulls"
+
+echo "We are now done."
