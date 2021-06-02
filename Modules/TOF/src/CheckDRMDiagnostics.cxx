@@ -43,20 +43,19 @@ Quality CheckDRMDiagnostics::check(std::map<std::string, std::shared_ptr<Monitor
     (void)moName;
     if (mo->getName() == "DRMCounter") {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
-//      if (h->GetEntries() == 0) {
-//        result = Quality::Medium;
+      //      if (h->GetEntries() == 0) {
+      //        result = Quality::Medium;
 
-	for (int i = 1; i < h->GetNbinsX(); i++) {
-	for (int j = 1; j < h->GetNbinsY(); j++) {
+      for (int i = 2; i < h->GetNbinsX(); i++) {
+        for (int j = 2; j < h->GetNbinsY(); j++) {
           const float content = h->GetBinContent(i, j);
           if (content > 0) { // If larger than zero
             result = Quality::Bad;
           }
         }
-       }
- 
-     }
+      }
     }
+  }
   return result;
 }
 
@@ -78,7 +77,7 @@ void CheckDRMDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       msg->AddText("Error bins with content >0");
       msg->SetFillColor(kGreen);
       //
-//      h->SetFillColor(kGreen);
+      //      h->SetFillColor(kGreen);
     } else {
       ILOG(Info, Support) << "Quality::Null, No Error bins with content >0";
       msg->SetTextColor(kWhite);
