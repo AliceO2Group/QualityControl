@@ -104,10 +104,6 @@ target_link_libraries(O2QualityControl
                               ROOT::Gui
                               CURL::libcurl)
 
-if (TARGET AliceO2::DebugGUI)
-  target_link_libraries(O2QualityControl PUBLIC AliceO2::DebugGUI)
-endif()
-
 add_root_dictionary(O2QualityControl
   HEADERS
   include/QualityControl/CheckInterface.h
