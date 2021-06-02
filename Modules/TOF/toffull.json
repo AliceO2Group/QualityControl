@@ -89,7 +89,7 @@
             "type": "Task",
             "name": "TaskRaw",
             "MOs": [
-              "RDHCounterCrate0"
+              "DRMCounter"
             ]
           }
         ]

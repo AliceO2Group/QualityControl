@@ -74,7 +74,7 @@ void CheckDRMDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
     if (checkResult == Quality::Bad) {
       ILOG(Info, Support) << "Quality::Bad, Error bins with content >0";
       msg->Clear();
-      msg->AddText("Error bins with content >0");
+      msg->AddText("DRM reporting error words");
       msg->SetFillColor(kGreen);
       //
       //      h->SetFillColor(kGreen);
@@ -82,7 +82,7 @@ void CheckDRMDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       ILOG(Info, Support) << "Quality::Null, No Error bins with content >0";
       msg->SetTextColor(kWhite);
       msg->SetFillColor(kBlack);
-      msg->AddText("No Error bins with content >0");
+      msg->AddText("DRM words: OK!");
     }
   } else
     ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
