@@ -46,6 +46,10 @@ namespace o2::quality_control_modules::tof
 void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
 {
   mCounterRDH[rdh->feeId & 0xFF].Count(0);
+
+  if ((rdh->detectorField & 0x00010000) != 0) {
+    mCounterRDH[rdh->feeId & 0xFF].Count(1);
+  }
 }
 
 void RawDataDecoder::headerHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* crateOrbit)
@@ -301,6 +305,12 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
     mDecoderRaw.setNoiseThreshold(param->second);
   }
 
+  // RDH
+  mHistoRDH.reset(new TH2F("RDHCounter", "RDH Diagnostics;RDH Word;Crate;Words",
+                           RawDataDecoder::nwords, 0, RawDataDecoder::nwords,
+                           RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates));
+  mDecoderRaw.mCounterRDH[0].MakeHistogram(mHistoRDH.get());
+  getObjectsManager()->startPublishing(mHistoRDH.get());
   // DRM
   mHistoDRM.reset(new TH2F("DRMCounter", "DRM Diagnostics;DRM Word;Crate;Words",
                            RawDataDecoder::nwords, 0, RawDataDecoder::nwords,
@@ -412,6 +422,7 @@ void TaskRaw::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
   for (unsigned int crate = 0; crate < RawDataDecoder::ncrates; crate++) { // Filling histograms only at the end of the cycle
+    mDecoderRaw.mCounterRDH[crate].FillHistogram(mHistoRDH.get(), crate + 1);
     mDecoderRaw.mCounterDRM[crate].FillHistogram(mHistoDRM.get(), crate + 1);
     mDecoderRaw.mCounterLTM[crate].FillHistogram(mHistoLTM.get(), crate + 1);
     mHistoSlotParticipating->SetBinContent(crate + 1, 2, mDecoderRaw.mCounterDRM[crate].HowMany(0));
@@ -449,8 +460,10 @@ void TaskRaw::endOfCycle()
       LOG(WARNING) << "Did not find diagnostic histogram for slot " << slot << " for reshuffling";
     }
   }
-  for (unsigned int crate = 0; crate < RawDataDecoder::ncrates; crate++) { // Loop over crates for how many RDH read
-    mHistoCrate[crate]->SetBinContent(1, 1, mDecoderRaw.mCounterRDH[crate].HowMany(0));
+  for (unsigned int crate = 0; crate < RawDataDecoder::ncrates; crate++) {              // Loop over crates for how many RDH read
+    for (unsigned int word = 0; word < mDecoderRaw.mCounterRDH[crate].Size(); word++) { // Loop over words
+      mHistoCrate[crate]->SetBinContent(word + 1, 1, mDecoderRaw.mCounterRDH[crate].HowMany(word));
+    }
   }
 }
 
@@ -464,6 +477,7 @@ void TaskRaw::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  mHistoRDH->Reset();
   mHistoDRM->Reset();
   mHistoLTM->Reset();
   for (unsigned int j = 0; j < RawDataDecoder::ntrms; j++) {
@@ -481,7 +495,7 @@ void TaskRaw::reset()
   mDecoderRaw.resetHistograms();
 }
 
-const char* RawDataDecoder::RDHDiagnosticsName[2] = { "RDH_HAS_DATA", "" };
+const char* RawDataDecoder::RDHDiagnosticsName[2] = { "RDH_HAS_DATA", "RDH_DECODER_FATAL" };
 
 const char* RawDataDecoder::DRMDiagnosticName[RawDataDecoder::nwords] = {
   diagnostic::DRMDiagnosticName[0],
