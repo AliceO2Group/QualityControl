@@ -426,7 +426,7 @@ void TaskRunner::endOfActivity()
 
 void TaskRunner::startCycle()
 {
-  ILOG(Debug, Ops) << "Start cycle " << mCycleNumber << " in " << mTaskConfig.taskName << ENDM;
+  ILOG(Debug, Ops) << "Start cycle " << mCycleNumber << ENDM;
   mTask->startOfCycle();
   mNumberMessagesReceivedInCycle = 0;
   mNumberObjectsPublishedInCycle = 0;
@@ -437,7 +437,7 @@ void TaskRunner::startCycle()
 
 void TaskRunner::finishCycle(DataAllocator& outputs)
 {
-  ILOG(Debug, Ops) << "Finish cycle " << mCycleNumber << " in " << mTaskConfig.taskName << ENDM;
+  ILOG(Debug, Ops) << "Finish cycle " << mCycleNumber << ENDM;
   mTask->endOfCycle();
 
   mNumberObjectsPublishedInCycle += publish(outputs);
