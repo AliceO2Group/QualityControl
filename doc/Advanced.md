@@ -5,39 +5,40 @@
 <!--./gh-md-toc --insert /path/to/README.md-->
 <!--ts-->
 * [Advanced topics](#advanced-topics)
-    * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
-    * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
-        * [Configuration](#configuration)
-        * [Example 1: basic](#example-1-basic)
-        * [Example 2: advanced](#example-2-advanced)
-        * [Limitations](#limitations)
-    * [Multi-node setups](#multi-node-setups)
-    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
-    * [Access run conditions and calibrations from the CCDB](#access-run-conditions-and-calibrations-from-the-ccdb)
-    * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
-    * [Custom QC object metadata](#custom-qc-object-metadata)
-    * [Canvas options](#canvas-options)
-    * [QC with DPL Analysis](#qc-with-dpl-analysis)
-        * [Getting AODs directly](#getting-aods-directly)
-        * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
-        * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
-    * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
-        * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
-    * [Local CCDB setup](#local-ccdb-setup)
-    * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
-    * [FLP Suite](#flp-suite)
-        * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
-        * [Switch detector in the workflow <em>readout-dataflow</em>](#switch-detector-in-the-workflow-readout-dataflow)
-    * [Configuration files details](#configuration-files-details)
-        * [Global configuration structure](#global-configuration-structure)
-        * [Common configuration](#common-configuration)
-        * [QC Tasks configuration](#qc-tasks-configuration)
-        * [QC Checks configuration](#qc-checks-configuration)
-        * [QC Aggregators configuration](#qc-aggregators-configuration)
-        * [QC Post-processing configuration](#qc-post-processing-configuration)
-        * [External tasks configuration](#external-tasks-configuration)
+   * [Plugging the QC to an existing DPL workflow](#plugging-the-qc-to-an-existing-dpl-workflow)
+   * [Production of QC objects outside this framework](#production-of-qc-objects-outside-this-framework)
+      * [Configuration](#configuration)
+      * [Example 1: basic](#example-1-basic)
+      * [Example 2: advanced](#example-2-advanced)
+      * [Limitations](#limitations)
+   * [Multi-node setups](#multi-node-setups)
+   * [Writing a DPL data producer](#writing-a-dpl-data-producer)
+   * [Access run conditions and calibrations from the CCDB](#access-run-conditions-and-calibrations-from-the-ccdb)
+   * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
+   * [Custom metadata](#custom-metadata)
+   * [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg)
+   * [Canvas options](#canvas-options)
+   * [QC with DPL Analysis](#qc-with-dpl-analysis)
+      * [Getting AODs directly](#getting-aods-directly)
+      * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
+      * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
+   * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
+      * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
+   * [Local CCDB setup](#local-ccdb-setup)
+   * [Local QCG (QC GUI) setup](#local-qcg-qc-gui-setup)
+   * [FLP Suite](#flp-suite)
+      * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
+      * [Switch detector in the workflow <em>readout-dataflow</em>](#switch-detector-in-the-workflow-readout-dataflow)
+   * [Configuration files details](#configuration-files-details)
+      * [Global configuration structure](#global-configuration-structure)
+      * [Common configuration](#common-configuration)
+      * [QC Tasks configuration](#qc-tasks-configuration)
+      * [QC Checks configuration](#qc-checks-configuration)
+      * [QC Aggregators configuration](#qc-aggregators-configuration)
+      * [QC Post-processing configuration](#qc-post-processing-configuration)
+      * [External tasks configuration](#external-tasks-configuration)
+   * [Data Sampling monitoring](#data-sampling-monitoring)
 <!--te-->
-
 
 [← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
 
@@ -326,7 +327,7 @@ Users can publish objects inheriting from a custom class, e.g. not a TH2F but a 
 
 The solution depends on the strategy to adopt to display the object.
 
-1. The custom class has multiple inheritance and one of them is a standard ROOT object which the QCG can display (e.g. a histogram). In such case, add a member `mTreatMeAs` to your custom class and set it to the name of the class that should be used to interpret and display the data : 
+1. The custom class has multiple inheritance and one of them is a standard ROOT object which the QCG can display (e.g. a histogram). In such case, add a member `mTreatMeAs` to your custom class and set it to the name of the class that should be used to interpret and display the data. There is an example in the Example module : 
 ```c++
   std::string mTreatMeAs = "TH2F"; // the name of the class this object should be considered as when drawing in QCG.
 ```
