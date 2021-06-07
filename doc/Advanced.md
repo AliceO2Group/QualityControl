@@ -323,7 +323,7 @@ This metadata will end up in the QCDB.
 
 ## Display a non-standard ROOT object in QCG
 
-Users can publish objects inheriting from a custom class, e.g. not a TH2F but a MyCustomClass, as long as a dictionary is available. By default, the QCG won't be able to display such objects.
+Users can publish objects inheriting from a custom class, e.g. not a TH2F but a MyCustomClass, as long as a dictionary is available. By default, JSROOT and in turn the QCG won't be able to display such objects.
 
 The solution depends on the strategy to adopt to display the object.
 
