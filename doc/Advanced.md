@@ -63,11 +63,11 @@ push this QC object to the QC framework where it will be checked and stored.
 Let be a device in the main data flow that produces a histogram on a channel defined as `TST/HISTO/0`. To get this histogram in the QC and check it, add to the configuration file an "external device":
 ```yaml
     "externalTasks": {
-  "External-1": {
-    "active": "true",
-    "query": "External-1:TST/HISTO/0",  "": "Query specifying where the objects to be checked and stored are coming from. Use the task name as binding. The origin (e.g. TST) is used as detector name for the objects."
-  }
-},
+      "External-1": {
+        "active": "true",
+        "query": "External-1:TST/HISTO/0",  "": "Query specifying where the objects to be checked and stored are coming from. Use the task name as binding. The origin (e.g. TST) is used as detector name for the objects."
+      }
+    },
     "checks": {
 ```
 The "query" syntax is the same as the one used in the DPL and in the Dispatcher. It must match the output of another device, whether it is in the same workflow or in a piped one.
@@ -78,17 +78,17 @@ The `binding` (first part, before the colon) is used in the path of the stored o
 As a basic example, we are going to produce histograms with the HistoProducer and collect them with the QC. The configuration is in [basic-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/basic-external-histo.json). An external task is defined and named "External-1" (see subsection above). It is then used in the Check QCCheck :
 ```yaml
       "QcCheck": {
-  "active": "true",
-  "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-  "moduleName": "QcSkeleton",
-  "policy": "OnAny",
-  "detectorName": "TST",
-  "dataSource": [{
-    "type": "ExternalTask",
-    "name": "External-1",
-    "MOs": ["hello"]
-  }]
-}
+        "active": "true",
+        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName": "QcSkeleton",
+        "policy": "OnAny",
+        "detectorName": "TST",
+        "dataSource": [{
+          "type": "ExternalTask",
+          "name": "External-1",
+          "MOs": ["hello"]
+        }]
+      }
 ```
 When using this feature, make sure that the name of the MO in the Check definition matches the name of the object you are sending from the external device.
 
@@ -156,19 +156,19 @@ added:
 
 ```json
     "tasks": {
-"MultiNodeLocal": {
-"active": "true",
-...
-"location": "local",
-"localMachines": [
-"localnode1",
-"localnode2"
-],
-"remoteMachine": "qcnode",
-"remotePort": "30132",
-"mergingMode": "delta"
-}
-},
+      "MultiNodeLocal": {
+        "active": "true",
+        ...
+        "location": "local",
+        "localMachines": [
+          "localnode1",
+          "localnode2"
+        ],
+        "remoteMachine": "qcnode",
+        "remotePort": "30132",
+        "mergingMode": "delta"
+      }
+    },
 ```
 List the local processing machines in the `localMachines` array. `remoteMachine` should contain the host name which
 will serve as a QC server and `remotePort` should be a port number on which Mergers will wait for upcoming MOs. Make
@@ -181,18 +181,18 @@ In case of a remote task, choosing `"remote"` option for the `"location"` parame
 
 ```json
     "tasks": {
-...
-"MultiNodeRemote": {
-"active": "true",
-...
-"dataSource": {
-"type": "dataSamplingPolicy",
-"name": "rnd-little"
-},
-"taskParameters": {},
-"location": "remote"
-}
-}
+      ...
+      "MultiNodeRemote": {
+        "active": "true",
+        ...
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "rnd-little"
+        },
+        "taskParameters": {},
+        "location": "remote"
+      }
+    }
 ```
 
 However in both cases, one has to specify the machines where data should be sampled, as below. If data should be
@@ -457,11 +457,11 @@ Note that the name of the object can contain slashes (`/`) in order to build a s
 The detector name and the taskname are set in the config file :
 ```json
 "tasks": {
-"QcTask": {       <---------- task name
-"active": "true",
-"className": "o2::quality_control_modules::skeleton::SkeletonTask",
-"moduleName": "QcSkeleton",
-"detectorName": "TST",       <---------- detector name
+  "QcTask": {       <---------- task name
+    "active": "true",
+    "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+    "moduleName": "QcSkeleton",
+    "detectorName": "TST",       <---------- detector name
 ```
 
 The quality is stored as a CCDB metadata of the object.
@@ -546,16 +546,16 @@ This is the global structure of the configuration in QC.
 
     },
     "tasks": {
-
+      
     },
     "externalTasks": {
-
+    
     },
     "checks": {
-
+      
     },
     "postprocessing": {
-
+      
     }
   },
   "dataSamplingPoliciesFile": "json:///path/to/data/sampling/config.json",
@@ -597,24 +597,24 @@ should not be present in real configuration files.
         "host": "ccdb-test.cern.ch:8080", "": "URL of a DB."
       },
       "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
-        "change or the values might come from other source (e.g. AliECS)." ],
+                                               "change or the values might come from other source (e.g. AliECS)." ],
         "number": "42",                   "": "Activity number.",
         "type": "2",                      "": "Arbitrary activity type."
       },
       "monitoring": {                     "": "Configuration of the Monitoring library.",
         "url": "infologger:///debug?qc",  "": ["URI to the Monitoring backend. Refer to the link below for more info:",
-          "https://github.com/AliceO2Group/Monitoring#monitoring-instance"]
+                                               "https://github.com/AliceO2Group/Monitoring#monitoring-instance"]
       },
       "consul": {                         "": "Configuration of the Consul library (used for Service Discovery).",
         "url": "http://consul-test.cern.ch:8500", "": "URL of the Consul backend"
       },
       "conditionDB": {                    "": ["Configuration of the Conditions and Calibration DataBase (CCDB).",
-        "Do not mistake with the CCDB which is used as QC repository."],
+                                               "Do not mistake with the CCDB which is used as QC repository."],
         "url": "ccdb-test.cern.ch:8080",  "": "URL of a CCDB"
       },
       "infologger": {                     "": "Configuration of the Infologger (optional).",
         "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
-        "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: 21 - Trace)"
+        "filterDiscardLevel": "2",        "": "Message at this level or above are discarded (default: 21 - Trace)" 
       }
     }
   }
@@ -646,9 +646,9 @@ the "tasks" path.
           "myOwnKey": "myOwnValue",         "": "An example of a key and a value. Nested structures are not supported"
         },
         "location": "local",                "": ["Location of the QC Task, it can be local or remote. Needed only for",
-          "multi-node setups, not respected in standalone development setups."],
+                                                 "multi-node setups, not respected in standalone development setups."],
         "localMachines": [                  "", "List of local machines where the QC task should run. Required only",
-          "", "for multi-node setups.",
+                                            "", "for multi-node setups.",
           "o2flp1",                         "", "Hostname of a local machine.",
           "o2flp2",                         "", "Hostname of a local machine."
         ],
@@ -676,12 +676,12 @@ the "checks" path. Please also refer to [the Checks documentation](doc/ModulesDe
         "moduleName": "QcCommon",     "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",        "": "3-letter code of the detector.",
         "policy": "OnAny",            "": ["Policy which determines when MOs should be checked. See the documentation",
-          "of Checks for the list of available policies and their behaviour."],
+                                           "of Checks for the list of available policies and their behaviour."],
         "dataSource": [{              "": "List of data source of the Check.",
-          "type": "Task",             "": "Type of the data source, \"Task\", \"ExternalTask\" or \"PostProcessing\"",
+          "type": "Task",             "": "Type of the data source, \"Task\", \"ExternalTask\" or \"PostProcessing\"", 
           "name": "myTask_1",         "": "Name of the Task",
           "MOs": [ "example" ],       "": ["List of MOs to be checked. "
-            "Can be omitted to mean \"all\"."]
+                                            "Can be omitted to mean \"all\"."]
         }],
         "checkParameters": {          "": "User Check parameters which are then accessible as a key-value map.",
           "myOwnKey": "myOwnValue",   "": "An example of a key and a value. Nested structures are not supported"
@@ -706,14 +706,14 @@ the "aggregators" path. Please also refer to [the Aggregators documentation](doc
         "className": "ns::of::Aggregator", "": "Class name of the QC Aggregator with full namespace.",
         "moduleName": "QcCommon",     "": "Library name. It can be found in CMakeLists of the detector module.",
         "policy": "OnAny",            "": ["Policy which determines when QOs should be aggregated. See the documentation",
-          "of Aggregators for the list of available policies and their behaviour."],
+                                           "of Aggregators for the list of available policies and their behaviour."],
         "detectorName": "TST",        "": "3-letter code of the detector.",
         "dataSource": [{              "": "List of data source of the Aggregator.",
-          "type": "Check",,           "": "Type of the data source: \"Check\" or \"Aggregator\"",
+          "type": "Check",,           "": "Type of the data source: \"Check\" or \"Aggregator\"", 
           "name": "dataSizeCheck",    "": "Name of the Check or Aggregator",
           "QOs": ["newQuality", "another"], "": ["List of QOs to be checked.",
-            "Can be omitted for Checks",
-            "that publish a single Quality or to mean \"all\"."]
+                                          "Can be omitted for Checks", 
+                                          "that publish a single Quality or to mean \"all\"."]
         }]
       }
     }
