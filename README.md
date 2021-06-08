@@ -67,6 +67,7 @@ For a general overview of our (O2) software, organization and processes, please 
     * [Custom QC object metadata](doc/Advanced.md#custom-qc-object-metadata)
     * [Canvas options](doc/Advanced.md#canvas-options)
     * [QC with DPL Analysis](doc/Advanced.md#qc-with-dpl-analysis)
+    * [Monitoring metrics](doc/Advanced.md#monitoring-metrics)
     * [Details on the data storage format in the CCDB](doc/Advanced.md#details-on-the-data-storage-format-in-the-ccdb)
     * [Local CCDB setup](doc/Advanced.md#local-ccdb-setup)
     * [Local QCG (QC GUI) setup](doc/Advanced.md#local-qcg-qc-gui-setup)

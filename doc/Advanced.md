@@ -21,6 +21,7 @@
       * [Getting AODs directly](#getting-aods-directly)
       * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
       * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
+   * [Monitoring metrics](#monitoring-metrics)
    * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
       * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
    * [Local CCDB setup](#local-ccdb-setup)
@@ -432,6 +433,14 @@ configure_file("etc/analysisDerived.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisD
 o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json)
 o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json)
 ```
+## Monitoring metrics
+
+The QC framework publishes monitoring metrics concerning data/object rates, which are published to the monitoring backend
+specified in the `"monitoring.url"` parameter in config files. If QC is run in standalone mode (no AliECS) and with 
+`"infologger:///debug?qc"` as the monitoring backend, the metrics will appear in logs in buffered chunks. To force
+printing them as soon as they are reported, please also add `--monitoring-backend infologger://` as the argument.
+
+One can also enable publishing metrics related to CPU/memory usage. To do so, use `--resources-monitoring <interval_sec>`.
 
 ## Details on the data storage format in the CCDB
 

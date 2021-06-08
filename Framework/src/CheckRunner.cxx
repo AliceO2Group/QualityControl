@@ -404,7 +404,6 @@ void CheckRunner::initMonitoring()
 {
   auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
   mCollector = MonitoringFactory::Get(monitoringUrl);
-  mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
   mTimer.reset(10000000); // 10 s.
