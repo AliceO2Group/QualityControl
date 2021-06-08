@@ -415,6 +415,7 @@ void TaskRunner::endOfActivity()
 {
   Activity activity(mRunNumber,
                     mConfigFile->get<int>("qc.config.Activity.type"));
+  ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
   mTask->endOfActivity(activity);
   mObjectsManager->removeAllFromServiceDiscovery();
 
@@ -424,7 +425,7 @@ void TaskRunner::endOfActivity()
 
 void TaskRunner::startCycle()
 {
-  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << " in " << mTaskConfig.taskName << ENDM;
+  ILOG(Debug, Ops) << "Start cycle " << mCycleNumber << ENDM;
   mTask->startOfCycle();
   mNumberMessagesReceivedInCycle = 0;
   mNumberObjectsPublishedInCycle = 0;
@@ -435,6 +436,7 @@ void TaskRunner::startCycle()
 
 void TaskRunner::finishCycle(DataAllocator& outputs)
 {
+  ILOG(Debug, Ops) << "Finish cycle " << mCycleNumber << ENDM;
   mTask->endOfCycle();
 
   mNumberObjectsPublishedInCycle += publish(outputs);

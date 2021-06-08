@@ -194,6 +194,10 @@ class CheckRunner : public framework::Task
 
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
   void start(const framework::ServiceRegistry& services);
+  /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
+  void stop();
+  /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
+  void reset();
 
   // General state
   std::string mDeviceName;
