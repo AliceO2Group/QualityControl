@@ -10,7 +10,7 @@
 
 ///
 /// \file   VertexingQcTask.h
-/// \author My Name
+/// \author Chiara Zampolli
 ///
 
 #ifndef QC_MODULE_REC_RECVERTEXINGQCTASK_H
