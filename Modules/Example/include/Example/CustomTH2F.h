@@ -41,8 +41,12 @@ class CustomTH2F : public TH2F, public o2::mergers::MergeInterface
     return TH2F::GetName();
   }
 
-  void merge(MergeInterface* const /*other*/) override
+  void merge(MergeInterface* const other) override
   {
+    auto otherHisto = dynamic_cast<const TH2F* const>(other);
+    if (otherHisto) {
+      this->Merge(otherHisto);
+    }
   }
 
  private:
