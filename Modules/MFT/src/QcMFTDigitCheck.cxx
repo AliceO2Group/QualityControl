@@ -42,7 +42,7 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
 
     (void)moName;
 
-    if (mo->getName().find("mMFTChipOccupancyMap") != std::string::npos) {
+    if (mo->getName().find("mMFTChipOccupancyStdDev") != std::string::npos) {
       auto* histogram = dynamic_cast<TH2F*>(mo->getObject());
 
       // test it
@@ -64,7 +64,7 @@ std::string QcMFTDigitCheck::getAcceptedType() { return "TH2"; }
 
 void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName().find("mMFTChipOccupancyMap") != std::string::npos) {
+  if (mo->getName().find("mMFTChipOccupancyStdDev") != std::string::npos) {
     auto* histogram = dynamic_cast<TH2F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {

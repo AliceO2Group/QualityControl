@@ -46,12 +46,11 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
-  mClusterSensorIndex = std::make_unique<TH1F>("mMFTClusterSensorIndex", "Chip Cluster Occupancy;Chip ID;#Entries",  936, -0.5, 935.5);
+  mClusterSensorIndex = std::make_unique<TH1F>("mMFTClusterSensorIndex", "Chip Cluster Occupancy;Chip ID;#Entries", 936, -0.5, 935.5);
   getObjectsManager()->startPublishing(mClusterSensorIndex.get());
 
   mClusterPatternIndex = std::make_unique<TH1F>("mMFTClusterPatternIndex", "Cluster Pattern ID;Pattern ID;#Entries", 300, -0.5, 299.5);
   getObjectsManager()->startPublishing(mClusterPatternIndex.get());
-
 }
 
 void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)

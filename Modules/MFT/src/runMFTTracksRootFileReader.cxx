@@ -75,7 +75,6 @@ class MFTTracksRootFileReader : public o2::framework::Task
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
     }
-
   }
 
   //_________________________________________________________________________________________________
@@ -92,10 +91,10 @@ class MFTTracksRootFileReader : public o2::framework::Task
     }
 
     mTree->GetEntry(mCurrentTF); // get TF
-    mNumberOfROF = rofs.size(); // get number of ROFs in this TF
+    mNumberOfROF = rofs.size();  // get number of ROFs in this TF
 
     // check if we need to read a new TF
-    if (mCurrentROF == mNumberOfROF-1)
+    if (mCurrentROF == mNumberOfROF - 1)
       mCurrentTF++;
 
     // prepare the rof output
@@ -106,8 +105,8 @@ class MFTTracksRootFileReader : public o2::framework::Task
     // --> get the current ROF
     auto& rof = rofs[mCurrentROF];
     // --> find the ranges
-    int index = rof.getFirstEntry();      // first track position
-    int numberOfTracksInROF = rof.getNEntries(); 
+    int index = rof.getFirstEntry(); // first track position
+    int numberOfTracksInROF = rof.getNEntries();
     int lastIndex = index + numberOfTracksInROF;
 
     // --> fill in the corresponding tracks
@@ -120,7 +119,6 @@ class MFTTracksRootFileReader : public o2::framework::Task
 
     //  update the ROF counter
     mCurrentROF++;
-
   }
 
  private:
@@ -129,10 +127,10 @@ class MFTTracksRootFileReader : public o2::framework::Task
   std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;   // pointer to ROF branch
   std::vector<o2::mft::TrackMFT> tracks, *ptracks = &tracks; // pointer to digit branch
 
-  unsigned long mNumberOfTF = 0;       // number of TF
-  unsigned long mNumberOfROF = 0;      // number of ROFs in current TF
-  unsigned long mCurrentROF = 2; // idx of current ROF
-  unsigned long mCurrentTF = 0;  // idx of current TF
+  unsigned long mNumberOfTF = 0;  // number of TF
+  unsigned long mNumberOfROF = 0; // number of ROFs in current TF
+  unsigned long mCurrentROF = 2;  // idx of current ROF
+  unsigned long mCurrentTF = 0;   // idx of current TF
 
 }; // end class definition
 

@@ -66,9 +66,9 @@ class QcMFTReadoutTask /*final*/ : public TaskInterface // todo add back the "fi
   void reset() override;
 
  private:
-  const int numberOfRU = 80;      // number of RU
+  const int numberOfRU = 80;             // number of RU
   const int maxNumberToIdentifyRU = 104; // max number to identify a RU
-  int mIndexOfRUMap[104];         // id start from zero
+  int mIndexOfRUMap[104];                // id start from zero
   std::unique_ptr<TH1F> mSummaryLaneStatus = nullptr;
   std::vector<std::unique_ptr<TH2F>> mIndividualLaneStatus;
 

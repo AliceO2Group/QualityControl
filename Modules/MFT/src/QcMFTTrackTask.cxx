@@ -45,18 +45,18 @@ void QcMFTTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
-  mTrackNumberOfClusters = std::make_unique<TH1F>("mMFTTrackNumberOfClusters", 
-    "Number Of Clusters Per Track; # clusters; # entries", 10, 0.5, 10.5);
+  mTrackNumberOfClusters = std::make_unique<TH1F>("mMFTTrackNumberOfClusters",
+                                                  "Number Of Clusters Per Track; # clusters; # entries", 10, 0.5, 10.5);
   getObjectsManager()->startPublishing(mTrackNumberOfClusters.get());
   getObjectsManager()->addMetadata(mTrackNumberOfClusters->GetName(), "custom", "34");
 
-  mCATrackNumberOfClusters = std::make_unique<TH1F>("CA/mMFTCATrackNumberOfClusters", 
-    "Number Of Clusters Per CA Track; # clusters; # tracks", 10, 0.5, 10.5);
+  mCATrackNumberOfClusters = std::make_unique<TH1F>("CA/mMFTCATrackNumberOfClusters",
+                                                    "Number Of Clusters Per CA Track; # clusters; # tracks", 10, 0.5, 10.5);
   getObjectsManager()->startPublishing(mCATrackNumberOfClusters.get());
   getObjectsManager()->addMetadata(mCATrackNumberOfClusters->GetName(), "custom", "34");
 
-  mLTFTrackNumberOfClusters = std::make_unique<TH1F>("LTF/mMFTLTFTrackNumberOfClusters", 
-    "Number Of Clusters Per LTF Track; # clusters; # entries", 10, 0.5, 10.5);
+  mLTFTrackNumberOfClusters = std::make_unique<TH1F>("LTF/mMFTLTFTrackNumberOfClusters",
+                                                     "Number Of Clusters Per LTF Track; # clusters; # entries", 10, 0.5, 10.5);
   getObjectsManager()->startPublishing(mLTFTrackNumberOfClusters.get());
   getObjectsManager()->addMetadata(mLTFTrackNumberOfClusters->GetName(), "custom", "34");
 

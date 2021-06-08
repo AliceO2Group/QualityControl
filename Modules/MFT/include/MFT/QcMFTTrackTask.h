@@ -62,7 +62,6 @@ class QcMFTTrackTask /*final*/ : public TaskInterface // todo add back the "fina
   std::unique_ptr<TH1F> mCATrackEta = nullptr;
   std::unique_ptr<TH1F> mLTFTrackEta = nullptr;
   std::unique_ptr<TH1F> mTrackTanl = nullptr;
-
 };
 
 } // namespace o2::quality_control_modules::mft

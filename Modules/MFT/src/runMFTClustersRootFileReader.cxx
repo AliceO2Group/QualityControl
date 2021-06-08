@@ -74,7 +74,6 @@ class MFTClustersRootFileReader : public o2::framework::Task
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
     }
-
   }
 
   //_________________________________________________________________________________________________
@@ -91,10 +90,10 @@ class MFTClustersRootFileReader : public o2::framework::Task
     }
 
     mTree->GetEntry(mCurrentTF); // get TF
-    mNumberOfROF = rofs.size(); // get number of ROFs in this TF
+    mNumberOfROF = rofs.size();  // get number of ROFs in this TF
 
     // check if we need to read a new TF
-    if (mCurrentROF == mNumberOfROF-1)
+    if (mCurrentROF == mNumberOfROF - 1)
       mCurrentTF++;
 
     // prepare the rof output
@@ -105,8 +104,8 @@ class MFTClustersRootFileReader : public o2::framework::Task
     // --> get the current ROF
     auto& rof = rofs[mCurrentROF];
     // --> find the ranges
-    int index = rof.getFirstEntry();        // first cluster position
-    int numberOfClustersInROF = rof.getNEntries(); 
+    int index = rof.getFirstEntry(); // first cluster position
+    int numberOfClustersInROF = rof.getNEntries();
     int lastIndex = index + numberOfClustersInROF;
 
     // --> fill in the corresponding clusters
@@ -119,20 +118,18 @@ class MFTClustersRootFileReader : public o2::framework::Task
 
     //  update the ROF counter
     mCurrentROF++;
-
   }
 
  private:
-  std::unique_ptr<TFile> mFile = nullptr;                    // file to be read
-  TTree* mTree = nullptr;                                    // tree inside the file
-  std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;   // pointer to ROF branch
+  std::unique_ptr<TFile> mFile = nullptr;                                   // file to be read
+  TTree* mTree = nullptr;                                                   // tree inside the file
+  std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;                  // pointer to ROF branch
   std::vector<o2::itsmft::CompClusterExt> clusters, *pclusters = &clusters; // pointer to cluster branch
 
-  unsigned long mNumberOfTF = 0;       // number of TF
-  unsigned long mNumberOfROF = 0;      // number of ROFs in current TF
-  unsigned long mCurrentROF = 0; // idx of current ROF
-  unsigned long mCurrentTF = 0;  // idx of current TF
-
+  unsigned long mNumberOfTF = 0;  // number of TF
+  unsigned long mNumberOfROF = 0; // number of ROFs in current TF
+  unsigned long mCurrentROF = 0;  // idx of current ROF
+  unsigned long mCurrentTF = 0;   // idx of current TF
 
 }; // end class definition
 

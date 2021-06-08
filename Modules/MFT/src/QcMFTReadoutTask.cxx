@@ -58,7 +58,7 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
   mSummaryLaneStatus->GetXaxis()->SetBinLabel(3, "Error");
   mSummaryLaneStatus->GetXaxis()->SetBinLabel(4, "Fault");
   mSummaryLaneStatus->GetXaxis()->SetBinLabel(5, "#Entries");
-  mSummaryLaneStatus->GetYaxis()->SetTitle("#Entries"); 
+  mSummaryLaneStatus->GetYaxis()->SetTitle("#Entries");
   mSummaryLaneStatus->SetStats(0);
 
   //  Defining individual histograms
@@ -71,7 +71,7 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
   int half = -1;
   for (int i = 0; i < maxNumberToIdentifyRU; i++) { // loop over potential IDs
     if (mIndexOfRUMap[i] == -1)
-      continue;                             // skip not asigned IDs
+      continue;                                // skip not asigned IDs
     unpackRUindex(i, zone, plane, disc, half); // get geo info
     // define histogram
     auto histogramRU = std::make_unique<TH2F>(

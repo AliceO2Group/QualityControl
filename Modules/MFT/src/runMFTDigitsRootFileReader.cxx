@@ -80,7 +80,7 @@ class MFTDigitsRootFileReader : public o2::framework::Task
 
   void run(framework::ProcessingContext& pc)
   {
-    
+
     // Check if this is the last TF
     if (mCurrentTF == mNumberOfTF) {
       LOG(INFO) << " MFTDigitsRootFileReader::run. End of file reached";
@@ -90,10 +90,10 @@ class MFTDigitsRootFileReader : public o2::framework::Task
     }
 
     mTree->GetEntry(mCurrentTF); // get TF
-    mNumberOfROF = rofs.size(); // get number of ROFs in this TF
+    mNumberOfROF = rofs.size();  // get number of ROFs in this TF
 
     // check if we need to read a new TF
-    if (mCurrentROF == mNumberOfROF-1)
+    if (mCurrentROF == mNumberOfROF - 1)
       mCurrentTF++;
 
     // prepare the rof output
@@ -104,8 +104,8 @@ class MFTDigitsRootFileReader : public o2::framework::Task
     // --> get the current ROF
     auto& rof = rofs[mCurrentROF];
     // --> find the ranges
-    int index = rof.getFirstEntry();      // first digit position
-    int numberOfDigitsInROF = rof.getNEntries(); 
+    int index = rof.getFirstEntry(); // first digit position
+    int numberOfDigitsInROF = rof.getNEntries();
     int lastIndex = index + numberOfDigitsInROF;
 
     // --> fill in the corresponding digits
@@ -126,10 +126,10 @@ class MFTDigitsRootFileReader : public o2::framework::Task
   std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;   // pointer to ROF branch
   std::vector<o2::itsmft::Digit> digits, *pdigits = &digits; // pointer to digit branch
 
-  unsigned long mNumberOfTF = 0;       // number of TF
-  unsigned long mNumberOfROF = 0;      // number of ROFs in current TF
-  unsigned long mCurrentROF = 0; // idx of current ROF
-  unsigned long mCurrentTF = 0;  // idx of current TF
+  unsigned long mNumberOfTF = 0;  // number of TF
+  unsigned long mNumberOfROF = 0; // number of ROFs in current TF
+  unsigned long mCurrentROF = 0;  // idx of current ROF
+  unsigned long mCurrentTF = 0;   // idx of current TF
 
 }; // end class definition
 

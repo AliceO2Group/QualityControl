@@ -127,7 +127,6 @@ class QcMFTDigitTask final : public TaskInterface
   void getNameOfPixelOccupancyMap(TString& folderName, TString& histogramName, int iChipIndex);
   void resetArrays(int array[], int array2[], int array3[]);
   void getChipMapData();
-
 };
 
 } // namespace o2::quality_control_modules::mft
