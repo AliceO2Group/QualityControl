@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "TaskRawLocal": {
+      "TaskRaw": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskRaw",
         "moduleName": "QcTOF",
@@ -65,7 +65,7 @@
         },
         "location": "remote"
       },
-      "TaskDigitsLocal": {
+      "TaskDigits": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskDigits",
         "moduleName": "QcTOF",
@@ -118,7 +118,7 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskRawLocal",
+            "name": "TaskRaw",
             "MOs": [
               "RDHCounterCrate0"
             ]
@@ -137,7 +137,7 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskRawLocal",
+            "name": "TaskRaw",
             "MOs": [
               "hDiagnostic"
             ]
@@ -188,7 +188,7 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskDigitsLocal",
+            "name": "TaskDigits",
             "MOs": [
               "TOFRawsMulti"
             ]

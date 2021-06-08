@@ -78,11 +78,11 @@ class RawDataDecoder final : public DecoderBase
   Counter<nwords, LTMDiagnosticName> mCounterLTM[ncrates];        /// LTM Counters
   Counter<nwords, TRMDiagnosticName> mCounterTRM[ncrates][ntrms]; /// TRM Counters
   // Global counters
-  Counter<nequipments, nullptr> mCounterIndexEquipment;          /// Counter for the single electronic index
-  Counter<nequipments, nullptr> mCounterIndexEquipmentInTimeWin; /// Counter for the single electronic index for noise analysis
-  Counter<nequipments, nullptr> mCounterNoisyChannels;           /// Counter for noisy channels
-  Counter<1024, nullptr> mCounterTimeBC;                         /// Counter for the Bunch Crossing Time
-  Counter<91, nullptr> mCounterNoiseMap[ncrates][4];             /// Counter for the Noise Hit Map
+  Counter<nequipments, nullptr> mCounterIndexEO;          /// Counter for the single electronic index
+  Counter<nequipments, nullptr> mCounterIndexEOInTimeWin; /// Counter for the single electronic index for noise analysis
+  Counter<nequipments, nullptr> mCounterNoisyChannels;    /// Counter for noisy channels
+  Counter<1024, nullptr> mCounterTimeBC;                  /// Counter for the Bunch Crossing Time
+  Counter<91, nullptr> mCounterNoiseMap[ncrates][4];      /// Counter for the Noise Hit Map
 
   /// Function to init histograms
   void initHistograms();
@@ -91,21 +91,21 @@ class RawDataDecoder final : public DecoderBase
   void resetHistograms();
 
   // Function for noise estimation
-  void estimateNoise(std::shared_ptr<TH1F> hIndexEquipmentIsNoise);
+  void estimateNoise(std::shared_ptr<TH1F> hIndexEOIsNoise);
 
   // Histograms filled in the decoder to be kept to the bare bone so as to increase performance
-  std::shared_ptr<TH1F> mHistoHits;                  /// Number of TOF hits
-  std::shared_ptr<TH1F> mHistoTime;                  /// Time
-  std::shared_ptr<TH1F> mHistoTOT;                   /// Time-Over-Threshold
-  std::shared_ptr<TH2F> mHistoDiagnostic;            /// Diagnostic words
-  std::shared_ptr<TH1F> mHistoNErrors;               /// Number of errors
-  std::shared_ptr<TH1F> mHistoErrorBits;             /// Bits of errors
-  std::shared_ptr<TH2F> mHistoError;                 /// Errors in slot and TDC
-  std::shared_ptr<TH1F> mHistoNTests;                /// Number of tests
-  std::shared_ptr<TH2F> mHistoTest;                  /// Tests in slot and TDC
-  std::shared_ptr<TH2F> mHistoOrbitID;               /// Orbit ID for the header and trailer words
-  std::shared_ptr<TH2F> mHistoNoiseMap;              /// Noise map per FEA cards
-  std::shared_ptr<TH1F> mHistoIndexEquipmentHitRate; /// Noise rate x channel
+  std::shared_ptr<TH1F> mHistoHits;           /// Number of TOF hits
+  std::shared_ptr<TH1F> mHistoTime;           /// Time
+  std::shared_ptr<TH1F> mHistoTOT;            /// Time-Over-Threshold
+  std::shared_ptr<TH2F> mHistoDiagnostic;     /// Diagnostic words
+  std::shared_ptr<TH1F> mHistoNErrors;        /// Number of errors
+  std::shared_ptr<TH1F> mHistoErrorBits;      /// Bits of errors
+  std::shared_ptr<TH2F> mHistoError;          /// Errors in slot and TDC
+  std::shared_ptr<TH1F> mHistoNTests;         /// Number of tests
+  std::shared_ptr<TH2F> mHistoTest;           /// Tests in slot and TDC
+  std::shared_ptr<TH2F> mHistoOrbitID;        /// Orbit ID for the header and trailer words
+  std::shared_ptr<TH2F> mHistoNoiseMap;       /// Noise map per FEA cards
+  std::shared_ptr<TH1F> mHistoIndexEOHitRate; /// Noise rate x channel
 
  private:
   /** decoding handlers **/
@@ -155,9 +155,9 @@ class TaskRaw final : public TaskInterface
   std::shared_ptr<TH2F> mHistoSlotParticipating;              /// Participating slot per crate
 
   // Indices in the electronic scheme
-  std::shared_ptr<TH1F> mHistoIndexEquipment;          /// Index in electronic
-  std::shared_ptr<TH1F> mHistoIndexEquipmentInTimeWin; /// Index in electronic for noise analysis
-  std::shared_ptr<TH1F> mHistoIndexEquipmentIsNoise;   /// Noise hit map x channel
+  std::shared_ptr<TH1F> mHistoIndexEO;          /// Index in electronic
+  std::shared_ptr<TH1F> mHistoIndexEOInTimeWin; /// Index in electronic for noise analysis
+  std::shared_ptr<TH1F> mHistoIndexEOIsNoise;   /// Noise hit map x channel
 
   // Other observables
   std::shared_ptr<TH1F> mHistoTimeBC; /// Time in Bunch Crossing
