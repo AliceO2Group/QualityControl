@@ -36,7 +36,7 @@ class CustomTH2F : public TH2F, public o2::mergers::MergeInterface
   /// \brief Default destructor
   ~CustomTH2F() override = default;
 
-  const char *GetName() const override
+  const char* GetName() const override
   {
     return TH2F::GetName();
   }
@@ -48,7 +48,7 @@ class CustomTH2F : public TH2F, public o2::mergers::MergeInterface
  private:
   std::string mTreatMeAs = "TH2F"; // the name of the class this object should be considered as when drawing in QCG.
 
- ClassDefOverride(CustomTH2F, 1);
+  ClassDefOverride(CustomTH2F, 1);
 };
 
 } // namespace o2::quality_control_modules::example

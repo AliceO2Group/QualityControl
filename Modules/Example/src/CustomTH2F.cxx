@@ -19,7 +19,7 @@
 namespace o2::quality_control_modules::example
 {
 
-CustomTH2F::CustomTH2F(std::string name): TH2F(name.c_str(), "Custom object inheriting from TH2F", 100, 0, 99, 100, 0, 99)
+CustomTH2F::CustomTH2F(std::string name) : TH2F(name.c_str(), "Custom object inheriting from TH2F", 100, 0, 99, 100, 0, 99)
 {
 }
 

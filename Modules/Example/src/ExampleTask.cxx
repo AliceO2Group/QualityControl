@@ -85,7 +85,7 @@ void ExampleTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (input.header != nullptr) {
       const auto* header = o2::header::get<header::DataHeader*>(input.header); // header of first valid input
       mHistos[0]->Fill(header->payloadSize);
-      mCustomTH2F->Fill(header->payloadSize%100, header->payloadSize%100);
+      mCustomTH2F->Fill(header->payloadSize % 100, header->payloadSize % 100);
       for (auto& mHisto : mHistos) {
         if (mHisto) {
           mHisto->FillRandom("gaus", 1);

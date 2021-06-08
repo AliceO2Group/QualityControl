@@ -45,7 +45,7 @@ class ExampleTask final : public TaskInterface
   int mNumberCycles;
   TH1F* mHistos[25];
   void publishHisto(int i);
-  CustomTH2F *mCustomTH2F;
+  CustomTH2F* mCustomTH2F;
 };
 
 } // namespace o2::quality_control_modules::example
