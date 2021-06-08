@@ -11,7 +11,7 @@
 ///
 /// \file   InfrastructureGenerator.cxx
 /// \author Piotr Konopka
-/// 
+///
 
 #include "QualityControl/InfrastructureGenerator.h"
 
