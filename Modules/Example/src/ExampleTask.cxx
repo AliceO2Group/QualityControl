@@ -52,7 +52,6 @@ void ExampleTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mCustomTH2F = new CustomTH2F("customTH2F");
   getObjectsManager()->startPublishing(mCustomTH2F);
-  mCustomTH2F->SaveAs("custom.json");
 }
 
 void ExampleTask::publishHisto(int i)
