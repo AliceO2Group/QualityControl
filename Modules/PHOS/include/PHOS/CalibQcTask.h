@@ -48,7 +48,6 @@ class CalibQcTask final : public TaskInterface
   void reset() override;
 
  protected:
-
  private:
   static constexpr short NHIST2D = 8;
   enum histos2D { kChangeHGM1,
@@ -60,7 +59,7 @@ class CalibQcTask final : public TaskInterface
                   kChangeLGM3,
                   kChangeLGM4
   };
-  std::array<TH2F*, NHIST2D> mHist2D = { nullptr }; ///< Array of 2D histograms
+  std::array<TH2F*, NHIST2D> mHist2D = { nullptr };  ///< Array of 2D histograms
   std::unique_ptr<o2::phos::BadChannelsMap> mBadMap; /// bad map
 };
 

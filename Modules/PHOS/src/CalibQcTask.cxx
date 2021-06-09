@@ -102,17 +102,16 @@ void CalibQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
   //std::array<short, 2*o2::phos::Mapping::NCHANNELS>
-  auto diff = ctx.inputs().get<gsl::span<short>>("CALIBDIFF"); 
-  bool fillLG = diff.size()>o2::phos::Mapping::NCHANNELS;
+  auto diff = ctx.inputs().get<gsl::span<short>>("CALIBDIFF");
+  bool fillLG = diff.size() > o2::phos::Mapping::NCHANNELS;
 
   char relid[3];
   for (short absId = o2::phos::Mapping::NCHANNELS; absId > 1792; absId--) {
-   
+
     o2::phos::Geometry::absToRelNumbering(absId, relid);
-printf("absId=%d, relid=[%d,%d,%d]\n",absId, relid[0], relid[1], relid[2]);    
-    mHist2D[kChangeHGM1 + relid[0]]->SetBinContent(relid[1],relid[2],diff[absId]) ;
-    if(fillLG){
-      mHist2D[kChangeLGM1 + relid[0]]->SetBinContent(relid[1],relid[2],diff[absId+o2::phos::Mapping::NCHANNELS]) ;
+    mHist2D[kChangeHGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId]);
+    if (fillLG) {
+      mHist2D[kChangeLGM1 + relid[0] - 1]->SetBinContent(relid[1], relid[2], diff[absId + o2::phos::Mapping::NCHANNELS]);
     }
   }
 
