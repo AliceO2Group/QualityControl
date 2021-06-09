@@ -9,6 +9,7 @@ target_sources(O2QcTOF
                       src/TaskRaw.cxx
                       # Checkers
                       src/CheckDiagnostics.cxx
+                      src/CheckDRMDiagnostics.cxx
                       src/CheckCompressedData.cxx
                       src/CheckRawMultiplicity.cxx
                       src/CheckRawTime.cxx
@@ -47,6 +48,7 @@ add_root_dictionary(O2QcTOF
                             # Checkers
                             include/TOF/CheckCompressedData.h
                             include/TOF/CheckDiagnostics.h
+                            include/TOF/CheckDRMDiagnostics.h
                             include/TOF/CheckRawMultiplicity.h
                             include/TOF/CheckRawTime.h
                             include/TOF/CheckRawToT.h

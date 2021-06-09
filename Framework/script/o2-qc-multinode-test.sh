@@ -7,6 +7,20 @@ set -m
 # UNIQUE_PORT_1 and UNIQUE_PORT_2 must be set and not occupied by another process
 # JSON_DIR must be set and point to the directory containing multinode-test.json.
 
+# this is to make sure that we do not leave child processes behind
+# https://unix.stackexchange.com/questions/240723/exit-trap-in-dash-vs-ksh-and-bash/240736#240736
+cleanup() {
+    # kill all processes whose parent is this process
+    pkill -P $$
+}
+for sig in INT QUIT HUP TERM; do
+  trap "
+    cleanup
+    trap - $sig EXIT
+    kill -s $sig "'"$$"' "$sig"
+done
+trap cleanup EXIT
+
 function check_if_port_in_use() {
   OS=`uname`
   if [[ $OS == Linux ]] ; then
@@ -69,12 +83,12 @@ fi
 delete_data
 
 # store data
-o2-qc-run-producer --producers 2 --message-amount 15  --message-rate 1 -b | timeout -k 5s 25s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --local --host localhost --run &
+o2-qc-run-producer --producers 2 --message-amount 15  --message-rate 1 -b | timeout -s INT 25s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --local --host localhost --run &
 
-timeout -k 5s 30s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run
+timeout -s INT 30s o2-qc --config json://${JSON_DIR}/multinode-test.json -b --remote --run
 
-# wait until the local QC quits before moving forward
-fg %1
+# wait until the local QC quits before moving forward.
+wait
 
 # check MonitorObject
 # first the return code must be 200

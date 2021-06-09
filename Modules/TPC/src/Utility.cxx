@@ -74,8 +74,19 @@ o2::tpc::ClusterNativeAccess clusterHandler(o2::framework::InputRecord& input)
   std::vector<int> inputIds(36);
   std::iota(inputIds.begin(), inputIds.end(), 0);
   std::vector<InputSpec> filter = {
-    { "check", ConcreteDataTypeMatcher{ o2::header::gDataOriginTPC, "CLUSTERNATIVE" }, Lifetime::Timeframe },
+    { "input", ConcreteDataTypeMatcher{ "TPC", "CLUSTERNATIVE" }, Lifetime::Timeframe },
   };
+  bool sampledData = true;
+  for ([[maybe_unused]] auto const& ref : InputRecordWalker(input, filter)) {
+    sampledData = false;
+    break;
+  }
+  if (sampledData) {
+    filter = {
+      { "sampled-data", ConcreteDataTypeMatcher{ "DS", "CLUSTERNATIVE" }, Lifetime::Timeframe },
+    };
+    LOG(INFO) << "Using sampled data.";
+  }
   for (auto const& ref : InputRecordWalker(input, filter)) {
     auto const* sectorHeader = DataRefUtils::getHeader<o2::tpc::TPCSectorHeader*>(ref);
     if (sectorHeader == nullptr) {

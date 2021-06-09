@@ -1,8 +1,8 @@
 <!--  \cond EXCLUDE_FOR_DOXYGEN -->
-[![aliBuild](https://img.shields.io/badge/aliBuild-dashboard-lightgrey.svg)](https://alisw.cern.ch/cockpit-legacy/d/000000001/main-dashboard?orgId=1&var-storagename=All&var-reponame=All&var-checkname=build%2FQualityControl%2Fo2-dataflow%2F0&var-upthreshold=30m&var-minuptime=30)
 [![JIRA](https://img.shields.io/badge/JIRA-Report%20issue-blue.svg)](https://alice.its.cern.ch/jira/secure/CreateIssue.jspa?pid=11201&issuetype=1)
 [![doxygen](https://img.shields.io/badge/doxygen-documentation-blue.svg)](https://aliceo2group.github.io/QualityControl/)
 [![Discourse](https://img.shields.io/badge/discourse-Get%20help-blue.svg)](https://alice-talk.web.cern.ch/)
+[![FLP doc](https://img.shields.io/badge/FLP-documentation-blue.svg)](https://alice-flp.docs.cern.ch/)
 
 <!--  \endcond  --> 
 
@@ -64,15 +64,18 @@ For a general overview of our (O2) software, organization and processes, please 
     * [Writing a DPL data producer](doc/Advanced.md#writing-a-dpl-data-producer)
     * [Access run conditions and calibrations from the CCDB](doc/Advanced.md#access-run-conditions-and-calibrations-from-the-ccdb)
     * [Definition and access of task-specific configuration](doc/Advanced.md#definition-and-access-of-task-specific-configuration)
+    * [Custom metadata](#custom-metadata)
+    * [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg)
     * [Custom QC object metadata](doc/Advanced.md#custom-qc-object-metadata)
     * [Canvas options](doc/Advanced.md#canvas-options)
     * [QC with DPL Analysis](doc/Advanced.md#qc-with-dpl-analysis)
-    * [Data Inspector](doc/Advanced.md#data-inspector)
+    * [Monitoring metrics](doc/Advanced.md#monitoring-metrics)
     * [Details on the data storage format in the CCDB](doc/Advanced.md#details-on-the-data-storage-format-in-the-ccdb)
     * [Local CCDB setup](doc/Advanced.md#local-ccdb-setup)
     * [Local QCG (QC GUI) setup](doc/Advanced.md#local-qcg-qc-gui-setup)
     * [FLP Suite](doc/Advanced.md#flp-suite)
     * [Configuration files details](doc/Advanced.md#configuration-files-details)
+    * [Data Sampling monitoring](#data-sampling-monitoring)
 
 ### Where to get help
 

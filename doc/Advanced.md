@@ -15,17 +15,14 @@
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
    * [Access run conditions and calibrations from the CCDB](#access-run-conditions-and-calibrations-from-the-ccdb)
    * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
-   * [Custom QC object metadata](#custom-qc-object-metadata)
+   * [Custom metadata](#custom-metadata)
+   * [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg)
    * [Canvas options](#canvas-options)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
       * [Getting AODs directly](#getting-aods-directly)
       * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
       * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
-   * [Data Inspector](#data-inspector)
-      * [Prerequisite](#prerequisite)
-      * [Compilation](#compilation)
-      * [Execution](#execution)
-      * [Configuration](#configuration-1)
+   * [Monitoring metrics](#monitoring-metrics)
    * [Details on the data storage format in the CCDB](#details-on-the-data-storage-format-in-the-ccdb)
       * [Data storage format before v0.14 and ROOT 6.18](#data-storage-format-before-v014-and-root-618)
    * [Local CCDB setup](#local-ccdb-setup)
@@ -41,30 +38,30 @@
       * [QC Aggregators configuration](#qc-aggregators-configuration)
       * [QC Post-processing configuration](#qc-post-processing-configuration)
       * [External tasks configuration](#external-tasks-configuration)
+   * [Data Sampling monitoring](#data-sampling-monitoring)
 <!--te-->
-
 
 [← Go back to Post-processing](PostProcessing.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Frequently Asked Questions →](FAQ.md)
 
 ## Plugging the QC to an existing DPL workflow
 
-Your existing DPL workflow can simply be considered a publisher. Therefore, replace `o2-qc-run-producer` with your own workflow. 
+Your existing DPL workflow can simply be considered a publisher. Therefore, replace `o2-qc-run-producer` with your own workflow.
 
-For example, if TPC wants to monitor the output `{"TPC", "CLUSTERS"}` of the workflow `o2-qc-run-tpcpid`, modify the config file to point to the correct data and do : 
+For example, if TPC wants to monitor the output `{"TPC", "CLUSTERS"}` of the workflow `o2-qc-run-tpcpid`, modify the config file to point to the correct data and do :
 ```
 o2-qc-run-tpcpid | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/tpcQCPID.json
 ```
 
 ## Production of QC objects outside this framework
-QC objects (e.g. histograms) are typically produced in a QC task. 
-This is however not the only way. Some processing tasks such as the calibration 
-might have already processed the data and produced histograms that should be 
+QC objects (e.g. histograms) are typically produced in a QC task.
+This is however not the only way. Some processing tasks such as the calibration
+might have already processed the data and produced histograms that should be
 monitored. Instead of re-processing and doing twice the work, one can simply
 push this QC object to the QC framework where it will be checked and stored.
 
 ### Configuration
 
-Let be a device in the main data flow that produces a histogram on a channel defined as `TST/HISTO/0`. To get this histogram in the QC and check it, add to the configuration file an "external device": 
+Let be a device in the main data flow that produces a histogram on a channel defined as `TST/HISTO/0`. To get this histogram in the QC and check it, add to the configuration file an "external device":
 ```yaml
     "externalTasks": {
       "External-1": {
@@ -74,12 +71,12 @@ Let be a device in the main data flow that produces a histogram on a channel def
     },
     "checks": {
 ```
-The "query" syntax is the same as the one used in the DPL and in the Dispatcher. It must match the output of another device, whether it is in the same workflow or in a piped one. 
-The `binding` (first part, before the colon) is used in the path of the stored objects and thus we encourage to use the task name to avoid confusion. Moreover, the `origin` (first element after the colon) is used as detectorName. 
+The "query" syntax is the same as the one used in the DPL and in the Dispatcher. It must match the output of another device, whether it is in the same workflow or in a piped one.
+The `binding` (first part, before the colon) is used in the path of the stored objects and thus we encourage to use the task name to avoid confusion. Moreover, the `origin` (first element after the colon) is used as detectorName.
 
 ### Example 1: basic
 
-As a basic example, we are going to produce histograms with the HistoProducer and collect them with the QC. The configuration is in [basic-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/basic-external-histo.json). An external task is defined and named "External-1" (see subsection above). It is then used in the Check QCCheck : 
+As a basic example, we are going to produce histograms with the HistoProducer and collect them with the QC. The configuration is in [basic-external-histo.json](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/basic-external-histo.json). An external task is defined and named "External-1" (see subsection above). It is then used in the Check QCCheck :
 ```yaml
       "QcCheck": {
         "active": "true",
@@ -101,7 +98,7 @@ To run it, do:
 o2-qc-run-histo-producer | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/basic-external-histo.json
 ```
 
-The object is visible in the QCG or the CCDB at `qc/TST/MO/External-1/hello_0`. In general we publish the objects of an external device at `qc/<detector>/MO/<binding>/object`. 
+The object is visible in the QCG or the CCDB at `qc/TST/MO/External-1/hello_0`. In general we publish the objects of an external device at `qc/<detector>/MO/<binding>/object`.
 
 The check results are stored at `qc/<detector>/QO/<binding>/object`.
 
@@ -111,13 +108,13 @@ This second, more advanced, example mixes QC tasks and external tasks. It is def
 
 ![alt text](images/Advanced-external.png)
 
-First, it runs 1 QC task (QC-TASK-RUNNER-QcTask) getting data from a data producer (bottom boxes, typical QC worfklow). 
+First, it runs 1 QC task (QC-TASK-RUNNER-QcTask) getting data from a data producer (bottom boxes, typical QC worfklow).
 
-On top we see 3 histogram producers. `histoProducer-2` is not part of the QC, it is not an external device defined in the configuration file. The two other histogram producers are configured as external devices in the configuration file. 
+On top we see 3 histogram producers. `histoProducer-2` is not part of the QC, it is not an external device defined in the configuration file. The two other histogram producers are configured as external devices in the configuration file.
 
 `histoProducer-0` produces an object that is used in a check (`QcCheck-External-1`). `histoProducer-1` objects are not used in any check but we generate one automatically to take care of the storage in the database.
 
-To run it, do: 
+To run it, do:
 ```yaml
 o2-qc-run-producer | o2-qc-run-histo-producer --producers 3 --histograms 3 | o2-qc --config  json://${QUALITYCONTROL_ROOT}/etc/advanced-external-histo.json 
 ```
@@ -142,10 +139,10 @@ that for now we support cases with one or more local machines, but just only one
 In our example, we assume having two local processing nodes (`localnode1`, `localnode2`) and one
 QC node (`qcnode`). There are two types of QC Tasks declared:
 - `MultiNodeLocal` which are executed on the local nodes and their results are merged and checked
- on the QC server.
+  on the QC server.
 - `MultiNodeRemote` which runs on the QC server, receiving a small percent of data from
-`localnode2` only. Mergers are not needed in this case, but there is a process running Checks against
- Monitor Objects generated by this Task.
+  `localnode2` only. Mergers are not needed in this case, but there is a process running Checks against
+  Monitor Objects generated by this Task.
 
 We use the `SkeletonTask` class for both, but any Task can be used of course. Should a Task be local,
 all its `MonitorObject`s need to be mergeable - they should be one of the mergeable ROOT types (histograms, TTrees)
@@ -157,7 +154,7 @@ These are the steps to follow to get a multinode setup:
 
 In this example we will use the `Framework/multiNode.json` config file. A config file should look
 almost like the usual one, but with a few additional parameters. In case of a local task, these parameters should be
- added:
+added:
 
 ```json
     "tasks": {
@@ -264,27 +261,27 @@ contact the QC or AliECS developers to receive assistance or instruction on how 
 
 For your convenience, and although it does not lie within the QC scope, we would like to document how to write a simple data producer in the DPL. The DPL documentation can be found [here](https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md) and for questions please head to the [forum](https://alice-talk.web.cern.ch/).
 
-As an example we take the `DataProducerExample` that you can find in the QC repository. It is produces a number. By default it will be 1s but one can specify with the parameter `my-param` a different number. It is made of 3 files : 
-* [runDataProducerExample.cxx](../Framework/src/runDataProducerExample.cxx) : 
-  This is an executable with a basic data producer in the Data Processing Layer. 
+As an example we take the `DataProducerExample` that you can find in the QC repository. It is produces a number. By default it will be 1s but one can specify with the parameter `my-param` a different number. It is made of 3 files :
+* [runDataProducerExample.cxx](../Framework/src/runDataProducerExample.cxx) :
+  This is an executable with a basic data producer in the Data Processing Layer.
   There are 2 important functions here :
-  * `customize(...)` to add parameters to the executable. Note that it must be written before the includes for the dataProcessing.
-  * `defineDataProcessing(...)` to define the workflow to be ran, in our case the device(s) publishing the number.
-* [DataProducerExample.h](../Framework/include/QualityControl/DataProducerExample.h) : 
-  The key elements are : 
-  1. The include `#include <Framework/DataProcessorSpec.h>`
-  2. The function `getDataProducerExampleSpec(...)` which must return a `DataProcessorSpec` i.e. the description of a device (name, inputs, outputs, algorithm)
-  3. The function `getDataProducerExampleAlgorithm` which must return an `AlgorithmSpec` i.e. the actual algorithm that produces the data. 
-* [DataProducerExample.cxx](../Framework/src/DataProducerExample.cxx) : 
+    * `customize(...)` to add parameters to the executable. Note that it must be written before the includes for the dataProcessing.
+    * `defineDataProcessing(...)` to define the workflow to be ran, in our case the device(s) publishing the number.
+* [DataProducerExample.h](../Framework/include/QualityControl/DataProducerExample.h) :
+  The key elements are :
+    1. The include `#include <Framework/DataProcessorSpec.h>`
+    2. The function `getDataProducerExampleSpec(...)` which must return a `DataProcessorSpec` i.e. the description of a device (name, inputs, outputs, algorithm)
+    3. The function `getDataProducerExampleAlgorithm` which must return an `AlgorithmSpec` i.e. the actual algorithm that produces the data.
+* [DataProducerExample.cxx](../Framework/src/DataProducerExample.cxx) :
   This is just the implementation of the header described just above. You will probably want to modify `getDataProducerExampleSpec` and the inner-most block of `getDataProducerExampleAlgorithm`. You might be taken aback by the look of this function, if you don't know what a _lambda_ is just ignore it and write your code inside the accolades.
-  
-You will probably write it in your detector's O2 directory rather than in the QC repository. 
 
-## Access run conditions and calibrations from the CCDB 
+You will probably write it in your detector's O2 directory rather than in the QC repository.
+
+## Access run conditions and calibrations from the CCDB
 
 The MonitorObjects generated by Quality Control are stored in a dedicated
 repository based on CCDB. The run conditions, on the other hand, are located
-in another, separate database. One can access these conditions inside a 
+in another, separate database. One can access these conditions inside a
 Task by a dedicated method of the TaskInterface, as below:
 ```
 TObject* condition = TaskInterface::retrieveCondition("Path/to/condition");
@@ -294,8 +291,8 @@ if (condition) {
 }
 ```
 Make sure to declare a valid URL of CCDB in the config file. Keep in
- mind that it might be different from the CCDB instance used for storing
- QC objects.
+mind that it might be different from the CCDB instance used for storing
+QC objects.
 
 ```
 {
@@ -309,13 +306,13 @@ Make sure to declare a valid URL of CCDB in the config file. Keep in
     ...
 ```
 
-## Definition and access of task-specific configuration 
+## Definition and access of task-specific configuration
 
 A task can access custom parameters declared in the configuration file at `qc.tasks.<task_name>.taskParameters`. They are stored inside a key-value map named mCustomParameters, which is a protected member of `TaskInterface`.
 
 One can also tell the DPL driver to accept new arguments. This is done using the `customize` method at the top of your workflow definition (usually called "runXXX" in the QC).
 
-For example, to add two parameters of different types do : 
+For example, to add two parameters of different types do :
 ```
 void customize(std::vector<ConfigParamSpec>& workflowOptions)
 {
@@ -326,28 +323,41 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 }
 ```
 
-## Custom QC object metadata
+## Custom metadata
 
-One can add custom metadata on the QC objects produced in a QC task. 
-Simply call `ObjectsManager::addMetadata(...)`, like in 
+One can add custom metadata on the QC objects produced in a QC task.
+Simply call `ObjectsManager::addMetadata(...)`, like in
 ```
   // add a metadata on histogram mHistogram, key is "custom" and value "34"
   getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
 ```
 This metadata will end up in the QCDB.
 
-## Canvas options 
+## Display a non-standard ROOT object in QCG
 
-The developer of a Task might perfectly know how to display a plot or a graph but cannot set these options if they belong to the Canvas. This is typically the case of `drawOptions` such as `colz` or `alp`. It is also the case for canvases' properties such as logarithmic scale and grid. These options can be set by the end user in the QCG but it is likely that the developer wants to give pertinent default options. 
+Users can publish objects inheriting from a custom class, e.g. not a TH2F but a MyCustomClass, as long as a dictionary is available. By default, JSROOT and in turn the QCG won't be able to display such objects.
+
+The solution depends on the strategy to adopt to display the object.
+
+1. The custom class has multiple inheritance and one of them is a standard ROOT object which the QCG can display (e.g. a histogram). In such case, add a member `mTreatMeAs` to your custom class and set it to the name of the class that should be used to interpret and display the data. There is an example in the Example module : 
+```c++
+  std::string mTreatMeAs = "TH2F"; // the name of the class this object should be considered as when drawing in QCG.
+```
+2. [Not ready yet] The class encapsulates the object that should actually be drawn. Contact us if you need this feature, we can easily add it. 
+3. [Not ready yet] The class cannot be drawn in the ways outlined above and need a custom piece of JS to actually do it. Contact us if you need this feature, it is not a trivial thing to do. 
+
+## Canvas options
+
+The developer of a Task might perfectly know how to display a plot or a graph but cannot set these options if they belong to the Canvas. This is typically the case of `drawOptions` such as `colz` or `alp`. It is also the case for canvases' properties such as logarithmic scale and grid. These options can be set by the end user in the QCG but it is likely that the developer wants to give pertinent default options.
 
 To do so, one can use one of the two following methods.
 * `TObjectsManager::setDefaultDrawOptions(<objectname or pointer>, string& drawOptions)`
-  
-  `drawOptions` is a space-separated list of drawing options. E.g. "colz" or "alp lego1". 
+
+  `drawOptions` is a space-separated list of drawing options. E.g. "colz" or "alp lego1".
 * `TObjectsManager::setDisplayHint(<objectname or pointer>, string& hints)`
-  
-  `hints` is a space-separated list of hints on how to draw the object. E.g. "logz" or "gridy logy". 
-  
+
+  `hints` is a space-separated list of hints on how to draw the object. E.g. "logz" or "gridy logy".
+
   Currently supported by QCG: logx, logy, logz, gridx, gridy, gridz.
 
 ## QC with DPL Analysis
@@ -356,9 +366,9 @@ It is possible to attach QC to the Run 3 Analysis Tasks, as they use Data Proces
 QC. AOD tables can be requested as direct data sources and then read by a QC task with
 TableConsumer. One can also request AOD tables directly from an AOD file.
 
-In this piece of documentation it is assumed that the users already have some idea about QC and 
+In this piece of documentation it is assumed that the users already have some idea about QC and
 [DPL Analysis](https://aliceo2group.github.io/analysis-framework), and
- they have an access to AOD files following the Run 3 data model.
+they have an access to AOD files following the Run 3 data model.
 
 ### Getting AODs directly
 
@@ -398,7 +408,7 @@ o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/analysisDirect.json -b --aod-fi
 
 ### Merging with other analysis workflows
 
-Now, let's try to subscribe to data generated in another analysis workflow - 
+Now, let's try to subscribe to data generated in another analysis workflow -
 [`o2-analysistutorial-tracks-combinations`](https://github.com/AliceO2Group/AliceO2/tree/dev/Analysis/Tutorials/src/tracksCombinations.cxx),
 which produces a new table with hash numbers generated out of tracks in AODs:
 ```
@@ -435,9 +445,9 @@ o2-analysistutorial-tracks-combinations --aod-file AO2D.root  -b | \
 ### Enabling a workflow to run on Hyperloop
 
 Hyperloop requires a workflow JSON dump in order to run it on Grid. To generate such a dump, in CMakeLists.txt of a
- detector libraryone should use `configure_file` to install the configuration files, then `o2_add_qc_workflow` to
- declare a QC analysis workflow. The first argument is an arbitrary workflow name, the second is the configuration
- file path in the installation directory. For example:
+detector libraryone should use `configure_file` to install the configuration files, then `o2_add_qc_workflow` to
+declare a QC analysis workflow. The first argument is an arbitrary workflow name, the second is the configuration
+file path in the installation directory. For example:
 
 ```
 configure_file("etc/analysisDirect.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json")
@@ -448,68 +458,23 @@ configure_file("etc/analysisDerived.json" "${CMAKE_INSTALL_PREFIX}/etc/analysisD
 o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-direct CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDirect.json)
 o2_add_qc_workflow(WORKFLOW_NAME o2-qc-example-analysis-derived CONFIG_FILE_PATH ${CMAKE_INSTALL_PREFIX}/etc/analysisDerived.json)
 ```
+## Monitoring metrics
 
-## Data Inspector
+The QC framework publishes monitoring metrics concerning data/object rates, which are published to the monitoring backend
+specified in the `"monitoring.url"` parameter in config files. If QC is run in standalone mode (no AliECS) and with 
+`"infologger:///debug?qc"` as the monitoring backend, the metrics will appear in logs in buffered chunks. To force
+printing them as soon as they are reported, please also add `--monitoring-backend infologger://` as the argument.
 
-This is a GUI to inspect the data coming out of the DataSampling, in
-particular the Readout.
-
-![alt text](images/dataDump.png)
-
-### Prerequisite
-
-If not already done, install GLFW for your platform. On CC7 install `glfw-devel` from epel repository : `sudo yum install glfw-devel --enablerepo=epel`
-
-### Compilation
-
-Build the QualityControl as usual.
-
-### Execution
-
-To monitor the readout, 3 processes have to be started : the Readout,
-the Data Sampling and the Data Inspector.
-
-First make sure that the Data Sampling is enabled in the readout :
-```
-[consumer-fmq-qc]
-consumerType=FairMQChannel
-enableRawFormat=1
-fmq-name=readout-qc
-fmq-address=ipc:///tmp/readout-pipe-1
-fmq-type=pub
-fmq-transport=zeromq
-unmanagedMemorySize=2G
-memoryPoolNumberOfPages=500
-memoryPoolPageSize=1M
-enabled=1
-```
-
-In 3 separate terminals, do respectively
-
-1. `o2-readout-exe file:///absolute/path/to/config.cfg`
-2. `o2-qc-run-readout-for-data-dump --batch`
-3. `o2-qc-data-dump --mq-config $QUALITYCONTROL_ROOT/etc/dataDump.json --id dataDump --control static`
-
-### Configuration
-
-__Fraction of data__
-The Data Sampling tries to take 100% of the events by default.
-Edit `$QUALITYCONTROL_ROOT/etc/readoutForDataDump.json`
-to change it. Look for the parameter `fraction` that is set to 1.
-
-__Port__
-The Data Sampling sends data to the GUI via the port `26525`.
-If this port is not free, edit the config file `$QUALITYCONTROL_ROOT/etc/readoutForDataDump.json`
-and `$QUALITYCONTROL_ROOT/etc/dataDump.json`.
+One can also enable publishing metrics related to CPU/memory usage. To do so, use `--resources-monitoring <interval_sec>`.
 
 ## Details on the data storage format in the CCDB
 
-Each MonitorObject is stored as a TFile in the CCDB. 
-It is therefore possible to easily open it with ROOT when loaded with alienv. It also seamlessly supports class schema evolution. 
+Each MonitorObject is stored as a TFile in the CCDB.
+It is therefore possible to easily open it with ROOT when loaded with alienv. It also seamlessly supports class schema evolution.
 
 The MonitorObjects are stored at a path which is enforced by the qc framework : `/qc/<detector code>/MO/<task name>/object/name`
-Note that the name of the object can contain slashes (`/`) in order to build a sub-tree visible in the GUI. 
-The detector name and the taskname are set in the config file : 
+Note that the name of the object can contain slashes (`/`) in order to build a sub-tree visible in the GUI.
+The detector name and the taskname are set in the config file :
 ```json
 "tasks": {
   "QcTask": {       <---------- task name
@@ -523,9 +488,9 @@ The quality is stored as a CCDB metadata of the object.
 
 ### Data storage format before v0.14 and ROOT 6.18
 
-Before September 2019, objects were serialized with TMessage and stored as _blobs_ in the CCDB. The main drawback was the loss of the corresponding streamer infos leading to problems when the class evolved or when accessing the data outside the QC framework. 
+Before September 2019, objects were serialized with TMessage and stored as _blobs_ in the CCDB. The main drawback was the loss of the corresponding streamer infos leading to problems when the class evolved or when accessing the data outside the QC framework.
 
-The QC framework is nevertheless backward compatible and can handle the old and the new storage system. 
+The QC framework is nevertheless backward compatible and can handle the old and the new storage system.
 
 ## Local CCDB setup
 
@@ -534,7 +499,7 @@ Having a central ccdb for test (ccdb-test) is handy but also means that everyone
 1. Download the local repository service from http://alimonitor.cern.ch/download/local.jar
 
 2. The service can simply be run with
-    `java -jar local.jar`
+   `java -jar local.jar`
 
 It will start listening by default on port 8080. This can be changed either with the java parameter “tomcat.port” or with the environment variable “TOMCAT_PORT”. Similarly the default listening address is 127.0.0.1 and it can be changed with the java parameter “tomcat.address” or with the environment variable “TOMCAT_ADDRESS” to something else (for example ‘*’ to listen on all interfaces).
 
@@ -546,11 +511,11 @@ At the moment, the description of the REST api can be found in this document : h
 
 ## Local QCG (QC GUI) setup
 
-To install and run the QCG locally, and its fellow process tobject2json, please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#run-qcg-locally
+To install and run the QCG locally please follow these instructions : https://github.com/AliceO2Group/WebUi/tree/dev/QualityControl#installation
 
 ## FLP Suite
 
-The QC is part of the FLP Suite. The Suite is installed on FLPs through RPMs and is configured with ansible. As a consequence a few things are different in this context compared to a pure development setup. 
+The QC is part of the FLP Suite. The Suite is installed on FLPs through RPMs and is configured with ansible. As a consequence a few things are different in this context compared to a pure development setup.
 
 ### Developing QC modules on a machine with FLP suite
 
@@ -560,19 +525,19 @@ __Option 1__: Rebuild everything locally and point ECS to it
 2. `aliBuild init QualityControl@master`
 3. You might want to switch alidist to a branch corresponding to an FLP Suite version but `master` should work as well.
 4. `aliBuild build O2Suite --defaults o2-dataflow`     
-It is necessary to build `O2Suite` and not `QualityControl`
+   It is necessary to build `O2Suite` and not `QualityControl`
 6. Run alienv at least once, or each time you switch branch: `alienv enter O2Suite/latest`
 7. Copy the absolute path to `sw/MODULES/<arch>`
-8. In aliECS, add a parameter `modulepath` and paste the path. 
+8. In aliECS, add a parameter `modulepath` and paste the path.
 9. When running with aliECS, the software from your build will be used.
 
 __Option 2__: Build on your development setup and scp the library
 
-1. Switch alidist to the branch corresponding to the flp-suite you installed, e.g. `flp-suite-v0.12.0`. 
+1. Switch alidist to the branch corresponding to the flp-suite you installed, e.g. `flp-suite-v0.12.0`.
 2. Rebuild QC using alibuild
 3. Backup the library (/opt/alisw/el7/QualityControl/<version>/lib)
 3. scp from development setup alice/sw/slc7_x86-64/QualityControl/latest/lib/yourlib* to /opt/alisw/el7/QualityControl/<version>/lib on the FLP.
-4. Rebuild the aliECS environment. 
+4. Rebuild the aliECS environment.
 
 __Option 3__: Rebuild only the QC reusing the installed software
 
@@ -621,24 +586,24 @@ This is the global structure of the configuration in QC.
 ```
 
 There are four QC-related components:
- - "config" - contains global configuration of QC which apply to any component. It is required in any configuration
+- "config" - contains global configuration of QC which apply to any component. It is required in any configuration
   file.
- - "tasks" - contains declarations of QC Tasks. It is mandatory for running topologies with Tasks and
- Checks.
- - "externalTasks" - contains declarations of external devices which sends objects to the QC to be checked and stored.
- - "checks" - contains declarations of QC Checks. It is mandatory for running topologies with
+- "tasks" - contains declarations of QC Tasks. It is mandatory for running topologies with Tasks and
+  Checks.
+- "externalTasks" - contains declarations of external devices which sends objects to the QC to be checked and stored.
+- "checks" - contains declarations of QC Checks. It is mandatory for running topologies with
   Tasks and Checks.
- - "postprocessing" - contains declarations of PostProcessing Tasks. It is only needed only when Post-Processing is
+- "postprocessing" - contains declarations of PostProcessing Tasks. It is only needed only when Post-Processing is
   run.
 
 The configuration file can also include a path to Data Sampling configuration ("dataSamplingPoliciesFile") or the
- list of Data Sampling Policies. Please refer to the [Data Sampling documentation](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/Core#data-sampling) to find more information. 
- 
- ### Common configuration
+list of Data Sampling Policies. Please refer to the [Data Sampling documentation](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/Core#data-sampling) to find more information.
+
+### Common configuration
 
 This is how a typical "config" structure looks like. Each configuration element is described with a relevant comment
- afterwards. The `"": "<comment>",` formatting is to keep the JSON structure valid. Please note that these comments
-  should not be present in real configuration files.
+afterwards. The `"": "<comment>",` formatting is to keep the JSON structure valid. Please note that these comments
+should not be present in real configuration files.
 
 ```json
 {
@@ -676,11 +641,11 @@ This is how a typical "config" structure looks like. Each configuration element 
 }
 ```
 
- ### QC Tasks configuration
+### QC Tasks configuration
 
 Below the full QC Task configuration structure is described. Note that more than one task might be declared inside in
- the "tasks" path.
- 
+the "tasks" path.
+
  ```json
 {
   "qc": {
@@ -719,8 +684,8 @@ Below the full QC Task configuration structure is described. Note that more than
 ### QC Checks configuration
 
 Below the full QC Checks configuration structure is described. Note that more than one check might be declared inside in
- the "checks" path. Please also refer to [the Checks documentation](doc/ModulesDevelopment.md#configuration) for more details.
- 
+the "checks" path. Please also refer to [the Checks documentation](doc/ModulesDevelopment.md#configuration) for more details.
+
  ```json
 {
   "qc": {
@@ -750,7 +715,7 @@ Below the full QC Checks configuration structure is described. Note that more th
 ### QC Aggregators configuration
 
 Below the full QC Aggregators configuration structure is described. Note that more than one aggregator might be declared inside in
- the "aggregators" path. Please also refer to [the Aggregators documentation](doc/ModulesDevelopment.md#quality-aggregation) for more details.
+the "aggregators" path. Please also refer to [the Aggregators documentation](doc/ModulesDevelopment.md#quality-aggregation) for more details.
 
 ```json
 {
@@ -779,7 +744,7 @@ Below the full QC Aggregators configuration structure is described. Note that mo
 ### QC Post-processing configuration
 
 Below the full QC Post-processing (PP) configuration structure is described. Note that more than one PP Task might be
- declared inside in the "postprocessing" path. Please also refer to [the Post-processing documentation](doc/PostProcessing.md) for more details.
+declared inside in the "postprocessing" path. Please also refer to [the Post-processing documentation](doc/PostProcessing.md) for more details.
 
 ```json
 {
@@ -821,6 +786,17 @@ Below the external task configuration structure is described. Note that more tha
   }
 }
 ```
+
+## Data Sampling monitoring
+
+To have the monitoring metrics for the Data Sampling (the Dispatcher) sent to a specific sink (like influxdb), add the option `--monitoring-backend` when launching the DPL workflow. For example:
+```shell
+--monitoring-backend 'influxdb-udp://influxdb-server.cern.ch:8086'
+```
+
+This will actually send the monitoring data of *all* DPL devices to this database.
+
+__Note for mac users__: if you get a crash and the message "std::exception::what: send_to: Message too long", it means that you have to adapt a `udp` parameter. You can check the datagram size via `sudo sysctl net.inet.udp.maxdgram`. If it says something less than 64 kB, then increase size: `sudo sysctl -w net.inet.udp.maxdgram=65535`
 
 ---
 

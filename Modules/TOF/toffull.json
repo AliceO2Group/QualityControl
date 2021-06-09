@@ -78,6 +78,22 @@
           }
         ]
       },
+      "CheckDRMDiagnostics": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckDRMDiagnostics",
+        "moduleName": "QcTOF",
+        "detectorName": "TOF",
+        "policy": "OnAny",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskRaw",
+            "MOs": [
+              "DRMCounter"
+            ]
+          }
+        ]
+      },
       "CheckCompressedData": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::CheckCompressedData",

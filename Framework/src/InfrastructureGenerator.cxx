@@ -29,6 +29,7 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/ExternalFairMQDeviceProxy.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
+#include <Framework/O2ControlLabels.h>
 #include <Mergers/MergerInfrastructureBuilder.h>
 #include <Mergers/MergerBuilder.h>
 #include <DataSampling/DataSampling.h>
@@ -285,6 +286,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxy(framework::Wo
       inputSpecs,
       channelConfig.c_str(),
       channelSelector));
+  workflow.back().labels.emplace_back(ecs::uniqueProxyLabel);
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxy(framework::WorkflowSpec& workflow,
@@ -304,6 +306,7 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxy(framework::W
     outputSpecs,
     channelConfig.c_str(),
     dplModelAdaptor()));
+  workflow.back().labels.emplace_back(ecs::uniqueProxyLabel);
 }
 
 void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow, size_t id,
@@ -321,6 +324,7 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
       proxyName.c_str(),
       { proxyInput },
       channelConfig.c_str()));
+  workflow.back().labels.emplace_back(ecs::uniqueProxyLabel);
 }
 
 void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSpec& workflow, std::string taskName,
@@ -343,6 +347,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
     proxyOutputs,
     channelConfig.c_str(),
     dplModelAdaptor()));
+  workflow.back().labels.emplace_back(ecs::uniqueProxyLabel);
 }
 
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName,

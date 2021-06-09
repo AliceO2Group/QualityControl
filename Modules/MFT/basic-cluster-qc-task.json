@@ -61,7 +61,7 @@
       "id": "mft-clusters",
       "active": "true",
       "machines": [],
-      "query": "randomcluster:MFT/CLUSTERS/0",
+      "query": "randomcluster:MFT/COMPCLUSTERS/0;clustersrof:MFT/CLUSTERSROF/0",
       "samplingConditions": [
         {
           "condition": "random",

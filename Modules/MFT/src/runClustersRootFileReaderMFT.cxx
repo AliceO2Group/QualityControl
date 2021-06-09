@@ -101,8 +101,8 @@ class ClustersRootFileReaderMFT : public o2::framework::Task
 
     // fill in the message
     // LOG(INFO) << " ClustersRootFileReaderMFT::run. In this ROF there are  " << ClustersInROF.size() << " clusters";
-    pc.outputs().snapshot(Output{ "MFT", "CLUSTERS", 0, Lifetime::Timeframe }, *ClustersInROF);
-    pc.outputs().snapshot(Output{ "MFT", "MFTClusterROF", 0, Lifetime::Timeframe }, *oneROFvec);
+    pc.outputs().snapshot(Output{ "MFT", "COMPCLUSTERS", 0, Lifetime::Timeframe }, *ClustersInROF);
+    pc.outputs().snapshot(Output{ "MFT", "CLUSTERSROF", 0, Lifetime::Timeframe }, *oneROFvec);
   }
 
  private:
@@ -117,8 +117,8 @@ WorkflowSpec defineDataProcessing(const ConfigContext&)
 
   // define the outputs
   std::vector<OutputSpec> outputs;
-  outputs.emplace_back("MFT", "CLUSTERS", 0, Lifetime::Timeframe);
-  outputs.emplace_back("MFT", "MFTClusterROF", 0, Lifetime::Timeframe);
+  outputs.emplace_back("MFT", "COMPCLUSTERS", 0, Lifetime::Timeframe);
+  outputs.emplace_back("MFT", "CLUSTERSROF", 0, Lifetime::Timeframe);
 
   // The producer to generate some data in the workflow
   DataProcessorSpec producer{

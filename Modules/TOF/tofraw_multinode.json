@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "TaskRawLocal": {
+      "TaskRaw": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskRaw",
         "moduleName": "QcTOF",
@@ -76,7 +76,7 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskRawLocal",
+            "name": "TaskRaw",
             "MOs": [
               "RDHCounterCrate0"
             ]
@@ -95,7 +95,7 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskRawLocal",
+            "name": "TaskRaw",
             "MOs": [
               "hDiagnostic"
             ]
