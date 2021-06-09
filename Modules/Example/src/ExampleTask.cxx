@@ -70,7 +70,6 @@ void ExampleTask::startOfActivity(Activity& activity)
       mHisto->Reset();
     }
   }
-  mCustomTH2F->Reset();
 }
 
 void ExampleTask::startOfCycle()
