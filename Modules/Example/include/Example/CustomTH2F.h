@@ -45,7 +45,7 @@ class CustomTH2F : public TH2F, public o2::mergers::MergeInterface
   {
     auto otherHisto = dynamic_cast<const TH2F* const>(other);
     if (otherHisto) {
-      this->Merge(otherHisto);
+      this->Add(otherHisto);
     }
   }
 
