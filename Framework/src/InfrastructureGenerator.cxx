@@ -176,7 +176,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   if (config->getRecursive("qc").count("tasks")) {
     TaskRunnerFactory taskRunnerFactory;
     for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
-      if (taskConfig.get<bool>("active", true)) {
+      if (!taskConfig.get<bool>("active", true)) {
         ILOG(Info, Devel) << "Task " << taskName << " is disabled, ignoring." << ENDM;
         continue;
       }
