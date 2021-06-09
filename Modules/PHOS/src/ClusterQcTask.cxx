@@ -64,7 +64,7 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeom = o2::phos::Geometry::GetInstance("Run3");
 
   //TODO: configure reading bad map from CCDB
-  mBadMap.reset(new o2::phos::BadChannelMap());
+  mBadMap.reset(new o2::phos::BadChannelsMap());
 
   //Prepare histograms
   for (Int_t mod = 0; mod < 4; mod++) {

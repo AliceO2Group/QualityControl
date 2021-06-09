@@ -18,8 +18,8 @@
 #define QC_MODULE_PHOS_QCCLUSTERTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "DataFormatsPHOS//Cluster.h"
-#include "PHOSCalib/BadChannelMap.h"
+#include "DataFormatsPHOS/Cluster.h"
+#include "DataFormatsPHOS/BadChannelsMap.h"
 #include "PHOSBase/Geometry.h"
 #include <TLorentzVector.h>
 #include <memory>
@@ -82,7 +82,7 @@ class ClusterQcTask final : public TaskInterface
   std::array<TH2F*, kNhist2D> mHist2D = { nullptr }; ///< Array of 2D histograms
   std::vector<TLorentzVector> mBuffer[4];            /// Keep photons per event per module
   o2::phos::Geometry* mGeom;                         /// Pointer to PHOS singleton geometry
-  std::unique_ptr<o2::phos::BadChannelMap> mBadMap;  /// bad map
+  std::unique_ptr<o2::phos::BadChannelsMap> mBadMap; /// bad map
 };
 
 } // namespace o2::quality_control_modules::phos
