@@ -1,7 +1,13 @@
 # ---- Library ----
 
-add_library(O2QcExample src/BenchmarkTask.cxx src/ExampleTask.cxx src/AnalysisTask.cxx
-                      src/FakeCheck.cxx src/ExampleCondition.cxx)
+add_library(O2QcExample
+  src/BenchmarkTask.cxx
+  src/ExampleTask.cxx
+  src/AnalysisTask.cxx
+  src/FakeCheck.cxx
+  src/ExampleCondition.cxx
+  src/CustomTH2F.cxx
+  )
 
 target_include_directories(
   O2QcExample
@@ -17,6 +23,7 @@ add_root_dictionary(O2QcExample
                             include/Example/ExampleTask.h
                             include/Example/FakeCheck.h
                             include/Example/ExampleCondition.h
+                            include/Example/CustomTH2F.h
                     LINKDEF include/Example/LinkDef.h
                     BASENAME O2QcExample)
 

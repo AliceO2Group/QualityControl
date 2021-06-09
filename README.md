@@ -64,6 +64,8 @@ For a general overview of our (O2) software, organization and processes, please 
     * [Writing a DPL data producer](doc/Advanced.md#writing-a-dpl-data-producer)
     * [Access run conditions and calibrations from the CCDB](doc/Advanced.md#access-run-conditions-and-calibrations-from-the-ccdb)
     * [Definition and access of task-specific configuration](doc/Advanced.md#definition-and-access-of-task-specific-configuration)
+    * [Custom metadata](#custom-metadata)
+    * [Display a non-standard ROOT object in QCG](#display-a-non-standard-root-object-in-qcg)
     * [Custom QC object metadata](doc/Advanced.md#custom-qc-object-metadata)
     * [Canvas options](doc/Advanced.md#canvas-options)
     * [QC with DPL Analysis](doc/Advanced.md#qc-with-dpl-analysis)
@@ -73,6 +75,7 @@ For a general overview of our (O2) software, organization and processes, please 
     * [Local QCG (QC GUI) setup](doc/Advanced.md#local-qcg-qc-gui-setup)
     * [FLP Suite](doc/Advanced.md#flp-suite)
     * [Configuration files details](doc/Advanced.md#configuration-files-details)
+    * [Data Sampling monitoring](#data-sampling-monitoring)
 
 ### Where to get help
 

@@ -15,6 +15,8 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::example
 {
 
+class CustomTH2F;
+
 /// \brief Example Quality Control Task
 /// It is final because there is no reason to derive from it. Just remove it if needed.
 /// \author Barthelemy von Haller
@@ -43,6 +45,7 @@ class ExampleTask final : public TaskInterface
   int mNumberCycles;
   TH1F* mHistos[25];
   void publishHisto(int i);
+  CustomTH2F* mCustomTH2F;
 };
 
 } // namespace o2::quality_control_modules::example
