@@ -376,7 +376,7 @@ std::string TaskRunner::validateDetectorName(std::string name) const
   int nDetectors = 16;
   const char* detNames[16] = // once we can use DetID, remove this hard-coded list
     { "ITS", "TPC", "TRD", "TOF", "PHS", "CPV", "EMC", "HMP", "MFT", "MCH", "MID", "ZDC", "FT0", "FV0", "FDD", "ACO" };
-  vector<string> permitted = { "MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS" };
+  vector<string> permitted = { "MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS", "REC" };
   for (auto i = 0; i < nDetectors; i++) {
     permitted.push_back(detNames[i]);
     //    permitted.push_back(o2::detectors::DetID::getName(i));
