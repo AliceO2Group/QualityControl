@@ -113,9 +113,9 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   mDecoder->init();
   mDecoder->setVerbosity(2); // this is for Debug
 
- //for (auto&& input : ctx.inputs()) {
- for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
-        // get message header
+  //for (auto&& input : ctx.inputs()) {
+  for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
+    // get message header
     if (input.header != nullptr && input.payload != nullptr) {
       const auto* header = header::get<header::DataHeader*>(input.header);
       int32_t* ptrToPayload = (int32_t*)(input.payload);
