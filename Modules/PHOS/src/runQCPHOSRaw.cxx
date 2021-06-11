@@ -75,7 +75,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
 std::string getConfigPath(const o2::framework::ConfigContext& config)
 {
   std::string userConfigPath = config.options().get<std::string>("config-path");
-  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ? std::string(getenv("QUALITYCONTROL_ROOT")) + "/Modules/PHOS/etc/raw.json" : "$QUALITYCONTROL_ROOT undefined";
+  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ? std::string(getenv("QUALITYCONTROL_ROOT")) + "/Modules/PHOS/etc/phosRaw.json" : "$QUALITYCONTROL_ROOT undefined";
   std::string path = userConfigPath == "" ? defaultConfigPath : userConfigPath;
   const std::string qcConfigurationSource = std::string("json:/") + path;
   return qcConfigurationSource;

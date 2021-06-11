@@ -2,7 +2,11 @@
 
 add_library(O2QcPHOS)
 
-target_sources(O2QcPHOS PRIVATE src/RawQcTask.cxx src/RawCheck.cxx src/ClusterQcTask.cxx src/ClusterCheck.cxx)
+target_sources(O2QcPHOS PRIVATE src/RawQcTask.cxx 
+                                src/RawCheck.cxx 
+                                src/ClusterQcTask.cxx 
+                                src/ClusterCheck.cxx
+                                src/CalibQcTask.cxx)
 
 target_include_directories(
   O2QcPHOS
@@ -17,6 +21,7 @@ add_root_dictionary(O2QcPHOS
 		            include/PHOS/ClusterCheck.h
                             include/PHOS/RawQcTask.h
                             include/PHOS/RawCheck.h
+                            include/PHOS/CalibQcTask.h
                     LINKDEF include/PHOS/LinkDef.h
                     BASENAME O2QcPHOS)
 
@@ -55,3 +60,10 @@ install(
 #    PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
 #  set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
 #endforeach()
+
+# ---- Install config files ----
+
+install(FILES etc/phosCalib.json
+              etc/phosPedestal.json
+              etc/phosRaw.json
+        DESTINATION etc)

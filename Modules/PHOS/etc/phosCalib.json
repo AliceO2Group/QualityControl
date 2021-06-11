@@ -1,0 +1,44 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://localhost:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "QcCalibTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::phos::CalibQcTask",
+        "moduleName": "QcPHOS",
+        "detectorName": "PHS",
+        "cycleDurationSeconds": "1000",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query" :"CALIBDIFF:PHS/CALIBDIFF/0"
+        },
+        "taskParameters": {
+          "pedestal": "on"    
+        },
+        "location": "remote"
+      }
+    }
+  }
+}

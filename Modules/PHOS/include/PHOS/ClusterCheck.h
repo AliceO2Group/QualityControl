@@ -17,8 +17,8 @@
 #define QC_MODULE_PHOS_PHOSCLUSTERCHECK_H
 
 #include "QualityControl/CheckInterface.h"
-#include "DataFormatsPHOS//Cluster.h"
-#include "PHOSCalib/BadChannelMap.h"
+#include "DataFormatsPHOS/Cluster.h"
+#include "DataFormatsPHOS/BadChannelsMap.h"
 #include "PHOSBase/Geometry.h"
 
 namespace o2::quality_control_modules::phos
@@ -46,7 +46,7 @@ class ClusterCheck : public o2::quality_control::checker::CheckInterface
   static constexpr int kNoisyThreshold = 2;   /// Number of new noisy channels per module to send warning
   static constexpr int kMaxUccupancyCut = 10; /// occupancy in noisy channel wrt mean over module
 
-  std::unique_ptr<o2::phos::BadChannelMap> mBadMap; /// bad map
+  std::unique_ptr<o2::phos::BadChannelsMap> mBadMap; /// bad map
   ClassDefOverride(ClusterCheck, 1);
 };
 

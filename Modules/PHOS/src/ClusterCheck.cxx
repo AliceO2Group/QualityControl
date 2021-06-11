@@ -33,7 +33,7 @@ void ClusterCheck::configure(std::string)
 {
 
   //TODO: configure reading bad map from CCDB
-  mBadMap.reset(new o2::phos::BadChannelMap());
+  mBadMap.reset(new o2::phos::BadChannelsMap());
 }
 
 Quality ClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
