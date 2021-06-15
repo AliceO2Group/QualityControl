@@ -199,7 +199,7 @@ should be specified, so data samples can be correctly dispatched.
           "name": "rnd-little"
         },
         "taskParameters": {},
-        "location": "remote"
+        "location": "remote",
         "localControl": "aliecs",
       }
     }
