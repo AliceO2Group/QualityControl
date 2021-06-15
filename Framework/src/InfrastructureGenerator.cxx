@@ -196,7 +196,6 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
         }
         generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, remotePort.value_or(defaultRemotePort));
 
-
         generateMergers(workflow, taskName, numberOfLocalMachines,
                         taskConfig.get<double>("cycleDurationSeconds"),
                         taskConfig.get<std::string>("mergingMode", "delta"),
