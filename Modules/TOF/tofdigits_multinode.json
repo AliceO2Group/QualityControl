@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "TaskDigitsLocal": {
+      "TaskDigits": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskDigits",
         "moduleName": "QcTOF",
@@ -76,7 +76,7 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskDigitsLocal",
+            "name": "TaskDigits",
             "MOs": [
               "TOFRawsMulti"
             ]

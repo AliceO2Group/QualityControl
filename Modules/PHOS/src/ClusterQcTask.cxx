@@ -64,7 +64,7 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeom = o2::phos::Geometry::GetInstance("Run3");
 
   //TODO: configure reading bad map from CCDB
-  mBadMap.reset(new o2::phos::BadChannelMap());
+  mBadMap.reset(new o2::phos::BadChannelsMap());
 
   //Prepare histograms
   for (Int_t mod = 0; mod < 4; mod++) {
@@ -156,10 +156,10 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       float e = clu.getEnergy();
       if (e > mOccCut) {
-        mHist2D[kOccupancyM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5);
+        mHist2D[kOccupancyM1 + mod - 1]->Fill(relid[1] - 0.5, relid[2] - 0.5);
       }
-      mHist2D[kTimeEM1 + mod]->Fill(e, clu.getTime());
-      mHist1D[kSpectrumM1 + mod]->Fill(e);
+      mHist2D[kTimeEM1 + mod - 1]->Fill(e, clu.getTime());
+      mHist1D[kSpectrumM1 + mod - 1]->Fill(e);
 
       if (!checkCluster(clu)) {
         continue;
@@ -169,13 +169,13 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mGeom->local2Global(mod, posX, posZ, vec3);
       double norm = vec3.Mag();
       TLorentzVector v(vec3.X() * e / norm, vec3.Y() * e / norm, vec3.Z() * e / norm, e);
-      for (const TLorentzVector& v2 : mBuffer[mod]) {
+      for (const TLorentzVector& v2 : mBuffer[mod - 1]) {
         TLorentzVector sum = v + v2;
         if (sum.Pt() > mPtMin) {
-          mHist1D[kPi0M1 + mod]->Fill(sum.M());
+          mHist1D[kPi0M1 + mod - 1]->Fill(sum.M());
         }
       }
-      mBuffer[mod].emplace_back(v);
+      mBuffer[mod - 1].emplace_back(v);
     }
   }
 

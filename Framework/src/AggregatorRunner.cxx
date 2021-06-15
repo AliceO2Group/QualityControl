@@ -113,6 +113,8 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
   try {
     // registering state machine callbacks
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
   } catch (o2::framework::RuntimeErrorRef& ref) {
     ILOG(Error) << "Error during initialization: " << o2::framework::error_from_ref(ref).what << ENDM;
   }
@@ -327,6 +329,27 @@ void AggregatorRunner::start(const ServiceRegistry& services)
 {
   mRunNumber = computeRunNumber(services, mConfigFile->getRecursive());
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+}
+
+
+void AggregatorRunner::stop()
+{
+  ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
+}
+
+void AggregatorRunner::reset()
+{
+  ILOG(Info, Ops) << "Reset" << ENDM;
+
+  try {
+    mCollector.reset();
+    mRunNumber = 0;
+  } catch (...) {
+    // we catch here because we don't know where it will go in DPL's CallbackService
+    ILOG(Error, Support) << "Error caught in reset() :\n"
+                         << current_diagnostic(true) << ENDM;
+    throw;
+  }
 }
 
 } // namespace o2::quality_control::checker

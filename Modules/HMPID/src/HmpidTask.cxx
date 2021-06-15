@@ -17,6 +17,7 @@
 #include <TH1.h>
 #include <TMath.h>
 #include <Framework/InputRecord.h>
+#include <Framework/InputRecordWalker.h>
 
 #include "QualityControl/QcInfoLogger.h"
 //#include "HMPID/HmpidDecodeRawMem.h"
@@ -112,7 +113,8 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   mDecoder->init();
   mDecoder->setVerbosity(2); // this is for Debug
 
-  for (auto&& input : ctx.inputs()) {
+  //for (auto&& input : ctx.inputs()) {
+  for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
       const auto* header = header::get<header::DataHeader*>(input.header);
@@ -134,7 +136,6 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
           hBusyTime->SetBinContent(eq + 1, mDecoder->getAverageBusyTime(eq) * 1000000);
           hBusyTime->SetBinError(eq + 1, 0.00000001);
         }
-        Printf("eq = %i, size = %f, busy = %f", eq, mDecoder->getAverageEventSize(eq), mDecoder->getAverageBusyTime(eq));
         for (Int_t column = 0; column < 24; column++) {
           for (Int_t dilogic = 0; dilogic < 10; dilogic++) {
             for (Int_t channel = 0; channel < 48; channel++) {

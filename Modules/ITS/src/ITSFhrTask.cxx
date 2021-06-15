@@ -47,6 +47,8 @@ ITSFhrTask::~ITSFhrTask()
   delete mInfoCanvasOBComm;
   delete mTextForShifter;
   delete mTextForShifter2;
+  delete mTextForShifterOB;
+  delete mTextForShifterOB2;
   delete mGeom;
   delete mChipStaveOccupancy[mLayer];
   delete mChipStaveEventHitCheck[mLayer];
@@ -76,7 +78,7 @@ ITSFhrTask::~ITSFhrTask()
 void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info) << "initialize ITSFhrTask" << ENDM;
-  getEnableLayers();
+  getParameters();
   o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   mGeom = o2::its::GeometryTGeo::Instance();
 
@@ -184,7 +186,13 @@ void ITSFhrTask::createGeneralPlots()
   mInfoCanvasOBComm->GetYaxis()->SetBinLabel(4, "ibb");
 
   mTextForShifter = new TText(.5, 1.5, "DarkGreen -> Processing");
+  mTextForShifterOB = new TText(.5, 1.5, "DarkGreen -> Processing");
   mTextForShifter2 = new TText(.5, 1.2, "Yellow    -> Finished");
+  mTextForShifterOB2 = new TText(.5, 1.2, "Yellow    -> Finished");
+  mTextForShifter->SetNDC();
+  mTextForShifterOB->SetNDC();
+  mTextForShifter2->SetNDC();
+  mTextForShifterOB2->SetNDC();
 
   mInfoCanvasComm->SetStats(0);
   mInfoCanvasComm->GetListOfFunctions()->Add(mTextForShifter);
@@ -192,8 +200,8 @@ void ITSFhrTask::createGeneralPlots()
   getObjectsManager()->startPublishing(mInfoCanvasComm);
 
   mInfoCanvasOBComm->SetStats(0);
-  mInfoCanvasOBComm->GetListOfFunctions()->Add(mTextForShifter);
-  mInfoCanvasOBComm->GetListOfFunctions()->Add(mTextForShifter2);
+  mInfoCanvasOBComm->GetListOfFunctions()->Add(mTextForShifterOB);
+  mInfoCanvasOBComm->GetListOfFunctions()->Add(mTextForShifterOB2);
   getObjectsManager()->startPublishing(mInfoCanvasOBComm);
 
   createErrorTriggerPlots();
@@ -327,13 +335,16 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
   start = std::chrono::high_resolution_clock::now();
-
   //get TF id by dataorigin and datadescription
   const InputSpec TFIdFilter{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA1" }, Lifetime::Timeframe }; //after Data Sampling the dataorigin will become to "DS" and the datadescription will become  to "RAWDATAX"
-  for (auto& input : ctx.inputs()) {
-    if (DataRefUtils::match(input, TFIdFilter)) {
-      mTimeFrameId = (int)*input.payload;
+  if (!mGetTFFromBinding) {
+    for (auto& input : ctx.inputs()) {
+      if (DataRefUtils::match(input, TFIdFilter)) {
+        mTimeFrameId = (unsigned int)*input.payload;
+      }
     }
+  } else {
+    mTimeFrameId = ctx.inputs().get<int>("G");
   }
 
   //set Decoder
@@ -424,17 +435,21 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           mHitnumber[stave][chip]++;
         } else {
           mGeom->getChipId(mChipDataBuffer->getChipID(), layer, stave, ssta, mod, chip);
-          hic = mod + ssta * 7;
+          if (lay == 3 || lay == 4) {
+            hic = mod + ssta * 4;
+          } else {
+            hic = mod + ssta * 7;
+          }
           mHitnumber[stave][hic]++;
         }
         digVec[stave][hic].emplace_back(mChipDataBuffer->getChipID(), pixel.getRow(), pixel.getCol());
       }
       if (lay < NLayerIB) {
-        if (pixels.size() > 100) {
+        if (pixels.size() > (unsigned int)mHitCutForCheck) {
           mChipStaveEventHitCheck[lay]->Fill(chip, stave);
         }
       } else {
-        if (pixels.size() > 100) {
+        if (pixels.size() > (unsigned int)mHitCutForCheck) {
           mChipStaveEventHitCheck[lay]->Fill(mod + (ssta * (nHicPerStave[lay] / 2)), stave);
         }
       }
@@ -525,7 +540,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
             totalhit += (int)iter->second;
             occupancyPlotTmp[i]->Fill(log10((double)iter->second / GBTLinkInfo->statistics.nTriggers));
           }
-          mOccupancy[istave][ichip] = (double)mHitnumber[istave][ichip] / (GBTLinkInfo->statistics.nTriggers * 1024 * 512);
+          mOccupancy[istave][ichip] = mHitnumber[istave][ichip] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512.);
         }
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
           if (GBTLinkInfo->statistics.errorCounts[ierror] <= 0) {
@@ -557,7 +572,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
               }
             }
           }
-          mOccupancy[istave][ihic + (ilink * 7)] = mHitnumber[istave][ihic + (ilink * 7)] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay]);
+          if (lay == 3 || lay == 4) {
+            mOccupancy[istave][ihic + (ilink * 4)] = mHitnumber[istave][ihic + (ilink * 4)] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay]);
+          } else {
+            mOccupancy[istave][ihic + (ilink * 7)] = mHitnumber[istave][ihic + (ilink * 7)] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay]);
+          }
         }
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
           if (GBTLinkInfo->statistics.errorCounts[ierror] <= 0) {
@@ -613,7 +632,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     delete occupancyPlotTmp[i];
   }
   delete[] occupancyPlotTmp;
-
+  //temporarily reverting to get TFId by querying binding
+  //  mTimeFrameId = ctx.inputs().get<int>("G");
   //Timer LOG
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
@@ -623,20 +643,14 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   ILOG(Info) << "time until thread all end is " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
 }
 
-void ITSFhrTask::getEnableLayers()
+void ITSFhrTask::getParameters()
 {
   mNThreads = std::stoi(mCustomParameters["decoderThreads"]);
   mLayer = std::stoi(mCustomParameters["Layer"]);
+  mHitCutForCheck = std::stoi(mCustomParameters["HitNumberCut"]);
+  mGetTFFromBinding = std::stoi(mCustomParameters["GetTFFromBinding"]);
   mRunNumberPath = mCustomParameters["runNumberPath"];
   mGeomPath = mCustomParameters["geomPath"];
-  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-    if (mCustomParameters["layer"][ilayer] != '0') {
-      mEnableLayers[ilayer] = 1;
-      ILOG(Info) << "enable layer : " << ilayer << ENDM;
-    } else {
-      mEnableLayers[ilayer] = 0;
-    }
-  }
 }
 
 void ITSFhrTask::endOfCycle()

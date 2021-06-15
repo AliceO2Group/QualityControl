@@ -96,7 +96,6 @@ target_link_libraries(O2QualityControl
                              Boost::container
                              O2::Framework
                              O2::CCDB
-                             O2::MCHBase
                              O2QualityControlTypes
                              O2::Mergers
                              O2::DataSampling
@@ -104,10 +103,6 @@ target_link_libraries(O2QualityControl
                       PRIVATE Boost::system
                               ROOT::Gui
                               CURL::libcurl)
-
-if (TARGET AliceO2::DebugGUI)
-  target_link_libraries(O2QualityControl PUBLIC AliceO2::DebugGUI)
-endif()
 
 add_root_dictionary(O2QualityControl
   HEADERS
@@ -130,7 +125,6 @@ set(EXE_SRCS
   src/runBasic.cxx
   src/runAdvanced.cxx
   src/runReadout.cxx
-  src/runReadoutForDataDump.cxx
   src/runRepositoryBenchmark.cxx
   src/runPostProcessing.cxx
   src/runPostProcessingOCC.cxx
@@ -145,7 +139,6 @@ set(EXE_NAMES
   o2-qc-run-basic
   o2-qc-run-advanced
   o2-qc-run-readout
-  o2-qc-run-readout-for-data-dump
   o2-qc-repository-benchmark
   o2-qc-run-postprocessing
   o2-qc-run-postprocessing-occ
@@ -189,21 +182,6 @@ foreach(i RANGE ${count})
   target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl ROOT::Tree)
   install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
-
-# ---- Gui ----
-
-set(DATADUMP "")
-if(TARGET AliceO2::DebugGUI)
-  set(DATADUMP "o2-qc-data-dump")
-
-  set(GUI_SRCS src/DataDumpGui.cxx src/runDataDump.cxx)
-
-  add_executable(${DATADUMP} ${GUI_SRCS})
-
-  target_link_libraries(${DATADUMP} PRIVATE O2QualityControl AliceO2::DebugGUI)
-else()
-  message(STATUS "DebugGUI not found, ${DATADUMP} will not be built")
-endif()
 
 # ---- Tests ----
 
@@ -339,7 +317,7 @@ set_property(TEST multinode_test PROPERTY TIMEOUT 60)
 #set_property(TEST testWorkflow PROPERTY LABELS manual)
 #set_property(TEST testCheckWorkflow PROPERTY LABELS manual)
 
-# ---- Install ----
+# ---- Install ---- 
 
 # Build targets with install rpath on Mac to dramatically speed up installation
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
@@ -355,7 +333,7 @@ endif()
 unset(isSystemDir)
 
 # Install library and binaries
-install(TARGETS O2QualityControl O2QualityControlTypes ${EXE_NAMES} ${DATADUMP}
+install(TARGETS O2QualityControl O2QualityControlTypes ${EXE_NAMES}
         EXPORT QualityControlTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -396,7 +374,6 @@ install(
 
 install(FILES example-default.json
               alfa.json
-              dataDump.json
               basic.json
               basic-aggregator.json
               basic-external-histo.json
@@ -407,18 +384,23 @@ install(FILES example-default.json
               multiNode.json
               readout.json
               readout-no-sampling.json
-              readoutForDataDump.json
               postprocessing.json
               script/RepoCleaner/config.yaml
               streamerinfos.root
               streamerinfos_v017.root
         DESTINATION etc)
 
-install(PROGRAMS script/RepoCleaner/rules/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/rules/skip.py
-                 script/RepoCleaner/repoCleaner.py script/RepoCleaner/rules/1_per_run.py script/RepoCleaner/rules/none_kept.py
-  script/o2-qc-functional-test.sh
-  script/o2-qc-multinode-test.sh
+install(PROGRAMS script/RepoCleaner/o2-qc-repo-cleaner
+                 script/o2-qc-functional-test.sh
+                 script/o2-qc-multinode-test.sh
         DESTINATION bin)
+
+install(FILES script/RepoCleaner/rules/1_per_hour.py
+              script/RepoCleaner/Ccdb.py
+              script/RepoCleaner/rules/skip.py
+              script/RepoCleaner/rules/1_per_run.py
+              script/RepoCleaner/rules/none_kept.py
+        DESTINATION lib)
 
 # ---- Copy test files ----
 #

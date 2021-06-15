@@ -195,7 +195,10 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 void RawQcTask::endOfCycle()
 {
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-  if (mMode == 1) { //Pedestals
+  if (mMode == 1) {   //Pedestals
+    if (mFinalized) { //means were already calculated
+      return;
+    }
     for (Int_t mod = 0; mod < 4; mod++) {
       if (mHist2D[kHGmeanM1 + mod]) {
         mHist2D[kHGmeanM1 + mod]->Divide(mHist2D[kHGoccupM1 + mod]);
@@ -256,11 +259,13 @@ void RawQcTask::endOfCycle()
         mHist2D[kLGoccupM1 + mod]->SetMaximum(occMax);
       }
     }
+    mFinalized = true;
   }
 }
 
 void RawQcTask::endOfActivity(Activity& /*activity*/)
 {
+  endOfCycle();
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
@@ -292,21 +297,22 @@ void RawQcTask::FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cel
       float e = c.getEnergy();
       if (e > kOcccupancyTh) {
         // Converts the absolute numbering into the following array
-        //  relid[0] = PHOS Module number 1:module
+        //  relid[0] = PHOS Module number 1,...4:module
         //  relid[1] = Row number inside a PHOS module (Phi coordinate)
         //  relid[2] = Column number inside a PHOS module (Z coordinate)
         char relid[3];
         o2::phos::Geometry::absToRelNumbering(address, relid);
-        int ibin = mHist2D[kCellOccupM1 + relid[0]]->FindBin(relid[1] - 0.5, relid[2] - 0.5);
+        short mod = relid[0] - 1;
+        int ibin = mHist2D[kCellOccupM1 + mod]->FindBin(relid[1] - 0.5, relid[2] - 0.5);
         float emean = e;
-        float n = mHist2D[kCellOccupM1 + relid[0]]->GetBinContent(ibin);
+        float n = mHist2D[kCellOccupM1 + mod]->GetBinContent(ibin);
         if (n > 0) {
-          emean = (e + mHist2D[kCellEM1 + relid[0]]->GetBinContent(ibin) * n) / (n + 1);
+          emean = (e + mHist2D[kCellEM1 + mod]->GetBinContent(ibin) * n) / (n + 1);
         }
-        mHist2D[kCellEM1 + relid[0]]->SetBinContent(ibin, emean);
-        mHist2D[kCellOccupM1 + relid[0]]->AddBinContent(ibin);
-        mHist2D[kTimeEM1 + relid[0]]->Fill(e, c.getTime());
-        mHist1D[kCellSpM1 + relid[0]]->Fill(e);
+        mHist2D[kCellEM1 + mod]->SetBinContent(ibin, emean);
+        mHist2D[kCellOccupM1 + mod]->AddBinContent(ibin);
+        mHist2D[kTimeEM1 + mod]->Fill(e, c.getTime());
+        mHist1D[kCellSpM1 + mod]->Fill(e);
       }
     }
   }
@@ -314,6 +320,13 @@ void RawQcTask::FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cel
 
 void RawQcTask::FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& cells, const gsl::span<const o2::phos::TriggerRecord>& cellsTR)
 {
+  if (mFinalized) {
+    for (Int_t mod = 0; mod < 4; mod++) {
+      mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+      mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+    }
+    mFinalized = false;
+  }
 
   for (const auto& tr : cellsTR) {
     int firstCellInEvent = tr.getFirstEntry();
@@ -323,14 +336,15 @@ void RawQcTask::FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& ce
       short address = c.getAbsId();
       char relid[3];
       o2::phos::Geometry::absToRelNumbering(address, relid);
+      short mod = relid[0] - 1;
       if (c.getHighGain()) {
-        mHist2D[kHGmeanM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
-        mHist2D[kHGrmsM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime()); //to store in Cells format
-        mHist2D[kHGoccupM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5);
+        mHist2D[kHGmeanM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
+        mHist2D[kHGrmsM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime()); //to store in Cells format
+        mHist2D[kHGoccupM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5);
       } else {
-        mHist2D[kLGmeanM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
-        mHist2D[kLGrmsM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime());
-        mHist2D[kLGoccupM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5);
+        mHist2D[kLGmeanM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
+        mHist2D[kLGrmsM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime());
+        mHist2D[kLGoccupM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5);
       }
     }
   }
@@ -342,7 +356,7 @@ void RawQcTask::CreatePedestalHistograms()
 
   for (Int_t mod = 0; mod < 4; mod++) {
     if (!mHist2D[kHGmeanM1 + mod]) {
-      mHist2D[kHGmeanM1 + mod] = new TH2F(Form("PedHGmean%d", mod + 1), Form("Pedestal mean High Gain, mod %d", mod), 64, 0., 64., 56, 0., 56.);
+      mHist2D[kHGmeanM1 + mod] = new TH2F(Form("PedHGmean%d", mod + 1), Form("Pedestal mean High Gain, mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
       mHist2D[kHGmeanM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
       mHist2D[kHGmeanM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
       mHist2D[kHGmeanM1 + mod]->GetXaxis()->SetTitle("x, cells");

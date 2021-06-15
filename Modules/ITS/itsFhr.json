@@ -37,6 +37,8 @@
                 "location": "remote",
                 "taskParameters": {
                     "Layer": "2",
+		    "HitNumberCut": "512",
+                    "GetTFFromBinding": "0",
                     "decoderThreads": "8",
                     "runNumberPath": "/data/shifts/runs/ibb2a/.run_counter",
                     "geomPath": "/tmp/qc_tmp/o2sim"

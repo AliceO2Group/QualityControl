@@ -34,6 +34,14 @@
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "digits"
+        },
+        "taskParameters": {
+          "feeId-config-file": "",
+          "crate-masks-file": "",
+          "electronics-delays-file": "",
+          "per-gbt": "false",
+          "per-feeId": "false",
+          "output-file": "./QCChecker-out.txt"
         }
       }
     },
@@ -57,7 +65,7 @@
       "id": "digits",
       "active": "true",
       "machines": [],
-      "query": "digits:MID/DATA/0",
+      "query": "digits:MID/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",

@@ -192,6 +192,8 @@ void CheckRunner::init(framework::InitContext& iCtx)
 
     // registering state machine callbacks
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
+    iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
 
     for (auto& check : mChecks) {
       check.init();
@@ -404,7 +406,6 @@ void CheckRunner::initMonitoring()
 {
   auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
   mCollector = MonitoringFactory::Get(monitoringUrl);
-  mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
   mTimer.reset(10000000); // 10 s.
@@ -428,5 +429,26 @@ void CheckRunner::start(const ServiceRegistry& services)
   mRunNumber = computeRunNumber(services, mConfigFile->getRecursive());
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
 }
+
+void CheckRunner::stop()
+{
+  ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
+}
+
+void CheckRunner::reset()
+{
+  ILOG(Info, Ops) << "Reset" << ENDM;
+
+  try {
+    mCollector.reset();
+    mRunNumber = 0;
+  } catch (...) {
+    // we catch here because we don't know where it will go in DPL's CallbackService
+    ILOG(Error, Support) << "Error caught in reset() :\n"
+                         << current_diagnostic(true) << ENDM;
+    throw;
+  }
+}
+
 
 } // namespace o2::quality_control::checker

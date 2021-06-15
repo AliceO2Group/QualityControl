@@ -11,4 +11,6 @@
 
 #pragma link C++ class o2::quality_control_modules::phos::RawCheck + ;
 
+#pragma link C++ class o2::quality_control_modules::phos::CalibQcTask + ;
+
 #endif

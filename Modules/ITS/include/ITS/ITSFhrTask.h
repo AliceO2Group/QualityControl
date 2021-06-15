@@ -65,7 +65,7 @@ class ITSFhrTask final : public TaskInterface
   void createErrorTriggerPlots();
   void createOccupancyPlots();
   void setPlotsFormat();
-  void getEnableLayers();
+  void getParameters();
   void resetGeneralPlots();
   void resetOccupancyPlots();
   void resetObject(TH1* obj);
@@ -84,8 +84,6 @@ class ITSFhrTask final : public TaskInterface
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const int ReduceFraction = 1; //TODO: move to Config file to define this number
 
-  std::array<bool, NLayer> mEnableLayers = { false };
-
   int mNThreads = 0;
   std::unordered_map<unsigned int, int> mHitPixelID_Hash[7][48][2][14][14]; //layer, stave, substave, hic, chip
 
@@ -102,6 +100,8 @@ class ITSFhrTask final : public TaskInterface
   static constexpr int NTrigger = 13;
   int16_t partID = 0;
   int mLayer;
+  int mHitCutForCheck = 100; //Hit number cut for fired pixel check in a trigger
+  int mGetTFFromBinding = 0;
 
   std::unordered_map<unsigned int, int>*** mHitPixelID_InStave /* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;
   int** mHitnumber /* = new int*[NStaves[lay]]*/;       //IB : hitnumber[stave][chip]; OB : hitnumber[stave][hic]
@@ -121,7 +121,9 @@ class ITSFhrTask final : public TaskInterface
   TH2I* mInfoCanvasOBComm; //tmp object decidated to ITS Outer Barral commissioning
 
   TText* mTextForShifter;
+  TText* mTextForShifterOB;
   TText* mTextForShifter2;
+  TText* mTextForShifterOB2;
 
   //Occupancy and hit-map
   THnSparseI* mStaveHitmap[7][48];

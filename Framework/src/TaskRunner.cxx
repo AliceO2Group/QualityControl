@@ -30,6 +30,11 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/InputRecordWalker.h>
+#include <Framework/InputSpan.h>
+#include <Framework/RawDeviceService.h>
+
+#include <fairlogger/Logger.h>
+#include <FairMQDevice.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -100,7 +105,6 @@ void TaskRunner::init(InitContext& iCtx)
   // setup monitoring
   auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
   mCollector = MonitoringFactory::Get(monitoringUrl);
-  mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
 
@@ -152,7 +156,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
   }
 }
 
-CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::CompletionPolicy::InputSet inputs)
+CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framework::InputSpan const& inputs)
 {
   // fixme: we assume that there is one timer input and the rest are data inputs. If some other implicit inputs are
   //  added, this will break.
@@ -372,7 +376,7 @@ std::string TaskRunner::validateDetectorName(std::string name) const
   int nDetectors = 16;
   const char* detNames[16] = // once we can use DetID, remove this hard-coded list
     { "ITS", "TPC", "TRD", "TOF", "PHS", "CPV", "EMC", "HMP", "MFT", "MCH", "MID", "ZDC", "FT0", "FV0", "FDD", "ACO" };
-  vector<string> permitted = { "MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS" };
+  vector<string> permitted = { "MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS", "REC" };
   for (auto i = 0; i < nDetectors; i++) {
     permitted.push_back(detNames[i]);
     //    permitted.push_back(o2::detectors::DetID::getName(i));
@@ -411,6 +415,7 @@ void TaskRunner::endOfActivity()
 {
   Activity activity(mRunNumber,
                     mConfigFile->get<int>("qc.config.Activity.type"));
+  ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
   mTask->endOfActivity(activity);
   mObjectsManager->removeAllFromServiceDiscovery();
 
@@ -420,7 +425,7 @@ void TaskRunner::endOfActivity()
 
 void TaskRunner::startCycle()
 {
-  QcInfoLogger::GetInstance() << "cycle " << mCycleNumber << " in " << mTaskConfig.taskName << ENDM;
+  ILOG(Debug, Ops) << "Start cycle " << mCycleNumber << ENDM;
   mTask->startOfCycle();
   mNumberMessagesReceivedInCycle = 0;
   mNumberObjectsPublishedInCycle = 0;
@@ -431,6 +436,7 @@ void TaskRunner::startCycle()
 
 void TaskRunner::finishCycle(DataAllocator& outputs)
 {
+  ILOG(Debug, Ops) << "Finish cycle " << mCycleNumber << ENDM;
   mTask->endOfCycle();
 
   mNumberObjectsPublishedInCycle += publish(outputs);
@@ -491,7 +497,7 @@ void TaskRunner::publishCycleStats()
 
 int TaskRunner::publish(DataAllocator& outputs)
 {
-  ILOG(Debug, Support) << "Send data from " << mTaskConfig.taskName << " len: " << mObjectsManager->getNumberPublishedObjects() << ENDM;
+  ILOG(Info, Support) << "Publishing " << mObjectsManager->getNumberPublishedObjects() << " MonitorObjects" << ENDM;
   AliceO2::Common::Timer publicationDurationTimer;
 
   auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);
