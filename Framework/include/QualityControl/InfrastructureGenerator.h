@@ -126,21 +126,25 @@ class InfrastructureGenerator
                                                    const std::string& policyName,
                                                    const framework::Inputs& inputSpecs,
                                                    const std::string& localMachine,
-                                                   const std::string& localPort);
+                                                   const std::string& localPort,
+                                                   const std::string& control);
   static void generateDataSamplingPolicyRemoteProxy(framework::WorkflowSpec& workflow,
                                                     const std::string& policyName,
                                                     const framework::Outputs& outputSpecs,
                                                     const std::string& localMachine,
-                                                    const std::string& localPort);
+                                                    const std::string& localPort,
+                                                    const std::string& control);
   static void generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow,
                                           size_t id,
                                           std::string taskName,
                                           std::string remoteHost,
-                                          std::string remotePort);
+                                          std::string remotePort,
+                                          const std::string& control);
   static void generateLocalTaskRemoteProxy(framework::WorkflowSpec& workflow,
                                            std::string taskName,
                                            size_t numberOfLocalMachines,
-                                           std::string remotePort);
+                                           std::string remotePort,
+                                           const std::string& control);
   static void generateMergers(framework::WorkflowSpec& workflow,
                               std::string taskName,
                               size_t numberOfLocalMachines,
