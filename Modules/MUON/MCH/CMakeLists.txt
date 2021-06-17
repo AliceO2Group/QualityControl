@@ -22,6 +22,7 @@ set(HEADERS
   include/MCH/PedestalsCheck.h
   include/MCH/PhysicsCheck.h
   include/MCH/TH1MCHReductor.h
+  include/MCH/MergeableTH2Ratio.h
 )
 
 # ---- Library ----
@@ -70,6 +71,7 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/PedestalsCheck.h
                             include/MCH/TH1MCHReductor.h
                             include/MCH/sampa_header.h
+                            include/MCH/MergeableTH2Ratio.h
                     LINKDEF include/MCH/LinkDef.h)
 
 # ---- Tests ----
