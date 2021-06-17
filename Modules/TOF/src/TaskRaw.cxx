@@ -47,8 +47,22 @@ void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
 {
   mCounterRDH[rdh->feeId & 0xFF].Count(0);
 
+  //Fatal
   if ((rdh->detectorField & 0x00010000) != 0) {
     mCounterRDH[rdh->feeId & 0xFF].Count(1);
+  }
+
+  //Trigger expected and served
+  if (rdh->stop) { // if RDH close
+    int triggerserved = ((rdh->detectorField & 0xFF00070F) >> 24);
+    int triggerreceived = ((rdh->detectorField & 0x00FF070F) >> 16);
+    if (triggerserved < triggerreceived) {
+      //Trigger error
+      mCounterRDH[rdh->feeId & 0xFF].Count(2);
+    }
+    //Trigger efficiency
+    mCounterRDHTriggers[0].Add(rdh->feeId & 0xFF, triggerserved);
+    mCounterRDHTriggers[1].Add(rdh->feeId & 0xFF, triggerreceived);
   }
 }
 
@@ -370,6 +384,9 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   mHistoIndexEOIsNoise.reset(new TH1F("hIndexEOIsNoise", "Noisy Channels; index EO;Counts", RawDataDecoder::nequipments, 0., RawDataDecoder::nequipments));
   mDecoderRaw.mCounterNoisyChannels.MakeHistogram(mHistoIndexEOIsNoise.get());
   getObjectsManager()->startPublishing(mHistoIndexEOIsNoise.get());
+  mHistoRDHTriggers.reset(new TH1F("hRDHTriggers", "RDH Trigger Efficiency;Crate;Triggers_{served}/Triggers_{received}", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates));
+  mDecoderRaw.mCounterRDHTriggers[0].MakeHistogram(mHistoRDHTriggers.get());
+  getObjectsManager()->startPublishing(mHistoRDHTriggers.get());
 
   mDecoderRaw.initHistograms();
   getObjectsManager()->startPublishing(mDecoderRaw.mHistoHits.get());
@@ -432,8 +449,10 @@ void TaskRaw::endOfCycle()
       mHistoSlotParticipating->SetBinContent(crate + 1, j + 4, mDecoderRaw.mCounterTRM[crate][j].HowMany(0));
     }
     mHistoSlotParticipating->SetBinContent(crate + 1, 1, mDecoderRaw.mCounterRDH[crate].HowMany(0));
+    if (mDecoderRaw.mCounterRDHTriggers[1].HowMany(crate) != 0) {
+      mHistoRDHTriggers->SetBinContent(crate + 1, (double)mDecoderRaw.mCounterRDHTriggers[0].HowMany(crate) / mDecoderRaw.mCounterRDHTriggers[1].HowMany(crate));
+    }
   }
-
   mDecoderRaw.mCounterIndexEO.FillHistogram(mHistoIndexEO.get());
   mDecoderRaw.mCounterIndexEOInTimeWin.FillHistogram(mHistoIndexEOInTimeWin.get());
   mDecoderRaw.mCounterTimeBC.FillHistogram(mHistoTimeBC.get());
@@ -491,11 +510,12 @@ void TaskRaw::reset()
   mHistoIndexEOInTimeWin->Reset();
   mHistoTimeBC->Reset();
   mHistoIndexEOIsNoise->Reset();
+  mHistoRDHTriggers->Reset();
 
   mDecoderRaw.resetHistograms();
 }
 
-const char* RawDataDecoder::RDHDiagnosticsName[2] = { "RDH_HAS_DATA", "RDH_DECODER_FATAL" };
+const char* RawDataDecoder::RDHDiagnosticsName[3] = { "RDH_HAS_DATA", "RDH_DECODER_FATAL", "RDH_TRIGGER_ERROR" };
 
 const char* RawDataDecoder::DRMDiagnosticName[RawDataDecoder::nwords] = {
   diagnostic::DRMDiagnosticName[0],

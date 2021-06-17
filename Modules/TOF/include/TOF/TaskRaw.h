@@ -68,12 +68,12 @@ class RawDataDecoder final : public DecoderBase
   void setNoiseThreshold(std::string thresholdnoise) { mNoiseThreshold = atof(thresholdnoise.c_str()); }
 
   // Names of diagnostic counters
-  static const char* RDHDiagnosticsName[2];     /// RDH Counter names
+  static const char* RDHDiagnosticsName[3];     /// RDH Counter names
   static const char* DRMDiagnosticName[nwords]; /// DRM Counter names
   static const char* LTMDiagnosticName[nwords]; /// LTM Counter names
   static const char* TRMDiagnosticName[nwords]; /// TRM Counter names
   // Diagnostic counters
-  Counter<2, RDHDiagnosticsName> mCounterRDH[ncrates];            /// RDH Counters
+  Counter<3, RDHDiagnosticsName> mCounterRDH[ncrates];            /// RDH Counters
   Counter<nwords, DRMDiagnosticName> mCounterDRM[ncrates];        /// DRM Counters
   Counter<nwords, LTMDiagnosticName> mCounterLTM[ncrates];        /// LTM Counters
   Counter<nwords, TRMDiagnosticName> mCounterTRM[ncrates][ntrms]; /// TRM Counters
@@ -83,6 +83,7 @@ class RawDataDecoder final : public DecoderBase
   Counter<nequipments, nullptr> mCounterNoisyChannels;    /// Counter for noisy channels
   Counter<1024, nullptr> mCounterTimeBC;                  /// Counter for the Bunch Crossing Time
   Counter<91, nullptr> mCounterNoiseMap[ncrates][4];      /// Counter for the Noise Hit Map
+  Counter<ncrates, nullptr> mCounterRDHTriggers[2];       /// Counter for RDH served and received triggers
 
   /// Function to init histograms
   void initHistograms();
@@ -158,6 +159,7 @@ class TaskRaw final : public TaskInterface
   std::shared_ptr<TH1F> mHistoIndexEO;          /// Index in electronic
   std::shared_ptr<TH1F> mHistoIndexEOInTimeWin; /// Index in electronic for noise analysis
   std::shared_ptr<TH1F> mHistoIndexEOIsNoise;   /// Noise hit map x channel
+  std::shared_ptr<TH1F> mHistoRDHTriggers;      /// RDH served and received trigger efficiency
 
   // Other observables
   std::shared_ptr<TH1F> mHistoTimeBC; /// Time in Bunch Crossing
