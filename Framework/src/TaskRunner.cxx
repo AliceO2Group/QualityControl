@@ -145,7 +145,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
 
   if (timerReady) {
     finishCycle(pCtx.outputs());
-    if (mResetAfterPublish) {
+    if (mResetAfterCycles > 0 && (mCycleNumber % mResetAfterCycles == 0)) {
       mTask->reset();
     }
     if (mTaskConfig.maxNumberCycles < 0 || mCycleNumber < mTaskConfig.maxNumberCycles) {
@@ -194,7 +194,10 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   return action;
 }
 
-void TaskRunner::setResetAfterPublish(bool resetAfterPublish) { mResetAfterPublish = resetAfterPublish; }
+void TaskRunner::setResetAfterCycles(size_t n)
+{
+  mResetAfterCycles = n;
+}
 
 std::string TaskRunner::createTaskRunnerIdString()
 {

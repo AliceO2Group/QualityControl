@@ -90,7 +90,8 @@ class TaskRunner : public framework::Task
   const framework::OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
   const framework::Options getOptions() { return mOptions; };
 
-  void setResetAfterPublish(bool);
+  /// \brief Makes TaskRunner invoke TaskInterface::reset() each n cycles. n = 0 means never.
+  void setResetAfterCycles(size_t n = 0);
 
   /// \brief ID string for all TaskRunner devices
   static std::string createTaskRunnerIdString();
@@ -127,7 +128,7 @@ class TaskRunner : public framework::Task
   std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
   std::shared_ptr<monitoring::Monitoring> mCollector;
   std::shared_ptr<TaskInterface> mTask;
-  bool mResetAfterPublish = false;
+  size_t mResetAfterCycles = 0;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   int mRunNumber;
 

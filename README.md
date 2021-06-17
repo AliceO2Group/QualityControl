@@ -61,6 +61,7 @@ For a general overview of our (O2) software, organization and processes, please 
     * [Plugging the QC to an existing DPL workflow](doc/Advanced.md#plugging-the-qc-to-an-existing-dpl-workflow)
     * [Production of QC objects outside this framework](doc/Advanced.md#production-of-qc-objects-outside-this-framework)
     * [Multi-node setups](doc/Advanced.md#multi-node-setups)
+    * [Moving window](doc/Advanced.md#moving-window)
     * [Writing a DPL data producer](doc/Advanced.md#writing-a-dpl-data-producer)
     * [Access run conditions and calibrations from the CCDB](doc/Advanced.md#access-run-conditions-and-calibrations-from-the-ccdb)
     * [Definition and access of task-specific configuration](doc/Advanced.md#definition-and-access-of-task-specific-configuration)
