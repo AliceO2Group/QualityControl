@@ -16,11 +16,10 @@
 #include "MCHBase/Digit.h"
 #endif
 #include "MCH/GlobalHistogram.h"
+#include "MCH/MergeableTH2Ratio.h"
 
 class TH1F;
 class TH2F;
-
-#define MCH_FEEID_NUM 64
 
 using namespace o2::quality_control::core;
 
@@ -52,45 +51,36 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   void reset() override;
 
  private:
+  void storeOrbit(const uint64_t& orb);
   void plotDigit(const o2::mch::Digit& digit);
+  void updateOrbits();
+
+  static constexpr int sMaxFeeId = 64;
+  static constexpr int sMaxLinkId = 12;
+  static constexpr int sMaxDsId = 40;
 
   o2::mch::raw::Elec2DetMapper mElec2DetMapper;
   o2::mch::raw::Det2ElecMapper mDet2ElecMapper;
   o2::mch::raw::FeeLink2SolarMapper mFeeLink2SolarMapper;
   o2::mch::raw::Solar2FeeLinkMapper mSolar2FeeLinkMapper;
 
-  uint32_t norbits[MCH_FEEID_NUM][12];
-  uint32_t lastorbitseen[MCH_FEEID_NUM][12];
-  // Mesn Occupancy on each DE
-  double MeanOccupancyDE[1100];
-  // Mean Occupancy on each DE during the elapsed cycle, and arrays needed to compute it
-  double MeanOccupancyDECycle[1100];
-  // Arrays needed for the computation of Occupancy on elapsed cycle
-  double LastMeanNhitsDE[1100];
-  double LastMeanNorbitsDE[1100];
-  double NewMeanNhitsDE[1100];
-  double NewMeanNorbitsDE[1100];
-
-  int NbinsDE[1100];
+  uint32_t mNOrbits[sMaxFeeId][sMaxLinkId];
+  uint32_t mLastOrbitSeen[sMaxFeeId][sMaxLinkId];
 
   // 2D Histograms, using Elec view (where x and y uniquely identify each pad based on its Elec info (fee, link, de)
-  TH2F* mHistogramNHitsElec;
-  TH2F* mHistogramNorbitsElec;
-  TH2F* mHistogramOccupancyElec;
+  TH2F* mHistogramNHits[sMaxFeeId * sMaxLinkId]; // Histogram of Number of hits per LinkId and FeeId
+  TH2F* mHistogramNHitsElec;                     // Histogram of Number of hits (Elec view)
+  TH2F* mHistogramNorbitsElec;                   // Histogram of Number of orbits (Elec view)
+  MergeableTH2Ratio* mHistogramOccupancyElec;    // Mergeable object, Occupancy histogram (Elec view)
 
-  // TH1 of the Mean Occupancy on each DE, integrated or only on elapsed cycle - Sent for Trending
-  TH1F* mMeanOccupancyPerDE;
-  TH1F* mMeanOccupancyPerDECycle;
+  std::map<int, TH1F*> mHistogramADCamplitudeDE;              // Histogram of ADC distribution per DE
+  std::map<int, TH2F*> mHistogramNhitsDE[2];                  // Histogram of Number of hits (XY view)
+  std::map<int, TH2F*> mHistogramNorbitsDE[2];                // Histogram of Number of orbits (XY view)
+  std::map<int, MergeableTH2Ratio*> mHistogramOccupancyDE[2]; // Mergeable object, Occupancy histogram (XY view)
 
-  TH2F* mHistogramNhits[1100];
-  TH1F* mHistogramADCamplitude[1100];
-  std::map<int, TH1F*> mHistogramADCamplitudeDE;
-  std::map<int, TH2F*> mHistogramNhitsDE[2];
-  std::map<int, TH2F*> mHistogramNorbitsDE[2];
-  std::map<int, TH2F*> mHistogramOccupancyXY[2];
-
-  GlobalHistogram* mHistogramOccupancy[1];
-  GlobalHistogram* mHistogramOrbits[1];
+  GlobalHistogram* mHistogramNHitsAllDE;       // Global histogram (all DE) of Number of hits
+  GlobalHistogram* mHistogramOrbitsAllDE;      // Global histogram (all DE) of Number of orbits
+  MergeableTH2Ratio* mHistogramOccupancyAllDE; //Mergeable object, Global histogram (all DE) of Occupancy
 };
 
 } // namespace muonchambers
