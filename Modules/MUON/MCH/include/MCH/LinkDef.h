@@ -10,4 +10,6 @@
 #pragma link C++ class o2::quality_control_modules::muonchambers::PedestalsCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::PhysicsCheck + ;
 #pragma link C++ class o2::quality_control_modules::muonchambers::TH1MCHReductor + ;
+#pragma link C++ class o2::quality_control_modules::muonchambers::MergeableTH2Ratio + ;
+
 #endif
