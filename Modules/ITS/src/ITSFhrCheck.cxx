@@ -84,13 +84,13 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       msg->Clear();
       msg->AddText("Quality::Bad");
       msg->SetTextColor(kRed);
-      msg->AddText("Max Occupancy over 10^{-6}");
+      msg->AddText("Max Occupancy over 10^{-5}");
       msg->AddText("Please Inform SL");
     } else if (checkResult == Quality::Medium) {
       msg->Clear();
       msg->AddText("Quality::Medium");
       msg->SetTextColor(kOrange);
-      msg->AddText("Max Occupancy over 10^{-5}");
+      msg->AddText("Max Occupancy over 10^{-6}");
     }
   }
   h->GetListOfFunctions()->Add(msg);
