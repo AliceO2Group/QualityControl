@@ -22,6 +22,7 @@
 #include <TH1.h>
 #include <TList.h>
 #include <TPaveText.h>
+#include <TH2Poly.h>
 
 namespace o2::quality_control_modules::its
 {
@@ -40,6 +41,15 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
       } else {
         result = Quality::Good;
       }
+    } else if (iter->second->getName() == "General/General_Occupancy") {
+      auto* h = dynamic_cast<TH2Poly*>(iter->second->getObject());
+      result = Quality::Good;
+      if (h->GetMaximum() > pow(10, -6)) {
+        result = Quality::Medium;
+      }
+      if (h->GetMaximum() > pow(10, -5)) {
+        result = Quality::Bad;
+      }
     }
   }
   return result;
@@ -49,20 +59,39 @@ std::string ITSFhrCheck::getAcceptedType() { return "TH1"; }
 
 void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto* h = dynamic_cast<TH1D*>(mo->getObject());
+  auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
   auto* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
   msg->SetName(Form("%s_msg", mo->GetName()));
-  if (checkResult == Quality::Good) {
-    msg->Clear();
-    msg->AddText("Quality::Good");
-    msg->AddText("There is no Error found");
-    msg->SetTextColor(kGreen);
-  } else if (checkResult == Quality::Bad) {
-    msg->Clear();
-    msg->AddText("Quality::Bad");
-    msg->SetTextColor(kRed);
-    msg->AddText("Decoding ERROR detected");
-    msg->AddText("please inform SL");
+  if (mo->getName() == "General/ErrorPlots") {
+    if (checkResult == Quality::Good) {
+      msg->Clear();
+      msg->AddText("Quality::Good");
+      msg->AddText("There is no Error found");
+      msg->SetTextColor(kGreen);
+    } else if (checkResult == Quality::Bad) {
+      msg->Clear();
+      msg->AddText("Quality::Bad");
+      msg->SetTextColor(kRed);
+      msg->AddText("Decoding ERROR detected");
+      msg->AddText("please inform SL");
+    }
+  } else if (mo->getName() == "General/General_Occupancy") {
+    if (checkResult == Quality::Good) {
+      msg->Clear();
+      msg->AddText("Quality::Good");
+      msg->SetTextColor(kGreen);
+    } else if (checkResult == Quality::Bad) {
+      msg->Clear();
+      msg->AddText("Quality::Bad");
+      msg->SetTextColor(kRed);
+      msg->AddText("Max Occupancy over 10^{-6}");
+      msg->AddText("Please Inform SL");
+    } else if (checkResult == Quality::Medium) {
+      msg->Clear();
+      msg->AddText("Quality::Medium");
+      msg->SetTextColor(kOrange);
+      msg->AddText("Max Occupancy over 10^{-5}");
+    }
   }
   h->GetListOfFunctions()->Add(msg);
 }

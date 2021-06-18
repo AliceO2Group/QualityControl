@@ -27,6 +27,7 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <THnSparse.h>
+#include <TH2Poly.h>
 
 class TH1F;
 class TH2;
@@ -65,10 +66,11 @@ class ITSFhrTask final : public TaskInterface
   void createErrorTriggerPlots();
   void createOccupancyPlots();
   void setPlotsFormat();
-  void getParameters();
+  void getParameters(); //get Task parameters from json file
   void resetGeneralPlots();
   void resetOccupancyPlots();
   void resetObject(TH1* obj);
+  void getStavePoint(int layer, int stave, double* px, double* py); //prepare for fill TH2Poly, get all point for add TH2Poly bin
   //detector information
   static constexpr int NCols = 1024; //column number in Alpide chip
   static constexpr int NRows = 512;  //row number in Alpide chip
@@ -82,7 +84,9 @@ class ITSFhrTask final : public TaskInterface
   const int nChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
   //const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
-  const int ReduceFraction = 1; //TODO: move to Config file to define this number
+  const int ReduceFraction = 1;                                                                                                                                                                                                                                             //TODO: move to Config file to define this number
+  const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; //start angle of first stave in each layer
+  const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 };                                                                                                                                                                               //mid point radius
 
   int mNThreads = 0;
   std::unordered_map<unsigned int, int> mHitPixelID_Hash[7][48][2][14][14]; //layer, stave, substave, hic, chip
@@ -117,8 +121,9 @@ class ITSFhrTask final : public TaskInterface
   TH2I* mTriggerVsFeeid;
   TH1D* mTriggerPlots;
   //TH1D* mInfoCanvas;//TODO: default, not implemented yet
-  TH2I* mInfoCanvasComm;   //tmp object decidated to ITS commissioning
-  TH2I* mInfoCanvasOBComm; //tmp object decidated to ITS Outer Barral commissioning
+  TH2I* mInfoCanvasComm;      //tmp object decidated to ITS commissioning
+  TH2I* mInfoCanvasOBComm;    //tmp object decidated to ITS Outer Barral commissioning
+  TH2Poly* mGeneralOccupancy; //Max Occuapncy(chip/hic) in one stave
 
   TText* mTextForShifter;
   TText* mTextForShifterOB;

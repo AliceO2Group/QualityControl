@@ -50,8 +50,7 @@ ITSFeeTask::~ITSFeeTask()
 
 void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "Initializing the ITSFeeTask" << AliceO2::InfoLogger::InfoLogger::endm;
-  getRunNumber();
+  ILOG(Info) << "Initializing the ITSFeeTask" << ENDM;
   createFeePlots();
   setPlotsFormat();
 }
@@ -145,12 +144,13 @@ void ITSFeeTask::setPlotsFormat()
   }
 }
 
-void ITSFeeTask::startOfActivity(Activity& /*activity*/)
+void ITSFeeTask::startOfActivity(Activity& activity)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  mRunNumber = activity.mId;
 }
 
-void ITSFeeTask::startOfCycle() { QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm; }
+void ITSFeeTask::startOfCycle() { ILOG(Info) << "startOfCycle" << ENDM; }
 
 void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -218,27 +218,8 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  ILOG(Info) << "Processing time: " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
+  ILOG(Debug) << "Processing time: " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
   mProcessingTime->SetBinContent(mTimeFrameId, difference);
-}
-
-void ITSFeeTask::getRunNumber()
-{
-  std::ifstream configFile("Config/ConfigFee.dat");
-
-  if (configFile) {
-    configFile >> mRunNumberPath;
-    std::ifstream runNumberFile(mRunNumberPath);
-    if (runNumberFile) {
-      mRunNumber = "";
-      runNumberFile >> mRunNumber;
-      ILOG(Info) << "runNumber : " << mRunNumber << ENDM;
-    } else {
-      ILOG(Warning) << "Incorrect run number path. ITS Run number not fetched, using 000000 instead." << ENDM;
-    }
-  } else {
-    ILOG(Warning) << "Config file not found. ITS Run number not fetched, using 000000 instead." << ENDM;
-  }
 }
 
 void ITSFeeTask::endOfCycle()
