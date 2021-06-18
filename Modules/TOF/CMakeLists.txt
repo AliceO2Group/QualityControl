@@ -28,7 +28,6 @@ target_include_directories(
 
 target_link_libraries(O2QcTOF PUBLIC O2QualityControl
                                     O2::TOFBase
-                                    O2::TOFWorkflow
                                     O2::DataFormatsTOF
                                     O2::TOFCompression
                                     O2::TOFReconstruction)
