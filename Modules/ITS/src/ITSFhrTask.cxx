@@ -86,7 +86,6 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeneralOccupancy = new TH2Poly();
   mGeneralOccupancy->SetTitle("General Occupancy;mm;mm");
   mGeneralOccupancy->SetName("General/General_Occupancy");
-  mGeneralOccupancy->SetStats(0);
 
   createGeneralPlots();
   createOccupancyPlots();
