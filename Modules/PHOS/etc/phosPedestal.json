@@ -28,7 +28,7 @@
         "className": "o2::quality_control_modules::phos::RawQcTask",
         "moduleName": "QcPHOS",
         "detectorName": "PHS",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "1000",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
