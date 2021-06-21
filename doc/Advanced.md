@@ -168,21 +168,25 @@ added:
         ],
         "remoteMachine": "qcnode",   "":"not needed with AliECS",
         "remotePort": "30132",       "":"not needed with AliECS",
+        "localControl": "aliecs",    "":"if absent, aliecs is default",
         "mergingMode": "delta",      "":"if absent, delta is default"
       }
     },
 ```
 List the local processing machines in the `localMachines` array. `remoteMachine` should contain the host name which
  will serve as a QC server and `remotePort` should be a port number on which Mergers will wait for upcoming MOs. Make
- sure it is not used by other service. If different QC Tasks are run in parallel, use separate ports for each. One
- also may choose the merging mode - `delta` is the default and recommended (tasks are reset after each cycle, so they
+ sure it is not used by other service. If different QC Tasks are run in parallel, use separate ports for each. The 
+ `localControl` parameter allows to properly configure QC with respect to the control software it is run with. It can 
+ be either `aliecs` (on FLPs) or `odc` (EPNs). It has no influence when running the software by hand.
+ 
+ One also may choose the merging mode - `delta` is the default and recommended (tasks are reset after each cycle, so they
  send only updates), but if it is not feasible, Mergers may expect `entire` objects - tasks are not reset, they
  always send entire objects and the latest versions are combined in Mergers.
- 
-With the `delta` mode, one can cheat by specifying just one local machine name and referencing only that one later.
-This is not possible with `entire` mode, because then Mergers need identifiable data sources to merge objects correctly.
+ With the `delta` mode, one can cheat by specifying just one local machine name and referencing only that one later.
+ This is not possible with `entire` mode, because then Mergers need identifiable data sources to merge objects correctly.
 
-In case of a remote task, choosing `"remote"` option for the `"location"` parameter is enough.
+In case of a remote task, choosing `"remote"` option for the `"location"` parameter is needed. Also, `localControl`
+should be specified, so data samples can be correctly dispatched.
 
 ```json
     "tasks": {
@@ -195,7 +199,8 @@ In case of a remote task, choosing `"remote"` option for the `"location"` parame
           "name": "rnd-little"
         },
         "taskParameters": {},
-        "location": "remote"
+        "location": "remote",
+        "localControl": "aliecs",
       }
     }
 ```
@@ -672,8 +677,10 @@ the "tasks" path.
           "o2flp1",                         "", "Hostname of a local machine.",
           "o2flp2",                         "", "Hostname of a local machine."
         ],
-        "remoteMachine": "o2qc1",           "": "Remote QC machine hostname. Required ony for multi-node setups.",
-        "remotePort": "30432",              "": "Remote QC machine TCP port. Required ony for multi-node setups.",
+        "remoteMachine": "o2qc1",           "": "Remote QC machine hostname. Required only for multi-node setups.",
+        "remotePort": "30432",              "": "Remote QC machine TCP port. Required only for multi-node setups.",
+        "localControl": "aliecs",           "": ["Control software specification, \"aliecs\" (default) or \"odc\").",
+                                                 "Needed only for multi-node setups."],
         "mergingMode": "delta",             "": "Merging mode, \"delta\" (default) or \"entire\" objects are expected"
       }
     }

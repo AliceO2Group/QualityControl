@@ -35,6 +35,7 @@
 #include <DataSampling/DataSampling.h>
 
 #include <algorithm>
+#include <set>
 
 using namespace o2::framework;
 using namespace o2::configuration;
@@ -50,6 +51,16 @@ namespace o2::quality_control::core
 
 const char* defaultRemotePort = "36543";
 uint16_t defaultPolicyPort = 42349;
+
+struct DataSamplingPolicySpec {
+  DataSamplingPolicySpec(std::string name, std::string control) : name(std::move(name)), control(std::move(control)) {}
+  bool operator<(const DataSamplingPolicySpec other) const
+  {
+    return std::tie(name, control) < std::tie(other.name, other.control);
+  }
+  std::string name;
+  std::string control;
+};
 
 framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructure(std::string configurationSource)
 {
@@ -82,7 +93,8 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
 {
   WorkflowSpec workflow;
   TaskRunnerFactory taskRunnerFactory;
-  std::unordered_set<std::string> samplingPoliciesUsed;
+  std::set<DataSamplingPolicySpec> samplingPoliciesUsed;
+
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
   printVersion();
 
@@ -124,7 +136,9 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
                  " This is fine if running with AliECS, but it might fail in standalone mode."
               << ENDM;
           }
-          generateLocalTaskLocalProxy(workflow, id, taskName, remoteMachine.value_or("any"), remotePort.value_or(defaultRemotePort));
+          generateLocalTaskLocalProxy(workflow, id, taskName, remoteMachine.value_or("any"),
+                                      remotePort.value_or(defaultRemotePort),
+                                      taskConfig.get<std::string>("localControl", "aliecs"));
           break;
         }
         id++;
@@ -135,7 +149,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
       auto dataSourceTree = taskConfig.get_child("dataSource");
       std::string type = dataSourceTree.get<std::string>("type");
       if (type == "dataSamplingPolicy") {
-        samplingPoliciesUsed.insert(dataSourceTree.get<std::string>("name"));
+        samplingPoliciesUsed.insert({ dataSourceTree.get<std::string>("name"), taskConfig.get<std::string>("localControl", "aliecs") });
       } else if (type == "direct") {
         throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
       } else {
@@ -145,7 +159,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   }
 
   // Creating Data Sampling Policies proxies
-  for (const auto& policyName : samplingPoliciesUsed) {
+  for (const auto& [policyName, control] : samplingPoliciesUsed) {
     // todo: leave only the new way once the return type is changed
     std::string port = std::to_string(std::optional<uint16_t>(DataSampling::PortForPolicy(config.get(), policyName)).value_or(defaultPolicyPort));
     Inputs inputSpecs = DataSampling::InputSpecsForPolicy(config.get(), policyName);
@@ -153,7 +167,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
     std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
     for (const auto& machine : machines) {
       if (machine == host) {
-        generateDataSamplingPolicyLocalProxy(workflow, policyName, inputSpecs, machine, port);
+        generateDataSamplingPolicyLocalProxy(workflow, policyName, inputSpecs, machine, port, control);
       }
     }
   }
@@ -170,7 +184,7 @@ void InfrastructureGenerator::generateLocalInfrastructure(framework::WorkflowSpe
 o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructure(std::string configurationSource)
 {
   WorkflowSpec workflow;
-  std::unordered_set<std::string> samplingPoliciesUsed;
+  std::set<DataSamplingPolicySpec> samplingPoliciesUsed;
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
   printVersion();
 
@@ -194,7 +208,8 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
                                   " This is fine if running with AliECS, but it might fail in standalone mode."
                                << ENDM;
         }
-        generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, remotePort.value_or(defaultRemotePort));
+        generateLocalTaskRemoteProxy(workflow, taskName, numberOfLocalMachines, remotePort.value_or(defaultRemotePort),
+                                     taskConfig.get<std::string>("localControl", "aliecs"));
 
         generateMergers(workflow, taskName, numberOfLocalMachines,
                         taskConfig.get<double>("cycleDurationSeconds"),
@@ -213,7 +228,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
         auto dataSourceTree = taskConfig.get_child("dataSource");
         std::string type = dataSourceTree.get<std::string>("type");
         if (type == "dataSamplingPolicy") {
-          samplingPoliciesUsed.insert(dataSourceTree.get<std::string>("name"));
+          samplingPoliciesUsed.insert({ dataSourceTree.get<std::string>("name"), taskConfig.get<std::string>("localControl", "aliecs") });
         } else if (type == "direct") {
           throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskName + " cannot use direct data sources");
         } else {
@@ -227,7 +242,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   }
 
   // Creating Data Sampling Policies proxies
-  for (const auto& policyName : samplingPoliciesUsed) {
+  for (const auto& [policyName, control] : samplingPoliciesUsed) {
     // todo now we have to generate one proxy per local machine and policy, because of the proxy limitations.
     //  Use one proxy per policy when it is possible.
 
@@ -236,7 +251,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
     Outputs outputSpecs = DataSampling::OutputSpecsForPolicy(config.get(), policyName);
     std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
     for (const auto& machine : machines) {
-      generateDataSamplingPolicyRemoteProxy(workflow, policyName, outputSpecs, machine, port);
+      generateDataSamplingPolicyRemoteProxy(workflow, policyName, outputSpecs, machine, port, control);
     }
   }
 
@@ -270,7 +285,8 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxy(framework::Wo
                                                                    const string& policyName,
                                                                    const framework::Inputs& inputSpecs,
                                                                    const std::string& localMachine,
-                                                                   const string& localPort)
+                                                                   const string& localPort,
+                                                                   const std::string& control)
 {
   std::string proxyName = policyName + "-proxy";
   std::string channelName = policyName + "-" + localMachine;
@@ -286,14 +302,15 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxy(framework::Wo
       inputSpecs,
       channelConfig.c_str(),
       channelSelector));
-  workflow.back().labels.emplace_back(ecs::uniqueProxyLabel);
+  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
 }
 
 void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxy(framework::WorkflowSpec& workflow,
                                                                     const std::string& policyName,
                                                                     const Outputs& outputSpecs,
                                                                     const std::string& localMachine,
-                                                                    const std::string& localPort)
+                                                                    const std::string& localPort,
+                                                                    const std::string& control)
 {
   std::string channelName = policyName + "-" + localMachine;
   const std::string& proxyName = channelName; // channel name has to match proxy name
@@ -306,12 +323,12 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxy(framework::W
     outputSpecs,
     channelConfig.c_str(),
     dplModelAdaptor()));
-  workflow.back().labels.emplace_back(ecs::uniqueProxyLabel);
+  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
 }
 
 void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow, size_t id,
                                                           std::string taskName, std::string remoteHost,
-                                                          std::string remotePort)
+                                                          std::string remotePort, const std::string& control)
 {
   std::string proxyName = taskName + "-proxy-" + std::to_string(id);
   std::string channelName = taskName + "-proxy";
@@ -324,11 +341,11 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
       proxyName.c_str(),
       { proxyInput },
       channelConfig.c_str()));
-  workflow.back().labels.emplace_back(ecs::uniqueProxyLabel);
+  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
 }
 
 void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSpec& workflow, std::string taskName,
-                                                           size_t numberOfLocalMachines, std::string remotePort)
+                                                           size_t numberOfLocalMachines, std::string remotePort, const std::string& control)
 {
   std::string proxyName = taskName + "-proxy"; // channel name has to match proxy name
   std::string channelName = taskName + "-proxy";
@@ -347,7 +364,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
     proxyOutputs,
     channelConfig.c_str(),
     dplModelAdaptor()));
-  workflow.back().labels.emplace_back(ecs::uniqueProxyLabel);
+  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
 }
 
 void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow, std::string taskName,
