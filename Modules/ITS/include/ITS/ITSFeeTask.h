@@ -70,7 +70,6 @@ class ITSFeeTask final : public TaskInterface
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createFeePlots();
   void setPlotsFormat();
-  void getRunNumber(); //for ITS commissioning only
   void resetGeneralPlots();
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;

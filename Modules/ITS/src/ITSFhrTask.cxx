@@ -36,6 +36,7 @@ ITSFhrTask::ITSFhrTask()
 
 ITSFhrTask::~ITSFhrTask()
 {
+  delete mGeneralOccupancy;
   delete mDecoder;
   delete mChipDataBuffer;
   delete mTFInfo;
@@ -82,6 +83,10 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   mGeom = o2::its::GeometryTGeo::Instance();
 
+  mGeneralOccupancy = new TH2Poly();
+  mGeneralOccupancy->SetTitle("General Occupancy;mm;mm");
+  mGeneralOccupancy->SetName("General/General_Occupancy");
+
   createGeneralPlots();
   createOccupancyPlots();
   setPlotsFormat();
@@ -99,6 +104,16 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
     mHitnumber = new int*[NStaves[mLayer]];
     mOccupancy = new double*[NStaves[mLayer]];
     mErrorCount = new int**[NStaves[mLayer]];
+
+    for (int istave = 0; istave < NStaves[mLayer]; istave++) {
+      double* px = new double[4];
+      double* py = new double[4];
+      getStavePoint(mLayer, istave, px, py);
+      mGeneralOccupancy->AddBin(4, px, py);
+    }
+    if (mGeneralOccupancy) {
+      getObjectsManager()->startPublishing(mGeneralOccupancy);
+    }
 
     //define the errorcount array, there is some reason cause break when I define errorcount and hitnumber, occupancy at same block.
     if (mLayer < NLayerIB) {
@@ -320,9 +335,10 @@ void ITSFhrTask::setPlotsFormat()
   }
 }
 
-void ITSFhrTask::startOfActivity(Activity& /*activity*/)
+void ITSFhrTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  mRunNumber = activity.mId;
   reset();
 }
 
@@ -493,7 +509,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  ILOG(Info) << "time untile decode over " << difference << ENDM;
+  ILOG(Debug) << "time untile decode over " << difference << ENDM;
 
   //Reset Error plots
   mErrorPlots->Reset();
@@ -602,6 +618,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
       }
+      mGeneralOccupancy->SetBinContent(istave + 1, *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
     } else {
       for (int ihic = 0; ihic < nHicPerStave[lay]; ihic++) {
         int ilink = ihic / (nHicPerStave[lay] / 2);
@@ -615,6 +632,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
+    mGeneralOccupancy->SetBinContent(istave + 1, *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
   }
   for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
     int feeError = mErrorVsFeeid->Integral(1, mErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);
@@ -639,8 +657,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   mAverageProcessTime += difference;
-  ILOG(Info) << "average process time == " << (double)mAverageProcessTime / mTimeFrameId << ENDM;
-  ILOG(Info) << "time until thread all end is " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
+  ILOG(Debug) << "average process time == " << (double)mAverageProcessTime / mTimeFrameId << ENDM;
+  ILOG(Debug) << "time until thread all end is " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
 }
 
 void ITSFhrTask::getParameters()
@@ -656,27 +674,22 @@ void ITSFhrTask::getParameters()
 void ITSFhrTask::endOfCycle()
 {
   std::ifstream runNumberFile("infiles/RunNumber.dat"); //catching ITS run number in commissioning
-  if (runNumberFile) {
-    std::string runNumber;
-    runNumberFile >> runNumber;
-    ILOG(Info) << "runNumber : " << runNumber << ENDM;
-    mInfoCanvasComm->SetTitle(Form("run%s", runNumber.c_str()));
-    if (runNumber != mRunNumber) {
-      getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mErrorPlots->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mErrorVsFeeid->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mTriggerVsFeeid->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mTriggerPlots->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mInfoCanvasComm->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mChipStaveOccupancy[mLayer]->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mOccupancyPlot[mLayer]->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mChipStaveEventHitCheck[mLayer]->GetName(), "Run", runNumber);
-      for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-        if (mStaveHitmap[mLayer][istave]) {
-          getObjectsManager()->addMetadata(mStaveHitmap[mLayer][istave]->GetName(), "Run", runNumber);
-        }
+  if (mRunNumber != "000000") {
+    ILOG(Info) << "runNumber : " << mRunNumber << ENDM;
+    mInfoCanvasComm->SetTitle(Form("run%s", mRunNumber.c_str()));
+    getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", mRunNumber);
+    getObjectsManager()->addMetadata(mErrorPlots->GetName(), "Run", mRunNumber);
+    getObjectsManager()->addMetadata(mErrorVsFeeid->GetName(), "Run", mRunNumber);
+    getObjectsManager()->addMetadata(mTriggerVsFeeid->GetName(), "Run", mRunNumber);
+    getObjectsManager()->addMetadata(mTriggerPlots->GetName(), "Run", mRunNumber);
+    getObjectsManager()->addMetadata(mInfoCanvasComm->GetName(), "Run", mRunNumber);
+    getObjectsManager()->addMetadata(mChipStaveOccupancy[mLayer]->GetName(), "Run", mRunNumber);
+    getObjectsManager()->addMetadata(mOccupancyPlot[mLayer]->GetName(), "Run", mRunNumber);
+    getObjectsManager()->addMetadata(mChipStaveEventHitCheck[mLayer]->GetName(), "Run", mRunNumber);
+    for (int istave = 0; istave < NStaves[mLayer]; istave++) {
+      if (mStaveHitmap[mLayer][istave]) {
+        getObjectsManager()->addMetadata(mStaveHitmap[mLayer][istave]->GetName(), "Run", mRunNumber);
       }
-      mRunNumber = runNumber;
     }
   }
   ILOG(Info) << "endOfCycle" << ENDM;
@@ -755,5 +768,34 @@ void ITSFhrTask::reset()
   }
 
   ILOG(Info) << "Reset" << ENDM;
+}
+
+void ITSFhrTask::getStavePoint(int layer, int stave, double* px, double* py)
+{
+  float stepAngle = TMath::Pi() * 2 / NStaves[layer];             //the angle between to stave
+  float midAngle = StartAngle[layer] + (stave * stepAngle);       //mid point angle
+  float staveRotateAngle = TMath::Pi() / 2 - (stave * stepAngle); //how many angle this stave rotate(compare with first stave)
+  px[1] = MidPointRad[layer] * TMath::Cos(midAngle);              //there are 4 point to decide this TH2Poly bin
+                                                                  //0:left point in this stave;
+                                                                  //1:mid point in this stave;
+                                                                  //2:right point in this stave;
+                                                                  //3:higher point int this stave;
+  py[1] = MidPointRad[layer] * TMath::Sin(midAngle);              //4 point calculated accord the blueprint
+                                                                  //roughly calculate
+  if (layer < NLayerIB) {
+    px[0] = 7.7 * TMath::Cos(staveRotateAngle) + px[1];
+    py[0] = -7.7 * TMath::Sin(staveRotateAngle) + py[1];
+    px[2] = -7.7 * TMath::Cos(staveRotateAngle) + px[1];
+    py[2] = 7.7 * TMath::Sin(staveRotateAngle) + py[1];
+    px[3] = 5.623 * TMath::Sin(staveRotateAngle) + px[1];
+    py[3] = 5.623 * TMath::Cos(staveRotateAngle) + py[1];
+  } else {
+    px[0] = 21 * TMath::Cos(staveRotateAngle) + px[1];
+    py[0] = -21 * TMath::Sin(staveRotateAngle) + py[1];
+    px[2] = -21 * TMath::Cos(staveRotateAngle) + px[1];
+    py[2] = 21 * TMath::Sin(staveRotateAngle) + py[1];
+    px[3] = 40 * TMath::Sin(staveRotateAngle) + px[1];
+    py[3] = 40 * TMath::Cos(staveRotateAngle) + py[1];
+  }
 }
 } // namespace o2::quality_control_modules::its
