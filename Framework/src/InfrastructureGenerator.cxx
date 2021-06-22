@@ -374,7 +374,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergerConfig.inputObjectTimespan = { (mergingMode.empty() || mergingMode == "delta") ? InputObjectsTimespan::LastDifference : InputObjectsTimespan::FullHistory };
   mergerConfig.publicationDecision = { PublicationDecision::EachNSeconds, cycleDurationSeconds };
   mergerConfig.mergedObjectTimespan = { MergedObjectTimespan::FullHistory, 0 };
-  // for now one merger should be enough, multiple layers to be supported later
+  // for now one merger should be enough, multiple layers will be supported later
   mergerConfig.topologySize = { TopologySize::NumberOfLayers, 1 };
   mergerConfig.monitoringUrl = monitoringUrl;
   mergersBuilder.setConfig(mergerConfig);
