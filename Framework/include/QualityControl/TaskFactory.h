@@ -20,7 +20,7 @@
 // STL
 #include <memory>
 // QC
-#include "QualityControl/TaskConfig.h"
+#include "QualityControl/TaskRunnerConfig.h"
 #include "QualityControl/TaskInterface.h"
 
 namespace o2::quality_control::core
@@ -43,7 +43,7 @@ class TaskFactory
   /// The TaskInterface actual class is decided based on the parameters passed.
   /// \todo make it static ?
   /// \author Barthelemy von Haller
-  TaskInterface* create(TaskConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager);
+  TaskInterface* create(TaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager);
 };
 
 } // namespace o2::quality_control::core

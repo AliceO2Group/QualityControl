@@ -20,7 +20,6 @@
 // QC
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/MonitorObjectCollection.h"
-#include "QualityControl/TaskConfig.h"
 // stl
 #include <string>
 #include <memory>

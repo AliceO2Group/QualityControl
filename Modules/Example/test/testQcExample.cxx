@@ -23,7 +23,7 @@ namespace o2::quality_control_modules::example
 BOOST_AUTO_TEST_CASE(insantiate_task)
 {
   ExampleTask task;
-  TaskConfig config;
+  TaskRunnerConfig config;
   config.consulUrl = "http://consul-test.cern.ch:8500";
   config.taskName = "qcExampleTest";
   config.detectorName = "TST";

@@ -23,6 +23,7 @@
         "moduleName": "QcSkeleton",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
+        "detectorName": "TST",
         "dataSource": {
           "type": "dataSamplingPolicy",
           "name": "tpcclust"
@@ -71,7 +72,15 @@
         "location": "remote"
       },
       "defTask": {
-        "active": "false"
+        "active": "false",
+        "className": "o2::quality_control_modules::skeleton::SkeletonTask",
+        "moduleName": "QcSkeleton",
+        "detectorName": "ITS",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tpcclust"
+        },
+        "cycleDurationSeconds": "10"
       }
     },
     "checks": {

@@ -21,6 +21,8 @@
 #include <vector>
 
 #include <Framework/DataProcessorSpec.h>
+#include "QualityControl/CommonSpec.h"
+#include "QualityControl/TaskSpec.h"
 
 namespace o2::framework
 {
@@ -30,6 +32,8 @@ class CompletionPolicy;
 namespace o2::quality_control::core
 {
 
+struct TaskRunnerConfig;
+
 /// \brief Factory in charge of creating DataProcessorSpec of QC task
 class TaskRunnerFactory
 {
@@ -37,14 +41,13 @@ class TaskRunnerFactory
   TaskRunnerFactory() = default;
   virtual ~TaskRunnerFactory() = default;
 
-  /// \brief Creator of tasks
+  /// \brief Creates TaskRunner
   ///
-  /// \param taskName - name of the task, which exists in tasks list in the configuration file
-  /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
-  /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
-  /// \param resetAfterPublish - should taskRunner reset the user's task after each MO publication
-  static o2::framework::DataProcessorSpec
-    create(std::string taskName, std::string configurationSource, size_t id = 0, size_t resetAfterCycles = 0);
+  /// \param taskConfig
+  static o2::framework::DataProcessorSpec create(const TaskRunnerConfig&);
+
+  /// \brief Knows how to create TaskConfig from Specs
+  static TaskRunnerConfig extractConfig(const CommonSpec&, const TaskSpec&, std::optional<int> id = std::nullopt, std::optional<int> resetAfterCycles = std::nullopt);
 
   /// \brief Provides necessary customization of the TaskRunners.
   ///

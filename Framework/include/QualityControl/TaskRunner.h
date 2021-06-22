@@ -30,7 +30,7 @@
 #include <Headers/DataHeader.h>
 #include <Framework/InitContext.h>
 // QC
-#include "QualityControl/TaskConfig.h"
+#include "QualityControl/TaskRunnerConfig.h"
 #include "QualityControl/TaskInterface.h"
 
 namespace o2::configuration
@@ -75,7 +75,7 @@ class TaskRunner : public framework::Task
   /// \param taskName - name of the task, which exists in tasks list in the configuration file
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
   /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
-  TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id = 0);
+  TaskRunner(const TaskRunnerConfig& config);
   ~TaskRunner() override = default;
 
   /// \brief TaskRunner's init callback
@@ -86,13 +86,10 @@ class TaskRunner : public framework::Task
   /// \brief TaskRunner's completion policy callback
   static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::InputSpan const& inputs);
 
-  std::string getDeviceName() { return mDeviceName; };
-  const framework::Inputs& getInputsSpecs() { return mInputSpecs; };
-  const framework::OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
-  const framework::Options getOptions() { return mOptions; };
-
-  /// \brief Makes TaskRunner invoke TaskInterface::reset() each n cycles. n = 0 means never.
-  void setResetAfterCycles(size_t n = 0);
+  std::string getDeviceName() { return mTaskConfig.deviceName; };
+  const framework::Inputs& getInputsSpecs() const { return mTaskConfig.inputSpecs; };
+  const framework::OutputSpec getOutputSpec() { return mTaskConfig.moSpec; };
+  const framework::Options getOptions() { return mTaskConfig.options; };
 
   /// \brief ID string for all TaskRunner devices
   static std::string createTaskRunnerIdString();
@@ -124,24 +121,15 @@ class TaskRunner : public framework::Task
   void saveToFile();
 
  private:
-  std::string mDeviceName;
-  TaskConfig mTaskConfig;
-  std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
+  TaskRunnerConfig mTaskConfig;
   std::shared_ptr<monitoring::Monitoring> mCollector;
   std::shared_ptr<TaskInterface> mTask;
-  size_t mResetAfterCycles = 0;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   int mRunNumber;
 
-  std::string validateDetectorName(std::string name) const;
   boost::property_tree::ptree getTaskConfigTree() const;
   void updateMonitoringStats(framework::ProcessingContext& pCtx);
   void computeRunNumber(const framework::ServiceRegistry& services);
-
-  // consider moving these to TaskConfig
-  framework::Inputs mInputSpecs;
-  framework::OutputSpec mMonitorObjectsSpec;
-  framework::Options mOptions;
 
   bool mCycleOn = false;
   bool mNoMoreCycles = false;

@@ -34,7 +34,7 @@ namespace o2::quality_control_modules::skeleton
 BOOST_AUTO_TEST_CASE(instantiate_task)
 {
   SkeletonTask task;
-  TaskConfig config;
+  TaskRunnerConfig config;
   config.consulUrl = "http://consul-test.cern.ch:8500";
   config.taskName = "qcSkeletonTest";
   config.detectorName = "TST";
