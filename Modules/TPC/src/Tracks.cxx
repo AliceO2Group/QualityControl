@@ -67,7 +67,7 @@ void Tracks::monitorData(o2::framework::ProcessingContext& ctx)
   auto tracks = ctx.inputs().get<TrackType>("inputTracks");
   //using TracksType = gsl::span<o2::tpc::TrackTPC>;
   //const auto tracks = ctx.inputs().get<TracksType>("inputTracks");
-  QcInfoLogger::GetInstance() << "monitorData: " << tracks.size() << AliceO2::InfoLogger::InfoLogger::endm;
+  //QcInfoLogger::GetInstance() << "monitorData: " << tracks.size() << AliceO2::InfoLogger::InfoLogger::endm;
 
   for (auto const& track : tracks) {
     mQCTracks.processTrack(track);
