@@ -309,7 +309,7 @@ add_test(NAME multinode_test COMMAND o2-qc-multinode-test.sh)
 set_tests_properties(multinode_test
   PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_PORT_1=${UNIQUE_PORT_1};UNIQUE_PORT_2=${UNIQUE_PORT_2}")
 set_property(TEST multinode_test PROPERTY LABELS slow)
-set_property(TEST multinode_test PROPERTY TIMEOUT 60)
+set_property(TEST multinode_test PROPERTY TIMEOUT 75)
 
 # disable some tests in the CI to avoid un-expected failures.
 # to be removed when it is fixed / understood
