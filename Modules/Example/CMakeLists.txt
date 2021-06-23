@@ -34,6 +34,8 @@ install(TARGETS O2QcExample
 
 # ---- Workflows for analysis ----
 
+# This is disabled because it can create problems when building on an FLP. This is due to the fact that we use the install directory before the install stage.
+
 # Install the config files for the analysis.
 # The command "install" cannot be used because it would be executed after o2_add_qc_workflow which relies on
 # the config files being already installed in the right place.
