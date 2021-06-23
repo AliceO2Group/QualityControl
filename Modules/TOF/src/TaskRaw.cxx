@@ -516,7 +516,7 @@ void TaskRaw::reset()
   mDecoderRaw.resetHistograms();
 }
 
-const char* RawDataDecoder::RDHDiagnosticsName[3] = { "RDH_HAS_DATA", "RDH_DECODER_FATAL", "RDH_TRIGGER_ERROR" };
+const char* RawDataDecoder::RDHDiagnosticsName[RawDataDecoder::nRDHwords] = { "RDH_HAS_DATA", "RDH_DECODER_FATAL", "RDH_TRIGGER_ERROR" };
 
 const char* RawDataDecoder::DRMDiagnosticName[RawDataDecoder::nwords] = {
   diagnostic::DRMDiagnosticName[0],

@@ -74,7 +74,7 @@ class RawDataDecoder final : public DecoderBase
   static const char* LTMDiagnosticName[nwords];     /// LTM Counter names
   static const char* TRMDiagnosticName[nwords];     /// TRM Counter names
   // Diagnostic counters
-  Counter<3, RDHDiagnosticsName> mCounterRDH[ncrates];            /// RDH Counters
+  Counter<nRDHwords, RDHDiagnosticsName> mCounterRDH[ncrates];    /// RDH Counters
   Counter<nwords, DRMDiagnosticName> mCounterDRM[ncrates];        /// DRM Counters
   Counter<nwords, LTMDiagnosticName> mCounterLTM[ncrates];        /// LTM Counters
   Counter<nwords, TRMDiagnosticName> mCounterTRM[ncrates][ntrms]; /// TRM Counters
