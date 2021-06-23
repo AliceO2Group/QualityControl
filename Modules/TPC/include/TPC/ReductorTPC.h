@@ -18,7 +18,7 @@
 #define QUALITYCONTROL_REDUCTORTPC_H
 
 #include <TObject.h>
-#include <vector> 
+#include <vector>
 
 namespace o2::quality_control_modules::tpc
 {
@@ -40,8 +40,7 @@ class ReductorTPC
   virtual const char* getBranchLeafList() = 0;
   /// \brief Fill the data structure with new data
   /// \param An object to be reduced
-  virtual void update(TObject* obj, std::vector<std::vector<float>> &axis, bool isCanvas) = 0;
-
+  virtual void update(TObject* obj, std::vector<std::vector<float>>& axis, bool isCanvas) = 0;
 };
 
 } // namespace o2::quality_control_modules::tpc

@@ -63,15 +63,15 @@ class TrendingTaskTPC : public quality_control::postprocessing::PostProcessingIn
   // Method to access the histograms to trend and publish their outputs.
   void trendValues(uint64_t timestamp, o2::quality_control::repository::DatabaseInterface&);
   void generatePlots();
-  void drawCanvas(TCanvas *thisCanvas, std::string var, std::string sel, std::string opt, std::string err, std::string name);
+  void drawCanvas(TCanvas* thisCanvas, std::string var, std::string sel, std::string opt, std::string err, std::string name);
 
-  TrendingTaskConfigTPC mConfig;  ///< JSON configuration of source and plots.
-  MetaData mMetaData; ///<
-  UInt_t mTime; ///<
-  std::unique_ptr<TTree> mTrend;  ///< Trending values at a given time.
-  std::map<std::string, TObject*> mPlots; ///<
+  TrendingTaskConfigTPC mConfig;                                            ///< JSON configuration of source and plots.
+  MetaData mMetaData;                                                       ///<
+  UInt_t mTime;                                                             ///<
+  std::unique_ptr<TTree> mTrend;                                            ///< Trending values at a given time.
+  std::map<std::string, TObject*> mPlots;                                   ///<
   std::unordered_map<std::string, std::unique_ptr<ReductorTPC>> mReductors; ///< Reductors for all the sources in the post-processing json.
-  int mNumberPads;  ///< Number of pads in the output canvas.
+  int mNumberPads;                                                          ///< Number of pads in the output canvas.
 };
 
 } // namespace o2::quality_control_modules::tpc

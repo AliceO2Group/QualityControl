@@ -73,12 +73,12 @@ void TrendingTaskTPC::update(Trigger t, framework::ServiceRegistry& services)
 
 void TrendingTaskTPC::finalize(Trigger, framework::ServiceRegistry&)
 {
-  generatePlots(); 
+  generatePlots();
 }
 
 void TrendingTaskTPC::trendValues(uint64_t timestamp, repository::DatabaseInterface& qcdb)
 {
-  mTime = timestamp / 1000;   // ROOT expects seconds since epoch.
+  mTime = timestamp / 1000; // ROOT expects seconds since epoch.
   // Todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not enough if we trend across runs).
   mMetaData.runNumber = -1;
 
@@ -91,8 +91,8 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp, repository::DatabaseInterf
 
     // Get the size of the axisDivision for the number of pads to prepare.
     int axisSize = (int)dataSource.axisDivision.size();
-    int innerAxisSize = (int)dataSource.axisDivision[0].size()-1;
-    mNumberPads = axisSize*innerAxisSize;
+    int innerAxisSize = (int)dataSource.axisDivision[0].size() - 1;
+    mNumberPads = axisSize * innerAxisSize;
 
     if (dataSource.type == "repository") {
       auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name, timestamp);
@@ -115,7 +115,7 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp, repository::DatabaseInterf
       ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
     }
   }
- 
+
   mTrend->Fill();
 }
 
@@ -144,11 +144,11 @@ void TrendingTaskTPC::generatePlots()
     c->SetTitle(plot.title.c_str());
 
     // Postprocessing the plot - adding specified titles, configuring time-based plots, flushing buffers. Notice that axes and title are drawn using a histogram, even in the case of graphs.
-    for (int p = 1; p < mNumberPads+1; p++) {  // Loop over each pad in c.
-      c->cd(p);  // Go to the corresponding pad.
+    for (int p = 1; p < mNumberPads + 1; p++) { // Loop over each pad in c.
+      c->cd(p);                                 // Go to the corresponding pad.
 
       if (auto histo = dynamic_cast<TH1*>(c->cd(p)->GetPrimitive("htemp"))) {
-      /* 
+        /* 
         // The title of histogram is printed, not the title of canvas => we set it as well.
         //histo->SetTitle(plot.title.c_str());
 
@@ -163,7 +163,8 @@ void TrendingTaskTPC::generatePlots()
         } else {
           ILOG(Error, Devel) << "Could not get the title TPaveText of the plot '" << plot.name << "'." << ENDM;
         }
-      */  // Is it really needed in our case?
+      */
+        // Is it really needed in our case?
 
         // We have to explicitly configure showing time on x axis.
         // I hope that looking for ":time" is enough here and someone doesn't come with an exotic use-case.
@@ -188,11 +189,11 @@ void TrendingTaskTPC::generatePlots()
   }
 }
 
-void TrendingTaskTPC::drawCanvas(TCanvas *thisCanvas, std::string var, std::string sel, std::string opt, std::string err, std::string name)
+void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, std::string var, std::string sel, std::string opt, std::string err, std::string name)
 {
   // We determine the order of the plot, i.e. if it is a histogram (1), graph (2), or any higher dimension.
   const size_t plotOrder = std::count(var.begin(), var.end(), ':') + 1;
-  
+
   // We have to delete the graph errors after the plot is saved, unfortunately the canvas does not take its ownership.
   TGraphErrors* graphErrors = nullptr;
 
@@ -200,9 +201,9 @@ void TrendingTaskTPC::drawCanvas(TCanvas *thisCanvas, std::string var, std::stri
   thisCanvas->DivideSquare(mNumberPads);
 
   for (int p = 0; p < (mNumberPads); p++) {
-    thisCanvas->cd(p+1);  // Go to the corresponding pad, starting from 1.
-    std::size_t posEndVar = var.find(":");  // Find the end of the y-variable.
-    std::string varPad(var.substr(0,posEndVar) + "[" + p + "]" + var.substr(posEndVar));
+    thisCanvas->cd(p + 1);                 // Go to the corresponding pad, starting from 1.
+    std::size_t posEndVar = var.find(":"); // Find the end of the y-variable.
+    std::string varPad(var.substr(0, posEndVar) + "[" + p + "]" + var.substr(posEndVar));
     mTrend->Draw(varPad.c_str(), sel.c_str(), opt.c_str());
 
     // For graphs we allow to draw errors if they are specified.
@@ -214,19 +215,19 @@ void TrendingTaskTPC::drawCanvas(TCanvas *thisCanvas, std::string var, std::stri
         std::string varexpWithErrors(varPad + ":" + err + "[" + p + "]");
         mTrend->Draw(varexpWithErrors.c_str(), sel.c_str(), "goff");
         graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0), mTrend->GetVal(2), mTrend->GetVal(3));
-        
+
         // We draw on the same plot as the main graph, but only error bars.
         graphErrors->Draw("SAME E");
 
         // We try to convince ROOT to delete graphErrors together with the rest of the canvas.
-        if (auto* pad = thisCanvas->GetPad(p+1)) {
+        if (auto* pad = thisCanvas->GetPad(p + 1)) {
           if (auto* primitives = pad->GetListOfPrimitives()) {
             primitives->Add(graphErrors);
           }
         }
       }
     } // if (!err.empty())
-  } // for (int p = 0; p < (mAxisSize*mInnerAxisSize); p++)
+  }   // for (int p = 0; p < (mAxisSize*mInnerAxisSize); p++)
 }
 
 } // namespace o2::quality_control_modules::tpc

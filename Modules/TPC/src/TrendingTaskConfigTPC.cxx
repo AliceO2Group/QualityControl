@@ -18,7 +18,7 @@
 #include "TPC/TrendingTaskConfigTPC.h"
 #include <boost/property_tree/ptree.hpp>
 #include <string>
-#include <typeinfo> 
+#include <typeinfo>
 #include <vector>
 
 namespace o2::quality_control_modules::tpc
@@ -44,8 +44,10 @@ TrendingTaskConfigTPC::TrendingTaskConfigTPC(std::string name, const boost::prop
     std::vector<float> singleAxis;
 
     if (const auto& multiAxisValues = dataSourceConfig.second.get_child_optional("axisDivision"); multiAxisValues.has_value()) {
-      for(const auto& multiAxisValue : multiAxisValues.value()) {
-        for (const auto& axis : multiAxisValue.second) {singleAxis.push_back(std::stof(axis.second.data()));}
+      for (const auto& multiAxisValue : multiAxisValues.value()) {
+        for (const auto& axis : multiAxisValue.second) {
+          singleAxis.push_back(std::stof(axis.second.data()));
+        }
         axisBoundaries.push_back(singleAxis);
         singleAxis.clear();
       }
@@ -62,7 +64,7 @@ TrendingTaskConfigTPC::TrendingTaskConfigTPC(std::string name, const boost::prop
                                 dataSourceConfig.second.get<std::string>("moduleName") });
       }
     } else if (!dataSourceConfig.second.get<std::string>("name").empty()) {
-    // "name" : [ "something" ] would return an empty string here.
+      // "name" : [ "something" ] would return an empty string here.
       dataSources.push_back({ dataSourceConfig.second.get<std::string>("type", "repository"),
                               dataSourceConfig.second.get<std::string>("path"),
                               dataSourceConfig.second.get<std::string>("name"),

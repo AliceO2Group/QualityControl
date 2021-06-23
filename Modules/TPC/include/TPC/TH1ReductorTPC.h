@@ -39,16 +39,16 @@ class TH1ReductorTPC : public quality_control_modules::tpc::ReductorTPC
   /// \brief Definitions of the methods common to all reductors.
   void* getBranchAddress() override;
   const char* getBranchLeafList() override;
-  void update(TObject* obj, std::vector<std::vector<float>> &axis, bool isCanvas) override;
+  void update(TObject* obj, std::vector<std::vector<float>>& axis, bool isCanvas) override;
 
  private:
-  static constexpr int NMAXSLICES = 72;   ///< Maximum number of slices, or histograms for an input canvas.
+  static constexpr int NMAXSLICES = 72; ///< Maximum number of slices, or histograms for an input canvas.
 
   struct {
-    Double_t mean[NMAXSLICES];  ///< Mean value for each slice/histogram.
+    Double_t mean[NMAXSLICES];    ///< Mean value for each slice/histogram.
     Double_t stddev[NMAXSLICES];  ///< Standard deviation for each slice/histogram.
-    Double_t entries[NMAXSLICES];   ///< Number of entries for each slice/histogram.
-  } mStats ;
+    Double_t entries[NMAXSLICES]; ///< Number of entries for each slice/histogram.
+  } mStats;
 };
 
 } // namespace o2::quality_control_modules::tpc

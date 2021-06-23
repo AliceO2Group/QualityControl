@@ -49,7 +49,7 @@ struct TrendingTaskConfigTPC : public quality_control::postprocessing::PostProce
     std::string path;
     std::string name;
     std::string reductorName;
-    std::vector<std::vector<float>> axisDivision; 
+    std::vector<std::vector<float>> axisDivision;
     std::string moduleName;
   };
 

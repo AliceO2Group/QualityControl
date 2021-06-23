@@ -39,12 +39,12 @@ class TH2ReductorTPC : public quality_control_modules::tpc::ReductorTPC
   /// \brief Definitions of the methods common to all reductors.
   void* getBranchAddress() override;
   const char* getBranchLeafList() override;
-  void update(TObject* obj, std::vector<std::vector<float>> &axis, bool isCanvas) override;
+  void update(TObject* obj, std::vector<std::vector<float>>& axis, bool isCanvas) override;
 
  private:
-  static constexpr int NMAXSLICES = 72;   ///< Maximum number of slices, or histograms for an input canvas.
+  static constexpr int NMAXSLICES = 72; ///< Maximum number of slices, or histograms for an input canvas.
 
-  struct {  ///< All quantities of TH2 for each x-slice/histogram.
+  struct { ///< All quantities of TH2 for each x-slice/histogram.
     Double_t sumw[NMAXSLICES];
     Double_t sumw2[NMAXSLICES];
     Double_t sumwx[NMAXSLICES];
@@ -52,7 +52,7 @@ class TH2ReductorTPC : public quality_control_modules::tpc::ReductorTPC
     Double_t sumwy[NMAXSLICES];
     Double_t sumwy2[NMAXSLICES];
     Double_t sumwxy[NMAXSLICES];
-    Double_t entries[NMAXSLICES];   // Is sumw == entries always? maybe not for values which land into the edge bins?
+    Double_t entries[NMAXSLICES]; // Is sumw == entries always? maybe not for values which land into the edge bins?
   } mStats;
 };
 
