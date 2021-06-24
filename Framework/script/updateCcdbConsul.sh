@@ -4,6 +4,19 @@
 # set -x
 
 HEAD_NODES=(
+#  alio2-cr1-flp162
+#  alio2-cr1-flp146
+#  alio2-cr1-flp160
+#  alio2-cr1-flp187
+#  alio2-cr1-flp148
+#  alio2-cr1-flp182
+#  alio2-cr1-flp159
+#  alio2-cr1-flp164
+#  alio2-cr1-flp178
+#  alio2-cr1-hv-head01
+#  alio2-cr1-flp166
+#  alio2-cr1-flp181
+#  alio2-cr1-mvs01
   barth-test-cc7.cern.ch
 )
 echo "Number of nodes: ${#HEAD_NODES[@]}"
@@ -33,7 +46,7 @@ for ((nodeIndex = 0; nodeIndex < ${#HEAD_NODES[@]}; nodeIndex++)); do
     # download
     consul kv get "$file" >/tmp/consul.json
     # modify
-    new_content=$(cat /tmp/consul.json | jq  '.qc.config.database.host |= "qcdb.cern.ch"')
+    new_content=$(cat /tmp/consul.json | jq  '.qc.config.database.host |= "qcdb.cern.ch:8083"')
     # upload
     consul kv put "$file" "$new_content"
   done
