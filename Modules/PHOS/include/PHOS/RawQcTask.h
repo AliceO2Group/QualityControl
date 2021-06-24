@@ -77,7 +77,8 @@ class RawQcTask final : public TaskInterface
   };
 
   static constexpr short kNhist2D = 35;
-  enum histos2D { kErrorType,
+  enum histos2D { kErrorNumber,
+                  kErrorType,
                   kPayloadSizePerDDL,
                   kHGmeanM1,
                   kHGmeanM2,
