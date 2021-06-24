@@ -400,6 +400,7 @@ install(FILES script/RepoCleaner/rules/1_per_hour.py
               script/RepoCleaner/rules/skip.py
               script/RepoCleaner/rules/1_per_run.py
               script/RepoCleaner/rules/none_kept.py
+              script/RepoCleaner/rules/last_only.py
         DESTINATION lib)
 
 # ---- Copy test files ----
