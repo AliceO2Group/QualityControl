@@ -65,7 +65,11 @@ void CheckDRMDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
 {
   ILOG(Info, Support) << "USING BEAUTIFY";
   if (mo->getName() == "DRMCounter") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    if (!h) {
+      ILOG(Warning, Support) << "Did not get MO for DRMCounter";
+      return;
+    }
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->Draw();
