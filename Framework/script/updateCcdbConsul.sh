@@ -46,7 +46,7 @@ for ((nodeIndex = 0; nodeIndex < ${#HEAD_NODES[@]}; nodeIndex++)); do
     # download
     consul kv get "$file" >/tmp/consul.json
     # modify
-    new_content=$(cat /tmp/consul.json | jq  '.qc.config.database.host |= "qcdb.cern.ch:8083"')
+    new_content=$(cat /tmp/consul.json | jq  '.qc.config.database.host |= "alio2-cr1-hv-qcdb1:8083"')
     # upload
     consul kv put "$file" "$new_content"
   done
