@@ -106,4 +106,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCCalDetPublisher.json
               run/tpcQCRawDigits_direct.json
               run/tpcQCTasks_multinode.json
+              run/tpcQCTrending_EPN.json
         DESTINATION etc)
