@@ -383,7 +383,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (lay < NLayerIB) {
       istave += StaveBoundary[lay];
     } else {
-      istave += StaveBoundary[lay - NLayerIB];
+      istave += StaveBoundary[lay] - StaveBoundary[NLayerIB];
     }
     for (int i = 0; i < 13; i++) {
       if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
