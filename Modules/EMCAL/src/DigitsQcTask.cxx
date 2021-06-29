@@ -61,18 +61,19 @@ void DigitsQcTask::startOfCycle()
 {
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
   std::map<std::string, std::string> metadata;
-  mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>("EMC/BadChannelMap", metadata);
+  mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>("EMC/Calib/BadChannels", metadata);
+  //it was EMC/BadChannelMap
   if (!mBadChannelMap)
     QcInfoLogger::GetInstance() << "No Bad Channel Map object " << AliceO2::InfoLogger::InfoLogger::endm;
 
-  mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>("EMC/TimeCalibrationParams", metadata);
+  mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>("EMC/Calib/Time", metadata);
+  //"EMC/TimeCalibrationParams
   if (!mTimeCalib)
     QcInfoLogger::GetInstance() << " No Time Calib object " << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  //  QcInfoLogger::GetInstance() << "Start monitor data" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // check if we have payoad
   using MaskType_t = o2::emcal::BadChannelMap::MaskType_t;
@@ -82,7 +83,6 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto const* emcheader = o2::framework::DataRefUtils::getHeader<o2::emcal::EMCALBlockHeader*>(dataref);
     if (!emcheader->mHasPayload) {
       QcInfoLogger::GetInstance() << "No more digits" << AliceO2::InfoLogger::InfoLogger::endm;
-      //ctx.services().get<o2::framework::ControlService>().readyToQuit(false);
       return;
     }
   }
@@ -96,8 +96,8 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (auto trg : triggerrecords) {
     if (!trg.getNumberOfObjects())
       continue;
+
     QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits" << QcInfoLogger::endm;
-    //gsl::span<const o2::emcal::Digit> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
     gsl::span<const o2::emcal::Cell> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
 
     //trigger type
