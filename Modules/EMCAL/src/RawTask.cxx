@@ -227,7 +227,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   //histos per SM and Trigger
   EventType triggers[2] = { EventType::CAL_EVENT, EventType::PHYS_EVENT };
-  TString histoStr[2] = { "PHYS", "CAL" };
+  TString histoStr[2] = { "CAL", "PHYS" };
   for (auto trg = 0; trg < 2; trg++) {
 
     TProfile2D* histosRawAmplRms; //Filling EMCAL/DCAL
