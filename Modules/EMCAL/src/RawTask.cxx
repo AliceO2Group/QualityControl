@@ -489,21 +489,22 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           mErrorTypeAltro->Fill(feeID, errornum); //for shifter
           continue;
         }
-        int jfeeID = feeID / 2; //SM id
+        int supermoduleID = feeID / 2; //SM id
         auto& mapping = mMappings->getMappingForDDL(feeID);
-        int col;
-        int row;
 
         //auto fecIndex = 0.;
         //auto branchIndex = 0.;
         //auto fecID = 0.;
 
         for (auto& chan : decoder.getChannels()) {
-          col = mapping.getColumn(chan.getHardwareAddress());
-          row = mapping.getRow(chan.getHardwareAddress());
-          auto [phimod, etamod, mod] = mGeometry->GetModuleIndexesFromCellIndexesInSModule(jfeeID, row, col);
+          // Row and column in online format, must be remapped to offline indexing,
+          // otherwise it leads to invalid cell IDs
+          auto colOnline = mapping.getColumn(chan.getHardwareAddress());
+          auto rowOnline = mapping.getRow(chan.getHardwareAddress());
+          auto [row, col] = mGeometry->ShiftOnlineToOfflineCellIndexes(supermoduleID, rowOnline, colOnline);
+          auto [phimod, etamod, mod] = mGeometry->GetModuleIndexesFromCellIndexesInSModule(supermoduleID, row, col);
           //tower absolute ID
-          auto cellID = mGeometry->GetAbsCellId(jfeeID, mod, phimod, etamod);
+          auto cellID = mGeometry->GetAbsCellId(supermoduleID, mod, phimod, etamod);
           //position in the EMCAL
           auto [globRow, globCol] = mGeometry->GlobalRowColFromIndex(cellID);
 
@@ -514,8 +515,8 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
           //fecIndex = chan.getFECIndex();
           //branchIndex = chan.getBranchIndex();
-          //fecID = mMappings->getFEEForChannelInDDL(jfeeID, fecIndex, branchIndex);
-          nchannels[jfeeID]++;
+          //fecID = mMappings->getFEEForChannelInDDL(supermoduleID, fecIndex, branchIndex);
+          nchannels[supermoduleID]++;
 
           Short_t maxADC = 0;
           Short_t minADC = SHRT_MAX;
@@ -528,7 +529,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             auto maxADCbunch = *max_element(adcs.begin(), adcs.end());
             if (maxADCbunch > maxADC)
               maxADC = maxADCbunch;
-            mRawAmplMaxEMCAL[evtype][jfeeID]->Fill(maxADCbunch); //max for each cell --> for for expert only
+            mRawAmplMaxEMCAL[evtype][supermoduleID]->Fill(maxADCbunch); //max for each cell --> for for expert only
 
             if (maxADCSMEvent == maxADCSM.end()) { //max for each event
               std::array<int, NUMBERSM> maxadc;
@@ -539,28 +540,28 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             auto minADCbunch = *min_element(adcs.begin(), adcs.end());
             if (minADCbunch < minADC)
               minADC = minADCbunch;
-            mRawAmplMinEMCAL[evtype][jfeeID]->Fill(minADCbunch); // min for each cell --> for for expert only
+            mRawAmplMinEMCAL[evtype][supermoduleID]->Fill(minADCbunch); // min for each cell --> for for expert only
 
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());
 
-            mRMS[evtype]->Fill(globCol, globRow, rmsADC);      //for  shifter
-            mRMSperSM[evtype][jfeeID]->Fill(col, row, rmsADC); // no shifter
+            mRMS[evtype]->Fill(globCol, globRow, rmsADC);             //for  shifter
+            mRMSperSM[evtype][supermoduleID]->Fill(col, row, rmsADC); // no shifter
 
-            mMEAN[evtype]->Fill(globCol, globRow, meanADC);      //for shifter
-            mMEANperSM[evtype][jfeeID]->Fill(col, row, meanADC); // no shifter
+            mMEAN[evtype]->Fill(globCol, globRow, meanADC);             //for shifter
+            mMEANperSM[evtype][supermoduleID]->Fill(col, row, meanADC); // no shifter
           }
-          if (maxADC > maxADCSMEvent->second[jfeeID])
-            maxADCSMEvent->second[jfeeID] = maxADC;
+          if (maxADC > maxADCSMEvent->second[supermoduleID])
+            maxADCSMEvent->second[supermoduleID] = maxADC;
 
-          mMAXperSM[evtype][jfeeID]->Fill(col, row, maxADC); //max col,row, per SM
-          mMAX[evtype]->Fill(globCol, globRow, maxADC);      //for shifter
+          mMAXperSM[evtype][supermoduleID]->Fill(col, row, maxADC); //max col,row, per SM
+          mMAX[evtype]->Fill(globCol, globRow, maxADC);             //for shifter
 
-          if (minADC < minADCSMEvent->second[jfeeID])
-            minADCSMEvent->second[jfeeID] = minADC;
-          mMINperSM[evtype][jfeeID]->Fill(col, row, minADC); //min col,row, per SM
-          mMIN[evtype]->Fill(globCol, globRow, minADC);      //for shifter
-        }                                                    //channels
+          if (minADC < minADCSMEvent->second[supermoduleID])
+            minADCSMEvent->second[supermoduleID] = minADC;
+          mMINperSM[evtype][supermoduleID]->Fill(col, row, minADC); //min col,row, per SM
+          mMIN[evtype]->Fill(globCol, globRow, minADC);             //for shifter
+        }                                                           //channels
         //check on trigger type
         //meaningless for CALIB trigger since the whole detector is illuminated
         int channelID = -1, maxCount = -1;
@@ -570,7 +571,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             channelID = i;
           }
         }
-        auto& currentmaxchannelSM = fecMaxChannelsEvent->second[jfeeID];
+        auto& currentmaxchannelSM = fecMaxChannelsEvent->second[supermoduleID];
         if (maxCount > currentmaxchannelSM.second) {
           // new slowest channel found
           currentmaxchannelSM.first = channelID;
