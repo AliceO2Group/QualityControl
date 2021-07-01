@@ -492,9 +492,9 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         int supermoduleID = feeID / 2; //SM id
         auto& mapping = mMappings->getMappingForDDL(feeID);
 
-        //auto fecIndex = 0.;
-        //auto branchIndex = 0.;
-        //auto fecID = 0.;
+        auto fecIndex = 0;
+        auto branchIndex = 0;
+        auto fecID = 0;
 
         for (auto& chan : decoder.getChannels()) {
           // Row and column in online format, must be remapped to offline indexing,
@@ -513,10 +513,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (chType == CHTYP::LEDMON || chType == CHTYP::TRU)
             continue;
 
-          //fecIndex = chan.getFECIndex();
-          //branchIndex = chan.getBranchIndex();
-          //fecID = mMappings->getFEEForChannelInDDL(supermoduleID, fecIndex, branchIndex);
-          nchannels[supermoduleID]++;
+          fecIndex = chan.getFECIndex();
+          branchIndex = chan.getBranchIndex();
+          fecID = mMappings->getFEEForChannelInDDL(supermoduleID, fecIndex, branchIndex);
+          nchannels[fecID]++;
 
           Short_t maxADC = 0;
           Short_t minADC = SHRT_MAX;
