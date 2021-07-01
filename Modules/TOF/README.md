@@ -59,3 +59,4 @@ o2-raw-file-reader-workflow -b --input-conf TOFraw.cfg --loop 1000 | \
 o2-qc -b --config json://${$QUALITYCONTROL_ROOT}/toffull_multinode.json --remote
 ```
 
+# Test
