@@ -29,6 +29,7 @@
 #include "EMCALReconstruction/AltroDecoder.h"
 #include "EMCALReconstruction/RawReaderMemory.h"
 #include "EMCALReconstruction/RawHeaderStream.h"
+#include <Framework/InputRecordWalker.h>
 #include <Framework/InputRecord.h>
 #include <CommonConstants/Triggers.h>
 
@@ -362,10 +363,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (Int_t i = 0; i < NFEESM; i++)
     nchannels[i] = 0;
 
-  for (auto&& input : ctx.inputs()) {
+  for (const auto& rawData : framework::InputRecordWalker(ctx.inputs())) {
     // get message header
-    if (input.header != nullptr && input.payload != nullptr) {
-      const auto* header = header::get<header::DataHeader*>(input.header);
+    if (rawData.header != nullptr && rawData.payload != nullptr) {
+      const auto* header = header::get<header::DataHeader*>(rawData.header);
       // get payload of a specific input, which is a char array.
       QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Processing superpage " << mNumberOfSuperpages << AliceO2::InfoLogger::InfoLogger::endm;
       mNumberOfSuperpages++;
@@ -378,13 +379,13 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTotalDataVolume->Fill(1., header->payloadSize); //for expert
 
       // Skip SOX headers
-      auto rdhblock = reinterpret_cast<const o2::header::RDHAny*>(input.payload);
+      auto rdhblock = reinterpret_cast<const o2::header::RDHAny*>(rawData.payload);
       if (o2::raw::RDHUtils::getHeaderSize(rdhblock) == static_cast<int>(header->payloadSize)) {
         continue;
       }
 
       // try decoding payload
-      o2::emcal::RawReaderMemory rawreader(gsl::span(input.payload, header->payloadSize));
+      o2::emcal::RawReaderMemory rawreader(gsl::span(rawData.payload, header->payloadSize));
 
       while (rawreader.hasNext()) {
 
