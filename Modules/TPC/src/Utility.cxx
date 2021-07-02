@@ -108,12 +108,12 @@ o2::tpc::ClusterNativeAccess clusterHandler(o2::framework::InputRecord& input)
       }
       continue;
     }
-    if ((validInputs & sectorMask).any()) {
+    /*if ((validInputs & sectorMask).any()) {
       // have already data for this sector, this should not happen in the current
       // sequential implementation, for parallel path merged at the tracker stage
       // multiple buffers need to be handled
       throw std::runtime_error("can only have one cluster data set per sector");
-    }
+    }*/
     validInputs |= sectorMask;
     inputrefs[sector].data = ref;
   }
