@@ -602,7 +602,7 @@ There are four QC-related components:
   run.
 
 The configuration file can also include a path to Data Sampling configuration ("dataSamplingPoliciesFile") or the
-list of Data Sampling Policies. Please refer to the [Data Sampling documentation](https://github.com/AliceO2Group/AliceO2/tree/dev/Framework/Core#data-sampling) to find more information.
+list of Data Sampling Policies. Please refer to the [Data Sampling documentation](https://github.com/AliceO2Group/AliceO2/tree/dev/Utilities/DataSampling) to find more information.
 
 ### Common configuration
 
