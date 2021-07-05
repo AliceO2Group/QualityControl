@@ -8,8 +8,8 @@
 #include <TH1.h>
 #include <TH2.h>
 #include <TProfile.h>
-#include "TRDBase/Digit.h"
 #include "DataFormatsTRD/Constants.h"
+#include "DataFormatsTRD/Digit.h"
 #include "QualityControl/ObjectsManager.h"
 #include "QualityControl/TaskInterface.h"
 #include "QualityControl/QcInfoLogger.h"
