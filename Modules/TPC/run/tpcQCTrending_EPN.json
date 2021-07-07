@@ -1,0 +1,727 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "Tracks_EPN_TrendingTPC": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/Tracks_EPN",
+            "names": [ "hEta", "hNClustersAfterCuts", "hNClustersBeforeCuts", "hPhiAside", "hPhiCside", "hPt", "hSign" ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/Tracks_EPN",
+            "names": [ "h2DEtaPhi", "h2DEtaPhiNeg", "h2DEtaPhiPos", "h2DNClustersEta", "h2DNClustersPhiAside", "h2DNClustersPhiCside", "h2DNClustersPt" ],
+            "reductorName": "o2::quality_control_modules::common::TH2Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "TPCncl_StatMean_Trend_BeforeCuts",
+            "title": "Mean number of TPC clusters vs time (Before the cuts)",
+            "varexp": "hNClustersBeforeCuts.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "TPCncl_StatMean_Trend_AfterCuts",
+            "title": "Mean number of TPC clusters vs time (After the cuts)",
+            "varexp": "hNClustersAfterCuts.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "Eta_StatMean_Trend",
+            "title": "Mean of the pseudorapidity vs time",
+            "varexp": "hEta.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "Phi_SideA_StatMean_Trend",
+            "title": "Mean of the azimuthal angles vs time, A side",
+            "varexp": "hPhiAside.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "Phi_SideC_StatMean_Trend",
+            "title": "Mean of the azimuthal angles vs time, C side",
+            "varexp": "hPhiCside.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "pT_StatMean_Trend",
+            "title": "Mean of p_T vs time",
+            "varexp": "hPt.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "Sign_StatMean_Trend",
+            "title": "Mean of the sign of electric charge vs time",
+            "varexp": "hSign.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DEtaPhi_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from h2DEtaPhi",
+            "varexp": "(h2DEtaPhi.sumwx/h2DEtaPhi.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DEtaPhi_StatMean_Eta_Trend",
+            "title": "Trend mean Eta vs Time from h2DEtaPhi",
+            "varexp": "(h2DEtaPhi.sumwy/h2DEtaPhi.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DEtaPhiNeg_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from h2DEtaPhiNeg",
+            "varexp": "(h2DEtaPhiNeg.sumwx/h2DEtaPhiNeg.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DEtaPhiNeg_StatMean_Eta_Trend",
+            "title": "Trend mean Eta vs Time from h2DEtaPhiNeg",
+            "varexp": "(h2DEtaPhiNeg.sumwy/h2DEtaPhiNeg.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DEtaPhiPos_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from h2DEtaPhiPos",
+            "varexp": "(h2DEtaPhiPos.sumwx/h2DEtaPhiPos.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DEtaPhiPos_StatMean_Eta_Trend",
+            "title": "Trend mean Eta vs Time from h2DEtaPhiPos",
+            "varexp": "(h2DEtaPhiPos.sumwy/h2DEtaPhiPos.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersEta_StatMean_Eta_Trend",
+            "title": "Trend mean Eta vs Time from h2DNClustersEta",
+            "varexp": "(h2DNClustersEta.sumwx/h2DNClustersEta.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersEta_StatMean_NClusters_Trend",
+            "title": "Trend mean number of clusters vs Time from h2DNClustersEta",
+            "varexp": "(h2DNClustersEta.sumwy/h2DNClustersEta.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPhiAside_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from h2DNClustersPhiAside",
+            "varexp": "(h2DNClustersPhiAside.sumwx/h2DNClustersPhiAside.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPhiAside_StatMean_NClusters_Trend",
+            "title": "Trend mean number of clusters vs Time from h2DNClustersPhiAside",
+            "varexp": "(h2DNClustersPhiAside.sumwy/h2DNClustersPhiAside.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPhiCside_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from h2DNClustersPhiCside",
+            "varexp": "(h2DNClustersPhiCside.sumwx/h2DNClustersPhiCside.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPhiCside_StatMean_NClusters_Trend",
+            "title": "Trend mean number of clusters vs Time from h2DNClustersPhiCside",
+            "varexp": "(h2DNClustersPhiCside.sumwy/h2DNClustersPhiCside.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPt_StatMean_Pt_Trend",
+            "title": "Trend mean Pt vs Time from h2DNClustersPt",
+            "varexp": "(h2DNClustersPt.sumwx/h2DNClustersPt.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPt_StatMean_NClusters_Trend",
+            "title": "Trend mean number of clusters vs Time from h2DNClustersPt",
+            "varexp": "(h2DNClustersPt.sumwy/h2DNClustersPt.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "30 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "PID_EPN_TrendingTPC": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/PID_EPN",
+            "names": [  "hdEdxMax", "hdEdxTot", "hNClusters", "hPhi", "hSnp", "hTgl" ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/PID_EPN",
+            "names": [  "hdEdxVsncls", "hdEdxVsp", "hdEdxVsPhi", "hdEdxVsTgl" ],
+            "reductorName": "o2::quality_control_modules::common::TH2Reductor",
+            "moduleName": "QcCommon"
+          }
+       ],
+       "plots": [
+          {
+            "name": "dEdxMax_StatMean_Trend",
+            "title": "Mean of dEdxMax vs time",
+            "varexp": "hdEdxMax.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "dEdxTot_StatMean_Trend",
+            "title": "Mean of dEdxTot vs time",
+            "varexp": "hdEdxTot.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "TPCncl_StatMean_Trend",
+            "title": "Mean number of TPC clusters vs time",
+            "varexp": "hNClusters.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "Phi_StatMean_Trend",
+            "title": "Mean of the azimuthal angles vs time",
+            "varexp": "hPhi.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxVsncls_StatMean_ncls_Trend",
+            "title": "Trend mean Number of Clusters vs Time from dEdx vs Number of Clusters",
+            "varexp": "(hdEdxVsncls.sumwx/hdEdxVsncls.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxVsncls_StatMean_dEdx_Trend",
+            "title": "Trend mean dEdx vs Time from dEdx vs Number of Clusters",
+            "varexp": "(hdEdxVsncls.sumwy/hdEdxVsncls.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxVsp_StatMean_p_Trend",
+            "title": "Trend mean p vs Time from dEdx vs Momentum",
+            "varexp": "(hdEdxVsp.sumwx/hdEdxVsp.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxVsp_StatMean_dEdx_Trend",
+            "title": "Trend mean dEdx vs Time from dEdx vs Momentum",
+            "varexp": "(hdEdxVsp.sumwy/hdEdxVsp.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxVsPhi_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from dEdx vs azimuthal angle Phi",
+            "varexp": "(hdEdxVsPhi.sumwx/hdEdxVsPhi.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxVsPhi_StatMean_dEdx_Trend",
+            "title": "Trend mean Phi vs Time from dEdx vs azimuthal angle Phi",
+            "varexp": "(hdEdxVsPhi.sumwy/hdEdxVsPhi.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxVsTgl_StatMean_Tgl_Trend",
+            "title": "Trend mean Tgl vs Time from dEdx vs Tgl",
+            "varexp": "(hdEdxVsTgl.sumwx/hdEdxVsTgl.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxVsTgl_StatMean_dEdx_Trend",
+            "title": "Trend mean dEdx vs Time from dEdx vs Tgl",
+            "varexp": "(hdEdxVsTgl.sumwy/hdEdxVsTgl.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "30 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "Clusters_EPN_TrendingTPC": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
+        "moduleName": "QualityControl",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/Clusters_EPN",
+            "names": [ "c_ROCs_N_Clusters_1D", "c_ROCs_Q_Max_1D", "c_ROCs_Q_Tot_1D", "c_ROCs_Sigma_Pad_1D", "c_ROCs_Sigma_Time_1D", "c_ROCs_Time_Bin_1D" ],
+            "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
+            "axisDivision": [ [ "99.0" ] ],
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/Clusters_EPN",
+            "names": [ "c_ROCs_N_Clusters_2D", "c_ROCs_Q_Max_2D", "c_ROCs_Q_Tot_2D", "c_ROCs_Sigma_Pad_2D", "c_ROCs_Sigma_Time_2D", "c_ROCs_Time_Bin_2D" ],
+            "reductorName": "o2::quality_control_modules::tpc::TH2ReductorTPC",
+            "axisDivision": [ [ "99.0" ] ],
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "TPCncl_ROCs_StatMean_Trend",
+            "title": "Mean number of TPC clusters versus time for all ROCs",
+            "varexp": "c_ROCs_N_Clusters_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:c_ROCs_N_Clusters_1D.stddev"
+          },
+          {
+            "name": "Qmax_ROCs_StatMean_Trend",
+            "title": "Mean number of the maximum charge versus time for all ROCs",
+            "varexp": "c_ROCs_Q_Max_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:c_ROCs_Q_Max_1D.stddev"
+          },
+          {
+            "name": "Qtot_ROCs_StatMean_Trend",
+            "title": "Mean number of the total charge versus time for all ROCs",
+            "varexp": "c_ROCs_Q_Tot_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:c_ROCs_Q_Tot_1D.stddev"
+          },
+          {
+            "name": "SigmaPad_ROCs_StatMean_Trend",
+            "title": "Mean number of sigma pads versus time for all ROCs",
+            "varexp": "c_ROCs_Sigma_Pad_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:c_ROCs_Sigma_Pad_1D.stddev"
+          },
+          {
+            "name": "SigmaTime_ROCs_StatMean_Trend",
+            "title": "Mean number of sigma time versus time for all ROCs",
+            "varexp": "c_ROCs_Sigma_Time_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:c_ROCs_Sigma_Time_1D.stddev"
+          },
+          {
+            "name": "TimeBin_ROCs_StatMean_Trend",
+            "title": "Mean number of the time bin (ADC) versus time for all ROCs",
+            "varexp": "c_ROCs_Time_Bin_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "c_ROCs_Time_Bin_1D.stddev"
+          },
+          {
+            "name": "c_ROCs_N_Clusters_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time for the number of clusters for all ROCs",
+            "varexp": "(c_ROCs_N_Clusters_2D.sumwx/c_ROCs_N_Clusters_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_N_Clusters_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time for the number of clusters for all ROCs",
+            "varexp": "(c_ROCs_N_Clusters_2D.sumwy/c_ROCs_N_Clusters_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Q_Max_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time for the maximum charge for all ROCs",
+            "varexp": "(c_ROCs_Q_Max_2D.sumwx/c_ROCs_Q_Max_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Q_Max_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time for the maximum charge for all ROCs",
+            "varexp": "(c_ROCs_Q_Max_2D.sumwy/c_ROCs_Q_Max_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Q_Tot_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time for the total charge for all ROCs",
+            "varexp": "(c_ROCs_Q_Tot_2D.sumwx/c_ROCs_Q_Tot_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Q_Tot_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time for the total charge for all ROCs",
+            "varexp": "(c_ROCs_Q_Tot_2D.sumwy/c_ROCs_Q_Tot_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Sigma_Pad_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time for the sigma pads for all ROCs",
+            "varexp": "(c_ROCs_Sigma_Pad_2D.sumwx/c_ROCs_Sigma_Pad_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Sigma_Pad_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time for the sigma pads for all ROCs",
+            "varexp": "(c_ROCs_Sigma_Pad_2D.sumwy/c_ROCs_Sigma_Pad_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Sigma_Time_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time for the sigma time for all ROCs",
+            "varexp": "(c_ROCs_Sigma_Time_2D.sumwx/c_ROCs_Sigma_Time_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Sigma_Time_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time for the sigma time for all ROCs",
+            "varexp": "(c_ROCs_Sigma_Time_2D.sumwy/c_ROCs_Sigma_Time_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Time_Bin_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time for the time bins for all ROCs",
+            "varexp": "(c_ROCs_Time_Bin_2D.sumwx/c_ROCs_Time_Bin_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Time_Bin_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time for the time bins for all ROCs",
+            "varexp": "(c_ROCs_Time_Bin_2D.sumwy/c_ROCs_Time_Bin_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "30 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "RawDigits_EPN_TrendingTPC": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
+        "moduleName": "QualityControl",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/RawDigits_EPN",
+            "names": [ "c_ROCs_N_RawDigits_1D", "c_ROCs_Q_Max_1D", "c_ROCs_Time_Bin_1D" ],
+            "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
+            "axisDivision": [ [ "99.0" ] ],
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/RawDigits_EPN",
+            "names": [ "c_ROCs_N_RawDigits_2D", "c_ROCs_Q_Max_2D", "c_ROCs_Time_Bin_2D" ],
+            "reductorName": "o2::quality_control_modules::tpc::TH2ReductorTPC",
+            "axisDivision": [ [ "99.0" ] ],
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "N_RawDigits_ROCs_StatMean_Trend",
+            "title": "Mean number of raw digits versus time for all ROCs",
+            "varexp": "c_ROCs_N_RawDigits_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:c_ROCs_N_RawDigits_1D.stddev"
+          },
+          {
+            "name": "Qmax_ROCs_StatMean_Trend",
+            "title": "Mean number of the maximum charge versus time for all ROCs",
+            "varexp": "c_ROCs_Q_Max_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:c_ROCs_Q_Max_1D.stddev"
+          },
+          {
+            "name": "TimeBin_ROCs_StatMean_Trend",
+            "title": "Mean number of the time bin (ADC) versus time for all ROCs",
+            "varexp": "c_ROCs_Time_Bin_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "c_ROCs_Time_Bin_1D.stddev"
+          },
+          {
+            "name": "c_ROCs_N_RawDigits_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time from Raw Digits for all ROCs",
+            "varexp": "(c_ROCs_N_RawDigits_2D.sumwx/c_ROCs_N_RawDigits_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_N_RawDigits_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time from Raw Digits for all ROCs",
+            "varexp": "(c_ROCs_N_RawDigits_2D.sumwy/c_ROCs_N_RawDigits_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Q_Max_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time from maxQ for all ROCs",
+            "varexp": "(c_ROCs_Q_Max_2D.sumwx/c_ROCs_Q_Max_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Q_Max_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time from maxQ for all ROCs",
+            "varexp": "(c_ROCs_Q_Max_2D.sumwy/c_ROCs_Q_Max_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Time_Bin_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time from TimeBin for all ROCs",
+            "varexp": "(c_ROCs_Time_Bin_2D.sumwx/c_ROCs_Time_Bin_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Time_Bin_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time from TimeBin for all ROCs",
+            "varexp": "(c_ROCs_Time_Bin_2D.sumwy/c_ROCs_Time_Bin_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "30 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },
+      "PadCalibration_TrendingTPC": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
+        "moduleName": "QualityControl",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/PadCalibration",
+            "names": [ "c_ROCs_Noise_1D", "c_ROCs_Pedestal_1D" ],
+            "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
+            "axisDivision": [ [ "99.0" ] ],
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/PadCalibration",
+            "names": [ "c_ROCs_Noise_2D", "c_ROCs_Pedestal_2D" ],
+            "reductorName": "o2::quality_control_modules::tpc::TH2ReductorTPC",
+            "axisDivision": [ [ "99.0" ] ],
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "Noise_ROCs_StatMean_Trend",
+            "title": "Mean noise versus time for all ROCs",
+            "varexp": "c_ROCs_Noise_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:c_ROCs_Noise_1D.stddev"
+          },
+          {
+            "name": "Pedestal_ROCs_StatMean_Trend",
+            "title": "Mean pedestals versus time for all ROCs",
+            "varexp": "c_ROCs_Pedestal_1D.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:c_ROCs_Pedestal_1D.stddev"
+          },
+          {
+            "name": "c_ROCs_Noise_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time from Noise_2D for all ROCs",
+            "varexp": "(c_ROCs_Noise_2D.sumwx/c_ROCs_Noise_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Noise_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time from Noise_2D for all ROCs",
+            "varexp": "(c_ROCs_Noise_2D.sumwy/c_ROCs_Noise_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Pedestal_2D_StatMean_PadRow_Trend",
+            "title": "Mean number of pad rows versus time from Pedestal_2D for all ROCs",
+            "varexp": "(c_ROCs_Pedestal_2D.sumwx/c_ROCs_Pedestal_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "c_ROCs_Pedestal_2D_StatMean_Pad_Trend",
+            "title": "Mean number of pads versus time from Pedestal_2D for all ROCs",
+            "varexp": "(c_ROCs_Pedestal_2D.sumwy/c_ROCs_Pedestal_2D.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "30 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}
