@@ -25,9 +25,9 @@
 namespace o2::quality_control_modules::tpc
 {
 
-/// \brief  TrendingTask configuration structure.
+/// \brief  TrendingTask configuration structure, tuned for the need of the TPC trending.
 ///
-/// Configuration structure for the trending objects: the data sources to trend and the plots to produce and publish.
+/// Configuration structure for the trending objects: the data sources to trend and the plots to produce and publish. This configuration structure is specific to the TPC trending, as it allows to pass the divisions to slice the x-axis of the input histogram into fully modular subranges.
 struct TrendingTaskConfigTPC : public quality_control::postprocessing::PostProcessingConfig {
   /// \brief Constructors.
   TrendingTaskConfigTPC() = default;

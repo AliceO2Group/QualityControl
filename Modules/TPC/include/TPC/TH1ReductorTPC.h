@@ -24,10 +24,10 @@
 namespace o2::quality_control_modules::tpc
 {
 
-/// \brief A Reductor which obtains the most popular characteristics of TH1.
+/// \brief A TPC-specific reductor which obtains the most popular characteristics of TH1.
 ///
-/// A Reductor which obtains the most popular characteristics of TH1.
-/// It produces a branch in the format: "mean/D:stddev:entries".
+/// A Reductor which obtains the most popular characteristics of TH1, in the case of TPC-related quantities.
+/// It produces a branch in the format: "mean/D:stddev:entries". All these variables are saved as arrays of doubles with a maximum length of 72 (i.e. number of ROCs in the full TPC).
 class TH1ReductorTPC : public quality_control_modules::tpc::ReductorTPC
 {
  public:
@@ -42,7 +42,7 @@ class TH1ReductorTPC : public quality_control_modules::tpc::ReductorTPC
   void update(TObject* obj, std::vector<std::vector<float>>& axis, bool isCanvas) override;
 
  private:
-  static constexpr int NMAXSLICES = 72; ///< Maximum number of slices, or histograms for an input canvas.
+  static constexpr int NMAXSLICES = 72; ///< Maximum number of slices, or histograms for an input canvas. TBI: Make configurable.
 
   struct {
     Double_t mean[NMAXSLICES];    ///< Mean value for each slice/histogram.

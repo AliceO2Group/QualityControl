@@ -35,10 +35,11 @@ class DatabaseInterface;
 namespace o2::quality_control_modules::tpc
 {
 
-/// \brief  A post-processing task which trends values, stores them in a TTree and produces plots.
+/// \brief  A post-processing task tuned for the needs of the trending of the TPC, which trends values, stores them in a TTree and produces plots. 
 ///
 /// A post-processing task which trends objects inside QC database (QCDB). It extracts some values of one or multiple objects using the Reductor classes, then stores them inside a TTree.
 /// One can generate plots out the TTree - the class exposes the TTree::Draw interface to the user. The TTree and plots are stored in the QCDB. The class is configured with configuration files, see Framework/postprocessing.json as an example.
+/// This class is specific to the trending of the TPC, as the configuration of a trending in the json file takes into account the arrays of values for the slicing subranges. Another feature is the possibility to input and output canvases in parallel to the histogram/graph returned by the common trending.
 ///
 /// \author based on work of Piotr Konopka
 class TrendingTaskTPC : public quality_control::postprocessing::PostProcessingInterface

@@ -24,6 +24,8 @@ namespace o2::quality_control_modules::tpc
 {
 
 /// \brief An interface for storing data derived from QC objects into a TTree
+///
+/// A TPC-specific reductor class from which each reductor used for the trending of the TPC-related quantities inherit.
 class ReductorTPC
 {
  public:
