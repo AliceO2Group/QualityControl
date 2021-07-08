@@ -28,19 +28,6 @@ class TPaveText;
 namespace o2::quality_control_modules::tpc
 {
 
-/// \brief Valid CalDet objects
-/// This struct contains the valid CalDet objects to be fetched from the CCDB
-enum struct outputCalPad { Pedestal,
-                           Noise
-};
-
-/// \brief Valid vectors of CalDet objects
-/// This struct contains the valid std::unordered_maps of CalDet objects to be fetched from the CCDB
-enum struct outputCalPadMap { NoPe,
-                              Pulser,
-                              CE
-};
-
 /// \brief Quality Control task for the calibration data of the TPC
 /// \author Thomas Klemenz
 class CalDetPublisher final : public quality_control::postprocessing::PostProcessingInterface
@@ -90,17 +77,7 @@ class CalDetPublisher final : public quality_control::postprocessing::PostProces
   long mInitRefPedestalTimestamp;                                        ///< timestamp of the pedestal data used at init of the task
   long mInitRefNoiseTimestamp;                                           ///< timestamp of the noise data used at init of the task
   TPaveText* mNewZSCalibMsg = nullptr;                                   ///< badge to indicate the necessity to upload new calibration data for ZS
-
-  std::unordered_map<std::string, std::vector<int>> mRanges{ ///< histogram ranges configurable via config file
-                                                             { "Pedestals", {} },
-                                                             { "Noise", {} },
-                                                             { "PulserQtot", {} },
-                                                             { "PulserT0", {} },
-                                                             { "PulserWidth", {} },
-                                                             { "CEQtot", {} },
-                                                             { "CET0", {} },
-                                                             { "CEWidth", {} }
-  };
+  std::unordered_map<std::string, std::vector<float>> mRanges;           ///< histogram ranges configurable via config file
 };
 
 } // namespace o2::quality_control_modules::tpc
