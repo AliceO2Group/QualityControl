@@ -28,11 +28,40 @@
         "className": "o2::quality_control_modules::tpc::CalDetPublisher",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
-        "outputList": [
+        "valid_outputCalPadMaps_comment" : [ "CE", "Pulser" ],
+        "outputCalPadMaps": [
+          "CE",
+          "Pulser"
+        ],
+        "outputCalPads_comment" : [ "Put all CalPad objects you want to look at in the list. The name has to be the same one as on the CCDB.",
+                                    "valid outputCalPads: 'Pedestal', 'Noise'" ],
+        "outputCalPads": [
           "Pedestal",
           "Noise"
         ],
-        "metaData": [
+        "timestamps_comment": [ "Put the timestamp of the corresponding file you want to look for in the timestamps array.",
+                                "You can either put a timestamp for every object or leave the array empty to take the latest file from the CCDB.",
+                                "An empty array to get the the latest version will be the main use case.",
+                                "The array is mapped to the output objects sequentially",
+                                "If you want to pick the latest file in the CCDB manually, you can use -1."
+        ],
+        "timestamps": [
+        ],
+        "lookupMetaData_comment": [ "With this array you can filter your search via meta data.",
+                                    "The array is mapped sequentially to the output objects.",
+                                    "If you leave only one entry in the array this is used for all objects in outputCalPadMaps and outputCalPads.",
+                                    "If you want no meta data simply remove 'keys' and 'values' completely and leave only {}",
+                                    "Every entry above (outputCalPads.size() + outputCalPadMaps.size()) is ignored.",
+                                    "The keys and values that are set by default are only there to serve as an example."
+        ],
+        "lookupMetaData": [
+          {
+          }
+        ],
+        "storeMetaData_comment": "For how-to, see 'lookupMetaData_comment'.",
+        "storeMetaData": [
+          {
+          },
           {
             "keys": [ "key1", "key2" ],
             "values": [ "value1", "value2" ]
@@ -40,14 +69,36 @@
           {
             "keys": [ "key" ],
             "values": [ "value" ]
+          },
+          {
           }
         ],
+        "histogramRanges_comment" : [ "nBins", "min", "max" ],
+        "histogramRanges": [
+          { "Pedestals" :   [ "240", "0",   "120" ] },
+          { "Noise" :       [ "200", "0",   "2"   ] },
+          { "PulserQtot" :  [ "600", "0",   "300" ] },
+          { "PulserT0" :    [ "100", "239", "240" ] },
+          { "PulserWidth" : [ "100", "0",   "1"   ] },
+          { "CEQtot" :      [ "600", "0",   "300" ] },
+          { "CET0" :        [ "200", "400", "500" ] },
+          { "CEWidth" :     [ "100", "0",   "1"   ] }
+        ],
+        "checkZSCalibration": {
+          "check": "true",
+          "initRefCalibTimestamp": "-1",
+          "initRefPedestalTimestamp": "-1",
+          "initRefNoiseTimestamp": "-1"
+        },
         "initTrigger": [
           "once"
         ],
+        "updateTrigger_comment": "To trigger on a specific file being updated, use e.g. 'newobject:ccdb:TPC/Calib/Noise'",
         "updateTrigger": [
           "once"
         ],
+        "stopTrigger_comment": [ "To keep the task running until it is stopped manually set the trigger on the update of a non-existing object, e.g. 'newobject:ccdb:TPC/ThisDoesNotExist'",
+                                 "There will be a end of run trigger implemented so the above workaround can be abandoned later." ],
         "stopTrigger": [
           "once"
         ]

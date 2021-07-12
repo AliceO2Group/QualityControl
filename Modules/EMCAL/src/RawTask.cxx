@@ -29,6 +29,7 @@
 #include "EMCALReconstruction/AltroDecoder.h"
 #include "EMCALReconstruction/RawReaderMemory.h"
 #include "EMCALReconstruction/RawHeaderStream.h"
+#include <Framework/InputRecordWalker.h>
 #include <Framework/InputRecord.h>
 #include <CommonConstants/Triggers.h>
 
@@ -226,7 +227,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   //histos per SM and Trigger
   EventType triggers[2] = { EventType::CAL_EVENT, EventType::PHYS_EVENT };
-  TString histoStr[2] = { "PHYS", "CAL" };
+  TString histoStr[2] = { "CAL", "PHYS" };
   for (auto trg = 0; trg < 2; trg++) {
 
     TProfile2D* histosRawAmplRms; //Filling EMCAL/DCAL
@@ -362,10 +363,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (Int_t i = 0; i < NFEESM; i++)
     nchannels[i] = 0;
 
-  for (auto&& input : ctx.inputs()) {
+  for (const auto& rawData : framework::InputRecordWalker(ctx.inputs())) {
     // get message header
-    if (input.header != nullptr && input.payload != nullptr) {
-      const auto* header = header::get<header::DataHeader*>(input.header);
+    if (rawData.header != nullptr && rawData.payload != nullptr) {
+      const auto* header = header::get<header::DataHeader*>(rawData.header);
       // get payload of a specific input, which is a char array.
       QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Processing superpage " << mNumberOfSuperpages << AliceO2::InfoLogger::InfoLogger::endm;
       mNumberOfSuperpages++;
@@ -378,13 +379,13 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTotalDataVolume->Fill(1., header->payloadSize); //for expert
 
       // Skip SOX headers
-      auto rdhblock = reinterpret_cast<const o2::header::RDHAny*>(input.payload);
+      auto rdhblock = reinterpret_cast<const o2::header::RDHAny*>(rawData.payload);
       if (o2::raw::RDHUtils::getHeaderSize(rdhblock) == static_cast<int>(header->payloadSize)) {
         continue;
       }
 
       // try decoding payload
-      o2::emcal::RawReaderMemory rawreader(gsl::span(input.payload, header->payloadSize));
+      o2::emcal::RawReaderMemory rawreader(gsl::span(rawData.payload, header->payloadSize));
 
       while (rawreader.hasNext()) {
 
@@ -489,21 +490,22 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           mErrorTypeAltro->Fill(feeID, errornum); //for shifter
           continue;
         }
-        int jfeeID = feeID / 2; //SM id
+        int supermoduleID = feeID / 2; //SM id
         auto& mapping = mMappings->getMappingForDDL(feeID);
-        int col;
-        int row;
 
-        //auto fecIndex = 0.;
-        //auto branchIndex = 0.;
-        //auto fecID = 0.;
+        auto fecIndex = 0;
+        auto branchIndex = 0;
+        auto fecID = 0;
 
         for (auto& chan : decoder.getChannels()) {
-          col = mapping.getColumn(chan.getHardwareAddress());
-          row = mapping.getRow(chan.getHardwareAddress());
-          auto [phimod, etamod, mod] = mGeometry->GetModuleIndexesFromCellIndexesInSModule(jfeeID, row, col);
+          // Row and column in online format, must be remapped to offline indexing,
+          // otherwise it leads to invalid cell IDs
+          auto colOnline = mapping.getColumn(chan.getHardwareAddress());
+          auto rowOnline = mapping.getRow(chan.getHardwareAddress());
+          auto [row, col] = mGeometry->ShiftOnlineToOfflineCellIndexes(supermoduleID, rowOnline, colOnline);
+          auto [phimod, etamod, mod] = mGeometry->GetModuleIndexesFromCellIndexesInSModule(supermoduleID, row, col);
           //tower absolute ID
-          auto cellID = mGeometry->GetAbsCellId(jfeeID, mod, phimod, etamod);
+          auto cellID = mGeometry->GetAbsCellId(supermoduleID, mod, phimod, etamod);
           //position in the EMCAL
           auto [globRow, globCol] = mGeometry->GlobalRowColFromIndex(cellID);
 
@@ -512,10 +514,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (chType == CHTYP::LEDMON || chType == CHTYP::TRU)
             continue;
 
-          //fecIndex = chan.getFECIndex();
-          //branchIndex = chan.getBranchIndex();
-          //fecID = mMappings->getFEEForChannelInDDL(jfeeID, fecIndex, branchIndex);
-          nchannels[jfeeID]++;
+          fecIndex = chan.getFECIndex();
+          branchIndex = chan.getBranchIndex();
+          fecID = mMappings->getFEEForChannelInDDL(supermoduleID, fecIndex, branchIndex);
+          nchannels[fecID]++;
 
           Short_t maxADC = 0;
           Short_t minADC = SHRT_MAX;
@@ -528,7 +530,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             auto maxADCbunch = *max_element(adcs.begin(), adcs.end());
             if (maxADCbunch > maxADC)
               maxADC = maxADCbunch;
-            mRawAmplMaxEMCAL[evtype][jfeeID]->Fill(maxADCbunch); //max for each cell --> for for expert only
+            mRawAmplMaxEMCAL[evtype][supermoduleID]->Fill(maxADCbunch); //max for each cell --> for for expert only
 
             if (maxADCSMEvent == maxADCSM.end()) { //max for each event
               std::array<int, NUMBERSM> maxadc;
@@ -539,28 +541,28 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             auto minADCbunch = *min_element(adcs.begin(), adcs.end());
             if (minADCbunch < minADC)
               minADC = minADCbunch;
-            mRawAmplMinEMCAL[evtype][jfeeID]->Fill(minADCbunch); // min for each cell --> for for expert only
+            mRawAmplMinEMCAL[evtype][supermoduleID]->Fill(minADCbunch); // min for each cell --> for for expert only
 
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());
 
-            mRMS[evtype]->Fill(globCol, globRow, rmsADC);      //for  shifter
-            mRMSperSM[evtype][jfeeID]->Fill(col, row, rmsADC); // no shifter
+            mRMS[evtype]->Fill(globCol, globRow, rmsADC);             //for  shifter
+            mRMSperSM[evtype][supermoduleID]->Fill(col, row, rmsADC); // no shifter
 
-            mMEAN[evtype]->Fill(globCol, globRow, meanADC);      //for shifter
-            mMEANperSM[evtype][jfeeID]->Fill(col, row, meanADC); // no shifter
+            mMEAN[evtype]->Fill(globCol, globRow, meanADC);             //for shifter
+            mMEANperSM[evtype][supermoduleID]->Fill(col, row, meanADC); // no shifter
           }
-          if (maxADC > maxADCSMEvent->second[jfeeID])
-            maxADCSMEvent->second[jfeeID] = maxADC;
+          if (maxADC > maxADCSMEvent->second[supermoduleID])
+            maxADCSMEvent->second[supermoduleID] = maxADC;
 
-          mMAXperSM[evtype][jfeeID]->Fill(col, row, maxADC); //max col,row, per SM
-          mMAX[evtype]->Fill(globCol, globRow, maxADC);      //for shifter
+          mMAXperSM[evtype][supermoduleID]->Fill(col, row, maxADC); //max col,row, per SM
+          mMAX[evtype]->Fill(globCol, globRow, maxADC);             //for shifter
 
-          if (minADC < minADCSMEvent->second[jfeeID])
-            minADCSMEvent->second[jfeeID] = minADC;
-          mMINperSM[evtype][jfeeID]->Fill(col, row, minADC); //min col,row, per SM
-          mMIN[evtype]->Fill(globCol, globRow, minADC);      //for shifter
-        }                                                    //channels
+          if (minADC < minADCSMEvent->second[supermoduleID])
+            minADCSMEvent->second[supermoduleID] = minADC;
+          mMINperSM[evtype][supermoduleID]->Fill(col, row, minADC); //min col,row, per SM
+          mMIN[evtype]->Fill(globCol, globRow, minADC);             //for shifter
+        }                                                           //channels
         //check on trigger type
         //meaningless for CALIB trigger since the whole detector is illuminated
         int channelID = -1, maxCount = -1;
@@ -570,7 +572,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             channelID = i;
           }
         }
-        auto& currentmaxchannelSM = fecMaxChannelsEvent->second[jfeeID];
+        auto& currentmaxchannelSM = fecMaxChannelsEvent->second[supermoduleID];
         if (maxCount > currentmaxchannelSM.second) {
           // new slowest channel found
           currentmaxchannelSM.first = channelID;
