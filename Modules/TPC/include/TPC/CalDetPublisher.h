@@ -86,7 +86,7 @@ class CalDetPublisher final : public quality_control::postprocessing::PostProces
   bool mCheckZSPrereq = true;                                            ///< is pedestal and noise in the outputList in the config file
   std::unique_ptr<o2::tpc::CalDet<float>> mRefPedestal;                  ///< reference pedestal file used for ZS at the moment
   std::unique_ptr<o2::tpc::CalDet<float>> mRefNoise;                     ///< reference noise file used for ZS at the moment
-  long mInitRefCalibTimestamp;                                           ///< timestamp of the pedestal/noise map used at init of the task
+                                                                         //  long mInitRefCalibTimestamp;                                           ///< timestamp of the pedestal/noise map used at init of the task
   long mInitRefPedestalTimestamp;                                        ///< timestamp of the pedestal data used at init of the task
   long mInitRefNoiseTimestamp;                                           ///< timestamp of the noise data used at init of the task
   TPaveText* mNewZSCalibMsg = nullptr;                                   ///< badge to indicate the necessity to upload new calibration data for ZS
