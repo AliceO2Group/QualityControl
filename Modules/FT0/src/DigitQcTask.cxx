@@ -184,7 +184,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (digit.mTriggers.amplA == -5000 && digit.mTriggers.amplC == -5000 && digit.mTriggers.timeA == -5000 && digit.mTriggers.timeC == -5000)
       isTCM = false;
     mHistOrbit2BC->Fill(digit.getOrbit() - firstOrbit, digit.getBC());
-    if (isTCM || !digit.mTriggers.getLaserBit()) {
+    if (isTCM && !digit.mTriggers.getLaserBit()) {
       mHistNchA->Fill(digit.mTriggers.nChanA);
       mHistNchC->Fill(digit.mTriggers.nChanC);
       mHistSumAmpA->Fill(digit.mTriggers.amplA);
