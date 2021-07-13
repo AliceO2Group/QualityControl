@@ -49,17 +49,17 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitCen, "Central" });
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitSCen, "SemiCentral" });
 
-  mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Time;Channel;", 4100, -2050, 2050, sNchannels, 0, sNchannels);
+  mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Time;Channel;", 4100, -2050, 2050, o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistTime2Ch->SetOption("colz");
-  mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Amp;Channel;", 4200, -100, 4100, sNchannels, 0, sNchannels);
+  mHistAmp2Ch = std::make_unique<TH2F>("AmpPerChannel", "Amplitude vs Channel;Amp;Channel;", 4200, -100, 4100, o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistAmp2Ch->SetOption("colz");
   mHistOrbit2BC = std::make_unique<TH2F>("OrbitPerBC", "BC-Orbit map;Orbit;BC;", 256, 0, 256, 3564, 0, 3564);
   mHistOrbit2BC->SetOption("colz");
 
-  mHistEventDensity2Ch = std::make_unique<TH2F>("EventDensityPerChannel", "Event density(in BC) per Channel;Channel;BC;", sNchannels, 0, sNchannels, 10000, 0, 1e5);
+  mHistEventDensity2Ch = std::make_unique<TH2F>("EventDensityPerChannel", "Event density(in BC) per Channel;Channel;BC;", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, 10000, 0, 1e5);
   mHistEventDensity2Ch->SetOption("colz");
 
-  mHistChDataBits = std::make_unique<TH2F>("ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", sNchannels, 0, sNchannels, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
+  mHistChDataBits = std::make_unique<TH2F>("ChannelDataBits", "ChannelData bits per ChannelID;Channel;Bit", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, mMapChTrgNames.size(), 0, mMapChTrgNames.size());
   mHistChDataBits->SetOption("colz");
 
   for (const auto& entry : mMapChTrgNames) {
@@ -70,13 +70,13 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   for (const auto& entry : mMapDigitTrgNames) {
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
-  mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", sNchannels, 0, sNchannels);
-  mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", sNchannels, 0, sNchannels);
+  mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
+  mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistSumAmpA = std::make_unique<TH1F>("SumAmpA", "Sum of amplitudes(TCM), side A;", 1000, 0, 1e4);
   mHistSumAmpC = std::make_unique<TH1F>("SumAmpC", "Sum of amplitudes(TCM), side C;", 1000, 0, 1e4);
   mHistAverageTimeA = std::make_unique<TH1F>("AverageTimeA", "Average time(TCM), side A", 4100, -2050, 2050);
   mHistAverageTimeC = std::make_unique<TH1F>("AverageTimeC", "Average time(TCM), side C", 4100, -2050, 2050);
-  mHistChannelID = std::make_unique<TH1F>("StatChannelID", "ChannelID statistics;ChannelID", sNchannels, 0, sNchannels);
+  mHistChannelID = std::make_unique<TH1F>("StatChannelID", "ChannelID statistics;ChannelID", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
   std::vector<unsigned int> vecChannelIDs;
@@ -85,7 +85,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     const std::string del = ",";
     vecChannelIDs = parseParameters<unsigned int>(chIDs, del);
   } else {
-    for (unsigned int iCh = 0; iCh < sNchannels; iCh++)
+    for (unsigned int iCh = 0; iCh < o2::ft0::Constants::sNCHANNELS_PM; iCh++)
       vecChannelIDs.push_back(iCh);
   }
   for (const auto& entry : vecChannelIDs) {
