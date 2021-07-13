@@ -28,13 +28,14 @@
         "className": "o2::quality_control_modules::tpc::CalDetPublisher",
         "moduleName": "QcTPC",
         "detectorName": "TPC",
-        "valid_outputCalPadMaps_comment" : [ "CE", "Pulser" ],
+        "outputCalPadMaps_comment" : [ "CalDet objects that are stored in std::unordered_map<std::string, o2::tpc::CalDet<float>> need to go here.",
+                                       "This needs to be the last part of the CCDB path, e.g. Pulser or CE." ],
         "outputCalPadMaps": [
           "CE",
           "Pulser"
         ],
-        "outputCalPads_comment" : [ "Put all CalPad objects you want to look at in the list. The name has to be the same one as on the CCDB.",
-                                    "valid outputCalPads: 'Pedestal', 'Noise'" ],
+        "outputCalPads_comment" : [ "CalDet objects that are stored as plain o2::tpc::CalDet<float> objects need to go here.",
+                                    "This needs to be the last part of the CCDB path, e.g. Pedestal or Noise." ],
         "outputCalPads": [
           "Pedestal",
           "Noise"
@@ -85,7 +86,7 @@
           { "CEWidth" :     [ "100", "0",   "1"   ] }
         ],
         "checkZSCalibration": {
-          "check": "true",
+          "check": "false",
           "initRefCalibTimestamp": "-1",
           "initRefPedestalTimestamp": "-1",
           "initRefNoiseTimestamp": "-1"
