@@ -13,6 +13,7 @@ Advanced topics
       * [Example 2: advanced](#example-2-advanced)
       * [Limitations](#limitations)
    * [Multi-node setups](#multi-node-setups)
+   * [Moving window](#moving-window)
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
       * [Getting AODs directly](#getting-aods-directly)
@@ -268,6 +269,44 @@ and `qc/TST/MO/MultiNodeRemote`, and corresponding Checks under the path `qc/TST
 
 When using AliECS, one has to generate workflow templates and upload them to the corresponding repository. Please
 contact the QC or AliECS developers to receive assistance or instruction on how to do that.
+
+## Moving window
+
+By default QC Tasks are never reset, thus the MOs they produce contain data from the full run.
+However, if objects should have a shorter validity range, one may add the following options to QC Task configuration:
+```json
+  "MovingWindowTaskA": {
+    ...
+    "resetAfterCycles": "10",
+  }
+```
+In the case above the QC Task will have the `TaskInterface::reset()` method invoked each 10 cycles.
+
+If the QC Task runs in parallel on many nodes and its results are merged, the effects will be different
+depending on the chosen merging mode:
+- If `"delta"` mode is used, the Merger in the last layer will implement the moving window, while the QC Tasks will
+ still reset after each cycle. Please note, that QC Tasks will fall out of sync during data acquisition, so the moving
+ window might contain slightly misaligned data time ranges coming from different sources. Also, due to fluctuations of
+ the data transfer, objects coming from different sources might appear more frequently than others. Thus, one might
+ notice higher occupancy on stave A one time, but the next object might contain less than average data for the same stave.
+- In the `"entire"` mode, QC Tasks will reset MOs, while Mergers will use the latest available object version from each
+ Task. Please note that if one of the Tasks dies, an old version of MO will be still used over and over. Thus, `"delta"`
+ mode is advised in most use cases.
+
+In setups with Mergers one may also extend the Mergers cycle duration, which can help to even out any data fluctuations:
+```json
+   "MovingWindowTaskB": {
+     ...
+     "cycleDurationSeconds" : "60",
+     "mergingMode" : "delta",
+     "mergerCycleMultiplier": "10",  "": "multiplies cycleDurationSeconds in Mergers",
+     "resetAfterCycles": "1",        "": "it could be still larger than 1"
+   }
+ ```
+In the presented case, the Merger will publish one set of complete MOs per 10 minutes, which should contain all deltas
+ received during this last period. Since the QC Tasks cycle is 10 times shorter, the occupancy fluctuations should be
+ less apparent. Please also note, that using this parameter in the `"entire"` merging mode does not make much sense, 
+ since Mergers would use every 10th incomplete MO version when merging.
 
 ## Writing a DPL data producer 
 
@@ -694,6 +733,8 @@ the "tasks" path.
         "taskParameters": {                 "": "User Task parameters which are then accessible as a key-value map.",
           "myOwnKey": "myOwnValue",         "": "An example of a key and a value. Nested structures are not supported"
         },
+        "resetAfterCycles" : "0",           "": "Makes the Task or Merger reset MOs each n cycles.",
+                                            "": "0 (default) means that MOs should cover the full run.",
         "location": "local",                "": ["Location of the QC Task, it can be local or remote. Needed only for",
                                                  "multi-node setups, not respected in standalone development setups."],
         "localMachines": [                  "", "List of local machines where the QC task should run. Required only",
@@ -705,7 +746,8 @@ the "tasks" path.
         "remotePort": "30432",              "": "Remote QC machine TCP port. Required only for multi-node setups.",
         "localControl": "aliecs",           "": ["Control software specification, \"aliecs\" (default) or \"odc\").",
                                                  "Needed only for multi-node setups."],
-        "mergingMode": "delta",             "": "Merging mode, \"delta\" (default) or \"entire\" objects are expected"
+        "mergingMode": "delta",             "": "Merging mode, \"delta\" (default) or \"entire\" objects are expected",
+        "mergerCycleMultiplier": "1",       "": "Multiplies the Merger cycle duration with respect to the QC Task cycle"
       }
     }
   }
