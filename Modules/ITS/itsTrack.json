@@ -1,81 +1,78 @@
 {
-  "qc": {
-    "config": {
-      "database": {
-        "implementation": "CCDB",
-        "host": "ccdb-test.cern.ch:8080",
-        "username": "not_applicable",
-        "password": "not_applicable",
-        "name": "not_applicable"
+  "qc" : {
+    "config" : {
+      "database" : {
+        "implementation" : "CCDB",
+        "host" : "ccdb-test.cern.ch:8080",
+        "username" : "not_applicable",
+        "password" : "not_applicable",
+        "name" : "not_applicable"
       },
-      "Activity": {
-        "number": "42",
-        "type": "2"
+      "Activity" : {
+        "number" : "42",
+        "type" : "2"
       },
-      "monitoring": {
-        "url": "infologger:///debug?qc"
+      "monitoring" : {
+        "url" : "infologger:///debug?qc"
       },
-      "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+      "consul" : {
+        "url" : "http://consul-test.cern.ch:8500"
       },
-            "conditionDB": {
-                "url": "ccdb-test.cern.ch:8080"
+      "conditionDB" : {
+        "url" : "ccdb-test.cern.ch:8080"
       }
     },
-    "tasks": {
-      "ITSTrackTask": {
-        "active": "true",
-        "className": "o2::quality_control_modules::its::ITSTrackTask",
-        "moduleName": "QcITS",
-	"detectorName": "ITS",	
-        "cycleDurationSeconds": "30",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "compclus"
+    "tasks" : {
+      "ITSTrackTask" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::its::ITSTrackTask",
+        "moduleName" : "QcITS",
+        "detectorName" : "ITS",
+        "cycleDurationSeconds" : "30",
+        "maxNumberCycles" : "-1",
+        "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource" : {
+          "type" : "dataSamplingPolicy",
+          "name" : "compclus"
         },
-        "location": "remote"
+        "location" : "remote",
+        "taskParameters" : {
+          "runNumberPath" : "/home/its/QC/workdir/infiles/RunNumber.dat"
+        }
+
       }
     },
-    "checks": {
-      "ITSTrackCheck": {
-        "active": "true",
-        "className": "o2::quality_control_modules::its::ITSTrackCheck",
-        "moduleName": "QcITS",
-        "policy": "OnAny",
-        "detectorName": "ITS",
-        "dataSource": [{
-          "type": "Task",
-          "name": "ITSTrackTask",
-          "MOs": ["NClusters"]
-          }]
-        }
+    "checks" : {
+      "ITSTrackCheck" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::its::ITSTrackCheck",
+        "moduleName" : "QcITS",
+        "policy" : "OnAny",
+        "detectorName" : "ITS",
+        "dataSource" : [ {
+          "type" : "Task",
+          "name" : "ITSTrackTask",
+          "MOs" : ["NClusters"]
+        } ]
+      }
     }
   },
 
+         "dataSamplingPolicies" : [
+           {
+             "id" : "compclus",
+             "active" : "true",
+             "machines" : [],
+             "query" : "tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;compclus:ITS/COMPCLUSTERS/0",
+             "samplingConditions" : [
+               {
+                 "condition" : "random",
+                 "fraction" : "1",
+                 "seed" : "1441"
+               }
+             ],
 
-  "dataSamplingPolicies": [
-    {
-    	    "id": "compclus",
-            "active": "true",
-            "machines": [],
-            "query": "tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;compclus:ITS/COMPCLUSTERS/0",
-            "samplingConditions": [
-                {
-                    "condition": "random",
-                    "fraction": "1",
-                    "seed": "1441"
-                }
-            ],
-
-	    "blocking": "false"
-    }
-  ]
-
+             "blocking" : "false"
+           }
+         ]
 }
-                                                                                                                               
-
-
-
-

@@ -63,6 +63,7 @@ class ITSTrackTask : public TaskInterface
   TH1D* hClusterUsage;
   TH2D* hAngularDistribution;
   std::string mRunNumber;
+  std::string mRunNumberPath;
 
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
@@ -72,7 +73,6 @@ class ITSTrackTask : public TaskInterface
   Int_t mNClusters = 0;
 
   o2::itsmft::TopologyDictionary mDict;
-  o2::its::GeometryTGeo* mGeom;
 };
 } // namespace o2::quality_control_modules::its
 

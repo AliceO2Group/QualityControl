@@ -38,11 +38,7 @@ using namespace o2::its;
 namespace o2::quality_control_modules::its
 {
 
-ITSClusterTask::ITSClusterTask() : TaskInterface()
-{
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
-  mGeom = o2::its::GeometryTGeo::Instance();
-}
+ITSClusterTask::ITSClusterTask() : TaskInterface() {}
 
 ITSClusterTask::~ITSClusterTask()
 {
@@ -86,6 +82,10 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   QcInfoLogger::GetInstance() << "initialize ITSClusterTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   getJsonParameters();
+
+  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  mGeom = o2::its::GeometryTGeo::Instance();
+
   createAllHistos();
 
   publishHistos();
