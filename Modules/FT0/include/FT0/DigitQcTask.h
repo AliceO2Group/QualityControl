@@ -73,7 +73,6 @@ class DigitQcTask final : public TaskInterface
     return vecResult;
   }
 
-//  static constexpr unsigned int sNchannels = o2::ft0::Constants::sNCHANNELS_PM;
   // Object which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
