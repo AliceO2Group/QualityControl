@@ -17,7 +17,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcFT0 PUBLIC O2QualityControl O2::DataFormatsFT0 O2::FITCalibration)
+target_link_libraries(O2QcFT0 PUBLIC O2QualityControl O2::DataFormatsFT0 O2::FT0Base O2::FITCalibration)
 
 install(TARGETS O2QcFT0
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

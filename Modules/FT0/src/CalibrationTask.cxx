@@ -21,6 +21,7 @@
 #include "FT0/CalibrationTask.h"
 #include "DataFormatsFT0/Digit.h"
 #include "DataFormatsFT0/ChannelData.h"
+#include "FT0Base/Constants.h"
 #include <Framework/InputRecord.h>
 #include "DetectorsCalibration/Utils.h"
 #include "CCDB/BasicCCDBManager.h"
@@ -35,13 +36,13 @@ CalibrationTask::~CalibrationTask()
 
 void CalibrationTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize CalibrationTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-
+  ILOG(Info, Support) << "initialize CalibrationTask" << ENDM;             // QcInfoLogger is used. FairMQ logs will go to there as well.
+  constexpr std::size_t Nchannels_FT0 = o2::ft0::Constants::sNCHANNELS_PM; //208(real) + 8 (empty) number of PM(without LCS) channels
   mNotCalibratedChannelTimeHistogram = std::make_unique<TH1F>("Not_calibrated_time", "Not_calibrated_time", 2 * CHANNEL_TIME_HISTOGRAM_RANGE, -CHANNEL_TIME_HISTOGRAM_RANGE, CHANNEL_TIME_HISTOGRAM_RANGE);
   mCalibratedChannelTimeHistogram = std::make_unique<TH1F>("Calibrated_time", "Calibrated_time", 2 * CHANNEL_TIME_HISTOGRAM_RANGE, -CHANNEL_TIME_HISTOGRAM_RANGE, CHANNEL_TIME_HISTOGRAM_RANGE);
-  mCalibratedTimePerChannelHistogram = std::make_unique<TH2F>("Calibrated_time_per_channel", "Calibrated_time_per_channel", o2::ft0::Nchannels_FT0, 0, o2::ft0::Nchannels_FT0, 2 * CHANNEL_TIME_HISTOGRAM_RANGE, -CHANNEL_TIME_HISTOGRAM_RANGE, CHANNEL_TIME_HISTOGRAM_RANGE);
-  mNotCalibratedTimePerChannelHistogram = std::make_unique<TH2F>("Not_calibrated_time_per_channel", "Not_calibrated_time_per_channel", o2::ft0::Nchannels_FT0, 0, o2::ft0::Nchannels_FT0, 2 * CHANNEL_TIME_HISTOGRAM_RANGE, -CHANNEL_TIME_HISTOGRAM_RANGE, CHANNEL_TIME_HISTOGRAM_RANGE);
-  mChannelTimeCalibrationObjectGraph = std::make_unique<TGraph>(o2::ft0::Nchannels_FT0);
+  mCalibratedTimePerChannelHistogram = std::make_unique<TH2F>("Calibrated_time_per_channel", "Calibrated_time_per_channel", Nchannels_FT0, 0, Nchannels_FT0, 2 * CHANNEL_TIME_HISTOGRAM_RANGE, -CHANNEL_TIME_HISTOGRAM_RANGE, CHANNEL_TIME_HISTOGRAM_RANGE);
+  mNotCalibratedTimePerChannelHistogram = std::make_unique<TH2F>("Not_calibrated_time_per_channel", "Not_calibrated_time_per_channel", Nchannels_FT0, 0, Nchannels_FT0, 2 * CHANNEL_TIME_HISTOGRAM_RANGE, -CHANNEL_TIME_HISTOGRAM_RANGE, CHANNEL_TIME_HISTOGRAM_RANGE);
+  mChannelTimeCalibrationObjectGraph = std::make_unique<TGraph>(Nchannels_FT0);
   mChannelTimeCalibrationObjectGraph->SetName("Channel_time_calibration_object");
   mChannelTimeCalibrationObjectGraph->SetTitle("Channel_time_calibration_object");
   mChannelTimeCalibrationObjectGraph->SetMarkerStyle(20);
@@ -73,7 +74,7 @@ void CalibrationTask::startOfCycle()
   mCalibratedTimePerChannelHistogram->Reset();
   mNotCalibratedTimePerChannelHistogram->Reset();
   mCurrentChannelTimeCalibrationObject = ccdb::BasicCCDBManager::instance().get<o2::ft0::FT0ChannelTimeCalibrationObject>(o2::fit::FITCalibrationApi::getObjectPath<o2::ft0::FT0ChannelTimeCalibrationObject>());
-  for (std::size_t chID = 0; chID < o2::ft0::Nchannels_FT0; ++chID) {
+  for (std::size_t chID = 0; chID < o2::ft0::Constants::sNCHANNELS_PM; ++chID) {
     if (mCurrentChannelTimeCalibrationObject) {
       mChannelTimeCalibrationObjectGraph->SetPoint(chID, chID, mCurrentChannelTimeCalibrationObject->mTimeOffsets[chID]);
     } else {
