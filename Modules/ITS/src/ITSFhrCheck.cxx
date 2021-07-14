@@ -59,10 +59,10 @@ std::string ITSFhrCheck::getAcceptedType() { return "TH1"; }
 
 void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
-  auto* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
-  msg->SetName(Form("%s_msg", mo->GetName()));
   if (mo->getName() == "General/ErrorPlots") {
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    auto* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+    msg->SetName(Form("%s_msg", mo->GetName()));
     if (checkResult == Quality::Good) {
       msg->Clear();
       msg->AddText("Quality::Good");
@@ -75,7 +75,11 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       msg->AddText("Decoding ERROR detected");
       msg->AddText("please inform SL");
     }
+    h->GetListOfFunctions()->Add(msg);
   } else if (mo->getName() == "General/General_Occupancy") {
+    auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
+    auto* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
+    msg->SetName(Form("%s_msg", mo->GetName()));
     if (checkResult == Quality::Good) {
       msg->Clear();
       msg->AddText("Quality::Good");
@@ -85,6 +89,7 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       msg->AddText("Quality::Bad");
       msg->SetTextColor(kRed);
       msg->AddText("Max Occupancy over 10^{-5}");
+      msg->AddText("or ERROR detected");
       msg->AddText("Please Inform SL");
     } else if (checkResult == Quality::Medium) {
       msg->Clear();
@@ -92,8 +97,8 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       msg->SetTextColor(kOrange);
       msg->AddText("Max Occupancy over 10^{-6}");
     }
+    h->GetListOfFunctions()->Add(msg);
   }
-  h->GetListOfFunctions()->Add(msg);
 }
 
 } // namespace o2::quality_control_modules::its
