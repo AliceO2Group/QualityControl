@@ -17,7 +17,6 @@
 #include <TText.h>
 #include <TList.h>
 #include "FT0/ChannelTimeCalibrationCheck.h"
-//#include "DataFormatsFT0/RawEventData.h"
 #include "FT0Base/Constants.h"
 
 namespace o2::quality_control_modules::ft0
