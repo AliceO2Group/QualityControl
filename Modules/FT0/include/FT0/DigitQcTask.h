@@ -73,7 +73,7 @@ class DigitQcTask final : public TaskInterface
     return vecResult;
   }
 
-  static constexpr unsigned int sNchannels = o2::ft0::Constants::sNCHANNELS_PM;
+//  static constexpr unsigned int sNchannels = o2::ft0::Constants::sNCHANNELS_PM;
   // Object which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
@@ -88,7 +88,7 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistAverageTimeA;
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;
-  std::array<o2::InteractionRecord, sNchannels> mStateLastIR2Ch;
+  std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
   TList* mListHistGarbage;
