@@ -21,7 +21,7 @@ namespace o2::quality_control::core
 {
 
 /// \brief Dummy class that should be removed when there is the official one.
-/// This corresponds to a Run1/2 "run".
+/// This corresponds to a Run 1/2 "run".
 /// \author   Barthelemy von Haller
 class Activity
 {
