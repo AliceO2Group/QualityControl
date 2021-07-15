@@ -75,7 +75,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
         // thus we should not let TaskRunnerFactory read it and decide by itself, since it might not be aware of
         // the context we run QC.
         size_t resetAfterCycles = taskConfig.get<int>("resetAfterCycles", 0);
-        workflow.emplace_back(TaskRunnerFactory::create(taskName, configurationSource, resetAfterCycles));
+        workflow.emplace_back(TaskRunnerFactory::create(taskName, configurationSource, 0, resetAfterCycles));
       }
     }
   }
@@ -245,7 +245,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
         auto resetAfterCycles = taskConfig.get<int>("resetAfterCycles", 0);
         // Creating the remote task
-        workflow.emplace_back(TaskRunnerFactory::create(taskName, configurationSource, resetAfterCycles));
+        workflow.emplace_back(TaskRunnerFactory::create(taskName, configurationSource, 0, resetAfterCycles));
       }
     }
   }
