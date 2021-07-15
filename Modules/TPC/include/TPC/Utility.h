@@ -40,6 +40,18 @@ void addAndPublish(std::shared_ptr<o2::quality_control::core::ObjectsManager> ob
 /// \return std::vector<TCanvas*>
 std::vector<TCanvas*> toVector(std::vector<std::unique_ptr<TCanvas>>& input);
 
+/// \brief Fills std::vector<std::unique_ptr<TCanvas>> with data from calDet
+/// This is a convenience function to call o2::tpc::painter::makeSummaryCanvases in QC tasks to visualize the content of a CalDet object.
+/// \param calDet Object to be displayed in the canvases
+/// \param canvases Vector containing three std::unique_ptr<TCanvas>, will be filled
+/// \param params Information about the ranges of the histograms that will be drawn on the canvases. The params can be set via 'taskParameters' in the config file of corresponding the task.
+/// \param paramName Name of the observable that is stored in calDet
+void fillCanvases(const o2::tpc::CalDet<float>& calDet, std::vector<std::unique_ptr<TCanvas>>& canvases, const std::unordered_map<std::string, std::string>& params, const std::string paramName);
+
+/// \brief Clears all canvases
+/// \param canvases Contains the canvases that will be cleared
+void clearCanvases(std::vector<std::unique_ptr<TCanvas>>& canvases);
+
 /// \brief Converts CLUSTERNATIVE from InputRecord to ClusterNativeAccess
 /// Convenience funtion to make native clusters accessible when receiving them from the DPL
 /// \param input InputReconrd from the ProcessingContext
