@@ -19,6 +19,8 @@
 #include "Framework/InputRecordWalker.h"
 #include "DataFormatsTPC/ClusterNativeHelper.h"
 #include "DataFormatsTPC/TPCSectorHeader.h"
+#include "TPCBase/CalDet.h"
+#include "TPCBase/Painter.h"
 
 // QC includes
 #include "TPC/Utility.h"
@@ -51,6 +53,22 @@ std::vector<TCanvas*> toVector(std::vector<std::unique_ptr<TCanvas>>& input)
     output.emplace_back(in.get());
   }
   return output;
+}
+
+void fillCanvases(const o2::tpc::CalDet<float>& calDet, std::vector<std::unique_ptr<TCanvas>>& canvases, std::unordered_map<std::string, std::string>& params, const std::string paramName)
+{
+  auto vecPtr = toVector(canvases);
+  o2::tpc::painter::makeSummaryCanvases(calDet,
+                                        std::stoi(params[(paramName + "NBins")]), std::stof(params[(paramName + "XMin")]), std::stof(params[(paramName + "XMax")]),
+                                        true,
+                                        &vecPtr);
+}
+
+void clearCanvases(std::vector<std::unique_ptr<TCanvas>>& canvases)
+{
+  for (const auto& canvas : canvases) {
+    canvas.get()->Clear();
+  }
 }
 
 o2::tpc::ClusterNativeAccess clusterHandler(o2::framework::InputRecord& input)

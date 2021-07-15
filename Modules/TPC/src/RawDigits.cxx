@@ -46,7 +46,6 @@ void RawDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
   for (auto& wrapper : mWrapperVector) {
     getObjectsManager()->startPublishing(&wrapper);
-    getObjectsManager()->addMetadata(wrapper.getObj()->getName().data(), "custom", "87");
   }
 
   mRawReader.setLinkZSCallback([this](int cru, int rowInSector, int padInRow, int timeBin, float adcValue) -> bool {
@@ -72,14 +71,9 @@ void RawDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
   mRawDigitQC.analyse();
 
-  auto vecPtrNRawDigits = toVector(mNRawDigitsCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mRawDigitQC.getNClusters(), 300, 0, 0, true, &vecPtrNRawDigits);
-
-  auto vecPtrQMax = toVector(mQMaxCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mRawDigitQC.getQMax(), 300, 0, 0, true, &vecPtrQMax);
-
-  auto vecPtrTimeBin = toVector(mTimeBinCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mRawDigitQC.getTimeBin(), 300, 0, 0, true, &vecPtrTimeBin);
+  fillCanvases(mRawDigitQC.getNClusters(), mNRawDigitsCanvasVec, mCustomParameters, "NRawDigits");
+  fillCanvases(mRawDigitQC.getQMax(), mQMaxCanvasVec, mCustomParameters, "Qmax");
+  fillCanvases(mRawDigitQC.getTimeBin(), mTimeBinCanvasVec, mCustomParameters, "TimeBin");
 }
 
 void RawDigits::endOfCycle()
@@ -97,6 +91,10 @@ void RawDigits::reset()
   // clean all the monitor objects here
 
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  clearCanvases(mNRawDigitsCanvasVec);
+  clearCanvases(mQMaxCanvasVec);
+  clearCanvases(mTimeBinCanvasVec);
 }
 
 } // namespace o2::quality_control_modules::tpc
