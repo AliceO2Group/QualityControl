@@ -44,7 +44,7 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
     (void)moName;
 
     if (mo->getName().find("mMFTChipOccupancyStdDev") != std::string::npos) {
-      auto* histogram = dynamic_cast<TH2F*>(mo->getObject());
+      auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
       // test it
       if (histogram->GetBinContent(histogram->GetMinimumBin()) > 250) {
@@ -61,12 +61,12 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
   return result;
 }
 
-std::string QcMFTDigitCheck::getAcceptedType() { return "TH2"; }
+std::string QcMFTDigitCheck::getAcceptedType() { return "TH1"; }
 
 void QcMFTDigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
   if (mo->getName().find("mMFTChipOccupancyStdDev") != std::string::npos) {
-    auto* histogram = dynamic_cast<TH2F*>(mo->getObject());
+    auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
       LOG(INFO) << "Quality::Good";
