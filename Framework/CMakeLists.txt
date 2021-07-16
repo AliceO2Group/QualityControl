@@ -267,7 +267,7 @@ foreach(i RANGE ${count})
   target_link_libraries(${test_name}
                         PRIVATE O2QualityControl Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name} ${arg})
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 45)
 endforeach()
 
 foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
