@@ -342,6 +342,9 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
   buffer.Clear();
   Writer<rapidjson::StringBuffer> writer(buffer);
   jsonDocument.Accept(writer);
+  if (auto maxSize = std::string().max_size(); buffer.GetSize() > maxSize) {
+    throw std::runtime_error("JSON buffer contains too large string: " + std::to_string(buffer.GetSize()) + ", while std::string::max_size() is " + maxSize);
+  }
   return strdup(buffer.GetString());
 }
 
