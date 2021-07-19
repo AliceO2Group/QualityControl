@@ -121,6 +121,7 @@ class CheckRunner : public framework::Task
   static std::string createCheckRunnerIdString() { return "QC-CHECK-RUNNER"; };
   static std::string createCheckRunnerName(std::vector<Check> checks);
   static std::string createSinkCheckRunnerName(o2::framework::InputSpec input);
+  static std::string createCheckRunnerFacility(std::string deviceName);
 
  private:
   /**

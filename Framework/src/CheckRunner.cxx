@@ -108,6 +108,13 @@ std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
   return name;
 }
 
+std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
+{
+  string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length()+1, string::npos );
+  facilityName = truncate(facilityName, 32);
+  return facilityName;
+}
+
 std::string CheckRunner::createSinkCheckRunnerName(InputSpec input)
 {
   std::string name(CheckRunner::createCheckRunnerIdString() + "-sink-");
@@ -186,7 +193,7 @@ void CheckRunner::init(framework::InitContext& iCtx)
   }
 
   try {
-    ILOG_INST.init("check/" + mDeviceName, mConfigFile->getRecursive(), ilContext);
+    ILOG_INST.init(createCheckRunnerFacility(mDeviceName), mConfigFile->getRecursive(), ilContext);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
