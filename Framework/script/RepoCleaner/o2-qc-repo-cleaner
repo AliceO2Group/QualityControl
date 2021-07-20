@@ -31,6 +31,7 @@ import dryable
 import yaml
 import time
 import consul
+import multiprocessing as mp
 
 import pidfile
 
@@ -204,11 +205,7 @@ def storeSavedTimestamp():
     f.close()
 
 
-# ****************
-# We start here !
-# ****************
-
-def main():
+def prepareLogger(logger):
     # Logging (split between stderr and stdout)
     formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S')
     h1 = logging.StreamHandler(sys.stdout)
@@ -216,16 +213,13 @@ def main():
     # filter out everything that is above INFO level (WARN, ERROR, ...)
     h1.addFilter(lambda record: record.levelno <= logging.INFO)
     h1.setFormatter(formatter)
-    logging.getLogger().addHandler(h1)
+    logger.addHandler(h1)
     h2 = logging.StreamHandler(sys.stderr)
     # take only warnings and error logs
     h2.setLevel(logging.WARNING)
     h2.setFormatter(formatter)
-    logging.getLogger().addHandler(h2)
+    logger.addHandler(h2)
 
-    # Parse arguments
-    args = parseArgs()
-    logging.getLogger().setLevel(int(args.log_level))
 
     try:
         with pidfile.PIDFile():
@@ -235,7 +229,8 @@ def main():
         print('Already running, stopping.')
         sys.exit(1)
 
-    # Read configuration
+
+def readConfig(args):
     path = args.config
     if args.config_consul:
         items = args.config_consul.split(':')
@@ -246,7 +241,28 @@ def main():
     config = parseConfig(path)
     rules: List[Rule] = config['rules']
     ccdb_url = config['ccdb_url']
+    return ccdb_url, rules
 
+
+def process_object(object_path, rules, ccdb):
+    print(f"Processing {object_path}")
+    # logger = create_logger()
+    # logger = logging.getLogger()
+    # logger.info(f"Processing {object_path}")
+    # Take the first matching rule, if any
+    rule = findMatchingRule(rules, object_path)
+    if rule is None:
+        return
+
+    # Apply rule on object (find the plug-in script and apply)
+    module = __import__(rule.policy)
+    stats = module.process(ccdb, object_path, int(rule.delay),  # rule.migration == "True",
+                           rule.extra_params)
+    # logger.info(f"{rule.policy} applied on {object_path}: {stats}")
+    print(f"{rule.policy} applied on {object_path}: {stats}")
+
+
+def run(args, ccdb_url, rules):
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url)
     paths = ccdb.getObjectsList(getTimestampLastExecution())
@@ -257,22 +273,54 @@ def main():
 
     # For each object call the first matching rule
     logging.info("Loop through the objects and apply first matching rule.")
-    for object_path in paths:
-        logging.info(f"Processing {object_path}")
-        # Take the first matching rule, if any
-        rule = findMatchingRule(rules, object_path);
-        if rule == None:
-            continue
 
-        # Apply rule on object (find the plug-in script and apply)
-        module = __import__(rule.policy)
-        stats = module.process(ccdb, object_path, int(rule.delay),  # rule.migration == "True",
-                               rule.extra_params)
-        logging.info(f"{rule.policy} applied on {object_path}: {stats}")
+    pool = mp.Pool(8)
+
+    [pool.apply(process_object, args=(object_path, rules, ccdb)) for object_path in paths]
+
+    # for object_path in paths:
+    #     process_object(object_path=object_path, rules=rules, ccdb=ccdb)
+        # logging.info(f"Processing {object_path}")
+        # # Take the first matching rule, if any
+        # rule = findMatchingRule(rules, object_path)
+        # if rule == None:
+        #     continue
+        #
+        # # Apply rule on object (find the plug-in script and apply)
+        # module = __import__(rule.policy)
+        # stats = module.process(ccdb, object_path, int(rule.delay),  # rule.migration == "True",
+        #                        rule.extra_params)
+        # logging.info(f"{rule.policy} applied on {object_path}: {stats}")
+
+    pool.close()
 
     logging.info(
         f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
     storeSavedTimestamp()
+
+
+# ****************
+# We start here !
+# ****************
+
+def main():
+    # logger = create_logger()
+    # logger.info('Starting pooling')
+    prepareLogger(logging.getLogger())
+    # multiprocessing_logging.install_mp_handler()
+    # prepareLogger(mp.get_logger())
+
+    # Parse arguments
+    args = parseArgs()
+    logging.getLogger().setLevel(int(args.log_level))
+
+    try:
+        with PIDFile(filename='o2-qc-repo-cleaner.pid'):
+            ccdb_url, rules = readConfig(args)
+            run(args, ccdb_url, rules)
+
+    except AlreadyRunningError:
+        print('Already running. Exiting.')
 
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.
