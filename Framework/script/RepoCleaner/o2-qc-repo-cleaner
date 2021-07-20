@@ -227,13 +227,13 @@ def main():
     args = parseArgs()
     logging.getLogger().setLevel(int(args.log_level))
 
-    # get_lock('o2-qc-repo-cleaner')
     try:
         with pidfile.PIDFile():
             print('No other copies around, we go ahead.')
             time.sleep(30)
     except pidfile.AlreadyRunningError:
         print('Already running, stopping.')
+        sys.exit(1)
 
     # Read configuration
     path = args.config
