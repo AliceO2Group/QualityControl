@@ -50,7 +50,6 @@ void Clusters::initialize(o2::framework::InitContext& /*ctx*/)
 
   for (auto& wrapper : mWrapperVector) {
     getObjectsManager()->startPublishing(&wrapper);
-    getObjectsManager()->addMetadata(wrapper.getObj()->getName().data(), "custom", "87");
   }
 }
 
@@ -80,23 +79,12 @@ void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
 
   mQCClusters.analyse();
 
-  auto vecPtrNClusters = toVector(mNClustersCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getNClusters(), 300, 0, 0, true, &vecPtrNClusters);
-
-  auto vecPtrQMax = toVector(mQMaxCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getQMax(), 300, 0, 0, true, &vecPtrQMax);
-
-  auto vecPtrQTot = toVector(mQTotCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getQTot(), 300, 0, 0, true, &vecPtrQTot);
-
-  auto vecPtrSigmaTime = toVector(mSigmaTimeCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getSigmaTime(), 300, 0, 0, true, &vecPtrSigmaTime);
-
-  auto vecPtrSigmaPad = toVector(mSigmaPadCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getSigmaPad(), 300, 0, 0, true, &vecPtrSigmaPad);
-
-  auto vecPtrTimeBin = toVector(mTimeBinCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getTimeBin(), 300, 0, 0, true, &vecPtrTimeBin);
+  fillCanvases(mQCClusters.getNClusters(), mNClustersCanvasVec, mCustomParameters, "NClusters");
+  fillCanvases(mQCClusters.getQMax(), mQMaxCanvasVec, mCustomParameters, "Qmax");
+  fillCanvases(mQCClusters.getQTot(), mQTotCanvasVec, mCustomParameters, "Qtot");
+  fillCanvases(mQCClusters.getSigmaTime(), mSigmaTimeCanvasVec, mCustomParameters, "SigmaPad");
+  fillCanvases(mQCClusters.getSigmaPad(), mSigmaPadCanvasVec, mCustomParameters, "SigmaTime");
+  fillCanvases(mQCClusters.getTimeBin(), mTimeBinCanvasVec, mCustomParameters, "TimeBin");
 }
 
 void Clusters::endOfCycle()
@@ -113,7 +101,14 @@ void Clusters::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "Resetting the canvases" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  clearCanvases(mNClustersCanvasVec);
+  clearCanvases(mQMaxCanvasVec);
+  clearCanvases(mQTotCanvasVec);
+  clearCanvases(mSigmaTimeCanvasVec);
+  clearCanvases(mSigmaPadCanvasVec);
+  clearCanvases(mTimeBinCanvasVec);
 }
 
 } // namespace o2::quality_control_modules::tpc
