@@ -83,6 +83,8 @@ def parseArgs():
                         help='Dry run, no actual deletion nor modification to the CCDB.')
     parser.add_argument('--only-path', dest='only_path', action='store', default="",
                         help='Only work on given path (omit the initial slash).')
+    parser.add_argument('--workers', dest='workers', action='store', default="1",
+                        help='Number of parallel workers.')
     args = parser.parse_args()
     dryable.set(args.dry_run)
     logging.info(args)
@@ -258,7 +260,6 @@ def process_object(object_path, rules, ccdb):
     # Take the first matching rule, if any
     rule = findMatchingRule(rules, object_path)
     if rule is None:
-        logger.info("rulenone")
         return
 
     # Apply rule on object (find the plug-in script and apply)
@@ -280,9 +281,11 @@ def run(args, ccdb_url, rules):
     # For each object call the first matching rule
     logging.info("Loop through the objects and apply first matching rule.")
 
-    pool = mp.Pool(4)
-    [pool.apply(process_object, args=(object_path, rules, ccdb)) for object_path in paths]
+    logging.info(f"workers: {args.workers}")
+    pool = mp.Pool(int(args.workers))
+    [pool.apply_async(process_object, args=(object_path, rules, ccdb)) for object_path in paths]
     pool.close()
+    pool.join()
 
     logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
     storeSavedTimestamp()
