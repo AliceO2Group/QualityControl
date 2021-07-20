@@ -81,20 +81,6 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, const bo
   return run;
 }
 
-/**
- * If the string is longer than the requested length, truncate it.
- * @param toBeTruncated
- * @return toBeTruncated truncated to `length` characters
- */
-inline std::string truncate(std::string toBeTruncated, size_t length)
-{
-  if(toBeTruncated.length() > length) {
-    return toBeTruncated.erase(length, std::string::npos);
-  } else {
-    return toBeTruncated;
-  }
-}
-
 } // namespace o2::quality_control::core
 
 #endif //QUALITYCONTROL_RUNNERUTILS_H
