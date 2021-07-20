@@ -111,7 +111,7 @@ std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
 std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
 {
   // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.f
-  string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length() + 1, string::npos );
+  string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length() + 1, string::npos);
   facilityName = facilityName.substr(0, 32);
   return facilityName;
 }
