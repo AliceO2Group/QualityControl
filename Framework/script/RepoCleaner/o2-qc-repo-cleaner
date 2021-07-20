@@ -32,6 +32,9 @@ import yaml
 import time
 import consul
 
+import socket
+import pidfile
+
 from Ccdb import Ccdb
 
 
@@ -202,6 +205,25 @@ def storeSavedTimestamp():
     f.close()
 
 
+# def get_lock(process_name):
+#     """
+#     Get a global lock to avoid that several copies of this script is running at the same time.
+#     :param process_name: the name of this process (used in the global lock name)
+#     """
+#     # Without holding a reference to our socket somewhere it gets garbage
+#     # collected when the function exits
+#     get_lock._lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+#
+#     try:
+#         # The null byte (\0) means the socket is created in the abstract namespace instead of being created
+#         # on the file system itself. Works only in Linux.
+#         get_lock._lock_socket.bind('\0' + process_name)
+#         print("I got the global lock")
+#     except socket.error:
+#         print("Global lock already taken")
+#         sys.exit()
+
+
 # ****************
 # We start here !
 # ****************
@@ -224,6 +246,14 @@ def main():
     # Parse arguments
     args = parseArgs()
     logging.getLogger().setLevel(int(args.log_level))
+
+    # get_lock('o2-qc-repo-cleaner')
+    try:
+        with pidfile.PIDFile():
+            print('No other copies around, we go ahead.')
+            time.sleep(30)
+    except pidfile.AlreadyRunningError:
+        print('Already running, stopping.')
 
     # Read configuration
     path = args.config
