@@ -47,21 +47,21 @@ InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost:
 
 CommonSpec InfrastructureSpecReader::readCommonSpec(const boost::property_tree::ptree& config, const std::string& configurationSource)
 {
-  CommonSpec gc;
+  CommonSpec spec;
   for (const auto& [key, value] : config.get_child("database")) {
-    gc.database.emplace(key, value.get_value<std::string>());
+    spec.database.emplace(key, value.get_value<std::string>());
   }
-  gc.activityNumber = config.get<int>("Activity.number", gc.activityNumber);
-  gc.activityType = config.get<int>("Activity.type", gc.activityType);
-  gc.monitoringUrl = config.get<std::string>("monitoring.url", gc.monitoringUrl);
-  gc.consulUrl = config.get<std::string>("consul.url", gc.consulUrl);
-  gc.conditionDBUrl = config.get<std::string>("conditionDB.url", gc.conditionDBUrl);
-  gc.infologgerFilterDiscardDebug = config.get<bool>("infologger.filterDiscardDebug", gc.infologgerFilterDiscardDebug);
-  gc.infologgerDiscardLevel = config.get<int>("infologger.filterDiscardLevel", gc.infologgerDiscardLevel);
+  spec.activityNumber = config.get<int>("Activity.number", spec.activityNumber);
+  spec.activityType = config.get<int>("Activity.type", spec.activityType);
+  spec.monitoringUrl = config.get<std::string>("monitoring.url", spec.monitoringUrl);
+  spec.consulUrl = config.get<std::string>("consul.url", spec.consulUrl);
+  spec.conditionDBUrl = config.get<std::string>("conditionDB.url", spec.conditionDBUrl);
+  spec.infologgerFilterDiscardDebug = config.get<bool>("infologger.filterDiscardDebug", spec.infologgerFilterDiscardDebug);
+  spec.infologgerDiscardLevel = config.get<int>("infologger.filterDiscardLevel", spec.infologgerDiscardLevel);
 
-  gc.configurationSource = configurationSource;
+  spec.configurationSource = configurationSource;
 
-  return gc;
+  return spec;
 }
 
 TaskSpec InfrastructureSpecReader::readTaskSpec(std::string taskName, const boost::property_tree::ptree& config, const std::string& configurationSource)
