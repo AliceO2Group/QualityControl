@@ -90,7 +90,7 @@ git tag -a $patchVersion -m "$patchVersion"
 echo "push the tag upstream"
 git push upstream $patchVersion
 
-echo "Go to Github https://github.com/AliceO2Group/QualityControl/releases/new?tag=v${patchVersion}&title=v${patchVersion}"
+echo "Go to Github https://github.com/AliceO2Group/QualityControl/releases/new?tag=${patchVersion}&title=${patchVersion}"
 
 read -p "Fill in the release notes and create the new release in GitHub" -n 1 -r
 echo
