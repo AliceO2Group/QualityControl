@@ -19,10 +19,16 @@ using namespace std;
 namespace o2::quality_control_modules::daq
 {
 
+struct Config {
+  std::string taskName = "test";
+  std::string detectorName = "TST";
+  std::string consulUrl = "invalid";
+};
+
 BOOST_AUTO_TEST_CASE(instantiate_task)
 {
   DaqTask task;
-  TaskRunnerConfig config;
+  Config config;
   config.consulUrl = "http://consul-test.cern.ch:8500";
   config.taskName = "qcDaqTest";
   config.detectorName = "DAQ";

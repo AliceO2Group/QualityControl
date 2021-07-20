@@ -86,10 +86,10 @@ class TaskRunner : public framework::Task
   /// \brief TaskRunner's completion policy callback
   static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::InputSpan const& inputs);
 
-  std::string getDeviceName() { return mTaskConfig.deviceName; };
+  std::string getDeviceName() const { return mTaskConfig.deviceName; };
   const framework::Inputs& getInputsSpecs() const { return mTaskConfig.inputSpecs; };
-  const framework::OutputSpec getOutputSpec() { return mTaskConfig.moSpec; };
-  const framework::Options getOptions() { return mTaskConfig.options; };
+  const framework::OutputSpec& getOutputSpec() const { return mTaskConfig.moSpec; };
+  const framework::Options& getOptions() const { return mTaskConfig.options; };
 
   /// \brief ID string for all TaskRunner devices
   static std::string createTaskRunnerIdString();
@@ -111,7 +111,6 @@ class TaskRunner : public framework::Task
 
   std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
   void loadTaskConfig();
-  void loadTopologyConfig();
   void startOfActivity();
   void endOfActivity();
   void startCycle();
@@ -127,9 +126,7 @@ class TaskRunner : public framework::Task
   std::shared_ptr<ObjectsManager> mObjectsManager;
   int mRunNumber;
 
-  boost::property_tree::ptree getTaskConfigTree() const;
   void updateMonitoringStats(framework::ProcessingContext& pCtx);
-  void computeRunNumber(const framework::ServiceRegistry& services);
 
   bool mCycleOn = false;
   bool mNoMoreCycles = false;
