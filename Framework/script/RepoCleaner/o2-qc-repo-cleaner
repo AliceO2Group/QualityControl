@@ -32,7 +32,6 @@ import yaml
 import time
 import consul
 
-import socket
 import pidfile
 
 from Ccdb import Ccdb
