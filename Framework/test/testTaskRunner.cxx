@@ -36,7 +36,7 @@ using namespace o2::header;
 using namespace o2::utilities;
 using namespace o2::configuration;
 
-TaskRunnerConfig getTaskConfig(const std::string& configFilePath, const std::string& taskName)
+TaskRunnerConfig getTaskConfig(const std::string& configFilePath, const std::string& taskName, size_t id)
 {
   auto config = ConfigurationFactory::getConfiguration(configFilePath);
   auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configFilePath);
@@ -45,7 +45,7 @@ TaskRunnerConfig getTaskConfig(const std::string& configFilePath, const std::str
     return taskSpec.taskName == taskName;
   });
   if (taskSpec != infrastructureSpec.tasks.end()) {
-    return TaskRunnerFactory::extractConfig(infrastructureSpec.common, *taskSpec);
+    return TaskRunnerFactory::extractConfig(infrastructureSpec.common, *taskSpec, id);
   } else {
     throw std::runtime_error("task " + taskName + " not found in the config file");
   }
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
-  DataProcessorSpec taskRunner = TaskRunnerFactory::create(getTaskConfig(configFilePath, "abcTask"));
+  DataProcessorSpec taskRunner = TaskRunnerFactory::create(getTaskConfig(configFilePath, "abcTask", 123));
 
   BOOST_CHECK_EQUAL(taskRunner.name, "QC-TASK-RUNNER-abcTask");
 
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
-  TaskRunner qcTask{ getTaskConfig(configFilePath, "abcTask") };
+  TaskRunner qcTask{ getTaskConfig(configFilePath, "abcTask", 0) };
 
   BOOST_CHECK_EQUAL(qcTask.getDeviceName(), "QC-TASK-RUNNER-abcTask");
 
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(test_task_wrong_detector_name)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
-  DataProcessorSpec taskRunner = TaskRunnerFactory::create(getTaskConfig(configFilePath, "abcTask"));
+  DataProcessorSpec taskRunner = TaskRunnerFactory::create(getTaskConfig(configFilePath, "abcTask", 0));
   //  cout << "It should print an error message" << endl;
 }
 
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(test_task_good_detector_name)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
 
-  DataProcessorSpec taskRunner = TaskRunnerFactory::create(getTaskConfig(configFilePath, "xyzTask"));
+  DataProcessorSpec taskRunner = TaskRunnerFactory::create(getTaskConfig(configFilePath, "xyzTask", 0));
 
   //  cout << "no error message" << endl;
 }

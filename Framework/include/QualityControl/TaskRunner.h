@@ -18,8 +18,6 @@
 #ifndef QC_CORE_TASKRUNNER_H
 #define QC_CORE_TASKRUNNER_H
 
-#include <boost/property_tree/ptree.hpp>
-
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>
