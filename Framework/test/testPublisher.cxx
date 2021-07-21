@@ -30,11 +30,13 @@ using namespace AliceO2::Common;
 namespace o2::quality_control::core
 {
 
+// fixme: unify with testObjectManager?
 BOOST_AUTO_TEST_CASE(publisher_test)
 {
-  TaskConfig config;
-  config.taskName = "test";
-  ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  std::string taskName = "test";
+  std::string detectorName = "TST";
+  std::string consulUrl = "invalid";
+  ObjectsManager objectsManager(taskName, detectorName, consulUrl, 0, true);
   TObjString s("content");
   objectsManager.startPublishing(&s);
 

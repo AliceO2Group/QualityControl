@@ -22,7 +22,7 @@
 namespace o2::quality_control::core
 {
 
-TaskInterface* TaskFactory::create(TaskConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
+TaskInterface* TaskFactory::create(TaskRunnerConfig& taskConfig, std::shared_ptr<ObjectsManager> objectsManager)
 {
   TaskInterface* result = root_class_factory::create<TaskInterface>(taskConfig.moduleName, taskConfig.className);
   result->setName(taskConfig.taskName);

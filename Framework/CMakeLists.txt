@@ -53,6 +53,7 @@ add_library(O2QualityControl
   src/TaskInterface.cxx
   src/RepositoryBenchmark.cxx
   src/InfrastructureGenerator.cxx
+  src/InfrastructureSpecReader.cxx
   src/Check.cxx
   src/Aggregator.cxx
   src/ServiceDiscovery.cxx
@@ -73,7 +74,8 @@ add_library(O2QualityControl
   src/UpdatePolicyManager.cxx
   src/AdvancedWorkflow.cxx
   src/QualitiesToTRFCollectionConverter.cxx
-  src/Calculators.cxx)
+  src/Calculators.cxx
+  src/DataSourceSpec.cxx)
 
 target_include_directories(
   O2QualityControl

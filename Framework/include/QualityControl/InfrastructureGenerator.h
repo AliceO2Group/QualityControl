@@ -71,9 +71,9 @@ class InfrastructureGenerator
   /// configuration to be 'local'.
   ///
   /// \param configurationSource - full path to configuration file, preceded with the backend (f.e. "json://")
-  /// \param host - name of the machine
+  /// \param targetHost - name of the machine
   /// \return generated local QC workflow
-  static framework::WorkflowSpec generateLocalInfrastructure(std::string configurationSource, std::string host);
+  static framework::WorkflowSpec generateLocalInfrastructure(std::string configurationSource, std::string targetHost);
 
   /// \brief Generates the local part of the QC infrastructure for a specified host.
   ///
