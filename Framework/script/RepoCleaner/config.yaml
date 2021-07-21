@@ -11,10 +11,10 @@ Rules:
     delay: 60
     policy: 1_per_run
     delete_when_no_run: True
-  - object_path: qc/TST/FunctionalTest*
+  - object_path: qc/TST/MO/FunctionalTest*
     delay: 60
     policy: none_kept
-  - object_path: qc/checks/TST/FunctionalTest*
+  - object_path: qc/TST/QO/FunctionalTest*
     delay: 60
     policy: none_kept
   - object_path: qc/TST/MO/Test/.*
