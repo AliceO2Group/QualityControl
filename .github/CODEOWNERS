@@ -1,6 +1,7 @@
 # Global access
 *       @Barthelemy @knopers8
 
-# TOF
+# Detectors
 /Modules/TOF/      @njacazio
 /Modules/EMCAL/    @mfasDa 
+/Modules/TPC/      @wiechula
