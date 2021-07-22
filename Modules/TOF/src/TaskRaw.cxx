@@ -49,7 +49,7 @@ void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
   mCounterRDH[rdh->feeId & 0xFF].Count(0);
 
   //Case for the RDH word "fatal"
-  if ((rdh->detectorField & 0x00010000) != 0) {
+  if ((rdh->detectorField & 0x00001000) != 0) {
     mCounterRDH[rdh->feeId & 0xFF].Count(1);
     // LOG(WARNING) << "RDH flag \"fatal\" error occurred in crate " << static_cast<int>(rdh->feeId & 0xFF);
   }
@@ -190,7 +190,7 @@ void RawDataDecoder::initHistograms() // Initialization of histograms in Decoder
   mHistoDiagnostic.get()->GetYaxis()->SetBinLabel(1, "DRM");
   mHistoDiagnostic.get()->GetYaxis()->SetBinLabel(2, "LTM");
   for (int k = 0; k < 10; k++) {
-    mHistoDiagnostic.get()->GetYaxis()->SetBinLabel(3 + k, Form("TRM%i", k));
+    mHistoDiagnostic.get()->GetYaxis()->SetBinLabel(3 + k, Form("TRMSlot%i", 3 + k));
   }
   mHistoNErrors.reset(new TH1F("hNErrors", "Error numbers;Number of errors", 1000, 0., 1000.));
   mHistoErrorBits.reset(new TH1F("hErrorBit", "Error Bit;TDC error bit", 15, 0., 15.));
@@ -471,8 +471,8 @@ void TaskRaw::endOfCycle()
       diagnosticHisto = mHistoTRM[slot - 2].get();
     }
     if (diagnosticHisto) {
-      for (int crate = 0; crate < diagnosticHisto->GetNbinsX(); crate++) { // Loop over crates
-        for (int word = 0; word < diagnosticHisto->GetNbinsY(); word++) {  // Loop over words
+      for (int crate = 0; crate < diagnosticHisto->GetNbinsY(); crate++) { // Loop over crates
+        for (int word = 0; word < diagnosticHisto->GetNbinsX(); word++) {  // Loop over words
           mHistoCrate[crate]->SetBinContent(word + 1, slot + 2,            // Shift position 1 to make room for the RDH
                                             diagnosticHisto->GetBinContent(word + 1, crate + 1));
         }
