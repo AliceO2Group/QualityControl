@@ -33,9 +33,8 @@ import time
 import consul
 import multiprocessing as mp
 
-import pidfile
-
 from Ccdb import Ccdb
+from pidfile import PIDFile, AlreadyRunningError
 
 
 class Rule:
@@ -237,6 +236,7 @@ def create_parallel_logger():
     if not len(logger.handlers):
         logger.addHandler(h2)
         logger.addHandler(h1)
+    return logger
 
 
 def readConfig(args):
@@ -277,7 +277,6 @@ def run(args, ccdb_url, rules):
         paths = [item for item in paths if item.startswith(args.only_path)]
     logging.debug(paths)
     logging.debug(len(paths))
-
     # For each object call the first matching rule
     logging.info("Loop through the objects and apply first matching rule.")
 
@@ -303,12 +302,12 @@ def main():
     logging.getLogger().setLevel(int(args.log_level))
 
     try:
-        with pidfile.PIDFile():
-            print('No other copies around, we go ahead.')
-            time.sleep(30)
-    except pidfile.AlreadyRunningError:
-        print('Already running, stopping.')
-        sys.exit(1)
+        with PIDFile(filename='o2-qc-repo-cleaner.pid'):
+            ccdb_url, rules = readConfig(args)
+            run(args, ccdb_url, rules)
+
+    except AlreadyRunningError:
+        print('Already running. Exiting.')
 
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.
