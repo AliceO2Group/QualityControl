@@ -75,7 +75,9 @@ add_library(O2QualityControl
   src/AdvancedWorkflow.cxx
   src/QualitiesToTRFCollectionConverter.cxx
   src/Calculators.cxx
-  src/DataSourceSpec.cxx)
+  src/DataSourceSpec.cxx
+  src/RootFileSink.cxx
+  src/RootFileSource.cxx)
 
 target_include_directories(
   O2QualityControl

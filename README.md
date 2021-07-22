@@ -62,6 +62,7 @@ For a general overview of our (O2) software, organization and processes, please 
         * [Plugging the QC to an existing DPL workflow](doc/Advanced.md#plugging-the-qc-to-an-existing-dpl-workflow)
         * [Production of QC objects outside this framework](doc/Advanced.md#production-of-qc-objects-outside-this-framework)
         * [Multi-node setups](doc/Advanced.md#multi-node-setups)
+        * [Batch processing](doc/Advanced.md#batch-processing)
         * [Moving window](doc/Advanced.md#moving-window)
         * [Writing a DPL data producer](doc/Advanced.md#writing-a-dpl-data-producer)
         * [QC with DPL Analysis](doc/Advanced.md#qc-with-dpl-analysis)
