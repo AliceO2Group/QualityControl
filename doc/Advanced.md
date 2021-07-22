@@ -32,6 +32,11 @@ Advanced topics
 * [FLP Suite](#flp-suite)
    * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
    * [Switch detector in the workflow <em>readout-dataflow</em>](#switch-detector-in-the-workflow-readout-dataflow)
+   * [Get all the task output to the infologger](#get-all-the-task output-to-the-infologger)
+   * [Enable the repo cleaner](#enable-the-repo-cleaner)
+
+  
+## Using a different config file with the general QC
 * [Configuration](#configuration-1)
    * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
    * [Configuration files details](#configuration-files-details)
@@ -549,7 +554,7 @@ The QC is part of the FLP Suite. The Suite is installed on FLPs through RPMs and
 
 ## Developing QC modules on a machine with FLP suite
 
-FOLLOWING THE INTRODUCTION OF UPDATABLE RPMS, THE FOLLOWING PROCEDURES ARE NOT CORRECT ANY MORE. 
+FOLLOWING THE INTRODUCTION OF UPDATABLE RPMS, THE FOLLOWING PROCEDURES ARE NOT CORRECT ANY MORE, ALTHOUGH OPTION 1 should still work.
 
 NEW PROCEDURES ARE BEING TESTED.
 
@@ -583,6 +588,14 @@ The workflow readout-dataflow works by default with the detector code TST. To ru
 
 2. Replace all instances of `TST` in the QC config file in consul with the one of the detector (e.g. `EMC`).
 2. Set the variable `detector` in aliECS to the detector (e.g. `EMC`).
+  
+## Get all the task output to the infologger
+  
+Set the variable log_task_output=all
+  
+## Using a different config file with the general QC
+  
+One can set the `QC URI` to a different config file that is used by the general QC when enabled. However, this is not the recommended way. One must make sure that the name of the task and the check are left untouched and that they are both enabled.
 
 ## Enable the repo cleaner 
 
@@ -599,10 +612,6 @@ By defaults there is a *disabled* cron job :
 3. update the cron job to use the modified config file 
 4. uncomment the cron job
   
-## Get all the task output to the infologger
-  
-Set the variable log_task_output=all
-
 # Configuration 
 
 ## Definition and access of task-specific configuration
