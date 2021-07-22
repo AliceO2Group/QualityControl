@@ -278,14 +278,17 @@ framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructur
     }
   }
 
-  // todo: could be moved to a factory.
-  workflow.push_back({ "qc-root-file-sink",
-                       std::move(fileSinkInputs),
-                       Outputs{},
-                       adaptFromTask<RootFileSink>(sinkFilePath),
-                       Options{},
-                       CommonServices::defaultServices(),
-                       { RootFileSink::getLabel() } });
+  if (fileSinkInputs.size() > 0) {
+    // todo: could be moved to a factory.
+    workflow.push_back({ "qc-root-file-sink",
+                         std::move(fileSinkInputs),
+                         Outputs{},
+                         adaptFromTask<RootFileSink>(sinkFilePath),
+                         Options{},
+                         CommonServices::defaultServices(),
+                         { RootFileSink::getLabel() } });
+  }
+
   return workflow;
 }
 
@@ -307,15 +310,14 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
   std::vector<OutputSpec> fileSourceOutputs;
   for (const auto& taskSpec : infrastructureSpec.tasks) {
     if (taskSpec.active) {
-      // The "resetAfterCycles" parameters should be handled differently for standalone/remote and local tasks,
-      // thus we should not let TaskRunnerFactory read it and decide by itself, since it might not be aware of
-      // the context we run QC.
-      auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, taskSpec.resetAfterCycles);
+      auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, 1);
       fileSourceOutputs.push_back(taskConfig.moSpec);
       fileSourceOutputs.back().binding.value = taskSpec.taskName;
     }
   }
-  workflow.push_back({ "qc-root-file-source", {}, std::move(fileSourceOutputs), adaptFromTask<RootFileSource>(sourceFilePath) });
+  if (fileSourceOutputs.size() > 0) {
+    workflow.push_back({ "qc-root-file-source", {}, std::move(fileSourceOutputs), adaptFromTask<RootFileSource>(sourceFilePath) });
+  }
 
   auto checkRunnerOutputs = generateCheckRunners(workflow, configurationSource);
   generateAggregator(workflow, configurationSource, checkRunnerOutputs);
