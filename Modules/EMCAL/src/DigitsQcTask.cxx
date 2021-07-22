@@ -105,8 +105,9 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << AliceO2::InfoLogger::InfoLogger::endm;
   int eventcounter = 0;
   for (auto trg : triggerrecords) {
-    if (!trg.getNumberOfObjects())
+    if (!trg.getNumberOfObjects()) {
       continue;
+    }
 
     QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits" << QcInfoLogger::endm;
     gsl::span<const o2::emcal::Cell> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
@@ -252,12 +253,19 @@ void DigitsQcTask::DigitsHistograms::reset()
   for (auto h : mDigitTime) {
     h->Reset();
   }
+  for (auto h : mDigitAmplitudeCalib) {
+    h->Reset();
+  }
+  for (auto h : mDigitTimeCalib) {
+    h->Reset();
+  }
 
   mDigitAmplitudeEMCAL->Reset();
   mDigitAmplitudeDCAL->Reset();
   mDigitOccupancy->Reset();
   mDigitOccupancyThr->Reset();
   mIntegratedOccupancy->Reset();
+  mnumberEvents->Reset();
 }
 
 void DigitsQcTask::DigitsHistograms::clean()
@@ -274,10 +282,24 @@ void DigitsQcTask::DigitsHistograms::clean()
   for (auto h : mDigitTimeCalib) {
     delete h;
   }
+
   if (mDigitAmplitudeEMCAL)
     delete mDigitAmplitudeEMCAL;
+
   if (mDigitAmplitudeDCAL)
     delete mDigitAmplitudeDCAL;
+
+  if (mDigitOccupancy)
+    delete mDigitOccupancy;
+
+  if (mDigitOccupancyThr)
+    delete mDigitOccupancyThr;
+
+  if (mIntegratedOccupancy)
+    delete mIntegratedOccupancy;
+
+  if (mnumberEvents)
+    delete mnumberEvents;
 }
 
 } // namespace emcal
