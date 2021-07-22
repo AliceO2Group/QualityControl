@@ -598,6 +598,10 @@ By defaults there is a *disabled* cron job :
 3. run by hand the repo-cleaner to check that the config file is ok   
 3. update the cron job to use the modified config file 
 4. uncomment the cron job
+  
+## Get all the task output to the infologger
+  
+Set the variable log_task_output=all
 
 # Configuration 
 
