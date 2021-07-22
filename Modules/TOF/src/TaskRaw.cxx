@@ -51,7 +51,7 @@ void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
   //Case for the RDH word "fatal"
   if ((rdh->detectorField & 0x00010000) != 0) {
     mCounterRDH[rdh->feeId & 0xFF].Count(1);
-    LOG(WARNING) << "RDH flag \"fatal\" error occurred in crate " << static_cast<int>(rdh->feeId & 0xFF);
+    // LOG(WARNING) << "RDH flag \"fatal\" error occurred in crate " << static_cast<int>(rdh->feeId & 0xFF);
   }
 
   if (rdh->stop) { // if RDH close
