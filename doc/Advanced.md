@@ -32,7 +32,8 @@ Advanced topics
 * [FLP Suite](#flp-suite)
    * [Developing QC modules on a machine with FLP suite](#developing-qc-modules-on-a-machine-with-flp-suite)
    * [Switch detector in the workflow <em>readout-dataflow</em>](#switch-detector-in-the-workflow-readout-dataflow)
-   * [Get all the task output to the infologger](#get-all-the-task output-to-the-infologger)
+   * [Get all the task output to the infologger](#get-all-the-task-output-to-the-infologger)
+   * [Using a different config file with the general QC](#using-a-different-config-file-with-the-general-qc-1)
    * [Enable the repo cleaner](#enable-the-repo-cleaner)
 
   
