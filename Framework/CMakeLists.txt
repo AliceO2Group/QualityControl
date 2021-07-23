@@ -269,7 +269,7 @@ foreach(i RANGE ${count})
   target_link_libraries(${test_name}
                         PRIVATE O2QualityControl Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name} ${arg})
-  set_tests_properties(${test_name} PROPERTIES TIMEOUT 45)
+  set_tests_properties(${test_name} PROPERTIES TIMEOUT 30)
 endforeach()
 
 foreach(t testTaskInterface testWorkflow testTaskRunner testCheckWorkflow
@@ -284,7 +284,7 @@ target_include_directories(testVersion PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib) 
 
-set_property(TEST testWorkflow PROPERTY TIMEOUT 30)
+set_property(TEST testWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
 set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
@@ -301,7 +301,7 @@ configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-function
 add_test(NAME functional_test COMMAND o2-qc-functional-test.sh)
 set_tests_properties(functional_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
 set_property(TEST functional_test PROPERTY LABELS slow)
-set_property(TEST functional_test PROPERTY TIMEOUT 30)
+set_property(TEST functional_test PROPERTY TIMEOUT 45)
 
 include(GenerateUniquePort)
 o2_generate_unique_port(UNIQUE_PORT_1)
