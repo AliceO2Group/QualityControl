@@ -53,10 +53,10 @@ fi
 delete_data
 
 # Run the Tasks 3 times, merge results into the file.
-o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_merged${UNIQUE_ID}.root
-o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_merged${UNIQUE_ID}.root
+o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_merged${UNIQUE_ID}.root --run
+o2-qc-run-producer --message-amount 100 --message-rate 100 | o2-qc --config json:/${JSON_DIR}/batch-test.json --local-batch /tmp/batch_test_merged${UNIQUE_ID}.root --run
 # Run Checks and Aggregators, publish results to QCDB
-o2-qc --config json:/${JSON_DIR}/batch-test.json --remote-batch /tmp/batch_test_merged${UNIQUE_ID}.root
+o2-qc --config json:/${JSON_DIR}/batch-test.json --remote-batch /tmp/batch_test_merged${UNIQUE_ID}.root --run
 
 # check MonitorObject
 # first the return code must be 200
