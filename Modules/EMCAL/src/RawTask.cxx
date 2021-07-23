@@ -30,6 +30,7 @@
 #include "EMCALReconstruction/AltroDecoder.h"
 #include "EMCALReconstruction/RawReaderMemory.h"
 #include "EMCALReconstruction/RawHeaderStream.h"
+#include <Framework/ConcreteDataMatcher.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputRecord.h>
 #include <CommonConstants/Triggers.h>
@@ -349,6 +350,18 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   using CHTYP = o2::emcal::ChannelType_t;
 
+  // The type DataOrigin allows only conversion of char arrays with size 4, not char *, therefore
+  // the origin string has to be converted manually to the char array and checked for length.
+  if (mDataOrigin.size() > 4) {
+    QcInfoLogger::GetInstance() << QcInfoLogger::Error << "No valid data origin" << mDataOrigin << ", cannot process" << QcInfoLogger::endm;
+    return;
+  }
+  char dataOrigin[4];
+  strcpy(dataOrigin, mDataOrigin.data());
+
+  if (isLostTimeframe(ctx))
+    return;
+
   Int_t nPagesMessage = 0, nSuperpagesMessage = 0;
   QcInfoLogger::GetInstance() << QcInfoLogger::Debug << " Processing message " << mNumberOfMessages << AliceO2::InfoLogger::InfoLogger::endm;
   mNumberOfMessages++;
@@ -364,7 +377,9 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (Int_t i = 0; i < NFEESM; i++)
     nchannels[i] = 0;
 
-  for (const auto& rawData : framework::InputRecordWalker(ctx.inputs())) {
+  // Accept only descriptor RAWDATA, discard FLP/SUBTIMEFRAME
+  std::vector<framework::InputSpec> filter{ { "filter", framework::ConcreteDataTypeMatcher(dataOrigin, "RAWDATA") } };
+  for (const auto& rawData : framework::InputRecordWalker(ctx.inputs(), filter)) {
     // get message header
     if (rawData.header != nullptr && rawData.payload != nullptr) {
       const auto* header = header::get<header::DataHeader*>(rawData.header);
@@ -657,4 +672,21 @@ void RawTask::reset()
   mPayloadSize->Reset();
   mErrorTypeAltro->Reset();
 }
+
+bool RawTask::isLostTimeframe(framework::ProcessingContext& ctx) const
+{
+  constexpr auto originEMC = header::gDataOriginEMC;
+  o2::framework::InputSpec dummy{ "dummy",
+                                  framework::ConcreteDataMatcher{ originEMC,
+                                                                  header::gDataDescriptionRawData,
+                                                                  0xDEADBEEF } };
+  for (const auto& ref : o2::framework::InputRecordWalker(ctx.inputs(), { dummy })) {
+    const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
+    if (dh->payloadSize == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 } // namespace o2::quality_control_modules::emcal
