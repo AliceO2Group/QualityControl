@@ -315,6 +315,14 @@ set_tests_properties(multinode_test
 set_property(TEST multinode_test PROPERTY LABELS slow)
 set_property(TEST multinode_test PROPERTY TIMEOUT 75)
 
+# Batch processing test
+string(RANDOM UNIQUE_ID)
+configure_file(batch-test.json.in ${CMAKE_BINARY_DIR}/tests/batch-test.json) # substitute the unique id in the task name
+add_test(NAME batch_test COMMAND o2-qc-batch-test.sh)
+set_tests_properties(batch_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
+set_property(TEST batch_test PROPERTY LABELS slow)
+set_property(TEST batch_test PROPERTY TIMEOUT 45)
+
 # disable some tests in the CI to avoid un-expected failures.
 # to be removed when it is fixed / understood
 #set_property(TEST functional_test PROPERTY LABELS manual)
