@@ -405,6 +405,7 @@ install(FILES example-default.json
 install(PROGRAMS script/RepoCleaner/o2-qc-repo-cleaner
                  script/o2-qc-functional-test.sh
                  script/o2-qc-multinode-test.sh
+                 script/o2-qc-batch-test.sh
         DESTINATION bin)
 
 install(FILES script/RepoCleaner/rules/1_per_hour.py
