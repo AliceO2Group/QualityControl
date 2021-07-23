@@ -219,17 +219,17 @@ void DigitsQcTask::DigitsHistograms::initForTrigger(const char* trigger)
 {
   mTriggerClass = trigger;
 
-  mDigitAmplitude[0] = new TH2F(Form("digitAmplitudeHG_%s", mTriggerClass.data()), Form("Digit Amplitude (High gain) %s", mTriggerClass.data()), 100, 0, 100, 20000, 0., 20000.);
-  mDigitAmplitude[1] = new TH2F(Form("digitAmplitudeLG_%s", mTriggerClass.data()), Form("Digit Amplitude (Low gain) %s", mTriggerClass.data()), 100, 0, 100, 20000, 0., 20000.);
+  mDigitAmplitude[0] = new TH2F(Form("digitAmplitudeHG_%s", mTriggerClass.data()), Form("Digit Amplitude (High gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
+  mDigitAmplitude[1] = new TH2F(Form("digitAmplitudeLG_%s", mTriggerClass.data()), Form("Digit Amplitude (Low gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
 
-  mDigitAmplitudeCalib[0] = new TH2F(Form("digitAmplitudeHGCalib_%s", mTriggerClass.data()), Form("Digit Amplitude (High gain) %s", mTriggerClass.data()), 100, 0, 100, 20000, 0., 20000.);
-  mDigitAmplitudeCalib[1] = new TH2F(Form("digitAmplitudeLGCalib_%s", mTriggerClass.data()), Form("Digit Amplitude (Low gain) %s", mTriggerClass.data()), 100, 0, 100, 20000, 0., 20000.);
+  mDigitAmplitudeCalib[0] = new TH2F(Form("digitAmplitudeHGCalib_%s", mTriggerClass.data()), Form("Digit Amplitude (High gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
+  mDigitAmplitudeCalib[1] = new TH2F(Form("digitAmplitudeLGCalib_%s", mTriggerClass.data()), Form("Digit Amplitude (Low gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
 
-  mDigitTime[0] = new TH2F(Form("digitTimeHG_%s", mTriggerClass.data()), Form("Digit Time (High gain) %s", mTriggerClass.data()), 2000, -200, 200, 20000, 0., 20000.);
-  mDigitTime[1] = new TH2F(Form("digitTimeLG_%s", mTriggerClass.data()), Form("Digit Time (Low gain) %s", mTriggerClass.data()), 2000, -200, 200, 20000, 0., 20000.);
+  mDigitTime[0] = new TH2F(Form("digitTimeHG_%s", mTriggerClass.data()), Form("Digit Time (High gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
+  mDigitTime[1] = new TH2F(Form("digitTimeLG_%s", mTriggerClass.data()), Form("Digit Time (Low gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
 
-  mDigitTimeCalib[0] = new TH2F(Form("digitTimeHGCalib_%s", mTriggerClass.data()), Form("Digit Time Calib (High gain) %s", mTriggerClass.data()), 2000, -200, 200, 20000, 0., 20000.);
-  mDigitTimeCalib[1] = new TH2F(Form("digitTimeLGCalib_%s", mTriggerClass.data()), Form("Digit Time Calib (Low gain) %s", mTriggerClass.data()), 2000, -200, 200, 20000, 0., 20000.);
+  mDigitTimeCalib[0] = new TH2F(Form("digitTimeHGCalib_%s", mTriggerClass.data()), Form("Digit Time Calib (High gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
+  mDigitTimeCalib[1] = new TH2F(Form("digitTimeLGCalib_%s", mTriggerClass.data()), Form("Digit Time Calib (Low gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
 
   mDigitOccupancy = new TH2F(Form("digitOccupancyEMC_%s", mTriggerClass.data()), Form("Digit Occupancy EMCAL %s", mTriggerClass.data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
   mDigitOccupancyThr = new TH2F(Form("digitOccupancyEMCwThr_%s", mTriggerClass.data()), Form("Digit Occupancy EMCAL with E>0.5 GeV/c %s", mTriggerClass.data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
