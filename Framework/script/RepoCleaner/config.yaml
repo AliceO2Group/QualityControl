@@ -17,6 +17,18 @@ Rules:
   - object_path: qc/TST/QO/FunctionalTest*
     delay: 60
     policy: none_kept
+  - object_path: qc/TST/MO/BatchTestTask*
+    delay: 60
+    policy: none_kept
+  - object_path: qc/TST/QO/BatchTestCheck*
+    delay: 60
+    policy: none_kept
+  - object_path: qc/TST/MO/MultiNodeRemoteTest*
+    delay: 60
+    policy: none_kept
+  - object_path: qc/TST/MO/MultiNodeLocalTest*
+    delay: 60
+    policy: none_kept
   - object_path: qc/TST/MO/Test/.*
     delay: 1440
     policy: none_kept
