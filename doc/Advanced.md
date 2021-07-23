@@ -13,6 +13,7 @@ Advanced topics
       * [Example 2: advanced](#example-2-advanced)
       * [Limitations](#limitations)
    * [Multi-node setups](#multi-node-setups)
+   * [Batch processing](#batch-processing)
    * [Moving window](#moving-window)
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
@@ -274,7 +275,34 @@ If there are no problems, on QCG you should see the `example` histogram updated 
 and `qc/TST/MO/MultiNodeRemote`, and corresponding Checks under the path `qc/TST/QO/`.
 
 When using AliECS, one has to generate workflow templates and upload them to the corresponding repository. Please
-contact the QC or AliECS developers to receive assistance or instruction on how to do that.
+contact the QC or AliECS developers to receive assistance or instructions on how to do that.
+
+## Batch processing
+
+In certain cases merging results of parallel QC Tasks cannot be performed in form of message passing.
+An example of this are the simulation workflows, which exchange data between processing stages via files
+ and produce (and process) consecutive TimeFrames in different directories in parallel.
+Then, one can run QC Tasks on incomplete data and save the results to a file.
+If the file already exists, the new objects will be merged with those obtained so far.
+At the end, one can run the rest of processing chain (Checks, Aggregators) on the complete objects.
+
+Here is a simple example:
+```bash
+# Remove any existing results
+rm results.root
+# Run the Tasks 3 times, merge results into the file.
+o2-qc-run-producer --message-amount 100 | o2-qc --config json:/${QUALITYCONTROL_ROOT}/etc/basic.json --local-batch results.root
+o2-qc-run-producer --message-amount 100 | o2-qc --config json:/${QUALITYCONTROL_ROOT}/etc/basic.json --local-batch results.root
+o2-qc-run-producer --message-amount 100 | o2-qc --config json:/${QUALITYCONTROL_ROOT}/etc/basic.json --local-batch results.root
+# Run Checks and Aggregators, publish results to QCDB
+o2-qc --config json:/${QUALITYCONTROL_ROOT}/etc/basic.json --remote-batch results.root
+```
+Please note, that the local batch QC workflow should not work on the same file at the same time.
+A semaphore mechanism is required if there is a risk they might be executed in parallel.
+
+To be done:
+- merging multiple files into one, to allow for cases, when local batch workflows cannot access the same file.
+- support for Post-Processing.
 
 ## Moving window
 

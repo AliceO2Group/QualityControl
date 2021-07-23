@@ -28,6 +28,8 @@
 #include "QualityControl/TaskSpec.h"
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/InfrastructureSpec.h"
+#include "QualityControl/RootFileSink.h"
+#include "QualityControl/RootFileSource.h"
 
 #include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataSpecUtils.h>
@@ -255,12 +257,88 @@ void InfrastructureGenerator::generateRemoteInfrastructure(framework::WorkflowSp
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
+framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructure(std::string configurationSource, std::string sinkFilePath)
+{
+  printVersion();
+
+  auto config = ConfigurationFactory::getConfiguration(configurationSource);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configurationSource);
+  std::vector<InputSpec> fileSinkInputs;
+
+  WorkflowSpec workflow;
+
+  for (const auto& taskSpec : infrastructureSpec.tasks) {
+    if (taskSpec.active) {
+
+      // We will merge deltas, thus we need to reset after each cycle (resetAfterCycles==1)
+      auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, 1);
+      workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
+
+      fileSinkInputs.emplace_back(taskSpec.taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskSpec.taskName));
+    }
+  }
+
+  if (fileSinkInputs.size() > 0) {
+    // todo: could be moved to a factory.
+    workflow.push_back({ "qc-root-file-sink",
+                         std::move(fileSinkInputs),
+                         Outputs{},
+                         adaptFromTask<RootFileSink>(sinkFilePath),
+                         Options{},
+                         CommonServices::defaultServices(),
+                         { RootFileSink::getLabel() } });
+  }
+
+  return workflow;
+}
+
+void InfrastructureGenerator::generateLocalBatchInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string sinkFilePath)
+{
+  auto qcInfrastructure = InfrastructureGenerator::generateLocalBatchInfrastructure(std::move(configurationSource), std::move(sinkFilePath));
+  workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
+}
+
+framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructure(std::string configurationSource, std::string sourceFilePath)
+{
+  printVersion();
+
+  auto config = ConfigurationFactory::getConfiguration(configurationSource);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configurationSource);
+
+  WorkflowSpec workflow;
+
+  std::vector<OutputSpec> fileSourceOutputs;
+  for (const auto& taskSpec : infrastructureSpec.tasks) {
+    if (taskSpec.active) {
+      auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, 0, 1);
+      fileSourceOutputs.push_back(taskConfig.moSpec);
+      fileSourceOutputs.back().binding.value = taskSpec.taskName;
+    }
+  }
+  if (fileSourceOutputs.size() > 0) {
+    workflow.push_back({ "qc-root-file-source", {}, std::move(fileSourceOutputs), adaptFromTask<RootFileSource>(sourceFilePath) });
+  }
+
+  auto checkRunnerOutputs = generateCheckRunners(workflow, configurationSource);
+  generateAggregator(workflow, configurationSource, checkRunnerOutputs);
+  generatePostProcessing(workflow, configurationSource);
+
+  return workflow;
+}
+
+void InfrastructureGenerator::generateRemoteBatchInfrastructure(framework::WorkflowSpec& workflow, std::string configurationSource, std::string sourceFilePath)
+{
+  auto qcInfrastructure = InfrastructureGenerator::generateRemoteBatchInfrastructure(configurationSource, sourceFilePath);
+  workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
+}
+
 void InfrastructureGenerator::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
   TaskRunnerFactory::customizeInfrastructure(policies);
   MergerBuilder::customizeInfrastructure(policies);
   CheckRunnerFactory::customizeInfrastructure(policies);
   AggregatorRunnerFactory::customizeInfrastructure(policies);
+  RootFileSink::customizeInfrastructure(policies);
 }
 
 void InfrastructureGenerator::printVersion()
