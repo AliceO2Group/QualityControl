@@ -27,7 +27,11 @@
 #include "EMCALBase/Geometry.h"
 #include "EMCALCalib/BadChannelMap.h"
 #include "EMCALCalib/TimeCalibrationParams.h"
+#include <Framework/ConcreteDataMatcher.h>
+#include <Framework/DataRefUtils.h>
+#include <Framework/DataSpecUtils.h>
 #include <Framework/InputRecord.h>
+#include <Framework/InputRecordWalker.h>
 #include <CommonConstants/Triggers.h>
 
 namespace o2
@@ -98,22 +102,36 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  // Get payload and loop over digits
-  auto digitcontainer = ctx.inputs().get<gsl::span<o2::emcal::Cell>>("emcal-digits"); //it was emcal::Digit
-  auto triggerrecords = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>("emcal-triggerecords");
+  // Handling of inputs from multiple subevents (multiple FLPs)
+  // Build maps of trigger records and cells according to the subspecification
+  // and combine trigger records from different maps into a single map of range
+  // references and subspecifications
+  std::vector<framework::InputSpec> cellInputs{ { "cellfilter", framework::ConcreteDataTypeMatcher(header::gDataOriginEMC, "CELLS") } },
+    triggerRecordInputs{ { "triggerrecordfilter", framework::ConcreteDataTypeMatcher(header::gDataOriginEMC, "CELLSTRGR") } };
+  std::unordered_map<int, gsl::span<const o2::emcal::Cell>> cellSubEvents;
+  std::unordered_map<int, gsl::span<const o2::emcal::TriggerRecord>> triggerRecordSubevents;
+
+  for (const auto& celldata : framework::InputRecordWalker(ctx.inputs(), cellInputs)) {
+    int subspecification = framework::DataRefUtils::getHeader<header::DataHeader*>(celldata)->subSpecification;
+    cellSubEvents[subspecification] = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(celldata);
+  }
+  for (const auto& trgrecorddata : framework::InputRecordWalker(ctx.inputs(), triggerRecordInputs)) {
+    int subspecification = framework::DataRefUtils::getHeader<header::DataHeader*>(trgrecorddata)->subSpecification;
+    triggerRecordSubevents[subspecification] = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(trgrecorddata);
+  }
+
+  auto combinedEvents = buildCombinedEvents(triggerRecordSubevents);
 
   //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << AliceO2::InfoLogger::InfoLogger::endm;
   int eventcounter = 0;
-  for (auto trg : triggerrecords) {
+  for (auto trg : combinedEvents) {
     if (!trg.getNumberOfObjects()) {
       continue;
     }
-
     QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits" << QcInfoLogger::endm;
-    gsl::span<const o2::emcal::Cell> eventdigits(digitcontainer.data() + trg.getFirstEntry(), trg.getNumberOfObjects());
 
     //trigger type
-    auto triggertype = trg.getTriggerBits();
+    auto triggertype = trg.mTriggerType;
     bool isPhysTrigger = triggertype & o2::trigger::PhT, isCalibTrigger = triggertype & o2::trigger::Cal;
     std::string trgClass;
     if (isPhysTrigger) {
@@ -127,44 +145,53 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     auto histos = mHistogramContainer[trgClass];
 
-    for (auto digit : eventdigits) {
-      int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
-      if (index < 0)
-        continue;
-      auto cellindices = mGeometry->GetCellIndex(digit.getTower());
+    // iterate over subevents
+    for (auto& subev : trg.mSubevents) {
+      auto cellsSubspec = cellSubEvents.find(subev.mSpecification);
+      if (cellsSubspec == cellSubEvents.end()) {
+        QcInfoLogger::GetInstance() << QcInfoLogger::Error << "No cell data found for subspecification " << subev.mSpecification << QcInfoLogger::endm;
+      } else {
+        gsl::span<const o2::emcal::Cell> eventdigits(cellsSubspec->second.data() + subev.mCellRange.getFirstEntry(), subev.mCellRange.getEntries());
+        for (auto digit : eventdigits) {
+          int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
+          if (index < 0)
+            continue;
+          auto cellindices = mGeometry->GetCellIndex(digit.getTower());
+          histos.mDigitAmplitude[index]->Fill(digit.getEnergy(), digit.getTower());
 
-      histos.mDigitAmplitude[index]->Fill(digit.getEnergy(), digit.getTower());
+          auto timeoffset = mTimeCalib ? mTimeCalib->getTimeCalibParam(digit.getTower(), digit.getLowGain()) : 0.;
 
-      auto timeoffset = mTimeCalib ? mTimeCalib->getTimeCalibParam(digit.getTower(), digit.getLowGain()) : 0.;
+          if (!mBadChannelMap || (mBadChannelMap->getChannelStatus(digit.getTower()) == MaskType_t::GOOD_CELL)) {
+            histos.mDigitAmplitudeCalib[index]->Fill(digit.getEnergy(), digit.getTower());
+            histos.mDigitTimeCalib[index]->Fill(digit.getTimeStamp() - timeoffset, digit.getTower());
+          }
+          histos.mDigitTime[index]->Fill(digit.getTimeStamp(), digit.getTower());
 
-      if (!mBadChannelMap || (mBadChannelMap->getChannelStatus(digit.getTower()) == MaskType_t::GOOD_CELL)) {
-        histos.mDigitAmplitudeCalib[index]->Fill(digit.getEnergy(), digit.getTower());
-        histos.mDigitTimeCalib[index]->Fill(digit.getTimeStamp() - timeoffset, digit.getTower());
+          // get the supermodule for filling EMCAL/DCAL spectra
+
+          try {
+
+            auto [row, col] = mGeometry->GlobalRowColFromIndex(digit.getTower());
+            if (digit.getEnergy() > 0) {
+              histos.mDigitOccupancy->Fill(col, row);
+            }
+            if (digit.getEnergy() > mCellThreshold) {
+              histos.mDigitOccupancyThr->Fill(col, row);
+            }
+            histos.mIntegratedOccupancy->Fill(col, row, digit.getEnergy());
+
+            if (std::get<0>(cellindices) < 12)
+              histos.mDigitAmplitudeEMCAL->Fill(digit.getEnergy());
+
+            else
+              histos.mDigitAmplitudeDCAL->Fill(digit.getEnergy());
+          } catch (o2::emcal::InvalidCellIDException& e) {
+            QcInfoLogger::GetInstance() << "Invalid cell ID: " << e.getCellID() << AliceO2::InfoLogger::InfoLogger::endm;
+          };
+        }
       }
-      histos.mDigitTime[index]->Fill(digit.getTimeStamp(), digit.getTower());
-
-      // get the supermodule for filling EMCAL/DCAL spectra
-
-      try {
-
-        auto [row, col] = mGeometry->GlobalRowColFromIndex(digit.getTower());
-        if (digit.getEnergy() > 0) {
-          histos.mDigitOccupancy->Fill(col, row);
-        }
-        if (digit.getEnergy() > mCellThreshold) {
-          histos.mDigitOccupancyThr->Fill(col, row);
-        }
-        histos.mIntegratedOccupancy->Fill(col, row, digit.getEnergy());
-
-        if (std::get<0>(cellindices) < 12)
-          histos.mDigitAmplitudeEMCAL->Fill(digit.getEnergy());
-
-        else
-          histos.mDigitAmplitudeDCAL->Fill(digit.getEnergy());
-      } catch (o2::emcal::InvalidCellIDException& e) {
-        QcInfoLogger::GetInstance() << "Invalid cell ID: " << e.getCellID() << AliceO2::InfoLogger::InfoLogger::endm;
-      };
     }
+
     histos.mnumberEvents->Fill(1);
     eventcounter++;
   }
@@ -190,22 +217,62 @@ void DigitsQcTask::reset()
   }
 }
 
+std::vector<DigitsQcTask::CombinedEvent> DigitsQcTask::buildCombinedEvents(const std::unordered_map<int, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const
+{
+  std::vector<DigitsQcTask::CombinedEvent> events;
+
+  // Search interaction records from all subevents
+  std::set<o2::InteractionRecord> allInteractions;
+  for (auto& [subspecification, trgrec] : triggerrecords) {
+    for (auto rec : trgrec) {
+      auto eventIR = rec.getBCData();
+      if (allInteractions.find(eventIR) == allInteractions.end())
+        allInteractions.insert(eventIR);
+    }
+  }
+
+  // iterate over all subevents for all bunch crossings
+  for (auto collision : allInteractions) {
+    CombinedEvent nextevent;
+    nextevent.mInteractionRecord = collision;
+    bool first = true,
+         hasSubevent = false;
+    for (auto [subspecification, records] : triggerrecords) {
+      auto found = std::find_if(records.begin(), records.end(), [&collision](const o2::emcal::TriggerRecord& rec) { return rec.getBCData() == collision; });
+      if (found != records.end()) {
+        hasSubevent = true;
+        if (first) {
+          nextevent.mTriggerType = found->getTriggerBits();
+          first = false;
+        }
+        nextevent.mSubevents.push_back({ subspecification, o2::dataformats::RangeReference(found->getFirstEntry(), found->getNumberOfObjects()) });
+      }
+    }
+    if (hasSubevent)
+      events.emplace_back(nextevent);
+  }
+  return events;
+}
+
 void DigitsQcTask::startPublishing(DigitsHistograms& histos)
 {
   for (auto h : histos.mDigitAmplitude) {
     getObjectsManager()->startPublishing(h);
   }
 
+  /*
   for (auto h : histos.mDigitTime) {
     getObjectsManager()->startPublishing(h);
   }
+  */
   for (auto h : histos.mDigitAmplitudeCalib) {
     getObjectsManager()->startPublishing(h);
   }
-
+  /*
   for (auto h : histos.mDigitTimeCalib) {
     getObjectsManager()->startPublishing(h);
   }
+  */
 
   getObjectsManager()->startPublishing(histos.mDigitAmplitudeEMCAL);
   getObjectsManager()->startPublishing(histos.mDigitAmplitudeDCAL);
