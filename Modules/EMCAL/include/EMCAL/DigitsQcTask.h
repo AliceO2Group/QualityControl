@@ -19,8 +19,13 @@
 
 #include "QualityControl/TaskInterface.h"
 #include <array>
+#include <unordered_map>
+#include <gsl/span>
 #include <CCDB/TObjectWrapper.h>
 #include <TProfile2D.h>
+#include "CommonDataFormat/InteractionRecord.h"
+#include "CommonDataFormat/RangeReference.h"
+#include "DataFormatsEMCAL/TriggerRecord.h"
 
 class TH1;
 class TH2;
@@ -89,6 +94,24 @@ class DigitsQcTask final : public TaskInterface
   void setEndOfPayloadCheck(Bool_t doCheck) { mDoEndOfPayloadCheck = doCheck; }
 
  private:
+  struct SubEvent {
+    int mSpecification;
+    dataformats::RangeReference<int, int> mCellRange;
+  };
+  struct CombinedEvent {
+    InteractionRecord mInteractionRecord;
+    uint32_t mTriggerType;
+    std::vector<SubEvent> mSubevents;
+
+    int getNumberOfObjects() const
+    {
+      int nObjects = 0;
+      for (auto ev : mSubevents)
+        nObjects += ev.mCellRange.getEntries();
+      return nObjects;
+    }
+  };
+  std::vector<CombinedEvent> buildCombinedEvents(const std::unordered_map<int, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const;
   void startPublishing(DigitsHistograms& histos);
   Double_t mCellThreshold = 0.5;                               ///< energy cell threshold
   Bool_t mDoEndOfPayloadCheck = false;                         ///< Do old style end-of-payload check
