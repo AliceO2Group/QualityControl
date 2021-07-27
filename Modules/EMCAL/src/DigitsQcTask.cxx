@@ -128,7 +128,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (!trg.getNumberOfObjects()) {
       continue;
     }
-    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits" << QcInfoLogger::endm;
+    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits from " << trg.getNumberOfSubevents() << " subevent(s)" << QcInfoLogger::endm;
 
     //trigger type
     auto triggertype = trg.mTriggerType;
@@ -151,6 +151,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (cellsSubspec == cellSubEvents.end()) {
         QcInfoLogger::GetInstance() << QcInfoLogger::Error << "No cell data found for subspecification " << subev.mSpecification << QcInfoLogger::endm;
       } else {
+        QcInfoLogger::GetInstance() << QcInfoLogger::Debug << subev.mCellRange.getEntries() << " digits in subevent from equipment " << subev.mSpecification << QcInfoLogger::endm;
         gsl::span<const o2::emcal::Cell> eventdigits(cellsSubspec->second.data() + subev.mCellRange.getFirstEntry(), subev.mCellRange.getEntries());
         for (auto digit : eventdigits) {
           int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);

@@ -98,6 +98,7 @@ class DigitsQcTask final : public TaskInterface
     int mSpecification;
     dataformats::RangeReference<int, int> mCellRange;
   };
+
   struct CombinedEvent {
     InteractionRecord mInteractionRecord;
     uint32_t mTriggerType;
@@ -110,6 +111,11 @@ class DigitsQcTask final : public TaskInterface
         nObjects += ev.mCellRange.getEntries();
       return nObjects;
     }
+
+    int getNumberOfSubevents()
+    {
+      return mSubevents.size();
+    };
   };
   std::vector<CombinedEvent> buildCombinedEvents(const std::unordered_map<int, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const;
   void startPublishing(DigitsHistograms& histos);
