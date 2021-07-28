@@ -81,13 +81,14 @@ void RawQcTask::InitHistograms()
   //First init general histograms for any mode
 
   // Statistics histograms
-  mHist2D[kErrorNumber] = new TH2F("NumberOfErrors", "Number of hardware errors", 17, 0, 17, 15, 0, 15.); //xaxis: FEE card number + 2 for TRU and global errors
-  mHist2D[kErrorNumber]->GetXaxis()->SetTitle("MonitorData");
-  mHist2D[kErrorNumber]->GetYaxis()->SetTitle("Number of hardware errors");
+  mHist2D[kErrorNumber] = new TH2F("NumberOfErrors", "Number of hardware errors", 32, 0, 32, 15, 0, 15.); //xaxis: FEE card number + 2 for TRU and global errors
+  mHist2D[kErrorNumber]->GetXaxis()->SetTitle("FEE card");
+  mHist2D[kErrorNumber]->GetYaxis()->SetTitle("DDL");
+  mHist2D[kErrorNumber]->SetDrawOption("colz");
   mHist2D[kErrorNumber]->SetStats(0);
   getObjectsManager()->startPublishing(mHist2D[kErrorNumber]);
 
-  mHist2D[kErrorType] = new TH2F("ErrorTypePerDDL", "ErrorTypePerDDL", 17, 0, 17, 15, 0, 15.);
+  mHist2D[kErrorType] = new TH2F("ErrorTypePerDDL", "ErrorTypePerDDL", 32, 0, 32, 15, 0, 15.);
   mHist2D[kErrorType]->GetXaxis()->SetTitle("FEE card");
   mHist2D[kErrorType]->GetYaxis()->SetTitle("DDL");
   mHist2D[kErrorType]->SetDrawOption("colz");
@@ -114,16 +115,19 @@ void RawQcTask::startOfActivity(Activity& /*activity*/)
 void RawQcTask::startOfCycle()
 {
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-  if (mMode == 1) { //Pedestals
-    for (Int_t mod = 0; mod < 4; mod++) {
-      if (mHist2D[kHGmeanM1 + mod]) {
-        mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
-        mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+  if (mMode == 1) {   //Pedestals
+    if (mFinalized) { //means were already calculated
+      for (Int_t mod = 0; mod < 4; mod++) {
+        if (mHist2D[kHGmeanM1 + mod]) {
+          mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+          mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+        }
+        if (mHist2D[kLGmeanM1 + mod]) {
+          mHist2D[kLGmeanM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+          mHist2D[kLGrmsM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+        }
       }
-      if (mHist2D[kLGmeanM1 + mod]) {
-        mHist2D[kLGmeanM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
-        mHist2D[kLGrmsM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
-      }
+      mFinalized = false;
     }
   }
 }
@@ -258,6 +262,7 @@ void RawQcTask::endOfActivity(Activity& /*activity*/)
 void RawQcTask::reset()
 {
   // clean all the monitor objects here
+  mFinalized = false;
 
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   for (int i = kNhist1D; i--;) {
@@ -310,6 +315,8 @@ void RawQcTask::FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& ce
     for (Int_t mod = 0; mod < 4; mod++) {
       mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
       mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+      mHist2D[kLGmeanM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+      mHist2D[kLGrmsM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
     }
     mFinalized = false;
   }
