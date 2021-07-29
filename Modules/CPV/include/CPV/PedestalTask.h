@@ -54,7 +54,6 @@ class PedestalTask final : public TaskInterface
 
  private:
   void initHistograms();
-  // void fillHistograms(const gsl::span<const o2::cpv::Digit>& digits, const gsl::span<const o2::cpv::TriggerRecord>& triggerRecords);
   void fillHistograms();
   void resetHistograms();
 
@@ -100,6 +99,7 @@ class PedestalTask final : public TaskInterface
 
   int mNEventsTotal;
   int mNEventsFromLastFillHistogramsCall;
+  int mMinNEventsToUpdatePedestals = 1000; ///< min number of events needed to update pedestals
 
   std::array<TH1F*, kNHist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
   std::array<TH2F*, kNHist2D> mHist2D = { nullptr }; ///< Array of 2D histograms
