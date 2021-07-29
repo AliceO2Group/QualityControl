@@ -153,19 +153,23 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       } else {
         gsl::span<const o2::emcal::Cell> eventdigits(cellsSubspec->second.data() + subev.mCellRange.getFirstEntry(), subev.mCellRange.getEntries());
         for (auto digit : eventdigits) {
-          int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
-          if (index < 0)
-            continue;
+          //int index = digit.getHighGain() ? 0 : (digit.getLowGain() ? 1 : -1);
+          //if (index < 0)
+          //  continue;
           auto cellindices = mGeometry->GetCellIndex(digit.getTower());
-          histos.mDigitAmplitude[index]->Fill(digit.getEnergy(), digit.getTower());
+          histos.mDigitAmplitude->Fill(digit.getEnergy(), digit.getTower());
+          //histos.mDigitAmplitude[index]->Fill(digit.getEnergy(), digit.getTower());
 
           auto timeoffset = mTimeCalib ? mTimeCalib->getTimeCalibParam(digit.getTower(), digit.getLowGain()) : 0.;
 
           if (!mBadChannelMap || (mBadChannelMap->getChannelStatus(digit.getTower()) == MaskType_t::GOOD_CELL)) {
-            histos.mDigitAmplitudeCalib[index]->Fill(digit.getEnergy(), digit.getTower());
-            histos.mDigitTimeCalib[index]->Fill(digit.getTimeStamp() - timeoffset, digit.getTower());
+            histos.mDigitAmplitudeCalib->Fill(digit.getEnergy(), digit.getTower());
+            //histos.mDigitAmplitudeCalib[index]->Fill(digit.getEnergy(), digit.getTower());
+            histos.mDigitTimeCalib->Fill(digit.getTimeStamp() - timeoffset, digit.getTower());
+            //histos.mDigitTimeCalib[index]->Fill(digit.getTimeStamp() - timeoffset, digit.getTower());
           }
-          histos.mDigitTime[index]->Fill(digit.getTimeStamp(), digit.getTower());
+          histos.mDigitTime->Fill(digit.getTimeStamp(), digit.getTower());
+          //histos.mDigitTime[index]->Fill(digit.getTimeStamp(), digit.getTower());
 
           // get the supermodule for filling EMCAL/DCAL spectra
 
@@ -256,23 +260,25 @@ std::vector<DigitsQcTask::CombinedEvent> DigitsQcTask::buildCombinedEvents(const
 
 void DigitsQcTask::startPublishing(DigitsHistograms& histos)
 {
-  for (auto h : histos.mDigitAmplitude) {
-    getObjectsManager()->startPublishing(h);
-  }
+  //  for (auto h : histos.mDigitAmplitude) {
+  //    getObjectsManager()->startPublishing(h);
+  //  }
 
-  /*
-  for (auto h : histos.mDigitTime) {
-    getObjectsManager()->startPublishing(h);
-  }
-  */
-  for (auto h : histos.mDigitAmplitudeCalib) {
-    getObjectsManager()->startPublishing(h);
-  }
-  /*
-  for (auto h : histos.mDigitTimeCalib) {
-    getObjectsManager()->startPublishing(h);
-  }
-  */
+  //  for (auto h : histos.mDigitTime) {
+  //    getObjectsManager()->startPublishing(h);
+  //  }
+  //  for (auto h : histos.mDigitAmplitudeCalib) {
+  //    getObjectsManager()->startPublishing(h);
+  //  }
+
+  // for (auto h : histos.mDigitTimeCalib) {
+  //   getObjectsManager()->startPublishing(h);
+  //}
+
+  getObjectsManager()->startPublishing(histos.mDigitTime);
+  getObjectsManager()->startPublishing(histos.mDigitTimeCalib);
+  getObjectsManager()->startPublishing(histos.mDigitAmplitude);
+  getObjectsManager()->startPublishing(histos.mDigitAmplitudeCalib);
 
   getObjectsManager()->startPublishing(histos.mDigitAmplitudeEMCAL);
   getObjectsManager()->startPublishing(histos.mDigitAmplitudeDCAL);
@@ -286,17 +292,17 @@ void DigitsQcTask::DigitsHistograms::initForTrigger(const char* trigger)
 {
   mTriggerClass = trigger;
 
-  mDigitAmplitude[0] = new TH2F(Form("digitAmplitudeHG_%s", mTriggerClass.data()), Form("Digit Amplitude (High gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
-  mDigitAmplitude[1] = new TH2F(Form("digitAmplitudeLG_%s", mTriggerClass.data()), Form("Digit Amplitude (Low gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
+  mDigitAmplitude = new TH2F(Form("digitAmplitudeHG_%s", mTriggerClass.data()), Form("Digit Amplitude (High gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
+  //mDigitAmplitude[1] = new TH2F(Form("digitAmplitudeLG_%s", mTriggerClass.data()), Form("Digit Amplitude (Low gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
 
-  mDigitAmplitudeCalib[0] = new TH2F(Form("digitAmplitudeHGCalib_%s", mTriggerClass.data()), Form("Digit Amplitude (High gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
-  mDigitAmplitudeCalib[1] = new TH2F(Form("digitAmplitudeLGCalib_%s", mTriggerClass.data()), Form("Digit Amplitude (Low gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
+  mDigitAmplitudeCalib = new TH2F(Form("digitAmplitudeHGCalib_%s", mTriggerClass.data()), Form("Digit Amplitude (High gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
+  //mDigitAmplitudeCalib[1] = new TH2F(Form("digitAmplitudeLGCalib_%s", mTriggerClass.data()), Form("Digit Amplitude (Low gain) %s", mTriggerClass.data()), 100, 0, 100, 17664, -0.5, 17663.5);
 
-  mDigitTime[0] = new TH2F(Form("digitTimeHG_%s", mTriggerClass.data()), Form("Digit Time (High gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
-  mDigitTime[1] = new TH2F(Form("digitTimeLG_%s", mTriggerClass.data()), Form("Digit Time (Low gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
+  mDigitTime = new TH2F(Form("digitTimeHG_%s", mTriggerClass.data()), Form("Digit Time (High gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
+  //  mDigitTime[1] = new TH2F(Form("digitTimeLG_%s", mTriggerClass.data()), Form("Digit Time (Low gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
 
-  mDigitTimeCalib[0] = new TH2F(Form("digitTimeHGCalib_%s", mTriggerClass.data()), Form("Digit Time Calib (High gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
-  mDigitTimeCalib[1] = new TH2F(Form("digitTimeLGCalib_%s", mTriggerClass.data()), Form("Digit Time Calib (Low gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
+  mDigitTimeCalib = new TH2F(Form("digitTimeHGCalib_%s", mTriggerClass.data()), Form("Digit Time Calib (High gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
+  //  mDigitTimeCalib[1] = new TH2F(Form("digitTimeLGCalib_%s", mTriggerClass.data()), Form("Digit Time Calib (Low gain) %s", mTriggerClass.data()), 2000, -200, 200, 17664, -0.5, 17663.5);
 
   mDigitOccupancy = new TH2F(Form("digitOccupancyEMC_%s", mTriggerClass.data()), Form("Digit Occupancy EMCAL %s", mTriggerClass.data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
   mDigitOccupancyThr = new TH2F(Form("digitOccupancyEMCwThr_%s", mTriggerClass.data()), Form("Digit Occupancy EMCAL with E>0.5 GeV/c %s", mTriggerClass.data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
@@ -314,19 +320,23 @@ void DigitsQcTask::DigitsHistograms::initForTrigger(const char* trigger)
 void DigitsQcTask::DigitsHistograms::reset()
 {
 
-  for (auto h : mDigitAmplitude) {
-    h->Reset();
-  }
-  for (auto h : mDigitTime) {
-    h->Reset();
-  }
-  for (auto h : mDigitAmplitudeCalib) {
-    h->Reset();
-  }
-  for (auto h : mDigitTimeCalib) {
-    h->Reset();
-  }
+  //  for (auto h : mDigitAmplitude) {
+  //    h->Reset();
+  //  }
+  //  for (auto h : mDigitTime) {
+  //    h->Reset();
+  //  }
+  //  for (auto h : mDigitAmplitudeCalib) {
+  //    h->Reset();
+  //  }
+  //  for (auto h : mDigitTimeCalib) {
+  //    h->Reset();
+  //  }
 
+  mDigitTime->Reset();
+  mDigitTimeCalib->Reset();
+  mDigitAmplitude->Reset();
+  mDigitAmplitudeCalib->Reset();
   mDigitAmplitudeEMCAL->Reset();
   mDigitAmplitudeDCAL->Reset();
   mDigitOccupancy->Reset();
@@ -337,18 +347,30 @@ void DigitsQcTask::DigitsHistograms::reset()
 
 void DigitsQcTask::DigitsHistograms::clean()
 {
-  for (auto h : mDigitAmplitude) {
-    delete h;
-  }
-  for (auto h : mDigitTime) {
-    delete h;
-  }
-  for (auto h : mDigitAmplitudeCalib) {
-    delete h;
-  }
-  for (auto h : mDigitTimeCalib) {
-    delete h;
-  }
+  //for (auto h : mDigitAmplitude) {
+  //  delete h;
+  //}
+  // for (auto h : mDigitTime) {
+  //  delete h;
+  // }
+  //for (auto h : mDigitAmplitudeCalib) {
+  //  delete h;
+  //}
+  //for (auto h : mDigitTimeCalib) {
+  //  delete h;
+  // }
+
+  if (mDigitTime)
+    delete mDigitTime;
+
+  if (mDigitTimeCalib)
+    delete mDigitTimeCalib;
+
+  if (mDigitAmplitude)
+    delete mDigitAmplitude;
+
+  if (mDigitAmplitudeCalib)
+    delete mDigitAmplitudeCalib;
 
   if (mDigitAmplitudeEMCAL)
     delete mDigitAmplitudeEMCAL;
