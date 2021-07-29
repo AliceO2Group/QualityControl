@@ -25,6 +25,7 @@
 #include <TProfile2D.h>
 #include "CommonDataFormat/InteractionRecord.h"
 #include "CommonDataFormat/RangeReference.h"
+#include "Headers/DataHeader.h"
 #include "DataFormatsEMCAL/TriggerRecord.h"
 
 class TH1;
@@ -95,9 +96,10 @@ class DigitsQcTask final : public TaskInterface
 
  private:
   struct SubEvent {
-    int mSpecification;
+    header::DataHeader::SubSpecificationType mSpecification;
     dataformats::RangeReference<int, int> mCellRange;
   };
+
   struct CombinedEvent {
     InteractionRecord mInteractionRecord;
     uint32_t mTriggerType;
@@ -106,12 +108,18 @@ class DigitsQcTask final : public TaskInterface
     int getNumberOfObjects() const
     {
       int nObjects = 0;
-      for (auto ev : mSubevents)
+      for (auto ev : mSubevents) {
         nObjects += ev.mCellRange.getEntries();
+      }
       return nObjects;
     }
+
+    int getNumberOfSubevents()
+    {
+      return mSubevents.size();
+    };
   };
-  std::vector<CombinedEvent> buildCombinedEvents(const std::unordered_map<int, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const;
+  std::vector<CombinedEvent> buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const;
   void startPublishing(DigitsHistograms& histos);
   Double_t mCellThreshold = 0.5;                               ///< energy cell threshold
   Bool_t mDoEndOfPayloadCheck = false;                         ///< Do old style end-of-payload check
