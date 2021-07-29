@@ -59,10 +59,14 @@ class DigitsQcTask final : public TaskInterface
  public:
   struct DigitsHistograms {
     std::string mTriggerClass;
-    std::array<TH2*, 2> mDigitAmplitude;      ///< Digit amplitude
-    std::array<TH2*, 2> mDigitTime;           ///< Digit time
-    std::array<TH2*, 2> mDigitAmplitudeCalib; ///< Digit amplitude calibrated
-    std::array<TH2*, 2> mDigitTimeCalib;      ///< Digit time calibrated
+    //std::array<TH2*, 2> mDigitAmplitude;      ///< Digit amplitude
+    TH2* mDigitAmplitude; ///< Digit amplitude
+                          //    std::array<TH2*, 2> mDigitTime;           ///< Digit time
+    TH2* mDigitTime;      ///< Digit time
+    //std::array<TH2*, 2> mDigitAmplitudeCalib; ///< Digit amplitude calibrated
+    TH2* mDigitAmplitudeCalib; ///< Digit amplitude calibrated
+                               //  std::array<TH2*, 2> mDigitTimeCalib;      ///< Digit time calibrated
+    TH2* mDigitTimeCalib;      ///< Digit time calibrated
 
     TH2* mDigitOccupancy = nullptr;             ///< Digit occupancy EMCAL and DCAL
     TH2* mDigitOccupancyThr = nullptr;          ///< Digit occupancy EMCAL and DCAL with Energy trheshold
