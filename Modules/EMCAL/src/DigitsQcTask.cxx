@@ -108,15 +108,23 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // references and subspecifications
   std::vector<framework::InputSpec> cellInputs{ { "cellfilter", framework::ConcreteDataTypeMatcher(header::gDataOriginEMC, "CELLS") } },
     triggerRecordInputs{ { "triggerrecordfilter", framework::ConcreteDataTypeMatcher(header::gDataOriginEMC, "CELLSTRGR") } };
-  std::unordered_map<int, gsl::span<const o2::emcal::Cell>> cellSubEvents;
-  std::unordered_map<int, gsl::span<const o2::emcal::TriggerRecord>> triggerRecordSubevents;
+  std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::Cell>> cellSubEvents;
+  std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>> triggerRecordSubevents;
 
   for (const auto& celldata : framework::InputRecordWalker(ctx.inputs(), cellInputs)) {
-    int subspecification = framework::DataRefUtils::getHeader<header::DataHeader*>(celldata)->subSpecification;
+    auto subspecification = framework::DataRefUtils::getHeader<header::DataHeader*>(celldata)->subSpecification;
+    // Discard message if it is a deadbeaf message (empty timeframe)
+    if (subspecification == 0xdeadbeaf) {
+      continue;
+    }
     cellSubEvents[subspecification] = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(celldata);
   }
   for (const auto& trgrecorddata : framework::InputRecordWalker(ctx.inputs(), triggerRecordInputs)) {
-    int subspecification = framework::DataRefUtils::getHeader<header::DataHeader*>(trgrecorddata)->subSpecification;
+    auto subspecification = framework::DataRefUtils::getHeader<header::DataHeader*>(trgrecorddata)->subSpecification;
+    // Discard message if it is a deadbeaf message (empty timeframe)
+    if (subspecification == 0xdeadbeaf) {
+      continue;
+    }
     triggerRecordSubevents[subspecification] = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(trgrecorddata);
   }
 
@@ -218,7 +226,7 @@ void DigitsQcTask::reset()
   }
 }
 
-std::vector<DigitsQcTask::CombinedEvent> DigitsQcTask::buildCombinedEvents(const std::unordered_map<int, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const
+std::vector<DigitsQcTask::CombinedEvent> DigitsQcTask::buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const
 {
   std::vector<DigitsQcTask::CombinedEvent> events;
 
