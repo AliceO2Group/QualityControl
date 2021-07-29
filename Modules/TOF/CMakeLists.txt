@@ -7,6 +7,7 @@ target_sources(O2QcTOF
               PRIVATE src/TaskDigits.cxx
                       src/TaskCosmics.cxx
                       src/TaskRaw.cxx
+                      src/TOFMatchedTracks.cxx
                       # Checkers
                       src/CheckDiagnostics.cxx
                       src/CheckDRMDiagnostics.cxx
@@ -30,7 +31,8 @@ target_link_libraries(O2QcTOF PUBLIC O2QualityControl
                                     O2::TOFBase
                                     O2::DataFormatsTOF
                                     O2::TOFCompression
-                                    O2::TOFReconstruction)
+                                    O2::TOFReconstruction
+				    O2::DataFormatsGlobalTracking)
 
 install(TARGETS O2QcTOF
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -44,6 +46,7 @@ add_root_dictionary(O2QcTOF
                     HEADERS include/TOF/TaskDigits.h
                             include/TOF/TaskCosmics.h
                             include/TOF/TaskRaw.h
+			    include/TOF/TOFMatchedTracks.h
                             # Checkers
                             include/TOF/CheckCompressedData.h
                             include/TOF/CheckDiagnostics.h
