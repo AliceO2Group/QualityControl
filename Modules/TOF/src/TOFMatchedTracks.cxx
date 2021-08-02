@@ -77,12 +77,12 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   for (int i = 0; i < trkType::SIZE; ++i) {
-    mInTracksPt[i] = new TH1D(Form("mInTracksPt_%d", i), Form("mInTracksPt (trkType %d); Pt; counts", i), 100, 0.f, 20.f);
-    mInTracksEta[i] = new TH1D(Form("mInTracksEta_%d", i), Form("mInTracksEta (trkType %d); Eta; counts", i), 100, -1.0f, 1.0f);
-    mMatchedTracksPt[i] = new TH1D(Form("mMatchedTracksPt_%d", i), Form("mMatchedTracksPt (trkType %d); Pt; counts", i), 100, 0.f, 20.f);
-    mMatchedTracksEta[i] = new TH1D(Form("mMatchedTracksEta_%d", i), Form("mMatchedTracksEta (trkType %d); Eta; counts", i), 100, -1.0f, 1.0f);
-    mEffPt[i] = new TH1D(Form("mEffPt_%d", i), Form("Efficiency vs Pt (trkType %d); Pt; Eff", i), 100, 0.f, 20.f);
-    mEffEta[i] = new TH1D(Form("mEffEta_%d", i), Form("Efficiency vs Eta (trkType %d); Eta; Eff", i), 100, -1.f, 1.f);
+    mInTracksPt[i] = new TH1F(Form("mInTracksPt_%d", i), Form("mInTracksPt (trkType %d); Pt; counts", i), 100, 0.f, 20.f);
+    mInTracksEta[i] = new TH1F(Form("mInTracksEta_%d", i), Form("mInTracksEta (trkType %d); Eta; counts", i), 100, -1.0f, 1.0f);
+    mMatchedTracksPt[i] = new TH1F(Form("mMatchedTracksPt_%d", i), Form("mMatchedTracksPt (trkType %d); Pt; counts", i), 100, 0.f, 20.f);
+    mMatchedTracksEta[i] = new TH1F(Form("mMatchedTracksEta_%d", i), Form("mMatchedTracksEta (trkType %d); Eta; counts", i), 100, -1.0f, 1.0f);
+    mEffPt[i] = new TH1F(Form("mEffPt_%d", i), Form("Efficiency vs Pt (trkType %d); Pt; Eff", i), 100, 0.f, 20.f);
+    mEffEta[i] = new TH1F(Form("mEffEta_%d", i), Form("Efficiency vs Eta (trkType %d); Eta; Eff", i), 100, -1.f, 1.f);
     getObjectsManager()->startPublishing(mInTracksPt[i]);
     getObjectsManager()->startPublishing(mInTracksEta[i]);
     getObjectsManager()->startPublishing(mMatchedTracksPt[i]);

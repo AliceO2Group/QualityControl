@@ -22,14 +22,14 @@
 #include "DataFormatsGlobalTracking/RecoContainer.h"
 #include "ReconstructionDataFormats/MatchInfoTOFReco.h"
 
-class TH1D;
+class TH1F;
+
+namespace o2::quality_control_modules::tof
+{
 
 using namespace o2::quality_control::core;
 using GID = o2::dataformats::GlobalTrackID;
 using trkType = o2::dataformats::MatchInfoTOFReco::TrackType;
-
-namespace o2::quality_control_modules::tof
-{
 
 /// \brief Example Quality Control DPL Task
 /// \author My Name
@@ -64,12 +64,12 @@ class TOFMatchedTracks final : public TaskInterface
 
   bool mUseMC = false;
   bool mVerbose = false;
-  TH1D* mInTracksPt[trkType::SIZE];
-  TH1D* mInTracksEta[trkType::SIZE];
-  TH1D* mMatchedTracksPt[trkType::SIZE];
-  TH1D* mMatchedTracksEta[trkType::SIZE];
-  TH1D* mEffPt[trkType::SIZE];
-  TH1D* mEffEta[trkType::SIZE];
+  TH1F* mInTracksPt[trkType::SIZE] = {};
+  TH1F* mInTracksEta[trkType::SIZE] = {};
+  TH1F* mMatchedTracksPt[trkType::SIZE] = {};
+  TH1F* mMatchedTracksEta[trkType::SIZE] = {};
+  TH1F* mEffPt[trkType::SIZE] = {};
+  TH1F* mEffEta[trkType::SIZE] = {};
 };
 
 } // namespace o2::quality_control_modules::tof
