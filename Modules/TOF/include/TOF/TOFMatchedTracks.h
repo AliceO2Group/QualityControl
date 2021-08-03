@@ -11,7 +11,8 @@
 
 ///
 /// \file   TOFMatchedTracks.h
-/// \author My Name
+/// \author Chiara Zampolli
+/// \since  03/08/2021
 ///
 
 #ifndef QC_MODULE_TOF_TOFTOFMATCHEDTRACKS_H
@@ -31,8 +32,8 @@ using namespace o2::quality_control::core;
 using GID = o2::dataformats::GlobalTrackID;
 using trkType = o2::dataformats::MatchInfoTOFReco::TrackType;
 
-/// \brief Example Quality Control DPL Task
-/// \author My Name
+/// \brief  Task for the control of the TOF matching efficiency
+/// \author Chiara Zampolli
 class TOFMatchedTracks final : public TaskInterface
 {
  public:
