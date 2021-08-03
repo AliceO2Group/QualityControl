@@ -7,6 +7,7 @@
 #pragma link C++ class o2::quality_control_modules::tof::TaskDigits+;
 #pragma link C++ class o2::quality_control_modules::tof::TaskCosmics+;
 #pragma link C++ class o2::quality_control_modules::tof::TaskRaw+;
+#pragma link C++ class o2::quality_control_modules::tof::TOFMatchedTracks + ;
 // Checks
 #pragma link C++ class o2::quality_control_modules::tof::CheckDiagnostics+;
 #pragma link C++ class o2::quality_control_modules::tof::CheckDRMDiagnostics+;
