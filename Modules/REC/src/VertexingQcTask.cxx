@@ -197,7 +197,9 @@ void VertexingQcTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 
-  mVtxEffVsMult->Divide(mNPrimaryMCEvWithVtx, mNPrimaryMCGen, 1, 1, "B");
+  if (mUseMC) {
+    mVtxEffVsMult->Divide(mNPrimaryMCEvWithVtx, mNPrimaryMCGen, 1, 1, "B");
+  }
 }
 
 void VertexingQcTask::endOfActivity(Activity& /*activity*/)
