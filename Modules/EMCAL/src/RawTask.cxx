@@ -224,11 +224,11 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNbunchPerChan->GetXaxis()->SetTitle("# bunches per channels");
   getObjectsManager()->startPublishing(mNbunchPerChan);
 
-  mNofADCsamples = new TH1F("NumberOfADCPerChannel", "NumberOfADCPerChannel", 16, -0.5, 15.5);
+  mNofADCsamples = new TH1F("NumberOfADCPerChannel", "NumberOfADCPerChannel", 15, -0.5, 14.5);
   mNofADCsamples->GetXaxis()->SetTitle("# of ADC sample per channels");
   getObjectsManager()->startPublishing(mNofADCsamples);
 
-  mADCsize = new TH1F("ADCsizePerBunch", "ADCsizePerBunch", 16, -0.5, 15.5);
+  mADCsize = new TH1F("ADCsizePerBunch", "ADCsizePerBunch", 15, -0.5, 14.5);
   mADCsize->GetXaxis()->SetTitle("ADC size per bunch");
   getObjectsManager()->startPublishing(mADCsize);
 
