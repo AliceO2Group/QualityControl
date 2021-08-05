@@ -115,6 +115,9 @@ class RawTask final : public TaskInterface
   TH1* mSuperpageCounter = nullptr;                                          ///< Counter for number of superpages
   TH1* mPageCounter = nullptr;                                               ///< Counter for number of pages (headers)
   TH1* mTotalDataVolume = nullptr;                                           ///< Total data volume
+  TH1* mNbunchPerChan = nullptr;                                             ///< Number of bunch per Channel
+  TH1* mNofADCsamples = nullptr;                                             ///< Number of ADC samples per Channel
+  TH1* mADCsize = nullptr;                                                   ///< ADC size per bunch
   std::array<TH1*, 20> mFECmaxCount;                                         ///< max number of hit channels
   std::array<TH1*, 20> mFECmaxID;                                            ///< FEC ID  max number of hit channels
   std::unordered_map<EventType, TProfile2D*> mRMS;                           ///< ADC rms for EMCAL+DCAL togheter

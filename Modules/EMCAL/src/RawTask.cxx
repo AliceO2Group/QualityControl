@@ -77,7 +77,15 @@ RawTask::~RawTask()
   if (mErrorTypeAltro) {
     delete mErrorTypeAltro;
   }
-
+  if (mNbunchPerChan) {
+    delete mNbunchPerChan;
+  }
+  if (mNofADCsamples) {
+    delete mNofADCsamples;
+  }
+  if (mADCsize) {
+    delete mADCsize;
+  }
   for (auto& histos : mRMS) {
     delete histos.second;
   }
@@ -213,6 +221,18 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeAltro->GetYaxis()->SetBinLabel(7, "ALTRO Mapping");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(8, "Channel");
   getObjectsManager()->startPublishing(mErrorTypeAltro);
+
+  mNbunchPerChan = new TH1F("NumberBunchPerChannel", "NumberBunchPerChannel", 4, -0.5, 3.5);
+  mNbunchPerChan->GetXaxis()->SetTitle("# bunches per channels");
+  getObjectsManager()->startPublishing(mNbunchPerChan);
+
+  mNofADCsamples = new TH1F("NumberOfADCPerChannel", "NumberOfADCPerChannel", 15, -0.5, 14.5);
+  mNofADCsamples->GetXaxis()->SetTitle("# of ADC sample per channels");
+  getObjectsManager()->startPublishing(mNofADCsamples);
+
+  mADCsize = new TH1F("ADCsizePerBunch", "ADCsizePerBunch", 15, -0.5, 14.5);
+  mADCsize->GetXaxis()->SetTitle("ADC size per bunch");
+  getObjectsManager()->startPublishing(mADCsize);
 
   //histos per SM
   for (auto ism = 0; ism < 20; ism++) {
@@ -540,8 +560,14 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           Double_t meanADC = 0;
           Double_t rmsADC = 0;
           EventType evtype = isPhysTrigger ? EventType::PHYS_EVENT : EventType::CAL_EVENT;
+
+          mNbunchPerChan->Fill(chan.getBunches().size()); //(1 histo for EMCAL-526).//1, if high rate --> pile up.
+
+          int numberOfADCsamples = 0;
           for (auto& bunch : chan.getBunches()) {
             auto adcs = bunch.getADC();
+            numberOfADCsamples += adcs.size();
+            mADCsize->Fill(adcs.size());
 
             auto maxADCbunch = *max_element(adcs.begin(), adcs.end());
             if (maxADCbunch > maxADC)
@@ -568,6 +594,8 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             mMEAN[evtype]->Fill(globCol, globRow, meanADC);             //for shifter
             mMEANperSM[evtype][supermoduleID]->Fill(col, row, meanADC); // no shifter
           }
+          mNofADCsamples->Fill(numberOfADCsamples); // number of bunches per channel
+
           if (maxADC > maxADCSMEvent->second[supermoduleID])
             maxADCSMEvent->second[supermoduleID] = maxADC;
 
@@ -671,6 +699,9 @@ void RawTask::reset()
   mPayloadSizePerDDL->Reset();
   mPayloadSize->Reset();
   mErrorTypeAltro->Reset();
+  mNbunchPerChan->Reset();
+  mNofADCsamples->Reset();
+  mADCsize->Reset();
 }
 
 bool RawTask::isLostTimeframe(framework::ProcessingContext& ctx) const

@@ -92,6 +92,12 @@ class DigitsQcTask final : public TaskInterface
     void countEvent();
   };
 
+  TH1* mEvCounterTF = nullptr;      ///< Number of Events per timeframe
+  TH1* mEvCounterTFPHYS = nullptr;  ///< Number of Events per timeframe per PHYS
+  TH1* mEvCounterTFCALIB = nullptr; ///< Number of Events per timeframe per CALIB
+  TH1* mTFPerCyclesTOT = nullptr;   ///< Number of Time Frame per cycles TOT
+  TH1* mTFPerCycles = nullptr;      ///< Number of Time Frame per cycles per MonitorData
+
   /// \brief Constructor
   DigitsQcTask() = default;
   /// Destructor
@@ -143,6 +149,7 @@ class DigitsQcTask final : public TaskInterface
   o2::emcal::Geometry* mGeometry = nullptr;                    ///< EMCAL geometry
   o2::emcal::BadChannelMap* mBadChannelMap;                    ///< EMCAL channel map
   o2::emcal::TimeCalibrationParams* mTimeCalib;                ///< EMCAL time calib
+  int mTimeFramesPerCycles = 0;                                ///< TF per cycles
 };
 
 } // namespace emcal
