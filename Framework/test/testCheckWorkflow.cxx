@@ -44,11 +44,14 @@ void customize(std::vector<CompletionPolicy>& policies)
 #include "QualityControl/runnerUtils.h"
 #include <Framework/runDataProcessing.h>
 #include <Framework/ControlService.h>
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 #include <set>
 #include <vector>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;
+using namespace o2::configuration;
 
 /**
  * Test description
@@ -140,7 +143,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   ILOG(Info) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure
-  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+  auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+  auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+  DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
   quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);

@@ -18,6 +18,7 @@
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
+using namespace o2::utilities;
 
 void customize(std::vector<o2::framework::CompletionPolicy>& policies)
 {
@@ -48,7 +49,11 @@ void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
                                                                                       " machines, can be omitted for the local development" } });
 }
 
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
+
+using namespace o2::configuration;
 
 std::string getConfigPath(const o2::framework::ConfigContext& config);
 
@@ -68,7 +73,9 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
 
     LOG(INFO) << "Local GenerateInfrastructure";
     // Generation of Data Sampling infrastructure
-    o2::utilities::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+    auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+    auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+    DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
     LOG(INFO) << "Local: generateLocalInfrastructure";
     // Generation of the local QC topology (local QC tasks)

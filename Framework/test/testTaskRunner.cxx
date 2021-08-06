@@ -59,8 +59,9 @@ BOOST_AUTO_TEST_CASE(test_factory)
 
   BOOST_CHECK_EQUAL(taskRunner.name, "QC-TASK-RUNNER-abcTask");
 
+  auto dataSamplingTree = ConfigurationFactory::getConfiguration(configFilePath)->getRecursive("dataSamplingPolicies");
   BOOST_REQUIRE_EQUAL(taskRunner.inputs.size(), 2);
-  BOOST_CHECK_EQUAL(taskRunner.inputs[0], DataSampling::InputSpecsForPolicy(configFilePath, "tpcclust").at(0));
+  BOOST_CHECK_EQUAL(taskRunner.inputs[0], DataSampling::InputSpecsForPolicy(dataSamplingTree, "tpcclust").at(0));
   BOOST_CHECK(taskRunner.inputs[1].lifetime == Lifetime::Timer);
 
   BOOST_REQUIRE_EQUAL(taskRunner.outputs.size(), 1);
@@ -84,13 +85,13 @@ BOOST_AUTO_TEST_CASE(test_task_runner_static)
 BOOST_AUTO_TEST_CASE(test_task_runner)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
-
   TaskRunner qcTask{ getTaskConfig(configFilePath, "abcTask", 0) };
 
   BOOST_CHECK_EQUAL(qcTask.getDeviceName(), "QC-TASK-RUNNER-abcTask");
 
+  auto dataSamplingTree = ConfigurationFactory::getConfiguration(configFilePath)->getRecursive("dataSamplingPolicies");
   BOOST_REQUIRE_EQUAL(qcTask.getInputsSpecs().size(), 2);
-  BOOST_CHECK_EQUAL(qcTask.getInputsSpecs()[0], DataSampling::InputSpecsForPolicy(configFilePath, "tpcclust").at(0));
+  BOOST_CHECK_EQUAL(qcTask.getInputsSpecs()[0], DataSampling::InputSpecsForPolicy(dataSamplingTree, "tpcclust").at(0));
   BOOST_CHECK(qcTask.getInputsSpecs()[1].lifetime == Lifetime::Timer);
 
   BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), (OutputSpec{ { "mo" }, "QC", "abcTask-mo", 0 }));

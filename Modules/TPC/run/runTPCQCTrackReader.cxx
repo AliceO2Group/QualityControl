@@ -20,16 +20,12 @@
 // for some reason, if the 'customize' functions are below the other includes,
 // the options are not added to the workflow.
 // So the structure should be kept as it is
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::utilities;
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
