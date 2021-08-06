@@ -15,6 +15,7 @@
 ///
 
 #include <boost/algorithm/string.hpp>
+#include <iostream>
 
 #include <TCanvas.h>
 #include <TH2.h>
@@ -178,23 +179,27 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Build maps of trigger records and cells according to the subspecification
   // and combine trigger records from different maps into a single map of range
   // references and subspecifications
-  std::vector<framework::InputSpec> cellInputs{ { "cellfilter", framework::ConcreteDataTypeMatcher(header::gDataOriginEMC, "CELLS") } },
-    triggerRecordInputs{ { "triggerrecordfilter", framework::ConcreteDataTypeMatcher(header::gDataOriginEMC, "CELLSTRGR") } };
   std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::Cell>> cellSubEvents;
   std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>> triggerRecordSubevents;
 
-  for (const auto& celldata : framework::InputRecordWalker(ctx.inputs(), cellInputs)) {
+  auto posCells = ctx.inputs().getPos("emcal-digits"),
+       posTriggerRecords = ctx.inputs().getPos("emcal-triggerecords");
+  auto numSlotsCells = ctx.inputs().getNofParts(posCells),
+       numSlotsTriggerRecords = ctx.inputs().getNofParts(posTriggerRecords);
+  for (decltype(numSlotsCells) islot = 0; islot < numSlotsCells; islot++) {
+    auto celldata = ctx.inputs().getByPos(posCells, islot);
     auto subspecification = framework::DataRefUtils::getHeader<header::DataHeader*>(celldata)->subSpecification;
     // Discard message if it is a deadbeaf message (empty timeframe)
-    if (subspecification == 0xdeadbeaf) {
+    if (subspecification == 0xDEADBEEF) {
       continue;
     }
     cellSubEvents[subspecification] = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(celldata);
   }
-  for (const auto& trgrecorddata : framework::InputRecordWalker(ctx.inputs(), triggerRecordInputs)) {
+  for (decltype(numSlotsTriggerRecords) islot = 0; islot < numSlotsTriggerRecords; islot++) {
+    auto trgrecorddata = ctx.inputs().getByPos(posTriggerRecords, islot);
     auto subspecification = framework::DataRefUtils::getHeader<header::DataHeader*>(trgrecorddata)->subSpecification;
     // Discard message if it is a deadbeaf message (empty timeframe)
-    if (subspecification == 0xdeadbeaf) {
+    if (subspecification == 0xDEADBEEF) {
       continue;
     }
     triggerRecordSubevents[subspecification] = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(trgrecorddata);
