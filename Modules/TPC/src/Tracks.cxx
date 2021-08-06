@@ -49,6 +49,11 @@ void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(&hist2);
     getObjectsManager()->addMetadata(hist2.GetName(), "custom", "42");
   }
+
+  for (auto& histR : mQCTracks.getHistogramRatios1D()) {
+    getObjectsManager()->startPublishing(&histR);
+    getObjectsManager()->addMetadata(histR.GetName(), "custom", "51");
+  }
 }
 
 void Tracks::startOfActivity(Activity& /*activity*/)
@@ -78,6 +83,7 @@ void Tracks::monitorData(o2::framework::ProcessingContext& ctx)
 
 void Tracks::endOfCycle()
 {
+  mQCTracks.processEndOfCycle();
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
