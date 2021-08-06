@@ -53,7 +53,7 @@ ObjectsManager::~ObjectsManager() = default;
 
 void ObjectsManager::startPublishing(TObject* object)
 {
-  if (mMonitorObjects->FindObject(object->GetName()) != 0) {
+  if (mMonitorObjects->FindObject(object->GetName()) != nullptr) {
     ILOG(Warning, Support) << "Object is already being published (" << object->GetName() << ")" << ENDM;
     BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
   }

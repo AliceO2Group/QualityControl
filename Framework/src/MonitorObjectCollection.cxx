@@ -15,8 +15,8 @@
 ///
 
 #include "QualityControl/MonitorObjectCollection.h"
-
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <Mergers/MergerAlgorithm.h>
 
@@ -49,6 +49,25 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
     }
   }
   delete otherIterator;
+}
+
+void MonitorObjectCollection::postDeserialization()
+{
+  auto it = this->MakeIterator();
+  while (auto obj = it->Next()) {
+    auto mo = dynamic_cast<MonitorObject*>(obj);
+    if (mo == nullptr) {
+      ILOG(Warning) << "Could not cast an object of type '" << obj->ClassName() << "' in MonitorObjectCollection to MonitorObject, skipping." << ENDM;
+      continue;
+    }
+    mo->setIsOwner(true);
+    if (mo->getObject() != nullptr && mo->getObject()->InheritsFrom(TCollection::Class())) {
+      auto collection = dynamic_cast<TCollection*>(mo->getObject());
+      collection->SetOwner(true);
+    }
+  }
+  this->SetOwner(true);
+  delete it;
 }
 
 } // namespace o2::quality_control::core
