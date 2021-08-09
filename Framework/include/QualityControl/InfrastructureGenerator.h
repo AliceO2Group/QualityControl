@@ -158,18 +158,29 @@ class InfrastructureGenerator
  private:
   // Dedicated methods for creating each QC component to hide implementation details.
 
-  static void generateDataSamplingPolicyLocalProxy(framework::WorkflowSpec& workflow,
-                                                   const std::string& policyName,
-                                                   const framework::Inputs& inputSpecs,
-                                                   const std::string& localMachine,
-                                                   const std::string& localPort,
-                                                   const std::string& control);
-  static void generateDataSamplingPolicyRemoteProxy(framework::WorkflowSpec& workflow,
-                                                    const std::string& policyName,
-                                                    const framework::Outputs& outputSpecs,
-                                                    const std::string& localMachine,
-                                                    const std::string& localPort,
-                                                    const std::string& control);
+  static void generateDataSamplingPolicyLocalProxyBind(framework::WorkflowSpec& workflow,
+                                                       const std::string& policyName,
+                                                       const framework::Inputs& inputSpecs,
+                                                       const std::string& localMachine,
+                                                       const std::string& localPort,
+                                                       const std::string& control);
+  static void generateDataSamplingPolicyRemoteProxyConnect(framework::WorkflowSpec& workflow,
+                                                           const std::string& policyName,
+                                                           const framework::Outputs& outputSpecs,
+                                                           const std::string& localMachine,
+                                                           const std::string& localPort,
+                                                           const std::string& control);
+  static void generateDataSamplingPolicyLocalProxyConnect(framework::WorkflowSpec& workflow,
+                                                          const std::string& policyName,
+                                                          const framework::Inputs& inputSpecs,
+                                                          const std::string& remoteMachine,
+                                                          const std::string& remotePort,
+                                                          const std::string& control);
+  static void generateDataSamplingPolicyRemoteProxyBind(framework::WorkflowSpec& workflow,
+                                                        const std::string& policyName,
+                                                        const framework::Outputs& outputSpecs,
+                                                        const std::string& remotePort,
+                                                        const std::string& control);
   static void generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow,
                                           size_t id,
                                           std::string taskName,
