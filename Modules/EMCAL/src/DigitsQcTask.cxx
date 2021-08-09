@@ -15,6 +15,7 @@
 ///
 
 #include <boost/algorithm/string.hpp>
+#include <iostream>
 
 #include <TCanvas.h>
 #include <TH2.h>
@@ -48,10 +49,21 @@ DigitsQcTask::~DigitsQcTask()
   for (auto en : mHistogramContainer) {
     en.second.clean();
   }
+  if (mEvCounterTF)
+    delete mEvCounterTF;
+  if (mEvCounterTFPHYS)
+    delete mEvCounterTFPHYS;
+  if (mEvCounterTFCALIB)
+    delete mEvCounterTFCALIB;
+  if (mTFPerCycles)
+    delete mTFPerCycles;
+  if (mTFPerCyclesTOT)
+    delete mTFPerCyclesTOT;
 }
 
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
+  QcInfoLogger::GetInstance().setDetector("EMC");
   QcInfoLogger::GetInstance() << "initialize DigitsQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
   //define histograms
 
@@ -98,6 +110,31 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     histos.startPublishing(*getObjectsManager());
     mHistogramContainer[trg] = histos;
   } //trigger type
+  //new histos`
+  mTFPerCyclesTOT = new TH1D("NumberOfTFperCycles_TOT", "NumberOfTFperCycles_TOT", 100, -0.5, 99.5); //
+  mTFPerCyclesTOT->GetXaxis()->SetTitle("NumberOfTFperCyclesTOT");
+  mTFPerCyclesTOT->GetYaxis()->SetTitle("Counts");
+  getObjectsManager()->startPublishing(mTFPerCyclesTOT);
+
+  mTFPerCycles = new TH1D("NumberOfTFperCycles_1", "NumberOfTFperCycles_1", 1, -0.5, 1.5);
+  mTFPerCycles->GetXaxis()->SetTitle("NumberOfTFperCycles");
+  mTFPerCycles->GetYaxis()->SetTitle("Counts");
+  getObjectsManager()->startPublishing(mTFPerCycles);
+
+  mEvCounterTF = new TH1D("NEventsPerTF", "NEventsPerTF", 100, -0.5, 99.5);
+  mEvCounterTF->GetXaxis()->SetTitle("NEventsPerTimeFrame");
+  mEvCounterTF->GetYaxis()->SetTitle("Counts");
+  getObjectsManager()->startPublishing(mEvCounterTF);
+
+  mEvCounterTFPHYS = new TH1D("NEventsPerTFPHYS", "NEventsPerTFPHYS", 100, -0.5, 99.5);
+  mEvCounterTFPHYS->GetXaxis()->SetTitle("NEventsPerTimeFrame_PHYS");
+  mEvCounterTFPHYS->GetYaxis()->SetTitle("Counts");
+  getObjectsManager()->startPublishing(mEvCounterTFPHYS);
+
+  mEvCounterTFCALIB = new TH1D("NEventsPerTFCALIB", "NEventsPerTFCALIB", 100, -0.5, 99.5);
+  mEvCounterTFCALIB->GetXaxis()->SetTitle("NEventsPerTimeFrame_CALIB");
+  mEvCounterTFCALIB->GetYaxis()->SetTitle("Counts");
+  getObjectsManager()->startPublishing(mEvCounterTFCALIB);
 }
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
@@ -108,6 +145,7 @@ void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 
 void DigitsQcTask::startOfCycle()
 {
+  mTimeFramesPerCycles = 0;
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
   std::map<std::string, std::string> metadata;
   mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>("EMC/Calib/BadChannels", metadata);
@@ -123,7 +161,8 @@ void DigitsQcTask::startOfCycle()
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
+  mTFPerCycles->Fill(1); //number of timeframe process per cycle
+  mTimeFramesPerCycles++;
   // check if we have payoad
   using MaskType_t = o2::emcal::BadChannelMap::MaskType_t;
 
@@ -140,23 +179,27 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Build maps of trigger records and cells according to the subspecification
   // and combine trigger records from different maps into a single map of range
   // references and subspecifications
-  std::vector<framework::InputSpec> cellInputs{ { "cellfilter", framework::ConcreteDataTypeMatcher(header::gDataOriginEMC, "CELLS") } },
-    triggerRecordInputs{ { "triggerrecordfilter", framework::ConcreteDataTypeMatcher(header::gDataOriginEMC, "CELLSTRGR") } };
   std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::Cell>> cellSubEvents;
   std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>> triggerRecordSubevents;
 
-  for (const auto& celldata : framework::InputRecordWalker(ctx.inputs(), cellInputs)) {
+  auto posCells = ctx.inputs().getPos("emcal-digits"),
+       posTriggerRecords = ctx.inputs().getPos("emcal-triggerecords");
+  auto numSlotsCells = ctx.inputs().getNofParts(posCells),
+       numSlotsTriggerRecords = ctx.inputs().getNofParts(posTriggerRecords);
+  for (decltype(numSlotsCells) islot = 0; islot < numSlotsCells; islot++) {
+    auto celldata = ctx.inputs().getByPos(posCells, islot);
     auto subspecification = framework::DataRefUtils::getHeader<header::DataHeader*>(celldata)->subSpecification;
     // Discard message if it is a deadbeaf message (empty timeframe)
-    if (subspecification == 0xdeadbeaf) {
+    if (subspecification == 0xDEADBEEF) {
       continue;
     }
     cellSubEvents[subspecification] = ctx.inputs().get<gsl::span<o2::emcal::Cell>>(celldata);
   }
-  for (const auto& trgrecorddata : framework::InputRecordWalker(ctx.inputs(), triggerRecordInputs)) {
+  for (decltype(numSlotsTriggerRecords) islot = 0; islot < numSlotsTriggerRecords; islot++) {
+    auto trgrecorddata = ctx.inputs().getByPos(posTriggerRecords, islot);
     auto subspecification = framework::DataRefUtils::getHeader<header::DataHeader*>(trgrecorddata)->subSpecification;
     // Discard message if it is a deadbeaf message (empty timeframe)
-    if (subspecification == 0xdeadbeaf) {
+    if (subspecification == 0xDEADBEEF) {
       continue;
     }
     triggerRecordSubevents[subspecification] = ctx.inputs().get<gsl::span<o2::emcal::TriggerRecord>>(trgrecorddata);
@@ -166,6 +209,8 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << AliceO2::InfoLogger::InfoLogger::endm;
   int eventcounter = 0;
+  int eventcounterCALIB = 0;
+  int eventcounterPHYS = 0;
   for (auto trg : combinedEvents) {
     if (!trg.getNumberOfObjects()) {
       continue;
@@ -178,8 +223,10 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     std::string trgClass;
     if (isPhysTrigger) {
       trgClass = "PHYS";
+      eventcounterPHYS++;
     } else if (isCalibTrigger) {
       trgClass = "CAL";
+      eventcounterCALIB++;
     } else {
       QcInfoLogger::GetInstance() << QcInfoLogger::Error << " Unmonitored trigger class requested " << AliceO2::InfoLogger::InfoLogger::endm;
       continue;
@@ -215,10 +262,15 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     eventcounter++;
   }
+  mEvCounterTF->Fill(eventcounter);
+  mEvCounterTFPHYS->Fill(eventcounterPHYS);
+  mEvCounterTFCALIB->Fill(eventcounterCALIB);
+  //event counter per TimeFrame  (range 0-100) for the moment (parameter)
 }
 
 void DigitsQcTask::endOfCycle()
 {
+  mTFPerCyclesTOT->Fill(mTimeFramesPerCycles); // do not reset this histo
   QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
@@ -235,6 +287,14 @@ void DigitsQcTask::reset()
   for (auto cont : mHistogramContainer) {
     cont.second.reset();
   }
+  if (mEvCounterTF)
+    mEvCounterTF->Reset();
+  if (mEvCounterTFPHYS)
+    mEvCounterTFPHYS->Reset();
+  if (mEvCounterTFCALIB)
+    mEvCounterTFCALIB->Reset();
+  if (mTFPerCycles)
+    mTFPerCycles->Reset();
 }
 
 std::vector<DigitsQcTask::CombinedEvent> DigitsQcTask::buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const
@@ -439,6 +499,10 @@ void DigitsQcTask::DigitsHistograms::startPublishing(o2::quality_control::core::
   publishOptional(mDigitOccupancyThr);
   publishOptional(mIntegratedOccupancy);
   publishOptional(mnumberEvents);
+  //  publishOptional(mEvCounterTF);
+  //  publishOptional(mEvCounterTFPHYS);
+  //  publishOptional(mEvCounterTFCALIB);
+  //  publishOptional(mTFPerCycles);
 }
 
 void DigitsQcTask::DigitsHistograms::reset()
@@ -476,6 +540,10 @@ void DigitsQcTask::DigitsHistograms::reset()
   resetOptional(mDigitOccupancyThr);
   resetOptional(mIntegratedOccupancy);
   resetOptional(mnumberEvents);
+  //  resetOptional(mEvCounterTF);
+  //  resetOptional(mEvCounterTFPHYS);
+  //  resetOptional(mEvCounterTFCALIB);
+  //  resetOptional(mTFPerCycles);
 }
 
 void DigitsQcTask::DigitsHistograms::clean()
@@ -512,6 +580,11 @@ void DigitsQcTask::DigitsHistograms::clean()
   cleanOptional(mDigitOccupancyThr);
   cleanOptional(mIntegratedOccupancy);
   cleanOptional(mnumberEvents);
+  //  cleanOptional(mEvCounterTF);
+  //  cleanOptional(mEvCounterTFPHYS);
+  //  cleanOptional(mEvCounterTFCALIB);
+  //  cleanOptional(mTFPerCycles);
+  //
 }
 
 } // namespace emcal

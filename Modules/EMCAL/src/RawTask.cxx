@@ -33,6 +33,8 @@
 #include <Framework/ConcreteDataMatcher.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputRecord.h>
+#include <Framework/DataRefUtils.h>
+#include <Headers/DataHeader.h>
 #include <CommonConstants/Triggers.h>
 
 using namespace o2::emcal;
@@ -77,7 +79,15 @@ RawTask::~RawTask()
   if (mErrorTypeAltro) {
     delete mErrorTypeAltro;
   }
-
+  if (mNbunchPerChan) {
+    delete mNbunchPerChan;
+  }
+  if (mNofADCsamples) {
+    delete mNofADCsamples;
+  }
+  if (mADCsize) {
+    delete mADCsize;
+  }
   for (auto& histos : mRMS) {
     delete histos.second;
   }
@@ -153,10 +163,6 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (!mGeometry)
     mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
 
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    QcInfoLogger::GetInstance() << "Custom parameter - myOwnKey : " << param->second << AliceO2::InfoLogger::InfoLogger::endm;
-  }
   mMappings = std::unique_ptr<o2::emcal::MappingHandler>(new o2::emcal::MappingHandler); //initialize the unique pointer to Mapper
 
   // Statistics histograms
@@ -213,6 +219,18 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeAltro->GetYaxis()->SetBinLabel(7, "ALTRO Mapping");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(8, "Channel");
   getObjectsManager()->startPublishing(mErrorTypeAltro);
+
+  mNbunchPerChan = new TH1F("NumberBunchPerChannel", "NumberBunchPerChannel", 4, -0.5, 3.5);
+  mNbunchPerChan->GetXaxis()->SetTitle("# bunches per channels");
+  getObjectsManager()->startPublishing(mNbunchPerChan);
+
+  mNofADCsamples = new TH1F("NumberOfADCPerChannel", "NumberOfADCPerChannel", 16, -0.5, 15.5);
+  mNofADCsamples->GetXaxis()->SetTitle("# of ADC sample per channels");
+  getObjectsManager()->startPublishing(mNofADCsamples);
+
+  mADCsize = new TH1F("ADCsizePerBunch", "ADCsizePerBunch", 16, -0.5, 15.5);
+  mADCsize->GetXaxis()->SetTitle("ADC size per bunch");
+  getObjectsManager()->startPublishing(mADCsize);
 
   //histos per SM
   for (auto ism = 0; ism < 20; ism++) {
@@ -339,25 +357,7 @@ void RawTask::startOfCycle()
 
 void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  // In this function you can access data inputs specified in the JSON config file, for example:
-  //   "query": "random:ITS/RAWDATA/0"
-  // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
-  // One can also access conditions from CCDB, via separate API (see point 3)
-
-  // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
-  // One can find additional examples at:
-  // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
-
   using CHTYP = o2::emcal::ChannelType_t;
-
-  // The type DataOrigin allows only conversion of char arrays with size 4, not char *, therefore
-  // the origin string has to be converted manually to the char array and checked for length.
-  if (mDataOrigin.size() > 4) {
-    QcInfoLogger::GetInstance() << QcInfoLogger::Error << "No valid data origin" << mDataOrigin << ", cannot process" << QcInfoLogger::endm;
-    return;
-  }
-  char dataOrigin[4];
-  strcpy(dataOrigin, mDataOrigin.data());
 
   if (isLostTimeframe(ctx))
     return;
@@ -378,8 +378,14 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     nchannels[i] = 0;
 
   // Accept only descriptor RAWDATA, discard FLP/SUBTIMEFRAME
-  std::vector<framework::InputSpec> filter{ { "filter", framework::ConcreteDataTypeMatcher(dataOrigin, "RAWDATA") } };
-  for (const auto& rawData : framework::InputRecordWalker(ctx.inputs(), filter)) {
+  std::cout << "Found " << ctx.inputs().size() << " inputs" << std::endl;
+
+  auto posReadout = ctx.inputs().getPos("readout");
+  auto nslots = ctx.inputs().getNofParts(posReadout);
+  for (decltype(nslots) islot = 0; islot < nslots; islot++) {
+    auto rawData = ctx.inputs().getByPos(posReadout, islot);
+    auto datahead = framework::DataRefUtils::getHeader<header::DataHeader*>(rawData);
+    std::cout << "Next input " << rawData.spec->binding << "" << datahead->dataOrigin.str << "/" << datahead->dataDescription.str << ", subspec " << datahead->subSpecification << std::endl;
     // get message header
     if (rawData.header != nullptr && rawData.payload != nullptr) {
       const auto* header = header::get<header::DataHeader*>(rawData.header);
@@ -540,8 +546,14 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           Double_t meanADC = 0;
           Double_t rmsADC = 0;
           EventType evtype = isPhysTrigger ? EventType::PHYS_EVENT : EventType::CAL_EVENT;
+
+          mNbunchPerChan->Fill(chan.getBunches().size()); //(1 histo for EMCAL-526).//1, if high rate --> pile up.
+
+          int numberOfADCsamples = 0;
           for (auto& bunch : chan.getBunches()) {
             auto adcs = bunch.getADC();
+            numberOfADCsamples += adcs.size();
+            mADCsize->Fill(adcs.size());
 
             auto maxADCbunch = *max_element(adcs.begin(), adcs.end());
             if (maxADCbunch > maxADC)
@@ -568,6 +580,8 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             mMEAN[evtype]->Fill(globCol, globRow, meanADC);             //for shifter
             mMEANperSM[evtype][supermoduleID]->Fill(col, row, meanADC); // no shifter
           }
+          mNofADCsamples->Fill(numberOfADCsamples); // number of bunches per channel
+
           if (maxADC > maxADCSMEvent->second[supermoduleID])
             maxADCSMEvent->second[supermoduleID] = maxADC;
 
@@ -671,19 +685,22 @@ void RawTask::reset()
   mPayloadSizePerDDL->Reset();
   mPayloadSize->Reset();
   mErrorTypeAltro->Reset();
+  mNbunchPerChan->Reset();
+  mNofADCsamples->Reset();
+  mADCsize->Reset();
 }
 
 bool RawTask::isLostTimeframe(framework::ProcessingContext& ctx) const
 {
-  constexpr auto originEMC = header::gDataOriginEMC;
-  o2::framework::InputSpec dummy{ "dummy",
-                                  framework::ConcreteDataMatcher{ originEMC,
-                                                                  header::gDataDescriptionRawData,
-                                                                  0xDEADBEEF } };
-  for (const auto& ref : o2::framework::InputRecordWalker(ctx.inputs(), { dummy })) {
+  auto posReadout = ctx.inputs().getPos("readout");
+  auto nslots = ctx.inputs().getNofParts(posReadout);
+  for (decltype(nslots) islot = 0; islot < nslots; islot++) {
+    const auto& ref = ctx.inputs().getByPos(posReadout, islot);
     const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
-    if (dh->payloadSize == 0) {
-      return true;
+    if (dh->subSpecification == 0xDEADBEEF) {
+      if (dh->payloadSize == 0) {
+        return true;
+      }
     }
   }
   return false;
