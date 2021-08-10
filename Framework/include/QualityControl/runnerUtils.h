@@ -78,6 +78,7 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, const bo
                         << ENDM;
   }
   run = run > 0 /* found it in service */ ? run : config.get<int>("qc.config.Activity.number", 0);
+  ILOG(Debug, Devel) << "Run number returned by computeRunNumber (tree) : " << run << ENDM;
   return run;
 }
 
@@ -95,6 +96,7 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, int defa
                         << ENDM;
   }
   run = run > 0 /* found it in service */ ? run : defaultRunNumber;
+  ILOG(Debug, Devel) << "Run number returned by computeRunNumber (default) : " << run << ENDM;
   return run;
 }
 
