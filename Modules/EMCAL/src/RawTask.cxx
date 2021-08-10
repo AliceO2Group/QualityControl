@@ -377,15 +377,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   for (Int_t i = 0; i < NFEESM; i++)
     nchannels[i] = 0;
 
-  // Accept only descriptor RAWDATA, discard FLP/SUBTIMEFRAME
-  std::cout << "Found " << ctx.inputs().size() << " inputs" << std::endl;
-
   auto posReadout = ctx.inputs().getPos("readout");
   auto nslots = ctx.inputs().getNofParts(posReadout);
   for (decltype(nslots) islot = 0; islot < nslots; islot++) {
     auto rawData = ctx.inputs().getByPos(posReadout, islot);
-    auto datahead = framework::DataRefUtils::getHeader<header::DataHeader*>(rawData);
-    std::cout << "Next input " << rawData.spec->binding << "" << datahead->dataOrigin.str << "/" << datahead->dataDescription.str << ", subspec " << datahead->subSpecification << std::endl;
     // get message header
     if (rawData.header != nullptr && rawData.payload != nullptr) {
       const auto* header = header::get<header::DataHeader*>(rawData.header);
