@@ -243,11 +243,12 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
 
       // We don't know what we receive, so we test for an array and then try a tobject.
       // If we received a tobject, it gets encapsulated in the tobjarray.
-      shared_ptr<const TObjArray> array = nullptr;
-      shared_ptr<const TObject> tobj = inputRecord.get<TObject*>(input.binding.c_str());
+      shared_ptr<TObjArray> array = nullptr;
+      auto tobj = DataRefUtils::as<TObject>(dataRef);
       // if the object has not been found, it will raise an exception that we just let go.
       if (tobj->InheritsFrom("TObjArray")) {
-        array = dynamic_pointer_cast<const TObjArray>(tobj);
+        array.reset(dynamic_cast<TObjArray*>(tobj.release()));
+        array->SetOwner(false);
         mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
                 << " received an array with " << array->GetEntries()
                 << " entries from " << input.binding << ENDM;
