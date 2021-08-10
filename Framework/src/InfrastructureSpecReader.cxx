@@ -26,10 +26,10 @@ using namespace o2::framework;
 namespace o2::quality_control::core
 {
 
-InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost::property_tree::ptree& config, const std::string& configurationSource)
+InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost::property_tree::ptree& wholeTree, const std::string& configurationSource)
 {
   InfrastructureSpec spec;
-  const auto& qcTree = config.get_child("qc");
+  const auto& qcTree = wholeTree.get_child("qc");
   if (qcTree.find("config") != qcTree.not_found()) {
     spec.common = readCommonSpec(qcTree.get_child("config"), configurationSource);
   } else {
@@ -39,32 +39,32 @@ InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost:
     const auto& tasksTree = qcTree.get_child("tasks");
     spec.tasks.reserve(tasksTree.size());
     for (const auto& [taskName, taskConfig] : tasksTree) {
-      spec.tasks.push_back(readTaskSpec(taskName, taskConfig, configurationSource));
+      spec.tasks.push_back(readTaskSpec(taskName, taskConfig, wholeTree));
     }
   }
   return spec;
 }
 
-CommonSpec InfrastructureSpecReader::readCommonSpec(const boost::property_tree::ptree& config, const std::string& configurationSource)
+CommonSpec InfrastructureSpecReader::readCommonSpec(const boost::property_tree::ptree& commonTree, const std::string& configurationSource)
 {
   CommonSpec spec;
-  for (const auto& [key, value] : config.get_child("database")) {
+  for (const auto& [key, value] : commonTree.get_child("database")) {
     spec.database.emplace(key, value.get_value<std::string>());
   }
-  spec.activityNumber = config.get<int>("Activity.number", spec.activityNumber);
-  spec.activityType = config.get<int>("Activity.type", spec.activityType);
-  spec.monitoringUrl = config.get<std::string>("monitoring.url", spec.monitoringUrl);
-  spec.consulUrl = config.get<std::string>("consul.url", spec.consulUrl);
-  spec.conditionDBUrl = config.get<std::string>("conditionDB.url", spec.conditionDBUrl);
-  spec.infologgerFilterDiscardDebug = config.get<bool>("infologger.filterDiscardDebug", spec.infologgerFilterDiscardDebug);
-  spec.infologgerDiscardLevel = config.get<int>("infologger.filterDiscardLevel", spec.infologgerDiscardLevel);
+  spec.activityNumber = commonTree.get<int>("Activity.number", spec.activityNumber);
+  spec.activityType = commonTree.get<int>("Activity.type", spec.activityType);
+  spec.monitoringUrl = commonTree.get<std::string>("monitoring.url", spec.monitoringUrl);
+  spec.consulUrl = commonTree.get<std::string>("consul.url", spec.consulUrl);
+  spec.conditionDBUrl = commonTree.get<std::string>("conditionDB.url", spec.conditionDBUrl);
+  spec.infologgerFilterDiscardDebug = commonTree.get<bool>("infologger.filterDiscardDebug", spec.infologgerFilterDiscardDebug);
+  spec.infologgerDiscardLevel = commonTree.get<int>("infologger.filterDiscardLevel", spec.infologgerDiscardLevel);
 
   spec.configurationSource = configurationSource;
 
   return spec;
 }
 
-TaskSpec InfrastructureSpecReader::readTaskSpec(std::string taskName, const boost::property_tree::ptree& config, const std::string& configurationSource)
+TaskSpec InfrastructureSpecReader::readTaskSpec(std::string taskName, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree)
 {
   static std::unordered_map<std::string, TaskLocationSpec> const taskLocationFromString = {
     { "local", TaskLocationSpec::Local },
@@ -74,52 +74,52 @@ TaskSpec InfrastructureSpecReader::readTaskSpec(std::string taskName, const boos
   TaskSpec ts;
 
   ts.taskName = taskName;
-  ts.className = config.get<std::string>("className");
-  ts.moduleName = config.get<std::string>("moduleName");
-  ts.detectorName = config.get<std::string>("detectorName");
-  ts.cycleDurationSeconds = config.get<int>("cycleDurationSeconds");
-  ts.dataSource = readDataSourceSpec(config.get_child("dataSource"), configurationSource);
+  ts.className = taskTree.get<std::string>("className");
+  ts.moduleName = taskTree.get<std::string>("moduleName");
+  ts.detectorName = taskTree.get<std::string>("detectorName");
+  ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds");
+  ts.dataSource = readDataSourceSpec(taskTree.get_child("dataSource"), wholeTree);
 
-  ts.active = config.get<bool>("active", ts.active);
-  ts.maxNumberCycles = config.get<int>("maxNumberCycles", ts.maxNumberCycles);
-  ts.resetAfterCycles = config.get<size_t>("resetAfterCycles", ts.resetAfterCycles);
-  ts.saveObjectsToFile = config.get<std::string>("saveObjectsToFile", ts.saveObjectsToFile);
-  if (config.count("taskParameters") > 0) {
-    for (const auto& [key, value] : config.get_child("taskParameters")) {
+  ts.active = taskTree.get<bool>("active", ts.active);
+  ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);
+  ts.resetAfterCycles = taskTree.get<size_t>("resetAfterCycles", ts.resetAfterCycles);
+  ts.saveObjectsToFile = taskTree.get<std::string>("saveObjectsToFile", ts.saveObjectsToFile);
+  if (taskTree.count("taskParameters") > 0) {
+    for (const auto& [key, value] : taskTree.get_child("taskParameters")) {
       ts.customParameters.emplace(key, value.get_value<std::string>());
     }
   }
 
-  bool multinodeSetup = config.find("location") != config.not_found();
-  ts.location = taskLocationFromString.at(config.get<std::string>("location", "remote"));
-  if (config.count("localMachines") > 0) {
-    for (const auto& [key, value] : config.get_child("localMachines")) {
+  bool multinodeSetup = taskTree.find("location") != taskTree.not_found();
+  ts.location = taskLocationFromString.at(taskTree.get<std::string>("location", "remote"));
+  if (taskTree.count("localMachines") > 0) {
+    for (const auto& [key, value] : taskTree.get_child("localMachines")) {
       ts.localMachines.emplace_back(value.get_value<std::string>());
     }
   }
-  if (multinodeSetup && config.count("remoteMachine") > 0) {
+  if (multinodeSetup && taskTree.count("remoteMachine") > 0) {
     ILOG(Warning, Trace)
       << "No remote machine was specified for a multinode QC setup."
          " This is fine if running with AliECS, but it will fail in standalone mode."
       << ENDM;
   }
-  ts.remoteMachine = config.get<std::string>("remoteMachine", ts.remoteMachine);
-  if (multinodeSetup && config.count("remotePort") > 0) {
+  ts.remoteMachine = taskTree.get<std::string>("remoteMachine", ts.remoteMachine);
+  if (multinodeSetup && taskTree.count("remotePort") > 0) {
     ILOG(Warning, Trace)
       << "No remote port was specified for a multinode QC setup."
          " This is fine if running with AliECS, but it might fail in standalone mode."
       << ENDM;
   }
-  ts.remotePort = config.get<uint16_t>("remotePort", ts.remotePort);
-  ts.localControl = config.get<std::string>("localControl", ts.localControl);
-  ts.mergingMode = config.get<std::string>("mergingMode", ts.mergingMode);
-  ts.mergerCycleMultiplier = config.get<int>("mergerCycleMultiplier", ts.mergerCycleMultiplier);
+  ts.remotePort = taskTree.get<uint16_t>("remotePort", ts.remotePort);
+  ts.localControl = taskTree.get<std::string>("localControl", ts.localControl);
+  ts.mergingMode = taskTree.get<std::string>("mergingMode", ts.mergingMode);
+  ts.mergerCycleMultiplier = taskTree.get<int>("mergerCycleMultiplier", ts.mergerCycleMultiplier);
 
   return ts;
 }
 
-DataSourceSpec InfrastructureSpecReader::readDataSourceSpec(const boost::property_tree::ptree& dataSourceSpec,
-                                                            const std::string& configurationSource)
+DataSourceSpec InfrastructureSpecReader::readDataSourceSpec(const boost::property_tree::ptree& dataSourceTree,
+                                                            const boost::property_tree::ptree& wholeTree)
 {
   static std::unordered_map<std::string, DataSourceType> const dataSourceTypeFromString = {
     // fixme: the convention is inconsistent and it should be fixed in coordination with configuration files
@@ -133,18 +133,18 @@ DataSourceSpec InfrastructureSpecReader::readDataSourceSpec(const boost::propert
   };
 
   DataSourceSpec dss;
-  dss.type = dataSourceTypeFromString.at(dataSourceSpec.get<std::string>("type"));
+  dss.type = dataSourceTypeFromString.at(dataSourceTree.get<std::string>("type"));
 
   switch (dss.type) {
     case DataSourceType::DataSamplingPolicy: {
-      auto name = dataSourceSpec.get<std::string>("name");
+      auto name = dataSourceTree.get<std::string>("name");
       dss.typeSpecificParams.insert({ "name", name });
-      dss.inputs = DataSampling::InputSpecsForPolicy(configurationSource, name); //fixme: add a method which takes a ptree, then i can remove configurationSource
+      dss.inputs = DataSampling::InputSpecsForPolicy(wholeTree.get_child("dataSamplingPolicies"), name);
       break;
     }
     case DataSourceType::Direct: {
-      dss.typeSpecificParams.insert({ "query", dataSourceSpec.get<std::string>("query") });
-      auto inputsQuery = dataSourceSpec.get<std::string>("query");
+      dss.typeSpecificParams.insert({ "query", dataSourceTree.get<std::string>("query") });
+      auto inputsQuery = dataSourceTree.get<std::string>("query");
       dss.inputs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
       break;
     }
@@ -152,11 +152,11 @@ DataSourceSpec InfrastructureSpecReader::readDataSourceSpec(const boost::propert
     case DataSourceType::PostProcessingTask:
     case DataSourceType::Check:
     case DataSourceType::Aggregator:
-      dss.typeSpecificParams.insert({ "name", dataSourceSpec.get<std::string>("name") });
+      dss.typeSpecificParams.insert({ "name", dataSourceTree.get<std::string>("name") });
       break;
     case DataSourceType::ExternalTask:
-      dss.typeSpecificParams.insert({ "name", dataSourceSpec.get<std::string>("name") });
-      dss.typeSpecificParams.insert({ "query", dataSourceSpec.get<std::string>("query") });
+      dss.typeSpecificParams.insert({ "name", dataSourceTree.get<std::string>("name") });
+      dss.typeSpecificParams.insert({ "query", dataSourceTree.get<std::string>("query") });
       break;
     case DataSourceType::Invalid:
       // todo: throw?

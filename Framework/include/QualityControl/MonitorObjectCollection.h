@@ -30,6 +30,9 @@ class MonitorObjectCollection : public TObjArray, public mergers::MergeInterface
   ~MonitorObjectCollection() = default;
 
   void merge(mergers::MergeInterface* const other) override;
+
+  void postDeserialization() override;
+
   ClassDefOverride(MonitorObjectCollection, 0);
 };
 

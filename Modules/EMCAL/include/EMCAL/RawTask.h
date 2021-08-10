@@ -66,15 +66,6 @@ class RawTask final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  /// \brief Set the data origin
-  /// \param origin Data origin
-  ///
-  /// Normally data origin is EMC, however in case the
-  /// Task subscribes directly to readout or the origin
-  /// is different in the STFbuilder this needs to be handled
-  /// accordingly
-  void setDataOrigin(const std::string_view origin) { mDataOrigin = origin; }
-
   enum class EventType {
     CAL_EVENT,
     PHYS_EVENT
@@ -107,7 +98,6 @@ class RawTask final : public TaskInterface
   bool isLostTimeframe(framework::ProcessingContext& ctx) const;
 
   o2::emcal::Geometry* mGeometry = nullptr; ///< EMCAL geometry
-  std::string mDataOrigin = "EMC";
   TH1* mPayloadSize = nullptr;
   TH1* mMessageCounter = nullptr;
   TH1* mNumberOfSuperpagesPerMessage;
@@ -115,6 +105,9 @@ class RawTask final : public TaskInterface
   TH1* mSuperpageCounter = nullptr;                                          ///< Counter for number of superpages
   TH1* mPageCounter = nullptr;                                               ///< Counter for number of pages (headers)
   TH1* mTotalDataVolume = nullptr;                                           ///< Total data volume
+  TH1* mNbunchPerChan = nullptr;                                             ///< Number of bunch per Channel
+  TH1* mNofADCsamples = nullptr;                                             ///< Number of ADC samples per Channel
+  TH1* mADCsize = nullptr;                                                   ///< ADC size per bunch
   std::array<TH1*, 20> mFECmaxCount;                                         ///< max number of hit channels
   std::array<TH1*, 20> mFECmaxID;                                            ///< FEC ID  max number of hit channels
   std::unordered_map<EventType, TProfile2D*> mRMS;                           ///< ADC rms for EMCAL+DCAL togheter

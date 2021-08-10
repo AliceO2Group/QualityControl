@@ -156,16 +156,18 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
     }
   }
 
-  // Creating Data Sampling Policies proxies
-  for (const auto& [policyName, control] : samplingPoliciesUsed) {
-    // todo: leave only the new way once the return type is changed
-    std::string port = std::to_string(std::optional<uint16_t>(DataSampling::PortForPolicy(config.get(), policyName)).value_or(defaultPolicyPort));
-    Inputs inputSpecs = DataSampling::InputSpecsForPolicy(config.get(), policyName);
+  if (!samplingPoliciesUsed.empty()) {
+    auto dataSamplingTree = config->getRecursive("dataSamplingPolicies");
+    // Creating Data Sampling Policies proxies
+    for (const auto& [policyName, control] : samplingPoliciesUsed) {
+      std::string port = std::to_string(DataSampling::PortForPolicy(dataSamplingTree, policyName).value_or(defaultPolicyPort));
+      Inputs inputSpecs = DataSampling::InputSpecsForPolicy(dataSamplingTree, policyName);
 
-    std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
-    for (const auto& machine : machines) {
-      if (machine == targetHost) {
-        generateDataSamplingPolicyLocalProxy(workflow, policyName, inputSpecs, machine, port, control);
+      std::vector<std::string> machines = DataSampling::MachinesForPolicy(dataSamplingTree, policyName);
+      for (const auto& machine : machines) {
+        if (machine == targetHost) {
+          generateDataSamplingPolicyLocalProxy(workflow, policyName, inputSpecs, machine, port, control);
+        }
       }
     }
   }
@@ -231,17 +233,19 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
     }
   }
 
-  // Creating Data Sampling Policies proxies
-  for (const auto& [policyName, control] : samplingPoliciesUsed) {
-    // todo now we have to generate one proxy per local machine and policy, because of the proxy limitations.
-    //  Use one proxy per policy when it is possible.
+  if (!samplingPoliciesUsed.empty()) {
+    auto dataSamplingTree = config->getRecursive("dataSamplingPolicies");
+    // Creating Data Sampling Policies proxies
+    for (const auto& [policyName, control] : samplingPoliciesUsed) {
+      // todo now we have to generate one proxy per local machine and policy, because of the proxy limitations.
+      //  Use one proxy per policy when it is possible.
 
-    // todo: leave only the new way once the return type is changed
-    std::string port = std::to_string(std::optional<uint16_t>(DataSampling::PortForPolicy(config.get(), policyName)).value_or(defaultPolicyPort));
-    Outputs outputSpecs = DataSampling::OutputSpecsForPolicy(config.get(), policyName);
-    std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
-    for (const auto& machine : machines) {
-      generateDataSamplingPolicyRemoteProxy(workflow, policyName, outputSpecs, machine, port, control);
+      std::string port = std::to_string(DataSampling::PortForPolicy(dataSamplingTree, policyName).value_or(defaultPolicyPort));
+      Outputs outputSpecs = DataSampling::OutputSpecsForPolicy(dataSamplingTree, policyName);
+      std::vector<std::string> machines = DataSampling::MachinesForPolicy(dataSamplingTree, policyName);
+      for (const auto& machine : machines) {
+        generateDataSamplingPolicyRemoteProxy(workflow, policyName, outputSpecs, machine, port, control);
+      }
     }
   }
 
@@ -396,7 +400,7 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
                                                           std::string taskName, std::string remoteHost,
                                                           std::string remotePort, const std::string& control)
 {
-  std::string proxyName = taskName + "-proxy-" + std::to_string(id);
+  std::string proxyName = taskName + "-proxy";
   std::string channelName = taskName + "-proxy";
   InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) };
   std::string channelConfig = "name=" + channelName + ",type=push,method=connect,address=tcp://" +

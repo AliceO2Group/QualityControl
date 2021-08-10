@@ -38,11 +38,8 @@
 ///   \endcode
 
 #include <Framework/CompletionPolicyHelpers.h>
-#include <Framework/DataSpecUtils.h>
 #include <DataSampling/DataSampling.h>
 #include "QualityControl/InfrastructureGenerator.h"
-#include "QualityControl/QcInfoLogger.h"
-#include "QualityControl/AdvancedWorkflow.h"
 
 using namespace o2;
 using namespace o2::framework;
@@ -73,11 +70,17 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 }
 
 #include <Framework/runDataProcessing.h>
+#include <Framework/DataSpecUtils.h>
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
+#include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/AdvancedWorkflow.h"
 
 using namespace o2;
 using namespace o2::header;
 using namespace o2::quality_control::core;
 using SubSpecificationType = o2::header::DataHeader::SubSpecificationType;
+using namespace o2::configuration;
 
 WorkflowSpec defineDataProcessing(ConfigContext const& config)
 {
@@ -93,7 +96,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
   WorkflowSpec specs = getFullProcessingTopology();
 
   if (!noQC) {
-    DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+    auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+    auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+    DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
     // Generation of the remote QC topology (for the QC servers)
     quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
   }

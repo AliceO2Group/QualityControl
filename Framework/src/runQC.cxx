@@ -28,12 +28,15 @@
 
 #include <boost/asio/ip/host_name.hpp>
 #include <DataSampling/DataSampling.h>
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
 
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::utilities;
+using namespace o2::configuration;
 
 // The customize() functions are used to declare the executable arguments and to specify custom completion and channel
 // configuration policies. They have to be above `#include "Framework/runDataProcessing.h"` - that header checks if
@@ -157,7 +160,9 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
         if (!config.options().get<bool>("no-data-sampling")) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-          DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+          auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+          auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+          DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
@@ -172,7 +177,9 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
         if (!config.options().get<bool>("no-data-sampling")) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-          DataSampling::GenerateInfrastructure(specs, qcConfigurationSource, 1, host);
+          auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+          auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+          DataSampling::GenerateInfrastructure(specs, dataSamplingTree, 1, host);
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
@@ -192,7 +199,9 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
         ILOG(Info, Support) << "Creating a local batch QC workflow." << ENDM;
         if (!config.options().get<bool>("no-data-sampling")) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-          DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+          auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+          auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+          DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }

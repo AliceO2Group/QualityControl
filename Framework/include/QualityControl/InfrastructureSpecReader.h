@@ -34,12 +34,12 @@ class InfrastructureSpecReader
  public:
   /// \brief Reads the full QC configuration file.
   // todo remove configurationSource when it is possible
-  static InfrastructureSpec readInfrastructureSpec(const boost::property_tree::ptree&, const std::string& configurationSource);
+  static InfrastructureSpec readInfrastructureSpec(const boost::property_tree::ptree& wholeTree, const std::string& configurationSource);
 
   // readers for separate parts
-  static CommonSpec readCommonSpec(const boost::property_tree::ptree& config, const std::string& configurationSource);
-  static TaskSpec readTaskSpec(std::string taskName, const boost::property_tree::ptree& taskSpec, const std::string& configurationSource);
-  static DataSourceSpec readDataSourceSpec(const boost::property_tree::ptree& dataSourceSpec, const std::string& configurationSource);
+  static CommonSpec readCommonSpec(const boost::property_tree::ptree& commonTree, const std::string& configurationSource);
+  static TaskSpec readTaskSpec(std::string taskName, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree);
+  static DataSourceSpec readDataSourceSpec(const boost::property_tree::ptree& dataSourceTree, const boost::property_tree::ptree& wholeTree);
 
   static std::string validateDetectorName(std::string name);
 };
