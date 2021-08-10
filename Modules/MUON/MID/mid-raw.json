@@ -70,7 +70,7 @@
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "1.0",
+          "fraction": "0.1",
           "seed": "1234"
         }
       ],
