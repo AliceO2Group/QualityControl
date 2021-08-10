@@ -48,7 +48,7 @@
     },
     "checks": {
       "QcCheck": {
-        "active": "true",
+        "active": "false",
         "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
         "moduleName": "QcSkeleton",
         "policy": "OnAny",

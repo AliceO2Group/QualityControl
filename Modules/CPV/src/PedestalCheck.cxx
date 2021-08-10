@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -135,6 +136,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
+        msg->AddText(Form("Run %d", mo->getRunNumber()));
         //count number of too small pedestals + too big pedestals
         int nOfBadPedestalValues = h->Integral(1, mMinGoodPedestalValueM[iMod]) + h->GetBinContent(h->GetNbinsX() + 1); //underflow + small pedestals + overflow
         if (nOfBadPedestalValues > mToleratedBadPedestalValueChannelsM[iMod]) {
@@ -170,6 +172,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
+        msg->AddText(Form("Run %d", mo->getRunNumber()));
         //count number of too small pedestals + too big pedestals
         float binWidth = h->GetBinWidth(1);
         int nOfBadPedestalSigmas = h->Integral(mMaxGoodPedestalSigmaM[iMod] / binWidth + 1,
@@ -197,6 +200,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
+        msg->AddText(Form("Run %d", mo->getRunNumber()));
         //count number of too small pedestals + too big pedestals
         float binWidth = h->GetBinWidth(1);
         int nOfBadPedestalEfficiencies = 7680 -

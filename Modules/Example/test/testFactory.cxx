@@ -25,7 +25,7 @@ namespace o2::quality_control_modules::example
 BOOST_AUTO_TEST_CASE(Task_Factory)
 {
   TaskFactory factory;
-  TaskConfig config;
+  TaskRunnerConfig config;
   config.taskName = "task";
   config.moduleName = "QcCommon";
   config.className = "o2::quality_control_modules::example::ExampleTask";
@@ -44,7 +44,7 @@ bool is_critical(AliceO2::Common::FatalException const&) { return true; }
 BOOST_AUTO_TEST_CASE(Task_Factory_failures, *utf::depends_on("Task_Factory") /* make sure we don't run both tests at the same time */)
 {
   TaskFactory factory;
-  TaskConfig config;
+  TaskRunnerConfig config;
   auto manager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl, 0, true);
 
   config.taskName = "task";

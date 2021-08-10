@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -18,6 +19,8 @@
 #include "Framework/InputRecordWalker.h"
 #include "DataFormatsTPC/ClusterNativeHelper.h"
 #include "DataFormatsTPC/TPCSectorHeader.h"
+#include "TPCBase/CalDet.h"
+#include "TPCBase/Painter.h"
 
 // QC includes
 #include "TPC/Utility.h"
@@ -50,6 +53,37 @@ std::vector<TCanvas*> toVector(std::vector<std::unique_ptr<TCanvas>>& input)
     output.emplace_back(in.get());
   }
   return output;
+}
+
+void fillCanvases(const o2::tpc::CalDet<float>& calDet, std::vector<std::unique_ptr<TCanvas>>& canvases, const std::unordered_map<std::string, std::string>& params, const std::string paramName)
+{
+  const std::string parNBins = paramName + "NBins";
+  const std::string parXMin = paramName + "XMin";
+  const std::string parXMax = paramName + "XMax";
+  int nbins = 300;
+  float xmin = 0;
+  float xmax = 0;
+  const auto last = params.end();
+  const auto itNBins = params.find(parNBins);
+  const auto itXMin = params.find(parXMin);
+  const auto itXMax = params.find(parXMax);
+  if ((itNBins == last) || (itXMin == last) || (itXMax == last)) {
+    LOGP(warning, "missing parameter {}, {} or {}, falling back to auto scaling", parNBins, parXMin, parXMax);
+    LOGP(warning, "Please add '{}': '<value>', '{}': '<value>', '{}': '<value>' to the 'taskParameters'.", parNBins, parXMin, parXMax);
+  } else {
+    nbins = std::stoi(itNBins->second);
+    xmin = std::stof(itXMin->second);
+    xmax = std::stof(itXMax->second);
+  }
+  auto vecPtr = toVector(canvases);
+  o2::tpc::painter::makeSummaryCanvases(calDet, nbins, xmin, xmax, true, &vecPtr);
+}
+
+void clearCanvases(std::vector<std::unique_ptr<TCanvas>>& canvases)
+{
+  for (const auto& canvas : canvases) {
+    canvas->Clear();
+  }
 }
 
 o2::tpc::ClusterNativeAccess clusterHandler(o2::framework::InputRecord& input)

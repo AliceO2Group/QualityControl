@@ -415,7 +415,8 @@ The `aggregate` method is called whenever the _policy_ is satisfied. It gets a m
 ## Committing code
 
 To commit your new or modified code, please follow this procedure
-1. Fork the [QualityControl](github.com/AliceO2Group/QualityControl) repo using github webpage or github desktop app.
+1. Fork the [QualityControl](https://github.com/AliceO2Group/QualityControl) repo using github webpage or github desktop app.
+   ![alt text](images/fork.png)
 1. Clone it : `git clone https://github.com/<yourIdentifier>/QualityControl.git`
 1. Before you start working on your code, create a branch in your fork : `git checkout -b feature-new-stuff`
 2. Push the branch : `git push --set-upstream origin feature-new-stuff`

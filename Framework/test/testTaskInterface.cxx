@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -133,7 +134,7 @@ class TestTask : public TaskInterface
 BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 {
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
-  TaskConfig taskConfig;
+  TaskRunnerConfig taskConfig;
   ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
 
   test::TestTask testTask(objectsManager);
@@ -168,7 +169,8 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 
 BOOST_AUTO_TEST_CASE(test_task_factory)
 {
-  TaskConfig config{
+  TaskRunnerConfig config{
+    "SkeletonTaskRunner",
     "skeletonTask",
     "QcSkeleton",
     "o2::quality_control_modules::skeleton::SkeletonTask",
@@ -199,7 +201,7 @@ BOOST_AUTO_TEST_CASE(retrieveCondition)
   api.storeAsTFileAny<o2::emcal::BadChannelMap>(&bad, "qc/TST/conditions", meta);
 
   // retrieve it
-  TaskConfig taskConfig;
+  TaskRunnerConfig taskConfig;
   ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
   test::TestTask testTask(objectsManager);
   testTask.loadCcdb("ccdb-test.cern.ch:8080");

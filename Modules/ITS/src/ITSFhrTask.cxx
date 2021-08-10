@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -105,11 +106,13 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
     mOccupancy = new double*[NStaves[mLayer]];
     mErrorCount = new int**[NStaves[mLayer]];
 
-    for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-      double* px = new double[4];
-      double* py = new double[4];
-      getStavePoint(mLayer, istave, px, py);
-      mGeneralOccupancy->AddBin(4, px, py);
+    for (int ilayer = 0; ilayer < 7; ilayer++) {
+      for (int istave = 0; istave < NStaves[ilayer]; istave++) {
+        double* px = new double[4];
+        double* py = new double[4];
+        getStavePoint(ilayer, istave, px, py);
+        mGeneralOccupancy->AddBin(4, px, py);
+      }
     }
     if (mGeneralOccupancy) {
       getObjectsManager()->startPublishing(mGeneralOccupancy);
@@ -383,7 +386,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (lay < NLayerIB) {
       istave += StaveBoundary[lay];
     } else {
-      istave += StaveBoundary[lay - NLayerIB];
+      istave += StaveBoundary[lay] - StaveBoundary[NLayerIB];
     }
     for (int i = 0; i < 13; i++) {
       if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
@@ -618,7 +621,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
       }
-      mGeneralOccupancy->SetBinContent(istave + 1, *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
+      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
     } else {
       for (int ihic = 0; ihic < nHicPerStave[lay]; ihic++) {
         int ilink = ihic / (nHicPerStave[lay] / 2);
@@ -626,13 +629,13 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (ihic == 0 || ihic == 7) {
           for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
             if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] != 0)) {
-              mErrorVsFeeid->SetBinContent((3 * StaveBoundary[3]) + (istave * 2) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
+              mErrorVsFeeid->SetBinContent((3 * StaveBoundary[3]) + ((StaveBoundary[lay] - StaveBoundary[NLayerIB] + istave) * 2) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
             }
           }
         }
       }
+      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
     }
-    mGeneralOccupancy->SetBinContent(istave + 1, *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
   }
   for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
     int feeError = mErrorVsFeeid->Integral(1, mErrorVsFeeid->GetXaxis()->GetNbins(), ierror + 1, ierror + 1);

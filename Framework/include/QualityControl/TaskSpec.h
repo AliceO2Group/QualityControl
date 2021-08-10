@@ -1,0 +1,74 @@
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
+//
+// See http://alice-o2.web.cern.ch/license for full licensing information.
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
+#ifndef QUALITYCONTROL_TASKSPEC_H
+#define QUALITYCONTROL_TASKSPEC_H
+
+///
+/// \file   TaskSpec.h
+/// \author Piotr Konopka
+///
+
+#include <string>
+#include <vector>
+
+#include "QualityControl/DataSourceSpec.h"
+
+namespace o2::quality_control::core
+{
+
+enum class TaskLocationSpec {
+  Local,
+  Remote
+};
+
+/// \brief Specification of a Task, which should map the JSON configuration structure.
+struct TaskSpec {
+  // default, invalid spec
+  TaskSpec() = default;
+
+  // minimal valid spec
+  TaskSpec(std::string taskName, std::string className, std::string moduleName, std::string detectorName,
+           int cycleDurationSeconds, DataSourceSpec dataSource)
+    : taskName(std::move(taskName)),
+      className(std::move(className)),
+      moduleName(std::move(moduleName)),
+      detectorName(std::move(detectorName)),
+      cycleDurationSeconds(cycleDurationSeconds),
+      dataSource(std::move(dataSource))
+  {
+  }
+
+  // basic
+  std::string taskName = "Invalid";
+  std::string className = "Invalid";
+  std::string moduleName = "Invalid";
+  std::string detectorName = "Invalid";
+  int cycleDurationSeconds = -1;
+  DataSourceSpec dataSource;
+  // advanced
+  bool active = true;
+  int maxNumberCycles = -1;
+  size_t resetAfterCycles = 0;
+  std::string saveObjectsToFile;
+  std::unordered_map<std::string, std::string> customParameters = {};
+  // multinode setups
+  TaskLocationSpec location = TaskLocationSpec::Remote;
+  std::vector<std::string> localMachines = {};
+  std::string remoteMachine = "any";
+  uint16_t remotePort = 36543;
+  std::string localControl = "aliecs";
+  std::string mergingMode = "delta"; // todo as enum?
+  int mergerCycleMultiplier = 1;
+};
+
+} // namespace o2::quality_control::core
+
+#endif //QUALITYCONTROL_TASKSPEC_H

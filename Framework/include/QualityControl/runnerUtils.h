@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -77,6 +78,23 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, const bo
                         << ENDM;
   }
   run = run > 0 /* found it in service */ ? run : config.get<int>("qc.config.Activity.number", 0);
+  return run;
+}
+
+inline int computeRunNumber(const framework::ServiceRegistry& services, int defaultRunNumber = 0)
+{ // Determine run number
+  int run = 0;
+  try {
+    auto temp = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("runNumber", "unspecified");
+    ILOG(Info, Devel) << "Got this property runNumber from RawDeviceService: '" << temp << "'" << ENDM;
+    run = stoi(temp);
+    ILOG(Info, Support) << "   Run number found in options: " << run << ENDM;
+  } catch (std::invalid_argument& ia) {
+    ILOG(Info, Support) << "   Run number not found in options or is not a number, \n"
+                           "   using the one from the config file or 0 as a last resort."
+                        << ENDM;
+  }
+  run = run > 0 /* found it in service */ ? run : defaultRunNumber;
   return run;
 }
 

@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -58,23 +59,10 @@ using namespace o2::utilities;
 using namespace std::chrono;
 using namespace AliceO2::Common;
 
-TaskRunner::TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id)
-  : mDeviceName(createTaskRunnerIdString() + "-" + taskName),
-    mRunNumber(0),
-    mMonitorObjectsSpec({ "mo" }, createTaskDataOrigin(), createTaskDataDescription(taskName), id)
+TaskRunner::TaskRunner(const TaskRunnerConfig& config)
+  : mTaskConfig(config),
+    mRunNumber(0)
 {
-  // setup configuration
-  try {
-    mTaskConfig.taskName = taskName;
-    mTaskConfig.parallelTaskID = id;
-    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-    loadTopologyConfig();
-  } catch (...) {
-    // catch the configuration exception and print it to avoid losing it
-    ILOG(Fatal, Ops) << "Unexpected exception during configuration:\n"
-                     << current_diagnostic(true) << ENDM;
-    throw;
-  }
 }
 
 void TaskRunner::init(InitContext& iCtx)
@@ -85,7 +73,10 @@ void TaskRunner::init(InitContext& iCtx)
   } catch (const RuntimeErrorRef& err) {
     ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
   }
-  ILOG_INST.init("task/" + mTaskConfig.taskName, mConfigFile->getRecursive(), ilContext);
+  ILOG_INST.init("task/" + mTaskConfig.taskName,
+                 mTaskConfig.infologgerFilterDiscardDebug,
+                 mTaskConfig.infologgerDiscardLevel,
+                 ilContext);
 
   ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
   try {
@@ -103,8 +94,7 @@ void TaskRunner::init(InitContext& iCtx)
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
 
   // setup monitoring
-  auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
-  mCollector = MonitoringFactory::Get(monitoringUrl);
+  mCollector = MonitoringFactory::Get(mTaskConfig.monitoringUrl);
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
 
@@ -145,7 +135,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
 
   if (timerReady) {
     finishCycle(pCtx.outputs());
-    if (mResetAfterPublish) {
+    if (mTaskConfig.resetAfterCycles > 0 && (mCycleNumber % mTaskConfig.resetAfterCycles == 0)) {
       mTask->reset();
     }
     if (mTaskConfig.maxNumberCycles < 0 || mCycleNumber < mTaskConfig.maxNumberCycles) {
@@ -194,8 +184,6 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
   return action;
 }
 
-void TaskRunner::setResetAfterPublish(bool resetAfterPublish) { mResetAfterPublish = resetAfterPublish; }
-
 std::string TaskRunner::createTaskRunnerIdString()
 {
   return std::string("QC-TASK-RUNNER");
@@ -225,7 +213,7 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 
 void TaskRunner::start(const ServiceRegistry& services)
 {
-  o2::quality_control::core::computeRunNumber(services, mConfigFile->getRecursive());
+  mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.defaultRunNumber);
 
   try {
     startOfActivity();
@@ -302,64 +290,11 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   return { dataReady, timerReady };
 }
 
-void TaskRunner::loadTopologyConfig()
-{
-  auto taskConfigTree = getTaskConfigTree();
-  auto policiesFilePath = mConfigFile->get<std::string>("dataSamplingPolicyFile", "");
-  std::shared_ptr<configuration::ConfigurationInterface> config = policiesFilePath.empty() ? mConfigFile : ConfigurationFactory::getConfiguration(policiesFilePath);
-  auto dataSourceTree = taskConfigTree.get_child("dataSource");
-  auto type = dataSourceTree.get<std::string>("type");
-
-  if (type == "dataSamplingPolicy") {
-    auto policyName = dataSourceTree.get<std::string>("name");
-    ILOG(Info, Support) << "policyName : " << policyName << ENDM;
-    mInputSpecs = DataSampling::InputSpecsForPolicy(config.get(), policyName);
-  } else if (type == "direct") {
-    auto inputsQuery = dataSourceTree.get<std::string>("query");
-    mInputSpecs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
-  } else {
-    std::string message = std::string("Configuration error : dataSource type unknown : ") + type;
-    BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
-  }
-
-  mInputSpecs.emplace_back(InputSpec{ "timer-cycle", createTaskDataOrigin(), createTaskDataDescription("TIMER-" + mTaskConfig.taskName), 0, Lifetime::Timer });
-
-  // needed to avoid having looping at the maximum speed
-  mTaskConfig.cycleDurationSeconds = taskConfigTree.get<int>("cycleDurationSeconds", 10);
-  mOptions.push_back({ "period-timer-cycle", framework::VariantType::Int, static_cast<int>(mTaskConfig.cycleDurationSeconds * 1000000), { "timer period" } });
-  mOptions.push_back({ "runNumber", framework::VariantType::String, { "Run number" } });
-}
-
-boost::property_tree::ptree TaskRunner::getTaskConfigTree() const
-{
-  auto tasksConfigList = mConfigFile->getRecursive("qc.tasks");
-  auto taskConfigTree = tasksConfigList.find(mTaskConfig.taskName);
-  if (taskConfigTree == tasksConfigList.not_found()) {
-    std::string message = "No configuration found for task \"" + mTaskConfig.taskName + "\"";
-    BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details(message));
-  }
-  return taskConfigTree->second;
-}
-
-void TaskRunner::loadTaskConfig()
+void TaskRunner::loadTaskConfig() // todo consider renaming
 {
   ILOG(Info, Support) << "Loading configuration" << ENDM;
 
-  auto taskConfigTree = getTaskConfigTree();
-  string test = taskConfigTree.get<std::string>("detectorName", "MISC");
-  mTaskConfig.detectorName = validateDetectorName(taskConfigTree.get<std::string>("detectorName", "MISC"));
   ILOG_INST.setDetector(mTaskConfig.detectorName);
-  mTaskConfig.moduleName = taskConfigTree.get<std::string>("moduleName");
-  mTaskConfig.className = taskConfigTree.get<std::string>("className");
-  mTaskConfig.maxNumberCycles = taskConfigTree.get<int>("maxNumberCycles", -1);
-  mTaskConfig.consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "");
-  mTaskConfig.conditionUrl = mConfigFile->get<std::string>("qc.config.conditionDB.url", "http://ccdb-test.cern.ch:8080");
-  mTaskConfig.saveToFile = taskConfigTree.get<std::string>("saveObjectsToFile", "");
-  try {
-    mTaskConfig.customParameters = mConfigFile->getRecursiveMap("qc.tasks." + mTaskConfig.taskName + ".taskParameters");
-  } catch (...) {
-    ILOG(Debug, Support) << "No custom parameters for " << mTaskConfig.taskName << ENDM;
-  }
 
   ILOG(Info, Support) << "Configuration loaded : " << ENDM;
   ILOG(Info, Support) << ">> Task name : " << mTaskConfig.taskName << ENDM;
@@ -370,31 +305,6 @@ void TaskRunner::loadTaskConfig()
   ILOG(Info, Support) << ">> Save to file : " << mTaskConfig.saveToFile << ENDM;
 }
 
-std::string TaskRunner::validateDetectorName(std::string name) const
-{
-  // name must be a detector code from DetID or one of the few allowed general names
-  int nDetectors = 16;
-  const char* detNames[16] = // once we can use DetID, remove this hard-coded list
-    { "ITS", "TPC", "TRD", "TOF", "PHS", "CPV", "EMC", "HMP", "MFT", "MCH", "MID", "ZDC", "FT0", "FV0", "FDD", "ACO" };
-  vector<string> permitted = { "MISC", "DAQ", "GENERAL", "TST", "BMK", "CTP", "TRG", "DCS", "REC" };
-  for (auto i = 0; i < nDetectors; i++) {
-    permitted.push_back(detNames[i]);
-    //    permitted.push_back(o2::detectors::DetID::getName(i));
-  }
-  auto it = std::find(permitted.begin(), permitted.end(), name);
-
-  if (it == permitted.end()) {
-    std::string permittedString;
-    for (auto i : permitted)
-      permittedString += i + ' ';
-    ILOG(Error, Support) << "Invalid detector name : " << name << "\n"
-                         << "    Placeholder 'MISC' will be used instead\n"
-                         << "    Note: list of permitted detector names :" << permittedString << ENDM;
-    return "MISC";
-  }
-  return name;
-}
-
 void TaskRunner::startOfActivity()
 {
   // stats
@@ -402,8 +312,7 @@ void TaskRunner::startOfActivity()
   mTotalNumberObjectsPublished = 0;
 
   // Start activity in module's stask and update objectsManager
-  Activity activity(mRunNumber,
-                    mConfigFile->get<int>("qc.config.Activity.type"));
+  Activity activity(mRunNumber, mTaskConfig.activityType);
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
@@ -413,8 +322,7 @@ void TaskRunner::startOfActivity()
 
 void TaskRunner::endOfActivity()
 {
-  Activity activity(mRunNumber,
-                    mConfigFile->get<int>("qc.config.Activity.type"));
+  Activity activity(mRunNumber, mTaskConfig.activityType);
   ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
   mTask->endOfActivity(activity);
   mObjectsManager->removeAllFromServiceDiscovery();
@@ -500,7 +408,7 @@ int TaskRunner::publish(DataAllocator& outputs)
   ILOG(Info, Support) << "Publishing " << mObjectsManager->getNumberPublishedObjects() << " MonitorObjects" << ENDM;
   AliceO2::Common::Timer publicationDurationTimer;
 
-  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mMonitorObjectsSpec);
+  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mTaskConfig.moSpec);
   // getNonOwningArray creates a TObjArray containing the monitoring objects, but not
   // owning them. The array is created by new and must be cleaned up by the caller
   std::unique_ptr<MonitorObjectCollection> array(mObjectsManager->getNonOwningArray());
@@ -510,7 +418,7 @@ int TaskRunner::publish(DataAllocator& outputs)
     Output{ concreteOutput.origin,
             concreteOutput.description,
             concreteOutput.subSpec,
-            mMonitorObjectsSpec.lifetime },
+            mTaskConfig.moSpec.lifetime },
     *array);
 
   mLastPublicationDuration = publicationDurationTimer.getTime();

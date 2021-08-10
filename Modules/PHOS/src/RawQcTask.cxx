@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -80,23 +81,14 @@ void RawQcTask::InitHistograms()
   //First init general histograms for any mode
 
   // Statistics histograms
-  mHist1D[kMessageCounter] = new TH1F("NumberOfMessages", "Number of messages in time interval", 1, 0.5, 1.5);
-  mHist1D[kMessageCounter]->GetXaxis()->SetTitle("MonitorData");
-  mHist1D[kMessageCounter]->GetYaxis()->SetTitle("Number of messages");
-  getObjectsManager()->startPublishing(mHist1D[kMessageCounter]);
+  mHist2D[kErrorNumber] = new TH2F("NumberOfErrors", "Number of hardware errors", 32, 0, 32, 15, 0, 15.); //xaxis: FEE card number + 2 for TRU and global errors
+  mHist2D[kErrorNumber]->GetXaxis()->SetTitle("FEE card");
+  mHist2D[kErrorNumber]->GetYaxis()->SetTitle("DDL");
+  mHist2D[kErrorNumber]->SetDrawOption("colz");
+  mHist2D[kErrorNumber]->SetStats(0);
+  getObjectsManager()->startPublishing(mHist2D[kErrorNumber]);
 
-  // mTotalDataVolume = new TH1F("TotalDataVolume", "Total data volume", 1, 0.5, 1.5);
-  // mTotalDataVolume->GetXaxis()->SetTitle("MonitorData");
-  // mTotalDataVolume->GetYaxis()->SetTitle("Total data volume (Byte)");
-  // getObjectsManager()->startPublishing(mTotalDataVolume);
-
-  // // PHOS related histograms
-  // mPayloadSizePerDDL = new TH2F("PayloadSizePerDDL", "PayloadSizePerDDL", 20, 0, 20, 100, 0, 1);
-  // mPayloadSizePerDDL->GetXaxis()->SetTitle("ddl");
-  // mPayloadSizePerDDL->GetYaxis()->SetTitle("PayloadSize");
-  // getObjectsManager()->startPublishing(mPayloadSizePerDDL);
-
-  mHist2D[kErrorType] = new TH2F("ErrorTypePerDDL", "ErrorTypePerDDL", 16, 0, 16, 15, 0, 15.); //xaxis: FEE card number + 2 for TRU and global errors
+  mHist2D[kErrorType] = new TH2F("ErrorTypePerDDL", "ErrorTypePerDDL", 32, 0, 32, 15, 0, 15.);
   mHist2D[kErrorType]->GetXaxis()->SetTitle("FEE card");
   mHist2D[kErrorType]->GetYaxis()->SetTitle("DDL");
   mHist2D[kErrorType]->SetDrawOption("colz");
@@ -123,16 +115,19 @@ void RawQcTask::startOfActivity(Activity& /*activity*/)
 void RawQcTask::startOfCycle()
 {
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-  if (mMode == 1) { //Pedestals
-    for (Int_t mod = 0; mod < 4; mod++) {
-      if (mHist2D[kHGmeanM1 + mod]) {
-        mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
-        mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+  if (mMode == 1) {   //Pedestals
+    if (mFinalized) { //means were already calculated
+      for (Int_t mod = 0; mod < 4; mod++) {
+        if (mHist2D[kHGmeanM1 + mod]) {
+          mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+          mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+        }
+        if (mHist2D[kLGmeanM1 + mod]) {
+          mHist2D[kLGmeanM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+          mHist2D[kLGrmsM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+        }
       }
-      if (mHist2D[kLGmeanM1 + mod]) {
-        mHist2D[kLGmeanM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
-        mHist2D[kLGrmsM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
-      }
+      mFinalized = false;
     }
   }
 }
@@ -150,15 +145,10 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto hwerrors = ctx.inputs().get<std::vector<o2::phos::RawReaderError>>("rawerr");
   for (auto e : hwerrors) {
-    int ibin = mHist2D[kErrorType]->Fill(float(e.getFEC()), float(e.getDDL()));
-    char cont = mHist2D[kErrorType]->GetBinContent(ibin);
-    if (cont == 0) { //not filled yet
-      mHist2D[kErrorType]->Fill(float(e.getFEC()), float(e.getDDL()), float(e.getError()));
-    } else {
-      if (cont != e.getError()) {                     //if same alredy reported, do nothing, else ...
-        mHist2D[kErrorType]->SetBinContent(ibin, 30); //30: several errors
-      }
-    }
+    int ibin = mHist2D[kErrorNumber]->Fill(float(e.getFEC()), float(e.getDDL()));
+    int cont = mHist2D[kErrorType]->GetBinContent(ibin);
+    cont |= (1 << e.getError());
+    mHist2D[kErrorType]->SetBinContent(ibin, cont);
   }
 
   // //Chi2: not hardware errors but unusual/correpted sample
@@ -272,6 +262,7 @@ void RawQcTask::endOfActivity(Activity& /*activity*/)
 void RawQcTask::reset()
 {
   // clean all the monitor objects here
+  mFinalized = false;
 
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   for (int i = kNhist1D; i--;) {
@@ -324,6 +315,8 @@ void RawQcTask::FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& ce
     for (Int_t mod = 0; mod < 4; mod++) {
       mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
       mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+      mHist2D[kLGmeanM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+      mHist2D[kLGrmsM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
     }
     mFinalized = false;
   }

@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -30,9 +31,15 @@ using namespace AliceO2::Common;
 namespace o2::quality_control::core
 {
 
+struct Config {
+  std::string taskName = "test";
+  std::string detectorName = "TST";
+  std::string consulUrl = "invalid";
+};
+
 BOOST_AUTO_TEST_CASE(invalid_url_test)
 {
-  TaskConfig config;
+  Config config;
   config.taskName = "test";
   config.consulUrl = "bad-url:1234";
   ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
@@ -40,7 +47,7 @@ BOOST_AUTO_TEST_CASE(invalid_url_test)
 
 BOOST_AUTO_TEST_CASE(duplicate_object_test)
 {
-  TaskConfig config;
+  Config config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
   ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
@@ -51,7 +58,7 @@ BOOST_AUTO_TEST_CASE(duplicate_object_test)
 
 BOOST_AUTO_TEST_CASE(is_being_published_test)
 {
-  TaskConfig config;
+  Config config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
   ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
@@ -64,7 +71,7 @@ BOOST_AUTO_TEST_CASE(is_being_published_test)
 
 BOOST_AUTO_TEST_CASE(unpublish_test)
 {
-  TaskConfig config;
+  Config config;
   config.taskName = "test";
   ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
   TObjString s("content");
@@ -82,7 +89,7 @@ BOOST_AUTO_TEST_CASE(unpublish_test)
 
 BOOST_AUTO_TEST_CASE(getters_test)
 {
-  TaskConfig config;
+  Config config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
   ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
@@ -112,7 +119,7 @@ BOOST_AUTO_TEST_CASE(getters_test)
 
 BOOST_AUTO_TEST_CASE(metadata_test)
 {
-  TaskConfig config;
+  Config config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
   ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
@@ -128,7 +135,7 @@ BOOST_AUTO_TEST_CASE(metadata_test)
 
 BOOST_AUTO_TEST_CASE(drawOptions_test)
 {
-  TaskConfig config;
+  Config config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
   ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);

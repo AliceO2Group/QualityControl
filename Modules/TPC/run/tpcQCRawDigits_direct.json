@@ -35,7 +35,9 @@
           "query" : "input:TPC/RAWDATA"
         },
         "taskParameters": {
-          "myOwnKey": "myOwnValue"
+          "NRawDigitsNBins": "100",  "NRawDigitsXMin": "0", "NRawDigitsXMax": "100",
+          "QmaxNBins":       "200",  "QmaxXMin":       "0", "QmaxXMax":       "200",
+          "TimeBinNBins":    "1000", "TimeBinXMin":    "0", "TimeBinXMax":    "100000"
         },
         "location": "remote"
       }

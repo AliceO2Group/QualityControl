@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -107,6 +108,14 @@ std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
   return name;
 }
 
+std::string CheckRunner::createCheckRunnerFacility(std::string deviceName)
+{
+  // it starts with "check/" and is followed by the unique part of the device name truncated to a maximum of 32 characters.f
+  string facilityName = "check/" + deviceName.substr(CheckRunner::createCheckRunnerIdString().length() + 1, string::npos);
+  facilityName = facilityName.substr(0, 32);
+  return facilityName;
+}
+
 std::string CheckRunner::createSinkCheckRunnerName(InputSpec input)
 {
   std::string name(CheckRunner::createCheckRunnerIdString() + "-sink-");
@@ -185,7 +194,7 @@ void CheckRunner::init(framework::InitContext& iCtx)
   }
 
   try {
-    ILOG_INST.init("check/" + mDeviceName, mConfigFile->getRecursive(), ilContext);
+    ILOG_INST.init(createCheckRunnerFacility(mDeviceName), mConfigFile->getRecursive(), ilContext);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();

@@ -1,13 +1,13 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// // distributed under the terms of the GNU General Public License v3 (GPL
-// // Version 3), copied verbatim in the file "COPYING".
-// //
-// // See http://alice-o2.web.cern.ch/license for full licensing information.
-// //
-// // In applying this license CERN does not waive the privileges and immunities
-// // granted to it by virtue of its status as an Intergovernmental Organization
-// // or submit itself to any jurisdiction.
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 ///
 /// \file   ITSTrackTask.cxx
@@ -30,9 +30,6 @@ namespace o2::quality_control_modules::its
 ITSTrackTask::ITSTrackTask() : TaskInterface()
 {
   createAllHistos();
-
-  o2::base::GeometryManager::loadGeometry();
-  mGeom = o2::its::GeometryTGeo::Instance();
 }
 
 ITSTrackTask::~ITSTrackTask()
@@ -44,14 +41,15 @@ ITSTrackTask::~ITSTrackTask()
   delete hOccupancyROF;
   delete hClusterUsage;
   delete hAngularDistribution;
-
-  delete mGeom;
 }
 
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
   QcInfoLogger::GetInstance() << "initialize ITSTrackTask" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  mRunNumberPath = mCustomParameters["runNumberPath"];
+
   publishHistos();
   std::string dictfile = o2::base::NameConf::getAlpideClusterDictionaryFileName(o2::detectors::DetID::ITS, "", ".bin");
   std::ifstream file(dictfile.c_str());
@@ -116,7 +114,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSTrackTask::endOfCycle()
 {
 
-  std::ifstream runNumberFile("/home/its/QC/workdir/infiles/RunNumber.dat"); //catching ITS run number in commissioning
+  std::ifstream runNumberFile(mRunNumberPath.c_str());
   if (runNumberFile) {
 
     std::string runNumber;

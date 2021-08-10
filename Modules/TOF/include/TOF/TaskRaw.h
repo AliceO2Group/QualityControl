@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -61,6 +62,7 @@ class RawDataDecoder final : public DecoderBase
   static constexpr unsigned int nwords = 32;          /// Number of diagnostic words of a slot card
   static constexpr unsigned int nslots = 12;          /// Number of slots in a crate
   static constexpr unsigned int nequipments = 172800; /// Number of equipment in the electronic indexing scheme
+  static constexpr unsigned int nRDHwords = 3;        /// Number of diagnostic words for RDH
 
   /// Set parameters for noise analysis
   void setTimeWindowMin(std::string min) { mTimeMin = atoi(min.c_str()); }
@@ -68,12 +70,12 @@ class RawDataDecoder final : public DecoderBase
   void setNoiseThreshold(std::string thresholdnoise) { mNoiseThreshold = atof(thresholdnoise.c_str()); }
 
   // Names of diagnostic counters
-  static const char* RDHDiagnosticsName[2];     /// RDH Counter names
-  static const char* DRMDiagnosticName[nwords]; /// DRM Counter names
-  static const char* LTMDiagnosticName[nwords]; /// LTM Counter names
-  static const char* TRMDiagnosticName[nwords]; /// TRM Counter names
+  static const char* RDHDiagnosticsName[nRDHwords]; /// RDH Counter names
+  static const char* DRMDiagnosticName[nwords];     /// DRM Counter names
+  static const char* LTMDiagnosticName[nwords];     /// LTM Counter names
+  static const char* TRMDiagnosticName[nwords];     /// TRM Counter names
   // Diagnostic counters
-  Counter<2, RDHDiagnosticsName> mCounterRDH[ncrates];            /// RDH Counters
+  Counter<nRDHwords, RDHDiagnosticsName> mCounterRDH[ncrates];    /// RDH Counters
   Counter<nwords, DRMDiagnosticName> mCounterDRM[ncrates];        /// DRM Counters
   Counter<nwords, LTMDiagnosticName> mCounterLTM[ncrates];        /// LTM Counters
   Counter<nwords, TRMDiagnosticName> mCounterTRM[ncrates][ntrms]; /// TRM Counters
@@ -82,7 +84,8 @@ class RawDataDecoder final : public DecoderBase
   Counter<nequipments, nullptr> mCounterIndexEOInTimeWin; /// Counter for the single electronic index for noise analysis
   Counter<nequipments, nullptr> mCounterNoisyChannels;    /// Counter for noisy channels
   Counter<1024, nullptr> mCounterTimeBC;                  /// Counter for the Bunch Crossing Time
-  Counter<91, nullptr> mCounterNoiseMap[ncrates][4];      /// Counter for the Noise Hit Map
+  Counter<91, nullptr> mCounterNoiseMap[ncrates][4];      /// Counter for the Noise Hit Map, counts per crate and per FEA (4 per strip)
+  Counter<ncrates, nullptr> mCounterRDHTriggers[2];       /// Counter for RDH triggers, one counts the triggers served to TDCs and one counts the triggers received
 
   /// Function to init histograms
   void initHistograms();
@@ -104,7 +107,7 @@ class RawDataDecoder final : public DecoderBase
   std::shared_ptr<TH1F> mHistoNTests;         /// Number of tests
   std::shared_ptr<TH2F> mHistoTest;           /// Tests in slot and TDC
   std::shared_ptr<TH2F> mHistoOrbitID;        /// Orbit ID for the header and trailer words
-  std::shared_ptr<TH2F> mHistoNoiseMap;       /// Noise map per FEA cards
+  std::shared_ptr<TH2F> mHistoNoiseMap;       /// Noise map, one bin corresponds to one FEA card
   std::shared_ptr<TH1F> mHistoIndexEOHitRate; /// Noise rate x channel
 
  private:
@@ -122,7 +125,7 @@ class RawDataDecoder final : public DecoderBase
   int mTimeMin = 0;                                /// Start of the time window in bins of the TDC
   int mTimeMax = -1;                               /// End of the time window in bins of the TDC
   static constexpr double mTDCWidth = 24.3660e-12; /// Width of the TDC bins in [s]
-  double mNoiseThreshold = 1.e+3;                  /// Threshold used to defined noise in [Hz]
+  double mNoiseThreshold = 1.e+3;                  /// Threshold used to define noisy channels [Hz]
 };
 
 /// \brief TOF Quality Control DPL Task for TOF Compressed data
@@ -158,6 +161,7 @@ class TaskRaw final : public TaskInterface
   std::shared_ptr<TH1F> mHistoIndexEO;          /// Index in electronic
   std::shared_ptr<TH1F> mHistoIndexEOInTimeWin; /// Index in electronic for noise analysis
   std::shared_ptr<TH1F> mHistoIndexEOIsNoise;   /// Noise hit map x channel
+  std::shared_ptr<TH1F> mHistoRDHTriggers;      /// RDH trigger efficiency, ratio of total triggers served to total triggers received per crate
 
   // Other observables
   std::shared_ptr<TH1F> mHistoTimeBC; /// Time in Bunch Crossing
