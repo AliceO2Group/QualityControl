@@ -171,20 +171,20 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
       }
       case WorkflowType::Local: {
         ILOG(Info, Support) << "Creating a local QC topology." << ENDM;
+        auto host = config.options().get<std::string>("host").empty()
+                      ? boost::asio::ip::host_name()
+                      : config.options().get<std::string>("host");
 
         if (!config.options().get<bool>("no-data-sampling")) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
           auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
           auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
-          DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
+          DataSampling::GenerateInfrastructure(specs, dataSamplingTree, 1, host);
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
 
         // Generation of the local QC topology (local QC tasks and their output proxies)
-        auto host = config.options().get<std::string>("host").empty()
-                      ? boost::asio::ip::host_name()
-                      : config.options().get<std::string>("host");
         quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, host);
         break;
       }
