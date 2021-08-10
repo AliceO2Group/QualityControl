@@ -400,7 +400,7 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
                                                           std::string taskName, std::string remoteHost,
                                                           std::string remotePort, const std::string& control)
 {
-  std::string proxyName = taskName + "-proxy-" + std::to_string(id);
+  std::string proxyName = taskName + "-proxy";
   std::string channelName = taskName + "-proxy";
   InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) };
   std::string channelConfig = "name=" + channelName + ",type=push,method=connect,address=tcp://" +
