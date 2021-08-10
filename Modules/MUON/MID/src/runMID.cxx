@@ -15,20 +15,12 @@
 /// \brief This is an executable to run the MID QC Task (see the ITS code).
 ///
 
-//#include "Framework/DataSampling.h"
-//#include "DataSampling/DataSampling.h"
-//#include "QualityControl/InfrastructureGenerator.h"
-
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::utilities;
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
@@ -54,7 +46,9 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include <memory>
 #include <random>
 
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 
 #include "QualityControl/Check.h"
 #include "QualityControl/InfrastructureGenerator.h"
@@ -67,6 +61,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 std::string getConfigPath(const ConfigContext& config);
 
 using namespace o2::framework;
+using namespace o2::configuration;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
 
@@ -84,7 +79,9 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
 
   // Generation of Data Sampling infrastructure
-  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+  auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+  auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+  DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
   quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);

@@ -68,6 +68,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 
 #include <Framework/runDataProcessing.h>
 #include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/InfrastructureGenerator.h"
@@ -80,6 +81,7 @@ std::string getConfigPath(const ConfigContext& config);
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::configuration;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
 
@@ -96,7 +98,9 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   ILOG(Info, Ops) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure
-  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+  auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+  auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+  DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
   quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
