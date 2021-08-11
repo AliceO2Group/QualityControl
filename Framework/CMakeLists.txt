@@ -409,11 +409,13 @@ install(PROGRAMS script/RepoCleaner/o2-qc-repo-cleaner
         DESTINATION bin)
 
 install(FILES script/RepoCleaner/rules/1_per_hour.py
-              script/RepoCleaner/Ccdb.py
-              script/RepoCleaner/rules/skip.py
               script/RepoCleaner/rules/1_per_run.py
-              script/RepoCleaner/rules/none_kept.py
               script/RepoCleaner/rules/last_only.py
+              script/RepoCleaner/rules/none_kept.py
+              script/RepoCleaner/rules/production.py
+              script/RepoCleaner/rules/skip.py
+              script/RepoCleaner/Ccdb.py
+              script/RepoCleaner/pidfile.py
         DESTINATION lib)
 
 # ---- Copy test files ----
