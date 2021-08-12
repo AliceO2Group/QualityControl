@@ -40,7 +40,9 @@
                     "decoderThreads": "8",
                     "HitNumberCut": "512",
                     "GetTFFromBinding": "0",
-                    "geomPath": "/tmp/qc_tmp/o2sim"
+                    "geomPath": "/tmp/qc_tmp/o2sim",
+                    "HitNumberCutForNoisyPixel": "1024",
+                    "OccupancyNumberCutForNoisyPixel": "0.01"
                 }
             },
             "ITSFEE": {

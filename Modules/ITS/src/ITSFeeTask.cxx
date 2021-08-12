@@ -161,6 +161,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   start = std::chrono::high_resolution_clock::now();
 
   std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "feedata0" }, Lifetime::Timeframe } };
+  rawDataFilter.push_back(InputSpec{ "", ConcreteDataTypeMatcher{ "ITS", "RAWDATA" }, Lifetime::Timeframe });
   DPLRawParser parser(ctx.inputs(), rawDataFilter);
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
