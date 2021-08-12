@@ -20,7 +20,8 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/TrendingTaskTPC.cxx
                              src/TrendingTaskConfigTPC.cxx
                              src/TH1ReductorTPC.cxx
-                             src/TH2ReductorTPC.cxx)
+                             src/TH2ReductorTPC.cxx
+                             src/ExpertVis.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -59,6 +60,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/ReductorTPC.h
                             include/TPC/TH1ReductorTPC.h
                             include/TPC/TH2ReductorTPC.h
+                            include/TPC/ExpertVis.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
@@ -125,4 +127,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCRawDigitVisualizer.json
               run/tpcQCTrending_slicer.json
               run/tpcQCTrending_canvas.json
+              run/tpcQCExpertVis.json
         DESTINATION etc)
