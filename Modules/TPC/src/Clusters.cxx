@@ -16,13 +16,18 @@
 
 // O2 includes
 #include "Framework/ProcessingContext.h"
+#include "DataFormatsTPC/KrCluster.h"
 #include "DataFormatsTPC/ClusterNative.h"
 #include "TPCBase/Painter.h"
+#include "Framework/InputRecordWalker.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/Clusters.h"
 #include "TPC/Utility.h"
+
+using namespace o2::framework;
+using namespace o2::tpc;
 
 namespace o2::quality_control_modules::tpc
 {
@@ -63,9 +68,12 @@ void Clusters::startOfCycle()
   QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
-void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
+void Clusters::processClusterNative(o2::framework::InputRecord& inputs)
 {
-  o2::tpc::ClusterNativeAccess clusterIndex = clusterHandler(ctx.inputs());
+  o2::tpc::ClusterNativeAccess clusterIndex = clusterHandler(inputs);
+  if (!clusterIndex.nClustersTotal) {
+    return;
+  }
 
   for (int isector = 0; isector < o2::tpc::constants::MAXSECTOR; ++isector) {
     for (int irow = 0; irow < o2::tpc::constants::MAXGLOBALPADROW; ++irow) {
@@ -76,6 +84,27 @@ void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
   }
+}
+
+void Clusters::processKrClusters(o2::framework::InputRecord& inputs)
+{
+  std::vector<InputSpec> filterKr = {
+    { "krClusters", ConcreteDataTypeMatcher{ "TPC", "KRCLUSTERS" }, Lifetime::Timeframe },
+    { "sampled-krClusters", ConcreteDataTypeMatcher{ "DS", "KRCLUSTERS" }, Lifetime::Timeframe },
+  };
+
+  for (auto const& inputRef : InputRecordWalker(inputs, filterKr)) {
+    auto krClusters = inputs.get<gsl::span<o2::tpc::KrCluster>>(inputRef);
+    for (const auto& cl : krClusters) {
+      mQCClusters.processCluster(cl, o2::tpc::Sector(cl.sector), int(cl.meanRow));
+    }
+  }
+}
+
+void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
+{
+  processClusterNative(ctx.inputs());
+  processKrClusters(ctx.inputs());
 
   mQCClusters.analyse();
 
