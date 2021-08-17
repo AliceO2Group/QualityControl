@@ -26,12 +26,14 @@ import re
 import sys
 from typing import List
 import tempfile
+import socket
 
 import dryable
 import yaml
 import time
 import consul
 import multiprocessing as mp
+from pathlib import Path
 
 from Ccdb import Ccdb
 from pidfile import PIDFile, AlreadyRunningError
@@ -206,6 +208,21 @@ def storeSavedTimestamp():
     f.close()
 
 
+def storeMonitoringMetrics(success, duration):
+    """
+    Store the status and the duration in influxdb via telegraf for monitoring purpose.
+    """
+    socket_file="/tmp/telegraf.sock"
+    if Path(socket_file).exists():
+        telegraf = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        telegraf.connect(socket_file)
+        telegraf.send(f"repoCleaner success={success}".encode('utf-8'))
+        telegraf.send(f"repoCleaner duration={duration}".encode('utf-8'))
+        logging.info(f"Monitoring metrics stored.")
+    else:
+        logging.warning(f"File {socket_file} does not exist, no monitoring metrics stored.")
+
+
 def prepare_main_logger():
     logger = logging.getLogger()
     # Logging (split between stderr and stdout)
@@ -239,7 +256,7 @@ def create_parallel_logger():
     return logger
 
 
-def readConfig(args):
+def read_config(args):
     path = args.config
     if args.config_consul:
         items = args.config_consul.split(':')
@@ -270,6 +287,7 @@ def process_object(object_path, rules, ccdb):
 
 
 def run(args, ccdb_url, rules):
+
     # Get list of objects from CCDB
     ccdb = Ccdb(ccdb_url)
     paths = ccdb.getObjectsList(getTimestampLastExecution())
@@ -295,6 +313,7 @@ def run(args, ccdb_url, rules):
 # ****************
 
 def main():
+    start_time = time.time()
     prepare_main_logger()
 
     # Parse arguments
@@ -303,11 +322,15 @@ def main():
 
     try:
         with PIDFile(filename='o2-qc-repo-cleaner.pid'):
-            ccdb_url, rules = readConfig(args)
+            ccdb_url, rules = read_config(args)
             run(args, ccdb_url, rules)
-
     except AlreadyRunningError:
         print('Already running. Exiting.')
+    except:
+        storeMonitoringMetrics(success=0, duration=time.time()-start_time)
+        raise
+
+    storeMonitoringMetrics(success=1, duration=time.time()-start_time)
 
 
 if __name__ == "__main__":  # to be able to run the test code above when not imported.
