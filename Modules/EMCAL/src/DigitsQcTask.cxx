@@ -465,7 +465,7 @@ void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit
       fillOptional2D(mDigitAmpSupermoduleCalib, digit.getEnergy(), supermoduleID);
       fillOptional2D(mDigitTimeSupermoduleCalib, digit.getTimeStamp() - timecalib, supermoduleID);
     }
-    if (supermoduleID) {
+    if (supermoduleID < 12) {
       fillOptional1D(mDigitAmplitudeEMCAL, digit.getEnergy());
     } else {
       fillOptional1D(mDigitAmplitudeDCAL, digit.getEnergy());
