@@ -729,7 +729,10 @@ should not be present in real configuration files.
       "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
                                                "change or the values might come from other source (e.g. AliECS)." ],
         "number": "42",                   "": "Activity number.",
-        "type": "2",                      "": "Arbitrary activity type."
+        "type": "2",                      "": "Arbitrary activity type.",
+        "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
+        "passType": "",                   "": "Pass type - e.g. spass, cpass1",
+        "provenance": "qc",               "": "Provenance - qc or qc_mc"
       },
       "monitoring": {                     "": "Configuration of the Monitoring library.",
         "url": "infologger:///debug?qc",  "": ["URI to the Monitoring backend. Refer to the link below for more info:",
