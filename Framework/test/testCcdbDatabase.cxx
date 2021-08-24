@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(mo->getRunNumber(), 1234);
   BOOST_CHECK_EQUAL(mo->getPeriodName(), "LHC66");
   BOOST_CHECK_EQUAL(mo->getPassType(), "passType1");
-//  BOOST_CHECK_EQUAL(mo->getProvenance(), "qc_hello"); // TODO : not yet doned
+  //  BOOST_CHECK_EQUAL(mo->getProvenance(), "qc_hello"); // TODO : not yet doned
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_timestamps, *utf::depends_on("ccdb_store"))

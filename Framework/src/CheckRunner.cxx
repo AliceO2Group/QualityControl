@@ -314,7 +314,7 @@ QualityObjectsType CheckRunner::check()
       mTotalNumberCheckExecuted += newQOs.size();
       // set the run number and the period on all objects
       for_each(newQOs.begin(), newQOs.end(), [&mRunNumber = mRunNumber](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mRunNumber); });
-//      for_each(newQOs.begin(), newQOs.end(), [&mPeriodName = mPeriodName](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mPeriodName); });
+      //      for_each(newQOs.begin(), newQOs.end(), [&mPeriodName = mPeriodName](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mPeriodName); });
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
@@ -443,10 +443,8 @@ void CheckRunner::start(const ServiceRegistry& services)
   mPeriodName = computePeriodName(services, mConfigFile->getRecursive());
   mPassType = computePassType(mConfigFile->getRecursive());
   mProvenance = computeProvenance(mConfigFile->getRecursive());
-  ILOG(Info, Ops) << "Starting run " << mRunNumber << ":" <<
-                                                      "\n   - period: " << mPeriodName <<
-                                                      "\n   - pass type: " << mPassType <<
-                                                      "\n   - provenance: " << mProvenance << ENDM;
+  ILOG(Info, Ops) << "Starting run " << mRunNumber << ":"
+                  << "\n   - period: " << mPeriodName << "\n   - pass type: " << mPassType << "\n   - provenance: " << mProvenance << ENDM;
 }
 
 void CheckRunner::stop()

@@ -220,5 +220,4 @@ void QualityObject::updateRunContext(int runNumber, const std::string& periodNam
   mProvenance = provenance;
 }
 
-
 } // namespace o2::quality_control::core
