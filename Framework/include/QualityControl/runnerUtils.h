@@ -87,7 +87,6 @@ inline std::string computePeriodName(const framework::ServiceRegistry& services,
   std::string periodName;
   periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("periodName", "unspecified");
   ILOG(Info, Devel) << "Got this property periodName from RawDeviceService: '" << periodName << "'" << ENDM;
-  ILOG(Info, Support) << "   Period name found in options: " << periodName << ENDM;
   periodName = periodName != "unspecified" /* found it in service */ ? periodName : config.get<std::string>("qc.config.Activity.periodName", "");
   ILOG(Debug, Devel) << "Period Name returned by computePeriodName : " << periodName << ENDM;
   return periodName;
