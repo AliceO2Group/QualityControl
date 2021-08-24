@@ -33,7 +33,7 @@ const std::string ObjectsManager::gDrawOptionsKey = "drawOptions";
 const std::string ObjectsManager::gDisplayHintsKey = "displayHints";
 
 ObjectsManager::ObjectsManager(std::string taskName, std::string detectorName, std::string consulUrl, int parallelTaskID, bool noDiscovery)
-  : mTaskName(taskName), mDetectorName(detectorName), mUpdateServiceDiscovery(false), mCurrentRunNumber(0)
+  : mTaskName(taskName), mDetectorName(detectorName), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects = std::make_unique<MonitorObjectCollection>();
   mMonitorObjects->SetOwner(true);
@@ -57,7 +57,7 @@ void ObjectsManager::startPublishing(TObject* object)
     ILOG(Warning, Support) << "Object is already being published (" << object->GetName() << ")" << ENDM;
     BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
   }
-  auto* newObject = new MonitorObject(object, mTaskName, mDetectorName, mCurrentRunNumber);
+  auto* newObject = new MonitorObject(object, mTaskName, mDetectorName);
   newObject->setIsOwner(false);
   mMonitorObjects->Add(newObject);
   mUpdateServiceDiscovery = true;
@@ -168,19 +168,6 @@ void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
 {
   MonitorObject* mo = getMonitorObject(obj->GetName());
   mo->addOrUpdateMetadata(gDisplayHintsKey, hints);
-}
-
-void ObjectsManager::updateRunNumber(int runNumber)
-{
-  mCurrentRunNumber = runNumber;
-  for (auto tobj : *mMonitorObjects) {
-    auto* mo = dynamic_cast<MonitorObject*>(tobj);
-    if (mo) {
-      mo->setRunNumber(runNumber);
-    } else {
-      ILOG(Error, Devel) << "ObjectsManager::updateRunNumber : dynamic_cast returned nullptr." << ENDM;
-    }
-  }
 }
 
 } // namespace o2::quality_control::core

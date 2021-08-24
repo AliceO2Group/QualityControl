@@ -317,7 +317,6 @@ void TaskRunner::startOfActivity()
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
-  mObjectsManager->updateRunNumber(mRunNumber);
 }
 
 void TaskRunner::endOfActivity()

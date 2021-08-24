@@ -312,8 +312,9 @@ QualityObjectsType CheckRunner::check()
     if (updatePolicyManager.isReady(check.getName())) {
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
-      // set the run number on all objects
+      // set the run number and the period on all objects
       for_each(newQOs.begin(), newQOs.end(), [&mRunNumber = mRunNumber](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mRunNumber); });
+//      for_each(newQOs.begin(), newQOs.end(), [&mPeriodName = mPeriodName](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mPeriodName); });
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
@@ -332,6 +333,7 @@ void CheckRunner::store(QualityObjectsType& qualityObjects)
   mLogger << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
+      qo->updateRunContext(mRunNumber, mPeriodName, mPassType, mProvenance);
       mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
     }
@@ -345,6 +347,7 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
   mLogger << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
+      mo->updateRunContext(mRunNumber, mPeriodName, mPassType, mProvenance);
       mDatabase->storeMO(mo);
       mTotalNumberMOStored++;
     }
@@ -437,7 +440,13 @@ void CheckRunner::initServiceDiscovery()
 void CheckRunner::start(const ServiceRegistry& services)
 {
   mRunNumber = computeRunNumber(services, mConfigFile->getRecursive());
-  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+  mPeriodName = computePeriodName(services, mConfigFile->getRecursive());
+  mPassType = computePassType(mConfigFile->getRecursive());
+  mProvenance = computeProvenance(mConfigFile->getRecursive());
+  ILOG(Info, Ops) << "Starting run " << mRunNumber << ":" <<
+                                                      "\n   - period: " << mPeriodName <<
+                                                      "\n   - pass type: " << mPassType <<
+                                                      "\n   - provenance: " << mProvenance << ENDM;
 }
 
 void CheckRunner::stop()
@@ -452,6 +461,9 @@ void CheckRunner::reset()
   try {
     mCollector.reset();
     mRunNumber = 0;
+    mPeriodName = "";
+    mPassType = "";
+    mProvenance = "";
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
     ILOG(Error, Support) << "Error caught in reset() :\n"

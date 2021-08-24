@@ -205,6 +205,9 @@ class CheckRunner : public framework::Task
   std::string mDeviceName;
   std::vector<Check> mChecks;
   int mRunNumber;
+  std::string mPeriodName;
+  std::string mPassType;
+  std::string mProvenance;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::unordered_set<std::string> mInputStoreSet;

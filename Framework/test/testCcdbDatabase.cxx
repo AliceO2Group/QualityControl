@@ -103,6 +103,10 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   TH1F* h1 = new TH1F("quarantine", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, f.taskName, "TST");
+  mo1->setRunNumber(1234);
+  mo1->setPeriodName("LHC66");
+  mo1->setPassType("passType1");
+  mo1->setProvenance("qc_hello");
 
   TH1F* h2 = new TH1F("metadata", "asdf", 100, 0, 99);
   shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, f.taskName, "TST");
@@ -112,6 +116,10 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, f.taskName, "TST");
 
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, f.taskName + "/test-ccdb-check", "TST", "OnAll", vector{ string("input1"), string("input2") });
+  qo1->setRunNumber(1234);
+  qo1->setPeriodName("LHC66");
+  qo1->setPassType("passType1");
+  qo1->setProvenance("qc_hello");
   shared_ptr<QualityObject> qo2 = make_shared<QualityObject>(Quality::Null, f.taskName + "/metadata", "TST", "OnAll", vector{ string("input1") });
   qo2->addMetadata("my_meta", "is_good");
   shared_ptr<QualityObject> qo3 = make_shared<QualityObject>(Quality::Good, f.taskName + "/short", "TST", "OnAll", vector{ string("input1") });
@@ -150,6 +158,10 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("quarantine"), "quarantine");
   BOOST_REQUIRE_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getName(), "quarantine");
+  BOOST_CHECK_EQUAL(mo->getRunNumber(), 1234);
+  BOOST_CHECK_EQUAL(mo->getPeriodName(), "LHC66");
+  BOOST_CHECK_EQUAL(mo->getPassType(), "passType1");
+//  BOOST_CHECK_EQUAL(mo->getProvenance(), "qc_hello"); // TODO : not yet doned
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_timestamps, *utf::depends_on("ccdb_store"))
@@ -180,6 +192,10 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_NE(qo, nullptr);
   Quality q = qo->getQuality();
   BOOST_CHECK_EQUAL(q.getLevel(), 3);
+  BOOST_CHECK_EQUAL(qo->getRunNumber(), 1234);
+  BOOST_CHECK_EQUAL(qo->getPeriodName(), "LHC66");
+  BOOST_CHECK_EQUAL(qo->getPassType(), "passType1");
+  //  BOOST_CHECK_EQUAL(qo->getProvenance(), "qc_hello"); // TODO : not yet doned
 }
 
 unique_ptr<CcdbDatabase> backendGlobal = std::make_unique<CcdbDatabase>();

@@ -182,4 +182,43 @@ std::ostream& operator<<(std::ostream& out, const QualityObject& q) // output
   return out;
 }
 
+const std::string& QualityObject::getPeriodName() const
+{
+  return mPeriodName;
+}
+
+void QualityObject::setPeriodName(const std::string& periodName)
+{
+  QualityObject::mPeriodName = periodName;
+}
+
+const std::string& QualityObject::getPassType() const
+{
+  return mPassType;
+}
+
+void QualityObject::setPassType(const std::string& passType)
+{
+  QualityObject::mPassType = passType;
+}
+
+const std::string& QualityObject::getProvenance() const
+{
+  return mProvenance;
+}
+
+void QualityObject::setProvenance(const std::string& provenance)
+{
+  QualityObject::mProvenance = provenance;
+}
+
+void QualityObject::updateRunContext(int runNumber, const std::string& periodName, const std::string& passType, const std::string& provenance)
+{
+  mRunNumber = runNumber;
+  mPeriodName = periodName;
+  mPassType = passType;
+  mProvenance = provenance;
+}
+
+
 } // namespace o2::quality_control::core

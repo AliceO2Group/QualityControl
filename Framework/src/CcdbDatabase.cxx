@@ -158,15 +158,25 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
                           << errinfo_details("Object and task names can't contain white spaces. Do not store."));
   }
 
-  // metadata
   map<string, string> metadata;
-  // QC metadata (prefix qc_)
-  metadata["qc_version"] = Version::GetQcVersion().getString();
+
   // user metadata
   map<string, string> userMetadata = mo->getMetadataMap();
   if (!userMetadata.empty()) {
     metadata.insert(userMetadata.begin(), userMetadata.end());
   }
+
+  // extract object and metadata from MonitorObject
+  TObject* obj = mo->getObject();
+  metadata["RunNumber"] = std::to_string(mo->getRunNumber());
+  metadata["PeriodName"] = mo->getPeriodName();
+  metadata["PassType"] = mo->getPassType();
+  metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
+
+  // QC metadata (prefix qc_)
+  metadata["qc_version"] = Version::GetQcVersion().getString();
+  metadata["qc_detector_name"] = mo->getDetectorName();
+  metadata["qc_task_name"] = mo->getTaskName();
 
   // other attributes
   string path = mo->getPath();
@@ -177,13 +187,6 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
 
-  // extract object and metadata from MonitorObject
-  TObject* obj = mo->getObject();
-  metadata["qc_detector_name"] = mo->getDetectorName();
-  metadata["qc_task_name"] = mo->getTaskName();
-  metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
-  metadata["RunNumber"] = std::to_string(mo->getRunNumber());
-
   ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
   ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
 }
@@ -193,6 +196,8 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
   // metadata
   map<string, string> metadata;
   metadata["RunNumber"] = std::to_string(qo->getRunNumber());
+  metadata["PeriodName"] = qo->getPeriodName();
+  metadata["PassType"] = qo->getPassType();
   metadata["ObjectType"] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   // QC metadata (prefix qc_)
   metadata["qc_version"] = Version::GetQcVersion().getString();
@@ -271,7 +276,8 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   } else {
     // Version >= 0.25 -> the object is stored directly unencapsulated
     ILOG(Debug, Devel) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
-    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"]);
+    int runNumber = stoi(headers["RunNumber"]);
+    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassType"]);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
   }

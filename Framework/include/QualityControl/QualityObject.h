@@ -126,6 +126,13 @@ class QualityObject : public TObject
   const std::vector<std::string> getMonitorObjectsNames() const;
   int getRunNumber() const;
   void setRunNumber(int mRunNumber);
+  const std::string& getPeriodName() const;
+  void setPeriodName(const std::string& periodName);
+  const std::string& getPassType() const;
+  void setPassType(const std::string& passType);
+  const std::string& getProvenance() const;
+  void setProvenance(const std::string& provenance);
+  void updateRunContext(int mRunNumber, const std::string& periodName, const std::string& passType, const std::string& provenance);
 
  private:
   Quality mQuality;
@@ -135,8 +142,11 @@ class QualityObject : public TObject
   std::vector<std::string> mInputs;
   std::vector<std::string> mMonitorObjectsNames;
   int mRunNumber;
+  std::string mPeriodName;
+  std::string mPassType;
+  std::string mProvenance;
 
-  ClassDefOverride(QualityObject, 4);
+  ClassDefOverride(QualityObject, 5);
 };
 
 using QualityObjectsType = std::vector<std::shared_ptr<QualityObject>>;

@@ -27,12 +27,26 @@ ClassImp(o2::quality_control::core::MonitorObject)
 namespace o2::quality_control::core
 {
 
-MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mDetectorName(""), mRunNumber(0), mIsOwner(true)
+MonitorObject::MonitorObject()
+  : TObject(),
+    mObject(nullptr),
+    mTaskName(""),
+    mDetectorName(""),
+    mRunNumber(0),
+    mIsOwner(true)
 {
 }
 
-MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName, int runNumber)
-  : TObject(), mObject(object), mTaskName(taskName), mDetectorName(detectorName), mRunNumber(runNumber), mIsOwner(true)
+MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName, int runNumber, const std::string& periodName, const std::string& passType, const std::string& provenance)
+  : TObject(),
+    mObject(object),
+    mTaskName(taskName),
+    mDetectorName(detectorName),
+    mRunNumber(runNumber),
+    mPeriodName(periodName),
+    mPassType(passType),
+    mProvenance(provenance),
+    mIsOwner(true)
 {
 }
 
@@ -122,6 +136,44 @@ int MonitorObject::getRunNumber() const
 void MonitorObject::setRunNumber(int runNumber)
 {
   mRunNumber = runNumber;
+}
+
+const string& MonitorObject::getPeriodName() const
+{
+  return mPeriodName;
+}
+
+void MonitorObject::setPeriodName(const string& periodName)
+{
+  MonitorObject::mPeriodName = periodName;
+}
+
+const string& MonitorObject::getPassType() const
+{
+  return mPassType;
+}
+
+void MonitorObject::setPassType(const string& passType)
+{
+  MonitorObject::mPassType = passType;
+}
+
+const string& MonitorObject::getProvenance() const
+{
+  return mProvenance;
+}
+
+void MonitorObject::setProvenance(const string& provenance)
+{
+  MonitorObject::mProvenance = provenance;
+}
+
+void MonitorObject::updateRunContext(int runNumber, const std::string& periodName, const std::string& passType, const std::string& provenance)
+{
+  mRunNumber = runNumber;
+  mPeriodName = periodName;
+  mPassType = passType;
+  mProvenance = provenance;
 }
 
 } // namespace o2::quality_control::core
