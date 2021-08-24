@@ -97,14 +97,14 @@ TaskSpec InfrastructureSpecReader::readTaskSpec(std::string taskName, const boos
       ts.localMachines.emplace_back(value.get_value<std::string>());
     }
   }
-  if (multinodeSetup && taskTree.count("remoteMachine") > 0) {
+  if (multinodeSetup && taskTree.count("remoteMachine") == 0) {
     ILOG(Warning, Trace)
       << "No remote machine was specified for a multinode QC setup."
          " This is fine if running with AliECS, but it will fail in standalone mode."
       << ENDM;
   }
   ts.remoteMachine = taskTree.get<std::string>("remoteMachine", ts.remoteMachine);
-  if (multinodeSetup && taskTree.count("remotePort") > 0) {
+  if (multinodeSetup && taskTree.count("remotePort") == 0) {
     ILOG(Warning, Trace)
       << "No remote port was specified for a multinode QC setup."
          " This is fine if running with AliECS, but it might fail in standalone mode."
