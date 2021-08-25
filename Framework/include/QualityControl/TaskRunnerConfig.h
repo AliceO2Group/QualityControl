@@ -48,6 +48,9 @@ struct TaskRunnerConfig {
   bool infologgerFilterDiscardDebug = false;
   int infologgerDiscardLevel = 21;
   int activityType = 0;
+  std::string activityPeriodName = "";
+  std::string activityPassType = "";
+  std::string activityProvenance = "qc";
   int defaultRunNumber = 0;
   std::string configurationSource{};
 };

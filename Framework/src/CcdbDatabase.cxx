@@ -178,7 +178,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   metadata["qc_detector_name"] = mo->getDetectorName();
   metadata["qc_task_name"] = mo->getTaskName();
 
-  // other attributes
+  // path attributes
   string path = mo->getPath();
   if (from == -1) {
     from = getCurrentTimestamp();

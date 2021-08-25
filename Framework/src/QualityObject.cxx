@@ -35,7 +35,8 @@ QualityObject::QualityObject(
     mPolicyName{ std::move(policyName) },
     mInputs{ std::move(inputs) },
     mMonitorObjectsNames{ std::move(monitorObjectsNames) },
-    mRunNumber(runNumber)
+    mRunNumber(runNumber),
+    mProvenance("qc")
 {
   mQuality.overwriteMetadata(std::move(metadata));
 }
@@ -46,6 +47,7 @@ const std::string anonChecker = "anonymousChecker";
 QualityObject::QualityObject()
   : QualityObject(Quality(), anonChecker)
 {
+  mProvenance = "qc";
 }
 
 const char* QualityObject::GetName() const

@@ -27,7 +27,7 @@ class Activity
 {
  public:
   Activity() = default;
-  Activity(int id, int type) : mId(id), mType(type) {}
+  Activity(int mId, int mType, const std::string& mPeriodName, const std::string& mPassType, const std::string& mProvenance) : mId(mId), mType(mType), mPeriodName(mPeriodName), mPassType(mPassType), mProvenance(mProvenance) {}
   /// Copy constructor
   Activity(const Activity& other) = default;
   /// Move constructor
@@ -41,6 +41,9 @@ class Activity
 
   int mId{ 0 };
   int mType{ 0 };
+  std::string mPeriodName;
+  std::string mPassType;
+  std::string mProvenance;
 };
 
 } // namespace o2::quality_control::core

@@ -33,6 +33,7 @@ MonitorObject::MonitorObject()
     mTaskName(""),
     mDetectorName(""),
     mRunNumber(0),
+    mProvenance("qc"),
     mIsOwner(true)
 {
 }
