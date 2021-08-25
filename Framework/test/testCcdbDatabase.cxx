@@ -61,17 +61,17 @@ struct test_fixture {
   ~test_fixture() = default;
 
   // shorthands to get the paths to the objects and their containing folder
-  std::string getQoPath(const string& checkName) const
+  std::string getQoPath(const string& checkName, const string& provenance = "qc") const
   {
-    return RepoPathUtils::getQoPath(detector, taskName + "/" + checkName);
+    return RepoPathUtils::getQoPath(detector, taskName + "/" + checkName, "", {}, provenance);
   }
-  std::string getMoPath(const string& objectName) const
+  std::string getMoPath(const string& objectName, const string& provenance = "qc") const
   {
-    return RepoPathUtils::getMoPath(detector, taskName, objectName);
+    return RepoPathUtils::getMoPath(detector, taskName, objectName, provenance);
   }
-  std::string getMoFolder(const string& objectName) const
+  std::string getMoFolder(const string& objectName, const string& provenance = "qc") const
   {
-    string fullMoPath = getMoPath(objectName);
+    string fullMoPath = getMoPath(objectName, provenance);
     return fullMoPath.substr(0, fullMoPath.find_last_of('/'));
   }
 
@@ -90,6 +90,8 @@ struct MyGlobalFixture {
     // cannot use the test_fixture because we are tearing down
     backend->truncate("qc/TST/MO/Test/pid" + std::to_string(getpid()), "*");
     backend->truncate("qc/TST/QO/Test/pid" + std::to_string(getpid()), "*");
+    backend->truncate("qc_hello/TST/MO/Test/pid" + std::to_string(getpid()), "*");
+    backend->truncate("qc_hello/TST/QO/Test/pid" + std::to_string(getpid()), "*");
   }
 };
 BOOST_TEST_GLOBAL_FIXTURE(MyGlobalFixture);
@@ -106,7 +108,6 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   mo1->setRunNumber(1234);
   mo1->setPeriodName("LHC66");
   mo1->setPassType("passType1");
-  mo1->setProvenance("qc_hello");
 
   TH1F* h2 = new TH1F("metadata", "asdf", 100, 0, 99);
   shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, f.taskName, "TST");
@@ -115,20 +116,27 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   TH1F* h3 = new TH1F("short", "asdf", 100, 0, 99);
   shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, f.taskName, "TST");
 
+  TH1F* h4 = new TH1F("provenance", "asdf", 100, 0, 99);
+  shared_ptr<MonitorObject> mo4 = make_shared<MonitorObject>(h4, f.taskName, "TST");
+  mo4->setProvenance("qc_hello");
+
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, f.taskName + "/test-ccdb-check", "TST", "OnAll", vector{ string("input1"), string("input2") });
   qo1->setRunNumber(1234);
   qo1->setPeriodName("LHC66");
   qo1->setPassType("passType1");
-  qo1->setProvenance("qc_hello");
   shared_ptr<QualityObject> qo2 = make_shared<QualityObject>(Quality::Null, f.taskName + "/metadata", "TST", "OnAll", vector{ string("input1") });
   qo2->addMetadata("my_meta", "is_good");
   shared_ptr<QualityObject> qo3 = make_shared<QualityObject>(Quality::Good, f.taskName + "/short", "TST", "OnAll", vector{ string("input1") });
+  shared_ptr<QualityObject> qo4 = make_shared<QualityObject>(Quality::Good, f.taskName + "/provenance", "TST", "OnAll", vector{ string("input1") });
+  qo4->setProvenance("qc_hello");
 
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->storeMO(mo1);
   f.backend->storeMO(mo2);
+  f.backend->storeMO(mo4);
   f.backend->storeQO(qo1);
   f.backend->storeQO(qo2);
+  f.backend->storeQO(qo4);
 
   // with timestamps
   f.backend->storeMO(mo3, 10000, 20000);
@@ -161,7 +169,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(mo->getRunNumber(), 1234);
   BOOST_CHECK_EQUAL(mo->getPeriodName(), "LHC66");
   BOOST_CHECK_EQUAL(mo->getPassType(), "passType1");
-  //  BOOST_CHECK_EQUAL(mo->getProvenance(), "qc_hello"); // TODO : not yet doned
+  BOOST_CHECK_EQUAL(mo->getProvenance(), "qc");
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_timestamps, *utf::depends_on("ccdb_store"))
@@ -195,7 +203,19 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_EQUAL(qo->getRunNumber(), 1234);
   BOOST_CHECK_EQUAL(qo->getPeriodName(), "LHC66");
   BOOST_CHECK_EQUAL(qo->getPassType(), "passType1");
-  //  BOOST_CHECK_EQUAL(qo->getProvenance(), "qc_hello"); // TODO : not yet doned
+  BOOST_CHECK_EQUAL(qo->getProvenance(), "qc");
+}
+
+BOOST_AUTO_TEST_CASE(ccdb_provenance, *utf::depends_on("ccdb_store"))
+{
+  test_fixture f;
+  std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "qc_hello"));
+  BOOST_CHECK_NE(qo, nullptr);
+  BOOST_CHECK_EQUAL(qo->getProvenance(), "qc_hello");
+
+  std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance", "qc_hello"), "provenance");
+  BOOST_CHECK_NE(mo, nullptr);
+  BOOST_CHECK_EQUAL(mo->getProvenance(), "qc_hello");
 }
 
 unique_ptr<CcdbDatabase> backendGlobal = std::make_unique<CcdbDatabase>();

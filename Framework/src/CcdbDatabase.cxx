@@ -277,7 +277,8 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
     // Version >= 0.25 -> the object is stored directly unencapsulated
     ILOG(Debug, Devel) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
     int runNumber = stoi(headers["RunNumber"]);
-    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassType"]);
+    string provenance = path.substr(0, path.find('/')); // get the item before the first slash corresponding to the provenance
+    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassType"], provenance);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
   }
