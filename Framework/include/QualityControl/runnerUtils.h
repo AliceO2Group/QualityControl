@@ -103,7 +103,7 @@ inline std::string computePassType(const boost::property_tree::ptree& config)
 inline std::string computeProvenance(const boost::property_tree::ptree& config)
 {
   std::string provenance;
-  provenance = config.get<std::string>("qc.config.Activity.provenance", "");
+  provenance = config.get<std::string>("qc.config.Activity.provenance", "qc");
   ILOG(Debug, Devel) << "Period Name returned by computeProvenance : " << provenance << ENDM;
   return provenance;
 }
