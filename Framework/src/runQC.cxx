@@ -220,7 +220,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     }
   } catch (const std::runtime_error& re) {
     ILOG(Fatal, Ops) << "Failed to build the workflow: " << re.what() << ENDM;
-    return {};
+    throw;
   }
 
   return specs;
