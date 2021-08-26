@@ -85,7 +85,7 @@ class MonitorObject : public TObject
   const std::string& getDetectorName() const { return mDetectorName; }
   void setDetectorName(const std::string& detectorName) { mDetectorName = detectorName; }
 
-  Activity& getActivity() ;
+  Activity& getActivity();
   const Activity& getActivity() const;
   void setActivity(const Activity& activity);
   void updateActivity(int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance);

@@ -330,7 +330,8 @@ void AggregatorRunner::start(const ServiceRegistry& services)
   mActivity.mPeriodName = computePeriodName(services, mConfigFile->getRecursive());
   mActivity.mPassName = computePassName(mConfigFile->getRecursive());
   mActivity.mProvenance = computeProvenance(mConfigFile->getRecursive());
-  ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":" << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+  ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
+                  << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }
 
 

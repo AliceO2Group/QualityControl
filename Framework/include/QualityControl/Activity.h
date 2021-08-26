@@ -31,12 +31,11 @@ class Activity
            int type,
            const std::string& periodName = "",
            const std::string& passName = "",
-           const std::string& provenance = "qc") :
-           mId(id),
-           mType(type),
-           mPeriodName(periodName),
-           mPassName(passName),
-           mProvenance(provenance) {}
+           const std::string& provenance = "qc") : mId(id),
+                                                   mType(type),
+                                                   mPeriodName(periodName),
+                                                   mPassName(passName),
+                                                   mProvenance(provenance) {}
 
   /// Copy constructor
   Activity(const Activity& other) = default;
@@ -49,11 +48,11 @@ class Activity
 
   virtual ~Activity() = default;
 
-  int mId{0};
-  int mType{0};
+  int mId{ 0 };
+  int mType{ 0 };
   std::string mPeriodName{};
   std::string mPassName{};
-  std::string mProvenance{"qc"};
+  std::string mProvenance{ "qc" };
 
   ClassDef(Activity, 1);
 };

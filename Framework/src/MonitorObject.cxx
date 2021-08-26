@@ -35,8 +35,8 @@ MonitorObject::MonitorObject()
     mDetectorName(""),
     mIsOwner(true)
 {
-  mActivity.mProvenance="qc";
-  mActivity.mId=0;
+  mActivity.mProvenance = "qc";
+  mActivity.mId = 0;
 }
 
 MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName, int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)

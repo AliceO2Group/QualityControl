@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(mopath)
   BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
 
   // provenance
-  obj.getActivity().mProvenance= "qc_mc";
+  obj.getActivity().mProvenance = "qc_mc";
   path = RepoPathUtils::getMoPath(&obj);
   BOOST_CHECK_EQUAL(path, "qc_mc/DET/MO/task/asdf");
 }
