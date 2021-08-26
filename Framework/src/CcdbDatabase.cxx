@@ -170,7 +170,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   TObject* obj = mo->getObject();
   metadata["RunNumber"] = std::to_string(mo->getRunNumber());
   metadata["PeriodName"] = mo->getPeriodName();
-  metadata["PassType"] = mo->getPassType();
+  metadata["PassName"] = mo->getPassName();
   metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
 
   // QC metadata (prefix qc_)
@@ -197,7 +197,7 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
   map<string, string> metadata;
   metadata["RunNumber"] = std::to_string(qo->getRunNumber());
   metadata["PeriodName"] = qo->getPeriodName();
-  metadata["PassType"] = qo->getPassType();
+  metadata["PassName"] = qo->getPassName();
   metadata["ObjectType"] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   // QC metadata (prefix qc_)
   metadata["qc_version"] = Version::GetQcVersion().getString();
@@ -278,7 +278,7 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
     ILOG(Debug, Devel) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
     int runNumber = stoi(headers["RunNumber"]);
     string provenance = path.substr(0, path.find('/')); // get the item before the first slash corresponding to the provenance
-    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassType"], provenance);
+    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassName"], provenance);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
   }

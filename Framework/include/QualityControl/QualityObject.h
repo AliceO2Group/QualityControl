@@ -128,11 +128,11 @@ class QualityObject : public TObject
   void setRunNumber(int mRunNumber);
   const std::string& getPeriodName() const;
   void setPeriodName(const std::string& periodName);
-  const std::string& getPassType() const;
-  void setPassType(const std::string& passType);
+  const std::string& getPassName() const;
+  void setPassName(const std::string& passName);
   const std::string& getProvenance() const;
   void setProvenance(const std::string& provenance);
-  void updateRunContext(int mRunNumber, const std::string& periodName, const std::string& passType, const std::string& provenance);
+  void updateRunContext(int mRunNumber, const std::string& periodName, const std::string& passName, const std::string& provenance);
 
  private:
   Quality mQuality;
@@ -143,7 +143,7 @@ class QualityObject : public TObject
   std::vector<std::string> mMonitorObjectsNames;
   int mRunNumber;
   std::string mPeriodName;
-  std::string mPassType;
+  std::string mPassName;
   std::string mProvenance;
 
   ClassDefOverride(QualityObject, 5);

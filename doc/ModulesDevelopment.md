@@ -526,7 +526,7 @@ void ExampleTask::startOfActivity(Activity& activity)
 The other attributes are 
 - `type`, i.e. the run type
 - `periodName`
-- `passType`
+- `passName`
 - `provenance`
 
 When running with the aliECS the run number is automatically provided to the modules' code. 
@@ -538,7 +538,7 @@ one can set it in the config file. Note that we call it `Activity` and not `Run`
         "number": "42",
         "type": "2",
         "periodName": "",           "": "Period name - e.g. LHC22c, LHC22c1b_test",
-        "passType": "",             "": "Pass type - e.g. spass, cpass1",
+        "passName": "",             "": "Pass type - e.g. spass, cpass1",
         "provenance": "qc",         "": "Provenance - qc or qc_mc"
       },
 ```

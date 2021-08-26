@@ -731,7 +731,7 @@ should not be present in real configuration files.
         "number": "42",                   "": "Activity number.",
         "type": "2",                      "": "Arbitrary activity type.",
         "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
-        "passType": "",                   "": "Pass type - e.g. spass, cpass1",
+        "passName": "",                   "": "Pass type - e.g. spass, cpass1",
         "provenance": "qc",               "": "Provenance - qc or qc_mc"
       },
       "monitoring": {                     "": "Configuration of the Monitoring library.",

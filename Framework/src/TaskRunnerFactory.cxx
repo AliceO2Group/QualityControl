@@ -93,7 +93,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     globalConfig.infologgerDiscardLevel,
     globalConfig.activityType,
     globalConfig.activityPeriodName,
-    globalConfig.activityPassType,
+    globalConfig.activityPassName,
     globalConfig.activityProvenance,
     globalConfig.activityNumber,
     globalConfig.configurationSource

@@ -194,14 +194,14 @@ void QualityObject::setPeriodName(const std::string& periodName)
   QualityObject::mPeriodName = periodName;
 }
 
-const std::string& QualityObject::getPassType() const
+const std::string& QualityObject::getPassName() const
 {
-  return mPassType;
+  return mPassName;
 }
 
-void QualityObject::setPassType(const std::string& passType)
+void QualityObject::setPassName(const std::string& passName)
 {
-  QualityObject::mPassType = passType;
+  QualityObject::mPassName = passName;
 }
 
 const std::string& QualityObject::getProvenance() const
@@ -214,11 +214,11 @@ void QualityObject::setProvenance(const std::string& provenance)
   QualityObject::mProvenance = provenance;
 }
 
-void QualityObject::updateRunContext(int runNumber, const std::string& periodName, const std::string& passType, const std::string& provenance)
+void QualityObject::updateRunContext(int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
 {
   mRunNumber = runNumber;
   mPeriodName = periodName;
-  mPassType = passType;
+  mPassName = passName;
   mProvenance = provenance;
 }
 

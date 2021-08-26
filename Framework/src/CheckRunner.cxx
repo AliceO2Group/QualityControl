@@ -333,7 +333,7 @@ void CheckRunner::store(QualityObjectsType& qualityObjects)
   mLogger << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
-      qo->updateRunContext(mRunNumber, mPeriodName, mPassType, mProvenance);
+      qo->updateRunContext(mRunNumber, mPeriodName, mPassName, mProvenance);
       mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
     }
@@ -347,7 +347,7 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
   mLogger << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
-      mo->updateRunContext(mRunNumber, mPeriodName, mPassType, mProvenance);
+      mo->updateRunContext(mRunNumber, mPeriodName, mPassName, mProvenance);
       mDatabase->storeMO(mo);
       mTotalNumberMOStored++;
     }
@@ -441,10 +441,10 @@ void CheckRunner::start(const ServiceRegistry& services)
 {
   mRunNumber = computeRunNumber(services, mConfigFile->getRecursive());
   mPeriodName = computePeriodName(services, mConfigFile->getRecursive());
-  mPassType = computePassType(mConfigFile->getRecursive());
+  mPassName = computePassName(mConfigFile->getRecursive());
   mProvenance = computeProvenance(mConfigFile->getRecursive());
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ":"
-                  << "\n   - period: " << mPeriodName << "\n   - pass type: " << mPassType << "\n   - provenance: " << mProvenance << ENDM;
+                  << "\n   - period: " << mPeriodName << "\n   - pass type: " << mPassName << "\n   - provenance: " << mProvenance << ENDM;
 }
 
 void CheckRunner::stop()
@@ -460,7 +460,7 @@ void CheckRunner::reset()
     mCollector.reset();
     mRunNumber = 0;
     mPeriodName = "";
-    mPassType = "";
+    mPassName = "";
     mProvenance = "";
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService

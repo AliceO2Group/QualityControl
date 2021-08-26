@@ -30,7 +30,7 @@ struct CommonSpec {
   int activityNumber{};
   int activityType{};
   std::string activityPeriodName;
-  std::string activityPassType;
+  std::string activityPassName;
   std::string activityProvenance = "qc";
   std::string monitoringUrl = "infologger:///debug?qc";
   std::string consulUrl;

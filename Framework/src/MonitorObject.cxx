@@ -38,14 +38,14 @@ MonitorObject::MonitorObject()
 {
 }
 
-MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName, int runNumber, const std::string& periodName, const std::string& passType, const std::string& provenance)
+MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName, int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
   : TObject(),
     mObject(object),
     mTaskName(taskName),
     mDetectorName(detectorName),
     mRunNumber(runNumber),
     mPeriodName(periodName),
-    mPassType(passType),
+    mPassName(passName),
     mProvenance(provenance),
     mIsOwner(true)
 {
@@ -149,14 +149,14 @@ void MonitorObject::setPeriodName(const string& periodName)
   MonitorObject::mPeriodName = periodName;
 }
 
-const string& MonitorObject::getPassType() const
+const string& MonitorObject::getPassName() const
 {
-  return mPassType;
+  return mPassName;
 }
 
-void MonitorObject::setPassType(const string& passType)
+void MonitorObject::setPassName(const string& passName)
 {
-  MonitorObject::mPassType = passType;
+  MonitorObject::mPassName = passName;
 }
 
 const string& MonitorObject::getProvenance() const
@@ -169,11 +169,11 @@ void MonitorObject::setProvenance(const string& provenance)
   MonitorObject::mProvenance = provenance;
 }
 
-void MonitorObject::updateRunContext(int runNumber, const std::string& periodName, const std::string& passType, const std::string& provenance)
+void MonitorObject::updateRunContext(int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
 {
   mRunNumber = runNumber;
   mPeriodName = periodName;
-  mPassType = passType;
+  mPassName = passName;
   mProvenance = provenance;
 }
 

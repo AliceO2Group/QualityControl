@@ -92,12 +92,12 @@ inline std::string computePeriodName(const framework::ServiceRegistry& services,
   return periodName;
 }
 
-inline std::string computePassType(const boost::property_tree::ptree& config)
+inline std::string computePassName(const boost::property_tree::ptree& config)
 {
-  std::string passType;
-  passType = config.get<std::string>("qc.config.Activity.passType", "");
-  ILOG(Debug, Devel) << "Period Name returned by computePassType : " << passType << ENDM;
-  return passType;
+  std::string passName;
+  passName = config.get<std::string>("qc.config.Activity.passName", "");
+  ILOG(Debug, Devel) << "Period Name returned by computePassName : " << passName << ENDM;
+  return passName;
 }
 
 inline std::string computeProvenance(const boost::property_tree::ptree& config)
