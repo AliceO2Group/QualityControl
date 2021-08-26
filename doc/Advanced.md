@@ -732,7 +732,7 @@ should not be present in real configuration files.
         "type": "2",                      "": "Arbitrary activity type.",
         "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
         "passName": "",                   "": "Pass type - e.g. spass, cpass1",
-        "provenance": "qc",               "": "Provenance - qc or qc_mc"
+        "provenance": "qc",               "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data"
       },
       "monitoring": {                     "": "Configuration of the Monitoring library.",
         "url": "infologger:///debug?qc",  "": ["URI to the Monitoring backend. Refer to the link below for more info:",
