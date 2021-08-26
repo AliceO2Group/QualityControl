@@ -168,9 +168,9 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
 
   // extract object and metadata from MonitorObject
   TObject* obj = mo->getObject();
-  metadata["RunNumber"] = std::to_string(mo->getRunNumber());
-  metadata["PeriodName"] = mo->getPeriodName();
-  metadata["PassName"] = mo->getPassName();
+  metadata["RunNumber"] = std::to_string(mo->getActivity().mId);
+  metadata["PeriodName"] = mo->getActivity().mPeriodName;
+  metadata["PassName"] = mo->getActivity().mPassName;
   metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
 
   // QC metadata (prefix qc_)
@@ -195,9 +195,9 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
 {
   // metadata
   map<string, string> metadata;
-  metadata["RunNumber"] = std::to_string(qo->getRunNumber());
-  metadata["PeriodName"] = qo->getPeriodName();
-  metadata["PassName"] = qo->getPassName();
+  metadata["RunNumber"] = std::to_string(qo->getActivity().mId);
+  metadata["PeriodName"] = qo->getActivity().mPeriodName;
+  metadata["PassName"] = qo->getActivity().mPassName;
   metadata["ObjectType"] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   // QC metadata (prefix qc_)
   metadata["qc_version"] = Version::GetQcVersion().getString();

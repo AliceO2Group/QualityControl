@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(qopath)
   BOOST_CHECK_EQUAL(path, "qc/DET/QO/xyzCheck");
 
   // provenance
-  qo.setProvenance("qc_mc");
+  qo.getActivity().mProvenance = "qc_mc";
   path = RepoPathUtils::getQoPath(&qo);
   BOOST_CHECK_EQUAL(path, "qc_mc/DET/QO/xyzCheck");
 
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(mopath)
   BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
 
   // provenance
-  obj.setProvenance("qc_mc");
+  obj.getActivity().mProvenance= "qc_mc";
   path = RepoPathUtils::getMoPath(&obj);
   BOOST_CHECK_EQUAL(path, "qc_mc/DET/MO/task/asdf");
 }

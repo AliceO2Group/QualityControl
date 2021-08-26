@@ -39,6 +39,7 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/UpdatePolicyManager.h"
+#include "QualityControl/Activity.h"
 
 namespace o2::quality_control::core
 {
@@ -204,10 +205,7 @@ class CheckRunner : public framework::Task
   // General state
   std::string mDeviceName;
   std::vector<Check> mChecks;
-  int mRunNumber;
-  std::string mPeriodName;
-  std::string mPassName;
-  std::string mProvenance;
+  Activity mActivity;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::unordered_set<std::string> mInputStoreSet;

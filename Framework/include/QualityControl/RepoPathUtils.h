@@ -54,7 +54,7 @@ class RepoPathUtils
    */
   static std::string getMoPath(const MonitorObject* mo)
   {
-    return getMoPath(mo->getDetectorName(), mo->getTaskName(), mo->getName(), mo->getProvenance());
+    return getMoPath(mo->getDetectorName(), mo->getTaskName(), mo->getName(), mo->getActivity().mProvenance);
   }
 
   /**
@@ -93,7 +93,11 @@ class RepoPathUtils
    */
   static std::string getQoPath(const QualityObject* qo)
   {
-    return getQoPath(qo->getDetectorName(), qo->getCheckName(), qo->getPolicyName(), qo->getMonitorObjectsNames(), qo->getProvenance());
+    return getQoPath(qo->getDetectorName(),
+                     qo->getCheckName(),
+                     qo->getPolicyName(),
+                     qo->getMonitorObjectsNames(),
+                     qo->getActivity().mProvenance);
   }
 };
 } // namespace o2::quality_control::core

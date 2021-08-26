@@ -17,6 +17,7 @@
 #include "QualityControl/MonitorObject.h"
 
 #include <iostream>
+#include <utility>
 #include <Common/Exceptions.h>
 #include "QualityControl/RepoPathUtils.h"
 
@@ -32,10 +33,10 @@ MonitorObject::MonitorObject()
     mObject(nullptr),
     mTaskName(""),
     mDetectorName(""),
-    mRunNumber(0),
-    mProvenance("qc"),
     mIsOwner(true)
 {
+  mActivity.mProvenance="qc";
+  mActivity.mId=0;
 }
 
 MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName, int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
@@ -43,10 +44,7 @@ MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const
     mObject(object),
     mTaskName(taskName),
     mDetectorName(detectorName),
-    mRunNumber(runNumber),
-    mPeriodName(periodName),
-    mPassName(passName),
-    mProvenance(provenance),
+    mActivity(runNumber, 0, periodName, passName, provenance),
     mIsOwner(true)
 {
 }
@@ -129,52 +127,27 @@ void MonitorObject::setDescription(const string& description)
   mDescription = description;
 }
 
-int MonitorObject::getRunNumber() const
+const Activity& MonitorObject::getActivity() const
 {
-  return mRunNumber;
+  return mActivity;
 }
 
-void MonitorObject::setRunNumber(int runNumber)
+Activity& MonitorObject::getActivity()
 {
-  mRunNumber = runNumber;
+  return mActivity;
 }
 
-const string& MonitorObject::getPeriodName() const
+void MonitorObject::setActivity(const Activity& activity)
 {
-  return mPeriodName;
+  MonitorObject::mActivity = activity;
 }
 
-void MonitorObject::setPeriodName(const string& periodName)
+void MonitorObject::updateActivity(int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
 {
-  MonitorObject::mPeriodName = periodName;
-}
-
-const string& MonitorObject::getPassName() const
-{
-  return mPassName;
-}
-
-void MonitorObject::setPassName(const string& passName)
-{
-  MonitorObject::mPassName = passName;
-}
-
-const string& MonitorObject::getProvenance() const
-{
-  return mProvenance;
-}
-
-void MonitorObject::setProvenance(const string& provenance)
-{
-  MonitorObject::mProvenance = provenance;
-}
-
-void MonitorObject::updateRunContext(int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
-{
-  mRunNumber = runNumber;
-  mPeriodName = periodName;
-  mPassName = passName;
-  mProvenance = provenance;
+  mActivity.mId = runNumber;
+  mActivity.mPeriodName = periodName;
+  mActivity.mPassName = passName;
+  mActivity.mProvenance = provenance;
 }
 
 } // namespace o2::quality_control::core

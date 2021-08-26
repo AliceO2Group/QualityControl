@@ -105,9 +105,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
   TH1F* h1 = new TH1F("quarantine", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
   shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, f.taskName, "TST");
-  mo1->setRunNumber(1234);
-  mo1->setPeriodName("LHC66");
-  mo1->setPassName("passName1");
+  mo1->updateActivity(1234, "LHC66", "passName1", "qc");
 
   TH1F* h2 = new TH1F("metadata", "asdf", 100, 0, 99);
   shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, f.taskName, "TST");
@@ -118,17 +116,15 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 
   TH1F* h4 = new TH1F("provenance", "asdf", 100, 0, 99);
   shared_ptr<MonitorObject> mo4 = make_shared<MonitorObject>(h4, f.taskName, "TST");
-  mo4->setProvenance("qc_hello");
+  mo4->updateActivity(1234, "LHC66", "passName1", "qc_hello");
 
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, f.taskName + "/test-ccdb-check", "TST", "OnAll", vector{ string("input1"), string("input2") });
-  qo1->setRunNumber(1234);
-  qo1->setPeriodName("LHC66");
-  qo1->setPassName("passName1");
+  qo1->updateActivity(1234, "LHC66", "passName1", "qc");
   shared_ptr<QualityObject> qo2 = make_shared<QualityObject>(Quality::Null, f.taskName + "/metadata", "TST", "OnAll", vector{ string("input1") });
   qo2->addMetadata("my_meta", "is_good");
   shared_ptr<QualityObject> qo3 = make_shared<QualityObject>(Quality::Good, f.taskName + "/short", "TST", "OnAll", vector{ string("input1") });
   shared_ptr<QualityObject> qo4 = make_shared<QualityObject>(Quality::Good, f.taskName + "/provenance", "TST", "OnAll", vector{ string("input1") });
-  qo4->setProvenance("qc_hello");
+  qo4->updateActivity(0, "", "", "qc_hello");
 
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->storeMO(mo1);
@@ -166,10 +162,10 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_mo, *utf::depends_on("ccdb_store"))
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("quarantine"), "quarantine");
   BOOST_REQUIRE_NE(mo, nullptr);
   BOOST_CHECK_EQUAL(mo->getName(), "quarantine");
-  BOOST_CHECK_EQUAL(mo->getRunNumber(), 1234);
-  BOOST_CHECK_EQUAL(mo->getPeriodName(), "LHC66");
-  BOOST_CHECK_EQUAL(mo->getPassName(), "passName1");
-  BOOST_CHECK_EQUAL(mo->getProvenance(), "qc");
+  BOOST_CHECK_EQUAL(mo->getActivity().mId, 1234);
+  BOOST_CHECK_EQUAL(mo->getActivity().mPeriodName, "LHC66");
+  BOOST_CHECK_EQUAL(mo->getActivity().mPassName, "passName1");
+  BOOST_CHECK_EQUAL(mo->getActivity().mProvenance, "qc");
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_retrieve_timestamps, *utf::depends_on("ccdb_store"))
@@ -200,10 +196,10 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_qo, *utf::depends_on("ccdb_store"))
   BOOST_CHECK_NE(qo, nullptr);
   Quality q = qo->getQuality();
   BOOST_CHECK_EQUAL(q.getLevel(), 3);
-  BOOST_CHECK_EQUAL(qo->getRunNumber(), 1234);
-  BOOST_CHECK_EQUAL(qo->getPeriodName(), "LHC66");
-  BOOST_CHECK_EQUAL(qo->getPassName(), "passName1");
-  BOOST_CHECK_EQUAL(qo->getProvenance(), "qc");
+  BOOST_CHECK_EQUAL(qo->getActivity().mId, 1234);
+  BOOST_CHECK_EQUAL(qo->getActivity().mPeriodName, "LHC66");
+  BOOST_CHECK_EQUAL(qo->getActivity().mPassName, "passName1");
+  BOOST_CHECK_EQUAL(qo->getActivity().mProvenance, "qc");
 }
 
 BOOST_AUTO_TEST_CASE(ccdb_provenance, *utf::depends_on("ccdb_store"))
@@ -211,11 +207,11 @@ BOOST_AUTO_TEST_CASE(ccdb_provenance, *utf::depends_on("ccdb_store"))
   test_fixture f;
   std::shared_ptr<QualityObject> qo = f.backend->retrieveQO(RepoPathUtils::getQoPath("TST", f.taskName + "/provenance", "", {}, "qc_hello"));
   BOOST_CHECK_NE(qo, nullptr);
-  BOOST_CHECK_EQUAL(qo->getProvenance(), "qc_hello");
+  BOOST_CHECK_EQUAL(qo->getActivity().mProvenance, "qc_hello");
 
   std::shared_ptr<MonitorObject> mo = f.backend->retrieveMO(f.getMoFolder("provenance", "qc_hello"), "provenance");
   BOOST_CHECK_NE(mo, nullptr);
-  BOOST_CHECK_EQUAL(mo->getProvenance(), "qc_hello");
+  BOOST_CHECK_EQUAL(mo->getActivity().mProvenance, "qc_hello");
 }
 
 unique_ptr<CcdbDatabase> backendGlobal = std::make_unique<CcdbDatabase>();

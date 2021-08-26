@@ -135,7 +135,6 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& che
 CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
   : mDeviceName(createCheckRunnerName(checks)),
     mChecks{ checks },
-    mRunNumber(0),
     mLogger(QcInfoLogger::GetInstance()),
     /* All checks have the same Input */
     mInputs(checks.front().getInputs()),
@@ -158,7 +157,6 @@ CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSou
 CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
   : mDeviceName(createSinkCheckRunnerName(input)),
     mChecks{},
-    mRunNumber(0),
     mLogger(QcInfoLogger::GetInstance()),
     mInputs{ input },
     mOutputs{},
@@ -312,9 +310,6 @@ QualityObjectsType CheckRunner::check()
     if (updatePolicyManager.isReady(check.getName())) {
       auto newQOs = check.check(mMonitorObjects);
       mTotalNumberCheckExecuted += newQOs.size();
-      // set the run number and the period on all objects
-      for_each(newQOs.begin(), newQOs.end(), [&mRunNumber = mRunNumber](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mRunNumber); });
-      //      for_each(newQOs.begin(), newQOs.end(), [&mPeriodName = mPeriodName](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mPeriodName); });
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
@@ -333,7 +328,7 @@ void CheckRunner::store(QualityObjectsType& qualityObjects)
   mLogger << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
-      qo->updateRunContext(mRunNumber, mPeriodName, mPassName, mProvenance);
+      qo->setActivity(mActivity);
       mDatabase->storeQO(qo);
       mTotalNumberQOStored++;
     }
@@ -347,7 +342,7 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
   mLogger << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
-      mo->updateRunContext(mRunNumber, mPeriodName, mPassName, mProvenance);
+      mo->setActivity(mActivity);
       mDatabase->storeMO(mo);
       mTotalNumberMOStored++;
     }
@@ -439,17 +434,16 @@ void CheckRunner::initServiceDiscovery()
 
 void CheckRunner::start(const ServiceRegistry& services)
 {
-  mRunNumber = computeRunNumber(services, mConfigFile->getRecursive());
-  mPeriodName = computePeriodName(services, mConfigFile->getRecursive());
-  mPassName = computePassName(mConfigFile->getRecursive());
-  mProvenance = computeProvenance(mConfigFile->getRecursive());
-  ILOG(Info, Ops) << "Starting run " << mRunNumber << ":"
-                  << "\n   - period: " << mPeriodName << "\n   - pass type: " << mPassName << "\n   - provenance: " << mProvenance << ENDM;
+  mActivity.mId = computeRunNumber(services, mConfigFile->getRecursive());
+  mActivity.mPeriodName = computePeriodName(services, mConfigFile->getRecursive());
+  mActivity.mPassName = computePassName(mConfigFile->getRecursive());
+  mActivity.mProvenance = computeProvenance(mConfigFile->getRecursive());
+  ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":" << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }
 
 void CheckRunner::stop()
 {
-  ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
+  ILOG(Info, Ops) << "Stopping run " << mActivity.mId << ENDM;
 }
 
 void CheckRunner::reset()
@@ -458,10 +452,7 @@ void CheckRunner::reset()
 
   try {
     mCollector.reset();
-    mRunNumber = 0;
-    mPeriodName = "";
-    mPassName = "";
-    mProvenance = "";
+    mActivity = Activity();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
     ILOG(Error, Support) << "Error caught in reset() :\n"

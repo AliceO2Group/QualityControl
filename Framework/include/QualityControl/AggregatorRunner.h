@@ -24,6 +24,7 @@
 // QC
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/UpdatePolicyManager.h"
+#include "QualityControl/Activity.h"
 
 namespace o2::framework
 {
@@ -160,7 +161,7 @@ class AggregatorRunner : public framework::Task
 
   // General state
   std::string mDeviceName;
-  int mRunNumber;
+  core::Activity mActivity;
   std::vector<std::shared_ptr<Aggregator>> mAggregators;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
