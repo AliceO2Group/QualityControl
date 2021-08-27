@@ -57,7 +57,8 @@
           "name": "sampling2"
         },
         "taskParameters": {},
-        "location": "remote"
+        "location": "remote",
+        "remoteMachine": "localhost"
       }
     },
     "checks": {

@@ -31,6 +31,7 @@ add_root_dictionary(O2QualityControlTypes
   HEADERS include/QualityControl/MonitorObject.h
   include/QualityControl/QualityObject.h
   include/QualityControl/Quality.h
+  include/QualityControl/Activity.h
   LINKDEF include/QualityControl/TypesLinkDef.h
   BASENAME O2QualityControlTypes
   )

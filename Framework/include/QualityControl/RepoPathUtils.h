@@ -30,37 +30,40 @@ class RepoPathUtils
  public:
   /**
    * Compute and return the path to the MonitorObject.
-   * Current algorithm does qc/<detectorCode>/MO/<taskName>/<moName>
+   * Current algorithm does <provenance(qc)>/<detectorCode>/MO/<taskName>/<moName>
    * @param detectorCode
    * @param taskName
    * @param moName
+   * @param provenance
    * @return the path to the MonitorObject
    */
   static std::string getMoPath(const std::string& detectorCode,
                                const std::string& taskName,
-                               const std::string& moName)
+                               const std::string& moName,
+                               const std::string& provenance = "qc")
   {
-    std::string path = "qc/" + detectorCode + "/MO/" + taskName + "/" + moName;
+    std::string path = provenance + "/" + detectorCode + "/MO/" + taskName + "/" + moName;
     return path;
   }
 
   /**
    * Compute and return the path to the MonitorObject.
-   * Current algorithm does qc/<detectorCode>/MO/<taskName>/<moName>
+   * Current algorithm does <provenance(qc)>/<detectorCode>/MO/<taskName>/<moName>
    * @param mo
    * @return the path to the MonitorObject
    */
   static std::string getMoPath(const MonitorObject* mo)
   {
-    return getMoPath(mo->getDetectorName(), mo->getTaskName(), mo->getName());
+    return getMoPath(mo->getDetectorName(), mo->getTaskName(), mo->getName(), mo->getActivity().mProvenance);
   }
 
   /**
    * Compute and return the path to the QualityObject.
-   * Current algorithm does  qc/<detectorCode>/QO/<checkName>[/<moName>].
+   * Current algorithm does <provenance(qc)>/<detectorCode>/QO/<checkName>[/<moName>].
    * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.
    * @param detectorCode
    * @param checkName
+   * @param provenance
    * @param policyName
    * @param monitorObjectsNames
    * @return the path to the QualityObject
@@ -68,9 +71,10 @@ class RepoPathUtils
   static std::string getQoPath(const std::string& detectorCode,
                                const std::string& checkName,
                                const std::string& policyName = "",
-                               const std::vector<std::string>& monitorObjectsNames = std::vector<std::string>())
+                               const std::vector<std::string>& monitorObjectsNames = std::vector<std::string>(),
+                               const std::string& provenance = "qc")
   {
-    std::string path = "qc/" + detectorCode + "/QO/" + checkName;
+    std::string path = provenance + "/" + detectorCode + "/QO/" + checkName;
     if (policyName == "OnEachSeparately") {
       if (monitorObjectsNames.empty()) {
         BOOST_THROW_EXCEPTION(AliceO2::Common::FatalException() << AliceO2::Common::errinfo_details("getQoPath: The vector of monitorObjectsNames is empty."));
@@ -82,14 +86,18 @@ class RepoPathUtils
 
   /**
    * Compute and return the path to the QualityObject.
-   * Current algorithm does  qc/<detectorCode>/QO/<checkName>[/<moName>].
+   * Current algorithm does <provenance(qc)>/<detectorCode>/QO/<checkName>[/<moName>].
    * The last, optional, part depends on policyName and uses the first element of the vector monitorObjectsNames.    
    * @param qo
    * @return the path to the QualityObject
    */
   static std::string getQoPath(const QualityObject* qo)
   {
-    return getQoPath(qo->getDetectorName(), qo->getCheckName(), qo->getPolicyName(), qo->getMonitorObjectsNames());
+    return getQoPath(qo->getDetectorName(),
+                     qo->getCheckName(),
+                     qo->getPolicyName(),
+                     qo->getMonitorObjectsNames(),
+                     qo->getActivity().mProvenance);
   }
 };
 } // namespace o2::quality_control::core

@@ -191,14 +191,15 @@ List the local processing machines in the `localMachines` array. `remoteMachine`
  `localControl` parameter allows to properly configure QC with respect to the control software it is run with. It can 
  be either `aliecs` (on FLPs) or `odc` (EPNs). It has no influence when running the software by hand.
  
- One also may choose the merging mode - `delta` is the default and recommended (tasks are reset after each cycle, so they
+One also may choose the merging mode - `delta` is the default and recommended (tasks are reset after each cycle, so they
  send only updates), but if it is not feasible, Mergers may expect `entire` objects - tasks are not reset, they
  always send entire objects and the latest versions are combined in Mergers.
- With the `delta` mode, one can cheat by specifying just one local machine name and referencing only that one later.
+ With the `delta` mode, one can cheat by specifying just one local machine name and using only that one during execution.
  This is not possible with `entire` mode, because then Mergers need identifiable data sources to merge objects correctly.
 
-In case of a remote task, choosing `"remote"` option for the `"location"` parameter is needed. Also, `localControl`
-should be specified, so data samples can be correctly dispatched.
+In case of a remote task, choosing `"remote"` option for the `"location"` parameter is needed. In standalone setups
+and those controlled by ODC, one should also specify the `"remoteMachine"`, so sampled data reaches the right node.
+Also, `"localControl"` should be specified to generate the correct AliECS workflow template.
 
 ```json
     "tasks": {
@@ -212,13 +213,16 @@ should be specified, so data samples can be correctly dispatched.
         },
         "taskParameters": {},
         "location": "remote",
-        "localControl": "aliecs",
+        "remoteMachine": "qcnode",   "":"not needed with AliECS",
+        "localControl": "aliecs",    "":"aliecs is default, not needed in setups fully controlled by AliECS"
       }
     }
 ```
 
-In case the task is running remotely, one has to specify the machines where data should be published to external 
-machines (with remote tasks) and a local port number. Use separate ports for each Data Sampling Policy.
+In case the task is running remotely, data should be sampled. The minimal-effort approach requires adding a port number
+ (see the example below). Use separate ports for each Data Sampling Policy. If the same configuration file will be used
+ on many nodes, but only some of them should apply a given sampling policy, one should also specify the list of
+ machines to match (or generalized aliases, e.g. "flp", "epn").
 ```json
 {
   "dataSamplingPolicies": [
@@ -226,16 +230,18 @@ machines (with remote tasks) and a local port number. Use separate ports for eac
     {
       "id": "rnd-little",
       "active": "true",
-      "machines": [        "","needed only for remote QC tasks",
+      "machines": [        "","only needed when the policy should run on a subgroup of nodes",
         "localnode2"
       ],
-      "port": "30333",     "":"not needed with AliECS",
+      "port": "30333",     "":"compulsory on standalone and ODC setups, not needed with AliECS",
       ...
     }
   ]
 }
 ```
-/
+By default, the channel is bound on the QC Task side. If this is not what you need, add `"bindLocation" : "local"` in
+the policy configuration (`"remote"` is the default value) and make sure to use valid host names.
+
 2. Make sure that the firewalls are properly configured. If your machines block incoming/outgoing connections by
  default, you can add these rules to the firewall (run as sudo). Consider enabling only concrete ports or a small
  range of those.
@@ -259,6 +265,7 @@ systemctl disable firewalld  # to disable permanently
 3. Install the same version of the QC software on each of these nodes. We cannot guarantee that different QC versions will talk to each other without problems. Also, make sure the configuration file that you will use is the same everywhere.
 
 4. Run each part of the workflow. In this example `o2-qc-run-producer` represents any DPL workflow, here it is just a process which produces some random data.
+The `--host` argument is matched against the `machines` lists in the configuration files.
 ```
 # On localnode1:
 o2-qc-run-producer | o2-qc --config json:/${QUALITYCONTROL_ROOT}/etc/multiNode.json --local --host localnode1 -b
@@ -726,7 +733,10 @@ should not be present in real configuration files.
       "Activity": {                       "": ["Configuration of a QC Activity (Run). This structure is subject to",
                                                "change or the values might come from other source (e.g. AliECS)." ],
         "number": "42",                   "": "Activity number.",
-        "type": "2",                      "": "Arbitrary activity type."
+        "type": "2",                      "": "Arbitrary activity type.",
+        "periodName": "",                 "": "Period name - e.g. LHC22c, LHC22c1b_test",
+        "passName": "",                   "": "Pass type - e.g. spass, cpass1",
+        "provenance": "qc",               "": "Provenance - qc or qc_mc depending whether it is normal data or monte carlo data"
       },
       "monitoring": {                     "": "Configuration of the Monitoring library.",
         "url": "infologger:///debug?qc",  "": ["URI to the Monitoring backend. Refer to the link below for more info:",

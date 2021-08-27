@@ -158,11 +158,10 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
       case WorkflowType::Standalone: {
         ILOG(Info, Support) << "Creating a standalone QC workflow." << ENDM;
 
-        if (!config.options().get<bool>("no-data-sampling")) {
+        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
+        if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-          auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
-          auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
-          DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
+          DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
@@ -175,11 +174,10 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
                       ? boost::asio::ip::host_name()
                       : config.options().get<std::string>("host");
 
-        if (!config.options().get<bool>("no-data-sampling")) {
+        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
+        if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-          auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
-          auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
-          DataSampling::GenerateInfrastructure(specs, dataSamplingTree, 1, host);
+          DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"), 1, host);
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
@@ -197,11 +195,10 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
       }
       case WorkflowType::LocalBatch: {
         ILOG(Info, Support) << "Creating a local batch QC workflow." << ENDM;
-        if (!config.options().get<bool>("no-data-sampling")) {
+        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
+        if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-          auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
-          auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
-          DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
+          DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
