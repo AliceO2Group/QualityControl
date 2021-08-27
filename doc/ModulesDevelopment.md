@@ -1,7 +1,7 @@
 # Modules development
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
-<!--./gh-md-toc --insert /path/to/README.md-->
+<!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 /path/to/README.md-->
 <!--ts-->
 * [Modules development](#modules-development)
    * [Context](#context)
@@ -30,7 +30,7 @@
    * [Data sources](#data-sources)
       * [Readout](#readout)
       * [DPL workflow](#dpl-workflow)
-   * [Run number](#run-number)
+   * [Run number and other run attributes (period, pass type, provenance)](#run-number-and-other-run-attributes-period-pass-type-provenance)
    * [A more advanced example](#a-more-advanced-example)
    * [Monitoring](#monitoring)
 <!--te-->
@@ -527,12 +527,12 @@ The other attributes are
 - `type`, i.e. the run type
 - `periodName`
 - `passName`
-- `provenance`
+- `provenance`, can be either `qc` for normal data or `qc_mc` for Monte Carlo data.
 
 When running with the aliECS the run number is automatically provided to the modules' code. 
 
 To set a run number and the other attributes in an "uncontrolled" environment such as a development setup, 
-one can set it in the config file. Note that we call it `Activity` and not `Run` in this context: 
+one can set it in the config file:
 ```yaml
       "Activity": {
         "number": "42",
@@ -542,6 +542,10 @@ one can set it in the config file. Note that we call it `Activity` and not `Run`
         "provenance": "qc",         "": "Provenance - qc or qc_mc"
       },
 ```
+
+These attributes are also stored in the QCDB as metadata under the names `PeriodName`, `RunNumber` and `PassName`.
+The provenance is treated differently and is used to modify the path to the object by changing the top level directory:
+`qc/TST/QcTask/example` vs `qc_mc/TST/QcTask/example`.
 
 The way we compute the run number is done in this order:
 1. Pick the run number from aliECS
