@@ -36,9 +36,6 @@ Advanced topics
    * [Get all the task output to the infologger](#get-all-the-task-output-to-the-infologger)
    * [Using a different config file with the general QC](#using-a-different-config-file-with-the-general-qc-1)
    * [Enable the repo cleaner](#enable-the-repo-cleaner)
-
-  
-## Using a different config file with the general QC
 * [Configuration](#configuration-1)
    * [Definition and access of task-specific configuration](#definition-and-access-of-task-specific-configuration)
    * [Configuration files details](#configuration-files-details)
