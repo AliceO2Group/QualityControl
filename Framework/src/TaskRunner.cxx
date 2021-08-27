@@ -312,17 +312,16 @@ void TaskRunner::startOfActivity()
   mTotalNumberObjectsPublished = 0;
 
   // Start activity in module's stask and update objectsManager
-  Activity activity(mRunNumber, mTaskConfig.activityType);
+  Activity activity(mRunNumber, mTaskConfig.activityType, mTaskConfig.activityPeriodName, mTaskConfig.activityPassName, mTaskConfig.activityProvenance);
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
-  mObjectsManager->updateRunNumber(mRunNumber);
 }
 
 void TaskRunner::endOfActivity()
 {
-  Activity activity(mRunNumber, mTaskConfig.activityType);
+  Activity activity(mRunNumber, mTaskConfig.activityType, mTaskConfig.activityPeriodName, mTaskConfig.activityPassName, mTaskConfig.activityProvenance);
   ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
   mTask->endOfActivity(activity);
   mObjectsManager->removeAllFromServiceDiscovery();

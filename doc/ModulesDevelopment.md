@@ -515,26 +515,38 @@ __Live detector data__
 
 If the detector is ready and connected to the CRU(s), one can of course start the full data taking workflow, including the SubTimeFrameBuilder and the DPL processing and plug the QC onto it.
 
-## Run number
+## Run number and other run attributes (period, pass type, provenance)
 
-When running with the aliECS the run number is automatically provided to the modules' code: 
+The run attributes, such as the run number, are provided to the modules through the object `activity`:
 ```c++
 void ExampleTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Info, Support) << "Run number : " << activity.mId << ENDM;
 ```
+The other attributes are 
+- `type`, i.e. the run type
+- `periodName`
+- `passName`
+- `provenance`
 
-To set a run number in an "uncontrolled" environment such as a development setup, one can set it in the config file. Note that we call it `Activity` and not `Run` in this context: 
+When running with the aliECS the run number is automatically provided to the modules' code. 
+
+To set a run number and the other attributes in an "uncontrolled" environment such as a development setup, 
+one can set it in the config file. Note that we call it `Activity` and not `Run` in this context: 
 ```yaml
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "2",
+        "periodName": "",           "": "Period name - e.g. LHC22c, LHC22c1b_test",
+        "passName": "",             "": "Pass type - e.g. spass, cpass1",
+        "provenance": "qc",         "": "Provenance - qc or qc_mc"
       },
 ```
-The way we compute it is :
-1. Pick the run number from aliECS, if it is not there
-2. Pick the run number from the config file, if it is not there
-3. Set it to `0`
+
+The way we compute the run number is done in this order:
+1. Pick the run number from aliECS
+2. If not found, pick the run number from the config file 
+3. If not found, set it to `0` otherwise
 
 ## A more advanced example
 

@@ -136,7 +136,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        msg->AddText(Form("Run %d", mo->getRunNumber()));
+        msg->AddText(Form("Run %d", mo->getActivity().mId));
         //count number of too small pedestals + too big pedestals
         int nOfBadPedestalValues = h->Integral(1, mMinGoodPedestalValueM[iMod]) + h->GetBinContent(h->GetNbinsX() + 1); //underflow + small pedestals + overflow
         if (nOfBadPedestalValues > mToleratedBadPedestalValueChannelsM[iMod]) {
@@ -172,7 +172,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        msg->AddText(Form("Run %d", mo->getRunNumber()));
+        msg->AddText(Form("Run %d", mo->getActivity().mId));
         //count number of too small pedestals + too big pedestals
         float binWidth = h->GetBinWidth(1);
         int nOfBadPedestalSigmas = h->Integral(mMaxGoodPedestalSigmaM[iMod] / binWidth + 1,
@@ -200,7 +200,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
-        msg->AddText(Form("Run %d", mo->getRunNumber()));
+        msg->AddText(Form("Run %d", mo->getActivity().mId));
         //count number of too small pedestals + too big pedestals
         float binWidth = h->GetBinWidth(1);
         int nOfBadPedestalEfficiencies = 7680 -

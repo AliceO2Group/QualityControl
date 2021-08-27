@@ -36,6 +36,11 @@ BOOST_AUTO_TEST_CASE(qopath)
   path = RepoPathUtils::getQoPath("DET", "xyzCheck");
   BOOST_CHECK_EQUAL(path, "qc/DET/QO/xyzCheck");
 
+  // provenance
+  qo.getActivity().mProvenance = "qc_mc";
+  path = RepoPathUtils::getQoPath(&qo);
+  BOOST_CHECK_EQUAL(path, "qc_mc/DET/QO/xyzCheck");
+
   // a policy which is not OnEachSeparately
   QualityObject qo2(Quality::Null, "xyzCheck", "DET", "OnAnyNonZero");
   string path2 = RepoPathUtils::getQoPath(&qo2);
@@ -66,4 +71,9 @@ BOOST_AUTO_TEST_CASE(mopath)
   BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
   path = RepoPathUtils::getMoPath("DET", "task", "asdf");
   BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
+
+  // provenance
+  obj.getActivity().mProvenance = "qc_mc";
+  path = RepoPathUtils::getMoPath(&obj);
+  BOOST_CHECK_EQUAL(path, "qc_mc/DET/MO/task/asdf");
 }

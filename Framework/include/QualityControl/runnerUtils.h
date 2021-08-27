@@ -82,6 +82,32 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, const bo
   return run;
 }
 
+inline std::string computePeriodName(const framework::ServiceRegistry& services, const boost::property_tree::ptree& config)
+{ // Determine period
+  std::string periodName;
+  periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("periodName", "unspecified");
+  ILOG(Info, Devel) << "Got this property periodName from RawDeviceService: '" << periodName << "'" << ENDM;
+  periodName = periodName != "unspecified" /* found it in service */ ? periodName : config.get<std::string>("qc.config.Activity.periodName", "");
+  ILOG(Debug, Devel) << "Period Name returned by computePeriodName : " << periodName << ENDM;
+  return periodName;
+}
+
+inline std::string computePassName(const boost::property_tree::ptree& config)
+{
+  std::string passName;
+  passName = config.get<std::string>("qc.config.Activity.passName", "");
+  ILOG(Debug, Devel) << "Period Name returned by computePassName : " << passName << ENDM;
+  return passName;
+}
+
+inline std::string computeProvenance(const boost::property_tree::ptree& config)
+{
+  std::string provenance;
+  provenance = config.get<std::string>("qc.config.Activity.provenance", "qc");
+  ILOG(Debug, Devel) << "Period Name returned by computeProvenance : " << provenance << ENDM;
+  return provenance;
+}
+
 inline int computeRunNumber(const framework::ServiceRegistry& services, int defaultRunNumber = 0)
 { // Determine run number
   int run = 0;
