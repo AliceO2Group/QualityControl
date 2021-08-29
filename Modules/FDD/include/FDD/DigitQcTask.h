@@ -55,7 +55,7 @@ class DigitQcTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
-  constexpr static std::size_t sNCHANNELS_PM = 208;
+  constexpr static std::size_t sNCHANNELS_PM = 28; // 16(for PM) + 12 (just in case for possible PM-LCS)
   constexpr static std::size_t sOrbitsPerTF = 256;
   constexpr static uint8_t sLaserBitPos = 5;
 
