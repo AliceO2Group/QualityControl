@@ -20,6 +20,9 @@
 #include <string>
 #include <unordered_map>
 
+#include <Framework/DataProcessorSpec.h>
+#include "QualityControl/UpdatePolicyType.h"
+
 namespace o2::quality_control::checker
 {
 
@@ -30,9 +33,12 @@ struct CheckConfig {
   std::string className;
   std::string detectorName = "MISC"; // intended to be the 3 letters code;
   std::unordered_map<std::string, std::string> customParameters = {};
-  std::string policyType = "OnAny";
-  std::vector<std::string> objectNames;
+  UpdatePolicyType policyType = UpdatePolicyType::OnAny;
+  std::vector<std::string> objectNames{}; // fixme: if object names are empty, allObjects are true, consider reducing to one var
   bool allObjects = false;
+  bool allowBeautify = false;
+  framework::Inputs inputSpecs{};
+  framework::OutputSpec qoSpec{ "XXX", "INVALID" };
 };
 
 } // namespace o2::quality_control::checker

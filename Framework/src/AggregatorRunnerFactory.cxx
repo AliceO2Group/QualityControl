@@ -31,7 +31,7 @@ using namespace o2::framework;
 namespace o2::quality_control::checker
 {
 
-DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource)
+DataProcessorSpec AggregatorRunnerFactory::create(const std::vector<OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource)
 {
   AggregatorRunner aggregator{ configurationSource, checkerRunnerOutputs };
 

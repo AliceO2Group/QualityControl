@@ -21,8 +21,8 @@ namespace o2::quality_control::core
 
 // todo make DataSourceUtils
 
-DataSourceSpec::DataSourceSpec(DataSourceType type, std::unordered_map<std::string, std::string> params)
-  : type(type), typeSpecificParams(std::move(params))
+DataSourceSpec::DataSourceSpec(DataSourceType type)
+  : type(type)
 {
   // todo: validation?
 }

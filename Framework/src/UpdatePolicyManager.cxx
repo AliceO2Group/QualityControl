@@ -61,94 +61,99 @@ void UpdatePolicyManager::updateObjectRevision(std::string objectName)
   updateObjectRevision(objectName, mGlobalRevision);
 }
 
-void UpdatePolicyManager::addPolicy(std::string actorName, std::string policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper)
+void UpdatePolicyManager::addPolicy(std::string actorName, UpdatePolicyType policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper)
 {
   UpdatePolicyFunctionType policy;
-  if (policyType == "OnAll") {
-    /** 
-     * Run check if all MOs are updated 
-     */
-    policy = [&, actorName]() {
-      for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
-        if (mObjectsRevision.count(objectName) == 0 || mObjectsRevision.at(objectName) <= mPoliciesByActor.at(actorName).revision) {
-          return false;
-        }
-      }
-      return true;
-    };
-  } else if (policyType == "OnAnyNonZero") {
-    /**
-     * Return true if any declared MOs were updated
-     * Guarantee that all declared MOs are available
-     */
-    policy = [&, actorName]() {
-      if (!mPoliciesByActor.at(actorName).policyHelperFlag) {
-        // Check if all monitor objects are available
+  switch (policyType) {
+    case UpdatePolicyType::OnAll: {
+      /**
+       * Run check if all MOs are updated
+       */
+      policy = [&, actorName]() {
         for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
-          if (!mObjectsRevision.count(objectName)) {
+          if (mObjectsRevision.count(objectName) == 0 || mObjectsRevision.at(objectName) <= mPoliciesByActor.at(actorName).revision) {
             return false;
           }
         }
-        // From now on all MOs are available
-        mPoliciesByActor.at(actorName).policyHelperFlag = true;
-      }
-
-      for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
-        if (mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
-          return true;
-        }
-      }
-      return false;
-    };
-
-  } else if (policyType == "OnEachSeparately") {
-    /**
-     * Return true if any declared object were updated.
-     * This is the same behaviour as OnAny.
-     */
-    policy = [&, actorName]() {
-      if (mPoliciesByActor.at(actorName).allInputObjects) {
         return true;
-      }
+      };
+      break;
+    }
+    case UpdatePolicyType::OnAnyNonZero: {
+      /**
+       * Return true if any declared MOs were updated
+       * Guarantee that all declared MOs are available
+       */
+      policy = [&, actorName]() {
+        if (!mPoliciesByActor.at(actorName).policyHelperFlag) {
+          // Check if all monitor objects are available
+          for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
+            if (!mObjectsRevision.count(objectName)) {
+              return false;
+            }
+          }
+          // From now on all MOs are available
+          mPoliciesByActor.at(actorName).policyHelperFlag = true;
+        }
 
-      for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
-        if (mObjectsRevision.count(objectName) && mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
+        for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
+          if (mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
+            return true;
+          }
+        }
+        return false;
+      };
+      break;
+    }
+    case UpdatePolicyType::OnEachSeparately: {
+      /**
+        * Return true if any declared object were updated.
+        * This is the same behaviour as OnAny.
+        */
+      policy = [&, actorName]() {
+        if (mPoliciesByActor.at(actorName).allInputObjects) {
           return true;
         }
-      }
-      return false;
-    };
 
-  } else if (policyType == "_OnGlobalAny") {
-    /**
-     * Return true if any MOs were updated.
-     * Inner policy - used for `"MOs": "all"`
-     * Might return true even if MO is not used in Check
-     */
-
-    policy = []() {
-      // Expecting check of this policy only if any change
-      return true;
-    };
-
-  } else if (policyType == "OnAny") {
-    /**
-     * Default behaviour
-     *
-     * Run check if any declared MOs are updated
-     * Does not guarantee to contain all declared MOs 
-     */
-    policy = [&, actorName]() {
-      for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
-        if (mObjectsRevision.count(objectName) && mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
-          return true;
+        for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
+          if (mObjectsRevision.count(objectName) && mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
+            return true;
+          }
         }
-      }
-      return false;
-    };
-  } else {
-    ILOG(Fatal, Ops) << "No policy named '" << policyType << "'" << ENDM;
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("No policy named '" + policyType + "'"));
+        return false;
+      };
+      break;
+    }
+    case UpdatePolicyType::OnGlobalAny: {
+      /**
+       * Return true if any MOs were updated.
+       * Inner policy - used for `"MOs": "all"`
+       * Might return true even if MO is not used in Check
+       */
+
+      policy = []() {
+        // Expecting check of this policy only if any change
+        return true;
+      };
+      break;
+    }
+    case UpdatePolicyType::OnAny: {
+      /**
+       * Default behaviour
+       *
+       * Run check if any declared MOs are updated
+       * Does not guarantee to contain all declared MOs
+       */
+      policy = [&, actorName]() {
+        for (const auto& objectName : mPoliciesByActor.at(actorName).inputObjects) {
+          if (mObjectsRevision.count(objectName) && mObjectsRevision[objectName] > mPoliciesByActor.at(actorName).revision) {
+            return true;
+          }
+        }
+        return false;
+      };
+      break;
+    }
   }
 
   mPoliciesByActor[actorName] = { actorName, policy, objectNames, allObjects, policyHelper };

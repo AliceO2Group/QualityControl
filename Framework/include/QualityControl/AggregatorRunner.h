@@ -91,7 +91,7 @@ class AggregatorRunner : public framework::Task
    * @param configurationSource Path to configuration
    * @param checkRunnerOutputs List of checkRunners' output that it will take as inputs.
    */
-  AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkRunnerOutputs);
+  AggregatorRunner(const std::string& configurationSource, const std::vector<framework::OutputSpec> checkRunnerOutputs);
 
   /// Destructor
   ~AggregatorRunner() override;

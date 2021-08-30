@@ -18,6 +18,9 @@
 
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/TaskSpec.h"
+#include "QualityControl/CheckSpec.h"
+#include "QualityControl/PostProcessingTaskSpec.h"
+#include "QualityControl/ExternalTaskSpec.h"
 
 #include <vector>
 
@@ -27,6 +30,9 @@ namespace o2::quality_control::core
 struct InfrastructureSpec {
   CommonSpec common;
   std::vector<TaskSpec> tasks;
+  std::vector<checker::CheckSpec> checks;
+  std::vector<PostProcessingTaskSpec> postProcessingTasks;
+  std::vector<ExternalTaskSpec> externalTasks;
   // todo: add other actors
 };
 

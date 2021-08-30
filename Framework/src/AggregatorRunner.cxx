@@ -44,7 +44,7 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkRunnerOutputs)
+AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const std::vector<framework::OutputSpec> checkRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
     mTotalNumberObjectsReceived(0)
 {
@@ -234,7 +234,7 @@ void AggregatorRunner::initAggregators()
           auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
           aggregator->init();
           updatePolicyManager.addPolicy(aggregator->getName(),
-                                        aggregator->getPolicyName(),
+                                        aggregator->getUpdatePolicyType(),
                                         aggregator->getObjectsNames(),
                                         aggregator->getAllObjectsOption(),
                                         false);

@@ -23,6 +23,8 @@
 #include <functional>
 #include <iosfwd>
 
+#include "QualityControl/UpdatePolicyType.h"
+
 namespace o2::quality_control::checker
 {
 
@@ -119,7 +121,7 @@ class UpdatePolicyManager
    * @param allObjects
    * @param policyHelper
    */
-  void addPolicy(std::string actorName, std::string policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper);
+  void addPolicy(std::string actorName, UpdatePolicyType policyType, std::vector<std::string> objectNames, bool allObjects, bool policyHelper);
   /**
    * Checks whether the given actor is ready or not.
    * @param actorName

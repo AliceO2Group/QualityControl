@@ -22,6 +22,7 @@
 #include "Framework/DataProcessorSpec.h"
 #include <Framework/CompletionPolicy.h>
 #include "QualityControl/Check.h"
+#include "QualityControl/CheckRunnerConfig.h"
 
 namespace o2::framework
 {
@@ -38,7 +39,7 @@ class CheckRunnerFactory
   CheckRunnerFactory() = default;
   virtual ~CheckRunnerFactory() = default;
 
-  framework::DataProcessorSpec create(std::vector<Check> checks, std::string configurationSource, std::vector<std::string> storeVector = {});
+  static framework::DataProcessorSpec create(CheckRunnerConfig checkRunnerConfig, std::vector<CheckConfig> checkConfigs, std::vector<std::string> storeVector = {});
 
   /*
    * \brief Create a CheckRunner sink DPL device.
@@ -48,7 +49,9 @@ class CheckRunnerFactory
    * @param input InputSpec with the content to store
    * @param configurationSource
    */
-  framework::DataProcessorSpec createSinkDevice(o2::framework::InputSpec input, std::string configurationSource);
+  static framework::DataProcessorSpec createSinkDevice(CheckRunnerConfig checkRunnerConfig, o2::framework::InputSpec input);
+
+  static CheckRunnerConfig extractConfig(const CommonSpec&);
 
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };

@@ -31,16 +31,16 @@ struct PostProcessingConfig {
   PostProcessingConfig() = default;
   PostProcessingConfig(std::string name, const boost::property_tree::ptree& config);
   ~PostProcessingConfig() = default;
-  std::string taskName = "";
-  std::string moduleName = "";
-  std::string className = "";
+  std::string taskName;
+  std::string moduleName;
+  std::string className;
   std::string detectorName = "MISC";
   std::vector<std::string> initTriggers = {};
   std::vector<std::string> updateTriggers = {};
   std::vector<std::string> stopTriggers = {};
-  std::string qcdbUrl = "";
-  std::string ccdbUrl = "";
-  std::string consulUrl = "";
+  std::string qcdbUrl;
+  std::string ccdbUrl;
+  std::string consulUrl;
 };
 
 } // namespace o2::quality_control::postprocessing

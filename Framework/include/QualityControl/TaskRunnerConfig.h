@@ -51,7 +51,7 @@ struct TaskRunnerConfig {
   std::string activityPeriodName = "";
   std::string activityPassName = "";
   std::string activityProvenance = "qc";
-  int defaultRunNumber = 0;
+  int fallbackRunNumber = 0;
   std::string configurationSource{};
 };
 

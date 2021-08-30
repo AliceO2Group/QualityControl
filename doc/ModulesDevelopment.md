@@ -319,7 +319,7 @@ A Check is a function that determines the quality of the Monitor Objects produce
     * _OnEachSeparately_ - Triggers separately for EACH of the listed objects whenever one of them changes.
     * In case the list of monitor objects is empty, the policy is simply ignored and the `check` will be triggered whenever a new MonitorObject is received.
 * __dataSource__ - declaration of the `check` input
-    * _type_ - currently only supported is _Task_
+    * _type_ - currently only supported are _Task_ and _ExternalTask_
     * _name_ - name of the _Task_
     * _MOs_ - list of MonitorObjects names or can be omitted to mean that all objects should be taken.
 
