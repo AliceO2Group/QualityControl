@@ -52,21 +52,13 @@ class RawQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  TH1F* mRawDataChecker = nullptr;
-  TH1F* mDetElemID = nullptr;
-
-  std::string mOutFilename;
-  std::string mFeeIdConfigFilename;
-  std::string mCrateMasksFilename;
-  std::string mElectronicsDelaysFilename;
-  bool mPerGBT;
-  bool mPerFeeId;
+  TH1F* mRawDataChecker{ nullptr };
 
   std::unique_ptr<o2::mid::Decoder> mDecoder{ nullptr };
-  o2::mid::RawDataChecker mChecker;
-  o2::mid::FEEIdConfig mFeeIdConfig;
-  o2::mid::ElectronicsDelay mElectronicsDelay;
-  o2::mid::CrateMasks mCrateMasks;
+  o2::mid::RawDataChecker mChecker{};
+  o2::mid::FEEIdConfig mFeeIdConfig{};
+  o2::mid::ElectronicsDelay mElectronicsDelay{};
+  o2::mid::CrateMasks mCrateMasks{};
 };
 
 } // namespace o2::quality_control_modules::mid
