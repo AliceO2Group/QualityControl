@@ -133,7 +133,7 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
     }
   } catch (std::exception& e) {
     mThreadRunning = false;
-    threadInfoLogger << AliceO2::InfoLogger::InfoLogger::Severity::Error << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
+    threadInfoLogger << AliceO2::InfoLogger::InfoLogger::Severity::Warning << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
   }
 }
 
