@@ -451,7 +451,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   //decode raw data and save digit hit to digit hit vector, and save hitnumber per chip/hic
   while ((mChipDataBuffer = mDecoder->getNextChipData(mChipsBuffer))) {
     if (mChipDataBuffer) {
-      int stave, ssta, mod, chip;
+      int stave = 0, ssta = 0, mod = 0, chip = 0;
       int hic = 0;
       const auto& pixels = mChipDataBuffer->getData();
       for (auto& pixel : pixels) {
@@ -593,7 +593,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           for (int ichip = 0; ichip < nChipsPerHic[lay]; ichip++) {
             if (GBTLinkInfo->statistics.nTriggers > 0) {
               std::unordered_map<unsigned int, int>::iterator iter;
-              for (iter = mHitPixelID_InStave[istave][ihic][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic][ichip].end(); iter++) {
+              for (iter = mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[lay] / NSubStave[lay]))][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[lay] / NSubStave[lay]))][ichip].end(); iter++) {
                 if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
                   mNoisyPixelNumber[lay][istave]++;
                 }
