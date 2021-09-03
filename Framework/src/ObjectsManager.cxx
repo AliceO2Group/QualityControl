@@ -170,4 +170,16 @@ void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
   mo->addOrUpdateMetadata(gDisplayHintsKey, hints);
 }
 
+void ObjectsManager::setObjectsValidity(ValidityInterval validity)
+{
+  for (auto tobj : *mMonitorObjects) {
+    auto* mo = dynamic_cast<MonitorObject*>(tobj);
+    if (mo) {
+      mo->setValidity(validity);
+    } else {
+      ILOG(Error, Devel) << "ObjectsManager::setObjectsValidity : dynamic_cast returned nullptr." << ENDM;
+    }
+  }
+}
+
 } // namespace o2::quality_control::core

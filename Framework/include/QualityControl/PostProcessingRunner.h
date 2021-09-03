@@ -36,7 +36,7 @@ class DataAllocator;
 namespace o2::quality_control::postprocessing
 {
 
-using MOCPublicationCallback = std::function<void(const o2::quality_control::core::MonitorObjectCollection*, long from, long to)>;
+using MOCPublicationCallback = std::function<void(const o2::quality_control::core::MonitorObjectCollection*)>;
 
 /// \brief A class driving the execution of a post-processing task
 ///
@@ -93,7 +93,7 @@ class PostProcessingRunner
   framework::ServiceRegistry mServices;
   std::shared_ptr<o2::quality_control::core::ObjectsManager> mObjectManager;
   // TODO in a longer run, we should store from/to in the MonitorObject itself and use them.
-  std::function<void(const o2::quality_control::core::MonitorObjectCollection*, long /*from*/, long /*to*/)> mPublicationCallback = nullptr;
+  MOCPublicationCallback mPublicationCallback = nullptr;
 
   std::string mName = "";
   std::string mConfigPath = "";

@@ -28,14 +28,16 @@ QualityObject::QualityObject(
   std::vector<std::string> inputs,
   std::vector<std::string> monitorObjectsNames,
   std::map<std::string, std::string> metadata,
-  int runNumber)
+  int runNumber,
+  ValidityInterval validity)
   : mQuality{ quality },
     mCheckName{ std::move(checkName) },
     mDetectorName{ std::move(detectorName) },
     mPolicyName{ std::move(policyName) },
     mInputs{ std::move(inputs) },
     mMonitorObjectsNames{ std::move(monitorObjectsNames) },
-    mActivity(runNumber, 0, "", "", "qc")
+    mActivity(runNumber, 0, "", "", "qc"),
+    mValidity(validity)
 {
   mQuality.overwriteMetadata(std::move(metadata));
 }
@@ -194,6 +196,21 @@ Activity& QualityObject::getActivity()
 void QualityObject::setActivity(const Activity& activity)
 {
   mActivity = activity;
+}
+
+void QualityObject::setValidity(ValidityInterval validityInterval)
+{
+  mValidity = validityInterval;
+}
+
+void QualityObject::updateValidity(time_type value)
+{
+  mValidity.update(value);
+}
+
+ValidityInterval QualityObject::getValidity() const
+{
+  return mValidity;
 }
 
 } // namespace o2::quality_control::core

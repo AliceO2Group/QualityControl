@@ -33,6 +33,7 @@ MonitorObject::MonitorObject()
     mObject(nullptr),
     mTaskName(""),
     mDetectorName(""),
+    mValidity(gInvalidValidityInterval),
     mIsOwner(true)
 {
   mActivity.mProvenance = "qc";
@@ -45,6 +46,7 @@ MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const
     mTaskName(taskName),
     mDetectorName(detectorName),
     mActivity(runNumber, 0, periodName, passName, provenance),
+    mValidity(gInvalidValidityInterval),
     mIsOwner(true)
 {
 }
@@ -148,6 +150,21 @@ void MonitorObject::updateActivity(int runNumber, const std::string& periodName,
   mActivity.mPeriodName = periodName;
   mActivity.mPassName = passName;
   mActivity.mProvenance = provenance;
+}
+
+void MonitorObject::setValidity(ValidityInterval validityInterval)
+{
+  mValidity = validityInterval;
+}
+
+void MonitorObject::updateValidity(time_type value)
+{
+  mValidity.update(value);
+}
+
+ValidityInterval MonitorObject::getValidity() const
+{
+  return mValidity;
 }
 
 } // namespace o2::quality_control::core

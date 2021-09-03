@@ -96,7 +96,7 @@ inline std::string computePassName(const boost::property_tree::ptree& config)
 {
   std::string passName;
   passName = config.get<std::string>("qc.config.Activity.passName", "");
-  ILOG(Debug, Devel) << "Period Name returned by computePassName : " << passName << ENDM;
+  ILOG(Debug, Devel) << "Pass Name returned by computePassName : " << passName << ENDM;
   return passName;
 }
 
@@ -104,7 +104,7 @@ inline std::string computeProvenance(const boost::property_tree::ptree& config)
 {
   std::string provenance;
   provenance = config.get<std::string>("qc.config.Activity.provenance", "qc");
-  ILOG(Debug, Devel) << "Period Name returned by computeProvenance : " << provenance << ENDM;
+  ILOG(Debug, Devel) << "Data Provenance returned by computeProvenance : " << provenance << ENDM;
   return provenance;
 }
 

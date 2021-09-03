@@ -163,6 +163,11 @@ class ObjectsManager
    */
   void removeAllFromServiceDiscovery();
 
+  /**
+   * \brief Sets the validity interval of all registered objects.
+   */
+  void setObjectsValidity(ValidityInterval);
+
  private:
   std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
   std::string mTaskName;

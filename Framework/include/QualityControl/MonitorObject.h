@@ -27,6 +27,7 @@
 #include <Common/Exceptions.h>
 // QC
 #include "QualityControl/Activity.h"
+#include "QualityControl/ValidityInterval.h"
 
 namespace o2::quality_control::core
 {
@@ -117,6 +118,10 @@ class MonitorObject : public TObject
   const std::string& getDescription() const;
   void setDescription(const std::string& description);
 
+  void setValidity(ValidityInterval);
+  void updateValidity(time_type value);
+  ValidityInterval getValidity() const;
+
  private:
   TObject* mObject;
   std::string mTaskName;
@@ -124,13 +129,14 @@ class MonitorObject : public TObject
   std::map<std::string, std::string> mUserMetadata;
   std::string mDescription;
   Activity mActivity;
+  ValidityInterval mValidity;
 
   // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the
   // object.
-  // TODO : maybe we should always be the owner ?
+  // TODO : maybe we should always be the owner ? we can't, snapshot/adopt would delete contained objects
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 9);
+  ClassDefOverride(MonitorObject, 10);
 };
 
 } // namespace o2::quality_control::core

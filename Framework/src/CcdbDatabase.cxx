@@ -146,7 +146,7 @@ void CcdbDatabase::storeAny(const void* obj, std::type_info const& typeInfo, std
 }
 
 // Monitor object
-void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo, long from, long to)
+void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::MonitorObject> mo)
 {
   if (mo->getName().length() == 0 || mo->getTaskName().length() == 0) {
     BOOST_THROW_EXCEPTION(DatabaseException()
@@ -180,18 +180,11 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
 
   // path attributes
   string path = mo->getPath();
-  if (from == -1) {
-    from = getCurrentTimestamp();
-  }
-  if (to == -1) {
-    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
-  }
-
   ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
-  ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
+  ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, mo->getValidity().getMin(), mo->getValidity().getMax());
 }
 
-void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo, long from, long to)
+void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::QualityObject> qo)
 {
   // metadata
   map<string, string> metadata;
@@ -212,15 +205,8 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
 
   // other attributes
   string path = qo->getPath();
-  if (from == -1) {
-    from = getCurrentTimestamp();
-  }
-  if (to == -1) {
-    to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
-  }
-
   ILOG(Debug, Support) << "Storing quality object " << path << " (" << qo->getName() << ")" << ENDM;
-  ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, from, to);
+  ccdbApi.storeAsTFileAny<QualityObject>(qo.get(), path, metadata, qo->getValidity().getMin(), qo->getValidity().getMax());
 }
 
 TObject* CcdbDatabase::retrieveTObject(std::string path, std::map<std::string, std::string> const& metadata, long timestamp, std::map<std::string, std::string>* headers)

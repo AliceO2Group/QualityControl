@@ -128,4 +128,19 @@ BOOST_AUTO_TEST_CASE(path)
   BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
 }
 
+BOOST_AUTO_TEST_CASE(validity)
+{
+  o2::quality_control::core::MonitorObject obj;
+
+  BOOST_CHECK(obj.getValidity() == gInvalidValidityInterval);
+
+  obj.updateValidity(1234);
+  BOOST_CHECK(obj.getValidity() == o2::quality_control::core::ValidityInterval(1234, 1234));
+  obj.updateValidity(9000);
+  BOOST_CHECK(obj.getValidity() == o2::quality_control::core::ValidityInterval(1234, 9000));
+
+  obj.setValidity({ 3, 4 });
+  BOOST_CHECK(obj.getValidity() == o2::quality_control::core::ValidityInterval(3, 4));
+}
+
 } // namespace o2::quality_control::core

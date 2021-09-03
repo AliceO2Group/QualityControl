@@ -21,6 +21,7 @@
 // QC
 #include "QualityControl/Quality.h"
 #include "QualityControl/Activity.h"
+#include "QualityControl/ValidityInterval.h"
 
 namespace o2::quality_control::core
 {
@@ -42,7 +43,8 @@ class QualityObject : public TObject
     std::vector<std::string> inputs = {},
     std::vector<std::string> monitorObjectsNames = {},
     std::map<std::string, std::string> metadata = {},
-    int runNumber = 0);
+    int runNumber = 0,
+    ValidityInterval validity = gInvalidValidityInterval);
 
   /// Destructor
   ~QualityObject() override;
@@ -130,6 +132,10 @@ class QualityObject : public TObject
   void setActivity(const Activity& activity);
   void updateActivity(int runNumber = 0, const std::string& periodName = "", const std::string& passName = "", const std::string& provenance = "");
 
+  void setValidity(ValidityInterval);
+  void updateValidity(time_type value);
+  ValidityInterval getValidity() const;
+
  private:
   Quality mQuality;
   std::string mCheckName;
@@ -138,8 +144,9 @@ class QualityObject : public TObject
   std::vector<std::string> mInputs;
   std::vector<std::string> mMonitorObjectsNames;
   Activity mActivity;
+  ValidityInterval mValidity;
 
-  ClassDefOverride(QualityObject, 5);
+  ClassDefOverride(QualityObject, 6);
 };
 
 using QualityObjectsType = std::vector<std::shared_ptr<QualityObject>>;

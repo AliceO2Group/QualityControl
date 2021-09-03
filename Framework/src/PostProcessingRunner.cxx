@@ -184,14 +184,15 @@ void PostProcessingRunner::doUpdate(Trigger trigger)
 {
   ILOG(Info, Support) << "Updating the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->update(trigger, mServices);
-  mPublicationCallback(mObjectManager->getNonOwningArray(), trigger.timestamp, trigger.timestamp + objectValidity);
+  mObjectManager->setObjectsValidity({ trigger.timestamp, trigger.timestamp + objectValidity });
+  mPublicationCallback(mObjectManager->getNonOwningArray());
 }
 
 void PostProcessingRunner::doFinalize(Trigger trigger)
 {
   ILOG(Info, Support) << "Finalizing the user task due to trigger '" << trigger << "'" << ENDM;
   mTask->finalize(trigger, mServices);
-  mPublicationCallback(mObjectManager->getNonOwningArray(), trigger.timestamp, trigger.timestamp + objectValidity);
+  mObjectManager->setObjectsValidity({ trigger.timestamp, trigger.timestamp + objectValidity });
   mTaskState = TaskState::Finished;
 }
 const std::string& PostProcessingRunner::getName()
@@ -201,7 +202,7 @@ const std::string& PostProcessingRunner::getName()
 
 MOCPublicationCallback publishToDPL(framework::DataAllocator& allocator, std::string outputBinding)
 {
-  return [&allocator = allocator, outputBinding = std::move(outputBinding)](const MonitorObjectCollection* moc, long, long) {
+  return [&allocator = allocator, outputBinding = std::move(outputBinding)](const MonitorObjectCollection* moc) {
     // TODO pass timestamps to objects, so they are later stored correctly.
     allocator.snapshot(framework::OutputRef{ outputBinding }, *moc);
   };
@@ -209,11 +210,11 @@ MOCPublicationCallback publishToDPL(framework::DataAllocator& allocator, std::st
 
 MOCPublicationCallback publishToRepository(o2::quality_control::repository::DatabaseInterface& repository)
 {
-  return [&](const MonitorObjectCollection* collection, long from, long to) {
+  return [&](const MonitorObjectCollection* collection) {
     for (const TObject* mo : *collection) {
       // We have to copy the object so we can pass a shared_ptr.
       // This is not ideal, but MySQL interface requires shared ptrs to queue the objects.
-      repository.storeMO(std::shared_ptr<MonitorObject>(dynamic_cast<MonitorObject*>(mo->Clone())), from, to);
+      repository.storeMO(std::shared_ptr<MonitorObject>(dynamic_cast<MonitorObject*>(mo->Clone())));
     }
   };
 }

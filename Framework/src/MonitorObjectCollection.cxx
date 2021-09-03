@@ -40,6 +40,10 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
       if (otherMO && targetMO) {
         // That might be another collection or a concrete object to be merged, we walk on the collection recursively.
         algorithm::merge(targetMO->getObject(), otherMO->getObject());
+        // we extend the validity interval to the largest of the two objects.
+        auto otherValidity = otherMO->getValidity();
+        targetMO->updateValidity(otherValidity.getMin());
+        targetMO->updateValidity(otherValidity.getMax());
       } else {
         throw std::runtime_error("The target object or the other object could not be casted to MonitorObject.");
       }

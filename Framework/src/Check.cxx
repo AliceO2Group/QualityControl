@@ -224,10 +224,25 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
       mCheckConfig.policyType,
       mInputsStringified,
       monitorObjectsNames));
+    qualityObjects.back()->setValidity(computeAggregatedValidity(moMapToCheck));
+
     beautify(moMapToCheck, quality);
   }
 
   return qualityObjects;
+}
+
+ValidityInterval Check::computeAggregatedValidity(const std::map<std::string, std::shared_ptr<MonitorObject>>& moMap)
+{
+  ValidityInterval aggregatedValidity = gInvalidValidityInterval;
+  for (const auto& [name, mo] : moMap) {
+    (void)name;
+
+    auto moValidity = mo->getValidity();
+    aggregatedValidity.update(moValidity.getMin());
+    aggregatedValidity.update(moValidity.getMax());
+  }
+  return aggregatedValidity;
 }
 
 void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality)

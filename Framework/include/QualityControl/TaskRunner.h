@@ -30,6 +30,7 @@
 // QC
 #include "QualityControl/TaskRunnerConfig.h"
 #include "QualityControl/TaskInterface.h"
+#include "QualityControl/ValidityInterval.h"
 
 namespace o2::configuration
 {
@@ -39,6 +40,11 @@ class ConfigurationInterface;
 namespace o2::monitoring
 {
 class Monitoring;
+}
+
+namespace o2::framework
+{
+class InputRecord;
 }
 
 namespace o2::quality_control::core
@@ -116,6 +122,8 @@ class TaskRunner : public framework::Task
   int publish(framework::DataAllocator& outputs);
   void publishCycleStats();
   void saveToFile();
+  void updateValidityInterval(framework::InputRecord& inputs);
+  void invalidateElapsedInterval();
 
  private:
   TaskRunnerConfig mTaskConfig;
@@ -129,6 +137,7 @@ class TaskRunner : public framework::Task
   bool mCycleOn = false;
   bool mNoMoreCycles = false;
   int mCycleNumber = 0;
+  ValidityInterval mValidity = gInvalidValidityInterval;
 
   // stats
   int mNumberMessagesReceivedInCycle = 0;

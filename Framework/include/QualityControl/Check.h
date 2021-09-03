@@ -27,6 +27,7 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckConfig.h"
+#include "QualityControl/ValidityInterval.h"
 
 namespace o2::quality_control::checker
 {
@@ -85,6 +86,7 @@ class Check
   void initConfig(std::string checkName);
 
   void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality);
+  static ValidityInterval computeAggregatedValidity(const std::map<std::string, std::shared_ptr<MonitorObject>>& moMap);
 
   std::string mConfigurationSource;
   o2::quality_control::core::QcInfoLogger& mLogger;

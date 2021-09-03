@@ -114,6 +114,36 @@ void TaskRunner::init(InitContext& iCtx)
   mCycleNumber = 0;
 }
 
+void TaskRunner::updateValidityInterval(InputRecord& /*inputs*/)
+{
+
+  // todo: this should be the proper way when TF timestamp can be extracted correctly.
+  //  for now, we use a workaround, to keep post-processing working.
+  /*
+  // Inputs are matched based on their TF ID, thus they should have the same firstTForbit.
+  // Checking one is enough.
+  auto ref = inputs.getFirstValid();
+  if (ref.header != nullptr) {
+    const auto* dph = get<DataProcessingHeader*>(ref.header);
+    if (dph != nullptr) {
+      auto msSinceEpoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+      mValidity.update(msSinceEpoch);
+    }
+  }
+  */
+  auto msSinceEpoch = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+  mValidity.update(msSinceEpoch); // fixme: CCDB still prefers older objects which had bigger timespan.
+}
+
+void TaskRunner::invalidateElapsedInterval()
+{
+  // If there was no data since the SOR, we keep the interval completely invalid.
+  // Otherwise, we cut the validity to the last message.
+  if (mValidity.isValid()) {
+    mValidity.setMin(mValidity.getMax());
+  }
+}
+
 void TaskRunner::run(ProcessingContext& pCtx)
 {
   if (mNoMoreCycles) {
@@ -129,6 +159,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
   auto [dataReady, timerReady] = validateInputs(pCtx.inputs());
 
   if (dataReady) {
+    updateValidityInterval(pCtx.inputs());
     mTask->monitorData(pCtx);
     updateMonitoringStats(pCtx);
   }
@@ -136,6 +167,7 @@ void TaskRunner::run(ProcessingContext& pCtx)
   if (timerReady) {
     finishCycle(pCtx.outputs());
     if (mTaskConfig.resetAfterCycles > 0 && (mCycleNumber % mTaskConfig.resetAfterCycles == 0)) {
+      invalidateElapsedInterval();
       mTask->reset();
     }
     if (mTaskConfig.maxNumberCycles < 0 || mCycleNumber < mTaskConfig.maxNumberCycles) {
@@ -317,6 +349,7 @@ void TaskRunner::startOfActivity()
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();
+  mValidity = gInvalidValidityInterval; // todo: if we get the SOR time, we could use it here.
 }
 
 void TaskRunner::endOfActivity()
@@ -407,12 +440,14 @@ int TaskRunner::publish(DataAllocator& outputs)
   ILOG(Info, Support) << "Publishing " << mObjectsManager->getNumberPublishedObjects() << " MonitorObjects" << ENDM;
   AliceO2::Common::Timer publicationDurationTimer;
 
-  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mTaskConfig.moSpec);
+  // We update the objects validity only before publication to avoid unnecessary workload at arrival of each timeslice.
+  mObjectsManager->setObjectsValidity(mValidity);
   // getNonOwningArray creates a TObjArray containing the monitoring objects, but not
   // owning them. The array is created by new and must be cleaned up by the caller
   std::unique_ptr<MonitorObjectCollection> array(mObjectsManager->getNonOwningArray());
   int objectsPublished = array->GetEntries();
 
+  auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(mTaskConfig.moSpec);
   outputs.snapshot(
     Output{ concreteOutput.origin,
             concreteOutput.description,
