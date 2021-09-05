@@ -698,25 +698,6 @@ void ITSFhrTask::getParameters()
 
 void ITSFhrTask::endOfCycle()
 {
-  std::ifstream runNumberFile("infiles/RunNumber.dat"); //catching ITS run number in commissioning
-  if (mRunNumber != "000000") {
-    ILOG(Info) << "runNumber : " << mRunNumber << ENDM;
-    mInfoCanvasComm->SetTitle(Form("run%s", mRunNumber.c_str()));
-    getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mErrorPlots->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mErrorVsFeeid->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mTriggerVsFeeid->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mTriggerPlots->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mInfoCanvasComm->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mChipStaveOccupancy[mLayer]->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mOccupancyPlot[mLayer]->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mChipStaveEventHitCheck[mLayer]->GetName(), "Run", mRunNumber);
-    for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-      if (mStaveHitmap[mLayer][istave]) {
-        getObjectsManager()->addMetadata(mStaveHitmap[mLayer][istave]->GetName(), "Run", mRunNumber);
-      }
-    }
-  }
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 

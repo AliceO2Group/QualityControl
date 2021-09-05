@@ -226,9 +226,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSFeeTask::endOfCycle()
 {
-  getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", mRunNumber);
-  getObjectsManager()->addMetadata(mTriggerVsFeeId->GetName(), "Run", mRunNumber);
-  getObjectsManager()->addMetadata(mTrigger->GetName(), "Run", mRunNumber);
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 
