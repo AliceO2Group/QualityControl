@@ -27,6 +27,7 @@
 #include <TDatime.h>
 #include <TGraphErrors.h>
 #include <TPoint.h>
+#include <numeric>
 
 using namespace o2::quality_control;
 using namespace o2::quality_control::core;
@@ -69,7 +70,8 @@ void TrendingTask::finalize(Trigger, framework::ServiceRegistry&)
 
 void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface& qcdb)
 {
-  mTime = timestamp / 1000; // ROOT expects seconds since epoch
+//  mTime = timestamp / 1000; // ROOT expects seconds since epoch
+  std::vector<uint64_t> objTimestamps;
   // todo get run number when it is available. consider putting it inside monitor object's metadata (this might be not
   //  enough if we trend across runs).
   mMetaData.runNumber = -1;
@@ -82,18 +84,34 @@ void TrendingTask::trendValues(uint64_t timestamp, repository::DatabaseInterface
       TObject* obj = mo ? mo->getObject() : nullptr;
       if (obj) {
         mReductors[dataSource.name]->update(obj);
+        objTimestamps.push_back(mo->getValidity().getMax());
       }
     } else if (dataSource.type == "repository-quality") {
       auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name, timestamp);
       if (qo) {
         mReductors[dataSource.name]->update(qo.get());
+        objTimestamps.push_back(qo->getValidity().getMax());
       }
     } else {
       ILOG(Error, Support) << "Unknown type of data source '" << dataSource.type << "'." << ENDM;
     }
   }
 
-  mTrend->Fill();
+  if (objTimestamps.empty()){
+    ILOG(Warning, Support) << "No objects could be read in this iteration." << ENDM;
+  } else {
+    if (std::all_of(objTimestamps.begin(), objTimestamps.end(), [first = objTimestamps[0]](auto other) { return first == other; })) {
+      mTime = objTimestamps[0] / 1000;
+    } else {
+      ILOG(Warning, Support) << "Trended objects have a different validity interval end. A mean value will be calculated." << ENDM;
+      for (auto t : objTimestamps) {
+        ILOG(Info) << t << ENDM;
+      }
+      mTime = std::accumulate(objTimestamps.begin(), objTimestamps.end(), 0ull) / objTimestamps.size() / 1000;
+    }
+    mTrend->Fill();
+  }
+
 }
 
 void TrendingTask::generatePlots()

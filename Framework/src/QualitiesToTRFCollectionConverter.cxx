@@ -104,7 +104,11 @@ void QualitiesToTRFCollectionConverter::operator()(const QualityObject& newQO)
   // the leftovers are TRFs which are no longer valid.
   for (auto& outdatedTRF : mCurrentTRFs) {
     outdatedTRF.setEnd(std::min(outdatedTRF.getEnd(), mCurrentStartTime));
-    mConverted->insert(outdatedTRF);
+    // if there is a zero length interval, then a new TRF came which should completely overwrite the outdated one.
+    // no need to store it.
+    if (!outdatedTRF.getInterval().isZeroLength()) {
+      mConverted->insert(outdatedTRF);
+    }
   }
   mCurrentTRFs.swap(newTRFs);
 }

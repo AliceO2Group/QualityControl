@@ -76,6 +76,7 @@ class CcdbDatabase : public DatabaseInterface
   // retrieval - general
   std::string retrieveJson(std::string path, long timestamp, const std::map<std::string, std::string>& metadata) override;
   TObject* retrieveTObject(std::string path, const std::map<std::string, std::string>& metadata, long timestamp = -1, std::map<std::string, std::string>* headers = nullptr) override;
+  std::map<std::string, std::string> retrieveHeaders(std::string const& path, std::map<std::string, std::string> const& metadata = {}, long timestamp = -1);
 
   void disconnect() override;
   void prepareTaskDataContainer(std::string taskName) override;
@@ -94,9 +95,9 @@ class CcdbDatabase : public DatabaseInterface
   /**
    * \brief Returns a vector of all 'valid from' timestamps for an object.
    * \path Path on an object.
-   * \return A vector of all 'valid from' timestamps for an object in non-descending order.
+   * \return A (sorted) set of all 'valid from' timestamps for an object in ascending order.
    */
-  std::vector<uint64_t> getTimestampsForObject(std::string path);
+  std::set<uint64_t> getTimestampsForObject(std::string path);
 
  private:
   /**

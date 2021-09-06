@@ -84,6 +84,8 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
   const std::string detectorCode = "TST";
   const std::string taskName = "testTriggersNewObject";
   const std::string objectName = "test_object" + pid;
+  auto currentTimestamp = static_cast<time_type>(CcdbDatabase::getCurrentTimestamp());
+  ValidityInterval validity = { currentTimestamp, currentTimestamp + 123456};
 
   TH1I* obj = new TH1I(objectName.c_str(), objectName.c_str(), 10, 0, 10.0);
   obj->Fill(4);
@@ -100,8 +102,8 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
   // Send the object
   std::shared_ptr<DatabaseInterface> repository = DatabaseFactory::create("CCDB");
   repository->connect(CCDB_ENDPOINT, "", "", "");
-  auto currentTimestamp = CcdbDatabase::getCurrentTimestamp();
-  repository->storeMO(mo, currentTimestamp);
+  mo->setValidity(validity);
+  repository->storeMO(mo);
 
   // Check after sending
   BOOST_CHECK_EQUAL(newObjectTrigger(), Trigger(TriggerType::NewObject, currentTimestamp));
@@ -110,10 +112,35 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
 
   // Update the object
   obj->Fill(10);
-  repository->storeMO(mo, currentTimestamp);
-
+  repository->storeMO(mo);
   // Check after the update
   BOOST_CHECK_EQUAL(newObjectTrigger(), Trigger(TriggerType::NewObject, currentTimestamp));
+  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+
+  // Update the object and change validity (the same start, but different end)
+  obj->Fill(10);
+  mo->updateValidity(currentTimestamp + 234567);
+  repository->storeMO(mo);
+  // Check after the update
+  BOOST_CHECK_EQUAL(newObjectTrigger(), Trigger(TriggerType::NewObject, currentTimestamp));
+  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+
+  // Update the object and change validity (later start)
+  obj->Fill(10);
+  mo->setValidity({currentTimestamp + 123, currentTimestamp + 234567});
+  repository->storeMO(mo);
+  // Check after the update
+  BOOST_CHECK_EQUAL(newObjectTrigger(), Trigger(TriggerType::NewObject, currentTimestamp + 123));
+  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+  BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
+
+  // Update the object and change validity (much later start, further than current validity)
+  obj->Fill(10);
+  mo->setValidity({currentTimestamp + 12345678, currentTimestamp + 23456789});
+  repository->storeMO(mo);
+  // Check after the update
   BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
   BOOST_CHECK_EQUAL(newObjectTrigger(), TriggerType::No);
 

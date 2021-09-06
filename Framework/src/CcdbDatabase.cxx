@@ -269,6 +269,7 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
     mo->addMetadata(headers);
   }
   mo->setIsOwner(true);
+  mo->setValidity({std::stoull(headers["Valid-From"]), std::stoull(headers["Valid-Until"])});
   return mo;
 }
 
@@ -284,6 +285,7 @@ std::shared_ptr<QualityObject> CcdbDatabase::retrieveQO(std::string qoPath, long
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     qo->addMetadata(headers);
   }
+  qo->setValidity({std::stoull(headers["Valid-From"]), std::stoull(headers["Valid-Until"])});
   return qo;
 }
 
@@ -341,6 +343,12 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
   return strdup(buffer.GetString());
 }
 
+std::map<std::string, std::string> CcdbDatabase::retrieveHeaders(std::string const& path, std::map<std::string, std::string> const& metadata, long timestamp)
+{
+  return ccdbApi.retrieveHeaders(path, metadata, timestamp);
+}
+
+
 void CcdbDatabase::disconnect()
 {
   // NOOP for CCDB
@@ -393,7 +401,7 @@ std::vector<std::string> CcdbDatabase::getListing(std::string subpath)
   return result;
 }
 
-std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(std::string path)
+std::set<uint64_t> CcdbDatabase::getTimestampsForObject(std::string path)
 {
   std::stringstream listingAsStringStream{ getListingAsString(path, "application/json") };
   //  std::cout << "listingAsString: " << listingAsStringStream.str() << std::endl;
@@ -401,18 +409,16 @@ std::vector<uint64_t> CcdbDatabase::getTimestampsForObject(std::string path)
   boost::property_tree::ptree listingAsTree;
   boost::property_tree::read_json(listingAsStringStream, listingAsTree);
 
-  std::vector<uint64_t> timestamps;
+  std::set<uint64_t> timestamps;
   const auto& objects = listingAsTree.get_child("objects");
-  timestamps.reserve(objects.size());
 
   // As for today, we receive objects in the order of the newest to the oldest.
-  // We prefer the other order here.
+  // We prefer the other order here and we hope to reduce the performance overhead
+  // by emplacing them in the right order. By using std::set, we also get rid of duplicates.
   for (auto rit = objects.rbegin(); rit != objects.rend(); ++rit) {
-    timestamps.emplace_back(rit->second.get<uint64_t>("Valid-From"));
+    timestamps.emplace(rit->second.get<uint64_t>("Valid-From"));
   }
 
-  // we make sure it is sorted. If it is already, it shouldn't cost much.
-  std::sort(timestamps.begin(), timestamps.end());
   return timestamps;
 }
 

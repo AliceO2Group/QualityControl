@@ -296,3 +296,33 @@ BOOST_AUTO_TEST_CASE(test_TheSameReasonsButSeparated)
   BOOST_CHECK_EQUAL(trf3.getComment(), "Bug in reco");
   BOOST_CHECK_EQUAL(trf3.getSource(), "qc/DET/QO/xyzCheck");
 }
+
+
+BOOST_AUTO_TEST_CASE(test_CommonValidFrom)
+{
+  // the last should overwrite the previous no matter what.
+  std::vector<QualityObject> qos{
+    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "5" }, { "Valid-Until", "25" } } },
+    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "5" }, { "Valid-Until", "40" } } },
+    { Quality::Good, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "5" }, { "Valid-Until", "50" } } },
+    { Quality::Bad, "xyzCheck", "DET", {}, {}, {}, { { "Valid-From", "5" }, { "Valid-Until", "100" } } }
+  };
+  qos[1].addReason(FlagReasonFactory::LimitedAcceptance(), "sector X can't see those particle thangs");
+  qos[3].addReason(FlagReasonFactory::ProcessingError(), "Bug in reco");
+
+  QualitiesToTRFCollectionConverter converter("test1", "DET", 5, 100, "qc/DET/QO/xyzCheck");
+  for (const auto& qo : qos) {
+    converter(qo);
+  }
+  auto trfc = converter.getResult();
+
+  BOOST_REQUIRE_EQUAL(trfc->size(), 1);
+
+  auto it = trfc->begin();
+  auto& trf1 = *it;
+  BOOST_CHECK_EQUAL(trf1.getStart(), 5);
+  BOOST_CHECK_EQUAL(trf1.getEnd(), 100);
+  BOOST_CHECK_EQUAL(trf1.getFlag(), FlagReasonFactory::ProcessingError());
+  BOOST_CHECK_EQUAL(trf1.getComment(), "Bug in reco");
+  BOOST_CHECK_EQUAL(trf1.getSource(), "qc/DET/QO/xyzCheck");
+}

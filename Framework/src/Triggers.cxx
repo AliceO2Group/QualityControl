@@ -17,13 +17,15 @@
 #include "QualityControl/Triggers.h"
 #include "QualityControl/QcInfoLogger.h"
 
-#include <CCDB/CcdbApi.h>
+#include <QualityControl/CcdbDatabase.h>
 #include <Common/Timer.h>
 #include <chrono>
 #include <ostream>
 
 using namespace std::chrono;
 using namespace o2::quality_control::core;
+using namespace o2::quality_control::repository;
+
 namespace o2::quality_control::postprocessing
 {
 
@@ -142,36 +144,48 @@ TriggerFcn NewObject(std::string databaseUrl, std::string objectPath)
   constexpr auto timestampKey = "Valid-From";
 
   // We support only CCDB here.
-  auto db = std::make_shared<o2::ccdb::CcdbApi>();
-  db->init(databaseUrl);
-  if (!db->isHostReachable()) {
-    ILOG(Error, Support) << "CCDB at URL '" << databaseUrl << "' is not reachable." << ENDM;
-  }
+  auto db = std::make_shared<CcdbDatabase>();
+  db->connect(databaseUrl, "", "", "");
 
   // We rely on changing MD5 - if the object has changed, it should have a different check sum.
   // If someone reuploaded an old object, it should not have an influence.
   std::string lastMD5;
-  if (auto headers = db->retrieveHeaders(objectPath, {}); headers.count(md5key)) {
+  uint64_t lastTimestamp = db->getCurrentTimestamp();
+  if (auto headers = db->retrieveHeaders(objectPath, {}, lastTimestamp); headers.count(md5key)) {
     lastMD5 = headers[md5key];
+    lastTimestamp = std::stoull(headers[timestampKey]);
   } else {
     // We don't make a fuss over it, because we might be just waiting for the first version of such object.
     // It should not happen often though, so having a warning makes sense.
-    ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
+    ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably it is missing for timestamp '" << lastTimestamp << "'." << ENDM;
   }
 
-  return [db, databaseUrl = std::move(databaseUrl), objectPath = std::move(objectPath), lastMD5]() mutable -> Trigger {
-    if (auto headers = db->retrieveHeaders(objectPath, {}); headers.count(md5key)) {
+  return [db, databaseUrl = std::move(databaseUrl), objectPath = std::move(objectPath), lastMD5, lastTimestamp]() mutable -> Trigger {
+
+    auto headers = db->retrieveHeaders(objectPath, {}, lastTimestamp);
+    // see if there are any (new) objects for the last timestamp
+    if (headers.count(md5key)) {
       auto newMD5 = headers[md5key];
       if (lastMD5 != newMD5) {
         lastMD5 = newMD5;
-        return { TriggerType::NewObject, std::stoull(headers[timestampKey]) };
+        lastTimestamp = std::stoull(headers[timestampKey]);
+        return { TriggerType::NewObject, lastTimestamp };
       }
-    } else {
-      // We don't make a fuss over it, because we might be just waiting for the first version of such object.
-      // It should not happen often though, so having a warning makes sense.
-      ILOG(Warning, Support) << "No MD5 of the file '" << objectPath << "' in the db '" << databaseUrl << "', probably the file is missing." << ENDM;
     }
 
+    // look for objects which are more in the future, but do not start later than now
+    auto timestamps = db->getTimestampsForObject(objectPath);
+    auto nextTimestamp = timestamps.upper_bound(lastTimestamp);
+    auto now = db->getCurrentTimestamp();
+    // todo use c++20 to compare signed and unsigned https://en.cppreference.com/w/cpp/utility/intcmp
+    if (nextTimestamp != timestamps.end() && now > static_cast<long>(*nextTimestamp)) {
+      headers = db->retrieveHeaders(objectPath, {}, *nextTimestamp);
+      lastMD5 = headers[md5key];
+      lastTimestamp = std::stoull(headers[timestampKey]);
+      return { TriggerType::NewObject, lastTimestamp };
+    }
+
+    ILOG(Debug, Support) << "No new objects '" << objectPath << "' found in the db '" << databaseUrl << "' between timestamps " << lastTimestamp << " and " << now << ENDM;
     return TriggerType::No;
   };
 }
