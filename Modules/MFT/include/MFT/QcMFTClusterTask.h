@@ -65,7 +65,7 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   int mTransID[936] = { 0 };
   int mLadder[936] = { 0 };
 
-  // internal functions
+  // internal functions 
   void getChipMapData();
   void getNameOfMap(TString& folderName, TString& histogramName, int iChipIndex);
 };
