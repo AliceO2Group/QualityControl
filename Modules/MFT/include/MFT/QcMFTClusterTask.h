@@ -19,6 +19,8 @@
 
 #ifndef QC_MFT_CLUSTER_TASK_H
 #define QC_MFT_CLUSTER_TASK_H
+#include <TH1F.h>
+#include <TH2F.h>
 
 // Quality Control
 #include "QualityControl/TaskInterface.h"
@@ -50,6 +52,22 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
  private:
   std::unique_ptr<TH1F> mClusterSensorIndex = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
+
+  std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
+  std::vector<std::unique_ptr<TH1F>> mClusterPatternSensorMap;
+
+  // needed to construct the name and path of some histograms
+  int mHalf[936] = { 0 };
+  int mDisk[936] = { 0 };
+  int mFace[936] = { 0 };
+  int mZone[936] = { 0 };
+  int mSensor[936] = { 0 };
+  int mTransID[936] = { 0 };
+  int mLadder[936] = { 0 };
+
+  // internal functions
+  void getChipMapData();
+  void getNameOfMap(TString& folderName, TString& histogramName, int iChipIndex);
 };
 
 } // namespace o2::quality_control_modules::mft

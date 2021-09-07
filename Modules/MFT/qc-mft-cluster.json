@@ -16,7 +16,7 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "alio2-cr1-flp182-ib:8500"
+        "url": "aliecs.cern.ch:8500"
       },
       "conditionDB": {
         "url": "qcdb.cern.ch:8083"
@@ -43,7 +43,7 @@
     },
     "checks": {
       "QcMFTClusterCheck": {
-        "active": "true",
+        "active": "false",
         "dataSource": [{
           "type": "Task",
           "name": "QcMFTClusterTask",
