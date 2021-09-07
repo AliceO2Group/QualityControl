@@ -22,7 +22,7 @@
 // QC
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/CheckConfig.h"
-#include "QualityObject.h"
+#include "QualityControl/UpdatePolicyType.h"
 // config
 #include <boost/property_tree/ptree_fwd.hpp>
 
@@ -36,6 +36,7 @@ namespace o2::quality_control::checker
 
 class AggregatorInterface;
 
+// todo: it can be replaced DataSourceType
 enum AggregatorSourceType { check,
                             aggregator };
 
@@ -73,7 +74,7 @@ class Aggregator
   o2::quality_control::core::QualityObjectsType aggregate(core::QualityObjectsMapType& qoMap);
 
   const std::string& getName() const;
-  std::string getPolicyName() const;
+  UpdatePolicyType getUpdatePolicyType() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;
   std::vector<AggregatorSource> getSources();

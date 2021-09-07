@@ -30,9 +30,9 @@ namespace o2::quality_control::checker
 
 using namespace o2::framework;
 
-DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::string configurationSource, std::vector<std::string> storeVector)
+DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig, std::vector<CheckConfig> checkConfigs, std::vector<std::string> storeVector)
 {
-  CheckRunner qcCheckRunner{ checks, configurationSource };
+  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), std::move(checkConfigs) };
   qcCheckRunner.setTaskStoreSet({ storeVector.begin(), storeVector.end() });
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
@@ -44,9 +44,9 @@ DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::str
   return newCheckRunner;
 }
 
-DataProcessorSpec CheckRunnerFactory::createSinkDevice(o2::framework::InputSpec input, std::string configurationSource)
+DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRunnerConfig, o2::framework::InputSpec input)
 {
-  CheckRunner qcCheckRunner{ input, configurationSource };
+  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), input };
   qcCheckRunner.setTaskStoreSet({ DataSpecUtils::label(input) });
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
@@ -68,6 +68,21 @@ void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::Completi
   auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 
   policies.emplace_back("checkerCompletionPolicy", matcher, callback);
+}
+
+CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec)
+{
+  return {
+    commonSpec.database,
+    commonSpec.consulUrl,
+    commonSpec.monitoringUrl,
+    commonSpec.infologgerFilterDiscardDebug,
+    commonSpec.infologgerDiscardLevel,
+    commonSpec.activityNumber,
+    commonSpec.activityPeriodName,
+    commonSpec.activityPassName,
+    commonSpec.activityProvenance
+  };
 }
 
 } // namespace o2::quality_control::checker

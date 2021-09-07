@@ -21,7 +21,6 @@
 
 // O2
 #include <Common/Exceptions.h>
-#include <Configuration/ConfigurationFactory.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <DataSampling/DataSampling.h>
 
@@ -29,13 +28,8 @@
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
-#include <Framework/DataDescriptorQueryBuilder.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpan.h>
-#include <Framework/RawDeviceService.h>
-
-#include <fairlogger/Logger.h>
-#include <FairMQDevice.h>
 
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskFactory.h"
@@ -213,7 +207,7 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 
 void TaskRunner::start(const ServiceRegistry& services)
 {
-  mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.defaultRunNumber);
+  mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackRunNumber);
 
   try {
     startOfActivity();

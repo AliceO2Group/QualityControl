@@ -32,6 +32,8 @@ namespace o2::quality_control
 namespace core
 {
 
+struct InfrastructureSpec;
+
 /// \brief A factory class which can generate QC topologies given a configuration file.
 ///
 /// A factory class which can generate QC topologies given a configuration file (example in Framework/basic.json and
@@ -199,8 +201,8 @@ class InfrastructureGenerator
                               std::string mergingMode,
                               size_t resetAfterCycles,
                               std::string monitoringUrl);
-  static vector<framework::OutputSpec> generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource);
-  static void generateAggregator(framework::WorkflowSpec& workflow, std::string configurationSource, vector<framework::OutputSpec>& checkRunnerOutputs);
+  static std::vector<framework::OutputSpec> generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
+  static void generateAggregator(framework::WorkflowSpec& workflow, std::string configurationSource, std::vector<framework::OutputSpec>& checkRunnerOutputs);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, std::string configurationSource);
 };
 

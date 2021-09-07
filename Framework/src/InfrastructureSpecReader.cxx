@@ -15,6 +15,8 @@
 
 #include "QualityControl/InfrastructureSpecReader.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "QualityControl/TaskRunner.h"
+#include "QualityControl/PostProcessingDevice.h"
 
 #include <DataSampling/DataSampling.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
@@ -22,6 +24,8 @@
 
 using namespace o2::utilities;
 using namespace o2::framework;
+using namespace o2::quality_control::postprocessing;
+using namespace o2::quality_control::checker;
 
 namespace o2::quality_control::core
 {
@@ -35,11 +39,33 @@ InfrastructureSpec InfrastructureSpecReader::readInfrastructureSpec(const boost:
   } else {
     ILOG(Error) << "The \"config\" section in the provided QC config file is missing." << ENDM;
   }
+  // fixme: code duplication
   if (qcTree.find("tasks") != qcTree.not_found()) {
     const auto& tasksTree = qcTree.get_child("tasks");
     spec.tasks.reserve(tasksTree.size());
-    for (const auto& [taskName, taskConfig] : tasksTree) {
-      spec.tasks.push_back(readTaskSpec(taskName, taskConfig, wholeTree));
+    for (const auto& [taskName, taskTree] : tasksTree) {
+      spec.tasks.push_back(readTaskSpec(taskName, taskTree, wholeTree));
+    }
+  }
+  if (qcTree.find("checks") != qcTree.not_found()) {
+    const auto& checksTree = qcTree.get_child("checks");
+    spec.checks.reserve(checksTree.size());
+    for (const auto& [checkName, checkTree] : checksTree) {
+      spec.checks.push_back(readCheckSpec(checkName, checkTree, wholeTree));
+    }
+  }
+  if (qcTree.find("postprocessing") != qcTree.not_found()) {
+    const auto& ppTree = qcTree.get_child("postprocessing");
+    spec.postProcessingTasks.reserve(ppTree.size());
+    for (const auto& [ppTaskName, ppTaskTree] : ppTree) {
+      spec.postProcessingTasks.push_back(readPostProcessingTaskSpec(ppTaskName, ppTaskTree, wholeTree));
+    }
+  }
+  if (qcTree.find("externalTasks") != qcTree.not_found()) {
+    const auto& externalTasksTree = qcTree.get_child("externalTasks");
+    spec.externalTasks.reserve(externalTasksTree.size());
+    for (const auto& [externalTaskName, externalTaskTree] : externalTasksTree) {
+      spec.externalTasks.push_back(readExternalTaskSpec(externalTaskName, externalTasksTree, wholeTree));
     }
   }
   return spec;
@@ -137,33 +163,109 @@ DataSourceSpec InfrastructureSpecReader::readDataSourceSpec(const boost::propert
 
   switch (dss.type) {
     case DataSourceType::DataSamplingPolicy: {
-      auto name = dataSourceTree.get<std::string>("name");
-      dss.typeSpecificParams.insert({ "name", name });
-      dss.inputs = DataSampling::InputSpecsForPolicy(wholeTree.get_child("dataSamplingPolicies"), name);
+      dss.name = dataSourceTree.get<std::string>("name");
+      dss.inputs = DataSampling::InputSpecsForPolicy(wholeTree.get_child("dataSamplingPolicies"), dss.name);
       break;
     }
     case DataSourceType::Direct: {
-      dss.typeSpecificParams.insert({ "query", dataSourceTree.get<std::string>("query") });
       auto inputsQuery = dataSourceTree.get<std::string>("query");
+      dss.name = inputsQuery;
       dss.inputs = DataDescriptorQueryBuilder::parse(inputsQuery.c_str());
       break;
     }
-    case DataSourceType::Task: // todo all below
-    case DataSourceType::PostProcessingTask:
+    case DataSourceType::Task: {
+      dss.name = dataSourceTree.get<std::string>("name");
+      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(dss.name), 0 } };
+      if (dataSourceTree.count("MOs") > 0) {
+        for (const auto& moName : dataSourceTree.get_child("MOs")) {
+          dss.subInputs.push_back(moName.second.get_value<std::string>());
+        }
+      }
+      break;
+    }
+    case DataSourceType::PostProcessingTask: {
+      dss.name = dataSourceTree.get<std::string>("name");
+      dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(dss.name), 0 } };
+      if (dataSourceTree.count("MOs") > 0) {
+        for (const auto& moName : dataSourceTree.get_child("MOs")) {
+          dss.subInputs.push_back(moName.second.get_value<std::string>());
+        }
+      }
+      break;
+    }
     case DataSourceType::Check:
     case DataSourceType::Aggregator:
-      dss.typeSpecificParams.insert({ "name", dataSourceTree.get<std::string>("name") });
       break;
-    case DataSourceType::ExternalTask:
-      dss.typeSpecificParams.insert({ "name", dataSourceTree.get<std::string>("name") });
-      dss.typeSpecificParams.insert({ "query", dataSourceTree.get<std::string>("query") });
+    case DataSourceType::ExternalTask: {
+      dss.name = dataSourceTree.get<std::string>("name");
+      auto query = wholeTree.get<std::string>("qc.externalTasks." + dss.name + ".query");
+      dss.inputs = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
       break;
+    }
     case DataSourceType::Invalid:
       // todo: throw?
       break;
   }
 
   return dss;
+}
+
+CheckSpec InfrastructureSpecReader::readCheckSpec(std::string checkName, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree)
+{
+  CheckSpec cs;
+
+  cs.checkName = std::move(checkName);
+  cs.className = checkTree.get<std::string>("className");
+  cs.moduleName = checkTree.get<std::string>("moduleName");
+  cs.detectorName = checkTree.get<std::string>("detectorName", cs.detectorName);
+
+  // errors of the past
+  const auto& dataSourcesTree = checkTree.count("dataSource") > 0 ? checkTree.get_child("dataSource") : checkTree.get_child("dataSources");
+  for (const auto& [_key, dataSourceTree] : dataSourcesTree) {
+    (void)_key;
+    cs.dataSources.push_back(readDataSourceSpec(dataSourceTree, wholeTree));
+  }
+
+  if (auto policy = checkTree.get_optional<std::string>("policy"); policy.has_value()) {
+    cs.updatePolicy = UpdatePolicyTypeUtils::FromString(policy.get());
+  }
+
+  cs.active = checkTree.get<bool>("active", cs.active);
+  if (checkTree.count("checkParameters") > 0) {
+    for (const auto& [key, value] : checkTree.get_child("checkParameters")) {
+      cs.customParameters.emplace(key, value.get_value<std::string>());
+    }
+  }
+
+  return cs;
+}
+
+PostProcessingTaskSpec
+  InfrastructureSpecReader::readPostProcessingTaskSpec(std::string ppTaskName, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree&)
+{
+  PostProcessingTaskSpec ppts;
+
+  ppts.taskName = std::move(ppTaskName);
+  ppts.className = ppTaskTree.get<std::string>("className");
+  ppts.moduleName = ppTaskTree.get<std::string>("moduleName");
+  ppts.detectorName = ppTaskTree.get<std::string>("detectorName");
+
+  ppts.active = ppTaskTree.get<bool>("active", ppts.active);
+  ppts.tree = ppTaskTree;
+
+  return ppts;
+}
+
+ExternalTaskSpec
+  InfrastructureSpecReader::readExternalTaskSpec(std::string externalTaskName, const boost::property_tree::ptree& externalTaskTree, const boost::property_tree::ptree&)
+{
+  ExternalTaskSpec ets;
+
+  ets.taskName = std::move(externalTaskName);
+  ets.query = externalTaskTree.get<std::string>("query");
+  ets.active = externalTaskTree.get<bool>("active", ets.active);
+
+  return ets;
 }
 
 std::string InfrastructureSpecReader::validateDetectorName(std::string name)

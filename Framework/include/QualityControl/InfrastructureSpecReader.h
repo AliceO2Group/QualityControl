@@ -20,6 +20,8 @@
 #include "QualityControl/TaskSpec.h"
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/DataSourceSpec.h"
+#include "QualityControl/CheckSpec.h"
+#include "QualityControl/PostProcessingTaskSpec.h"
 #include <boost/property_tree/ptree_fwd.hpp>
 
 namespace o2::quality_control::core
@@ -40,6 +42,9 @@ class InfrastructureSpecReader
   static CommonSpec readCommonSpec(const boost::property_tree::ptree& commonTree, const std::string& configurationSource);
   static TaskSpec readTaskSpec(std::string taskName, const boost::property_tree::ptree& taskTree, const boost::property_tree::ptree& wholeTree);
   static DataSourceSpec readDataSourceSpec(const boost::property_tree::ptree& dataSourceTree, const boost::property_tree::ptree& wholeTree);
+  static checker::CheckSpec readCheckSpec(std::string checkName, const boost::property_tree::ptree& checkTree, const boost::property_tree::ptree& wholeTree);
+  static PostProcessingTaskSpec readPostProcessingTaskSpec(std::string ppTaskName, const boost::property_tree::ptree& ppTaskTree, const boost::property_tree::ptree& wholeTree);
+  static ExternalTaskSpec readExternalTaskSpec(std::string externalTaskName, const boost::property_tree::ptree& externalTaskTree, const boost::property_tree::ptree& wholeTree);
 
   static std::string validateDetectorName(std::string name);
 };

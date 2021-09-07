@@ -18,6 +18,7 @@
 #include "QualityControl/Aggregator.h"
 #include "QualityControl/RootClassFactory.h"
 #include "QualityControl/AggregatorInterface.h"
+#include "QualityControl/UpdatePolicyType.h"
 #include <Common/Exceptions.h>
 
 using namespace o2::quality_control::checker;
@@ -31,7 +32,7 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
 {
   mAggregatorConfig.name = aggregatorName;
   mAggregatorConfig.moduleName = configuration.get<std::string>("moduleName", "");
-  mAggregatorConfig.policyType = configuration.get<std::string>("policy", "");
+  mAggregatorConfig.policyType = UpdatePolicyTypeUtils::FromString(configuration.get<std::string>("policy", ""));
   mAggregatorConfig.className = configuration.get<std::string>("className", "");
   mAggregatorConfig.detectorName = configuration.get<std::string>("detectorName", "");
 
@@ -55,7 +56,7 @@ Aggregator::Aggregator(const std::string& aggregatorName, const boost::property_
       if (dataSource.count("QOs") == 0) {
         ILOG(Info, Devel) << "      (no QOs specified, we take all)" << ENDM;
         mAggregatorConfig.allObjects = true;
-        mAggregatorConfig.policyType = "_OnGlobalAny";
+        mAggregatorConfig.policyType = UpdatePolicyType::OnGlobalAny;
       } else {
         for (const auto& qoName : dataSource.get_child("QOs")) {
           auto name = std::string(sourceName + "/" + qoName.second.get_value<std::string>());
@@ -89,7 +90,7 @@ void Aggregator::init()
   ILOG(Info, Ops) << mAggregatorConfig.name << ": Module " << mAggregatorConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
   ILOG(Info, Ops) << mAggregatorConfig.name << ": Class " << mAggregatorConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
   ILOG(Info, Ops) << mAggregatorConfig.name << ": Detector " << mAggregatorConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
-  ILOG(Info, Ops) << mAggregatorConfig.name << ": Policy " << mAggregatorConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Ops) << mAggregatorConfig.name << ": Policy " << UpdatePolicyTypeUtils::ToString(mAggregatorConfig.policyType) << AliceO2::InfoLogger::InfoLogger::endm;
   ILOG(Info, Ops) << mAggregatorConfig.name << ": QualityObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
   for (const auto& moname : mAggregatorConfig.objectNames) {
     ILOG(Info, Ops) << mAggregatorConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
@@ -140,7 +141,7 @@ QualityObjectsType Aggregator::aggregate(QualityObjectsMapType& qoMap)
       quality,
       mAggregatorConfig.name + "/" + qualityName,
       mAggregatorConfig.detectorName,
-      mAggregatorConfig.policyType));
+      UpdatePolicyTypeUtils::ToString(mAggregatorConfig.policyType)));
   }
   return qualityObjects;
 }
@@ -150,7 +151,7 @@ const std::string& Aggregator::getName() const
   return mAggregatorConfig.name;
 }
 
-std::string Aggregator::getPolicyName() const
+UpdatePolicyType Aggregator::getUpdatePolicyType() const
 {
   return mAggregatorConfig.policyType;
 }

@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(test_basic_isready)
   UpdatePolicyManager updatePolicyManager;
 
   // init
-  updatePolicyManager.addPolicy("actor1", "OnAny", { "object1" }, false, false);
+  updatePolicyManager.addPolicy("actor1", UpdatePolicyType::OnAny, { "object1" }, false, false);
 
   // this is like 1 iteration of the run() :
   // get new data
@@ -61,10 +61,10 @@ BOOST_AUTO_TEST_CASE(test_basic_isready2)
   UpdatePolicyManager updatePolicyManager;
 
   // init
-  updatePolicyManager.addPolicy("actor1", "OnAny", { "object1", "object2" }, false, false);
-  updatePolicyManager.addPolicy("actor2", "OnAny", { "object2", "object3" }, false, false);
-  updatePolicyManager.addPolicy("actor3", "OnAny", {}, false, false); // no objects listed
-  updatePolicyManager.addPolicy("actor4", "OnAny", {}, true, false);  // allMOs set
+  updatePolicyManager.addPolicy("actor1", UpdatePolicyType::OnAny, { "object1", "object2" }, false, false);
+  updatePolicyManager.addPolicy("actor2", UpdatePolicyType::OnAny, { "object2", "object3" }, false, false);
+  updatePolicyManager.addPolicy("actor3", UpdatePolicyType::OnAny, {}, false, false); // no objects listed
+  updatePolicyManager.addPolicy("actor4", UpdatePolicyType::OnAny, {}, true, false);  // allMOs set
 
   // this is like 1 iteration of the run() :
   // get new data
@@ -114,10 +114,10 @@ BOOST_AUTO_TEST_CASE(test_check_policy_OnAll)
   UpdatePolicyManager updatePolicyManager;
 
   // init
-  updatePolicyManager.addPolicy("actor1", "OnAll", { "object1", "object2" }, false, false);
-  updatePolicyManager.addPolicy("actor2", "OnAll", { "object2", "object3" }, false, false);
-  //  updatePolicyManager.addPolicy("actor3", "OnAll", { }, false, false);
-  //  updatePolicyManager.addPolicy("actor4", "OnAll", { }, true, false);
+  updatePolicyManager.addPolicy("actor1", UpdatePolicyType::OnAll, { "object1", "object2" }, false, false);
+  updatePolicyManager.addPolicy("actor2", UpdatePolicyType::OnAll, { "object2", "object3" }, false, false);
+  //  updatePolicyManager.addPolicy("actor3", UpdatePolicyType::OnAll, { }, false, false);
+  //  updatePolicyManager.addPolicy("actor4", UpdatePolicyType::OnAll, { }, true, false);
 
   // iteration 1 of run() : get object1
   // get new data
@@ -178,8 +178,8 @@ BOOST_AUTO_TEST_CASE(test_check_policy_OnAny)
   UpdatePolicyManager updatePolicyManager;
 
   // init
-  updatePolicyManager.addPolicy("actor1", "OnAny", { "object1", "object2" }, false, false);
-  updatePolicyManager.addPolicy("actor2", "OnAny", { "object2", "object3" }, false, false);
+  updatePolicyManager.addPolicy("actor1", UpdatePolicyType::OnAny, { "object1", "object2" }, false, false);
+  updatePolicyManager.addPolicy("actor2", UpdatePolicyType::OnAny, { "object2", "object3" }, false, false);
 
   // iteration 1 of run() : get object1
   // get new data
@@ -235,8 +235,8 @@ BOOST_AUTO_TEST_CASE(test_check_policy_OnAnyNonZero)
   UpdatePolicyManager updatePolicyManager;
 
   // init
-  updatePolicyManager.addPolicy("actor1", "OnAnyNonZero", { "object1", "object2" }, false, false);
-  updatePolicyManager.addPolicy("actor2", "OnAnyNonZero", { "object2", "object3" }, false, false);
+  updatePolicyManager.addPolicy("actor1", UpdatePolicyType::OnAnyNonZero, { "object1", "object2" }, false, false);
+  updatePolicyManager.addPolicy("actor2", UpdatePolicyType::OnAnyNonZero, { "object2", "object3" }, false, false);
 
   // iteration 1 of run() : get object1
   // get new data
@@ -291,8 +291,8 @@ BOOST_AUTO_TEST_CASE(test_check_policy_OnEachSeparately)
   UpdatePolicyManager updatePolicyManager;
 
   // init
-  updatePolicyManager.addPolicy("actor1", "OnEachSeparately", { "object1", "object2" }, false, false);
-  updatePolicyManager.addPolicy("actor2", "OnEachSeparately", { "object2", "object3" }, false, false);
+  updatePolicyManager.addPolicy("actor1", UpdatePolicyType::OnEachSeparately, { "object1", "object2" }, false, false);
+  updatePolicyManager.addPolicy("actor2", UpdatePolicyType::OnEachSeparately, { "object2", "object3" }, false, false);
 
   // iteration 1 of run() : get object1
   // get new data
@@ -348,9 +348,7 @@ BOOST_AUTO_TEST_CASE(test_errors)
   UpdatePolicyManager updatePolicyManager;
 
   // init
-  BOOST_CHECK_THROW(
-    updatePolicyManager.addPolicy("actor1", "OnTheMoon", { "object1", "object2" }, false, false), FatalException);
-  updatePolicyManager.addPolicy("actor2", "OnEachSeparately", { "object2", "object3" }, false, false);
+  updatePolicyManager.addPolicy("actor2", UpdatePolicyType::OnEachSeparately, { "object2", "object3" }, false, false);
 
   // get new data
   updatePolicyManager.updateObjectRevision("object3");

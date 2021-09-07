@@ -20,16 +20,15 @@
 
 // O2
 #include <Common/Exceptions.h>
-#include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataSpecUtils.h>
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
+
+#include <utility>
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/runnerUtils.h"
-// Fairlogger
-#include <fairlogger/Logger.h>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -45,18 +44,8 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 
 namespace o2::quality_control::checker
 {
-// fixme: this is not actually used. collectOutputs() is used instead.
-o2::header::DataDescription CheckRunner::createCheckRunnerDataDescription(const std::string taskName)
-{
-  if (taskName.empty()) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for checker's data description"));
-  }
-  o2::header::DataDescription description;
-  description.runtimeInit(std::string(taskName.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
-  return description;
-}
 
-std::size_t CheckRunner::hash(std::string inputString)
+std::size_t CheckRunner::hash(const std::string& inputString)
 {
   // BSD checksum
   const int mode = 16;
@@ -71,7 +60,7 @@ std::size_t CheckRunner::hash(std::string inputString)
   return checksum;
 }
 
-std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
+std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& checks)
 {
   static const std::string alphanumeric =
     "0123456789"
@@ -82,13 +71,13 @@ std::string CheckRunner::createCheckRunnerName(std::vector<Check> checks)
 
   if (checks.size() == 1) {
     // If single check, use the check name
-    name += checks[0].getName();
+    name += checks[0].name;
   } else {
-    std::string hash_string = "";
+    std::string hash_string;
     std::vector<std::string> names;
     // Fill vector with check names
-    for (auto& c : checks) {
-      names.push_back(c.getName());
+    for (const auto& c : checks) {
+      names.push_back(c.name);
     }
     // Be sure that after configuration shuffle, the name will be the same
     std::sort(names.begin(), names.end());
@@ -123,40 +112,36 @@ std::string CheckRunner::createSinkCheckRunnerName(InputSpec input)
   return name;
 }
 
-o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<Check>& checks)
+o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig>& checkConfigs)
 {
   o2::framework::Outputs outputs;
-  for (auto& check : checks) {
-    outputs.push_back(check.getOutputSpec());
+  for (auto& check : checkConfigs) {
+    outputs.push_back(check.qoSpec);
   }
   return outputs;
 }
 
-CheckRunner::CheckRunner(std::vector<Check> checks, std::string configurationSource)
-  : mDeviceName(createCheckRunnerName(checks)),
-    mChecks{ checks },
+CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs)
+  : mDeviceName(createCheckRunnerName(checkConfigs)),
+    mConfig(std::move(checkRunnerConfig)),
     mLogger(QcInfoLogger::GetInstance()),
     /* All checks have the same Input */
-    mInputs(checks.front().getInputs()),
-    mOutputs(CheckRunner::collectOutputs(checks)),
+    mInputs(checkConfigs.front().inputSpecs),
+    mOutputs(CheckRunner::collectOutputs(checkConfigs)),
     mTotalNumberObjectsReceived(0),
     mTotalNumberCheckExecuted(0),
     mTotalNumberQOStored(0),
     mTotalNumberMOStored(0)
 {
-  try {
-    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-  } catch (...) {
-    // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal, Ops) << "Unexpected exception during initialization:\n"
-                     << boost::current_exception_diagnostic_information(true) << ENDM;
-    throw;
+  for (const auto& checkConfig : checkConfigs) {
+    mChecks.emplace_back(checkConfig);
   }
 }
 
-CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
+CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
   : mDeviceName(createSinkCheckRunnerName(input)),
     mChecks{},
+    mConfig(std::move(checkRunnerConfig)),
     mLogger(QcInfoLogger::GetInstance()),
     mInputs{ input },
     mOutputs{},
@@ -165,14 +150,6 @@ CheckRunner::CheckRunner(InputSpec input, std::string configurationSource)
     mTotalNumberQOStored(0),
     mTotalNumberMOStored(0)
 {
-  try {
-    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-  } catch (...) {
-    // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal, Ops) << "Unexpected exception during initialization:\n"
-                     << boost::current_exception_diagnostic_information(true) << ENDM;
-    throw;
-  }
 }
 
 CheckRunner::~CheckRunner()
@@ -192,7 +169,10 @@ void CheckRunner::init(framework::InitContext& iCtx)
   }
 
   try {
-    ILOG_INST.init(createCheckRunnerFacility(mDeviceName), mConfigFile->getRecursive(), ilContext);
+    ILOG_INST.init(createCheckRunnerFacility(mDeviceName),
+                   mConfig.infologgerFilterDiscardDebug,
+                   mConfig.infologgerDiscardLevel,
+                   ilContext);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -204,7 +184,7 @@ void CheckRunner::init(framework::InitContext& iCtx)
 
     for (auto& check : mChecks) {
       check.init();
-      updatePolicyManager.addPolicy(check.getName(), check.getPolicyName(), check.getObjectsNames(), check.getAllObjectsOption(), false);
+      updatePolicyManager.addPolicy(check.getName(), check.getUpdatePolicyType(), check.getObjectsNames(), check.getAllObjectsOption(), false);
     }
   } catch (...) {
     // catch the exceptions and print it (the ultimate caller might not know how to display it)
@@ -394,7 +374,7 @@ void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObject
 
   // prepare the string of comma separated objects and publish it
   std::string objects;
-  for (auto path : mListAllQOPaths) {
+  for (const auto& path : mListAllQOPaths) {
     objects += path + ",";
   }
   objects.pop_back(); // remove last comma
@@ -403,17 +383,16 @@ void CheckRunner::updateServiceDiscovery(const QualityObjectsType& qualityObject
 
 void CheckRunner::initDatabase()
 {
-  mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
-  mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
+  mDatabase = DatabaseFactory::create(mConfig.database.at("implementation"));
+  mDatabase->connect(mConfig.database);
   ILOG(Info, Support) << "Database that is going to be used : " << ENDM;
-  ILOG(Info, Support) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation") << ENDM;
-  ILOG(Info, Support) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host") << ENDM;
+  ILOG(Info, Support) << ">> Implementation : " << mConfig.database.at("implementation") << ENDM;
+  ILOG(Info, Support) << ">> Host : " << mConfig.database.at("host") << ENDM;
 }
 
 void CheckRunner::initMonitoring()
 {
-  auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
-  mCollector = MonitoringFactory::Get(monitoringUrl);
+  mCollector = MonitoringFactory::Get(mConfig.monitoringUrl);
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
   mTimer.reset(10000000); // 10 s.
@@ -421,23 +400,22 @@ void CheckRunner::initMonitoring()
 
 void CheckRunner::initServiceDiscovery()
 {
-  auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "");
-  if (consulUrl.empty()) {
+  if (mConfig.consulUrl.empty()) {
     mServiceDiscovery = nullptr;
     ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
     return;
   }
   std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
-  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
+  mServiceDiscovery = std::make_shared<ServiceDiscovery>(mConfig.consulUrl, mDeviceName, mDeviceName, url);
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
 }
 
 void CheckRunner::start(const ServiceRegistry& services)
 {
-  mActivity.mId = computeRunNumber(services, mConfigFile->getRecursive());
-  mActivity.mPeriodName = computePeriodName(services, mConfigFile->getRecursive());
-  mActivity.mPassName = computePassName(mConfigFile->getRecursive());
-  mActivity.mProvenance = computeProvenance(mConfigFile->getRecursive());
+  mActivity.mId = computeRunNumber(services, mConfig.fallbackRunNumber);
+  mActivity.mPeriodName = computePeriodName(services, mConfig.fallbackPeriodName);
+  mActivity.mPassName = computePassName(mConfig.fallbackPassName);
+  mActivity.mProvenance = computeProvenance(mConfig.fallbackProvenance);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }
@@ -461,6 +439,5 @@ void CheckRunner::reset()
     throw;
   }
 }
-
 
 } // namespace o2::quality_control::checker
