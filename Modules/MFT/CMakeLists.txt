@@ -35,6 +35,7 @@ add_root_dictionary(O2QcMFT
                     include/MFT/QcMFTTrackTask.h 
                     include/MFT/QcMFTReadoutCheck.h
                     include/MFT/QcMFTReadoutTask.h
+                    include/MFT/QcMFTUtilTables.h
                     LINKDEF include/MFT/LinkDef.h
                     BASENAME O2QcMFT)
                     

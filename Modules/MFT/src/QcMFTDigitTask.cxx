@@ -28,7 +28,7 @@
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTDigitTask.h"
-#include "MFT/QcMFTDigitTaskConversionTable.h"
+#include "MFT/QcMFTUtilTables.h"
 // C++
 #include <fstream>
 
@@ -178,7 +178,7 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
     int vectorOccupancyMapIndex = getVectorIndexChipOccupancyMap(chipIndex);
     if (vectorOccupancyMapIndex < 0)
       continue;
-    mChipOccupancyMap[vectorOccupancyMapIndex]->Fill(x[chipIndex], y[chipIndex]);
+    mChipOccupancyMap[vectorOccupancyMapIndex]->Fill(mX[chipIndex], mY[chipIndex]);
   }
 }
 
@@ -232,22 +232,11 @@ void QcMFTDigitTask::getNameOfPixelOccupancyMap(TString& folderName, TString& hi
 
 void QcMFTDigitTask::getChipMapData()
 {
-
   const o2::itsmft::ChipMappingMFT map;
   auto chipMapData = map.getChipMappingData();
+  QcMFTUtilTables MFTTable;
 
-  //  reset arrays
-  for (int i = 0; i < numberOfChips; i++) {
-    mHalf[i] = 0;
-    mDisk[i] = 0;
-    mFace[i] = 0;
-    mZone[i] = 0;
-    mSensor[i] = 0;
-    mTransID[i] = 0;
-    mLayer[i] = 0;
-  }
-
-  for (int i = 0; i < numberOfChips; i++) {
+  for (int i = 0; i < 936; i++) {
     mHalf[i] = chipMapData[i].half;
     mDisk[i] = chipMapData[i].disk;
     mLayer[i] = chipMapData[i].layer;
@@ -255,6 +244,9 @@ void QcMFTDigitTask::getChipMapData()
     mZone[i] = chipMapData[i].zone;
     mSensor[i] = chipMapData[i].localChipSWID;
     mTransID[i] = chipMapData[i].cable;
+    mLadder[i] = MFTTable.mLadder[i];
+    mX[i] = MFTTable.mX[i];
+    mY[i] = MFTTable.mY[i];
   }
 }
 

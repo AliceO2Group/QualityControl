@@ -77,6 +77,9 @@ class QcMFTDigitTask final : public TaskInterface
   int mSensor[936] = { 0 };
   int mTransID[936] = { 0 };
   int mLayer[936] = { 0 };
+  int mLadder[936] = { 0 };
+  int mX[936] = { 0 };
+  int mY[936] = { 0 };
 
   //  bin numbers for chip hit maps
   double mNumberOfBinsInOccupancyMaps[20][6] = {
