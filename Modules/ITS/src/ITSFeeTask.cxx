@@ -13,6 +13,7 @@
 /// \file   ITSFeeTask.cxx
 /// \author Jian Liu
 /// \author Liang Zhang
+/// \author Pietro Fecchio
 ///
 
 #include "ITS/ITSFeeTask.h"
@@ -42,6 +43,7 @@ ITSFeeTask::~ITSFeeTask()
   delete mIndexCheck;
   delete mIdCheck;
   delete mProcessingTime;
+  delete mPayloadSize;
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
   }
@@ -86,6 +88,9 @@ void ITSFeeTask::createFeePlots()
 
   mIdCheck = new TH2I("IdCheck", "Id Check", NFees, 0, NFees, 8, 0, 8);
   getObjectsManager()->startPublishing(mIdCheck); //mIdCheck
+
+  mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, 5.12e3, 0, 5.12e6);
+  getObjectsManager()->startPublishing(mPayloadSize); //mPayloadSize
 }
 
 void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
@@ -140,6 +145,10 @@ void ITSFeeTask::setPlotsFormat()
     setAxisTitle(mIndexCheck, "FEEID", "Flag");
   }
 
+  if (mPayloadSize) {
+    setAxisTitle(mPayloadSize, "FEEID", "Avg. Payload size");
+  }
+
   if (mIdCheck) {
     setAxisTitle(mIdCheck, "FEEID", "Flag");
   }
@@ -155,20 +164,30 @@ void ITSFeeTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM;
 
 void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // set timer
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "feedata0" }, Lifetime::Timeframe } };
+  int nStops[NFees] = {};
+  int payloadTot[NFees] = {};
+
+  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
+
   rawDataFilter.push_back(InputSpec{ "", ConcreteDataTypeMatcher{ "ITS", "RAWDATA" }, Lifetime::Timeframe });
   DPLRawParser parser(ctx.inputs(), rawDataFilter);
+
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
+    // Decoding data format (RDHv6)
     int istave = (int)(rdh->feeId & 0x00ff);
     int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
     int ilayer = (int)((rdh->feeId & 0xf000) >> 12);
     int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
+    int memorysize = (int)(rdh->memorySize);
+
+    payloadTot[ifee] += memorysize;
 
     if ((int)(rdh->stop) && it.size()) { //looking into the DDW0 from the closing packet
       auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
@@ -212,6 +231,17 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         mTrigger->Fill(i + 1);
         mTriggerVsFeeId->Fill(ifee, i + 1);
       }
+    }
+
+    if ((int)(rdh->stop)) {
+      nStops[ifee]++;
+    }
+  }
+
+  for (int i = 0; i < NFees; i++) {
+    if (nStops[i]) {
+      float payloadAvg = (float)payloadTot[i] / nStops[i];
+      mPayloadSize->Fill(i + 1, payloadAvg);
     }
   }
 

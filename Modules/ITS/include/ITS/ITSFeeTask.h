@@ -13,6 +13,7 @@
 /// \file   ITSFeeTask.h
 /// \author Jian Liu
 /// \author Liang Zhang
+/// \author Pietro Fecchio
 ///
 
 #ifndef QC_MODULE_ITS_ITSFEETASK_H
@@ -25,6 +26,7 @@
 
 class TH2I;
 class TH1I;
+class TH2F;
 
 using namespace o2::quality_control::core;
 
@@ -92,6 +94,7 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mIdCheck;            //should be 0x : e4
   TH2I* mLaneStatus[NFlags]; //4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
   TH1I* mProcessingTime;
+  TH2F* mPayloadSize;        //average payload size vs linkID
   //TH1D* mInfoCanvas;//TODO: default, not implemented yet
   std::string mRunNumberPath;
   std::string mRunNumber = "000000";
