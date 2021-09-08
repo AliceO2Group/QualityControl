@@ -147,7 +147,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
     {
       // Collecting Data Sampling Policies
       if (taskSpec.dataSource.isOneOf(DataSourceType::DataSamplingPolicy)) {
-        samplingPoliciesForRemoteTasks.insert({ taskSpec.dataSource.name, taskSpec.localControl });
+        samplingPoliciesForRemoteTasks.insert({ taskSpec.dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
       } else {
         throw std::runtime_error(
           "Configuration error: unsupported dataSource '" + taskSpec.dataSource.name + "' for a remote QC Task '" + taskSpec.taskName + "'");
@@ -219,7 +219,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
 
       // Collecting Data Sampling Policies
       if (taskSpec.dataSource.isOneOf(DataSourceType::DataSamplingPolicy)) {
-        samplingPoliciesForRemoteTasks.insert({ taskSpec.dataSource.name, taskSpec.localControl });
+        samplingPoliciesForRemoteTasks.insert({ taskSpec.dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
       } else {
         throw std::runtime_error(
           "Configuration error: unsupported dataSource '" + taskSpec.dataSource.name + "' for a remote QC Task '" + taskSpec.taskName + "'");
