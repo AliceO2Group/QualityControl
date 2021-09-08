@@ -10,7 +10,7 @@ include(CMakeParseArguments)
 include(GNUInstallDirs)
 include(AddQCWorkflow)
 
-# ---- Project ----
+# ---- Project -----
 
 project(QualityControl
         VERSION 1.29.0 
