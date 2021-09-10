@@ -123,6 +123,10 @@ void TaskCosmics::monitorData(o2::framework::ProcessingContext& ctx)
     }
     const int crate1 = o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(cosmic.getCH1()));
     const int crate2 = o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(cosmic.getCH2()));
+    if (crate1 == crate2) {
+      continue;
+    }
+
     mHistoCrate1->Fill(crate1);
     mHistoCrate2->Fill(crate2);
     mHistoCrate1VsCrate2->Fill(crate1, crate2);
@@ -131,12 +135,13 @@ void TaskCosmics::monitorData(o2::framework::ProcessingContext& ctx)
     mHistoToT2->Fill(cosmic.getTOT2());
     mHistoLength->Fill(cosmic.getL());
     mHistoDeltaTLength->Fill(cosmic.getL(), cosmic.getDeltaTime());
+
     if (abs(cosmic.getDeltaTime()) < mSelDeltaTSignalRegion) {
       mCounterPeak.Count(crate1);
       mCounterPeak.Count(crate2);
     } else if (abs(cosmic.getDeltaTime()) < mSelDeltaTBackgroundRegion) {
-      mCounterPeak.Add(crate1, -1);
-      mCounterPeak.Add(crate2, -1);
+      mCounterBkg.Count(crate1);
+      mCounterBkg.Count(crate2);
     }
   }
 }
@@ -145,6 +150,7 @@ void TaskCosmics::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
   mCounterPeak.FillHistogram(mHistoCosmicRate.get());
+  mCounterBkg.AddHistogram(mHistoCosmicRate.get(), -1);
   if (mCounterTF.HowMany(0) > 0) {
     mHistoCosmicRate->Scale(1. / (mCounterTF.HowMany(0) * mTFDuration));
   } else {

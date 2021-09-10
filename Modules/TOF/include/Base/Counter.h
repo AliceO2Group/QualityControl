@@ -90,6 +90,12 @@ class Counter
   /// @returns Returns 0 if everything went OK
   int FillHistogram(TH1* histogram, const unsigned int& biny = 0, const unsigned int& binz = 0) const;
 
+  /// Function to fill a histogram with the counters
+  /// @param histogram The histogram to fill
+  /// @param weight Weight to apply to second histogram (optional)
+  /// @returns Returns 0 if everything went OK
+  int AddHistogram(TH1* histogram, const float& weight = 1) const;
+
   /// Getter for the size
   /// @return Returns the size of the counter
   unsigned int Size() const { return size; }
@@ -249,6 +255,78 @@ int Counter<size, labels>::FillHistogram(TH1* histogram, const unsigned int& bin
         histogram->SetBinContent(bin, counter[index]);
         histogram->SetBinError(bin, TMath::Sqrt(counter[index]));
       }
+    }
+  };
+
+  LOG(DEBUG) << "Filling Histogram " << histogram->GetName() << " with counter contents";
+#ifndef ENABLE_BIN_SHIFT
+  if (size != (histogram->GetNbinsX())) {
+    LOG(FATAL) << "Counter of size " << size << " does not fit in histogram " << histogram->GetName() << " with size " << histogram->GetNbinsX() - 1;
+    return 1;
+  }
+  for (unsigned int i = 0; i < size; i++) {
+    LOG(DEBUG) << "Filling bin " << i + 1 << " with counter at position " << i;
+    if (HasLabel(i) && strcmp(labels[i], histogram->GetXaxis()->GetBinLabel(i + 1)) != 0) { // If it has a label check its consistency!
+      LOG(FATAL) << "Bin " << i + 1 << " does not have the expected label '" << histogram->GetXaxis()->GetBinLabel(i + 1) << "' vs '" << labels[i] << "'";
+      return 1;
+    }
+    fillIt(i + 1, i);
+  }
+#else
+  const unsigned int nbinsx = histogram->GetNbinsX();
+  if constexpr (labels == nullptr) { // Fill without labels
+    if (nbinsx < size) {
+      LOG(FATAL) << "Counter size " << size << " is too large to fit in histogram " << histogram->GetName() << " with size " << nbinsx;
+      return 1;
+    }
+    for (unsigned int i = 0; i < size; i++) {
+      LOG(DEBUG) << "Filling bin " << i + 1 << " with position " << i << " with " << counter[i];
+      fillIt(i + 1, i);
+    }
+  } else { // Fill with labels
+    unsigned int binx = 1;
+    for (unsigned int i = 0; i < size; i++) {
+      if (!HasLabel(i)) { // Labels are defined and label is empty
+        if (counter[i] > 0) {
+          LOG(FATAL) << "Counter at position " << i << " was non empty (" << counter[i] << ") but was discarded because of empty labels";
+          return 1;
+        }
+        continue;
+      }
+      LOG(DEBUG) << "Filling bin " << binx << " with position " << i << " of label " << labels[i] << " with " << counter[i];
+      if (binx > nbinsx) {
+        LOG(FATAL) << "Filling histogram " << histogram->GetName() << " at position " << binx << " i.e. past its size (" << nbinsx << ")!";
+        return 1;
+      }
+      const char* bin_label = histogram->GetXaxis()->GetBinLabel(binx);
+      if (!HasLabel(i) && counter[i] > 0) {
+        LOG(FATAL) << "Label at position " << i << " does not exist for axis label '" << bin_label << "' but counter is *non* empty!";
+        return 1;
+      } else if (strcmp(labels[i], bin_label) != 0) {
+        LOG(FATAL) << "Bin " << binx << " does not have the expected label '" << bin_label << "' vs '" << labels[i] << "'";
+        return 1;
+      }
+      fillIt(binx, i);
+      binx++;
+    }
+    if (binx != nbinsx + 1) {
+      LOG(FATAL) << "Did not fully fill histogram " << histogram->GetName() << ", filled " << binx << " out of " << nbinsx;
+      return 1;
+    }
+  }
+#endif
+
+  return 0;
+}
+
+template <const unsigned int size, const char* labels[size]>
+int Counter<size, labels>::AddHistogram(TH1* histogram, const float& weight) const
+{ //Works only for 1D histos
+
+  auto fillIt = [&](const unsigned int& bin, const unsigned int& index) {
+    if (counter[index] > 0) {
+      histogram->AddBinContent(bin, counter[index] * weight);
+      //Errors not propagated, not crucial
     }
   };
 

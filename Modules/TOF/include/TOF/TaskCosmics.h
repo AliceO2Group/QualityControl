@@ -73,6 +73,7 @@ class TaskCosmics final : public TaskInterface
   // Counters
   Counter<2, nullptr> mCounterTF;    /// Counter for the number of TF seen
   Counter<72, nullptr> mCounterPeak; /// Counter for coincidence between signals in the peak region
+  Counter<72, nullptr> mCounterBkg;  /// Counter for coincidence between signals in the bkg region
 };
 
 } // namespace o2::quality_control_modules::tof
