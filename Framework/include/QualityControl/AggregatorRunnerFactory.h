@@ -30,7 +30,7 @@ class AggregatorRunnerFactory
   AggregatorRunnerFactory() = default;
   virtual ~AggregatorRunnerFactory() = default;
 
-  static framework::DataProcessorSpec create(const vector<framework::OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource);
+  static framework::DataProcessorSpec create(const std::vector<framework::OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource);
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };
 

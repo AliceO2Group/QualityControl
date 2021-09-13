@@ -58,13 +58,15 @@ namespace o2::quality_control::core
 uint16_t defaultPolicyPort = 42349;
 
 struct DataSamplingPolicySpec {
-  DataSamplingPolicySpec(std::string name, std::string control) : name(std::move(name)), control(std::move(control)) {}
+  DataSamplingPolicySpec(std::string name, std::string control, std::string remoteMachine = "")
+    : name(std::move(name)), control(std::move(control)), remoteMachine(std::move(remoteMachine)) {}
   bool operator<(const DataSamplingPolicySpec other) const
   {
-    return std::tie(name, control) < std::tie(other.name, other.control);
+    return std::tie(name, control, remoteMachine) < std::tie(other.name, other.control, other.remoteMachine);
   }
   std::string name;
   std::string control;
+  std::string remoteMachine;
 };
 
 framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructure(std::string configurationSource)
@@ -86,7 +88,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
       workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
     }
   }
-  auto checkRunnerOutputs = generateCheckRunners(workflow, configurationSource);
+  auto checkRunnerOutputs = generateCheckRunners(workflow, infrastructureSpec);
   generateAggregator(workflow, configurationSource, checkRunnerOutputs);
   generatePostProcessing(workflow, configurationSource);
 
@@ -107,7 +109,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configurationSource);
 
   WorkflowSpec workflow;
-  std::set<DataSamplingPolicySpec> samplingPoliciesUsed;
+  std::set<DataSamplingPolicySpec> samplingPoliciesForRemoteTasks;
 
   if (infrastructureSpec.tasks.empty()) {
     return workflow;
@@ -144,28 +146,29 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
     } else // TaskLocationSpec::Remote
     {
       // Collecting Data Sampling Policies
-      switch (taskSpec.dataSource.type) {
-        case DataSourceType::DataSamplingPolicy:
-          samplingPoliciesUsed.insert({ taskSpec.dataSource.typeSpecificParams.at("name"), taskSpec.localControl });
-          break;
-        case DataSourceType::Direct:
-          throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskSpec.taskName + " cannot use direct data sources");
-        default:
-          throw std::runtime_error("Configuration error: unsupported dataSource for remote QC Tasks");
+      if (taskSpec.dataSource.isOneOf(DataSourceType::DataSamplingPolicy)) {
+        samplingPoliciesForRemoteTasks.insert({ taskSpec.dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
+      } else {
+        throw std::runtime_error(
+          "Configuration error: unsupported dataSource '" + taskSpec.dataSource.name + "' for a remote QC Task '" + taskSpec.taskName + "'");
       }
     }
   }
 
-  // Creating Data Sampling Policies proxies
-  for (const auto& [policyName, control] : samplingPoliciesUsed) {
-    // todo: leave only the new way once the return type is changed
-    std::string port = std::to_string(std::optional<uint16_t>(DataSampling::PortForPolicy(config.get(), policyName)).value_or(defaultPolicyPort));
-    Inputs inputSpecs = DataSampling::InputSpecsForPolicy(config.get(), policyName);
+  if (!samplingPoliciesForRemoteTasks.empty()) {
+    auto dataSamplingTree = config->getRecursive("dataSamplingPolicies");
+    // Creating Data Sampling Policies proxies
+    for (const auto& [policyName, control, remoteMachine] : samplingPoliciesForRemoteTasks) {
+      std::string port = std::to_string(DataSampling::PortForPolicy(dataSamplingTree, policyName).value_or(defaultPolicyPort));
+      Inputs inputSpecs = DataSampling::InputSpecsForPolicy(dataSamplingTree, policyName);
+      std::vector<std::string> machines = DataSampling::MachinesForPolicy(dataSamplingTree, policyName);
 
-    std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
-    for (const auto& machine : machines) {
-      if (machine == targetHost) {
-        generateDataSamplingPolicyLocalProxy(workflow, policyName, inputSpecs, machine, port, control);
+      if (machines.empty() || std::find(machines.begin(), machines.end(), targetHost) != machines.end()) {
+        if (DataSampling::BindLocationForPolicy(dataSamplingTree, policyName) == "remote") {
+          generateDataSamplingPolicyLocalProxyConnect(workflow, policyName, inputSpecs, remoteMachine, port, control);
+        } else {
+          generateDataSamplingPolicyLocalProxyBind(workflow, policyName, inputSpecs, targetHost, port, control);
+        }
       }
     }
   }
@@ -187,7 +190,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configurationSource);
 
   WorkflowSpec workflow;
-  std::set<DataSamplingPolicySpec> samplingPoliciesUsed;
+  std::set<DataSamplingPolicySpec> samplingPoliciesForRemoteTasks;
 
   for (const auto& taskSpec : infrastructureSpec.tasks) {
     if (!taskSpec.active) {
@@ -215,14 +218,11 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
       // (for the time being we don't foresee parallel tasks on QC servers, so no mergers here)
 
       // Collecting Data Sampling Policies
-      switch (taskSpec.dataSource.type) {
-        case DataSourceType::DataSamplingPolicy:
-          samplingPoliciesUsed.insert({ taskSpec.dataSource.typeSpecificParams.at("name"), taskSpec.localControl });
-          break;
-        case DataSourceType::Direct:
-          throw std::runtime_error("Configuration error: Remote QC tasks such as " + taskSpec.taskName + " cannot use direct data sources");
-        default:
-          throw std::runtime_error("Configuration error: unsupported dataSource for remote QC Tasks");
+      if (taskSpec.dataSource.isOneOf(DataSourceType::DataSamplingPolicy)) {
+        samplingPoliciesForRemoteTasks.insert({ taskSpec.dataSource.name, taskSpec.localControl, taskSpec.remoteMachine });
+      } else {
+        throw std::runtime_error(
+          "Configuration error: unsupported dataSource '" + taskSpec.dataSource.name + "' for a remote QC Task '" + taskSpec.taskName + "'");
       }
 
       // Creating the remote task
@@ -231,21 +231,27 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
     }
   }
 
-  // Creating Data Sampling Policies proxies
-  for (const auto& [policyName, control] : samplingPoliciesUsed) {
-    // todo now we have to generate one proxy per local machine and policy, because of the proxy limitations.
-    //  Use one proxy per policy when it is possible.
-
-    // todo: leave only the new way once the return type is changed
-    std::string port = std::to_string(std::optional<uint16_t>(DataSampling::PortForPolicy(config.get(), policyName)).value_or(defaultPolicyPort));
-    Outputs outputSpecs = DataSampling::OutputSpecsForPolicy(config.get(), policyName);
-    std::vector<std::string> machines = DataSampling::MachinesForPolicy(config.get(), policyName);
-    for (const auto& machine : machines) {
-      generateDataSamplingPolicyRemoteProxy(workflow, policyName, outputSpecs, machine, port, control);
+  if (!samplingPoliciesForRemoteTasks.empty()) {
+    auto dataSamplingTree = config->getRecursive("dataSamplingPolicies");
+    // Creating Data Sampling Policies proxies
+    for (const auto& [policyName, control, remoteMachine] : samplingPoliciesForRemoteTasks) {
+      (void)remoteMachine;
+      std::string port = std::to_string(DataSampling::PortForPolicy(dataSamplingTree, policyName).value_or(defaultPolicyPort));
+      Outputs outputSpecs = DataSampling::OutputSpecsForPolicy(dataSamplingTree, policyName);
+      if (DataSampling::BindLocationForPolicy(dataSamplingTree, policyName) == "remote") {
+        generateDataSamplingPolicyRemoteProxyBind(workflow, policyName, outputSpecs, port, control);
+      } else {
+        // todo now we have to generate one proxy per local machine and policy, because of the proxy limitations.
+        //  Use one proxy per policy when it is possible.
+        std::vector<std::string> localMachines = DataSampling::MachinesForPolicy(dataSamplingTree, policyName);
+        for (const auto& localMachine : localMachines) {
+          generateDataSamplingPolicyRemoteProxyConnect(workflow, policyName, outputSpecs, localMachine, port, control);
+        }
+      }
     }
   }
 
-  generateCheckRunners(workflow, configurationSource);
+  generateCheckRunners(workflow, infrastructureSpec);
   generatePostProcessing(workflow, configurationSource);
 
   return workflow;
@@ -319,7 +325,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
     workflow.push_back({ "qc-root-file-source", {}, std::move(fileSourceOutputs), adaptFromTask<RootFileSource>(sourceFilePath) });
   }
 
-  auto checkRunnerOutputs = generateCheckRunners(workflow, configurationSource);
+  auto checkRunnerOutputs = generateCheckRunners(workflow, infrastructureSpec);
   generateAggregator(workflow, configurationSource, checkRunnerOutputs);
   generatePostProcessing(workflow, configurationSource);
 
@@ -347,12 +353,12 @@ void InfrastructureGenerator::printVersion()
   ILOG(Info, Support) << "QC version " << o2::quality_control::core::Version::GetQcVersion().getString() << ENDM;
 }
 
-void InfrastructureGenerator::generateDataSamplingPolicyLocalProxy(framework::WorkflowSpec& workflow,
-                                                                   const string& policyName,
-                                                                   const framework::Inputs& inputSpecs,
-                                                                   const std::string& localMachine,
-                                                                   const string& localPort,
-                                                                   const std::string& control)
+void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyBind(framework::WorkflowSpec& workflow,
+                                                                       const string& policyName,
+                                                                       const framework::Inputs& inputSpecs,
+                                                                       const std::string& localMachine,
+                                                                       const string& localPort,
+                                                                       const std::string& control)
 {
   std::string proxyName = policyName + "-proxy";
   std::string channelName = policyName + "-" + localMachine;
@@ -371,12 +377,12 @@ void InfrastructureGenerator::generateDataSamplingPolicyLocalProxy(framework::Wo
   workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
 }
 
-void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxy(framework::WorkflowSpec& workflow,
-                                                                    const std::string& policyName,
-                                                                    const Outputs& outputSpecs,
-                                                                    const std::string& localMachine,
-                                                                    const std::string& localPort,
-                                                                    const std::string& control)
+void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyConnect(framework::WorkflowSpec& workflow,
+                                                                           const std::string& policyName,
+                                                                           const Outputs& outputSpecs,
+                                                                           const std::string& localMachine,
+                                                                           const std::string& localPort,
+                                                                           const std::string& control)
 {
   std::string channelName = policyName + "-" + localMachine;
   const std::string& proxyName = channelName; // channel name has to match proxy name
@@ -392,11 +398,54 @@ void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxy(framework::W
   workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
 }
 
+void InfrastructureGenerator::generateDataSamplingPolicyLocalProxyConnect(framework::WorkflowSpec& workflow,
+                                                                          const string& policyName,
+                                                                          const framework::Inputs& inputSpecs,
+                                                                          const std::string& remoteMachine,
+                                                                          const string& remotePort,
+                                                                          const std::string& control)
+{
+  std::string proxyName = policyName + "-proxy";
+  const std::string& channelName = policyName;
+  std::string channelConfig = "name=" + channelName + ",type=push,method=connect,address=tcp://" + remoteMachine + ":" + remotePort +
+                              ",rateLogging=60,transport=zeromq";
+  auto channelSelector = [channelName](InputSpec const&, const std::unordered_map<std::string, std::vector<FairMQChannel>>&) {
+    return channelName;
+  };
+
+  workflow.emplace_back(
+    specifyFairMQDeviceMultiOutputProxy(
+      proxyName.c_str(),
+      inputSpecs,
+      channelConfig.c_str(),
+      channelSelector));
+  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+}
+
+void InfrastructureGenerator::generateDataSamplingPolicyRemoteProxyBind(framework::WorkflowSpec& workflow,
+                                                                        const std::string& policyName,
+                                                                        const Outputs& outputSpecs,
+                                                                        const std::string& remotePort,
+                                                                        const std::string& control)
+{
+  std::string channelName = policyName;
+  const std::string& proxyName = channelName; // channel name has to match proxy name
+
+  std::string channelConfig = "name=" + channelName + ",type=pull,method=bind,address=tcp://*:" + remotePort + ",rateLogging=60,transport=zeromq";
+
+  workflow.emplace_back(specifyExternalFairMQDeviceProxy(
+    proxyName.c_str(),
+    outputSpecs,
+    channelConfig.c_str(),
+    dplModelAdaptor()));
+  workflow.back().labels.emplace_back(control == "odc" ? ecs::preserveRawChannelsLabel : ecs::uniqueProxyLabel);
+}
+
 void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow, size_t id,
                                                           std::string taskName, std::string remoteHost,
                                                           std::string remotePort, const std::string& control)
 {
-  std::string proxyName = taskName + "-proxy-" + std::to_string(id);
+  std::string proxyName = taskName + "-proxy";
   std::string channelName = taskName + "-proxy";
   InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) };
   std::string channelConfig = "name=" + channelName + ",type=push,method=connect,address=tcp://" +
@@ -464,68 +513,55 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergersBuilder.generateInfrastructure(workflow);
 }
 
-vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource)
+std::vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
 {
   // todo have a look if this complex procedure can be simplified.
   // todo also make well defined and scoped functions to make it more readable and clearer.
   typedef std::vector<std::string> InputNames;
-  typedef std::vector<Check> Checks;
+  typedef std::vector<CheckConfig> CheckConfigs;
   std::map<std::string, o2::framework::InputSpec> tasksOutputMap; // all active tasks' output, as inputs, keyed by their label
-  std::map<InputNames, Checks> checksMap;                         // all the Checks defined in the config mapped keyed by their sorted inputNames
+  std::map<InputNames, CheckConfigs> checksMap;                   // all the Checks defined in the config mapped keyed by their sorted inputNames
   std::map<InputNames, InputNames> storeVectorMap;
 
-  auto config = ConfigurationFactory::getConfiguration(configurationSource);
-
-  if (config->getRecursive("qc").count("tasks")) {
-    for (const auto& [taskName, taskConfig] : config->getRecursive("qc.tasks")) {
-      if (taskConfig.get<bool>("active", true)) {
-        InputSpec taskOutput{ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) };
-        tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
-      }
+  // todo: avoid code repetition
+  for (const auto& taskSpec : infrastructureSpec.tasks) {
+    if (taskSpec.active) {
+      InputSpec taskOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskSpec.taskName) };
+      tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
     }
   }
 
-  if (config->getRecursive("qc").count("postprocessing")) {
-    for (const auto& [ppTaskName, ppTaskConfig] : config->getRecursive("qc.postprocessing")) {
-      if (ppTaskConfig.get<bool>("active", true)) {
-        InputSpec taskOutput{ ppTaskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(ppTaskName) };
-        tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
-      }
+  for (const auto& ppTaskSpec : infrastructureSpec.postProcessingTasks) {
+    if (ppTaskSpec.active) {
+      InputSpec ppTaskOutput{ ppTaskSpec.taskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName) };
+      tasksOutputMap.insert({ DataSpecUtils::label(ppTaskOutput), ppTaskOutput });
     }
   }
 
-  // For each external task prepare the InputSpec to be stored in tasksoutputMap
-  if (config->getRecursive("qc").count("externalTasks")) {
-    for (const auto& [taskName, taskConfig] : config->getRecursive("qc.externalTasks")) {
-      (void)taskName;
-      if (taskConfig.get<bool>("active", true)) {
-        auto query = taskConfig.get<std::string>("query");
-        Inputs inputs = DataDescriptorQueryBuilder::parse(query.c_str());
-        for (const auto& taskOutput : inputs) {
-          tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
-        }
+  for (const auto& externalTaskSpec : infrastructureSpec.externalTasks) {
+    if (externalTaskSpec.active) {
+      auto query = externalTaskSpec.query;
+      Inputs inputs = DataDescriptorQueryBuilder::parse(query.c_str());
+      for (const auto& taskOutput : inputs) {
+        tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
       }
     }
   }
 
   // Instantiate Checks based on the configuration and build a map of checks (keyed by their inputs names)
-  if (config->getRecursive("qc").count("checks")) {
-    // For every check definition, create a Check
-    for (const auto& [checkName, checkConfig] : config->getRecursive("qc.checks")) {
-      ILOG(Debug, Devel) << ">> Check name : " << checkName << ENDM;
-      if (checkConfig.get<bool>("active", true)) {
-        auto check = Check(checkName, configurationSource);
-        InputNames inputNames;
+  for (const auto& checkSpec : infrastructureSpec.checks) {
+    ILOG(Debug, Devel) << ">> Check name : " << checkSpec.checkName << ENDM;
+    if (checkSpec.active) {
+      auto checkConfig = Check::extractConfig(infrastructureSpec.common, checkSpec);
+      InputNames inputNames;
 
-        for (auto& inputSpec : check.getInputs()) {
-          auto name = DataSpecUtils::label(inputSpec);
-          inputNames.push_back(name);
-        }
-        // Create a grouping key - sorted vector of stringified InputSpecs
-        std::sort(inputNames.begin(), inputNames.end());
-        // Group checks
-        checksMap[inputNames].push_back(check);
+      for (const auto& inputSpec : checkConfig.inputSpecs) {
+        inputNames.push_back(DataSpecUtils::label(inputSpec));
       }
+      // Create a grouping key - sorted vector of stringified InputSpecs //todo: consider std::set, which is sorted
+      std::sort(inputNames.begin(), inputNames.end());
+      // Group checks
+      checksMap[inputNames].push_back(checkConfig);
     }
   }
 
@@ -537,6 +573,7 @@ vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::Work
     // Look for this task as input in the Checks' inputs, if we found it then we are done
     for (auto& [inputNames, checks] : checksMap) { // for each set of inputs
       (void)checks;
+
       if (std::find(inputNames.begin(), inputNames.end(), label) != inputNames.end() && inputNames.size() == 1) {
         storeVectorMap[inputNames].push_back(label);
         break;
@@ -552,27 +589,27 @@ vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::Work
   }
 
   // Create CheckRunners: 1 per set of inputs
-  CheckRunnerFactory checkRunnerFactory;
-  vector<framework::OutputSpec> checkRunnerOutputs; // needed later for the aggregators
-  for (auto& [inputNames, checks] : checksMap) {
+  std::vector<framework::OutputSpec> checkRunnerOutputs; // needed later for the aggregators //fixme: we should be able to reconstruct it from check names in aggregators
+  auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
+  for (auto& [inputNames, checkConfigs] : checksMap) {
     //Logging
     ILOG(Info, Devel) << ">> Inputs (" << inputNames.size() << "): ";
     for (const auto& name : inputNames)
       ILOG(Info, Devel) << name << " ";
-    ILOG(Info, Devel) << " ; Checks (" << checks.size() << "): ";
-    for (auto& check : checks)
-      ILOG(Info, Devel) << check.getName() << " ";
+    ILOG(Info, Devel) << " ; Checks (" << checkConfigs.size() << "): ";
+    for (const auto& checkConfig : checkConfigs)
+      ILOG(Info, Devel) << checkConfig.name << " ";
     ILOG(Info, Devel) << " ; Stores (" << storeVectorMap[inputNames].size() << "): ";
-    for (auto& input : storeVectorMap[inputNames])
+    for (const auto& input : storeVectorMap[inputNames])
       ILOG(Info, Devel) << input << " ";
     ILOG(Info, Devel) << ENDM;
 
-    if (!checks.empty()) { // Create a CheckRunner for the grouped checks
-      DataProcessorSpec spec = checkRunnerFactory.create(checks, configurationSource, storeVectorMap[inputNames]);
+    if (!checkConfigs.empty()) { // Create a CheckRunner for the grouped checks
+      DataProcessorSpec spec = CheckRunnerFactory::create(checkRunnerConfig, checkConfigs, storeVectorMap[inputNames]);
       workflow.emplace_back(spec);
       checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
     } else { // If there are no checks, create a sink CheckRunner
-      DataProcessorSpec spec = checkRunnerFactory.createSinkDevice(tasksOutputMap.find(inputNames[0])->second, configurationSource);
+      DataProcessorSpec spec = CheckRunnerFactory::createSinkDevice(checkRunnerConfig, tasksOutputMap.find(inputNames[0])->second);
       workflow.emplace_back(spec);
       checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
     }
@@ -586,7 +623,7 @@ vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::Work
   return checkRunnerOutputs;
 }
 
-void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, std::string configurationSource, vector<framework::OutputSpec>& checkRunnerOutputs)
+void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, std::string configurationSource, std::vector<framework::OutputSpec>& checkRunnerOutputs)
 {
   // TODO consider whether we should recompute checkRunnerOutputs instead of receiving it all baked.
   auto config = ConfigurationFactory::getConfiguration(configurationSource);

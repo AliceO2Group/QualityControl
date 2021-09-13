@@ -1,7 +1,7 @@
 # QuickStart
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
-<!--./gh-md-toc --no-backup --hide-footer /path/to/README.md-->
+<!--./gh-md-toc --no-backup --hide-footer --indent 3  /path/to/README.md-->
 <!--ts-->
 * [QuickStart](#quickstart)
    * [Read this first!](#read-this-first)

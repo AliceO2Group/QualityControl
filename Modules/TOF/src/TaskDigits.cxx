@@ -153,10 +153,10 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mTOFRawsLTMHits.reset(new TH1F("TOFRawsLTMHits", "LTMs OR signals; Crate; Counts", 72, 0., 72.));
   getObjectsManager()->startPublishing(mTOFRawsLTMHits.get());
 
-  mTOFrefMap.reset(new TH2F("TOFrefMap", "TOF enabled channel reference map;sector;strip", 72, 0., 18., 91, 0., 91.));
+  mTOFrefMap.reset(new TH2F("TOFrefMap", "TOF enabled channel reference map;sector + FEA/4; strip", 72, 0., 18., 91, 0., 91.));
   getObjectsManager()->startPublishing(mTOFrefMap.get());
 
-  mTOFRawHitMap.reset(new TH2F("TOFRawHitMap", "TOF raw hit map (1 bin = 1 FEA = 24 channels);sector;strip", 72, 0., 18., 91, 0., 91.));
+  mTOFRawHitMap.reset(new TH2F("TOFRawHitMap", "TOF raw hit map;sector + FEA/4; strip", 72, 0., 18., 91, 0., 91.));
   getObjectsManager()->startPublishing(mTOFRawHitMap.get());
 
   mTOFDecodingErrors.reset(new TH2I("TOFDecodingErrors", "Decoding error monitoring; DDL; Error ", 72, 0, 72, 13, 1, 14));
@@ -270,8 +270,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     for (auto const& digit : digits_in_row) {
       o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
       strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
-      const Int_t ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
-      mHitCounterPerStrip[strip].Count(o2::tof::Geo::getCrateFromECH(ech));
+      mHitCounterPerStrip[strip].Count(det[0] * 4 + det[4] / 12);
       mHitCounterPerChannel.Count(digit.getChannel());
       // TDC time and ToT time
       tdc_time = digit.getTDC() * o2::tof::Geo::TDCBIN * 0.001;

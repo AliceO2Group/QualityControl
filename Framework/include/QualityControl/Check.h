@@ -27,6 +27,8 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckConfig.h"
+#include "QualityControl/CommonSpec.h"
+#include "QualityControl/CheckSpec.h"
 
 namespace o2::quality_control::checker
 {
@@ -49,7 +51,7 @@ class Check
    * @param checkName Check name from the configuration
    * @param configurationSource Path to configuration
    */
-  Check(std::string checkName, std::string configurationSource);
+  Check(CheckConfig config);
 
   /**
    * \brief Initialize the check state
@@ -68,36 +70,28 @@ class Check
   void updateRevision(unsigned int revision);
 
   const std::string& getName() const { return mCheckConfig.name; };
-  o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
-  o2::framework::Inputs getInputs() const { return mInputs; };
+  o2::framework::OutputSpec getOutputSpec() const { return mCheckConfig.qoSpec; };
+  o2::framework::Inputs getInputs() const { return mCheckConfig.inputSpecs; };
 
   //TODO: Unique Input string
-  static o2::header::DataDescription createCheckerDataDescription(const std::string taskName);
+  static o2::header::DataDescription createCheckerDataDescription(const std::string& taskName);
 
   // For testing purpose
   void setCheckInterface(CheckInterface* checkInterface) { mCheckInterface = checkInterface; };
 
-  std::string getPolicyName() const;
+  UpdatePolicyType getUpdatePolicyType() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;
 
- private:
-  void initConfig(std::string checkName);
+  // todo: probably make CheckFactory
+  static CheckConfig extractConfig(const CommonSpec&, const CheckSpec&);
 
+ private:
   void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality);
 
-  std::string mConfigurationSource;
   o2::quality_control::core::QcInfoLogger& mLogger;
   CheckConfig mCheckConfig;
   CheckInterface* mCheckInterface = nullptr;
-  size_t mNumberOfTaskSources;
-
-  // DPL information
-  o2::framework::Inputs mInputs;
-  std::vector<std::string> mInputsStringified;
-  o2::framework::OutputSpec mOutputSpec;
-
-  bool mBeautify = true;
 };
 
 } // namespace o2::quality_control::checker

@@ -85,6 +85,7 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   auto hasAmpVsCell = get_bool(getConfigValueLower("hasAmpVsCell")),
        hasTimeVsCell = get_bool(getConfigValueLower("hasTimeVsCell")),
        hasCalib2D = get_bool(getConfigValueLower("hasHistValibVsCell"));
+  mIgnoreTriggerTypes = get_bool(getConfigValue("ignoreTriggers"));
   double threshold = hasConfigValue("threshold") ? get_double(getConfigValue("threshold")) : 0.5;
 
   if (hasAmpVsCell) {
@@ -219,7 +220,8 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     //trigger type
     auto triggertype = trg.mTriggerType;
-    bool isPhysTrigger = triggertype & o2::trigger::PhT, isCalibTrigger = triggertype & o2::trigger::Cal;
+    bool isPhysTrigger = mIgnoreTriggerTypes || (triggertype & o2::trigger::PhT),
+         isCalibTrigger = (!mIgnoreTriggerTypes) && (triggertype & o2::trigger::Cal);
     std::string trgClass;
     if (isPhysTrigger) {
       trgClass = "PHYS";
@@ -463,7 +465,7 @@ void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit
       fillOptional2D(mDigitAmpSupermoduleCalib, digit.getEnergy(), supermoduleID);
       fillOptional2D(mDigitTimeSupermoduleCalib, digit.getTimeStamp() - timecalib, supermoduleID);
     }
-    if (supermoduleID) {
+    if (supermoduleID < 12) {
       fillOptional1D(mDigitAmplitudeEMCAL, digit.getEnergy());
     } else {
       fillOptional1D(mDigitAmplitudeDCAL, digit.getEnergy());

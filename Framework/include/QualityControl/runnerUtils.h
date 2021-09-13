@@ -64,6 +64,7 @@ inline bool hasChecks(std::string configSource)
   return config->getRecursive("qc").count("checks") > 0;
 }
 
+// todo: delete those four once QC-443 is done (or in the process)
 inline int computeRunNumber(const framework::ServiceRegistry& services, const boost::property_tree::ptree& config)
 { // Determine run number
   int run = 0;
@@ -78,10 +79,37 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, const bo
                         << ENDM;
   }
   run = run > 0 /* found it in service */ ? run : config.get<int>("qc.config.Activity.number", 0);
+  ILOG(Debug, Devel) << "Run number returned by computeRunNumber (tree) : " << run << ENDM;
   return run;
 }
 
-inline int computeRunNumber(const framework::ServiceRegistry& services, int defaultRunNumber = 0)
+inline std::string computePeriodName(const framework::ServiceRegistry& services, const boost::property_tree::ptree& config)
+{ // Determine period
+  std::string periodName;
+  periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("periodName", "unspecified");
+  ILOG(Info, Devel) << "Got this property periodName from RawDeviceService: '" << periodName << "'" << ENDM;
+  periodName = periodName != "unspecified" /* found it in service */ ? periodName : config.get<std::string>("qc.config.Activity.periodName", "");
+  ILOG(Debug, Devel) << "Period Name returned by computePeriodName : " << periodName << ENDM;
+  return periodName;
+}
+
+inline std::string computePassName(const boost::property_tree::ptree& config)
+{
+  std::string passName;
+  passName = config.get<std::string>("qc.config.Activity.passName", "");
+  ILOG(Debug, Devel) << "Period Name returned by computePassName : " << passName << ENDM;
+  return passName;
+}
+
+inline std::string computeProvenance(const boost::property_tree::ptree& config)
+{
+  std::string provenance;
+  provenance = config.get<std::string>("qc.config.Activity.provenance", "qc");
+  ILOG(Debug, Devel) << "Period Name returned by computeProvenance : " << provenance << ENDM;
+  return provenance;
+}
+
+inline int computeRunNumber(const framework::ServiceRegistry& services, int fallbackRunNumber = 0)
 { // Determine run number
   int run = 0;
   try {
@@ -94,8 +122,35 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, int defa
                            "   using the one from the config file or 0 as a last resort."
                         << ENDM;
   }
-  run = run > 0 /* found it in service */ ? run : defaultRunNumber;
+  run = run > 0 /* found it in service */ ? run : fallbackRunNumber;
+  ILOG(Debug, Devel) << "Run number returned by computeRunNumber (default) : " << run << ENDM;
   return run;
+}
+
+inline std::string computePeriodName(const framework::ServiceRegistry& services, const std::string& fallbackPeriodName = "")
+{ // Determine period
+  std::string periodName;
+  periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("periodName", "unspecified");
+  ILOG(Info, Devel) << "Got this property periodName from RawDeviceService: '" << periodName << "'" << ENDM;
+  periodName = periodName != "unspecified" /* found it in service */ ? periodName : fallbackPeriodName;
+  ILOG(Debug, Devel) << "Period Name returned by computePeriodName : " << periodName << ENDM;
+  return periodName;
+}
+
+inline std::string computePassName(const std::string& fallbackPassName = "")
+{
+  std::string passName;
+  passName = fallbackPassName;
+  ILOG(Debug, Devel) << "Period Name returned by computePassName : " << passName << ENDM;
+  return passName;
+}
+
+inline std::string computeProvenance(const std::string& fallbackProvenance = "")
+{
+  std::string provenance;
+  provenance = fallbackProvenance;
+  ILOG(Debug, Devel) << "Period Name returned by computeProvenance : " << provenance << ENDM;
+  return provenance;
 }
 
 } // namespace o2::quality_control::core

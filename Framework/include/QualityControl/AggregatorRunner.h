@@ -24,6 +24,7 @@
 // QC
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/UpdatePolicyManager.h"
+#include "QualityControl/Activity.h"
 
 namespace o2::framework
 {
@@ -90,7 +91,7 @@ class AggregatorRunner : public framework::Task
    * @param configurationSource Path to configuration
    * @param checkRunnerOutputs List of checkRunners' output that it will take as inputs.
    */
-  AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkRunnerOutputs);
+  AggregatorRunner(const std::string& configurationSource, const std::vector<framework::OutputSpec> checkRunnerOutputs);
 
   /// Destructor
   ~AggregatorRunner() override;
@@ -160,7 +161,7 @@ class AggregatorRunner : public framework::Task
 
   // General state
   std::string mDeviceName;
-  int mRunNumber;
+  core::Activity mActivity;
   std::vector<std::shared_ptr<Aggregator>> mAggregators;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;

@@ -12,6 +12,8 @@
 ///
 /// \file   TOFMatchedTracks.cxx
 /// \author Chiara Zampolli
+/// \brief  Task to monitor TOF matching efficiency
+/// \since  03/08/2021
 ///
 
 #include <TCanvas.h>
@@ -120,7 +122,7 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
     }
     // loop over TOF MatchInfo
     for (const auto& matchTOF : mTPCTOFMatches) {
-      const auto& trk = mTPCTracks[matchTOF.getTrackIndex()];
+      const auto& trk = mTPCTracks[matchTOF.getTrackRef().getIndex()];
       mMatchedTracksPt[trkType::UNCONS]->Fill(trk.getPt());
       mMatchedTracksEta[trkType::UNCONS]->Fill(trk.getEta());
     }
@@ -134,7 +136,7 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
     ILOG(Info, Support) << "We found " << mITSTPCTOFMatches.size() << " ITS-TPC tracks matched to TOF" << ENDM;
     // loop over TOF MatchInfo
     for (const auto& matchTOF : mITSTPCTOFMatches) {
-      const auto& trk = mITSTPCTracks[matchTOF.getTrackIndex()];
+      const auto& trk = mITSTPCTracks[matchTOF.getTrackRef().getIndex()];
       mMatchedTracksPt[trkType::CONSTR]->Fill(trk.getPt());
       mMatchedTracksEta[trkType::CONSTR]->Fill(trk.getEta());
     }
@@ -156,7 +158,7 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
           return true;
         }
       } else if constexpr (isTPCTOFTrack<decltype(trk)>()) {
-        const auto& tpcTrack = mTPCTracks[mTPCTOFMatches[trk.getRefMatch()].getTrackIndex()];
+        const auto& tpcTrack = mTPCTracks[mTPCTOFMatches[trk.getRefMatch()].getTrackRef().getIndex()];
         if (tpcTrack.getNClusters() < nMinTPCClusters) {
           return true;
         }

@@ -28,12 +28,15 @@
 
 #include <boost/asio/ip/host_name.hpp>
 #include <DataSampling/DataSampling.h>
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
 
 using namespace o2;
 using namespace o2::framework;
 using namespace o2::utilities;
+using namespace o2::configuration;
 
 // The customize() functions are used to declare the executable arguments and to specify custom completion and channel
 // configuration policies. They have to be above `#include "Framework/runDataProcessing.h"` - that header checks if
@@ -155,9 +158,10 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
       case WorkflowType::Standalone: {
         ILOG(Info, Support) << "Creating a standalone QC workflow." << ENDM;
 
-        if (!config.options().get<bool>("no-data-sampling")) {
+        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
+        if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-          DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+          DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
@@ -166,18 +170,19 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
       }
       case WorkflowType::Local: {
         ILOG(Info, Support) << "Creating a local QC topology." << ENDM;
+        auto host = config.options().get<std::string>("host").empty()
+                      ? boost::asio::ip::host_name()
+                      : config.options().get<std::string>("host");
 
-        if (!config.options().get<bool>("no-data-sampling")) {
+        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
+        if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-          DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+          DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"), 1, host);
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
 
         // Generation of the local QC topology (local QC tasks and their output proxies)
-        auto host = config.options().get<std::string>("host").empty()
-                      ? boost::asio::ip::host_name()
-                      : config.options().get<std::string>("host");
         quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, host);
         break;
       }
@@ -190,9 +195,10 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
       }
       case WorkflowType::LocalBatch: {
         ILOG(Info, Support) << "Creating a local batch QC workflow." << ENDM;
-        if (!config.options().get<bool>("no-data-sampling")) {
+        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
+        if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
-          DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+          DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
@@ -211,7 +217,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     }
   } catch (const std::runtime_error& re) {
     ILOG(Fatal, Ops) << "Failed to build the workflow: " << re.what() << ENDM;
-    return {};
+    throw;
   }
 
   return specs;

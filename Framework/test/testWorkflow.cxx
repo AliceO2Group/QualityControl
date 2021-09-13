@@ -32,10 +32,13 @@ void customize(std::vector<CompletionPolicy>& policies)
 #include "QualityControl/runnerUtils.h"
 #include <Framework/runDataProcessing.h>
 #include <Framework/ControlService.h>
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 #include <TH1F.h>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;
+using namespace o2::configuration;
 
 WorkflowSpec defineDataProcessing(ConfigContext const&)
 {
@@ -60,7 +63,9 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   ILOG(Info) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure
-  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+  auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+  auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+  DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
   quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
@@ -69,7 +74,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataProcessorSpec receiver{
     "receiver",
     Inputs{
-      { "checked-mo", "QC", CheckRunner::createCheckRunnerDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
+      { "checked-mo", "QC", Check::createCheckerDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
     Outputs{},
     AlgorithmSpec{
       [](ProcessingContext& pctx) {

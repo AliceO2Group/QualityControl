@@ -38,6 +38,7 @@ ITSFhrTask::ITSFhrTask()
 ITSFhrTask::~ITSFhrTask()
 {
   delete mGeneralOccupancy;
+  delete mGeneralNoisyPixel;
   delete mDecoder;
   delete mChipDataBuffer;
   delete mTFInfo;
@@ -88,6 +89,10 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeneralOccupancy->SetTitle("General Occupancy;mm;mm");
   mGeneralOccupancy->SetName("General/General_Occupancy");
 
+  mGeneralNoisyPixel = new TH2Poly();
+  mGeneralNoisyPixel->SetTitle("Noisy Pixel Number;mm;mm");
+  mGeneralNoisyPixel->SetName("General/Noisy_Pixel");
+
   createGeneralPlots();
   createOccupancyPlots();
   setPlotsFormat();
@@ -112,12 +117,15 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
         double* py = new double[4];
         getStavePoint(ilayer, istave, px, py);
         mGeneralOccupancy->AddBin(4, px, py);
+        mGeneralNoisyPixel->AddBin(4, px, py);
       }
     }
     if (mGeneralOccupancy) {
       getObjectsManager()->startPublishing(mGeneralOccupancy);
     }
-
+    if (mGeneralNoisyPixel) {
+      getObjectsManager()->startPublishing(mGeneralNoisyPixel);
+    }
     //define the errorcount array, there is some reason cause break when I define errorcount and hitnumber, occupancy at same block.
     if (mLayer < NLayerIB) {
       for (int istave = 0; istave < NStaves[mLayer]; istave++) {
@@ -443,7 +451,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   //decode raw data and save digit hit to digit hit vector, and save hitnumber per chip/hic
   while ((mChipDataBuffer = mDecoder->getNextChipData(mChipsBuffer))) {
     if (mChipDataBuffer) {
-      int layer, stave, ssta, mod, chip;
+      int stave = 0, ssta = 0, mod = 0, chip = 0;
       int hic = 0;
       const auto& pixels = mChipDataBuffer->getData();
       for (auto& pixel : pixels) {
@@ -453,7 +461,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           hic = 0;
           mHitnumber[stave][chip]++;
         } else {
-          mGeom->getChipId(mChipDataBuffer->getChipID(), layer, stave, ssta, mod, chip);
+          stave = (mChipDataBuffer->getChipID() - ChipBoundary[lay]) / (14 * nHicPerStave[lay]);
+          int chipIdLocal = (mChipDataBuffer->getChipID() - ChipBoundary[lay]) % (14 * nHicPerStave[lay]);
+          ssta = chipIdLocal / (7 * nHicPerStave[lay]);
+          mod = (chipIdLocal % (7 * nHicPerStave[lay])) / 14;
+          chip = chipIdLocal % 14;
           if (lay == 3 || lay == 4) {
             hic = mod + ssta * 4;
           } else {
@@ -502,8 +514,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     } else {
       for (int ihic = 0; ihic < nHicPerStave[lay]; ihic++) {
         for (auto& digit : digVec[istave][ihic]) {
-          int lay, stave, ssta, mod, chip;
-          mGeom->getChipId(digit.getChipIndex(), lay, stave, ssta, mod, chip);
+          int chip = ((digit.getChipIndex() - ChipBoundary[lay]) % (14 * nHicPerStave[lay])) % 14;
           mHitPixelID_InStave[istave][ihic][chip][1000 * digit.getColumn() + digit.getRow()]++;
         }
       }
@@ -544,6 +555,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (!RUdecode) {
       continue;
     }
+    mNoisyPixelNumber[lay][istave] = 0;
 
     if (lay < NLayerIB) {
       for (int ilink = 0; ilink < RUDecodeData::MaxLinksPerRU; ilink++) {
@@ -554,6 +566,9 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         for (int ichip = 0 + (ilink * 3); ichip < (ilink * 3) + 3; ichip++) {
           std::unordered_map<unsigned int, int>::iterator iter;
           for (iter = mHitPixelID_InStave[istave][0][ichip].begin(); iter != mHitPixelID_InStave[istave][0][ichip].end(); iter++) {
+            if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
+              mNoisyPixelNumber[lay][istave]++;
+            }
             int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip), (int)(iter->first % 1000) };
             mStaveHitmap[lay][istave]->SetBinContent(pixelPos, (double)iter->second);
             totalhit += (int)iter->second;
@@ -578,7 +593,10 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           for (int ichip = 0; ichip < nChipsPerHic[lay]; ichip++) {
             if (GBTLinkInfo->statistics.nTriggers > 0) {
               std::unordered_map<unsigned int, int>::iterator iter;
-              for (iter = mHitPixelID_InStave[istave][ihic][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic][ichip].end(); iter++) {
+              for (iter = mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[lay] / NSubStave[lay]))][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[lay] / NSubStave[lay]))][ichip].end(); iter++) {
+                if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
+                  mNoisyPixelNumber[lay][istave]++;
+                }
                 double pixelOccupancy = (double)iter->second;
                 occupancyPlotTmp[i]->Fill(log10(pixelOccupancy / GBTLinkInfo->statistics.nTriggers));
                 if (ichip < 7) {
@@ -622,6 +640,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
       mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
+      mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[lay][istave]);
     } else {
       for (int ihic = 0; ihic < nHicPerStave[lay]; ihic++) {
         int ilink = ihic / (nHicPerStave[lay] / 2);
@@ -635,6 +654,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
       mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
+      mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[lay][istave]);
     }
   }
   for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
@@ -672,29 +692,12 @@ void ITSFhrTask::getParameters()
   mGetTFFromBinding = std::stoi(mCustomParameters["GetTFFromBinding"]);
   mRunNumberPath = mCustomParameters["runNumberPath"];
   mGeomPath = mCustomParameters["geomPath"];
+  mHitCutForNoisyPixel = std::stoi(mCustomParameters["HitNumberCutForNoisyPixel"]);
+  mOccupancyCutForNoisyPixel = std::stof(mCustomParameters["OccupancyNumberCutForNoisyPixel"]);
 }
 
 void ITSFhrTask::endOfCycle()
 {
-  std::ifstream runNumberFile("infiles/RunNumber.dat"); //catching ITS run number in commissioning
-  if (mRunNumber != "000000") {
-    ILOG(Info) << "runNumber : " << mRunNumber << ENDM;
-    mInfoCanvasComm->SetTitle(Form("run%s", mRunNumber.c_str()));
-    getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mErrorPlots->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mErrorVsFeeid->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mTriggerVsFeeid->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mTriggerPlots->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mInfoCanvasComm->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mChipStaveOccupancy[mLayer]->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mOccupancyPlot[mLayer]->GetName(), "Run", mRunNumber);
-    getObjectsManager()->addMetadata(mChipStaveEventHitCheck[mLayer]->GetName(), "Run", mRunNumber);
-    for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-      if (mStaveHitmap[mLayer][istave]) {
-        getObjectsManager()->addMetadata(mStaveHitmap[mLayer][istave]->GetName(), "Run", mRunNumber);
-      }
-    }
-  }
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 

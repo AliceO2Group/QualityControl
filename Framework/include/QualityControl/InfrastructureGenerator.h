@@ -32,6 +32,8 @@ namespace o2::quality_control
 namespace core
 {
 
+struct InfrastructureSpec;
+
 /// \brief A factory class which can generate QC topologies given a configuration file.
 ///
 /// A factory class which can generate QC topologies given a configuration file (example in Framework/basic.json and
@@ -158,18 +160,29 @@ class InfrastructureGenerator
  private:
   // Dedicated methods for creating each QC component to hide implementation details.
 
-  static void generateDataSamplingPolicyLocalProxy(framework::WorkflowSpec& workflow,
-                                                   const std::string& policyName,
-                                                   const framework::Inputs& inputSpecs,
-                                                   const std::string& localMachine,
-                                                   const std::string& localPort,
-                                                   const std::string& control);
-  static void generateDataSamplingPolicyRemoteProxy(framework::WorkflowSpec& workflow,
-                                                    const std::string& policyName,
-                                                    const framework::Outputs& outputSpecs,
-                                                    const std::string& localMachine,
-                                                    const std::string& localPort,
-                                                    const std::string& control);
+  static void generateDataSamplingPolicyLocalProxyBind(framework::WorkflowSpec& workflow,
+                                                       const std::string& policyName,
+                                                       const framework::Inputs& inputSpecs,
+                                                       const std::string& localMachine,
+                                                       const std::string& localPort,
+                                                       const std::string& control);
+  static void generateDataSamplingPolicyRemoteProxyConnect(framework::WorkflowSpec& workflow,
+                                                           const std::string& policyName,
+                                                           const framework::Outputs& outputSpecs,
+                                                           const std::string& localMachine,
+                                                           const std::string& localPort,
+                                                           const std::string& control);
+  static void generateDataSamplingPolicyLocalProxyConnect(framework::WorkflowSpec& workflow,
+                                                          const std::string& policyName,
+                                                          const framework::Inputs& inputSpecs,
+                                                          const std::string& remoteMachine,
+                                                          const std::string& remotePort,
+                                                          const std::string& control);
+  static void generateDataSamplingPolicyRemoteProxyBind(framework::WorkflowSpec& workflow,
+                                                        const std::string& policyName,
+                                                        const framework::Outputs& outputSpecs,
+                                                        const std::string& remotePort,
+                                                        const std::string& control);
   static void generateLocalTaskLocalProxy(framework::WorkflowSpec& workflow,
                                           size_t id,
                                           std::string taskName,
@@ -188,8 +201,8 @@ class InfrastructureGenerator
                               std::string mergingMode,
                               size_t resetAfterCycles,
                               std::string monitoringUrl);
-  static vector<framework::OutputSpec> generateCheckRunners(framework::WorkflowSpec& workflow, std::string configurationSource);
-  static void generateAggregator(framework::WorkflowSpec& workflow, std::string configurationSource, vector<framework::OutputSpec>& checkRunnerOutputs);
+  static std::vector<framework::OutputSpec> generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
+  static void generateAggregator(framework::WorkflowSpec& workflow, std::string configurationSource, std::vector<framework::OutputSpec>& checkRunnerOutputs);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, std::string configurationSource);
 };
 

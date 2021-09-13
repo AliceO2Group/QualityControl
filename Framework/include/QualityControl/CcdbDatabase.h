@@ -115,8 +115,9 @@ class CcdbDatabase : public DatabaseInterface
    * @return The listing of folder and/or objects in the format requested and as returned by the http server.
    */
   std::string getListingAsString(std::string subpath = "", std::string accept = "text/plain");
+
   o2::ccdb::CcdbApi ccdbApi;
-  std::string mUrl = "";
+  std::string mUrl;
 };
 
 } // namespace o2::quality_control::repository

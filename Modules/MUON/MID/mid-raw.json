@@ -36,29 +36,30 @@
           "name": "digits"
         },
         "taskParameters": {
-          "feeId-config-file": "",
+          "feeId-config-file": "/home/mid/daq_utils/config/feeId_mapper.txt",
           "crate-masks-file": "",
-          "electronics-delays-file": "",
-          "per-gbt": "false",
-          "per-feeId": "false",
-          "output-file": "./QCChecker-out.txt"
+          "electronics-delays-file": ""
         }
       }
     },
     "checks": {
       "QcCheckMID": {
         "active": "true",
-        "dataSource": [{
-          "type": "Task",
-          "name": "QcTestMID",
-          "MOs": ["mDetElemID"]
-        }],
         "className": "o2::quality_control_modules::mid::RawQcCheck",
         "moduleName": "QcMID",
         "detectorName": "MID",
-        "policy": "OnAny"
+        "policy": "OnAny",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "QcTestMID",
+            "MOs": [
+              "mDetElemID"
+            ]
+          }
+        ]
       }
-    }    
+    }
   },
   "dataSamplingPolicies": [
     {
@@ -69,7 +70,7 @@
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "1.0",
+          "fraction": "0.1",
           "seed": "1234"
         }
       ],

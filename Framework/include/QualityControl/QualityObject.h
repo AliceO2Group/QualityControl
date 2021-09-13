@@ -20,6 +20,7 @@
 #include <Common/Exceptions.h>
 // QC
 #include "QualityControl/Quality.h"
+#include "QualityControl/Activity.h"
 
 namespace o2::quality_control::core
 {
@@ -124,8 +125,10 @@ class QualityObject : public TObject
   const std::string& getCheckName() const;
   const std::string& getPolicyName() const;
   const std::vector<std::string> getMonitorObjectsNames() const;
-  int getRunNumber() const;
-  void setRunNumber(int mRunNumber);
+  Activity& getActivity();
+  const Activity& getActivity() const;
+  void setActivity(const Activity& activity);
+  void updateActivity(int runNumber = 0, const std::string& periodName = "", const std::string& passName = "", const std::string& provenance = "");
 
  private:
   Quality mQuality;
@@ -134,9 +137,9 @@ class QualityObject : public TObject
   std::string mPolicyName;
   std::vector<std::string> mInputs;
   std::vector<std::string> mMonitorObjectsNames;
-  int mRunNumber;
+  Activity mActivity;
 
-  ClassDefOverride(QualityObject, 4);
+  ClassDefOverride(QualityObject, 5);
 };
 
 using QualityObjectsType = std::vector<std::shared_ptr<QualityObject>>;

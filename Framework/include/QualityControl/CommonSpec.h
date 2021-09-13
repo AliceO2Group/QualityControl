@@ -27,8 +27,11 @@ struct CommonSpec {
   CommonSpec() = default;
 
   std::unordered_map<std::string, std::string> database;
-  int activityNumber;
-  int activityType;
+  int activityNumber{};
+  int activityType{};
+  std::string activityPeriodName;
+  std::string activityPassName;
+  std::string activityProvenance = "qc";
   std::string monitoringUrl = "infologger:///debug?qc";
   std::string consulUrl;
   std::string conditionDBUrl = "http://ccdb-test.cern.ch:8080";
