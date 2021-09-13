@@ -66,6 +66,15 @@ class RawTask final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
+  /// \brief Set the data origin
+  /// \param origin Data origin
+  ///
+  /// Normally data origin is EMC, however in case the
+  /// Task subscribes directly to readout or the origin
+  /// is different in the STFbuilder this needs to be handled
+  /// accordingly
+  void setDataOrigin(const std::string_view origin) { mDataOrigin = origin; }
+
   enum class EventType {
     CAL_EVENT,
     PHYS_EVENT
@@ -98,6 +107,7 @@ class RawTask final : public TaskInterface
   bool isLostTimeframe(framework::ProcessingContext& ctx) const;
 
   o2::emcal::Geometry* mGeometry = nullptr; ///< EMCAL geometry
+  std::string mDataOrigin = "EMC";
   TH1* mPayloadSize = nullptr;
   TH1* mMessageCounter = nullptr;
   TH1* mNumberOfSuperpagesPerMessage;
@@ -108,6 +118,10 @@ class RawTask final : public TaskInterface
   TH1* mNbunchPerChan = nullptr;                                             ///< Number of bunch per Channel
   TH1* mNofADCsamples = nullptr;                                             ///< Number of ADC samples per Channel
   TH1* mADCsize = nullptr;                                                   ///< ADC size per bunch
+  TH2* mFECmaxCountperSM = nullptr;                                          ///< max number of hit channels per SM
+  TH2* mFECmaxIDperSM = nullptr;                                             ///< FEC ID max number of hit channels per SM
+  std::unordered_map<EventType, TH1*> mRawAmplMinEMCAL_tot;                  ///< Min Raw amplitude in whole EMCAL
+  std::unordered_map<EventType, TH1*> mRawAmplMinDCAL_tot;                   ///< Min Raw amplitude in whole DCAL
   std::array<TH1*, 20> mFECmaxCount;                                         ///< max number of hit channels
   std::array<TH1*, 20> mFECmaxID;                                            ///< FEC ID  max number of hit channels
   std::unordered_map<EventType, TProfile2D*> mRMS;                           ///< ADC rms for EMCAL+DCAL togheter
@@ -125,6 +139,7 @@ class RawTask final : public TaskInterface
   std::unique_ptr<o2::emcal::MappingHandler> mMappings;                      ///< Mappings Hardware address -> Channel
   TH2F* mErrorTypeAltro = nullptr;                                           ///< Error from AltroDecoder
   TH2F* mPayloadSizePerDDL = nullptr;                                        ///< Payload size per ddl
+  TH2F* mPayloadSizeTFPerDDL = nullptr;                                      ///< Payload size per TimeFrame per ddl
   Int_t mNumberOfSuperpages = 0;                                             ///< Simple total superpage counter
   Int_t mNumberOfPages = 0;                                                  ///< Simple total number of superpages counter
   Int_t mNumberOfMessages = 0;

@@ -85,8 +85,11 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   auto hasAmpVsCell = get_bool(getConfigValueLower("hasAmpVsCell")),
        hasTimeVsCell = get_bool(getConfigValueLower("hasTimeVsCell")),
        hasCalib2D = get_bool(getConfigValueLower("hasHistValibVsCell"));
+
   mIgnoreTriggerTypes = get_bool(getConfigValue("ignoreTriggers"));
-  double threshold = hasConfigValue("threshold") ? get_double(getConfigValue("threshold")) : 0.5;
+  //add a second threshold
+  double thresholdCAL = hasConfigValue("threshold") ? get_double(getConfigValue("threshold")) : 0.5;
+  double thresholdPHYS = hasConfigValue("threshold") ? get_double(getConfigValue("threshold")) : 0.2;
 
   if (hasAmpVsCell) {
     QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Enabling histograms : Amplitude vs. cellID" << QcInfoLogger::endm;
@@ -105,7 +108,7 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   std::array<std::string, 2> triggers = { { "CAL", "PHYS" } };
   for (const auto& trg : triggers) {
     DigitsHistograms histos;
-    histos.mCellThreshold = threshold;
+    histos.mCellThreshold = (trg == "CAL") ? thresholdCAL : thresholdPHYS;
     histos.mGeometry = mGeometry;
     histos.initForTrigger(trg.data(), hasAmpVsCell, hasTimeVsCell, hasCalib2D);
     histos.startPublishing(*getObjectsManager());
@@ -234,6 +237,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       continue;
     }
 
+    auto bcphase = trg.mInteractionRecord.bc % 4; // to be fixed:4 histos for EMCAL, 4 histos for DCAL
     auto histos = mHistogramContainer[trgClass];
 
     // iterate over subevents
@@ -254,7 +258,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (mBadChannelMap) {
             goodcell = mBadChannelMap->getChannelStatus(digit.getTower()) != MaskType_t::GOOD_CELL;
           }
-          histos.fillHistograms(digit, goodcell, timeoffset);
+          histos.fillHistograms(digit, goodcell, timeoffset, bcphase);
           ndigit++;
           ndigitGlobal++;
         }
@@ -399,7 +403,7 @@ void DigitsQcTask::DigitsHistograms::initForTrigger(const std::string trigger, b
     }
 
     mDigitAmpSupermodule = histBuilder2D("digitAmplitudeSupermodule", "Digit amplitude vs. supermodule ID ", 400, 0., 100, 20, -0.5, 19.5, false);
-    mDigitTimeSupermodule = histBuilder2D("digitTimeSupermodule", "Digit Time vs. supermodule ID (High gain)", 400, -200, 200, 20, -0.5, 19.5, false);
+    mDigitTimeSupermodule = histBuilder2D("digitTimeSupermodule", "Digit Time vs. supermodule ID ", 400, -200, 200, 20, -0.5, 19.5, false);
     if (hasHistosCalib2D) {
       mDigitAmpSupermoduleCalib = histBuilder2D("digitAmplitudeSupermoduleCalib", "Digit amplitude (Calib) vs. supermodule ID ", 400, 0., 100, 20, -0.5, 19.5, false);
       mDigitTimeSupermoduleCalib = histBuilder2D("digitTimeSupermoduleCalib", "Digit Time (Calib) vs. supermodule ID (High gain)", 400, -200, 200, 20, -0.5, 19.5, false);
@@ -408,18 +412,22 @@ void DigitsQcTask::DigitsHistograms::initForTrigger(const std::string trigger, b
 
   mDigitOccupancy = histBuilder2D("digitOccupancyEMC", "Digit Occupancy EMCAL", 96, -0.5, 95.5, 208, -0.5, 207.5, false);
   mDigitOccupancyThr = histBuilder2D("digitOccupancyEMCwThr", Form("Digit Occupancy EMCAL with E>%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+  mDigitOccupancyThrBelow = histBuilder2D("digitOccupancyEMCwThrBelow", Form("Digit Occupancy EMCAL with E<%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
 
   mIntegratedOccupancy = histBuilder2D("digitOccupancyInt", "Digit Occupancy Integrated", 96, -0.5, 95.5, 208, -0.5, 207.5, true);
   mIntegratedOccupancy->GetXaxis()->SetTitle("col");
   mIntegratedOccupancy->GetYaxis()->SetTitle("row");
   // 1D histograms for showing the integrated spectrum
 
+  mDigitTimeSupermoduleEMCAL = histBuilder1D("digitTimeEMCAL", "Digit Time EMCAL", 400, -200, 200);
+  mDigitTimeSupermoduleDCAL = histBuilder1D("digitTimeDCAL", "Digit Time DCAL", 400, -200, 200);
   mDigitAmplitudeEMCAL = histBuilder1D("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 400, 0., 100.);
+  mDigitAmplitudeEMCAL_0 = histBuilder1D("digitAmplitudeEMCAL_bc0", "Digit amplitude in EMCAL(bc=0)", 400, 0., 100.);
   mDigitAmplitudeDCAL = histBuilder1D("digitAmplitudeDCAL", "Digit amplitude in DCAL", 400, 0., 100.);
   mnumberEvents = histBuilder1D("NumberOfEvents", "Number Of Events", 1, 0.5, 1.5);
 }
 
-void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit, bool goodCell, double timecalib)
+void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit, bool goodCell, double timecalib, int bcphase)
 {
   auto fillOptional1D = [](TH1* hist, double x, double weight = 1.) {
     if (hist)
@@ -449,7 +457,10 @@ void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit
     }
     if (digit.getEnergy() > mCellThreshold) {
       fillOptional2D(mDigitOccupancyThr, col, row);
+    } else {
+      fillOptional2D(mDigitOccupancyThrBelow, col, row);
     }
+
     fillOptional2D(mIntegratedOccupancy, col, row, digit.getEnergy());
 
   } catch (o2::emcal::InvalidCellIDException& e) {
@@ -466,9 +477,14 @@ void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit
       fillOptional2D(mDigitTimeSupermoduleCalib, digit.getTimeStamp() - timecalib, supermoduleID);
     }
     if (supermoduleID < 12) {
-      fillOptional1D(mDigitAmplitudeEMCAL, digit.getEnergy());
+
+      fillOptional1D(mDigitTimeSupermoduleEMCAL, digit.getTimeStamp());
+      fillOptional1D(mDigitAmplitudeEMCAL, digit.getEnergy()); //EMCAL
+      if (bcphase == 0)
+        fillOptional1D(mDigitAmplitudeEMCAL_0, digit.getEnergy()); //EMCALBC bcphase in the name?if bcphase=0-->Fill?
     } else {
       fillOptional1D(mDigitAmplitudeDCAL, digit.getEnergy());
+      fillOptional1D(mDigitTimeSupermoduleDCAL, digit.getTimeStamp());
     }
   } catch (o2::emcal::InvalidCellIDException& e) {
     QcInfoLogger::GetInstance() << "Invalid cell ID: " << e.getCellID() << QcInfoLogger::endm;
@@ -494,11 +510,15 @@ void DigitsQcTask::DigitsHistograms::startPublishing(o2::quality_control::core::
   publishOptional(mDigitAmpSupermodule);
   publishOptional(mDigitAmpSupermoduleCalib);
   publishOptional(mDigitTimeSupermodule);
+  publishOptional(mDigitTimeSupermoduleEMCAL);
+  publishOptional(mDigitTimeSupermoduleDCAL);
   publishOptional(mDigitTimeSupermoduleCalib);
   publishOptional(mDigitAmplitudeEMCAL);
+  publishOptional(mDigitAmplitudeEMCAL_0);
   publishOptional(mDigitAmplitudeDCAL);
   publishOptional(mDigitOccupancy);
   publishOptional(mDigitOccupancyThr);
+  publishOptional(mDigitOccupancyThrBelow);
   publishOptional(mIntegratedOccupancy);
   publishOptional(mnumberEvents);
   //  publishOptional(mEvCounterTF);
@@ -535,11 +555,15 @@ void DigitsQcTask::DigitsHistograms::reset()
   resetOptional(mDigitAmpSupermodule);
   resetOptional(mDigitAmpSupermoduleCalib);
   resetOptional(mDigitTimeSupermodule);
+  resetOptional(mDigitTimeSupermoduleEMCAL);
+  resetOptional(mDigitTimeSupermoduleDCAL);
   resetOptional(mDigitTimeSupermoduleCalib);
   resetOptional(mDigitAmplitudeEMCAL);
+  resetOptional(mDigitAmplitudeEMCAL_0);
   resetOptional(mDigitAmplitudeDCAL);
   resetOptional(mDigitOccupancy);
   resetOptional(mDigitOccupancyThr);
+  resetOptional(mDigitOccupancyThrBelow);
   resetOptional(mIntegratedOccupancy);
   resetOptional(mnumberEvents);
   //  resetOptional(mEvCounterTF);
@@ -575,11 +599,15 @@ void DigitsQcTask::DigitsHistograms::clean()
   cleanOptional(mDigitAmpSupermodule);
   cleanOptional(mDigitAmpSupermoduleCalib);
   cleanOptional(mDigitTimeSupermodule);
+  cleanOptional(mDigitTimeSupermoduleEMCAL);
+  cleanOptional(mDigitTimeSupermoduleDCAL);
   cleanOptional(mDigitTimeSupermoduleCalib);
   cleanOptional(mDigitAmplitudeEMCAL);
+  cleanOptional(mDigitAmplitudeEMCAL_0);
   cleanOptional(mDigitAmplitudeDCAL);
   cleanOptional(mDigitOccupancy);
   cleanOptional(mDigitOccupancyThr);
+  cleanOptional(mDigitOccupancyThrBelow);
   cleanOptional(mIntegratedOccupancy);
   cleanOptional(mnumberEvents);
   //  cleanOptional(mEvCounterTF);
