@@ -99,7 +99,6 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTracking_direct.json
               run/tpcQCClusterChecker.json
               run/tpcQCSimpleTrending.json
-              run/tpcQCTrendingClusters.json
               run/tpcQCTrending.json
               run/tpcQCClusters_direct.json
               run/tpcQCTrackingFromExternal_direct.json
@@ -107,4 +106,6 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCRawDigits_direct.json
               run/tpcQCTasks_multinode.json
               run/tpcQCTrending_EPN.json
+              run/tpcQCTrending_all.json
+              run/tpcQCTrending_slicer.json
         DESTINATION etc)

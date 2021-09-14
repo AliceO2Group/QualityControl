@@ -35,7 +35,7 @@ namespace o2::quality_control_modules::tpc
 PID::PID() : TaskInterface() {}
 
 PID::~PID()
-{
+{ //std::cout << "Hello" << std::endl;  // LOKIII
 }
 
 void PID::initialize(o2::framework::InitContext& /*ctx*/)
