@@ -12,11 +12,6 @@
 #pragma link C++ class o2::quality_control_modules::tpc::Clusters+;
 #pragma link C++ class o2::quality_control_modules::tpc::CalDetPublisher+;
 #pragma link C++ class o2::quality_control_modules::tpc::RawDigits+;
-#pragma link C++ class o2::quality_control_modules::tpc::TrendingTaskTPC+;
-#pragma link C++ class o2::quality_control_modules::tpc::TrendingTaskConfigTPC+;
-#pragma link C++ class o2::quality_control_modules::tpc::ReductorTPC+;
-#pragma link C++ class o2::quality_control_modules::tpc::TH1ReductorTPC+;
-#pragma link C++ class o2::quality_control_modules::tpc::TH2ReductorTPC+;
 
 #pragma link C++ function o2::quality_control_modules::tpc::addAndPublish+;
 #pragma link C++ function o2::quality_control_modules::tpc::toVector+;
