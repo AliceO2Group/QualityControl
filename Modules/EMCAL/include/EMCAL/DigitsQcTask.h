@@ -76,19 +76,23 @@ class DigitsQcTask final : public TaskInterface
     TH2* mDigitTimeSupermodule = nullptr;
     TH2* mDigitTimeSupermoduleCalib = nullptr;
 
-    TH2* mDigitOccupancy = nullptr;      ///< Digit occupancy EMCAL and DCAL
-    TH2* mDigitOccupancyThr = nullptr;   ///< Digit occupancy EMCAL and DCAL with Energy trheshold
-    TH2* mIntegratedOccupancy = nullptr; ///< Digit integrated occupancy
-    TH1* mDigitAmplitudeEMCAL = nullptr; ///< Digit amplitude in EMCAL
-    TH1* mDigitAmplitudeDCAL = nullptr;  ///< Digit amplitude in DCAL
-    TH1* mnumberEvents = nullptr;        ///< Number of Events for normalization
+    TH2* mDigitOccupancy = nullptr;            ///< Digit occupancy EMCAL and DCAL
+    TH2* mDigitOccupancyThr = nullptr;         ///< Digit occupancy EMCAL and DCAL with Energy trheshold
+    TH2* mDigitOccupancyThrBelow = nullptr;    ///< Digit occupancy EMCAL and DCAL with Energy trheshold
+    TH2* mIntegratedOccupancy = nullptr;       ///< Digit integrated occupancy
+    TH1* mDigitAmplitudeEMCAL = nullptr;       ///< Digit amplitude in EMCAL
+    TH1* mDigitAmplitudeEMCAL_0 = nullptr;     ///< Digit amplitude in EMCAL if bc==0
+    TH1* mDigitAmplitudeDCAL = nullptr;        ///< Digit amplitude in DCAL
+    TH1* mDigitTimeSupermoduleEMCAL = nullptr; ///< Digit amplitude in DCAL per SuperModule
+    TH1* mDigitTimeSupermoduleDCAL = nullptr;  ///< Digit amplitude in DCAL per SuperModule
+    TH1* mnumberEvents = nullptr;              ///< Number of Events for normalization
 
     void initForTrigger(const std::string trigger, bool hasAmpVsCellID, bool hasTimeVsCellID, bool hasHistosCalib2D);
     void startPublishing(o2::quality_control::core::ObjectsManager& manager);
     void reset();
     void clean();
 
-    void fillHistograms(const o2::emcal::Cell& cell, bool isGood, double timeoffset);
+    void fillHistograms(const o2::emcal::Cell& cell, bool isGood, double timeoffset, int bcphase);
     void countEvent();
   };
 

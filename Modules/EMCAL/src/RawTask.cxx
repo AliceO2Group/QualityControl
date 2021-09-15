@@ -50,6 +50,9 @@ RawTask::~RawTask()
   if (mPayloadSizePerDDL) {
     delete mPayloadSizePerDDL;
   }
+  if (mPayloadSizeTFPerDDL) {
+    delete mPayloadSizeTFPerDDL;
+  }
   if (mMessageCounter) {
     delete mMessageCounter;
   }
@@ -62,14 +65,12 @@ RawTask::~RawTask()
   if (mNumberOfPagesPerMessage) {
     delete mNumberOfPagesPerMessage;
   }
-
   for (auto h : mFECmaxCount) {
     delete h;
   }
   for (auto h : mFECmaxID) {
     delete h;
   }
-
   if (mNumberOfSuperpagesPerMessage) {
     delete mNumberOfSuperpagesPerMessage;
   }
@@ -88,6 +89,13 @@ RawTask::~RawTask()
   if (mADCsize) {
     delete mADCsize;
   }
+  if (mFECmaxCountperSM) {
+    delete mFECmaxCountperSM;
+  }
+  if (mFECmaxIDperSM) {
+    delete mFECmaxIDperSM;
+  }
+
   for (auto& histos : mRMS) {
     delete histos.second;
   }
@@ -103,7 +111,12 @@ RawTask::~RawTask()
   for (auto& histos : mMIN) {
     delete histos.second;
   }
-
+  for (auto& histos : mRawAmplMinEMCAL_tot) {
+    delete histos.second;
+  }
+  for (auto& histos : mRawAmplMinDCAL_tot) {
+    delete histos.second;
+  }
   for (auto& histos : mRawAmplitudeEMCAL) {
     for (auto h : histos.second) {
       delete h;
@@ -163,6 +176,10 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   if (!mGeometry)
     mGeometry = o2::emcal::Geometry::GetInstanceFromRunNumber(300000);
 
+  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
+  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
+    QcInfoLogger::GetInstance() << "Custom parameter - myOwnKey : " << param->second << AliceO2::InfoLogger::InfoLogger::endm;
+  }
   mMappings = std::unique_ptr<o2::emcal::MappingHandler>(new o2::emcal::MappingHandler); //initialize the unique pointer to Mapper
 
   // Statistics histograms
@@ -197,10 +214,15 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mTotalDataVolume);
 
   // EMCAL related histograms
-  mPayloadSizePerDDL = new TH2F("PayloadSizePerDDL", "PayloadSizePerDDL", 40, 0, 40, 100, 0, 1);
+  mPayloadSizePerDDL = new TH2F("PayloadSizePerDDL", "PayloadSizePerDDL", 40, 0, 40, 200, 0, 20);
   mPayloadSizePerDDL->GetXaxis()->SetTitle("ddl");
-  mPayloadSizePerDDL->GetYaxis()->SetTitle("PayloadSize");
+  mPayloadSizePerDDL->GetYaxis()->SetTitle("Payload Size / Event (kB)");
   getObjectsManager()->startPublishing(mPayloadSizePerDDL);
+
+  mPayloadSizeTFPerDDL = new TH2F("PayloadSizeTFPerDDL", "PayloadSizeTFPerDDL", 40, 0, 40, 100, 0, 100);
+  mPayloadSizeTFPerDDL->GetXaxis()->SetTitle("ddl");
+  mPayloadSizeTFPerDDL->GetYaxis()->SetTitle("Payload Size / TF (kB)");
+  getObjectsManager()->startPublishing(mPayloadSizeTFPerDDL);
 
   mPayloadSize = new TH1F("PayloadSize", "PayloadSize", 20, 0, 60000000); //
   mPayloadSize->GetXaxis()->SetTitle("bytes");
@@ -224,13 +246,23 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mNbunchPerChan->GetXaxis()->SetTitle("# bunches per channels");
   getObjectsManager()->startPublishing(mNbunchPerChan);
 
-  mNofADCsamples = new TH1F("NumberOfADCPerChannel", "NumberOfADCPerChannel", 16, -0.5, 15.5);
+  mNofADCsamples = new TH1F("NumberOfADCPerChannel", "NumberOfADCPerChannel", 15, -0.5, 14.5);
   mNofADCsamples->GetXaxis()->SetTitle("# of ADC sample per channels");
   getObjectsManager()->startPublishing(mNofADCsamples);
 
-  mADCsize = new TH1F("ADCsizePerBunch", "ADCsizePerBunch", 16, -0.5, 15.5);
+  mADCsize = new TH1F("ADCsizePerBunch", "ADCsizePerBunch", 15, -0.5, 14.5);
   mADCsize->GetXaxis()->SetTitle("ADC size per bunch");
   getObjectsManager()->startPublishing(mADCsize);
+
+  mFECmaxCountperSM = new TH2F("NumberOfChWithInput_perSM", "NumberOfChWithInput_perSM", 20, 0, 20, 40, 0, 40);
+  mFECmaxCountperSM->GetXaxis()->SetTitle("SM");
+  mFECmaxCountperSM->GetYaxis()->SetTitle("max FEC count");
+  getObjectsManager()->startPublishing(mFECmaxCountperSM);
+
+  mFECmaxIDperSM = new TH2F("FECidMaxChWithInput_perSM", "FECidMaxChWithInput_perSM", 20, 0, 20, 40, 0, 40);
+  mFECmaxIDperSM->GetXaxis()->SetTitle("SM");
+  mFECmaxIDperSM->GetYaxis()->SetTitle("FEC id");
+  getObjectsManager()->startPublishing(mFECmaxIDperSM);
 
   //histos per SM
   for (auto ism = 0; ism < 20; ism++) {
@@ -274,6 +306,19 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     histosRawAmplMin->GetXaxis()->SetTitle("col");
     histosRawAmplMin->GetYaxis()->SetTitle("raw");
     getObjectsManager()->startPublishing(histosRawAmplMin);
+
+    TH1D* histosRawMinEMCALtot;
+    TH1D* histosRawMinDCALtot;
+
+    histosRawMinEMCALtot = new TH1D(Form("mRawAmplMinEMCAL_distr_%s", histoStr[trg].Data()), Form("mRawAmplMinEMCAL_distr_%s", histoStr[trg].Data()), 100, 0., 100.);
+    histosRawMinEMCALtot->GetXaxis()->SetTitle("Raw Amplitude");
+    histosRawMinEMCALtot->GetYaxis()->SetTitle("Counts");
+    getObjectsManager()->startPublishing(histosRawMinEMCALtot);
+
+    histosRawMinDCALtot = new TH1D(Form("mRawAmplMinDCAL_distr_%s", histoStr[trg].Data()), Form("mRawAmplMinDCAL_distr_%s", histoStr[trg].Data()), 100, 0., 100.);
+    histosRawMinDCALtot->GetXaxis()->SetTitle("Raw Amplitude");
+    histosRawMinDCALtot->GetYaxis()->SetTitle("Counts");
+    getObjectsManager()->startPublishing(histosRawMinDCALtot);
 
     std::array<TH1*, 20> histosRawAmplEMCALSM;
     std::array<TH1*, 20> histosMINRawAmplEMCALSM;
@@ -341,6 +386,9 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     mMAX[triggers[trg]] = histosRawAmplMax;
     mMIN[triggers[trg]] = histosRawAmplMin;
 
+    mRawAmplMinEMCAL_tot[triggers[trg]] = histosRawMinEMCALtot;
+    mRawAmplMinDCAL_tot[triggers[trg]] = histosRawMinDCALtot;
+
   } //loop trigger case
 }
 
@@ -357,7 +405,25 @@ void RawTask::startOfCycle()
 
 void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // In this function you can access data inputs specified in the JSON config file, for example:
+  //   "query": "random:ITS/RAWDATA/0"
+  // which is correspondingly <binding>:<dataOrigin>/<dataDescription>/<subSpecification
+  // One can also access conditions from CCDB, via separate API (see point 3)
+
+  // Use Framework/DataRefUtils.h or Framework/InputRecord.h to access and unpack inputs (both are documented)
+  // One can find additional examples at:
+  // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
+
   using CHTYP = o2::emcal::ChannelType_t;
+
+  // The type DataOrigin allows only conversion of char arrays with size 4, not char *, therefore
+  // the origin string has to be converted manually to the char array and checked for length.
+  if (mDataOrigin.size() > 4) {
+    QcInfoLogger::GetInstance() << QcInfoLogger::Error << "No valid data origin" << mDataOrigin << ", cannot process" << QcInfoLogger::endm;
+    return;
+  }
+  char dataOrigin[4];
+  strcpy(dataOrigin, mDataOrigin.data());
 
   if (isLostTimeframe(ctx))
     return;
@@ -368,15 +434,12 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   mMessageCounter->Fill(1); //for expert
 
   const int NUMBERSM = 20;
+  const int NFEESM = 40; //number of fee per sm
 
   std::unordered_map<RawEventType, std::array<int, 20>, RawEventTypeHash> maxADCSM, minADCSM;
-  std::unordered_map<RawEventType, std::array<std::pair<int, int>, NUMBERSM>, RawEventTypeHash> fecMaxPayload;
+  std::unordered_map<RawEventType, std::array<std::array<int, NFEESM>, NUMBERSM>, RawEventTypeHash> fecMaxPayload;
 
-  const int NFEESM = 40; //number of fee per sm
-  int nchannels[NFEESM]; //channel counting for FECid.
-  for (Int_t i = 0; i < NFEESM; i++)
-    nchannels[i] = 0;
-
+  // Accept only descriptor RAWDATA, discard FLP/SUBTIMEFRAME
   auto posReadout = ctx.inputs().getPos("readout");
   auto nslots = ctx.inputs().getNofParts(posReadout);
   for (decltype(nslots) islot = 0; islot < nslots; islot++) {
@@ -396,10 +459,11 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTotalDataVolume->Fill(1., header->payloadSize); //for expert
 
       // Skip SOX headers
-      auto rdhblock = reinterpret_cast<const o2::header::RDHAny*>(rawData.payload);
+      auto rdhblock = reinterpret_cast<const o2::header::RDHAny*>(rawData.payload); //
       if (o2::raw::RDHUtils::getHeaderSize(rdhblock) == static_cast<int>(header->payloadSize)) {
         continue;
       }
+      mPayloadSizeTFPerDDL->Fill(o2::raw::RDHUtils::getFEEID(rdhblock), header->payloadSize / 1024.); //PayLoad size per TimeFrame for shifter
 
       // try decoding payload
       o2::emcal::RawReaderMemory rawreader(gsl::span(rawData.payload, header->payloadSize));
@@ -436,9 +500,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         // Needs separate maps for the two trigger classes
         auto fecMaxChannelsEvent = fecMaxPayload.find(evIndex);
         if (fecMaxChannelsEvent == fecMaxPayload.end()) {
-          std::array<std::pair<int, int>, NUMBERSM> fecMaxCh;
-          for (auto ism = 0; ism < NUMBERSM; ism++)
-            fecMaxCh[ism] = { -1, -1 };
+          std::array<std::array<int, NFEESM>, NUMBERSM> fecMaxCh;
+          for (auto ism = 0; ism < NUMBERSM; ism++) {
+            std::fill(fecMaxCh[ism].begin(), fecMaxCh[ism].end(), 0);
+          }
           fecMaxChannelsEvent = (fecMaxPayload.insert({ evIndex, fecMaxCh })).first;
         }
 
@@ -533,8 +598,8 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
           fecIndex = chan.getFECIndex();
           branchIndex = chan.getBranchIndex();
-          fecID = mMappings->getFEEForChannelInDDL(supermoduleID, fecIndex, branchIndex);
-          nchannels[fecID]++;
+          fecID = mMappings->getFEEForChannelInDDL(feeID, fecIndex, branchIndex);
+          fecMaxChannelsEvent->second[supermoduleID][fecID]++;
 
           Short_t maxADC = 0;
           Short_t minADC = SHRT_MAX;
@@ -565,6 +630,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             if (minADCbunch < minADC)
               minADC = minADCbunch;
             mRawAmplMinEMCAL[evtype][supermoduleID]->Fill(minADCbunch); // min for each cell --> for for expert only
+            if (supermoduleID < 12)
+              mRawAmplMinEMCAL_tot[evtype]->Fill(minADCbunch); //shifter
+            else
+              mRawAmplMinDCAL_tot[evtype]->Fill(minADCbunch); //shifter
 
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());
@@ -588,26 +657,10 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           mMINperSM[evtype][supermoduleID]->Fill(col, row, minADC); //min col,row, per SM
           mMIN[evtype]->Fill(globCol, globRow, minADC);             //for shifter
         }                                                           //channels
-        //check on trigger type
-        //meaningless for CALIB trigger since the whole detector is illuminated
-        int channelID = -1, maxCount = -1;
-        for (Int_t i = 0; i < 40; i++) {
-          if (nchannels[i] > maxCount) {
-            maxCount = nchannels[i];
-            channelID = i;
-          }
-        }
-        auto& currentmaxchannelSM = fecMaxChannelsEvent->second[supermoduleID];
-        if (maxCount > currentmaxchannelSM.second) {
-          // new slowest channel found
-          currentmaxchannelSM.first = channelID;
-          currentmaxchannelSM.second = maxCount;
-        }
-
-      }                                          //new page
-    }                                            //header
-  }                                              //inputs
-  mNumberOfPagesPerMessage->Fill(nPagesMessage); // for experts
+      }                                                             //new page
+    }                                                               //header
+  }                                                                 //inputs
+  mNumberOfPagesPerMessage->Fill(nPagesMessage);                    // for experts
   mNumberOfSuperpagesPerMessage->Fill(nSuperpagesMessage);
 
   // Fill histograms with cached values
@@ -617,8 +670,22 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (!isPhysTrigger)
       continue; // Only select phys event for max FEC, in case of calibration events the whole EMCAL gets the FEC pulse, so the payload size is roughly equal
     for (auto ism = 0; ism < NUMBERSM; ism++) {
-      mFECmaxID[ism]->Fill(maxfec.second[ism].first);     // histo to monitor the ID of FEC with max count for shifter
-      mFECmaxCount[ism]->Fill(maxfec.second[ism].second); // histo to monitor the count //for shifter
+      // Find maximum FEC in array of FECs
+      int maxfecID(-1), maxfecCount(-1);
+      auto& fecsSM = maxfec.second[ism];
+      for (int ifec = 0; ifec < NFEESM; ifec++) {
+        if (fecsSM[ifec] > maxfecCount) {
+          maxfecCount = fecsSM[ifec];
+          maxfecID = ifec;
+        }
+      }
+      if (maxfecCount <= 0)
+        continue;                           // Reject links on different FLP
+      mFECmaxID[ism]->Fill(maxfecID);       // histo to monitor the ID of FEC with max count for shifter
+      mFECmaxCount[ism]->Fill(maxfecCount); // histo to monitor the count //for shifter
+
+      mFECmaxIDperSM->Fill(ism, maxfecID);       //filled as a funcion of SM (shifter)
+      mFECmaxCountperSM->Fill(ism, maxfecCount); //filled as a function of SM (shifter)
     }
   }
   for (auto maxadc : maxADCSM) {
@@ -635,7 +702,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     bool isPhysTrigger = triggertype & o2::trigger::PhT;
     EventType evtype = isPhysTrigger ? EventType::PHYS_EVENT : EventType::CAL_EVENT;
     for (int ism = 0; ism < NUMBERSM; ism++) {
-      mMINRawAmplitudeEMCAL[evtype][ism]->Fill(minadc.second[ism]); //max in the event for shifter
+      mMINRawAmplitudeEMCAL[evtype][ism]->Fill(minadc.second[ism]); //max in the event (not for shifter)
     }
   }
   // Same for other cached values
@@ -658,7 +725,6 @@ void RawTask::reset()
   // clean all the monitor objects here
 
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
-  mPayloadSize->Reset();
   EventType triggers[2] = { EventType::CAL_EVENT, EventType::PHYS_EVENT };
 
   for (const auto& trg : triggers) {
@@ -678,24 +744,33 @@ void RawTask::reset()
     }
   }
   mPayloadSizePerDDL->Reset();
+  mPayloadSizeTFPerDDL->Reset();
   mPayloadSize->Reset();
   mErrorTypeAltro->Reset();
   mNbunchPerChan->Reset();
   mNofADCsamples->Reset();
   mADCsize->Reset();
+  mFECmaxIDperSM->Reset();
+  mFECmaxCountperSM->Reset();
 }
 
 bool RawTask::isLostTimeframe(framework::ProcessingContext& ctx) const
 {
-  auto posReadout = ctx.inputs().getPos("readout");
-  auto nslots = ctx.inputs().getNofParts(posReadout);
-  for (decltype(nslots) islot = 0; islot < nslots; islot++) {
-    const auto& ref = ctx.inputs().getByPos(posReadout, islot);
+  constexpr auto originEMC = header::gDataOriginEMC;
+  o2::framework::InputSpec dummy{ "dummy",
+                                  framework::ConcreteDataMatcher{ originEMC,
+                                                                  header::gDataDescriptionRawData,
+                                                                  0xDEADBEEF } };
+  for (const auto& ref : o2::framework::InputRecordWalker(ctx.inputs(), { dummy })) {
+    //auto posReadout = ctx.inputs().getPos("readout");
+    //auto nslots = ctx.inputs().getNofParts(posReadout);
+    //for (decltype(nslots) islot = 0; islot < nslots; islot++) {
+    //  const auto& ref = ctx.inputs().getByPos(posReadout, islot);
     const auto dh = o2::framework::DataRefUtils::getHeader<o2::header::DataHeader*>(ref);
-    if (dh->subSpecification == 0xDEADBEEF) {
-      if (dh->payloadSize == 0) {
-        return true;
-      }
+    // if (dh->subSpecification == 0xDEADBEEF) {
+    if (dh->payloadSize == 0) {
+      return true;
+      //  }
     }
   }
   return false;
