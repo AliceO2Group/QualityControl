@@ -23,7 +23,152 @@
       }
     },
     "postprocessing": {
-     "TracksTrendingTPC": {
+      "PID_TrendingTPC": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTask",
+        "moduleName": "QualityControl",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/PID",
+            "names": [ "hdEdxEles", "hdEdxMax", "hdEdxMips", "hdEdxTot", "hNClusters", "hPhi", "hSnp", "hTgl" ],
+            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
+            "moduleName": "QcCommon"
+          },
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/PID",
+            "names": [  "hdEdxVsncls", "hdEdxVsp", "hdEdxVsPhi", "hdEdxVsTgl" ],
+            "reductorName": "o2::quality_control_modules::common::TH2Reductor",
+            "moduleName": "QcCommon"
+          }
+        ],
+        "plots": [
+          {
+            "name": "hdEdxEles_StatMean_Trend",
+            "title": "Mean trend of dEdx for electrons",
+            "varexp": "hdEdxEles.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxEles_StatStddev_Trend",
+            "title": "Stddev trend of dEdx for electrons",
+            "varexp": "hdEdxEles.stddev:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxMax_StatMean_Trend",
+            "title": "Mean trend of dEdxMax",
+            "varexp": "hdEdxMax.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:hdEdxMax.stddev"
+          },
+          {
+            "name": "hdEdxMips_StatMean_Trend",
+            "title": "Mean trend of dEdx for MIPS",
+            "varexp": "hdEdxMips.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxMips_StatStddev_Trend",
+            "title": "Stddev trend of dEdx for MIPS",
+            "varexp": "hdEdxMips.stddev:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxElesMips_Separ_Trend",
+            "title": "Separation trend of dEdx between electrons and MIPS",
+            "varexp": "(hdEdxEles.mean-hdEdxMips.mean):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxElesMips_SeparPower_Trend",
+            "title": "Separation power trend of dEdx between electrons and MIPS",
+            "varexp": "((hdEdxEles.mean-hdEdxMips.mean)/(0.5*(hdEdxEles.stddev+hdEdxMips.stddev))):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxTot_StatMean_Trend",
+            "title": "Mean trend of dEdxTot",
+            "varexp": "hdEdxTot.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:hdEdxTot.stddev"
+          },
+          {
+            "name": "hNClusters_StatMean_Trend",
+            "title": "Mean trend of the number of TPC clusters",
+            "varexp": "hNClusters.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:hNClusters.stddev"
+          },
+          {
+            "name": "hPhi_StatMean_Trend",
+            "title": "Mean trend of the azimuthal angles",
+            "varexp": "hPhi.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:hPhi.stddev"
+          },
+          {
+            "name": "hSnp_StatMean_Trend",
+            "title": "Mean trend of sin(p)",
+            "varexp": "hSnp.mean:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "0:hSnp.stddev"
+          },
+          {
+            "name": "hdEdxVsncls_StatMean_dEdx_Trend",
+            "title": "Trend mean dEdx from dEdx vs Number of Clusters",
+            "varexp": "(hdEdxVsncls.sumwy/hdEdxVsncls.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxVsp_StatMean_p_Trend",
+            "title": "Trend mean p from dEdx vs Momentum",
+            "varexp": "(hdEdxVsp.sumwx/hdEdxVsp.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "hdEdxVsTgl_StatMean_Tgl_Trend",
+            "title": "Trend mean Tgl vs Time from dEdx vs Tgl",
+            "varexp": "(hdEdxVsTgl.sumwx/hdEdxVsTgl.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "30 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      },     
+      "Tracks_TrendingTPC": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QualityControl",
@@ -101,118 +246,118 @@
             "option": "*L",
             "graphErrors": ""
           },
-	  {
-           "name": "h2DEtaPhi_StatMean_Phi_Trend",
-           "title": "Trend mean Phi vs Time from h2DEtaPhi",
-           "varexp": "(h2DEtaPhi.sumwx/h2DEtaPhi.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DEtaPhi_StatMean_Eta_Trend",
-           "title": "Trend mean Eta vs Time from h2DEtaPhi",
-           "varexp": "(h2DEtaPhi.sumwy/h2DEtaPhi.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DEtaPhiNeg_StatMean_Phi_Trend",
-           "title": "Trend mean Phi vs Time from h2DEtaPhiNeg",
-           "varexp": "(h2DEtaPhiNeg.sumwx/h2DEtaPhiNeg.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DEtaPhiNeg_StatMean_Eta_Trend",
-           "title": "Trend mean Eta vs Time from h2DEtaPhiNeg",
-           "varexp": "(h2DEtaPhiNeg.sumwy/h2DEtaPhiNeg.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DEtaPhiPos_StatMean_Phi_Trend",
-           "title": "Trend mean Phi vs Time from h2DEtaPhiPos",
-           "varexp": "(h2DEtaPhiPos.sumwx/h2DEtaPhiPos.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DEtaPhiPos_StatMean_Eta_Trend",
-           "title": "Trend mean Eta vs Time from h2DEtaPhiPos",
-           "varexp": "(h2DEtaPhiPos.sumwy/h2DEtaPhiPos.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DNClustersEta_StatMean_Eta_Trend",
-           "title": "Trend mean Eta vs Time from h2DNClustersEta",
-           "varexp": "(h2DNClustersEta.sumwx/h2DNClustersEta.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DNClustersEta_StatMean_NClusters_Trend",
-           "title": "Trend mean number of clusters vs Time from h2DNClustersEta",
-           "varexp": "(h2DNClustersEta.sumwy/h2DNClustersEta.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DNClustersPhiAside_StatMean_Phi_Trend",
-           "title": "Trend mean Phi vs Time from h2DNClustersPhiAside",
-           "varexp": "(h2DNClustersPhiAside.sumwx/h2DNClustersPhiAside.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DNClustersPhiAside_StatMean_NClusters_Trend",
-           "title": "Trend mean number of clusters vs Time from h2DNClustersPhiAside",
-           "varexp": "(h2DNClustersPhiAside.sumwy/h2DNClustersPhiAside.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DNClustersPhiCside_StatMean_Phi_Trend",
-           "title": "Trend mean Phi vs Time from h2DNClustersPhiCside",
-           "varexp": "(h2DNClustersPhiCside.sumwx/h2DNClustersPhiCside.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DNClustersPhiCside_StatMean_NClusters_Trend",
-           "title": "Trend mean number of clusters vs Time from h2DNClustersPhiCside",
-           "varexp": "(h2DNClustersPhiCside.sumwy/h2DNClustersPhiCside.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DNClustersPt_StatMean_Pt_Trend",
-           "title": "Trend mean Pt vs Time from h2DNClustersPt",
-           "varexp": "(h2DNClustersPt.sumwx/h2DNClustersPt.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "h2DNClustersPt_StatMean_NClusters_Trend",
-           "title": "Trend mean number of clusters vs Time from h2DNClustersPt",
-           "varexp": "(h2DNClustersPt.sumwy/h2DNClustersPt.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         }
+          {
+            "name": "h2DEtaPhi_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from h2DEtaPhi",
+            "varexp": "(h2DEtaPhi.sumwx/h2DEtaPhi.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DEtaPhi_StatMean_Eta_Trend",
+            "title": "Trend mean Eta vs Time from h2DEtaPhi",
+            "varexp": "(h2DEtaPhi.sumwy/h2DEtaPhi.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DEtaPhiNeg_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from h2DEtaPhiNeg",
+            "varexp": "(h2DEtaPhiNeg.sumwx/h2DEtaPhiNeg.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+             "name": "h2DEtaPhiNeg_StatMean_Eta_Trend",
+             "title": "Trend mean Eta vs Time from h2DEtaPhiNeg",
+             "varexp": "(h2DEtaPhiNeg.sumwy/h2DEtaPhiNeg.sumw):time",
+             "selection": "",
+             "option": "*L",
+             "graphErrors": ""
+          },
+          {
+            "name": "h2DEtaPhiPos_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from h2DEtaPhiPos",
+            "varexp": "(h2DEtaPhiPos.sumwx/h2DEtaPhiPos.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DEtaPhiPos_StatMean_Eta_Trend",
+            "title": "Trend mean Eta vs Time from h2DEtaPhiPos",
+            "varexp": "(h2DEtaPhiPos.sumwy/h2DEtaPhiPos.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersEta_StatMean_Eta_Trend",
+            "title": "Trend mean Eta vs Time from h2DNClustersEta",
+            "varexp": "(h2DNClustersEta.sumwx/h2DNClustersEta.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersEta_StatMean_NClusters_Trend",
+            "title": "Trend mean number of clusters vs Time from h2DNClustersEta",
+            "varexp": "(h2DNClustersEta.sumwy/h2DNClustersEta.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPhiAside_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from h2DNClustersPhiAside",
+            "varexp": "(h2DNClustersPhiAside.sumwx/h2DNClustersPhiAside.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPhiAside_StatMean_NClusters_Trend",
+            "title": "Trend mean number of clusters vs Time from h2DNClustersPhiAside",
+            "varexp": "(h2DNClustersPhiAside.sumwy/h2DNClustersPhiAside.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPhiCside_StatMean_Phi_Trend",
+            "title": "Trend mean Phi vs Time from h2DNClustersPhiCside",
+            "varexp": "(h2DNClustersPhiCside.sumwx/h2DNClustersPhiCside.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPhiCside_StatMean_NClusters_Trend",
+            "title": "Trend mean number of clusters vs Time from h2DNClustersPhiCside",
+            "varexp": "(h2DNClustersPhiCside.sumwy/h2DNClustersPhiCside.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPt_StatMean_Pt_Trend",
+            "title": "Trend mean Pt vs Time from h2DNClustersPt",
+            "varexp": "(h2DNClustersPt.sumwx/h2DNClustersPt.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "h2DNClustersPt_StatMean_NClusters_Trend",
+            "title": "Trend mean number of clusters vs Time from h2DNClustersPt",
+            "varexp": "(h2DNClustersPt.sumwy/h2DNClustersPt.sumw):time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          }
         ],
         "initTrigger": [
           "userorcontrol"
@@ -223,136 +368,7 @@
         "stopTrigger": [
           "userorcontrol"
         ]
-      },
-     "PIDTrendingTPC": {
-       "active": "true",
-       "className": "o2::quality_control::postprocessing::TrendingTask",
-       "moduleName": "QualityControl",
-       "detectorName": "TPC",
-       "dataSources": [
-         {
-           "type": "repository",
-           "path": "qc/TPC/MO/PID",
-           "names": [  "hdEdxMax", "hdEdxTot", "hNClusters", "hPhi", "hSnp", "hTgl" ],
-           "reductorName": "o2::quality_control_modules::common::TH1Reductor",
-           "moduleName": "QcCommon"
-         },
-         {
-           "type": "repository",
-           "path": "qc/TPC/MO/PID",
-           "names": [  "hdEdxVsncls", "hdEdxVsp", "hdEdxVsPhi", "hdEdxVsTgl" ],
-           "reductorName": "o2::quality_control_modules::common::TH2Reductor",
-           "moduleName": "QcCommon"
-         }
-       ],
-       "plots": [
-         {
-           "name": "dEdxMax_StatMean_Trend",
-           "title": "Mean of dEdxMax vs time",
-           "varexp": "hdEdxMax.mean:time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-         {
-           "name": "dEdxTot_StatMean_Trend",
-           "title": "Mean of dEdxTot vs time",
-           "varexp": "hdEdxTot.mean:time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-         {
-           "name": "TPCncl_StatMean_Trend",
-           "title": "Mean number of TPC clusters vs time",
-           "varexp": "hNClusters.mean:time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-         {
-           "name": "Phi_StatMean_Trend",
-           "title": "Mean of the azimuthal angles vs time",
-           "varexp": "hPhi.mean:time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "hdEdxVsncls_StatMean_ncls_Trend",
-           "title": "Trend mean Number of Clustes vs Time from dEdx vs Number of Clusters",
-           "varexp": "(hdEdxVsncls.sumwx/hdEdxVsncls.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "hdEdxVsncls_StatMean_dEdx_Trend",
-           "title": "Trend mean dEdx vs Time from dEdx vs Number of Clusters",
-           "varexp": "(hdEdxVsncls.sumwy/hdEdxVsncls.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "hdEdxVsp_StatMean_p_Trend",
-           "title": "Trend mean p vs Time from dEdx vs Momentum",
-           "varexp": "(hdEdxVsp.sumwx/hdEdxVsp.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "hdEdxVsp_StatMean_dEdx_Trend",
-           "title": "Trend mean dEdx vs Time from dEdx vs Momentum",
-           "varexp": "(hdEdxVsp.sumwy/hdEdxVsp.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "hdEdxVsPhi_StatMean_Phi_Trend",
-           "title": "Trend mean Phi vs Time from dEdx vs azimuthal angle Phi",
-           "varexp": "(hdEdxVsPhi.sumwx/hdEdxVsPhi.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	 {
-           "name": "hdEdxVsPhi_StatMean_dEdx_Trend",
-           "title": "Trend mean Phi vs Time from dEdx vs azimuthal angle Phi",
-           "varexp": "(hdEdxVsPhi.sumwy/hdEdxVsPhi.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },
-	{
-           "name": "hdEdxVsTgl_StatMean_Tgl_Trend",
-           "title": "Trend mean Tgl vs Time from dEdx vs Tgl",
-           "varexp": "(hdEdxVsTgl.sumwx/hdEdxVsTgl.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         },	
-	 {
-           "name": "hdEdxVsTgl_StatMean_dEdx_Trend",
-           "title": "Trend mean dEdx vs Time from dEdx vs Tgl",
-           "varexp": "(hdEdxVsTgl.sumwy/hdEdxVsTgl.sumw):time",
-           "selection": "",
-           "option": "*L",
-           "graphErrors": ""
-         }
-       ],
-       "initTrigger": [
-         "userorcontrol"
-       ],
-       "updateTrigger": [
-         "30 seconds"
-       ],
-       "stopTrigger": [
-         "userorcontrol"
-       ]
-     }
+      }
     }
   }
 }
