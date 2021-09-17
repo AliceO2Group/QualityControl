@@ -111,6 +111,9 @@ RawTask::~RawTask()
   for (auto& histos : mMIN) {
     delete histos.second;
   }
+  for (auto& histos : mRawAmplMin_tot) {
+    delete histos.second;
+  }
   for (auto& histos : mRawAmplMinEMCAL_tot) {
     delete histos.second;
   }
@@ -256,7 +259,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mFECmaxCountperSM = new TH2F("NumberOfChWithInput_perSM", "NumberOfChWithInput_perSM", 20, 0, 20, 40, 0, 40);
   mFECmaxCountperSM->GetXaxis()->SetTitle("SM");
-  mFECmaxCountperSM->GetYaxis()->SetTitle("max FEC count");
+  mFECmaxCountperSM->GetYaxis()->SetTitle("max channel count");
   getObjectsManager()->startPublishing(mFECmaxCountperSM);
 
   mFECmaxIDperSM = new TH2F("FECidMaxChWithInput_perSM", "FECidMaxChWithInput_perSM", 20, 0, 20, 40, 0, 40);
@@ -307,8 +310,14 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     histosRawAmplMin->GetYaxis()->SetTitle("raw");
     getObjectsManager()->startPublishing(histosRawAmplMin);
 
+    TH1D* histosRawMintot;
     TH1D* histosRawMinEMCALtot;
     TH1D* histosRawMinDCALtot;
+
+    histosRawMintot = new TH1D(Form("mRawAmplMin_distr_%s", histoStr[trg].Data()), Form("mRawAmplMin_distr_%s", histoStr[trg].Data()), 100, 0., 100.);
+    histosRawMintot->GetXaxis()->SetTitle("Raw Amplitude EMCAL,DCAL");
+    histosRawMintot->GetYaxis()->SetTitle("Counts");
+    getObjectsManager()->startPublishing(histosRawMintot);
 
     histosRawMinEMCALtot = new TH1D(Form("mRawAmplMinEMCAL_distr_%s", histoStr[trg].Data()), Form("mRawAmplMinEMCAL_distr_%s", histoStr[trg].Data()), 100, 0., 100.);
     histosRawMinEMCALtot->GetXaxis()->SetTitle("Raw Amplitude");
@@ -386,6 +395,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     mMAX[triggers[trg]] = histosRawAmplMax;
     mMIN[triggers[trg]] = histosRawAmplMin;
 
+    mRawAmplMin_tot[triggers[trg]] = histosRawMintot;
     mRawAmplMinEMCAL_tot[triggers[trg]] = histosRawMinEMCALtot;
     mRawAmplMinDCAL_tot[triggers[trg]] = histosRawMinDCALtot;
 
@@ -630,10 +640,11 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             if (minADCbunch < minADC)
               minADC = minADCbunch;
             mRawAmplMinEMCAL[evtype][supermoduleID]->Fill(minADCbunch); // min for each cell --> for for expert only
+            mRawAmplMin_tot[evtype]->Fill(minADCbunch);                 //shifter
             if (supermoduleID < 12)
-              mRawAmplMinEMCAL_tot[evtype]->Fill(minADCbunch); //shifter
+              mRawAmplMinEMCAL_tot[evtype]->Fill(minADCbunch); //shifter (not for pilot beam)
             else
-              mRawAmplMinDCAL_tot[evtype]->Fill(minADCbunch); //shifter
+              mRawAmplMinDCAL_tot[evtype]->Fill(minADCbunch); //shifter (not for pilot beam)
 
             meanADC = TMath::Mean(adcs.begin(), adcs.end());
             rmsADC = TMath::RMS(adcs.begin(), adcs.end());

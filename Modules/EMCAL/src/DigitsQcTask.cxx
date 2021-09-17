@@ -411,16 +411,18 @@ void DigitsQcTask::DigitsHistograms::initForTrigger(const std::string trigger, b
   }
 
   mDigitOccupancy = histBuilder2D("digitOccupancyEMC", "Digit Occupancy EMCAL", 96, -0.5, 95.5, 208, -0.5, 207.5, false);
-  mDigitOccupancyThr = histBuilder2D("digitOccupancyEMCwThr", Form("Digit Occupancy EMCAL with E>%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
-  mDigitOccupancyThrBelow = histBuilder2D("digitOccupancyEMCwThrBelow", Form("Digit Occupancy EMCAL with E<%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+  mDigitOccupancyThr = histBuilder2D("digitOccupancyEMCwThr", Form("Digit Occupancy EMCAL,DCAL with E>%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+  mDigitOccupancyThrBelow = histBuilder2D("digitOccupancyEMCwThrBelow", Form("Digit Occupancy EMCAL,DCAL with E<%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
 
   mIntegratedOccupancy = histBuilder2D("digitOccupancyInt", "Digit Occupancy Integrated", 96, -0.5, 95.5, 208, -0.5, 207.5, true);
   mIntegratedOccupancy->GetXaxis()->SetTitle("col");
   mIntegratedOccupancy->GetYaxis()->SetTitle("row");
   // 1D histograms for showing the integrated spectrum
 
+  mDigitTimeSupermodule_tot = histBuilder1D("digitTime", "Digit Time EMCAL,DCAL", 400, -200, 200);
   mDigitTimeSupermoduleEMCAL = histBuilder1D("digitTimeEMCAL", "Digit Time EMCAL", 400, -200, 200);
   mDigitTimeSupermoduleDCAL = histBuilder1D("digitTimeDCAL", "Digit Time DCAL", 400, -200, 200);
+  mDigitAmplitude_tot = histBuilder1D("digitAmplitude", "Digit amplitude in EMCAL,DCAL", 400, 0., 100.);
   mDigitAmplitudeEMCAL = histBuilder1D("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 400, 0., 100.);
   mDigitAmplitudeEMCAL_0 = histBuilder1D("digitAmplitudeEMCAL_bc0", "Digit amplitude in EMCAL(bc=0)", 400, 0., 100.);
   mDigitAmplitudeDCAL = histBuilder1D("digitAmplitudeDCAL", "Digit amplitude in DCAL", 400, 0., 100.);
@@ -476,6 +478,8 @@ void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit
       fillOptional2D(mDigitAmpSupermoduleCalib, digit.getEnergy(), supermoduleID);
       fillOptional2D(mDigitTimeSupermoduleCalib, digit.getTimeStamp() - timecalib, supermoduleID);
     }
+    fillOptional1D(mDigitAmplitude_tot, digit.getEnergy());          //EMCAL+DCAL, shifter
+    fillOptional1D(mDigitTimeSupermodule_tot, digit.getTimeStamp()); //EMCAL+DCAL shifter
     if (supermoduleID < 12) {
 
       fillOptional1D(mDigitTimeSupermoduleEMCAL, digit.getTimeStamp());
@@ -510,9 +514,11 @@ void DigitsQcTask::DigitsHistograms::startPublishing(o2::quality_control::core::
   publishOptional(mDigitAmpSupermodule);
   publishOptional(mDigitAmpSupermoduleCalib);
   publishOptional(mDigitTimeSupermodule);
+  publishOptional(mDigitTimeSupermodule_tot);
   publishOptional(mDigitTimeSupermoduleEMCAL);
   publishOptional(mDigitTimeSupermoduleDCAL);
   publishOptional(mDigitTimeSupermoduleCalib);
+  publishOptional(mDigitAmplitude_tot);
   publishOptional(mDigitAmplitudeEMCAL);
   publishOptional(mDigitAmplitudeEMCAL_0);
   publishOptional(mDigitAmplitudeDCAL);
@@ -555,9 +561,11 @@ void DigitsQcTask::DigitsHistograms::reset()
   resetOptional(mDigitAmpSupermodule);
   resetOptional(mDigitAmpSupermoduleCalib);
   resetOptional(mDigitTimeSupermodule);
+  resetOptional(mDigitTimeSupermodule_tot);
   resetOptional(mDigitTimeSupermoduleEMCAL);
   resetOptional(mDigitTimeSupermoduleDCAL);
   resetOptional(mDigitTimeSupermoduleCalib);
+  resetOptional(mDigitAmplitude_tot);
   resetOptional(mDigitAmplitudeEMCAL);
   resetOptional(mDigitAmplitudeEMCAL_0);
   resetOptional(mDigitAmplitudeDCAL);
@@ -599,9 +607,11 @@ void DigitsQcTask::DigitsHistograms::clean()
   cleanOptional(mDigitAmpSupermodule);
   cleanOptional(mDigitAmpSupermoduleCalib);
   cleanOptional(mDigitTimeSupermodule);
+  cleanOptional(mDigitTimeSupermodule_tot);
   cleanOptional(mDigitTimeSupermoduleEMCAL);
   cleanOptional(mDigitTimeSupermoduleDCAL);
   cleanOptional(mDigitTimeSupermoduleCalib);
+  cleanOptional(mDigitAmplitude_tot);
   cleanOptional(mDigitAmplitudeEMCAL);
   cleanOptional(mDigitAmplitudeEMCAL_0);
   cleanOptional(mDigitAmplitudeDCAL);

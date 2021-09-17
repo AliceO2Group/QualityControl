@@ -120,6 +120,7 @@ class RawTask final : public TaskInterface
   TH1* mADCsize = nullptr;                                                   ///< ADC size per bunch
   TH2* mFECmaxCountperSM = nullptr;                                          ///< max number of hit channels per SM
   TH2* mFECmaxIDperSM = nullptr;                                             ///< FEC ID max number of hit channels per SM
+  std::unordered_map<EventType, TH1*> mRawAmplMin_tot;                       ///< Min Raw amplitude in whole EMCAL and DCAL
   std::unordered_map<EventType, TH1*> mRawAmplMinEMCAL_tot;                  ///< Min Raw amplitude in whole EMCAL
   std::unordered_map<EventType, TH1*> mRawAmplMinDCAL_tot;                   ///< Min Raw amplitude in whole DCAL
   std::array<TH1*, 20> mFECmaxCount;                                         ///< max number of hit channels
