@@ -141,7 +141,7 @@ inline std::string computePassName(const std::string& fallbackPassName = "")
 {
   std::string passName;
   passName = fallbackPassName;
-  ILOG(Debug, Devel) << "Period Name returned by computePassName : " << passName << ENDM;
+  ILOG(Debug, Devel) << "Pass Name returned by computePassName : " << passName << ENDM;
   return passName;
 }
 
@@ -149,7 +149,7 @@ inline std::string computeProvenance(const std::string& fallbackProvenance = "")
 {
   std::string provenance;
   provenance = fallbackProvenance;
-  ILOG(Debug, Devel) << "Period Name returned by computeProvenance : " << provenance << ENDM;
+  ILOG(Debug, Devel) << "Provenance returned by computeProvenance : " << provenance << ENDM;
   return provenance;
 }
 
