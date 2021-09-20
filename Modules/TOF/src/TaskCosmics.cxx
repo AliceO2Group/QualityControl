@@ -62,15 +62,15 @@ void TaskCosmics::initialize(o2::framework::InitContext& /*ctx*/)
   // Set task parameters from JSON
   if (auto param = mCustomParameters.find("SelDeltaTSignalRegion"); param != mCustomParameters.end()) {
     mSelDeltaTSignalRegion = atoi(param->second.c_str());
-    LOG(INFO) << "Set SelDeltaTSignalRegion to " << mSelDeltaTSignalRegion << " ps";
+    LOG(info) << "Set SelDeltaTSignalRegion to " << mSelDeltaTSignalRegion << " ps";
   }
   if (auto param = mCustomParameters.find("SelDeltaTBackgroundRegion"); param != mCustomParameters.end()) {
     mSelDeltaTBackgroundRegion = atoi(param->second.c_str());
-    LOG(INFO) << "Set SelDeltaTBackgroundRegion to " << mSelDeltaTBackgroundRegion << " ps";
+    LOG(info) << "Set SelDeltaTBackgroundRegion to " << mSelDeltaTBackgroundRegion << " ps";
   }
   if (auto param = mCustomParameters.find("SelMinLength"); param != mCustomParameters.end()) {
     mSelMinLength = atoi(param->second.c_str());
-    LOG(INFO) << "Set SelMinLength to " << mSelMinLength << " cm";
+    LOG(info) << "Set SelMinLength to " << mSelMinLength << " cm";
   }
 
   mHistoCrate1.reset(new TH1F("Crate1", "Crate1;Crate of first hit;Counts", 72, 0, 72));

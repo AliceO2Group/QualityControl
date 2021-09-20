@@ -101,7 +101,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  LOG(info) << "Using config file '" << qcConfigurationSource << "'";
 
   if (!config.options().get<bool>("local") && !config.options().get<bool>("remote")) {
     ILOG(Info, Support) << "Creating a standalone QC topology." << ENDM;

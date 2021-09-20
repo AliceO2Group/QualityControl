@@ -51,13 +51,13 @@ class MFTTracksRootFileReader : public o2::framework::Task
   //_________________________________________________________________________________________________
   void init(framework::InitContext& ic)
   {
-    LOG(INFO) << " In MFTTracksRootFileReader::init ... entering ";
+    LOG(info) << " In MFTTracksRootFileReader::init ... entering ";
 
     // open the input file
     auto filename = ic.options().get<std::string>("mft-track-infile");
     mFile = std::make_unique<TFile>(filename.c_str(), "OLD");
     if (!mFile->IsOpen()) {
-      LOG(ERROR) << "MFTTracksRootFileReader::init. Cannot open the file: " << filename.c_str();
+      LOG(error) << "MFTTracksRootFileReader::init. Cannot open the file: " << filename.c_str();
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -71,7 +71,7 @@ class MFTTracksRootFileReader : public o2::framework::Task
     // check that it has entries
     mNumberOfTF = mTree->GetEntries();
     if (mNumberOfTF == 0) {
-      LOG(ERROR) << "MFTTracksRootFileReader::init. No TFs ";
+      LOG(error) << "MFTTracksRootFileReader::init. No TFs ";
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -85,7 +85,7 @@ class MFTTracksRootFileReader : public o2::framework::Task
 
     // Check if this is the last TF
     if (mCurrentTF == mNumberOfTF) {
-      LOG(INFO) << " MFTDTracksRootFileReader::run. End of file reached";
+      LOG(info) << " MFTDTracksRootFileReader::run. End of file reached";
       pc.services().get<ControlService>().endOfStream();
       pc.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;

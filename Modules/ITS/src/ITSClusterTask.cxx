@@ -93,10 +93,10 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   std::ifstream file(mDictPath.c_str());
 
   if (file.good()) {
-    LOG(INFO) << "Running with dictionary: " << mDictPath;
+    LOG(info) << "Running with dictionary: " << mDictPath;
     mDict.readBinaryFile(mDictPath);
   } else {
-    LOG(INFO) << "Running without dictionary !";
+    LOG(info) << "Running without dictionary !";
   }
 }
 
@@ -305,12 +305,12 @@ void ITSClusterTask::getJsonParameters()
   mRunNumberPath = mCustomParameters["runNumberPath"];
   mGeomPath = mCustomParameters["geomPath"];
   mNThreads = stoi(mCustomParameters.find("nThreads")->second);
-  LOG(INFO) << "#################### mNThreads : " << mNThreads;
+  LOG(info) << "#################### mNThreads : " << mNThreads;
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
 
     if (mCustomParameters["layer"][ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
-      LOG(INFO) << "enable layer : " << ilayer;
+      LOG(info) << "enable layer : " << ilayer;
     } else {
       mEnableLayers[ilayer] = 0;
     }
@@ -320,7 +320,7 @@ void ITSClusterTask::getJsonParameters()
 void ITSClusterTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    LOG(INFO) << " ERROR: trying to add non-existent object ";
+    LOG(info) << " ERROR: trying to add non-existent object ";
     return;
   } else
     mPublishedObjects.push_back(aObject);
@@ -338,7 +338,7 @@ void ITSClusterTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    LOG(INFO) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
+    LOG(info) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
   }
 }
 

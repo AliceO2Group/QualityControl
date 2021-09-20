@@ -51,7 +51,7 @@ void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
   //Case for the RDH word "fatal"
   if ((rdh->detectorField & 0x00001000) != 0) {
     mCounterRDH[rdh->feeId & 0xFF].Count(1);
-    // LOG(WARNING) << "RDH flag \"fatal\" error occurred in crate " << static_cast<int>(rdh->feeId & 0xFF);
+    // LOG(warn) << "RDH flag \"fatal\" error occurred in crate " << static_cast<int>(rdh->feeId & 0xFF);
   }
 
   if (rdh->stop) { // if RDH close
@@ -307,7 +307,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   // Set task parameters from JSON
   if (auto param = mCustomParameters.find("DecoderCONET"); param != mCustomParameters.end()) {
     if (param->second == "True") {
-      LOG(INFO) << "Rig for DecoderCONET";
+      LOG(info) << "Rig for DecoderCONET";
       mDecoderRaw.setDecoderCONET(kTRUE);
     }
   }
@@ -478,7 +478,7 @@ void TaskRaw::endOfCycle()
         }
       }
     } else {
-      LOG(WARNING) << "Did not find diagnostic histogram for slot " << slot << " for reshuffling";
+      LOG(warn) << "Did not find diagnostic histogram for slot " << slot << " for reshuffling";
     }
   }
   for (unsigned int crate = 0; crate < RawDataDecoder::ncrates; crate++) {              // Loop over crates for how many RDH read

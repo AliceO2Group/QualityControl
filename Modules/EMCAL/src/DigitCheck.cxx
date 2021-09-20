@@ -104,14 +104,14 @@ void DigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
+      LOG(info) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Mean outside limits or no entries");
       msg->AddText("If NOT a technical run,");
       msg->AddText("call EMCAL on-call.");
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
+      LOG(info) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
@@ -130,14 +130,14 @@ void DigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
+      LOG(info) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Mean outside limits or no entries");
       msg->AddText("If NOT a technical run,");
       msg->AddText("call EMCAL on-call.");
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
+      LOG(info) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);

@@ -120,7 +120,7 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto digitsTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("dtrigrec");
   //mNEventsTotal += digitsTR.size();//number of events in the current input
   for (const auto& trigRecord : digitsTR) {
-    LOG(DEBUG) << " monitorData() : trigger record #" << mNEventsTotal
+    LOG(debug) << " monitorData() : trigger record #" << mNEventsTotal
                << " contains " << trigRecord.getNumberOfObjects() << " objects." << ENDM;
     if (trigRecord.getNumberOfObjects() > 0) { //at least 1 digit -> pedestal event
       mNEventsTotal++;
@@ -153,13 +153,13 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
   //   Double_t stats[4];
   //   h->GetStats(stats);
   //   auto s = ctx.inputs().get<TObjString*>("string");
-  //   LOG(INFO) << "String is " << s->GetString().Data();
+  //   LOG(info) << "String is " << s->GetString().Data();
 
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
   // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
   //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
   //   if (condition) {
-  //     LOG(INFO) << "Retrieved " << condition->ClassName();
+  //     LOG(info) << "Retrieved " << condition->ClassName();
   //     delete condition;
   //   }
 }
@@ -411,7 +411,7 @@ void PedestalTask::fillHistograms()
 
     if (channel % 1000 == 0) {
       ILOG(Info, Devel) << "fillHistograms(): Start to search peaks in channel " << channel << ENDM;
-      LOG(INFO) << "fillHistograms(): Start to search peaks in channel " << channel;
+      LOG(info) << "fillHistograms(): Start to search peaks in channel " << channel;
     }
 
     numberOfPeaks = peakSearcher->Search(mHistAmplitudes[channel], 10., "nobackground", 0.2);
@@ -465,7 +465,7 @@ void PedestalTask::fillHistograms()
 
   //show some info to developer
   ILOG(Info, Devel) << "fillHistograms() : at this time, N events = " << mNEventsTotal << ENDM;
-  LOG(INFO) << "fillPedestals() : I finished filling of histograms";
+  LOG(info) << "fillPedestals() : I finished filling of histograms";
 }
 
 void PedestalTask::resetHistograms()
