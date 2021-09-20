@@ -268,6 +268,10 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     const auto digits_in_row = row.getBunchChannelData(digits); // Digits inside a readout window
     // Loop on digits
     for (auto const& digit : digits_in_row) {
+      if (digit.getChannel() < 0) {
+        LOG(ERROR) << "No valid channel";
+        continue;
+      }
       o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
       strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
       mHitCounterPerStrip[strip].Count(det[0] * 4 + det[4] / 12);
