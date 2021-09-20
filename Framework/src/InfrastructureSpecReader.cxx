@@ -79,6 +79,9 @@ CommonSpec InfrastructureSpecReader::readCommonSpec(const boost::property_tree::
   }
   spec.activityNumber = commonTree.get<int>("Activity.number", spec.activityNumber);
   spec.activityType = commonTree.get<int>("Activity.type", spec.activityType);
+  spec.activityPassName = commonTree.get<std::string>("Activity.passName", spec.activityPassName);
+  spec.activityPeriodName = commonTree.get<std::string>("Activity.periodName", spec.activityPeriodName);
+  spec.activityProvenance = commonTree.get<std::string>("Activity.provenance", spec.activityProvenance);
   spec.monitoringUrl = commonTree.get<std::string>("monitoring.url", spec.monitoringUrl);
   spec.consulUrl = commonTree.get<std::string>("consul.url", spec.consulUrl);
   spec.conditionDBUrl = commonTree.get<std::string>("conditionDB.url", spec.conditionDBUrl);
