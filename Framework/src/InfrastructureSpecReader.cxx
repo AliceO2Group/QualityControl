@@ -123,6 +123,8 @@ TaskSpec InfrastructureSpecReader::readTaskSpec(std::string taskName, const boos
       ts.localMachines.emplace_back(value.get_value<std::string>());
     }
   }
+  // fixme: ideally we should print those only when we are running with '--local' and '--remote',
+  //  but we do not have access to this information here.
   if (multinodeSetup && taskTree.count("remoteMachine") == 0) {
     ILOG(Warning, Trace)
       << "No remote machine was specified for a multinode QC setup."
@@ -130,9 +132,9 @@ TaskSpec InfrastructureSpecReader::readTaskSpec(std::string taskName, const boos
       << ENDM;
   }
   ts.remoteMachine = taskTree.get<std::string>("remoteMachine", ts.remoteMachine);
-  if (multinodeSetup && taskTree.count("remotePort") == 0) {
+  if (multinodeSetup && ts.location == TaskLocationSpec::Local && taskTree.count("remotePort") == 0) {
     ILOG(Warning, Trace)
-      << "No remote port was specified for a multinode QC setup."
+      << "No remote port was specified for a task which should use Mergers in a multinode QC setup."
          " This is fine if running with AliECS, but it might fail in standalone mode."
       << ENDM;
   }
