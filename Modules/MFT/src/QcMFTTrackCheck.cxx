@@ -60,13 +60,13 @@ void QcMFTTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
     auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
-      LOG(INFO) << "Quality::Good, setting to green";
+      LOG(info) << "Quality::Good, setting to green";
       histogram->SetLineColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
+      LOG(info) << "Quality::Bad, setting to red";
       histogram->SetLineColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::Medium, setting to orange";
+      LOG(info) << "Quality::Medium, setting to orange";
       histogram->SetLineColor(kOrange);
     }
     histogram->SetLineColor(kBlack);

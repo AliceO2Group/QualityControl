@@ -93,7 +93,7 @@ void Tracking::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusRefs = ctx.inputs().get<std::vector<o2::tpc::TPCClRefElem>>("inputClusRefs");
   const auto& inputsTPCclusters = o2::tpc::getWorkflowTPCInput(ctx, 0, true);
 
-  LOG(INFO) << "RECEIVED tracks " << tracks.size() << " (MC " << trackLabels.size() << ", ClusRefs " << clusRefs.size() << ") clusters " << inputsTPCclusters->clusterIndex.nClustersTotal << " (MC " << inputsTPCclusters->clusterIndex.clustersMCTruth->getNElements() << ")";
+  LOG(info) << "RECEIVED tracks " << tracks.size() << " (MC " << trackLabels.size() << ", ClusRefs " << clusRefs.size() << ") clusters " << inputsTPCclusters->clusterIndex.nClustersTotal << " (MC " << inputsTPCclusters->clusterIndex.clustersMCTruth->getNElements() << ")";
   mQCTracking.processTracks(&tracks, &trackLabels, &inputsTPCclusters->clusterIndex);
 }
 

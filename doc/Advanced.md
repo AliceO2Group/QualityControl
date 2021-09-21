@@ -476,7 +476,7 @@ Task by a dedicated method of the TaskInterface, as below:
 ```
 TObject* condition = TaskInterface::retrieveCondition("Path/to/condition");
 if (condition) {
-  LOG(INFO) << "Retrieved " << condition->ClassName();
+  LOG(info) << "Retrieved " << condition->ClassName();
   delete condition;
 }
 ```

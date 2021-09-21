@@ -119,7 +119,7 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
+      LOG(info) << "Quality::Bad, setting to red";
       //
       msg->Clear();
       msg->AddText("Call MCH on-call.");
@@ -127,7 +127,7 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       //
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
+      LOG(info) << "Quality::medium, setting to orange";
       //
       msg->Clear();
       msg->AddText("No entries. If MCH in the run, check MCH TWiki");

@@ -55,10 +55,10 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   std::ifstream file(dictfile.c_str());
 
   if (file.good()) {
-    LOG(INFO) << "Running with dictionary: " << dictfile.c_str();
+    LOG(info) << "Running with dictionary: " << dictfile.c_str();
     mDict.readBinaryFile(dictfile);
   } else {
-    LOG(INFO) << "Running without dictionary !";
+    LOG(info) << "Running without dictionary !";
   }
 }
 
@@ -182,7 +182,7 @@ void ITSTrackTask::createAllHistos()
 void ITSTrackTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    LOG(INFO) << " ERROR: trying to add non-existent object ";
+    LOG(info) << " ERROR: trying to add non-existent object ";
     return;
   } else {
     mPublishedObjects.push_back(aObject);
@@ -201,7 +201,7 @@ void ITSTrackTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    LOG(INFO) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
+    LOG(info) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
   }
 }
 

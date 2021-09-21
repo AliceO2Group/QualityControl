@@ -119,23 +119,23 @@ o2::tpc::ClusterNativeAccess clusterHandler(o2::framework::InputRecord& input)
     filter = {
       { "sampled-data", ConcreteDataTypeMatcher{ "DS", "CLUSTERNATIVE" }, Lifetime::Timeframe },
     };
-    LOG(INFO) << "Using sampled data.";
+    LOG(info) << "Using sampled data.";
   }
   for (auto const& ref : InputRecordWalker(input, filter)) {
     auto const* sectorHeader = DataRefUtils::getHeader<o2::tpc::TPCSectorHeader*>(ref);
     if (sectorHeader == nullptr) {
       // FIXME: think about error policy
-      LOG(ERROR) << "sector header missing on header stack";
+      LOG(error) << "sector header missing on header stack";
       return clusterIndex;
     }
     const int sector = sectorHeader->sector();
     std::bitset<o2::tpc::constants::MAXSECTOR> sectorMask(sectorHeader->sectorBits);
-    LOG(INFO) << "Reading TPC cluster data, sector mask is " << sectorMask;
+    LOG(info) << "Reading TPC cluster data, sector mask is " << sectorMask;
 
     if (sector < 0) {
       if (operation < 0 && operation != sector) {
         // we expect the same operation on all inputs
-        LOG(ERROR) << "inconsistent lane operation, got " << sector << ", expecting " << operation;
+        LOG(error) << "inconsistent lane operation, got " << sector << ", expecting " << operation;
       } else if (operation == 0) {
         // store the operation
         operation = sector;
