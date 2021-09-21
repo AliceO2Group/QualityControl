@@ -218,3 +218,21 @@ Then
 
 The problem is that builds continuously happen in the machine. So you cannot just do `cd sw/BUILD/O2-latest/O2/` and `make`
 
+### How to find from which IP an object was sent to the QCDB ? 
+
+Use `curl 'http://ccdb-test.cern.ch:8080/browse/qc/path/to/object?Accept=text/json' | jq '.["objects"][] | .UploadedFrom'`.
+
+Example:
+```
+~ $ curl 'http://ccdb-test.cern.ch:8080/browse/qc/ITS/MO/ITSTrackTask/AngularDistribution?Accept=text/json' | jq '.["objects"][] | .UploadedFrom'
+% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+Dload  Upload   Total   Spent    Left  Speed
+100  974k    0  974k    0     0  6015k      0 --:--:-- --:--:-- --:--:-- 6015k
+"128.141.19.252"
+"165.132.27.119"
+"128.141.19.252"
+"165.132.27.119"
+"128.141.19.252"
+"165.132.27.119"
+"128.141.19.252"
+```
