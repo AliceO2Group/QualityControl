@@ -223,7 +223,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mOrbitDDL.reset(new TProfile2D("OrbitDDL", "Orbits in TF vs DDL ; DDL; Orbits in TF; Fraction", 72, 0., 72., 256 * 3, 0, 256));
   getObjectsManager()->startPublishing(mOrbitDDL.get());
 
-  mROWSize.reset(new TH1I("mROWSize", "N Orbits in TF; Orbits in TF", 1000, 0., 1000.));
+  mROWSize.reset(new TH1I("mROWSize", "N Orbits in TF; Orbits in TF", 300, 0., 300.));
   getObjectsManager()->startPublishing(mROWSize.get());
 }
 
@@ -262,7 +262,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   Bool_t isSectorI = kFALSE;
   Int_t ndigits[4] = { 0 }; // Number of digits per side I/A,O/A,I/C,O/C
 
-  mROWSize->Fill(rows.size());
+  mROWSize->Fill(rows.size() / 3.0);
 
   Int_t currentrow = 0;
   // Loop on readout windows
