@@ -430,7 +430,11 @@ void TaskRaw::startOfCycle()
 
 void TaskRaw::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
+  // Reset counter before decode() call
+  for (int ncrate = 0; ncrate < 72; ncrate++) { // loop over crates
+    mDecoderRaw.mCounterRDHOpen.Reset();
+  }
+  //
   for (auto iit = ctx.inputs().begin(), iend = ctx.inputs().end(); iit != iend; ++iit) {
     if (!iit.isValid()) {
       continue;
@@ -444,19 +448,15 @@ void TaskRaw::monitorData(o2::framework::ProcessingContext& ctx)
       mDecoderRaw.setDecoderBuffer(payloadIn);
       mDecoderRaw.setDecoderBufferSize(payloadInSize);
       //
-      for (int ncrate = 0; ncrate < 72; ncrate++) { // loop over crates
-        mDecoderRaw.mCounterRDHOpen.Reset();
-      }
-      //
       mDecoderRaw.decode();
-      //
-      for (int ncrate = 0; ncrate < 72; ncrate++) { // loop over crates
-        if (mDecoderRaw.mCounterRDHOpen.HowMany(ncrate) <= 799) {
-          mDecoderRaw.mCounterOrbitsPerCrate[ncrate].Count(mDecoderRaw.mCounterRDHOpen.HowMany(ncrate));
-        } else {
-          mDecoderRaw.mCounterOrbitsPerCrate[ncrate].Count(799);
-        }
-      }
+    }
+  }
+  // Count number of orbits per crate
+  for (int ncrate = 0; ncrate < 72; ncrate++) { // loop over crates
+    if (mDecoderRaw.mCounterRDHOpen.HowMany(ncrate) <= 799) {
+      mDecoderRaw.mCounterOrbitsPerCrate[ncrate].Count(mDecoderRaw.mCounterRDHOpen.HowMany(ncrate));
+    } else {
+      mDecoderRaw.mCounterOrbitsPerCrate[ncrate].Count(799);
     }
   }
 }
