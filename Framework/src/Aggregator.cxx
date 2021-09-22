@@ -11,6 +11,7 @@
 
 ///
 /// \file   Aggregator.cxx
+
 /// \author Barthelemy von Haller
 ///
 
