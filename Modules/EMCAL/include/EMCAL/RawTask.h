@@ -112,37 +112,37 @@ class RawTask final : public TaskInterface
   TH1* mMessageCounter = nullptr;
   TH1* mNumberOfSuperpagesPerMessage;
   TH1* mNumberOfPagesPerMessage;
-  TH1* mSuperpageCounter = nullptr;                                          ///< Counter for number of superpages
-  TH1* mPageCounter = nullptr;                                               ///< Counter for number of pages (headers)
-  TH1* mTotalDataVolume = nullptr;                                           ///< Total data volume
-  TH1* mNbunchPerChan = nullptr;                                             ///< Number of bunch per Channel
-  TH1* mNofADCsamples = nullptr;                                             ///< Number of ADC samples per Channel
-  TH1* mADCsize = nullptr;                                                   ///< ADC size per bunch
-  TH2* mFECmaxCountperSM = nullptr;                                          ///< max number of hit channels per SM
-  TH2* mFECmaxIDperSM = nullptr;                                             ///< FEC ID max number of hit channels per SM
-  std::unordered_map<EventType, TH1*> mRawAmplMin_tot;                       ///< Min Raw amplitude in whole EMCAL and DCAL
-  std::unordered_map<EventType, TH1*> mRawAmplMinEMCAL_tot;                  ///< Min Raw amplitude in whole EMCAL
-  std::unordered_map<EventType, TH1*> mRawAmplMinDCAL_tot;                   ///< Min Raw amplitude in whole DCAL
-  std::array<TH1*, 20> mFECmaxCount;                                         ///< max number of hit channels
-  std::array<TH1*, 20> mFECmaxID;                                            ///< FEC ID  max number of hit channels
-  std::unordered_map<EventType, TProfile2D*> mRMS;                           ///< ADC rms for EMCAL+DCAL togheter
-  std::unordered_map<EventType, TProfile2D*> mMEAN;                          ///< ADC mean
-  std::unordered_map<EventType, TProfile2D*> mMAX;                           ///< ADC max
-  std::unordered_map<EventType, TProfile2D*> mMIN;                           ///< ADC min
-  std::unordered_map<EventType, std::array<TH1*, 20>> mRawAmplitudeEMCAL;    /////< Raw amplitude in EMCAL
-  std::unordered_map<EventType, std::array<TH1*, 20>> mMINRawAmplitudeEMCAL; /////< Raw amplitude in EMCAL
-  std::unordered_map<EventType, std::array<TH1*, 20>> mRawAmplMaxEMCAL;      ///< Max Raw amplitude in EMCAL per cell
-  std::unordered_map<EventType, std::array<TH1*, 20>> mRawAmplMinEMCAL;      ///< Min Raw amplitude in EMCAL per cell
-  std::unordered_map<EventType, std::array<TProfile2D*, 20>> mRMSperSM;      ///< ADC rms per SM
-  std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMEANperSM;     ///< ADC mean per SM
-  std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMAXperSM;      ///< ADC max per SM
-  std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMINperSM;      ///< ADC min per SM
-  std::unique_ptr<o2::emcal::MappingHandler> mMappings;                      ///< Mappings Hardware address -> Channel
-  TH2F* mErrorTypeAltro = nullptr;                                           ///< Error from AltroDecoder
-  TH2F* mPayloadSizePerDDL = nullptr;                                        ///< Payload size per ddl
-  TH2F* mPayloadSizeTFPerDDL = nullptr;                                      ///< Payload size per TimeFrame per ddl
-  Int_t mNumberOfSuperpages = 0;                                             ///< Simple total superpage counter
-  Int_t mNumberOfPages = 0;                                                  ///< Simple total number of superpages counter
+  TH1* mSuperpageCounter = nullptr;                                              ///< Counter for number of superpages
+  TH1* mPageCounter = nullptr;                                                   ///< Counter for number of pages (headers)
+  TH1* mTotalDataVolume = nullptr;                                               ///< Total data volume
+  TH1* mNbunchPerChan = nullptr;                                                 ///< Number of bunch per Channel
+  TH1* mNofADCsamples = nullptr;                                                 ///< Number of ADC samples per Channel
+  TH1* mADCsize = nullptr;                                                       ///< ADC size per bunch
+  TH2* mFECmaxCountperSM = nullptr;                                              ///< max number of hit channels per SM
+  TH2* mFECmaxIDperSM = nullptr;                                                 ///< FEC ID max number of hit channels per SM
+  std::unordered_map<EventType, TH1*> mMinBunchRawAmplFull;                      ///< Min Raw amplitude in whole EMCAL and DCAL
+  std::unordered_map<EventType, TH1*> mRawAmplMinEMCAL_tot;                      ///< Min Raw amplitude in whole EMCAL
+  std::unordered_map<EventType, TH1*> mRawAmplMinDCAL_tot;                       ///< Min Raw amplitude in whole DCAL
+  std::array<TH1*, 20> mFECmaxCount;                                             ///< max number of hit channels
+  std::array<TH1*, 20> mFECmaxID;                                                ///< FEC ID  max number of hit channels
+  std::unordered_map<EventType, TProfile2D*> mRMSBunchADCRCFull;                 ///< ADC rms for EMCAL+DCAL togheter
+  std::unordered_map<EventType, TProfile2D*> mMeanBunchADCRCFull;                ///< ADC mean
+  std::unordered_map<EventType, TProfile2D*> mMaxChannelADCRCFull;               ///< ADC max
+  std::unordered_map<EventType, TProfile2D*> mMinChannelADCRCFull;               ///< ADC min
+  std::unordered_map<EventType, std::array<TH1*, 20>> mMaxSMRawAmplSM;           ///< Raw amplitude in Supermodule
+  std::unordered_map<EventType, std::array<TH1*, 20>> mMinSMRawAmplSM;           ///< Raw amplitude in Supermodule
+  std::unordered_map<EventType, std::array<TH1*, 20>> mMaxBunchRawAmplSM;        ///< Max Raw amplitude in EMCAL per cell
+  std::unordered_map<EventType, std::array<TH1*, 20>> mMinBunchRawAmplSM;        ///< Min Raw amplitude in EMCAL per cell
+  std::unordered_map<EventType, std::array<TProfile2D*, 20>> mRMSBunchADCRCSM;   ///< ADC rms per SM
+  std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMeanBunchADCRCSM;  ///< ADC mean per SM
+  std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMaxChannelADCRCSM; ///< ADC max per SM
+  std::unordered_map<EventType, std::array<TProfile2D*, 20>> mMinChannelADCRCSM; ///< ADC min per SM
+  std::unique_ptr<o2::emcal::MappingHandler> mMappings;                          ///< Mappings Hardware address -> Channel
+  TH2F* mErrorTypeAltro = nullptr;                                               ///< Error from AltroDecoder
+  TH2F* mPayloadSizePerDDL = nullptr;                                            ///< Payload size per ddl
+  TH2F* mPayloadSizeTFPerDDL = nullptr;                                          ///< Payload size per TimeFrame per ddl
+  Int_t mNumberOfSuperpages = 0;                                                 ///< Simple total superpage counter
+  Int_t mNumberOfPages = 0;                                                      ///< Simple total number of superpages counter
   Int_t mNumberOfMessages = 0;
 };
 
