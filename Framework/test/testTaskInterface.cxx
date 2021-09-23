@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(test_task_factory)
     "http://consul-test.cern.ch:8500"
   };
 
-  auto objectsManager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl);
+  auto objectsManager = make_shared<ObjectsManager>(config.taskName, config.className, config.detectorName, config.consulUrl);
 
   TaskFactory taskFactory;
   auto task = taskFactory.create(config, objectsManager);

@@ -177,6 +177,7 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   metadata["qc_version"] = Version::GetQcVersion().getString();
   metadata["qc_detector_name"] = mo->getDetectorName();
   metadata["qc_task_name"] = mo->getTaskName();
+  metadata["qc_task_class"] = mo->getTaskClass();
 
   // path attributes
   string path = mo->getPath();
@@ -278,7 +279,7 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
     ILOG(Debug, Devel) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
     int runNumber = stoi(headers["RunNumber"]);
     string provenance = path.substr(0, path.find('/')); // get the item before the first slash corresponding to the provenance
-    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassName"], provenance);
+    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_task_class"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassName"], provenance);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
   }
@@ -479,7 +480,7 @@ void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 void CcdbDatabase::storeStreamerInfosToFile(std::string filename)
 {
   TH1F* h1 = new TH1F("asdf", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake", "class");
   TMessage message(kMESS_OBJECT);
   message.Reset();
   message.EnableSchemaEvolution(true);

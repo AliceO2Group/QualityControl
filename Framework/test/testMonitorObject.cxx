@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(mo_save)
 {
   string objectName = "asdf";
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
-  o2::quality_control::core::MonitorObject obj(&h, "task");
+  o2::quality_control::core::MonitorObject obj(&h, "task", "class");
   ILOG(Info, Support) << "getName : '" << obj.getName() << "'" << ENDM;
   ILOG(Info, Support) << "GetName : '" << obj.GetName() << "'" << ENDM;
   ILOG(Info, Support) << "title : '" << obj.GetTitle() << "'" << ENDM;
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(metadata)
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
 
   // no metadata at creation
-  o2::quality_control::core::MonitorObject obj(&h, "task");
+  o2::quality_control::core::MonitorObject obj(&h, "task", "class");
   obj.setIsOwner(false);
   BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 0);
 
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(path)
 {
   string objectName = "asdf";
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
-  o2::quality_control::core::MonitorObject obj(&h, "task");
+  o2::quality_control::core::MonitorObject obj(&h, "task", "class");
   obj.setIsOwner(false);
   string path = obj.getPath();
   BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");

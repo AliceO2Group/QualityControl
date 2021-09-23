@@ -44,12 +44,13 @@ class ObjectsManager
   /**
    * Constructor
    * @param taskName Task name
+   * @param taskClass Class of the task
    * @param detectorName Detector 3-letter code
    * @param consulUrl Consul URL, for the service discovery
    * @param parallelTaskID ID of a parallel Task, use 0 if there is only one.
    * @param noDiscovery If true disables the use of ServiceDiscovery
    */
-  ObjectsManager(std::string taskName, std::string detectorName, std::string consulUrl, int parallelTaskID = 0, bool noDiscovery = false);
+  ObjectsManager(std::string taskName, std::string taskClass, std::string detectorName, std::string consulUrl, int parallelTaskID = 0, bool noDiscovery = false);
   virtual ~ObjectsManager();
 
   static const std::string gDrawOptionsKey;
@@ -166,6 +167,7 @@ class ObjectsManager
  private:
   std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
   std::string mTaskName;
+  std::string mTaskClass;
   std::string mDetectorName;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;

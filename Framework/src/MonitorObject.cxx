@@ -39,10 +39,11 @@ MonitorObject::MonitorObject()
   mActivity.mId = 0;
 }
 
-MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName, int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
+MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& taskClass, const std::string& detectorName, int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
   : TObject(),
     mObject(object),
     mTaskName(taskName),
+    mTaskClass(taskClass),
     mDetectorName(detectorName),
     mActivity(runNumber, 0, periodName, passName, provenance),
     mIsOwner(true)
@@ -148,6 +149,16 @@ void MonitorObject::updateActivity(int runNumber, const std::string& periodName,
   mActivity.mPeriodName = periodName;
   mActivity.mPassName = passName;
   mActivity.mProvenance = provenance;
+}
+
+const string& MonitorObject::getTaskClass() const
+{
+  return mTaskClass;
+}
+
+void MonitorObject::setTaskClass(const string& taskClass)
+{
+  MonitorObject::mTaskClass = taskClass;
 }
 
 } // namespace o2::quality_control::core
