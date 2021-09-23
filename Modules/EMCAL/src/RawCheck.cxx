@@ -62,7 +62,7 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
   } // checker for the raw ampl histos (second peak around 40)
   if (mo->getName() == "FECidMaxChWithInput_perSM") {
     double errormargin = 2.;
-    auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    auto* h = dynamic_cast<TH2*>(mo->getObject());
     bool hasBadFEC = false;
     for (int ism = 0; ism < h->GetXaxis()->GetNbins(); ism++) {
       std::unique_ptr<TH1> smbin(h->ProjectionY("nextsm", ism + 1, ism + 1));
@@ -96,7 +96,7 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
   if (mo->getName() == "PayloadSizeTFPerDDL") {
     std::map<int, double> meanPayloadSizeDDL;
     double errormargin = 2.;
-    auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    auto* h = dynamic_cast<TH2*>(mo->getObject());
     std::vector<double> meanPayloads;
     for (int ism = 0; ism < h->GetXaxis()->GetNbins(); ism++) {
       std::unique_ptr<TH1> smbin(h->ProjectionY("nextsm", ism + 1, ism + 1));
