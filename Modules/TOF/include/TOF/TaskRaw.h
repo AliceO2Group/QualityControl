@@ -86,6 +86,8 @@ class RawDataDecoder final : public DecoderBase
   Counter<1024, nullptr> mCounterTimeBC;                  /// Counter for the Bunch Crossing Time
   Counter<91, nullptr> mCounterNoiseMap[ncrates][4];      /// Counter for the Noise Hit Map, counts per crate and per FEA (4 per strip)
   Counter<ncrates, nullptr> mCounterRDHTriggers[2];       /// Counter for RDH triggers, one counts the triggers served to TDCs and one counts the triggers received
+  Counter<72, nullptr> mCounterRDHOpen;                   /// Counter for RDH open
+  Counter<800, nullptr> mCounterOrbitsPerCrate[ncrates];  /// Counter for orbits per crate
 
   /// Function to init histograms
   void initHistograms();
@@ -162,6 +164,7 @@ class TaskRaw final : public TaskInterface
   std::shared_ptr<TH1F> mHistoIndexEOInTimeWin; /// Index in electronic for noise analysis
   std::shared_ptr<TH1F> mHistoIndexEOIsNoise;   /// Noise hit map x channel
   std::shared_ptr<TH1F> mHistoRDHTriggers;      /// RDH trigger efficiency, ratio of total triggers served to total triggers received per crate
+  std::shared_ptr<TH2F> mHistoOrbitsPerCrate;   /// Orbit per crate
 
   // Other observables
   std::shared_ptr<TH1F> mHistoTimeBC; /// Time in Bunch Crossing
