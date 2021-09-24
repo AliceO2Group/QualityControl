@@ -5,7 +5,7 @@
 // This software is distributed under the terms of the GNU General Public
 // License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
-// In applyingthis license CERN does not waive the privileges and immunities
+// In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
 // or submit itself to any jurisdiction.
 
@@ -164,7 +164,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad, setting to red";
       msg->Clear();
-      msg->AddText("Presence of a second peak around 40"); //Type of the Error, in SM XX
+      msg->AddText("Min. bunch amplitude outside limits"); //Type of the Error, in SM XX
       msg->AddText("If NOT a technical run,");
       msg->AddText("call EMCAL on-call.");
       h->SetFillColor(kRed);
@@ -174,7 +174,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     }
     h->SetLineColor(kBlack);
   }
-  if (mo->getName() == "FECidMaxChWithInput_perSM" || "BunchMinRawAmplutudeFull_PHYS") {
+  if (mo->getName() == "FECidMaxChWithInput_perSM" || "PayloadSizeTFPerDDL") {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
