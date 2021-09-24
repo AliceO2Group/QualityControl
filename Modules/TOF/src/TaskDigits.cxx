@@ -269,7 +269,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     // Loop on digits
     for (auto const& digit : digits_in_row) {
       if (digit.getChannel() < 0) {
-        LOG(ERROR) << "No valid channel";
+        LOG(error) << "No valid channel";
         continue;
       }
       o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
