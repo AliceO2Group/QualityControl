@@ -349,7 +349,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
       histosMaxBunchAmpSM[ism] = new TH1F(Form("BunchMaxRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Max bunch raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 500, 0., 500.);
       histosMaxBunchAmpSM[ism]->GetXaxis()->SetTitle("Max Raw Amplitude (ADC)");
       histosMaxBunchAmpSM[ism]->GetYaxis()->SetTitle("Counts");
-      getObjectsManager()->startPublishing(histosMaxBunchAmpSM[ism]);
+      getObjectsManager()->startPublishing(histosMinSMAmpSM[ism]);
 
       histosMinBunchAmpSM[ism] = new TH1F(Form("BunchMinRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Min bunch raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
       histosMinBunchAmpSM[ism]->GetXaxis()->SetTitle("Min Raw Amplitude (ADC)");
