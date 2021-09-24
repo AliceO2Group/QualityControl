@@ -62,6 +62,7 @@ class ITSFhrTask final : public TaskInterface
 
  private:
   int mAverageProcessTime = 0;
+  int mTFCount = 0;
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createGeneralPlots(); //create General Plots depend mLayer which define by json file
   void createErrorTriggerPlots();
