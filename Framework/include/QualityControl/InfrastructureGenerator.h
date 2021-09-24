@@ -201,9 +201,9 @@ class InfrastructureGenerator
                               std::string mergingMode,
                               size_t resetAfterCycles,
                               std::string monitoringUrl);
-  static std::vector<framework::OutputSpec> generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
-  static void generateAggregator(framework::WorkflowSpec& workflow, std::string configurationSource, std::vector<framework::OutputSpec>& checkRunnerOutputs);
-  static void generatePostProcessing(framework::WorkflowSpec& workflow, std::string configurationSource);
+  static void generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
+  static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
+  static void generatePostProcessing(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
 };
 
 } // namespace core

@@ -61,20 +61,12 @@ class Check
 
   QualityObjectsType check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
 
-  /**
-   * \brief Change the revision.
-   *
-   * Update the revision number with the latest global revision.
-   * Expected to be changed after invoke of `check(moMap)` or revision number overflow.
-   */
-  void updateRevision(unsigned int revision);
-
   const std::string& getName() const { return mCheckConfig.name; };
   o2::framework::OutputSpec getOutputSpec() const { return mCheckConfig.qoSpec; };
   o2::framework::Inputs getInputs() const { return mCheckConfig.inputSpecs; };
 
   //TODO: Unique Input string
-  static o2::header::DataDescription createCheckerDataDescription(const std::string& taskName);
+  static o2::header::DataDescription createCheckDataDescription(const std::string& checkName);
 
   // For testing purpose
   void setCheckInterface(CheckInterface* checkInterface) { mCheckInterface = checkInterface; };
@@ -85,6 +77,7 @@ class Check
 
   // todo: probably make CheckFactory
   static CheckConfig extractConfig(const CommonSpec&, const CheckSpec&);
+  static framework::OutputSpec createOutputSpec(const std::string& checkName);
 
  private:
   void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality);

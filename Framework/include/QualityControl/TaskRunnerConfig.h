@@ -52,7 +52,6 @@ struct TaskRunnerConfig {
   std::string activityPassName = "";
   std::string activityProvenance = "qc";
   int fallbackRunNumber = 0;
-  std::string configurationSource{};
 };
 
 } // namespace o2::quality_control::core

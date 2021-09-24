@@ -74,7 +74,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataProcessorSpec receiver{
     "receiver",
     Inputs{
-      { "checked-mo", "QC", Check::createCheckerDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
+      { "checked-mo", "QC", Check::createCheckDataDescription(getFirstCheckName(qcConfigurationSource)), 0 } },
     Outputs{},
     AlgorithmSpec{
       [](ProcessingContext& pctx) {
