@@ -78,18 +78,19 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   auto* h1 = new TH1F("object1", "object1", 100, 0, 99);
   auto* h2 = new TH1F("object2", "object2", 100, 0, 99);
   auto* h3 = new TH1F("path/to/object3", "object3", 100, 0, 99);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "functional_test", "TST");
-  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "functional_test", "TST");
-  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, "functional_test", "TST");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "functional_test", "testClass", "TST");
+  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, "functional_test", "testClass", "TST");
+  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, "functional_test", "testClass", "TST");
   ccdb->storeMO(mo1);
   ccdb->storeMO(mo2);
   ccdb->storeMO(mo3);
 
   // test getting list of tasks
   std::vector<std::string> list = ccdb->getListing(prefixPath + "/functional_test");
-  //    for (const auto& item : list) {
-  //      ILOG(Info, Support) << "task : " << item << ENDM;
-  //    }
+  cout << prefixPath + "/functional_test" << endl;
+      for (const auto& item : list) {
+        ILOG(Info, Support) << "task : " << item << ENDM;
+      }
   BOOST_CHECK(std::find(list.begin(), list.end(), RepoPathUtils::getMoPath(mo1.get())) != list.end());
 
   // test getting objects list from task

@@ -29,7 +29,7 @@ namespace o2::quality_control_modules::common
 BOOST_AUTO_TEST_CASE(checkable)
 {
   TH1F histo("testObject", "test", 100, 0, 99);
-  MonitorObject monitorObject(&histo, "task", "testClass");
+  MonitorObject monitorObject(&histo, "task", "testClass", "TST");
   monitorObject.setIsOwner(false);
   NonEmpty myCheck;
   myCheck.configure("test");
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(checkable)
 BOOST_AUTO_TEST_CASE(beautify)
 {
   auto* histo = new TH1F("testObject", "test", 100, 0, 99);
-  std::shared_ptr<MonitorObject> monitorObject(new MonitorObject(histo, "task", "testClass")); // here we are the owner of the histo
+  std::shared_ptr<MonitorObject> monitorObject(new MonitorObject(histo, "task", "testClass", "TST")); // here we are the owner of the histo
   NonEmpty myCheck;
   myCheck.configure("test");
 
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(beautify)
 BOOST_AUTO_TEST_CASE(nonempty)
 {
   TH1F histo("testObject", "test", 100, 0, 99);
-  std::shared_ptr<MonitorObject> monitorObject(new MonitorObject(&histo, "task", "testClass")); // here we are the owner of the histo
+  std::shared_ptr<MonitorObject> monitorObject(new MonitorObject(&histo, "task", "testClass", "TST")); // here we are the owner of the histo
   monitorObject->setIsOwner(false);
   NonEmpty myCheck;
 

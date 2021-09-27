@@ -35,6 +35,7 @@ struct Config {
   std::string taskName = "test";
   std::string detectorName = "TST";
   std::string consulUrl = "invalid";
+  std::string taskClass = "TestClass";
 };
 
 BOOST_AUTO_TEST_CASE(invalid_url_test)
@@ -42,7 +43,7 @@ BOOST_AUTO_TEST_CASE(invalid_url_test)
   Config config;
   config.taskName = "test";
   config.consulUrl = "bad-url:1234";
-  ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
 }
 
 BOOST_AUTO_TEST_CASE(duplicate_object_test)
@@ -50,7 +51,7 @@ BOOST_AUTO_TEST_CASE(duplicate_object_test)
   Config config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
-  ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
   TObjString s("content");
   objectsManager.startPublishing(&s);
   BOOST_CHECK_THROW(objectsManager.startPublishing(&s), o2::quality_control::core::DuplicateObjectError);
@@ -61,7 +62,7 @@ BOOST_AUTO_TEST_CASE(is_being_published_test)
   Config config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
-  ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
   TObjString s("content");
   BOOST_CHECK(!objectsManager.isBeingPublished("content"));
   objectsManager.startPublishing(&s);
@@ -73,7 +74,7 @@ BOOST_AUTO_TEST_CASE(unpublish_test)
 {
   Config config;
   config.taskName = "test";
-  ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
   TObjString s("content");
   objectsManager.startPublishing(&s);
   BOOST_CHECK_EQUAL(objectsManager.getNumberPublishedObjects(), 1);
@@ -92,7 +93,7 @@ BOOST_AUTO_TEST_CASE(getters_test)
   Config config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
-  ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
 
   TObjString s("content");
   TH1F h("histo", "h", 100, 0, 99);
@@ -122,7 +123,7 @@ BOOST_AUTO_TEST_CASE(metadata_test)
   Config config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
-  ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
 
   TObjString s("content");
   TH1F h("histo", "h", 100, 0, 99);
@@ -138,7 +139,7 @@ BOOST_AUTO_TEST_CASE(drawOptions_test)
   Config config;
   config.taskName = "test";
   config.consulUrl = "http://consul-test.cern.ch:8500";
-  ObjectsManager objectsManager(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  ObjectsManager objectsManager(config.taskName, config.taskClass, config.detectorName, config.consulUrl, 0, true);
 
   TH1F h("histo", "h", 100, 0, 99);
   objectsManager.startPublishing(&h);

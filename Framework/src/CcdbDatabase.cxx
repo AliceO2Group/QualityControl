@@ -480,7 +480,7 @@ void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 void CcdbDatabase::storeStreamerInfosToFile(std::string filename)
 {
   TH1F* h1 = new TH1F("asdf", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake", "class");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake", "class", "DET");
   TMessage message(kMESS_OBJECT);
   message.Reset();
   message.EnableSchemaEvolution(true);
