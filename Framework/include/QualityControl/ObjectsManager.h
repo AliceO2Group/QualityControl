@@ -44,7 +44,7 @@ class ObjectsManager
   /**
    * Constructor
    * @param taskName Task name
-   * @param taskClass Class of the task
+   * @param taskClass Task's class
    * @param detectorName Detector 3-letter code
    * @param consulUrl Consul URL, for the service discovery
    * @param parallelTaskID ID of a parallel Task, use 0 if there is only one.
