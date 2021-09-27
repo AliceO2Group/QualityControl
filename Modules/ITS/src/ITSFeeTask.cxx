@@ -225,7 +225,6 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSFeeTask::endOfCycle()
 {
-  ILOG(Debug) << "Processing time: " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 
