@@ -88,9 +88,9 @@ BOOST_AUTO_TEST_CASE(db_ccdb_listing)
   // test getting list of tasks
   std::vector<std::string> list = ccdb->getListing(prefixPath + "/functional_test");
   cout << prefixPath + "/functional_test" << endl;
-      for (const auto& item : list) {
-        ILOG(Info, Support) << "task : " << item << ENDM;
-      }
+  for (const auto& item : list) {
+    ILOG(Info, Support) << "task : " << item << ENDM;
+  }
   BOOST_CHECK(std::find(list.begin(), list.end(), RepoPathUtils::getMoPath(mo1.get())) != list.end());
 
   // test getting objects list from task
