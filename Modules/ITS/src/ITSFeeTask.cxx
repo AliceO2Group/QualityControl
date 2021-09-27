@@ -220,12 +220,12 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  ILOG(Debug) << "Processing time: " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
   mProcessingTime->SetBinContent(mTimeFrameId, difference);
 }
 
 void ITSFeeTask::endOfCycle()
 {
+  ILOG(Debug) << "Processing time: " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 
