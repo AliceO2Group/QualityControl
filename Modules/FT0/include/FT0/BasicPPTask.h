@@ -19,11 +19,13 @@
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
+#include "FT0Base/Constants.h"
 
 class TH1F;
 class TGraph;
 class TCanvas;
 class TLegend;
+class TProfile;
 
 namespace o2::quality_control_modules::ft0
 {
@@ -47,6 +49,8 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   TGraph* mRateCentral = nullptr;
   TGraph* mRateSemiCentral = nullptr;
   TCanvas* mRatesCanv = nullptr;
+  TProfile* mAmpl = nullptr;
+  TProfile* mTime = nullptr;
 };
 
 } // namespace o2::quality_control_modules::ft0

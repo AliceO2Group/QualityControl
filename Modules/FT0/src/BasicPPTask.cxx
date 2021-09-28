@@ -18,10 +18,12 @@
 #include "QualityControl/QcInfoLogger.h"
 
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TGraph.h>
 #include <TCanvas.h>
 #include <TPad.h>
 #include <TLegend.h>
+#include <TProfile.h>
 
 using namespace o2::quality_control::postprocessing;
 
@@ -36,6 +38,8 @@ BasicPPTask::~BasicPPTask()
   delete mRateCentral;
   delete mRateSemiCentral;
   delete mRatesCanv;
+  delete mAmpl;
+  delete mTime;
 }
 
 void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
@@ -48,6 +52,8 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
   mRateCentral = new TGraph();
   mRateSemiCentral = new TGraph();
   mRatesCanv = new TCanvas("cRates", "trigger rates");
+  mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
+  mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
 
   mRateOrA->SetNameTitle("rateOrA", "trg rate: OrA;cycle;rate [kHz]");
   mRateOrC->SetNameTitle("rateOrC", "trg rate: OrC;cycle;rate [kHz]");
@@ -71,14 +77,14 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
   mRateCentral->SetLineColor(kBlue);
   mRateSemiCentral->SetLineColor(kOrange);
 
-  mRateOrA->GetYaxis()->SetTitleOffset(1.4);
-
   getObjectsManager()->startPublishing(mRateOrA);
   getObjectsManager()->startPublishing(mRateOrC);
   getObjectsManager()->startPublishing(mRateVertex);
   getObjectsManager()->startPublishing(mRateCentral);
   getObjectsManager()->startPublishing(mRateSemiCentral);
   getObjectsManager()->startPublishing(mRatesCanv);
+  getObjectsManager()->startPublishing(mAmpl);
+  getObjectsManager()->startPublishing(mTime);
 }
 
 void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
@@ -130,6 +136,35 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
   mRateSemiCentral->Draw("PL,SAME");
   TLegend* leg = gPad->BuildLegend();
   leg->SetFillStyle(1);
+
+  auto mo3 = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", "AmpPerChannel");
+  auto hAmpPerChannel = (TH2D*)mo3->getObject();
+  if (!hAmpPerChannel) {
+    ILOG(Error) << "\nMO \"AmpPerChannel\" NOT retrieved!!!\n"
+                << ENDM;
+  }
+  auto mo4 = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", "TimePerChannel");
+  auto hTimePerChannel = (TH2D*)mo4->getObject();
+  if (!hTimePerChannel) {
+    ILOG(Error) << "\nMO \"TimePerChannel\" NOT retrieved!!!\n"
+                << ENDM;
+  }
+
+  mAmpl = hAmpPerChannel->ProfileY("MeanAmplPerChannel");
+  mTime = hTimePerChannel->ProfileY("MeanTimePerChannel");
+  mAmpl->SetErrorOption("s");
+  mTime->SetErrorOption("s");
+  // for some reason the styling is not preserved after assigning result of ProfileX/Y() to already existing object
+  mAmpl->SetMarkerStyle(24);
+  mTime->SetMarkerStyle(24);
+  mAmpl->SetLineColor(kBlack);
+  mTime->SetLineColor(kBlack);
+  mAmpl->SetDrawOption("P");
+  mTime->SetDrawOption("P");
+  mAmpl->GetXaxis()->SetTitleOffset(1);
+  mTime->GetXaxis()->SetTitleOffset(1);
+  mAmpl->GetYaxis()->SetTitleOffset(1);
+  mTime->GetYaxis()->SetTitleOffset(1);
 }
 
 void BasicPPTask::finalize(Trigger, framework::ServiceRegistry&)
