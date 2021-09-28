@@ -9,7 +9,8 @@ target_sources(O2QcFT0 PRIVATE src/BasicDigitQcTask.cxx
                              src/MergedTreeCheck.cxx
                              src/TreeReaderPostProcessing.cxx
                              src/CalibrationTask.cxx
-                             src/ChannelTimeCalibrationCheck.cxx)
+                             src/ChannelTimeCalibrationCheck.cxx
+                             src/BasicPPTask.cxx)
 
 target_include_directories(
   O2QcFT0
@@ -35,6 +36,7 @@ add_root_dictionary(O2QcFT0
                 include/FT0/TreeReaderPostProcessing.h
                 include/FT0/CalibrationTask.h
                 include/FT0/ChannelTimeCalibrationCheck.h
+                include/FT0/BasicPPTask.h
         LINKDEF include/FT0/LinkDef.h
         BASENAME O2QcFT0)
 

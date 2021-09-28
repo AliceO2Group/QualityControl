@@ -54,6 +54,11 @@ class DigitQcTask final : public TaskInterface
   void reset() override;
 
  private:
+  double mTimeMinNS = 0.;
+  double mTimeMaxNS = 0.;
+  double mTimeCurNS = 0.;
+  int mTfCounter = 0;
+
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
                                                std::is_same<std::string, Param_t>::value || (std::is_integral<Param_t>::value && !std::is_same<bool, Param_t>::value)>::type>
@@ -90,6 +95,8 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistChannelID;
   std::unique_ptr<TH2F> mHistTimeSum2Diff;
   std::unique_ptr<TH2F> mHistTriggersCorrelation;
+  std::unique_ptr<TH1D> mHistCycleDuration;
+  std::unique_ptr<TH1D> mHistCycleDurationNTF;
   std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::map<int, std::string> mMapDigitTrgNames;
