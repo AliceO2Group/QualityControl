@@ -66,10 +66,13 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   for (const auto& entry : mMapChTrgNames) {
     mHistChDataBits->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
-
+  mHistTriggersCorrelation = std::make_unique<TH2F>("TriggersCorrelation", "Correlation of triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size(), mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+  mHistTriggersCorrelation->SetOption("colz");
   mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   for (const auto& entry : mMapDigitTrgNames) {
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+    mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+    mHistTriggersCorrelation->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
   }
   mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
@@ -77,6 +80,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistSumAmpC = std::make_unique<TH1F>("SumAmpC", "Sum of amplitudes(TCM), side C;", 1000, 0, 1e4);
   mHistAverageTimeA = std::make_unique<TH1F>("AverageTimeA", "Average time(TCM), side A", 4100, -2050, 2050);
   mHistAverageTimeC = std::make_unique<TH1F>("AverageTimeC", "Average time(TCM), side C", 4100, -2050, 2050);
+  mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2;(TOA+TOC)/2", 820, -4100, 4100, 820, -4100, 4100);
+  mHistTimeSum2Diff->SetOption("colz");
   mHistChannelID = std::make_unique<TH1F>("StatChannelID", "ChannelID statistics;ChannelID", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mListHistGarbage = new TList();
   mListHistGarbage->SetOwner(kTRUE);
@@ -131,6 +136,8 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistAverageTimeA.get());
   getObjectsManager()->startPublishing(mHistAverageTimeC.get());
   getObjectsManager()->startPublishing(mHistChannelID.get());
+  getObjectsManager()->startPublishing(mHistTriggersCorrelation.get());
+  getObjectsManager()->startPublishing(mHistTimeSum2Diff.get());
 }
 
 void DigitQcTask::startOfActivity(Activity& activity)
@@ -149,6 +156,8 @@ void DigitQcTask::startOfActivity(Activity& activity)
   mHistAverageTimeA->Reset();
   mHistAverageTimeC->Reset();
   mHistChannelID->Reset();
+  mHistTriggersCorrelation->Reset();
+  mHistTimeSum2Diff->Reset();
   for (auto& entry : mMapHistAmp1D) {
     entry.second->Reset();
   }
@@ -192,10 +201,14 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mHistSumAmpC->Fill(digit.mTriggers.amplC);
       mHistAverageTimeA->Fill(digit.mTriggers.timeA);
       mHistAverageTimeC->Fill(digit.mTriggers.timeC);
-
+      mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) / 2);
       for (const auto& entry : mMapDigitTrgNames) {
         if (digit.mTriggers.triggersignals & (1 << entry.first))
           mHistTriggers->Fill(static_cast<Double_t>(entry.first));
+        for (const auto& entry2 : mMapDigitTrgNames) {
+          if ((digit.mTriggers.triggersignals & (1 << entry.first)) && (digit.mTriggers.triggersignals & (1 << entry2.first)))
+            mHistTriggersCorrelation->Fill(static_cast<Double_t>(entry.first), static_cast<Double_t>(entry2.first));
+        }
       }
     }
 
@@ -250,6 +263,8 @@ void DigitQcTask::reset()
   mHistAverageTimeA->Reset();
   mHistAverageTimeC->Reset();
   mHistChannelID->Reset();
+  mHistTriggersCorrelation->Reset();
+  mHistTimeSum2Diff->Reset();
   for (auto& entry : mMapHistAmp1D) {
     entry.second->Reset();
   }
