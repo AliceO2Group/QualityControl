@@ -228,7 +228,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPayloadSize->GetYaxis()->SetTitle("Counts");
   getObjectsManager()->startPublishing(mPayloadSize);
 
-  mErrorTypeAltro = new TH2F("ErrorTypePerSM", "ErrorTypeForSM", 40, 0, 40, 8, 0, 8);
+  mErrorTypeAltro = new TH2F("ErrorTypePerSM", "ErrorTypeForSM", 40, 0, 40, 10, 0, 10);
   mErrorTypeAltro->GetXaxis()->SetTitle("SM");
   mErrorTypeAltro->GetYaxis()->SetTitle("Error Type");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(1, "RCU Trailer");
@@ -239,7 +239,10 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeAltro->GetYaxis()->SetBinLabel(6, "ALTRO Payload");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(7, "ALTRO Mapping");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(8, "Channel");
-  getObjectsManager()->startPublishing(mErrorTypeAltro);
+  mErrorTypeAltro->GetYaxis()->SetBinLabel(9, "Mapper HWAddress");
+  mErrorTypeAltro->GetYaxis()->SetBinLabel(10, "Geometry InvalidCell");
+  getObjectsManager()
+    ->startPublishing(mErrorTypeAltro);
 
   mNbunchPerChan = new TH1F("NumberBunchPerChannel", "Number of bunches per channel", 4, -0.5, 3.5);
   mNbunchPerChan->GetXaxis()->SetTitle("# bunches per channels");
@@ -344,12 +347,12 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
       histosMinSMAmpSM[ism] = new TH1F(Form("SMMinRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Min SM raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
       histosMinSMAmpSM[ism]->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
       histosMinSMAmpSM[ism]->GetYaxis()->SetTitle("Counts");
-      getObjectsManager()->startPublishing(histosMaxBunchAmpSM[ism]);
+      getObjectsManager()->startPublishing(histosMinSMAmpSM[ism]);
 
       histosMaxBunchAmpSM[ism] = new TH1F(Form("BunchMaxRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Max bunch raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 500, 0., 500.);
       histosMaxBunchAmpSM[ism]->GetXaxis()->SetTitle("Max Raw Amplitude (ADC)");
       histosMaxBunchAmpSM[ism]->GetYaxis()->SetTitle("Counts");
-      getObjectsManager()->startPublishing(histosMinSMAmpSM[ism]);
+      getObjectsManager()->startPublishing(histosMaxBunchAmpSM[ism]);
 
       histosMinBunchAmpSM[ism] = new TH1F(Form("BunchMinRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Min bunch raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
       histosMinBunchAmpSM[ism]->GetXaxis()->SetTitle("Min Raw Amplitude (ADC)");
@@ -377,7 +380,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(histosMinChannelRawAmpRC[ism]);
     } //loop SM
     mMaxSMRawAmplSM[triggers[trg]] = histosMaxSMAmpSM;
-    mMinSMRawAmplSM[triggers[trg]] = histosMaxSMAmpSM;
+    mMinSMRawAmplSM[triggers[trg]] = histosMinSMAmpSM;
     mMaxBunchRawAmplSM[triggers[trg]] = histosMaxBunchAmpSM;
     mMinBunchRawAmplSM[triggers[trg]] = histosMinBunchAmpSM;
 
@@ -588,19 +591,31 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         for (auto& chan : decoder.getChannels()) {
           // Row and column in online format, must be remapped to offline indexing,
           // otherwise it leads to invalid cell IDs
-          auto colOnline = mapping.getColumn(chan.getHardwareAddress());
-          auto rowOnline = mapping.getRow(chan.getHardwareAddress());
+          int colOnline, rowOnline;
+          o2::emcal::ChannelType_t chType;
+          try {
+            colOnline = mapping.getColumn(chan.getHardwareAddress());
+            rowOnline = mapping.getRow(chan.getHardwareAddress());
+            chType = mapping.getChannelType(chan.getHardwareAddress());
+          } catch (o2::emcal::Mapper::AddressNotFoundException& err) {
+            QcInfoLogger::GetInstance() << QcInfoLogger::Error << "DDL " << feeID << ": " << err.what() << QcInfoLogger::endm;
+            mErrorTypeAltro->Fill(feeID, 8);
+            continue;
+          }
+          //exclude LED Mon, TRU
+          if (chType == CHTYP::LEDMON || chType == CHTYP::TRU)
+            continue;
+
           auto [row, col] = mGeometry->ShiftOnlineToOfflineCellIndexes(supermoduleID, rowOnline, colOnline);
           auto [phimod, etamod, mod] = mGeometry->GetModuleIndexesFromCellIndexesInSModule(supermoduleID, row, col);
           //tower absolute ID
           auto cellID = mGeometry->GetAbsCellId(supermoduleID, mod, phimod, etamod);
+          if (cellID > 17664) {
+            mErrorTypeAltro->Fill(feeID, 9);
+            continue;
+          }
           //position in the EMCAL
           auto [globRow, globCol] = mGeometry->GlobalRowColFromIndex(cellID);
-
-          //exclude LED Mon, TRU
-          auto chType = mapping.getChannelType(chan.getHardwareAddress());
-          if (chType == CHTYP::LEDMON || chType == CHTYP::TRU)
-            continue;
 
           fecIndex = chan.getFECIndex();
           branchIndex = chan.getBranchIndex();
