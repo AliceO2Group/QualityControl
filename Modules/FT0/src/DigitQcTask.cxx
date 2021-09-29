@@ -17,12 +17,13 @@
 #include "TCanvas.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TROOT.h"
 
 #include "QualityControl/QcInfoLogger.h"
 #include "FT0/DigitQcTask.h"
 #include "DataFormatsFT0/Digit.h"
 #include "DataFormatsFT0/ChannelData.h"
-#include <Framework/InputRecord.h>
+#include "Framework/InputRecord.h"
 
 namespace o2::quality_control_modules::ft0
 {
@@ -30,6 +31,56 @@ namespace o2::quality_control_modules::ft0
 DigitQcTask::~DigitQcTask()
 {
   delete mListHistGarbage;
+}
+
+void DigitQcTask::rebinFromConfig()
+{
+  /* Examples:
+     "binning_SumAmpC": "100, 0, 100"
+     "binning_BcOrbitMap_TrgOrA": "25, 0, 256, 10, 0, 3564"
+   hashtag = all channel IDs (mSetAllowedChIDs), e.g.
+     "binning_Amp_channel#": "5,-10,90"
+   is equivalent to:
+     "binning_Amp_channel0": "5,-10,90"
+     "binning_Amp_channel1": "5,-10,90"
+     "binning_Amp_channel2": "5,-10,90" ...
+  */
+  auto rebinHisto = [](std::string hName, std::string binning) {
+    vector<std::string> tokenizedBinning;
+    boost::split(tokenizedBinning, binning, boost::is_any_of(","));
+    if (tokenizedBinning.size() == 3) { // TH1
+      ILOG(Debug) << "config: rebinning TH1 " << hName << " -> " << binning << ENDM;
+      auto htmp = (TH1F*)gROOT->FindObject(hName.data());
+      htmp->SetBins(std::atof(tokenizedBinning[0].c_str()), std::atof(tokenizedBinning[1].c_str()), std::atof(tokenizedBinning[2].c_str()));
+    } else if (tokenizedBinning.size() == 6) { // TH2
+      auto htmp = (TH2F*)gROOT->FindObject(hName.data());
+      ILOG(Debug) << "config: rebinning TH2 " << hName << " -> " << binning << ENDM;
+      htmp->SetBins(std::atof(tokenizedBinning[0].c_str()), std::atof(tokenizedBinning[1].c_str()), std::atof(tokenizedBinning[2].c_str()),
+                    std::atof(tokenizedBinning[3].c_str()), std::atof(tokenizedBinning[4].c_str()), std::atof(tokenizedBinning[5].c_str()));
+    } else {
+      ILOG(Warning) << "config: invalid binning parameter: " << hName << " -> " << binning << ENDM;
+    }
+  };
+
+  const std::string rebinKeyword = "binning";
+  const char* channelIdPlaceholder = "#";
+  for (auto& param : mCustomParameters) {
+    if (param.first.rfind(rebinKeyword, 0) != 0)
+      continue;
+    std::string hName = param.first.substr(rebinKeyword.length() + 1);
+    std::string binning = param.second.c_str();
+    if (hName.find(channelIdPlaceholder) != std::string::npos) {
+      for (const auto& chID : mSetAllowedChIDs) {
+        std::string hNameCur = hName.substr(0, hName.find(channelIdPlaceholder)) + std::to_string(chID) + hName.substr(hName.find(channelIdPlaceholder) + 1);
+        rebinHisto(hNameCur, binning);
+      }
+    } else if (!gROOT->FindObject(hName.data())) {
+      ILOG(Warning) << "config: histogram named \"" << hName << "\" not found" << ENDM;
+      continue;
+    } else {
+      rebinHisto(hName, binning);
+    }
+  }
 }
 
 void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -136,6 +187,9 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       getObjectsManager()->startPublishing(pairHistAmpVsTime.first->second);
     }
   }
+
+  rebinFromConfig();
+
   getObjectsManager()->startPublishing(mHistTime2Ch.get());
   getObjectsManager()->startPublishing(mHistAmp2Ch.get());
   getObjectsManager()->startPublishing(mHistOrbit2BC.get());

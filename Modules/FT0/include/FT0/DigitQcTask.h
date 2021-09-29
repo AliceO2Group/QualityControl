@@ -28,6 +28,7 @@
 #include <memory>
 #include <regex>
 #include <type_traits>
+#include <boost/algorithm/string.hpp>
 #include "TH1.h"
 #include "TH2.h"
 #include "TList.h"
@@ -79,6 +80,8 @@ class DigitQcTask final : public TaskInterface
     }
     return vecResult;
   }
+
+  void rebinFromConfig();
 
   // Object which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
