@@ -91,7 +91,7 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
     entry.second->Reset();
     // scale bc pattern by vmax to make sure the difference is non positive
     float vmax = hBcOrbitMapTrg->GetBinContent(hBcOrbitMapTrg->GetMaximumBin());
-    entry.second->Add(hBcOrbitMapTrg, (TH2F*)mHistBcPattern->Clone(), 1, -1 * vmax);
+    entry.second->Add(hBcOrbitMapTrg, mHistBcPattern.get(), 1, -1 * vmax);
     for (int j = 0; j < nOrbits + 1; j++)
       for (int i = 0; i < nBc + 1; i++)
         if (entry.second->GetBinContent(j + 1, i + 1) < 0)

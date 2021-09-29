@@ -83,6 +83,8 @@ class DigitQcTask final : public TaskInterface
 
   void rebinFromConfig();
 
+  std::unique_ptr<TH1F> mHistNumADC;
+  std::unique_ptr<TH1F> mHistNumCFD;
   // Object which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
@@ -98,6 +100,7 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH1F> mHistAverageTimeA;
   std::unique_ptr<TH1F> mHistAverageTimeC;
   std::unique_ptr<TH1F> mHistChannelID;
+  std::unique_ptr<TH1F> mHistCFDEff;
   std::unique_ptr<TH2F> mHistTimeSum2Diff;
   std::unique_ptr<TH2F> mHistTriggersCorrelation;
   std::unique_ptr<TH1D> mHistCycleDuration;
