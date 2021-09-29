@@ -12,6 +12,7 @@
 ///
 /// \file   DigitQcTask.h
 /// \author Artur Furs afurs@cern.ch
+/// modified by Sebastin Bysiak sbysiak@cern.ch
 /// QC Task for FT0 detector, mostly for data visualisation during FEE tests
 
 #ifndef QC_MODULE_FT0_FT0DIGITQCTASK_H
@@ -83,8 +84,9 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
   std::unique_ptr<TH2F> mHistEventDensity2Ch;
-  std::unique_ptr<TH2F> mHistOrbit2BC;
   std::unique_ptr<TH2F> mHistChDataBits;
+  std::unique_ptr<TH2F> mHistOrbit2BC;
+  std::unique_ptr<TH1F> mHistBC;
   std::unique_ptr<TH1F> mHistTriggers;
   std::unique_ptr<TH1F> mHistNchA;
   std::unique_ptr<TH1F> mHistNchC;
@@ -105,6 +107,7 @@ class DigitQcTask final : public TaskInterface
   std::map<unsigned int, TH1F*> mMapHistTime1D;
   std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
+  std::map<unsigned int, TH2F*> mMapTrgBcOrbit;
   std::set<unsigned int> mSetAllowedChIDs;
 };
 

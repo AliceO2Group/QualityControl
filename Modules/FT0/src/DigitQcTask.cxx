@@ -12,6 +12,7 @@
 ///
 /// \file   DigitQcTask.cxx
 /// \author Artur Furs afurs@cern.ch
+/// modified by Sebastin Bysiak sbysiak@cern.ch
 
 #include "TCanvas.h"
 #include "TH1.h"
@@ -56,6 +57,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistAmp2Ch->SetOption("colz");
   mHistOrbit2BC = std::make_unique<TH2F>("OrbitPerBC", "BC-Orbit map;Orbit;BC;", 256, 0, 256, 3564, 0, 3564);
   mHistOrbit2BC->SetOption("colz");
+  mHistBC = std::make_unique<TH1F>("BC", "BC;BC;counts;", 3564, 0, 3564);
 
   mHistEventDensity2Ch = std::make_unique<TH2F>("EventDensityPerChannel", "Event density(in BC) per Channel;Channel;BC;", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, 10000, 0, 1e5);
   mHistEventDensity2Ch->SetOption("colz");
@@ -69,10 +71,20 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistTriggersCorrelation = std::make_unique<TH2F>("TriggersCorrelation", "Correlation of triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size(), mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
   mHistTriggersCorrelation->SetOption("colz");
   mHistTriggers = std::make_unique<TH1F>("Triggers", "Triggers from TCM", mMapDigitTrgNames.size(), 0, mMapDigitTrgNames.size());
+
+  mListHistGarbage = new TList();
+  mListHistGarbage->SetOwner(kTRUE);
   for (const auto& entry : mMapDigitTrgNames) {
     mHistTriggers->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetXaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
     mHistTriggersCorrelation->GetYaxis()->SetBinLabel(entry.first + 1, entry.second.c_str());
+
+    auto pairTrgBcOrbit = mMapTrgBcOrbit.insert({ entry.first, new TH2F(Form("BcOrbitMap_Trg%s", entry.second.c_str()), Form("BC-orbit map: %s fired;Orbit;BC", entry.second.c_str()), 256, 0, 256, 3564, 0, 3564) });
+    if (pairTrgBcOrbit.second) {
+      getObjectsManager()->startPublishing(pairTrgBcOrbit.first->second);
+      pairTrgBcOrbit.first->second->SetOption("colz");
+      mListHistGarbage->Add(pairTrgBcOrbit.first->second);
+    }
   }
   mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
@@ -85,8 +97,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistChannelID = std::make_unique<TH1F>("StatChannelID", "ChannelID statistics;ChannelID", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistCycleDuration = std::make_unique<TH1D>("CycleDuration", "Cycle Duration;;time [ns]", 1, 0, 2);
   mHistCycleDurationNTF = std::make_unique<TH1D>("CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
-  mListHistGarbage = new TList();
-  mListHistGarbage->SetOwner(kTRUE);
+
   std::vector<unsigned int> vecChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
     const auto chIDs = param->second;
@@ -128,6 +139,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistTime2Ch.get());
   getObjectsManager()->startPublishing(mHistAmp2Ch.get());
   getObjectsManager()->startPublishing(mHistOrbit2BC.get());
+  getObjectsManager()->startPublishing(mHistBC.get());
   getObjectsManager()->startPublishing(mHistEventDensity2Ch.get());
   getObjectsManager()->startPublishing(mHistChDataBits.get());
   getObjectsManager()->startPublishing(mHistTriggers.get());
@@ -150,6 +162,7 @@ void DigitQcTask::startOfActivity(Activity& activity)
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistOrbit2BC->Reset();
+  mHistBC->Reset();
   mHistEventDensity2Ch->Reset();
   mHistChDataBits->Reset();
   mHistTriggers->Reset();
@@ -174,6 +187,9 @@ void DigitQcTask::startOfActivity(Activity& activity)
     entry.second->Reset();
   }
   for (auto& entry : mMapHistAmpVsTime) {
+    entry.second->Reset();
+  }
+  for (auto& entry : mMapTrgBcOrbit) {
     entry.second->Reset();
   }
 }
@@ -213,6 +229,8 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (digit.mTriggers.amplA == -5000 && digit.mTriggers.amplC == -5000 && digit.mTriggers.timeA == -5000 && digit.mTriggers.timeC == -5000)
       isTCM = false;
     mHistOrbit2BC->Fill(digit.getOrbit() - firstOrbit, digit.getBC());
+    mHistBC->Fill(digit.getBC());
+
     if (isTCM && !digit.mTriggers.getLaserBit()) {
       mHistNchA->Fill(digit.mTriggers.nChanA);
       mHistNchC->Fill(digit.mTriggers.nChanC);
@@ -227,6 +245,11 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         for (const auto& entry2 : mMapDigitTrgNames) {
           if ((digit.mTriggers.triggersignals & (1 << entry.first)) && (digit.mTriggers.triggersignals & (1 << entry2.first)))
             mHistTriggersCorrelation->Fill(static_cast<Double_t>(entry.first), static_cast<Double_t>(entry2.first));
+        }
+      }
+      for (auto& entry : mMapTrgBcOrbit) {
+        if (digit.mTriggers.triggersignals & (1 << entry.first)) {
+          entry.second->Fill(digit.getOrbit() - firstOrbit, digit.getBC());
         }
       }
     }
@@ -278,6 +301,7 @@ void DigitQcTask::reset()
   mHistTime2Ch->Reset();
   mHistAmp2Ch->Reset();
   mHistOrbit2BC->Reset();
+  mHistBC->Reset();
   mHistEventDensity2Ch->Reset();
   mHistChDataBits->Reset();
   mHistTriggers->Reset();
@@ -301,8 +325,10 @@ void DigitQcTask::reset()
   for (auto& entry : mMapHistPMbits) {
     entry.second->Reset();
   }
-
   for (auto& entry : mMapHistAmpVsTime) {
+    entry.second->Reset();
+  }
+  for (auto& entry : mMapTrgBcOrbit) {
     entry.second->Reset();
   }
 }
