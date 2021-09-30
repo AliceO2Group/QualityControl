@@ -61,7 +61,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName().find("QcMuonChambers_Occupancy_Elec") != std::string::npos) {
+    if (mo->getName().find("Occupancy_Elec") != std::string::npos) {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
       if (!h)
         return result;
@@ -69,14 +69,14 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       if (h->GetEntries() == 0) {
         result = Quality::Medium;
       } else {
-        int nbinsx = 3; //h->GetXaxis()->GetNbins();
+        int nbinsx = h->GetXaxis()->GetNbins();
         int nbinsy = h->GetYaxis()->GetNbins();
         int nbad = 0;
         for (int i = 1; i <= nbinsx; i++) {
           for (int j = 1; j <= nbinsy; j++) {
             Float_t occ = h->GetBinContent(i, j);
             if (occ < minOccupancy || occ >= maxOccupancy) {
-              nbad += 1;
+              //nbad += 1;
               int ds_addr = (i % 40) - 1;
               int link_id = ((i - 1 - ds_addr) / 40) % 12;
               int fee_id = (i - 1 - ds_addr - 40 * link_id) / (12 * 40);
@@ -105,9 +105,11 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
   //std::cout<<"===================================="<<std::endl;
   //std::cout<<"PhysicsCheck::beautify() called"<<std::endl;
   //std::cout<<"===================================="<<std::endl;
-  if (mo->getName().find("QcMuonChambers_Occupancy_Elec") != std::string::npos) {
+  if (mo->getName().find("Occupancy_Elec") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     h->SetDrawOption("colz");
+    h->SetMinimum(0);
+    h->SetMaximum(10);
     TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
