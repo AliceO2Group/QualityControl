@@ -78,7 +78,7 @@ void TrendingTaskITSThr::storeTrend(repository::DatabaseInterface& qcdb)
   ILOG(Info, Support) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
   auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(),
-                                                  "o2::quality_control_modules::its::TrendingTaskITSThr",
+                                                  mConfig.className,
                                                   mConfig.detectorName);
   mo->setIsOwner(false);
   qcdb.storeMO(mo);
