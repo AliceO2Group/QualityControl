@@ -2,7 +2,7 @@
 
 add_library(O2QcFT0)
 
-target_sources(O2QcFT0 PRIVATE src/BasicDigitQcTask.cxx
+target_sources(O2QcFT0 PRIVATE  src/BasicDigitQcTask.cxx
                              src/DigitQcTask.cxx
                              src/ChannelsCheck.cxx
                              src/DigitsCheck.cxx
@@ -11,7 +11,9 @@ target_sources(O2QcFT0 PRIVATE src/BasicDigitQcTask.cxx
                              src/CalibrationTask.cxx
                              src/ChannelTimeCalibrationCheck.cxx
                              src/BasicPPTask.cxx
-                             src/OutOfBunchCollTask.cxx)
+                             src/OutOfBunchCollTask.cxx
+                             src/CFDEffCheck.cxx
+                            )
 
 target_include_directories(
   O2QcFT0
@@ -39,11 +41,12 @@ add_root_dictionary(O2QcFT0
                 include/FT0/ChannelTimeCalibrationCheck.h
                 include/FT0/BasicPPTask.h
                 include/FT0/OutOfBunchCollTask.h
+                include/FT0/CFDEffCheck.h
         LINKDEF include/FT0/LinkDef.h
         BASENAME O2QcFT0)
 
 # ---- Executables ----
-# keep commented as an example 
+# keep commented as an example
 
 #set(EXE_SRCS
 #     src/runDataProducer.cxx )

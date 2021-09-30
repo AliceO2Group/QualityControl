@@ -15,5 +15,6 @@
 #pragma link C++ class o2::quality_control_modules::ft0::ChannelTimeCalibrationCheck + ;
 #pragma link C++ class o2::quality_control_modules::ft0::BasicPPTask + ;
 #pragma link C++ class o2::quality_control_modules::ft0::OutOfBunchCollTask + ;
+#pragma link C++ class o2::quality_control_modules::ft0::CFDEffCheck + ;
 
 #endif
