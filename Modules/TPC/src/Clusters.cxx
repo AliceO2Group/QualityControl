@@ -103,10 +103,12 @@ void Clusters::processKrClusters(o2::framework::InputRecord& inputs)
 
 void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  mQCClusters.denormalize();
+
   processClusterNative(ctx.inputs());
   processKrClusters(ctx.inputs());
 
-  mQCClusters.analyse();
+  mQCClusters.normalize();
 
   fillCanvases(mQCClusters.getNClusters(), mNClustersCanvasVec, mCustomParameters, "NClusters");
   fillCanvases(mQCClusters.getQMax(), mQMaxCanvasVec, mCustomParameters, "Qmax");
@@ -131,6 +133,8 @@ void Clusters::reset()
   // clean all the monitor objects here
 
   QcInfoLogger::GetInstance() << "Resetting the canvases" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  mQCClusters.reset();
 
   clearCanvases(mNClustersCanvasVec);
   clearCanvases(mQMaxCanvasVec);

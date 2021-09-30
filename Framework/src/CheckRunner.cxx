@@ -462,5 +462,4 @@ void CheckRunner::reset()
   }
 }
 
-
 } // namespace o2::quality_control::checker
