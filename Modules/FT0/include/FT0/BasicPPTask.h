@@ -21,6 +21,8 @@
 #include "QualityControl/DatabaseInterface.h"
 #include "FT0Base/Constants.h"
 
+#include <TCanvas.h>
+
 class TH1F;
 class TGraph;
 class TCanvas;
@@ -43,12 +45,12 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
 
  private:
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
-  TGraph* mRateOrA = nullptr;
-  TGraph* mRateOrC = nullptr;
-  TGraph* mRateVertex = nullptr;
-  TGraph* mRateCentral = nullptr;
-  TGraph* mRateSemiCentral = nullptr;
-  TCanvas* mRatesCanv = nullptr;
+  std::unique_ptr<TGraph> mRateOrA;
+  std::unique_ptr<TGraph> mRateOrC;
+  std::unique_ptr<TGraph> mRateVertex;
+  std::unique_ptr<TGraph> mRateCentral;
+  std::unique_ptr<TGraph> mRateSemiCentral;
+  std::unique_ptr<TCanvas> mRatesCanv;
   TProfile* mAmpl = nullptr;
   TProfile* mTime = nullptr;
 };

@@ -32,12 +32,6 @@ namespace o2::quality_control_modules::ft0
 
 BasicPPTask::~BasicPPTask()
 {
-  delete mRateOrA;
-  delete mRateOrC;
-  delete mRateVertex;
-  delete mRateCentral;
-  delete mRateSemiCentral;
-  delete mRatesCanv;
   delete mAmpl;
   delete mTime;
 }
@@ -46,12 +40,12 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 
-  mRateOrA = new TGraph();
-  mRateOrC = new TGraph();
-  mRateVertex = new TGraph();
-  mRateCentral = new TGraph();
-  mRateSemiCentral = new TGraph();
-  mRatesCanv = new TCanvas("cRates", "trigger rates");
+  mRateOrA = std::make_unique<TGraph>(0);
+  mRateOrC = std::make_unique<TGraph>(0);
+  mRateVertex = std::make_unique<TGraph>(0);
+  mRateCentral = std::make_unique<TGraph>(0);
+  mRateSemiCentral = std::make_unique<TGraph>(0);
+  mRatesCanv = std::make_unique<TCanvas>("cRates", "trigger rates");
   mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
 
@@ -77,12 +71,12 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
   mRateCentral->SetLineColor(kBlue);
   mRateSemiCentral->SetLineColor(kOrange);
 
-  getObjectsManager()->startPublishing(mRateOrA);
-  getObjectsManager()->startPublishing(mRateOrC);
-  getObjectsManager()->startPublishing(mRateVertex);
-  getObjectsManager()->startPublishing(mRateCentral);
-  getObjectsManager()->startPublishing(mRateSemiCentral);
-  getObjectsManager()->startPublishing(mRatesCanv);
+  getObjectsManager()->startPublishing(mRateOrA.get());
+  getObjectsManager()->startPublishing(mRateOrC.get());
+  getObjectsManager()->startPublishing(mRateVertex.get());
+  getObjectsManager()->startPublishing(mRateCentral.get());
+  getObjectsManager()->startPublishing(mRateSemiCentral.get());
+  getObjectsManager()->startPublishing(mRatesCanv.get());
   getObjectsManager()->startPublishing(mAmpl);
   getObjectsManager()->startPublishing(mTime);
 }
