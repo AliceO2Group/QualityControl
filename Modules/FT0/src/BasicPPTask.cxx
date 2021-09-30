@@ -150,13 +150,13 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
                 << ENDM;
   }
 
-  mAmpl = hAmpPerChannel->ProfileY("MeanAmplPerChannel");
-  mTime = hTimePerChannel->ProfileY("MeanTimePerChannel");
+  mAmpl = hAmpPerChannel->ProfileX("MeanAmplPerChannel");
+  mTime = hTimePerChannel->ProfileX("MeanTimePerChannel");
   mAmpl->SetErrorOption("s");
   mTime->SetErrorOption("s");
   // for some reason the styling is not preserved after assigning result of ProfileX/Y() to already existing object
-  mAmpl->SetMarkerStyle(24);
-  mTime->SetMarkerStyle(24);
+  mAmpl->SetMarkerStyle(8);
+  mTime->SetMarkerStyle(8);
   mAmpl->SetLineColor(kBlack);
   mTime->SetLineColor(kBlack);
   mAmpl->SetDrawOption("P");
