@@ -2,7 +2,7 @@
 
 add_library(O2QcMID)
 
-target_sources(O2QcMID PRIVATE src/RawQcCheck.cxx src/RawQcTask.cxx)
+target_sources(O2QcMID PRIVATE src/RawQcCheck.cxx src/RawQcTask.cxx src/DigitsQcTask.cxx)
 
 target_include_directories(
   O2QcMID
@@ -19,7 +19,7 @@ install(
 
 add_root_dictionary(
   O2QcMID
-  HEADERS include/MID/RawQcCheck.h include/MID/RawQcTask.h
+  HEADERS include/MID/RawQcCheck.h include/MID/RawQcTask.h include/MID/DigitsQcTask.h include/MID/MergeableTH2Ratio.h
   LINKDEF include/MID/LinkDef.h
   BASENAME O2QcMID)
 
@@ -50,4 +50,4 @@ endforeach()
 
 # install( TARGETS ${EXE_NAMES} RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} )
 
-install(FILES mid-raw.json DESTINATION etc)
+install(FILES mid-raw.json mid-digits.json DESTINATION etc)
