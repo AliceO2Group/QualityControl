@@ -96,6 +96,7 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
     TH1F* h = new TH1F(TString::Format("%sADCamplitude_DE%03d", getHistoPath(de).c_str(), de),
                        TString::Format("ADC amplitude (DE%03d)", de), 5000, 0, 5000);
     mHistogramADCamplitudeDE.insert(make_pair(de, h));
+    getObjectsManager()->startPublishing(h);
 
     float Xsize = 40 * 5;
     float Xsize2 = Xsize / 2;
@@ -208,7 +209,9 @@ void PhysicsTaskDigits::plotDigit(const o2::mch::Digit& digit)
     h->second->Fill(ADC);
   }
 
-  if (ADC < 100) return;
+  if (ADC < 50) {
+    return;
+  }
 
   // Fill NHits Elec Histogram and ADC distribution
   const o2::mch::mapping::Segmentation& segment = o2::mch::mapping::segmentation(de);
