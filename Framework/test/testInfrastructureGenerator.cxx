@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -41,7 +42,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 1);
 
-    BOOST_CHECK_EQUAL(workflow[1].name, "skeletonTask-proxy-1");
+    BOOST_CHECK_EQUAL(workflow[1].name, "skeletonTask-proxy");
     BOOST_CHECK_EQUAL(workflow[1].inputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[1].inputs[0]).value_or(-1), 1);
     BOOST_CHECK_EQUAL(workflow[1].outputs.size(), 0);
@@ -61,7 +62,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 2);
 
-    BOOST_CHECK_EQUAL(workflow[1].name, "skeletonTask-proxy-2");
+    BOOST_CHECK_EQUAL(workflow[1].name, "skeletonTask-proxy");
     BOOST_CHECK_EQUAL(workflow[1].inputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[1].inputs[0]).value_or(-1), 2);
     BOOST_CHECK_EQUAL(workflow[1].outputs.size(), 0);
@@ -87,7 +88,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto tcpclustProxy = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "tpcclust-o2flp1" &&
+      return d.name == "tpcclust" &&
              d.inputs.size() == 0 &&
              d.outputs.size() == 1;
     });
@@ -226,4 +227,99 @@ BOOST_AUTO_TEST_CASE(qc_factory_empty_config)
     BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateRemoteInfrastructure(workflow, configFilePath));
     BOOST_CHECK_EQUAL(workflow.size(), 0);
   }
+  {
+    WorkflowSpec workflow;
+    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateLocalBatchInfrastructure(workflow, configFilePath, "file.root"));
+    BOOST_CHECK_EQUAL(workflow.size(), 0);
+  }
+  {
+    WorkflowSpec workflow;
+    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateRemoteBatchInfrastructure(workflow, configFilePath, "file.root"));
+    BOOST_CHECK_EQUAL(workflow.size(), 0);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(qc_infrastructure_local_batch_test)
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+  std::cout << configFilePath << std::endl;
+  {
+    auto workflow = InfrastructureGenerator::generateLocalBatchInfrastructure(configFilePath, "file.root");
+
+    BOOST_REQUIRE_EQUAL(workflow.size(), 4);
+
+    auto taskRunnerSkeleton = std::find_if(
+      workflow.begin(), workflow.end(),
+      [](const DataProcessorSpec& d) {
+        return d.name == "QC-TASK-RUNNER-skeletonTask" &&
+               d.inputs.size() == 2 &&
+               d.outputs.size() == 1;
+      });
+    BOOST_CHECK(taskRunnerSkeleton != workflow.end());
+
+    auto taskRunnerAbcTask = std::find_if(
+      workflow.begin(), workflow.end(),
+      [](const DataProcessorSpec& d) {
+        return d.name == "QC-TASK-RUNNER-abcTask" &&
+               d.inputs.size() == 2 &&
+               d.outputs.size() == 1;
+      });
+    BOOST_CHECK(taskRunnerAbcTask != workflow.end());
+
+    auto taskRunnerXyzTask = std::find_if(
+      workflow.begin(), workflow.end(),
+      [](const DataProcessorSpec& d) {
+        return d.name == "QC-TASK-RUNNER-xyzTask" &&
+               d.inputs.size() == 2 &&
+               d.outputs.size() == 1;
+      });
+    BOOST_CHECK(taskRunnerXyzTask != workflow.end());
+
+    BOOST_CHECK_EQUAL(workflow[3].name, "qc-root-file-sink");
+    BOOST_CHECK_EQUAL(workflow[3].inputs.size(), 3);
+    BOOST_CHECK_EQUAL(workflow[3].outputs.size(), 0);
+  }
+}
+
+BOOST_AUTO_TEST_CASE(qc_infrastructure_remote_batch_test)
+{
+  std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
+  auto workflow = InfrastructureGenerator::generateRemoteBatchInfrastructure(configFilePath, "file.root");
+
+  BOOST_REQUIRE_EQUAL(workflow.size(), 7);
+
+  auto fileReader = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "qc-root-file-source" &&
+             d.inputs.size() == 0 &&
+             d.outputs.size() == 3;
+    });
+  BOOST_CHECK(fileReader != workflow.end());
+
+  auto checkRunnerCount = std::count_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name.find("QC-CHECK-RUNNER") != std::string::npos &&
+             d.inputs.size() == 1;
+    });
+  BOOST_REQUIRE_EQUAL(checkRunnerCount, 4);
+
+  auto postprocessingTask = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "PP-TASK-RUNNER-SkeletonPostProcessing" &&
+             d.inputs.size() == 1 &&
+             d.outputs.size() == 1;
+    });
+  BOOST_CHECK(postprocessingTask != workflow.end());
+
+  auto aggregator = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "QC-AGGREGATOR-RUNNER" &&
+             d.inputs.size() == 7 &&
+             d.outputs.size() == 0;
+    });
+  BOOST_CHECK(aggregator != workflow.end());
 }

@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -27,7 +28,7 @@
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTDigitTask.h"
-#include "MFT/QcMFTDigitTaskConversionTable.h"
+#include "MFT/QcMFTUtilTables.h"
 // C++
 #include <fstream>
 
@@ -63,21 +64,20 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
   // Defining histograms
   //==============================================
   mChipOccupancy = std::make_unique<TH1F>(
-    "ChipOccupancyMaps/mMFTChipOccupancy",
+    "mMFTChipOccupancy",
     "Chip Occupancy;Chip ID;#Entries",
     936, -0.5, 935.5);
-  if (mTaskLevel == 3 || mTaskLevel == 4)
-    getObjectsManager()->startPublishing(mChipOccupancy.get());
+  getObjectsManager()->startPublishing(mChipOccupancy.get());
 
   mChipOccupancyStdDev = std::make_unique<TH1F>(
-    "ChipOccupancyMaps/mMFTChipOccupancyStdDev",
+    "mMFTChipOccupancyStdDev",
     "Chip Occupancy Std Dev;Chip ID;Chip std dev",
     936, -0.5, 935.5);
-  if (mTaskLevel == 3 || mTaskLevel == 4)
-    getObjectsManager()->startPublishing(mChipOccupancyStdDev.get());
+  getObjectsManager()->startPublishing(mChipOccupancyStdDev.get());
 
   // --Chip hit maps
   //==============================================
+  QcMFTUtilTables MFTTable;
   for (int iVectorOccupancyMapIndex = 0; iVectorOccupancyMapIndex < 4; iVectorOccupancyMapIndex++) {
     // create only hit maps corresponding to the FLP
     int iOccupancyMapIndex = getIndexChipOccupancyMap(iVectorOccupancyMapIndex);
@@ -89,16 +89,16 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
 
     auto chiphitmap = std::make_unique<TH2F>(
       folderName, histogramName,
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][0],
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][1],
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][2],
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][3],
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][4],
-      mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][5]);
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][0],
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][1],
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][2],
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][3],
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][4],
+      MFTTable.mNumberOfBinsInOccupancyMaps[iOccupancyMapIndex][5]);
     chiphitmap->SetStats(0);
+    chiphitmap->SetOption("colz");
     mChipOccupancyMap.push_back(std::move(chiphitmap));
-    if (mTaskLevel == 0 || mTaskLevel == 1 || mTaskLevel == 4)
-      getObjectsManager()->startPublishing(mChipOccupancyMap[iVectorOccupancyMapIndex].get());
+    getObjectsManager()->startPublishing(mChipOccupancyMap[iVectorOccupancyMapIndex].get());
   }
 
   // --Pixel hit maps
@@ -122,8 +122,9 @@ void QcMFTDigitTask::initialize(o2::framework::InitContext& /*ctx*/)
       minBinPixelOccupancyMap - shiftPixelOccupancyMap,
       maxBinYPixelOccupancyMap - shiftPixelOccupancyMap);
     pixelhitmap->SetStats(0);
+    pixelhitmap->SetOption("colz");
     mPixelOccupancyMap.push_back(std::move(pixelhitmap));
-    if (mTaskLevel == 2 || mTaskLevel == 4)
+    if (mTaskLevel == 1)
       getObjectsManager()->startPublishing(mPixelOccupancyMap[iVectorIndex].get());
   }
 }
@@ -177,7 +178,7 @@ void QcMFTDigitTask::monitorData(o2::framework::ProcessingContext& ctx)
     int vectorOccupancyMapIndex = getVectorIndexChipOccupancyMap(chipIndex);
     if (vectorOccupancyMapIndex < 0)
       continue;
-    mChipOccupancyMap[vectorOccupancyMapIndex]->Fill(x[chipIndex], y[chipIndex]);
+    mChipOccupancyMap[vectorOccupancyMapIndex]->Fill(mX[chipIndex], mY[chipIndex]);
   }
 }
 
@@ -231,22 +232,11 @@ void QcMFTDigitTask::getNameOfPixelOccupancyMap(TString& folderName, TString& hi
 
 void QcMFTDigitTask::getChipMapData()
 {
-
   const o2::itsmft::ChipMappingMFT map;
   auto chipMapData = map.getChipMappingData();
+  QcMFTUtilTables MFTTable;
 
-  //  reset arrays
-  for (int i = 0; i < numberOfChips; i++) {
-    mHalf[i] = 0;
-    mDisk[i] = 0;
-    mFace[i] = 0;
-    mZone[i] = 0;
-    mSensor[i] = 0;
-    mTransID[i] = 0;
-    mLayer[i] = 0;
-  }
-
-  for (int i = 0; i < numberOfChips; i++) {
+  for (int i = 0; i < 936; i++) {
     mHalf[i] = chipMapData[i].half;
     mDisk[i] = chipMapData[i].disk;
     mLayer[i] = chipMapData[i].layer;
@@ -254,6 +244,9 @@ void QcMFTDigitTask::getChipMapData()
     mZone[i] = chipMapData[i].zone;
     mSensor[i] = chipMapData[i].localChipSWID;
     mTransID[i] = chipMapData[i].cable;
+    mLadder[i] = MFTTable.mLadder[i];
+    mX[i] = MFTTable.mX[i];
+    mY[i] = MFTTable.mY[i];
   }
 }
 

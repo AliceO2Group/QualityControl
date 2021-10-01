@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -54,7 +55,7 @@ void PostProcessingRunner::init(const boost::property_tree::ptree& config)
   ILOG(Info, Support) << ">> Implementation : " << config.get<std::string>("qc.config.database.implementation") << ENDM;
   ILOG(Info, Support) << ">> Host : " << config.get<std::string>("qc.config.database.host") << ENDM;
 
-  mObjectManager = std::make_shared<ObjectsManager>(mConfig.taskName, mConfig.detectorName, mConfig.consulUrl);
+  mObjectManager = std::make_shared<ObjectsManager>(mConfig.taskName, mConfig.detectorName, mConfig.className, mConfig.consulUrl);
   mServices.registerService<DatabaseInterface>(mDatabase.get());
   if (mPublicationCallback == nullptr) {
     mPublicationCallback = publishToRepository(*mDatabase);

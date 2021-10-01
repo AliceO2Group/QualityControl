@@ -1,13 +1,13 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// // distributed under the terms of the GNU General Public License v3 (GPL
-// // Version 3), copied verbatim in the file "COPYING".
-// //
-// // See http://alice-o2.web.cern.ch/license for full licensing information.
-// //
-// // In applying this license CERN does not waive the privileges and immunities
-// // granted to it by virtue of its status as an Intergovernmental Organization
-// // or submit itself to any jurisdiction.
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 ///
 /// \file   ITSClusterTask.cxx
@@ -38,11 +38,7 @@ using namespace o2::its;
 namespace o2::quality_control_modules::its
 {
 
-ITSClusterTask::ITSClusterTask() : TaskInterface()
-{
-  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
-  mGeom = o2::its::GeometryTGeo::Instance();
-}
+ITSClusterTask::ITSClusterTask() : TaskInterface() {}
 
 ITSClusterTask::~ITSClusterTask()
 {
@@ -86,6 +82,10 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   QcInfoLogger::GetInstance() << "initialize ITSClusterTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   getJsonParameters();
+
+  o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
+  mGeom = o2::its::GeometryTGeo::Instance();
+
   createAllHistos();
 
   publishHistos();
@@ -93,10 +93,10 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   std::ifstream file(mDictPath.c_str());
 
   if (file.good()) {
-    LOG(INFO) << "Running with dictionary: " << mDictPath;
+    LOG(info) << "Running with dictionary: " << mDictPath;
     mDict.readBinaryFile(mDictPath);
   } else {
-    LOG(INFO) << "Running without dictionary !";
+    LOG(info) << "Running without dictionary !";
   }
 }
 
@@ -305,12 +305,12 @@ void ITSClusterTask::getJsonParameters()
   mRunNumberPath = mCustomParameters["runNumberPath"];
   mGeomPath = mCustomParameters["geomPath"];
   mNThreads = stoi(mCustomParameters.find("nThreads")->second);
-  LOG(INFO) << "#################### mNThreads : " << mNThreads;
+  LOG(info) << "#################### mNThreads : " << mNThreads;
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
 
     if (mCustomParameters["layer"][ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
-      LOG(INFO) << "enable layer : " << ilayer;
+      LOG(info) << "enable layer : " << ilayer;
     } else {
       mEnableLayers[ilayer] = 0;
     }
@@ -320,7 +320,7 @@ void ITSClusterTask::getJsonParameters()
 void ITSClusterTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    LOG(INFO) << " ERROR: trying to add non-existent object ";
+    LOG(info) << " ERROR: trying to add non-existent object ";
     return;
   } else
     mPublishedObjects.push_back(aObject);
@@ -338,7 +338,7 @@ void ITSClusterTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    LOG(INFO) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
+    LOG(info) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
   }
 }
 

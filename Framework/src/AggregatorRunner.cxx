@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -43,9 +44,8 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkRunnerOutputs)
+AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const std::vector<framework::OutputSpec> checkRunnerOutputs)
   : mDeviceName(createAggregatorRunnerName()),
-    mRunNumber(0),
     mTotalNumberObjectsReceived(0)
 {
   try {
@@ -161,8 +161,6 @@ QualityObjectsType AggregatorRunner::aggregate()
         mQualityObjects[qo->getName()] = qo;
         updatePolicyManager.updateObjectRevision(qo->getName());
       }
-      // set the run number on all objects
-      for_each(newQOs.begin(), newQOs.end(), [&mRunNumber = mRunNumber](std::shared_ptr<QualityObject>& qo) -> void { qo->setRunNumber(mRunNumber); });
 
       allQOs.insert(allQOs.end(), std::make_move_iterator(newQOs.begin()), std::make_move_iterator(newQOs.end()));
       newQOs.clear();
@@ -180,6 +178,7 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
   ILOG(Info, Devel) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
+      qo->setActivity(mActivity);
       mDatabase->storeQO(qo);
     }
   } catch (boost::exception& e) {
@@ -235,7 +234,7 @@ void AggregatorRunner::initAggregators()
           auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
           aggregator->init();
           updatePolicyManager.addPolicy(aggregator->getName(),
-                                        aggregator->getPolicyName(),
+                                        aggregator->getUpdatePolicyType(),
                                         aggregator->getObjectsNames(),
                                         aggregator->getAllObjectsOption(),
                                         false);
@@ -327,14 +326,18 @@ void AggregatorRunner::sendPeriodicMonitoring()
 
 void AggregatorRunner::start(const ServiceRegistry& services)
 {
-  mRunNumber = computeRunNumber(services, mConfigFile->getRecursive());
-  ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+  mActivity.mId = computeRunNumber(services, mConfigFile->getRecursive());
+  mActivity.mPeriodName = computePeriodName(services, mConfigFile->getRecursive());
+  mActivity.mPassName = computePassName(mConfigFile->getRecursive());
+  mActivity.mProvenance = computeProvenance(mConfigFile->getRecursive());
+  ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
+                  << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }
 
 
 void AggregatorRunner::stop()
 {
-  ILOG(Info, Ops) << "Stopping run " << mRunNumber << ENDM;
+  ILOG(Info, Ops) << "Stopping run " << mActivity.mId << ENDM;
 }
 
 void AggregatorRunner::reset()
@@ -343,7 +346,7 @@ void AggregatorRunner::reset()
 
   try {
     mCollector.reset();
-    mRunNumber = 0;
+    mActivity = Activity();
   } catch (...) {
     // we catch here because we don't know where it will go in DPL's CallbackService
     ILOG(Error, Support) << "Error caught in reset() :\n"

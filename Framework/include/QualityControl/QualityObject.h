@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -19,6 +20,7 @@
 #include <Common/Exceptions.h>
 // QC
 #include "QualityControl/Quality.h"
+#include "QualityControl/Activity.h"
 
 namespace o2::quality_control::core
 {
@@ -123,8 +125,10 @@ class QualityObject : public TObject
   const std::string& getCheckName() const;
   const std::string& getPolicyName() const;
   const std::vector<std::string> getMonitorObjectsNames() const;
-  int getRunNumber() const;
-  void setRunNumber(int mRunNumber);
+  Activity& getActivity();
+  const Activity& getActivity() const;
+  void setActivity(const Activity& activity);
+  void updateActivity(int runNumber = 0, const std::string& periodName = "", const std::string& passName = "", const std::string& provenance = "");
 
  private:
   Quality mQuality;
@@ -133,9 +137,9 @@ class QualityObject : public TObject
   std::string mPolicyName;
   std::vector<std::string> mInputs;
   std::vector<std::string> mMonitorObjectsNames;
-  int mRunNumber;
+  Activity mActivity;
 
-  ClassDefOverride(QualityObject, 4);
+  ClassDefOverride(QualityObject, 5);
 };
 
 using QualityObjectsType = std::vector<std::shared_ptr<QualityObject>>;

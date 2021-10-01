@@ -1,20 +1,26 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
+//
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 #include <string>
 #include <TH1.h>
 
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-using namespace o2::framework;
-// TODO bring back full namespaces after the migration
-#else
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include <DataFormatsEMCAL/Digit.h>
 #include <DataFormatsEMCAL/Cell.h>
 #include <EMCALWorkflow/PublisherSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
+
+using namespace o2::utilities;
 
 void customize(std::vector<o2::framework::CompletionPolicy>& policies)
 {
@@ -46,6 +52,10 @@ void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
 }
 
 #include "Framework/runDataProcessing.h"
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
+
+using namespace o2::configuration;
 
 std::string getConfigPath(const o2::framework::ConfigContext& config);
 
@@ -91,18 +101,22 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  LOG(info) << "Using config file '" << qcConfigurationSource << "'";
 
   if (!config.options().get<bool>("local") && !config.options().get<bool>("remote")) {
     ILOG(Info, Support) << "Creating a standalone QC topology." << ENDM;
-    o2::quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+    auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+    auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+    DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
   }
 
   if (config.options().get<bool>("local")) {
     ILOG(Info, Support) << "Creating a local QC topology." << ENDM;
 
     // Generation of Data Sampling infrastructure
-    DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+    auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+    auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+    DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
     // Generation of the local QC topology (local QC tasks and their output proxies)
     o2::quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, config.options().get<std::string>("host"));

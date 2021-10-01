@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -61,6 +62,7 @@ class ITSFhrTask final : public TaskInterface
 
  private:
   int mAverageProcessTime = 0;
+  int mTFCount = 0;
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createGeneralPlots(); //create General Plots depend mLayer which define by json file
   void createErrorTriggerPlots();
@@ -82,9 +84,9 @@ class ITSFhrTask final : public TaskInterface
   const int NStaves[NLayer] = { 12, 16, 20, 24, 30, 42, 48 };
   const int nHicPerStave[NLayer] = { 1, 1, 1, 8, 8, 14, 14 };
   const int nChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
-  //const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
+  const int ChipBoundary[NLayer + 1] = { 0, 108, 252, 432, 3120, 6480, 14712, 24120 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
-  const int ReduceFraction = 1;                                                                                                                                                                                                                                             //TODO: move to Config file to define this number
+  const int ReduceFraction = 1;
   const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; //start angle of first stave in each layer
   const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 };                                                                                                                                                                               //mid point radius
 
@@ -106,11 +108,14 @@ class ITSFhrTask final : public TaskInterface
   int mLayer;
   int mHitCutForCheck = 100; //Hit number cut for fired pixel check in a trigger
   int mGetTFFromBinding = 0;
+  int mHitCutForNoisyPixel = 1024;        //Hit number cut for noisy pixel, this number should be define according how many TF will be accumulated before reset(one can reference the cycle time)
+  float mOccupancyCutForNoisyPixel = 0.1; //Occupancy cut for noisy pixel. check if the hit/event value over this cut. similar with mHitCutForNoisyPixel
 
   std::unordered_map<unsigned int, int>*** mHitPixelID_InStave /* = new std::unordered_map<unsigned int, int>**[NStaves[lay]]*/;
   int** mHitnumber /* = new int*[NStaves[lay]]*/;       //IB : hitnumber[stave][chip]; OB : hitnumber[stave][hic]
   double** mOccupancy /* = new double*[NStaves[lay]]*/; //IB : occupancy[stave][chip]; OB : occupancy[stave][hic]
   int*** mErrorCount /* = new int**[NStaves[lay]]*/;    //IB : errorcount[stave][FEE][errorid]
+  int mNoisyPixelNumber[7][48] = { { 0 } };
 
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
 
@@ -121,9 +126,10 @@ class ITSFhrTask final : public TaskInterface
   TH2I* mTriggerVsFeeid;
   TH1D* mTriggerPlots;
   //TH1D* mInfoCanvas;//TODO: default, not implemented yet
-  TH2I* mInfoCanvasComm;      //tmp object decidated to ITS commissioning
-  TH2I* mInfoCanvasOBComm;    //tmp object decidated to ITS Outer Barral commissioning
-  TH2Poly* mGeneralOccupancy; //Max Occuapncy(chip/hic) in one stave
+  TH2I* mInfoCanvasComm;       //tmp object decidated to ITS commissioning
+  TH2I* mInfoCanvasOBComm;     //tmp object decidated to ITS Outer Barral commissioning
+  TH2Poly* mGeneralOccupancy;  //Max Occuapncy(chip/hic) in one stave
+  TH2Poly* mGeneralNoisyPixel; //Noisy pixel number in one stave
 
   TText* mTextForShifter;
   TText* mTextForShifterOB;

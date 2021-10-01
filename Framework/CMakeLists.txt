@@ -31,6 +31,7 @@ add_root_dictionary(O2QualityControlTypes
   HEADERS include/QualityControl/MonitorObject.h
   include/QualityControl/QualityObject.h
   include/QualityControl/Quality.h
+  include/QualityControl/Activity.h
   LINKDEF include/QualityControl/TypesLinkDef.h
   BASENAME O2QualityControlTypes
   )
@@ -53,6 +54,7 @@ add_library(O2QualityControl
   src/TaskInterface.cxx
   src/RepositoryBenchmark.cxx
   src/InfrastructureGenerator.cxx
+  src/InfrastructureSpecReader.cxx
   src/Check.cxx
   src/Aggregator.cxx
   src/ServiceDiscovery.cxx
@@ -73,7 +75,11 @@ add_library(O2QualityControl
   src/UpdatePolicyManager.cxx
   src/AdvancedWorkflow.cxx
   src/QualitiesToTRFCollectionConverter.cxx
-  src/Calculators.cxx)
+  src/Calculators.cxx
+  src/DataSourceSpec.cxx
+  src/RootFileSink.cxx
+  src/RootFileSource.cxx
+  src/UpdatePolicyType.cxx)
 
 target_include_directories(
   O2QualityControl
@@ -282,9 +288,9 @@ target_include_directories(testVersion PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib) 
 
-set_property(TEST testWorkflow PROPERTY TIMEOUT 30)
+set_property(TEST testWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
-set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 40)
+set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 50)
 set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 30)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
@@ -299,7 +305,7 @@ configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-function
 add_test(NAME functional_test COMMAND o2-qc-functional-test.sh)
 set_tests_properties(functional_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
 set_property(TEST functional_test PROPERTY LABELS slow)
-set_property(TEST functional_test PROPERTY TIMEOUT 30)
+set_property(TEST functional_test PROPERTY TIMEOUT 45)
 
 include(GenerateUniquePort)
 o2_generate_unique_port(UNIQUE_PORT_1)
@@ -309,7 +315,15 @@ add_test(NAME multinode_test COMMAND o2-qc-multinode-test.sh)
 set_tests_properties(multinode_test
   PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_PORT_1=${UNIQUE_PORT_1};UNIQUE_PORT_2=${UNIQUE_PORT_2}")
 set_property(TEST multinode_test PROPERTY LABELS slow)
-set_property(TEST multinode_test PROPERTY TIMEOUT 60)
+set_property(TEST multinode_test PROPERTY TIMEOUT 75)
+
+# Batch processing test
+string(RANDOM UNIQUE_ID)
+configure_file(batch-test.json.in ${CMAKE_BINARY_DIR}/tests/batch-test.json) # substitute the unique id in the task name
+add_test(NAME batch_test COMMAND o2-qc-batch-test.sh)
+set_tests_properties(batch_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
+set_property(TEST batch_test PROPERTY LABELS slow)
+set_property(TEST batch_test PROPERTY TIMEOUT 45)
 
 # disable some tests in the CI to avoid un-expected failures.
 # to be removed when it is fixed / understood
@@ -393,13 +407,17 @@ install(FILES example-default.json
 install(PROGRAMS script/RepoCleaner/o2-qc-repo-cleaner
                  script/o2-qc-functional-test.sh
                  script/o2-qc-multinode-test.sh
+                 script/o2-qc-batch-test.sh
         DESTINATION bin)
 
 install(FILES script/RepoCleaner/rules/1_per_hour.py
-              script/RepoCleaner/Ccdb.py
-              script/RepoCleaner/rules/skip.py
               script/RepoCleaner/rules/1_per_run.py
+              script/RepoCleaner/rules/last_only.py
               script/RepoCleaner/rules/none_kept.py
+              script/RepoCleaner/rules/production.py
+              script/RepoCleaner/rules/skip.py
+              script/RepoCleaner/Ccdb.py
+              script/RepoCleaner/pidfile.py
         DESTINATION lib)
 
 # ---- Copy test files ----

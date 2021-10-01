@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -19,7 +20,6 @@
 // QC
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/MonitorObjectCollection.h"
-#include "QualityControl/TaskConfig.h"
 // stl
 #include <string>
 #include <memory>
@@ -44,12 +44,13 @@ class ObjectsManager
   /**
    * Constructor
    * @param taskName Task name
+   * @param taskClass Task's class
    * @param detectorName Detector 3-letter code
    * @param consulUrl Consul URL, for the service discovery
    * @param parallelTaskID ID of a parallel Task, use 0 if there is only one.
    * @param noDiscovery If true disables the use of ServiceDiscovery
    */
-  ObjectsManager(std::string taskName, std::string detectorName, std::string consulUrl, int parallelTaskID = 0, bool noDiscovery = false);
+  ObjectsManager(std::string taskName, std::string taskClass, std::string detectorName, std::string consulUrl, int parallelTaskID = 0, bool noDiscovery = false);
   virtual ~ObjectsManager();
 
   static const std::string gDrawOptionsKey;
@@ -163,20 +164,13 @@ class ObjectsManager
    */
   void removeAllFromServiceDiscovery();
 
-  /**
-   * Set a new run number.
-   * All objects are updated and any new object gets this new run number.
-   * @param runNumber the run number.
-   */
-  void updateRunNumber(int runNumber);
-
  private:
   std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
   std::string mTaskName;
+  std::string mTaskClass;
   std::string mDetectorName;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;
-  int mCurrentRunNumber = 0;
 };
 
 } // namespace o2::quality_control::core

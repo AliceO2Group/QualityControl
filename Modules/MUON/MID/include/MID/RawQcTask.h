@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -51,21 +52,13 @@ class RawQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  TH1F* mRawDataChecker = nullptr;
-  TH1F* mDetElemID = nullptr;
-
-  std::string mOutFilename;
-  std::string mFeeIdConfigFilename;
-  std::string mCrateMasksFilename;
-  std::string mElectronicsDelaysFilename;
-  bool mPerGBT;
-  bool mPerFeeId;
+  TH1F* mRawDataChecker{ nullptr };
 
   std::unique_ptr<o2::mid::Decoder> mDecoder{ nullptr };
-  o2::mid::RawDataChecker mChecker;
-  o2::mid::FEEIdConfig mFeeIdConfig;
-  o2::mid::ElectronicsDelay mElectronicsDelay;
-  o2::mid::CrateMasks mCrateMasks;
+  o2::mid::RawDataChecker mChecker{};
+  o2::mid::FEEIdConfig mFeeIdConfig{};
+  o2::mid::ElectronicsDelay mElectronicsDelay{};
+  o2::mid::CrateMasks mCrateMasks{};
 };
 
 } // namespace o2::quality_control_modules::mid

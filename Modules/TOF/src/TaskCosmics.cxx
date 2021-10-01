@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -61,15 +62,15 @@ void TaskCosmics::initialize(o2::framework::InitContext& /*ctx*/)
   // Set task parameters from JSON
   if (auto param = mCustomParameters.find("SelDeltaTSignalRegion"); param != mCustomParameters.end()) {
     mSelDeltaTSignalRegion = atoi(param->second.c_str());
-    LOG(INFO) << "Set SelDeltaTSignalRegion to " << mSelDeltaTSignalRegion << " ps";
+    LOG(info) << "Set SelDeltaTSignalRegion to " << mSelDeltaTSignalRegion << " ps";
   }
   if (auto param = mCustomParameters.find("SelDeltaTBackgroundRegion"); param != mCustomParameters.end()) {
     mSelDeltaTBackgroundRegion = atoi(param->second.c_str());
-    LOG(INFO) << "Set SelDeltaTBackgroundRegion to " << mSelDeltaTBackgroundRegion << " ps";
+    LOG(info) << "Set SelDeltaTBackgroundRegion to " << mSelDeltaTBackgroundRegion << " ps";
   }
   if (auto param = mCustomParameters.find("SelMinLength"); param != mCustomParameters.end()) {
     mSelMinLength = atoi(param->second.c_str());
-    LOG(INFO) << "Set SelMinLength to " << mSelMinLength << " cm";
+    LOG(info) << "Set SelMinLength to " << mSelMinLength << " cm";
   }
 
   mHistoCrate1.reset(new TH1F("Crate1", "Crate1;Crate of first hit;Counts", 72, 0, 72));
@@ -122,6 +123,10 @@ void TaskCosmics::monitorData(o2::framework::ProcessingContext& ctx)
     }
     const int crate1 = o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(cosmic.getCH1()));
     const int crate2 = o2::tof::Geo::getCrateFromECH(o2::tof::Geo::getECHFromCH(cosmic.getCH2()));
+    if (crate1 == crate2) {
+      continue;
+    }
+
     mHistoCrate1->Fill(crate1);
     mHistoCrate2->Fill(crate2);
     mHistoCrate1VsCrate2->Fill(crate1, crate2);
@@ -130,12 +135,13 @@ void TaskCosmics::monitorData(o2::framework::ProcessingContext& ctx)
     mHistoToT2->Fill(cosmic.getTOT2());
     mHistoLength->Fill(cosmic.getL());
     mHistoDeltaTLength->Fill(cosmic.getL(), cosmic.getDeltaTime());
+
     if (abs(cosmic.getDeltaTime()) < mSelDeltaTSignalRegion) {
       mCounterPeak.Count(crate1);
       mCounterPeak.Count(crate2);
     } else if (abs(cosmic.getDeltaTime()) < mSelDeltaTBackgroundRegion) {
-      mCounterPeak.Add(crate1, -1);
-      mCounterPeak.Add(crate2, -1);
+      mCounterBkg.Count(crate1);
+      mCounterBkg.Count(crate2);
     }
   }
 }
@@ -144,6 +150,7 @@ void TaskCosmics::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
   mCounterPeak.FillHistogram(mHistoCosmicRate.get());
+  mCounterBkg.AddHistogram(mHistoCosmicRate.get(), -1);
   if (mCounterTF.HowMany(0) > 0) {
     mHistoCosmicRate->Scale(1. / (mCounterTF.HowMany(0) * mTFDuration));
   } else {

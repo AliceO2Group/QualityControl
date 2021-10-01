@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -21,6 +22,7 @@
 #include <TH2F.h>
 #include <TH1I.h>
 #include <TH2I.h>
+#include <TProfile2D.h>
 
 // O2 includes
 #include "TOFBase/Digit.h"
@@ -89,6 +91,8 @@ TaskDigits::~TaskDigits()
   mOrbitID.reset();
   mTimeBC.reset();
   mEventCounter.reset();
+  mOrbitDDL.reset();
+  mROWSize.reset();
 }
 
 void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
@@ -152,10 +156,10 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mTOFRawsLTMHits.reset(new TH1F("TOFRawsLTMHits", "LTMs OR signals; Crate; Counts", 72, 0., 72.));
   getObjectsManager()->startPublishing(mTOFRawsLTMHits.get());
 
-  mTOFrefMap.reset(new TH2F("TOFrefMap", "TOF enabled channel reference map;sector;strip", 72, 0., 18., 91, 0., 91.));
+  mTOFrefMap.reset(new TH2F("TOFrefMap", "TOF enabled channel reference map;sector + FEA/4; strip", 72, 0., 18., 91, 0., 91.));
   getObjectsManager()->startPublishing(mTOFrefMap.get());
 
-  mTOFRawHitMap.reset(new TH2F("TOFRawHitMap", "TOF raw hit map (1 bin = 1 FEA = 24 channels);sector;strip", 72, 0., 18., 91, 0., 91.));
+  mTOFRawHitMap.reset(new TH2F("TOFRawHitMap", "TOF raw hit map;sector + FEA/4; strip", 72, 0., 18., 91, 0., 91.));
   getObjectsManager()->startPublishing(mTOFRawHitMap.get());
 
   mTOFDecodingErrors.reset(new TH2I("TOFDecodingErrors", "Decoding error monitoring; DDL; Error ", 72, 0, 72, 13, 1, 14));
@@ -215,6 +219,12 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
   mNfiredMacropad.reset(new TH1I("NfiredMacropad", "Number of fired TOF macropads per event; number of fired macropads; Events ", 50, 0, 50));
   getObjectsManager()->startPublishing(mNfiredMacropad.get());
+
+  mOrbitDDL.reset(new TProfile2D("OrbitDDL", "Orbits in TF vs DDL ; DDL; Orbits in TF; Fraction", 72, 0., 72., 256 * 3, 0, 256));
+  getObjectsManager()->startPublishing(mOrbitDDL.get());
+
+  mROWSize.reset(new TH1I("mROWSize", "N Orbits in TF; Orbits in TF", 300, 0., 300.));
+  getObjectsManager()->startPublishing(mROWSize.get());
 }
 
 void TaskDigits::startOfActivity(Activity& /*activity*/)
@@ -252,25 +262,35 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   Bool_t isSectorI = kFALSE;
   Int_t ndigits[4] = { 0 }; // Number of digits per side I/A,O/A,I/C,O/C
 
+  mROWSize->Fill(rows.size() / 3.0);
+
+  Int_t currentrow = 0;
   // Loop on readout windows
   for (const auto& row : rows) {
     for (int i = 0; i < 72; i++) { // Loop on all crates
-      if (row.isEmptyCrate(i)) {   // Only for active crates
+      mOrbitDDL->Fill(i, currentrow / 3.0, !row.isEmptyCrate(i));
+      //
+      if (row.isEmptyCrate(i)) { // Only for active crates
         continue;
       }
       mOrbitID->Fill(row.mFirstIR.orbit % 1048576, i);
       mTimeBC->Fill(row.mFirstIR.bc % 1024, i);
       mEventCounter->Fill(row.mEventCounter % 1000, i);
     }
+    currentrow++;
+    //
     mTOFRawsMulti->Fill(row.size()); // Number of digits inside a readout window
 
     const auto digits_in_row = row.getBunchChannelData(digits); // Digits inside a readout window
     // Loop on digits
     for (auto const& digit : digits_in_row) {
+      if (digit.getChannel() < 0) {
+        LOG(error) << "No valid channel";
+        continue;
+      }
       o2::tof::Geo::getVolumeIndices(digit.getChannel(), det);
       strip = o2::tof::Geo::getStripNumberPerSM(det[1], det[2]); // Strip index in the SM
-      const Int_t ech = o2::tof::Geo::getECHFromCH(digit.getChannel());
-      mHitCounterPerStrip[strip].Count(o2::tof::Geo::getCrateFromECH(ech));
+      mHitCounterPerStrip[strip].Count(det[0] * 4 + det[4] / 12);
       mHitCounterPerChannel.Count(digit.getChannel());
       // TDC time and ToT time
       tdc_time = digit.getTDC() * o2::tof::Geo::TDCBIN * 0.001;
@@ -312,6 +332,13 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
     ndigits[1] = 0;
     ndigits[2] = 0;
     ndigits[3] = 0;
+  }
+
+  //To complete the second TF in case it receives orbits
+  for (; currentrow < 768; currentrow++) {
+    for (int i = 0; i < 72; i++) { // Loop on all crates
+      mOrbitDDL->Fill(i, currentrow / 3.0, 0);
+    }
   }
 }
 
@@ -369,6 +396,8 @@ void TaskDigits::reset()
   mOrbitID->Reset();
   mTimeBC->Reset();
   mEventCounter->Reset();
+  mOrbitDDL->Reset();
+  mROWSize->Reset();
 }
 
 } // namespace o2::quality_control_modules::tof

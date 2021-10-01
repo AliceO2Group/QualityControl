@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -56,46 +57,25 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   // Retrieve task parameters from the config file
   if (auto param = mCustomParameters.find("feeId-config-file"); param != mCustomParameters.end()) {
     ILOG(Info) << "Custom parameter - FEE Id config file: " << param->second << ENDM;
-    mFeeIdConfigFilename = param->second;
+    if (!param->second.empty()) {
+      mFeeIdConfig = o2::mid::FEEIdConfig(param->second.c_str());
+    }
   }
 
   if (auto param = mCustomParameters.find("crate-masks-file"); param != mCustomParameters.end()) {
     ILOG(Info) << "Custom parameter - Crate masks file: " << param->second << ENDM;
-    mCrateMasksFilename = param->second;
+    if (!param->second.empty()) {
+      mCrateMasks = o2::mid::CrateMasks(param->second.c_str());
+    }
   }
 
   if (auto param = mCustomParameters.find("electronics-delays-file"); param != mCustomParameters.end()) {
     ILOG(Info) << "Custom parameter - Electronics delays file: " << param->second << ENDM;
-    mElectronicsDelaysFilename = param->second;
+    if (!param->second.empty()) {
+      mElectronicsDelay = o2::mid::readElectronicsDelay(param->second.c_str());
+    }
   }
 
-  if (auto param = mCustomParameters.find("per-gbt"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - Reading per GBT link: " << param->second << ENDM;
-    std::istringstream(param->second) >> std::boolalpha >> mPerGBT;
-  }
-
-  if (auto param = mCustomParameters.find("per-feeId"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - Reading per FEE Id: " << param->second << ENDM;
-    std::istringstream(param->second) >> std::boolalpha >> mPerFeeId;
-  }
-
-  if (auto param = mCustomParameters.find("output-file"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - Output file: " << param->second << ENDM;
-    mOutFilename = param->second;
-  }
-
-  // Decoder configuration inputs
-  if (!mFeeIdConfigFilename.empty()) {
-    mFeeIdConfig = o2::mid::FEEIdConfig(mFeeIdConfigFilename.c_str());
-  }
-
-  if (!mElectronicsDelaysFilename.empty()) {
-    mElectronicsDelay = o2::mid::readElectronicsDelay(mElectronicsDelaysFilename.c_str());
-  }
-
-  if (!mCrateMasksFilename.empty()) {
-    mCrateMasks = o2::mid::CrateMasks(mCrateMasksFilename.c_str());
-  }
   mChecker.init(mCrateMasks);
 
   // Histograms to be published
@@ -109,7 +89,6 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 void RawQcTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info) << "startOfActivity" << ENDM;
-  mDetElemID->Reset();
 }
 
 void RawQcTask::startOfCycle()
@@ -121,22 +100,6 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
   ILOG(Info) << "startOfDataMonitoring" << ENDM;
-
-  /* // FIXME
-  // Old version if called with runMID.cxx through o2-qc-run-mid
-  // To be included back
-
-  auto digits = ctx.inputs().get("digits");
-
-  // Get strip patterns and loop over them
-  gsl::span<const o2::mid::ColumnData> patterns = o2::framework::DataRefUtils::as<const o2::mid::ColumnData>(msg);
-
-  // Loop on stripPatterns
-  for (auto& col : patterns) {
-    int deIndex = col.deId;
-    mDetElemID->Fill(deIndex);
-  }
-  */
 
   o2::framework::DPLRawParser parser(ctx.inputs());
 

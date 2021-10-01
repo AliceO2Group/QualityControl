@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -54,10 +55,10 @@ BOOST_AUTO_TEST_CASE(test_task)
     histo->Fill(4);
     histo->Fill(5);
     histo->Fill(6);
-    std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(histo, taskName, "TST");
+    std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(histo, taskName, "TestClass", "TST");
     repository->storeMO(mo);
 
-    std::shared_ptr<QualityObject> qo = std::make_shared<QualityObject>(Quality::Null, "testTrendingTaskCheck", "TST");
+    std::shared_ptr<QualityObject> qo = std::make_shared<QualityObject>(Quality::Null, "testTrendingTaskCheck", "TestClass", "TST");
     qo->updateQuality(Quality::Bad);
     repository->storeQO(qo);
   }
@@ -65,7 +66,7 @@ BOOST_AUTO_TEST_CASE(test_task)
   // We make sure, that destroy the previous, possibly correct test result
   {
     TTree* dummyTree = new TTree(taskName.c_str(), taskName.c_str());
-    repository->storeMO(std::make_shared<MonitorObject>(dummyTree, taskName, "TST"));
+    repository->storeMO(std::make_shared<MonitorObject>(dummyTree, taskName, "TestClass", "TST"));
     auto treeMO = repository->retrieveMO("qc/TST/MO/" + taskName, taskName);
     BOOST_REQUIRE(treeMO != nullptr);
     TTree* treeFromRepo = dynamic_cast<TTree*>(treeMO->getObject());

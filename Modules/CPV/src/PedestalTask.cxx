@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -54,8 +55,10 @@ void PedestalTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize PedestalTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+  if (auto param = mCustomParameters.find("minNEventsToUpdatePedestals"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter : minNEventsToUpdatePedestals " << param->second << ENDM;
+    mMinNEventsToUpdatePedestals = stoi(param->second);
+    ILOG(Info, Devel) << "I set minNEventsToUpdatePedestals = " << mMinNEventsToUpdatePedestals << ENDM;
   }
   initHistograms();
   mNEventsTotal = 0;
@@ -64,7 +67,7 @@ void PedestalTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PedestalTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity" << activity.mId << ENDM;
+  ILOG(Info, Support) << "startOfActivity() : resetting everything" << activity.mId << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
   mNEventsFromLastFillHistogramsCall = 0;
@@ -72,7 +75,7 @@ void PedestalTask::startOfActivity(Activity& activity)
 
 void PedestalTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << ENDM;
+  ILOG(Info, Devel) << "startOfCycle" << ENDM;
   //at at the startOfCycle all HistAmplitudes are not updated by definition
   for (int i = 0; i < kNChannels; i++)
     mIsUpdatedAmplitude[i] = false;
@@ -113,24 +116,25 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
   // 2. Using get("<binding>")
   auto digits = ctx.inputs().get<gsl::span<o2::cpv::Digit>>("digits");
   mHist1D[H1DNDigitsPerInput]->Fill(digits.size());
-  for (const auto& digit : digits) {
-    mHist1D[H1DDigitIds]->Fill(digit.getAbsId());
-    short relId[3];
-    mCPVGeometry.absToRelNumbering(digit.getAbsId(), relId);
-    //reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
-    mHist2D[H2DDigitMapM2 + relId[0] - 2]->Fill(relId[1], relId[2]);
-    mHistAmplitudes[digit.getAbsId()]->Fill(digit.getAmplitude());
-    mIsUpdatedAmplitude[digit.getAbsId()] = true;
-  }
 
   auto digitsTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("dtrigrec");
   //mNEventsTotal += digitsTR.size();//number of events in the current input
   for (const auto& trigRecord : digitsTR) {
-    ILOG(Info, Devel) << " monitorData() : trigger record #" << mNEventsTotal
-                      << " contains " << trigRecord.getNumberOfObjects() << " objects." << ENDM;
+    LOG(debug) << " monitorData() : trigger record #" << mNEventsTotal
+               << " contains " << trigRecord.getNumberOfObjects() << " objects." << ENDM;
     if (trigRecord.getNumberOfObjects() > 0) { //at least 1 digit -> pedestal event
       mNEventsTotal++;
       mNEventsFromLastFillHistogramsCall++;
+      for (int iDig = trigRecord.getFirstEntry(); iDig < trigRecord.getFirstEntry() + trigRecord.getNumberOfObjects(); iDig++) {
+        mHist1D[H1DDigitIds]->Fill(digits[iDig].getAbsId());
+        short relId[3];
+        if (mCPVGeometry.absToRelNumbering(digits[iDig].getAbsId(), relId)) {
+          //reminder: relId[3]={Module, phi col, z row} where Module=2..4, phi col=0..127, z row=0..59
+          mHist2D[H2DDigitMapM2 + relId[0] - 2]->Fill(relId[1], relId[2]);
+          mHistAmplitudes[digits[iDig].getAbsId()]->Fill(digits[iDig].getAmplitude());
+          mIsUpdatedAmplitude[digits[iDig].getAbsId()] = true;
+        }
+      }
     }
   }
   // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
@@ -149,33 +153,35 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
   //   Double_t stats[4];
   //   h->GetStats(stats);
   //   auto s = ctx.inputs().get<TObjString*>("string");
-  //   LOG(INFO) << "String is " << s->GetString().Data();
+  //   LOG(info) << "String is " << s->GetString().Data();
 
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
   // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
   //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
   //   if (condition) {
-  //     LOG(INFO) << "Retrieved " << condition->ClassName();
+  //     LOG(info) << "Retrieved " << condition->ClassName();
   //     delete condition;
   //   }
 }
 
 void PedestalTask::endOfCycle()
 {
-  ILOG(Info, Support) << "endOfCycle. I call fillHistograms()" << ENDM;
+  ILOG(Info, Devel) << "endOfCycle. I call fillHistograms()" << ENDM;
   //fit histograms if have sufficient increment of event number
-  if (mNEventsFromLastFillHistogramsCall > 1000)
+  if (mNEventsFromLastFillHistogramsCall >= mMinNEventsToUpdatePedestals) {
     fillHistograms();
-  mNEventsFromLastFillHistogramsCall = 0;
+    mNEventsFromLastFillHistogramsCall = 0;
+  }
 }
 
 void PedestalTask::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
   //do a final fill of histograms (if needed)
-  if (mNEventsFromLastFillHistogramsCall)
+  if (mNEventsFromLastFillHistogramsCall) {
+    ILOG(Info, Devel) << "Final call of fillHistograms() " << ENDM;
     fillHistograms();
-  mNEventsFromLastFillHistogramsCall = 0;
+  }
 }
 
 void PedestalTask::reset()
@@ -189,15 +195,17 @@ void PedestalTask::reset()
 
 void PedestalTask::initHistograms()
 {
+  ILOG(Info, Devel) << "initing histograms" << ENDM;
+
   //create monitoring histograms (or reset, if they already exist)
   for (int i = 0; i < kNChannels; i++) {
     if (!mHistAmplitudes[i]) {
       mHistAmplitudes[i] =
         new TH1F(Form("HistAmplitude%d", i), Form("HistAmplitude%d", i), 4096, 0., 4096.);
       //publish some of them
-      if (i % 1000 == 0)
+      if (i % 1000 == 0) {
         getObjectsManager()->startPublishing(mHistAmplitudes[i]);
-
+      }
     } else {
       mHistAmplitudes[i]->Reset();
     }
@@ -403,7 +411,7 @@ void PedestalTask::fillHistograms()
 
     if (channel % 1000 == 0) {
       ILOG(Info, Devel) << "fillHistograms(): Start to search peaks in channel " << channel << ENDM;
-      LOG(INFO) << "fillHistograms(): Start to search peaks in channel " << channel;
+      LOG(info) << "fillHistograms(): Start to search peaks in channel " << channel;
     }
 
     numberOfPeaks = peakSearcher->Search(mHistAmplitudes[channel], 10., "nobackground", 0.2);
@@ -457,7 +465,7 @@ void PedestalTask::fillHistograms()
 
   //show some info to developer
   ILOG(Info, Devel) << "fillHistograms() : at this time, N events = " << mNEventsTotal << ENDM;
-  LOG(INFO) << "fillPedestals() : I finished filling of histograms";
+  LOG(info) << "fillPedestals() : I finished filling of histograms";
 }
 
 void PedestalTask::resetHistograms()

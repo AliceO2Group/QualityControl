@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -38,6 +39,8 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/UpdatePolicyManager.h"
+#include "QualityControl/Activity.h"
+#include "QualityControl/CheckRunnerConfig.h"
 
 namespace o2::quality_control::core
 {
@@ -81,11 +84,10 @@ class CheckRunner : public framework::Task
    * Depending on the constructor, it can be a single check device or a group check device.
    * Group check assumes that the input of the checks is the same!
    *
-   * @param checkName Check name from the configuration
-   * @param checkNames List of check names, that operate on the same inputs.
-   * @param configurationSource Path to configuration
+   * @param checkRunnerConfig configuration of CheckRunner
+   * @param checkConfigs configuration of all Checks that should run in this data processor
    */
-  CheckRunner(std::vector<Check> checks, std::string configurationSource);
+  CheckRunner(CheckRunnerConfig, const std::vector<CheckConfig>& checkConfigs);
 
   /**
    * \brief CheckRunner constructor
@@ -93,10 +95,10 @@ class CheckRunner : public framework::Task
    * Create a sink for the Input. It is expected to receive Monitor Object to store.
    * It will not run any checks on a given input.
    *
+   * @param checkRunnerConfig configuration of CheckRunner
    * @param input Monitor Object input spec.
-   * @param configSource Path to configuration
    */
-  CheckRunner(o2::framework::InputSpec input, std::string configurationSource);
+  CheckRunner(CheckRunnerConfig, o2::framework::InputSpec input);
 
   /// Destructor
   ~CheckRunner() override;
@@ -114,12 +116,10 @@ class CheckRunner : public framework::Task
   std::string getDeviceName() { return mDeviceName; };
 
   /// \brief Unified DataDescription naming scheme for all checkers
-  static o2::header::DataDescription createCheckRunnerDataDescription(const std::string taskName);
-  static o2::framework::Inputs createInputSpec(const std::string checkName, const std::string configSource);
-
   static std::string createCheckRunnerIdString() { return "QC-CHECK-RUNNER"; };
-  static std::string createCheckRunnerName(std::vector<Check> checks);
+  static std::string createCheckRunnerName(const std::vector<CheckConfig>& checks);
   static std::string createSinkCheckRunnerName(o2::framework::InputSpec input);
+  static std::string createCheckRunnerFacility(std::string deviceName);
 
  private:
   /**
@@ -158,7 +158,7 @@ class CheckRunner : public framework::Task
    *
    * \param checks List of all checks
    */
-  static o2::framework::Outputs collectOutputs(const std::vector<Check>& checks);
+  static o2::framework::Outputs collectOutputs(const std::vector<CheckConfig>& checks);
 
   inline void initDatabase();
   inline void initMonitoring();
@@ -175,7 +175,7 @@ class CheckRunner : public framework::Task
    *
    * \param input_string String intended to be hashed
    */
-  static std::size_t hash(std::string input_string);
+  static std::size_t hash(const std::string& inputString);
 
   /**
    * \brief Massage/Prepare data from the Context and store it in the cache.
@@ -202,12 +202,12 @@ class CheckRunner : public framework::Task
   // General state
   std::string mDeviceName;
   std::vector<Check> mChecks;
-  int mRunNumber;
+  Activity mActivity;
+  CheckRunnerConfig mConfig;
   o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;
-  std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
   UpdatePolicyManager updatePolicyManager;
 
   // DPL

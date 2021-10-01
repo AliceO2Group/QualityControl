@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -18,6 +19,8 @@
 
 #ifndef QC_MFT_CLUSTER_TASK_H
 #define QC_MFT_CLUSTER_TASK_H
+#include <TH1F.h>
+#include <TH2F.h>
 
 // Quality Control
 #include "QualityControl/TaskInterface.h"
@@ -47,8 +50,31 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   void reset() override;
 
  private:
+  std::unique_ptr<TH1F> mClusterLayerIndexH0 = nullptr;
+  std::unique_ptr<TH1F> mClusterLayerIndexH1 = nullptr;
+  std::unique_ptr<TH1F> mClusterDiskIndex = nullptr;
+
   std::unique_ptr<TH1F> mClusterSensorIndex = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
+
+  std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
+  std::vector<std::unique_ptr<TH1F>> mClusterPatternSensorMap;
+  std::vector<std::unique_ptr<TH2F>> mChipOccupancyMap;
+
+  // needed to construct the name and path of some histograms
+  int mHalf[936] = { 0 };
+  int mDisk[936] = { 0 };
+  int mFace[936] = { 0 };
+  int mZone[936] = { 0 };
+  int mSensor[936] = { 0 };
+  int mTransID[936] = { 0 };
+  int mLadder[936] = { 0 };
+  float mX[936] = { 0 };
+  float mY[936] = { 0 };
+
+  // internal functions
+  void getChipMapData();
+  void getNameOfMap(TString& folderName, TString& histogramName, int iChipIndex);
 };
 
 } // namespace o2::quality_control_modules::mft

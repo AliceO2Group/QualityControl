@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -49,13 +50,13 @@ class MFTClustersRootFileReader : public o2::framework::Task
   //_________________________________________________________________________________________________
   void init(framework::InitContext& ic)
   {
-    LOG(INFO) << " In MFTClustersRootFileReader::init ... entering ";
+    LOG(info) << " In MFTClustersRootFileReader::init ... entering ";
 
     // open the input file
     auto filename = ic.options().get<std::string>("mft-cluster-infile");
     mFile = std::make_unique<TFile>(filename.c_str(), "OLD");
     if (!mFile->IsOpen()) {
-      LOG(ERROR) << "MFTClustersRootFileReader::init. Cannot open the file: " << filename.c_str();
+      LOG(error) << "MFTClustersRootFileReader::init. Cannot open the file: " << filename.c_str();
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -69,7 +70,7 @@ class MFTClustersRootFileReader : public o2::framework::Task
     // check that it has entries
     mNumberOfTF = mTree->GetEntries();
     if (mNumberOfTF == 0) {
-      LOG(ERROR) << "MFTClustersRootFileReader::init. No TFs ";
+      LOG(error) << "MFTClustersRootFileReader::init. No TFs ";
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -83,7 +84,7 @@ class MFTClustersRootFileReader : public o2::framework::Task
 
     // Check if this is the last TF
     if (mCurrentTF == mNumberOfTF) {
-      LOG(INFO) << " MFTClustersRootFileReader::run. End of file reached";
+      LOG(info) << " MFTClustersRootFileReader::run. End of file reached";
       pc.services().get<ControlService>().endOfStream();
       pc.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;

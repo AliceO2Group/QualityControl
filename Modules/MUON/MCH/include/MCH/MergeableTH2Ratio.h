@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -65,12 +66,16 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
 
   void update()
   {
+    static constexpr double sOrbitLengthInNanoseconds = 3564 * 25;
+    static constexpr double sOrbitLengthInMicroseconds = sOrbitLengthInNanoseconds / 1000;
+    static constexpr double sOrbitLengthInMilliseconds = sOrbitLengthInMicroseconds / 1000;
     const char* name = this->GetName();
     const char* title = this->GetTitle();
     Reset();
     Divide(mhistoNum, mhistoDen);
     SetNameTitle(name, title);
-    Scale(1 / 87.5);
+    // convertion to KHz units
+    Scale(1. / sOrbitLengthInMilliseconds);
     SetOption("colz");
   }
 

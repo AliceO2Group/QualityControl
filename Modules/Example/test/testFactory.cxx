@@ -25,12 +25,12 @@ namespace o2::quality_control_modules::example
 BOOST_AUTO_TEST_CASE(Task_Factory)
 {
   TaskFactory factory;
-  TaskConfig config;
+  TaskRunnerConfig config;
   config.taskName = "task";
   config.moduleName = "QcCommon";
   config.className = "o2::quality_control_modules::example::ExampleTask";
   config.detectorName = "DAQ";
-  auto manager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  auto manager = make_shared<ObjectsManager>(config.taskName, config.className, config.detectorName, config.consulUrl, 0, true);
   try {
     gSystem->AddDynamicPath("lib:../../lib:../../../lib:.:"); // add local  paths for the test
     factory.create(config, manager);
@@ -44,8 +44,8 @@ bool is_critical(AliceO2::Common::FatalException const&) { return true; }
 BOOST_AUTO_TEST_CASE(Task_Factory_failures, *utf::depends_on("Task_Factory") /* make sure we don't run both tests at the same time */)
 {
   TaskFactory factory;
-  TaskConfig config;
-  auto manager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  TaskRunnerConfig config;
+  auto manager = make_shared<ObjectsManager>(config.taskName, config.className, config.detectorName, config.consulUrl, 0, true);
 
   config.taskName = "task";
   config.moduleName = "WRONGNAME";

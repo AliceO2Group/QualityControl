@@ -62,7 +62,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
         freshest: ObjectVersion = None
         for v in run_versions:
             # logging.debug(f"  - version {v}")
-            if freshest is None or freshest.validFromAsDatetime < v.validFromAsDt:
+            if freshest is None or freshest.validFromAsDt < v.validFromAsDt:
                 if freshest is not None:
                     if in_grace_period(freshest, delay):
                         preservation_list.append(freshest)

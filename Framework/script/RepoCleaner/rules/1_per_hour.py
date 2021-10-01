@@ -32,7 +32,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
     deletion_list: List[ObjectVersion] = []
     update_list: List[ObjectVersion] = []
     for v in versions:
-        if last_preserved == None or last_preserved.validFromAsDatetime < v.validFromAsDt - timedelta(hours=1):
+        if last_preserved == None or last_preserved.validFromAsDt < v.validFromAsDt - timedelta(hours=1):
             # first extend validity of the previous preserved (should we take into account the run ?)
             if last_preserved != None:
                 ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1))

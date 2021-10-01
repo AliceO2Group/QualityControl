@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -187,7 +188,7 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
   //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
   //   if (condition) {
-  //     LOG(INFO) << "Retrieved " << condition->ClassName();
+  //     LOG(info) << "Retrieved " << condition->ClassName();
   //     delete condition;
   //   }
 }
@@ -196,7 +197,9 @@ void VertexingQcTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 
-  mVtxEffVsMult->Divide(mNPrimaryMCEvWithVtx, mNPrimaryMCGen, 1, 1, "B");
+  if (mUseMC) {
+    mVtxEffVsMult->Divide(mNPrimaryMCEvWithVtx, mNPrimaryMCGen, 1, 1, "B");
+  }
 }
 
 void VertexingQcTask::endOfActivity(Activity& /*activity*/)
