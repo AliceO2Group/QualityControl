@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(test_invoke_all_methods)
 {
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
   TaskRunnerConfig taskConfig;
-  ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
+  ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.className, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
 
   test::TestTask testTask(objectsManager);
   BOOST_CHECK_EQUAL(testTask.test, 0);
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(test_task_factory)
     "http://consul-test.cern.ch:8500"
   };
 
-  auto objectsManager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl);
+  auto objectsManager = make_shared<ObjectsManager>(config.taskName, config.className, config.detectorName, config.consulUrl);
 
   TaskFactory taskFactory;
   auto task = taskFactory.create(config, objectsManager);
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(retrieveCondition)
 
   // retrieve it
   TaskRunnerConfig taskConfig;
-  ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
+  ObjectsManager* objectsManager = new ObjectsManager(taskConfig.taskName, taskConfig.className, taskConfig.detectorName, taskConfig.consulUrl, 0, true);
   test::TestTask testTask(objectsManager);
   testTask.loadCcdb("ccdb-test.cern.ch:8080");
   o2::emcal::BadChannelMap* bcm = testTask.testRetrieveCondition();

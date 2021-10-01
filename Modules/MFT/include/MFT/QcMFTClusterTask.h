@@ -50,11 +50,16 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   void reset() override;
 
  private:
+  std::unique_ptr<TH1F> mClusterLayerIndexH0 = nullptr;
+  std::unique_ptr<TH1F> mClusterLayerIndexH1 = nullptr;
+  std::unique_ptr<TH1F> mClusterDiskIndex = nullptr;
+
   std::unique_ptr<TH1F> mClusterSensorIndex = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
 
   std::unique_ptr<TH2F> mClusterPatternSensorIndices = nullptr;
   std::vector<std::unique_ptr<TH1F>> mClusterPatternSensorMap;
+  std::vector<std::unique_ptr<TH2F>> mChipOccupancyMap;
 
   // needed to construct the name and path of some histograms
   int mHalf[936] = { 0 };
@@ -64,8 +69,10 @@ class QcMFTClusterTask /*final*/ : public TaskInterface // todo add back the "fi
   int mSensor[936] = { 0 };
   int mTransID[936] = { 0 };
   int mLadder[936] = { 0 };
+  float mX[936] = { 0 };
+  float mY[936] = { 0 };
 
-  // internal functions 
+  // internal functions
   void getChipMapData();
   void getNameOfMap(TString& folderName, TString& histogramName, int iChipIndex);
 };

@@ -46,7 +46,7 @@ class MonitorObject : public TObject
  public:
   /// Default constructor
   MonitorObject();
-  MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName = "DET", int runNumber = 0, const std::string& periodName = "", const std::string& passName = "", const std::string& provenance = "qc");
+  MonitorObject(TObject* object, const std::string& taskName, const std::string& taskClass, const std::string& detectorName, int runNumber = 0, const std::string& periodName = "", const std::string& passName = "", const std::string& provenance = "qc");
   /// Destructor
   ~MonitorObject() override;
 
@@ -72,11 +72,9 @@ class MonitorObject : public TObject
   const std::string getFullName() const { return getTaskName() + "/" + getName(); }
 
   TObject* getObject() const { return mObject; }
-
   void setObject(TObject* object) { mObject = object; }
 
   bool isIsOwner() const { return mIsOwner; }
-
   void setIsOwner(bool isOwner) { mIsOwner = isOwner; }
 
   const std::string& getTaskName() const { return mTaskName; }
@@ -84,6 +82,9 @@ class MonitorObject : public TObject
 
   const std::string& getDetectorName() const { return mDetectorName; }
   void setDetectorName(const std::string& detectorName) { mDetectorName = detectorName; }
+
+  const std::string& getTaskClass() const;
+  void setTaskClass(const std::string& taskClass);
 
   Activity& getActivity();
   const Activity& getActivity() const;
@@ -120,6 +121,7 @@ class MonitorObject : public TObject
  private:
   TObject* mObject;
   std::string mTaskName;
+  std::string mTaskClass;
   std::string mDetectorName;
   std::map<std::string, std::string> mUserMetadata;
   std::string mDescription;
@@ -130,7 +132,7 @@ class MonitorObject : public TObject
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 9);
+  ClassDefOverride(MonitorObject, 10);
 };
 
 } // namespace o2::quality_control::core

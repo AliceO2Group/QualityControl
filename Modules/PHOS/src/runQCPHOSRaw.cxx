@@ -63,7 +63,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
-  LOG(INFO) << "Using config file=== '" << qcConfigurationSource << "'";
+  LOG(info) << "Using config file=== '" << qcConfigurationSource << "'";
 
   if (config.options().get<bool>("local") && config.options().get<bool>("remote")) {
     ILOG(Info, Support) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
@@ -71,13 +71,13 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
 
   if (config.options().get<bool>("local") || !config.options().get<bool>("remote")) {
 
-    LOG(INFO) << "Local GenerateInfrastructure";
+    LOG(info) << "Local GenerateInfrastructure";
     // Generation of Data Sampling infrastructure
     auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
     auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
     DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
-    LOG(INFO) << "Local: generateLocalInfrastructure";
+    LOG(info) << "Local: generateLocalInfrastructure";
     // Generation of the local QC topology (local QC tasks)
     o2::quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, config.options().get<std::string>("host"));
   }
@@ -85,7 +85,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
     // Generation of the remote QC topology (task for QC servers, mergers and all checkers)
     o2::quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
   }
-  LOG(INFO) << "Done ";
+  LOG(info) << "Done ";
 
   return specs;
 }

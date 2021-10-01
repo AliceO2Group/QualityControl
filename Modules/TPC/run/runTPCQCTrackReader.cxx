@@ -98,9 +98,9 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     //(++(*reader))(processingContext);
     if (reader->next()) {
       (*reader)(processingContext);
-      //LOG(INFO) << "Call producer AlgorithmSpec::ProcessCallback:  has data " << reader->getCount();
+      //LOG(info) << "Call producer AlgorithmSpec::ProcessCallback:  has data " << reader->getCount();
     } else {
-      //LOG(INFO) << "Call producer AlgorithmSpec::ProcessCallback:  no next data" << reader->getCount();
+      //LOG(info) << "Call producer AlgorithmSpec::ProcessCallback:  no next data" << reader->getCount();
     }
   };
 }

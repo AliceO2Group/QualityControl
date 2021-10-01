@@ -105,13 +105,13 @@ void SkeletonTask::monitorData(o2::framework::ProcessingContext& ctx)
   //   Double_t stats[4];
   //   h->GetStats(stats);
   //   auto s = ctx.inputs().get<TObjString*>("string");
-  //   LOG(INFO) << "String is " << s->GetString().Data();
+  //   LOG(info) << "String is " << s->GetString().Data();
 
   // 3. Access CCDB. If it is enough to retrieve it once, do it in initialize().
   // Remember to delete the object when the pointer goes out of scope or it is no longer needed.
   //   TObject* condition = TaskInterface::retrieveCondition("QcTask/example"); // put a valid condition path here
   //   if (condition) {
-  //     LOG(INFO) << "Retrieved " << condition->ClassName();
+  //     LOG(info) << "Retrieved " << condition->ClassName();
   //     delete condition;
   //   }
 }

@@ -211,7 +211,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto digits = ctx.inputs().get<const std::vector<o2::itsmft::Digit>>("digits");
   auto events = ctx.inputs().get<DigitEvent*>("Events");
-  LOG(INFO) << "Digit Size Getting For This TimeFrame (Event) = " << digits.size();
+  LOG(info) << "Digit Size Getting For This TimeFrame (Event) = " << digits.size();
 
   mErrors = ctx.inputs().get<const std::array<unsigned int, NError>>("Error");
 

@@ -49,6 +49,11 @@ PhysicsTaskDigits::PhysicsTaskDigits() : TaskInterface() {}
 
 PhysicsTaskDigits::~PhysicsTaskDigits() {}
 
+static std::string getHistoPath(int deId)
+{
+  return fmt::format("ST{}/DE{}/", (deId - 100) / 200 + 1, deId);
+}
+
 void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize PhysicsTaskDigits" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -68,72 +73,73 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   for (int feeid = 0; feeid < PhysicsTaskDigits::sMaxFeeId; feeid++) {
     for (int linkId = 0; linkId < PhysicsTaskDigits::sMaxLinkId; linkId++) {
       int index = PhysicsTaskDigits::sMaxLinkId * feeid + linkId;
-      mHistogramNHits[index] = new TH2F(TString::Format("QcMuonChambers_NHits_FEE%01d_LINK%02d", feeid, linkId),
-                                        TString::Format("QcMuonChambers - Number of hits (FEE link %02d)", index), PhysicsTaskDigits::sMaxDsId, 0, PhysicsTaskDigits::sMaxDsId, 64, 0, 64);
+      mHistogramNHits[index] = new TH2F(TString::Format("NHits_FEE%01d_LINK%02d", feeid, linkId),
+                                        TString::Format("Number of hits (FEE link %02d)", index), PhysicsTaskDigits::sMaxDsId, 0, PhysicsTaskDigits::sMaxDsId, 64, 0, 64);
     }
   }
 
   const uint32_t nElecXbins = PhysicsTaskDigits::sMaxFeeId * PhysicsTaskDigits::sMaxLinkId * PhysicsTaskDigits::sMaxDsId;
-  mHistogramNorbitsElec = new TH2F("QcMuonChambers_Norbits_Elec", "QcMuonChambers - Norbits", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramNorbitsElec = new TH2F("Norbits_Elec", "Norbits", nElecXbins, 0, nElecXbins, 64, 0, 64);
   mHistogramNorbitsElec->SetOption("colz");
   getObjectsManager()->startPublishing(mHistogramNorbitsElec);
-  mHistogramNHitsElec = new TH2F("QcMuonChambers_NHits_Elec", "QcMuonChambers - NHits", nElecXbins, 0, nElecXbins, 64, 0, 64);
+  mHistogramNHitsElec = new TH2F("NHits_Elec", "NHits", nElecXbins, 0, nElecXbins, 64, 0, 64);
   mHistogramNHitsElec->SetOption("colz");
   getObjectsManager()->startPublishing(mHistogramNHitsElec);
 
-  mHistogramOccupancyElec = new MergeableTH2Ratio("QcMuonChambers_Occupancy_Elec", "Occupancy (MHz)",
+  mHistogramOccupancyElec = new MergeableTH2Ratio("Occupancy_Elec", "Occupancy (KHz)",
                                                   mHistogramNHitsElec, mHistogramNorbitsElec);
   getObjectsManager()->startPublishing(mHistogramOccupancyElec);
   mHistogramOccupancyElec->SetOption("colz");
 
   // Histograms in detector coordinates
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
-    TH1F* h = new TH1F(TString::Format("QcMuonChambers_ADCamplitude_DE%03d", de),
-                       TString::Format("QcMuonChambers - ADC amplitude (DE%03d)", de), 5000, 0, 5000);
+    TH1F* h = new TH1F(TString::Format("%sADCamplitude_DE%03d", getHistoPath(de).c_str(), de),
+                       TString::Format("ADC amplitude (DE%03d)", de), 5000, 0, 5000);
     mHistogramADCamplitudeDE.insert(make_pair(de, h));
+    getObjectsManager()->startPublishing(h);
 
     float Xsize = 40 * 5;
     float Xsize2 = Xsize / 2;
     float Ysize = 50;
     float Ysize2 = Ysize / 2;
 
-    TH2F* h2n0 = new TH2F(TString::Format("QcMuonChambers_Nhits_DE%03d_B", de),
-                          TString::Format("QcMuonChambers - Number of hits (DE%03d B)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+    TH2F* h2n0 = new TH2F(TString::Format("%sNhits_DE%03d_B", getHistoPath(de).c_str(), de),
+                          TString::Format("Number of hits (DE%03d B)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
     mHistogramNhitsDE[0].insert(make_pair(de, h2n0));
 
-    TH2F* h2n1 = new TH2F(TString::Format("QcMuonChambers_Nhits_DE%03d_NB", de),
-                          TString::Format("QcMuonChambers - Number of hits (DE%03d NB)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+    TH2F* h2n1 = new TH2F(TString::Format("%sNhits_DE%03d_NB", getHistoPath(de).c_str(), de),
+                          TString::Format("Number of hits (DE%03d NB)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
     mHistogramNhitsDE[1].insert(make_pair(de, h2n1));
 
-    TH2F* h2d0 = new TH2F(TString::Format("QcMuonChambers_Norbits_DE%03d_B", de),
-                          TString::Format("QcMuonChambers - Number of orbits (DE%03d B)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+    TH2F* h2d0 = new TH2F(TString::Format("%sNorbits_DE%03d_B", getHistoPath(de).c_str(), de),
+                          TString::Format("Number of orbits (DE%03d B)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
     mHistogramNorbitsDE[0].insert(make_pair(de, h2d0));
-    TH2F* h2d1 = new TH2F(TString::Format("QcMuonChambers_Norbits_DE%03d_NB", de),
-                          TString::Format("QcMuonChambers - Number of orbits (DE%03d NB)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+    TH2F* h2d1 = new TH2F(TString::Format("%sNorbits_DE%03d_NB", getHistoPath(de).c_str(), de),
+                          TString::Format("Number of orbits (DE%03d NB)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
     mHistogramNorbitsDE[1].insert(make_pair(de, h2d1));
 
-    MergeableTH2Ratio* hm = new MergeableTH2Ratio(TString::Format("QcMuonChambers_Occupancy_B_XY_%03d", de),
-                                                  TString::Format("QcMuonChambers - Occupancy XY (DE%03d B) (MHz)", de), h2n0, h2d0);
+    MergeableTH2Ratio* hm = new MergeableTH2Ratio(TString::Format("%sOccupancy_B_XY_%03d", getHistoPath(de).c_str(), de),
+                                                  TString::Format("Occupancy XY (DE%03d B) (KHz)", de), h2n0, h2d0);
     mHistogramOccupancyDE[0].insert(make_pair(de, hm));
     getObjectsManager()->startPublishing(hm);
 
-    hm = new MergeableTH2Ratio(TString::Format("QcMuonChambers_Occupancy_NB_XY_%03d", de),
-                               TString::Format("QcMuonChambers - Occupancy XY (DE%03d NB) (MHz)", de), h2n1, h2d1);
+    hm = new MergeableTH2Ratio(TString::Format("%sOccupancy_NB_XY_%03d", getHistoPath(de).c_str(), de),
+                               TString::Format("Occupancy XY (DE%03d NB) (KHz)", de), h2n1, h2d1);
     mHistogramOccupancyDE[1].insert(make_pair(de, hm));
     getObjectsManager()->startPublishing(hm);
   }
 
-  mHistogramNHitsAllDE = new GlobalHistogram("QcMuonChambers_NHits_AllDE", "Number of hits");
+  mHistogramNHitsAllDE = new GlobalHistogram("NHits_AllDE", "Number of hits");
   mHistogramNHitsAllDE->init();
   mHistogramNHitsAllDE->SetOption("colz");
   getObjectsManager()->startPublishing(mHistogramNHitsAllDE);
 
-  mHistogramOrbitsAllDE = new GlobalHistogram("QcMuonChambers_Orbits_AllDE", "Number of orbits");
+  mHistogramOrbitsAllDE = new GlobalHistogram("Norbits_AllDE", "Number of orbits");
   mHistogramOrbitsAllDE->init();
   mHistogramOrbitsAllDE->SetOption("colz");
   getObjectsManager()->startPublishing(mHistogramOrbitsAllDE);
 
-  mHistogramOccupancyAllDE = new MergeableTH2Ratio("QcMuonChambers_Occupancy_AllDE", "Occupancy (MHz)",
+  mHistogramOccupancyAllDE = new MergeableTH2Ratio("Occupancy_AllDE", "Occupancy (KHz)",
                                                    mHistogramNHitsAllDE, mHistogramOrbitsAllDE);
   mHistogramOccupancyAllDE->SetOption("colz");
   getObjectsManager()->startPublishing(mHistogramOccupancyAllDE);
@@ -201,6 +207,10 @@ void PhysicsTaskDigits::plotDigit(const o2::mch::Digit& digit)
   auto h = mHistogramADCamplitudeDE.find(de);
   if ((h != mHistogramADCamplitudeDE.end()) && (h->second != NULL)) {
     h->second->Fill(ADC);
+  }
+
+  if (ADC < 50) {
+    return;
   }
 
   // Fill NHits Elec Histogram and ADC distribution

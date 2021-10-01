@@ -48,13 +48,13 @@ class MFTDigitsHotPixelRootFileReader : public o2::framework::Task
   //_________________________________________________________________________________________________
   void init(framework::InitContext& ic)
   {
-    LOG(INFO) << " In MFTDigitsHotPixelRootFileReader::init ... entering ";
+    LOG(info) << " In MFTDigitsHotPixelRootFileReader::init ... entering ";
 
     // open the input file
     auto filename = ic.options().get<std::string>("mft-digit-infile");
     mFile = std::make_unique<TFile>(filename.c_str(), "OLD");
     if (!mFile->IsOpen()) {
-      LOG(ERROR) << "MFTDigitsHotPixelRootFileReader::init. Cannot open the file: " << filename.c_str();
+      LOG(error) << "MFTDigitsHotPixelRootFileReader::init. Cannot open the file: " << filename.c_str();
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
@@ -68,12 +68,12 @@ class MFTDigitsHotPixelRootFileReader : public o2::framework::Task
     // check that it has entries
     mNumberOfTF = mTree->GetEntries();
     if (mNumberOfTF == 0) {
-      LOG(ERROR) << "MFTDigitsHotPixelRootFileReader::init. No TFs ";
+      LOG(error) << "MFTDigitsHotPixelRootFileReader::init. No TFs ";
       ic.services().get<ControlService>().endOfStream();
       ic.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;
     }
-    //LOG(INFO) << " oooooooooooo In MFTDigitsHotPixelRootFileReader::init ... mNumberOfTF = " << mNumberOfTF;
+    //LOG(info) << " oooooooooooo In MFTDigitsHotPixelRootFileReader::init ... mNumberOfTF = " << mNumberOfTF;
   }
 
   //_________________________________________________________________________________________________
@@ -83,7 +83,7 @@ class MFTDigitsHotPixelRootFileReader : public o2::framework::Task
 
     // Check if this is the last TF
     if (mCurrentTF == mNumberOfTF) {
-      LOG(INFO) << " MFTDigitsHotPixelRootFileReader::run. End of file reached";
+      LOG(info) << " MFTDigitsHotPixelRootFileReader::run. End of file reached";
       pc.services().get<ControlService>().endOfStream();
       pc.services().get<ControlService>().readyToQuit(QuitRequest::Me);
       return;

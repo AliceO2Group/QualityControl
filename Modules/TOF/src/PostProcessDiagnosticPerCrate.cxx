@@ -92,7 +92,7 @@ void PostProcessDiagnosticPerCrate::finalize(Trigger, framework::ServiceRegistry
   for (auto& i : mCrates) {
     TCanvas* c = new TCanvas(i->GetName(), i->GetName());
     i->Draw();
-    auto mo = std::make_shared<o2::quality_control::core::MonitorObject>(c, "PostProcessDiagnosticPerCrate", "TOF");
+    auto mo = std::make_shared<o2::quality_control::core::MonitorObject>(c, "PostProcessDiagnosticPerCrate", "o2::quality_control_modules::tof::PostProcessDiagnosticPerCreate", "TOF");
     mo->setIsOwner(false);
     mDatabase->storeMO(mo);
 

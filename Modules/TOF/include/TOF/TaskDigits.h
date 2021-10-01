@@ -25,6 +25,7 @@ class TH1F;
 class TH2F;
 class TH1I;
 class TH2I;
+class TProfile2D;
 
 using namespace o2::quality_control::core;
 
@@ -107,6 +108,8 @@ class TaskDigits final : public TaskInterface
   std::shared_ptr<TH2F> mTOFRawHitMap24 = nullptr;          /// TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels)
   std::shared_ptr<TH2I> mHitMultiVsDDL = nullptr;           /// TOF raw hit multiplicity per event vs DDL
   std::shared_ptr<TH1I> mNfiredMacropad = nullptr;          /// Number of fired TOF macropads per event
+  std::shared_ptr<TProfile2D> mOrbitDDL = nullptr;          /// Orbits per crate
+  std::shared_ptr<TH1I> mROWSize = nullptr;                 ///Readout window size
 
   // Counters
   Counter<72, nullptr> mHitCounterPerStrip[91];         /// Hit map counter in the crate, one per strip

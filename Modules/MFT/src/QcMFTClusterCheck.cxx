@@ -46,13 +46,13 @@ Quality QcMFTClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
 
       // test it
       if ((int(histogram->GetBinContent(400)) % 3) == 0) {
-        result = Quality::Good;
+        // result = Quality::Good;
       }
       if ((int(histogram->GetBinContent(400)) % 3) == 1) {
-        result = Quality::Medium;
+        // result = Quality::Medium;
       }
       if ((int(histogram->GetBinContent(400)) % 3) == 2) {
-        result = Quality::Bad;
+        // result = Quality::Bad;
       }
     }
   }
@@ -67,19 +67,19 @@ void QcMFTClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
-      LOG(INFO) << "Quality::Good";
+      LOG(info) << "Quality::Good";
       histogram->SetLineColor(kGreen + 2);
       TLatex* tl = new TLatex(350, 1.05 * histogram->GetMaximum(), "#color[418]{Dummy check status: Good!}");
       histogram->GetListOfFunctions()->Add(tl);
       tl->Draw();
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad";
+      LOG(info) << "Quality::Bad";
       histogram->SetLineColor(kRed + 1);
       TLatex* tl = new TLatex(350, 1.05 * histogram->GetMaximum(), "#color[633]{Dummy check status: Bad!}");
       histogram->GetListOfFunctions()->Add(tl);
       tl->Draw();
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::Medium";
+      LOG(info) << "Quality::Medium";
       histogram->SetLineColor(kOrange);
       TLatex* tl = new TLatex(350, 1.05 * histogram->GetMaximum(), "#color[800]{Dummy check status: Medium!}");
       histogram->GetListOfFunctions()->Add(tl);

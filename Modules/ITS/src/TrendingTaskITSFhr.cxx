@@ -82,7 +82,7 @@ void TrendingTaskITSFhr::storeTrend(repository::DatabaseInterface& qcdb)
 {
   ILOG(Info, Support) << "Storing the trend, entries: " << mTrend->GetEntries() << ENDM;
 
-  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(),
+  auto mo = std::make_shared<core::MonitorObject>(mTrend.get(), getName(), "o2::quality_control_modules::its::TrendingTaskITSFhr",
                                                   mConfig.detectorName);
   mo->setIsOwner(false);
   qcdb.storeMO(mo);
@@ -168,7 +168,7 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
     SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
     ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;
-    auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, mConfig.detectorName);
+    auto mo = std::make_shared<MonitorObject>(g, mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFhr", mConfig.detectorName);
     mo->setIsOwner(false);
     qcdb.storeMO(mo);
     // It should delete everything inside. Confirmed by trying to delete histo
@@ -255,7 +255,7 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
   for (int idx = 0; idx < NLAYERS * NTRENDSFHR; idx++) {
     ILOG(Info, Support) << " Saving canvas for layer " << idx / NTRENDSFHR << " to CCDB "
                         << ENDM;
-    auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName,
+    auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSFhr",
                                               mConfig.detectorName);
     mo->setIsOwner(false);
     qcdb.storeMO(mo);

@@ -44,14 +44,14 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
     (void)moName;
 
     if (mo->getName() == "mMFTSummaryLaneStatus") {
-      auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
+      // auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
       // test it: if entries in bins 1 to 4
-      int notOkStatus = histogram->GetBinContent(1) + histogram->GetBinContent(2) + histogram->GetBinContent(3) + histogram->GetBinContent(4);
-      if (notOkStatus)
-        result = Quality::Bad;
-      else
-        result = Quality::Good;
+      // int notOkStatus = histogram->GetBinContent(1) + histogram->GetBinContent(2) + histogram->GetBinContent(3) + histogram->GetBinContent(4);
+      // if (notOkStatus)
+      //   result = Quality::Bad;
+      // else
+      //   result = Quality::Good;
     } // end of getting histogram by name
   }   // end of loop over MO
   return result;
@@ -65,13 +65,13 @@ void QcMFTReadoutCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality chec
     auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {
-      LOG(INFO) << "Quality::Good, setting to green";
+      LOG(info) << "Quality::Good, setting to green";
       histogram->SetLineColor(kGreen + 2);
       TLatex* tl = new TLatex(1.4, 1.05 * histogram->GetMaximum(), "#color[418]{Check status: Good!}");
       histogram->GetListOfFunctions()->Add(tl);
       tl->Draw();
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
+      LOG(info) << "Quality::Bad, setting to red";
       histogram->SetLineColor(kRed + 1);
       TLatex* tl = new TLatex(1.4, 1.05 * histogram->GetMaximum(), "#color[633]{Check status: Bad!}");
       histogram->GetListOfFunctions()->Add(tl);

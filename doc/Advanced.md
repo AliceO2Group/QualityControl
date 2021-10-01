@@ -178,8 +178,8 @@ added:
           "localnode1",
           "localnode2"
         ],
-        "remoteMachine": "qcnode",   "":"not needed with AliECS",
-        "remotePort": "30132",       "":"not needed with AliECS",
+        "remoteMachine": "qcnode",   "":"not needed with FLP+QC, needed with EPN+QC",
+        "remotePort": "30132",       "":"not needed with FLP+QC, needed with EPN+QC",
         "localControl": "aliecs",    "":"if absent, aliecs is default",
         "mergingMode": "delta",      "":"if absent, delta is default"
       }
@@ -213,8 +213,8 @@ Also, `"localControl"` should be specified to generate the correct AliECS workfl
         },
         "taskParameters": {},
         "location": "remote",
-        "remoteMachine": "qcnode",   "":"not needed with AliECS",
-        "localControl": "aliecs",    "":"aliecs is default, not needed in setups fully controlled by AliECS"
+        "remoteMachine": "qcnode",   "":"not needed with FLP+QC, needed with EPN+QC",
+        "localControl": "aliecs",    "":"aliecs is default, not needed with FLP+QC, needed with EPN+QC"
       }
     }
 ```
@@ -233,7 +233,7 @@ In case the task is running remotely, data should be sampled. The minimal-effort
       "machines": [        "","only needed when the policy should run on a subgroup of nodes",
         "localnode2"
       ],
-      "port": "30333",     "":"compulsory on standalone and ODC setups, not needed with AliECS",
+      "port": "30333",     "":"compulsory on standalone and ODC setups (EPN), not needed for FLPs",
       ...
     }
   ]
@@ -476,7 +476,7 @@ Task by a dedicated method of the TaskInterface, as below:
 ```
 TObject* condition = TaskInterface::retrieveCondition("Path/to/condition");
 if (condition) {
-  LOG(INFO) << "Retrieved " << condition->ClassName();
+  LOG(info) << "Retrieved " << condition->ClassName();
   delete condition;
 }
 ```
@@ -787,12 +787,12 @@ the "tasks" path.
         "location": "local",                "": ["Location of the QC Task, it can be local or remote. Needed only for",
                                                  "multi-node setups, not respected in standalone development setups."],
         "localMachines": [                  "", "List of local machines where the QC task should run. Required only",
-                                            "", "for multi-node setups.",
+                                            "", "for multi-node setups. An alias can be used if merging deltas.",
           "o2flp1",                         "", "Hostname of a local machine.",
           "o2flp2",                         "", "Hostname of a local machine."
         ],
-        "remoteMachine": "o2qc1",           "": "Remote QC machine hostname. Required only for multi-node setups.",
-        "remotePort": "30432",              "": "Remote QC machine TCP port. Required only for multi-node setups.",
+        "remoteMachine": "o2qc1",           "": "Remote QC machine hostname. Required only for multi-node setups with EPNs.",
+        "remotePort": "30432",              "": "Remote QC machine TCP port. Required only for multi-node setups with EPNs.",
         "localControl": "aliecs",           "": ["Control software specification, \"aliecs\" (default) or \"odc\").",
                                                  "Needed only for multi-node setups."],
         "mergingMode": "delta",             "": "Merging mode, \"delta\" (default) or \"entire\" objects are expected",

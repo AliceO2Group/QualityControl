@@ -24,6 +24,7 @@
 #include <TPaveText.h>
 #include <TList.h>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -36,29 +37,16 @@ Quality DigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
 {
   auto mo = moMap->begin()->second;
   Quality result = Quality::Good;
-
-  if (mo->getName() == "digitAmplitudeEMCAL") {
+  //digitAmplidute_PHYS
+  //digitTime_PHYS
+  std::vector<std::string> amplitudeHist = { "digitAmplitudeEMCAL", "digitAmplitudeDCAL", "digitAmplitude_PHYS" };
+  if (std::find(amplitudeHist.begin(), amplitudeHist.end(), mo->getName()) != amplitudeHist.end()) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (h->GetEntries() == 0)
       result = Quality::Bad;
   }
-  if (mo->getName() == "digitAmplitudeDCAL") {
-    auto* h = dynamic_cast<TH1*>(mo->getObject());
-    if (h->GetEntries() == 0)
-      result = Quality::Bad;
-  }
-  if (mo->getName() == "digitAmplitudeHG") {
-    auto* h = dynamic_cast<TH2*>(mo->getObject());
-    if (h->GetEntries() == 0)
-      result = Quality::Bad;
-  }
-  if (mo->getName() == "digitAmplitudeLG") {
-    auto* h = dynamic_cast<TH2*>(mo->getObject());
-    if (h->GetEntries() == 0)
-      result = Quality::Bad;
-  }
 
-  if (mo->getName() == "digitTimeHG") {
+  /* if (mo->getName() == "digitTimeHG") {
     auto* h = dynamic_cast<TH2*>(mo->getObject());
     if (h->GetEntries() == 0)
       result = Quality::Bad;
@@ -83,6 +71,7 @@ Quality DigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>*
       }
     }
   }
+  */
   return result;
 }
 
@@ -104,14 +93,14 @@ void DigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
+      LOG(info) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Mean outside limits or no entries");
       msg->AddText("If NOT a technical run,");
       msg->AddText("call EMCAL on-call.");
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
+      LOG(info) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);
@@ -130,14 +119,14 @@ void DigitCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
+      LOG(info) << "Quality::Bad, setting to red";
       msg->Clear();
       msg->AddText("Mean outside limits or no entries");
       msg->AddText("If NOT a technical run,");
       msg->AddText("call EMCAL on-call.");
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
+      LOG(info) << "Quality::medium, setting to orange";
       h->SetFillColor(kOrange);
     }
     h->SetLineColor(kBlack);

@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(publisher_test)
   std::string taskName = "test";
   std::string detectorName = "TST";
   std::string consulUrl = "invalid";
-  ObjectsManager objectsManager(taskName, detectorName, consulUrl, 0, true);
+  ObjectsManager objectsManager(taskName, "taskClass", detectorName, consulUrl, 0, true);
   TObjString s("content");
   objectsManager.startPublishing(&s);
 

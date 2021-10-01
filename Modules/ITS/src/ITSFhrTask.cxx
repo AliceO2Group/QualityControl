@@ -521,10 +521,6 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  end = std::chrono::high_resolution_clock::now();
-  difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  ILOG(Debug) << "time untile decode over " << difference << ENDM;
-
   //Reset Error plots
   mErrorPlots->Reset();
   mErrorVsFeeid->Reset(); //Error is   statistic by decoder so if we didn't reset decoder, then we need reset Error plots, and use TH::SetBinContent function
@@ -680,8 +676,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   mAverageProcessTime += difference;
-  ILOG(Debug) << "average process time == " << (double)mAverageProcessTime / mTimeFrameId << ENDM;
-  ILOG(Debug) << "time until thread all end is " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
+  mTFCount++;
 }
 
 void ITSFhrTask::getParameters()
@@ -698,6 +693,7 @@ void ITSFhrTask::getParameters()
 
 void ITSFhrTask::endOfCycle()
 {
+  ILOG(Debug) << "average process time == " << (double)mAverageProcessTime / mTFCount << ENDM;
   ILOG(Info) << "endOfCycle" << ENDM;
 }
 
