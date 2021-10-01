@@ -53,6 +53,11 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
   // define histograms
+  mClusterLayerIndexH0 = std::make_unique<TH1F>("mClusterLayerIndexH0", "Clusters per layer in H0;Layer(=Disk*2+Face);Entries", 10, -0.5, 9.5);
+  getObjectsManager()->startPublishing(mClusterLayerIndexH0.get());
+  mClusterLayerIndexH1 = std::make_unique<TH1F>("mClusterLayerIndexH1", "Clusters per layer in H1;Layer(=Disk*2+Face);Entries", 10, -0.5, 9.5);
+  getObjectsManager()->startPublishing(mClusterLayerIndexH1.get());
+
   mClusterSensorIndex = std::make_unique<TH1F>("mMFTClusterSensorIndex", "Chip Cluster Occupancy;Chip ID;#Entries", 936, -0.5, 935.5);
   getObjectsManager()->startPublishing(mClusterSensorIndex.get());
 
@@ -63,9 +68,10 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
                                                         "Cluster Pattern ID vs Chip ID;Chip ID;Pattern ID",
                                                         936, -0.5, 935.5, 100, -0.5, 99.5);
   mClusterPatternSensorIndices->SetStats(0);
+  mClusterPatternSensorIndices->SetOption("colz");
   getObjectsManager()->startPublishing(mClusterPatternSensorIndices.get());
 
-  // define vector of histogram
+  // define vector of histograms
   getChipMapData(); // needed to construct the name and path of the histogram
   for (int i = 0; i < 936; i++) {
     //  generate folder and histogram name using the mapping table
@@ -77,6 +83,29 @@ void QcMFTClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
     mClusterPatternSensorMap.push_back(std::move(histo));
     getObjectsManager()->startPublishing(mClusterPatternSensorMap[i].get());
   }
+
+  // define chip occupancy maps
+  QcMFTUtilTables MFTTable;
+  for (int iHalf = 0; iHalf < 2; iHalf++) {
+    for (int iDisk = 0; iDisk < 5; iDisk++) {
+      for (int iFace = 0; iFace < 2; iFace++) {
+        int idx = (iDisk * 2 + iFace) + (10 * iHalf);
+        auto chipmap = std::make_unique<TH2F>(
+          Form("ChipOccupancyMaps/Half_%d/Disk_%d/Face_%d/mMFTChipOccupancyMap", iHalf, iDisk, iFace),
+          Form("h%d-d%d-f%d;x (cm);y (cm)", iHalf, iDisk, iFace),
+          MFTTable.mNumberOfBinsInOccupancyMaps[idx][0],
+          MFTTable.mNumberOfBinsInOccupancyMaps[idx][1],
+          MFTTable.mNumberOfBinsInOccupancyMaps[idx][2],
+          MFTTable.mNumberOfBinsInOccupancyMaps[idx][3],
+          MFTTable.mNumberOfBinsInOccupancyMaps[idx][4],
+          MFTTable.mNumberOfBinsInOccupancyMaps[idx][5]);
+        chipmap->SetStats(0);
+        chipmap->SetOption("colz");
+        mChipOccupancyMap.push_back(std::move(chipmap));
+        getObjectsManager()->startPublishing(mChipOccupancyMap[idx].get());
+      } // loop over faces
+    }   // loop over disks
+  }     // loop over halfs
 }
 
 void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
@@ -85,8 +114,13 @@ void QcMFTClusterTask::startOfActivity(Activity& /*activity*/)
   mClusterSensorIndex->Reset();
   mClusterPatternIndex->Reset();
   mClusterPatternSensorIndices->Reset();
+  mClusterLayerIndexH0->Reset();
+  mClusterLayerIndexH1->Reset();
   for (int i = 0; i < 936; i++) {
     mClusterPatternSensorMap[i]->Reset();
+  }
+  for (int i = 0; i < 20; i++) {
+    mChipOccupancyMap[i]->Reset();
   }
 }
 
@@ -103,11 +137,18 @@ void QcMFTClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     return;
   // fill the histograms
   for (auto& oneCluster : clusters) {
-    mClusterSensorIndex->Fill(oneCluster.getSensorID());
+    int sensorID = oneCluster.getSensorID();
+    int layerID = mDisk[sensorID] * 2 + mFace[sensorID];
+    (mHalf[sensorID] == 0) ? mClusterLayerIndexH0->Fill(layerID)
+                           : mClusterLayerIndexH1->Fill(layerID);
+    mClusterSensorIndex->Fill(sensorID);
     mClusterPatternIndex->Fill(oneCluster.getPatternID());
-    mClusterPatternSensorIndices->Fill(oneCluster.getSensorID(),
+    mClusterPatternSensorIndices->Fill(sensorID,
                                        oneCluster.getPatternID());
     mClusterPatternSensorMap[oneCluster.getSensorID()]->Fill(oneCluster.getPatternID());
+    // fill occupancy maps
+    int idx = layerID + (10 * mHalf[sensorID]);
+    mChipOccupancyMap[idx]->Fill(mX[sensorID], mY[sensorID]);
   }
 }
 
@@ -129,8 +170,13 @@ void QcMFTClusterTask::reset()
   mClusterSensorIndex->Reset();
   mClusterPatternIndex->Reset();
   mClusterPatternSensorIndices->Reset();
+  mClusterLayerIndexH0->Reset();
+  mClusterLayerIndexH1->Reset();
   for (int i = 0; i < 936; i++) {
     mClusterPatternSensorMap[i]->Reset();
+  }
+  for (int i = 0; i < 20; i++) {
+    mChipOccupancyMap[i]->Reset();
   }
 }
 
@@ -159,6 +205,8 @@ void QcMFTClusterTask::getChipMapData()
     mSensor[i] = chipMapData[i].localChipSWID;
     mTransID[i] = chipMapData[i].cable;
     mLadder[i] = MFTTable.mLadder[i];
+    mX[i] = MFTTable.mX[i];
+    mY[i] = MFTTable.mY[i];
   }
 }
 

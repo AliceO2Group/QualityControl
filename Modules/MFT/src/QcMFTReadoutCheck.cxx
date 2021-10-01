@@ -44,14 +44,14 @@ Quality QcMFTReadoutCheck::check(std::map<std::string, std::shared_ptr<MonitorOb
     (void)moName;
 
     if (mo->getName() == "mMFTSummaryLaneStatus") {
-      auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
+      // auto* histogram = dynamic_cast<TH1F*>(mo->getObject());
 
       // test it: if entries in bins 1 to 4
-      int notOkStatus = histogram->GetBinContent(1) + histogram->GetBinContent(2) + histogram->GetBinContent(3) + histogram->GetBinContent(4);
-      if (notOkStatus)
-        result = Quality::Bad;
-      else
-        result = Quality::Good;
+      // int notOkStatus = histogram->GetBinContent(1) + histogram->GetBinContent(2) + histogram->GetBinContent(3) + histogram->GetBinContent(4);
+      // if (notOkStatus)
+      //   result = Quality::Bad;
+      // else
+      //   result = Quality::Good;
     } // end of getting histogram by name
   }   // end of loop over MO
   return result;

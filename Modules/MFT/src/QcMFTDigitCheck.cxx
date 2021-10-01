@@ -48,13 +48,13 @@ Quality QcMFTDigitCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
 
       // test it
       if (histogram->GetBinContent(histogram->GetMinimumBin()) > 250) {
-        result = Quality::Good;
+        // result = Quality::Good;
       }
       if ((histogram->GetBinContent(histogram->GetMinimumBin()) < 250) && (histogram->GetBinContent(histogram->GetMinimumBin()) > 200)) {
-        result = Quality::Medium;
+        // result = Quality::Medium;
       }
       if (histogram->GetBinContent(histogram->GetMinimumBin()) < 200) {
-        result = Quality::Bad;
+        // result = Quality::Bad;
       }
     }
   }

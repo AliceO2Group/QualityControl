@@ -86,6 +86,7 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
     histogramRU->GetYaxis()->SetBinLabel(4, "Fault");
     histogramRU->SetXTitle("Lane");
     histogramRU->SetStats(0);
+    histogramRU->SetOption("colz");
     // push the histo into the vector of histograms and publish it
     mIndividualLaneStatus.push_back(std::move(histogramRU));
     getObjectsManager()->startPublishing(mIndividualLaneStatus[mIndexOfRUMap[i]].get());
