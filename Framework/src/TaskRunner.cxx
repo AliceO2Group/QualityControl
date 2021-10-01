@@ -93,7 +93,7 @@ void TaskRunner::init(InitContext& iCtx)
   mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
 
   // setup publisher
-  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
+  mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
 
   // setup user's task
   TaskFactory f;

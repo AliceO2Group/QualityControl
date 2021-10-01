@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(instantiate_task)
   config.consulUrl = "http://consul-test.cern.ch:8500";
   config.taskName = "qcSkeletonTest";
   config.detectorName = "TST";
-  auto manager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  auto manager = make_shared<ObjectsManager>(config.taskName, "SkeletonTask", config.detectorName, config.consulUrl, 0, true);
   task.setObjectsManager(manager);
   //  o2::framework::InitContext ctx;
   //  task.initialize(ctx);

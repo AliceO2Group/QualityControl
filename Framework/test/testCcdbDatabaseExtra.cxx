@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TestClass", "TST");
   oldTimestamp = CcdbDatabase::getCurrentTimestamp();
   f.backend->storeMO(mo1);
 
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(ccdb_retrieve_former_versions, *utf::depends_on("ccdb_store
   test_fixture f;
   TH1F* h1 = new TH1F("asdf/asdf", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10001);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TST");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "my/task", "TestClass", "TST");
   f.backend->storeMO(mo1);
 
   // Retrieve old object stored at timestampStorage

@@ -32,8 +32,8 @@ namespace o2::quality_control::core
 const std::string ObjectsManager::gDrawOptionsKey = "drawOptions";
 const std::string ObjectsManager::gDisplayHintsKey = "displayHints";
 
-ObjectsManager::ObjectsManager(std::string taskName, std::string detectorName, std::string consulUrl, int parallelTaskID, bool noDiscovery)
-  : mTaskName(taskName), mDetectorName(detectorName), mUpdateServiceDiscovery(false)
+ObjectsManager::ObjectsManager(std::string taskName, std::string taskClass, std::string detectorName, std::string consulUrl, int parallelTaskID, bool noDiscovery)
+  : mTaskName(taskName), mTaskClass(taskClass), mDetectorName(detectorName), mUpdateServiceDiscovery(false)
 {
   mMonitorObjects = std::make_unique<MonitorObjectCollection>();
   mMonitorObjects->SetOwner(true);
@@ -57,7 +57,7 @@ void ObjectsManager::startPublishing(TObject* object)
     ILOG(Warning, Support) << "Object is already being published (" << object->GetName() << ")" << ENDM;
     BOOST_THROW_EXCEPTION(DuplicateObjectError() << errinfo_object_name(object->GetName()));
   }
-  auto* newObject = new MonitorObject(object, mTaskName, mDetectorName);
+  auto* newObject = new MonitorObject(object, mTaskName, mTaskClass, mDetectorName);
   newObject->setIsOwner(false);
   mMonitorObjects->Add(newObject);
   mUpdateServiceDiscovery = true;

@@ -104,18 +104,18 @@ BOOST_AUTO_TEST_CASE(ccdb_store)
 
   TH1F* h1 = new TH1F("quarantine", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 10000);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, f.taskName, "TST");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, f.taskName, "TestClass", "TST");
   mo1->updateActivity(1234, "LHC66", "passName1", "qc");
 
   TH1F* h2 = new TH1F("metadata", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, f.taskName, "TST");
+  shared_ptr<MonitorObject> mo2 = make_shared<MonitorObject>(h2, f.taskName, "TestClass", "TST");
   mo2->addMetadata("my_meta", "is_good");
 
   TH1F* h3 = new TH1F("short", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, f.taskName, "TST");
+  shared_ptr<MonitorObject> mo3 = make_shared<MonitorObject>(h3, f.taskName, "TestClass", "TST");
 
   TH1F* h4 = new TH1F("provenance", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo4 = make_shared<MonitorObject>(h4, f.taskName, "TST");
+  shared_ptr<MonitorObject> mo4 = make_shared<MonitorObject>(h4, f.taskName, "TestClass", "TST");
   mo4->updateActivity(1234, "LHC66", "passName1", "qc_hello");
 
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, f.taskName + "/test-ccdb-check", "TST", "OnAll", vector{ string("input1"), string("input2") });
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(ccdb_store_for_future_tests)
 
   TH1F* h1 = new TH1F("to_be_kept", "asdf", 100, 0, 99);
   h1->FillRandom("gaus", 12345);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "task", "TST_KEEP");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "TestClass", "task", "TST_KEEP");
   mo1->addMetadata("RunNumber", o2::quality_control::core::Version::GetQcVersion().getString());
   shared_ptr<QualityObject> qo1 = make_shared<QualityObject>(Quality::Bad, "check", "TST_KEEP", "OnAll", vector{ string("input1"), string("input2") });
   qo1->addMetadata("RunNumber", o2::quality_control::core::Version::GetQcVersion().getString());
