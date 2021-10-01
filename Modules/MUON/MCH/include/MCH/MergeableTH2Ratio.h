@@ -66,12 +66,16 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
 
   void update()
   {
+    static constexpr double sOrbitLengthInNanoseconds = 3564 * 25;
+    static constexpr double sOrbitLengthInMicroseconds = sOrbitLengthInNanoseconds / 1000;
+    static constexpr double sOrbitLengthInMilliseconds = sOrbitLengthInMicroseconds / 1000;
     const char* name = this->GetName();
     const char* title = this->GetTitle();
     Reset();
     Divide(mhistoNum, mhistoDen);
     SetNameTitle(name, title);
-    Scale(1 / 87.5);
+    // convertion to KHz units
+    Scale(1. / sOrbitLengthInMilliseconds);
     SetOption("colz");
   }
 
