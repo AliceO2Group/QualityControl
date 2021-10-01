@@ -29,6 +29,8 @@
 #include "ReconstructionDataFormats/MatchInfoTOF.h"
 #include "DataFormatsGlobalTracking/RecoContainerCreateTracksVariadic.h"
 
+using GTrackID = o2::dataformats::GlobalTrackID;
+
 namespace o2::quality_control_modules::tof
 {
 
@@ -78,19 +80,50 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Fatal, Support) << "Check the requested sources: ITSTPCTOF = " << mSrc[GID::Source::ITSTPCTOF] << ", ITSTPC = " << mSrc[GID::Source::ITSTPC] << ENDM;
   }
 
+  std::array<std::string, 2> title{ "UNCONS", "CONSTR" };
   for (int i = 0; i < trkType::SIZE; ++i) {
-    mInTracksPt[i] = new TH1F(Form("mInTracksPt_%d", i), Form("mInTracksPt (trkType %d); Pt; counts", i), 100, 0.f, 20.f);
-    mInTracksEta[i] = new TH1F(Form("mInTracksEta_%d", i), Form("mInTracksEta (trkType %d); Eta; counts", i), 100, -1.0f, 1.0f);
-    mMatchedTracksPt[i] = new TH1F(Form("mMatchedTracksPt_%d", i), Form("mMatchedTracksPt (trkType %d); Pt; counts", i), 100, 0.f, 20.f);
-    mMatchedTracksEta[i] = new TH1F(Form("mMatchedTracksEta_%d", i), Form("mMatchedTracksEta (trkType %d); Eta; counts", i), 100, -1.0f, 1.0f);
-    mEffPt[i] = new TH1F(Form("mEffPt_%d", i), Form("Efficiency vs Pt (trkType %d); Pt; Eff", i), 100, 0.f, 20.f);
-    mEffEta[i] = new TH1F(Form("mEffEta_%d", i), Form("Efficiency vs Eta (trkType %d); Eta; Eff", i), 100, -1.f, 1.f);
-    getObjectsManager()->startPublishing(mInTracksPt[i]);
-    getObjectsManager()->startPublishing(mInTracksEta[i]);
-    getObjectsManager()->startPublishing(mMatchedTracksPt[i]);
-    getObjectsManager()->startPublishing(mMatchedTracksEta[i]);
-    getObjectsManager()->startPublishing(mEffPt[i]);
-    getObjectsManager()->startPublishing(mEffEta[i]);
+    mInTracksPt[i] = new TH1F(Form("mInTracksPt_%s", title[i].c_str()), Form("mInTracksPt (trkType: %s); Pt; counts", title[i].c_str()), 100, 0.f, 20.f);
+    mInTracksEta[i] = new TH1F(Form("mInTracksEta_%s", title[i].c_str()), Form("mInTracksEta (trkType: %s); Eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
+    mMatchedTracksPt[i] = new TH1F(Form("mMatchedTracksPt_%s", title[i].c_str()), Form("mMatchedTracksPt (trkType: %s); Pt; counts", title[i].c_str()), 100, 0.f, 20.f);
+    mMatchedTracksEta[i] = new TH1F(Form("mMatchedTracksEta_%s", title[i].c_str()), Form("mMatchedTracksEta (trkType: %s); Eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
+    if (mUseMC) {
+      mFakeMatchedTracksPt[i] = new TH1F(Form("mFakeMatchedTracksPt_%s", title[i].c_str()), Form("mFakeMatchedTracksPt (trkType: %s); Pt; counts", title[i].c_str()), 100, 0.f, 20.f);
+      mFakeMatchedTracksEta[i] = new TH1F(Form("mFakeMatchedTracksEta_%s", title[i].c_str()), Form("mFakeMatchedTracksEta (trkType: %s); Eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
+      mFakeFractionTracksPt[i] = new TH1F(Form("mFakeFractionPt_%s", title[i].c_str()), Form("Fraction of fake matches vs Pt (trkType: %s); Pt; Eff", title[i].c_str()), 100, 0.f, 20.f);
+      mFakeFractionTracksEta[i] = new TH1F(Form("mFakeFractionEta_%s", title[i].c_str()), Form("Fraction of fake matches vs Eta (trkType: %s); Eta; Eff", title[i].c_str()), 100, -1.0f, 1.0f);
+    }
+    mEffPt[i] = new TH1F(Form("mEffPt_%s", title[i].c_str()), Form("Efficiency vs Pt (trkType: %s); Pt; Eff", title[i].c_str()), 100, 0.f, 20.f);
+    mEffEta[i] = new TH1F(Form("mEffEta_%s", title[i].c_str()), Form("Efficiency vs Eta (trkType: %s); Eta; Eff", title[i].c_str()), 100, -1.f, 1.f);
+  }
+
+  if (mSrc[GID::Source::TPCTOF] == 1) {
+    getObjectsManager()->startPublishing(mInTracksPt[trkType::UNCONS]);
+    getObjectsManager()->startPublishing(mInTracksEta[trkType::UNCONS]);
+    getObjectsManager()->startPublishing(mMatchedTracksPt[trkType::UNCONS]);
+    getObjectsManager()->startPublishing(mMatchedTracksEta[trkType::UNCONS]);
+    if (mUseMC) {
+      getObjectsManager()->startPublishing(mFakeMatchedTracksPt[trkType::UNCONS]);
+      getObjectsManager()->startPublishing(mFakeMatchedTracksEta[trkType::UNCONS]);
+      getObjectsManager()->startPublishing(mFakeFractionTracksPt[trkType::UNCONS]);
+      getObjectsManager()->startPublishing(mFakeFractionTracksEta[trkType::UNCONS]);
+    }
+    getObjectsManager()->startPublishing(mEffPt[trkType::UNCONS]);
+    getObjectsManager()->startPublishing(mEffEta[trkType::UNCONS]);
+  }
+
+  if (mSrc[GID::Source::ITSTPCTOF] == 1) {
+    getObjectsManager()->startPublishing(mInTracksPt[trkType::CONSTR]);
+    getObjectsManager()->startPublishing(mInTracksEta[trkType::CONSTR]);
+    getObjectsManager()->startPublishing(mMatchedTracksPt[trkType::CONSTR]);
+    getObjectsManager()->startPublishing(mMatchedTracksEta[trkType::CONSTR]);
+    if (mUseMC) {
+      getObjectsManager()->startPublishing(mFakeMatchedTracksPt[trkType::CONSTR]);
+      getObjectsManager()->startPublishing(mFakeMatchedTracksEta[trkType::CONSTR]);
+      getObjectsManager()->startPublishing(mFakeFractionTracksPt[trkType::CONSTR]);
+      getObjectsManager()->startPublishing(mFakeFractionTracksEta[trkType::CONSTR]);
+    }
+    getObjectsManager()->startPublishing(mEffPt[trkType::CONSTR]);
+    getObjectsManager()->startPublishing(mEffEta[trkType::CONSTR]);
   }
 }
 
@@ -122,9 +155,17 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
     }
     // loop over TOF MatchInfo
     for (const auto& matchTOF : mTPCTOFMatches) {
-      const auto& trk = mTPCTracks[matchTOF.getTrackRef().getIndex()];
+      GTrackID gTrackId = matchTOF.getTrackRef();
+      const auto& trk = mTPCTracks[gTrackId.getIndex()];
       mMatchedTracksPt[trkType::UNCONS]->Fill(trk.getPt());
       mMatchedTracksEta[trkType::UNCONS]->Fill(trk.getEta());
+      if (mUseMC) {
+        auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
+        if (lbl.isFake()) {
+          mFakeMatchedTracksPt[trkType::UNCONS]->Fill(trk.getPt());
+          mFakeMatchedTracksEta[trkType::UNCONS]->Fill(trk.getEta());
+        }
+      }
     }
   }
 
@@ -136,9 +177,17 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
     ILOG(Info, Support) << "We found " << mITSTPCTOFMatches.size() << " ITS-TPC tracks matched to TOF" << ENDM;
     // loop over TOF MatchInfo
     for (const auto& matchTOF : mITSTPCTOFMatches) {
-      const auto& trk = mITSTPCTracks[matchTOF.getTrackRef().getIndex()];
+      GTrackID gTrackId = matchTOF.getTrackRef();
+      const auto& trk = mITSTPCTracks[gTrackId.getIndex()];
       mMatchedTracksPt[trkType::CONSTR]->Fill(trk.getPt());
       mMatchedTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+      if (mUseMC) {
+        auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
+        if (lbl.isFake()) {
+          mFakeMatchedTracksPt[trkType::CONSTR]->Fill(trk.getPt());
+          mFakeMatchedTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+        }
+      }
     }
   }
 
@@ -184,9 +233,17 @@ void TOFMatchedTracks::endOfCycle()
 {
 
   ILOG(Info, Support) << "endOfCycle" << ENDM;
-  for (int i = 0; i < trkType::SIZE; ++i) {
-    mEffPt[i]->Divide(mMatchedTracksPt[i], mInTracksPt[i], 1, 1, "b");
-    mEffEta[i]->Divide(mMatchedTracksEta[i], mInTracksEta[i], 1, 1, "b");
+  if (mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) {
+    mEffPt[trkType::UNCONS]->Divide(mMatchedTracksPt[trkType::UNCONS], mInTracksPt[trkType::UNCONS], 1, 1, "b");
+    mEffEta[trkType::UNCONS]->Divide(mMatchedTracksEta[trkType::UNCONS], mInTracksEta[trkType::UNCONS], 1, 1, "b");
+    mFakeFractionTracksPt[trkType::UNCONS]->Divide(mFakeMatchedTracksPt[trkType::UNCONS], mMatchedTracksPt[trkType::UNCONS], 1, 1, "b");
+    mFakeFractionTracksEta[trkType::UNCONS]->Divide(mFakeMatchedTracksEta[trkType::UNCONS], mMatchedTracksEta[trkType::UNCONS], 1, 1, "b");
+  }
+  if (mRecoCont.isTrackSourceLoaded(GID::ITSTPCTOF)) {
+    mEffPt[trkType::CONSTR]->Divide(mMatchedTracksPt[trkType::CONSTR], mInTracksPt[trkType::CONSTR], 1, 1, "b");
+    mEffEta[trkType::CONSTR]->Divide(mMatchedTracksEta[trkType::CONSTR], mInTracksEta[trkType::CONSTR], 1, 1, "b");
+    mFakeFractionTracksPt[trkType::CONSTR]->Divide(mFakeMatchedTracksPt[trkType::CONSTR], mMatchedTracksPt[trkType::CONSTR], 1, 1, "b");
+    mFakeFractionTracksEta[trkType::CONSTR]->Divide(mFakeMatchedTracksEta[trkType::CONSTR], mMatchedTracksEta[trkType::CONSTR], 1, 1, "b");
   }
 
   // Printing, for checks
@@ -236,6 +293,10 @@ void TOFMatchedTracks::reset()
     mInTracksEta[i]->Reset();
     mMatchedTracksPt[i]->Reset();
     mMatchedTracksEta[i]->Reset();
+    if (mUseMC) {
+      mFakeMatchedTracksPt[i]->Reset();
+      mFakeMatchedTracksEta[i]->Reset();
+    }
     mEffPt[i]->Reset();
     mEffEta[i]->Reset();
   }

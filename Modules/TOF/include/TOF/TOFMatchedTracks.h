@@ -23,6 +23,7 @@
 
 #include "DataFormatsGlobalTracking/RecoContainer.h"
 #include "ReconstructionDataFormats/MatchInfoTOFReco.h"
+#include "SimulationDataFormat/MCCompLabel.h"
 
 class TH1F;
 
@@ -70,8 +71,12 @@ class TOFMatchedTracks final : public TaskInterface
   TH1F* mInTracksEta[trkType::SIZE] = {};
   TH1F* mMatchedTracksPt[trkType::SIZE] = {};
   TH1F* mMatchedTracksEta[trkType::SIZE] = {};
+  TH1F* mFakeMatchedTracksPt[trkType::SIZE] = {};
+  TH1F* mFakeMatchedTracksEta[trkType::SIZE] = {};
   TH1F* mEffPt[trkType::SIZE] = {};
   TH1F* mEffEta[trkType::SIZE] = {};
+  TH1F* mFakeFractionTracksPt[trkType::SIZE] = {};  // fraction of fakes among the matched tracks vs pT
+  TH1F* mFakeFractionTracksEta[trkType::SIZE] = {}; // fraction of fakes among the matched tracks vs Eta
 };
 
 } // namespace o2::quality_control_modules::tof
