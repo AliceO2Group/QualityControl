@@ -18,7 +18,6 @@
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "FT0/OutOfBunchCollTask.h"
-#include "CCDB/CcdbApi.h"
 
 #include <TH1F.h>
 #include <TH2.h>
@@ -35,9 +34,14 @@ OutOfBunchCollTask::~OutOfBunchCollTask()
   delete mListHistGarbage;
 }
 
+void OutOfBunchCollTask::configure(std::string, const boost::property_tree::ptree& config){
+  mCcdbUrl = config.get_child("qc.config.conditionDB.url").get_value<std::string>();
+}
+
 void OutOfBunchCollTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
+  mCcdbApi.init(mCcdbUrl);
 
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitA, "OrA" });
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitC, "OrC" });
@@ -64,11 +68,9 @@ void OutOfBunchCollTask::initialize(Trigger, framework::ServiceRegistry& service
 
 void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
 {
-  o2::ccdb::CcdbApi api;
-  api.init("http://ccdb-test.cern.ch:8080"); // any way to infer it?
   std::map<std::string, std::string> metadata;
   std::map<std::string, std::string> headers;
-  const auto* bcPattern = api.retrieveFromTFileAny<o2::BunchFilling>("GLO/GRP/BunchFilling", metadata, -1, &headers);
+  const auto* bcPattern = mCcdbApi.retrieveFromTFileAny<o2::BunchFilling>("GLO/GRP/BunchFilling", metadata, -1, &headers);
   if (!bcPattern) {
     ILOG(Error) << "\nMO \"BunchFilling\" NOT retrieved!!!\n"
                 << ENDM;

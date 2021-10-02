@@ -23,6 +23,7 @@
 #include "FT0Base/Constants.h"
 #include "DataFormatsFT0/Digit.h"
 #include "DataFormatsFT0/ChannelData.h"
+#include "CCDB/CcdbApi.h"
 
 #include "TList.h"
 #include "Rtypes.h"
@@ -43,9 +44,12 @@ class OutOfBunchCollTask final : public quality_control::postprocessing::PostPro
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
+  void configure(std::string, const boost::property_tree::ptree&) override;
 
  private:
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
+  std::string mCcdbUrl;
+  o2::ccdb::CcdbApi mCcdbApi;
   TList* mListHistGarbage;
   std::map<int, std::string> mMapDigitTrgNames;
   std::map<unsigned int, TH2F*> mMapOutOfBunchColl;
