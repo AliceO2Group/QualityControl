@@ -34,7 +34,8 @@ OutOfBunchCollTask::~OutOfBunchCollTask()
   delete mListHistGarbage;
 }
 
-void OutOfBunchCollTask::configure(std::string, const boost::property_tree::ptree& config){
+void OutOfBunchCollTask::configure(std::string, const boost::property_tree::ptree& config)
+{
   mCcdbUrl = config.get_child("qc.config.conditionDB.url").get_value<std::string>();
 }
 
