@@ -16,5 +16,6 @@
 #pragma link C++ class o2::quality_control_modules::ft0::BasicPPTask + ;
 #pragma link C++ class o2::quality_control_modules::ft0::OutOfBunchCollTask + ;
 #pragma link C++ class o2::quality_control_modules::ft0::CFDEffCheck + ;
+#pragma link C++ class o2::quality_control_modules::ft0::TriggerQcTask + ;
 
 #endif
