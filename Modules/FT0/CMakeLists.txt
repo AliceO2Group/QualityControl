@@ -14,6 +14,7 @@ target_sources(O2QcFT0 PRIVATE  src/BasicDigitQcTask.cxx
                              src/OutOfBunchCollTask.cxx
                              src/CFDEffCheck.cxx
                              src/TriggerQcTask.cxx
+                             src/OutOfBunchCollCheck.cxx
                             )
 
 target_include_directories(
@@ -44,6 +45,7 @@ add_root_dictionary(O2QcFT0
                 include/FT0/OutOfBunchCollTask.h
                 include/FT0/CFDEffCheck.h
                 include/FT0/TriggerQcTask.h
+                include/FT0/OutOfBunchCollCheck.h
         LINKDEF include/FT0/LinkDef.h
         BASENAME O2QcFT0)
 

@@ -100,6 +100,7 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
         if (entry.second->GetBinContent(j + 1, i + 1) < 0)
           entry.second->SetBinContent(j + 1, i + 1, 0); // is it too slow?
     entry.second->SetEntries(entry.second->Integral());
+    getObjectsManager()->addMetadata(entry.second->GetName(), "BcOrbitMapIntegral", std::to_string(hBcOrbitMapTrg->Integral()));
   }
 }
 
