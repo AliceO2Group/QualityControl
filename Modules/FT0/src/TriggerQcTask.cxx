@@ -28,7 +28,7 @@ unsigned int TriggerQcTask::getModeParameter(std::string paramName, unsigned int
 {
   if (auto param = mCustomParameters.find(paramName); param != mCustomParameters.end()) {
     // if parameter was provided check which option was chosen
-    for (const auto choice : choices) {
+    for (const auto& choice : choices) {
       if (param->second == choice.second) {
         ILOG(Debug) << "setting \"" << paramName << "\" to: \"" << choice.second << "\"" << ENDM;
         return choice.first;
