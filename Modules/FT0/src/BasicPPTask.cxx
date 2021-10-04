@@ -40,7 +40,7 @@ BasicPPTask::~BasicPPTask()
 void BasicPPTask::configure(std::string, const boost::property_tree::ptree& config)
 {
   const char* configPath = Form("qc.postprocessing.%s", getName().c_str());
-  ILOG(Warning) << "configPath = " << configPath << ENDM;
+  ILOG(Info, Support) << "configPath = " << configPath << ENDM;
   auto node = config.get_child_optional(Form("%s.custom.numOrbitsInTF", configPath));
   if (node) {
     mNumOrbitsInTF = std::stoi(node.get_ptr()->get_child("").get_value<std::string>());
