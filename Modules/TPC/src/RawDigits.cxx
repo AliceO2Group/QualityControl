@@ -66,10 +66,12 @@ void RawDigits::startOfCycle()
 
 void RawDigits::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  mRawDigitQC.denormalize();
+
   auto& reader = mRawReader.getReaders()[0];
   o2::tpc::calib_processing_helper::processRawData(ctx.inputs(), reader, false);
 
-  mRawDigitQC.analyse();
+  mRawDigitQC.normalize();
 
   fillCanvases(mRawDigitQC.getNClusters(), mNRawDigitsCanvasVec, mCustomParameters, "NRawDigits");
   fillCanvases(mRawDigitQC.getQMax(), mQMaxCanvasVec, mCustomParameters, "Qmax");
@@ -91,6 +93,8 @@ void RawDigits::reset()
   // clean all the monitor objects here
 
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+
+  mRawDigitQC.reset();
 
   clearCanvases(mNRawDigitsCanvasVec);
   clearCanvases(mQMaxCanvasVec);
