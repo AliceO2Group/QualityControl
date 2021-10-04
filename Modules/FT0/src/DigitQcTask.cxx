@@ -143,7 +143,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistSumAmpC = std::make_unique<TH1F>("SumAmpC", "Sum of amplitudes(TCM), side C;", 1000, 0, 1e4);
   mHistAverageTimeA = std::make_unique<TH1F>("AverageTimeA", "Average time(TCM), side A", 4100, -2050, 2050);
   mHistAverageTimeC = std::make_unique<TH1F>("AverageTimeC", "Average time(TCM), side C", 4100, -2050, 2050);
-  mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2;(TOA+TOC)/2", 820, -4100, 4100, 820, -4100, 4100);
+  mHistTimeSum2Diff = std::make_unique<TH2F>("timeSumVsDiff", "time A/C side: sum VS diff;(TOC-TOA)/2 [ns];(TOA+TOC)/2 [ns]", 400, -52.08, 52.08, 400, -52.08, 52.08); // range of 52.08 ns = 4000*13.02ps = 4000 channels
   mHistTimeSum2Diff->SetOption("colz");
   mHistChannelID = std::make_unique<TH1F>("StatChannelID", "ChannelID statistics;ChannelID", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistNumADC = std::make_unique<TH1F>("HistNumADC", "HistNumADC", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
@@ -151,6 +151,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mHistCFDEff = std::make_unique<TH1F>("CFD_efficiency", "CFD efficiency;ChannelID;efficiency", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistCycleDuration = std::make_unique<TH1D>("CycleDuration", "Cycle Duration;;time [ns]", 1, 0, 2);
   mHistCycleDurationNTF = std::make_unique<TH1D>("CycleDurationNTF", "Cycle Duration;;time [TimeFrames]", 1, 0, 2);
+  mHistCycleDurationRange = std::make_unique<TH1D>("CycleDurationRange", "Cycle Duration (total cycle range);;time [ns]", 1, 0, 2);
 
   std::vector<unsigned int> vecChannelIDs;
   if (auto param = mCustomParameters.find("ChannelIDs"); param != mCustomParameters.end()) {
@@ -212,6 +213,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistTimeSum2Diff.get());
   getObjectsManager()->startPublishing(mHistCycleDuration.get());
   getObjectsManager()->startPublishing(mHistCycleDurationNTF.get());
+  getObjectsManager()->startPublishing(mHistCycleDurationRange.get());
 }
 
 void DigitQcTask::startOfActivity(Activity& activity)
@@ -238,6 +240,7 @@ void DigitQcTask::startOfActivity(Activity& activity)
   mHistTimeSum2Diff->Reset();
   mHistCycleDuration->Reset();
   mHistCycleDurationNTF->Reset();
+  mHistCycleDurationRange->Reset();
   for (auto& entry : mMapHistAmp1D) {
     entry.second->Reset();
   }
@@ -262,11 +265,13 @@ void DigitQcTask::startOfCycle()
   mTimeMaxNS = 0.;
   mTimeCurNS = 0.;
   mTfCounter = 0;
+  mTimeSum = 0.;
 }
 
 void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-
+  double curTfTimeMin = -1;
+  double curTfTimeMax = 0;
   mTfCounter++;
   auto channels = ctx.inputs().get<gsl::span<o2::ft0::ChannelData>>("channels");
   auto digits = ctx.inputs().get<gsl::span<o2::ft0::Digit>>("digits");
@@ -287,6 +292,14 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mTimeMinNS = mTimeCurNS;
     if (mTimeCurNS > mTimeMaxNS)
       mTimeMaxNS = mTimeCurNS;
+
+    if (curTfTimeMin < 0)
+      curTfTimeMin = mTimeCurNS;
+    if (mTimeCurNS < curTfTimeMin)
+      curTfTimeMin = mTimeCurNS;
+    if (mTimeCurNS > curTfTimeMax)
+      curTfTimeMax = mTimeCurNS;
+
     if (digit.mTriggers.amplA == -5000 && digit.mTriggers.amplC == -5000 && digit.mTriggers.timeA == -5000 && digit.mTriggers.timeC == -5000)
       isTCM = false;
     mHistOrbit2BC->Fill(digit.getOrbit() - firstOrbit, digit.getBC());
@@ -299,7 +312,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mHistSumAmpC->Fill(digit.mTriggers.amplC);
       mHistAverageTimeA->Fill(digit.mTriggers.timeA);
       mHistAverageTimeC->Fill(digit.mTriggers.timeC);
-      mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) / 2);
+      mHistTimeSum2Diff->Fill((digit.mTriggers.timeC - digit.mTriggers.timeA) * mCFDChannel2NS / 2, (digit.mTriggers.timeC + digit.mTriggers.timeA) * mCFDChannel2NS / 2);
       for (const auto& entry : mMapDigitTrgNames) {
         if (digit.mTriggers.triggersignals & (1 << entry.first))
           mHistTriggers->Fill(static_cast<Double_t>(entry.first));
@@ -343,6 +356,7 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHistCFDEff->Reset();
     mHistCFDEff->Divide(mHistNumADC.get(), mHistNumCFD.get());
   }
+  mTimeSum += curTfTimeMax - curTfTimeMin;
 }
 
 void DigitQcTask::endOfCycle()
@@ -350,10 +364,13 @@ void DigitQcTask::endOfCycle()
   ILOG(Info, Support) << "endOfCycle" << ENDM;
   // one has to set num. of entries manually because
   // default TH1Reductor gets only mean,stddev and entries (no integral)
-  mHistCycleDuration->SetBinContent(1., mTimeMaxNS - mTimeMinNS);
-  mHistCycleDuration->SetEntries(mTimeMaxNS - mTimeMinNS);
+  mHistCycleDurationRange->SetBinContent(1., mTimeMaxNS - mTimeMinNS);
+  mHistCycleDurationRange->SetEntries(mTimeMaxNS - mTimeMinNS);
   mHistCycleDurationNTF->SetBinContent(1., mTfCounter);
   mHistCycleDurationNTF->SetEntries(mTfCounter);
+  mHistCycleDuration->SetBinContent(1., mTimeSum);
+  mHistCycleDuration->SetEntries(mTimeSum);
+  ILOG(Debug) << "Cycle duration: NTF=" << mTfCounter << ", range = " << (mTimeMaxNS - mTimeMinNS) / 1e6 / mTfCounter << " ms/TF, sum = " << mTimeSum / 1e6 / mTfCounter << " ms/TF" << ENDM;
 }
 
 void DigitQcTask::endOfActivity(Activity& /*activity*/)
@@ -385,6 +402,7 @@ void DigitQcTask::reset()
   mHistTimeSum2Diff->Reset();
   mHistCycleDuration->Reset();
   mHistCycleDurationNTF->Reset();
+  mHistCycleDurationRange->Reset();
   for (auto& entry : mMapHistAmp1D) {
     entry.second->Reset();
   }

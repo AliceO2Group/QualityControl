@@ -56,10 +56,17 @@ class DigitQcTask final : public TaskInterface
   void reset() override;
 
  private:
+  // three ways of computing cycle duration:
+  // 1) number of time frames
+  // 2) time in ns from InteractionRecord: total range (totalMax - totalMin)
+  // 3) time in ns from InteractionRecord: sum of each TF duration
+  // later on choose the best and remove others
   double mTimeMinNS = 0.;
   double mTimeMaxNS = 0.;
   double mTimeCurNS = 0.;
   int mTfCounter = 0;
+  double mTimeSum = 0.;
+  const float mCFDChannel2NS = 0.01302; // CFD channel width in ns
 
   template <typename Param_t,
             typename = typename std::enable_if<std::is_floating_point<Param_t>::value ||
@@ -83,9 +90,15 @@ class DigitQcTask final : public TaskInterface
 
   void rebinFromConfig();
 
+  TList* mListHistGarbage;
+  std::set<unsigned int> mSetAllowedChIDs;
+  std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
+  std::map<int, std::string> mMapDigitTrgNames;
+  std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
-  // Object which will be published
+
+  // Objects which will be published
   std::unique_ptr<TH2F> mHistAmp2Ch;
   std::unique_ptr<TH2F> mHistTime2Ch;
   std::unique_ptr<TH2F> mHistEventDensity2Ch;
@@ -105,16 +118,12 @@ class DigitQcTask final : public TaskInterface
   std::unique_ptr<TH2F> mHistTriggersCorrelation;
   std::unique_ptr<TH1D> mHistCycleDuration;
   std::unique_ptr<TH1D> mHistCycleDurationNTF;
-  std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
-  std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
-  std::map<int, std::string> mMapDigitTrgNames;
-  TList* mListHistGarbage;
+  std::unique_ptr<TH1D> mHistCycleDurationRange;
   std::map<unsigned int, TH1F*> mMapHistAmp1D;
   std::map<unsigned int, TH1F*> mMapHistTime1D;
   std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
   std::map<unsigned int, TH2F*> mMapTrgBcOrbit;
-  std::set<unsigned int> mSetAllowedChIDs;
 };
 
 } // namespace o2::quality_control_modules::ft0
