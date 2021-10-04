@@ -55,7 +55,7 @@ void PostProcessingRunner::init(const boost::property_tree::ptree& config)
   ILOG(Info, Support) << ">> Implementation : " << config.get<std::string>("qc.config.database.implementation") << ENDM;
   ILOG(Info, Support) << ">> Host : " << config.get<std::string>("qc.config.database.host") << ENDM;
 
-  mObjectManager = std::make_shared<ObjectsManager>(mConfig.taskName, mConfig.detectorName, mConfig.className, mConfig.consulUrl);
+  mObjectManager = std::make_shared<ObjectsManager>(mConfig.taskName, mConfig.className, mConfig.detectorName, mConfig.consulUrl);
   mServices.registerService<DatabaseInterface>(mDatabase.get());
   if (mPublicationCallback == nullptr) {
     mPublicationCallback = publishToRepository(*mDatabase);
