@@ -16,6 +16,7 @@
 
 #include "FT0/BasicPPTask.h"
 #include "QualityControl/QcInfoLogger.h"
+#include "CommonConstants/LHCConstants.h"
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -34,6 +35,29 @@ BasicPPTask::~BasicPPTask()
 {
   delete mAmpl;
   delete mTime;
+}
+
+void BasicPPTask::configure(std::string, const boost::property_tree::ptree& config)
+{
+  const char* configPath = Form("qc.postprocessing.%s", getName().c_str());
+  ILOG(Warning) << "configPath = " << configPath << ENDM;
+  auto node = config.get_child_optional(Form("%s.custom.numOrbitsInTF", configPath));
+  if (node) {
+    mNumOrbitsInTF = std::stoi(node.get_ptr()->get_child("").get_value<std::string>());
+    ILOG(Info, Support) << "configure() : using numOrbitsInTF = " << mNumOrbitsInTF << ENDM;
+  } else {
+    mNumOrbitsInTF = 256;
+    ILOG(Info, Support) << "configure() : using default numOrbitsInTF = " << mNumOrbitsInTF << ENDM;
+  }
+
+  node = config.get_child_optional(Form("%s.custom.cycleDurationMoName", configPath));
+  if (node) {
+    mCycleDurationMoName = node.get_ptr()->get_child("").get_value<std::string>();
+    ILOG(Info, Support) << "configure() : using cycleDurationMoName = \"" << mCycleDurationMoName << "\"" << ENDM;
+  } else {
+    mCycleDurationMoName = "CycleDurationNTF";
+    ILOG(Info, Support) << "configure() : using default cycleDurationMoName = \"" << mCycleDurationMoName << "\"" << ENDM;
+  }
 }
 
 void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
@@ -86,17 +110,22 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
   auto mo = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", "Triggers");
   auto hTriggers = (TH1F*)mo->getObject();
   if (!hTriggers) {
-    ILOG(Error) << "\nMO \"Triggers\" NOT retrieved!!!\n"
-                << ENDM;
+    ILOG(Error) << "MO \"Triggers\" NOT retrieved!!!" << ENDM;
   }
 
-  auto mo2 = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", "CycleDuration");
+  auto mo2 = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", mCycleDurationMoName);
   auto hCycleDuration = (TH1D*)mo2->getObject();
   if (!hCycleDuration) {
-    ILOG(Error) << "\nMO \"CycleDuration\" NOT retrieved!!!\n"
-                << ENDM;
+    ILOG(Error) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
   }
-  double cycleDurationMS = hCycleDuration->GetBinContent(1) / 1e6; // ns -> ms
+
+  double cycleDurationMS = 0;
+  if (mCycleDurationMoName == "CycleDuration" || mCycleDurationMoName == "CycleDurationRange")
+    // assume MO stores cycle duration in ns
+    cycleDurationMS = hCycleDuration->GetBinContent(1) / 1e6; // ns -> ms
+  else if (mCycleDurationMoName == "CycleDurationNTF")
+    // assume MO stores cycle duration in number of TF
+    cycleDurationMS = hCycleDuration->GetBinContent(1) * mNumOrbitsInTF * o2::constants::lhc::LHCOrbitNS / 1e6; // ns ->ms
 
   int n = mRateOrA->GetN();
 

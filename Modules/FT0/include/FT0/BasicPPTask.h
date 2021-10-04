@@ -39,11 +39,15 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
  public:
   BasicPPTask() = default;
   ~BasicPPTask() override;
+  void configure(std::string, const boost::property_tree::ptree&);
   void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
  private:
+  std::string mCycleDurationMoName;
+  int mNumOrbitsInTF;
+
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
   std::unique_ptr<TGraph> mRateOrA;
   std::unique_ptr<TGraph> mRateOrC;
