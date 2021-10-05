@@ -65,6 +65,12 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       mMode = 1;
     }
   }
+  if (auto param = mCustomParameters.find("LED"); param != mCustomParameters.end()) {
+    QcInfoLogger::GetInstance() << "Working in LED mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    if (param->second.find("on") != std::string::npos) {
+      mMode = 2;
+    }
+  }
   if (auto param = mCustomParameters.find("physics"); param != mCustomParameters.end()) {
     QcInfoLogger::GetInstance() << "Working in physics mode " << AliceO2::InfoLogger::InfoLogger::endm;
     if (param->second.find("on") != std::string::npos) {

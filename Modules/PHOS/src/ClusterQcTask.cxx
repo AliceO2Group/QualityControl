@@ -195,7 +195,6 @@ void ClusterQcTask::endOfActivity(Activity& /*activity*/)
 void ClusterQcTask::reset()
 {
   // clean all the monitor objects here
-
   QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   for (int i = kNhist1D; i--;) {
     if (mHist1D[i]) {

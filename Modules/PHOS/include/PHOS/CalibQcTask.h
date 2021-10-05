@@ -19,7 +19,6 @@
 #define QC_MODULE_PHOS_QCCALIBTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "DataFormatsPHOS/BadChannelsMap.h"
 #include <array>
 
 class TH1F;
@@ -50,6 +49,7 @@ class CalibQcTask final : public TaskInterface
 
  protected:
  private:
+  int mMode = 0; ///< Mode of operation: 0: badMap, 1: Pedestals, 2: LED
   static constexpr short NHIST2D = 8;
   enum histos2D { kChangeHGM1,
                   kChangeHGM2,
@@ -60,8 +60,7 @@ class CalibQcTask final : public TaskInterface
                   kChangeLGM3,
                   kChangeLGM4
   };
-  std::array<TH2F*, NHIST2D> mHist2D = { nullptr };  ///< Array of 2D histograms
-  std::unique_ptr<o2::phos::BadChannelsMap> mBadMap; /// bad map
+  std::array<TH2F*, NHIST2D> mHist2D = { nullptr }; ///< Array of 2D histograms
 };
 
 } // namespace o2::quality_control_modules::phos

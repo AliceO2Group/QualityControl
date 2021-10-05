@@ -23,31 +23,31 @@
             }
         },
        "tasks": {
-        "QcTask": {
+        "PHOSClusters": {
           "active": "true",
-          "className": "o2::quality_control_modules::phos::RawQcTask",
+          "className": "o2::quality_control_modules::phos::ClusterQcTask",
           "moduleName": "QcPHOS",
           "detectorName": "PHS",
-          "cycleDurationSeconds": "10",
+          "cycleDurationSeconds": "100",
           "maxNumberCycles": "-1",
           "dataSource": {
             "type": "dataSamplingPolicy",
-            "name": "phos-rawerr"
+            "name": "phos-clu"
           },
           "taskParameters": {
-            "physics": "on"    
+            "": ""    
           },
           "location": "remote"
-        }
+        }        
       }
     },
     "dataSamplingPolicies": [
       {
-        "id": "phos-rawerr",
+        "id": "phos-clu",
         "active": "true",
         "machines": [],
         "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1[;binding2:...]",
-        "query": "rawerr:PHS/RAWHWERRORS/0;cells:PHS/CELLS/0;cellstr:PHS/CELLTRIGREC/0",
+        "query": "clusters:PHS/CLUSTERS/0;clustertr:PHS/CLUSTERTRIGREC/0",
         "samplingConditions": [
           {
             "condition": "random",
@@ -57,5 +57,6 @@
         ],
         "blocking": "false"
       }
+
   ]
 }

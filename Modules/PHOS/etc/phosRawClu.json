@@ -38,7 +38,23 @@
             "physics": "on"    
           },
           "location": "remote"
-        }
+        },
+        "PHOSClusters": {
+          "active": "true",
+          "className": "o2::quality_control_modules::phos::ClusterQcTask",
+          "moduleName": "QcPHOS",
+          "detectorName": "PHS",
+          "cycleDurationSeconds": "100",
+          "maxNumberCycles": "-1",
+          "dataSource": {
+            "type": "dataSamplingPolicy",
+            "name": "phos-clu"
+          },
+          "taskParameters": {
+            "": ""    
+          },
+          "location": "remote"
+        }        
       }
     },
     "dataSamplingPolicies": [
@@ -56,6 +72,22 @@
           }
         ],
         "blocking": "false"
+      },
+      {
+        "id": "phos-clu",
+        "active": "true",
+        "machines": [],
+        "query_comment" : "query is in the format of binding1:origin1/description1/subSpec1[;binding2:...]",
+        "query": "clusters:PHS/CLUSTERS/0;clustertr:PHS/CLUSTERTRIGREC/0",
+        "samplingConditions": [
+          {
+            "condition": "random",
+            "fraction": "1.",
+            "seed": "1234"
+          }
+        ],
+        "blocking": "false"
       }
+
   ]
 }

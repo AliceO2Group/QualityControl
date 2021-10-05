@@ -63,7 +63,10 @@ install(
 
 # ---- Install config files ----
 
-install(FILES etc/phosCalib.json
+install(FILES etc/phosCalibLED.json
+              etc/phosCalibPed.json
+              etc/phosClusters.json
               etc/phosPedestal.json
+              etc/phosRawClu.json
               etc/phosRaw.json
         DESTINATION etc)
