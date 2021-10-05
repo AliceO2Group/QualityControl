@@ -42,7 +42,17 @@ Quality PadCalibrationCheck2D::check(std::map<std::string, std::shared_ptr<Monit
       const auto padName = fmt::format("c_ROCs_Pedestal_2D_{:d}", tpads);
       const auto histName = fmt::format("h_Pedestals_ROC_{:02d}", tpads - 1);
       TPad* pad = (TPad*)canv->GetListOfPrimitives()->FindObject(padName.data());
+      if (!pad) {
+        badSectorsName.push_back("notitle");
+        badSectorsQuality.push_back(Quality::Null);
+        continue;
+      }
       TH2F* h = (TH2F*)pad->GetListOfPrimitives()->FindObject(histName.data());
+      if (!h) {
+        badSectorsName.push_back("notitle");
+        badSectorsQuality.push_back(Quality::Null);
+        continue;
+      }
       const std::string titleh = h->GetTitle();
 
       //check if we are dealing with IROC or OROC
@@ -102,8 +112,14 @@ void PadCalibrationCheck2D::beautify(std::shared_ptr<MonitorObject> mo, Quality)
     const auto padName = fmt::format("c_ROCs_Pedestal_2D_{:d}", tpads);
     const auto histName = fmt::format("h_Pedestals_ROC_{:02d}", tpads - 1);
     TPad* pad = (TPad*)canv->GetListOfPrimitives()->FindObject(padName.data());
+    if (!pad) {
+      continue;
+    }
     pad->cd();
     TH2F* h = (TH2F*)pad->GetListOfPrimitives()->FindObject(histName.data());
+    if (!h) {
+      continue;
+    }
     const std::string titleh = h->GetTitle();
     auto it = std::find(badSectorsName.begin(), badSectorsName.end(), titleh);
     if (it == badSectorsName.end()) {
