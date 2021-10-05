@@ -86,9 +86,7 @@ class ITSNoisyPixelTask : public TaskInterface
   int mTotalTimeInQCTask;
   int ChipIDprev = 0;
   std::string mDictPath;
-  std::string mRunNumberPath;
   std::string mGeomPath;
-  std::string mRunNumber = "000000";
 
   const int mNStaves[7] = { 12, 16, 20, 24, 30, 42, 48 };
   const int mNHicPerStave[7] = { 1, 1, 1, 8, 8, 14, 14 };

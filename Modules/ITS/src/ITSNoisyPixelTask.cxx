@@ -244,18 +244,7 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSNoisyPixelTask::endOfCycle()
 {
-
-  std::ifstream runNumberFile(mRunNumberPath.c_str()); //catching ITS run number in commissioning; to be redesinged for the final version
-  if (runNumberFile) {
-    std::string runNumber;
-    runNumberFile >> runNumber;
-    if (runNumber != mRunNumber) {
-      for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++)
-        getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
-      mRunNumber = runNumber;
-    }
-    QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-  }
+  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSNoisyPixelTask::endOfActivity(Activity& /*activity*/)
@@ -360,7 +349,6 @@ void ITSNoisyPixelTask::createAllHistos()
 void ITSNoisyPixelTask::getJsonParameters()
 {
   mDictPath = mCustomParameters["clusterDictionaryPath"];
-  mRunNumberPath = mCustomParameters["runNumberPath"];
   mGeomPath = mCustomParameters["geomPath"];
   mOccUpdateFrequency = std::stoi(mCustomParameters["updateFrequency"]);
 

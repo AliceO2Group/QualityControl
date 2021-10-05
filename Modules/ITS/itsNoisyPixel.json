@@ -37,9 +37,8 @@
         },
         "location": "remote",
         "taskParameters": {
-                    "layer": "1000010",
+                    "layer": "1111111",
                     "clusterDictionaryPath": "/home/nvalle/alice/qc/workdir/ITSdictionary.bin",
-                    "runNumberPath": "/home/nvalle/alice/qc/workdir/RunNumber.dat",
                     "geomPath": "/home/nvalle/alice/qc/workdir/o2sim_geometry.root",
 	            "updateFrequency": "10000"
         }
