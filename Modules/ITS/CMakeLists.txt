@@ -9,7 +9,7 @@ add_library(O2QcITS
             src/ITSFhrTask.cxx
             src/ITSFeeTask.cxx
             src/ITSClusterTask.cxx
-	    src/ITSNoisyPixelTask.cxx
+            src/ITSNoisyPixelTask.cxx
             src/ITSTrackTask.cxx
             src/ITSFhrCheck.cxx
             src/ITSClusterCheck.cxx
@@ -49,7 +49,7 @@ add_root_dictionary(O2QcITS
                             include/ITS/ITSFhrTask.h
                             include/ITS/ITSFeeTask.h
                             include/ITS/ITSClusterTask.h
-			    include/ITS/ITSNoisyPixelTask.h
+                            include/ITS/ITSNoisyPixelTask.h
                             include/ITS/ITSTrackTask.h
                             include/ITS/ITSFhrCheck.h
                             include/ITS/ITSClusterCheck.h
@@ -107,7 +107,7 @@ install(FILES
         itsFhr.json
         itsFee.json
         itsCluster.json
-	itsNoisyPixel.json
+        itsNoisyPixel.json
         DESTINATION etc)
 
 get_property(dirs
