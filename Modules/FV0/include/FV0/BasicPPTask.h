@@ -14,13 +14,13 @@
 /// \author Sebastian Bysiak sbysiak@cern.ch
 ///
 
-#ifndef QC_MODULE_FT0_BASICPPTASK_H
-#define QC_MODULE_FT0_BASICPPTASK_H
+#ifndef QC_MODULE_FV0_BASICPPTASK_H
+#define QC_MODULE_FV0_BASICPPTASK_H
 
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/DatabaseInterface.h"
-#include "FT0Base/Constants.h"
-
+#include "FV0Base/Constants.h"
+#include <TGraph.h>
 #include <TCanvas.h>
 
 class TH1F;
@@ -29,10 +29,10 @@ class TCanvas;
 class TLegend;
 class TProfile;
 
-namespace o2::quality_control_modules::ft0
+namespace o2::quality_control_modules::fv0
 {
 
-/// \brief Basic Postprocessing Task for FT0, computes among others the trigger rates
+/// \brief Basic Postprocessing Task for FV0, computes among others the trigger rates
 /// \author Sebastian Bysiak sbysiak@cern.ch
 class BasicPPTask final : public quality_control::postprocessing::PostProcessingInterface
 {
@@ -44,21 +44,23 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
   void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) override;
 
+  constexpr static std::size_t sNCHANNELS_PM = 60; //48(for PM) + 12(just in case for possible PM-LCS)
+
  private:
   std::string mCycleDurationMoName;
   int mNumOrbitsInTF;
 
   o2::quality_control::repository::DatabaseInterface* mDatabase = nullptr;
-  std::unique_ptr<TGraph> mRateOrA;
-  std::unique_ptr<TGraph> mRateOrC;
-  std::unique_ptr<TGraph> mRateVertex;
-  std::unique_ptr<TGraph> mRateCentral;
-  std::unique_ptr<TGraph> mRateSemiCentral;
+  std::unique_ptr<TGraph> mRateMinBias;
+  std::unique_ptr<TGraph> mRateOuterRing;
+  std::unique_ptr<TGraph> mRateNChannels;
+  std::unique_ptr<TGraph> mRateCharge;
+  std::unique_ptr<TGraph> mRateInnerRing;
   std::unique_ptr<TCanvas> mRatesCanv;
   TProfile* mAmpl = nullptr;
   TProfile* mTime = nullptr;
 };
 
-} // namespace o2::quality_control_modules::ft0
+} // namespace o2::quality_control_modules::fv0
 
-#endif //QC_MODULE_FT0_BASICPPTASK_H
+#endif //QC_MODULE_FV0_BASICPPTASK_H

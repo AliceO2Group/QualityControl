@@ -14,7 +14,7 @@
 /// \author Sebastian Bysiak sbysiak@cern.ch
 ///
 
-#include "FT0/BasicPPTask.h"
+#include "FV0/BasicPPTask.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "CommonConstants/LHCConstants.h"
 
@@ -28,7 +28,7 @@
 
 using namespace o2::quality_control::postprocessing;
 
-namespace o2::quality_control_modules::ft0
+namespace o2::quality_control_modules::fv0
 {
 
 BasicPPTask::~BasicPPTask()
@@ -64,42 +64,42 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
 {
   mDatabase = &services.get<o2::quality_control::repository::DatabaseInterface>();
 
-  mRateOrA = std::make_unique<TGraph>(0);
-  mRateOrC = std::make_unique<TGraph>(0);
-  mRateVertex = std::make_unique<TGraph>(0);
-  mRateCentral = std::make_unique<TGraph>(0);
-  mRateSemiCentral = std::make_unique<TGraph>(0);
+  mRateMinBias = std::make_unique<TGraph>(0);
+  mRateOuterRing = std::make_unique<TGraph>(0);
+  mRateNChannels = std::make_unique<TGraph>(0);
+  mRateCharge = std::make_unique<TGraph>(0);
+  mRateInnerRing = std::make_unique<TGraph>(0);
   mRatesCanv = std::make_unique<TCanvas>("cRates", "trigger rates");
-  mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
-  mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
+  mAmpl = new TProfile("MeanAmplPerChannel", "mean ampl per channel;Channel;Ampl #mu #pm #sigma", sNCHANNELS_PM, 0, sNCHANNELS_PM);
+  mTime = new TProfile("MeanTimePerChannel", "mean time per channel;Channel;Time #mu #pm #sigma", sNCHANNELS_PM, 0, sNCHANNELS_PM);
 
-  mRateOrA->SetNameTitle("rateOrA", "trg rate: OrA;cycle;rate [kHz]");
-  mRateOrC->SetNameTitle("rateOrC", "trg rate: OrC;cycle;rate [kHz]");
-  mRateVertex->SetNameTitle("rateVertex", "trg rate: Vertex;cycle;rate [kHz]");
-  mRateCentral->SetNameTitle("rateCentral", "trg rate: Central;cycle;rate [kHz]");
-  mRateSemiCentral->SetNameTitle("rateSemiCentral", "trg rate: SemiCentral;cycle;rate [kHz]");
+  mRateMinBias->SetNameTitle("rateMinBias", "trg rate: MinBias;cycle;rate [kHz]");
+  mRateOuterRing->SetNameTitle("rateOuterRing", "trg rate: OuterRing;cycle;rate [kHz]");
+  mRateNChannels->SetNameTitle("rateNChannels", "trg rate: NChannels;cycle;rate [kHz]");
+  mRateCharge->SetNameTitle("rateCharge", "trg rate: Charge;cycle;rate [kHz]");
+  mRateInnerRing->SetNameTitle("rateInnerRing", "trg rate: InnerRing;cycle;rate [kHz]");
 
-  mRateOrA->SetMarkerStyle(24);
-  mRateOrC->SetMarkerStyle(25);
-  mRateVertex->SetMarkerStyle(26);
-  mRateCentral->SetMarkerStyle(27);
-  mRateSemiCentral->SetMarkerStyle(28);
-  mRateOrA->SetMarkerColor(kOrange);
-  mRateOrC->SetMarkerColor(kMagenta);
-  mRateVertex->SetMarkerColor(kBlack);
-  mRateCentral->SetMarkerColor(kBlue);
-  mRateSemiCentral->SetMarkerColor(kOrange);
-  mRateOrA->SetLineColor(kOrange);
-  mRateOrC->SetLineColor(kMagenta);
-  mRateVertex->SetLineColor(kBlack);
-  mRateCentral->SetLineColor(kBlue);
-  mRateSemiCentral->SetLineColor(kOrange);
+  mRateMinBias->SetMarkerStyle(24);
+  mRateOuterRing->SetMarkerStyle(25);
+  mRateNChannels->SetMarkerStyle(26);
+  mRateCharge->SetMarkerStyle(27);
+  mRateInnerRing->SetMarkerStyle(28);
+  mRateMinBias->SetMarkerColor(kOrange);
+  mRateOuterRing->SetMarkerColor(kMagenta);
+  mRateNChannels->SetMarkerColor(kBlack);
+  mRateCharge->SetMarkerColor(kBlue);
+  mRateInnerRing->SetMarkerColor(kOrange);
+  mRateMinBias->SetLineColor(kOrange);
+  mRateOuterRing->SetLineColor(kMagenta);
+  mRateNChannels->SetLineColor(kBlack);
+  mRateCharge->SetLineColor(kBlue);
+  mRateInnerRing->SetLineColor(kOrange);
 
-  getObjectsManager()->startPublishing(mRateOrA.get());
-  getObjectsManager()->startPublishing(mRateOrC.get());
-  getObjectsManager()->startPublishing(mRateVertex.get());
-  getObjectsManager()->startPublishing(mRateCentral.get());
-  getObjectsManager()->startPublishing(mRateSemiCentral.get());
+  getObjectsManager()->startPublishing(mRateMinBias.get());
+  getObjectsManager()->startPublishing(mRateOuterRing.get());
+  getObjectsManager()->startPublishing(mRateNChannels.get());
+  getObjectsManager()->startPublishing(mRateCharge.get());
+  getObjectsManager()->startPublishing(mRateInnerRing.get());
   getObjectsManager()->startPublishing(mRatesCanv.get());
   getObjectsManager()->startPublishing(mAmpl);
   getObjectsManager()->startPublishing(mTime);
@@ -107,13 +107,13 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
 
 void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
 {
-  auto mo = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", "Triggers");
+  auto mo = mDatabase->retrieveMO("qc/FV0/MO/DigitQcTask/", "Triggers");
   auto hTriggers = (TH1F*)mo->getObject();
   if (!hTriggers) {
     ILOG(Error) << "MO \"Triggers\" NOT retrieved!!!" << ENDM;
   }
 
-  auto mo2 = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", mCycleDurationMoName);
+  auto mo2 = mDatabase->retrieveMO("qc/FV0/MO/DigitQcTask/", mCycleDurationMoName);
   auto hCycleDuration = (TH1D*)mo2->getObject();
   if (!hCycleDuration) {
     ILOG(Error) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
@@ -127,46 +127,46 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
     // assume MO stores cycle duration in number of TF
     cycleDurationMS = hCycleDuration->GetBinContent(1) * mNumOrbitsInTF * o2::constants::lhc::LHCOrbitNS / 1e6; // ns ->ms
 
-  int n = mRateOrA->GetN();
+  int n = mRateMinBias->GetN();
 
   double eps = 1e-8;
   if (cycleDurationMS < eps) {
     ILOG(Warning) << "cycle duration = " << cycleDurationMS << " ms, almost zero - cannot compute trigger rates!" << ENDM;
   } else {
-    mRateOrA->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OrA")) / cycleDurationMS);
-    mRateOrC->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OrC")) / cycleDurationMS);
-    mRateVertex->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("Vertex")) / cycleDurationMS);
-    mRateCentral->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("Central")) / cycleDurationMS);
-    mRateSemiCentral->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("SemiCentral")) / cycleDurationMS);
+    mRateMinBias->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("MinBias")) / cycleDurationMS);
+    mRateOuterRing->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OuterRing")) / cycleDurationMS);
+    mRateNChannels->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("NChannels")) / cycleDurationMS);
+    mRateCharge->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("Charge")) / cycleDurationMS);
+    mRateInnerRing->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("InnerRing")) / cycleDurationMS);
   }
 
   mRatesCanv->cd();
-  float vmin = std::min({ mRateOrA->GetYaxis()->GetXmin(), mRateOrC->GetYaxis()->GetXmin(), mRateVertex->GetYaxis()->GetXmin(), mRateCentral->GetYaxis()->GetXmin(), mRateSemiCentral->GetYaxis()->GetXmin() });
-  float vmax = std::max({ mRateOrA->GetYaxis()->GetXmax(), mRateOrC->GetYaxis()->GetXmax(), mRateVertex->GetYaxis()->GetXmax(), mRateCentral->GetYaxis()->GetXmax(), mRateSemiCentral->GetYaxis()->GetXmax() });
+  float vmin = std::min({ mRateMinBias->GetYaxis()->GetXmin(), mRateOuterRing->GetYaxis()->GetXmin(), mRateNChannels->GetYaxis()->GetXmin(), mRateCharge->GetYaxis()->GetXmin(), mRateInnerRing->GetYaxis()->GetXmin() });
+  float vmax = std::max({ mRateMinBias->GetYaxis()->GetXmax(), mRateOuterRing->GetYaxis()->GetXmax(), mRateNChannels->GetYaxis()->GetXmax(), mRateCharge->GetYaxis()->GetXmax(), mRateInnerRing->GetYaxis()->GetXmax() });
 
-  auto hAxis = mRateOrA->GetHistogram();
+  auto hAxis = mRateMinBias->GetHistogram();
   hAxis->GetYaxis()->SetTitleOffset(1.4);
   hAxis->SetMinimum(vmin);
   hAxis->SetMaximum(vmax * 1.1);
-  hAxis->SetTitle("FT0 trigger rates");
+  hAxis->SetTitle("FV0 trigger rates");
   hAxis->SetLineWidth(0);
   hAxis->Draw("AXIS");
 
-  mRateOrA->Draw("PL,SAME");
-  mRateOrC->Draw("PL,SAME");
-  mRateVertex->Draw("PL,SAME");
-  mRateCentral->Draw("PL,SAME");
-  mRateSemiCentral->Draw("PL,SAME");
+  mRateMinBias->Draw("PL,SAME");
+  mRateOuterRing->Draw("PL,SAME");
+  mRateNChannels->Draw("PL,SAME");
+  mRateCharge->Draw("PL,SAME");
+  mRateInnerRing->Draw("PL,SAME");
   TLegend* leg = gPad->BuildLegend();
   leg->SetFillStyle(1);
 
-  auto mo3 = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", "AmpPerChannel");
+  auto mo3 = mDatabase->retrieveMO("qc/FV0/MO/DigitQcTask/", "AmpPerChannel");
   auto hAmpPerChannel = (TH2D*)mo3->getObject();
   if (!hAmpPerChannel) {
     ILOG(Error) << "\nMO \"AmpPerChannel\" NOT retrieved!!!\n"
                 << ENDM;
   }
-  auto mo4 = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", "TimePerChannel");
+  auto mo4 = mDatabase->retrieveMO("qc/FV0/MO/DigitQcTask/", "TimePerChannel");
   auto hTimePerChannel = (TH2D*)mo4->getObject();
   if (!hTimePerChannel) {
     ILOG(Error) << "\nMO \"TimePerChannel\" NOT retrieved!!!\n"
@@ -194,4 +194,4 @@ void BasicPPTask::finalize(Trigger, framework::ServiceRegistry&)
 {
 }
 
-} // namespace o2::quality_control_modules::ft0
+} // namespace o2::quality_control_modules::fv0

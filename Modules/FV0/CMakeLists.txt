@@ -2,7 +2,13 @@
 
 add_library(O2QcFV0)
 
-target_sources(O2QcFV0 PRIVATE src/DigitQcTask.cxx )
+target_sources(O2QcFV0 PRIVATE  src/DigitQcTask.cxx
+                                src/CFDEffCheck.cxx
+                                src/BasicPPTask.cxx
+                                src/OutOfBunchCollTask.cxx
+                                src/OutOfBunchCollCheck.cxx
+                                #src/TriggerQcTask.cxx
+                                )
 
 target_include_directories(
   O2QcFV0
@@ -21,6 +27,11 @@ add_root_dictionary(O2QcFV0
                     HEADERS
   include/FV0/DigitQcTask.h
   include/FV0/Helper.h
+  include/FV0/CFDEffCheck.h
+  include/FV0/BasicPPTask.h
+  include/FV0/OutOfBunchCollTask.h
+  include/FV0/OutOfBunchCollCheck.h
+  #include/FV0/TriggerQcTask.h
                     LINKDEF include/FV0/LinkDef.h
                     BASENAME O2QcFV0)
 
@@ -40,4 +51,3 @@ foreach(test ${TEST_SRCS})
     PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
   set_tests_properties(${test_name} PROPERTIES TIMEOUT 20)
 endforeach()
-
