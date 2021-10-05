@@ -10,12 +10,12 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   PedestalTask.h
+/// \file   PhysicsTask.h
 /// \author Sergey Evdokimov
 ///
 
-#ifndef QC_MODULE_CPV_CPVPEDESTALTASK_H
-#define QC_MODULE_CPV_CPVPEDESTALTASK_H
+#ifndef QC_MODULE_CPV_CPVPHYSICSTASK_H
+#define QC_MODULE_CPV_CPVPHYSICSTASK_H
 
 #include "QualityControl/TaskInterface.h"
 #include <memory>
@@ -31,15 +31,15 @@ using namespace o2::quality_control::core;
 namespace o2::quality_control_modules::cpv
 {
 
-/// \brief CPV Pedestal Task which processes uncalibrated digits from pedestal runs and produces pedestal monitor objects
-/// \author Sergey Evdokimov
-class PedestalTask final : public TaskInterface
+/// \brief Example Quality Control DPL Task
+/// \author My Name
+class PhysicsTask final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  PedestalTask() = default;
+  PhysicsTask() = default;
   /// Destructor
-  ~PedestalTask() override;
+  ~PhysicsTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -52,43 +52,34 @@ class PedestalTask final : public TaskInterface
 
  private:
   void initHistograms();
-  void fillHistograms();
+  //void fillHistograms(); // this will be needed in the future
   void resetHistograms();
 
-  static constexpr short kNHist1D = 14;
+  static constexpr short kNHist1D = 15;
   enum Histos1D { H1DInputPayloadSize,
                   H1DNInputs,
                   H1DNValidInputs,
                   H1DNDigitsPerInput,
+                  H1DNClustersPerInput,
                   H1DDigitIds,
-                  H1DPedestalValueM2,
-                  H1DPedestalValueM3,
-                  H1DPedestalValueM4,
-                  H1DPedestalSigmaM2,
-                  H1DPedestalSigmaM3,
-                  H1DPedestalSigmaM4,
-                  H1DPedestalEfficiencyM2,
-                  H1DPedestalEfficiencyM3,
-                  H1DPedestalEfficiencyM4
+                  H1DDigitEnergyM2,
+                  H1DDigitEnergyM3,
+                  H1DDigitEnergyM4,
+                  H1DClusterTotEnergyM2,
+                  H1DClusterTotEnergyM3,
+                  H1DClusterTotEnergyM4,
+                  H1DNDigitsInClusterM2,
+                  H1DNDigitsInClusterM3,
+                  H1DNDigitsInClusterM4
   };
 
-  static constexpr short kNHist2D = 16;
-  enum Histos2D { H2DErrorType,
-                  H2DDigitMapM2,
+  static constexpr short kNHist2D = 6;
+  enum Histos2D { H2DDigitMapM2,
                   H2DDigitMapM3,
                   H2DDigitMapM4,
-                  H2DPedestalValueMapM2,
-                  H2DPedestalValueMapM3,
-                  H2DPedestalValueMapM4,
-                  H2DPedestalSigmaMapM2,
-                  H2DPedestalSigmaMapM3,
-                  H2DPedestalSigmaMapM4,
-                  H2DPedestalEfficiencyMapM2,
-                  H2DPedestalEfficiencyMapM3,
-                  H2DPedestalEfficiencyMapM4,
-                  H2DPedestalNPeaksMapM2,
-                  H2DPedestalNPeaksMapM3,
-                  H2DPedestalNPeaksMapM4
+                  H2DClusterMapM2,
+                  H2DClusterMapM3,
+                  H2DClusterMapM4
   };
 
   static constexpr short kNModules = 3;
@@ -97,15 +88,11 @@ class PedestalTask final : public TaskInterface
 
   int mNEventsTotal;
   int mNEventsFromLastFillHistogramsCall;
-  int mMinNEventsToUpdatePedestals = 1000; ///< min number of events needed to update pedestals
 
   std::array<TH1F*, kNHist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
   std::array<TH2F*, kNHist2D> mHist2D = { nullptr }; ///< Array of 2D histograms
-
-  std::array<TH1F*, kNChannels> mHistAmplitudes = { nullptr };  ///< Array of amplitude spectra
-  std::array<bool, kNChannels> mIsUpdatedAmplitude = { false }; ///< Array of isUpdatedAmplitude bools
 };
 
 } // namespace o2::quality_control_modules::cpv
 
-#endif // QC_MODULE_CPV_CPVPEDESTALTASK_H
+#endif // QC_MODULE_CPV_CPVPHYSICSTASK_H
