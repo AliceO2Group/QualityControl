@@ -607,9 +607,9 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             continue;
 
           auto [row, col] = mGeometry->ShiftOnlineToOfflineCellIndexes(supermoduleID, rowOnline, colOnline);
-          auto [phimod, etamod, mod] = mGeometry->GetModuleIndexesFromCellIndexesInSModule(supermoduleID, row, col);
           //tower absolute ID
-          auto cellID = mGeometry->GetAbsCellId(supermoduleID, mod, phimod, etamod);
+          auto cellID = mGeometry->GetAbsCellIdFromCellIndexes(supermoduleID, row, col);
+          ;
           if (cellID > 17664) {
             mErrorTypeAltro->Fill(feeID, 9);
             continue;
