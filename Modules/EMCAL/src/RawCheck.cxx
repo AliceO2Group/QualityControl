@@ -44,14 +44,18 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
       result = Quality::Bad;
     } // checker for the error type per SM
   }
-  if (mo->getName() == "BunchMinRawAmplutudeFull_PHYS" || mo->getName().find("RawAmplMinEMCAL") == 0) {
-    auto* h = dynamic_cast<TH1D*>(mo->getObject());
+  if (mo->getName().find("BunchMinRawAmplitude") == 0) {
+    auto* h = dynamic_cast<TH1*>(mo->getObject());
     Float_t totentries = h->Integral(10, 100); // Exclude dominant part of the channels for which the signal is in the noise range below pedestal
+    Float_t entriesBadRegion = h->Integral(20, 60);
+    int first = h->GetXaxis()->GetFirst(),
+        last = h->GetXaxis()->GetLast();
     h->GetXaxis()->SetRangeUser(20, 60);
     Int_t maxbin = h->GetMaximumBin();
+    h->GetXaxis()->SetRange(first, last);
     if (maxbin > 30 && maxbin < 50) {
-      Float_t entries = h->GetBinContent(maxbin + 1);
-      if (entries > 0.5 * totentries) {
+      //Float_t entries = h->GetBinContent(maxbin + 1);
+      if (entriesBadRegion > 0.5 * totentries) {
         result = Quality::Bad;
       }
     }
@@ -150,7 +154,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     }
     h->SetLineColor(kBlack);
   }
-  if (mo->getName() == "BunchMinRawAmplutudeFull_PHYS") {
+  if (mo->getName().find("BunchMinRawAmplitude") != std::string::npos) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
@@ -174,7 +178,8 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     }
     h->SetLineColor(kBlack);
   }
-  if (mo->getName() == "FECidMaxChWithInput_perSM" || "PayloadSizeTFPerDDL") {
+  std::vector<std::string> payloadhists = { "FECidMaxChWithInput_perSM", "PayloadSizeTFPerDDL" };
+  if (std::find(payloadhists.begin(), payloadhists.end(), mo->getName()) != payloadhists.end()) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     h->GetListOfFunctions()->Add(msg);
