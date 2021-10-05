@@ -2,7 +2,7 @@
 
 add_library(O2QcREC)
 
-target_sources(O2QcREC PRIVATE src/VertexingQcTask.cxx )
+target_sources(O2QcREC PRIVATE src/ITSTPCMatchingTask.cxx  src/VertexingQcTask.cxx )
 
 target_include_directories(
   O2QcREC
@@ -13,7 +13,10 @@ target_include_directories(
 target_link_libraries(O2QcREC
   PUBLIC
   O2QualityControl
-  O2::Steer)
+  O2::Steer
+  O2::DataFormatsGlobalTracking
+  O2::DataFormatsITS
+  O2::GlobalTracking)
 
 install(TARGETS O2QcREC
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -22,6 +25,7 @@ install(TARGETS O2QcREC
 
 add_root_dictionary(O2QcREC
                     HEADERS
+  include/REC/ITSTPCMatchingTask.h
   include/REC/VertexingQcTask.h
                     LINKDEF include/REC/LinkDef.h
                     BASENAME O2QcREC)
