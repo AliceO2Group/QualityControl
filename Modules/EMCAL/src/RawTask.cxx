@@ -313,17 +313,17 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     TH1D* histosRawMinEMCAL;
     TH1D* histosRawMinDCAL;
 
-    histosRawMinFull = new TH1D(Form("BunchMinRawAmplutudeFull_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL+DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
+    histosRawMinFull = new TH1D(Form("BunchMinRawAmplitudeFull_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL+DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
     histosRawMinFull->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
     histosRawMinFull->GetYaxis()->SetTitle("Counts");
     getObjectsManager()->startPublishing(histosRawMinFull);
 
-    histosRawMinEMCAL = new TH1D(Form("BunchMinRawAmplutudeEMCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
+    histosRawMinEMCAL = new TH1D(Form("BunchMinRawAmplitudeEMCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
     histosRawMinEMCAL->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
     histosRawMinEMCAL->GetYaxis()->SetTitle("Counts");
     getObjectsManager()->startPublishing(histosRawMinEMCAL);
 
-    histosRawMinDCAL = new TH1D(Form("BunchMinRawAmplutudeDCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
+    histosRawMinDCAL = new TH1D(Form("BunchMinRawAmplitudeDCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
     histosRawMinDCAL->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
     histosRawMinDCAL->GetYaxis()->SetTitle("Counts");
     getObjectsManager()->startPublishing(histosRawMinDCAL);

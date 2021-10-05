@@ -25,6 +25,8 @@
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/UpdatePolicyManager.h"
 #include "QualityControl/Activity.h"
+#include "QualityControl/AggregatorRunnerConfig.h"
+#include "QualityControl/AggregatorConfig.h"
 
 namespace o2::framework
 {
@@ -88,10 +90,10 @@ class AggregatorRunner : public framework::Task
    * \brief AggregatorRunner constructor
    * Create the AggregatorRunner device.
    *
-   * @param configurationSource Path to configuration
-   * @param checkRunnerOutputs List of checkRunners' output that it will take as inputs.
+   * @param arc AggregatorRunner Config
+   * @param acs Aggregator configs
    */
-  AggregatorRunner(const std::string& configurationSource, const std::vector<framework::OutputSpec> checkRunnerOutputs);
+  AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs);
 
   /// Destructor
   ~AggregatorRunner() override;
@@ -164,7 +166,8 @@ class AggregatorRunner : public framework::Task
   core::Activity mActivity;
   std::vector<std::shared_ptr<Aggregator>> mAggregators;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-  std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
+  AggregatorRunnerConfig mRunnerConfig;
+  std::vector<AggregatorConfig> mAggregatorsConfigs;
   core::QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
   UpdatePolicyManager updatePolicyManager;
 

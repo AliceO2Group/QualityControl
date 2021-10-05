@@ -32,7 +32,7 @@ using namespace o2::framework;
 
 DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig, std::vector<CheckConfig> checkConfigs, std::vector<std::string> storeVector)
 {
-  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), std::move(checkConfigs) };
+  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), checkConfigs };
   qcCheckRunner.setTaskStoreSet({ storeVector.begin(), storeVector.end() });
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),

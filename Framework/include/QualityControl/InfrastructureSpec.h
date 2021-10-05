@@ -19,6 +19,7 @@
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/TaskSpec.h"
 #include "QualityControl/CheckSpec.h"
+#include "QualityControl/AggregatorSpec.h"
 #include "QualityControl/PostProcessingTaskSpec.h"
 #include "QualityControl/ExternalTaskSpec.h"
 
@@ -31,7 +32,8 @@ struct InfrastructureSpec {
   CommonSpec common;
   std::vector<TaskSpec> tasks;
   std::vector<checker::CheckSpec> checks;
-  std::vector<PostProcessingTaskSpec> postProcessingTasks;
+  std::vector<checker::AggregatorSpec> aggregators;
+  std::vector<postprocessing::PostProcessingTaskSpec> postProcessingTasks;
   std::vector<ExternalTaskSpec> externalTasks;
   // todo: add other actors
 };
