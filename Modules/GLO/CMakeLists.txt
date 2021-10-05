@@ -2,7 +2,7 @@
 
 add_library(O2QcGLO)
 
-target_sources(O2QcGLO PRIVATE src/VertexingQcTask.cxx )
+target_sources(O2QcGLO PRIVATE src/VertexingQcTask.cxx src/ITSTPCMatchingTask.cxx)
 
 target_include_directories(
   O2QcGLO
@@ -13,7 +13,10 @@ target_include_directories(
 target_link_libraries(O2QcGLO
   PUBLIC
   O2QualityControl
-  O2::Steer)
+  O2::Steer
+  O2::DataFormatsGlobalTracking
+  O2::DataFormatsITS
+  O2::GlobalTracking)
 
 install(TARGETS O2QcGLO
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -23,6 +26,7 @@ install(TARGETS O2QcGLO
 add_root_dictionary(O2QcGLO
                     HEADERS
   include/GLO/VertexingQcTask.h
+  include/GLO/ITSTPCMatchingTask.h
                     LINKDEF include/GLO/LinkDef.h
                     BASENAME O2QcGLO)
 
