@@ -17,6 +17,10 @@ target_sources(O2QcTOF
                       src/CheckRawToT.cxx
                       # PostProcessing
                       src/PostProcessDiagnosticPerCrate.cxx
+                      # Trending
+                      src/TrendingHits.cxx
+                      # Trending config
+                      src/TrendingConfigTOF.cxx
                       # Utilities
                 )
 
@@ -56,6 +60,10 @@ add_root_dictionary(O2QcTOF
                             include/TOF/CheckRawToT.h
                             # PostProcessing
                             include/TOF/PostProcessDiagnosticPerCrate.h
+                            # Trending
+                            include/TOF/TrendingHits.h
+                            # Trending config
+                            include/TOF/TrendingConfigTOF.h
                             # Utilities
                             include/Base/Counter.h
                     LINKDEF include/TOF/LinkDef.h
@@ -95,6 +103,7 @@ install(FILES tofdigits.json
               tofraw.json
               tofraw_multinode.json
               tofcosmics.json
+              toftrending.json
         DESTINATION etc)
 
 get_property(dirs
