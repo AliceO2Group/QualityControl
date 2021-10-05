@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -15,8 +16,10 @@
 
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TGraph.h>
 #include <TMath.h>
 #include <Framework/InputRecord.h>
+#include <Framework/InputRecordWalker.h>
 
 #include "QualityControl/QcInfoLogger.h"
 //#include "HMPID/HmpidDecodeRawMem.h"
@@ -65,15 +68,19 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   hPedestalSigma->SetXTitle("Pedestal sigma (ADC channel)");
   hPedestalMean->SetYTitle("Entries/0.1 ADC");
 
-  hBusyTime = new TH1F("hBusyTime", "Average Busy Time", 14, 0, 14);
-  hBusyTime->SetXTitle("Equipment");
-  hBusyTime->SetYTitle("Busy time (#mus)");
+  hBusyTime = new TGraph(14);
+  hBusyTime->SetName("hBusyTime");
   hBusyTime->SetMarkerStyle(20);
+  hBusyTime->SetLineWidth(0);
+  hBusyTime->GetXaxis()->SetTitle("Equipment");
+  hBusyTime->GetYaxis()->SetTitle("Busy time (#mus)");
 
-  hEventSize = new TH1F("hEventSize", "Average Event Size", 14, 0, 14);
-  hEventSize->SetXTitle("Equipment");
-  hEventSize->SetYTitle("Event size (kB)");
+  hEventSize = new TGraph(14);
+  hEventSize->SetName("hEventSize");
   hEventSize->SetMarkerStyle(20);
+  hEventSize->SetLineWidth(0);
+  hEventSize->GetXaxis()->SetTitle("Equipment");
+  hEventSize->GetYaxis()->SetTitle("Event size (kB)");
 
   getObjectsManager()->startPublishing(hPedestalMean);
   getObjectsManager()->addMetadata(hPedestalMean->GetName(), "custom", "34");
@@ -93,8 +100,6 @@ void HmpidTask::startOfActivity(Activity& /*activity*/)
   ILOG(Info) << "startOfActivity" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
-  hBusyTime->Reset();
-  hEventSize->Reset();
 
   mDecoder = new o2::hmpid::HmpidDecoder2(14);
   mDecoder->init();
@@ -112,7 +117,8 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
   mDecoder->init();
   mDecoder->setVerbosity(2); // this is for Debug
 
-  for (auto&& input : ctx.inputs()) {
+  //for (auto&& input : ctx.inputs()) {
+  for (auto&& input : o2::framework::InputRecordWalker(ctx.inputs())) {
     // get message header
     if (input.header != nullptr && input.payload != nullptr) {
       const auto* header = header::get<header::DataHeader*>(input.header);
@@ -125,16 +131,16 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (!mDecoder->decodeBufferFast()) {
         ILOG(Error) << "Error decoding the Superpage !" << ENDM;
       }
+
+      // Double_t ddl[14], EventSize[14], BusyTime[14];
+
       for (Int_t eq = 0; eq < 14; eq++) {
         if (mDecoder->getAverageEventSize(eq) > 0.) {
-          hEventSize->SetBinContent(eq + 1, mDecoder->getAverageEventSize(eq) / 1000.);
-          hEventSize->SetBinError(eq + 1, 0.0000001);
+          hEventSize->AddPoint(eq + 1, mDecoder->getAverageEventSize(eq) / 1000.);
         }
         if (mDecoder->getAverageBusyTime(eq) > 0.) {
-          hBusyTime->SetBinContent(eq + 1, mDecoder->getAverageBusyTime(eq) * 1000000);
-          hBusyTime->SetBinError(eq + 1, 0.00000001);
+          hBusyTime->AddPoint(eq + 1, mDecoder->getAverageBusyTime(eq) * 1000000);
         }
-        Printf("eq = %i, size = %f, busy = %f", eq, mDecoder->getAverageEventSize(eq), mDecoder->getAverageBusyTime(eq));
         for (Int_t column = 0; column < 24; column++) {
           for (Int_t dilogic = 0; dilogic < 10; dilogic++) {
             for (Int_t channel = 0; channel < 48; channel++) {
@@ -185,8 +191,8 @@ void HmpidTask::reset()
   ILOG(Info) << "Resetting the histogram" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
-  hBusyTime->Reset();
-  hEventSize->Reset();
+  hBusyTime->ResetAttFill();
+  hEventSize->ResetAttFill();
 }
 
 } // namespace o2::quality_control_modules::hmpid
