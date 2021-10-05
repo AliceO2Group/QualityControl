@@ -44,11 +44,11 @@ int main(int argc, const char* argv[])
       ("help,h", "Help screen")                                                                                                     //
       ("input-file", bpo::value<std::string>()->default_value("./QAResults.root"), "Path to the ROOT file with objects to insert.") //
       ("qcdb-url", bpo::value<std::string>()->default_value("ccdb-test.cern.ch:8080"), "URL to the QCDB.")                          //
-      ("task-name", bpo::value<std::string>(), "Name of the task which the objects belong to. Use / to make directories")           //
+      ("task-name", bpo::value<std::string>(), "Name of the task to which the objects belong. Use / to make directories")           //
       ("detector-code", bpo::value<std::string>()->default_value("TST"), "3-letter detector code. Put AOD for analysis tasks")      //
       ("validity-start", bpo::value<uint64_t>()->default_value(0), "Start of objects validity in ms since epoch")                   //
       ("validity-end", bpo::value<uint64_t>()->default_value(0), "End of objects validity in ms since epoch")                       //
-      ("run-number", bpo::value<uint64_t>()->default_value(0), "Run number of objects (put 0 for trends across runs)")              //
+      ("run-number", bpo::value<uint64_t>(), "Run number of objects (put 0 for many runs)")                                         //
       ("period-name", bpo::value<std::string>()->default_value("unknown"), "Period name of the objects")                            // todo one could ask logbook
       ("pass-name", bpo::value<std::string>()->default_value("unknown"), "Calib/reco/sim pass name")                                //
       ("provenance", bpo::value<std::string>()->default_value("qc"), "Object path prefix used to mark if data comes from detector (use qc) or simulation (use qc_mc)");
