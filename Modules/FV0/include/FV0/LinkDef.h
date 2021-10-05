@@ -8,6 +8,7 @@
 #pragma link C++ class o2::quality_control_modules::fv0::OutOfBunchCollTask + ;
 #pragma link C++ class o2::quality_control_modules::fv0::CFDEffCheck + ;
 #pragma link C++ class o2::quality_control_modules::fv0::OutOfBunchCollCheck + ;
+#pragma link C++ class o2::quality_control_modules::fv0::TriggerQcTask + ;
 #pragma link C++ class o2::quality_control_modules::fv0::CalibrationTask + ;
 #pragma link C++ class o2::quality_control_modules::fv0::ChannelTimeCalibrationCheck + ;
 

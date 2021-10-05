@@ -7,6 +7,7 @@ target_sources(O2QcFV0 PRIVATE  src/DigitQcTask.cxx
                                 src/BasicPPTask.cxx
                                 src/OutOfBunchCollTask.cxx
                                 src/OutOfBunchCollCheck.cxx
+				src/TriggerQcTask.cxx
                                 src/CalibrationTask.cxx
                                 src/ChannelTimeCalibrationCheck.cxx
                                 )
@@ -32,6 +33,7 @@ add_root_dictionary(O2QcFV0
   include/FV0/BasicPPTask.h
   include/FV0/OutOfBunchCollTask.h
   include/FV0/OutOfBunchCollCheck.h
+  include/FV0/TriggerQcTask.h
   include/FV0/CalibrationTask.h
   include/FV0/ChannelTimeCalibrationCheck.h
                     LINKDEF include/FV0/LinkDef.h
