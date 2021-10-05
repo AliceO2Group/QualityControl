@@ -31,9 +31,9 @@ using namespace o2::framework;
 namespace o2::quality_control::checker
 {
 
-DataProcessorSpec AggregatorRunnerFactory::create(const std::vector<OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource)
+DataProcessorSpec AggregatorRunnerFactory::create(AggregatorRunnerConfig arc, std::vector<AggregatorConfig> acs)
 {
-  AggregatorRunner aggregator{ configurationSource, checkerRunnerOutputs };
+  AggregatorRunner aggregator{ std::move(arc), std::move(acs) };
 
   DataProcessorSpec newAggregatorRunner{
     aggregator.getDeviceName(),
@@ -55,6 +55,21 @@ void AggregatorRunnerFactory::customizeInfrastructure(std::vector<framework::Com
   auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 
   policies.emplace_back("aggregatorRunnerCompletionPolicy", matcher, callback);
+}
+
+AggregatorRunnerConfig AggregatorRunnerFactory::extractConfig(const core::CommonSpec& commonSpec)
+{
+  return {
+    commonSpec.database,
+    commonSpec.consulUrl,
+    commonSpec.monitoringUrl,
+    commonSpec.infologgerFilterDiscardDebug,
+    commonSpec.infologgerDiscardLevel,
+    commonSpec.activityNumber,
+    commonSpec.activityPeriodName,
+    commonSpec.activityPassName,
+    commonSpec.activityProvenance
+  };
 }
 
 } // namespace o2::quality_control::checker

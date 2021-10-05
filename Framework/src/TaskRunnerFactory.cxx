@@ -95,8 +95,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     globalConfig.activityPeriodName,
     globalConfig.activityPassName,
     globalConfig.activityProvenance,
-    globalConfig.activityNumber,
-    globalConfig.configurationSource
+    globalConfig.activityNumber
   };
 }
 

@@ -20,6 +20,7 @@
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Headers/DataHeader.h>
+#include "QualityControl/PostProcessingRunnerConfig.h"
 
 #include <string>
 #include <memory>
@@ -28,6 +29,7 @@ namespace o2::quality_control::postprocessing
 {
 
 class PostProcessingRunner;
+class PostProcessingRunnerConfig;
 
 /// \brief A class driving the execution of a QC PostProcessing task inside DPL.
 ///
@@ -39,7 +41,7 @@ class PostProcessingDevice : public framework::Task
   ///
   /// \param taskName - name of the task, which exists in tasks list in the configuration file
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
-  PostProcessingDevice(const std::string& taskName, const std::string& configurationSource);
+  PostProcessingDevice(const PostProcessingRunnerConfig& runnerConfig);
   ~PostProcessingDevice() override = default;
 
   /// \brief PostProcessingDevice's init callback
@@ -70,7 +72,7 @@ class PostProcessingDevice : public framework::Task
  private:
   std::shared_ptr<PostProcessingRunner> mRunner;
   std::string mDeviceName;
-  std::string mConfigSource;
+  PostProcessingRunnerConfig mRunnerConfig;
 };
 
 } // namespace o2::quality_control::postprocessing

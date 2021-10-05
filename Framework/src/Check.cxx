@@ -38,13 +38,13 @@ namespace o2::quality_control::checker
 {
 
 /// Static functions
-o2::header::DataDescription Check::createCheckerDataDescription(const std::string& name)
+o2::header::DataDescription Check::createCheckDataDescription(const std::string& checkName)
 {
-  if (name.empty()) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for checker's data description"));
+  if (checkName.empty()) {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty checkName for check's data description"));
   }
   o2::header::DataDescription description;
-  description.runtimeInit(std::string(name.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
+  description.runtimeInit(std::string(checkName.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
   return description;
 }
 
@@ -205,8 +205,6 @@ CheckConfig Check::extractConfig(const CommonSpec&, const CheckSpec& checkSpec)
     ILOG(Warning, Devel) << "Beautification disabled because more than one source is used in this Check (" << checkSpec.checkName << ")" << ENDM;
   }
 
-  framework::OutputSpec qoSpec{ "QC", createCheckerDataDescription(checkSpec.checkName), 0 };
-
   return {
     checkSpec.checkName,
     checkSpec.moduleName,
@@ -218,8 +216,13 @@ CheckConfig Check::extractConfig(const CommonSpec&, const CheckSpec& checkSpec)
     checkAllObjects,
     allowBeautify,
     std::move(inputs),
-    std::move(qoSpec)
+    createOutputSpec(checkSpec.checkName)
   };
+}
+
+framework::OutputSpec Check::createOutputSpec(const std::string& checkName)
+{
+  return { "QC", createCheckDataDescription(checkName), 0 };
 }
 
 } // namespace o2::quality_control::checker

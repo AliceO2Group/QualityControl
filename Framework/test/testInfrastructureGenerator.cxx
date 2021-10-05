@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   // the infrastructure should consist of a proxy, merger and checker for the 'skeletonTask' (its taskRunner is declared to be
   // local) and also taskRunner and checker for the 'abcTask' and 'xyzTask'.
   // Post processing adds one process for the task and one for checks.
-  BOOST_REQUIRE_EQUAL(workflow.size(), 10);
+  BOOST_REQUIRE_EQUAL(workflow.size(), 11);
 
   auto tcpclustProxy = std::find_if(
     workflow.begin(), workflow.end(),
@@ -154,6 +154,15 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
              d.outputs.size() == 1;
     });
   BOOST_CHECK(postprocessingTask != workflow.end());
+
+  auto aggregator = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "QC-AGGREGATOR-RUNNER" &&
+             d.inputs.size() == 4 &&
+             d.outputs.size() == 0;
+    });
+  BOOST_CHECK(aggregator != workflow.end());
 }
 
 BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
@@ -207,6 +216,15 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
              d.outputs.size() == 1;
     });
   BOOST_CHECK(postprocessingTask != workflow.end());
+
+  auto aggregator = std::find_if(
+    workflow.begin(), workflow.end(),
+    [](const DataProcessorSpec& d) {
+      return d.name == "QC-AGGREGATOR-RUNNER" &&
+             d.inputs.size() == 4 &&
+             d.outputs.size() == 0;
+    });
+  BOOST_CHECK(aggregator != workflow.end());
 }
 
 BOOST_AUTO_TEST_CASE(qc_factory_empty_config)
@@ -318,7 +336,7 @@ BOOST_AUTO_TEST_CASE(qc_infrastructure_remote_batch_test)
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
       return d.name == "QC-AGGREGATOR-RUNNER" &&
-             d.inputs.size() == 7 &&
+             d.inputs.size() == 4 &&
              d.outputs.size() == 0;
     });
   BOOST_CHECK(aggregator != workflow.end());

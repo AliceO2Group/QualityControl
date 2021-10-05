@@ -22,7 +22,7 @@
 #include <RuntimeControlledObject.h>
 #include <boost/program_options.hpp>
 #include <Common/Timer.h>
-#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ptree_fwd.hpp>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;

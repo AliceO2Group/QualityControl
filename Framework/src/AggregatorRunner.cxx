@@ -23,6 +23,8 @@
 #include <Monitoring/MonitoringFactory.h>
 #include <Monitoring/Monitoring.h>
 #include <Framework/InputRecordWalker.h>
+
+#include <utility>
 // QC
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -44,26 +46,20 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(const std::string& configurationSource, const std::vector<framework::OutputSpec> checkRunnerOutputs)
+AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs)
   : mDeviceName(createAggregatorRunnerName()),
+    mRunnerConfig(std::move(arc)),
+    mAggregatorsConfigs(acs),
     mTotalNumberObjectsReceived(0)
 {
-  try {
-    mConfigFile = ConfigurationFactory::getConfiguration(configurationSource);
-  } catch (...) {
-    // catch the exceptions and print it (the ultimate caller might not know how to display it)
-    ILOG(Fatal) << "Unexpected exception during initialization:\n"
-                << boost::current_exception_diagnostic_information(true) << ENDM;
-    throw;
-  }
-
   // prepare list of all inputs
   // we cannot use the binding of the output because it is empty.
   int i = 0;
-  for (const auto& spec : checkRunnerOutputs) {
-    auto input = DataSpecUtils::matchingInput(spec);
-    input.binding = "checkerOutput" + to_string(i++);
-    mInputs.emplace_back(input);
+  for (const auto& aggConfig : mAggregatorsConfigs) {
+    for (auto input : aggConfig.inputSpecs) {
+      input.binding = "checkerOutput" + to_string(i++);
+      mInputs.emplace_back(input);
+    }
   }
 }
 
@@ -99,7 +95,7 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
   }
 
   try {
-    ILOG_INST.init("aggregator", mConfigFile->getRecursive(), ilContext);
+    ILOG_INST.init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, ilContext);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -188,17 +184,16 @@ void AggregatorRunner::store(QualityObjectsType& qualityObjects)
 
 void AggregatorRunner::initDatabase()
 {
-  mDatabase = DatabaseFactory::create(mConfigFile->get<std::string>("qc.config.database.implementation"));
-  mDatabase->connect(mConfigFile->getRecursiveMap("qc.config.database"));
+  mDatabase = DatabaseFactory::create(mRunnerConfig.database.at("implementation"));
+  mDatabase->connect(mRunnerConfig.database);
   ILOG(Info, Devel) << "Database that is going to be used : ";
-  ILOG(Info, Devel) << ">> Implementation : " << mConfigFile->get<std::string>("qc.config.database.implementation");
-  ILOG(Info, Devel) << ">> Host : " << mConfigFile->get<std::string>("qc.config.database.host");
+  ILOG(Info, Support) << ">> Implementation : " << mRunnerConfig.database.at("implementation") << ENDM;
+  ILOG(Info, Support) << ">> Host : " << mRunnerConfig.database.at("host") << ENDM;
 }
 
 void AggregatorRunner::initMonitoring()
 {
-  auto monitoringUrl = mConfigFile->get<std::string>("qc.config.monitoring.url", "infologger:///debug?qc");
-  mCollector = MonitoringFactory::Get(monitoringUrl);
+  mCollector = MonitoringFactory::Get(mRunnerConfig.monitoringUrl);
   mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("AggregatorRunnerName", mDeviceName);
@@ -207,13 +202,13 @@ void AggregatorRunner::initMonitoring()
 
 void AggregatorRunner::initServiceDiscovery()
 {
-  auto consulUrl = mConfigFile->get<std::string>("qc.config.consul.url", "");
+  auto consulUrl = mRunnerConfig.consulUrl;
   if (consulUrl.empty()) {
     mServiceDiscovery = nullptr;
     ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
     return;
   }
-  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 1); // we try to avoid colliding with the TaskRunner
+  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 2); // we try to avoid colliding with the CheckRunner
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
   ILOG(Info, Devel) << "ServiceDiscovery initialized";
 }
@@ -222,30 +217,23 @@ void AggregatorRunner::initAggregators()
 {
   ILOG(Info, Devel) << "Initialization of the aggregators" << ENDM;
 
-  // Build aggregators based on the configurationd
-  if (mConfigFile->getRecursive("qc").count("aggregators")) {
-
-    // For every aggregator definition, create an Aggregator
-    for (const auto& [aggregatorName, aggregatorConfig] : mConfigFile->getRecursive("qc.aggregators")) {
-      ILOG(Info, Devel) << ">> Aggregator name : " << aggregatorName << ENDM;
-
-      if (aggregatorConfig.get<bool>("active", true)) {
-        try {
-          auto aggregator = make_shared<Aggregator>(aggregatorName, aggregatorConfig);
-          aggregator->init();
-          updatePolicyManager.addPolicy(aggregator->getName(),
-                                        aggregator->getUpdatePolicyType(),
-                                        aggregator->getObjectsNames(),
-                                        aggregator->getAllObjectsOption(),
-                                        false);
-          mAggregators.push_back(aggregator);
-        } catch (...) {
-          // catch the configuration exception and print it to avoid losing it
-          ILOG(Error, Ops) << "Error creating aggregator '" << aggregatorName << "'"
-                           << current_diagnostic(true) << ENDM;
-          continue; // skip this aggregator, it might still fail fatally later if another aggregator depended on it
-        }
-      }
+  // For every aggregator definition, create an Aggregator
+  for (const auto& aggregatorConfig : mAggregatorsConfigs) {
+    ILOG(Info, Devel) << ">> Aggregator name : " << aggregatorConfig.name << ENDM;
+    try {
+      auto aggregator = make_shared<Aggregator>(aggregatorConfig);
+      aggregator->init();
+      updatePolicyManager.addPolicy(aggregator->getName(),
+                                    aggregator->getUpdatePolicyType(),
+                                    aggregator->getObjectsNames(),
+                                    aggregator->getAllObjectsOption(),
+                                    false);
+      mAggregators.push_back(aggregator);
+    } catch (...) {
+      // catch the configuration exception and print it to avoid losing it
+      ILOG(Error, Ops) << "Error creating aggregator '" << aggregatorConfig.name << "'"
+                       << current_diagnostic(true) << ENDM;
+      continue; // skip this aggregator, it might still fail fatally later if another aggregator depended on it
     }
   }
 
@@ -291,7 +279,7 @@ void AggregatorRunner::reorderAggregators()
     // Loop over remaining items in the original list
     for (const auto& orig : originals) {
       // if no Aggregator dependencies or Aggregator sources are all already in result
-      auto sources = orig->getSources(aggregator);
+      auto sources = orig->getSources(DataSourceType::Aggregator);
       if (sources.empty() || areSourcesIn(sources, results)) {
         // move from original to result
         toBeMoved.push_back(orig);
@@ -326,10 +314,10 @@ void AggregatorRunner::sendPeriodicMonitoring()
 
 void AggregatorRunner::start(const ServiceRegistry& services)
 {
-  mActivity.mId = computeRunNumber(services, mConfigFile->getRecursive());
-  mActivity.mPeriodName = computePeriodName(services, mConfigFile->getRecursive());
-  mActivity.mPassName = computePassName(mConfigFile->getRecursive());
-  mActivity.mProvenance = computeProvenance(mConfigFile->getRecursive());
+  mActivity.mId = computeRunNumber(services, mRunnerConfig.fallbackRunNumber);
+  mActivity.mPeriodName = computePeriodName(services, mRunnerConfig.fallbackPeriodName);
+  mActivity.mPassName = computePassName(mRunnerConfig.fallbackPassName);
+  mActivity.mProvenance = computeProvenance(mRunnerConfig.fallbackProvenance);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }

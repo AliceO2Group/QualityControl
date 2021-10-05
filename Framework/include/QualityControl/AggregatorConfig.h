@@ -10,37 +10,37 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   CheckConfig.h
-/// \author Barthelemy von Haller
+/// \file   AggregatorConfig.h
+/// \author Piotr Konopka
 ///
 
-#ifndef QC_CORE_CHECKCONFIG_H
-#define QC_CORE_CHECKCONFIG_H
+#ifndef QC_CORE_AGGREGATORCONFIG_H
+#define QC_CORE_AGGREGATORCONFIG_H
 
 #include <string>
 #include <unordered_map>
 
 #include <Framework/DataProcessorSpec.h>
 #include "QualityControl/UpdatePolicyType.h"
+#include "QualityControl/AggregatorSource.h"
 
 namespace o2::quality_control::checker
 {
 
-/// \brief  Container for the configuration of a Check.
-struct CheckConfig {
+/// \brief  Container for the configuration of an Aggregator.
+struct AggregatorConfig {
   std::string name;
   std::string moduleName;
   std::string className;
   std::string detectorName = "MISC"; // intended to be the 3 letters code;
   std::unordered_map<std::string, std::string> customParameters = {};
   UpdatePolicyType policyType = UpdatePolicyType::OnAny;
-  std::vector<std::string> objectNames{}; // fixme: if object names are empty, allObjects are true, consider reducing to one var
+  std::vector<std::string> objectNames{}; // fixme: if object names are empty, allObjects are true, consider reducing to one var // fixme: duplicates "sources"
   bool allObjects = false;
-  bool allowBeautify = false;
   framework::Inputs inputSpecs{};
-  framework::OutputSpec qoSpec{ "XXX", "INVALID" };
+  std::vector<AggregatorSource> sources;
 };
 
 } // namespace o2::quality_control::checker
 
-#endif // QC_CORE_CHECKCONFIG_H
+#endif // QC_CORE_AGGREGATORCONFIG_H

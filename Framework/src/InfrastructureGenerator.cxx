@@ -19,10 +19,12 @@
 #include "QualityControl/TaskRunner.h"
 #include "QualityControl/TaskRunnerFactory.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
+#include "QualityControl/Aggregator.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/CheckRunnerFactory.h"
 #include "QualityControl/PostProcessingDevice.h"
+#include "QualityControl/PostProcessingRunner.h"
 #include "QualityControl/Version.h"
 #include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/TaskSpec.h"
@@ -74,7 +76,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
   printVersion();
 
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configurationSource);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
   // todo: report the number of tasks/checks/etc once all are read there.
 
   WorkflowSpec workflow;
@@ -88,9 +90,9 @@ framework::WorkflowSpec InfrastructureGenerator::generateStandaloneInfrastructur
       workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
     }
   }
-  auto checkRunnerOutputs = generateCheckRunners(workflow, infrastructureSpec);
-  generateAggregator(workflow, configurationSource, checkRunnerOutputs);
-  generatePostProcessing(workflow, configurationSource);
+  generateCheckRunners(workflow, infrastructureSpec);
+  generateAggregator(workflow, infrastructureSpec);
+  generatePostProcessing(workflow, infrastructureSpec);
 
   return workflow;
 }
@@ -106,7 +108,7 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(std::string co
   printVersion();
 
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configurationSource);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
 
   WorkflowSpec workflow;
   std::set<DataSamplingPolicySpec> samplingPoliciesForRemoteTasks;
@@ -187,7 +189,7 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   printVersion();
 
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configurationSource);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
 
   WorkflowSpec workflow;
   std::set<DataSamplingPolicySpec> samplingPoliciesForRemoteTasks;
@@ -252,7 +254,8 @@ o2::framework::WorkflowSpec InfrastructureGenerator::generateRemoteInfrastructur
   }
 
   generateCheckRunners(workflow, infrastructureSpec);
-  generatePostProcessing(workflow, configurationSource);
+  generateAggregator(workflow, infrastructureSpec);
+  generatePostProcessing(workflow, infrastructureSpec);
 
   return workflow;
 }
@@ -268,7 +271,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateLocalBatchInfrastructur
   printVersion();
 
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configurationSource);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
   std::vector<InputSpec> fileSinkInputs;
 
   WorkflowSpec workflow;
@@ -309,7 +312,7 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
   printVersion();
 
   auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive(), configurationSource);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
 
   WorkflowSpec workflow;
 
@@ -325,9 +328,9 @@ framework::WorkflowSpec InfrastructureGenerator::generateRemoteBatchInfrastructu
     workflow.push_back({ "qc-root-file-source", {}, std::move(fileSourceOutputs), adaptFromTask<RootFileSource>(sourceFilePath) });
   }
 
-  auto checkRunnerOutputs = generateCheckRunners(workflow, infrastructureSpec);
-  generateAggregator(workflow, configurationSource, checkRunnerOutputs);
-  generatePostProcessing(workflow, configurationSource);
+  generateCheckRunners(workflow, infrastructureSpec);
+  generateAggregator(workflow, infrastructureSpec);
+  generatePostProcessing(workflow, infrastructureSpec);
 
   return workflow;
 }
@@ -513,7 +516,7 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
   mergersBuilder.generateInfrastructure(workflow);
 }
 
-std::vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
+void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
 {
   // todo have a look if this complex procedure can be simplified.
   // todo also make well defined and scoped functions to make it more readable and clearer.
@@ -589,7 +592,7 @@ std::vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework:
   }
 
   // Create CheckRunners: 1 per set of inputs
-  std::vector<framework::OutputSpec> checkRunnerOutputs; // needed later for the aggregators //fixme: we should be able to reconstruct it from check names in aggregators
+  std::vector<framework::OutputSpec> checkRunnerOutputs;
   auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
   for (auto& [inputNames, checkConfigs] : checksMap) {
     //Logging
@@ -604,50 +607,55 @@ std::vector<OutputSpec> InfrastructureGenerator::generateCheckRunners(framework:
       ILOG(Info, Devel) << input << " ";
     ILOG(Info, Devel) << ENDM;
 
-    if (!checkConfigs.empty()) { // Create a CheckRunner for the grouped checks
-      DataProcessorSpec spec = CheckRunnerFactory::create(checkRunnerConfig, checkConfigs, storeVectorMap[inputNames]);
-      workflow.emplace_back(spec);
-      checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
-    } else { // If there are no checks, create a sink CheckRunner
-      DataProcessorSpec spec = CheckRunnerFactory::createSinkDevice(checkRunnerConfig, tasksOutputMap.find(inputNames[0])->second);
-      workflow.emplace_back(spec);
-      checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
-    }
+    DataProcessorSpec spec = checkConfigs.empty()
+                               ? CheckRunnerFactory::createSinkDevice(checkRunnerConfig, tasksOutputMap.find(inputNames[0])->second)
+                               : CheckRunnerFactory::create(checkRunnerConfig, checkConfigs, storeVectorMap[inputNames]);
+    workflow.emplace_back(spec);
+    checkRunnerOutputs.insert(checkRunnerOutputs.end(), spec.outputs.begin(), spec.outputs.end());
   }
 
   ILOG(Info) << ">> Outputs (" << checkRunnerOutputs.size() << "): ";
   for (const auto& output : checkRunnerOutputs)
     ILOG(Info) << DataSpecUtils::describe(output) << " ";
   ILOG(Info) << ENDM;
-
-  return checkRunnerOutputs;
 }
 
-void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, std::string configurationSource, std::vector<framework::OutputSpec>& checkRunnerOutputs)
+void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
 {
-  // TODO consider whether we should recompute checkRunnerOutputs instead of receiving it all baked.
-  auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  if (config->getRecursive("qc").count("aggregators") == 0) {
+  std::vector<framework::OutputSpec> checkRunnerOutputs;
+  for (const auto& checkSpec : infrastructureSpec.checks) {
+    checkRunnerOutputs.emplace_back(Check::createOutputSpec(checkSpec.checkName));
+  }
+
+  if (infrastructureSpec.aggregators.empty()) {
     ILOG(Debug, Devel) << "No \"aggregators\" structure found in the config file. If no quality aggregation is expected, then it is completely fine." << ENDM;
     return;
   }
-  DataProcessorSpec spec = AggregatorRunnerFactory::create(checkRunnerOutputs, configurationSource);
+
+  std::vector<AggregatorConfig> aggregatorConfigs;
+  for (const auto& aggregatorSpec : infrastructureSpec.aggregators) {
+    if (aggregatorSpec.active) {
+      ILOG(Debug, Devel) << ">> Aggregator name : " << aggregatorSpec.aggregatorName << ENDM;
+      aggregatorConfigs.emplace_back(Aggregator::extractConfig(infrastructureSpec.common, aggregatorSpec));
+    }
+  }
+
+  DataProcessorSpec spec = AggregatorRunnerFactory::create(AggregatorRunnerFactory::extractConfig(infrastructureSpec.common), aggregatorConfigs);
   workflow.emplace_back(spec);
 }
 
-void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, std::string configurationSource)
+void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec)
 {
-  auto config = ConfigurationFactory::getConfiguration(configurationSource);
-  if (config->getRecursive("qc").count("postprocessing") == 0) {
+  if (infrastructureSpec.postProcessingTasks.empty()) {
     ILOG(Debug, Devel) << "No \"postprocessing\" structure found in the config file. If no postprocessing is expected, then it is completely fine." << ENDM;
     return;
   }
-  for (const auto& [ppTaskName, ppTaskConfig] : config->getRecursive("qc.postprocessing")) {
-    if (ppTaskConfig.get<bool>("active", true)) {
+  for (const auto& ppTaskSpec : infrastructureSpec.postProcessingTasks) {
+    if (ppTaskSpec.active) {
 
-      PostProcessingDevice ppTask{ ppTaskName, configurationSource };
+      PostProcessingDevice ppTask{ PostProcessingRunner::extractConfig(infrastructureSpec.common, ppTaskSpec) };
 
-      DataProcessorSpec ppTaskSpec{
+      DataProcessorSpec dataProcessorSpec{
         ppTask.getDeviceName(),
         ppTask.getInputsSpecs(),
         ppTask.getOutputSpecs(),
@@ -655,9 +663,9 @@ void InfrastructureGenerator::generatePostProcessing(WorkflowSpec& workflow, std
         ppTask.getOptions()
       };
 
-      ppTaskSpec.algorithm = adaptFromTask<PostProcessingDevice>(std::move(ppTask));
+      dataProcessorSpec.algorithm = adaptFromTask<PostProcessingDevice>(std::move(ppTask));
 
-      workflow.emplace_back(std::move(ppTaskSpec));
+      workflow.emplace_back(std::move(dataProcessorSpec));
     }
   }
 }

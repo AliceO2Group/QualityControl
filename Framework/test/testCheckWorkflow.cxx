@@ -111,7 +111,7 @@ class Receiver : public framework::Task
   {
     Inputs inputs;
     for (auto& checkName : mNames) {
-      inputs.push_back({ checkName, "QC", Check::createCheckerDataDescription(checkName) });
+      inputs.push_back({ checkName, "QC", Check::createCheckDataDescription(checkName) });
     }
     return inputs;
   }
