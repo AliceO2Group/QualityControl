@@ -23,7 +23,7 @@
       }
     },
     "postprocessing": {
-      "PID_TrendingTPC": {
+      "PID_Trending": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QualityControl",
@@ -91,7 +91,7 @@
             "varexp": "hdEdxEles.mean:time",
             "selection": "",
             "option": "*L",
-            "graphErrors": ""
+            "graphErrors": "0:(hdEdxEles.stddev/(sqrt(hdEdxEles.entries)))"
           },
           {
             "name": "hdEdxEles_StatStddev_Trend",
@@ -107,7 +107,7 @@
             "varexp": "hdEdxMips.mean:time",
             "selection": "",
             "option": "*L",
-            "graphErrors": ""
+            "graphErrors": "0:(hdEdxMips.stddev/(sqrt(hdEdxMips.entries)))"
           },
           {
             "name": "hdEdxMips_StatStddev_Trend",
@@ -192,7 +192,7 @@
           "userorcontrol"
         ]
       },     
-      "Tracks_TrendingTPC": {
+      "Tracks_Trending": {
         "active": "true",
         "className": "o2::quality_control::postprocessing::TrendingTask",
         "moduleName": "QualityControl",
@@ -210,13 +210,6 @@
             "path": "qc/TPC/MO/Tracks",
             "names": [ "h2DNClustersPhiAside", "h2DNClustersPhiCside" ],
             "reductorName": "o2::quality_control_modules::common::TH2Reductor",
-            "moduleName": "QcCommon"
-          },
-          {
-            "type": "repository",
-            "path": "qc/TPC/MO/Tracks",
-            "names": [ "hEtaRatio", "hPhiAsideRatio", "hPhiCsideRatio", "hPtRatio" ],
-            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcCommon"
           }
         ],
