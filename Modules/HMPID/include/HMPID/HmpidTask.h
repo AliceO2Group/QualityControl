@@ -21,6 +21,7 @@
 #include "HMPIDReconstruction/HmpidDecoder2.h"
 
 class TH1F;
+class TGraph;
 
 using namespace o2::quality_control::core;
 
@@ -49,8 +50,8 @@ class HmpidTask final : public TaskInterface
  private:
   TH1F* hPedestalMean = nullptr;
   TH1F* hPedestalSigma = nullptr;
-  TH1F* hBusyTime = nullptr;
-  TH1F* hEventSize = nullptr;
+  TGraph* hBusyTime = nullptr;
+  TGraph* hEventSize = nullptr;
   o2::hmpid::HmpidDecoder2* mDecoder = nullptr;
 };
 
