@@ -29,7 +29,7 @@ namespace o2::quality_control::postprocessing
 {
 
 class PostProcessingRunner;
-class PostProcessingRunnerConfig;
+struct PostProcessingRunnerConfig;
 
 /// \brief A class driving the execution of a QC PostProcessing task inside DPL.
 ///

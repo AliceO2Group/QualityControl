@@ -78,9 +78,6 @@ if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 endif()
 
-# Add compiler flags for warnings and (more importantly) fPIC and debug symbols
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Werror")
-
 # Set fPIC for all targets
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 

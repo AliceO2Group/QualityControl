@@ -55,44 +55,48 @@ TaskDigits::TaskDigits() : TaskInterface()
 
 TaskDigits::~TaskDigits()
 {
+  // Event info
+  mOrbitID.reset();
+  mTimeBC.reset();
+  mEventCounter.reset();
+  mTOFRawHitMap.reset();
+  mTOFtimeVsBCID.reset();
+  mOrbitDDL.reset();
+  mROWSize.reset();
+  // Multiplicity
   mTOFRawsMulti.reset();
   mTOFRawsMultiIA.reset();
   mTOFRawsMultiOA.reset();
   mTOFRawsMultiIC.reset();
   mTOFRawsMultiOC.reset();
+  // Time
   mTOFRawsTime.reset();
   mTOFRawsTimeIA.reset();
   mTOFRawsTimeOA.reset();
   mTOFRawsTimeIC.reset();
   mTOFRawsTimeOC.reset();
+  // ToT
   mTOFRawsToT.reset();
   mTOFRawsToTIA.reset();
   mTOFRawsToTOA.reset();
   mTOFRawsToTIC.reset();
   mTOFRawsToTOC.reset();
-  mTOFRawsLTMHits.reset();
-  mTOFrefMap.reset();
-  mTOFRawHitMap.reset();
-  mTOFDecodingErrors.reset();
-  mTOFOrphansTime.reset();
-  mTOFRawTimeVsTRM035.reset();
-  mTOFRawTimeVsTRM3671.reset();
-  mTOFTimeVsStrip.reset();
-  mTOFtimeVsBCID.reset();
-  mTOFchannelEfficiencyMap.reset();
-  mTOFhitsCTTM.reset();
-  mTOFmacropadCTTM.reset();
-  mTOFmacropadDeltaPhiTime.reset();
-  mBXVsCttmBit.reset();
-  mTimeVsCttmBit.reset();
-  mTOFRawHitMap24.reset();
-  mHitMultiVsDDL.reset();
-  mNfiredMacropad.reset();
-  mOrbitID.reset();
-  mTimeBC.reset();
-  mEventCounter.reset();
-  mOrbitDDL.reset();
-  mROWSize.reset();
+  // mTOFRawsLTMHits.reset();
+  // mTOFrefMap.reset();
+  // mTOFDecodingErrors.reset();
+  // mTOFOrphansTime.reset();
+  // mTOFRawTimeVsTRM035.reset();
+  // mTOFRawTimeVsTRM3671.reset();
+  // mTOFTimeVsStrip.reset();
+  // mTOFchannelEfficiencyMap.reset();
+  // mTOFhitsCTTM.reset();
+  // mTOFmacropadCTTM.reset();
+  // mTOFmacropadDeltaPhiTime.reset();
+  // mBXVsCttmBit.reset();
+  // mTimeVsCttmBit.reset();
+  // mTOFRawHitMap24.reset();
+  // mHitMultiVsDDL.reset();
+  // mNfiredMacropad.reset();
 }
 
 void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
@@ -153,72 +157,72 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mTOFRawsToTOC.reset(new TH1F("TOFRawsToTOC", "TOF Raws - Hit ToT (ns) - O/C side;Measured Hit ToT (ns);Hits", 100, 0., 48.8));
   getObjectsManager()->startPublishing(mTOFRawsToTOC.get());
 
-  mTOFRawsLTMHits.reset(new TH1F("TOFRawsLTMHits", "LTMs OR signals; Crate; Counts", 72, 0., 72.));
-  getObjectsManager()->startPublishing(mTOFRawsLTMHits.get());
+  // mTOFRawsLTMHits.reset(new TH1F("TOFRawsLTMHits", "LTMs OR signals; Crate; Counts", 72, 0., 72.));
+  // getObjectsManager()->startPublishing(mTOFRawsLTMHits.get());
 
-  mTOFrefMap.reset(new TH2F("TOFrefMap", "TOF enabled channel reference map;sector + FEA/4; strip", 72, 0., 18., 91, 0., 91.));
-  getObjectsManager()->startPublishing(mTOFrefMap.get());
+  // mTOFrefMap.reset(new TH2F("TOFrefMap", "TOF enabled channel reference map;sector + FEA/4; strip", 72, 0., 18., 91, 0., 91.));
+  // getObjectsManager()->startPublishing(mTOFrefMap.get());
 
   mTOFRawHitMap.reset(new TH2F("TOFRawHitMap", "TOF raw hit map;sector + FEA/4; strip", 72, 0., 18., 91, 0., 91.));
   getObjectsManager()->startPublishing(mTOFRawHitMap.get());
 
-  mTOFDecodingErrors.reset(new TH2I("TOFDecodingErrors", "Decoding error monitoring; DDL; Error ", 72, 0, 72, 13, 1, 14));
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(1, "DRM ");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(2, "LTM ");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(3, "TRM 3 ");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(4, "TRM 4");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(5, "TRM 5");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(6, "TRM 6");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(7, "TRM 7");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(8, "TRM 8");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(9, "TRM 9");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(10, "TRM 10");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(11, "TRM 11");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(12, "TRM 12");
-  mTOFDecodingErrors->GetYaxis()->SetBinLabel(13, "recovered");
-  getObjectsManager()->startPublishing(mTOFDecodingErrors.get());
+  // mTOFDecodingErrors.reset(new TH2I("TOFDecodingErrors", "Decoding error monitoring; DDL; Error ", 72, 0, 72, 13, 1, 14));
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(1, "DRM ");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(2, "LTM ");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(3, "TRM 3 ");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(4, "TRM 4");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(5, "TRM 5");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(6, "TRM 6");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(7, "TRM 7");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(8, "TRM 8");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(9, "TRM 9");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(10, "TRM 10");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(11, "TRM 11");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(12, "TRM 12");
+  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(13, "recovered");
+  // getObjectsManager()->startPublishing(mTOFDecodingErrors.get());
 
-  mTOFOrphansTime.reset(new TH1F("TOFOrphansTime", "TOF Raws - Orphans time (ns);Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
-  getObjectsManager()->startPublishing(mTOFOrphansTime.get());
+  // mTOFOrphansTime.reset(new TH1F("TOFOrphansTime", "TOF Raws - Orphans time (ns);Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  // getObjectsManager()->startPublishing(mTOFOrphansTime.get());
 
-  mTOFRawTimeVsTRM035.reset(new TH2F("TOFRawTimeVsTRM035", "TOF raws - Hit time vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF raw time [ns]", 361, 0., 361., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
-  getObjectsManager()->startPublishing(mTOFRawTimeVsTRM035.get());
+  // mTOFRawTimeVsTRM035.reset(new TH2F("TOFRawTimeVsTRM035", "TOF raws - Hit time vs TRM - crates 0 to 35; TRM index = DDL*10+TRM(0-9);TOF raw time [ns]", 361, 0., 361., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  // getObjectsManager()->startPublishing(mTOFRawTimeVsTRM035.get());
 
-  mTOFRawTimeVsTRM3671.reset(new TH2F("TOFRawTimeVsTRM3671", "TOF raws - Hit time vs TRM - crates 36 to 72; TRM index = DDL**10+TRM(0-9);TOF raw time [ns]", 361, 360., 721., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
-  getObjectsManager()->startPublishing(mTOFRawTimeVsTRM3671.get());
+  // mTOFRawTimeVsTRM3671.reset(new TH2F("TOFRawTimeVsTRM3671", "TOF raws - Hit time vs TRM - crates 36 to 72; TRM index = DDL**10+TRM(0-9);TOF raw time [ns]", 361, 360., 721., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  // getObjectsManager()->startPublishing(mTOFRawTimeVsTRM3671.get());
 
-  mTOFTimeVsStrip.reset(new TH2F("TOFTimeVsStrip", "TOF raw hit time vs. MRPC (along z axis); MRPC index along z axis; Raws TOF time (ns) ", 91, 0., 91, fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
-  getObjectsManager()->startPublishing(mTOFTimeVsStrip.get());
+  // mTOFTimeVsStrip.reset(new TH2F("TOFTimeVsStrip", "TOF raw hit time vs. MRPC (along z axis); MRPC index along z axis; Raws TOF time (ns) ", 91, 0., 91, fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  // getObjectsManager()->startPublishing(mTOFTimeVsStrip.get());
 
   mTOFtimeVsBCID.reset(new TH2F("TOFtimeVsBCID", "TOF time vs BCID;BC time (24.4 ps);time (ns) ", 1024, 0., 1024., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
   getObjectsManager()->startPublishing(mTOFtimeVsBCID.get());
 
-  mTOFchannelEfficiencyMap.reset(new TH2F("TOFchannelEfficiencyMap", "TOF channels (HWok && efficient && !noisy && !problematic);sector;strip", 72, 0., 18., 91, 0., 91.));
-  getObjectsManager()->startPublishing(mTOFchannelEfficiencyMap.get());
+  // mTOFchannelEfficiencyMap.reset(new TH2F("TOFchannelEfficiencyMap", "TOF channels (HWok && efficient && !noisy && !problematic);sector;strip", 72, 0., 18., 91, 0., 91.));
+  // getObjectsManager()->startPublishing(mTOFchannelEfficiencyMap.get());
 
-  mTOFhitsCTTM.reset(new TH2F("TOFhitsCTTM", "Map of hit pads according to CTTM numbering;LTM index;bit index", 72, 0., 72., 23, 0., 23.));
-  getObjectsManager()->startPublishing(mTOFhitsCTTM.get());
+  // mTOFhitsCTTM.reset(new TH2F("TOFhitsCTTM", "Map of hit pads according to CTTM numbering;LTM index;bit index", 72, 0., 72., 23, 0., 23.));
+  // getObjectsManager()->startPublishing(mTOFhitsCTTM.get());
 
-  mTOFmacropadCTTM.reset(new TH2F("TOFmacropadCTTM", "Map of hit macropads according to CTTM numbering;LTM index; bit index", 72, 0., 72., 23, 0., 23.));
-  getObjectsManager()->startPublishing(mTOFmacropadCTTM.get());
+  // mTOFmacropadCTTM.reset(new TH2F("TOFmacropadCTTM", "Map of hit macropads according to CTTM numbering;LTM index; bit index", 72, 0., 72., 23, 0., 23.));
+  // getObjectsManager()->startPublishing(mTOFmacropadCTTM.get());
 
-  mTOFmacropadDeltaPhiTime.reset(new TH2F("TOFmacropadDeltaPhiTime", "#Deltat vs #Delta#Phi of hit macropads;#Delta#Phi (degrees);#DeltaBX", 18, 0., 180., 20, 0., 20.0));
-  getObjectsManager()->startPublishing(mTOFmacropadDeltaPhiTime.get());
+  // mTOFmacropadDeltaPhiTime.reset(new TH2F("TOFmacropadDeltaPhiTime", "#Deltat vs #Delta#Phi of hit macropads;#Delta#Phi (degrees);#DeltaBX", 18, 0., 180., 20, 0., 20.0));
+  // getObjectsManager()->startPublishing(mTOFmacropadDeltaPhiTime.get());
 
-  mBXVsCttmBit.reset(new TH2I("BXVsCttmBit", "BX ID in TOF matching window vs trg channel; trg channel; BX", 1728, 0, 1728, 24, 0, 24));
-  getObjectsManager()->startPublishing(mBXVsCttmBit.get());
+  // mBXVsCttmBit.reset(new TH2I("BXVsCttmBit", "BX ID in TOF matching window vs trg channel; trg channel; BX", 1728, 0, 1728, 24, 0, 24));
+  // getObjectsManager()->startPublishing(mBXVsCttmBit.get());
 
-  mTimeVsCttmBit.reset(new TH2F("TimeVsCttmBit", "TOF raw time vs trg channel; trg channel; raw time (ns)", 1728, 0., 1728., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
-  getObjectsManager()->startPublishing(mTimeVsCttmBit.get());
+  // mTimeVsCttmBit.reset(new TH2F("TimeVsCttmBit", "TOF raw time vs trg channel; trg channel; raw time (ns)", 1728, 0., 1728., fgNbinsTime, fgRangeMinTime, fgRangeMaxTime));
+  // getObjectsManager()->startPublishing(mTimeVsCttmBit.get());
 
-  mTOFRawHitMap24.reset(new TH2F("TOFRawHitMap24", "TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels);sector;strip", 72, 0., 18., 91, 0., 91.));
-  getObjectsManager()->startPublishing(mTOFRawHitMap24.get());
+  // mTOFRawHitMap24.reset(new TH2F("TOFRawHitMap24", "TOF average raw hits/channel map (1 bin = 1 FEA = 24 channels);sector;strip", 72, 0., 18., 91, 0., 91.));
+  // getObjectsManager()->startPublishing(mTOFRawHitMap24.get());
 
-  mHitMultiVsDDL.reset(new TH2I("itMultiVsDDL", "TOF raw hit multiplicity per event vs DDL ; DDL; TOF raw hits number; Events ", 72, 0., 72., 500, 0, 500));
-  getObjectsManager()->startPublishing(mHitMultiVsDDL.get());
+  // mHitMultiVsDDL.reset(new TH2I("itMultiVsDDL", "TOF raw hit multiplicity per event vs DDL ; DDL; TOF raw hits number; Events ", 72, 0., 72., 500, 0, 500));
+  // getObjectsManager()->startPublishing(mHitMultiVsDDL.get());
 
-  mNfiredMacropad.reset(new TH1I("NfiredMacropad", "Number of fired TOF macropads per event; number of fired macropads; Events ", 50, 0, 50));
-  getObjectsManager()->startPublishing(mNfiredMacropad.get());
+  // mNfiredMacropad.reset(new TH1I("NfiredMacropad", "Number of fired TOF macropads per event; number of fired macropads; Events ", 50, 0, 50));
+  // getObjectsManager()->startPublishing(mNfiredMacropad.get());
 
   mOrbitDDL.reset(new TProfile2D("OrbitDDL", "Orbits in TF vs DDL ; DDL; Orbits in TF; Fraction", 72, 0., 72., 256 * 3, 0, 256));
   getObjectsManager()->startPublishing(mOrbitDDL.get());
@@ -360,44 +364,48 @@ void TaskDigits::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  // Event info
+  mOrbitID->Reset();
+  mTimeBC->Reset();
+  mEventCounter->Reset();
+  mTOFRawHitMap->Reset();
+  mTOFtimeVsBCID->Reset();
+  mOrbitDDL->Reset();
+  mROWSize->Reset();
+  // Multiplicity
   mTOFRawsMulti->Reset();
   mTOFRawsMultiIA->Reset();
   mTOFRawsMultiOA->Reset();
   mTOFRawsMultiIC->Reset();
   mTOFRawsMultiOC->Reset();
+  // Time
   mTOFRawsTime->Reset();
   mTOFRawsTimeIA->Reset();
   mTOFRawsTimeOA->Reset();
   mTOFRawsTimeIC->Reset();
   mTOFRawsTimeOC->Reset();
+  // ToT
   mTOFRawsToT->Reset();
   mTOFRawsToTIA->Reset();
   mTOFRawsToTOA->Reset();
   mTOFRawsToTIC->Reset();
   mTOFRawsToTOC->Reset();
-  mTOFRawsLTMHits->Reset();
-  mTOFrefMap->Reset();
-  mTOFRawHitMap->Reset();
-  mTOFDecodingErrors->Reset();
-  mTOFOrphansTime->Reset();
-  mTOFRawTimeVsTRM035->Reset();
-  mTOFRawTimeVsTRM3671->Reset();
-  mTOFTimeVsStrip->Reset();
-  mTOFtimeVsBCID->Reset();
-  mTOFchannelEfficiencyMap->Reset();
-  mTOFhitsCTTM->Reset();
-  mTOFmacropadCTTM->Reset();
-  mTOFmacropadDeltaPhiTime->Reset();
-  mBXVsCttmBit->Reset();
-  mTimeVsCttmBit->Reset();
-  mTOFRawHitMap24->Reset();
-  mHitMultiVsDDL->Reset();
-  mNfiredMacropad->Reset();
-  mOrbitID->Reset();
-  mTimeBC->Reset();
-  mEventCounter->Reset();
-  mOrbitDDL->Reset();
-  mROWSize->Reset();
+  // mTOFRawsLTMHits->Reset();
+  // mTOFrefMap->Reset();
+  // mTOFDecodingErrors->Reset();
+  // mTOFOrphansTime->Reset();
+  // mTOFRawTimeVsTRM035->Reset();
+  // mTOFRawTimeVsTRM3671->Reset();
+  // mTOFTimeVsStrip->Reset();
+  // mTOFchannelEfficiencyMap->Reset();
+  // mTOFhitsCTTM->Reset();
+  // mTOFmacropadCTTM->Reset();
+  // mTOFmacropadDeltaPhiTime->Reset();
+  // mBXVsCttmBit->Reset();
+  // mTimeVsCttmBit->Reset();
+  // mTOFRawHitMap24->Reset();
+  // mHitMultiVsDDL->Reset();
+  // mNfiredMacropad->Reset();
 }
 
 } // namespace o2::quality_control_modules::tof

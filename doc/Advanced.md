@@ -17,7 +17,8 @@ Advanced topics
    * [Moving window](#moving-window)
    * [Writing a DPL data producer](#writing-a-dpl-data-producer)
    * [QC with DPL Analysis](#qc-with-dpl-analysis)
-      * [Getting AODs directly](#getting-aods-directly)
+      * [Uploading objects to QCDB](#uploading-objects-to-qcdb)
+      * [Getting AODs in QC Tasks](#getting-aods-in-qc-tasks)
       * [Merging with other analysis workflows](#merging-with-other-analysis-workflows)
       * [Enabling a workflow to run on Hyperloop](#enabling-a-workflow-to-run-on-hyperloop)
 * [CCDB / QCDB](#ccdb--qcdb)
@@ -368,15 +369,48 @@ You will probably write it in your detector's O2 directory rather than in the QC
 
 ## QC with DPL Analysis
 
-It is possible to attach QC to the Run 3 Analysis Tasks, as they use Data Processing Layer, just as
-QC. AOD tables can be requested as direct data sources and then read by a QC task with
-TableConsumer. One can also request AOD tables directly from an AOD file.
+QC offers several ways to interact with the DPL Analysis framework.
+One allows to [upload root objects generated](#uploading-objects-to-qcdb) by an Analysis Task into QCDB.
+It is also possible to [run QC workflows alongside Analysis Tasks](#merging-with-other-analysis-workflows),
+ as they are also based on the Data Processing Layer.
+AOD tables can be [requested as direct data sources](#getting-aods-in-qc-tasks) and then read by a QC task with TableConsumer.
 
 In this piece of documentation it is assumed that the users already have some idea about QC and
 [DPL Analysis](https://aliceo2group.github.io/analysis-framework), and
 they have an access to AOD files following the Run 3 data model.
 
-### Getting AODs directly
+### Uploading objects to QCDB
+
+To upload objects written to a file by an Analysis Task to QCDB, one may use the following command:
+```shell script
+o2-qc-upload-root-objects \
+  --input-file ./QAResults.root \
+  --qcdb-url ccdb-test.cern.ch:8080 \
+  --task-name AnalysisFromFileTest \
+  --detector-code TST \
+  --provenance qc_mc \
+  --pass-name passMC \
+  --period-name SimChallenge \ 
+  --run-number 49999
+```
+
+See the `--help` message for explanation of the arguments.
+If everything went well, the objects should be accessible in [the test QCG instance](https://qcg-test.cern.ch) under
+the directories listed in the logs:
+```
+2021-10-05 10:59:41.408998     QC infologger initialized
+2021-10-05 10:59:41.409053     Input file './QAResults.root' successfully open.
+...
+2021-10-05 10:59:41.585893     Storing MonitorObject qc_mc/TST/MO/AnalysisFromFileTest/hMcEventCounter
+2021-10-05 10:59:41.588649     Storing MonitorObject qc_mc/TST/MO/AnalysisFromFileTest/hGlobalBcFT0
+2021-10-05 10:59:41.591542     Storing MonitorObject qc_mc/TST/MO/AnalysisFromFileTest/hTimeT0Aall
+2021-10-05 10:59:41.594386     Storing MonitorObject qc_mc/TST/MO/AnalysisFromFileTest/hTimeT0Call
+2021-10-05 10:59:41.597743     Successfully uploaded 10 objects to the QCDB.
+```
+Notice that the executable will ignore the directory structure in the input file and upload all objects to one directory.
+If you need a different behaviour, please contact the developers.
+
+### Getting AODs in QC Tasks
 
 First, let's see how to get data directly from an AOD file. To read the table, we will use TableConsumer from DPL, as in [the example of a QC analysis
 task](../Modules/Example/src/AnalysisTask.cxx):

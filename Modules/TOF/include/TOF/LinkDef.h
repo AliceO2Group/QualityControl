@@ -17,5 +17,7 @@
 #pragma link C++ class o2::quality_control_modules::tof::CheckRawToT+;
 // PostProcessing
 #pragma link C++ class o2::quality_control_modules::tof::PostProcessDiagnosticPerCrate+;
+// Trending
+#pragma link C++ class o2::quality_control_modules::tof::TrendingHits+;
 // Utilities
 #endif

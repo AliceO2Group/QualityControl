@@ -13,8 +13,9 @@
 #pragma link C++ class o2::quality_control_modules::tpc::CalDetPublisher+;
 #pragma link C++ class o2::quality_control_modules::tpc::RawDigits+;
 #pragma link C++ class o2::quality_control_modules::tpc::CheckOfTrendings+;
+#pragma link C++ class o2::quality_control_modules::tpc::PadCalibrationCheck2D+;
 
-#pragma link C++ function o2::quality_control_modules::tpc::addAndPublish+;
-#pragma link C++ function o2::quality_control_modules::tpc::toVector+;
-#pragma link C++ function o2::quality_control_modules::tpc::clusterHandler+;
+#pragma link C++ function o2::quality_control_modules::tpc::addAndPublish + ;
+#pragma link C++ function o2::quality_control_modules::tpc::toVector + ;
+#pragma link C++ function o2::quality_control_modules::tpc::clusterHandler + ;
 #endif
