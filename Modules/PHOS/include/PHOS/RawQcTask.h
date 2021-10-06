@@ -52,7 +52,7 @@ class RawQcTask final : public TaskInterface
   void reset() override;
 
  protected:
-  static constexpr short kNhist1D = 21;
+  static constexpr short kNhist1D = 22;
   enum histos1D { kTotalDataVolume,
                   kMessageCounter,
                   kHGmeanSummaryM1,
@@ -77,7 +77,7 @@ class RawQcTask final : public TaskInterface
                   kCellSpM4
   };
 
-  static constexpr short kNhist2D = 35;
+  static constexpr short kNhist2D = 39;
   enum histos2D { kErrorNumber,
                   kErrorType,
                   kPayloadSizePerDDL,

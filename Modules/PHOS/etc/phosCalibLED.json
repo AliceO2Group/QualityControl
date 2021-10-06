@@ -16,26 +16,26 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://localhost:8500"
+        "url": "http://consul-test.cern.ch:8500"
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
       }
     },
     "tasks": {
-      "QcCalibTask": {
+      "PHOSCalibLED": {
         "active": "true",
         "className": "o2::quality_control_modules::phos::CalibQcTask",
         "moduleName": "QcPHOS",
         "detectorName": "PHS",
-        "cycleDurationSeconds": "1000",
+        "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
         "dataSource": {
           "type": "direct",
-          "query" :"CALIBDIFF:PHS/CALIBDIFF/0"
+          "query" :"calibdiff:PHS/CALIBDIFF/0"
         },
         "taskParameters": {
-          "pedestal": "on"    
+          "LED": "on"    
         },
         "location": "remote"
       }
