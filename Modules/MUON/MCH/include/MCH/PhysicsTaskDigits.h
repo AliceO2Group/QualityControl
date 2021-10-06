@@ -28,6 +28,8 @@
 #endif
 #include "MCH/GlobalHistogram.h"
 #include "MCH/MergeableTH2Ratio.h"
+#include "MCH/MergeableTH1OccupancyPerDE.h"
+#include "MCH/MergeableTH1OccupancyPerDECycle.h"
 
 class TH1F;
 class TH2F;
@@ -85,13 +87,17 @@ class PhysicsTaskDigits /*final*/ : public TaskInterface // todo add back the "f
   MergeableTH2Ratio* mHistogramOccupancyElec;    // Mergeable object, Occupancy histogram (Elec view)
 
   std::map<int, TH1F*> mHistogramADCamplitudeDE;              // Histogram of ADC distribution per DE
-  std::map<int, TH2F*> mHistogramNhitsDE[2];                  // Histogram of Number of hits (XY view)
-  std::map<int, TH2F*> mHistogramNorbitsDE[2];                // Histogram of Number of orbits (XY view)
+  std::map<int, DetectorHistogram*> mHistogramNhitsDE[2];     // Histogram of Number of hits (XY view)
+  std::map<int, DetectorHistogram*> mHistogramNorbitsDE[2];   // Histogram of Number of orbits (XY view)
   std::map<int, MergeableTH2Ratio*> mHistogramOccupancyDE[2]; // Mergeable object, Occupancy histogram (XY view)
 
   GlobalHistogram* mHistogramNHitsAllDE;       // Global histogram (all DE) of Number of hits
   GlobalHistogram* mHistogramOrbitsAllDE;      // Global histogram (all DE) of Number of orbits
   MergeableTH2Ratio* mHistogramOccupancyAllDE; //Mergeable object, Global histogram (all DE) of Occupancy
+
+  // TH1 of the Mean Occupancy on each DE, integrated or only on elapsed cycle - Sent for Trending
+  MergeableTH1OccupancyPerDE* mMeanOccupancyPerDE;
+  MergeableTH1OccupancyPerDECycle* mMeanOccupancyPerDECycle;
 };
 
 } // namespace muonchambers

@@ -49,11 +49,6 @@ PhysicsTaskDigits::PhysicsTaskDigits() : TaskInterface() {}
 
 PhysicsTaskDigits::~PhysicsTaskDigits() {}
 
-static std::string getHistoPath(int deId)
-{
-  return fmt::format("ST{}/DE{}/", (deId - 100) / 200 + 1, deId);
-}
-
 void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
   QcInfoLogger::GetInstance() << "initialize PhysicsTaskDigits" << AliceO2::InfoLogger::InfoLogger::endm;
@@ -91,6 +86,11 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistogramOccupancyElec);
   mHistogramOccupancyElec->SetOption("colz");
 
+  mMeanOccupancyPerDE = new MergeableTH1OccupancyPerDE("MeanOccupancy", "Mean Occupancy of each DE (KHz)", mHistogramNHitsElec, mHistogramNorbitsElec);
+  getObjectsManager()->startPublishing(mMeanOccupancyPerDE);
+  mMeanOccupancyPerDECycle = new MergeableTH1OccupancyPerDECycle("MeanOccupancyPerCycle", "Mean Occupancy of each DE Per Cycle (MHz)", mHistogramNHitsElec, mHistogramNorbitsElec);
+  getObjectsManager()->startPublishing(mMeanOccupancyPerDECycle);
+
   // Histograms in detector coordinates
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
     TH1F* h = new TH1F(TString::Format("%sADCamplitude_DE%03d", getHistoPath(de).c_str(), de),
@@ -98,24 +98,19 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
     mHistogramADCamplitudeDE.insert(make_pair(de, h));
     getObjectsManager()->startPublishing(h);
 
-    float Xsize = 40 * 5;
-    float Xsize2 = Xsize / 2;
-    float Ysize = 50;
-    float Ysize2 = Ysize / 2;
-
-    TH2F* h2n0 = new TH2F(TString::Format("%sNhits_DE%03d_B", getHistoPath(de).c_str(), de),
-                          TString::Format("Number of hits (DE%03d B)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+    DetectorHistogram* h2n0 = new DetectorHistogram(TString::Format("%sNhits_DE%03d_B", getHistoPath(de).c_str(), de),
+                                                    TString::Format("Number of hits (DE%03d B)", de), de);
     mHistogramNhitsDE[0].insert(make_pair(de, h2n0));
 
-    TH2F* h2n1 = new TH2F(TString::Format("%sNhits_DE%03d_NB", getHistoPath(de).c_str(), de),
-                          TString::Format("Number of hits (DE%03d NB)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+    DetectorHistogram* h2n1 = new DetectorHistogram(TString::Format("%sNhits_DE%03d_NB", getHistoPath(de).c_str(), de),
+                                                    TString::Format("Number of hits (DE%03d NB)", de), de);
     mHistogramNhitsDE[1].insert(make_pair(de, h2n1));
 
-    TH2F* h2d0 = new TH2F(TString::Format("%sNorbits_DE%03d_B", getHistoPath(de).c_str(), de),
-                          TString::Format("Number of orbits (DE%03d B)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+    DetectorHistogram* h2d0 = new DetectorHistogram(TString::Format("%sNorbits_DE%03d_B", getHistoPath(de).c_str(), de),
+                                                    TString::Format("Number of orbits (DE%03d B)", de), de);
     mHistogramNorbitsDE[0].insert(make_pair(de, h2d0));
-    TH2F* h2d1 = new TH2F(TString::Format("%sNorbits_DE%03d_NB", getHistoPath(de).c_str(), de),
-                          TString::Format("Number of orbits (DE%03d NB)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+    DetectorHistogram* h2d1 = new DetectorHistogram(TString::Format("%sNorbits_DE%03d_NB", getHistoPath(de).c_str(), de),
+                                                    TString::Format("Number of orbits (DE%03d NB)", de), de);
     mHistogramNorbitsDE[1].insert(make_pair(de, h2d1));
 
     MergeableTH2Ratio* hm = new MergeableTH2Ratio(TString::Format("%sOccupancy_B_XY_%03d", getHistoPath(de).c_str(), de),
@@ -227,17 +222,7 @@ void PhysicsTaskDigits::plotDigit(const o2::mch::Digit& digit)
   // Fill X Y 2D hits histogram with fired pads distribution
   auto h2 = mHistogramNhitsDE[cathode].find(de);
   if ((h2 != mHistogramNhitsDE[cathode].end()) && (h2->second != NULL)) {
-    int binx_min = h2->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
-    int binx_max = h2->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
-    int biny_min = h2->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
-    int biny_max = h2->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
-    for (int by = biny_min; by <= biny_max; by++) {
-      float y = h2->second->GetYaxis()->GetBinCenter(by);
-      for (int bx = binx_min; bx <= binx_max; bx++) {
-        float x = h2->second->GetXaxis()->GetBinCenter(bx);
-        h2->second->Fill(x, y);
-      }
-    }
+    h2->second->Fill(padX, padY, padSizeX, padSizeY);
   }
 
   // Using the mapping to go from Digit info (de, pad) to Elec info (fee, link) and fill Elec Histogram,
@@ -306,24 +291,15 @@ void PhysicsTaskDigits::updateOrbits()
           int ybin = channel + 1;
           mHistogramNorbitsElec->SetBinContent(xbin, ybin, mNOrbits[feeId][linkId]);
 
-          double x_pad = segment.padPositionX(padid);
-          double y_pad = segment.padPositionY(padid);
+          double padX = segment.padPositionX(padid);
+          double padY = segment.padPositionY(padid);
           float padSizeX = segment.padSizeX(padid);
           float padSizeY = segment.padSizeY(padid);
           int cathode = segment.isBendingPad(padid) ? 0 : 1;
 
           auto h2 = mHistogramNorbitsDE[cathode].find(de);
           if ((h2 != mHistogramNorbitsDE[cathode].end()) && (h2->second != NULL)) {
-
-            int binx_min = h2->second->GetXaxis()->FindBin(x_pad - padSizeX / 2 + 0.1);
-            int binx_max = h2->second->GetXaxis()->FindBin(x_pad + padSizeX / 2 - 0.1);
-            int biny_min = h2->second->GetYaxis()->FindBin(y_pad - padSizeY / 2 + 0.1);
-            int biny_max = h2->second->GetYaxis()->FindBin(y_pad + padSizeY / 2 - 0.1);
-            for (int by = biny_min; by <= biny_max; by++) {
-              for (int bx = binx_min; bx <= binx_max; bx++) {
-                h2->second->SetBinContent(bx, by, mNOrbits[feeId][linkId]);
-              }
-            }
+            h2->second->Set(padX, padY, padSizeX, padSizeY, mNOrbits[feeId][linkId]);
           }
         }
       }
@@ -351,6 +327,9 @@ void PhysicsTaskDigits::endOfCycle()
       }
     }
   }
+
+  mMeanOccupancyPerDE->update();
+  mMeanOccupancyPerDECycle->update();
 }
 
 void PhysicsTaskDigits::endOfActivity(Activity& /*activity*/)
@@ -358,13 +337,15 @@ void PhysicsTaskDigits::endOfActivity(Activity& /*activity*/)
   QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 
 #ifdef QC_MCH_SAVE_TEMP_ROOTFILE
-  TFile f("qc-digits.root", "RECREATE");
+  TFile f("mch-qc-digits.root", "RECREATE");
 
   mHistogramNorbitsElec->Write();
   mHistogramNHitsElec->Write();
   mHistogramOccupancyElec->Write();
+  mMeanOccupancyPerDE->Write();
+  mMeanOccupancyPerDECycle->Write();
 
-  for (int de = 0; de < 1100; de++) {
+  for (auto de : o2::mch::raw::deIdsForAllMCH) {
     {
       auto h = mHistogramADCamplitudeDE.find(de);
       if ((h != mHistogramADCamplitudeDE.end()) && (h->second != NULL)) {
@@ -400,7 +381,6 @@ void PhysicsTaskDigits::endOfActivity(Activity& /*activity*/)
 void PhysicsTaskDigits::reset()
 {
   // clean all the monitor objects here
-
   QcInfoLogger::GetInstance() << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
