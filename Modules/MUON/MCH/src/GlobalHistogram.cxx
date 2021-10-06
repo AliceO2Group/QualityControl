@@ -20,6 +20,8 @@
 #include <TLine.h>
 #include <TList.h>
 
+#include <fmt/format.h>
+
 #include "MCHMappingInterface/Segmentation.h"
 #include "MCHMappingInterface/CathodeSegmentation.h"
 #ifdef MCH_HAS_MAPPING_FACTORY
@@ -48,8 +50,177 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
+std::string getHistoPath(int deId)
+{
+  return fmt::format("ST{}/DE{}/", (deId - 100) / 200 + 1, deId);
+}
+
+static int getLR(int de)
+{
+  int lr = -1;
+  int deId = de % 100;
+  if ((de >= 100) && (de < 500)) {
+    if ((deId >= 1) && (deId <= 2)) {
+      // ST12 left
+      lr = 0;
+    } else {
+      lr = 1;
+    }
+  }
+  if ((de >= 500) && (de < 700)) {
+    if (((deId >= 0) && (deId <= 4)) || ((deId >= 14) && (deId <= 17))) {
+      // ST3 right
+      lr = 1;
+    }
+    if (((deId >= 5) && (deId <= 13))) {
+      // ST3 left
+      lr = 0;
+    }
+  }
+  if ((de >= 700) && (de < 1100)) {
+    if (((deId >= 0) && (deId <= 6)) || ((deId >= 20) && (deId <= 25))) {
+      // ST4/5 right
+      lr = 1;
+    }
+    if (((deId >= 7) && (deId <= 19))) {
+      // ST4/5 left
+      lr = 0;
+    }
+  }
+  return lr;
+}
+
+static int getBT(int de)
+{
+  int bt = -1;
+  int deId = de % 100;
+  if ((de >= 100) && (de < 500)) {
+    if ((deId == 0) || (deId == 1)) {
+      // ST12 top
+      bt = 1;
+    } else {
+      bt = 0;
+    }
+  }
+  return bt;
+}
+
+static int getDetectorHistWidth(int deId)
+{
+  if (deId >= 500) {
+    return (40 * 5);
+  } else {
+    return (300);
+  }
+  return 10;
+}
+
+static int getDetectorHistXbins(int deId)
+{
+  return (getDetectorHistWidth(deId) * 2);
+}
+
+static int getDetectorHistHeight(int deId)
+{
+  if (deId >= 500) {
+    return (50);
+  } else {
+    return (300);
+  }
+  return 10;
+}
+
+static int getDetectorHistYbins(int deId)
+{
+  return (getDetectorHistHeight(deId) * 2);
+}
+
+static bool getDetectorFlipX(int deId)
+{
+  int lr = getLR(deId);
+  if (lr == 1) {
+    return true;
+  }
+  return false;
+}
+
+static bool getDetectorFlipY(int deId)
+{
+  if (deId >= 100 && deId < 500) {
+    int bt = getBT(deId);
+    if (bt == 0) {
+      return true;
+    }
+  }
+  if (deId == 510 || deId == 517 || deId == 610 || deId == 617) {
+    return true;
+  }
+  if (deId >= 700) {
+    if ((deId % 100) == 14) {
+      return true;
+    }
+    if ((deId % 100) == 25) {
+      return true;
+    }
+  }
+  return false;
+}
+
+DetectorHistogram::DetectorHistogram(TString name, TString title, int deId) : TH2F(name, title,
+                                                                                   getDetectorHistXbins(deId), -1.0 * getDetectorHistWidth(deId) / 2, getDetectorHistWidth(deId) / 2,
+                                                                                   getDetectorHistYbins(deId), -1.0 * getDetectorHistHeight(deId) / 2, getDetectorHistHeight(deId) / 2),
+                                                                              mDeId(deId),
+                                                                              mFlipX(getDetectorFlipX(deId)),
+                                                                              mFlipY(getDetectorFlipY(deId))
+{
+  SetDrawOption("colz");
+}
+
+void DetectorHistogram::Fill(double padX, double padY, double padSizeX, double padSizeY, double val)
+{
+  if (mFlipX) {
+    padX *= -1.0;
+  }
+  if (mFlipY) {
+    padY *= -1.0;
+  }
+
+  int binx_min = GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
+  int binx_max = GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
+  int biny_min = GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
+  int biny_max = GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
+  for (int by = biny_min; by <= biny_max; by++) {
+    float y = GetYaxis()->GetBinCenter(by);
+    for (int bx = binx_min; bx <= binx_max; bx++) {
+      float x = GetXaxis()->GetBinCenter(bx);
+      TH2F::Fill(x, y, val);
+    }
+  }
+}
+
+void DetectorHistogram::Set(double padX, double padY, double padSizeX, double padSizeY, double val)
+{
+  if (mFlipX) {
+    padX *= -1.0;
+  }
+  if (mFlipY) {
+    padY *= -1.0;
+  }
+
+  int binx_min = GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
+  int binx_max = GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
+  int biny_min = GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
+  int biny_max = GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
+  for (int by = biny_min; by <= biny_max; by++) {
+    for (int bx = binx_min; bx <= binx_max; bx++) {
+      TH2F::SetBinContent(bx, by, val);
+    }
+  }
+}
+
 GlobalHistogram::GlobalHistogram(std::string name, std::string title) : TH2F(name.c_str(), title.c_str(), HIST_WIDTH / HIST_SCALE, 0, HIST_WIDTH, HIST_HEIGHT / HIST_SCALE, 0, HIST_HEIGHT)
 {
+  SetDrawOption("colz");
 }
 
 void GlobalHistogram::init()
@@ -87,10 +258,16 @@ void GlobalHistogram::init()
     float xB0, yB0, xNB0, yNB0;
     getDeCenter(de, xB0, yB0, xNB0, yNB0);
     bool isR = getLR(de) == 1;
+    bool flipY = getDetectorFlipY(de);
 
     for (unsigned int vi = 0; vi < vertices.size(); vi++) {
-      const o2::mch::contour::Vertex<double> v1 = vertices[vi];
-      const o2::mch::contour::Vertex<double> v2 = (vi < (vertices.size() - 1)) ? vertices[vi + 1] : vertices[0];
+      o2::mch::contour::Vertex<double> v1 = vertices[vi];
+      o2::mch::contour::Vertex<double> v2 = (vi < (vertices.size() - 1)) ? vertices[vi + 1] : vertices[0];
+
+      if (flipY) {
+        v1.y *= -1;
+        v2.y *= -1;
+      }
 
       if (isR) {
         line = new TLine(-v1.x + xB0, v1.y + yB0, -v2.x + xB0, v2.y + yB0);
@@ -120,33 +297,6 @@ void GlobalHistogram::getDeCenter(int de, float& xB0, float& yB0, float& xNB0, f
   if ((de >= 900) && (de < 1100)) {
     getDeCenterST5(de, xB0, yB0, xNB0, yNB0);
   }
-}
-
-int GlobalHistogram::getLR(int de)
-{
-  int lr = -1;
-  int deId = de % 100;
-  if ((de >= 500) && (de < 700)) {
-    if (((deId >= 0) && (deId <= 4)) || ((deId >= 14) && (deId <= 17))) {
-      // ST3 right
-      lr = 1;
-    }
-    if (((deId >= 5) && (deId <= 13))) {
-      // ST3 left
-      lr = 0;
-    }
-  }
-  if ((de >= 700) && (de < 1100)) {
-    if (((deId >= 0) && (deId <= 6)) || ((deId >= 20) && (deId <= 25))) {
-      // ST4/5 right
-      lr = 1;
-    }
-    if (((deId >= 7) && (deId <= 19))) {
-      // ST4/5 left
-      lr = 0;
-    }
-  }
-  return lr;
 }
 
 void GlobalHistogram::getDeCenterST3(int de, float& xB0, float& yB0, float& xNB0, float& yNB0)
@@ -227,11 +377,19 @@ void GlobalHistogram::getDeCenterST3(int de, float& xB0, float& yB0, float& xNB0
     // ST3 left, shift all detectors to the right
     xB0 += 120 - xmax;
     xNB0 += 120 - xmax;
+    if (deId == 9) {
+      xB0 -= 22.5;
+      xNB0 -= 22.5;
+    }
   }
   if (xId == 1) {
     // ST3 right, shift all detectors to the left
     xB0 -= 120 - xmax;
     xNB0 -= 120 - xmax;
+    if (deId == 0) {
+      xB0 += 22.5;
+      xNB0 += 22.5;
+    }
   }
 }
 
@@ -333,11 +491,19 @@ void GlobalHistogram::getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0
     // ST3 left, shift all detectors to the right
     xB0 += 120 - xmax;
     xNB0 += 120 - xmax;
+    if (deId == 13) {
+      xB0 -= 40;
+      xNB0 -= 40;
+    }
   }
   if (xId == 1) {
     // ST3 right, shift all detectors to the left
     xB0 -= 120 - xmax;
     xNB0 -= 120 - xmax;
+    if (deId == 0) {
+      xB0 += 40;
+      xNB0 += 40;
+    }
   }
 }
 
@@ -348,17 +514,17 @@ void GlobalHistogram::getDeCenterST5(int de, float& xB0, float& yB0, float& xNB0
   xNB0 += NXHIST_PER_STATION * DE_WIDTH;
 }
 
-void GlobalHistogram::add(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& histNB)
+void GlobalHistogram::add(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB)
 {
   set(histB, histNB, false);
 }
 
-void GlobalHistogram::set_includeNull(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& histNB)
+void GlobalHistogram::set_includeNull(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB)
 {
   set(histB, histNB, true, true);
 }
 
-void GlobalHistogram::set(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& histNB, bool doAverage, bool includeNullBins)
+void GlobalHistogram::set(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB, bool doAverage, bool includeNullBins)
 {
   for (auto& ih : histB) {
     int de = ih.first;
@@ -372,17 +538,13 @@ void GlobalHistogram::set(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& his
       continue;
     }
 
-    bool swapX = getLR(de) == 1;
-
-    //std::cout<<"[GlobalHistogram::set] de="<<de<<"  swapX="<<swapX<<std::endl;
-
-    TH2F* hNB = nullptr;
+    DetectorHistogram* hNB = nullptr;
     auto jh = histNB.find(de);
     if (jh != histNB.end()) {
       hNB = jh->second;
     }
 
-    TH2F* hist[2] = { hB, hNB };
+    DetectorHistogram* hist[2] = { hB, hNB };
 
     float xB0, yB0, xNB0, yNB0;
     getDeCenter(de, xB0, yB0, xNB0, yNB0);
@@ -442,13 +604,6 @@ void GlobalHistogram::set(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& his
           // horizontal boundaries of current bin, in DE coordinates
           float minX = GetXaxis()->GetBinLowEdge(bx) - x0[i];
           float maxX = GetXaxis()->GetBinUpEdge(bx) - x0[i];
-
-          if (swapX) {
-            float tempMax = -minX;
-            float tempMin = -maxX;
-            minX = tempMin;
-            maxX = tempMax;
-          }
 
           // find X bin range in source histogram
           int srcBinXmin = hist[i]->GetXaxis()->FindBin(minX);

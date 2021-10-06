@@ -10,6 +10,8 @@ set(SRCS
   src/DecodingErrorsTask.cxx
   src/PedestalsCheck.cxx
   src/PhysicsCheck.cxx
+  src/PhysicsOccupancyCheck.cxx
+  src/PhysicsPreclustersCheck.cxx
   src/TH1MCHReductor.cxx
 )
 
@@ -21,8 +23,15 @@ set(HEADERS
   include/MCH/DecodingErrorsTask.h
   include/MCH/PedestalsCheck.h
   include/MCH/PhysicsCheck.h
+  include/MCH/PhysicsOccupancyCheck.h
+  include/MCH/PhysicsPreclustersCheck.h
   include/MCH/TH1MCHReductor.h
   include/MCH/MergeableTH2Ratio.h
+  include/MCH/MergeableTH1OccupancyPerDE.h
+  include/MCH/MergeableTH1OccupancyPerDECycle.h
+  include/MCH/MergeableTH1PseudoEfficiencyPerDE.h
+  include/MCH/MergeableTH1PseudoEfficiencyPerDECycle.h
+  include/MCH/MergeableTH1MPVPerDECycle.h
 )
 
 # ---- Library ----
@@ -67,11 +76,18 @@ add_root_dictionary(${MODULE_NAME}
                             include/MCH/PhysicsTaskDigits.h
                             include/MCH/PhysicsTaskPreclusters.h
                             include/MCH/PhysicsCheck.h
+                            include/MCH/PhysicsOccupancyCheck.h
+                            include/MCH/PhysicsPreclustersCheck.h
                             include/MCH/DecodingErrorsTask.h
                             include/MCH/PedestalsCheck.h
                             include/MCH/TH1MCHReductor.h
                             include/MCH/sampa_header.h
                             include/MCH/MergeableTH2Ratio.h
+                            include/MCH/MergeableTH1OccupancyPerDE.h
+                            include/MCH/MergeableTH1OccupancyPerDECycle.h
+                            include/MCH/MergeableTH1PseudoEfficiencyPerDE.h
+                            include/MCH/MergeableTH1PseudoEfficiencyPerDECycle.h
+                            include/MCH/MergeableTH1MPVPerDECycle.h
                     LINKDEF include/MCH/LinkDef.h)
 
 # ---- Tests ----

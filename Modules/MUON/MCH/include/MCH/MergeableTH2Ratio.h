@@ -34,12 +34,12 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
   MergeableTH2Ratio() = default;
 
   MergeableTH2Ratio(MergeableTH2Ratio const& copymerge)
-    : TH2F(*(copymerge.getNum())), o2::mergers::MergeInterface(), mhistoNum(copymerge.getNum()), mhistoDen(copymerge.getDen())
+    : TH2F(*(copymerge.getNum())), o2::mergers::MergeInterface(), mhistoNum(copymerge.getNum()), mhistoDen(copymerge.getDen()), mlistOfFunctions(copymerge.getNum()->GetListOfFunctions()), mScalingFactor(copymerge.getScalingFactor())
   {
   }
 
-  MergeableTH2Ratio(const char* name, const char* title, TH2F* histonum, TH2F* histoden)
-    : TH2F(*histonum), o2::mergers::MergeInterface(), mhistoNum(histonum), mhistoDen(histoden)
+  MergeableTH2Ratio(const char* name, const char* title, TH2F* histonum, TH2F* histoden, double scaling = 1.)
+    : TH2F(*histonum), o2::mergers::MergeInterface(), mhistoNum(histonum), mhistoDen(histoden), mlistOfFunctions(mhistoNum->GetListOfFunctions()), mScalingFactor(scaling)
   {
     SetNameTitle(name, title);
     update();
@@ -64,6 +64,11 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
     return mhistoDen;
   }
 
+  double getScalingFactor() const
+  {
+    return mScalingFactor;
+  }
+
   void update()
   {
     static constexpr double sOrbitLengthInNanoseconds = 3564 * 25;
@@ -72,17 +77,30 @@ class MergeableTH2Ratio : public TH2F, public o2::mergers::MergeInterface
     const char* name = this->GetName();
     const char* title = this->GetTitle();
     Reset();
+    //if(mlistOfFunctions->GetLast() > 0){
+    //    beautify();
+    //}
     Divide(mhistoNum, mhistoDen);
     SetNameTitle(name, title);
     // convertion to KHz units
-    Scale(1. / sOrbitLengthInMilliseconds);
+    if (mScalingFactor != 1.) {
+      Scale(1. / sOrbitLengthInMilliseconds);
+    }
     SetOption("colz");
+  }
+
+  void beautify()
+  {
+    GetListOfFunctions()->RemoveAll();
+    GetListOfFunctions()->AddAll(mlistOfFunctions);
   }
 
  private:
   TH2F* mhistoNum{ nullptr };
   TH2F* mhistoDen{ nullptr };
+  TList* mlistOfFunctions{ nullptr };
   std::string mTreatMeAs = "TH2F";
+  double mScalingFactor = 1.;
 
   ClassDefOverride(MergeableTH2Ratio, 1);
 };
