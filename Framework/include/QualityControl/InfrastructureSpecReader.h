@@ -37,7 +37,7 @@ namespace InfrastructureSpecReader
 InfrastructureSpec readInfrastructureSpec(const boost::property_tree::ptree& wholeTree);
 
 template <typename T>
-static T readSpecEntry(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
+T readSpecEntry(std::string entryName, const boost::property_tree::ptree& entryTree, const boost::property_tree::ptree& wholeTree);
 
 // readers for separate parts
 template <>
@@ -57,7 +57,7 @@ CommonSpec readSpecEntry<CommonSpec>(std::string entryName, const boost::propert
 
 // todo: section names should be enum.
 template <typename T>
-static std::vector<T> readSectionSpec(const boost::property_tree::ptree& wholeTree, const std::string& section)
+std::vector<T> readSectionSpec(const boost::property_tree::ptree& wholeTree, const std::string& section)
 {
   const auto& qcTree = wholeTree.get_child("qc");
   std::vector<T> sectionSpec;
