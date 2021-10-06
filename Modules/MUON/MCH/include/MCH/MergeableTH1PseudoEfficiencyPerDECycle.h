@@ -61,8 +61,10 @@ class MergeableTH1PseudoEfficiencyPerDECycle : public TH1F, public o2::mergers::
   void merge(MergeInterface* const other) override
   { //FIXME
     for (auto de : o2::mch::raw::deIdsForAllMCH) {
-      auto hnum = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getNum().find(de);
-      auto hden = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getDen().find(de);
+      auto hnumMap = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getNum();
+      auto hnum = hnumMap.find(de);
+      auto hdenMap = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getDen();
+      auto hden = hdenMap.find(de);
       if ((hden != dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getDen().end()) && (hden->second != NULL) && (hnum != dynamic_cast<const MergeableTH1PseudoEfficiencyPerDECycle* const>(other)->getNum().end()) && (hnum->second != NULL)) {
 
         auto hnumfinal = mhistosNum.find(de);

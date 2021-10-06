@@ -59,8 +59,10 @@ class MergeableTH1PseudoEfficiencyPerDE : public TH1F, public o2::mergers::Merge
   {
 
     for (auto de : o2::mch::raw::deIdsForAllMCH) {
-      auto hnum = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getNum().find(de);
-      auto hden = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getDen().find(de);
+      auto hnumMap = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getNum();
+      auto hnum = hnumMap.find(de);
+      auto hdenMap = dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getDen();
+      auto hden = hdenMap.find(de);
       if ((hden != dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getDen().end()) && (hden->second != NULL) && (hnum != dynamic_cast<const MergeableTH1PseudoEfficiencyPerDE* const>(other)->getNum().end()) && (hnum->second != NULL)) {
 
         auto hnumfinal = mhistosNum.find(de);

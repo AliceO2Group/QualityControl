@@ -58,7 +58,8 @@ class MergeableTH1MPVPerDECycle : public TH1F, public o2::mergers::MergeInterfac
   void merge(MergeInterface* const other) override
   { //FIXME
     for (auto de : o2::mch::raw::deIdsForAllMCH) {
-      auto hnum = dynamic_cast<const MergeableTH1MPVPerDECycle* const>(other)->getNum().find(de);
+      auto hnumMap = dynamic_cast<const MergeableTH1MPVPerDECycle* const>(other)->getNum();
+      auto hnum = hnumMap.find(de);
       if ((hnum != dynamic_cast<const MergeableTH1MPVPerDECycle* const>(other)->getNum().end()) && (hnum->second != NULL)) {
 
         auto hnumfinal = mhistosCharge.find(de);
