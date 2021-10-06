@@ -14,7 +14,6 @@
 /// \author Sergey Evdokimov
 ///
 
-#include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TF1.h>
@@ -24,6 +23,7 @@
 #include "CPV/PedestalTask.h"
 #include <Framework/InputRecord.h>
 #include "DataFormatsCPV/TriggerRecord.h"
+#include "DataFormatsCPV/Digit.h"
 
 namespace o2::quality_control_modules::cpv
 {
@@ -120,8 +120,8 @@ void PedestalTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto digitsTR = ctx.inputs().get<gsl::span<o2::cpv::TriggerRecord>>("dtrigrec");
   //mNEventsTotal += digitsTR.size();//number of events in the current input
   for (const auto& trigRecord : digitsTR) {
-    LOG(debug) << " monitorData() : trigger record #" << mNEventsTotal
-               << " contains " << trigRecord.getNumberOfObjects() << " objects." << ENDM;
+    LOG(DEBUG) << " monitorData() : trigger record #" << mNEventsTotal
+               << " contains " << trigRecord.getNumberOfObjects() << " objects.";
     if (trigRecord.getNumberOfObjects() > 0) { //at least 1 digit -> pedestal event
       mNEventsTotal++;
       mNEventsFromLastFillHistogramsCall++;
