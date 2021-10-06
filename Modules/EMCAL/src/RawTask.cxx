@@ -665,18 +665,22 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (maxADC > maxADCSMEvent->second[supermoduleID])
             maxADCSMEvent->second[supermoduleID] = maxADC;
 
-          mMaxChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, maxADC); //max col,row, per SM
-          mMaxChannelADCRCFull[evtype]->Fill(globCol, globRow, maxADC);      //for shifter
+          if (maxADC > 3)
+            mMaxChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, maxADC); //max col,row, per SM
+          if (maxADC > 3)
+            mMaxChannelADCRCFull[evtype]->Fill(globCol, globRow, maxADC); //for shifter
 
           if (minADC < minADCSMEvent->second[supermoduleID])
             minADCSMEvent->second[supermoduleID] = minADC;
-          mMinChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, minADC); //min col,row, per SM
-          mMinChannelADCRCFull[evtype]->Fill(globCol, globRow, minADC);      //for shifter
-        }                                                                    //channels
-      }                                                                      //new page
-    }                                                                        //header
-  }                                                                          //inputs
-  mNumberOfPagesPerMessage->Fill(nPagesMessage);                             // for experts
+          if (minADC > 3)
+            mMinChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, minADC); //min col,row, per SM
+          if (minADC > 3)
+            mMinChannelADCRCFull[evtype]->Fill(globCol, globRow, minADC); //for shifter
+        }                                                                 //channels
+      }                                                                   //new page
+    }                                                                     //header
+  }                                                                       //inputs
+  mNumberOfPagesPerMessage->Fill(nPagesMessage);                          // for experts
   mNumberOfSuperpagesPerMessage->Fill(nSuperpagesMessage);
 
   // Fill histograms with cached values
