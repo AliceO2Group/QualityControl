@@ -451,7 +451,7 @@ void CheckRunner::reset()
   mTotalNumberCheckExecuted = 0;
   mTotalNumberMOStored = 0;
   mTotalNumberQOStored = 0;
-  mTotalQOSent=0;
+  mTotalQOSent = 0;
 }
 
 } // namespace o2::quality_control::checker
