@@ -159,7 +159,7 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto z = pvertices[i].getZ();
     auto nContr = pvertices[i].getNContributors();
     auto timeUnc = pvertices[i].getTimeStamp().getTimeStampError();
-    ILOG(Info, Support) << "x = " << x << ", y = " << y << ", z = " << z << ", nContributors = " << nContr << ", timeUnc = " << timeUnc << ENDM;
+    ILOG(Debug, Support) << "x = " << x << ", y = " << y << ", z = " << z << ", nContributors = " << nContr << ", timeUnc = " << timeUnc << ENDM;
     mX->Fill(x);
     mY->Fill(y);
     mZ->Fill(z);
