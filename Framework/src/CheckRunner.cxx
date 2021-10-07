@@ -393,6 +393,7 @@ void CheckRunner::initDatabase()
 void CheckRunner::initMonitoring()
 {
   mCollector = MonitoringFactory::Get(mConfig.monitoringUrl);
+  mCollector->enableProcessMonitoring();
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("CheckRunnerName", mDeviceName);
   mTimer.reset(10000000); // 10 s.

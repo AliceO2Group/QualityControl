@@ -124,6 +124,7 @@ class TaskRunner : public framework::Task
   std::shared_ptr<ObjectsManager> mObjectsManager;
   int mRunNumber;
 
+  inline void initMonitoring();
   void updateMonitoringStats(framework::ProcessingContext& pCtx);
 
   bool mCycleOn = false;

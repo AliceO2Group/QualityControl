@@ -88,9 +88,7 @@ void TaskRunner::init(InitContext& iCtx)
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
 
   // setup monitoring
-  mCollector = MonitoringFactory::Get(mTaskConfig.monitoringUrl);
-  mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
-  mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
+  initMonitoring();
 
   // setup publisher
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
@@ -354,6 +352,14 @@ void TaskRunner::finishCycle(DataAllocator& outputs)
     ILOG(Info, Support) << "The maximum number of cycles (" << mTaskConfig.maxNumberCycles << ") has been reached."
                         << " The task will not do anything from now on." << ENDM;
   }
+}
+
+void TaskRunner::initMonitoring()
+{
+  mCollector = MonitoringFactory::Get(mTaskConfig.monitoringUrl);
+  mCollector->enableProcessMonitoring();
+  mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
+  mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
 }
 
 void TaskRunner::updateMonitoringStats(ProcessingContext& pCtx)
