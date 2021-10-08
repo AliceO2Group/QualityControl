@@ -52,13 +52,16 @@ AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector
     mAggregatorsConfigs(acs),
     mTotalNumberObjectsReceived(0)
 {
-  // prepare list of all inputs
-  // we cannot use the binding of the output because it is empty.
+  // Prepare the inputs, remove duplicates
+  std::set<std::string> alreadySeen;
   int i = 0;
   for (const auto& aggConfig : mAggregatorsConfigs) {
     for (auto input : aggConfig.inputSpecs) {
-      input.binding = "checkerOutput" + to_string(i++);
-      mInputs.emplace_back(input);
+      if(alreadySeen.count(input.binding) == 0 ) {
+        alreadySeen.insert(input.binding);
+        input.binding = "   checkerOutput" + to_string(i++);
+        mInputs.emplace_back(input);
+      }
     }
   }
 }
