@@ -76,18 +76,18 @@ class DigitsQcTask final : public TaskInterface
     TH2* mDigitTimeSupermodule = nullptr;
     TH2* mDigitTimeSupermoduleCalib = nullptr;
 
-    TH2* mDigitOccupancy = nullptr;            ///< Digit occupancy EMCAL and DCAL
-    TH2* mDigitOccupancyThr = nullptr;         ///< Digit occupancy EMCAL and DCAL with Energy trheshold
-    TH2* mDigitOccupancyThrBelow = nullptr;    ///< Digit occupancy EMCAL and DCAL with Energy trheshold
-    TH2* mIntegratedOccupancy = nullptr;       ///< Digit integrated occupancy
-    TH1* mDigitAmplitude_tot = nullptr;        ///< Digit amplitude in EMCAL,DCAL
-    TH1* mDigitAmplitudeEMCAL = nullptr;       ///< Digit amplitude in EMCAL
-    TH1* mDigitAmplitudeEMCAL_0 = nullptr;     ///< Digit amplitude in EMCAL if bc==0
-    TH1* mDigitAmplitudeDCAL = nullptr;        ///< Digit amplitude in DCAL
-    TH1* mDigitTimeSupermodule_tot = nullptr;  ///< Digit time in EMCAL,DCAL per SuperModule
-    TH1* mDigitTimeSupermoduleEMCAL = nullptr; ///< Digit time in EMCAL per SuperModule
-    TH1* mDigitTimeSupermoduleDCAL = nullptr;  ///< Digit time in DCAL per SuperModule
-    TH1* mnumberEvents = nullptr;              ///< Number of Events for normalization
+    TH2* mDigitOccupancy = nullptr;                             ///< Digit occupancy EMCAL and DCAL
+    TH2* mDigitOccupancyThr = nullptr;                          ///< Digit occupancy EMCAL and DCAL with Energy trheshold
+    TH2* mDigitOccupancyThrBelow = nullptr;                     ///< Digit occupancy EMCAL and DCAL with Energy trheshold
+    TH2* mIntegratedOccupancy = nullptr;                        ///< Digit integrated occupancy
+    TH1* mDigitAmplitude_tot = nullptr;                         ///< Digit amplitude in EMCAL,DCAL
+    TH1* mDigitAmplitudeEMCAL = nullptr;                        ///< Digit amplitude in EMCAL
+    std::unordered_map<int, std::array<TH1*, 20>> mDigitTimeBC; ///< Digit amplitude in EMCAL if bc==0
+    TH1* mDigitAmplitudeDCAL = nullptr;                         ///< Digit amplitude in DCAL
+    TH1* mDigitTimeSupermodule_tot = nullptr;                   ///< Digit time in EMCAL,DCAL per SuperModule
+    TH1* mDigitTimeSupermoduleEMCAL = nullptr;                  ///< Digit time in EMCAL per SuperModule
+    TH1* mDigitTimeSupermoduleDCAL = nullptr;                   ///< Digit time in DCAL per SuperModule
+    TH1* mnumberEvents = nullptr;                               ///< Number of Events for normalization
 
     void initForTrigger(const std::string trigger, bool hasAmpVsCellID, bool hasTimeVsCellID, bool hasHistosCalib2D);
     void startPublishing(o2::quality_control::core::ObjectsManager& manager);
