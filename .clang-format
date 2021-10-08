@@ -52,6 +52,3 @@ UseTab:          Never
 ---
 Language: ObjC
 DisableFormat: true
----
-Language: Json
-DisableFormat: true
