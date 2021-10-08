@@ -25,6 +25,8 @@
 #include "DataFormatsFT0/ChannelData.h"
 #include "Framework/InputRecord.h"
 
+#include <DataFormatsFT0/LookUpTable.h>
+
 namespace o2::quality_control_modules::ft0
 {
 
@@ -137,6 +139,34 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       mListHistGarbage->Add(pairTrgBcOrbit.first->second);
     }
   }
+
+  char* p;
+  for (const auto& lutEntry : o2::ft0::SingleLUT::Instance().getVecMetadataFEE()) {
+    int chId = std::strtol(lutEntry.mChannelID.c_str(), &p, 10);
+    if (*p) {
+      // lutEntry.mChannelID is not a number
+      continue;
+    }
+    auto moduleName = lutEntry.mModuleName;
+    if (mMapPmModuleChannels.find(moduleName) != mMapPmModuleChannels.end()) {
+      mMapPmModuleChannels[moduleName].push_back(chId);
+    } else {
+      std::vector<int> vChId = {
+        chId,
+      };
+      mMapPmModuleChannels.insert({ moduleName, vChId });
+    }
+  }
+
+  for (const auto& entry : mMapPmModuleChannels) {
+    auto pairModuleBcOrbit = mMapPmModuleBcOrbit.insert({ entry.first, new TH2F(Form("BcOrbitMap_%s", entry.first.c_str()), Form("BC-orbit map for %s;Orbit;BC", entry.first.c_str()), 256, 0, 256, 3564, 0, 3564) });
+    if (pairModuleBcOrbit.second) {
+      getObjectsManager()->startPublishing(pairModuleBcOrbit.first->second);
+      pairModuleBcOrbit.first->second->SetOption("colz");
+      mListHistGarbage->Add(pairModuleBcOrbit.first->second);
+    }
+  }
+
   mHistNchA = std::make_unique<TH1F>("NumChannelsA", "Number of channels(TCM), side A;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistNchC = std::make_unique<TH1F>("NumChannelsC", "Number of channels(TCM), side C;Nch", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM);
   mHistSumAmpA = std::make_unique<TH1F>("SumAmpA", "Sum of amplitudes(TCM), side A;", 1000, 0, 1e4);
@@ -192,7 +222,7 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  rebinFromConfig();
+  rebinFromConfig(); // after all histos are created
 
   getObjectsManager()->startPublishing(mHistTime2Ch.get());
   getObjectsManager()->startPublishing(mHistAmp2Ch.get());
@@ -254,6 +284,9 @@ void DigitQcTask::startOfActivity(Activity& activity)
     entry.second->Reset();
   }
   for (auto& entry : mMapTrgBcOrbit) {
+    entry.second->Reset();
+  }
+  for (auto& entry : mMapPmModuleBcOrbit) {
     entry.second->Reset();
   }
 }
@@ -323,7 +356,16 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       for (auto& entry : mMapTrgBcOrbit) {
         if (digit.mTriggers.triggersignals & (1 << entry.first)) {
-          entry.second->Fill(digit.getOrbit() - firstOrbit, digit.getBC());
+          entry.second->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
+        }
+      }
+    }
+
+    for (auto& entry : mMapPmModuleChannels) {
+      for (const auto& chData : vecChData) {
+        if (std::find(entry.second.begin(), entry.second.end(), chData.ChId) != entry.second.end()) {
+          mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
+          break;
         }
       }
     }
@@ -416,6 +458,9 @@ void DigitQcTask::reset()
     entry.second->Reset();
   }
   for (auto& entry : mMapTrgBcOrbit) {
+    entry.second->Reset();
+  }
+  for (auto& entry : mMapPmModuleBcOrbit) {
     entry.second->Reset();
   }
 }

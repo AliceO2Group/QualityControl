@@ -54,6 +54,7 @@ class DigitQcTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
+  constexpr static std::size_t sOrbitsPerTF = 256;
 
  private:
   // three ways of computing cycle duration:
@@ -95,6 +96,7 @@ class DigitQcTask final : public TaskInterface
   std::array<o2::InteractionRecord, o2::ft0::Constants::sNCHANNELS_PM> mStateLastIR2Ch;
   std::map<int, std::string> mMapDigitTrgNames;
   std::map<o2::ft0::ChannelData::EEventDataBit, std::string> mMapChTrgNames;
+  std::map<std::string, std::vector<int>> mMapPmModuleChannels; // PM name to its channels
   std::unique_ptr<TH1F> mHistNumADC;
   std::unique_ptr<TH1F> mHistNumCFD;
 
@@ -124,6 +126,7 @@ class DigitQcTask final : public TaskInterface
   std::map<unsigned int, TH1F*> mMapHistPMbits;
   std::map<unsigned int, TH2F*> mMapHistAmpVsTime;
   std::map<unsigned int, TH2F*> mMapTrgBcOrbit;
+  std::map<std::string, TH2F*> mMapPmModuleBcOrbit;
 };
 
 } // namespace o2::quality_control_modules::ft0
