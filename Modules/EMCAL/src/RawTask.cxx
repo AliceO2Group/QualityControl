@@ -216,16 +216,19 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPayloadSizePerDDL = new TH2F("PayloadSizePerDDL", "Payload Size / Event", 40, 0, 40, 200, 0, 20);
   mPayloadSizePerDDL->GetXaxis()->SetTitle("DDL");
   mPayloadSizePerDDL->GetYaxis()->SetTitle("Payload Size / Event (kB)");
+  mPayloadSizePerDDL->SetStats(0);
   getObjectsManager()->startPublishing(mPayloadSizePerDDL);
 
   mPayloadSizeTFPerDDL = new TH2F("PayloadSizeTFPerDDL", "Payload Size / TF", 40, 0, 40, 100, 0, 100);
   mPayloadSizeTFPerDDL->GetXaxis()->SetTitle("DDL");
   mPayloadSizeTFPerDDL->GetYaxis()->SetTitle("Payload Size / TF (kB)");
+  mPayloadSizeTFPerDDL->SetStats(0);
   getObjectsManager()->startPublishing(mPayloadSizeTFPerDDL);
 
   mPayloadSize = new TH1F("PayloadSize", "PayloadSize", 20, 0, 60000000); //
   mPayloadSize->GetXaxis()->SetTitle("bytes");
   mPayloadSize->GetYaxis()->SetTitle("Counts");
+  mPayloadSize->SetStats(0);
   getObjectsManager()->startPublishing(mPayloadSize);
 
   mErrorTypeAltro = new TH2F("ErrorTypePerSM", "ErrorTypeForSM", 40, 0, 40, 10, 0, 10);
@@ -241,29 +244,35 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mErrorTypeAltro->GetYaxis()->SetBinLabel(8, "Channel");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(9, "Mapper HWAddress");
   mErrorTypeAltro->GetYaxis()->SetBinLabel(10, "Geometry InvalidCell");
+  mErrorTypeAltro->SetStats(0);
   getObjectsManager()
     ->startPublishing(mErrorTypeAltro);
 
   mNbunchPerChan = new TH1F("NumberBunchPerChannel", "Number of bunches per channel", 4, -0.5, 3.5);
   mNbunchPerChan->GetXaxis()->SetTitle("# bunches per channels");
+  mNbunchPerChan->SetStats(0);
   getObjectsManager()->startPublishing(mNbunchPerChan);
 
   mNofADCsamples = new TH1F("NumberOfADCPerChannel", "Number od ADC samples per channel", 15, -0.5, 14.5);
   mNofADCsamples->GetXaxis()->SetTitle("# of ADC sample per channels");
+  mNofADCsamples->SetStats(0);
   getObjectsManager()->startPublishing(mNofADCsamples);
 
   mADCsize = new TH1F("ADCsizePerBunch", "ADCsizePerBunch", 15, -0.5, 14.5);
   mADCsize->GetXaxis()->SetTitle("ADC size per bunch");
+  mADCsize->SetStats(0);
   getObjectsManager()->startPublishing(mADCsize);
 
   mFECmaxCountperSM = new TH2F("NumberOfChWithInput_perSM", "NumberOfChWithInput_perSM", 20, 0, 20, 40, 0, 40);
   mFECmaxCountperSM->GetXaxis()->SetTitle("SM");
   mFECmaxCountperSM->GetYaxis()->SetTitle("max channel count");
+  mFECmaxCountperSM->SetStats(0);
   getObjectsManager()->startPublishing(mFECmaxCountperSM);
 
   mFECmaxIDperSM = new TH2F("FECidMaxChWithInput_perSM", "FECidMaxChWithInput_perSM", 20, 0, 20, 40, 0, 40);
   mFECmaxIDperSM->GetXaxis()->SetTitle("SM");
   mFECmaxIDperSM->GetYaxis()->SetTitle("FEC id");
+  mFECmaxIDperSM->SetStats(0);
   getObjectsManager()->startPublishing(mFECmaxIDperSM);
 
   //histos per SM
@@ -271,11 +280,13 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     mFECmaxCount[ism] = new TH1F(Form("NumberOfChWithInputSM_%d", ism), Form("Number of Channels in max FEC for SM %d", ism), 40, -0.5, 39.5);
     mFECmaxCount[ism]->GetXaxis()->SetTitle("max FEC count");
     mFECmaxCount[ism]->GetYaxis()->SetTitle("maximum occupancy");
+    mFECmaxCount[ism]->SetStats(0);
     getObjectsManager()->startPublishing(mFECmaxCount[ism]);
 
     mFECmaxID[ism] = new TH1F(Form("IDFECMaxChWithInputSM_%d", ism), Form("ID FEC Max Number of Channels with input %d", ism), 40, -0.5, 39.5);
     mFECmaxID[ism]->GetXaxis()->SetTitle("FEC id");
     mFECmaxID[ism]->GetYaxis()->SetTitle("maximum occupancy");
+    mFECmaxID[ism]->SetStats(0);
     getObjectsManager()->startPublishing(mFECmaxID[ism]);
   }
 
@@ -292,6 +303,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     histosRawAmplRmsRC = new TProfile2D(Form("RMSADC_EMCAL_%s", histoStr[trg].Data()), Form("Bunch ADC RMS (%s)", histoStr[trg].Data()), 96, 0, 95, 208, 0, 207);
     histosRawAmplRmsRC->GetXaxis()->SetTitle("col");
     histosRawAmplRmsRC->GetYaxis()->SetTitle("row");
+    histosRawAmplRmsRC->SetStats(0);
     getObjectsManager()->startPublishing(histosRawAmplRmsRC);
 
     histosRawAmplMeanRC = new TProfile2D(Form("MeanADC_EMCAL_%s", histoStr[trg].Data()), Form("Bunch ADC mean (%s)", histoStr[trg].Data()), 96, 0, 95, 208, 0, 207);
@@ -302,11 +314,13 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     histosRawAmplMaxRC = new TProfile2D(Form("MaxADC_EMCAL_%s", histoStr[trg].Data()), Form("Channel ADC max (%s)", histoStr[trg].Data()), 96, 0, 95, 208, 0, 207);
     histosRawAmplMaxRC->GetXaxis()->SetTitle("col");
     histosRawAmplMaxRC->GetYaxis()->SetTitle("row");
+    histosRawAmplMaxRC->SetStats(0);
     getObjectsManager()->startPublishing(histosRawAmplMaxRC);
 
     histosRawAmplMinRC = new TProfile2D(Form("MinADC_EMCAL_%s", histoStr[trg].Data()), Form("Channel ADC min (%s)", histoStr[trg].Data()), 96, 0, 95, 208, 0, 207);
     histosRawAmplMinRC->GetXaxis()->SetTitle("col");
     histosRawAmplMinRC->GetYaxis()->SetTitle("raw");
+    histosRawAmplMinRC->SetStats(0);
     getObjectsManager()->startPublishing(histosRawAmplMinRC);
 
     TH1D* histosRawMinFull;
@@ -316,16 +330,19 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     histosRawMinFull = new TH1D(Form("BunchMinRawAmplitudeFull_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL+DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
     histosRawMinFull->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
     histosRawMinFull->GetYaxis()->SetTitle("Counts");
+    histosRawMinFull->SetStats(0);
     getObjectsManager()->startPublishing(histosRawMinFull);
 
     histosRawMinEMCAL = new TH1D(Form("BunchMinRawAmplitudeEMCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude EMCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
     histosRawMinEMCAL->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
     histosRawMinEMCAL->GetYaxis()->SetTitle("Counts");
+    histosRawMinEMCAL->SetStats(0);
     getObjectsManager()->startPublishing(histosRawMinEMCAL);
 
     histosRawMinDCAL = new TH1D(Form("BunchMinRawAmplitudeDCAL_%s", histoStr[trg].Data()), Form("Bunch min raw amplitude DCAL (%s)", histoStr[trg].Data()), 100, 0., 100.);
     histosRawMinDCAL->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
     histosRawMinDCAL->GetYaxis()->SetTitle("Counts");
+    histosRawMinDCAL->SetStats(0);
     getObjectsManager()->startPublishing(histosRawMinDCAL);
 
     std::array<TH1*, 20> histosMinBunchAmpSM;
@@ -342,41 +359,49 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
       histosMaxSMAmpSM[ism] = new TH1F(Form("SMMaxRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Max SM raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
       histosMaxSMAmpSM[ism]->GetXaxis()->SetTitle("Max raw amplitude (ADC)");
       histosMaxSMAmpSM[ism]->GetYaxis()->SetTitle("Counts");
+      histosMaxSMAmpSM[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosMaxSMAmpSM[ism]);
 
       histosMinSMAmpSM[ism] = new TH1F(Form("SMMinRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Min SM raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
       histosMinSMAmpSM[ism]->GetXaxis()->SetTitle("Min raw amplitude (ADC)");
       histosMinSMAmpSM[ism]->GetYaxis()->SetTitle("Counts");
+      histosMinSMAmpSM[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosMinSMAmpSM[ism]);
 
       histosMaxBunchAmpSM[ism] = new TH1F(Form("BunchMaxRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Max bunch raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 500, 0., 500.);
       histosMaxBunchAmpSM[ism]->GetXaxis()->SetTitle("Max Raw Amplitude (ADC)");
       histosMaxBunchAmpSM[ism]->GetYaxis()->SetTitle("Counts");
+      histosMaxBunchAmpSM[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosMaxBunchAmpSM[ism]);
 
       histosMinBunchAmpSM[ism] = new TH1F(Form("BunchMinRawAmplitude_SM%d_%s", ism, histoStr[trg].Data()), Form("Min bunch raw amplitude SM%d (%s)", ism, histoStr[trg].Data()), 100, 0., 100.);
       histosMinBunchAmpSM[ism]->GetXaxis()->SetTitle("Min Raw Amplitude (ADC)");
       histosMinBunchAmpSM[ism]->GetYaxis()->SetTitle("Counts");
+      histosMinBunchAmpSM[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosMinBunchAmpSM[ism]);
 
       histosBunchRawAmplRmsRC[ism] = new TProfile2D(Form("BunchRCRMSAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC RMS SM%d (%s)", ism, histoStr[trg].Data()), 48, 0, 48, 24, 0, 24);
       histosBunchRawAmplRmsRC[ism]->GetXaxis()->SetTitle("col");
       histosBunchRawAmplRmsRC[ism]->GetYaxis()->SetTitle("row");
+      histosBunchRawAmplRmsRC[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosBunchRawAmplRmsRC[ism]);
 
       histosBunchRawAmplMeanRC[ism] = new TProfile2D(Form("BunchRCMeanAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC mean SM%d (%s)", ism, histoStr[trg].Data()), 48, 0, 48, 24, 0, 24);
       histosBunchRawAmplMeanRC[ism]->GetXaxis()->SetTitle("col");
       histosBunchRawAmplMeanRC[ism]->GetYaxis()->SetTitle("row");
+      histosBunchRawAmplMeanRC[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosBunchRawAmplMeanRC[ism]);
 
       histosMaxChannelRawAmplRC[ism] = new TProfile2D(Form("ChannelRCMaxAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Channel ADC max SM%d (%s)", ism, histoStr[trg].Data()), 48, 0, 47, 24, 0, 23);
       histosMaxChannelRawAmplRC[ism]->GetXaxis()->SetTitle("col");
       histosMaxChannelRawAmplRC[ism]->GetYaxis()->SetTitle("row");
+      histosMaxChannelRawAmplRC[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosMaxChannelRawAmplRC[ism]);
 
       histosMinChannelRawAmpRC[ism] = new TProfile2D(Form("ChannelRCMinAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Channel ADC min SM%d (%s)", ism, histoStr[trg].Data()), 48, 0, 47, 24, 0, 23);
       histosMinChannelRawAmpRC[ism]->GetXaxis()->SetTitle("col");
       histosMinChannelRawAmpRC[ism]->GetYaxis()->SetTitle("raw");
+      histosMinChannelRawAmpRC[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosMinChannelRawAmpRC[ism]);
     } //loop SM
     mMaxSMRawAmplSM[triggers[trg]] = histosMaxSMAmpSM;
