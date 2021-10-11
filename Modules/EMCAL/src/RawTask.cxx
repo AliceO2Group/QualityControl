@@ -50,8 +50,14 @@ RawTask::~RawTask()
   if (mPayloadSizePerDDL) {
     delete mPayloadSizePerDDL;
   }
+  if (mPayloadSizePerDDL_1D) {
+    delete mPayloadSizePerDDL_1D;
+  }
   if (mPayloadSizeTFPerDDL) {
     delete mPayloadSizeTFPerDDL;
+  }
+  if (mPayloadSizeTFPerDDL_1D) {
+    delete mPayloadSizeTFPerDDL_1D;
   }
   if (mMessageCounter) {
     delete mMessageCounter;
@@ -219,11 +225,23 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   mPayloadSizePerDDL->SetStats(0);
   getObjectsManager()->startPublishing(mPayloadSizePerDDL);
 
+  mPayloadSizePerDDL_1D = new TH1F("PayloadSizePerDDL_1D", "Accumulated Payload Size / Event", 40, 0, 40);
+  mPayloadSizePerDDL_1D->GetXaxis()->SetTitle("DDL");
+  mPayloadSizePerDDL_1D->GetYaxis()->SetTitle("Accumulated Payload Size / Event (kB)");
+  mPayloadSizePerDDL_1D->SetStats(0);
+  getObjectsManager()->startPublishing(mPayloadSizePerDDL_1D);
+
   mPayloadSizeTFPerDDL = new TH2F("PayloadSizeTFPerDDL", "Payload Size / TF", 40, 0, 40, 100, 0, 100);
   mPayloadSizeTFPerDDL->GetXaxis()->SetTitle("DDL");
   mPayloadSizeTFPerDDL->GetYaxis()->SetTitle("Payload Size / TF (kB)");
   mPayloadSizeTFPerDDL->SetStats(0);
   getObjectsManager()->startPublishing(mPayloadSizeTFPerDDL);
+
+  mPayloadSizeTFPerDDL_1D = new TH1F("PayloadSizeTFPerDDL_1D", "Accumulated Payload Size / TF ", 40, 0, 40);
+  mPayloadSizeTFPerDDL_1D->GetXaxis()->SetTitle("DDL");
+  mPayloadSizeTFPerDDL_1D->GetYaxis()->SetTitle("Accumulated Payload Size / TF (kB)");
+  mPayloadSizeTFPerDDL_1D->SetStats(0);
+  getObjectsManager()->startPublishing(mPayloadSizeTFPerDDL_1D);
 
   mPayloadSize = new TH1F("PayloadSize", "PayloadSize", 20, 0, 60000000); //
   mPayloadSize->GetXaxis()->SetTitle("bytes");
@@ -498,6 +516,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
       mPayloadSizeTFPerDDL->Fill(o2::raw::RDHUtils::getFEEID(rdhblock), header->payloadSize / 1024.); //PayLoad size per TimeFrame for shifter
+      mPayloadSizeTFPerDDL_1D->Fill(o2::raw::RDHUtils::getFEEID(rdhblock), header->payloadSize / 1024.);
 
       // try decoding payload
       o2::emcal::RawReaderMemory rawreader(gsl::span(rawData.payload, header->payloadSize));
@@ -520,12 +539,13 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
         o2::InteractionRecord triggerIR{ o2::raw::RDHUtils::getTriggerBC(headerR), o2::raw::RDHUtils::getTriggerOrbit(headerR) };
         RawEventType evIndex{ triggerIR, o2::raw::RDHUtils::getTriggerType(headerR) };
 
-        mPayloadSizePerDDL->Fill(feeID, payLoadSize / 1024.); //for shifter
-
         //trigger type
         auto triggertype = o2::raw::RDHUtils::getTriggerType(headerR);
         bool isPhysTrigger = triggertype & o2::trigger::PhT, isCalibTrigger = triggertype & o2::trigger::Cal;
-
+        if (isPhysTrigger) {
+          mPayloadSizePerDDL->Fill(feeID, payLoadSize / 1024.);    //for shifter
+          mPayloadSizePerDDL_1D->Fill(feeID, payLoadSize / 1024.); //for shifter
+        }
         if (!(isPhysTrigger || isCalibTrigger)) {
           QcInfoLogger::GetInstance() << QcInfoLogger::Error << " Unmonitored trigger class requested " << AliceO2::InfoLogger::InfoLogger::endm;
           continue;
@@ -793,7 +813,9 @@ void RawTask::reset()
     }
   }
   mPayloadSizePerDDL->Reset();
+  mPayloadSizePerDDL_1D->Reset();
   mPayloadSizeTFPerDDL->Reset();
+  mPayloadSizeTFPerDDL_1D->Reset();
   mPayloadSize->Reset();
   mErrorTypeAltro->Reset();
   mNbunchPerChan->Reset();
