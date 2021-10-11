@@ -389,44 +389,56 @@ void DigitsQcTask::DigitsHistograms::initForTrigger(const std::string trigger, b
   if (isPhysTrigger) {
     if (hasAmpVsCellID) {
       mDigitAmplitude = histBuilder2D("digitAmplitudeHG", "Digit Amplitude (High gain)", 80, 0, 16, 17664, -0.5, 17663.5, false);
-
+      mDigitAmplitude->SetStats(0);
       //mDigitAmplitude[1] = histBuilder2D("digitAmplitudeLG", "Digit Amplitude (Low gain)", 100, 0, 100, 17664, -0.5, 17663.5, false);
       if (hasHistosCalib2D) {
         mDigitAmplitudeCalib = histBuilder2D("digitAmplitudeHGCalib", "Digit Amplitude (High gain)", 80, 0, 16, 17664, -0.5, 17663.5, false);
+       mDigitAmplitudeCalib->SetStats(0); 
         //mDigitAmplitudeCalib[1] = histBuilder2D("digitAmplitudeLGCalib", "Digit Amplitude (Low gain)", 100, 0, 100, 17664, -0.5, 17663.5, false);
       }
     }
     if (hasTimeVsCellID) {
       mDigitTime = histBuilder2D("digitTimeHG", "Digit Time (High gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
+     mDigitTime->SetStats(0);
       // mDigitTime[1] = histBuilder2D("digitTimeLG", "Digit Time (Low gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
       if (hasHistosCalib2D) {
         mDigitTimeCalib = histBuilder2D("digitTimeHGCalib", "Digit Time Calib (High gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
+       mDigitTimeCalib->SetStats(0); 
         // mDigitTimeCalib[1] = histBuilder2D("digitTimeLGCalib", "Digit Time Calib (Low gain)", 400, -200, 200, 17664, -0.5, 17663.5, false);
       }
     }
 
     mDigitAmpSupermodule = histBuilder2D("digitAmplitudeSupermodule", "Digit amplitude vs. supermodule ID ", 4 * static_cast<int>(maxAmp), 0., maxAmp, 20, -0.5, 19.5, false);
+   mDigitAmpSupermodule->SetStats(0); 
     mDigitTimeSupermodule = histBuilder2D("digitTimeSupermodule", "Digit Time vs. supermodule ID ", 600, -400, 800, 20, -0.5, 19.5, false);
+   mDigitTimeSupermodule->SetStats(0);
     if (hasHistosCalib2D) {
       mDigitAmpSupermoduleCalib = histBuilder2D("digitAmplitudeSupermoduleCalib", "Digit amplitude (Calib) vs. supermodule ID ", 4 * static_cast<int>(maxAmp), 0., maxAmp, 20, -0.5, 19.5, false);
+     mDigitAmpSupermoduleCalib->SetStats(0);
       mDigitTimeSupermoduleCalib = histBuilder2D("digitTimeSupermoduleCalib", "Digit Time (Calib) vs. supermodule ID (High gain)", 600, -400, 800, 20, -0.5, 19.5, false);
+     mDigitTimeSupermoduleCalib->SetStats(0);
     }
   }
 
   mDigitOccupancy = histBuilder2D("digitOccupancyEMC", "Digit Occupancy EMCAL", 96, -0.5, 95.5, 208, -0.5, 207.5, false);
-  mDigitOccupancyThr = histBuilder2D("digitOccupancyEMCwThr", Form("Digit Occupancy EMCAL,DCAL with E>%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
-  mDigitOccupancyThrBelow = histBuilder2D("digitOccupancyEMCwThrBelow", Form("Digit Occupancy EMCAL,DCAL with E<%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+ mDigitOccupancy->SetStats(0); 
+    mDigitOccupancyThr = histBuilder2D("digitOccupancyEMCwThr", Form("Digit Occupancy EMCAL,DCAL with E>%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+ mDigitOccupancyThr->SetStats(0); 
+    mDigitOccupancyThrBelow = histBuilder2D("digitOccupancyEMCwThrBelow", Form("Digit Occupancy EMCAL,DCAL with E<%.1f GeV/c", mCellThreshold), 96, -0.5, 95.5, 208, -0.5, 207.5, false);
+  mDigitOccupancyThrBelow->SetStats(0);
+
 
   mIntegratedOccupancy = histBuilder2D("digitOccupancyInt", "Digit Occupancy Integrated", 96, -0.5, 95.5, 208, -0.5, 207.5, true);
   mIntegratedOccupancy->GetXaxis()->SetTitle("col");
   mIntegratedOccupancy->GetYaxis()->SetTitle("row");
+ mIntegratedOccupancy->SetStats(0);
   // 1D histograms for showing the integrated spectrum
 
   mDigitTimeSupermodule_tot = histBuilder1D("digitTime", "Digit Time EMCAL,DCAL", 600, -400, 800);
   mDigitTimeSupermoduleEMCAL = histBuilder1D("digitTimeEMCAL", "Digit Time EMCAL", 600, -400, 800);
   mDigitTimeSupermoduleDCAL = histBuilder1D("digitTimeDCAL", "Digit Time DCAL", 600, -400, 800);
   mDigitAmplitude_tot = histBuilder1D("digitAmplitude", "Digit amplitude in EMCAL,DCAL", 4 * static_cast<int>(maxAmp), 0., maxAmp);
-  mDigitAmplitudeEMCAL = histBuilder1D("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 4 * static_cast<int>(maxAmp), 0., maxAmp);
+    mDigitAmplitudeEMCAL = histBuilder1D("digitAmplitudeEMCAL", "Digit amplitude in EMCAL", 4 * static_cast<int>(maxAmp), 0., maxAmp);
   mDigitAmplitudeDCAL = histBuilder1D("digitAmplitudeDCAL", "Digit amplitude in DCAL", 4 * static_cast<int>(maxAmp), 0., maxAmp);
   mnumberEvents = histBuilder1D("NumberOfEvents", "Number Of Events", 1, 0.5, 1.5);
   if (isPhysTrigger) {
