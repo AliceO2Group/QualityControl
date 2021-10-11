@@ -134,3 +134,21 @@ BOOST_AUTO_TEST_CASE(test_aggregator_quality_filter)
   result = aggregator->aggregate(qoMap);
   BOOST_CHECK_EQUAL(getQualityForCheck(result, "MyAggregatorB/newQuality"), Quality::Medium);
 }
+
+BOOST_AUTO_TEST_CASE(test_getDetector)
+{
+  AggregatorConfig config;
+  config.detectorName = "TST";
+
+  vector<Aggregator> aggregators;
+  BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "");
+  Aggregator checkTST(config);
+  aggregators.push_back(checkTST);
+  BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "TST");
+  aggregators.push_back(checkTST);
+  BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "TST");
+  config.detectorName = "EMC";
+  Aggregator checkEMC(config);
+  aggregators.push_back(checkEMC);
+  BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "MANY");
+}

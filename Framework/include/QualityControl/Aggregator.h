@@ -72,6 +72,7 @@ class Aggregator
   bool getAllObjectsOption() const;
   std::vector<AggregatorSource> getSources();
   std::vector<AggregatorSource> getSources(core::DataSourceType type);
+  const std::string& getDetector() const { return mAggregatorConfig.detectorName; };
 
   static AggregatorConfig extractConfig(const core::CommonSpec&, const AggregatorSpec&);
 

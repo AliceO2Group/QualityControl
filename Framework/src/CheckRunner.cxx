@@ -457,16 +457,14 @@ void CheckRunner::reset()
 
 std::string CheckRunner::getDetectorName(std::vector<Check> checks)
 {
-  // determine the detector to be used in the infologger.
-  // if all checks belong to the same detector then we use it otherwise we use MANY
   std::string detectorName;
   for (auto& check : checks) {
     const std::string& thisDetector = check.getDetector();
-    if(detectorName != thisDetector && detectorName.length() != 0) {
+    if(detectorName.length() == 0) {
+      detectorName = thisDetector;
+    } else if (thisDetector != detectorName) {
       detectorName = "MANY";
       break;
-    } else if (detectorName.length() == 0) {
-      detectorName = thisDetector;
     }
   }
   return detectorName;
