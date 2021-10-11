@@ -43,6 +43,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/PadCalibrationCheck2D.h
                             include/TPC/Utility.h
                             include/TPC/RawDigits.h
+                            include/TPC/ClustersData.h
                             include/TPC/CheckOfTrendings.h
                             include/TPC/LaserTracks.h
                             include/TPC/LtrCalibReductor.h
