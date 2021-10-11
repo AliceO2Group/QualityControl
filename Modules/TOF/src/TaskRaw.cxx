@@ -49,6 +49,12 @@ namespace o2::quality_control_modules::tof
 void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
 {
   //auto orbit = RDHUtils::getHeartBeatOrbit(rdh);
+  bool isValidRDH = RDHUtils::checkRDH(rdh, false);
+
+  if (!isValidRDH) {
+    LOG(DEBUG) << "No valid RDH... skipped";
+    return;
+  }
 
   if (RDHUtils::getPageCounter(rdh) == 0) { // if RDH open
     mCounterRDHOpen.Count(rdh->feeId & 0xFF);
