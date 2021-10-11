@@ -115,8 +115,9 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
   const auto pvertices = ctx.inputs().get<gsl::span<o2::dataformats::PrimaryVertex>>("pvtx");
+  gsl::span<const o2::MCEventLabel> mcLbl;
   if (mUseMC) {
-    gsl::span<const o2::MCEventLabel> mcLbl = ctx.inputs().get<gsl::span<o2::MCEventLabel>>("pvtxLbl");
+    mcLbl = ctx.inputs().get<gsl::span<o2::MCEventLabel>>("pvtxLbl");
     for (const auto& lbl : mcLbl) {
       if (lbl.getSourceID() != 0) { // using only underlying event,  which is source 0
         continue;
@@ -166,8 +167,7 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNContributors->Fill(nContr);
     mTimeUncVsNContrib->Fill(nContr, timeUnc);
 
-    if (mUseMC) {
-      gsl::span<const o2::MCEventLabel> mcLbl = ctx.inputs().get<gsl::span<o2::MCEventLabel>>("pvtxLbl");
+    if (mUseMC && mcLbl[i].isSet()) { // make sure the label was set
       auto header = mMCReader.getMCEventHeader(mcLbl[i].getSourceID(), mcLbl[i].getEventID());
       auto purity = mcLbl[i].getCorrWeight();
       auto mult = header.GetNPrim();
