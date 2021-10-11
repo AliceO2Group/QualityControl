@@ -91,6 +91,7 @@ void TaskRunner::init(InitContext& iCtx)
   mCollector = MonitoringFactory::Get(mTaskConfig.monitoringUrl);
   mCollector->addGlobalTag(tags::Key::Subsystem, tags::Value::QC);
   mCollector->addGlobalTag("TaskName", mTaskConfig.taskName);
+  iCtx.services().get<Monitoring>().addGlobalTag(tags::Key::Subsystem, tags::Value::QC); // set the tag QC on the DPL values
 
   // setup publisher
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
