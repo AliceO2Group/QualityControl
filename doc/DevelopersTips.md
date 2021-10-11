@@ -133,7 +133,7 @@ We use the infologger. There is a utility class, `QcInfoLogger`, that can be use
 
 Related issues : https://alice.its.cern.ch/jira/browse/QC-224
 
-To have the full details of what is sent to the logs, do `export INFOLOGGER_MODE=raw`.
+To have the full details of what is sent to the logs, do `export O2_INFOLOGGER_MODE=raw`.
 
 ### Service Discovery (Online mode)
 

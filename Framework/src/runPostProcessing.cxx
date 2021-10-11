@@ -50,6 +50,8 @@ int main(int argc, const char* argv[])
     store(bpo::command_line_parser(argc, argv).options(desc).positional(positionalArgs).run(), vm);
     notify(vm);
 
+    ILOG_INST.setFacility("runPostProcessing");
+
     if (vm.count("help")) {
       ILOG(Info, Support) << desc << ENDM;
       return 0;
