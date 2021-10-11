@@ -460,7 +460,7 @@ std::string CheckRunner::getDetectorName(std::vector<Check> checks)
   std::string detectorName;
   for (auto& check : checks) {
     const std::string& thisDetector = check.getDetector();
-    if(detectorName.length() == 0) {
+    if (detectorName.length() == 0) {
       detectorName = thisDetector;
     } else if (thisDetector != detectorName) {
       detectorName = "MANY";

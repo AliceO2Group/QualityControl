@@ -349,7 +349,7 @@ std::string AggregatorRunner::getDetectorName(std::vector<Aggregator> aggregator
   std::string detectorName;
   for (auto& aggregator : aggregators) {
     const std::string& thisDetector = aggregator.getDetector();
-    if(detectorName.length() == 0) {
+    if (detectorName.length() == 0) {
       detectorName = thisDetector;
     } else if (thisDetector != detectorName) {
       detectorName = "MANY";
