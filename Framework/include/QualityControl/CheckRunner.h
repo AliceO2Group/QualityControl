@@ -227,7 +227,9 @@ class CheckRunner : public framework::Task
   int mTotalNumberCheckExecuted;
   int mTotalNumberQOStored;
   int mTotalNumberMOStored;
+  int mTotalQOSent;
   AliceO2::Common::Timer mTimer;
+  AliceO2::Common::Timer mTimerTotalDurationActivity;
 };
 
 } // namespace o2::quality_control::checker

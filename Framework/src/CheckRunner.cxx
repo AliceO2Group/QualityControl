@@ -131,7 +131,8 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<
     mTotalNumberObjectsReceived(0),
     mTotalNumberCheckExecuted(0),
     mTotalNumberQOStored(0),
-    mTotalNumberMOStored(0)
+    mTotalNumberMOStored(0),
+    mTotalQOSent(0)
 {
   for (const auto& checkConfig : checkConfigs) {
     mChecks.emplace_back(checkConfig);
@@ -148,7 +149,8 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
     mTotalNumberObjectsReceived(0),
     mTotalNumberCheckExecuted(0),
     mTotalNumberQOStored(0),
-    mTotalNumberMOStored(0)
+    mTotalNumberMOStored(0),
+    mTotalQOSent(0)
 {
 }
 
@@ -273,10 +275,13 @@ void CheckRunner::sendPeriodicMonitoring()
 {
   if (mTimer.isTimeout()) {
     mTimer.reset(10000000); // 10 s.
-    mCollector->send({ mTotalNumberObjectsReceived, "qc_objects_received" }, DerivedMetricMode::RATE);
-    mCollector->send({ mTotalNumberCheckExecuted, "qc_checks_executed" }, DerivedMetricMode::RATE);
-    mCollector->send({ mTotalNumberQOStored, "qc_qo_stored" }, DerivedMetricMode::RATE);
-    mCollector->send({ mTotalNumberMOStored, "qc_mo_stored" }, DerivedMetricMode::RATE);
+    mCollector->send({ mTotalNumberObjectsReceived, "qc_checkrunner_objects_received" });
+    mCollector->send({ mTotalNumberCheckExecuted, "qc_checkrunner_checks_executed" });
+    mCollector->send(Metric{ "qc_checkrunner_stored" }
+                       .addValue(mTotalNumberMOStored, "mos")
+                       .addValue(mTotalNumberQOStored, "qos"));
+    mCollector->send({ mTotalQOSent, "qc_checkrunner_qo_sent" });
+    mCollector->send({ mTimerTotalDurationActivity.getTime(), "qc_checkrunner_duration" });
   }
 }
 
@@ -347,6 +352,7 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
     auto concreteOutput = framework::DataSpecUtils::asConcreteDataMatcher(outputSpec);
     allocator.snapshot(
       framework::Output{ concreteOutput.origin, concreteOutput.description, concreteOutput.subSpec, outputSpec.lifetime }, *qo);
+    mTotalQOSent++;
   }
 }
 
@@ -418,6 +424,8 @@ void CheckRunner::start(const ServiceRegistry& services)
   mActivity.mProvenance = computeProvenance(mConfig.fallbackProvenance);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
+  mTimerTotalDurationActivity.reset();
+  mCollector->setRunNumber(mActivity.mId);
 }
 
 void CheckRunner::stop()
@@ -438,6 +446,12 @@ void CheckRunner::reset()
                          << current_diagnostic(true) << ENDM;
     throw;
   }
+
+  mTotalNumberObjectsReceived = 0;
+  mTotalNumberCheckExecuted = 0;
+  mTotalNumberMOStored = 0;
+  mTotalNumberQOStored = 0;
+  mTotalQOSent = 0;
 }
 
 } // namespace o2::quality_control::checker
