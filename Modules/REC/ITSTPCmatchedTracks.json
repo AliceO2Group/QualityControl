@@ -33,12 +33,11 @@
         "className" : "o2::quality_control_modules::rec::ITSTPCMatchingTask",
         "moduleName" : "QcREC",
         "detectorName" : "REC",
-        "cycleDurationSeconds" : "10",
+        "cycleDurationSeconds" : "3600",
         "maxNumberCycles" : "-1",
         "dataSource" : {
-          "type" : "direct",
-          "query_comment" : "checking every matched track",
-          "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS"
+            "type" : "dataSamplingPolicy",
+	    "name" : "ITSTPCmatchingSampling"
         },
         "taskParameters" : {
           "GID" : "ITS-TPC,ITS",
@@ -71,6 +70,21 @@
       }
     }
   },
-         "dataSamplingPolicies" : [
-         ]
+    "dataSamplingPolicies" : [
+	{
+	    "id" : "ITSTPCmatchingSampling",
+	    "active" : "true",
+	    "machines": [],
+	    "query_comment" : "checking every matched track",
+            "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS",
+	    "samplingConditions": [
+		{
+		    "condition": "random",
+		    "fraction": "0.1",
+		    "seed": "1234"
+		}
+	    ],
+	    "blocking": "false"
+	}
+    ]
 }
