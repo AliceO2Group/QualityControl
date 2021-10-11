@@ -21,10 +21,10 @@
 #include "ReconstructionDataFormats/PrimaryVertex.h"
 
 #include "QualityControl/QcInfoLogger.h"
-#include "REC/VertexingQcTask.h"
+#include "GLO/VertexingQcTask.h"
 #include <Framework/InputRecord.h>
 
-namespace o2::quality_control_modules::rec
+namespace o2::quality_control_modules::glo
 {
 
 VertexingQcTask::~VertexingQcTask()
@@ -231,4 +231,4 @@ void VertexingQcTask::reset()
   }
 }
 
-} // namespace o2::quality_control_modules::rec
+} // namespace o2::quality_control_modules::glo

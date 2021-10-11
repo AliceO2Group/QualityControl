@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   testREC.cxx
+/// \file   testQcGLO.cxx
 /// \author My Name
 ///
 
@@ -22,9 +22,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-namespace o2::quality_control_modules::rec
+namespace o2::quality_control_modules::glo
 {
 
 BOOST_AUTO_TEST_CASE(instantiate_task) { BOOST_CHECK(true); }
 
-} // namespace o2::quality_control_modules::rec
+} // namespace o2::quality_control_modules::glo
