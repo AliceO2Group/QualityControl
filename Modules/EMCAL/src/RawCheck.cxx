@@ -154,8 +154,8 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       msg->Draw();
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad, setting to red";
-      QcInfoLogger::GetInstance() << QcInfoLogger::Error << " QualityBad:Presence of Error Code " << AliceO2::InfoLogger::InfoLogger::endm;
-      TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Presence of Error Code}");
+      QcInfoLogger::GetInstance() << QcInfoLogger::Error << " QualityBad:Presence of Error Code" << AliceO2::InfoLogger::InfoLogger::endm;
+      TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Presence of Error Code: call EMCAL oncall}");
       msg->SetNDC();
       msg->SetTextSize(16);
       msg->SetTextFont(43);
@@ -181,7 +181,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad, setting to red";
       QcInfoLogger::GetInstance() << QcInfoLogger::Error << " QualityBad:Bunch min Amplitude outside limits " << AliceO2::InfoLogger::InfoLogger::endm;
-      TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Data outside limits}");
+      TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Pedestal peak detected}");
       msg->SetNDC();
       msg->SetTextSize(16);
       msg->SetTextFont(43);
@@ -220,7 +220,10 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       msg->Draw();
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad, setting to red";
-      TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Entry out of trend!}");
+      TLatex* msg;
+      if (mo->getName() == "FECidMaxChWithInput_perSM")msg = new TLatex(0.2, 0.8, "#color[2]{Noisy FEC detected}");
+      if (mo->getName() == "PayloadSizeTFPerDDL") msg = new TLatex(0.2, 0.8, "#color[2]{Large payload in several DDLs}");
+      //Large payload in several DDLs
       msg->SetNDC();
       msg->SetTextSize(16);
       msg->SetTextFont(43);
