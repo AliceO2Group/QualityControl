@@ -59,7 +59,7 @@ AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector
     for (auto input : aggConfig.inputSpecs) {
       if (alreadySeen.count(input.binding) == 0) {
         alreadySeen.insert(input.binding);
-        input.binding = "   checkerOutput" + to_string(i++);
+        input.binding = "checkerOutput" + to_string(i++);
         mInputs.emplace_back(input);
       }
     }
