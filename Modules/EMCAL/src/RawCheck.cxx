@@ -132,6 +132,32 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
       }
     }
   }
+  if (mo->getName().find("PayloadSize") != std::string::npos && mo->getName().find("1D") != std::string::npos) {
+    double errormargin = 2.;
+    auto* h = dynamic_cast<TH1*>(mo->getObject());
+    if (!h->GetEntries()) {
+      result = Quality::Medium;
+    } else {
+      // get count rates for truncated mean
+      std::vector<double> payloadSize1D;
+      for (int ipay = 0; ipay < h->GetXaxis()->GetNbins(); ipay++) {
+        double countrate = h->GetBinContent(ipay + 1);
+        if (countrate > DBL_EPSILON)
+          payloadSize1D.push_back(countrate);
+      }
+      // evaluate truncated mean to find outliers
+      double mean, sigma;
+      TRobustEstimator estimmator;
+      estimmator.EvaluateUni(payloadSize1D.size(), payloadSize1D.data(), mean, sigma);
+      // compare count rate of each FEC to truncated mean
+      for (int ipay = 0; ipay < h->GetXaxis()->GetNbins(); ipay++) {
+        double countrate = h->GetBinContent(ipay + 1);
+        if (countrate > mean + errormargin * sigma) {
+          result = Quality::Bad;
+        }
+      }
+    }
+  }
   std::cout << " result " << result << std::endl;
   return result;
 }
@@ -207,7 +233,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     }
     h->SetLineColor(kBlack);
   }
-  std::vector<std::string> payloadhists = { "FECidMaxChWithInput_perSM", "PayloadSizeTFPerDDL" };
+  std::vector<std::string> payloadhists = { "FECidMaxChWithInput_perSM", "PayloadSizeTFPerDDL", "PayloadSizeTFPerDDL_1D", "PayloadSizePerDDL_1D" };
   if (std::find(payloadhists.begin(), payloadhists.end(), mo->getName()) != payloadhists.end()) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (checkResult == Quality::Good) {
@@ -221,8 +247,10 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad, setting to red";
       TLatex* msg;
-      if (mo->getName() == "FECidMaxChWithInput_perSM")msg = new TLatex(0.2, 0.8, "#color[2]{Noisy FEC detected}");
-      if (mo->getName() == "PayloadSizeTFPerDDL") msg = new TLatex(0.2, 0.8, "#color[2]{Large payload in several DDLs}");
+      if (mo->getName() == "FECidMaxChWithInput_perSM")
+        msg = new TLatex(0.2, 0.8, "#color[2]{Noisy FEC detected}");
+      if (mo->getName().find("PayloadSize") != std::string::npos)
+        msg = new TLatex(0.2, 0.8, "#color[2]{Large payload in several DDLs}");
       //Large payload in several DDLs
       msg->SetNDC();
       msg->SetTextSize(16);
