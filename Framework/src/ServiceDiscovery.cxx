@@ -153,12 +153,14 @@ void ServiceDiscovery::send(const std::string& path, std::string&& post)
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post.c_str());
   response = curl_easy_perform(curl);
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+  static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningDevel, 1, 600); // send it only every 10 minutes
   if (response != CURLE_OK) {
-    ILOG(Error, Devel) << "ServiceDiscovery::send(...) " << curl_easy_strerror(response) << ENDM;
-    ILOG(Error, Devel) << "   URI: " << uri << ENDM;
+    std::string s = std::string("ServiceDiscovery::send(...) ") + curl_easy_strerror(response) + "\n   URI: " + uri;
+    ILOG_INST.log(msgLimit, "%s", s.c_str());
   }
   if (responseCode < 200 || responseCode > 206) {
-    ILOG(Error, Devel) << "ServiceDiscovery::send(...) Response code: " << responseCode << ENDM;
+    std::string s = std::string("ServiceDiscovery::send(...) Response code: ") + std::to_string(responseCode);
+    ILOG_INST.log(msgLimit, "%s", s.c_str());
   }
 }
 } // namespace o2::quality_control::core
