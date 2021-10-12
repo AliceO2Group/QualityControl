@@ -131,6 +131,8 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
 
+  ILOG_INST.setFacility("runQC");
+
   if (!validateArguments(config)) {
     return {};
   }

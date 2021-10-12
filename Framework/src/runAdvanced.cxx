@@ -84,6 +84,8 @@ using namespace o2::configuration;
 
 WorkflowSpec defineDataProcessing(ConfigContext const& config)
 {
+  ILOG_INST.setFacility("runAdvanced");
+
   bool noQC = config.options().get<bool>("no-qc");
   bool noDebug = config.options().get<bool>("no-debug-output");
   const std::string qcConfigurationSource =

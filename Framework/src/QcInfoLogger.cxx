@@ -26,7 +26,6 @@ QcInfoLogger::QcInfoLogger()
   mContext->setField(infoContext::FieldName::Facility, "QC");
   mContext->setField(infoContext::FieldName::System, "QC");
   this->setContext(*mContext);
-  *this << "QC infologger initialized" << ENDM;
 }
 
 void QcInfoLogger::setFacility(const std::string& facility)
@@ -38,7 +37,7 @@ void QcInfoLogger::setFacility(const std::string& facility)
     mDplContext->setField(infoContext::FieldName::Facility, facility);
   }
   this->setContext(*mContext);
-  *this << LogDebugDevel << "Facility set to " << facility << ENDM;
+  ILOG(Debug, Support) << "Facility set to " << facility << ENDM;
 }
 
 void QcInfoLogger::setDetector(const std::string& detector)
@@ -48,7 +47,7 @@ void QcInfoLogger::setDetector(const std::string& detector)
     mDplContext->setField(infoContext::FieldName::Detector, detector);
   }
   this->setContext(*mContext);
-  *this << LogDebugDevel << "Detector set to " << detector << ENDM;
+  ILOG(Debug, Support) << "Detector set to " << detector << ENDM;
 }
 
 void QcInfoLogger::init(const std::string& facility, bool discardDebug, int discardFromLevel,
@@ -61,8 +60,9 @@ void QcInfoLogger::init(const std::string& facility, bool discardDebug, int disc
   ILOG_INST.filterDiscardDebug(discardDebug);
   ILOG_INST.filterDiscardLevel(discardFromLevel);
   // we use cout because we might have just muted ourselves
-  std::cout << "Discard debug ? " << discardDebug << std::endl;
-  std::cout << "Discard from level " << discardFromLevel << std::endl;
+  ILOG(Debug, Ops) << "QC infologger initialized" << ENDM;
+  ILOG(Debug, Support) << "   Discard debug ? " << discardDebug << ENDM;
+  ILOG(Debug, Support) << "   Discard from level ? " << discardFromLevel << ENDM;
 }
 
 void QcInfoLogger::init(const std::string& facility, const boost::property_tree::ptree& config,

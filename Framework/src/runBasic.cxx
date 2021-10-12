@@ -89,6 +89,8 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
 
+  ILOG_INST.setFacility("runBasic");
+
   // The producer to generate some data in the workflow
   DataProcessorSpec producer = getDataProducerSpec(1, 10000, 10);
   specs.push_back(producer);

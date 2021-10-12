@@ -197,6 +197,8 @@ int main(int argc, const char* argv[])
     store(parse_command_line(argc, argv, desc), vm);
     notify(vm);
 
+    ILOG_INST.setFacility("runPostProcessingOCC");
+
     if (vm.count("help")) {
       ILOG(Info, Support) << desc << ENDM;
       return 0;
