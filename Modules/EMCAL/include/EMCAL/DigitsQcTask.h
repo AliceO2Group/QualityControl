@@ -103,6 +103,7 @@ class DigitsQcTask final : public TaskInterface
   TH1* mEvCounterTFCALIB = nullptr; ///< Number of Events per timeframe per CALIB
   TH1* mTFPerCyclesTOT = nullptr;   ///< Number of Time Frame per cycles TOT
   TH1* mTFPerCycles = nullptr;      ///< Number of Time Frame per cycles per MonitorData
+  TH1* mDigitsMaxSM = nullptr;      ///< Supermodule with the largest amount of digits
 
   /// \brief Constructor
   DigitsQcTask() = default;
