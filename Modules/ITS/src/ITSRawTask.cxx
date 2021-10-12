@@ -204,7 +204,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   int ResetDecision = ctx.inputs().get<int>("in");
   ILOG(Info, Support) << "Reset Histogram Decision = " << ResetDecision
-                              << AliceO2::InfoLogger::InfoLogger::endm;
+                      << AliceO2::InfoLogger::InfoLogger::endm;
   if (ResetDecision == 1) {
     reset();
   }
@@ -221,7 +221,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   for (int i = 0; i < NError; i++) {
     ILOG(Info, Support) << " i = " << i << "   Error = " << mErrors[i] << "   ErrorPre = " << mErrorPre[i]
-                                << "   ErrorPerFile = " << mErrorPerFile[i] << AliceO2::InfoLogger::InfoLogger::endm;
+                        << "   ErrorPerFile = " << mErrorPerFile[i] << AliceO2::InfoLogger::InfoLogger::endm;
     hErrorPlots->SetBinContent(i + 1, mErrors[i]);
     hErrorFile->SetBinContent((FileID + 1 + (EPID - 4) * 12), i + 1, mErrorPerFile[i]);
   }
@@ -343,7 +343,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   ILOG(Info, Support) << "Time After Loop = " << difference / 1000.0 << "s"
-                              << AliceO2::InfoLogger::InfoLogger::endm;
+                      << AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Time After Loop = " << difference / 1000.0 << "s" << std::endl;
 
   ILOG(Info, Support) << "NEventDone = " << mNEvent << AliceO2::InfoLogger::InfoLogger::endm;
@@ -355,7 +355,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   TotalHisTime = TotalHisTime + difference;
   ILOG(Info, Support) << "Time in Histogram = " << difference / 1000.0 << "s"
-                              << AliceO2::InfoLogger::InfoLogger::endm;
+                      << AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Time in Histogram = " << difference / 1000.0 << "s" << std::endl;
 
   if (mNEvent == 0 && ChipID == 0 && row == 0 && col == 0 && mYellowed == 0) {
@@ -664,7 +664,7 @@ void ITSRawTask::updateFile(int aRunID, int aEpID, int aFileID)
   if (RunIDPre != aRunID || FileIDPre != aFileID) {
     TString FileName = Form("infiles/run000%d/data-ep%d-link%d", aRunID, aEpID, aFileID);
     ILOG(Info, Support) << "For the Moment: RunID = " << aRunID << "  FileID = " << aFileID
-                                << AliceO2::InfoLogger::InfoLogger::endm;
+                        << AliceO2::InfoLogger::InfoLogger::endm;
     hFileNameInfo->Fill(0.5);
     hFileNameInfo->SetTitle(Form("Current File Name: %s", FileName.Data()));
     mTotalFileDone = mTotalFileDone + 1;

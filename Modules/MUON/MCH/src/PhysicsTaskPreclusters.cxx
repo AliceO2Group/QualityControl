@@ -395,18 +395,18 @@ void PhysicsTaskPreclusters::printPrecluster(gsl::span<const o2::mch::Digit> pre
   CoG(preClusterDigits, Xcog, Ycog, isWide);
 
   ILOG(Info, Support) << "\n\n\n====================\n"
-                              << "[pre-cluster] nDigits = " << preClusterDigits.size() << "  charge = " << chargeSum[0] << " " << chargeSum[1] << "   CoG = " << Xcog << "," << Ycog << AliceO2::InfoLogger::InfoLogger::endm;
+                      << "[pre-cluster] nDigits = " << preClusterDigits.size() << "  charge = " << chargeSum[0] << " " << chargeSum[1] << "   CoG = " << Xcog << "," << Ycog << AliceO2::InfoLogger::InfoLogger::endm;
   for (auto& d : preClusterDigits) {
     float X = segment.padPositionX(d.getPadID());
     float Y = segment.padPositionY(d.getPadID());
     bool bend = !segment.isBendingPad(d.getPadID());
     ILOG(Info, Support) << fmt::format("  DE {:4d}  PAD {:5d}  ADC {:6d}  TIME ({})",
-                                               d.getDetID(), d.getPadID(), d.getADC(), d.getTime())
-                                << "\n"
-                                << fmt::format("  CATHODE {}  PAD_XY {:+2.2f} , {:+2.2f}", (int)bend, X, Y) << AliceO2::InfoLogger::InfoLogger::endm;
+                                       d.getDetID(), d.getPadID(), d.getADC(), d.getTime())
+                        << "\n"
+                        << fmt::format("  CATHODE {}  PAD_XY {:+2.2f} , {:+2.2f}", (int)bend, X, Y) << AliceO2::InfoLogger::InfoLogger::endm;
   }
   ILOG(Info, Support) << "\n====================\n\n"
-                              << AliceO2::InfoLogger::InfoLogger::endm;
+                      << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 //_________________________________________________________________________________________________

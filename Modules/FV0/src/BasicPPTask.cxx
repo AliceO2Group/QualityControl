@@ -164,13 +164,13 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
   auto hAmpPerChannel = (TH2D*)mo3->getObject();
   if (!hAmpPerChannel) {
     ILOG(Error, Support) << "\nMO \"AmpPerChannel\" NOT retrieved!!!\n"
-                << ENDM;
+                         << ENDM;
   }
   auto mo4 = mDatabase->retrieveMO("qc/FV0/MO/DigitQcTask/", "TimePerChannel");
   auto hTimePerChannel = (TH2D*)mo4->getObject();
   if (!hTimePerChannel) {
     ILOG(Error, Support) << "\nMO \"TimePerChannel\" NOT retrieved!!!\n"
-                << ENDM;
+                         << ENDM;
   }
 
   mAmpl = hAmpPerChannel->ProfileX("MeanAmplPerChannel");
