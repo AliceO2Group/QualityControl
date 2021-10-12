@@ -27,17 +27,16 @@
                        "filterDiscardLevel" : "21",
                        "" : "Message at this level or above are discarded (default: 21 - Trace)" }
     },
-    "tasks" : {
-    },
+    "tasks" : {},
     "externalTasks" : {
-	"MatchedTracksITSTPC": {
-	    "active": "true",
-            "query": "ITSTPCMatchingQC1D:GLO/ITSTPCMATCHQC_1D/0;ITSTPCMatchingQC2D:GLO/ITSTPCMATCHQC_2D/0", "": "Use the task name as binding (encouraged)"
-	}
+      "MatchedTracksITSTPC" : {
+        "active" : "true",
+        "query" : "ITSTPCMatchingQC1D:GLO/ITSTPCMATCHQC_1D/0;ITSTPCMatchingQC2D:GLO/ITSTPCMATCHQC_2D/0",
+        "" : "Use the task name as binding (encouraged)"
+      }
     },
-    "checks" : {	
-    } 
+    "checks" : {}
   },
-  "dataSamplingPolicies" : [
-  ]
+         "dataSamplingPolicies" : [
+         ]
 }

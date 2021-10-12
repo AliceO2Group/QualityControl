@@ -18,11 +18,11 @@
 #include <TH1.h>
 
 #include "QualityControl/QcInfoLogger.h"
-#include "REC/ITSTPCMatchingTask.h"
+#include "GLO/ITSTPCMatchingTask.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 
-namespace o2::quality_control_modules::rec
+namespace o2::quality_control_modules::glo
 {
 
 ITSTPCMatchingTask::~ITSTPCMatchingTask()
@@ -114,4 +114,4 @@ void ITSTPCMatchingTask::reset()
   mMatchITSTPCQC.reset();
 }
 
-} // namespace o2::quality_control_modules::rec
+} // namespace o2::quality_control_modules::glo

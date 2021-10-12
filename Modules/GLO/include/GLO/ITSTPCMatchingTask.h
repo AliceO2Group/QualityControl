@@ -14,8 +14,8 @@
 /// \author My Name
 ///
 
-#ifndef QC_MODULE_REC_RECITSTPCMATCHINGTASK_H
-#define QC_MODULE_REC_RECITSTPCMATCHINGTASK_H
+#ifndef QC_MODULE_GLO_ITSTPCMATCHINGTASK_H
+#define QC_MODULE_GLO_ITSTPCMATCHINGTASK_H
 
 #include "QualityControl/TaskInterface.h"
 #include "GlobalTracking/MatchITSTPCQC.h"
@@ -24,7 +24,7 @@ class TH1F;
 
 using namespace o2::quality_control::core;
 
-namespace o2::quality_control_modules::rec
+namespace o2::quality_control_modules::glo
 {
 
 /// \brief Example Quality Control DPL Task
@@ -50,6 +50,6 @@ class ITSTPCMatchingTask final : public TaskInterface
   o2::globaltracking::MatchITSTPCQC mMatchITSTPCQC;
 };
 
-} // namespace o2::quality_control_modules::rec
+} // namespace o2::quality_control_modules::glo
 
-#endif // QC_MODULE_REC_RECITSTPCMATCHINGTASK_H
+#endif // QC_MODULE_GLO_ITSTPCMATCHINGTASK_H

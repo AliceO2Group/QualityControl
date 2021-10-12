@@ -30,14 +30,14 @@
     "tasks" : {
       "MatchedTracksITSTPC" : {
         "active" : "true",
-        "className" : "o2::quality_control_modules::rec::ITSTPCMatchingTask",
-        "moduleName" : "QcREC",
-        "detectorName" : "REC",
+        "className" : "o2::quality_control_modules::glo::ITSTPCMatchingTask",
+        "moduleName" : "QcGLO",
+        "detectorName" : "GLO",
         "cycleDurationSeconds" : "3600",
         "maxNumberCycles" : "-1",
         "dataSource" : {
-            "type" : "dataSamplingPolicy",
-	    "name" : "ITSTPCmatchingSampling"
+          "type" : "dataSamplingPolicy",
+          "name" : "ITSTPCmatchingSampling"
         },
         "taskParameters" : {
           "GID" : "ITS-TPC,ITS",
@@ -47,8 +47,8 @@
           "minNTPCClustersCut" : "40",
           "minDCACut" : "100.f",
           "minDCACutY" : "10.f",
-	  "grpFileName" : "o2sim_grp.root",
-	  "geomFileName" : "o2sim_geometry.root"
+          "grpFileName" : "o2sim_grp.root",
+          "geomFileName" : "o2sim_geometry.root"
         },
         "location" : "remote",
         "saveObjectsToFile" : "ITSTPCmatched.root",
@@ -70,21 +70,21 @@
       }
     }
   },
-    "dataSamplingPolicies" : [
-	{
-	    "id" : "ITSTPCmatchingSampling",
-	    "active" : "true",
-	    "machines": [],
-	    "query_comment" : "checking every matched track",
-            "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS",
-	    "samplingConditions": [
-		{
-		    "condition": "random",
-		    "fraction": "0.1",
-		    "seed": "1234"
-		}
-	    ],
-	    "blocking": "false"
-	}
-    ]
+         "dataSamplingPolicies" : [
+           {
+             "id" : "ITSTPCmatchingSampling",
+             "active" : "true",
+             "machines" : [],
+             "query_comment" : "checking every matched track",
+             "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS",
+             "samplingConditions" : [
+               {
+                 "condition" : "random",
+                 "fraction" : "0.1",
+                 "seed" : "1234"
+               }
+             ],
+             "blocking" : "false"
+           }
+         ]
 }
