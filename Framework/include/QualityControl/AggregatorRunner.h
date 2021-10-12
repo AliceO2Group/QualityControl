@@ -115,7 +115,7 @@ class AggregatorRunner : public framework::Task
   /// \brief Compute the detector name to be used in the infologger for this runner.
   /// Compute the detector name to be used in the infologger for this runner.
   /// If all checks belong to the same detector we use it, otherwise we use "MANY"
-  static std::string getDetectorName(std::vector<Aggregator> aggregators);
+  static std::string getDetectorName(std::vector<std::shared_ptr<Aggregator>> aggregators);
 
  private:
   /**

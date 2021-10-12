@@ -140,15 +140,16 @@ BOOST_AUTO_TEST_CASE(test_getDetector)
   AggregatorConfig config;
   config.detectorName = "TST";
 
-  vector<Aggregator> aggregators;
+  std::vector<std::shared_ptr<Aggregator>> aggregators;
   BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "");
-  Aggregator checkTST(config);
+  auto checkTST = std::make_shared<Aggregator>(config);
   aggregators.push_back(checkTST);
   BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "TST");
-  aggregators.push_back(checkTST);
+  auto checkTST2 = std::make_shared<Aggregator>(config);
+  aggregators.push_back(checkTST2);
   BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "TST");
   config.detectorName = "EMC";
-  Aggregator checkEMC(config);
+  auto checkEMC = std::make_shared<Aggregator>(config);
   aggregators.push_back(checkEMC);
   BOOST_CHECK_EQUAL(AggregatorRunner::getDetectorName(aggregators), "MANY");
 }
