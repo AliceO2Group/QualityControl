@@ -51,7 +51,7 @@ ITSFeeTask::~ITSFeeTask()
 
 void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "Initializing the ITSFeeTask" << ENDM;
+  ILOG(Info, Support) << "Initializing the ITSFeeTask" << ENDM;
   createFeePlots();
   setPlotsFormat();
 }
@@ -151,7 +151,7 @@ void ITSFeeTask::startOfActivity(Activity& activity)
   mRunNumber = activity.mId;
 }
 
-void ITSFeeTask::startOfCycle() { ILOG(Info) << "startOfCycle" << ENDM; }
+void ITSFeeTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM; }
 
 void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -225,12 +225,12 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ITSFeeTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ITSFeeTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void ITSFeeTask::resetGeneralPlots()
@@ -242,7 +242,7 @@ void ITSFeeTask::resetGeneralPlots()
 void ITSFeeTask::reset()
 {
   resetGeneralPlots();
-  ILOG(Info) << "Reset" << ENDM;
+  ILOG(Info, Support) << "Reset" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::its

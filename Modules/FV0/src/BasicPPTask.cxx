@@ -110,13 +110,13 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
   auto mo = mDatabase->retrieveMO("qc/FV0/MO/DigitQcTask/", "Triggers");
   auto hTriggers = (TH1F*)mo->getObject();
   if (!hTriggers) {
-    ILOG(Error) << "MO \"Triggers\" NOT retrieved!!!" << ENDM;
+    ILOG(Error, Support) << "MO \"Triggers\" NOT retrieved!!!" << ENDM;
   }
 
   auto mo2 = mDatabase->retrieveMO("qc/FV0/MO/DigitQcTask/", mCycleDurationMoName);
   auto hCycleDuration = (TH1D*)mo2->getObject();
   if (!hCycleDuration) {
-    ILOG(Error) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
+    ILOG(Error, Support) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
   }
 
   double cycleDurationMS = 0;
@@ -131,7 +131,7 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
 
   double eps = 1e-8;
   if (cycleDurationMS < eps) {
-    ILOG(Warning) << "cycle duration = " << cycleDurationMS << " ms, almost zero - cannot compute trigger rates!" << ENDM;
+    ILOG(Warning, Support) << "cycle duration = " << cycleDurationMS << " ms, almost zero - cannot compute trigger rates!" << ENDM;
   } else {
     mRateMinBias->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("MinBias")) / cycleDurationMS);
     mRateOuterRing->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OuterRing")) / cycleDurationMS);
@@ -163,13 +163,13 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
   auto mo3 = mDatabase->retrieveMO("qc/FV0/MO/DigitQcTask/", "AmpPerChannel");
   auto hAmpPerChannel = (TH2D*)mo3->getObject();
   if (!hAmpPerChannel) {
-    ILOG(Error) << "\nMO \"AmpPerChannel\" NOT retrieved!!!\n"
+    ILOG(Error, Support) << "\nMO \"AmpPerChannel\" NOT retrieved!!!\n"
                 << ENDM;
   }
   auto mo4 = mDatabase->retrieveMO("qc/FV0/MO/DigitQcTask/", "TimePerChannel");
   auto hTimePerChannel = (TH2D*)mo4->getObject();
   if (!hTimePerChannel) {
-    ILOG(Error) << "\nMO \"TimePerChannel\" NOT retrieved!!!\n"
+    ILOG(Error, Support) << "\nMO \"TimePerChannel\" NOT retrieved!!!\n"
                 << ENDM;
   }
 

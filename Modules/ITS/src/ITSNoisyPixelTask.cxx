@@ -239,7 +239,7 @@ void ITSNoisyPixelTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   mTotalTimeInQCTask += difference;
-  ILOG(Info) << "Time in QC Noisy Pixel Task:  " << difference << ENDM;
+  ILOG(Info, Support) << "Time in QC Noisy Pixel Task:  " << difference << ENDM;
 }
 
 void ITSNoisyPixelTask::endOfCycle()

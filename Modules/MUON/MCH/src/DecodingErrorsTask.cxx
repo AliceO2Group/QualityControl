@@ -77,7 +77,7 @@ static void setAxisLabels(TH2F* hErrors)
 
 void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
 {
-  ILOG(Info) << "initialize DecodingErrorsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "initialize DecodingErrorsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   mElec2Det = createElec2DetMapper<ElectronicMapperGenerated>();
   mFee2Solar = createFeeLink2SolarMapper<ElectronicMapperGenerated>();
@@ -89,13 +89,13 @@ void DecodingErrorsTask::initialize(o2::framework::InitContext& /*ic*/)
 
 void DecodingErrorsTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
   mHistogramErrors->Reset();
 }
 
 void DecodingErrorsTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void DecodingErrorsTask::decodeTF(framework::ProcessingContext& pc)
@@ -141,7 +141,7 @@ void DecodingErrorsTask::decodeReadout(const o2::framework::DataRef& input)
 
 void DecodingErrorsTask::decodeBuffer(gsl::span<const std::byte> buf)
 {
-  ILOG(Debug) << "Start of new buffer" << ENDM;
+  ILOG(Debug, Support) << "Start of new buffer" << ENDM;
 
   size_t bufSize = buf.size();
   size_t pageStart = 0;
@@ -195,7 +195,7 @@ void DecodingErrorsTask::decodePage(gsl::span<const std::byte> page)
 
   auto& rdhAny = *reinterpret_cast<RDH*>(const_cast<std::byte*>(&(page[0])));
   int feeId = o2::raw::RDHUtils::getFEEID(rdhAny) & 0x7F;
-  ILOG(Debug) << "Received " << nErrors << " from " << feeId << ENDM;
+  ILOG(Debug, Support) << "Received " << nErrors << " from " << feeId << ENDM;
 }
 
 void DecodingErrorsTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -222,12 +222,12 @@ void DecodingErrorsTask::saveHistograms()
 
 void DecodingErrorsTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void DecodingErrorsTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 
 #ifdef QC_MCH_SAVE_TEMP_ROOTFILE
   saveHistograms();
@@ -238,7 +238,7 @@ void DecodingErrorsTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mHistogramErrors->Reset();
 }
 

@@ -35,7 +35,7 @@ namespace o2::quality_control_modules::tpc
 
 void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize TPC Tracks QC task" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize TPC Tracks QC task" << ENDM;
 
   mQCTracks.initializeHistograms();
   o2::tpc::qc::helpers::setStyleHistogram2D(mQCTracks.getHistograms2D());
@@ -55,13 +55,13 @@ void Tracks::initialize(o2::framework::InitContext& /*ctx*/)
 
 void Tracks::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   mQCTracks.resetHistograms();
 }
 
 void Tracks::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void Tracks::monitorData(o2::framework::ProcessingContext& ctx)
@@ -70,7 +70,7 @@ void Tracks::monitorData(o2::framework::ProcessingContext& ctx)
   auto tracks = ctx.inputs().get<TrackType>("inputTracks");
   //using TracksType = gsl::span<o2::tpc::TrackTPC>;
   //const auto tracks = ctx.inputs().get<TracksType>("inputTracks");
-  //QcInfoLogger::GetInstance() << "monitorData: " << tracks.size() << AliceO2::InfoLogger::InfoLogger::endm;
+  //ILOG(Info, Support) << "monitorData: " << tracks.size() << ENDM;
 
   for (auto const& track : tracks) {
     mQCTracks.processTrack(track);
@@ -81,19 +81,19 @@ void Tracks::monitorData(o2::framework::ProcessingContext& ctx)
 void Tracks::endOfCycle()
 {
   mQCTracks.processEndOfCycle();
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void Tracks::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void Tracks::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mQCTracks.resetHistograms();
 }
 

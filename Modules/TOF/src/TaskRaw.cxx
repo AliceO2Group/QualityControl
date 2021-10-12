@@ -321,7 +321,7 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   // Set task parameters from JSON
   if (auto param = mCustomParameters.find("DecoderCONET"); param != mCustomParameters.end()) {
     if (param->second == "True") {
-      LOG(info) << "Rig for DecoderCONET";
+      ILOG(Info, Support) << "Rig for DecoderCONET";
       mDecoderRaw.setDecoderCONET(kTRUE);
     }
   }

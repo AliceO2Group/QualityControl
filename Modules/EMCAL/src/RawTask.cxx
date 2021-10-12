@@ -178,8 +178,8 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::Facility, "QC");
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "EMC");
-  QcInfoLogger::GetInstance().setContext(context);
-  QcInfoLogger::GetInstance() << "initialize RawTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG_INST.setContext(context);
+  ILOG(Info, Support) << "initialize RawTask" << ENDM;
 
   // initialize geometry
   if (!mGeometry)
@@ -446,13 +446,13 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void RawTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "startOfActivity" << ENDM;
   reset();
 }
 
 void RawTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "startOfCycle" << ENDM;
 }
 
 void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -471,7 +471,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   // The type DataOrigin allows only conversion of char arrays with size 4, not char *, therefore
   // the origin string has to be converted manually to the char array and checked for length.
   if (mDataOrigin.size() > 4) {
-    QcInfoLogger::GetInstance() << QcInfoLogger::Error << "No valid data origin" << mDataOrigin << ", cannot process" << QcInfoLogger::endm;
+    ILOG(Error, Support) << "No valid data origin" << mDataOrigin << ", cannot process" << QcInfoLogger::endm;
     return;
   }
   char dataOrigin[4];
@@ -481,7 +481,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     return;
 
   Int_t nPagesMessage = 0, nSuperpagesMessage = 0;
-  QcInfoLogger::GetInstance() << QcInfoLogger::Debug << " Processing message " << mNumberOfMessages << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Debug, Support) << " Processing message " << mNumberOfMessages << ENDM;
   mNumberOfMessages++;
   mMessageCounter->Fill(1); //for expert
 
@@ -500,11 +500,11 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (rawData.header != nullptr && rawData.payload != nullptr) {
       const auto* header = header::get<header::DataHeader*>(rawData.header);
       // get payload of a specific input, which is a char array.
-      QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Processing superpage " << mNumberOfSuperpages << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Debug, Support) << "Processing superpage " << mNumberOfSuperpages << ENDM;
       mNumberOfSuperpages++;
       nSuperpagesMessage++;
       mSuperpageCounter->Fill(1); //for expert
-      QcInfoLogger::GetInstance() << QcInfoLogger::Debug << " EMCAL Reading Payload size: " << header->payloadSize << " for " << header->dataOrigin << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Debug, Support) << " EMCAL Reading Payload size: " << header->payloadSize << " for " << header->dataOrigin << ENDM;
 
       //fill the histogram with payload sizes
       mPayloadSize->Fill(header->payloadSize);         //for expert
@@ -523,7 +523,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       while (rawreader.hasNext()) {
 
-        QcInfoLogger::GetInstance() << QcInfoLogger::Debug << " Processing page " << mNumberOfPages << AliceO2::InfoLogger::InfoLogger::endm;
+        ILOG(Debug, Support) << " Processing page " << mNumberOfPages << ENDM;
         mNumberOfPages++;
         nPagesMessage++;
         mPageCounter->Fill(1); //expert
@@ -547,7 +547,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           mPayloadSizePerDDL_1D->Fill(feeID, payLoadSize / 1024.); //for shifter
         }
         if (!(isPhysTrigger || isCalibTrigger)) {
-          QcInfoLogger::GetInstance() << QcInfoLogger::Error << " Unmonitored trigger class requested " << AliceO2::InfoLogger::InfoLogger::endm;
+          ILOG(Error, Support) << " Unmonitored trigger class requested " << ENDM;
           continue;
         }
 
@@ -621,7 +621,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
               break;
           }
           errormessage << " in Supermodule " << feeID;
-          QcInfoLogger::GetInstance() << QcInfoLogger::Error << " EMCAL raw task: " << errormessage.str() << AliceO2::InfoLogger::InfoLogger::endm;
+          ILOG(Error, Support) << " EMCAL raw task: " << errormessage.str() << ENDM;
           //fill histograms  with error types
           mErrorTypeAltro->Fill(feeID, errornum); //for shifter
           continue;
@@ -643,7 +643,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             rowOnline = mapping.getRow(chan.getHardwareAddress());
             chType = mapping.getChannelType(chan.getHardwareAddress());
           } catch (o2::emcal::Mapper::AddressNotFoundException& err) {
-            QcInfoLogger::GetInstance() << QcInfoLogger::Error << "DDL " << feeID << ": " << err.what() << QcInfoLogger::endm;
+            ILOG(Error, Support) << "DDL " << feeID << ": " << err.what() << QcInfoLogger::endm;
             mErrorTypeAltro->Fill(feeID, 8);
             continue;
           }
@@ -779,21 +779,21 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "endOfCycle" << ENDM;
 }
 
 void RawTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
-  QcInfoLogger::GetInstance() << "Total amount of messages: " << mNumberOfMessages << AliceO2::InfoLogger::InfoLogger::endm;
-  QcInfoLogger::GetInstance() << "Total amount of superpages: " << mNumberOfSuperpages << ", pages: " << mNumberOfPages << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "endOfActivity" << ENDM;
+  QcInfoLogger::GetInstance() << "Total amount of messages: " << mNumberOfMessages << ENDM;
+  QcInfoLogger::GetInstance() << "Total amount of superpages: " << mNumberOfSuperpages << ", pages: " << mNumberOfPages << ENDM;
 }
 
 void RawTask::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "Resetting the histogram" << ENDM;
   EventType triggers[2] = { EventType::CAL_EVENT, EventType::PHYS_EVENT };
 
   for (const auto& trg : triggers) {

@@ -51,7 +51,7 @@ PhysicsTaskDigits::~PhysicsTaskDigits() {}
 
 void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize PhysicsTaskDigits" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize PhysicsTaskDigits" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mElec2DetMapper = createElec2DetMapper<ElectronicMapperGenerated>();
   mDet2ElecMapper = createDet2ElecMapper<ElectronicMapperGenerated>();
@@ -142,12 +142,12 @@ void PhysicsTaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PhysicsTaskDigits::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void PhysicsTaskDigits::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void PhysicsTaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
@@ -156,7 +156,7 @@ void PhysicsTaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   auto digits = ctx.inputs().get<gsl::span<o2::mch::Digit>>("digits");
   auto orbits = ctx.inputs().get<gsl::span<uint64_t>>("orbits");
   if (orbits.empty()) {
-    QcInfoLogger::GetInstance() << "WARNING: empty orbits vector" << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "WARNING: empty orbits vector" << AliceO2::InfoLogger::InfoLogger::endm;
     return;
   }
 
@@ -309,7 +309,7 @@ void PhysicsTaskDigits::updateOrbits()
 
 void PhysicsTaskDigits::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 
   updateOrbits();
 
@@ -334,7 +334,7 @@ void PhysicsTaskDigits::endOfCycle()
 
 void PhysicsTaskDigits::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 
 #ifdef QC_MCH_SAVE_TEMP_ROOTFILE
   TFile f("mch-qc-digits.root", "RECREATE");
@@ -381,7 +381,7 @@ void PhysicsTaskDigits::endOfActivity(Activity& /*activity*/)
 void PhysicsTaskDigits::reset()
 {
   // clean all the monitor objects here
-  QcInfoLogger::GetInstance() << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 } // namespace muonchambers

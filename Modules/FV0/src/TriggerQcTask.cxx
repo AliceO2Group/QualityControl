@@ -30,7 +30,7 @@ unsigned int TriggerQcTask::getModeParameter(std::string paramName, unsigned int
     // if parameter was provided check which option was chosen
     for (const auto& choice : choices) {
       if (param->second == choice.second) {
-        ILOG(Debug) << "setting \"" << paramName << "\" to: \"" << choice.second << "\"" << ENDM;
+        ILOG(Debug, Support) << "setting \"" << paramName << "\" to: \"" << choice.second << "\"" << ENDM;
         return choice.first;
       }
     }
@@ -41,11 +41,11 @@ unsigned int TriggerQcTask::getModeParameter(std::string paramName, unsigned int
       allowedValues += choice.second;
       allowedValues += "\", ";
     }
-    ILOG(Warning) << "Provided value (\"" << param->second << "\") for parameter \"" << paramName << "\" is not allowed. Allowed values are: " << allowedValues << " setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
+    ILOG(Warning, Support) << "Provided value (\"" << param->second << "\") for parameter \"" << paramName << "\" is not allowed. Allowed values are: " << allowedValues << " setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
     return defaultVal;
   } else {
     // param not provided - use default
-    ILOG(Debug) << "Setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
+    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to default value: \"" << choices[defaultVal] << "\"" << ENDM;
     return defaultVal;
   }
 }
@@ -54,10 +54,10 @@ int TriggerQcTask::getNumericalParameter(std::string paramName, int defaultVal)
 {
   if (auto param = mCustomParameters.find(paramName); param != mCustomParameters.end()) {
     float val = stoi(param->second);
-    ILOG(Debug) << "Setting \"" << paramName << "\" to: " << val << ENDM;
+    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to: " << val << ENDM;
     return val;
   } else {
-    ILOG(Debug) << "Setting \"" << paramName << "\" to default value: " << defaultVal << ENDM;
+    ILOG(Debug, Support) << "Setting \"" << paramName << "\" to default value: " << defaultVal << ENDM;
     return defaultVal;
   }
 }
@@ -197,7 +197,7 @@ void TriggerQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           digit.mTriggers.amplA, int(sumAmplInner + sumAmplOuter),
           int(sumAmplInner),
           int(sumAmplOuter));
-        ILOG(Info) << msg << ENDM;
+        ILOG(Info, Support) << msg << ENDM;
       }
     }
   }

@@ -49,16 +49,16 @@ void DigitQcTask::rebinFromConfig()
     vector<std::string> tokenizedBinning;
     boost::split(tokenizedBinning, binning, boost::is_any_of(","));
     if (tokenizedBinning.size() == 3) { // TH1
-      ILOG(Debug) << "config: rebinning TH1 " << hName << " -> " << binning << ENDM;
+      ILOG(Debug, Support) << "config: rebinning TH1 " << hName << " -> " << binning << ENDM;
       auto htmp = (TH1F*)gROOT->FindObject(hName.data());
       htmp->SetBins(std::atof(tokenizedBinning[0].c_str()), std::atof(tokenizedBinning[1].c_str()), std::atof(tokenizedBinning[2].c_str()));
     } else if (tokenizedBinning.size() == 6) { // TH2
       auto htmp = (TH2F*)gROOT->FindObject(hName.data());
-      ILOG(Debug) << "config: rebinning TH2 " << hName << " -> " << binning << ENDM;
+      ILOG(Debug, Support) << "config: rebinning TH2 " << hName << " -> " << binning << ENDM;
       htmp->SetBins(std::atof(tokenizedBinning[0].c_str()), std::atof(tokenizedBinning[1].c_str()), std::atof(tokenizedBinning[2].c_str()),
                     std::atof(tokenizedBinning[3].c_str()), std::atof(tokenizedBinning[4].c_str()), std::atof(tokenizedBinning[5].c_str()));
     } else {
-      ILOG(Warning) << "config: invalid binning parameter: " << hName << " -> " << binning << ENDM;
+      ILOG(Warning, Support) << "config: invalid binning parameter: " << hName << " -> " << binning << ENDM;
     }
   };
 
@@ -75,7 +75,7 @@ void DigitQcTask::rebinFromConfig()
         rebinHisto(hNameCur, binning);
       }
     } else if (!gROOT->FindObject(hName.data())) {
-      ILOG(Warning) << "config: histogram named \"" << hName << "\" not found" << ENDM;
+      ILOG(Warning, Support) << "config: histogram named \"" << hName << "\" not found" << ENDM;
       continue;
     } else {
       rebinHisto(hName, binning);
@@ -437,7 +437,7 @@ void DigitQcTask::endOfCycle()
   mHistCycleDurationNTF->SetEntries(mTfCounter);
   mHistCycleDuration->SetBinContent(1., mTimeSum);
   mHistCycleDuration->SetEntries(mTimeSum);
-  ILOG(Debug) << "Cycle duration: NTF=" << mTfCounter << ", range = " << (mTimeMaxNS - mTimeMinNS) / 1e6 / mTfCounter << " ms/TF, sum = " << mTimeSum / 1e6 / mTfCounter << " ms/TF" << ENDM;
+  ILOG(Debug, Support) << "Cycle duration: NTF=" << mTfCounter << ", range = " << (mTimeMaxNS - mTimeMinNS) / 1e6 / mTfCounter << " ms/TF, sum = " << mTimeSum / 1e6 / mTfCounter << " ms/TF" << ENDM;
 }
 
 void DigitQcTask::endOfActivity(Activity& /*activity*/)

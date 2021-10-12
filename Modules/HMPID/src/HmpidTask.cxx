@@ -53,11 +53,11 @@ Int_t NumCycles = 0;
 
 void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize HmpidTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "initialize HmpidTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+    ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
   hPedestalMean = new TH1F("hPedestalMean", "Pedestal Mean", 2000, 0, 2000);
@@ -97,7 +97,7 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void HmpidTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
 
@@ -108,7 +108,7 @@ void HmpidTask::startOfActivity(Activity& /*activity*/)
 
 void HmpidTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -129,7 +129,7 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       mDecoder->setUpStream(ptrToPayload, (long int)header->payloadSize);
       if (!mDecoder->decodeBufferFast()) {
-        ILOG(Error) << "Error decoding the Superpage !" << ENDM;
+        ILOG(Error, Support) << "Error decoding the Superpage !" << ENDM;
       }
 
       // Double_t ddl[14], EventSize[14], BusyTime[14];
@@ -176,19 +176,19 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void HmpidTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void HmpidTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void HmpidTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
   hBusyTime->ResetAttFill();

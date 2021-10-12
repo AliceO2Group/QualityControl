@@ -54,11 +54,11 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "PHS");
   QcInfoLogger::GetInstance().setContext(context);
-  QcInfoLogger::GetInstance() << "initialize ClusterQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize ClusterQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    QcInfoLogger::GetInstance() << "Custom parameter - myOwnKey : " << param->second << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Custom parameter - myOwnKey : " << param->second << AliceO2::InfoLogger::InfoLogger::endm;
   }
 
   //read alignment to calculate cluster global coordinates
@@ -120,13 +120,13 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ClusterQcTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   reset();
 }
 
 void ClusterQcTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -184,18 +184,18 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ClusterQcTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ClusterQcTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ClusterQcTask::reset()
 {
   // clean all the monitor objects here
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   for (int i = kNhist1D; i--;) {
     if (mHist1D[i]) {
       mHist1D[i]->Reset();

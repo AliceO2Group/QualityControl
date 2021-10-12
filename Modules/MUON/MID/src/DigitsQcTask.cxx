@@ -53,7 +53,7 @@ DigitsQcTask::~DigitsQcTask()
 
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize DigitsQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "initialize DigitsQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // Histograms to be published
   mHitsMapB = new TH2F("HitsMapB", "Hits Map - bending plane", MID_NDE, 0, MID_NDE, MID_NCOL, 0, MID_NCOL);
@@ -105,12 +105,12 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
 }
 
 void DigitsQcTask::startOfCycle()
 {
-  ILOG(Info) << "startOfCycle" << ENDM;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 static int countColumnDataHits(const o2::mid::ColumnData& digit, int id)
@@ -157,7 +157,7 @@ static std::pair<uint32_t, uint32_t> getROFSize(const o2::mid::ROFRecord& rof, g
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  ILOG(Info) << "startOfDataMonitoring" << ENDM;
+  ILOG(Info, Support) << "startOfDataMonitoring" << ENDM;
 
   auto digits = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("digits");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("digitrofs");
@@ -203,7 +203,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void DigitsQcTask::endOfCycle()
 {
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 
   mOccupancyMapB->update();
   mOccupancyMapNB->update();
@@ -211,14 +211,14 @@ void DigitsQcTask::endOfCycle()
 
 void DigitsQcTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void DigitsQcTask::reset()
 {
   // clean all the monitor objects here
 
-  ILOG(Info) << "Resetting the histogram" << ENDM;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::mid
