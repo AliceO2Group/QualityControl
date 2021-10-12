@@ -318,24 +318,24 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
     TProfile2D* histosRawAmplMaxRC;
     TProfile2D* histosRawAmplMinRC;
     //EMCAL+DCAL histo
-    histosRawAmplRmsRC = new TProfile2D(Form("RMSADC_EMCAL_%s", histoStr[trg].Data()), Form("Bunch ADC RMS (%s)", histoStr[trg].Data()), 96, 0, 95, 208, 0, 207);
+    histosRawAmplRmsRC = new TProfile2D(Form("RMSADC_EMCAL_%s", histoStr[trg].Data()), Form("Bunch ADC RMS (%s)", histoStr[trg].Data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
     histosRawAmplRmsRC->GetXaxis()->SetTitle("col");
     histosRawAmplRmsRC->GetYaxis()->SetTitle("row");
     histosRawAmplRmsRC->SetStats(0);
     getObjectsManager()->startPublishing(histosRawAmplRmsRC);
 
-    histosRawAmplMeanRC = new TProfile2D(Form("MeanADC_EMCAL_%s", histoStr[trg].Data()), Form("Bunch ADC mean (%s)", histoStr[trg].Data()), 96, 0, 95, 208, 0, 207);
+    histosRawAmplMeanRC = new TProfile2D(Form("MeanADC_EMCAL_%s", histoStr[trg].Data()), Form("Bunch ADC mean (%s)", histoStr[trg].Data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
     histosRawAmplMeanRC->GetXaxis()->SetTitle("col");
     histosRawAmplMeanRC->GetYaxis()->SetTitle("row");
     getObjectsManager()->startPublishing(histosRawAmplMeanRC);
 
-    histosRawAmplMaxRC = new TProfile2D(Form("MaxADC_EMCAL_%s", histoStr[trg].Data()), Form("Channel ADC max (%s)", histoStr[trg].Data()), 96, 0, 95, 208, 0, 207);
+    histosRawAmplMaxRC = new TProfile2D(Form("MaxADC_EMCAL_%s", histoStr[trg].Data()), Form("Channel ADC max (%s)", histoStr[trg].Data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
     histosRawAmplMaxRC->GetXaxis()->SetTitle("col");
     histosRawAmplMaxRC->GetYaxis()->SetTitle("row");
     histosRawAmplMaxRC->SetStats(0);
     getObjectsManager()->startPublishing(histosRawAmplMaxRC);
 
-    histosRawAmplMinRC = new TProfile2D(Form("MinADC_EMCAL_%s", histoStr[trg].Data()), Form("Channel ADC min (%s)", histoStr[trg].Data()), 96, 0, 95, 208, 0, 207);
+    histosRawAmplMinRC = new TProfile2D(Form("MinADC_EMCAL_%s", histoStr[trg].Data()), Form("Channel ADC min (%s)", histoStr[trg].Data()), 96, -0.5, 95.5, 208, -0.5, 207.5);
     histosRawAmplMinRC->GetXaxis()->SetTitle("col");
     histosRawAmplMinRC->GetYaxis()->SetTitle("raw");
     histosRawAmplMinRC->SetStats(0);
@@ -398,25 +398,25 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
       histosMinBunchAmpSM[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosMinBunchAmpSM[ism]);
 
-      histosBunchRawAmplRmsRC[ism] = new TProfile2D(Form("BunchRCRMSAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC RMS SM%d (%s)", ism, histoStr[trg].Data()), 48, 0, 48, 24, 0, 24);
+      histosBunchRawAmplRmsRC[ism] = new TProfile2D(Form("BunchRCRMSAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC RMS SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
       histosBunchRawAmplRmsRC[ism]->GetXaxis()->SetTitle("col");
       histosBunchRawAmplRmsRC[ism]->GetYaxis()->SetTitle("row");
       histosBunchRawAmplRmsRC[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosBunchRawAmplRmsRC[ism]);
 
-      histosBunchRawAmplMeanRC[ism] = new TProfile2D(Form("BunchRCMeanAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC mean SM%d (%s)", ism, histoStr[trg].Data()), 48, 0, 48, 24, 0, 24);
+      histosBunchRawAmplMeanRC[ism] = new TProfile2D(Form("BunchRCMeanAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Bunch ADC mean SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
       histosBunchRawAmplMeanRC[ism]->GetXaxis()->SetTitle("col");
       histosBunchRawAmplMeanRC[ism]->GetYaxis()->SetTitle("row");
       histosBunchRawAmplMeanRC[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosBunchRawAmplMeanRC[ism]);
 
-      histosMaxChannelRawAmplRC[ism] = new TProfile2D(Form("ChannelRCMaxAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Channel ADC max SM%d (%s)", ism, histoStr[trg].Data()), 48, 0, 47, 24, 0, 23);
+      histosMaxChannelRawAmplRC[ism] = new TProfile2D(Form("ChannelRCMaxAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Channel ADC max SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
       histosMaxChannelRawAmplRC[ism]->GetXaxis()->SetTitle("col");
       histosMaxChannelRawAmplRC[ism]->GetYaxis()->SetTitle("row");
       histosMaxChannelRawAmplRC[ism]->SetStats(0);
       getObjectsManager()->startPublishing(histosMaxChannelRawAmplRC[ism]);
 
-      histosMinChannelRawAmpRC[ism] = new TProfile2D(Form("ChannelRCMinAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Channel ADC min SM%d (%s)", ism, histoStr[trg].Data()), 48, 0, 47, 24, 0, 23);
+      histosMinChannelRawAmpRC[ism] = new TProfile2D(Form("ChannelRCMinAmplitudeSM%d_%s", ism, histoStr[trg].Data()), Form("Channel ADC min SM%d (%s)", ism, histoStr[trg].Data()), 48, -0.5, 47.5, 24, -0.5, 23.5);
       histosMinChannelRawAmpRC[ism]->GetXaxis()->SetTitle("col");
       histosMinChannelRawAmpRC[ism]->GetYaxis()->SetTitle("raw");
       histosMinChannelRawAmpRC[ism]->SetStats(0);
@@ -487,6 +487,9 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   const int NUMBERSM = 20;
   const int NFEESM = 40; //number of fee per sm
+
+  double thresholdMinADCocc = 3,
+         thresholdMaxADCocc = 15;
 
   std::unordered_map<RawEventType, std::array<int, 20>, RawEventTypeHash> maxADCSM, minADCSM;
   std::unordered_map<RawEventType, std::array<std::array<int, NFEESM>, NUMBERSM>, RawEventTypeHash> fecMaxPayload;
@@ -710,16 +713,16 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
           if (maxADC > maxADCSMEvent->second[supermoduleID])
             maxADCSMEvent->second[supermoduleID] = maxADC;
 
-          if (maxADC > 3)
+          if (maxADC > thresholdMaxADCocc)
             mMaxChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, maxADC); //max col,row, per SM
-          if (maxADC > 3)
+          if (maxADC > thresholdMaxADCocc)
             mMaxChannelADCRCFull[evtype]->Fill(globCol, globRow, maxADC); //for shifter
 
           if (minADC < minADCSMEvent->second[supermoduleID])
             minADCSMEvent->second[supermoduleID] = minADC;
-          if (minADC > 3)
+          if (minADC > thresholdMinADCocc)
             mMinChannelADCRCSM[evtype][supermoduleID]->Fill(col, row, minADC); //min col,row, per SM
-          if (minADC > 3)
+          if (minADC > thresholdMinADCocc)
             mMinChannelADCRCFull[evtype]->Fill(globCol, globRow, minADC); //for shifter
         }                                                                 //channels
       }                                                                   //new page
