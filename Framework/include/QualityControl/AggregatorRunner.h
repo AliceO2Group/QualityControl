@@ -112,6 +112,11 @@ class AggregatorRunner : public framework::Task
   static std::string createAggregatorRunnerName();
   static header::DataDescription createAggregatorRunnerDataDescription(const std::string& aggregatorName);
 
+  /// \brief Compute the detector name to be used in the infologger for this runner.
+  /// Compute the detector name to be used in the infologger for this runner.
+  /// If all checks belong to the same detector we use it, otherwise we use "MANY"
+  static std::string getDetectorName(std::vector<std::shared_ptr<Aggregator>> aggregators);
+
  private:
   /**
    * \brief For each aggregator, check if the data is ready and, if so, call its own aggregation method.

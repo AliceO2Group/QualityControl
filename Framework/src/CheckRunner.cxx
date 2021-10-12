@@ -175,6 +175,7 @@ void CheckRunner::init(framework::InitContext& iCtx)
                    mConfig.infologgerFilterDiscardDebug,
                    mConfig.infologgerDiscardLevel,
                    ilContext);
+    ILOG_INST.setDetector(CheckRunner::getDetectorName(mChecks));
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -452,6 +453,21 @@ void CheckRunner::reset()
   mTotalNumberMOStored = 0;
   mTotalNumberQOStored = 0;
   mTotalQOSent = 0;
+}
+
+std::string CheckRunner::getDetectorName(std::vector<Check> checks)
+{
+  std::string detectorName;
+  for (auto& check : checks) {
+    const std::string& thisDetector = check.getDetector();
+    if (detectorName.length() == 0) {
+      detectorName = thisDetector;
+    } else if (thisDetector != detectorName) {
+      detectorName = "MANY";
+      break;
+    }
+  }
+  return detectorName;
 }
 
 } // namespace o2::quality_control::checker

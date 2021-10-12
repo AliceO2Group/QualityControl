@@ -99,6 +99,7 @@ void AggregatorRunner::init(framework::InitContext& iCtx)
 
   try {
     ILOG_INST.init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, ilContext);
+    ILOG_INST.setDetector(AggregatorRunner::getDetectorName(mAggregators));
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -344,6 +345,21 @@ void AggregatorRunner::reset()
                          << current_diagnostic(true) << ENDM;
     throw;
   }
+}
+
+std::string AggregatorRunner::getDetectorName(std::vector<std::shared_ptr<Aggregator>> aggregators)
+{
+  std::string detectorName;
+  for (auto& aggregator : aggregators) {
+    const std::string& thisDetector = aggregator->getDetector();
+    if (detectorName.length() == 0) {
+      detectorName = thisDetector;
+    } else if (thisDetector != detectorName) {
+      detectorName = "MANY";
+      break;
+    }
+  }
+  return detectorName;
 }
 
 } // namespace o2::quality_control::checker

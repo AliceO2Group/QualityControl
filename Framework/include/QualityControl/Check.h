@@ -64,6 +64,7 @@ class Check
   const std::string& getName() const { return mCheckConfig.name; };
   o2::framework::OutputSpec getOutputSpec() const { return mCheckConfig.qoSpec; };
   o2::framework::Inputs getInputs() const { return mCheckConfig.inputSpecs; };
+  const std::string& getDetector() const { return mCheckConfig.detectorName; };
 
   //TODO: Unique Input string
   static o2::header::DataDescription createCheckDataDescription(const std::string& checkName);

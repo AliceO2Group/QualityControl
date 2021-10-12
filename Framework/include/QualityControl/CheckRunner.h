@@ -121,6 +121,11 @@ class CheckRunner : public framework::Task
   static std::string createSinkCheckRunnerName(o2::framework::InputSpec input);
   static std::string createCheckRunnerFacility(std::string deviceName);
 
+  /// \brief Compute the detector name to be used in the infologger for this checkrunner.
+  /// Compute the detector name to be used in the infologger for this checkrunner.
+  /// If all checks belong to the same detector we use it, otherwise we use "MANY"
+  static std::string getDetectorName(std::vector<Check> checks);
+
  private:
   /**
    * \brief Evaluate the quality of a MonitorObject.
