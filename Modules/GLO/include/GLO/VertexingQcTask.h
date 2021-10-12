@@ -14,8 +14,8 @@
 /// \author Chiara Zampolli
 ///
 
-#ifndef QC_MODULE_REC_RECVERTEXINGQCTASK_H
-#define QC_MODULE_REC_RECVERTEXINGQCTASK_H
+#ifndef QC_MODULE_GLO_GLOVERTEXINGQCTASK_H
+#define QC_MODULE_GLO_GLOVERTEXINGQCTASK_H
 
 #include "QualityControl/TaskInterface.h"
 #include "Steer/MCKinematicsReader.h"
@@ -29,7 +29,7 @@ class TProfile;
 
 using namespace o2::quality_control::core;
 
-namespace o2::quality_control_modules::rec
+namespace o2::quality_control_modules::glo
 {
 
 /// \brief Example Quality Control DPL Task
@@ -76,6 +76,6 @@ class VertexingQcTask final : public TaskInterface
   TProfile* mVtxPullsZVsMult = nullptr;                       // vertex pulls in Z
 };
 
-} // namespace o2::quality_control_modules::rec
+} // namespace o2::quality_control_modules::glo
 
-#endif // QC_MODULE_REC_RECVERTEXINGQCTASK_H
+#endif // QC_MODULE_GLO_GLOVERTEXINGQCTASK_H

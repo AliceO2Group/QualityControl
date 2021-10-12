@@ -1,34 +1,34 @@
 # ---- Library ----
 
-add_library(O2QcREC)
+add_library(O2QcGLO)
 
-target_sources(O2QcREC PRIVATE src/VertexingQcTask.cxx )
+target_sources(O2QcGLO PRIVATE src/VertexingQcTask.cxx )
 
 target_include_directories(
-  O2QcREC
+  O2QcGLO
   PUBLIC $<INSTALL_INTERFACE:include>
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcREC
+target_link_libraries(O2QcGLO
   PUBLIC
   O2QualityControl
   O2::Steer)
 
-install(TARGETS O2QcREC
+install(TARGETS O2QcGLO
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_root_dictionary(O2QcREC
+add_root_dictionary(O2QcGLO
                     HEADERS
-  include/REC/VertexingQcTask.h
-                    LINKDEF include/REC/LinkDef.h
-                    BASENAME O2QcREC)
+  include/GLO/VertexingQcTask.h
+                    LINKDEF include/GLO/LinkDef.h
+                    BASENAME O2QcGLO)
 
 # ---- Test(s) ----
 
-set(TEST_SRCS test/testQcREC.cxx)
+set(TEST_SRCS test/testQcGLO.cxx)
 
 foreach(test ${TEST_SRCS})
   get_filename_component(test_name ${test} NAME)
@@ -36,7 +36,7 @@ foreach(test ${TEST_SRCS})
 
   add_executable(${test_name} ${test})
   target_link_libraries(${test_name}
-                        PRIVATE O2QcREC Boost::unit_test_framework)
+                        PRIVATE O2QcGLO Boost::unit_test_framework)
   add_test(NAME ${test_name} COMMAND ${test_name})
   set_property(TARGET ${test_name}
     PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
