@@ -67,10 +67,21 @@ void PedestalTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PedestalTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity() : resetting everything" << activity.mId << ENDM;
+  ILOG(Info, Support) << "startOfActivity() : Run Number of Activity is " << activity.mId << ENDM;
   resetHistograms();
   mNEventsTotal = 0;
   mNEventsFromLastFillHistogramsCall = 0;
+  mRunNumber = activity.mId;
+  for (int i = 0; i < kNHist1D; i++) {
+    if (mHist1D[i]) {
+      getObjectsManager()->addMetadata(mHist1D[i]->GetName(), "RunNumberFromTask", Form("%d", mRunNumber));
+    }
+  }
+  for (int i = 0; i < kNHist2D; i++) {
+    if (mHist2D[i]) {
+      getObjectsManager()->addMetadata(mHist2D[i]->GetName(), "RunNumberFromTask", Form("%d", mRunNumber));
+    }
+  }
 }
 
 void PedestalTask::startOfCycle()
