@@ -31,7 +31,7 @@
     "externalTasks" : {
       "MatchedTracksITSTPC" : {
         "active" : "true",
-        "query" : "ITSTPCMatchingQC1D:GLO/ITSTPCMATCHQC_1D/0;ITSTPCMatchingQC2D:GLO/ITSTPCMATCHQC_2D/0",
+        "query" : "MatchedTracksITSTPC:GLO/ITSTPCMATCHQC/0",
         "" : "Use the task name as binding (encouraged)"
       }
     },
