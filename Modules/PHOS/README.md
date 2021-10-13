@@ -1,6 +1,6 @@
 # This is the documentation of the PHOS Quality Control
 
-## PHOS QC contains 2 modules:
+## PHOS QC contains 3 modules:
  - RawQcTask analyzes raw data converted to cells and HW errors
 
  - ClusterQCTask analyzes clusters

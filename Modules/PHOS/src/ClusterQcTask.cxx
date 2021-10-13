@@ -145,6 +145,10 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
     for (int i = firstCluInEvent; i < lastCluInEvent; i++) {
       const o2::phos::Cluster& clu = clusters[i];
+      float e = clu.getEnergy();
+      if (e < 1.e-4) {
+        continue;
+      }
 
       int mod = clu.module();
       //Fill occupancy and time-E histos
@@ -155,7 +159,6 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       char relid[3];
       mGeom->absToRelNumbering(absId, relid);
 
-      float e = clu.getEnergy();
       if (e > mOccCut) {
         mHist2D[kOccupancyM1 + mod - 1]->Fill(relid[1] - 0.5, relid[2] - 0.5);
       }
