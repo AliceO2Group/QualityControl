@@ -30,7 +30,7 @@
     "tasks" : {
       "Vertexing" : {
         "active" : "true",
-        "className" : "o2::quality_control_modules::rec::VertexingQcTask",
+        "className" : "o2::quality_control_modules::glo::VertexingQcTask",
         "moduleName" : "QcGLO",
         "detectorName" : "GLO",
         "cycleDurationSeconds" : "10",
