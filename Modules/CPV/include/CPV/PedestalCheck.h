@@ -40,6 +40,8 @@ class PedestalCheck : public o2::quality_control::checker::CheckInterface
   std::string getAcceptedType() override;
 
  private:
+  int getRunNumberFromMO(std::shared_ptr<MonitorObject> mo);
+
   //configurable parameters and their default values
   //see config example in Modules/CPV/etc/pedestal-task-no-sampling.json
   int mMinGoodPedestalValueM[3] = { 1, 1, 1 };
