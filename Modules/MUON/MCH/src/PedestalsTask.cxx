@@ -57,7 +57,7 @@ PedestalsTask::~PedestalsTask()
 
 void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize PedestalsTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize PedestalsTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
@@ -120,12 +120,12 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PedestalsTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void PedestalsTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void PedestalsTask::fill_noise_distributions()
@@ -298,7 +298,7 @@ void PedestalsTask::PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t chann
 
 void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
 {
-  QcInfoLogger::GetInstance() << "Plotting pedestals" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Plotting pedestals" << AliceO2::InfoLogger::InfoLogger::endm;
   using ChannelPedestal = o2::mch::calibration::MCHChannelCalibrator::ChannelPedestal;
 
   auto pedestals = ctx.inputs().get<gsl::span<ChannelPedestal>>("pedestals");
@@ -350,7 +350,7 @@ void PedestalsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void PedestalsTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mHistogramPedestalsMCH->set(mHistogramPedestalsXY[0], mHistogramPedestalsXY[1], true);
   mHistogramNoiseMCH->set(mHistogramNoiseXY[0], mHistogramNoiseXY[1], true);
@@ -359,7 +359,7 @@ void PedestalsTask::endOfCycle()
 void PedestalsTask::endOfActivity(Activity& /*activity*/)
 {
   printf("PedestalsTask::endOfActivity() called\n");
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 
 #ifdef QC_MCH_SAVE_TEMP_ROOTFILE
   save_histograms();
@@ -370,7 +370,7 @@ void PedestalsTask::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   mPedestalProcessor.reset();
 }
 

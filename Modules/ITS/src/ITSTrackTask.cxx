@@ -46,7 +46,7 @@ ITSTrackTask::~ITSTrackTask()
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  QcInfoLogger::GetInstance() << "initialize ITSTrackTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize ITSTrackTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mRunNumberPath = mCustomParameters["runNumberPath"];
 
@@ -64,18 +64,18 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSTrackTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSTrackTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  QcInfoLogger::GetInstance() << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
   auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks");
   auto rofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
@@ -124,18 +124,18 @@ void ITSTrackTask::endOfCycle()
         getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
       mRunNumber = runNumber;
     }
-    QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
 
 void ITSTrackTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSTrackTask::reset()
 {
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   hAngularDistribution->Reset();
   hNClusters->Reset();
   hTrackPhi->Reset();

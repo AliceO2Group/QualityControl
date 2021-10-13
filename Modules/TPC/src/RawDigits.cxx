@@ -36,7 +36,7 @@ RawDigits::RawDigits() : TaskInterface()
 
 void RawDigits::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize TPC RawDigits QC task" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize TPC RawDigits QC task" << ENDM;
 
   mRawReader.createReader("");
 
@@ -56,12 +56,12 @@ void RawDigits::initialize(o2::framework::InitContext& /*ctx*/)
 
 void RawDigits::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
 }
 
 void RawDigits::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void RawDigits::monitorData(o2::framework::ProcessingContext& ctx)
@@ -80,19 +80,19 @@ void RawDigits::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawDigits::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void RawDigits::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void RawDigits::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
 
   mRawDigitQC.reset();
 

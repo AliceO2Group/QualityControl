@@ -268,7 +268,7 @@ void TriggerQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           digit.mTriggers.amplC, int(sumAmplC / 8),
           digit.mTriggers.timeA, avgTimeA,
           digit.mTriggers.timeC, avgTimeC, vtxPos);
-        ILOG(Info) << msg << ENDM;
+        ILOG(Info, Support) << msg << ENDM;
       }
     }
   }

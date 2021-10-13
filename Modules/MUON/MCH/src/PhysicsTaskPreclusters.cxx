@@ -53,7 +53,7 @@ PhysicsTaskPreclusters::~PhysicsTaskPreclusters() {}
 
 void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize PhysicsTaskPreclusters" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize PhysicsTaskPreclusters" << AliceO2::InfoLogger::InfoLogger::endm;
 
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
 
@@ -138,12 +138,12 @@ void PhysicsTaskPreclusters::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PhysicsTaskPreclusters::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void PhysicsTaskPreclusters::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void PhysicsTaskPreclusters::monitorData(o2::framework::ProcessingContext& ctx)
@@ -394,19 +394,19 @@ void PhysicsTaskPreclusters::printPrecluster(gsl::span<const o2::mch::Digit> pre
   bool isWide[2];
   CoG(preClusterDigits, Xcog, Ycog, isWide);
 
-  QcInfoLogger::GetInstance() << "\n\n\n====================\n"
-                              << "[pre-cluster] nDigits = " << preClusterDigits.size() << "  charge = " << chargeSum[0] << " " << chargeSum[1] << "   CoG = " << Xcog << "," << Ycog << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "\n\n\n====================\n"
+                      << "[pre-cluster] nDigits = " << preClusterDigits.size() << "  charge = " << chargeSum[0] << " " << chargeSum[1] << "   CoG = " << Xcog << "," << Ycog << AliceO2::InfoLogger::InfoLogger::endm;
   for (auto& d : preClusterDigits) {
     float X = segment.padPositionX(d.getPadID());
     float Y = segment.padPositionY(d.getPadID());
     bool bend = !segment.isBendingPad(d.getPadID());
-    QcInfoLogger::GetInstance() << fmt::format("  DE {:4d}  PAD {:5d}  ADC {:6d}  TIME ({})",
-                                               d.getDetID(), d.getPadID(), d.getADC(), d.getTime())
-                                << "\n"
-                                << fmt::format("  CATHODE {}  PAD_XY {:+2.2f} , {:+2.2f}", (int)bend, X, Y) << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << fmt::format("  DE {:4d}  PAD {:5d}  ADC {:6d}  TIME ({})",
+                                       d.getDetID(), d.getPadID(), d.getADC(), d.getTime())
+                        << "\n"
+                        << fmt::format("  CATHODE {}  PAD_XY {:+2.2f} , {:+2.2f}", (int)bend, X, Y) << AliceO2::InfoLogger::InfoLogger::endm;
   }
-  QcInfoLogger::GetInstance() << "\n====================\n\n"
-                              << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "\n====================\n\n"
+                      << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 //_________________________________________________________________________________________________
@@ -475,14 +475,14 @@ void PhysicsTaskPreclusters::computePseudoEfficiency()
 
 void PhysicsTaskPreclusters::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 
   computePseudoEfficiency();
 }
 
 void PhysicsTaskPreclusters::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 
 #ifdef QC_MCH_SAVE_TEMP_ROOTFILE
   computePseudoEfficiency();
@@ -550,7 +550,7 @@ void PhysicsTaskPreclusters::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 } // namespace muonchambers

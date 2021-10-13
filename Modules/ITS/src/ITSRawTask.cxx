@@ -107,12 +107,12 @@ ITSRawTask::~ITSRawTask()
 
 void ITSRawTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize ITSRawTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize ITSRawTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   o2::its::GeometryTGeo* geom = o2::its::GeometryTGeo::Instance();
   geom->fillMatrixCache(o2::math_utils::bit2Mask(o2::math_utils::TransformType::L2G));
   int numOfChips = geom->getNumberOfChips();
-  QcInfoLogger::GetInstance() << "numOfChips = " << numOfChips << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "numOfChips = " << numOfChips << AliceO2::InfoLogger::InfoLogger::endm;
   setNChips(numOfChips);
 
   for (int i = 0; i < NError; i++) {
@@ -158,7 +158,7 @@ void ITSRawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   publishHistos();
 
-  QcInfoLogger::GetInstance() << "DONE Inititing Publication = " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "DONE Inititing Publication = " << AliceO2::InfoLogger::InfoLogger::endm;
 
   bulb->SetFillColor(kRed);
   mTotalFileDone = 0;
@@ -169,12 +169,12 @@ void ITSRawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSRawTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSRawTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -193,7 +193,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   ofstream timefout2("HisTimeLoop.dat", ios::app);
 
-  QcInfoLogger::GetInstance() << "BEEN HERE BRO" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "BEEN HERE BRO" << AliceO2::InfoLogger::InfoLogger::endm;
 
   int FileID = ctx.inputs().get<int>("File");
   int EPID = ctx.inputs().get<int>("EP");
@@ -203,8 +203,8 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   //Will Fix Later//
 
   int ResetDecision = ctx.inputs().get<int>("in");
-  QcInfoLogger::GetInstance() << "Reset Histogram Decision = " << ResetDecision
-                              << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Reset Histogram Decision = " << ResetDecision
+                      << AliceO2::InfoLogger::InfoLogger::endm;
   if (ResetDecision == 1) {
     reset();
   }
@@ -220,8 +220,8 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   for (int i = 0; i < NError; i++) {
-    QcInfoLogger::GetInstance() << " i = " << i << "   Error = " << mErrors[i] << "   ErrorPre = " << mErrorPre[i]
-                                << "   ErrorPerFile = " << mErrorPerFile[i] << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << " i = " << i << "   Error = " << mErrors[i] << "   ErrorPre = " << mErrorPre[i]
+                        << "   ErrorPerFile = " << mErrorPerFile[i] << AliceO2::InfoLogger::InfoLogger::endm;
     hErrorPlots->SetBinContent(i + 1, mErrors[i]);
     hErrorFile->SetBinContent((FileID + 1 + (EPID - 4) * 12), i + 1, mErrorPerFile[i]);
   }
@@ -233,7 +233,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 
   difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-  //	QcInfoLogger::GetInstance() << "Before Loop = " << difference/1000.0 << "s" <<  AliceO2::InfoLogger::InfoLogger::endm;
+  //	ILOG(Info, Support) << "Before Loop = " << difference/1000.0 << "s" <<  AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Before Loop  = " << difference / 1000.0 << "s" << std::endl;
   int i = 0;
   for (auto&& pixeldata : digits) {
@@ -256,12 +256,12 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	QcInfoLogger::GetInstance() << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Info, Support) << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "Getting Value Time  = " << difference << "ns" << std::endl;
     }
 
     if (mNEvent % 1000000 == 0 && mNEvent > 0) {
-      QcInfoLogger::GetInstance() << "ChipID = " << ChipID << "  col = " << col << "  row = " << row << "  mNEvent = " << mNEvent << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Info, Support) << "ChipID = " << ChipID << "  col = " << col << "  row = " << row << "  mNEvent = " << mNEvent << AliceO2::InfoLogger::InfoLogger::endm;
     }
     // wouldnt this update this update the text for every digit in events 1000, 2000 ... ?
     if (mNEvent % 1000 == 0 || mNEventPre != mNEvent) {
@@ -272,7 +272,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	QcInfoLogger::GetInstance() << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Info, Support) << "Before Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "Before Geo  = " << difference << "ns" << std::endl;
     }
 
@@ -289,7 +289,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Info, Support) << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "After Geo =  " << difference << "ns" << std::endl;
     }
 
@@ -309,14 +309,14 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Info, Support) << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "Fill HitMaps =  " << difference << "ns" << std::endl;
     }
 
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Info, Support) << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "Before glo etaphi =  " << difference << "ns" << std::endl;
     }
 
@@ -327,7 +327,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (mCounted < mTotalCounted) {
       end = std::chrono::high_resolution_clock::now();
       difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end - startLoop).count();
-      //	QcInfoLogger::GetInstance() << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
+      //	ILOG(Info, Support) << "After Geo = " << difference << "ns" <<  AliceO2::InfoLogger::InfoLogger::endm;
       timefout2 << "After glo etaphi =  " << difference << "ns" << std::endl;
       mCounted = mCounted + 1;
     }
@@ -342,20 +342,20 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   //cout << "EndUpdateOcc " << NEventPre <<endl;
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-  QcInfoLogger::GetInstance() << "Time After Loop = " << difference / 1000.0 << "s"
-                              << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Time After Loop = " << difference / 1000.0 << "s"
+                      << AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Time After Loop = " << difference / 1000.0 << "s" << std::endl;
 
-  QcInfoLogger::GetInstance() << "NEventDone = " << mNEvent << AliceO2::InfoLogger::InfoLogger::endm;
-  QcInfoLogger::GetInstance() << "Test  " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "NEventDone = " << mNEvent << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Test  " << AliceO2::InfoLogger::InfoLogger::endm;
 
   digits.clear();
 
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   TotalHisTime = TotalHisTime + difference;
-  QcInfoLogger::GetInstance() << "Time in Histogram = " << difference / 1000.0 << "s"
-                              << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Time in Histogram = " << difference / 1000.0 << "s"
+                      << AliceO2::InfoLogger::InfoLogger::endm;
   timefout << "Time in Histogram = " << difference / 1000.0 << "s" << std::endl;
 
   if (mNEvent == 0 && ChipID == 0 && row == 0 && col == 0 && mYellowed == 0) {
@@ -367,7 +367,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSRawTask::addObject(TObject* aObject, bool published)
 {
   if (!aObject) {
-    QcInfoLogger::GetInstance() << "ERROR: trying to add non-existent object" << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "ERROR: trying to add non-existent object" << AliceO2::InfoLogger::InfoLogger::endm;
     return;
   }
   m_objects.push_back(aObject);
@@ -643,8 +643,8 @@ void ITSRawTask::getProcessStatus(int aInfoFile, int& aFileFinish)
   //cout<<"aInfoFile = "<<aInfoFile<<endl;
   FileRest = (aInfoFile - aFileFinish) / 10;
 
-  QcInfoLogger::GetInstance() << "FileFinish = " << aFileFinish << AliceO2::InfoLogger::InfoLogger::endm;
-  QcInfoLogger::GetInstance() << "FileRest = " << FileRest << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "FileFinish = " << aFileFinish << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "FileRest = " << FileRest << AliceO2::InfoLogger::InfoLogger::endm;
 
   if (aFileFinish == 0) {
     bulb->SetFillColor(kGreen);
@@ -663,8 +663,8 @@ void ITSRawTask::updateFile(int aRunID, int aEpID, int aFileID)
   static int RunIDPre = 0, FileIDPre = 0;
   if (RunIDPre != aRunID || FileIDPre != aFileID) {
     TString FileName = Form("infiles/run000%d/data-ep%d-link%d", aRunID, aEpID, aFileID);
-    QcInfoLogger::GetInstance() << "For the Moment: RunID = " << aRunID << "  FileID = " << aFileID
-                                << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "For the Moment: RunID = " << aRunID << "  FileID = " << aFileID
+                        << AliceO2::InfoLogger::InfoLogger::endm;
     hFileNameInfo->Fill(0.5);
     hFileNameInfo->SetTitle(Form("Current File Name: %s", FileName.Data()));
     mTotalFileDone = mTotalFileDone + 1;
@@ -683,18 +683,18 @@ void ITSRawTask::updateFile(int aRunID, int aEpID, int aFileID)
 
 void ITSRawTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSRawTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSRawTask::reset()
 {
   // clean all the monitor objects here
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mTotalFileDone = 0;
   ptNFile->Clear();
@@ -704,7 +704,7 @@ void ITSRawTask::reset()
   resetHitmaps();
   resetOccupancyPlots();
 
-  QcInfoLogger::GetInstance() << "DONE the histogram Resetting" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "DONE the histogram Resetting" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 // reset method for all plots that are supposed to be reset once

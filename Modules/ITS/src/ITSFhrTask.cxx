@@ -80,7 +80,7 @@ ITSFhrTask::~ITSFhrTask()
 
 void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize ITSFhrTask" << ENDM;
+  ILOG(Info, Support) << "initialize ITSFhrTask" << ENDM;
   getParameters();
   o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   mGeom = o2::its::GeometryTGeo::Instance();
@@ -353,7 +353,7 @@ void ITSFhrTask::startOfActivity(Activity& activity)
   reset();
 }
 
-void ITSFhrTask::startOfCycle() { ILOG(Info) << "startOfCycle" << ENDM; }
+void ITSFhrTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM; }
 
 void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -693,13 +693,13 @@ void ITSFhrTask::getParameters()
 
 void ITSFhrTask::endOfCycle()
 {
-  ILOG(Debug) << "average process time == " << (double)mAverageProcessTime / mTFCount << ENDM;
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Support) << "average process time == " << (double)mAverageProcessTime / mTFCount << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ITSFhrTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void ITSFhrTask::resetGeneralPlots()
@@ -769,7 +769,7 @@ void ITSFhrTask::reset()
     }
   }
 
-  ILOG(Info) << "Reset" << ENDM;
+  ILOG(Info, Support) << "Reset" << ENDM;
 }
 
 void ITSFhrTask::getStavePoint(int layer, int stave, double* px, double* py)

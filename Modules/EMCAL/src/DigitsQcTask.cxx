@@ -63,8 +63,8 @@ DigitsQcTask::~DigitsQcTask()
 
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance().setDetector("EMC");
-  QcInfoLogger::GetInstance() << "initialize DigitsQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG_INST.setDetector("EMC");
+  ILOG(Info, Support) << "initialize DigitsQcTask" << ENDM;
   //define histograms
 
   auto get_bool = [](const std::string_view input) -> bool {
@@ -92,13 +92,13 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   double thresholdPHYS = hasConfigValue("threshold") ? get_double(getConfigValue("threshold")) : 0.2;
 
   if (hasAmpVsCell) {
-    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Enabling histograms : Amplitude vs. cellID" << QcInfoLogger::endm;
+    ILOG(Debug, Support) << "Enabling histograms : Amplitude vs. cellID" << ENDM;
   }
   if (hasTimeVsCell) {
-    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Enabling histograms : Time vs. cellID" << QcInfoLogger::endm;
+    ILOG(Debug, Support) << "Enabling histograms : Time vs. cellID" << ENDM;
   }
   if (hasCalib2D) {
-    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Enabling calibrated histograms" << QcInfoLogger::endm;
+    ILOG(Debug, Support) << "Enabling calibrated histograms" << ENDM;
   }
 
   // initialize geometry
@@ -143,24 +143,24 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "startOfActivity" << ENDM;
   reset();
 }
 
 void DigitsQcTask::startOfCycle()
 {
   mTimeFramesPerCycles = 0;
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "startOfCycle" << ENDM;
   std::map<std::string, std::string> metadata;
   mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>("EMC/Calib/BadChannels", metadata);
   //it was EMC/BadChannelMap
   if (!mBadChannelMap)
-    QcInfoLogger::GetInstance() << "No Bad Channel Map object " << AliceO2::InfoLogger::InfoLogger::endm;
+    QcInfoLogger::GetInstance() << "No Bad Channel Map object " << ENDM;
 
   mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>("EMC/Calib/Time", metadata);
   //"EMC/TimeCalibrationParams
   if (!mTimeCalib)
-    QcInfoLogger::GetInstance() << " No Time Calib object " << AliceO2::InfoLogger::InfoLogger::endm;
+    QcInfoLogger::GetInstance() << " No Time Calib object " << ENDM;
 }
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -174,7 +174,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto dataref = ctx.inputs().get("emcal-digits");
     auto const* emcheader = o2::framework::DataRefUtils::getHeader<o2::emcal::EMCALBlockHeader*>(dataref);
     if (!emcheader->mHasPayload) {
-      QcInfoLogger::GetInstance() << "No more digits" << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Info, Support) << "No more digits" << ENDM;
       return;
     }
   }
@@ -211,7 +211,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto combinedEvents = buildCombinedEvents(triggerRecordSubevents);
 
-  //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << AliceO2::InfoLogger::InfoLogger::endm;
+  //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << ENDM;
   int eventcounter = 0;
   int eventcounterCALIB = 0;
   int eventcounterPHYS = 0;
@@ -219,7 +219,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (!trg.getNumberOfObjects()) {
       continue;
     }
-    QcInfoLogger::GetInstance() << QcInfoLogger::Debug << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits from " << trg.getNumberOfSubevents() << " subevent(s)" << QcInfoLogger::endm;
+    ILOG(Debug, Support) << "Next event " << eventcounter << " has " << trg.getNumberOfObjects() << " digits from " << trg.getNumberOfSubevents() << " subevent(s)" << ENDM;
 
     //trigger type
     auto triggertype = trg.mTriggerType;
@@ -233,7 +233,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       trgClass = "CAL";
       eventcounterCALIB++;
     } else {
-      QcInfoLogger::GetInstance() << QcInfoLogger::Error << " Unmonitored trigger class requested " << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << " Unmonitored trigger class requested " << ENDM;
       continue;
     }
 
@@ -244,9 +244,9 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (auto& subev : trg.mSubevents) {
       auto cellsSubspec = cellSubEvents.find(subev.mSpecification);
       if (cellsSubspec == cellSubEvents.end()) {
-        QcInfoLogger::GetInstance() << QcInfoLogger::Error << "No cell data found for subspecification " << subev.mSpecification << QcInfoLogger::endm;
+        ILOG(Error, Support) << "No cell data found for subspecification " << subev.mSpecification << ENDM;
       } else {
-        QcInfoLogger::GetInstance() << QcInfoLogger::Debug << subev.mCellRange.getEntries() << " digits in subevent from equipment " << subev.mSpecification << QcInfoLogger::endm;
+        ILOG(Debug, Support) << subev.mCellRange.getEntries() << " digits in subevent from equipment " << subev.mSpecification << ENDM;
         gsl::span<const o2::emcal::Cell> eventdigits(cellsSubspec->second.data() + subev.mCellRange.getFirstEntry(), subev.mCellRange.getEntries());
         int ndigit = 0, ndigitGlobal = subev.mCellRange.getFirstEntry();
         for (auto digit : eventdigits) {
@@ -277,19 +277,19 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 void DigitsQcTask::endOfCycle()
 {
   mTFPerCyclesTOT->Fill(mTimeFramesPerCycles); // do not reset this histo
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "endOfCycle" << ENDM;
 }
 
 void DigitsQcTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "endOfActivity" << ENDM;
 }
 
 void DigitsQcTask::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "Resetting the histogram" << ENDM;
   for (auto cont : mHistogramContainer) {
     cont.second.reset();
   }
@@ -496,7 +496,7 @@ void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit
     fillOptional2D(mIntegratedOccupancy, col, row, digit.getEnergy());
 
   } catch (o2::emcal::InvalidCellIDException& e) {
-    QcInfoLogger::GetInstance() << QcInfoLogger::Error << "Invalid cell ID: " << e.getCellID() << QcInfoLogger::endm;
+    ILOG(Error, Support) << "Invalid cell ID: " << e.getCellID() << ENDM;
   };
 
   try {
@@ -532,7 +532,7 @@ void DigitsQcTask::DigitsHistograms::fillHistograms(const o2::emcal::Cell& digit
       }
     }
   } catch (o2::emcal::InvalidCellIDException& e) {
-    QcInfoLogger::GetInstance() << "Invalid cell ID: " << e.getCellID() << QcInfoLogger::endm;
+    ILOG(Info, Support) << "Invalid cell ID: " << e.getCellID() << ENDM;
   }
 }
 

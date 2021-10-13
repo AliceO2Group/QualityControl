@@ -73,8 +73,8 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
   std::map<std::string, std::string> headers;
   const auto* bcPattern = mCcdbApi.retrieveFromTFileAny<o2::BunchFilling>("GLO/GRP/BunchFilling", metadata, -1, &headers);
   if (!bcPattern) {
-    ILOG(Error) << "\nMO \"BunchFilling\" NOT retrieved!!!\n"
-                << ENDM;
+    ILOG(Error, Support) << "\nMO \"BunchFilling\" NOT retrieved!!!\n"
+                         << ENDM;
   }
   const int nBc = 3564;
   const int nOrbits = 256;
@@ -88,8 +88,8 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
     auto mo = mDatabase->retrieveMO("qc/FV0/MO/DigitQcTask/", moName);
     auto hBcOrbitMapTrg = (TH2F*)mo->getObject();
     if (!hBcOrbitMapTrg) {
-      ILOG(Error) << "\nMO \"" << moName << "\" NOT retrieved!!!\n"
-                  << ENDM;
+      ILOG(Error, Support) << "\nMO \"" << moName << "\" NOT retrieved!!!\n"
+                           << ENDM;
     }
     entry.second->Reset();
     // scale bc pattern by vmax to make sure the difference is non positive
