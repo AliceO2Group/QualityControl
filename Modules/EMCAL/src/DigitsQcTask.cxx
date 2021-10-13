@@ -15,6 +15,7 @@
 ///
 
 #include <boost/algorithm/string.hpp>
+#include <algorithm>
 #include <iostream>
 
 #include <TCanvas.h>
@@ -59,6 +60,8 @@ DigitsQcTask::~DigitsQcTask()
     delete mTFPerCycles;
   if (mTFPerCyclesTOT)
     delete mTFPerCyclesTOT;
+  if (mDigitsMaxSM)
+    delete mDigitsMaxSM;
 }
 
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -139,6 +142,11 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mEvCounterTFCALIB->GetXaxis()->SetTitle("NEventsPerTimeFrame_CALIB");
   mEvCounterTFCALIB->GetYaxis()->SetTitle("Counts");
   getObjectsManager()->startPublishing(mEvCounterTFCALIB);
+
+  mDigitsMaxSM = new TH1D("SMMaxNumDigits", "Supermodule with largest amount of digits", 20, -0.5, 19.5);
+  mDigitsMaxSM->GetXaxis()->SetTitle("Supermodule");
+  mDigitsMaxSM->GetYaxis()->SetTitle("counts");
+  getObjectsManager()->startPublishing(mDigitsMaxSM);
 }
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
@@ -215,6 +223,8 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   int eventcounter = 0;
   int eventcounterCALIB = 0;
   int eventcounterPHYS = 0;
+  std::array<int, 20> numDigitsSM;
+  std::fill(numDigitsSM.begin(), numDigitsSM.end(), 0);
   for (auto trg : combinedEvents) {
     if (!trg.getNumberOfObjects()) {
       continue;
@@ -259,12 +269,22 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
             goodcell = mBadChannelMap->getChannelStatus(digit.getTower()) != MaskType_t::GOOD_CELL;
           }
           histos.fillHistograms(digit, goodcell, timeoffset, bcphase);
+          if (isPhysTrigger) {
+            auto [sm, mod, iphi, ieta] = mGeometry->GetCellIndex(digit.getTower());
+            numDigitsSM[sm]++;
+          }
           ndigit++;
           ndigitGlobal++;
         }
       }
     }
     histos.countEvent();
+
+    if (isPhysTrigger) {
+      auto maxSM = std::max_element(numDigitsSM.begin(), numDigitsSM.end());
+      auto indexMaxSM = maxSM - numDigitsSM.begin();
+      mDigitsMaxSM->Fill(indexMaxSM);
+    }
 
     eventcounter++;
   }
@@ -301,6 +321,8 @@ void DigitsQcTask::reset()
     mEvCounterTFCALIB->Reset();
   if (mTFPerCycles)
     mTFPerCycles->Reset();
+  if (mDigitsMaxSM)
+    mDigitsMaxSM->Reset();
 }
 
 std::vector<DigitsQcTask::CombinedEvent> DigitsQcTask::buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const

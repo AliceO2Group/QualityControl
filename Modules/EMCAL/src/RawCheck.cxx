@@ -57,7 +57,7 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
       h->GetXaxis()->SetRangeUser(20, 60);
       Int_t maxbin = h->GetMaximumBin();
       h->GetXaxis()->SetRange(first, last);
-      if (maxbin > 30 && maxbin < 50) {
+      if (maxbin > 20 && maxbin < 50) {
         //Float_t entries = h->GetBinContent(maxbin + 1);
         if (entriesBadRegion > 0.5 * totentries) {
           result = Quality::Bad;
