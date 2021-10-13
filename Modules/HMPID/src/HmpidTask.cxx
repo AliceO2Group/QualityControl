@@ -191,8 +191,8 @@ void HmpidTask::reset()
   ILOG(Info) << "Resetting the histogram" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
-  hBusyTime->ResetAttFill();
-  hEventSize->ResetAttFill();
+  hBusyTime->Set(0);
+  hEventSize->Set(0);
 }
 
 } // namespace o2::quality_control_modules::hmpid
