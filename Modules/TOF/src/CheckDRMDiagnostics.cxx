@@ -21,18 +21,15 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 
-// ROOT
-#include <TH1.h>
-#include <TH2.h>
-#include <TPaveText.h>
-#include <TList.h>
-
 using namespace std;
 
 namespace o2::quality_control_modules::tof
 {
 
-void CheckDRMDiagnostics::configure(std::string) {}
+void CheckDRMDiagnostics::configure(std::string)
+{
+  mShifterMessages.Configure(mCustomParameters);
+}
 
 Quality CheckDRMDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -44,50 +41,45 @@ Quality CheckDRMDiagnostics::check(std::map<std::string, std::shared_ptr<Monitor
     (void)moName;
     if (mo->getName() == "DRMCounter") {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
-      //      if (h->GetEntries() == 0) {
-      //        result = Quality::Medium;
-
+      if (h->GetEntries() == 0) {
+        result = Quality::Medium;
+        continue;
+      }
       for (int i = 2; i < h->GetNbinsX(); i++) {
         for (int j = 2; j < h->GetNbinsY(); j++) {
-          const float content = h->GetBinContent(i, j);
-          if (content > 0) { // If larger than zero
+          if (h->GetBinContent(i, j) > 0) { // If larger than zero
             result = Quality::Bad;
+            break;
           }
         }
+        if (result == Quality::Bad) {
+          break;
+        }
       }
+      result = Quality::Good;
     }
   }
   return result;
 }
 
-std::string CheckDRMDiagnostics::getAcceptedType() { return "TH1F"; }
+std::string CheckDRMDiagnostics::getAcceptedType() { return "TH2F"; }
 
 void CheckDRMDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  ILOG(Info, Support) << "USING BEAUTIFY";
   if (mo->getName() == "DRMCounter") {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     if (!h) {
       ILOG(Warning, Support) << "Did not get MO for DRMCounter";
       return;
     }
-    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->Draw();
-    msg->SetName(Form("%s_msg", mo->GetName()));
-
-    if (checkResult == Quality::Bad) {
-      ILOG(Info, Support) << "Quality::Bad, Error bins with content >0";
-      msg->Clear();
+    TPaveText* msg = mShifterMessages.MakeMessagePad(h, checkResult);
+    if (checkResult == Quality::Good) {
+      msg->AddText("OK!");
+    } else if (checkResult == Quality::Bad) {
       msg->AddText("DRM reporting error words");
-      msg->SetFillColor(kGreen);
-      //
-      //      h->SetFillColor(kGreen);
-    } else {
-      ILOG(Info, Support) << "Quality::Null, No Error bins with content >0";
-      msg->SetTextColor(kWhite);
-      msg->SetFillColor(kBlack);
-      msg->AddText("DRM words: OK!");
+    } else if (checkResult == Quality::Medium) {
+      msg->AddText("No entries. IF TOF IN RUN");
+      msg->AddText("email TOF on-call.");
     }
   } else
     ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
