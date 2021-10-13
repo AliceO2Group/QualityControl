@@ -16,20 +16,21 @@
 /// \author Based on the work from Piotr Konopka
 ///
 
+#include "TPC/TH1ReductorTPC.h"
+#include "QualityControl/QcInfoLogger.h"
 #include <TH1.h>
 #include <vector>
 #include <TCanvas.h>
 #include <TList.h>
 #include <TAxis.h>
-#include "QualityControl/QcInfoLogger.h"
-#include "TPC/TH1ReductorTPC.h"
 
 namespace o2::quality_control_modules::tpc
 {
-
+/*
 void* TH1ReductorTPC::getBranchAddress()
 {
-  return &mStats;
+  //return &mStats;
+  return Form("Hellow");
 }
 
 const char* TH1ReductorTPC::getBranchLeafList()
@@ -37,8 +38,8 @@ const char* TH1ReductorTPC::getBranchLeafList()
   //return Form("numberPads/I:entries[%i]/D:mean[%i]:stddev[%i]", numberPads, numberPads, numberPads);
   return Form("Hellow");
 }
-
-void TH1ReductorTPC::update(TObject* obj, std::vector<std::vector<float>>& axis)
+*/
+void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource, std::vector<std::vector<float>>& axis)
 {
   TList* padList = nullptr;   // List of TPads for input TCanvas.
   TH1* histo = nullptr;       // General pointer to the histogram to trend.
@@ -56,7 +57,7 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<std::vector<float>>& axis)
     padList->SetOwner(kTRUE);
     numberPads = padList->GetEntries();
   } else {  // Slicer case for one histo: number of pads = axis.size*innerAxis.size.
-    if (axis[0].size() > 1) {
+    if (axis[0].size() > 1) { // To ensure we use the slicing.
       axisSize = (int)axis.size();
       innerAxisSize = (int)axis[0].size() - 1;
       numberPads = axisSize*innerAxisSize;
@@ -76,22 +77,38 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<std::vector<float>>& axis)
   // Get the trending quantities.
     if (histo) {
       for (int i = 0; i < axisSize; i++) {  // 1 pass if canvas.
-        for (int j = 0; j < innerAxisSize-1; j++) { // 1 pass if canvas.
-          int index = j; // array index in case of slicer.
-          if (isCanvas) {index = iPad;}
-          sliceInfo mySlice;
+        for (int j = 0; j < innerAxisSize; j++) { // 1 pass if canvas.
+          int index = iPad; // array index in case of canvas.
+          if (!isCanvas) {
+            index = j;
+            if (innerAxisSize > 1) {  // Cut the axes if we have enough slices.
+              histo->GetXaxis()->SetRangeUser(axis[i][j], axis[i][j + 1]);
+            }
+          }
+
+          SliceInfo mySlice;
           mySlice.entries = histo->GetEntries();
-          mySlice.mean = histo->GetMean();
-          mySlice.stddev = histo->GetStdDev();
-          mStats.push_back(mySlice);
-          printf("Index: %d Mean slice: %.2f\n", index, mySlice.mean);
+          mySlice.meanX = histo->GetMean(1);//-1.;  // Not used if slicing.
+          mySlice.stddevX = histo->GetStdDev(1);//-1.;  // Not used if slicing.
+          mySlice.errMeanX = mySlice.stddevX/(sqrt(mySlice.entries));//-1.;  // Not used if slicing.
+          mySlice.meanY = histo->GetMean(2);
+          mySlice.stddevY = histo->GetStdDev(2);
+          mySlice.errMeanY = mySlice.stddevY/(sqrt(mySlice.entries));
+          if (isCanvas) {
+            mySlice.meanX = histo->GetMean(1);
+            mySlice.stddevX = histo->GetStdDev(1);
+            mySlice.errMeanX = mySlice.stddevX/(sqrt(mySlice.entries));
+          }
+
+          reducedSource.emplace_back(mySlice);
+          ILOG(Info, Support) << "i: " << i << " Index: " << index << " Mean slice along x: "
+            << mySlice.meanX << " Mean slice along y: " << mySlice.meanY << ENDM;
         }
       }
     } else {
       ILOG(Error, Support) << "Error: histo not found." << ENDM;
     }
-  } // for (int iPad = 0; iPad < nPads; iPad++).
-  ILOG(Info, Support) << "Done with histo " << obj->GetName() << ENDM;
+  }
 }
 
 } // namespace o2::quality_control_modules::tpc

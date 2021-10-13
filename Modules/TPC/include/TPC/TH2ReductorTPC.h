@@ -19,6 +19,7 @@
 #ifndef QUALITYCONTROL_TH2REDUCTORTPC_H
 #define QUALITYCONTROL_TH2REDUCTORTPC_H
 
+#include "TPC/SliceInfo.h"
 #include "TPC/ReductorTPC.h"
 #include <vector>
 
@@ -38,9 +39,9 @@ class TH2ReductorTPC : public quality_control_modules::tpc::ReductorTPC
   ~TH2ReductorTPC() = default;
 
   /// \brief Definitions of the methods common to all reductors.
-  void* getBranchAddress() final;
-  const char* getBranchLeafList() final;
-  void update(TObject* obj, std::vector<std::vector<float>>& axis) final;
+  //void* getBranchAddress() final;
+  //const char* getBranchLeafList() final;
+  void update(TObject* obj, std::vector<SliceInfo>& reducedSource, std::vector<std::vector<float>>& axis) final;
 
  private:
   static constexpr int NMAXSLICES = 72; ///< Maximum number of slices, or histograms for an input canvas. TBI: Make configurable.

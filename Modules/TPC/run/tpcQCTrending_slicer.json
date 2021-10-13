@@ -32,17 +32,17 @@
             {
               "type": "repository",
               "path": "qc/TPC/MO/Tracks",
-              "names": [ "hPhiAside", "hEta" ],
+              "names": [ "hEtaRatio", "hEta" ],
               "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
-              "axisDivision": [ [ "-999.0" ] ],
+              "axisDivision": [ [ "-2.0", "0.0", "2.0" ] ],
               "moduleName": "QcTPC"
             }
           ],
           "plots": [
             {
-              "name": "Phi_SideA_StatMean_Trend_AllSlices",
-              "title": "Mean of the azimuthal angles vs time, A side",
-              "varexp": "hPhiAside.mean:time",
+              "name": "hEtaRatio_StatMean_Trend",
+              "title": "Mean of the eta ratio",
+              "varexp": "hEtaRatio.meanX:time",
               "selection": "",
               "option": "*L",
               "graphErrors": ""
@@ -50,7 +50,7 @@
             {
               "name": "Eta_StatMean_Trend",
               "title": "Mean of the pseudorapidity vs time",
-              "varexp": "hEta.mean:time",
+              "varexp": "hEta.meanX:time",
               "selection": "",
               "option": "*L",
               "graphErrors": ""

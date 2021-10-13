@@ -25,7 +25,7 @@
 
 namespace o2::quality_control_modules::tpc
 {
-
+/*
 void* TH2ReductorTPC::getBranchAddress()
 {
   return &mStats;
@@ -35,8 +35,8 @@ const char* TH2ReductorTPC::getBranchLeafList()
 {
   return Form("sumw[%i]/D:sumw2[%i]:sumwx[%i]:sumwx2[%i]:sumwy[%i]:sumwy2[%i]:sumwxy[%i]:entries[%i]", NMAXSLICES, NMAXSLICES, NMAXSLICES, NMAXSLICES, NMAXSLICES, NMAXSLICES, NMAXSLICES, NMAXSLICES);
 }
-
-void TH2ReductorTPC::update(TObject* obj, std::vector<std::vector<float>>& axis)
+*/
+void TH2ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource, std::vector<std::vector<float>>& axis)
 {
   TList* padList = nullptr;                // List of TPads for input TCanvas.
   int nPads = 1;                           // Number of pads in obj (Set to 1 for TH2).
@@ -75,6 +75,7 @@ void TH2ReductorTPC::update(TObject* obj, std::vector<std::vector<float>>& axis)
         mStats.sumwy2[iPad] = stats[5];
         mStats.sumwxy[iPad] = stats[6];
         mStats.entries[iPad] = histo->GetEntries();
+        reducedSource.clear();
 
       } else if ((int)axis.size() == 1) {
         for (int i = 0; i < (int)axis.size(); i++) {

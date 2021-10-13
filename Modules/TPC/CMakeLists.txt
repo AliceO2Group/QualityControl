@@ -42,6 +42,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/CalDetPublisher.h
                             include/TPC/Utility.h
                             include/TPC/RawDigits.h
+                            include/TPC/SliceInfo.h
                             include/TPC/TrendingTaskTPC.h
                             include/TPC/TrendingTaskConfigTPC.h
                             include/TPC/ReductorTPC.h

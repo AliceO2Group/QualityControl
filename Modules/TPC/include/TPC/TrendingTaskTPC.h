@@ -19,10 +19,10 @@
 #ifndef QUALITYCONTROL_TRENDINGTASKTPC_H
 #define QUALITYCONTROL_TRENDINGTASKTPC_H
 
-#include "QualityControl/PostProcessingInterface.h"
+#include "TPC/SliceInfo.h"
 #include "TPC/TrendingTaskConfigTPC.h"
 #include "TPC/ReductorTPC.h"
-#include "TPC/TH1ReductorTPC.h"
+#include "QualityControl/PostProcessingInterface.h"
 
 #include <memory>
 #include <unordered_map>
@@ -36,15 +36,20 @@ class DatabaseInterface;
 
 namespace o2::quality_control_modules::tpc
 {
+/// \brief  A post-processing task tuned for the needs of the trending of the TPC.
+///
+/// A post-processing task which trends TPC related objects inside QC database (QCDB).
+/// It extracts some values of one or multiple objects using the Reductor classes,
+/// then stores them inside a TTree. The class exposes the TTree::Draw interface
+/// to the user tp generate the plots out of the TTree.
+/// This class is specific to the TPC: a subrange slicer is available in the json,
+/// and input/output canvas can be dealt with alongside normal histograms.
+///
+/// \author Marcel Lesch
+/// \author Cindy Mordasini
+/// \author Based on the work from Piotr Konopka
 
-/// \brief  A post-processing task tuned for the needs of the trending of the TPC, which trends values, stores them in a TTree and produces plots.
-///
-/// A post-processing task which trends objects inside QC database (QCDB). It extracts some values of one or multiple objects using the Reductor classes, then stores them inside a TTree.
-/// One can generate plots out the TTree - the class exposes the TTree::Draw interface to the user. The TTree and plots are stored in the QCDB. The class is configured with configuration files, see Framework/postprocessing.json as an example.
-/// This class is specific to the trending of the TPC, as the configuration of a trending in the json file takes into account the arrays of values for the slicing subranges. Another feature is the possibility to input and output canvases in parallel to the histogram/graph returned by the common trending.
-///
-/// \author based on work of Piotr Konopka
-class TrendingTaskTPC : public quality_control::postprocessing::PostProcessingInterface
+class TrendingTaskTPC : public o2::quality_control::postprocessing::PostProcessingInterface
 {
  public:
   /// \brief Constructor.
@@ -54,27 +59,28 @@ class TrendingTaskTPC : public quality_control::postprocessing::PostProcessingIn
 
   /// \brief Definitions of the methods used for the trending.
   void configure(std::string name, const boost::property_tree::ptree& config) final;
-  void initialize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) final;
-  void update(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) final;
-  void finalize(quality_control::postprocessing::Trigger, framework::ServiceRegistry&) final;
+  void initialize(o2::quality_control::postprocessing::Trigger, framework::ServiceRegistry&) final;
+  void update(o2::quality_control::postprocessing::Trigger, framework::ServiceRegistry&) final;
+  void finalize(o2::quality_control::postprocessing::Trigger, framework::ServiceRegistry&) final;
 
  private:
   struct MetaData {
     Int_t runNumber = 0;
   };
 
-  // Method to access the histograms to trend and publish their outputs.
   void trendValues(uint64_t timestamp, o2::quality_control::repository::DatabaseInterface&);
   void generatePlots();
-  void drawCanvas(TCanvas* thisCanvas, const std::string& var, const std::string& sel, const std::string& opt, const std::string& err, const std::string& name);
+  void drawCanvas(TCanvas* thisCanvas, const std::string& var, const std::string& sel,
+    const std::string& opt, const std::string& err, const std::string& name);
 
-  TrendingTaskConfigTPC mConfig;                                            ///< JSON configuration of source and plots.
-  MetaData mMetaData;                                                       ///<
-  UInt_t mTime;                                                             ///<
-  std::unique_ptr<TTree> mTrend;                                            ///< Trending values at a given time.
-  std::map<std::string, TObject*> mPlots;                                   ///<
-  std::unordered_map<std::string, std::unique_ptr<ReductorTPC>> mReductors; ///< Reductors for all the sources in the post-processing json.
-  int mNumberPads;                                                          ///< Number of pads in the output canvas.
+  TrendingTaskConfigTPC mConfig;
+  MetaData mMetaData;
+  UInt_t mTime;
+  std::unique_ptr<TTree> mTrend;
+  std::map<std::string, TObject*> mPlots;
+  std::unordered_map<std::string, std::unique_ptr<ReductorTPC>> mReductors;
+  int mNumberPads;    // LOKI: Needed?
+  std::unordered_map<std::string, std::vector<SliceInfo>> mSources;
 };
 
 } // namespace o2::quality_control_modules::tpc

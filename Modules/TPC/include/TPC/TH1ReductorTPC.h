@@ -19,11 +19,13 @@
 #ifndef QUALITYCONTROL_TH1REDUCTORTPC_H
 #define QUALITYCONTROL_TH1REDUCTORTPC_H
 
+#include "TPC/SliceInfo.h"
 #include "TPC/ReductorTPC.h"
 #include <vector>
 
 namespace o2::quality_control_modules::tpc
 {
+  /*
   struct sliceInfo {
     //sliceInfo() = default;
     //~sliceInfo() = default;
@@ -31,7 +33,7 @@ namespace o2::quality_control_modules::tpc
     double entries;   ///< Number of entries for each slice/histogram.
     double mean;      ///< Mean value for each slice/histogram.
     double stddev;    ///< Standard deviation for each slice/histogram.
-  };
+  };*/
 
 /// \brief A TPC-specific reductor which obtains the most popular characteristics of TH1.
 ///
@@ -45,11 +47,11 @@ class TH1ReductorTPC : public quality_control_modules::tpc::ReductorTPC
   TH1ReductorTPC() = default;
   /// \brief Destructor.
   ~TH1ReductorTPC() = default;
-
+/*
   /// \brief Definitions of the methods common to all reductors for TPC.
   void* getBranchAddress() final;
-  const char* getBranchLeafList() final;
-  void update(TObject* obj, std::vector<std::vector<float>>& axis) final;
+  const char* getBranchLeafList() final;*/
+  void update(TObject* obj, std::vector<SliceInfo>& reducedSource, std::vector<std::vector<float>>& axis) final;
 
  //private:
   /*struct sliceInfo {
@@ -61,7 +63,7 @@ class TH1ReductorTPC : public quality_control_modules::tpc::ReductorTPC
     double stddev;    ///< Standard deviation for each slice/histogram.
   };
   */
-  std::vector<sliceInfo> mStats;  //!<!
+  //std::vector<sliceInfo> mStats;  //!<!
 
 };
 
