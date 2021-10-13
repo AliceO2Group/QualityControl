@@ -308,6 +308,7 @@ void TaskRunner::startOfActivity()
   // Start activity in module's stask and update objectsManager
   Activity activity(mRunNumber, mTaskConfig.activityType, mTaskConfig.activityPeriodName, mTaskConfig.activityPassName, mTaskConfig.activityProvenance);
   ILOG(Info, Ops) << "Starting run " << mRunNumber << ENDM;
+  mObjectsManager->setActivity(activity);
   mCollector->setRunNumber(mRunNumber);
   mTask->startOfActivity(activity);
   mObjectsManager->updateServiceDiscovery();

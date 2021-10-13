@@ -144,7 +144,7 @@ class ObjectsManager
   size_t getNumberPublishedObjects();
 
   /**
-   * Returns the published MonitorObject specified by its name
+   * Returns the published MonitorObject specified by its index
    * @param index
    * @return A pointer to the MonitorObject.
    * @throw ObjectNotFoundError if the object is not found.
@@ -164,6 +164,9 @@ class ObjectsManager
    */
   void removeAllFromServiceDiscovery();
 
+  const Activity& getActivity() const;
+  void setActivity(const Activity& activity);
+
  private:
   std::unique_ptr<MonitorObjectCollection> mMonitorObjects;
   std::string mTaskName;
@@ -171,6 +174,7 @@ class ObjectsManager
   std::string mDetectorName;
   std::unique_ptr<ServiceDiscovery> mServiceDiscovery;
   bool mUpdateServiceDiscovery;
+  Activity mActivity;
 };
 
 } // namespace o2::quality_control::core

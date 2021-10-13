@@ -59,6 +59,7 @@ void ObjectsManager::startPublishing(TObject* object)
   }
   auto* newObject = new MonitorObject(object, mTaskName, mTaskClass, mDetectorName);
   newObject->setIsOwner(false);
+  newObject->setActivity(mActivity);
   mMonitorObjects->Add(newObject);
   mUpdateServiceDiscovery = true;
 }
@@ -168,6 +169,21 @@ void ObjectsManager::setDisplayHint(TObject* obj, const std::string& hints)
 {
   MonitorObject* mo = getMonitorObject(obj->GetName());
   mo->addOrUpdateMetadata(gDisplayHintsKey, hints);
+}
+
+const Activity& ObjectsManager::getActivity() const
+{
+  return mActivity;
+}
+
+void ObjectsManager::setActivity(const Activity& activity)
+{
+  mActivity = activity;
+  // update the activity of all the objects
+  for (auto tobj : *mMonitorObjects) {
+    MonitorObject* mo = dynamic_cast<MonitorObject*>(tobj);
+    mo->setActivity(activity);
+  }
 }
 
 } // namespace o2::quality_control::core
