@@ -28,7 +28,7 @@ namespace o2::quality_control_modules::tof
 
 void CheckDRMDiagnostics::configure(std::string)
 {
-  mShifterMessages.Configure(mCustomParameters);
+  mShifterMessages.configure(mCustomParameters);
 }
 
 Quality CheckDRMDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)

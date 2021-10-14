@@ -34,7 +34,7 @@ void CheckRawToT::configure(std::string)
   if (auto param = mCustomParameters.find("MaxRawTime"); param != mCustomParameters.end()) {
     mMaxRawToT = ::atof(param->second.c_str());
   }
-  mShifterMessages.Configure(mCustomParameters);
+  mShifterMessages.configure(mCustomParameters);
 }
 
 Quality CheckRawToT::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)

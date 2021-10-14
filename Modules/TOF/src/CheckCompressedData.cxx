@@ -31,8 +31,8 @@ void CheckCompressedData::configure(std::string)
     mDiagnosticThresholdPerSlot = ::atof(param->second.c_str());
   }
 
-  mShifterMessages.Configure(0.9, 0.1, 1.0, 0.5); // Setting default before checking in configuration
-  mShifterMessages.Configure(mCustomParameters);
+  mShifterMessages.configure(0.9, 0.1, 1.0, 0.5); // Setting default before checking in configuration
+  mShifterMessages.configure(mCustomParameters);
 }
 
 Quality CheckCompressedData::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)

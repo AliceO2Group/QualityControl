@@ -49,7 +49,7 @@ void CheckRawMultiplicity::configure(std::string)
   if (auto param = mCustomParameters.find("MaxFractAtLowMult"); param != mCustomParameters.end()) {
     mMaxFractAtLowMult = ::atof(param->second.c_str());
   }
-  mShifterMessages.Configure(mCustomParameters);
+  mShifterMessages.configure(mCustomParameters);
 }
 
 Quality CheckRawMultiplicity::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)

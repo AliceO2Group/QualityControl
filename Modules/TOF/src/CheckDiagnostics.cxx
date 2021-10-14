@@ -28,7 +28,7 @@ namespace o2::quality_control_modules::tof
 
 void CheckDiagnostics::configure(std::string)
 {
-  mShifterMessages.Configure(mCustomParameters);
+  mShifterMessages.configure(mCustomParameters);
 }
 
 Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)

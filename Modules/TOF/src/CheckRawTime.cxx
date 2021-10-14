@@ -35,7 +35,7 @@ void CheckRawTime::configure(std::string)
   if (auto param = mCustomParameters.find("MinPeakRatioIntegral"); param != mCustomParameters.end()) {
     mMinPeakRatioIntegral = ::atof(param->second.c_str());
   }
-  mShifterMessages.Configure(mCustomParameters);
+  mShifterMessages.configure(mCustomParameters);
 }
 
 Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)

@@ -40,7 +40,7 @@ struct MessagePad {
   int mEnabledFlag = 1;                 /// Flag to enable or disable the pad
 
   template <typename T>
-  void Configure(const T& CustomParameters)
+  void configure(const T& CustomParameters)
   {
     if (auto param = CustomParameters.find("PadLowX"); param != CustomParameters.end()) {
       mPadLowX = ::atof(param->second.c_str());
@@ -59,7 +59,7 @@ struct MessagePad {
     }
   }
 
-  void Configure(const float& padLowX, const float& padLowY, const float& padHighX, const float& padHighY)
+  void configure(const float& padLowX, const float& padLowY, const float& padHighX, const float& padHighY)
   {
     mPadLowX = padLowX;
     mPadLowY = padLowY;
