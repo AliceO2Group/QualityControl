@@ -11,7 +11,7 @@
 
 ///
 /// \file   CheckDRMDiagnostics.h
-/// \author Nicolo' Jacazio,Pranjal Sarma
+/// \author Nicolo' Jacazio, Pranjal Sarma
 /// \brief  Checker dedicated to the study of low level raw data diagnostics words
 ///
 
@@ -19,8 +19,7 @@
 #define QC_MODULE_TOF_CHECKDRMDIAGNOSTICS_H
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
+#include "Base/MessagePad.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -41,6 +40,10 @@ class CheckDRMDiagnostics : public o2::quality_control::checker::CheckInterface
   Quality check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap) override;
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
+
+ private:
+  /// Messages to print on the output PAD
+  MessagePad mShifterMessages;
 
   ClassDefOverride(CheckDRMDiagnostics, 1);
 };
