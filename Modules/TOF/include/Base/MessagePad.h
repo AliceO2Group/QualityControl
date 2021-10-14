@@ -73,11 +73,11 @@ struct MessagePad {
   }
 
   template <typename T>
-  TPaveText* MakeMessagePad(T* histogram, const Quality& quality)
+  std::shared_ptr<TPaveText> MakeMessagePad(T* histogram, const Quality& quality)
   {
-    TPaveText* msg = new TPaveText(mPadLowX, mPadLowY, mPadHighX, mPadHighY, "blNDC");
+    std::shared_ptr<TPaveText> msg = std::make_shared<TPaveText>(mPadLowX, mPadLowY, mPadHighX, mPadHighY, "blNDC");
     if (mEnabledFlag) {
-      histogram->GetListOfFunctions()->Add(msg);
+      histogram->GetListOfFunctions()->Add(msg.get());
     }
     msg->SetBorderSize(1);
     msg->SetTextColor(kBlack);

@@ -129,7 +129,7 @@ void CheckRawMultiplicity::beautify(std::shared_ptr<MonitorObject> mo, Quality c
 {
   if (mo->getName() == "TOFRawsMulti") {
     auto* h = dynamic_cast<TH1I*>(mo->getObject());
-    TPaveText* msg = mShifterMessages.MakeMessagePad(h, checkResult);
+    auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     if (checkResult == Quality::Good) {
       msg->AddText(Form("Mean value = %5.2f", mRawHitsMean));
       msg->AddText(Form("Reference range: %5.2f-%5.2f", mMinRawHits, mMaxRawHits));

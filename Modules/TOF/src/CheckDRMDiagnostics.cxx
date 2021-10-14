@@ -72,7 +72,7 @@ void CheckDRMDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       ILOG(Warning, Support) << "Did not get MO for DRMCounter";
       return;
     }
-    TPaveText* msg = mShifterMessages.MakeMessagePad(h, checkResult);
+    auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     if (checkResult == Quality::Good) {
       msg->AddText("OK!");
     } else if (checkResult == Quality::Bad) {
