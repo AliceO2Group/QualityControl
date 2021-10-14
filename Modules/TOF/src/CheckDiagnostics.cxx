@@ -21,18 +21,15 @@
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
 
-// ROOT
-#include <TH1.h>
-#include <TH2.h>
-#include <TPaveText.h>
-#include <TList.h>
-
 using namespace std;
 
 namespace o2::quality_control_modules::tof
 {
 
-void CheckDiagnostics::configure(std::string) {}
+void CheckDiagnostics::configure(std::string)
+{
+  mShifterMessages.configure(mCustomParameters);
+}
 
 Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
@@ -42,7 +39,7 @@ Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObj
 
   for (auto& [moName, mo] : *moMap) {
     (void)moName;
-    if (mo->getName() == "DRMCounter") {
+    if (mo->getName() == "RDHCounter") {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
       if (h->GetEntries() == 0) {
         result = Quality::Medium;
@@ -52,47 +49,21 @@ Quality CheckDiagnostics::check(std::map<std::string, std::shared_ptr<MonitorObj
   return result;
 }
 
-std::string CheckDiagnostics::getAcceptedType() { return "TH1F"; }
+std::string CheckDiagnostics::getAcceptedType() { return "TH2F"; }
 
 void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  ILOG(Info, Support) << "USING BEAUTIFY";
-  if (mo->getName() == "DRMCounter") {
-    auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->Draw();
-    msg->SetName(Form("%s_msg", mo->GetName()));
-
+  if (mo->getName() == "RDHCounter") {
+    auto* h = dynamic_cast<TH2F*>(mo->getObject());
+    auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     if (checkResult == Quality::Good) {
-      ILOG(Info, Support) << "Quality::Good, setting to green";
-      msg->Clear();
       msg->AddText("OK!");
-      msg->SetFillColor(kGreen);
-      //
-      h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info, Support) << "Quality::Bad, setting to red";
-      //
-      msg->Clear();
       msg->AddText("No TOF hits for all events.");
       msg->AddText("Call TOF on-call.");
-      msg->SetFillColor(kRed);
-      //
-      h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to orange";
-      //
-      msg->Clear();
       msg->AddText("No entries. IF TOF IN RUN");
-      msg->AddText("check the TOF TWiki");
-      msg->SetFillColor(kYellow);
-      //
-      h->SetFillColor(kOrange);
-    } else {
-      ILOG(Info, Support) << "Quality::Null, setting to black background";
-      msg->SetTextColor(kWhite);
-      msg->SetFillColor(kBlack);
+      msg->AddText("email TOF on-call.");
     }
   } else
     ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();

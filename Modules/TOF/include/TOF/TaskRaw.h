@@ -84,9 +84,9 @@ class RawDataDecoder final : public DecoderBase
   Counter<nequipments, nullptr> mCounterIndexEOInTimeWin; /// Counter for the single electronic index for noise analysis
   Counter<nequipments, nullptr> mCounterNoisyChannels;    /// Counter for noisy channels
   Counter<1024, nullptr> mCounterTimeBC;                  /// Counter for the Bunch Crossing Time
-  Counter<91, nullptr> mCounterNoiseMap[ncrates][4];      /// Counter for the Noise Hit Map, counts per crate and per FEA (4 per strip)
+  Counter<nstrips, nullptr> mCounterNoiseMap[ncrates][4]; /// Counter for the Noise Hit Map, counts per crate and per FEA (4 per strip)
   Counter<ncrates, nullptr> mCounterRDHTriggers[2];       /// Counter for RDH triggers, one counts the triggers served to TDCs and one counts the triggers received
-  Counter<72, nullptr> mCounterRDHOpen;                   /// Counter for RDH open
+  Counter<ncrates, nullptr> mCounterRDHOpen;              /// Counter for RDH open
   Counter<800, nullptr> mCounterOrbitsPerCrate[ncrates];  /// Counter for orbits per crate
 
   /// Function to init histograms

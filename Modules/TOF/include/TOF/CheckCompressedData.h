@@ -19,8 +19,7 @@
 #define QC_MODULE_TOF_CHECKCOMPRESSEDDATA_H
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
+#include "Base/MessagePad.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -44,6 +43,9 @@ class CheckCompressedData : public o2::quality_control::checker::CheckInterface
 
  private:
   float mDiagnosticThresholdPerSlot = 0;
+
+  /// Messages to print on the output PAD
+  MessagePad mShifterMessages;
 
   ClassDefOverride(CheckCompressedData, 1);
 };

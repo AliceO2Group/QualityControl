@@ -19,12 +19,6 @@
 #include "TOF/CheckCompressedData.h"
 #include "QualityControl/QcInfoLogger.h"
 
-// ROOT
-#include <TH1.h>
-#include <TH2.h>
-#include <TPaveText.h>
-#include <TList.h>
-
 using namespace std;
 
 namespace o2::quality_control_modules::tof
@@ -36,6 +30,9 @@ void CheckCompressedData::configure(std::string)
   if (auto param = mCustomParameters.find("DiagnosticThresholdPerSlot"); param != mCustomParameters.end()) {
     mDiagnosticThresholdPerSlot = ::atof(param->second.c_str());
   }
+
+  mShifterMessages.configure(0.9, 0.1, 1.0, 0.5); // Setting default before checking in configuration
+  mShifterMessages.configure(mCustomParameters);
 }
 
 Quality CheckCompressedData::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -70,34 +67,15 @@ void CheckCompressedData::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
 {
   if (mo->getName() == "hDiagnostic") {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
-    TPaveText* msg = new TPaveText(0.9, 0.1, 1.0, 0.5, "blNDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->SetBorderSize(1);
-    msg->SetTextColor(kWhite);
-    msg->SetFillColor(kBlack);
-    msg->AddText("Default message for hDiagnostic");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-
+    auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
     if (checkResult == Quality::Good) {
-      ILOG(Info, Support) << "Quality::Good, setting to green";
-      msg->Clear();
       msg->AddText("OK!");
-      msg->SetFillColor(kGreen);
-      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info, Support) << "Quality::Bad, setting to red";
-      msg->Clear();
       msg->AddText("Diagnostics");
       msg->AddText("above");
       msg->AddText(Form("threshold (%.0f)", mDiagnosticThresholdPerSlot));
-      msg->SetFillColor(kRed);
-      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to yellow";
-      msg->Clear();
       msg->AddText("Diagnostics above zero");
-      msg->SetFillColor(kYellow);
-      msg->SetTextColor(kBlack);
     }
   } else {
     ILOG(Error, Support) << "Did not get correct histo from " << mo->GetName();
