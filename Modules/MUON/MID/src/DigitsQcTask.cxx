@@ -157,8 +157,6 @@ static std::pair<uint32_t, uint32_t> getROFSize(const o2::mid::ROFRecord& rof, g
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  ILOG(Info, Support) << "startOfDataMonitoring" << ENDM;
-
   auto digits = ctx.inputs().get<gsl::span<o2::mid::ColumnData>>("digits");
   auto rofs = ctx.inputs().get<gsl::span<o2::mid::ROFRecord>>("digitrofs");
 
