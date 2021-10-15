@@ -23,6 +23,7 @@
 #include <Framework/RawDeviceService.h>
 #include <FairMQDevice.h>
 #include <Framework/ConfigParamRegistry.h>
+#include <QualityControl/QcInfoLogger.h>
 
 namespace o2::quality_control::core
 {

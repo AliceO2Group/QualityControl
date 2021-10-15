@@ -23,13 +23,12 @@
 #include <Common/Exceptions.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
 // QC
-#include "QualityControl/TaskRunner.h"
 #include "QualityControl/InputUtils.h"
 #include "QualityControl/RootClassFactory.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
-using namespace o2::configuration;
 
 using namespace o2::quality_control::checker;
 using namespace std;
@@ -50,8 +49,7 @@ o2::header::DataDescription Check::createCheckDataDescription(const std::string&
 
 /// Members
 Check::Check(CheckConfig config)
-  : mLogger(QcInfoLogger::GetInstance()),
-    mCheckConfig(std::move(config))
+  : mCheckConfig(std::move(config))
 {
 }
 
@@ -69,13 +67,13 @@ void Check::init()
   }
 
   // Print setting
-  mLogger << mCheckConfig.name << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": Policy " << UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType) << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Policy " << UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType) << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
   for (const auto& moname : mCheckConfig.objectNames) {
-    mLogger << mCheckConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << mCheckConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
 
@@ -126,7 +124,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
     boost::copy(moMapToCheck | boost::adaptors::map_keys, std::back_inserter(monitorObjectsNames));
 
     auto quality = mCheckInterface->check(&moMapToCheck);
-    mLogger << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
+    ILOG(Info, Support) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,

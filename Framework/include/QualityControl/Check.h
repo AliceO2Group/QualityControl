@@ -25,7 +25,6 @@
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckConfig.h"
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/CheckSpec.h"
@@ -83,7 +82,6 @@ class Check
  private:
   void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality);
 
-  o2::quality_control::core::QcInfoLogger& mLogger;
   CheckConfig mCheckConfig;
   CheckInterface* mCheckInterface = nullptr;
 };

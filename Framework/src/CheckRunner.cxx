@@ -124,7 +124,6 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs)
   : mDeviceName(createCheckRunnerName(checkConfigs)),
     mConfig(std::move(checkRunnerConfig)),
-    mLogger(QcInfoLogger::GetInstance()),
     /* All checks have the same Input */
     mInputs(checkConfigs.front().inputSpecs),
     mOutputs(CheckRunner::collectOutputs(checkConfigs)),
@@ -143,7 +142,6 @@ CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, InputSpec input)
   : mDeviceName(createSinkCheckRunnerName(input)),
     mChecks{},
     mConfig(std::move(checkRunnerConfig)),
-    mLogger(QcInfoLogger::GetInstance()),
     mInputs{ input },
     mOutputs{},
     mTotalNumberObjectsReceived(0),
@@ -230,7 +228,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
       if (tobj->InheritsFrom("TObjArray")) {
         array.reset(dynamic_cast<TObjArray*>(tobj.release()));
         array->SetOwner(false);
-        mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
+        ILOG(Info, Support) << "CheckRunner " << mDeviceName
                 << " received an array with " << array->GetEntries()
                 << " entries from " << input.binding << ENDM;
       } else {
@@ -239,7 +237,7 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
         TObject* newTObject = tobj->Clone(); // we need a copy to avoid that it gets deleted behind our back.
         newArray->Add(newTObject);
         array.reset(newArray); // now that the array is ready we can adopt it.
-        mLogger << AliceO2::InfoLogger::InfoLogger::Info << "CheckRunner " << mDeviceName
+        ILOG(Info, Support) << "CheckRunner " << mDeviceName
                 << " received a tobject named " << tobj->GetName()
                 << " from " << input.binding << ENDM;
       }
@@ -251,8 +249,8 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
         std::shared_ptr<MonitorObject> mo{ dynamic_cast<MonitorObject*>(tObject) };
 
         if (mo == nullptr) {
-          mLogger << AliceO2::InfoLogger::InfoLogger::Info << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
-          mLogger << AliceO2::InfoLogger::InfoLogger::Info << "    Creating an ad hoc MO." << ENDM;
+          ILOG(Info, Support) << "The MO is null, probably a TObject could not be casted into an MO." << ENDM;
+          ILOG(Info, Support) << "    Creating an ad hoc MO." << ENDM;
           header::DataOrigin origin = DataSpecUtils::asConcreteOrigin(input);
           mo = std::make_shared<MonitorObject>(tObject, input.binding, "CheckRunner", origin.str);
         }
@@ -288,7 +286,7 @@ void CheckRunner::sendPeriodicMonitoring()
 
 QualityObjectsType CheckRunner::check()
 {
-  mLogger << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
+  ILOG(Info, Support) << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
           << ENDM;
 
   QualityObjectsType allQOs;
@@ -303,7 +301,7 @@ QualityObjectsType CheckRunner::check()
       // Was checked, update latest revision
       updatePolicyManager.updateActorRevision(check.getName());
     } else {
-      mLogger << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
+      ILOG(Info, Support) << "Monitor Objects for the check '" << check.getName() << "' are not ready, ignoring" << ENDM;
     }
   }
   return allQOs;
@@ -311,7 +309,7 @@ QualityObjectsType CheckRunner::check()
 
 void CheckRunner::store(QualityObjectsType& qualityObjects)
 {
-  mLogger << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
+  ILOG(Info, Support) << "Storing " << qualityObjects.size() << " QualityObjects" << ENDM;
   try {
     for (auto& qo : qualityObjects) {
       qo->setActivity(mActivity);
@@ -319,13 +317,13 @@ void CheckRunner::store(QualityObjectsType& qualityObjects)
       mTotalNumberQOStored++;
     }
   } catch (boost::exception& e) {
-    mLogger << "Unable to " << diagnostic_information(e) << ENDM;
+    ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
   }
 }
 
 void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObjects)
 {
-  mLogger << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
+  ILOG(Info, Support) << "Storing " << monitorObjects.size() << " MonitorObjects" << ENDM;
   try {
     for (auto& mo : monitorObjects) {
       mo->setActivity(mActivity);
@@ -333,7 +331,7 @@ void CheckRunner::store(std::vector<std::shared_ptr<MonitorObject>>& monitorObje
       mTotalNumberMOStored++;
     }
   } catch (boost::exception& e) {
-    mLogger << "Unable to " << diagnostic_information(e) << ENDM;
+    ILOG(Info, Support) << "Unable to " << diagnostic_information(e) << ENDM;
   }
 }
 
@@ -342,7 +340,7 @@ void CheckRunner::send(QualityObjectsType& qualityObjects, framework::DataAlloca
   // Note that we might send multiple QOs in one output, as separate parts.
   // This should be fine if they are retrieved on the other side with InputRecordWalker.
 
-  mLogger << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
+  ILOG(Info, Support) << "Sending " << qualityObjects.size() << " quality objects" << ENDM;
   for (const auto& qo : qualityObjects) {
 
     const auto& correspondingCheck = std::find_if(mChecks.begin(), mChecks.end(), [checkName = qo->getCheckName()](const auto& check) {
