@@ -71,7 +71,7 @@ class ITSNoisyPixelTask : public TaskInterface
 
   std::vector<TObject*> mPublishedObjects;
 
-  const int nmostnoisy[3] = { 50, 50, 50 }; // number of bins for the following three histograms
+  int nmostnoisy = 25; // number of bins for the following three histograms. It can be configured from config file.
   TH1D* hOrderedHitsAddressIB;
   TH1D* hOrderedHitsAddressML;
   TH1D* hOrderedHitsAddressOL;
@@ -83,6 +83,7 @@ class ITSNoisyPixelTask : public TaskInterface
   THnSparseD* hNoisyPixelMapOB[4][48];
 
   int mOccUpdateFrequency;
+  bool mEnableOrderedHitsObject;
   int mTotalTimeInQCTask;
   int ChipIDprev = 0;
   std::string mDictPath;
