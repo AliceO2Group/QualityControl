@@ -225,6 +225,8 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
+  ILOG(Info, Support) << "Porco cane" << ENDM;
+
   auto creator = [this](auto& trk, GID, float, float) {
     // Getting the tracks for the denominator of the efficiencies for TPC-TOF tracks;
     // The RecoContainer will provide as TPCtracks only those not matched to TOF (lower
@@ -266,27 +268,28 @@ void TOFMatchedTracks::endOfCycle()
 {
 
   ILOG(Info, Support) << "endOfCycle" << ENDM;
+
   if (mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) {
-    if (!mEffPt[trkType::UNCONS]->SetPassedHistogram(*mMatchedTracksPt[trkType::UNCONS], "") ||
-        !mEffPt[trkType::UNCONS]->SetTotalHistogram(*mInTracksPt[trkType::UNCONS], "") ||
-        !mEffEta[trkType::UNCONS]->SetPassedHistogram(*mMatchedTracksEta[trkType::UNCONS], "") ||
+    if (!mEffPt[trkType::UNCONS]->SetTotalHistogram(*mInTracksPt[trkType::UNCONS], "") ||
+        !mEffPt[trkType::UNCONS]->SetPassedHistogram(*mMatchedTracksPt[trkType::UNCONS], "") ||
         !mEffEta[trkType::UNCONS]->SetTotalHistogram(*mInTracksEta[trkType::UNCONS], "") ||
-        !mFakeFractionTracksPt[trkType::UNCONS]->SetPassedHistogram(*mFakeMatchedTracksPt[trkType::UNCONS], "") ||
+        !mEffEta[trkType::UNCONS]->SetPassedHistogram(*mMatchedTracksEta[trkType::UNCONS], "") ||
         !mFakeFractionTracksPt[trkType::UNCONS]->SetTotalHistogram(*mMatchedTracksPt[trkType::UNCONS], "") ||
-        !mFakeFractionTracksEta[trkType::UNCONS]->SetPassedHistogram(*mFakeMatchedTracksEta[trkType::UNCONS], "") ||
-        !mFakeFractionTracksEta[trkType::UNCONS]->SetTotalHistogram(*mMatchedTracksEta[trkType::UNCONS], "")) {
+        !mFakeFractionTracksPt[trkType::UNCONS]->SetPassedHistogram(*mFakeMatchedTracksPt[trkType::UNCONS], "") ||
+        !mFakeFractionTracksEta[trkType::UNCONS]->SetTotalHistogram(*mMatchedTracksEta[trkType::UNCONS], "") ||
+        !mFakeFractionTracksEta[trkType::UNCONS]->SetPassedHistogram(*mFakeMatchedTracksEta[trkType::UNCONS], "")) {
       ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms!!";
     }
   }
   if (mRecoCont.isTrackSourceLoaded(GID::ITSTPCTOF)) {
-    if (!mEffPt[trkType::CONSTR]->SetPassedHistogram(*mMatchedTracksPt[trkType::CONSTR], "") ||
-        !mEffPt[trkType::CONSTR]->SetTotalHistogram(*mInTracksPt[trkType::CONSTR], "") ||
-        !mEffEta[trkType::CONSTR]->SetPassedHistogram(*mMatchedTracksEta[trkType::CONSTR], "") ||
+    if (!mEffPt[trkType::CONSTR]->SetTotalHistogram(*mInTracksPt[trkType::CONSTR], "") ||
+        !mEffPt[trkType::CONSTR]->SetPassedHistogram(*mMatchedTracksPt[trkType::CONSTR], "") ||
         !mEffEta[trkType::CONSTR]->SetTotalHistogram(*mInTracksEta[trkType::CONSTR], "") ||
-        !mFakeFractionTracksPt[trkType::CONSTR]->SetPassedHistogram(*mFakeMatchedTracksPt[trkType::CONSTR], "") ||
+        !mEffEta[trkType::CONSTR]->SetPassedHistogram(*mMatchedTracksEta[trkType::CONSTR], "") ||
         !mFakeFractionTracksPt[trkType::CONSTR]->SetTotalHistogram(*mMatchedTracksPt[trkType::CONSTR], "") ||
-        !mFakeFractionTracksEta[trkType::CONSTR]->SetPassedHistogram(*mFakeMatchedTracksEta[trkType::CONSTR], "") ||
-        !mFakeFractionTracksEta[trkType::CONSTR]->SetTotalHistogram(*mMatchedTracksEta[trkType::CONSTR], "")) {
+        !mFakeFractionTracksPt[trkType::CONSTR]->SetPassedHistogram(*mFakeMatchedTracksPt[trkType::CONSTR], "") ||
+        !mFakeFractionTracksEta[trkType::CONSTR]->SetTotalHistogram(*mMatchedTracksEta[trkType::CONSTR], "") ||
+        !mFakeFractionTracksEta[trkType::CONSTR]->SetPassedHistogram(*mFakeMatchedTracksEta[trkType::CONSTR], "")) {
       ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms!!";
     }
   }
@@ -338,8 +341,10 @@ void TOFMatchedTracks::reset()
     mInTracksEta[i]->Reset();
     mMatchedTracksPt[i]->Reset();
     mMatchedTracksEta[i]->Reset();
-    mFakeMatchedTracksPt[i]->Reset();
-    mFakeMatchedTracksEta[i]->Reset();
+    if (mUseMC) {
+      mFakeMatchedTracksPt[i]->Reset();
+      mFakeMatchedTracksEta[i]->Reset();
+    }
   }
 }
 

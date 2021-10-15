@@ -57,6 +57,13 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize VertexingQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
+  if (auto param = mCustomParameters.find("verbose"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - verbose (= verbose printouts): " << param->second << ENDM;
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mVerbose = true;
+    }
+  }
+
   if (auto param = mCustomParameters.find("isMC"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - isMC: " << param->second << ENDM;
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
@@ -204,9 +211,20 @@ void VertexingQcTask::endOfCycle()
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 
   if (mUseMC) {
-    if (!mVtxEffVsMult->SetPassedHistogram(*mNPrimaryMCEvWithVtx, "") ||
-        !mVtxEffVsMult->SetTotalHistogram(*mNPrimaryMCGen, "")) {
+
+    if (!mVtxEffVsMult->SetTotalHistogram(*mNPrimaryMCGen, "") ||
+        !mVtxEffVsMult->SetPassedHistogram(*mNPrimaryMCEvWithVtx, "")) {
       ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms!!";
+    } else {
+      if (mVerbose) {
+        for (int ibin = 0; ibin < mNPrimaryMCEvWithVtx->GetNbinsX(); ibin++) {
+          if (mNPrimaryMCEvWithVtx->GetBinContent(ibin + 1) != 0 && mNPrimaryMCGen->GetBinContent(ibin + 1) != 0) {
+            ILOG(Info, Support) << "ibin = " << ibin + 1 << ", mNPrimaryMCEvWithVtx->GetBinContent(ibin + 1) = " << mNPrimaryMCEvWithVtx->GetBinContent(ibin + 1) << ", mNPrimaryMCGen->GetBinContent(ibin + 1) = " << mNPrimaryMCGen->GetBinContent(ibin + 1) << ", efficiency = " << mVtxEffVsMult->GetEfficiency(ibin + 1) << ENDM;
+            ILOG(Info, Support) << "ibin = " << ibin + 1 << ", mNPrimaryMCEvWithVtx->GetBinError(ibin + 1) = " << mNPrimaryMCEvWithVtx->GetBinError(ibin + 1) << ", mNPrimaryMCGen->GetBinError(ibin + 1) = " << mNPrimaryMCGen->GetBinError(ibin + 1) << ", efficiency error low = " << mVtxEffVsMult->GetEfficiencyErrorLow(ibin + 1) << ", efficiency error up = " << mVtxEffVsMult->GetEfficiencyErrorUp(ibin + 1) << ENDM;
+          }
+        }
+        ILOG(Info, Support) << "mNPrimaryMCEvWithVtx entries = " << mNPrimaryMCEvWithVtx->GetEntries() << ", mNPrimaryMCGen entries = " << mNPrimaryMCGen->GetEntries() << ENDM;
+      }
     }
   }
 }

@@ -60,6 +60,8 @@ class VertexingQcTask final : public TaskInterface
   TH1F* mNContributors = nullptr;         // vertex N contributors
   TProfile* mTimeUncVsNContrib = nullptr; // time uncertainty vs N contributors
 
+  bool mVerbose = false;
+
   // MC related part
   bool mUseMC = false;
   o2::steer::MCKinematicsReader mMCReader; // MC reader
