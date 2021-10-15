@@ -98,7 +98,7 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
     double MeanOccupancyDE[1100];
     int NbinsDE[1100];
     auto horbits = mhistoDen;
-    if (&htemp && horbits) {
+    if (horbits) {
       for (auto de : o2::mch::raw::deIdsForAllMCH) {
         MeanOccupancyDE[de] = 0;
         NbinsDE[de] = 0;
