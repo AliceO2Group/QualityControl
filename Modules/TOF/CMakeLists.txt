@@ -105,6 +105,9 @@ install(FILES tofdigits.json
               tofraw_multinode.json
               tofcosmics.json
               toftrending.json
+              tofMatchedTracks_ITSTPCTOF.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF_MC.json
         DESTINATION etc)
 
 get_property(dirs

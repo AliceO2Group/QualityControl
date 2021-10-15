@@ -26,6 +26,7 @@
 #include "SimulationDataFormat/MCCompLabel.h"
 
 class TH1F;
+class TEfficiency;
 
 namespace o2::quality_control_modules::tof
 {
@@ -53,6 +54,19 @@ class TOFMatchedTracks final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
+  // track selection
+  bool selectTrack(o2::tpc::TrackTPC const& track);
+  void setPtCut(float v) { mPtCut = v; }
+  void setEtaCut(float v) { mEtaCut = v; }
+  void setMinNTPCClustersCut(float v) { mNTPCClustersCut = v; }
+  void setMinDCAtoBeamPipeCut(std::array<float, 2> v)
+  {
+    setMinDCAtoBeamPipeDistanceCut(v[0]);
+    setMinDCAtoBeamPipeYCut(v[1]);
+  }
+  void setMinDCAtoBeamPipeDistanceCut(float v) { mDCACut = v; }
+  void setMinDCAtoBeamPipeYCut(float v) { mDCACutY = v; }
+
  private:
   std::shared_ptr<o2::globaltracking::DataRequest> mDataRequest;
   o2::globaltracking::RecoContainer mRecoCont;
@@ -73,10 +87,20 @@ class TOFMatchedTracks final : public TaskInterface
   TH1F* mMatchedTracksEta[trkType::SIZE] = {};
   TH1F* mFakeMatchedTracksPt[trkType::SIZE] = {};
   TH1F* mFakeMatchedTracksEta[trkType::SIZE] = {};
-  TH1F* mEffPt[trkType::SIZE] = {};
-  TH1F* mEffEta[trkType::SIZE] = {};
-  TH1F* mFakeFractionTracksPt[trkType::SIZE] = {};  // fraction of fakes among the matched tracks vs pT
-  TH1F* mFakeFractionTracksEta[trkType::SIZE] = {}; // fraction of fakes among the matched tracks vs Eta
+  TEfficiency* mEffPt[trkType::SIZE] = {};
+  TEfficiency* mEffEta[trkType::SIZE] = {};
+  TEfficiency* mFakeFractionTracksPt[trkType::SIZE] = {};  // fraction of fakes among the matched tracks vs pT
+  TEfficiency* mFakeFractionTracksEta[trkType::SIZE] = {}; // fraction of fakes among the matched tracks vs Eta
+
+  // for track selection
+  float mPtCut = 0.1f;
+  float mEtaCut = 1.4f;
+  int32_t mNTPCClustersCut = 40;
+  float mDCACut = 100.f;
+  float mDCACutY = 10.f;
+  std::string mGRPFileName = "o2sim_grp.root";
+  std::string mGeomFileName = "o2sim_geometry.root";
+  float mBz = 0; ///< nominal Bz
 };
 
 } // namespace o2::quality_control_modules::tof
