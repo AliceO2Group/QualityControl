@@ -85,7 +85,8 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, int fall
 inline std::string computePartitionName(const framework::ServiceRegistry& services, const std::string& fallbackPartitionName = "")
 {
   std::string partitionName;
-  partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", "unspecified");  ILOG(Info, Devel) << "Got this property partitionName from RawDeviceService: '" << partitionName << "'" << ENDM;
+  partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", "unspecified");
+  ILOG(Info, Devel) << "Got this property partitionName from RawDeviceService: '" << partitionName << "'" << ENDM;
   partitionName = partitionName != "unspecified" /* found it in service */ ? partitionName : fallbackPartitionName;
   ILOG(Debug, Devel) << "Period Name returned by computePeriodName : " << partitionName << ENDM;
   return partitionName;

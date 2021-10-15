@@ -52,7 +52,7 @@ void QcInfoLogger::setDetector(const std::string& detector)
 
 void QcInfoLogger::setRunPartition(int run, std::string& partitionName)
 {
-  if(run > 0) {
+  if (run > 0) {
     mContext->setField(infoContext::FieldName::Run, std::to_string(run));
     if (mDplContext) {
       mDplContext->setField(infoContext::FieldName::Run, std::to_string(run));
