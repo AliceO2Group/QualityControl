@@ -13,7 +13,8 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/PadCalibrationCheck2D.cxx
                              src/Utility.cxx
                              src/RawDigits.cxx
-                             src/CheckOfTrendings.cxx)
+                             src/CheckOfTrendings.cxx
+                             src/LtrCalibReductor.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -42,6 +43,7 @@ add_root_dictionary(O2QcTPC
                             include/TPC/Utility.h
                             include/TPC/RawDigits.h
                             include/TPC/CheckOfTrendings.h
+                            include/TPC/LtrCalibReductor.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
@@ -102,4 +104,5 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCRawDigits_direct.json
               run/tpcQCTasks_multinode.json
               run/tpcQCCheckTrending.json
+              run/tpcQCTrending_laserCalib.json
         DESTINATION etc)
