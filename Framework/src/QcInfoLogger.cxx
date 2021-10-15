@@ -50,11 +50,31 @@ void QcInfoLogger::setDetector(const std::string& detector)
   ILOG(Debug, Support) << "Detector set to " << detector << ENDM;
 }
 
+void QcInfoLogger::setRunPartition(int run, std::string& partitionName)
+{
+  if(run > 0) {
+    mContext->setField(infoContext::FieldName::Run, std::to_string(run));
+    if (mDplContext) {
+      mDplContext->setField(infoContext::FieldName::Run, std::to_string(run));
+    }
+  }
+  mContext->setField(infoContext::FieldName::Partition, partitionName);
+  if (mDplContext) {
+    mDplContext->setField(infoContext::FieldName::Partition, partitionName);
+  }
+  this->setContext(*mContext);
+  ILOG(Debug, Support) << "IL: Run set to " << run << ENDM;
+  ILOG(Debug, Support) << "IL: Partition set to " << partitionName << ENDM;
+}
+
 void QcInfoLogger::init(const std::string& facility, bool discardDebug, int discardFromLevel,
-                        AliceO2::InfoLogger::InfoLoggerContext* dplContext)
+                        AliceO2::InfoLogger::InfoLoggerContext* dplContext,
+                        int run,
+                        std::string partitionName)
 {
   mDplContext = dplContext;
   setFacility(facility);
+  setRunPartition(run, partitionName);
 
   // Set the proper discard filters
   ILOG_INST.filterDiscardDebug(discardDebug);
@@ -66,7 +86,9 @@ void QcInfoLogger::init(const std::string& facility, bool discardDebug, int disc
 }
 
 void QcInfoLogger::init(const std::string& facility, const boost::property_tree::ptree& config,
-                        AliceO2::InfoLogger::InfoLoggerContext* dplContext)
+                        AliceO2::InfoLogger::InfoLoggerContext* dplContext,
+                        int run,
+                        std::string partitionName)
 {
   std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "false");
   bool discardDebug = discardDebugStr == "true" ? 1 : 0;
