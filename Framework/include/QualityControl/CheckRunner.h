@@ -36,7 +36,6 @@
 #include "QualityControl/CheckInterface.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/MonitorObject.h"
-#include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/Check.h"
 #include "QualityControl/UpdatePolicyManager.h"
 #include "QualityControl/Activity.h"
@@ -209,7 +208,6 @@ class CheckRunner : public framework::Task
   std::vector<Check> mChecks;
   Activity mActivity;
   CheckRunnerConfig mConfig;
-  o2::quality_control::core::QcInfoLogger& mLogger;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   std::unordered_set<std::string> mInputStoreSet;
   std::vector<std::shared_ptr<MonitorObject>> mMonitorObjectStoreVector;

@@ -13,11 +13,12 @@
 #include <TH1.h>
 
 #include <DataSampling/DataSampling.h>
-// #include <DataFormatsPHOS/Digit.h>
 #include <PHOSWorkflow/ReaderSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/QcInfoLogger.h"
+
 using namespace o2::utilities;
 
 void customize(std::vector<o2::framework::CompletionPolicy>& policies)

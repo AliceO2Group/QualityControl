@@ -19,6 +19,7 @@
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace o2::utilities;
 
