@@ -108,6 +108,8 @@ install(FILES tofdigits.json
               tofMatchedTracks_ITSTPCTOF.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF.json
               tofMatchedTracks_ITSTPCTOF_TPCTOF_MC.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF_direct.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF_direct_MC.json
         DESTINATION etc)
 
 get_property(dirs

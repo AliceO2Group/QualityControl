@@ -36,9 +36,8 @@
         "cycleDurationSeconds" : "10",
         "maxNumberCycles" : "-1",
         "dataSource" : {
-          "type" : "direct",
-          "query_comment" : "checking every matched track",
-          "query" : "matchITSTPCTOF:TOF/MTC_ITSTPC/0;matchTPCTOF:TOF/MTC_TPC/0;trackTPCTOF:TOF/TOFTRACKS_TPC/0;trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS/0;trackTPCClRefs:TPC/CLUSREFS/0;tofcluster:TOF/CLUSTERS/0"
+          "type" : "dataSamplingPolicy",
+          "name" : "tof-match-samp"
         },
         "taskParameters" : {
           "GID" : "ITS-TPC,TPC,ITS-TPC-TOF,TPC-TOF",
@@ -72,5 +71,20 @@
     }
   },
          "dataSamplingPolicies" : [
+           {
+             "id" : "tof-match-samp",
+             "active" : "true",
+             "machines" : [],
+             "query_comment" : "checking every 10% matched track",
+             "query" : "matchITSTPCTOF:TOF/MTC_ITSTPC/0;matchTPCTOF:TOF/MTC_TPC/0;trackTPCTOF:TOF/TOFTRACKS_TPC/0;trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS/0;trackTPCClRefs:TPC/CLUSREFS/0;tofcluster:TOF/CLUSTERS/0",
+             "samplingConditions" : [
+               {
+                 "condition" : "random",
+                 "fraction" : "0.1",
+                 "seed" : "1234"
+               }
+             ],
+             "blocking" : "false"
+           }
          ]
 }

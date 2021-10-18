@@ -26,6 +26,7 @@ install(TARGETS O2QcGLO
 # install json files
 install(FILES ITSTPCmatchedTracks_external.json
               ITSTPCmatchedTracks.json
+              ITSTPCmatchedTracks_direct.json
               vertexing-qc-direct.json
               vertexing-qc-direct-mc.json
               vertexing-qc.json
