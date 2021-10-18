@@ -80,8 +80,8 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
 
   void update()
   {
-    mhistoDivTemp = new TH2F("TempNameDiv", "TempTitleDiv", mhistoNum->GetNbinsX(), 0, mhistoNum->GetNbinsX(), mhistoNum->GetNbinsY(), 0, mhistoNum->GetNbinsY());
-    mhistoDivTemp->Divide(mhistoNum, mhistoDen);
+    TH2F htemp = TH2F("TempNameDiv", "TempTitleDiv", mhistoNum->GetNbinsX(), 0, mhistoNum->GetNbinsX(), mhistoNum->GetNbinsY(), 0, mhistoNum->GetNbinsY());
+    htemp.Divide(mhistoNum, mhistoDen);
 
     const char* name = this->GetName();
     const char* title = this->GetTitle();
@@ -97,15 +97,14 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
     // By looking at each bin in NHits Elec histogram, getting the Elec info (fee, link, de) for each bin, computing the number of hits seen on a given DE and dividing by the number of bins
     double MeanOccupancyDE[1100];
     int NbinsDE[1100];
-    auto h = mhistoDivTemp;
     auto horbits = mhistoDen;
-    if (h && horbits) {
+    if (horbits) {
       for (auto de : o2::mch::raw::deIdsForAllMCH) {
         MeanOccupancyDE[de] = 0;
         NbinsDE[de] = 0;
       }
-      for (int binx = 1; binx < h->GetXaxis()->GetNbins() + 1; binx++) {
-        for (int biny = 1; biny < h->GetYaxis()->GetNbins() + 1; biny++) {
+      for (int binx = 1; binx < htemp.GetXaxis()->GetNbins() + 1; binx++) {
+        for (int biny = 1; biny < htemp.GetYaxis()->GetNbins() + 1; biny++) {
 
           int mNOrbits = horbits->GetBinContent(binx, biny);
           if (mNOrbits <= 0) {
@@ -128,7 +127,7 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
           }
           de = dsDetId->deId();
 
-          MeanOccupancyDE[de] += h->GetBinContent(binx, biny);
+          MeanOccupancyDE[de] += htemp.GetBinContent(binx, biny);
           NbinsDE[de] += 1;
         }
       }
@@ -142,17 +141,14 @@ class MergeableTH1OccupancyPerDE : public TH1F, public o2::mergers::MergeInterfa
     }
 
     Scale(1 / 87.5);
-
-    delete mhistoDivTemp;
   }
 
  private:
   TH2F* mhistoNum{ nullptr };
   TH2F* mhistoDen{ nullptr };
-  TH2F* mhistoDivTemp{ nullptr };
   std::string mTreatMeAs = "TH1F";
 
-  ClassDefOverride(MergeableTH1OccupancyPerDE, 1);
+  ClassDefOverride(MergeableTH1OccupancyPerDE, 2);
 };
 
 } // namespace o2::quality_control_modules::muonchambers
