@@ -208,6 +208,9 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 void TaskRunner::start(const ServiceRegistry& services)
 {
   mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackRunNumber);
+  ILOG_INST.setRun(mRunNumber);
+  string partitionName = computePartitionName(services);
+  ILOG_INST.setPartition(partitionName);
 
   try {
     startOfActivity();
