@@ -229,8 +229,8 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
         array.reset(dynamic_cast<TObjArray*>(tobj.release()));
         array->SetOwner(false);
         ILOG(Info, Support) << "CheckRunner " << mDeviceName
-                << " received an array with " << array->GetEntries()
-                << " entries from " << input.binding << ENDM;
+                            << " received an array with " << array->GetEntries()
+                            << " entries from " << input.binding << ENDM;
       } else {
         // it is just a TObject not embedded in a TObjArray. We build a TObjArray for it.
         auto* newArray = new TObjArray();    // we cannot use `array` to add an object as it is const
@@ -238,8 +238,8 @@ void CheckRunner::prepareCacheData(framework::InputRecord& inputRecord)
         newArray->Add(newTObject);
         array.reset(newArray); // now that the array is ready we can adopt it.
         ILOG(Info, Support) << "CheckRunner " << mDeviceName
-                << " received a tobject named " << tobj->GetName()
-                << " from " << input.binding << ENDM;
+                            << " received a tobject named " << tobj->GetName()
+                            << " from " << input.binding << ENDM;
       }
 
       // for each item of the array, check whether it is a MonitorObject. If not, create one and encapsulate.
@@ -287,7 +287,7 @@ void CheckRunner::sendPeriodicMonitoring()
 QualityObjectsType CheckRunner::check()
 {
   ILOG(Info, Support) << "Trying " << mChecks.size() << " checks for " << mMonitorObjects.size() << " monitor objects"
-          << ENDM;
+                      << ENDM;
 
   QualityObjectsType allQOs;
   for (auto& check : mChecks) {
