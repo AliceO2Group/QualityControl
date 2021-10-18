@@ -322,8 +322,9 @@ void AggregatorRunner::start(const ServiceRegistry& services)
   mActivity.mPeriodName = computePeriodName(services, mRunnerConfig.fallbackPeriodName);
   mActivity.mPassName = computePassName(mRunnerConfig.fallbackPassName);
   mActivity.mProvenance = computeProvenance(mRunnerConfig.fallbackProvenance);
-  string partitionName = o2::quality_control::core::computePartitionName(services);
-  ILOG_INST.setRunPartition(mActivity.mId, partitionName);
+  string partitionName = computePartitionName(services);
+  ILOG_INST.setRun(mActivity.mId);
+  ILOG_INST.setPartition(partitionName);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }

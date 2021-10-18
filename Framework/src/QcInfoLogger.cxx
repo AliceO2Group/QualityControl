@@ -50,7 +50,7 @@ void QcInfoLogger::setDetector(const std::string& detector)
   ILOG(Debug, Support) << "Detector set to " << detector << ENDM;
 }
 
-void QcInfoLogger::setRunPartition(int run, std::string& partitionName)
+void QcInfoLogger::setRun(int run)
 {
   if (run > 0) {
     mContext->setField(infoContext::FieldName::Run, std::to_string(run));
@@ -58,12 +58,17 @@ void QcInfoLogger::setRunPartition(int run, std::string& partitionName)
       mDplContext->setField(infoContext::FieldName::Run, std::to_string(run));
     }
   }
+  this->setContext(*mContext);
+  ILOG(Debug, Support) << "IL: Run set to " << run << ENDM;
+}
+
+void QcInfoLogger::setPartition(std::string& partitionName)
+{
   mContext->setField(infoContext::FieldName::Partition, partitionName);
   if (mDplContext) {
     mDplContext->setField(infoContext::FieldName::Partition, partitionName);
   }
   this->setContext(*mContext);
-  ILOG(Debug, Support) << "IL: Run set to " << run << ENDM;
   ILOG(Debug, Support) << "IL: Partition set to " << partitionName << ENDM;
 }
 
@@ -74,7 +79,8 @@ void QcInfoLogger::init(const std::string& facility, bool discardDebug, int disc
 {
   mDplContext = dplContext;
   setFacility(facility);
-  setRunPartition(run, partitionName);
+  setRun(run);
+  setPartition(partitionName);
 
   // Set the proper discard filters
   ILOG_INST.filterDiscardDebug(discardDebug);
@@ -93,7 +99,7 @@ void QcInfoLogger::init(const std::string& facility, const boost::property_tree:
   std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "false");
   bool discardDebug = discardDebugStr == "true" ? 1 : 0;
   int discardLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);
-  init(facility, discardDebug, discardLevel, dplContext);
+  init(facility, discardDebug, discardLevel, dplContext, run, partitionName);
 }
 
 } // namespace o2::quality_control::core

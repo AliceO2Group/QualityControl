@@ -423,8 +423,9 @@ void CheckRunner::start(const ServiceRegistry& services)
   mActivity.mPeriodName = computePeriodName(services, mConfig.fallbackPeriodName);
   mActivity.mPassName = computePassName(mConfig.fallbackPassName);
   mActivity.mProvenance = computeProvenance(mConfig.fallbackProvenance);
-  string partitionName = o2::quality_control::core::computePartitionName(services);
-  ILOG_INST.setRunPartition(mActivity.mId, partitionName);
+  string partitionName = computePartitionName(services);
+  ILOG_INST.setRun(mActivity.mId);
+  ILOG_INST.setPartition(partitionName);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();
