@@ -23,7 +23,7 @@ Alternatively do it manually:
 
 One can use the script `createPatch.sh` : 
 ```shell
-createPatch.sh v1.9.1 # current version
+patch.sh v1.9.1 # current version
 ```
 
 Alternatively do it manually:
@@ -69,7 +69,7 @@ It will be available in doc/html, thus to open it quickly do `[xdg-]open doc/htm
 
 When we don't see the monitoring data in grafana, here is what to do to pinpoint the source of the problem.
 
-1. `ssh root@aido2mon-gpn.cern.ch`
+1. `ssh root@alio2-cr1-mvs01.cern.ch`
 2. See if the data reach the servers :
     1. `systemctl stop influxdb`
     2. `nc -u -l 8087`  <-- make sure to use the proper port (cf your monitoring url)
@@ -88,10 +88,26 @@ When we don't see the monitoring data in grafana, here is what to do to pinpoint
     
 ### Monitoring setup for building the grafana dashboard
 
-1. Ask Adam for an account on pcald03.cern.ch:3000.
-3. Ask Adam for a copy of the QC dashboard that you can edit. 
-2. Set the monitoring url to `"url": "influxdb-udp://flptest2.cern.ch:8089"`
-4. Once the dashboard is ready, tell Adam. 
+1. Go to `flptest1`
+2. Edit telegraf config file, add following lines:
+```
+[[inputs.socket_listener]]
+  service_address = "udp://:8089"
+```
+3. Restart telegraf: `systemctl restart telegraf`
+4. Open port
+```
+firewall-cmd --add-port=8089/udp --zone=public --permanent
+firewall-cmd --reload
+```
+5. Go to Grafana and login as `admin`, the password is in here: https://gitlab.cern.ch/AliceO2Group/system-configuration/-/blob/dev/ansible/roles/grafana/vars/main.yml#L2
+6. Go to "Explore" tab (4th icon from top), and select `qc` as data source
+7. Run your workflow with `--monitoring-backend influxdb-udp://flptest1.cern.ch:8089 --resources-monitoring 2`
+8. The metrics should be there 
+9. Make a copy of the QC dashboard that you can edit.
+10. Set the monitoring url to `"url": "stdout://?qc,influxdb-udp://flptest1.cern.ch:8089"`
+11. Once the dashboard is ready, tell Adam.
+
 
 ### Avoid writing QC objects to a repository
 
@@ -117,7 +133,7 @@ We use the infologger. There is a utility class, `QcInfoLogger`, that can be use
 
 Related issues : https://alice.its.cern.ch/jira/browse/QC-224
 
-To have the full details of what is sent to the logs, do `export INFOLOGGER_MODE=raw`.
+To have the full details of what is sent to the logs, do `export O2_INFOLOGGER_MODE=raw`.
 
 ### Service Discovery (Online mode)
 
@@ -218,3 +234,21 @@ Then
 
 The problem is that builds continuously happen in the machine. So you cannot just do `cd sw/BUILD/O2-latest/O2/` and `make`
 
+### How to find from which IP an object was sent to the QCDB ? 
+
+Use `curl 'http://ccdb-test.cern.ch:8080/browse/qc/path/to/object?Accept=text/json' | jq '.["objects"][] | .UploadedFrom'`.
+
+Example:
+```
+~ $ curl 'http://ccdb-test.cern.ch:8080/browse/qc/ITS/MO/ITSTrackTask/AngularDistribution?Accept=text/json' | jq '.["objects"][] | .UploadedFrom'
+% Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+Dload  Upload   Total   Spent    Left  Speed
+100  974k    0  974k    0     0  6015k      0 --:--:-- --:--:-- --:--:-- 6015k
+"128.141.19.252"
+"165.132.27.119"
+"128.141.19.252"
+"165.132.27.119"
+"128.141.19.252"
+"165.132.27.119"
+"128.141.19.252"
+```

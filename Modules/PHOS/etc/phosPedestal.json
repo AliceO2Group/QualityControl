@@ -1,0 +1,44 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "PHOSPedestal": {
+        "active": "true",
+        "className": "o2::quality_control_modules::phos::RawQcTask",
+        "moduleName": "QcPHOS",
+        "detectorName": "PHS",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query" :"rawerr:PHS/RAWHWERRORS/0;cells:PHS/CELLS/0;cellstr:PHS/CELLTRIGREC/0"
+        },
+        "taskParameters": {
+          "pedestal": "on"    
+        },
+        "location": "remote"
+      }
+    }
+  }
+}

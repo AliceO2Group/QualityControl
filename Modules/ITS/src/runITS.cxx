@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -18,16 +19,12 @@
 /// \brief This is an executable to run the ITS QC Task.
 ///
 
-#if __has_include(<Framework/DataSampling.h>)
-#include <Framework/DataSampling.h>
-#else
 #include <DataSampling/DataSampling.h>
-using namespace o2::utilities;
-#endif
 #include "QualityControl/InfrastructureGenerator.h"
 
 using namespace o2;
 using namespace o2::framework;
+using namespace o2::utilities;
 
 void customize(std::vector<CompletionPolicy>& policies)
 {
@@ -53,8 +50,10 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 #include <memory>
 #include <random>
 
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
 
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 #include "QualityControl/Check.h"
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/runnerUtils.h"
@@ -64,6 +63,7 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
 
 std::string getConfigPath(const ConfigContext& config);
 
+using namespace o2::configuration;
 using namespace o2::framework;
 using namespace o2::quality_control::checker;
 using namespace std::chrono;
@@ -80,10 +80,12 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
-  LOG(INFO) << "Using config file '" << qcConfigurationSource << "'";
+  LOG(info) << "Using config file '" << qcConfigurationSource << "'";
 
   // Generation of Data Sampling infrastructure
-  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+  auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+  auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+  DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
   quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);

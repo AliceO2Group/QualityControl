@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -35,6 +36,11 @@ BOOST_AUTO_TEST_CASE(qopath)
   path = RepoPathUtils::getQoPath("DET", "xyzCheck");
   BOOST_CHECK_EQUAL(path, "qc/DET/QO/xyzCheck");
 
+  // provenance
+  qo.getActivity().mProvenance = "qc_mc";
+  path = RepoPathUtils::getQoPath(&qo);
+  BOOST_CHECK_EQUAL(path, "qc_mc/DET/QO/xyzCheck");
+
   // a policy which is not OnEachSeparately
   QualityObject qo2(Quality::Null, "xyzCheck", "DET", "OnAnyNonZero");
   string path2 = RepoPathUtils::getQoPath(&qo2);
@@ -59,10 +65,15 @@ BOOST_AUTO_TEST_CASE(mopath)
 {
   string objectName = "asdf";
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
-  o2::quality_control::core::MonitorObject obj(&h, "task");
+  o2::quality_control::core::MonitorObject obj(&h, "task", "class", "DET");
   obj.setIsOwner(false);
   string path = RepoPathUtils::getMoPath(&obj);
   BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
   path = RepoPathUtils::getMoPath("DET", "task", "asdf");
   BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");
+
+  // provenance
+  obj.getActivity().mProvenance = "qc_mc";
+  path = RepoPathUtils::getMoPath(&obj);
+  BOOST_CHECK_EQUAL(path, "qc_mc/DET/MO/task/asdf");
 }

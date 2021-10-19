@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -17,18 +18,17 @@
 #ifndef QC_CORE_TASKRUNNER_H
 #define QC_CORE_TASKRUNNER_H
 
-#include <boost/property_tree/ptree.hpp>
-
 // O2
 #include <Common/Timer.h>
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/CompletionPolicy.h>
 #include <Framework/EndOfStreamContext.h>
+#include <Framework/InputSpan.h>
 #include <Headers/DataHeader.h>
 #include <Framework/InitContext.h>
 // QC
-#include "QualityControl/TaskConfig.h"
+#include "QualityControl/TaskRunnerConfig.h"
 #include "QualityControl/TaskInterface.h"
 
 namespace o2::configuration
@@ -73,7 +73,7 @@ class TaskRunner : public framework::Task
   /// \param taskName - name of the task, which exists in tasks list in the configuration file
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
   /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
-  TaskRunner(const std::string& taskName, const std::string& configurationSource, size_t id = 0);
+  TaskRunner(const TaskRunnerConfig& config);
   ~TaskRunner() override = default;
 
   /// \brief TaskRunner's init callback
@@ -82,14 +82,12 @@ class TaskRunner : public framework::Task
   void run(framework::ProcessingContext& pCtx) override;
 
   /// \brief TaskRunner's completion policy callback
-  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::CompletionPolicy::InputSet inputs);
+  static framework::CompletionPolicy::CompletionOp completionPolicyCallback(o2::framework::InputSpan const& inputs);
 
-  std::string getDeviceName() { return mDeviceName; };
-  const framework::Inputs& getInputsSpecs() { return mInputSpecs; };
-  const framework::OutputSpec getOutputSpec() { return mMonitorObjectsSpec; };
-  const framework::Options getOptions() { return mOptions; };
-
-  void setResetAfterPublish(bool);
+  std::string getDeviceName() const { return mTaskConfig.deviceName; };
+  const framework::Inputs& getInputsSpecs() const { return mTaskConfig.inputSpecs; };
+  const framework::OutputSpec& getOutputSpec() const { return mTaskConfig.moSpec; };
+  const framework::Options& getOptions() const { return mTaskConfig.options; };
 
   /// \brief ID string for all TaskRunner devices
   static std::string createTaskRunnerIdString();
@@ -111,7 +109,6 @@ class TaskRunner : public framework::Task
 
   std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
   void loadTaskConfig();
-  void loadTopologyConfig();
   void startOfActivity();
   void endOfActivity();
   void startCycle();
@@ -121,24 +118,13 @@ class TaskRunner : public framework::Task
   void saveToFile();
 
  private:
-  std::string mDeviceName;
-  TaskConfig mTaskConfig;
-  std::shared_ptr<configuration::ConfigurationInterface> mConfigFile; // used in init only
+  TaskRunnerConfig mTaskConfig;
   std::shared_ptr<monitoring::Monitoring> mCollector;
   std::shared_ptr<TaskInterface> mTask;
-  bool mResetAfterPublish = false;
   std::shared_ptr<ObjectsManager> mObjectsManager;
   int mRunNumber;
 
-  std::string validateDetectorName(std::string name) const;
-  boost::property_tree::ptree getTaskConfigTree() const;
   void updateMonitoringStats(framework::ProcessingContext& pCtx);
-  void computeRunNumber(const framework::ServiceRegistry& services);
-
-  // consider moving these to TaskConfig
-  framework::Inputs mInputSpecs;
-  framework::OutputSpec mMonitorObjectsSpec;
-  framework::Options mOptions;
 
   bool mCycleOn = false;
   bool mNoMoreCycles = false;

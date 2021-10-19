@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -24,8 +25,9 @@
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/QcInfoLogger.h"
 #include "QualityControl/CheckConfig.h"
+#include "QualityControl/CommonSpec.h"
+#include "QualityControl/CheckSpec.h"
 
 namespace o2::quality_control::checker
 {
@@ -48,7 +50,7 @@ class Check
    * @param checkName Check name from the configuration
    * @param configurationSource Path to configuration
    */
-  Check(std::string checkName, std::string configurationSource);
+  Check(CheckConfig config);
 
   /**
    * \brief Initialize the check state
@@ -58,45 +60,30 @@ class Check
 
   QualityObjectsType check(std::map<std::string, std::shared_ptr<o2::quality_control::core::MonitorObject>>& moMap);
 
-  /**
-   * \brief Change the revision.
-   *
-   * Update the revision number with the latest global revision.
-   * Expected to be changed after invoke of `check(moMap)` or revision number overflow.
-   */
-  void updateRevision(unsigned int revision);
-
   const std::string& getName() const { return mCheckConfig.name; };
-  o2::framework::OutputSpec getOutputSpec() const { return mOutputSpec; };
-  o2::framework::Inputs getInputs() const { return mInputs; };
+  o2::framework::OutputSpec getOutputSpec() const { return mCheckConfig.qoSpec; };
+  o2::framework::Inputs getInputs() const { return mCheckConfig.inputSpecs; };
+  const std::string& getDetector() const { return mCheckConfig.detectorName; };
 
   //TODO: Unique Input string
-  static o2::header::DataDescription createCheckerDataDescription(const std::string taskName);
+  static o2::header::DataDescription createCheckDataDescription(const std::string& checkName);
 
   // For testing purpose
   void setCheckInterface(CheckInterface* checkInterface) { mCheckInterface = checkInterface; };
 
-  std::string getPolicyName() const;
+  UpdatePolicyType getUpdatePolicyType() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;
 
- private:
-  void initConfig(std::string checkName);
+  // todo: probably make CheckFactory
+  static CheckConfig extractConfig(const CommonSpec&, const CheckSpec&);
+  static framework::OutputSpec createOutputSpec(const std::string& checkName);
 
+ private:
   void beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality);
 
-  std::string mConfigurationSource;
-  o2::quality_control::core::QcInfoLogger& mLogger;
   CheckConfig mCheckConfig;
   CheckInterface* mCheckInterface = nullptr;
-  size_t mNumberOfTaskSources;
-
-  // DPL information
-  o2::framework::Inputs mInputs;
-  std::vector<std::string> mInputsStringified;
-  o2::framework::OutputSpec mOutputSpec;
-
-  bool mBeautify = true;
 };
 
 } // namespace o2::quality_control::checker

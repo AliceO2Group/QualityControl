@@ -18,6 +18,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
+        "detectorName" : "TST",
         "cycleDurationSeconds": "5",
         "maxNumberCycles": "-1",
         "dataSource": {
@@ -32,6 +33,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
+        "detectorName" : "TST",
         "cycleDurationSeconds": "5",
         "maxNumberCycles": "-1",
         "dataSource": {
@@ -46,6 +48,7 @@
         "active": "true",
         "className": "o2::quality_control_modules::skeleton::SkeletonTask",
         "moduleName": "QcSkeleton",
+        "detectorName" : "TST",
         "cycleDurationSeconds": "5",
         "maxNumberCycles": "-1",
         "dataSource": {

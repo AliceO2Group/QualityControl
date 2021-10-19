@@ -45,6 +45,8 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
         logging.debug(f"Processing {v}")
         if "Run" in v.metadata:
             runs_dict[v.metadata['Run']].append(v)
+        elif "RunNumber" in v.metadata:
+            runs_dict[v.metadata['RunNumber']].append(v)
         else:
             runs_dict[-1].append(v) # the ones with no run specified
 
@@ -62,7 +64,7 @@ def process(ccdb: Ccdb, object_path: str, delay: int, extra_params: Dict[str, st
         freshest: ObjectVersion = None
         for v in run_versions:
             # logging.debug(f"  - version {v}")
-            if freshest is None or freshest.validFromAsDatetime < v.validFromAsDt:
+            if freshest is None or freshest.validFromAsDt < v.validFromAsDt:
                 if freshest is not None:
                     if in_grace_period(freshest, delay):
                         preservation_list.append(freshest)

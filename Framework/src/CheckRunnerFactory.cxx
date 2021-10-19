@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -29,9 +30,9 @@ namespace o2::quality_control::checker
 
 using namespace o2::framework;
 
-DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::string configurationSource, std::vector<std::string> storeVector)
+DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig, std::vector<CheckConfig> checkConfigs, std::vector<std::string> storeVector)
 {
-  CheckRunner qcCheckRunner{ checks, configurationSource };
+  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), checkConfigs };
   qcCheckRunner.setTaskStoreSet({ storeVector.begin(), storeVector.end() });
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
@@ -43,9 +44,9 @@ DataProcessorSpec CheckRunnerFactory::create(std::vector<Check> checks, std::str
   return newCheckRunner;
 }
 
-DataProcessorSpec CheckRunnerFactory::createSinkDevice(o2::framework::InputSpec input, std::string configurationSource)
+DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRunnerConfig, o2::framework::InputSpec input)
 {
-  CheckRunner qcCheckRunner{ input, configurationSource };
+  CheckRunner qcCheckRunner{ std::move(checkRunnerConfig), input };
   qcCheckRunner.setTaskStoreSet({ DataSpecUtils::label(input) });
 
   DataProcessorSpec newCheckRunner{ qcCheckRunner.getDeviceName(),
@@ -67,6 +68,21 @@ void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::Completi
   auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 
   policies.emplace_back("checkerCompletionPolicy", matcher, callback);
+}
+
+CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec)
+{
+  return {
+    commonSpec.database,
+    commonSpec.consulUrl,
+    commonSpec.monitoringUrl,
+    commonSpec.infologgerFilterDiscardDebug,
+    commonSpec.infologgerDiscardLevel,
+    commonSpec.activityNumber,
+    commonSpec.activityPeriodName,
+    commonSpec.activityPassName,
+    commonSpec.activityProvenance
+  };
 }
 
 } // namespace o2::quality_control::checker

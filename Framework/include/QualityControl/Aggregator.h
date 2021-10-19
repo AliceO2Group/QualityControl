@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -20,10 +21,15 @@
 #include <string>
 // QC
 #include "QualityControl/QualityObject.h"
-#include "QualityControl/CheckConfig.h"
-#include "QualityObject.h"
+#include "QualityControl/AggregatorConfig.h"
+#include "QualityControl/UpdatePolicyType.h"
+#include "QualityControl/CommonSpec.h"
+#include "QualityControl/AggregatorSpec.h"
+#include "QualityControl/DataSourceSpec.h"
+#include "QualityControl/AggregatorSource.h"
 // config
 #include <boost/property_tree/ptree_fwd.hpp>
+#include <utility>
 
 namespace o2::configuration
 {
@@ -34,16 +40,6 @@ namespace o2::quality_control::checker
 {
 
 class AggregatorInterface;
-
-enum AggregatorSourceType { check,
-                            aggregator };
-
-struct AggregatorSource {
-  AggregatorSource(const std::string& t, const std::string& n);
-  AggregatorSourceType type;
-  std::string name;
-  std::vector<std::string> objects;
-};
 
 /// \brief An aggregator as found in the configuration.
 ///
@@ -59,10 +55,9 @@ class Aggregator
    *
    * Create an aggregator using the provided configuration.
    *
-   * @param aggregatorName Aggregator name that must exist in the configuration
-   * @param configurationSource Path to configuration
+   * @param configuration configuration structure of an aggregator
    */
-  Aggregator(const std::string& aggregatorName, const boost::property_tree::ptree& configuration);
+  Aggregator(AggregatorConfig configuration);
 
   /**
    * \brief Initialize the aggregator
@@ -72,11 +67,14 @@ class Aggregator
   o2::quality_control::core::QualityObjectsType aggregate(core::QualityObjectsMapType& qoMap);
 
   const std::string& getName() const;
-  std::string getPolicyName() const;
+  UpdatePolicyType getUpdatePolicyType() const;
   std::vector<std::string> getObjectsNames() const;
   bool getAllObjectsOption() const;
   std::vector<AggregatorSource> getSources();
-  std::vector<AggregatorSource> getSources(AggregatorSourceType type);
+  std::vector<AggregatorSource> getSources(core::DataSourceType type);
+  const std::string& getDetector() const { return mAggregatorConfig.detectorName; };
+
+  static AggregatorConfig extractConfig(const core::CommonSpec&, const AggregatorSpec&);
 
  private:
   /**
@@ -86,7 +84,7 @@ class Aggregator
    */
   core::QualityObjectsMapType filter(core::QualityObjectsMapType& qoMap);
 
-  CheckConfig mAggregatorConfig; // we reuse checkConfig, just consider that Check = Aggregator
+  AggregatorConfig mAggregatorConfig;
   AggregatorInterface* mAggregatorInterface = nullptr;
   std::vector<AggregatorSource> mSources;
 };

@@ -2,7 +2,7 @@
 
 add_library(O2QcCPV)
 
-target_sources(O2QcCPV PRIVATE src/PedestalCheck.cxx  src/PedestalTask.cxx )
+target_sources(O2QcCPV PRIVATE src/PhysicsTask.cxx  src/PedestalCheck.cxx  src/PedestalTask.cxx )
 
 target_include_directories(
   O2QcCPV
@@ -19,6 +19,7 @@ install(TARGETS O2QcCPV
 
 add_root_dictionary(O2QcCPV
                     HEADERS
+  include/CPV/PhysicsTask.h
   include/CPV/PedestalCheck.h
   include/CPV/PedestalTask.h
                     LINKDEF include/CPV/LinkDef.h

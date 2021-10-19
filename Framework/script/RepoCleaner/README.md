@@ -1,11 +1,11 @@
 Here are the tools to clean up the CCDB of the QC.
 
 ## Entry point
-It is `repoCleaner.py`. See the long comment at the beginning.
+It is `o2-qc-repo-cleaner`. See the long comment at the beginning.
 
 ## Usage
 ```
-./repoCleaner [--dry-run] [--log-level 10] [--config config.yaml]
+./o2-qc-repo-cleaner [--dry-run] [--log-level 10] [--config config.yaml]
 ```
 
 ## Configuration

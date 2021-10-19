@@ -7,5 +7,6 @@
 #pragma link C++ class o2::quality_control::core::MonitorObject + ;
 #pragma link C++ class o2::quality_control::core::QualityObject + ;
 #pragma link C++ class o2::quality_control::core::Quality + ;
+#pragma link C++ class o2::quality_control::core::Activity + ;
 
 #endif

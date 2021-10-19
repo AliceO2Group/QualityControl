@@ -1,3 +1,14 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
+//
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   PhysicsTask.h
 /// \author Barthelemy von Haller
@@ -18,9 +29,25 @@ namespace quality_control_modules
 namespace muonchambers
 {
 
+std::string getHistoPath(int deId);
+
+class DetectorHistogram : public TH2F
+{
+ public:
+  DetectorHistogram(TString name, TString title, int deId);
+
+  void Fill(double padX, double padY, double padSizeX, double padSizeY, double val = 1);
+  void Set(double padX, double padY, double padSizeX, double padSizeY, double val);
+
+ private:
+  int mDeId{ 0 };
+
+  bool mFlipX{ false };
+  bool mFlipY{ false };
+};
+
 class GlobalHistogram : public TH2F
 {
-  int getLR(int de);
   void getDeCenter(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
   void getDeCenterST3(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
   void getDeCenterST4(int de, float& xB0, float& yB0, float& xNB0, float& yNB0);
@@ -32,13 +59,13 @@ class GlobalHistogram : public TH2F
   void init();
 
   // add the histograms of the individual detection elements
-  void add(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& histNB);
+  void add(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB);
 
   // replace the contents with the histograms of the individual detection elements, including null bins
-  void set_includeNull(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& histNB);
+  void set_includeNull(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB);
 
   // replace the contents with the histograms of the individual detection elements
-  void set(std::map<int, TH2F*>& histB, std::map<int, TH2F*>& histNB, bool doAverage = true, bool includeNullBins = false);
+  void set(std::map<int, DetectorHistogram*>& histB, std::map<int, DetectorHistogram*>& histNB, bool doAverage = true, bool includeNullBins = false);
 };
 
 } // namespace muonchambers

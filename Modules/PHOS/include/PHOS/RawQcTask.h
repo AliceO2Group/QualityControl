@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -51,7 +52,7 @@ class RawQcTask final : public TaskInterface
   void reset() override;
 
  protected:
-  static constexpr short kNhist1D = 21;
+  static constexpr short kNhist1D = 22;
   enum histos1D { kTotalDataVolume,
                   kMessageCounter,
                   kHGmeanSummaryM1,
@@ -76,8 +77,9 @@ class RawQcTask final : public TaskInterface
                   kCellSpM4
   };
 
-  static constexpr short kNhist2D = 35;
-  enum histos2D { kErrorType,
+  static constexpr short kNhist2D = 39;
+  enum histos2D { kErrorNumber,
+                  kErrorType,
                   kPayloadSizePerDDL,
                   kHGmeanM1,
                   kHGmeanM2,
@@ -130,7 +132,8 @@ class RawQcTask final : public TaskInterface
   static constexpr short kMaxErr = 5;
   static constexpr short kOcccupancyTh = 10;
 
-  int mMode = 0; ///< Possible modes: 0(def): Physics, 1: Pedestals, 2: LED
+  int mMode = 0;           ///< Possible modes: 0(def): Physics, 1: Pedestals, 2: LED
+  bool mFinalized = false; ///< if final histograms calculated
 
   std::array<TH1F*, kNhist1D> mHist1D = { nullptr }; ///< Array of 1D histograms
   std::array<TH2F*, kNhist2D> mHist2D = { nullptr }; ///< Array of 2D histograms

@@ -1,3 +1,14 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
+//
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   PedestalsTask.cxx
 /// \author Andrea Ferrero
@@ -46,61 +57,61 @@ PedestalsTask::~PedestalsTask()
 
 void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize PedestalsTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize PedestalsTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mSolar2FeeLinkMapper = o2::mch::raw::createSolar2FeeLinkMapper<o2::mch::raw::ElectronicMapperGenerated>();
   mElec2DetMapper = o2::mch::raw::createElec2DetMapper<o2::mch::raw::ElectronicMapperGenerated>();
 
-  mHistogramPedestals = new TH2F("QcMuonChambers_Pedestals", "QcMuonChambers - Pedestals",
+  mHistogramPedestals = new TH2F("Pedestals", "Pedestals",
                                  (MCH_FFEID_MAX + 1) * 12 * 40, 0, (MCH_FFEID_MAX + 1) * 12 * 40, 64, 0, 64);
   getObjectsManager()->startPublishing(mHistogramPedestals);
-  mHistogramPedestalsMCH = new GlobalHistogram("QcMuonChambers_Pedestals_AllDE", "Pedestals");
+  mHistogramPedestalsMCH = new GlobalHistogram("Pedestals_AllDE", "Pedestals");
   mHistogramPedestalsMCH->init();
   getObjectsManager()->startPublishing(mHistogramPedestalsMCH);
 
-  mHistogramNoise = new TH2F("QcMuonChambers_Noise", "QcMuonChambers - Noise",
+  mHistogramNoise = new TH2F("QcMuonChambers_Noise", "Noise",
                              (MCH_FFEID_MAX + 1) * 12 * 40, 0, (MCH_FFEID_MAX + 1) * 12 * 40, 64, 0, 64);
   getObjectsManager()->startPublishing(mHistogramNoise);
-  mHistogramNoiseMCH = new GlobalHistogram("QcMuonChambers_Noise_AllDE", "Noise");
+  mHistogramNoiseMCH = new GlobalHistogram("Noise_AllDE", "Noise");
   mHistogramNoiseMCH->init();
   getObjectsManager()->startPublishing(mHistogramNoiseMCH);
 
   for (auto de : o2::mch::raw::deIdsForAllMCH) {
-    TH2F* hPedDE = new TH2F(TString::Format("QcMuonChambers_Pedestals_DE%03d", de),
-                            TString::Format("QcMuonChambers - Pedestals (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
+    TH2F* hPedDE = new TH2F(TString::Format("Pedestals_Elec_DE%03d", de),
+                            TString::Format("Pedestals (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
     mHistogramPedestalsDE.insert(make_pair(de, hPedDE));
-    TH2F* hNoiseDE = new TH2F(TString::Format("QcMuonChambers_Noise_DE%03d", de),
-                              TString::Format("QcMuonChambers - Noise (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
+    TH2F* hNoiseDE = new TH2F(TString::Format("Noise_Elec_DE%03d", de),
+                              TString::Format("Noise (DE%03d)", de), 2000, 0, 2000, 64, 0, 64);
     mHistogramNoiseDE.insert(make_pair(de, hNoiseDE));
 
     for (int pi = 0; pi < 5; pi++) {
-      TH1F* hNoiseDE = new TH1F(TString::Format("QcMuonChambers_Noise_Distr_DE%03d_b_%d", de, pi),
-                                TString::Format("QcMuonChambers - Noise distribution (DE%03d B, %d)", de, pi), 1000, 0, 10);
+      TH1F* hNoiseDE = new TH1F(TString::Format("Noise_Distr_DE%03d_b_%d", de, pi),
+                                TString::Format("Noise distribution (DE%03d B, %d)", de, pi), 1000, 0, 10);
       mHistogramNoiseDistributionDE[pi][0].insert(make_pair(de, hNoiseDE));
-      hNoiseDE = new TH1F(TString::Format("QcMuonChambers_Noise_Distr_DE%03d_nb_%d", de, pi),
-                          TString::Format("QcMuonChambers - Noise distribution (DE%03d NB, %d)", de, pi), 1000, 0, 10);
+      hNoiseDE = new TH1F(TString::Format("Noise_Distr_DE%03d_nb_%d", de, pi),
+                          TString::Format("Noise distribution (DE%03d NB, %d)", de, pi), 1000, 0, 10);
       mHistogramNoiseDistributionDE[pi][1].insert(make_pair(de, hNoiseDE));
     }
 
-    float Xsize = 50 * 5;
-    float Xsize2 = Xsize / 2;
-    float Ysize = 50;
-    float Ysize2 = Ysize / 2;
     {
-      TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYb_%03d", de),
-                              TString::Format("QcMuonChambers - Pedestals XY (DE%03d B)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+      DetectorHistogram* hPedXY = new DetectorHistogram(TString::Format("%sPedestals_%03d_B", getHistoPath(de).c_str(), de),
+                                                        TString::Format("Pedestals (DE%03d B)", de), de);
       mHistogramPedestalsXY[0].insert(make_pair(de, hPedXY));
-      TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYb_%03d", de),
-                                TString::Format("QcMuonChambers - Noise XY (DE%03d B)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+      getObjectsManager()->startPublishing(hPedXY);
+      DetectorHistogram* hNoiseXY = new DetectorHistogram(TString::Format("%sNoise_%03d_B", getHistoPath(de).c_str(), de),
+                                                          TString::Format("Noise (DE%03d B)", de), de);
       mHistogramNoiseXY[0].insert(make_pair(de, hNoiseXY));
+      getObjectsManager()->startPublishing(hNoiseXY);
     }
     {
-      TH2F* hPedXY = new TH2F(TString::Format("QcMuonChambers_Pedestals_XYnb_%03d", de),
-                              TString::Format("QcMuonChambers - Pedestals XY (DE%03d NB)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+      DetectorHistogram* hPedXY = new DetectorHistogram(TString::Format("%sPedestals_%03d_NB", getHistoPath(de).c_str(), de),
+                                                        TString::Format("Pedestals (DE%03d NB)", de), de);
       mHistogramPedestalsXY[1].insert(make_pair(de, hPedXY));
-      TH2F* hNoiseXY = new TH2F(TString::Format("QcMuonChambers_Noise_XYnb_%03d", de),
-                                TString::Format("QcMuonChambers - Noise XY (DE%03d NB)", de), Xsize * 2, -Xsize2, Xsize2, Ysize * 2, -Ysize2, Ysize2);
+      getObjectsManager()->startPublishing(hPedXY);
+      DetectorHistogram* hNoiseXY = new DetectorHistogram(TString::Format("%sNoise_%03d_NB", getHistoPath(de).c_str(), de),
+                                                          TString::Format("Noise (DE%03d NB)", de), de);
       mHistogramNoiseXY[1].insert(make_pair(de, hNoiseXY));
+      getObjectsManager()->startPublishing(hNoiseXY);
     }
   }
 
@@ -109,12 +120,12 @@ void PedestalsTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void PedestalsTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void PedestalsTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void PedestalsTask::fill_noise_distributions()
@@ -181,7 +192,7 @@ void PedestalsTask::fill_noise_distributions()
 
 void PedestalsTask::save_histograms()
 {
-  TFile f("/tmp/qc.root", "RECREATE");
+  TFile f("mch-qc-pedestals.root", "RECREATE");
   fill_noise_distributions();
 
   mHistogramPedestalsMCH->Write();
@@ -228,7 +239,6 @@ void PedestalsTask::save_histograms()
     }
   }
 
-  f.ls();
   f.Close();
 }
 
@@ -271,40 +281,24 @@ void PedestalsTask::PlotPedestalDE(uint16_t solarID, uint8_t dsID, uint8_t chann
 
   double padX = segment.padPositionX(padId);
   double padY = segment.padPositionY(padId);
-  float padSizeX = segment.padSizeX(padId);
-  float padSizeY = segment.padSizeY(padId);
+  double padSizeX = segment.padSizeX(padId);
+  double padSizeY = segment.padSizeY(padId);
   int cathode = segment.isBendingPad(padId) ? 0 : 1;
 
   // Fill the histograms for each detection element
   auto hPedXY = mHistogramPedestalsXY[cathode].find(deId);
   if ((hPedXY != mHistogramPedestalsXY[cathode].end()) && (hPedXY->second != NULL)) {
-    int binx_min = hPedXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
-    int binx_max = hPedXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
-    int biny_min = hPedXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
-    int biny_max = hPedXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
-    for (int by = biny_min; by <= biny_max; by++) {
-      for (int bx = binx_min; bx <= binx_max; bx++) {
-        hPedXY->second->SetBinContent(bx, by, mean);
-      }
-    }
+    hPedXY->second->Set(padX, padY, padSizeX, padSizeY, mean);
   }
   auto hNoiseXY = mHistogramNoiseXY[cathode].find(deId);
   if ((hNoiseXY != mHistogramNoiseXY[cathode].end()) && (hNoiseXY->second != NULL)) {
-    int binx_min = hNoiseXY->second->GetXaxis()->FindBin(padX - padSizeX / 2 + 0.1);
-    int binx_max = hNoiseXY->second->GetXaxis()->FindBin(padX + padSizeX / 2 - 0.1);
-    int biny_min = hNoiseXY->second->GetYaxis()->FindBin(padY - padSizeY / 2 + 0.1);
-    int biny_max = hNoiseXY->second->GetYaxis()->FindBin(padY + padSizeY / 2 - 0.1);
-    for (int by = biny_min; by <= biny_max; by++) {
-      for (int bx = binx_min; bx <= binx_max; bx++) {
-        hNoiseXY->second->SetBinContent(bx, by, rms);
-      }
-    }
+    hNoiseXY->second->Set(padX, padY, padSizeX, padSizeY, rms);
   }
 }
 
 void PedestalsTask::monitorDataPedestals(o2::framework::ProcessingContext& ctx)
 {
-  QcInfoLogger::GetInstance() << "Plotting pedestals" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Plotting pedestals" << AliceO2::InfoLogger::InfoLogger::endm;
   using ChannelPedestal = o2::mch::calibration::MCHChannelCalibrator::ChannelPedestal;
 
   auto pedestals = ctx.inputs().get<gsl::span<ChannelPedestal>>("pedestals");
@@ -356,7 +350,7 @@ void PedestalsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void PedestalsTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mHistogramPedestalsMCH->set(mHistogramPedestalsXY[0], mHistogramPedestalsXY[1], true);
   mHistogramNoiseMCH->set(mHistogramNoiseXY[0], mHistogramNoiseXY[1], true);
@@ -365,7 +359,7 @@ void PedestalsTask::endOfCycle()
 void PedestalsTask::endOfActivity(Activity& /*activity*/)
 {
   printf("PedestalsTask::endOfActivity() called\n");
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 
 #ifdef QC_MCH_SAVE_TEMP_ROOTFILE
   save_histograms();
@@ -376,7 +370,7 @@ void PedestalsTask::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Reseting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   mPedestalProcessor.reset();
 }
 

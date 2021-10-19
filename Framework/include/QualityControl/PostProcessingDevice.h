@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -19,6 +20,7 @@
 #include <Framework/Task.h>
 #include <Framework/DataProcessorSpec.h>
 #include <Headers/DataHeader.h>
+#include "QualityControl/PostProcessingRunnerConfig.h"
 
 #include <string>
 #include <memory>
@@ -27,6 +29,7 @@ namespace o2::quality_control::postprocessing
 {
 
 class PostProcessingRunner;
+struct PostProcessingRunnerConfig;
 
 /// \brief A class driving the execution of a QC PostProcessing task inside DPL.
 ///
@@ -38,7 +41,7 @@ class PostProcessingDevice : public framework::Task
   ///
   /// \param taskName - name of the task, which exists in tasks list in the configuration file
   /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
-  PostProcessingDevice(const std::string& taskName, const std::string& configurationSource);
+  PostProcessingDevice(const PostProcessingRunnerConfig& runnerConfig);
   ~PostProcessingDevice() override = default;
 
   /// \brief PostProcessingDevice's init callback
@@ -69,7 +72,7 @@ class PostProcessingDevice : public framework::Task
  private:
   std::shared_ptr<PostProcessingRunner> mRunner;
   std::string mDeviceName;
-  std::string mConfigSource;
+  PostProcessingRunnerConfig mRunnerConfig;
 };
 
 } // namespace o2::quality_control::postprocessing

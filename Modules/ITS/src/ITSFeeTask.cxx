@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -50,8 +51,7 @@ ITSFeeTask::~ITSFeeTask()
 
 void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "Initializing the ITSFeeTask" << AliceO2::InfoLogger::InfoLogger::endm;
-  getRunNumber();
+  ILOG(Info, Support) << "Initializing the ITSFeeTask" << ENDM;
   createFeePlots();
   setPlotsFormat();
 }
@@ -145,12 +145,13 @@ void ITSFeeTask::setPlotsFormat()
   }
 }
 
-void ITSFeeTask::startOfActivity(Activity& /*activity*/)
+void ITSFeeTask::startOfActivity(Activity& activity)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  mRunNumber = activity.mId;
 }
 
-void ITSFeeTask::startOfCycle() { QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm; }
+void ITSFeeTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM; }
 
 void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -159,7 +160,9 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-  DPLRawParser parser(ctx.inputs());
+  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "feedata0" }, Lifetime::Timeframe } };
+  rawDataFilter.push_back(InputSpec{ "", ConcreteDataTypeMatcher{ "ITS", "RAWDATA" }, Lifetime::Timeframe });
+  DPLRawParser parser(ctx.inputs(), rawDataFilter);
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
     int istave = (int)(rdh->feeId & 0x00ff);
@@ -217,40 +220,17 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  ILOG(Info) << "Processing time: " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
   mProcessingTime->SetBinContent(mTimeFrameId, difference);
-}
-
-void ITSFeeTask::getRunNumber()
-{
-  std::ifstream configFile("Config/ConfigFee.dat");
-
-  if (configFile) {
-    configFile >> mRunNumberPath;
-    std::ifstream runNumberFile(mRunNumberPath);
-    if (runNumberFile) {
-      mRunNumber = "";
-      runNumberFile >> mRunNumber;
-      ILOG(Info) << "runNumber : " << mRunNumber << ENDM;
-    } else {
-      ILOG(Warning) << "Incorrect run number path. ITS Run number not fetched, using 000000 instead." << ENDM;
-    }
-  } else {
-    ILOG(Warning) << "Config file not found. ITS Run number not fetched, using 000000 instead." << ENDM;
-  }
 }
 
 void ITSFeeTask::endOfCycle()
 {
-  getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", mRunNumber);
-  getObjectsManager()->addMetadata(mTriggerVsFeeId->GetName(), "Run", mRunNumber);
-  getObjectsManager()->addMetadata(mTrigger->GetName(), "Run", mRunNumber);
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ITSFeeTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void ITSFeeTask::resetGeneralPlots()
@@ -262,7 +242,7 @@ void ITSFeeTask::resetGeneralPlots()
 void ITSFeeTask::reset()
 {
   resetGeneralPlots();
-  ILOG(Info) << "Reset" << ENDM;
+  ILOG(Info, Support) << "Reset" << ENDM;
 }
 
 } // namespace o2::quality_control_modules::its

@@ -1,12 +1,25 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
+//
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 #include <string>
 #include <TH1.h>
 
 #include <DataSampling/DataSampling.h>
-// #include <DataFormatsPHOS/Digit.h>
 #include <PHOSWorkflow/ReaderSpec.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
+#include "QualityControl/QcInfoLogger.h"
+
+using namespace o2::utilities;
 
 void customize(std::vector<o2::framework::CompletionPolicy>& policies)
 {
@@ -37,7 +50,11 @@ void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
                                                                                       " machines, can be omitted for the local development" } });
 }
 
-#include "Framework/runDataProcessing.h"
+#include <Framework/runDataProcessing.h>
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
+
+using namespace o2::configuration;
 
 std::string getConfigPath(const o2::framework::ConfigContext& config);
 
@@ -47,7 +64,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
 
   // Path to the config file
   std::string qcConfigurationSource = getConfigPath(config);
-  LOG(INFO) << "Using config file=== '" << qcConfigurationSource << "'";
+  LOG(info) << "Using config file=== '" << qcConfigurationSource << "'";
 
   if (config.options().get<bool>("local") && config.options().get<bool>("remote")) {
     ILOG(Info, Support) << "To create both local and remote QC topologies, one does not have to add any of '--local' or '--remote' flags." << ENDM;
@@ -55,11 +72,13 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
 
   if (config.options().get<bool>("local") || !config.options().get<bool>("remote")) {
 
-    LOG(INFO) << "Local GenerateInfrastructure";
+    LOG(info) << "Local GenerateInfrastructure";
     // Generation of Data Sampling infrastructure
-    o2::utilities::DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+    auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+    auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+    DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
-    LOG(INFO) << "Local: generateLocalInfrastructure";
+    LOG(info) << "Local: generateLocalInfrastructure";
     // Generation of the local QC topology (local QC tasks)
     o2::quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, config.options().get<std::string>("host"));
   }
@@ -67,7 +86,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
     // Generation of the remote QC topology (task for QC servers, mergers and all checkers)
     o2::quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
   }
-  LOG(INFO) << "Done ";
+  LOG(info) << "Done ";
 
   return specs;
 }
@@ -75,7 +94,7 @@ o2::framework::WorkflowSpec defineDataProcessing(o2::framework::ConfigContext co
 std::string getConfigPath(const o2::framework::ConfigContext& config)
 {
   std::string userConfigPath = config.options().get<std::string>("config-path");
-  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ? std::string(getenv("QUALITYCONTROL_ROOT")) + "/Modules/PHOS/etc/raw.json" : "$QUALITYCONTROL_ROOT undefined";
+  std::string defaultConfigPath = getenv("QUALITYCONTROL_ROOT") != nullptr ? std::string(getenv("QUALITYCONTROL_ROOT")) + "/Modules/PHOS/etc/phosRaw.json" : "$QUALITYCONTROL_ROOT undefined";
   std::string path = userConfigPath == "" ? defaultConfigPath : userConfigPath;
   const std::string qcConfigurationSource = std::string("json:/") + path;
   return qcConfigurationSource;
