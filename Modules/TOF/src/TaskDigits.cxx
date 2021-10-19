@@ -82,7 +82,7 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   mOrbitID = std::make_shared<TH2F>("OrbitID", "OrbitID;OrbitID % 1048576;Crate", 1024, 0, 1048576, RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
   getObjectsManager()->startPublishing(mOrbitID.get());
 
-  mTimeBC = std::make_shared<TH2F>("TimeBC", "Raw BC Time;BC time (24.4 ps);Crate", 1024, 0., 1024., RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
+  mTimeBC = std::make_shared<TH2F>("TimeBC", "Raw BC ID;BC ID (~25 ns);Crate", 641, 0., 3564., RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
   getObjectsManager()->startPublishing(mTimeBC.get());
 
   mEventCounter = std::make_shared<TH2F>("EventCounter", "Event Counter;Event counter % 1000;Crate", 1000, 0., 1000., RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates);
@@ -251,7 +251,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
         continue;
       }
       mOrbitID->Fill(row.mFirstIR.orbit % 1048576, i);
-      mTimeBC->Fill(row.mFirstIR.bc % 1024, i);
+      mTimeBC->Fill(row.mFirstIR.bc % o2::tof::Geo::BC_IN_ORBIT, i);
       mEventCounter->Fill(row.mEventCounter % 1000, i);
     }
     currentrow++;
@@ -270,7 +270,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       mHitCounterPerStrip[strip].Count(det[0] * 4 + det[4] / 12);
       mHitCounterPerChannel.Count(digit.getChannel());
       // TDC time and ToT time
-      tdc_time = (digit.getTDC() + digit.getBC() * 1024) * o2::tof::Geo::TDCBIN * 0.001;
+      tdc_time = (digit.getTDC() + digit.getIR().bc * 1024) * o2::tof::Geo::TDCBIN * 0.001;
       tot_time = digit.getTOT() * o2::tof::Geo::TOTBIN_NS;
       mTOFtimeVsBCID->Fill(row.mFirstIR.bc % 1024, tdc_time);
       mTOFRawsTime->Fill(tdc_time);

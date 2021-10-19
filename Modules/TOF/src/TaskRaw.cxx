@@ -108,12 +108,16 @@ void RawDataDecoder::headerHandler(const CrateHeader_t* crateHeader, const Crate
 void RawDataDecoder::frameHandler(const CrateHeader_t* crateHeader, const CrateOrbit_t* /*crateOrbit*/,
                                   const FrameHeader_t* frameHeader, const PackedHit_t* packedHits)
 {
+  const auto& drmID = crateHeader->drmID; // [0-71]
+  const auto& trmID = frameHeader->trmID; // [3-12]
   // Number of hits
   mHistoHits->Fill(frameHeader->numberOfHits);
+  // Number of hits in TRM slot per crate
+  if (mDebugCrateMultiplicity) {
+    mHistoHitsCrate[drmID]->Fill(frameHeader->numberOfHits);
+  }
   for (int i = 0; i < frameHeader->numberOfHits; ++i) {
     const auto packedHit = packedHits + i;
-    const auto drmID = crateHeader->drmID;                                                    // [0-71]
-    const auto trmID = frameHeader->trmID;                                                    // [3-12]
     const auto chain = packedHit->chain;                                                      // [0-1]
     const auto tdcID = packedHit->tdcID;                                                      // [0-14]
     const auto channel = packedHit->channel;                                                  // [0-7]
@@ -197,7 +201,12 @@ void RawDataDecoder::trailerHandler(const CrateHeader_t* crateHeader, const Crat
 
 void RawDataDecoder::initHistograms() // Initialization of histograms in Decoder
 {
-  mHistoHits = std::make_shared<TH1F>("hHits", "Raw Hits;Hits per event", 1000, 0., 1000.);
+  mHistoHits = std::make_shared<TH1I>("hHits", "Raw Hits;Hits per event", 1000, 0., 1000.);
+  if (mDebugCrateMultiplicity) {
+    for (unsigned int i = 0; i < ncrates; i++) {
+      mHistoHitsCrate[i] = std::make_shared<TH1I>(Form("CrateMultiplicity/hHitsCrate%02i", i), Form("Hits in TRMs per Crate %i ;Hits per event", i), 1000, 0., 1000.);
+    }
+  }
   mHistoTime = std::make_shared<TH1F>("hTime", "Raw Time;Time (24.4 ps)", 2097152, 0., 2097152.);
   mHistoTOT = std::make_shared<TH1F>("hTOT", "Raw ToT;ToT (48.8 ps)", 2048, 0., 2048.);
   mHistoDiagnostic = std::make_shared<TH2F>("hDiagnostic", "hDiagnostic;Crate;Slot", ncrates, 0., ncrates, nslots, 1, nslots + 1);
@@ -235,6 +244,11 @@ void RawDataDecoder::resetHistograms() // Reset of histograms in Decoder
 
   // Reset histograms
   mHistoHits->Reset();
+  if (mDebugCrateMultiplicity) {
+    for (unsigned int i = 0; i < ncrates; i++) {
+      mHistoHitsCrate[i]->Reset();
+    }
+  }
   mHistoTime->Reset();
   mHistoTOT->Reset();
   mHistoDiagnostic->Reset();
@@ -350,6 +364,11 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("NoiseThreshold"); param != mCustomParameters.end()) {
     mDecoderRaw.setNoiseThreshold(param->second);
   }
+  if (auto param = mCustomParameters.find("DebugCrateMultiplicity"); param != mCustomParameters.end()) {
+    if (param->second == "True") {
+      mDecoderRaw.setDebugCrateMultiplicity(true);
+    }
+  }
 
   // RDH
   mHistoRDH = std::make_shared<TH2F>("RDHCounter", "RDH Diagnostics;RDH Word;Crate;Words",
@@ -426,6 +445,11 @@ void TaskRaw::initialize(o2::framework::InitContext& /*ctx*/)
 
   mDecoderRaw.initHistograms();
   getObjectsManager()->startPublishing(mDecoderRaw.mHistoHits.get());
+  if (mDecoderRaw.isDebugCrateMultiplicity()) {
+    for (unsigned int i = 0; i < RawDataDecoder::ncrates; i++) {
+      getObjectsManager()->startPublishing(mDecoderRaw.mHistoHitsCrate[i].get());
+    }
+  }
   getObjectsManager()->startPublishing(mDecoderRaw.mHistoTime.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mHistoTOT.get());
   getObjectsManager()->startPublishing(mDecoderRaw.mHistoDiagnostic.get());
