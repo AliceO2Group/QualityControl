@@ -88,10 +88,14 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeneralOccupancy = new TH2Poly();
   mGeneralOccupancy->SetTitle("General Occupancy;mm;mm");
   mGeneralOccupancy->SetName("General/General_Occupancy");
+	mGeneralOccupancy->SetStats(0);
+	mGeneralOccupancy->GetZaxis()->SetRangeUser(pow(10, mMinGeneralAxisRange), pow(10, mMaxGeneralAxisRange));
 
   mGeneralNoisyPixel = new TH2Poly();
   mGeneralNoisyPixel->SetTitle("Noisy Pixel Number;mm;mm");
   mGeneralNoisyPixel->SetName("General/Noisy_Pixel");
+	mGeneralNoisyPixel->SetStats(0);
+	mGeneralNoisyPixel->GetZaxis()->SetRangeUser(mMinGeneralNoisyAxisRange, mMaxGeneralNoisyAxisRange);
 
   createGeneralPlots();
   createOccupancyPlots();
@@ -630,8 +634,8 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         mChipStaveOccupancy[lay]->SetBinContent(ichip + 1, istave + 1, mOccupancy[istave][ichip]);
         int ilink = ichip / 3;
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
-          if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] > 0)) {
-            mErrorVsFeeid->SetBinContent((istave * 3) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
+          if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] != 0)) {
+            mErrorVsFeeid->SetBinContent(((istave + StaveBoundary[lay]) * 3) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
           }
         }
       }
@@ -689,6 +693,10 @@ void ITSFhrTask::getParameters()
   mGeomPath = mCustomParameters["geomPath"];
   mHitCutForNoisyPixel = std::stoi(mCustomParameters["HitNumberCutForNoisyPixel"]);
   mOccupancyCutForNoisyPixel = std::stof(mCustomParameters["OccupancyNumberCutForNoisyPixel"]);
+	mMaxGeneralAxisRange = std::stof(mCustomParameters["MaxGeneralAxisRange"]);
+	mMinGeneralAxisRange = std::stof(mCustomParameters["MinGeneralAxisRange"]);
+	mMaxGeneralNoisyAxisRange = std::stof(mCustomParameters["MaxGeneralNoisyAxisRange"]);
+	mMinGeneralNoisyAxisRange = std::stof(mCustomParameters["MinGeneralNoisyAxisRange"]);
 }
 
 void ITSFhrTask::endOfCycle()
@@ -738,6 +746,10 @@ void ITSFhrTask::reset()
 {
   resetGeneralPlots();
   resetOccupancyPlots();
+
+	mGeneralOccupancy->Reset("content");
+	mGeneralNoisyPixel->Reset("content");
+	mDecoder->clearStat();
 
   if (mLayer < NLayerIB) {
     for (int istave = 0; istave < NStaves[mLayer]; istave++) {

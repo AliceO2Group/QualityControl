@@ -97,7 +97,7 @@ class ITSFhrTask final : public TaskInterface
   ChipPixelData* mChipDataBuffer = nullptr;
   std::vector<ChipPixelData> mChipsBuffer;
   int mHitNumberOfChip[7][48][2][14][14] = { { { { { 0 } } } } }; //layer, stave, substave, hic, chip
-  int mTimeFrameId = 0;
+  unsigned int mTimeFrameId = 0;
   uint32_t mTriggerTypeCount[13] = { 0 };
 
   int mNError = 19;
@@ -116,6 +116,11 @@ class ITSFhrTask final : public TaskInterface
   double** mOccupancy /* = new double*[NStaves[lay]]*/; //IB : occupancy[stave][chip]; OB : occupancy[stave][hic]
   int*** mErrorCount /* = new int**[NStaves[lay]]*/;    //IB : errorcount[stave][FEE][errorid]
   int mNoisyPixelNumber[7][48] = { { 0 } };
+
+	int mMaxGeneralAxisRange = -3;  	//the range of TH2Poly plots z axis range, pow(10, mMinGeneralAxisRange) ~ pow(10, mMaxGeneralAxisRange)
+	int mMinGeneralAxisRange = -12; 	//
+	int mMaxGeneralNoisyAxisRange = 4000;
+	int mMinGeneralNoisyAxisRange = 0;
 
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
 
