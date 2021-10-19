@@ -156,7 +156,7 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       mDecoder->setUpStream(ptrToPayload, (long int)header->payloadSize);
       if (!mDecoder->decodeBufferFast()) {
-        ILOG(Error) << "Error decoding the Superpage !" << ENDM;
+        ILOG(Error, Devel) << "Error decoding the Superpage !" << ENDM;
       }
 
       // Double_t ddl[14], EventSize[14], BusyTime[14];
