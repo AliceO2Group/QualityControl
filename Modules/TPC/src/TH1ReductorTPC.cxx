@@ -45,7 +45,7 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
   TH1* histo = nullptr;       // General pointer to the histogram to trend.
   int numberPads = 1;         // Default value if no slicer and not a canvas.
   int axisSize = 1;           // Default value for the main slicer axis (for the canvas as input).
-  int innerAxisSize = 2;      // Default value for the inner slicer axis (for the canvas as input).
+  int innerAxisSize = 1;      // Default value for the inner slicer axis (for the canvas as input).
 
   ILOG(Info, Support) << "Entering Reductor::update." << ENDM;
 
@@ -60,10 +60,9 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
     if (axis[0].size() > 1) { // To ensure we use the slicing.
       axisSize = (int)axis.size();
       innerAxisSize = (int)axis[0].size() - 1;
-      numberPads = axisSize*innerAxisSize;
     }
   }
-  ILOG(Info, Support) << "Trending of " << obj->GetName() << " will contain " << numberPads << " histogram(s)." << ENDM;
+  ILOG(Info, Support) << "Trending of " << obj->GetName() << " will contain " << numberPads << " histogram(s) from axisSize: " << axisSize << " and innerAxisSize: " << innerAxisSize << ENDM;
 
   // Access the histo embedded in obj.
   for (int iPad = 0; iPad < numberPads; iPad++) {

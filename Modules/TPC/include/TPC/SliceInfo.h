@@ -19,6 +19,8 @@
 #ifndef QUALITYCONTROL_SLICEINFO_H
 #define QUALITYCONTROL_SLICEINFO_H
 
+#include <Rtypes.h>
+
 namespace o2::quality_control_modules::tpc
 {
 /// \brief  A post-processing task tuned for the needs of the trending of the TPC.
@@ -42,6 +44,8 @@ struct SliceInfo {
   double meanY;
   double stddevY;
   double errMeanY;
+
+  ClassDefNV(SliceInfo,1);
 };
 
 } // namespace o2::quality_control_modules::tpc

@@ -79,7 +79,7 @@ void TrendingTaskTPC::update(Trigger t, framework::ServiceRegistry& services)
   file->Close();
   ILOG(Info, Support) << "File saved." << ENDM;
 
-  //generatePlots();
+  generatePlots();
 }
 
 void TrendingTaskTPC::finalize(Trigger, framework::ServiceRegistry&)
@@ -118,6 +118,10 @@ void TrendingTaskTPC::trendValues(uint64_t timestamp,
     } else {
       ILOG(Error, Support) << "Data source '" << dataSource.type << "' unknown." << ENDM;
     }
+
+
+    ILOG(Info, Support) << "Vector el 0 '" << mSources[dataSource.name].at(0).meanX << ENDM;
+
   }
 
   mTrend->Fill();
@@ -182,10 +186,11 @@ void TrendingTaskTPC::generatePlots()
     mPlots[plot.name] = c;
     getObjectsManager()->startPublishing(c);
   }
-
+/*
   for (auto& dataSource : mConfig.dataSources) {
     mSources[dataSource.name].clear();
   }
+  ILOG(Info, Support) << "vector cleared" << ENDM;*/
 }
 
 void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
@@ -196,19 +201,35 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
 
   // Determine the order of the plot (1 - histo, 2 - graph, ...)
   const size_t plotOrder = std::count(var.begin(), var.end(), ':') + 1;
+  //std::string lazy(var+sel+opt+err+name);
+  //lazy = "";
 
   // Delete the graph errors after the plot is saved.
   // Unfortunately the canvas does not take its ownership.
   TGraphErrors* graphErrors = nullptr;
 
+    std::vector<SliceInfo> *ch2ProngVec = nullptr;
+    mTrend->SetBranchAddress("hEtaRatio", &ch2ProngVec);
+    int nEvents = mTrend->GetEntriesFast();
+    ILOG(Info, Support) << "Total number entries: " << nEvents << ENDM;
+
+    for (int i = 0; i < nEvents; i++) {
+      mTrend->GetEvent(i);
+      ILOG(Info, Support) << "Event: " << i << " 0-th slice, meanX: " << ch2ProngVec->at(0).meanX << ENDM;
+      ILOG(Info, Support) << "Event: " << i << " 1-th slice, meanX: " << ch2ProngVec->at(1).meanX << ENDM;
+    }
+
+
   for (int p = 0; p < (mNumberPads); p++) {
     thisCanvas->cd(p + 1);
-    //std::size_t posEndVar = var.find(".");  // Find the end of the y-variable.
-    //std::string varPad(var.substr(0, posEndVar) + "[" + p + "]" + var.substr(posEndVar));
+    std::size_t posEndVar = var.find(".");  // Find the end of the y-variable.
+    std::string varPad(var.substr(0, posEndVar) + "[" + p + "]" + var.substr(posEndVar));
+    //const std::string pain("ch2ProngVec->at(");
     //std::string varPad(var.substr(0, posEndVar) + ".at(" + p + ")" + var.substr(posEndVar));
-    //ILOG(Info, Support) << "varPad " << varPad << ENDM;
+    ILOG(Info, Support) << "varPad " << varPad << ENDM;
 
-    mTrend->Draw(var.c_str(), sel.c_str(), opt.c_str());  ///// varpad
+    mTrend->Draw(varPad.c_str(), sel.c_str(), opt.c_str());  ///// varpad
+    ILOG(Info, Support) << "trending drawn" << ENDM;
 
     // For graphs, we allow to draw errors if they are specified.
     if (!err.empty()) {
@@ -217,7 +238,7 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
       } else {
         // We generate some 4-D points, where 2 dimensions represent graph points and 2 others are the error bars. The errors are given as errX:errY.
         //std::string varexpWithErrors(varPad + ":" + err + "[" + p + "]");
-        mTrend->Draw(var.c_str(), sel.c_str(), "goff");
+        mTrend->Draw(varPad.c_str(), sel.c_str(), "goff");
         graphErrors = new TGraphErrors(mTrend->GetSelectedRows(), mTrend->GetVal(1), mTrend->GetVal(0), mTrend->GetVal(2), mTrend->GetVal(3));
 
         // We draw on the same plot as the main graph, but only error bars.
@@ -232,4 +253,8 @@ void TrendingTaskTPC::drawCanvas(TCanvas* thisCanvas, const std::string& var,
       }
     } // if (!err.empty())
   }   // for (int p = 0; p < (mAxisSize*mInnerAxisSize); p++)
+
+  delete ch2ProngVec;
+  mTrend->ResetBranchAddresses();
+
 }

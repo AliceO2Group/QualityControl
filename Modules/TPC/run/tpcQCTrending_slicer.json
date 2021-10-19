@@ -32,7 +32,7 @@
             {
               "type": "repository",
               "path": "qc/TPC/MO/Tracks",
-              "names": [ "hEtaRatio", "hEta" ],
+              "names": [ "hEtaRatio" ],
               "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
               "axisDivision": [ [ "-2.0", "0.0", "2.0" ] ],
               "moduleName": "QcTPC"
@@ -46,15 +46,7 @@
               "selection": "",
               "option": "*L",
               "graphErrors": ""
-            },
-            {
-              "name": "Eta_StatMean_Trend",
-              "title": "Mean of the pseudorapidity vs time",
-              "varexp": "hEta.meanX:time",
-              "selection": "",
-              "option": "*L",
-              "graphErrors": ""
-          }
+            }
           ],
         "initTrigger": [
           "userorcontrol"
