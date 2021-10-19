@@ -117,10 +117,10 @@ class ITSFhrTask final : public TaskInterface
   int*** mErrorCount /* = new int**[NStaves[lay]]*/;    //IB : errorcount[stave][FEE][errorid]
   int mNoisyPixelNumber[7][48] = { { 0 } };
 
-	int mMaxGeneralAxisRange = -3;  	//the range of TH2Poly plots z axis range, pow(10, mMinGeneralAxisRange) ~ pow(10, mMaxGeneralAxisRange)
-	int mMinGeneralAxisRange = -12; 	//
-	int mMaxGeneralNoisyAxisRange = 4000;
-	int mMinGeneralNoisyAxisRange = 0;
+  int mMaxGeneralAxisRange = -3;  //the range of TH2Poly plots z axis range, pow(10, mMinGeneralAxisRange) ~ pow(10, mMaxGeneralAxisRange)
+  int mMinGeneralAxisRange = -12; //
+  int mMaxGeneralNoisyAxisRange = 4000;
+  int mMinGeneralNoisyAxisRange = 0;
 
   TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
 

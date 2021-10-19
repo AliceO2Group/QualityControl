@@ -61,58 +61,58 @@ std::string ITSFhrCheck::getAcceptedType() { return "TH1"; }
 
 void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-	TLatex *text[5];
+  TLatex* text[5];
   if (mo->getName() == "General/ErrorPlots") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     if (checkResult == Quality::Good) {
-	text[0] = new TLatex(0, 0, "Quality::Good");
-	text[1] = new TLatex(0, -100, "There is no Error found");
-	for(int i = 0; i < 2; ++i) {
-		text[i]->SetTextAlign(23);
-		text[i]->SetTextSize(0.08);
-		text[i]->SetTextColor(kGreen);
-		h->GetListOfFunctions()->Add(text[i]);
-	}
+      text[0] = new TLatex(0, 0, "Quality::Good");
+      text[1] = new TLatex(0, -100, "There is no Error found");
+      for (int i = 0; i < 2; ++i) {
+        text[i]->SetTextAlign(23);
+        text[i]->SetTextSize(0.08);
+        text[i]->SetTextColor(kGreen);
+        h->GetListOfFunctions()->Add(text[i]);
+      }
     } else if (checkResult == Quality::Bad) {
-	text[0] = new TLatex(0, 100, "Quality::Bad");
-	text[1] = new TLatex(0, 0, "Decoding ERROR detected");
-	text[2] = new TLatex(0, -100, "please inform SL");
-        for(int i = 0; i < 3; ++i) {
-                text[i]->SetTextAlign(23);
-                text[i]->SetTextSize(0.08);
-                text[i]->SetTextColor(kRed);
-                h->GetListOfFunctions()->Add(text[i]);
-        }
+      text[0] = new TLatex(0, 100, "Quality::Bad");
+      text[1] = new TLatex(0, 0, "Decoding ERROR detected");
+      text[2] = new TLatex(0, -100, "please inform SL");
+      for (int i = 0; i < 3; ++i) {
+        text[i]->SetTextAlign(23);
+        text[i]->SetTextSize(0.08);
+        text[i]->SetTextColor(kRed);
+        h->GetListOfFunctions()->Add(text[i]);
+      }
     }
   } else if (mo->getName() == "General/General_Occupancy") {
     auto* h = dynamic_cast<TH2Poly*>(mo->getObject());
     auto* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "NDC");
     msg->SetName(Form("%s_msg", mo->GetName()));
     if (checkResult == Quality::Good) {
-	text[0] = new TLatex(0, 0, "Quality::Good");
-	text[0]->SetTextAlign(23);
-	text[0]->SetTextSize(0.08);
-	text[0]->SetTextColor(kGreen);
-	h->GetListOfFunctions()->Add(text[0]);
+      text[0] = new TLatex(0, 0, "Quality::Good");
+      text[0]->SetTextAlign(23);
+      text[0]->SetTextSize(0.08);
+      text[0]->SetTextColor(kGreen);
+      h->GetListOfFunctions()->Add(text[0]);
     } else if (checkResult == Quality::Bad) {
-	text[0] = new TLatex(0, 100, "Quality::Bad");
-	text[1] = new TLatex(0, 0, "Max Occupancy over 10^{-5}");
-	text[2] = new TLatex(0, -100, "or ERROR detected, Please Inform SL");
-        for(int i = 0; i < 3; ++i) {
-                text[i]->SetTextAlign(23);
-                text[i]->SetTextSize(0.08);
-                text[i]->SetTextColor(kRed);
-                h->GetListOfFunctions()->Add(text[i]);
-        }
+      text[0] = new TLatex(0, 100, "Quality::Bad");
+      text[1] = new TLatex(0, 0, "Max Occupancy over 10^{-5}");
+      text[2] = new TLatex(0, -100, "or ERROR detected, Please Inform SL");
+      for (int i = 0; i < 3; ++i) {
+        text[i]->SetTextAlign(23);
+        text[i]->SetTextSize(0.08);
+        text[i]->SetTextColor(kRed);
+        h->GetListOfFunctions()->Add(text[i]);
+      }
     } else if (checkResult == Quality::Medium) {
-	text[0] = new TLatex(0, 0, "Quality::Medium");
-	text[1] = new TLatex(0, -100, "Max Occupancy over 10^{-6}");
-        for(int i = 0; i < 2; ++i) {
-                text[i]->SetTextAlign(23);
-                text[i]->SetTextSize(0.08);
-                text[i]->SetTextColor(kOrange);
-                h->GetListOfFunctions()->Add(text[i]);
-        }
+      text[0] = new TLatex(0, 0, "Quality::Medium");
+      text[1] = new TLatex(0, -100, "Max Occupancy over 10^{-6}");
+      for (int i = 0; i < 2; ++i) {
+        text[i]->SetTextAlign(23);
+        text[i]->SetTextSize(0.08);
+        text[i]->SetTextColor(kOrange);
+        h->GetListOfFunctions()->Add(text[i]);
+      }
     }
   }
 }

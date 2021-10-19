@@ -88,14 +88,14 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeneralOccupancy = new TH2Poly();
   mGeneralOccupancy->SetTitle("General Occupancy;mm;mm");
   mGeneralOccupancy->SetName("General/General_Occupancy");
-	mGeneralOccupancy->SetStats(0);
-	mGeneralOccupancy->GetZaxis()->SetRangeUser(pow(10, mMinGeneralAxisRange), pow(10, mMaxGeneralAxisRange));
+  mGeneralOccupancy->SetStats(0);
+  mGeneralOccupancy->GetZaxis()->SetRangeUser(pow(10, mMinGeneralAxisRange), pow(10, mMaxGeneralAxisRange));
 
   mGeneralNoisyPixel = new TH2Poly();
   mGeneralNoisyPixel->SetTitle("Noisy Pixel Number;mm;mm");
   mGeneralNoisyPixel->SetName("General/Noisy_Pixel");
-	mGeneralNoisyPixel->SetStats(0);
-	mGeneralNoisyPixel->GetZaxis()->SetRangeUser(mMinGeneralNoisyAxisRange, mMaxGeneralNoisyAxisRange);
+  mGeneralNoisyPixel->SetStats(0);
+  mGeneralNoisyPixel->GetZaxis()->SetRangeUser(mMinGeneralNoisyAxisRange, mMaxGeneralNoisyAxisRange);
 
   createGeneralPlots();
   createOccupancyPlots();
@@ -693,10 +693,10 @@ void ITSFhrTask::getParameters()
   mGeomPath = mCustomParameters["geomPath"];
   mHitCutForNoisyPixel = std::stoi(mCustomParameters["HitNumberCutForNoisyPixel"]);
   mOccupancyCutForNoisyPixel = std::stof(mCustomParameters["OccupancyNumberCutForNoisyPixel"]);
-	mMaxGeneralAxisRange = std::stof(mCustomParameters["MaxGeneralAxisRange"]);
-	mMinGeneralAxisRange = std::stof(mCustomParameters["MinGeneralAxisRange"]);
-	mMaxGeneralNoisyAxisRange = std::stof(mCustomParameters["MaxGeneralNoisyAxisRange"]);
-	mMinGeneralNoisyAxisRange = std::stof(mCustomParameters["MinGeneralNoisyAxisRange"]);
+  mMaxGeneralAxisRange = std::stof(mCustomParameters["MaxGeneralAxisRange"]);
+  mMinGeneralAxisRange = std::stof(mCustomParameters["MinGeneralAxisRange"]);
+  mMaxGeneralNoisyAxisRange = std::stof(mCustomParameters["MaxGeneralNoisyAxisRange"]);
+  mMinGeneralNoisyAxisRange = std::stof(mCustomParameters["MinGeneralNoisyAxisRange"]);
 }
 
 void ITSFhrTask::endOfCycle()
@@ -747,9 +747,9 @@ void ITSFhrTask::reset()
   resetGeneralPlots();
   resetOccupancyPlots();
 
-	mGeneralOccupancy->Reset("content");
-	mGeneralNoisyPixel->Reset("content");
-	mDecoder->clearStat();
+  mGeneralOccupancy->Reset("content");
+  mGeneralNoisyPixel->Reset("content");
+  mDecoder->clearStat();
 
   if (mLayer < NLayerIB) {
     for (int istave = 0; istave < NStaves[mLayer]; istave++) {
