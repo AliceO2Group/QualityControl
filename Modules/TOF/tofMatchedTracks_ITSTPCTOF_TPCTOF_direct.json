@@ -28,19 +28,20 @@
                        "" : "Message at this level or above are discarded (default: 21 - Trace)" }
     },
     "tasks" : {
-      "MatchedTracksITSTPC" : {
+      "MatchedTracksITSTPCTOF_TPCTOF" : {
         "active" : "true",
-        "className" : "o2::quality_control_modules::glo::ITSTPCMatchingTask",
-        "moduleName" : "QcGLO",
-        "detectorName" : "GLO",
-        "cycleDurationSeconds" : "3600",
+        "className" : "o2::quality_control_modules::tof::TOFMatchedTracks",
+        "moduleName" : "QcTOF",
+        "detectorName" : "TOF",
+        "cycleDurationSeconds" : "10",
         "maxNumberCycles" : "-1",
         "dataSource" : {
-          "type" : "dataSamplingPolicy",
-          "name" : "ITSTPCmatchingSampling"
+          "type" : "direct",
+          "query_comment" : "checking every matched track",
+          "query" : "matchITSTPCTOF:TOF/MTC_ITSTPC/0;matchTPCTOF:TOF/MTC_TPC/0;trackTPCTOF:TOF/TOFTRACKS_TPC/0;trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS/0;trackTPCClRefs:TPC/CLUSREFS/0;tofcluster:TOF/CLUSTERS/0"
         },
         "taskParameters" : {
-          "GID" : "ITS-TPC,ITS",
+          "GID" : "ITS-TPC,TPC,ITS-TPC-TOF,TPC-TOF",
           "verbose" : "false",
           "minPtCut" : "0.1f",
           "etaCut" : "1.4f",
@@ -51,7 +52,7 @@
           "geomFileName" : "o2sim_geometry.root"
         },
         "location" : "remote",
-        "saveObjectsToFile" : "ITSTPCmatched.root",
+        "saveObjectsToFile" : "TOFmatchedITSTPCTOF_TPCTOF.root",
         "" : "For debugging, path to the file where to save. If empty or missing it won't save."
       }
     },
@@ -71,20 +72,5 @@
     }
   },
          "dataSamplingPolicies" : [
-           {
-             "id" : "ITSTPCmatchingSampling",
-             "active" : "true",
-             "machines" : [],
-             "query_comment" : "checking every 10% matched track",
-             "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS",
-             "samplingConditions" : [
-               {
-                 "condition" : "random",
-                 "fraction" : "0.1",
-                 "seed" : "1234"
-               }
-             ],
-             "blocking" : "false"
-           }
          ]
 }

@@ -15,8 +15,10 @@
 ///
 
 #include <TCanvas.h>
-#include <TH1.h>
+#include <TH1F.h>
+#include <TH2F.h>
 #include <TProfile.h>
+#include <TEfficiency.h>
 
 #include "ReconstructionDataFormats/PrimaryVertex.h"
 
@@ -34,6 +36,7 @@ VertexingQcTask::~VertexingQcTask()
   delete mZ;
   delete mNContributors;
   delete mTimeUncVsNContrib;
+  delete mBeamSpot;
   if (mUseMC) {
     delete mPurityVsMult;
     delete mNPrimaryMCEvWithVtx;
@@ -54,24 +57,31 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize VertexingQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
+  if (auto param = mCustomParameters.find("verbose"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - verbose (= verbose printouts): " << param->second << ENDM;
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      mVerbose = true;
+    }
+  }
+
   if (auto param = mCustomParameters.find("isMC"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - isMC: " << param->second << ENDM;
     if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
       mUseMC = true;
       mMCReader.initFromDigitContext("collisioncontext.root");
-      mPurityVsMult = new TProfile("purityVsMult", "purityVsMult", 100, -0.5, 9999.5, 0.f, 1.f);
-      mNPrimaryMCEvWithVtx = new TH1F("NPrimaryMCEvWithVtx", "NPrimaryMCEvWithVtx", 100, -0.5, 9999.5);
+      mPurityVsMult = new TProfile("purityVsMult", "purityVsMult; MC primary mult; vtx purity", 100, -0.5, 9999.5, 0.f, 1.f);
+      mNPrimaryMCEvWithVtx = new TH1F("NPrimaryMCEvWithVtx", "NPrimaryMCEvWithVtx; MC primary mult; n. events", 100, -0.5, 9999.5);
       mNPrimaryMCEvWithVtx->Sumw2();
-      mNPrimaryMCGen = new TH1F("NPrimaryMCGen", "NPrimaryMCGen", 100, -0.5, 9999.5);
+      mNPrimaryMCGen = new TH1F("NPrimaryMCGen", "NPrimaryMCGen; MC primary mult; n. events with vtx", 100, -0.5, 9999.5);
       mNPrimaryMCGen->Sumw2();
-      mVtxEffVsMult = new TH1F("vtxEffVsMult", "vtxEffVsMult", 100, -0.5, 9999.5);
-      mCloneFactorVsMult = new TProfile("cloneFactorVsMult", "cloneFactorVsMult", 100, -0.5, 9999.5, 0.f, 1.f);
-      mVtxResXVsMult = new TProfile("vtxResXVsMult", "vtxRes (X) vs mult", 100, -0.5, 9999.5, 0.f, 100.f);
-      mVtxResYVsMult = new TProfile("vtxResYVsMult", "vtxRes (Y) vs mult", 100, -0.5, 9999.5, 0.f, 100.f);
-      mVtxResZVsMult = new TProfile("vtxResZVsMult", "vtxRes (Z) vs mult", 100, -0.5, 9999.5, 0.f, 100.f);
-      mVtxPullsXVsMult = new TProfile("vtxPullsXVsMult", "vtxPulls (X) vs mult", 100, -0.5, 9999.5, 0.f, 100.f);
-      mVtxPullsYVsMult = new TProfile("vtxPullsYVsMult", "vtxPulls (Y) vs mult", 100, -0.5, 9999.5, 0.f, 100.f);
-      mVtxPullsZVsMult = new TProfile("vtxPullsZVsMult", "vtxPulls (Z) vs mult", 100, -0.5, 9999.5, 0.f, 100.f);
+      mVtxEffVsMult = new TEfficiency("vtxEffVsMult", "vtxEffVsMult; MC primary mult; vtx reco efficiency", 100, -0.5, 9999.5);
+      mCloneFactorVsMult = new TProfile("cloneFactorVsMult", "cloneFactorVsMult; MC primary mult; n. cloned vertices", 100, -0.5, 9999.5, 0.f, 1.f);
+      mVtxResXVsMult = new TProfile("vtxResXVsMult", "vtxRes (X) vs mult; n. contributors; res on X (cm)", 100, -0.5, 9999.5, 0.f, 100.f);
+      mVtxResYVsMult = new TProfile("vtxResYVsMult", "vtxRes (Y) vs mult; n. conrtibutors; res on Y (cm)", 100, -0.5, 9999.5, 0.f, 100.f);
+      mVtxResZVsMult = new TProfile("vtxResZVsMult", "vtxRes (Z) vs mult; n. contriobutors; res on Z (cm)", 100, -0.5, 9999.5, 0.f, 100.f);
+      mVtxPullsXVsMult = new TProfile("vtxPullsXVsMult", "vtxPulls (X) vs mult; MC primary mult; pulls for X", 100, -0.5, 9999.5, 0.f, 100.f);
+      mVtxPullsYVsMult = new TProfile("vtxPullsYVsMult", "vtxPulls (Y) vs mult; MC primary mult; pulls for Y", 100, -0.5, 9999.5, 0.f, 100.f);
+      mVtxPullsZVsMult = new TProfile("vtxPullsZVsMult", "vtxPulls (Z) vs mult; MC primary mult; pulls for Z", 100, -0.5, 9999.5, 0.f, 100.f);
       getObjectsManager()->startPublishing(mPurityVsMult);
       getObjectsManager()->startPublishing(mNPrimaryMCEvWithVtx);
       getObjectsManager()->startPublishing(mNPrimaryMCGen);
@@ -86,17 +96,19 @@ void VertexingQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     }
   }
 
-  mX = new TH1F("vertex_X", "vertex_X", 1000, -1, 1);
-  mY = new TH1F("vertex_Y", "vertex_Y", 1000, -1, 1);
-  mZ = new TH1F("vertex_Z", "vertex_Z", 1000, -20, 20);
-  mNContributors = new TH1F("vertex_NContributors", "vertex_NContributors", 1000, -0.5, 999.5);
-  mTimeUncVsNContrib = new TProfile("timeUncVsNContrib", "timeUncVsNContrib", 100, -0.5, 999.5, 0.f, 10.f);
+  mX = new TH1F("vertex_X", "vertex_X; vtx_X (cm); entries", 1000, -1, 1);
+  mY = new TH1F("vertex_Y", "vertex_Y; vtx_Y (cm); entries", 1000, -1, 1);
+  mZ = new TH1F("vertex_Z", "vertex_Z; vtx_Z (cm);entries", 1000, -20, 20);
+  mNContributors = new TH1F("vertex_NContributors", "vertex_NContributors; n. contributors; entries", 1000, -0.5, 999.5);
+  mTimeUncVsNContrib = new TProfile("timeUncVsNContrib", "timeUncVsNContrib; n. contributors; time uncertainty (us)", 100, -0.5, 999.5, 0.f, 10.f);
+  mBeamSpot = new TH2F("beamSpot", "beam spot; vtx_X (cm); vtx_Y (cm)", 1000, -1, 1, 1000, -1, 1);
 
   getObjectsManager()->startPublishing(mX);
   getObjectsManager()->startPublishing(mY);
   getObjectsManager()->startPublishing(mZ);
   getObjectsManager()->startPublishing(mNContributors);
   getObjectsManager()->startPublishing(mTimeUncVsNContrib);
+  getObjectsManager()->startPublishing(mBeamSpot);
 }
 
 void VertexingQcTask::startOfActivity(Activity& activity)
@@ -166,12 +178,13 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mZ->Fill(z);
     mNContributors->Fill(nContr);
     mTimeUncVsNContrib->Fill(nContr, timeUnc);
+    mBeamSpot->Fill(x, y);
 
     if (mUseMC && mcLbl[i].isSet()) { // make sure the label was set
       auto header = mMCReader.getMCEventHeader(mcLbl[i].getSourceID(), mcLbl[i].getEventID());
       auto purity = mcLbl[i].getCorrWeight();
       auto mult = header.GetNPrim();
-      ILOG(Info, Support) << "purity = " << purity << ", mult = " << mult << ENDM;
+      ILOG(Debug, Support) << "purity = " << purity << ", mult = " << mult << ENDM;
       mPurityVsMult->Fill(mult, purity);
       TVector3 vtMC;
       header.GetVertex(vtMC);
@@ -198,7 +211,21 @@ void VertexingQcTask::endOfCycle()
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 
   if (mUseMC) {
-    mVtxEffVsMult->Divide(mNPrimaryMCEvWithVtx, mNPrimaryMCGen, 1, 1, "B");
+
+    if (!mVtxEffVsMult->SetTotalHistogram(*mNPrimaryMCGen, "") ||
+        !mVtxEffVsMult->SetPassedHistogram(*mNPrimaryMCEvWithVtx, "")) {
+      ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms!!";
+    } else {
+      if (mVerbose) {
+        for (int ibin = 0; ibin < mNPrimaryMCEvWithVtx->GetNbinsX(); ibin++) {
+          if (mNPrimaryMCEvWithVtx->GetBinContent(ibin + 1) != 0 && mNPrimaryMCGen->GetBinContent(ibin + 1) != 0) {
+            ILOG(Info, Support) << "ibin = " << ibin + 1 << ", mNPrimaryMCEvWithVtx->GetBinContent(ibin + 1) = " << mNPrimaryMCEvWithVtx->GetBinContent(ibin + 1) << ", mNPrimaryMCGen->GetBinContent(ibin + 1) = " << mNPrimaryMCGen->GetBinContent(ibin + 1) << ", efficiency = " << mVtxEffVsMult->GetEfficiency(ibin + 1) << ENDM;
+            ILOG(Info, Support) << "ibin = " << ibin + 1 << ", mNPrimaryMCEvWithVtx->GetBinError(ibin + 1) = " << mNPrimaryMCEvWithVtx->GetBinError(ibin + 1) << ", mNPrimaryMCGen->GetBinError(ibin + 1) = " << mNPrimaryMCGen->GetBinError(ibin + 1) << ", efficiency error low = " << mVtxEffVsMult->GetEfficiencyErrorLow(ibin + 1) << ", efficiency error up = " << mVtxEffVsMult->GetEfficiencyErrorUp(ibin + 1) << ENDM;
+          }
+        }
+        ILOG(Info, Support) << "mNPrimaryMCEvWithVtx entries = " << mNPrimaryMCEvWithVtx->GetEntries() << ", mNPrimaryMCGen entries = " << mNPrimaryMCGen->GetEntries() << ENDM;
+      }
+    }
   }
 }
 
@@ -216,11 +243,11 @@ void VertexingQcTask::reset()
   mY->Reset();
   mZ->Reset();
   mNContributors->Reset();
+  mBeamSpot->Reset();
   if (mUseMC) {
     mPurityVsMult->Reset();
     mNPrimaryMCEvWithVtx->Reset();
     mNPrimaryMCGen->Reset();
-    mVtxEffVsMult->Reset();
     mCloneFactorVsMult->Reset();
     mVtxResXVsMult->Reset();
     mVtxResYVsMult->Reset();

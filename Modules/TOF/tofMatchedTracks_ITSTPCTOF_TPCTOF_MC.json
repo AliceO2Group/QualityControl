@@ -36,14 +36,20 @@
         "cycleDurationSeconds" : "10",
         "maxNumberCycles" : "-1",
         "dataSource" : {
-          "type" : "direct",
-          "query_comment" : "checking every matched track",
-          "query" : "matchITSTPCTOF:TOF/MTC_ITSTPC/0;matchTPCTOF:TOF/MTC_TPC/0;trackTPCTOF:TOF/TOFTRACKS_TPC/0;trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS/0;trackTPCClRefs:TPC/CLUSREFS/0;tofcluster:TOF/CLUSTERS/0;trackTPCMCTR:TPC/TRACKSMCLBL;trackITSTPCMCTR:GLO/TPCITS_MC;trackITSTPCABMCTR:GLO/TPCITSAB_MC;clsTOF_TPC_MCTR:TOF/MCMATCHTOF_TPC;clsTOF_GLO_MCTR:TOF/MCMATCHTOF"
+          "type" : "dataSamplingPolicy",
+          "name" : "tof-match-samp"
         },
         "taskParameters" : {
           "GID" : "ITS-TPC,TPC,ITS-TPC-TOF,TPC-TOF",
           "verbose" : "false",
-          "isMC" : "true"
+          "isMC" : "true",
+          "minPtCut" : "0.1f",
+          "etaCut" : "1.4f",
+          "minNTPCClustersCut" : "40",
+          "minDCACut" : "100.f",
+          "minDCACutY" : "10.f",
+          "grpFileName" : "o2sim_grp.root",
+          "geomFileName" : "o2sim_geometry.root"
         },
         "location" : "remote",
         "saveObjectsToFile" : "TOFmatchedITSTPCTOF_TPCTOF_MC.root",
@@ -66,5 +72,20 @@
     }
   },
          "dataSamplingPolicies" : [
+           {
+             "id" : "tof-match-samp",
+             "active" : "true",
+             "machines" : [],
+             "query_comment" : "checking every 10% matched track",
+             "query" : "matchITSTPCTOF:TOF/MTC_ITSTPC/0;matchTPCTOF:TOF/MTC_TPC/0;trackTPCTOF:TOF/TOFTRACKS_TPC/0;trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS/0;trackTPCClRefs:TPC/CLUSREFS/0;tofcluster:TOF/CLUSTERS/0;trackTPCMCTR:TPC/TRACKSMCLBL;trackITSTPCMCTR:GLO/TPCITS_MC;trackITSTPCABMCTR:GLO/TPCITSAB_MC;clsTOF_TPC_MCTR:TOF/MCMATCHTOF_TPC;clsTOF_GLO_MCTR:TOF/MCMATCHTOF",
+             "samplingConditions" : [
+               {
+                 "condition" : "random",
+                 "fraction" : "0.1",
+                 "seed" : "1234"
+               }
+             ],
+             "blocking" : "false"
+           }
          ]
 }
