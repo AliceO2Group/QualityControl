@@ -65,7 +65,7 @@ void TaskRunner::init(InitContext& iCtx)
   try {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
   } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
+    ILOG(Error, Devel) << "Could not find the DPL InfoLogger Context." << ENDM;
   }
   ILOG_INST.init("task/" + mTaskConfig.taskName,
                  mTaskConfig.infologgerFilterDiscardDebug,

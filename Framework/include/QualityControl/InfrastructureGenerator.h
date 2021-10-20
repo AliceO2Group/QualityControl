@@ -200,7 +200,8 @@ class InfrastructureGenerator
                               double cycleDurationSeconds,
                               std::string mergingMode,
                               size_t resetAfterCycles,
-                              std::string monitoringUrl);
+                              std::string monitoringUrl,
+                              std::string detectorName);
   static void generateCheckRunners(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generateAggregator(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
   static void generatePostProcessing(framework::WorkflowSpec& workflow, const InfrastructureSpec& infrastructureSpec);
