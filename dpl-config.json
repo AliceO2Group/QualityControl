@@ -1,0 +1,18 @@
+{
+    "internal-dpl-clock": "",
+    "producer-0": {
+        "orbit-offset-enumeration": "0",
+        "orbit-multiplier-enumeration": "0",
+        "start-value-enumeration": "0",
+        "end-value-enumeration": "-1",
+        "step-value-enumeration": "1"
+    },
+    "Dispatcher": {
+        "period-timer-stats": "10000000"
+    },
+    "QC-TASK-RUNNER-QcTask": {
+        "period-timer-cycle": "10000000"
+    },
+    "QC-CHECK-RUNNER-QcCheck": "",
+    "printer": ""
+}
