@@ -151,24 +151,24 @@ void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void DigitsQcTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   reset();
 }
 
 void DigitsQcTask::startOfCycle()
 {
   mTimeFramesPerCycles = 0;
-  QcInfoLogger::GetInstance() << "startOfCycle" << ENDM;
+  ILOG(Debug, Support) << "startOfCycle" << ENDM;
   std::map<std::string, std::string> metadata;
   mBadChannelMap = retrieveConditionAny<o2::emcal::BadChannelMap>("EMC/Calib/BadChannels", metadata);
   //it was EMC/BadChannelMap
   if (!mBadChannelMap)
-    QcInfoLogger::GetInstance() << "No Bad Channel Map object " << ENDM;
+    ILOG(Info, Support) << "No Bad Channel Map object " << ENDM;
 
   mTimeCalib = retrieveConditionAny<o2::emcal::TimeCalibrationParams>("EMC/Calib/Time", metadata);
   //"EMC/TimeCalibrationParams
   if (!mTimeCalib)
-    QcInfoLogger::GetInstance() << " No Time Calib object " << ENDM;
+    ILOG(Info, Support) << " No Time Calib object " << ENDM;
 }
 
 void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -297,19 +297,19 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 void DigitsQcTask::endOfCycle()
 {
   mTFPerCyclesTOT->Fill(mTimeFramesPerCycles); // do not reset this histo
-  QcInfoLogger::GetInstance() << "endOfCycle" << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void DigitsQcTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << ENDM;
+  ILOG(Debug, Support) << "endOfActivity" << ENDM;
 }
 
 void DigitsQcTask::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Support) << "Resetting the histogram" << ENDM;
   for (auto cont : mHistogramContainer) {
     cont.second.reset();
   }
