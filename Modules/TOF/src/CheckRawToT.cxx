@@ -67,6 +67,9 @@ void CheckRawToT::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
   if (mo->getName().find("RawsToT") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
+    if (!msg) {
+      return;
+    }
     if (checkResult == Quality::Good) {
       msg->AddText("Mean inside limits: OK");
       msg->AddText(Form("Allowed range: %3.1f-%3.1f ns", mMinRawToT, mMaxRawToT));
