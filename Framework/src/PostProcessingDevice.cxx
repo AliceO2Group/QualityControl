@@ -49,6 +49,7 @@ void PostProcessingDevice::init(framework::InitContext& ctx)
   // registering state machine callbacks
   ctx.services().get<CallbackService>().set(CallbackService::Id::Start, [this]() { start(); });
   ctx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
+  ctx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 }
 
 void PostProcessingDevice::run(framework::ProcessingContext& ctx)

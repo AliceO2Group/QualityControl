@@ -85,6 +85,7 @@ void TaskRunner::init(InitContext& iCtx)
   // registering state machine callbacks
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
+  iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });
 
   // setup monitoring
   mCollector = MonitoringFactory::Get(mTaskConfig.monitoringUrl);
