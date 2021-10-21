@@ -56,7 +56,8 @@
         "dataSource": [{
           "type": "Task",
           "name": "ITSClusterTask",
-          "MOs": ["Layer0/AverageClusterSize"]
+          "MOs": ["Layer0/AverageClusterSize","Layer1/AverageClusterSize","Layer2/AverageClusterSize","Layer3/AverageClusterSize","Layer4/AverageClusterSize","Layer5/AverageClusterSize","Layer6/AverageClusterSize", "Layer0/ClusterOccupation","Layer1/ClusterOccupation","Layer2/ClusterOccupation","Layer3/ClusterOccupation","Layer4/ClusterOccupation", "Layer5/ClusterOccupation"]
+
           }]
         }
     }
