@@ -249,6 +249,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     auto bcphase = trg.mInteractionRecord.bc % 4; // to be fixed:4 histos for EMCAL, 4 histos for DCAL
     auto histos = mHistogramContainer[trgClass];
+    std::fill(numDigitsSM.begin(), numDigitsSM.end(), 0);
 
     // iterate over subevents
     for (auto& subev : trg.mSubevents) {
