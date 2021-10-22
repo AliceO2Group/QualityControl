@@ -52,7 +52,7 @@
         "dataSource" : [ {
           "type" : "Task",
           "name" : "ITSTrackTask",
-          "MOs" : ["NClusters"]
+          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","ClusterUsage","EtaDistribution"]
         } ]
       }
     }

@@ -66,8 +66,11 @@ Quality ITSClusterCheck::check(std::map<std::string, std::shared_ptr<MonitorObje
        if ( iter->second->getName().find("Layer4") != std::string::npos && h->GetMaximum() > 25) result = Quality::Bad;
        else result = Quality::Good;
 
-       if ( iter->second->getName().find("Layer5") != std::string::npos && h->GetMaximum() > 10) result = Quality::Bad;
+       if ( iter->second->getName().find("Layer5") != std::string::npos && h->GetMaximum() > 15) result = Quality::Bad;
        else result = Quality::Good;
+
+       if ( iter->second->getName().find("Layer6") != std::string::npos && h->GetMaximum() > 14) result = Quality::Bad;
+       else result = Quality::Good; 
       
     }
 
