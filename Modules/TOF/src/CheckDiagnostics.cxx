@@ -56,6 +56,9 @@ void CheckDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality check
   if (mo->getName() == "RDHCounter") {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
+    if (!msg) {
+      return;
+    }
     if (checkResult == Quality::Good) {
       msg->AddText("OK!");
     } else if (checkResult == Quality::Bad) {

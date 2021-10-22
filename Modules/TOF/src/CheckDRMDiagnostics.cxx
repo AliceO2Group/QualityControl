@@ -73,6 +73,9 @@ void CheckDRMDiagnostics::beautify(std::shared_ptr<MonitorObject> mo, Quality ch
       return;
     }
     auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
+    if (!msg) {
+      return;
+    }
     if (checkResult == Quality::Good) {
       msg->AddText("OK!");
     } else if (checkResult == Quality::Bad) {
