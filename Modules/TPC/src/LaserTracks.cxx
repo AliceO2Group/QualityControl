@@ -31,6 +31,11 @@ using namespace o2::quality_control::postprocessing;
 namespace o2::quality_control_modules::tpc
 {
 
+void LaserTracks::configure(std::string name, const boost::property_tree::ptree& config)
+{
+  o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.config.conditionDB.url"));
+}
+
 void LaserTracks::initialize(Trigger, framework::ServiceRegistry&)
 {
   addAndPublish(getObjectsManager(),

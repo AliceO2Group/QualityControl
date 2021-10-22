@@ -38,6 +38,8 @@ namespace o2::quality_control_modules::tpc
 
 void CalDetPublisher::configure(std::string name, const boost::property_tree::ptree& config)
 {
+  o2::tpc::CDBInterface::instance().setURL(config.get<std::string>("qc.config.conditionDB.url"));
+
   for (const auto& output : config.get_child("qc.postprocessing." + name + ".outputCalPadMaps")) {
     mOutputListMap.emplace_back(output.second.data());
   }
