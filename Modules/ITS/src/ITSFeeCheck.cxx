@@ -31,15 +31,23 @@ void ITSFeeCheck::configure(std::string) {}
 
 Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = Quality::Null;
-  std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
-  for (iter = moMap->begin(); iter != moMap->end(); ++iter) {
-    if (iter->second->getName() == "LaneStatus/laneStatusFlagFAULT") {
+  Quality result = 0;                                                   //Fee Checker will check three plot in Fee Task, and will store the
+  std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter; //quality result in a three digits number:
+  for (iter = moMap->begin(); iter != moMap->end(); ++iter) {           //   XXX
+    if (iter->second->getName() == "LaneStatus/laneStatusFlagFAULT") {  //   |||-> laneStatusFlagFAULT
+      auto* h = dynamic_cast<TH2I*>(iter->second->getObject());         //   ||-> laneStatusFlagERROR
+      if (h->GetMaximum() > 0) {                                        //   |-> laneStatusFlagWARNING
+        result = result.getLevel() + 1;                                 //the number for each digits is correspond:
+      }                                                                 //0: Good, 1: Bad
+    } else if (iter->second->getName() == "LaneStatus/laneStatusFlagERROR") {
       auto* h = dynamic_cast<TH2I*>(iter->second->getObject());
       if (h->GetMaximum() > 0) {
-        result = Quality::Bad;
-      } else {
-        result = Quality::Good;
+        result = result.getLevel() + 10;
+      }
+    } else if (iter->second->getName() == "LaneStatus/laneStatusFlagWARNING") {
+      auto* h = dynamic_cast<TH2I*>(iter->second->getObject());
+      if (h->GetMaximum() > 0) {
+        result = result.getLevel() + 100;
       }
     }
   }
@@ -52,17 +60,40 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
 {
   auto* h = dynamic_cast<TH2I*>(mo->getObject());
   auto* tInfo = new TText();
-
-  if (checkResult == Quality::Good) {
-    tInfo->SetText(0.1, 0.8, "Quality::GOOD");
-    tInfo->SetTextColor(kGreen);
-  } else if (checkResult == Quality::Bad) {
-    tInfo->SetText(0.1, 0.8, "Quality::BAD");
-    tInfo->SetTextColor(kRed);
+  if (mo->getName() == "LaneStatus/laneStatusFlagFAULT") {
+    if ((checkResult.getLevel() % 10) == 0) {
+      tInfo->SetText(0.1, 0.8, "Quality::GOOD");
+      tInfo->SetTextColor(kGreen);
+    } else if ((checkResult.getLevel() % 10) == 1) {
+      tInfo->SetText(0.1, 0.8, "Quality::BAD");
+      tInfo->SetTextColor(kRed);
+    }
+    tInfo->SetTextSize(17);
+    tInfo->SetNDC();
+    h->GetListOfFunctions()->Add(tInfo);
+  } else if (mo->getName() == "LaneStatus/laneStatusFlagERROR") {
+    if (((checkResult.getLevel() % 100) / 10) == 0) {
+      tInfo->SetText(0.1, 0.8, "Quality::GOOD");
+      tInfo->SetTextColor(kGreen);
+    } else if (((checkResult.getLevel() % 100) / 10) == 1) {
+      tInfo->SetText(0.1, 0.8, "Quality::BAD(call expert)");
+      tInfo->SetTextColor(kRed);
+    }
+    tInfo->SetTextSize(17);
+    tInfo->SetNDC();
+    h->GetListOfFunctions()->Add(tInfo);
+  } else if (mo->getName() == "LaneStatus/laneStatusFlagWARNING") {
+    if ((checkResult.getLevel() / 100) == 0) {
+      tInfo->SetText(0.1, 0.8, "Quality::GOOD");
+      tInfo->SetTextColor(kGreen);
+    } else if ((checkResult.getLevel() / 100) == 1) {
+      tInfo->SetText(0.1, 0.8, "Quality::BAD(call expert)");
+      tInfo->SetTextColor(kRed);
+    }
+    tInfo->SetTextSize(17);
+    tInfo->SetNDC();
+    h->GetListOfFunctions()->Add(tInfo);
   }
-  tInfo->SetTextSize(17);
-  tInfo->SetNDC();
-  h->GetListOfFunctions()->Add(tInfo);
 }
 
 } // namespace o2::quality_control_modules::its
