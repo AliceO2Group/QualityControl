@@ -47,7 +47,7 @@
                 "dataSource": [{
                     "type": "Task",
                     "name": "ITSFEE",
-                    "MOs": ["LaneStatus/laneStatusFlagFAULT"]
+                    "MOs": ["LaneStatus/laneStatusFlagFAULT","LaneStatus/laneStatusFlagERROR","LaneStatus/laneStatusFlagWARNING"]
                 }]
             }
         }

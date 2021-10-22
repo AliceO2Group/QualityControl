@@ -69,7 +69,7 @@
                 "dataSource": [{
                     "type": "Task",
                     "name": "FHRTask",
-                    "MOs": ["General/ErrorPlots"]
+                    "MOs": ["General/ErrorPlots","General/General_Occupancy","General/Noisy_Pixel"]
                 }]
             },
             "ITSFeeCheck": {
@@ -81,7 +81,7 @@
                 "dataSource": [{
                     "type": "Task",
                     "name": "ITSFEE",
-                    "MOs": ["LaneStatus/laneStatusFlagFAULT"]
+                    "MOs": ["LaneStatus/laneStatusFlagFAULT","LaneStatus/laneStatusFlagERROR","LaneStatus/laneStatusFlagWARNING"]
                 }]
             }
        }
