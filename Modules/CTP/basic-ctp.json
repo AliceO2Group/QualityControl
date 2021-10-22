@@ -1,0 +1,76 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "MyRawDataQcTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ctp::RawDataQcTask",
+        "moduleName": "QcCTP",
+        "detectorName": "CTP",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "tst-raw"
+        },
+        "taskParameters": {
+          "myOwnKey": "myOwnValue"
+        },
+        "location": "remote",
+        "saveObjectsToFile": "test.root",      "": "~/alice/QualityControl/Modules/CTP/"
+      }
+    },
+    "checks": {
+      "Example2Check": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ctp::Example2Check",
+        "moduleName": "QcCTP",
+        "policy": "OnAny",
+        "detectorName": "CTP",
+        "dataSource": [{
+          "type": "Task",
+          "name": "MyRawDataQcTask",
+          "MOs": ["example2"]
+        }]
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "tst-raw",
+      "active": "true",
+      "machines": [],
+      "query": "random:TST/RAWDATA/0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
+}
