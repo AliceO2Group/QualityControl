@@ -101,6 +101,7 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
           entry.second->SetBinContent(j + 1, i + 1, 0); // is it too slow?
     entry.second->SetEntries(entry.second->Integral());
     getObjectsManager()->addMetadata(entry.second->GetName(), "BcOrbitMapIntegral", std::to_string(hBcOrbitMapTrg->Integral()));
+    ILOG(Debug, Support) << "Trg: " << moName << "  Integrals BcOrbitMap: " << hBcOrbitMapTrg->Integral() << ", OutOfBunchColl:" << entry.second->Integral() << ENDM;
   }
 }
 
