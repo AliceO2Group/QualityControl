@@ -65,7 +65,7 @@ void ITSFeeCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       tInfo->SetText(0.1, 0.8, "Quality::GOOD");
       tInfo->SetTextColor(kGreen);
     } else if ((checkResult.getLevel() % 10) == 1) {
-      tInfo->SetText(0.1, 0.8, "Quality::BAD");
+      tInfo->SetText(0.1, 0.8, "Quality::BAD(call expert)");
       tInfo->SetTextColor(kRed);
     }
     tInfo->SetTextSize(17);

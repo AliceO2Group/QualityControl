@@ -74,21 +74,21 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
           continue;
         }
         if (ibin < 48) {
-          if (h->GetBinContent(ibin) > 472) {
+          if ((h->GetBinContent(ibin) / (double)mNPixelPerStave[0]) > 0.0001) {
             result = (result.getLevel() % 100) + 100;
-          } else if (h->GetBinContent(ibin) > 236 && (result.getLevel() / 100 < 1)) {
+          } else if (h->GetBinContent(ibin) > 0.00005 && (result.getLevel() / 100 < 1)) {
             result = (result.getLevel() % 100) + 200;
           }
         } else if (ibin < 102) {
-          if (h->GetBinContent(ibin) > 5872) {
+          if ((h->GetBinContent(ibin) / (double)mNPixelPerStave[1]) > 0.0001) {
             result = (result.getLevel() % 100) + 100;
-          } else if (h->GetBinContent(ibin) > 2936 && (result.getLevel() / 100 < 1)) {
+          } else if ((h->GetBinContent(ibin) / (double)mNPixelPerStave[1]) > 0.00005 && (result.getLevel() / 100 < 1)) {
             result = (result.getLevel() % 100) + 200;
           }
         } else {
-          if (h->GetBinContent(ibin) > 10276) {
+          if ((h->GetBinContent(ibin) / (double)mNPixelPerStave[2]) > 0.0001) {
             result = (result.getLevel() % 100) + 100;
-          } else if (h->GetBinContent(ibin) > 5138 && (result.getLevel() / 100 < 1)) {
+          } else if ((h->GetBinContent(ibin) / (double)mNPixelPerStave[2]) > 0.00005 && (result.getLevel() / 100 < 1)) {
             result = (result.getLevel() % 100) + 200;
           }
         }
@@ -164,7 +164,7 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       h->GetListOfFunctions()->Add(text[0]);
     } else if ((checkResult.getLevel() / 100) == 1) {
       text[0] = new TLatex(0, 100, "Quality::Bad");
-      text[1] = new TLatex(0, 0, "Noisy Pixel over 0.1 per thousand");
+      text[1] = new TLatex(0, 0, "Noisy Pixel over 0.01%");
       text[2] = new TLatex(0, -100, "Please Call Expert");
       for (int i = 0; i < 3; ++i) {
         text[i]->SetTextAlign(23);
@@ -174,7 +174,7 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       }
     } else if ((checkResult.getLevel() / 100) == 2) {
       text[0] = new TLatex(0, 100, "Quality::Medium");
-      text[1] = new TLatex(0, 0, "Noisy Pixel over 0.05 per thousand");
+      text[1] = new TLatex(0, 0, "Noisy Pixel over 0.005%");
       text[2] = new TLatex(0, -100, "Please Notify Expert On MM");
       for (int i = 0; i < 3; ++i) {
         text[i]->SetTextAlign(23);
