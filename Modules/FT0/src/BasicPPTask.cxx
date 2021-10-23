@@ -58,6 +58,15 @@ void BasicPPTask::configure(std::string, const boost::property_tree::ptree& conf
     mCycleDurationMoName = "CycleDurationNTF";
     ILOG(Info, Support) << "configure() : using default cycleDurationMoName = \"" << mCycleDurationMoName << "\"" << ENDM;
   }
+
+  node = config.get_child_optional(Form("%s.custom.pathDigitQcTask", configPath));
+  if (node) {
+    mPathDigitQcTask = node.get_ptr()->get_child("").get_value<std::string>();
+    ILOG(Info, Support) << "configure() : using pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
+  } else {
+    mPathDigitQcTask = "qc/FT0/MO/DigitQcTask/";
+    ILOG(Info, Support) << "configure() : using default pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
+  }
 }
 
 void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
@@ -107,13 +116,13 @@ void BasicPPTask::initialize(Trigger, framework::ServiceRegistry& services)
 
 void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
 {
-  auto mo = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", "Triggers");
+  auto mo = mDatabase->retrieveMO(mPathDigitQcTask, "Triggers");
   auto hTriggers = (TH1F*)mo->getObject();
   if (!hTriggers) {
     ILOG(Error) << "MO \"Triggers\" NOT retrieved!!!" << ENDM;
   }
 
-  auto mo2 = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", mCycleDurationMoName);
+  auto mo2 = mDatabase->retrieveMO(mPathDigitQcTask, mCycleDurationMoName);
   auto hCycleDuration = (TH1D*)mo2->getObject();
   if (!hCycleDuration) {
     ILOG(Error) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
@@ -160,13 +169,13 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
   TLegend* leg = gPad->BuildLegend();
   leg->SetFillStyle(1);
 
-  auto mo3 = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", "AmpPerChannel");
+  auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel");
   auto hAmpPerChannel = (TH2D*)mo3->getObject();
   if (!hAmpPerChannel) {
     ILOG(Error) << "\nMO \"AmpPerChannel\" NOT retrieved!!!\n"
                 << ENDM;
   }
-  auto mo4 = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", "TimePerChannel");
+  auto mo4 = mDatabase->retrieveMO(mPathDigitQcTask, "TimePerChannel");
   auto hTimePerChannel = (TH2D*)mo4->getObject();
   if (!hTimePerChannel) {
     ILOG(Error) << "\nMO \"TimePerChannel\" NOT retrieved!!!\n"

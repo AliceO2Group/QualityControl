@@ -37,6 +37,26 @@ OutOfBunchCollTask::~OutOfBunchCollTask()
 void OutOfBunchCollTask::configure(std::string, const boost::property_tree::ptree& config)
 {
   mCcdbUrl = config.get_child("qc.config.conditionDB.url").get_value<std::string>();
+
+  const char* configPath = Form("qc.postprocessing.%s", getName().c_str());
+  ILOG(Info, Support) << "configPath = " << configPath << ENDM;
+  auto node = config.get_child_optional(Form("%s.custom.pathDigitQcTask", configPath));
+  if (node) {
+    mPathDigitQcTask = node.get_ptr()->get_child("").get_value<std::string>();
+    ILOG(Info, Support) << "configure() : using pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
+  } else {
+    mPathDigitQcTask = "qc/FT0/MO/DigitQcTask/";
+    ILOG(Info, Support) << "configure() : using default pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
+  }
+
+  node = config.get_child_optional(Form("%s.custom.pathBunchFilling", configPath));
+  if (node) {
+    mPathBunchFilling = node.get_ptr()->get_child("").get_value<std::string>();
+    ILOG(Info, Support) << "configure() : using pathBunchFilling = \"" << mPathBunchFilling << "\"" << ENDM;
+  } else {
+    mPathBunchFilling = "GLO/GRP/BunchFilling";
+    ILOG(Info, Support) << "configure() : using default pathBunchFilling = \"" << mPathBunchFilling << "\"" << ENDM;
+  }
 }
 
 void OutOfBunchCollTask::initialize(Trigger, framework::ServiceRegistry& services)
@@ -71,9 +91,9 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
 {
   std::map<std::string, std::string> metadata;
   std::map<std::string, std::string> headers;
-  const auto* bcPattern = mCcdbApi.retrieveFromTFileAny<o2::BunchFilling>("GLO/GRP/BunchFilling", metadata, -1, &headers);
+  const auto* bcPattern = mCcdbApi.retrieveFromTFileAny<o2::BunchFilling>(mPathBunchFilling, metadata, -1, &headers);
   if (!bcPattern) {
-    ILOG(Error, Support) << "\nMO \"BunchFilling\" NOT retrieved!!!\n"
+    ILOG(Error, Support) << "\nMO \"" << mPathBunchFilling << "\" NOT retrieved!!!\n"
                          << ENDM;
   }
   const int nBc = 3564;
@@ -85,7 +105,7 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
 
   for (auto& entry : mMapOutOfBunchColl) {
     auto moName = Form("BcOrbitMap_Trg%s", mMapDigitTrgNames.at(entry.first).c_str());
-    auto mo = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", moName);
+    auto mo = mDatabase->retrieveMO(mPathDigitQcTask, moName);
     auto hBcOrbitMapTrg = (TH2F*)mo->getObject();
     if (!hBcOrbitMapTrg) {
       ILOG(Error, Support) << "\nMO \"" << moName << "\" NOT retrieved!!!\n"
