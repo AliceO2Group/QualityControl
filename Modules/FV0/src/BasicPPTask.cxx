@@ -128,46 +128,48 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
     ILOG(Error, Support) << "MO \"" << mCycleDurationMoName << "\" NOT retrieved!!!" << ENDM;
   }
 
-  double cycleDurationMS = 0;
-  if (mCycleDurationMoName == "CycleDuration" || mCycleDurationMoName == "CycleDurationRange")
-    // assume MO stores cycle duration in ns
-    cycleDurationMS = hCycleDuration->GetBinContent(1) / 1e6; // ns -> ms
-  else if (mCycleDurationMoName == "CycleDurationNTF")
-    // assume MO stores cycle duration in number of TF
-    cycleDurationMS = hCycleDuration->GetBinContent(1) * mNumOrbitsInTF * o2::constants::lhc::LHCOrbitNS / 1e6; // ns ->ms
+  if (hTriggers && hCycleDuration) {
+    double cycleDurationMS = 0;
+    if (mCycleDurationMoName == "CycleDuration" || mCycleDurationMoName == "CycleDurationRange")
+      // assume MO stores cycle duration in ns
+      cycleDurationMS = hCycleDuration->GetBinContent(1) / 1e6; // ns -> ms
+    else if (mCycleDurationMoName == "CycleDurationNTF")
+      // assume MO stores cycle duration in number of TF
+      cycleDurationMS = hCycleDuration->GetBinContent(1) * mNumOrbitsInTF * o2::constants::lhc::LHCOrbitNS / 1e6; // ns ->ms
 
-  int n = mRateMinBias->GetN();
+    int n = mRateMinBias->GetN();
 
-  double eps = 1e-8;
-  if (cycleDurationMS < eps) {
-    ILOG(Warning, Support) << "cycle duration = " << cycleDurationMS << " ms, almost zero - cannot compute trigger rates!" << ENDM;
-  } else {
-    mRateMinBias->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("MinBias")) / cycleDurationMS);
-    mRateOuterRing->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OuterRing")) / cycleDurationMS);
-    mRateNChannels->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("NChannels")) / cycleDurationMS);
-    mRateCharge->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("Charge")) / cycleDurationMS);
-    mRateInnerRing->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("InnerRing")) / cycleDurationMS);
+    double eps = 1e-8;
+    if (cycleDurationMS < eps) {
+      ILOG(Warning, Support) << "cycle duration = " << cycleDurationMS << " ms, almost zero - cannot compute trigger rates!" << ENDM;
+    } else {
+      mRateMinBias->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("MinBias")) / cycleDurationMS);
+      mRateOuterRing->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("OuterRing")) / cycleDurationMS);
+      mRateNChannels->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("NChannels")) / cycleDurationMS);
+      mRateCharge->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("Charge")) / cycleDurationMS);
+      mRateInnerRing->SetPoint(n, n, hTriggers->GetBinContent(hTriggers->GetXaxis()->FindBin("InnerRing")) / cycleDurationMS);
+    }
+
+    mRatesCanv->cd();
+    float vmin = std::min({ mRateMinBias->GetYaxis()->GetXmin(), mRateOuterRing->GetYaxis()->GetXmin(), mRateNChannels->GetYaxis()->GetXmin(), mRateCharge->GetYaxis()->GetXmin(), mRateInnerRing->GetYaxis()->GetXmin() });
+    float vmax = std::max({ mRateMinBias->GetYaxis()->GetXmax(), mRateOuterRing->GetYaxis()->GetXmax(), mRateNChannels->GetYaxis()->GetXmax(), mRateCharge->GetYaxis()->GetXmax(), mRateInnerRing->GetYaxis()->GetXmax() });
+
+    auto hAxis = mRateMinBias->GetHistogram();
+    hAxis->GetYaxis()->SetTitleOffset(1.4);
+    hAxis->SetMinimum(vmin);
+    hAxis->SetMaximum(vmax * 1.1);
+    hAxis->SetTitle("FV0 trigger rates");
+    hAxis->SetLineWidth(0);
+    hAxis->Draw("AXIS");
+
+    mRateMinBias->Draw("PL,SAME");
+    mRateOuterRing->Draw("PL,SAME");
+    mRateNChannels->Draw("PL,SAME");
+    mRateCharge->Draw("PL,SAME");
+    mRateInnerRing->Draw("PL,SAME");
+    TLegend* leg = gPad->BuildLegend();
+    leg->SetFillStyle(1);
   }
-
-  mRatesCanv->cd();
-  float vmin = std::min({ mRateMinBias->GetYaxis()->GetXmin(), mRateOuterRing->GetYaxis()->GetXmin(), mRateNChannels->GetYaxis()->GetXmin(), mRateCharge->GetYaxis()->GetXmin(), mRateInnerRing->GetYaxis()->GetXmin() });
-  float vmax = std::max({ mRateMinBias->GetYaxis()->GetXmax(), mRateOuterRing->GetYaxis()->GetXmax(), mRateNChannels->GetYaxis()->GetXmax(), mRateCharge->GetYaxis()->GetXmax(), mRateInnerRing->GetYaxis()->GetXmax() });
-
-  auto hAxis = mRateMinBias->GetHistogram();
-  hAxis->GetYaxis()->SetTitleOffset(1.4);
-  hAxis->SetMinimum(vmin);
-  hAxis->SetMaximum(vmax * 1.1);
-  hAxis->SetTitle("FV0 trigger rates");
-  hAxis->SetLineWidth(0);
-  hAxis->Draw("AXIS");
-
-  mRateMinBias->Draw("PL,SAME");
-  mRateOuterRing->Draw("PL,SAME");
-  mRateNChannels->Draw("PL,SAME");
-  mRateCharge->Draw("PL,SAME");
-  mRateInnerRing->Draw("PL,SAME");
-  TLegend* leg = gPad->BuildLegend();
-  leg->SetFillStyle(1);
 
   auto mo3 = mDatabase->retrieveMO(mPathDigitQcTask, "AmpPerChannel");
   auto hAmpPerChannel = (TH2D*)mo3->getObject();
@@ -181,22 +183,23 @@ void BasicPPTask::update(Trigger, framework::ServiceRegistry&)
     ILOG(Error, Support) << "\nMO \"TimePerChannel\" NOT retrieved!!!\n"
                          << ENDM;
   }
-
-  mAmpl = hAmpPerChannel->ProfileX("MeanAmplPerChannel");
-  mTime = hTimePerChannel->ProfileX("MeanTimePerChannel");
-  mAmpl->SetErrorOption("s");
-  mTime->SetErrorOption("s");
-  // for some reason the styling is not preserved after assigning result of ProfileX/Y() to already existing object
-  mAmpl->SetMarkerStyle(8);
-  mTime->SetMarkerStyle(8);
-  mAmpl->SetLineColor(kBlack);
-  mTime->SetLineColor(kBlack);
-  mAmpl->SetDrawOption("P");
-  mTime->SetDrawOption("P");
-  mAmpl->GetXaxis()->SetTitleOffset(1);
-  mTime->GetXaxis()->SetTitleOffset(1);
-  mAmpl->GetYaxis()->SetTitleOffset(1);
-  mTime->GetYaxis()->SetTitleOffset(1);
+  if (hAmpPerChannel && hTimePerChannel) {
+    mAmpl = hAmpPerChannel->ProfileX("MeanAmplPerChannel");
+    mTime = hTimePerChannel->ProfileX("MeanTimePerChannel");
+    mAmpl->SetErrorOption("s");
+    mTime->SetErrorOption("s");
+    // for some reason the styling is not preserved after assigning result of ProfileX/Y() to already existing object
+    mAmpl->SetMarkerStyle(8);
+    mTime->SetMarkerStyle(8);
+    mAmpl->SetLineColor(kBlack);
+    mTime->SetLineColor(kBlack);
+    mAmpl->SetDrawOption("P");
+    mTime->SetDrawOption("P");
+    mAmpl->GetXaxis()->SetTitleOffset(1);
+    mTime->GetXaxis()->SetTitleOffset(1);
+    mAmpl->GetYaxis()->SetTitleOffset(1);
+    mTime->GetYaxis()->SetTitleOffset(1);
+  }
 }
 
 void BasicPPTask::finalize(Trigger, framework::ServiceRegistry&)

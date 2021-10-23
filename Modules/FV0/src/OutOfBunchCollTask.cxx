@@ -95,6 +95,7 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
   if (!bcPattern) {
     ILOG(Error, Support) << "\nMO \"" << mPathBunchFilling << "\" NOT retrieved!!!\n"
                          << ENDM;
+    return;
   }
   const int nBc = 3564;
   const int nOrbits = 256;
@@ -110,6 +111,7 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
     if (!hBcOrbitMapTrg) {
       ILOG(Error, Support) << "\nMO \"" << moName << "\" NOT retrieved!!!\n"
                            << ENDM;
+      continue;
     }
     entry.second->Reset();
     // scale bc pattern by vmax to make sure the difference is non positive
