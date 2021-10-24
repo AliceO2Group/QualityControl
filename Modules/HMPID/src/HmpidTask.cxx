@@ -93,6 +93,13 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   hEventSize->GetXaxis()->SetLabelSize(0.02);
   hEventSize->SetStats(0);
 
+  hEventSize = new TGraph(14);
+  hEventSize->SetName("hEventSize");
+  hEventSize->SetMarkerStyle(20);
+  hEventSize->SetLineWidth(0);
+  hEventSize->GetXaxis()->SetTitle("Equipment");
+  hEventSize->GetYaxis()->SetTitle("Event size (kB)");
+
   getObjectsManager()->startPublishing(hPedestalMean);
   getObjectsManager()->addMetadata(hPedestalMean->GetName(), "custom", "34");
 
@@ -111,8 +118,6 @@ void HmpidTask::startOfActivity(Activity& /*activity*/)
   ILOG(Info, Support) << "startOfActivity" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
-  hBusyTime->Reset();
-  hEventSize->Reset();
 
   mDecoder = new o2::hmpid::HmpidDecoder2(14);
   mDecoder->init();
