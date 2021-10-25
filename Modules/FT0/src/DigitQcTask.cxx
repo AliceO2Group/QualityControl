@@ -103,6 +103,9 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitVertex, "Vertex" });
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitCen, "Central" });
   mMapDigitTrgNames.insert({ o2::ft0::Triggers::bitSCen, "SemiCentral" });
+  mMapDigitTrgNames.insert({ 5, "Laser" });
+  mMapDigitTrgNames.insert({ 6, "OutputsAreBlocked" });
+  mMapDigitTrgNames.insert({ 7, "DataIsValid" });
 
   mHistTime2Ch = std::make_unique<TH2F>("TimePerChannel", "Time vs Channel;Channel;Time", o2::ft0::Constants::sNCHANNELS_PM, 0, o2::ft0::Constants::sNCHANNELS_PM, 4100, -2050, 2050);
   mHistTime2Ch->SetOption("colz");
@@ -148,6 +151,12 @@ void DigitQcTask::initialize(o2::framework::InitContext& /*ctx*/)
       continue;
     }
     auto moduleName = lutEntry.mModuleName;
+    if (moduleName == "TCM") {
+      if (mMapPmModuleChannels.find(moduleName) == mMapPmModuleChannels.end()) {
+        mMapPmModuleChannels.insert({ moduleName, std::vector<int>{} });
+      }
+      continue;
+    }
     if (mMapPmModuleChannels.find(moduleName) != mMapPmModuleChannels.end()) {
       mMapPmModuleChannels[moduleName].push_back(chId);
     } else {
@@ -367,6 +376,9 @@ void DigitQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
           break;
         }
+      }
+      if (entry.first == "TCM" && isTCM && (digit.getTriggers().triggersignals & (1 << sDataIsValidBitPos))) {
+        mMapPmModuleBcOrbit[entry.first]->Fill(digit.getIntRecord().orbit % sOrbitsPerTF, digit.getIntRecord().bc);
       }
     }
 
