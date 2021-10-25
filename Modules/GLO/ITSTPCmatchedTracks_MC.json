@@ -48,7 +48,8 @@
           "minDCACut" : "100.f",
           "minDCACutY" : "10.f",
           "grpFileName" : "o2sim_grp.root",
-          "geomFileName" : "o2sim_geometry.root"
+          "geomFileName" : "o2sim_geometry.root",
+          "isMC" : "true"
         },
         "location" : "remote",
         "saveObjectsToFile" : "ITSTPCmatched.root",
@@ -76,7 +77,7 @@
              "active" : "true",
              "machines" : [],
              "query_comment" : "checking every 10% matched track",
-             "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS",
+             "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS;trackTPCMCTR:TPC/TRACKSMCLBL;trackITSTPCMCTR:GLO/TPCITS_MC;trackITSTPCABMCTR:GLO/TPCITSAB_MC",
              "samplingConditions" : [
                {
                  "condition" : "random",
