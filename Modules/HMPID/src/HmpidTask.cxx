@@ -11,7 +11,7 @@
 
 ///
 /// \file   HmpidTask.cxx
-/// \author My Name
+/// \author Antonio Franco, Giacomo Volpe
 ///
 
 #include <TCanvas.h>
@@ -93,20 +93,6 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   hEventSize->GetXaxis()->SetLabelSize(0.02);
   hEventSize->SetStats(0);
 
-  /*hBusyTime = new TGraph(14);
-  hBusyTime->SetName("hBusyTime");
-  hBusyTime->SetMarkerStyle(20);
-  hBusyTime->SetLineWidth(0);
-  hBusyTime->GetXaxis()->SetTitle("Equipment");
-  hBusyTime->GetYaxis()->SetTitle("Busy time (#mus)");
-
-  hEventSize = new TGraph(14);
-  hEventSize->SetName("hEventSize");
-  hEventSize->SetMarkerStyle(20);
-  hEventSize->SetLineWidth(0);
-  hEventSize->GetXaxis()->SetTitle("Equipment");
-  hEventSize->GetYaxis()->SetTitle("Event size (kB)");
-*/
   getObjectsManager()->startPublishing(hPedestalMean);
   getObjectsManager()->addMetadata(hPedestalMean->GetName(), "custom", "34");
 
@@ -125,7 +111,9 @@ void HmpidTask::startOfActivity(Activity& /*activity*/)
   ILOG(Info, Support) << "startOfActivity" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
-
+  hBusyTime->Reset();
+  hEventSize->Reset();
+  
   mDecoder = new o2::hmpid::HmpidDecoder2(14);
   mDecoder->init();
   mDecoder->setVerbosity(2); // this is for Debug
@@ -156,8 +144,6 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       if (!mDecoder->decodeBufferFast()) {
         ILOG(Error, Devel) << "Error decoding the Superpage !" << ENDM;
       }
-
-      // Double_t ddl[14], EventSize[14], BusyTime[14];
 
       for (Int_t eq = 0; eq < 14; eq++) {
         if (mDecoder->getAverageEventSize(eq) > 0.) {
@@ -216,8 +202,8 @@ void HmpidTask::reset()
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
-  hBusyTime->Set(0);
-  hEventSize->Set(0);
+  hBusyTime->Reset();
+  hEventSize->Reset();
 }
 
 } // namespace o2::quality_control_modules::hmpid
