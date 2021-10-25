@@ -51,7 +51,7 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mRunNumberPath = mCustomParameters["runNumberPath"];
 
   publishHistos();
- }
+}
 
 void ITSTrackTask::startOfActivity(Activity& /*activity*/)
 {
@@ -84,8 +84,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       hNClusters->Fill(track.getNumberOfClusters());
       mNClustersInTracks += track.getNumberOfClusters();
-
-     }
+    }
   }
 
   mNTracks += trackArr.size();

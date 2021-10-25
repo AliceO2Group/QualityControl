@@ -65,11 +65,9 @@ class ITSClusterTask : public TaskInterface
   TH1D* hClusterSizeIBmonitor[7][48][9];
   TH1D* hAverageClusterSummary[7];
 
-
-
   TH1D* hClusterTopologyIB[7][48][9];
   TH2D* hOccupancyIB[7];
-  TH2D* hOccupancyIBmonitor[7];  //will be used in online data monitoring, showing occupation for the last N ROFs
+  TH2D* hOccupancyIBmonitor[7]; //will be used in online data monitoring, showing occupation for the last N ROFs
   TH2D* hAverageClusterIB[7];
   TH2D* hAverageClusterIBmonitor[7];
 
@@ -79,21 +77,19 @@ class ITSClusterTask : public TaskInterface
   TH1D* hClusterSizeOBmonitor[7][48][14];
   TH1D* hClusterTopologyOB[7][48][14];
   TH2D* hOccupancyOB[7];
-  TH2D* hOccupancyOBmonitor[7];  //will be used in online data monitoring, showing occupation for the last N ROFs
+  TH2D* hOccupancyOBmonitor[7]; //will be used in online data monitoring, showing occupation for the last N ROFs
   TH2D* hAverageClusterOB[7];
   TH2D* hAverageClusterOBmonitor[7];
 
-
-//  THnSparseD *sClustersSize[7];
-  TH2Poly *mGeneralOccupancy;
+  //  THnSparseD *sClustersSize[7];
+  TH2Poly* mGeneralOccupancy;
   Int_t mClusterOccupancyOB[7][48][14];
   Int_t mClusterOccupancyOBmonitor[7][48][14];
-  
 
   const int mOccUpdateFrequency = 100000;
   int mNThreads = 1;
   int mNRofs = 0;
-  int mNRofsMonitor = 0; 
+  int mNRofsMonitor = 0;
   std::string mDictPath;
   std::string mRunNumberPath;
   std::string mGeomPath;
