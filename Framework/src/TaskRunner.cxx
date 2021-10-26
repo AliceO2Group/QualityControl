@@ -194,6 +194,9 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
   o2::header::DataDescription description;
+  if (taskName.length() > header::DataDescription::size - 3) {
+    ILOG(Warning, Devel) << "Task name is longer than " << header::DataDescription::size - 3 << ", it might cause name clashes in the DPL workflow" << ENDM;
+  }
   description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size - 3) + "-mo").c_str());
   return description;
 }
