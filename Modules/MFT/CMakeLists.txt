@@ -3,14 +3,14 @@
 add_library(O2QcMFT)
 
 target_sources(O2QcMFT PRIVATE
-               src/BasicDigitQcCheck.cxx
-               src/BasicDigitQcTask.cxx
-               src/BasicClusterQcCheck.cxx
-               src/BasicClusterQcTask.cxx
-               src/BasicTrackQcCheck.cxx
-               src/BasicTrackQcTask.cxx
-               src/BasicReadoutHeaderQcCheck.cxx
-               src/BasicReadoutHeaderQcTask.cxx)
+               src/QcMFTDigitCheck.cxx
+               src/QcMFTDigitTask.cxx
+               src/QcMFTClusterCheck.cxx
+               src/QcMFTClusterTask.cxx
+               src/QcMFTTrackCheck.cxx
+               src/QcMFTTrackTask.cxx
+               src/QcMFTReadoutCheck.cxx
+               src/QcMFTReadoutTask.cxx)
 
 target_include_directories(
   O2QcMFT
@@ -18,7 +18,7 @@ target_include_directories(
          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-target_link_libraries(O2QcMFT PUBLIC O2QualityControl O2::DataFormatsITSMFT)
+target_link_libraries(O2QcMFT PUBLIC O2QualityControl O2::DataFormatsITSMFT O2::ITSMFTReconstruction)
 
 install(TARGETS O2QcMFT
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -27,29 +27,30 @@ install(TARGETS O2QcMFT
 
 add_root_dictionary(O2QcMFT
                     HEADERS
-                    include/MFT/BasicDigitQcCheck.h
-                    include/MFT/BasicDigitQcTask.h
-                    include/MFT/BasicClusterQcCheck.h
-                    include/MFT/BasicClusterQcTask.h
-                    include/MFT/BasicTrackQcCheck.h
-                    include/MFT/BasicTrackQcTask.h 
-                    include/MFT/BasicReadoutHeaderQcCheck.h
-                    include/MFT/BasicReadoutHeaderQcTask.h
+                    include/MFT/QcMFTDigitCheck.h
+                    include/MFT/QcMFTDigitTask.h
+                    include/MFT/QcMFTClusterCheck.h
+                    include/MFT/QcMFTClusterTask.h
+                    include/MFT/QcMFTTrackCheck.h
+                    include/MFT/QcMFTTrackTask.h 
+                    include/MFT/QcMFTReadoutCheck.h
+                    include/MFT/QcMFTReadoutTask.h
+                    include/MFT/QcMFTUtilTables.h
                     LINKDEF include/MFT/LinkDef.h
                     BASENAME O2QcMFT)
                     
 # ---- Executables ----
 
 set(EXE_SRCS 
-     src/runDigitsRootFileReaderMFT.cxx 
-     src/runDigitsHotPixelRootFileReaderMFT.cxx 
-     src/runClustersRootFileReaderMFT.cxx
-     src/runTracksRootFileReaderMFT.cxx)
+     src/runMFTDigitsRootFileReader.cxx 
+     src/runMFTDigitsHotPixelRootFileReader.cxx 
+     src/runMFTClustersRootFileReader.cxx
+     src/runMFTTracksRootFileReader.cxx)
 set(EXE_NAMES 
-     o2-qc-run-digits-root-file-reader-mft
-     o2-qc-run-digits-hot-pixel-root-file-reader-mft
-     o2-qc-run-clusters-root-file-reader-mft
-     o2-qc-run-tracks-root-file-reader-mft)
+     o2-qc-mft-digits-root-file-reader
+     o2-qc-mft-digits-hot-pixel-root-file-reader
+     o2-qc-mft-clusters-root-file-reader
+     o2-qc-mft-tracks-root-file-reader)
 
 list(LENGTH EXE_SRCS count)
 math(EXPR count "${count}-1")
@@ -61,10 +62,10 @@ foreach(i RANGE ${count})
 endforeach()
 
 install(
-  TARGETS o2-qc-run-digits-root-file-reader-mft
-          o2-qc-run-digits-hot-pixel-root-file-reader-mft
-          o2-qc-run-clusters-root-file-reader-mft
-          o2-qc-run-tracks-root-file-reader-mft
+  TARGETS o2-qc-mft-digits-root-file-reader
+          o2-qc-mft-digits-hot-pixel-root-file-reader
+          o2-qc-mft-clusters-root-file-reader
+          o2-qc-mft-tracks-root-file-reader
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )   
 
@@ -87,32 +88,8 @@ endforeach()
 
 # ---- Install config files and scripts ----
 
-install(FILES mft-digit-qc-task-FLP-0-TaskLevel-0.json
-              mft-digit-qc-task-FLP-0-TaskLevel-1.json
-              mft-digit-qc-task-FLP-0-TaskLevel-2.json
-              mft-digit-qc-task-FLP-0-TaskLevel-3.json
-              mft-digit-qc-task-FLP-0-TaskLevel-4.json
-              mft-digit-qc-task-FLP-1-TaskLevel-0.json
-              mft-digit-qc-task-FLP-1-TaskLevel-1.json
-              mft-digit-qc-task-FLP-1-TaskLevel-2.json
-              mft-digit-qc-task-FLP-1-TaskLevel-3.json
-              mft-digit-qc-task-FLP-1-TaskLevel-4.json
-              mft-digit-qc-task-FLP-2-TaskLevel-0.json
-              mft-digit-qc-task-FLP-2-TaskLevel-1.json
-              mft-digit-qc-task-FLP-2-TaskLevel-2.json
-              mft-digit-qc-task-FLP-2-TaskLevel-3.json
-              mft-digit-qc-task-FLP-2-TaskLevel-4.json
-              mft-digit-qc-task-FLP-3-TaskLevel-0.json
-              mft-digit-qc-task-FLP-3-TaskLevel-1.json
-              mft-digit-qc-task-FLP-3-TaskLevel-2.json
-              mft-digit-qc-task-FLP-3-TaskLevel-3.json
-              mft-digit-qc-task-FLP-3-TaskLevel-4.json
-              mft-digit-qc-task-FLP-4-TaskLevel-0.json
-              mft-digit-qc-task-FLP-4-TaskLevel-1.json
-              mft-digit-qc-task-FLP-4-TaskLevel-2.json
-              mft-digit-qc-task-FLP-4-TaskLevel-3.json
-              mft-digit-qc-task-FLP-4-TaskLevel-4.json
-              basic-cluster-qc-task.json
-              basic-track-qc-task.json
-              mft-basic-readout-header-qc-task.json
+install(FILES qc-mft-digit.json
+              qc-mft-cluster.json
+              qc-mft-track.json
+              qc-mft-readout.json
         DESTINATION etc)

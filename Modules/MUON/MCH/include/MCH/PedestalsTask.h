@@ -1,3 +1,14 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
+//
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 ///
 /// \file   PedestalsTask.h
 /// \author Andrea Ferrero
@@ -52,8 +63,8 @@ class PedestalsTask final : public TaskInterface
 
   std::map<int, TH2F*> mHistogramPedestalsDE;
   std::map<int, TH2F*> mHistogramNoiseDE;
-  std::map<int, TH2F*> mHistogramPedestalsXY[2];
-  std::map<int, TH2F*> mHistogramNoiseXY[2];
+  std::map<int, DetectorHistogram*> mHistogramPedestalsXY[2];
+  std::map<int, DetectorHistogram*> mHistogramNoiseXY[2];
 
   std::map<int, TH1F*> mHistogramNoiseDistributionDE[5][2];
 

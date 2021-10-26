@@ -7,14 +7,20 @@ target_sources(O2QcTOF
               PRIVATE src/TaskDigits.cxx
                       src/TaskCosmics.cxx
                       src/TaskRaw.cxx
+                      src/TOFMatchedTracks.cxx
                       # Checkers
                       src/CheckDiagnostics.cxx
+                      src/CheckDRMDiagnostics.cxx
                       src/CheckCompressedData.cxx
                       src/CheckRawMultiplicity.cxx
                       src/CheckRawTime.cxx
                       src/CheckRawToT.cxx
                       # PostProcessing
                       src/PostProcessDiagnosticPerCrate.cxx
+                      # Trending
+                      src/TrendingHits.cxx
+                      # Trending config
+                      src/TrendingConfigTOF.cxx
                       # Utilities
                 )
 
@@ -27,10 +33,10 @@ target_include_directories(
 
 target_link_libraries(O2QcTOF PUBLIC O2QualityControl
                                     O2::TOFBase
-                                    O2::TOFWorkflow
                                     O2::DataFormatsTOF
                                     O2::TOFCompression
-                                    O2::TOFReconstruction)
+                                    O2::TOFReconstruction
+                                    O2::DataFormatsGlobalTracking)
 
 install(TARGETS O2QcTOF
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -44,16 +50,23 @@ add_root_dictionary(O2QcTOF
                     HEADERS include/TOF/TaskDigits.h
                             include/TOF/TaskCosmics.h
                             include/TOF/TaskRaw.h
+                            include/TOF/TOFMatchedTracks.h
                             # Checkers
                             include/TOF/CheckCompressedData.h
                             include/TOF/CheckDiagnostics.h
+                            include/TOF/CheckDRMDiagnostics.h
                             include/TOF/CheckRawMultiplicity.h
                             include/TOF/CheckRawTime.h
                             include/TOF/CheckRawToT.h
                             # PostProcessing
                             include/TOF/PostProcessDiagnosticPerCrate.h
+                            # Trending
+                            include/TOF/TrendingHits.h
+                            # Trending config
+                            include/TOF/TrendingConfigTOF.h
                             # Utilities
                             include/Base/Counter.h
+                            include/Base/MessagePad.h
                     LINKDEF include/TOF/LinkDef.h
                     BASENAME O2QcTOF)
 
@@ -91,6 +104,12 @@ install(FILES tofdigits.json
               tofraw.json
               tofraw_multinode.json
               tofcosmics.json
+              toftrending.json
+              tofMatchedTracks_ITSTPCTOF.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF_MC.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF_direct.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF_direct_MC.json
         DESTINATION etc)
 
 get_property(dirs

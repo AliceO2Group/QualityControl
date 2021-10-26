@@ -30,28 +30,20 @@
         "detectorName": "TPC",
         "cycleDurationSeconds": "10",
         "maxNumberCycles": "-1",
+        "resetAfterCycles": "5",
         "dataSource": {
           "type": "direct",
           "query" : "input:TPC/CLUSTERNATIVE"
         },
         "taskParameters": {
-          "myOwnKey": "myOwnValue"
+          "NClustersNBins": "100",  "NClustersXMin": "0", "NClustersXMax": "100",
+          "QmaxNBins":      "200",  "QmaxXMin":      "0", "QmaxXMax":      "200",
+          "QtotNBins":      "600",  "QtotXMin":      "0", "QtotXMax":      "600",
+          "SigmaPadNBins":  "200",  "SigmaPadXMin":  "0", "SigmaPadXMax":  "2",
+          "SigmaTimeNBins": "200",  "SigmaTimeXMin": "0", "SigmaTimeXMax": "2",
+          "TimeBinNBins":   "1000", "TimeBinXMin":   "0", "TimeBinXMax":   "100000"
         },
         "location": "remote"
-      }
-    },
-    "checks": {
-      "QcCheckClusters": {
-        "active": "true",
-        "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
-        "moduleName": "QcSkeleton",
-        "policy": "OnAny",
-        "detectorName": "TPC",
-        "dataSource": [{
-          "type": "Task",
-          "name": "Clusters",
-          "MOs": ["example"]
-        }]
       }
     }
   },

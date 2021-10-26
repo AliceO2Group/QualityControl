@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -22,6 +23,7 @@
 #include <Framework/RawDeviceService.h>
 #include <FairMQDevice.h>
 #include <Framework/ConfigParamRegistry.h>
+#include <QualityControl/QcInfoLogger.h>
 
 namespace o2::quality_control::core
 {
@@ -63,7 +65,7 @@ inline bool hasChecks(std::string configSource)
   return config->getRecursive("qc").count("checks") > 0;
 }
 
-inline int computeRunNumber(const framework::ServiceRegistry& services, const boost::property_tree::ptree& config)
+inline int computeRunNumber(const framework::ServiceRegistry& services, int fallbackRunNumber = 0)
 { // Determine run number
   int run = 0;
   try {
@@ -76,8 +78,45 @@ inline int computeRunNumber(const framework::ServiceRegistry& services, const bo
                            "   using the one from the config file or 0 as a last resort."
                         << ENDM;
   }
-  run = run > 0 /* found it in service */ ? run : config.get<int>("qc.config.Activity.number", 0);
+  run = run > 0 /* found it in service */ ? run : fallbackRunNumber;
+  ILOG(Debug, Devel) << "Run number returned by computeRunNumber (default) : " << run << ENDM;
   return run;
+}
+
+inline std::string computePartitionName(const framework::ServiceRegistry& services, const std::string& fallbackPartitionName = "")
+{
+  std::string partitionName;
+  partitionName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("environment_id", "unspecified");
+  ILOG(Info, Devel) << "Got this property partitionName from RawDeviceService: '" << partitionName << "'" << ENDM;
+  partitionName = partitionName != "unspecified" /* found it in service */ ? partitionName : fallbackPartitionName;
+  ILOG(Debug, Devel) << "Period Name returned by computePeriodName : " << partitionName << ENDM;
+  return partitionName;
+}
+
+inline std::string computePeriodName(const framework::ServiceRegistry& services, const std::string& fallbackPeriodName = "")
+{ // Determine period
+  std::string periodName;
+  periodName = services.get<framework::RawDeviceService>().device()->fConfig->GetProperty<std::string>("periodName", "unspecified");
+  ILOG(Info, Devel) << "Got this property periodName from RawDeviceService: '" << periodName << "'" << ENDM;
+  periodName = periodName != "unspecified" /* found it in service */ ? periodName : fallbackPeriodName;
+  ILOG(Debug, Devel) << "Period Name returned by computePeriodName : " << periodName << ENDM;
+  return periodName;
+}
+
+inline std::string computePassName(const std::string& fallbackPassName = "")
+{
+  std::string passName;
+  passName = fallbackPassName;
+  ILOG(Debug, Devel) << "Pass Name returned by computePassName : " << passName << ENDM;
+  return passName;
+}
+
+inline std::string computeProvenance(const std::string& fallbackProvenance = "")
+{
+  std::string provenance;
+  provenance = fallbackProvenance;
+  ILOG(Debug, Devel) << "Provenance returned by computeProvenance : " << provenance << ENDM;
+  return provenance;
 }
 
 } // namespace o2::quality_control::core

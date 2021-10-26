@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -34,7 +35,7 @@ QualityObject::QualityObject(
     mPolicyName{ std::move(policyName) },
     mInputs{ std::move(inputs) },
     mMonitorObjectsNames{ std::move(monitorObjectsNames) },
-    mRunNumber(runNumber)
+    mActivity(runNumber, 0, "", "", "qc")
 {
   mQuality.overwriteMetadata(std::move(metadata));
 }
@@ -45,6 +46,7 @@ const std::string anonChecker = "anonymousChecker";
 QualityObject::QualityObject()
   : QualityObject(Quality(), anonChecker)
 {
+  mActivity.mProvenance = "qc";
 }
 
 const char* QualityObject::GetName() const
@@ -157,28 +159,41 @@ const std::vector<std::string> QualityObject::getMonitorObjectsNames() const
   return mMonitorObjectsNames;
 }
 
-int QualityObject::getRunNumber() const
-{
-  return mRunNumber;
-}
-
-void QualityObject::setRunNumber(int runNumber)
-{
-  QualityObject::mRunNumber = runNumber;
-}
-
 std::ostream& operator<<(std::ostream& out, const QualityObject& q) // output
 {
   out << "QualityObject: " << q.getName() << ":\n"
       << "   - checkName : " << q.getCheckName() << "\n"
       << "   - detectorName : " << q.getDetectorName() << "\n"
-      << "   - runNumber : " << q.getRunNumber() << "\n"
+      //      << "   - runNumber : " << q.getRunNumber() << "\n"
       << "   - quality : " << q.getQuality() << "\n"
       << "   - monitorObjectsNames : ";
   for (auto item : q.getMonitorObjectsNames()) {
     out << item << ", ";
   }
   return out;
+}
+
+void QualityObject::updateActivity(int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
+{
+  mActivity.mId = runNumber;
+  mActivity.mPeriodName = periodName;
+  mActivity.mPassName = passName;
+  mActivity.mProvenance = provenance;
+}
+
+const Activity& QualityObject::getActivity() const
+{
+  return mActivity;
+}
+
+Activity& QualityObject::getActivity()
+{
+  return mActivity;
+}
+
+void QualityObject::setActivity(const Activity& activity)
+{
+  mActivity = activity;
 }
 
 } // namespace o2::quality_control::core

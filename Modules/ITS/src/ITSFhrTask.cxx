@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -36,6 +37,8 @@ ITSFhrTask::ITSFhrTask()
 
 ITSFhrTask::~ITSFhrTask()
 {
+  delete mGeneralOccupancy;
+  delete mGeneralNoisyPixel;
   delete mDecoder;
   delete mChipDataBuffer;
   delete mTFInfo;
@@ -47,6 +50,8 @@ ITSFhrTask::~ITSFhrTask()
   delete mInfoCanvasOBComm;
   delete mTextForShifter;
   delete mTextForShifter2;
+  delete mTextForShifterOB;
+  delete mTextForShifterOB2;
   delete mGeom;
   delete mChipStaveOccupancy[mLayer];
   delete mChipStaveEventHitCheck[mLayer];
@@ -75,10 +80,22 @@ ITSFhrTask::~ITSFhrTask()
 
 void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info) << "initialize ITSFhrTask" << ENDM;
-  getEnableLayers();
+  ILOG(Info, Support) << "initialize ITSFhrTask" << ENDM;
+  getParameters();
   o2::base::GeometryManager::loadGeometry(mGeomPath.c_str());
   mGeom = o2::its::GeometryTGeo::Instance();
+
+  mGeneralOccupancy = new TH2Poly();
+  mGeneralOccupancy->SetTitle("General Occupancy;mm;mm");
+  mGeneralOccupancy->SetName("General/General_Occupancy");
+  mGeneralOccupancy->SetStats(0);
+  mGeneralOccupancy->GetZaxis()->SetRangeUser(pow(10, mMinGeneralAxisRange), pow(10, mMaxGeneralAxisRange));
+
+  mGeneralNoisyPixel = new TH2Poly();
+  mGeneralNoisyPixel->SetTitle("Noisy Pixel Number;mm;mm");
+  mGeneralNoisyPixel->SetName("General/Noisy_Pixel");
+  mGeneralNoisyPixel->SetStats(0);
+  mGeneralNoisyPixel->GetZaxis()->SetRangeUser(mMinGeneralNoisyAxisRange, mMaxGeneralNoisyAxisRange);
 
   createGeneralPlots();
   createOccupancyPlots();
@@ -98,6 +115,21 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
     mOccupancy = new double*[NStaves[mLayer]];
     mErrorCount = new int**[NStaves[mLayer]];
 
+    for (int ilayer = 0; ilayer < 7; ilayer++) {
+      for (int istave = 0; istave < NStaves[ilayer]; istave++) {
+        double* px = new double[4];
+        double* py = new double[4];
+        getStavePoint(ilayer, istave, px, py);
+        mGeneralOccupancy->AddBin(4, px, py);
+        mGeneralNoisyPixel->AddBin(4, px, py);
+      }
+    }
+    if (mGeneralOccupancy) {
+      getObjectsManager()->startPublishing(mGeneralOccupancy);
+    }
+    if (mGeneralNoisyPixel) {
+      getObjectsManager()->startPublishing(mGeneralNoisyPixel);
+    }
     //define the errorcount array, there is some reason cause break when I define errorcount and hitnumber, occupancy at same block.
     if (mLayer < NLayerIB) {
       for (int istave = 0; istave < NStaves[mLayer]; istave++) {
@@ -184,7 +216,13 @@ void ITSFhrTask::createGeneralPlots()
   mInfoCanvasOBComm->GetYaxis()->SetBinLabel(4, "ibb");
 
   mTextForShifter = new TText(.5, 1.5, "DarkGreen -> Processing");
+  mTextForShifterOB = new TText(.5, 1.5, "DarkGreen -> Processing");
   mTextForShifter2 = new TText(.5, 1.2, "Yellow    -> Finished");
+  mTextForShifterOB2 = new TText(.5, 1.2, "Yellow    -> Finished");
+  mTextForShifter->SetNDC();
+  mTextForShifterOB->SetNDC();
+  mTextForShifter2->SetNDC();
+  mTextForShifterOB2->SetNDC();
 
   mInfoCanvasComm->SetStats(0);
   mInfoCanvasComm->GetListOfFunctions()->Add(mTextForShifter);
@@ -192,8 +230,8 @@ void ITSFhrTask::createGeneralPlots()
   getObjectsManager()->startPublishing(mInfoCanvasComm);
 
   mInfoCanvasOBComm->SetStats(0);
-  mInfoCanvasOBComm->GetListOfFunctions()->Add(mTextForShifter);
-  mInfoCanvasOBComm->GetListOfFunctions()->Add(mTextForShifter2);
+  mInfoCanvasOBComm->GetListOfFunctions()->Add(mTextForShifterOB);
+  mInfoCanvasOBComm->GetListOfFunctions()->Add(mTextForShifterOB2);
   getObjectsManager()->startPublishing(mInfoCanvasOBComm);
 
   createErrorTriggerPlots();
@@ -312,13 +350,14 @@ void ITSFhrTask::setPlotsFormat()
   }
 }
 
-void ITSFhrTask::startOfActivity(Activity& /*activity*/)
+void ITSFhrTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info) << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  mRunNumber = activity.mId;
   reset();
 }
 
-void ITSFhrTask::startOfCycle() { ILOG(Info) << "startOfCycle" << ENDM; }
+void ITSFhrTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM; }
 
 void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
@@ -327,19 +366,23 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
   start = std::chrono::high_resolution_clock::now();
-
   //get TF id by dataorigin and datadescription
   const InputSpec TFIdFilter{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA1" }, Lifetime::Timeframe }; //after Data Sampling the dataorigin will become to "DS" and the datadescription will become  to "RAWDATAX"
-  for (auto& input : ctx.inputs()) {
-    if (DataRefUtils::match(input, TFIdFilter)) {
-      mTimeFrameId = (int)*input.payload;
+  if (!mGetTFFromBinding) {
+    for (auto& input : ctx.inputs()) {
+      if (DataRefUtils::match(input, TFIdFilter)) {
+        mTimeFrameId = (unsigned int)*input.payload;
+      }
     }
+  } else {
+    mTimeFrameId = ctx.inputs().get<int>("G");
   }
 
   //set Decoder
   mDecoder->startNewTF(ctx.inputs());
   mDecoder->setDecodeNextAuto(true);
-  DPLRawParser parser(ctx.inputs()); //set input data
+  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
+  DPLRawParser parser(ctx.inputs(), rawDataFilter); //set input data
 
   //get data information from RDH(like witch layer, stave, link, trigger type)
   int lay = 0;
@@ -355,7 +398,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (lay < NLayerIB) {
       istave += StaveBoundary[lay];
     } else {
-      istave += StaveBoundary[lay - NLayerIB];
+      istave += StaveBoundary[lay] - StaveBoundary[NLayerIB];
     }
     for (int i = 0; i < 13; i++) {
       if (((uint32_t)(rdh->triggerType) >> i & 1) == 1) {
@@ -412,7 +455,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   //decode raw data and save digit hit to digit hit vector, and save hitnumber per chip/hic
   while ((mChipDataBuffer = mDecoder->getNextChipData(mChipsBuffer))) {
     if (mChipDataBuffer) {
-      int layer, stave, ssta, mod, chip;
+      int stave = 0, ssta = 0, mod = 0, chip = 0;
       int hic = 0;
       const auto& pixels = mChipDataBuffer->getData();
       for (auto& pixel : pixels) {
@@ -422,18 +465,26 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           hic = 0;
           mHitnumber[stave][chip]++;
         } else {
-          mGeom->getChipId(mChipDataBuffer->getChipID(), layer, stave, ssta, mod, chip);
-          hic = mod + ssta * 7;
+          stave = (mChipDataBuffer->getChipID() - ChipBoundary[lay]) / (14 * nHicPerStave[lay]);
+          int chipIdLocal = (mChipDataBuffer->getChipID() - ChipBoundary[lay]) % (14 * nHicPerStave[lay]);
+          ssta = chipIdLocal / (7 * nHicPerStave[lay]);
+          mod = (chipIdLocal % (7 * nHicPerStave[lay])) / 14;
+          chip = chipIdLocal % 14;
+          if (lay == 3 || lay == 4) {
+            hic = mod + ssta * 4;
+          } else {
+            hic = mod + ssta * 7;
+          }
           mHitnumber[stave][hic]++;
         }
         digVec[stave][hic].emplace_back(mChipDataBuffer->getChipID(), pixel.getRow(), pixel.getCol());
       }
       if (lay < NLayerIB) {
-        if (pixels.size() > 100) {
+        if (pixels.size() > (unsigned int)mHitCutForCheck) {
           mChipStaveEventHitCheck[lay]->Fill(chip, stave);
         }
       } else {
-        if (pixels.size() > 100) {
+        if (pixels.size() > (unsigned int)mHitCutForCheck) {
           mChipStaveEventHitCheck[lay]->Fill(mod + (ssta * (nHicPerStave[lay] / 2)), stave);
         }
       }
@@ -467,17 +518,12 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     } else {
       for (int ihic = 0; ihic < nHicPerStave[lay]; ihic++) {
         for (auto& digit : digVec[istave][ihic]) {
-          int lay, stave, ssta, mod, chip;
-          mGeom->getChipId(digit.getChipIndex(), lay, stave, ssta, mod, chip);
+          int chip = ((digit.getChipIndex() - ChipBoundary[lay]) % (14 * nHicPerStave[lay])) % 14;
           mHitPixelID_InStave[istave][ihic][chip][1000 * digit.getColumn() + digit.getRow()]++;
         }
       }
     }
   }
-
-  end = std::chrono::high_resolution_clock::now();
-  difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  ILOG(Info) << "time untile decode over " << difference << ENDM;
 
   //Reset Error plots
   mErrorPlots->Reset();
@@ -509,6 +555,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (!RUdecode) {
       continue;
     }
+    mNoisyPixelNumber[lay][istave] = 0;
 
     if (lay < NLayerIB) {
       for (int ilink = 0; ilink < RUDecodeData::MaxLinksPerRU; ilink++) {
@@ -519,12 +566,15 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         for (int ichip = 0 + (ilink * 3); ichip < (ilink * 3) + 3; ichip++) {
           std::unordered_map<unsigned int, int>::iterator iter;
           for (iter = mHitPixelID_InStave[istave][0][ichip].begin(); iter != mHitPixelID_InStave[istave][0][ichip].end(); iter++) {
+            if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
+              mNoisyPixelNumber[lay][istave]++;
+            }
             int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip), (int)(iter->first % 1000) };
             mStaveHitmap[lay][istave]->SetBinContent(pixelPos, (double)iter->second);
             totalhit += (int)iter->second;
             occupancyPlotTmp[i]->Fill(log10((double)iter->second / GBTLinkInfo->statistics.nTriggers));
           }
-          mOccupancy[istave][ichip] = (double)mHitnumber[istave][ichip] / (GBTLinkInfo->statistics.nTriggers * 1024 * 512);
+          mOccupancy[istave][ichip] = mHitnumber[istave][ichip] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512.);
         }
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
           if (GBTLinkInfo->statistics.errorCounts[ierror] <= 0) {
@@ -543,7 +593,10 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           for (int ichip = 0; ichip < nChipsPerHic[lay]; ichip++) {
             if (GBTLinkInfo->statistics.nTriggers > 0) {
               std::unordered_map<unsigned int, int>::iterator iter;
-              for (iter = mHitPixelID_InStave[istave][ihic][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic][ichip].end(); iter++) {
+              for (iter = mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[lay] / NSubStave[lay]))][ichip].begin(); iter != mHitPixelID_InStave[istave][ihic + ilink * ((nHicPerStave[lay] / NSubStave[lay]))][ichip].end(); iter++) {
+                if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
+                  mNoisyPixelNumber[lay][istave]++;
+                }
                 double pixelOccupancy = (double)iter->second;
                 occupancyPlotTmp[i]->Fill(log10(pixelOccupancy / GBTLinkInfo->statistics.nTriggers));
                 if (ichip < 7) {
@@ -556,7 +609,11 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
               }
             }
           }
-          mOccupancy[istave][ihic + (ilink * 7)] = mHitnumber[istave][ihic + (ilink * 7)] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay]);
+          if (lay == 3 || lay == 4) {
+            mOccupancy[istave][ihic + (ilink * 4)] = mHitnumber[istave][ihic + (ilink * 4)] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay]);
+          } else {
+            mOccupancy[istave][ihic + (ilink * 7)] = mHitnumber[istave][ihic + (ilink * 7)] / (GBTLinkInfo->statistics.nTriggers * 1024. * 512. * nChipsPerHic[lay]);
+          }
         }
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
           if (GBTLinkInfo->statistics.errorCounts[ierror] <= 0) {
@@ -577,11 +634,13 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         mChipStaveOccupancy[lay]->SetBinContent(ichip + 1, istave + 1, mOccupancy[istave][ichip]);
         int ilink = ichip / 3;
         for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
-          if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] > 0)) {
-            mErrorVsFeeid->SetBinContent((istave * 3) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
+          if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] != 0)) {
+            mErrorVsFeeid->SetBinContent(((istave + StaveBoundary[lay]) * 3) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
           }
         }
       }
+      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
+      mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[lay][istave]);
     } else {
       for (int ihic = 0; ihic < nHicPerStave[lay]; ihic++) {
         int ilink = ihic / (nHicPerStave[lay] / 2);
@@ -589,11 +648,13 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
         if (ihic == 0 || ihic == 7) {
           for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
             if (mErrorVsFeeid && (mErrorCount[istave][ilink][ierror] != 0)) {
-              mErrorVsFeeid->SetBinContent((3 * StaveBoundary[3]) + (istave * 2) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
+              mErrorVsFeeid->SetBinContent((3 * StaveBoundary[3]) + ((StaveBoundary[lay] - StaveBoundary[NLayerIB] + istave) * 2) + ilink + 1, ierror + 1, mErrorCount[istave][ilink][ierror]);
             }
           }
         }
       }
+      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
+      mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[lay][istave]);
     }
   }
   for (int ierror = 0; ierror < o2::itsmft::GBTLinkDecodingStat::NErrorsDefined; ierror++) {
@@ -612,64 +673,41 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     delete occupancyPlotTmp[i];
   }
   delete[] occupancyPlotTmp;
-
+  //temporarily reverting to get TFId by querying binding
+  //  mTimeFrameId = ctx.inputs().get<int>("G");
   //Timer LOG
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   mAverageProcessTime += difference;
-  ILOG(Info) << "average process time == " << (double)mAverageProcessTime / mTimeFrameId << ENDM;
-  ILOG(Info) << "time until thread all end is " << difference << ", and TF ID == " << mTimeFrameId << ENDM;
+  mTFCount++;
 }
 
-void ITSFhrTask::getEnableLayers()
+void ITSFhrTask::getParameters()
 {
   mNThreads = std::stoi(mCustomParameters["decoderThreads"]);
   mLayer = std::stoi(mCustomParameters["Layer"]);
+  mHitCutForCheck = std::stoi(mCustomParameters["HitNumberCut"]);
+  mGetTFFromBinding = std::stoi(mCustomParameters["GetTFFromBinding"]);
   mRunNumberPath = mCustomParameters["runNumberPath"];
   mGeomPath = mCustomParameters["geomPath"];
-  for (int ilayer = 0; ilayer < NLayer; ilayer++) {
-    if (mCustomParameters["layer"][ilayer] != '0') {
-      mEnableLayers[ilayer] = 1;
-      ILOG(Info) << "enable layer : " << ilayer << ENDM;
-    } else {
-      mEnableLayers[ilayer] = 0;
-    }
-  }
+  mHitCutForNoisyPixel = std::stoi(mCustomParameters["HitNumberCutForNoisyPixel"]);
+  mOccupancyCutForNoisyPixel = std::stof(mCustomParameters["OccupancyNumberCutForNoisyPixel"]);
+  mMaxGeneralAxisRange = std::stof(mCustomParameters["MaxGeneralAxisRange"]);
+  mMinGeneralAxisRange = std::stof(mCustomParameters["MinGeneralAxisRange"]);
+  mMaxGeneralNoisyAxisRange = std::stof(mCustomParameters["MaxGeneralNoisyAxisRange"]);
+  mMinGeneralNoisyAxisRange = std::stof(mCustomParameters["MinGeneralNoisyAxisRange"]);
 }
 
 void ITSFhrTask::endOfCycle()
 {
-  std::ifstream runNumberFile("infiles/RunNumber.dat"); //catching ITS run number in commissioning
-  if (runNumberFile) {
-    std::string runNumber;
-    runNumberFile >> runNumber;
-    ILOG(Info) << "runNumber : " << runNumber << ENDM;
-    mInfoCanvasComm->SetTitle(Form("run%s", runNumber.c_str()));
-    if (runNumber != mRunNumber) {
-      getObjectsManager()->addMetadata(mTFInfo->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mErrorPlots->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mErrorVsFeeid->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mTriggerVsFeeid->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mTriggerPlots->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mInfoCanvasComm->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mChipStaveOccupancy[mLayer]->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mOccupancyPlot[mLayer]->GetName(), "Run", runNumber);
-      getObjectsManager()->addMetadata(mChipStaveEventHitCheck[mLayer]->GetName(), "Run", runNumber);
-      for (int istave = 0; istave < NStaves[mLayer]; istave++) {
-        if (mStaveHitmap[mLayer][istave]) {
-          getObjectsManager()->addMetadata(mStaveHitmap[mLayer][istave]->GetName(), "Run", runNumber);
-        }
-      }
-      mRunNumber = runNumber;
-    }
-  }
-  ILOG(Info) << "endOfCycle" << ENDM;
+  ILOG(Debug, Support) << "average process time == " << (double)mAverageProcessTime / mTFCount << ENDM;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void ITSFhrTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void ITSFhrTask::resetGeneralPlots()
@@ -709,6 +747,10 @@ void ITSFhrTask::reset()
   resetGeneralPlots();
   resetOccupancyPlots();
 
+  mGeneralOccupancy->Reset("content");
+  mGeneralNoisyPixel->Reset("content");
+  mDecoder->clearStat();
+
   if (mLayer < NLayerIB) {
     for (int istave = 0; istave < NStaves[mLayer]; istave++) {
       for (int ilink = 0; ilink < 3; ilink++) {
@@ -739,6 +781,35 @@ void ITSFhrTask::reset()
     }
   }
 
-  ILOG(Info) << "Reset" << ENDM;
+  ILOG(Info, Support) << "Reset" << ENDM;
+}
+
+void ITSFhrTask::getStavePoint(int layer, int stave, double* px, double* py)
+{
+  float stepAngle = TMath::Pi() * 2 / NStaves[layer];             //the angle between to stave
+  float midAngle = StartAngle[layer] + (stave * stepAngle);       //mid point angle
+  float staveRotateAngle = TMath::Pi() / 2 - (stave * stepAngle); //how many angle this stave rotate(compare with first stave)
+  px[1] = MidPointRad[layer] * TMath::Cos(midAngle);              //there are 4 point to decide this TH2Poly bin
+                                                                  //0:left point in this stave;
+                                                                  //1:mid point in this stave;
+                                                                  //2:right point in this stave;
+                                                                  //3:higher point int this stave;
+  py[1] = MidPointRad[layer] * TMath::Sin(midAngle);              //4 point calculated accord the blueprint
+                                                                  //roughly calculate
+  if (layer < NLayerIB) {
+    px[0] = 7.7 * TMath::Cos(staveRotateAngle) + px[1];
+    py[0] = -7.7 * TMath::Sin(staveRotateAngle) + py[1];
+    px[2] = -7.7 * TMath::Cos(staveRotateAngle) + px[1];
+    py[2] = 7.7 * TMath::Sin(staveRotateAngle) + py[1];
+    px[3] = 5.623 * TMath::Sin(staveRotateAngle) + px[1];
+    py[3] = 5.623 * TMath::Cos(staveRotateAngle) + py[1];
+  } else {
+    px[0] = 21 * TMath::Cos(staveRotateAngle) + px[1];
+    py[0] = -21 * TMath::Sin(staveRotateAngle) + py[1];
+    px[2] = -21 * TMath::Cos(staveRotateAngle) + px[1];
+    py[2] = 21 * TMath::Sin(staveRotateAngle) + py[1];
+    px[3] = 40 * TMath::Sin(staveRotateAngle) + px[1];
+    py[3] = 40 * TMath::Cos(staveRotateAngle) + py[1];
+  }
 }
 } // namespace o2::quality_control_modules::its

@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -18,8 +19,7 @@
 #define QC_MODULE_TOF_TOFCHECKRAWSTOT_H
 
 #include "QualityControl/CheckInterface.h"
-#include "QualityControl/MonitorObject.h"
-#include "QualityControl/Quality.h"
+#include "Base/MessagePad.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -40,9 +40,12 @@ class CheckRawToT : public o2::quality_control::checker::CheckInterface
 
  private:
   /// Minimum ToT allowed for the mean in ns
-  float mMinRawToT;
+  float mMinRawToT = 10.; // ns
   /// Maximum ToT allowed for the mean in ns
-  float mMaxRawToT;
+  float mMaxRawToT = 15.; // ns
+
+  /// Messages to print on the output PAD
+  MessagePad mShifterMessages;
 
   ClassDefOverride(CheckRawToT, 1);
 };

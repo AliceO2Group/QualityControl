@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -24,6 +25,8 @@
 #include <TObject.h>
 // O2
 #include <Common/Exceptions.h>
+// QC
+#include "QualityControl/Activity.h"
 
 namespace o2::quality_control::core
 {
@@ -43,7 +46,7 @@ class MonitorObject : public TObject
  public:
   /// Default constructor
   MonitorObject();
-  MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName = "DET", int runNumber = 0);
+  MonitorObject(TObject* object, const std::string& taskName, const std::string& taskClass, const std::string& detectorName, int runNumber = 0, const std::string& periodName = "", const std::string& passName = "", const std::string& provenance = "qc");
   /// Destructor
   ~MonitorObject() override;
 
@@ -69,11 +72,9 @@ class MonitorObject : public TObject
   const std::string getFullName() const { return getTaskName() + "/" + getName(); }
 
   TObject* getObject() const { return mObject; }
-
   void setObject(TObject* object) { mObject = object; }
 
   bool isIsOwner() const { return mIsOwner; }
-
   void setIsOwner(bool isOwner) { mIsOwner = isOwner; }
 
   const std::string& getTaskName() const { return mTaskName; }
@@ -82,8 +83,13 @@ class MonitorObject : public TObject
   const std::string& getDetectorName() const { return mDetectorName; }
   void setDetectorName(const std::string& detectorName) { mDetectorName = detectorName; }
 
-  int getRunNumber() const;
-  void setRunNumber(int runNumber);
+  const std::string& getTaskClass() const;
+  void setTaskClass(const std::string& taskClass);
+
+  Activity& getActivity();
+  const Activity& getActivity() const;
+  void setActivity(const Activity& activity);
+  void updateActivity(int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance);
 
   /// \brief Add key value pair that will end up in the database as metadata of the object
   /// Add a metadata (key value pair) to the MonitorObject. It will be stored in the database as metadata.
@@ -115,17 +121,18 @@ class MonitorObject : public TObject
  private:
   TObject* mObject;
   std::string mTaskName;
+  std::string mTaskClass;
   std::string mDetectorName;
   std::map<std::string, std::string> mUserMetadata;
   std::string mDescription;
-  int mRunNumber;
+  Activity mActivity;
 
   // indicates that we are the owner of mObject. It is the case by default. It is not the case when a task creates the
   // object.
   // TODO : maybe we should always be the owner ?
   bool mIsOwner;
 
-  ClassDefOverride(MonitorObject, 8);
+  ClassDefOverride(MonitorObject, 10);
 };
 
 } // namespace o2::quality_control::core

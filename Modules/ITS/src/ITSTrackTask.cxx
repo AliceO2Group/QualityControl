@@ -30,9 +30,6 @@ namespace o2::quality_control_modules::its
 ITSTrackTask::ITSTrackTask() : TaskInterface()
 {
   createAllHistos();
-
-  o2::base::GeometryManager::loadGeometry();
-  mGeom = o2::its::GeometryTGeo::Instance();
 }
 
 ITSTrackTask::~ITSTrackTask()
@@ -44,24 +41,16 @@ ITSTrackTask::~ITSTrackTask()
   delete hOccupancyROF;
   delete hClusterUsage;
   delete hAngularDistribution;
-
-  delete mGeom;
 }
 
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
   QcInfoLogger::GetInstance() << "initialize ITSTrackTask" << AliceO2::InfoLogger::InfoLogger::endm;
-  publishHistos();
-  std::string dictfile = o2::base::NameConf::getDictionaryFileName(o2::detectors::DetID::ITS, "", ".bin");
-  std::ifstream file(dictfile.c_str());
 
-  if (file.good()) {
-    LOG(INFO) << "Running with dictionary: " << dictfile.c_str();
-    mDict.readBinaryFile(dictfile);
-  } else {
-    LOG(INFO) << "Running without dictionary !";
-  }
+  mRunNumberPath = mCustomParameters["runNumberPath"];
+
+  publishHistos();
 }
 
 void ITSTrackTask::startOfActivity(Activity& /*activity*/)
@@ -116,7 +105,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 void ITSTrackTask::endOfCycle()
 {
 
-  std::ifstream runNumberFile("/home/its/QC/workdir/infiles/RunNumber.dat"); //catching ITS run number in commissioning
+  std::ifstream runNumberFile(mRunNumberPath.c_str());
   if (runNumberFile) {
 
     std::string runNumber;

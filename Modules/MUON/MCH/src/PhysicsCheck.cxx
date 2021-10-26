@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -60,7 +61,7 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName().find("QcMuonChambers_Occupancy_Elec") != std::string::npos) {
+    if (mo->getName().find("Occupancy_Elec") != std::string::npos) {
       auto* h = dynamic_cast<TH2F*>(mo->getObject());
       if (!h)
         return result;
@@ -68,14 +69,14 @@ Quality PhysicsCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>
       if (h->GetEntries() == 0) {
         result = Quality::Medium;
       } else {
-        int nbinsx = 3; //h->GetXaxis()->GetNbins();
+        int nbinsx = h->GetXaxis()->GetNbins();
         int nbinsy = h->GetYaxis()->GetNbins();
         int nbad = 0;
         for (int i = 1; i <= nbinsx; i++) {
           for (int j = 1; j <= nbinsy; j++) {
             Float_t occ = h->GetBinContent(i, j);
             if (occ < minOccupancy || occ >= maxOccupancy) {
-              nbad += 1;
+              //nbad += 1;
               int ds_addr = (i % 40) - 1;
               int link_id = ((i - 1 - ds_addr) / 40) % 12;
               int fee_id = (i - 1 - ds_addr - 40 * link_id) / (12 * 40);
@@ -104,9 +105,11 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
   //std::cout<<"===================================="<<std::endl;
   //std::cout<<"PhysicsCheck::beautify() called"<<std::endl;
   //std::cout<<"===================================="<<std::endl;
-  if (mo->getName().find("QcMuonChambers_Occupancy_Elec") != std::string::npos) {
+  if (mo->getName().find("Occupancy_Elec") != std::string::npos) {
     auto* h = dynamic_cast<TH2F*>(mo->getObject());
     h->SetDrawOption("colz");
+    h->SetMinimum(0);
+    h->SetMaximum(10);
     TPaveText* msg = new TPaveText(0.1, 0.9, 0.9, 0.95, "NDC");
     h->GetListOfFunctions()->Add(msg);
     msg->SetName(Form("%s_msg", mo->GetName()));
@@ -118,7 +121,7 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       //
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
-      LOG(INFO) << "Quality::Bad, setting to red";
+      LOG(info) << "Quality::Bad, setting to red";
       //
       msg->Clear();
       msg->AddText("Call MCH on-call.");
@@ -126,7 +129,7 @@ void PhysicsCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
       //
       h->SetFillColor(kRed);
     } else if (checkResult == Quality::Medium) {
-      LOG(INFO) << "Quality::medium, setting to orange";
+      LOG(info) << "Quality::medium, setting to orange";
       //
       msg->Clear();
       msg->AddText("No entries. If MCH in the run, check MCH TWiki");

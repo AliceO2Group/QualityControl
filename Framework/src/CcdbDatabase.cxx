@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -157,17 +158,28 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
                           << errinfo_details("Object and task names can't contain white spaces. Do not store."));
   }
 
-  // metadata
   map<string, string> metadata;
-  // QC metadata (prefix qc_)
-  metadata["qc_version"] = Version::GetQcVersion().getString();
+
   // user metadata
   map<string, string> userMetadata = mo->getMetadataMap();
   if (!userMetadata.empty()) {
     metadata.insert(userMetadata.begin(), userMetadata.end());
   }
 
-  // other attributes
+  // extract object and metadata from MonitorObject
+  TObject* obj = mo->getObject();
+  metadata["RunNumber"] = std::to_string(mo->getActivity().mId);
+  metadata["PeriodName"] = mo->getActivity().mPeriodName;
+  metadata["PassName"] = mo->getActivity().mPassName;
+  metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
+
+  // QC metadata (prefix qc_)
+  metadata["qc_version"] = Version::GetQcVersion().getString();
+  metadata["qc_detector_name"] = mo->getDetectorName();
+  metadata["qc_task_name"] = mo->getTaskName();
+  metadata["qc_task_class"] = mo->getTaskClass();
+
+  // path attributes
   string path = mo->getPath();
   if (from == -1) {
     from = getCurrentTimestamp();
@@ -175,13 +187,6 @@ void CcdbDatabase::storeMO(std::shared_ptr<const o2::quality_control::core::Moni
   if (to == -1) {
     to = from + 1000l * 60 * 60 * 24 * 365 * 10; // ~10 years since the start of validity
   }
-
-  // extract object and metadata from MonitorObject
-  TObject* obj = mo->getObject();
-  metadata["qc_detector_name"] = mo->getDetectorName();
-  metadata["qc_task_name"] = mo->getTaskName();
-  metadata["ObjectType"] = mo->getObject()->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
-  metadata["RunNumber"] = std::to_string(mo->getRunNumber());
 
   ILOG(Debug, Support) << "Storing MonitorObject " << path << ENDM;
   ccdbApi.storeAsTFileAny<TObject>(obj, path, metadata, from, to);
@@ -191,7 +196,9 @@ void CcdbDatabase::storeQO(std::shared_ptr<const o2::quality_control::core::Qual
 {
   // metadata
   map<string, string> metadata;
-  metadata["RunNumber"] = std::to_string(qo->getRunNumber());
+  metadata["RunNumber"] = std::to_string(qo->getActivity().mId);
+  metadata["PeriodName"] = qo->getActivity().mPeriodName;
+  metadata["PassName"] = qo->getActivity().mPassName;
   metadata["ObjectType"] = qo->IsA()->GetName(); // ObjectType says TObject and not MonitorObject due to a quirk in the API. Once fixed, remove this.
   // QC metadata (prefix qc_)
   metadata["qc_version"] = Version::GetQcVersion().getString();
@@ -270,7 +277,9 @@ std::shared_ptr<core::MonitorObject> CcdbDatabase::retrieveMO(std::string taskNa
   } else {
     // Version >= 0.25 -> the object is stored directly unencapsulated
     ILOG(Debug, Devel) << "Version of object " << taskName << "/" << objectName << " is >= 0.25" << ENDM;
-    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_detector_name"]);
+    int runNumber = stoi(headers["RunNumber"]);
+    string provenance = path.substr(0, path.find('/')); // get the item before the first slash corresponding to the provenance
+    mo = make_shared<MonitorObject>(obj, headers["qc_task_name"], headers["qc_task_class"], headers["qc_detector_name"], runNumber, headers["PeriodName"], headers["PassName"], provenance);
     // TODO should we remove the headers we know are general such as ETag and qc_task_name ?
     mo->addMetadata(headers);
   }
@@ -341,6 +350,9 @@ std::string CcdbDatabase::retrieveJson(std::string path, long timestamp, const s
   buffer.Clear();
   Writer<rapidjson::StringBuffer> writer(buffer);
   jsonDocument.Accept(writer);
+  if (auto maxSize = std::string().max_size(); buffer.GetSize() > maxSize) {
+    throw std::runtime_error("JSON buffer contains too large string: " + std::to_string(buffer.GetSize()) + ", while std::string::max_size() is " + maxSize);
+  }
   return strdup(buffer.GetString());
 }
 
@@ -468,7 +480,7 @@ void CcdbDatabase::truncate(std::string taskName, std::string objectName)
 void CcdbDatabase::storeStreamerInfosToFile(std::string filename)
 {
   TH1F* h1 = new TH1F("asdf", "asdf", 100, 0, 99);
-  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake");
+  shared_ptr<MonitorObject> mo1 = make_shared<MonitorObject>(h1, "fake", "class", "DET");
   TMessage message(kMESS_OBJECT);
   message.Reset();
   message.EnableSchemaEvolution(true);

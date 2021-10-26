@@ -32,13 +32,6 @@ install (
 
 # ---- Executables ----
 
-add_executable(qcRunEmcalDigit src/runQCEMCALDigits.cxx)
-target_link_libraries(qcRunEmcalDigit PUBLIC O2QualityControl O2QcEMCAL O2::DataFormatsEMCAL O2::EMCALBase O2::EMCALWorkflow O2::CCDB O2::EMCALCalib)
-install(
-  TARGETS qcRunEmcalDigit
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  )
-
 # ---- Tests ----
 
 set(

@@ -1,0 +1,52 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "KrClusters": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::Clusters",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "cycleDurationSeconds": "10",
+        "maxNumberCycles": "-1",
+        "resetAfterCycles": "5",
+        "dataSource": {
+          "type": "direct",
+          "query" : "krClusters:TPC/KRCLUSTERS"
+        },
+        "taskParameters": {
+          "NClustersNBins": "100",  "NClustersXMin": "0", "NClustersXMax": "100",
+          "QmaxNBins":      "200",  "QmaxXMin":      "0", "QmaxXMax":      "1024",
+          "QtotNBins":      "600",  "QtotXMin":      "0", "QtotXMax":      "6000",
+          "SigmaPadNBins":  "200",  "SigmaPadXMin":  "0", "SigmaPadXMax":  "3.8",
+          "SigmaTimeNBins": "200",  "SigmaTimeXMin": "0", "SigmaTimeXMax": "2.5",
+          "TimeBinNBins":   "1000", "TimeBinXMin":   "0", "TimeBinXMax":   "100000"
+        },
+        "location": "remote"
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+  ]
+}

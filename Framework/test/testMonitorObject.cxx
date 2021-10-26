@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -41,7 +42,7 @@ BOOST_AUTO_TEST_CASE(mo_save)
 {
   string objectName = "asdf";
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
-  o2::quality_control::core::MonitorObject obj(&h, "task");
+  o2::quality_control::core::MonitorObject obj(&h, "task", "class", "DET");
   ILOG(Info, Support) << "getName : '" << obj.getName() << "'" << ENDM;
   ILOG(Info, Support) << "GetName : '" << obj.GetName() << "'" << ENDM;
   ILOG(Info, Support) << "title : '" << obj.GetTitle() << "'" << ENDM;
@@ -75,7 +76,7 @@ BOOST_AUTO_TEST_CASE(metadata)
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
 
   // no metadata at creation
-  o2::quality_control::core::MonitorObject obj(&h, "task");
+  o2::quality_control::core::MonitorObject obj(&h, "task", "class", "DET");
   obj.setIsOwner(false);
   BOOST_CHECK_EQUAL(obj.getMetadataMap().size(), 0);
 
@@ -121,7 +122,7 @@ BOOST_AUTO_TEST_CASE(path)
 {
   string objectName = "asdf";
   TH1F h(objectName.data(), objectName.data(), 100, 0, 99);
-  o2::quality_control::core::MonitorObject obj(&h, "task");
+  o2::quality_control::core::MonitorObject obj(&h, "task", "class", "DET");
   obj.setIsOwner(false);
   string path = obj.getPath();
   BOOST_CHECK_EQUAL(path, "qc/DET/MO/task/asdf");

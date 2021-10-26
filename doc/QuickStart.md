@@ -1,7 +1,7 @@
 # QuickStart
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
-<!--./gh-md-toc --no-backup --hide-footer /path/to/README.md-->
+<!--./gh-md-toc --no-backup --hide-footer --indent 3  /path/to/README.md-->
 <!--ts-->
 * [QuickStart](#quickstart)
    * [Read this first!](#read-this-first)
@@ -46,11 +46,11 @@ A CC7 machine (Mac, and in particular Ubuntu, are only supported on a best effor
 2. Prepare the QualityControl development package
     * `aliBuild init QualityControl@master --defaults o2`
 
-4. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `O2Suite`.
+4. Build/install the QualityControl and the readout. The simplest is to use the metapackage `O2Suite`.
     * `aliBuild build O2Suite --defaults o2`
     * At this point you might encounter a message about missing system requirements. Run `aliDoctor O2Suite` to get a full information about what is missing and how to install it.
 
-Note: on non-CC7 systems, you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages. Moreover, you can build `qcg` instead of `O2Suite` if you don't plan to use the readout (remember to substitute `O2Suite` with `qcg` when loading the environment).
+Note: you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages. Moreover, you can build `QualityControl` instead of `O2Suite` if you don't plan to use the readout (remember to substitute `O2Suite` with `QualityControl` when loading the environment).
 
 ### Environment loading
 

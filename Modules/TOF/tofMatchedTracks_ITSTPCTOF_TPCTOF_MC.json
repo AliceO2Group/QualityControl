@@ -1,0 +1,91 @@
+{
+  "qc" : {
+    "config" : {
+      "database" : {
+        "implementation" : "CCDB",
+        "host" : "ccdb-test.cern.ch:8080",
+        "username" : "not_applicable",
+        "password" : "not_applicable",
+        "name" : "not_applicable"
+      },
+      "Activity" : {
+        "number" : "42",
+        "type" : "2"
+      },
+      "monitoring" : {
+        "url" : "infologger:///debug?qc"
+      },
+      "consul" : {
+        "url" : ""
+      },
+      "conditionDB" : {
+        "url" : "ccdb-test.cern.ch:8080"
+      },
+      "infologger" : { "" : "Configuration of the Infologger (optional).",
+                       "filterDiscardDebug" : "false",
+                       "" : "Set to true to discard debug and trace messages (default: false)",
+                       "filterDiscardLevel" : "21",
+                       "" : "Message at this level or above are discarded (default: 21 - Trace)" }
+    },
+    "tasks" : {
+      "MatchedTracksITSTPCTOF_TPCTOF" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::tof::TOFMatchedTracks",
+        "moduleName" : "QcTOF",
+        "detectorName" : "TOF",
+        "cycleDurationSeconds" : "10",
+        "maxNumberCycles" : "-1",
+        "dataSource" : {
+          "type" : "dataSamplingPolicy",
+          "name" : "tof-match-samp"
+        },
+        "taskParameters" : {
+          "GID" : "ITS-TPC,TPC,ITS-TPC-TOF,TPC-TOF",
+          "verbose" : "false",
+          "isMC" : "true",
+          "minPtCut" : "0.1f",
+          "etaCut" : "1.4f",
+          "minNTPCClustersCut" : "40",
+          "minDCACut" : "100.f",
+          "minDCACutY" : "10.f",
+          "grpFileName" : "o2sim_grp.root",
+          "geomFileName" : "o2sim_geometry.root"
+        },
+        "location" : "remote",
+        "saveObjectsToFile" : "TOFmatchedITSTPCTOF_TPCTOF_MC.root",
+        "" : "For debugging, path to the file where to save. If empty or missing it won't save."
+      }
+    },
+    "checks" : {
+      "QcCheck" : {
+        "active" : "false",
+        "className" : "o2::quality_control_modules::skeleton::SkeletonCheck",
+        "moduleName" : "QcSkeleton",
+        "policy" : "OnAny",
+        "detectorName" : "TOF",
+        "dataSource" : [ {
+          "type" : "Task",
+          "name" : "QcTask",
+          "MOs" : ["example"]
+        } ]
+      }
+    }
+  },
+         "dataSamplingPolicies" : [
+           {
+             "id" : "tof-match-samp",
+             "active" : "true",
+             "machines" : [],
+             "query_comment" : "checking every 10% matched track",
+             "query" : "matchITSTPCTOF:TOF/MTC_ITSTPC/0;matchTPCTOF:TOF/MTC_TPC/0;trackTPCTOF:TOF/TOFTRACKS_TPC/0;trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS/0;trackTPCClRefs:TPC/CLUSREFS/0;tofcluster:TOF/CLUSTERS/0;trackTPCMCTR:TPC/TRACKSMCLBL;trackITSTPCMCTR:GLO/TPCITS_MC;trackITSTPCABMCTR:GLO/TPCITSAB_MC;clsTOF_TPC_MCTR:TOF/MCMTC_TPC;clsTOF_GLO_MCTR:TOF/MCMTC_ITSTPC",
+             "samplingConditions" : [
+               {
+                 "condition" : "random",
+                 "fraction" : "0.1",
+                 "seed" : "1234"
+               }
+             ],
+             "blocking" : "false"
+           }
+         ]
+}

@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -132,7 +133,7 @@ void ServiceDiscovery::runHealthServer(unsigned int port)
     }
   } catch (std::exception& e) {
     mThreadRunning = false;
-    threadInfoLogger << AliceO2::InfoLogger::InfoLogger::Severity::Error << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
+    threadInfoLogger << AliceO2::InfoLogger::InfoLogger::Severity::Warning << "ServiceDiscovery::runHealthServer - " << e.what() << ENDM;
   }
 }
 
@@ -152,12 +153,14 @@ void ServiceDiscovery::send(const std::string& path, std::string&& post)
   curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post.c_str());
   response = curl_easy_perform(curl);
   curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+  static AliceO2::InfoLogger::InfoLogger::AutoMuteToken msgLimit(LogWarningDevel, 1, 600); // send it only every 10 minutes
   if (response != CURLE_OK) {
-    ILOG(Error, Devel) << "ServiceDiscovery::send(...) " << curl_easy_strerror(response) << ENDM;
-    ILOG(Error, Devel) << "   URI: " << uri << ENDM;
+    std::string s = std::string("ServiceDiscovery::send(...) ") + curl_easy_strerror(response) + "\n   URI: " + uri;
+    ILOG_INST.log(msgLimit, "%s", s.c_str());
   }
   if (responseCode < 200 || responseCode > 206) {
-    ILOG(Error, Devel) << "ServiceDiscovery::send(...) Response code: " << responseCode << ENDM;
+    std::string s = std::string("ServiceDiscovery::send(...) Response code: ") + std::to_string(responseCode);
+    ILOG_INST.log(msgLimit, "%s", s.c_str());
   }
 }
 } // namespace o2::quality_control::core

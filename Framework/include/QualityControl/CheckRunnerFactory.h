@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -21,6 +22,7 @@
 #include "Framework/DataProcessorSpec.h"
 #include <Framework/CompletionPolicy.h>
 #include "QualityControl/Check.h"
+#include "QualityControl/CheckRunnerConfig.h"
 
 namespace o2::framework
 {
@@ -37,7 +39,7 @@ class CheckRunnerFactory
   CheckRunnerFactory() = default;
   virtual ~CheckRunnerFactory() = default;
 
-  framework::DataProcessorSpec create(std::vector<Check> checks, std::string configurationSource, std::vector<std::string> storeVector = {});
+  static framework::DataProcessorSpec create(CheckRunnerConfig checkRunnerConfig, std::vector<CheckConfig> checkConfigs, std::vector<std::string> storeVector = {});
 
   /*
    * \brief Create a CheckRunner sink DPL device.
@@ -47,7 +49,9 @@ class CheckRunnerFactory
    * @param input InputSpec with the content to store
    * @param configurationSource
    */
-  framework::DataProcessorSpec createSinkDevice(o2::framework::InputSpec input, std::string configurationSource);
+  static framework::DataProcessorSpec createSinkDevice(CheckRunnerConfig checkRunnerConfig, o2::framework::InputSpec input);
+
+  static CheckRunnerConfig extractConfig(const CommonSpec&);
 
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 };

@@ -3,7 +3,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "188.184.2.39:8080",
+        "host": "188.184.2.55:8080",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -19,7 +19,7 @@
         "url": "http://consul-test.cern.ch:8500"
       },
       "conditionDB": {
-        "url": "188.184.2.39:8080"
+        "url": "188.184.2.55:8080"
       }
     },
     "tasks": {
@@ -40,7 +40,8 @@
                     "layer": "1111111",
                     "clusterDictionaryPath": "/home/its/aisakov/workdir/ITSdictionary.bin",
                     "runNumberPath": "/home/its/QC/workdir/infiles/RunNumber.dat",
-                    "geomPath": "/home/its/aisakov/workdir/o2sim_geometry.root"  
+                    "geomPath": "/home/its/aisakov/workdir/o2sim_geometry.root",
+                    "nThreads": "4"  
         }
 
       }
@@ -55,7 +56,8 @@
         "dataSource": [{
           "type": "Task",
           "name": "ITSClusterTask",
-          "MOs": ["Layer0/AverageClusterSize"]
+          "MOs": ["Layer0/AverageClusterSize","Layer1/AverageClusterSize","Layer2/AverageClusterSize","Layer3/AverageClusterSize","Layer4/AverageClusterSize","Layer5/AverageClusterSize","Layer6/AverageClusterSize", "Layer0/ClusterOccupation","Layer1/ClusterOccupation","Layer2/ClusterOccupation","Layer3/ClusterOccupation","Layer4/ClusterOccupation", "Layer5/ClusterOccupation",  "Layer6/ClusterOccupation"]
+
           }]
         }
     }

@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -17,6 +18,7 @@
 #include <Framework/InputRecord.h>
 #include "QualityControl/QcInfoLogger.h"
 #include <TH1.h>
+#include "Example/CustomTH2F.h"
 
 using namespace std;
 
@@ -48,6 +50,9 @@ void ExampleTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   // Extendable axis
   mHistos[0]->SetCanExtend(TH1::kXaxis);
+
+  mCustomTH2F = new CustomTH2F("customTH2F");
+  getObjectsManager()->startPublishing(mCustomTH2F);
 }
 
 void ExampleTask::publishHisto(int i)
@@ -79,6 +84,7 @@ void ExampleTask::monitorData(o2::framework::ProcessingContext& ctx)
     if (input.header != nullptr) {
       const auto* header = o2::header::get<header::DataHeader*>(input.header); // header of first valid input
       mHistos[0]->Fill(header->payloadSize);
+      mCustomTH2F->Fill(header->payloadSize % 100, header->payloadSize % 100);
       for (auto& mHisto : mHistos) {
         if (mHisto) {
           mHisto->FillRandom("gaus", 1);

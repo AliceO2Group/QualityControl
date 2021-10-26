@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -18,8 +19,8 @@
 #define QC_MODULE_PHOS_QCCLUSTERTASK_H
 
 #include "QualityControl/TaskInterface.h"
-#include "DataFormatsPHOS//Cluster.h"
-#include "PHOSCalib/BadChannelMap.h"
+#include "DataFormatsPHOS/Cluster.h"
+#include "DataFormatsPHOS/BadChannelsMap.h"
 #include "PHOSBase/Geometry.h"
 #include <TLorentzVector.h>
 #include <memory>
@@ -82,7 +83,7 @@ class ClusterQcTask final : public TaskInterface
   std::array<TH2F*, kNhist2D> mHist2D = { nullptr }; ///< Array of 2D histograms
   std::vector<TLorentzVector> mBuffer[4];            /// Keep photons per event per module
   o2::phos::Geometry* mGeom;                         /// Pointer to PHOS singleton geometry
-  std::unique_ptr<o2::phos::BadChannelMap> mBadMap;  /// bad map
+  std::unique_ptr<o2::phos::BadChannelsMap> mBadMap; /// bad map
 };
 
 } // namespace o2::quality_control_modules::phos

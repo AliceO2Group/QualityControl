@@ -57,7 +57,8 @@
           "name": "sampling2"
         },
         "taskParameters": {},
-        "location": "remote"
+        "location": "remote",
+        "remoteMachine": "localhost"
       }
     },
     "checks": {
@@ -111,7 +112,7 @@
         "localhost"
       ],
       "port": "@UNIQUE_PORT_2@",
-      "query": "random:TST/RAWDATA",
+      "query": "random0:TST/RAWDATA",
       "samplingConditions": [
         {
           "condition": "random",

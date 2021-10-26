@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -53,7 +54,7 @@ Tracking::~Tracking()
 
 void Tracking::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize TPC Tracking QC task" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize TPC Tracking QC task" << ENDM;
   mOutputMode = o2::tpc::qc::Tracking::outputMergeable;
   mQCTracking.initialize(mOutputMode);
 
@@ -76,13 +77,13 @@ void Tracking::initialize(o2::framework::InitContext& /*ctx*/)
 
 void Tracking::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   mQCTracking.resetHistograms();
 }
 
 void Tracking::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void Tracking::monitorData(o2::framework::ProcessingContext& ctx)
@@ -92,25 +93,25 @@ void Tracking::monitorData(o2::framework::ProcessingContext& ctx)
   auto clusRefs = ctx.inputs().get<std::vector<o2::tpc::TPCClRefElem>>("inputClusRefs");
   const auto& inputsTPCclusters = o2::tpc::getWorkflowTPCInput(ctx, 0, true);
 
-  LOG(INFO) << "RECEIVED tracks " << tracks.size() << " (MC " << trackLabels.size() << ", ClusRefs " << clusRefs.size() << ") clusters " << inputsTPCclusters->clusterIndex.nClustersTotal << " (MC " << inputsTPCclusters->clusterIndex.clustersMCTruth->getNElements() << ")";
+  LOG(info) << "RECEIVED tracks " << tracks.size() << " (MC " << trackLabels.size() << ", ClusRefs " << clusRefs.size() << ") clusters " << inputsTPCclusters->clusterIndex.nClustersTotal << " (MC " << inputsTPCclusters->clusterIndex.clustersMCTruth->getNElements() << ")";
   mQCTracking.processTracks(&tracks, &trackLabels, &inputsTPCclusters->clusterIndex);
 }
 
 void Tracking::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
 void Tracking::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void Tracking::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mQCTracking.resetHistograms();
 }
 

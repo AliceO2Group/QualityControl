@@ -38,8 +38,11 @@
                 "taskParameters": {
                     "Layer": "2",
                     "decoderThreads": "8",
-                    "runNumberPath": "/data/shifts/runs/ibb2a/.run_counter",
-                    "geomPath": "/tmp/qc_tmp/o2sim"
+                    "HitNumberCut": "512",
+                    "GetTFFromBinding": "0",
+                    "geomPath": "/tmp/qc_tmp/o2sim",
+                    "HitNumberCutForNoisyPixel": "1024",
+                    "OccupancyNumberCutForNoisyPixel": "0.01"
                 }
             },
             "ITSFEE": {
@@ -66,7 +69,7 @@
                 "dataSource": [{
                     "type": "Task",
                     "name": "FHRTask",
-                    "MOs": ["General/ErrorPlots"]
+                    "MOs": ["General/ErrorPlots","General/General_Occupancy","General/Noisy_Pixel"]
                 }]
             },
             "ITSFeeCheck": {
@@ -78,7 +81,7 @@
                 "dataSource": [{
                     "type": "Task",
                     "name": "ITSFEE",
-                    "MOs": ["LaneStatus/laneStatusFlagFAULT"]
+                    "MOs": ["LaneStatus/laneStatusFlagFAULT","LaneStatus/laneStatusFlagERROR","LaneStatus/laneStatusFlagWARNING"]
                 }]
             }
        }

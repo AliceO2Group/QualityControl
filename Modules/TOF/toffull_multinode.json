@@ -23,7 +23,7 @@
       }
     },
     "tasks": {
-      "TaskRawLocal": {
+      "TaskRaw": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskRaw",
         "moduleName": "QcTOF",
@@ -48,24 +48,7 @@
         "remotePort": "30132",
         "mergingMode": "delta"
       },
-      "TaskRawRemote": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::TaskRaw",
-        "moduleName": "QcTOF",
-        "detectorName": "TOF",
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "raw-remote"
-        },
-        "taskParameters": {
-          "nothing": "rien"
-        },
-        "location": "remote"
-      },
-      "TaskDigitsLocal": {
+      "TaskDigits": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskDigits",
         "moduleName": "QcTOF",
@@ -89,27 +72,10 @@
         "remoteMachine": "localhost",
         "remotePort": "30132",
         "mergingMode": "delta"
-      },
-      "TaskDigitsRemote": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::TaskDigits",
-        "moduleName": "QcTOF",
-        "detectorName": "TOF",
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "digi-remote"
-        },
-        "taskParameters": {
-          "nothing": "rien"
-        },
-        "location": "remote"
       }
     },
     "checks": {
-      "CheckDiagnosticsLocal": {
+      "CheckDiagnostics": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::CheckDiagnostics",
         "moduleName": "QcTOF",
@@ -118,14 +84,14 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskRawLocal",
+            "name": "TaskRaw",
             "MOs": [
               "RDHCounterCrate0"
             ]
           }
         ]
       },
-      "CheckCompressedDataLocal": {
+      "CheckCompressedData": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::CheckCompressedData",
         "moduleName": "QcTOF",
@@ -137,49 +103,14 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskRawLocal",
+            "name": "TaskRaw",
             "MOs": [
               "hDiagnostic"
             ]
           }
         ]
       },
-      "CheckDiagnosticsRemote": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::CheckDiagnostics",
-        "moduleName": "QcTOF",
-        "detectorName": "TOF",
-        "policy": "OnAny",
-        "dataSource": [
-          {
-            "type": "Task",
-            "name": "TaskRawRemote",
-            "MOs": [
-              "RDHCounterCrate0"
-            ]
-          }
-        ]
-      },
-      "CheckCompressedDataRemote": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::CheckCompressedData",
-        "moduleName": "QcTOF",
-        "detectorName": "TOF",
-        "policy": "OnAny",
-        "checkParameters": {
-          "DiagnosticThresholdPerSlot": "10"
-        },
-        "dataSource": [
-          {
-            "type": "Task",
-            "name": "TaskRawRemote",
-            "MOs": [
-              "hDiagnostic"
-            ]
-          }
-        ]
-      },
-      "MultiNodeLocalCheck": {
+      "CheckRawMultiplicity": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
         "moduleName": "QcTOF",
@@ -188,23 +119,7 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskDigitsLocal",
-            "MOs": [
-              "TOFRawsMulti"
-            ]
-          }
-        ]
-      },
-      "MultiNodeRemoteCheck": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
-        "moduleName": "QcTOF",
-        "policy": "OnAny",
-        "detectorName": "TOF",
-        "dataSource": [
-          {
-            "type": "Task",
-            "name": "TaskDigitsRemote",
+            "name": "TaskDigits",
             "MOs": [
               "TOFRawsMulti"
             ]
@@ -226,23 +141,6 @@
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "1.0",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    },
-    {
-      "id": "raw-remote",
-      "active": "true",
-      "machines": [
-        "localhost"
-      ],
-      "port": "30333",
-      "query": "dataframe:TOF/CRAWDATA",
-      "samplingConditions": [
-        {
-          "condition": "random",
           "fraction": "0.1",
           "seed": "1234"
         }
@@ -256,22 +154,6 @@
         "localnode1",
         "localnode2",
         "localnode3"
-      ],
-      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "1.0",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    },
-    {
-      "id": "digi-remote",
-      "active": "true",
-      "machines": [
-        "localhost"
       ],
       "port": "30333",
       "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
