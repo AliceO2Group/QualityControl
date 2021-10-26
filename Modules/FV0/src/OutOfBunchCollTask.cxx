@@ -93,7 +93,7 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
   std::map<std::string, std::string> headers;
   const auto* bcPattern = mCcdbApi.retrieveFromTFileAny<o2::BunchFilling>(mPathBunchFilling, metadata, -1, &headers);
   if (!bcPattern) {
-    ILOG(Error, Support) << "\nMO \"" << mPathBunchFilling << "\" NOT retrieved!!!\n"
+    ILOG(Error, Support) << "object \"" << mPathBunchFilling << "\" NOT retrieved!!!"
                          << ENDM;
     return;
   }
@@ -107,9 +107,9 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
   for (auto& entry : mMapOutOfBunchColl) {
     auto moName = Form("BcOrbitMap_Trg%s", mMapDigitTrgNames.at(entry.first).c_str());
     auto mo = mDatabase->retrieveMO(mPathDigitQcTask, moName);
-    auto hBcOrbitMapTrg = (TH2F*)mo->getObject();
+    auto hBcOrbitMapTrg = mo ? (TH2F*)mo->getObject() : nullptr;
     if (!hBcOrbitMapTrg) {
-      ILOG(Error, Support) << "\nMO \"" << moName << "\" NOT retrieved!!!\n"
+      ILOG(Error, Support) << "MO \"" << moName << "\" NOT retrieved!!!"
                            << ENDM;
       continue;
     }
