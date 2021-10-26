@@ -1,13 +1,13 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
-// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
-// All rights not expressly granted are reserved.
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// // distributed under the terms of the GNU General Public License v3 (GPL
+// // Version 3), copied verbatim in the file "COPYING".
+// //
+// // See http://alice-o2.web.cern.ch/license for full licensing information.
+// //
+// // In applying this license CERN does not waive the privileges and immunities
+// // granted to it by virtue of its status as an Intergovernmental Organization
+// // or submit itself to any jurisdiction.
 //
-// This software is distributed under the terms of the GNU General Public
-// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
-//
-// In applying this license CERN does not waive the privileges and immunities
-// granted to it by virtue of its status as an Intergovernmental Organization
-// or submit itself to any jurisdiction.
 
 ///
 /// \file   ITSTrackTask.cxx
@@ -46,36 +46,27 @@ ITSTrackTask::~ITSTrackTask()
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  ILOG(Info, Support) << "initialize ITSTrackTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "initialize ITSTrackTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mRunNumberPath = mCustomParameters["runNumberPath"];
 
   publishHistos();
-  std::string dictfile = o2::base::NameConf::getAlpideClusterDictionaryFileName(o2::detectors::DetID::ITS, "", ".bin");
-  std::ifstream file(dictfile.c_str());
-
-  if (file.good()) {
-    LOG(info) << "Running with dictionary: " << dictfile.c_str();
-    mDict.readBinaryFile(dictfile);
-  } else {
-    LOG(info) << "Running without dictionary !";
-  }
 }
 
 void ITSTrackTask::startOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSTrackTask::startOfCycle()
 {
-  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  ILOG(Info, Support) << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
   auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks");
   auto rofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
@@ -124,18 +115,18 @@ void ITSTrackTask::endOfCycle()
         getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
       mRunNumber = runNumber;
     }
-    ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+    QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
 
 void ITSTrackTask::endOfActivity(Activity& /*activity*/)
 {
-  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ITSTrackTask::reset()
 {
-  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   hAngularDistribution->Reset();
   hNClusters->Reset();
   hTrackPhi->Reset();
@@ -182,7 +173,7 @@ void ITSTrackTask::createAllHistos()
 void ITSTrackTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    LOG(info) << " ERROR: trying to add non-existent object ";
+    LOG(INFO) << " ERROR: trying to add non-existent object ";
     return;
   } else {
     mPublishedObjects.push_back(aObject);
@@ -201,7 +192,7 @@ void ITSTrackTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    LOG(info) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
+    LOG(INFO) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
   }
 }
 
