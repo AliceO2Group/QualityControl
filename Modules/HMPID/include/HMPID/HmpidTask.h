@@ -11,7 +11,7 @@
 
 ///
 /// \file   HmpidTask.h
-/// \author My Name
+/// \author Antonio Franco, Giacomo Volpe
 ///
 
 #ifndef QC_MODULE_HMPID_HMPIDHMPIDTASK_H
