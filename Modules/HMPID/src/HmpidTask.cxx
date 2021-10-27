@@ -113,7 +113,7 @@ void HmpidTask::startOfActivity(Activity& /*activity*/)
   hPedestalSigma->Reset();
   hBusyTime->Reset();
   hEventSize->Reset();
-  
+
   mDecoder = new o2::hmpid::HmpidDecoder2(14);
   mDecoder->init();
   mDecoder->setVerbosity(2); // this is for Debug
