@@ -172,10 +172,10 @@ void CheckRunner::init(framework::InitContext& iCtx)
 
   try {
     QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
-                   mConfig.infologgerFilterDiscardDebug,
-                   mConfig.infologgerDiscardLevel,
+                       mConfig.infologgerFilterDiscardDebug,
+                       mConfig.infologgerDiscardLevel,
                        il,
-                   ilContext);
+                       ilContext);
     QcInfoLogger::setDetector(CheckRunner::getDetectorName(mChecks));
     initDatabase();
     initMonitoring();

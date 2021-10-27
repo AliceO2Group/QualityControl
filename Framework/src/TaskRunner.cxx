@@ -70,10 +70,10 @@ void TaskRunner::init(InitContext& iCtx)
     ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
   QcInfoLogger::init("task/" + mTaskConfig.taskName,
-                 mTaskConfig.infologgerFilterDiscardDebug,
-                 mTaskConfig.infologgerDiscardLevel,
-                 il,
-                 ilContext);
+                     mTaskConfig.infologgerFilterDiscardDebug,
+                     mTaskConfig.infologgerDiscardLevel,
+                     il,
+                     ilContext);
 
   ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
   try {

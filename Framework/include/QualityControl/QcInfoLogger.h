@@ -59,24 +59,25 @@ class QcInfoLogger
   static void setRun(int run);
   static void setPartition(const std::string& partitionName);
   static void init(const std::string& facility,
-            bool discardDebug = false,
-            int discardFromLevel = 21 /* Discard Trace */,
-            AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
-            AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
-            int run = -1,
-            std::string partitionName = "");
+                   bool discardDebug = false,
+                   int discardFromLevel = 21 /* Discard Trace */,
+                   AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
+                   AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
+                   int run = -1,
+                   std::string partitionName = "");
   static void init(const std::string& facility,
-            const boost::property_tree::ptree& config,
-            AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
-            AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
-            int run = -1,
-            std::string partitionName = "");
+                   const boost::property_tree::ptree& config,
+                   AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
+                   AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
+                   int run = -1,
+                   std::string partitionName = "");
 
   // build a default infologger
   static class _init
   {
    public:
-    _init() {
+    _init()
+    {
       std::cout << "BUILDING INSTANCE OF IL" << std::endl;
       instance = new AliceO2::InfoLogger::InfoLogger();
       mContext = new AliceO2::InfoLogger::InfoLoggerContext();
@@ -87,7 +88,6 @@ class QcInfoLogger
   } _initializer;
 
  private:
-
   // raw pointers because we don't want to take ownership of dpl pointers and destroy them.
   // if we keep the default infologger it will any ways be valid till the end of the process.
   static AliceO2::InfoLogger::InfoLogger* instance;

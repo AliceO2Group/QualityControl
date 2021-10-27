@@ -69,7 +69,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
 
-  ILOG(Info, Support) <<"START READER" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "START READER" << AliceO2::InfoLogger::InfoLogger::endm;
 
   specs.emplace_back(o2::mid::getRawDecoderSpec(false));
   specs.emplace_back(o2::mid::getRawAggregatorSpec());

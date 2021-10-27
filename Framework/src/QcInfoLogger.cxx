@@ -20,9 +20,9 @@
 namespace o2::quality_control::core
 {
 
- AliceO2::InfoLogger::InfoLogger* QcInfoLogger::instance;
- AliceO2::InfoLogger::InfoLoggerContext* QcInfoLogger::mContext;
- QcInfoLogger::_init QcInfoLogger::_initializer;
+AliceO2::InfoLogger::InfoLogger* QcInfoLogger::instance;
+AliceO2::InfoLogger::InfoLoggerContext* QcInfoLogger::mContext;
+QcInfoLogger::_init QcInfoLogger::_initializer;
 
 void QcInfoLogger::setFacility(const std::string& facility)
 {
@@ -63,7 +63,7 @@ void QcInfoLogger::init(const std::string& facility,
                         int run,
                         std::string partitionName)
 {
-  if(dplInfoLogger && dplContext) {
+  if (dplInfoLogger && dplContext) {
     // we ignore the small memory leak that might occur if we are replacing the default InfoLogger
     instance = dplInfoLogger;
     mContext = dplContext;
@@ -83,7 +83,7 @@ void QcInfoLogger::init(const std::string& facility,
 
 void QcInfoLogger::init(const std::string& facility,
                         const boost::property_tree::ptree& config,
-                        AliceO2::InfoLogger::InfoLogger* dplInfoLogger ,
+                        AliceO2::InfoLogger::InfoLogger* dplInfoLogger,
                         AliceO2::InfoLogger::InfoLoggerContext* dplContext,
                         int run,
                         std::string partitionName)

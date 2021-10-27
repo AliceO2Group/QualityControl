@@ -117,7 +117,7 @@ void RepositoryBenchmark::InitTask()
   }
 
   if (mDeletionMode) {
-    ILOG(Info, Support) <<"Deletion mode..." << infologger::endm;
+    ILOG(Info, Support) << "Deletion mode..." << infologger::endm;
     emptyDatabase();
   }
 
@@ -172,14 +172,14 @@ bool RepositoryBenchmark::ConditionalRun()
   auto remaining = duration_cast<microseconds>(std::chrono::seconds(1) - duration2);
   //  ILOG(Info, Support) <<"Remaining duration : " << remaining.count() << " us" << infologger::endm;
   if (remaining.count() < 0) {
-    ILOG(Info, Support) <<"Remaining duration is negative, we don't sleep " << infologger::endm;
+    ILOG(Info, Support) << "Remaining duration is negative, we don't sleep " << infologger::endm;
   } else {
     this_thread::sleep_for(chrono::microseconds(remaining));
   }
 
   if (mMaxIterations > 0 && ++mNumIterations >= mMaxIterations) {
-    ILOG(Info, Support) <<"Configured maximum number of iterations reached. Leaving RUNNING state."
-                                << infologger::endm;
+    ILOG(Info, Support) << "Configured maximum number of iterations reached. Leaving RUNNING state."
+                        << infologger::endm;
     return false;
   }
 
