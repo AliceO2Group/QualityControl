@@ -55,8 +55,8 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
 {
   Quality result = Quality::Null;
   TH2F* hOutOfBunchColl = 0;
-  float countsBcOrbitMap = 0;
-  float countsOutOfBunchColl = 0;
+  float integralBcOrbitMap = 0;
+  float integralOutOfBunchColl = 0;
   bool metadataFound = false;
   std::string metadataKey = "BcOrbitMapIntegral";
 
@@ -66,15 +66,15 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
       hOutOfBunchColl = dynamic_cast<TH2F*>(mo->getObject());
       for (auto metainfo : mo->getMetadataMap()) {
         if (metainfo.first == metadataKey) {
-          countsBcOrbitMap = std::stof(metainfo.second);
+          integralBcOrbitMap = std::stof(metainfo.second);
           metadataFound = true;
         }
       }
     }
   }
   std::string reason = "";
-  if (!countsBcOrbitMap)
-    reason = Form("Cannot compute quality due to zero counts in BcOrbitMap");
+  if (!integralBcOrbitMap)
+    reason = Form("Cannot compute quality due to zero integ in BcOrbitMap");
   if (!metadataFound)
     reason = Form("Cannot compute quality due to missing metadata: %s", metadataKey.c_str());
   if (!hOutOfBunchColl)
@@ -90,8 +90,11 @@ Quality OutOfBunchCollCheck::check(std::map<std::string, std::shared_ptr<Monitor
   mFractionOutOfBunchColl = 0;
   mNumNonEmptyBins = 0;
 
-  countsOutOfBunchColl = hOutOfBunchColl->Integral();
-  mFractionOutOfBunchColl = countsOutOfBunchColl / countsBcOrbitMap;
+  integralOutOfBunchColl = hOutOfBunchColl->Integral();
+  mFractionOutOfBunchColl = integralOutOfBunchColl / integralBcOrbitMap;
+
+  ILOG(Debug, Support) << "in checker: integralBcOrbitMap:" << integralBcOrbitMap << " integralOutOfBunchColl: " << integralOutOfBunchColl << " -> fraction: " << mFractionOutOfBunchColl << ENDM;
+
   if (mFractionOutOfBunchColl > mThreshError) {
     result.set(Quality::Bad);
     result.addReason(FlagReasonFactory::Unknown(),

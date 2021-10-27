@@ -47,6 +47,7 @@ class BasicPPTask final : public quality_control::postprocessing::PostProcessing
   constexpr static std::size_t sNCHANNELS_PM = 60; //48(for PM) + 12(just in case for possible PM-LCS)
 
  private:
+  std::string mPathDigitQcTask;
   std::string mCycleDurationMoName;
   int mNumOrbitsInTF;
 
