@@ -55,6 +55,7 @@ class DigitQcTask final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
   constexpr static std::size_t sOrbitsPerTF = 256;
+  constexpr static uint8_t sDataIsValidBitPos = 7;
 
  private:
   // three ways of computing cycle duration:

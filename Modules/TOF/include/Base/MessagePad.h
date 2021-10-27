@@ -36,9 +36,11 @@ struct MessagePad {
   float mPadLowY = 0.5;                 /// Position of the message PAD in low y
   float mPadHighX = 0.9;                /// Position of the message PAD in high x
   float mPadHighY = 0.75;               /// Position of the message PAD in high y
-  std::vector<std::string> mMessages{}; /// Message to print
+  std::vector<std::string> mMessages{}; /// Message to print on the pad, this is reset at each call of MakeMessagePad
+  TPaveText* mMessagePad = nullptr;     /// Text pad with the messages
   int mEnabledFlag = 1;                 /// Flag to enable or disable the pad
 
+  /// Function configure the message pad
   template <typename T>
   void configure(const T& CustomParameters)
   {
@@ -59,6 +61,7 @@ struct MessagePad {
     }
   }
 
+  /// Function configure the message pad
   void configure(const float& padLowX, const float& padLowY, const float& padHighX, const float& padHighY)
   {
     mPadLowX = padLowX;
@@ -67,38 +70,47 @@ struct MessagePad {
     mPadHighY = padHighY;
   }
 
+  /// Function to add a message that will be reported in the pad, will only add the message if the flag mEnabledFlag is on
   void AddMessage(const std::string& message)
   {
+    if (!mEnabledFlag) {
+      return;
+    }
     mMessages.push_back(message);
   }
 
+  /// Function to add the message pad to the histogram. Returns nullptr if the message pad is disabled
   template <typename T>
-  std::shared_ptr<TPaveText> MakeMessagePad(T* histogram, const Quality& quality)
+  TPaveText* MakeMessagePad(T* histogram, const Quality& quality)
   {
-    std::shared_ptr<TPaveText> msg = std::make_shared<TPaveText>(mPadLowX, mPadLowY, mPadHighX, mPadHighY, "blNDC");
-    if (mEnabledFlag) {
-      histogram->GetListOfFunctions()->Add(msg.get());
+    if (!mEnabledFlag) {
+      mMessages.clear();
+      return nullptr;
     }
-    msg->SetBorderSize(1);
-    msg->SetTextColor(kBlack);
+
+    mMessagePad = new TPaveText(mPadLowX, mPadLowY, mPadHighX, mPadHighY, "blNDC");
+    mMessagePad->SetName(Form("%s_msg", histogram->GetName()));
+    histogram->GetListOfFunctions()->Add(mMessagePad);
+    mMessagePad->SetBorderSize(1);
+    mMessagePad->SetTextColor(kBlack);
     if (quality == Quality::Good) {
-      msg->SetFillColor(kGreen);
+      mMessagePad->SetFillColor(kGreen);
     } else if (quality == Quality::Medium) {
-      msg->SetFillColor(kYellow);
+      mMessagePad->SetFillColor(kYellow);
     } else if (quality == Quality::Bad) {
-      msg->SetFillColor(kRed);
+      mMessagePad->SetFillColor(kRed);
     } else if (quality == Quality::Null) {
-      msg->SetTextColor(kWhite);
-      msg->SetFillStyle(3001);
-      msg->SetFillColor(kBlack);
-      msg->AddText("No quality established");
+      mMessagePad->SetTextColor(kWhite);
+      mMessagePad->SetFillStyle(3001);
+      mMessagePad->SetFillColor(kBlack);
+      mMessagePad->AddText("No quality established");
     }
-    msg->SetName(Form("%s_msg", histogram->GetName()));
     for (const auto& line : mMessages) {
-      msg->AddText(line.c_str());
+      mMessagePad->AddText(line.c_str());
     }
+    // Clear the messages for next usage
     mMessages.clear();
-    return msg;
+    return mMessagePad;
   }
 };
 
