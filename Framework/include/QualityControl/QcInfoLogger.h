@@ -40,50 +40,64 @@ namespace o2::quality_control::core
 ///           ILOG(Info, Ops) << "Test message with severity Info and level Ops, see InfoLoggerMacros.hxx" << ENDM;
 ///
 /// \author Barthelemy von Haller
-class QcInfoLogger : public AliceO2::InfoLogger::InfoLogger
+class QcInfoLogger
 {
-
  public:
-  static QcInfoLogger& GetInstance()
+  static AliceO2::InfoLogger::InfoLogger& GetInfoLogger()
   {
-    // Guaranteed to be destroyed. Instantiated on first use
-    static QcInfoLogger foo;
-    return foo;
+    return *instance;
   }
 
-  void setFacility(const std::string& facility);
-  void setDetector(const std::string& detector);
-  void setRun(int run);
-  void setPartition(std::string& partitionName);
-  void init(const std::string& facility,
-            bool discardDebug = false,
-            int discardFromLevel = 21 /* Discard Trace */,
-            AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
-            int run = -1,
-            std::string partitionName = "");
-  void init(const std::string& facility,
-            const boost::property_tree::ptree& config,
-            AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
-            int run = -1,
-            std::string partitionName = "");
-
- private:
-  QcInfoLogger();
-  ~QcInfoLogger() override = default;
-
-  // Disallow copying
+  // disable non-static
+  QcInfoLogger() = delete;
+  ~QcInfoLogger() = delete;
   QcInfoLogger& operator=(const QcInfoLogger&) = delete;
   QcInfoLogger(const QcInfoLogger&) = delete;
 
-  // remember the contexts
-  std::shared_ptr<AliceO2::InfoLogger::InfoLoggerContext> mContext = nullptr;
-  AliceO2::InfoLogger::InfoLoggerContext* mDplContext = nullptr;
+  static void setFacility(const std::string& facility);
+  static void setDetector(const std::string& detector);
+  static void setRun(int run);
+  static void setPartition(const std::string& partitionName);
+  static void init(const std::string& facility,
+            bool discardDebug = false,
+            int discardFromLevel = 21 /* Discard Trace */,
+            AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
+            AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
+            int run = -1,
+            std::string partitionName = "");
+  static void init(const std::string& facility,
+            const boost::property_tree::ptree& config,
+            AliceO2::InfoLogger::InfoLogger* dplInfoLogger = nullptr,
+            AliceO2::InfoLogger::InfoLoggerContext* dplContext = nullptr,
+            int run = -1,
+            std::string partitionName = "");
+
+  // build a default infologger
+  static class _init
+  {
+   public:
+    _init() {
+      std::cout << "BUILDING INSTANCE OF IL" << std::endl;
+      instance = new AliceO2::InfoLogger::InfoLogger();
+      mContext = new AliceO2::InfoLogger::InfoLoggerContext();
+      mContext->setField(infoContext::FieldName::Facility, "QC");
+      mContext->setField(infoContext::FieldName::System, "QC");
+      instance->setContext(*mContext);
+    }
+  } _initializer;
+
+ private:
+
+  // raw pointers because we don't want to take ownership of dpl pointers and destroy them.
+  // if we keep the default infologger it will any ways be valid till the end of the process.
+  static AliceO2::InfoLogger::InfoLogger* instance;
+  static AliceO2::InfoLogger::InfoLoggerContext* mContext;
 };
 
 } // namespace o2::quality_control::core
 
 // Define shortcuts to our instance using macros.
-#define ILOG_INST o2::quality_control::core::QcInfoLogger::GetInstance()
+#define ILOG_INST o2::quality_control::core::QcInfoLogger::GetInfoLogger()
 #define ILOGI ILOG_INST << AliceO2::InfoLogger::InfoLogger::Info
 #define ILOGW ILOG_INST << AliceO2::InfoLogger::InfoLogger::Warning
 #define ILOGE ILOG_INST << AliceO2::InfoLogger::InfoLogger::Error

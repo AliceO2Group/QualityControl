@@ -178,7 +178,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::Facility, "QC");
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "EMC");
-  ILOG_INST.setContext(context);
+  QcInfoLogger::setContext(context);
   ILOG(Info, Support) << "initialize RawTask" << ENDM;
 
   // initialize geometry
@@ -471,7 +471,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
   // The type DataOrigin allows only conversion of char arrays with size 4, not char *, therefore
   // the origin string has to be converted manually to the char array and checked for length.
   if (mDataOrigin.size() > 4) {
-    ILOG(Error, Support) << "No valid data origin" << mDataOrigin << ", cannot process" << QcInfoLogger::endm;
+    ILOG(Error, Support) << "No valid data origin" << mDataOrigin << ", cannot process" << ENDM;
     return;
   }
   char dataOrigin[4];
@@ -646,7 +646,7 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
             rowOnline = mapping.getRow(chan.getHardwareAddress());
             chType = mapping.getChannelType(chan.getHardwareAddress());
           } catch (o2::emcal::Mapper::AddressNotFoundException& err) {
-            ILOG(Error, Support) << "DDL " << feeID << ": " << err.what() << QcInfoLogger::endm;
+            ILOG(Error, Support) << "DDL " << feeID << ": " << err.what() << ENDM;
             mErrorTypeAltro->Fill(feeID, 8);
             continue;
           }

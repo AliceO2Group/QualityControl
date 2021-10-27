@@ -61,7 +61,7 @@ void PostProcessingRunner::init(const PostProcessingRunnerConfig& runnerConfig, 
   mRunnerConfig = runnerConfig;
   mTaskConfig = taskConfig;
 
-  ILOG_INST.init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel);
+  QcInfoLogger::init("post/" + mName, runnerConfig.infologgerFilterDiscardDebug, runnerConfig.infologgerDiscardLevel);
   ILOG(Info, Support) << "Initializing PostProcessingRunner" << ENDM;
 
   // configuration of the database

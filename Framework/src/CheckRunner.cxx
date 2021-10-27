@@ -162,18 +162,21 @@ CheckRunner::~CheckRunner()
 void CheckRunner::init(framework::InitContext& iCtx)
 {
   InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
   } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
+    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
 
   try {
-    ILOG_INST.init(createCheckRunnerFacility(mDeviceName),
+    QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
                    mConfig.infologgerFilterDiscardDebug,
                    mConfig.infologgerDiscardLevel,
+                       il,
                    ilContext);
-    ILOG_INST.setDetector(CheckRunner::getDetectorName(mChecks));
+    QcInfoLogger::setDetector(CheckRunner::getDetectorName(mChecks));
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -422,8 +425,8 @@ void CheckRunner::start(const ServiceRegistry& services)
   mActivity.mPassName = computePassName(mConfig.fallbackPassName);
   mActivity.mProvenance = computeProvenance(mConfig.fallbackProvenance);
   string partitionName = computePartitionName(services);
-  ILOG_INST.setRun(mActivity.mId);
-  ILOG_INST.setPartition(partitionName);
+  QcInfoLogger::setRun(mActivity.mId);
+  QcInfoLogger::setPartition(partitionName);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
   mTimerTotalDurationActivity.reset();

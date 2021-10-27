@@ -131,7 +131,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 {
   WorkflowSpec specs;
 
-  ILOG_INST.setFacility("runQC");
+  o2::quality_control::core::QcInfoLogger::setFacility("runQC");
 
   if (!validateArguments(config)) {
     return {};

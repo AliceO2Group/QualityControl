@@ -36,7 +36,7 @@ namespace o2::quality_control::repository
 std::unique_ptr<DatabaseInterface> DatabaseFactory::create(std::string name)
 {
   if (name == "MySql") {
-    QcInfoLogger::GetInstance() << "MySQL backend selected" << QcInfoLogger::endm;
+    ILOG(Info, Support) <<"MySQL backend selected" << ENDM;
 #ifdef _WITH_MYSQL
     return std::make_unique<MySqlDatabase>();
 #else
@@ -45,10 +45,10 @@ std::unique_ptr<DatabaseInterface> DatabaseFactory::create(std::string name)
 #endif
   } else if (name == "CCDB") {
     // TODO check if CCDB installed
-    QcInfoLogger::GetInstance() << "CCDB backend selected" << QcInfoLogger::endm;
+    ILOG(Info, Support) <<"CCDB backend selected" << ENDM;
     return std::make_unique<CcdbDatabase>();
   } else if (name == "Dummy") {
-    QcInfoLogger::GetInstance() << "Dummy backend selected, MonitorObjects will not be stored nor retrieved" << QcInfoLogger::endm;
+    ILOG(Info, Support) <<"Dummy backend selected, MonitorObjects will not be stored nor retrieved" << ENDM;
     return std::make_unique<DummyDatabase>();
   } else {
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("No database named " + name));

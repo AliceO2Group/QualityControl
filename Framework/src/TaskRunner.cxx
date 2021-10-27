@@ -62,14 +62,17 @@ TaskRunner::TaskRunner(const TaskRunnerConfig& config)
 void TaskRunner::init(InitContext& iCtx)
 {
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
   } catch (const RuntimeErrorRef& err) {
-    ILOG(Error, Devel) << "Could not find the DPL InfoLogger Context." << ENDM;
+    ILOG(Error, Devel) << "Could not find the DPL InfoLogger" << ENDM;
   }
-  ILOG_INST.init("task/" + mTaskConfig.taskName,
+  QcInfoLogger::init("task/" + mTaskConfig.taskName,
                  mTaskConfig.infologgerFilterDiscardDebug,
                  mTaskConfig.infologgerDiscardLevel,
+                 il,
                  ilContext);
 
   ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
@@ -226,9 +229,9 @@ void TaskRunner::endOfStream(framework::EndOfStreamContext& eosContext)
 void TaskRunner::start(const ServiceRegistry& services)
 {
   mRunNumber = o2::quality_control::core::computeRunNumber(services, mTaskConfig.fallbackRunNumber);
-  ILOG_INST.setRun(mRunNumber);
+  QcInfoLogger::setRun(mRunNumber);
   string partitionName = computePartitionName(services);
-  ILOG_INST.setPartition(partitionName);
+  QcInfoLogger::setPartition(partitionName);
 
   try {
     startOfActivity();
@@ -309,7 +312,7 @@ void TaskRunner::loadTaskConfig() // todo consider renaming
 {
   ILOG(Info, Support) << "Loading configuration" << ENDM;
 
-  ILOG_INST.setDetector(mTaskConfig.detectorName);
+  QcInfoLogger::setDetector(mTaskConfig.detectorName);
 
   ILOG(Info, Support) << "Configuration loaded : " << ENDM;
   ILOG(Info, Support) << ">> Task name : " << mTaskConfig.taskName << ENDM;
