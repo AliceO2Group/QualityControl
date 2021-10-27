@@ -95,6 +95,8 @@ class TaskRunner : public framework::Task
   static header::DataOrigin createTaskDataOrigin();
   /// \brief Unified DataDescription naming scheme for all tasks
   static header::DataDescription createTaskDataDescription(const std::string& taskName);
+  /// \brief Unified DataDescription naming scheme for all timers
+  static header::DataDescription createTimerDataDescription(const std::string& taskName);
 
   /// \brief Callback for CallbackService::Id::EndOfStream
   void endOfStream(framework::EndOfStreamContext& eosContext) override;

@@ -194,7 +194,25 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
   o2::header::DataDescription description;
+  if (taskName.length() > header::DataDescription::size - 3) {
+    ILOG(Warning, Devel) << "Task name is longer than " << header::DataDescription::size - 3 << ", it might cause name clashes in the DPL workflow" << ENDM;
+  }
   description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size - 3) + "-mo").c_str());
+  return description;
+}
+
+header::DataDescription TaskRunner::createTimerDataDescription(const std::string& taskName)
+{
+  if (taskName.empty()) {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for timers's data description"));
+  }
+  // hash the taskName to avoid clashing if the name is long and the beginning is identical
+  auto hashedName = std::hash<std::string>{}(taskName);
+  hashedName = hashedName % 10000000000LU; // 10 characters max
+  std::ostringstream ss;
+  ss << std::setw(10) << std::setfill('0') << hashedName; // 10 characters min
+  o2::header::DataDescription description;
+  description.runtimeInit(std::string("TIMER-" + ss.str()).substr(0, header::DataDescription::size).c_str());
   return description;
 }
 

@@ -57,7 +57,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   auto inputs = taskSpec.dataSource.inputs;
   inputs.emplace_back("timer-cycle",
                       TaskRunner::createTaskDataOrigin(),
-                      TaskRunner::createTaskDataDescription("TIMER-" + taskSpec.taskName),
+                      TaskRunner::createTimerDataDescription(taskSpec.taskName),
                       0,
                       Lifetime::Timer);
 
