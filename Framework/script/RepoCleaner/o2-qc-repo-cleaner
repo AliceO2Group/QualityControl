@@ -144,7 +144,7 @@ def downloadConfigFromConsul(consul_url, consul_port):
 
     logging.debug("Get it from consul")
     consul_server = consul.Consul(host=consul_url, port=consul_port)
-    index, data = consul_server.kv.get(key='folder/blabla')
+    index, data = consul_server.kv.get(key='o2/components/qc/ANY/any/repoCleanerConfig.yaml')
     logging.debug(f"config file from consul : \n{data['Value']}")
     text = data["Value"].decode()
     logging.debug(f"config file from consul : \n{text}")
