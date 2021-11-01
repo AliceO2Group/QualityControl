@@ -16,7 +16,7 @@
           "url": "infologger:///debug?METRIC"
         },
         "consul": {
-          "url": "http://consul-test.cern.ch:8500"
+          "url": ""
         },
         "conditionDB": {
           "url": "ccdb-test.cern.ch:8080"
