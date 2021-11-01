@@ -178,7 +178,7 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::Facility, "QC");
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "EMC");
-  QcInfoLogger::setContext(context);
+  QcInfoLogger::GetInfoLogger().setContext(context);
   ILOG(Info, Support) << "initialize RawTask" << ENDM;
 
   // initialize geometry

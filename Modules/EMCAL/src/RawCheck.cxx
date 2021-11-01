@@ -167,7 +167,7 @@ std::string RawCheck::getAcceptedType() { return "TH1"; }
 
 void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  QcInfoLogger::GetInstance().setDetector("EMC");
+  QcInfoLogger::setDetector("EMC");
   if (mo->getName().find("Error") != std::string::npos) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
 
