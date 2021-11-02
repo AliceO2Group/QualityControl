@@ -37,6 +37,7 @@ using namespace o2;
 using namespace o2::framework;
 using namespace o2::utilities;
 using namespace o2::configuration;
+using namespace std;
 
 // The customize() functions are used to declare the executable arguments and to specify custom completion and channel
 // configuration policies. They have to be above `#include "Framework/runDataProcessing.h"` - that header checks if
@@ -137,8 +138,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     return {};
   }
 
-  const std::string qcConfigurationSource = config.options().get<std::string>("config");
-  ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+  auto qcConfigurationSource = config.options().get<std::string>("config");
 
   try {
     // The online QC infrastructure is divided into two parts:
@@ -155,12 +155,20 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     // - remote-batch - Checks and Aggregators are run on the QC objects inside a file created by a local-batch workflow.
     //                  The results are stored in the database specified in the config file.
 
+    // we set the infologger levels as soon as possible to avoid spamming
+    auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
+    auto infologgerFilterDiscardDebug = configTree.get<bool>("qc.config.infologger.filterDiscardDebug", false);
+    auto infologgerDiscardLevel = configTree.get<int>("qc.config.infologger.filterDiscardLevel",21);
+    ILOG_INST.filterDiscardDebug(infologgerFilterDiscardDebug);
+    ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
+
+    ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+
     auto workflowType = getWorkflowType(config);
     switch (workflowType) {
       case WorkflowType::Standalone: {
         ILOG(Info, Support) << "Creating a standalone QC workflow." << ENDM;
 
-        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
         if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
           DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));
@@ -176,7 +184,6 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
                       ? boost::asio::ip::host_name()
                       : config.options().get<std::string>("host");
 
-        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
         if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
           DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"), 1, host);
@@ -197,7 +204,6 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
       }
       case WorkflowType::LocalBatch: {
         ILOG(Info, Support) << "Creating a local batch QC workflow." << ENDM;
-        auto configTree = ConfigurationFactory::getConfiguration(qcConfigurationSource)->getRecursive();
         if (!config.options().get<bool>("no-data-sampling") && configTree.count("dataSamplingPolicies") > 0) {
           ILOG(Info, Support) << "Generating Data Sampling" << ENDM;
           DataSampling::GenerateInfrastructure(specs, configTree.get_child("dataSamplingPolicies"));

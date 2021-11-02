@@ -78,7 +78,6 @@ class QcInfoLogger
    public:
     _init()
     {
-      std::cout << "BUILDING INSTANCE OF IL" << std::endl;
       instance = new AliceO2::InfoLogger::InfoLogger();
       mContext = new AliceO2::InfoLogger::InfoLoggerContext();
       mContext->setField(infoContext::FieldName::Facility, "QC");
