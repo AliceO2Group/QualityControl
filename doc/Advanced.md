@@ -806,7 +806,7 @@ the "tasks" path.
         "className": "namespace::of::Task", "": "Class name of the QC Task with full namespace.",
         "moduleName": "QcSkeleton",         "": "Library name. It can be found in CMakeLists of the detector module.",
         "detectorName": "TST",              "": "3-letter code of the detector.",
-        "cycleDurationSeconds": "10",       "": "Duration of one cycle (how often MonitorObjects are published).",
+        "cycleDurationSeconds": "10",       "": "Cycle duration (how often objects are published), 10 seconds minimum.",
         "maxNumberCycles": "-1",            "": "Number of cycles to perform. Use -1 for infinite.",
         "dataSource": {                     "": "Data source of the QC Task.",
           "type": "dataSamplingPolicy",     "": "Type of the data source, \"dataSamplingPolicy\" or \"direct\".",

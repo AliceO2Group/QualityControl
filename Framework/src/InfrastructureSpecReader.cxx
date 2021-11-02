@@ -87,6 +87,11 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskName,
   ts.moduleName = taskTree.get<std::string>("moduleName");
   ts.detectorName = taskTree.get<std::string>("detectorName");
   ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds");
+  if(ts.cycleDurationSeconds < 10) {
+    ILOG(Error, Support) << "Cycle duration is too short (" << ts.cycleDurationSeconds << "), replaced by a duration of 10 seconds." << ENDM;
+    ts.cycleDurationSeconds = 10;
+  }
+
   ts.dataSource = readSpecEntry<DataSourceSpec>("", taskTree.get_child("dataSource"), wholeTree);
 
   ts.active = taskTree.get<bool>("active", ts.active);
