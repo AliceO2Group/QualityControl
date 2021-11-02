@@ -70,4 +70,4 @@ double LtrCalibReductor::getValue(TText* line)
   return value;
 }
 
-}   // namespace o2::quality_control_modules::tpc
+} // namespace o2::quality_control_modules::tpc

@@ -52,5 +52,5 @@ class LtrCalibReductor : public quality_control::postprocessing::Reductor
   double getValue(TText* line);
 };
 
-}   // namespace o2::quality_control_modules::tpc
+} // namespace o2::quality_control_modules::tpc
 #endif //QC_MODULE_TPC_LTRCALIBREDUCTOR_H
