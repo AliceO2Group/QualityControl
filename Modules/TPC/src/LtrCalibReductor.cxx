@@ -33,7 +33,7 @@ void* LtrCalibReductor::getBranchAddress()
 const char* LtrCalibReductor::getBranchLeafList()
 {
   //return "processedTFs/g:dvCorrectionA/F:dvCorrectionC:dvOffsetA:dvOffsetC:nTracksA/s:nTracksC";
-  return "processedTFs/D:dvCorrectionA:dvCorrectionC:dvOffsetA:dvOffsetC:nTracksA:nTracksC";
+  return "processedTFs/D:dvCorrectionA:dvCorrectionC:dvCorrection:dvOffsetA:dvOffsetC:nTracksA:nTracksC";
 }
 
 void LtrCalibReductor::update(TObject* obj)
@@ -44,13 +44,14 @@ void LtrCalibReductor::update(TObject* obj)
     if (auto canvas = static_cast<TCanvas*>(obj)) {
       if (auto blocText = static_cast<TPaveText*>(canvas->GetPrimitive("TPave"))) {
 
-        mLtrCalib.processedTFs = 1;//getValue((TText*)blocText->GetLineWith("processed"));
-        mLtrCalib.dvCorrectionA = getValue((TText*)blocText->GetLineWith("dvCorrectionA"));
-        mLtrCalib.dvCorrectionC = getValue((TText*)blocText->GetLineWith("dvCorrectionC"));
-        mLtrCalib.dvOffsetA = getValue((TText*)blocText->GetLineWith("dvOffsetA"));
-        mLtrCalib.dvOffsetC = getValue((TText*)blocText->GetLineWith("dvOffsetC"));
-        mLtrCalib.nTracksA = getValue((TText*)blocText->GetLineWith("nTracksA"));
-        mLtrCalib.nTracksC = getValue((TText*)blocText->GetLineWith("nTracksC"));
+        mLtrCalib.processedTFs = getValue((TText*)blocText->GetLineWith("processedTFs:"));
+        mLtrCalib.dvCorrectionA = getValue((TText*)blocText->GetLineWith("dvCorrectionA:"));
+        mLtrCalib.dvCorrectionC = getValue((TText*)blocText->GetLineWith("dvCorrectionC:"));
+        mLtrCalib.dvCorrection = getValue((TText*)blocText->GetLineWith("dvCorrection:"));
+        mLtrCalib.dvOffsetA = getValue((TText*)blocText->GetLineWith("dvOffsetA:"));
+        mLtrCalib.dvOffsetC = getValue((TText*)blocText->GetLineWith("dvOffsetC:"));
+        mLtrCalib.nTracksA = getValue((TText*)blocText->GetLineWith("nTracksA:"));
+        mLtrCalib.nTracksC = getValue((TText*)blocText->GetLineWith("nTracksC:"));
       }
     }
   } else {

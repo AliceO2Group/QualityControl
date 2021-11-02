@@ -18,7 +18,7 @@
 #define QC_MODULE_TPC_LTRCALIBREDUCTOR_H
 
 #include "QualityControl/Reductor.h"
-//#include "DataFormatsTPC/LtrCalibData.h"  //Loki: Needed?
+//#include "DataFormatsTPC/LtrCalibData.h"
 #include <TText.h>
 
 namespace o2::quality_control_modules::tpc
@@ -38,10 +38,11 @@ class LtrCalibReductor : public quality_control::postprocessing::Reductor
   void update(TObject* obj) final;
 
  private:
-  struct {  //Loki: Trendable quantities from LtrCalibData.
+  struct {
     double processedTFs;
     double dvCorrectionA;
     double dvCorrectionC;
+    double dvCorrection;
     double dvOffsetA;
     double dvOffsetC;
     double nTracksA;

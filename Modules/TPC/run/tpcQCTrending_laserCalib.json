@@ -39,6 +39,14 @@
         ],
         "plots": [
           {
+            "name": "processedTFs_Trend",
+            "title": "Trend of the number of processed TFs",
+            "varexp": "Calib_Values.processedTFs:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
             "name": "dvCorrectionA_Trend",
             "title": "Trend of the drift velocity correction factor (A side)",
             "varexp": "Calib_Values.dvCorrectionA:time",
@@ -50,6 +58,46 @@
             "name": "dvCorrectionC_Trend",
             "title": "Trend of the drift velocity correction factor (C side)",
             "varexp": "Calib_Values.dvCorrectionC:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "dvCorrection_Trend",
+            "title": "Trend of the drift velocity correction factor",
+            "varexp": "Calib_Values.dvCorrection:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "dvOffsetA_Trend",
+            "title": "Trend of the drift velocity offset (A side)",
+            "varexp": "Calib_Values.dvOffsetA:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "dvOffsetC_Trend",
+            "title": "Trend of the drift velocity offset (C side)",
+            "varexp": "Calib_Values.dvOffsetC:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "nTracksA_Trend",
+            "title": "Trend of the number of tracks (A side)",
+            "varexp": "Calib_Values.nTracksA:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": ""
+          },
+          {
+            "name": "nTracksC_Trend",
+            "title": "Trend of the number of tracks (C side)",
+            "varexp": "Calib_Values.nTracksC:time",
             "selection": "",
             "option": "*L",
             "graphErrors": ""
