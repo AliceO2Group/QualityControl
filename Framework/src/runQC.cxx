@@ -37,7 +37,6 @@ using namespace o2;
 using namespace o2::framework;
 using namespace o2::utilities;
 using namespace o2::configuration;
-using namespace std;
 
 // The customize() functions are used to declare the executable arguments and to specify custom completion and channel
 // configuration policies. They have to be above `#include "Framework/runDataProcessing.h"` - that header checks if
