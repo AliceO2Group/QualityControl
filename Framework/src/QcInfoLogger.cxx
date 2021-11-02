@@ -20,33 +20,22 @@
 namespace o2::quality_control::core
 {
 
-QcInfoLogger::QcInfoLogger()
-{
-  mContext = std::make_shared<AliceO2::InfoLogger::InfoLoggerContext>();
-  mContext->setField(infoContext::FieldName::Facility, "QC");
-  mContext->setField(infoContext::FieldName::System, "QC");
-  this->setContext(*mContext);
-}
+AliceO2::InfoLogger::InfoLogger* QcInfoLogger::instance;
+AliceO2::InfoLogger::InfoLoggerContext* QcInfoLogger::mContext;
+QcInfoLogger::_init QcInfoLogger::_initializer;
 
 void QcInfoLogger::setFacility(const std::string& facility)
 {
   mContext->setField(infoContext::FieldName::Facility, facility);
   mContext->setField(infoContext::FieldName::System, "QC");
-  if (mDplContext) {
-    mDplContext->setField(infoContext::FieldName::System, "QC");
-    mDplContext->setField(infoContext::FieldName::Facility, facility);
-  }
-  this->setContext(*mContext);
+  instance->setContext(*mContext);
   ILOG(Debug, Support) << "Facility set to " << facility << ENDM;
 }
 
 void QcInfoLogger::setDetector(const std::string& detector)
 {
   mContext->setField(infoContext::FieldName::Detector, detector);
-  if (mDplContext) {
-    mDplContext->setField(infoContext::FieldName::Detector, detector);
-  }
-  this->setContext(*mContext);
+  instance->setContext(*mContext);
   ILOG(Debug, Support) << "Detector set to " << detector << ENDM;
 }
 
@@ -54,30 +43,31 @@ void QcInfoLogger::setRun(int run)
 {
   if (run > 0) {
     mContext->setField(infoContext::FieldName::Run, std::to_string(run));
-    if (mDplContext) {
-      mDplContext->setField(infoContext::FieldName::Run, std::to_string(run));
-    }
   }
-  this->setContext(*mContext);
+  instance->setContext(*mContext);
   ILOG(Debug, Support) << "IL: Run set to " << run << ENDM;
 }
 
-void QcInfoLogger::setPartition(std::string& partitionName)
+void QcInfoLogger::setPartition(const std::string& partitionName)
 {
   mContext->setField(infoContext::FieldName::Partition, partitionName);
-  if (mDplContext) {
-    mDplContext->setField(infoContext::FieldName::Partition, partitionName);
-  }
-  this->setContext(*mContext);
+  instance->setContext(*mContext);
   ILOG(Debug, Support) << "IL: Partition set to " << partitionName << ENDM;
 }
 
-void QcInfoLogger::init(const std::string& facility, bool discardDebug, int discardFromLevel,
+void QcInfoLogger::init(const std::string& facility,
+                        bool discardDebug,
+                        int discardFromLevel,
+                        AliceO2::InfoLogger::InfoLogger* dplInfoLogger,
                         AliceO2::InfoLogger::InfoLoggerContext* dplContext,
                         int run,
                         std::string partitionName)
 {
-  mDplContext = dplContext;
+  if (dplInfoLogger && dplContext) {
+    // we ignore the small memory leak that might occur if we are replacing the default InfoLogger
+    instance = dplInfoLogger;
+    mContext = dplContext;
+  }
   setFacility(facility);
   setRun(run);
   setPartition(partitionName);
@@ -91,7 +81,9 @@ void QcInfoLogger::init(const std::string& facility, bool discardDebug, int disc
   ILOG(Debug, Support) << "   Discard from level ? " << discardFromLevel << ENDM;
 }
 
-void QcInfoLogger::init(const std::string& facility, const boost::property_tree::ptree& config,
+void QcInfoLogger::init(const std::string& facility,
+                        const boost::property_tree::ptree& config,
+                        AliceO2::InfoLogger::InfoLogger* dplInfoLogger,
                         AliceO2::InfoLogger::InfoLoggerContext* dplContext,
                         int run,
                         std::string partitionName)
@@ -99,7 +91,7 @@ void QcInfoLogger::init(const std::string& facility, const boost::property_tree:
   std::string discardDebugStr = config.get<std::string>("qc.config.infologger.filterDiscardDebug", "false");
   bool discardDebug = discardDebugStr == "true" ? 1 : 0;
   int discardLevel = config.get<int>("qc.config.infologger.filterDiscardLevel", 21 /* Discard Trace */);
-  init(facility, discardDebug, discardLevel, dplContext, run, partitionName);
+  init(facility, discardDebug, discardLevel, dplInfoLogger, dplContext, run, partitionName);
 }
 
 } // namespace o2::quality_control::core

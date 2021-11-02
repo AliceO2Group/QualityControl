@@ -167,7 +167,7 @@ std::string RawCheck::getAcceptedType() { return "TH1"; }
 
 void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  QcInfoLogger::GetInstance().setDetector("EMC");
+  QcInfoLogger::setDetector("EMC");
   if (mo->getName().find("Error") != std::string::npos) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
 
@@ -181,7 +181,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       msg->Draw();
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad, setting to red";
-      QcInfoLogger::GetInstance() << QcInfoLogger::Error << " QualityBad:Presence of Error Code" << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << " QualityBad:Presence of Error Code" << AliceO2::InfoLogger::InfoLogger::endm;
       TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Presence of Error Code: call EMCAL oncall}");
       msg->SetNDC();
       msg->SetTextSize(16);
@@ -207,7 +207,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
       h->SetFillColor(kGreen);
     } else if (checkResult == Quality::Bad) {
       LOG(info) << "Quality::Bad, setting to red";
-      QcInfoLogger::GetInstance() << QcInfoLogger::Error << " QualityBad:Bunch min Amplitude outside limits " << AliceO2::InfoLogger::InfoLogger::endm;
+      ILOG(Error, Support) << " QualityBad:Bunch min Amplitude outside limits " << AliceO2::InfoLogger::InfoLogger::endm;
       TLatex* msg = new TLatex(0.2, 0.8, "#color[2]{Pedestal peak detected}");
       msg->SetNDC();
       msg->SetTextSize(16);
