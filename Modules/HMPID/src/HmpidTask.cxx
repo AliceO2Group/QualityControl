@@ -11,12 +11,12 @@
 
 ///
 /// \file   HmpidTask.cxx
-/// \author My Name
+/// \author Antonio Franco, Giacomo Volpe
 ///
 
 #include <TCanvas.h>
 #include <TH1.h>
-#include <TGraph.h>
+#include <TProfile.h>
 #include <TMath.h>
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
@@ -68,19 +68,30 @@ void HmpidTask::initialize(o2::framework::InitContext& /*ctx*/)
   hPedestalSigma->SetXTitle("Pedestal sigma (ADC channel)");
   hPedestalMean->SetYTitle("Entries/0.1 ADC");
 
-  hBusyTime = new TGraph(14);
-  hBusyTime->SetName("hBusyTime");
+  // TProfiles
+  hBusyTime = new TProfile("hBusyTime", "HMP Busy Time per DDL;;Busy Time (#mus)", 14, 0.5, 14.5);
+  hBusyTime->Sumw2();
+  hBusyTime->SetOption("P");
+  hBusyTime->SetMinimum(0);
   hBusyTime->SetMarkerStyle(20);
-  hBusyTime->SetLineWidth(0);
-  hBusyTime->GetXaxis()->SetTitle("Equipment");
-  hBusyTime->GetYaxis()->SetTitle("Busy time (#mus)");
+  hBusyTime->SetMarkerColor(kBlack);
+  hBusyTime->SetLineColor(kBlack);
+  for (Int_t iddl = 0; iddl < 14; iddl++)
+    hBusyTime->GetXaxis()->SetBinLabel(iddl + 1, Form("%d", iddl + 1));
+  hBusyTime->GetXaxis()->SetLabelSize(0.02);
+  hBusyTime->SetStats(0);
 
-  hEventSize = new TGraph(14);
-  hEventSize->SetName("hEventSize");
+  hEventSize = new TProfile("hEventSize", "HMP Event Size per DDL;;Event Size (kB)", 14, 0.5, 14.5);
+  hEventSize->Sumw2();
+  hEventSize->SetOption("P");
+  hEventSize->SetMinimum(0);
   hEventSize->SetMarkerStyle(20);
-  hEventSize->SetLineWidth(0);
-  hEventSize->GetXaxis()->SetTitle("Equipment");
-  hEventSize->GetYaxis()->SetTitle("Event size (kB)");
+  hEventSize->SetMarkerColor(kBlack);
+  hEventSize->SetLineColor(kBlack);
+  for (Int_t iddl = 0; iddl < 14; iddl++)
+    hEventSize->GetXaxis()->SetBinLabel(iddl + 1, Form("%d", iddl + 1));
+  hEventSize->GetXaxis()->SetLabelSize(0.02);
+  hEventSize->SetStats(0);
 
   getObjectsManager()->startPublishing(hPedestalMean);
   getObjectsManager()->addMetadata(hPedestalMean->GetName(), "custom", "34");
@@ -100,6 +111,8 @@ void HmpidTask::startOfActivity(Activity& /*activity*/)
   ILOG(Info, Support) << "startOfActivity" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
+  hBusyTime->Reset();
+  hEventSize->Reset();
 
   mDecoder = new o2::hmpid::HmpidDecoder2(14);
   mDecoder->init();
@@ -129,17 +142,15 @@ void HmpidTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
       mDecoder->setUpStream(ptrToPayload, (long int)header->payloadSize);
       if (!mDecoder->decodeBufferFast()) {
-        ILOG(Error, Support) << "Error decoding the Superpage !" << ENDM;
+        ILOG(Error, Devel) << "Error decoding the Superpage !" << ENDM;
       }
-
-      // Double_t ddl[14], EventSize[14], BusyTime[14];
 
       for (Int_t eq = 0; eq < 14; eq++) {
         if (mDecoder->getAverageEventSize(eq) > 0.) {
-          hEventSize->AddPoint(eq + 1, mDecoder->getAverageEventSize(eq) / 1000.);
+          hEventSize->Fill(eq + 1, mDecoder->getAverageEventSize(eq) / 1000.);
         }
         if (mDecoder->getAverageBusyTime(eq) > 0.) {
-          hBusyTime->AddPoint(eq + 1, mDecoder->getAverageBusyTime(eq) * 1000000);
+          hBusyTime->Fill(eq + 1, mDecoder->getAverageBusyTime(eq) * 1000000);
         }
         for (Int_t column = 0; column < 24; column++) {
           for (Int_t dilogic = 0; dilogic < 10; dilogic++) {
@@ -191,8 +202,8 @@ void HmpidTask::reset()
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   hPedestalMean->Reset();
   hPedestalSigma->Reset();
-  hBusyTime->Set(0);
-  hEventSize->Set(0);
+  hBusyTime->Reset();
+  hEventSize->Reset(0);
 }
 
 } // namespace o2::quality_control_modules::hmpid

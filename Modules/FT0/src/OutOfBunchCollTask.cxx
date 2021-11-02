@@ -37,6 +37,26 @@ OutOfBunchCollTask::~OutOfBunchCollTask()
 void OutOfBunchCollTask::configure(std::string, const boost::property_tree::ptree& config)
 {
   mCcdbUrl = config.get_child("qc.config.conditionDB.url").get_value<std::string>();
+
+  const char* configPath = Form("qc.postprocessing.%s", getName().c_str());
+  ILOG(Info, Support) << "configPath = " << configPath << ENDM;
+  auto node = config.get_child_optional(Form("%s.custom.pathDigitQcTask", configPath));
+  if (node) {
+    mPathDigitQcTask = node.get_ptr()->get_child("").get_value<std::string>();
+    ILOG(Info, Support) << "configure() : using pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
+  } else {
+    mPathDigitQcTask = "qc/FT0/MO/DigitQcTask/";
+    ILOG(Info, Support) << "configure() : using default pathDigitQcTask = \"" << mPathDigitQcTask << "\"" << ENDM;
+  }
+
+  node = config.get_child_optional(Form("%s.custom.pathBunchFilling", configPath));
+  if (node) {
+    mPathBunchFilling = node.get_ptr()->get_child("").get_value<std::string>();
+    ILOG(Info, Support) << "configure() : using pathBunchFilling = \"" << mPathBunchFilling << "\"" << ENDM;
+  } else {
+    mPathBunchFilling = "GLO/GRP/BunchFilling";
+    ILOG(Info, Support) << "configure() : using default pathBunchFilling = \"" << mPathBunchFilling << "\"" << ENDM;
+  }
 }
 
 void OutOfBunchCollTask::initialize(Trigger, framework::ServiceRegistry& services)
@@ -71,10 +91,11 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
 {
   std::map<std::string, std::string> metadata;
   std::map<std::string, std::string> headers;
-  const auto* bcPattern = mCcdbApi.retrieveFromTFileAny<o2::BunchFilling>("GLO/GRP/BunchFilling", metadata, -1, &headers);
+  const auto* bcPattern = mCcdbApi.retrieveFromTFileAny<o2::BunchFilling>(mPathBunchFilling, metadata, -1, &headers);
   if (!bcPattern) {
-    ILOG(Error, Support) << "\nMO \"BunchFilling\" NOT retrieved!!!\n"
+    ILOG(Error, Support) << "object \"" << mPathBunchFilling << "\" NOT retrieved!!!"
                          << ENDM;
+    return;
   }
   const int nBc = 3564;
   const int nOrbits = 256;
@@ -85,11 +106,12 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
 
   for (auto& entry : mMapOutOfBunchColl) {
     auto moName = Form("BcOrbitMap_Trg%s", mMapDigitTrgNames.at(entry.first).c_str());
-    auto mo = mDatabase->retrieveMO("qc/FT0/MO/DigitQcTask/", moName);
-    auto hBcOrbitMapTrg = (TH2F*)mo->getObject();
+    auto mo = mDatabase->retrieveMO(mPathDigitQcTask, moName);
+    auto hBcOrbitMapTrg = mo ? (TH2F*)mo->getObject() : nullptr;
     if (!hBcOrbitMapTrg) {
-      ILOG(Error, Support) << "\nMO \"" << moName << "\" NOT retrieved!!!\n"
+      ILOG(Error, Support) << "MO \"" << moName << "\" NOT retrieved!!!"
                            << ENDM;
+      continue;
     }
     entry.second->Reset();
     // scale bc pattern by vmax to make sure the difference is non positive
@@ -100,7 +122,8 @@ void OutOfBunchCollTask::update(Trigger, framework::ServiceRegistry&)
         if (entry.second->GetBinContent(j + 1, i + 1) < 0)
           entry.second->SetBinContent(j + 1, i + 1, 0); // is it too slow?
     entry.second->SetEntries(entry.second->Integral());
-    getObjectsManager()->addMetadata(entry.second->GetName(), "BcOrbitMapIntegral", std::to_string(hBcOrbitMapTrg->Integral()));
+    getObjectsManager()->getMonitorObject(entry.second->GetName())->addOrUpdateMetadata("BcOrbitMapIntegral", std::to_string(hBcOrbitMapTrg->Integral()));
+    ILOG(Debug, Support) << "Trg: " << moName << " Integrals BcOrbitMap: " << hBcOrbitMapTrg->Integral() << ", OutOfBunchColl:" << entry.second->Integral() << ENDM;
   }
 }
 

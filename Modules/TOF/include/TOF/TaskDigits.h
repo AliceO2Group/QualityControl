@@ -20,6 +20,8 @@
 
 #include "QualityControl/TaskInterface.h"
 #include "Base/Counter.h"
+#include "TOF/TaskRaw.h"
+#include "CommonConstants/LHCConstants.h"
 
 class TH1F;
 class TH2F;
@@ -40,7 +42,7 @@ class TaskDigits final : public TaskInterface
   /// \brief Constructor
   TaskDigits();
   /// Destructor
-  ~TaskDigits() override;
+  ~TaskDigits() override = default;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -51,15 +53,16 @@ class TaskDigits final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  static Int_t fgNbinsMultiplicity;         /// Number of bins in multiplicity plot
-  static Int_t fgRangeMinMultiplicity;      /// Min range in multiplicity plot
-  static Int_t fgRangeMaxMultiplicity;      /// Max range in multiplicity plot
-  static Int_t fgNbinsTime;                 /// Number of bins in time plot
-  static const Float_t fgkNbinsWidthTime;   /// Width of bins in time plot
-  static Float_t fgRangeMinTime;            /// Range min in time plot
-  static Float_t fgRangeMaxTime;            /// Range max in time plot
-  static Int_t fgCutNmaxFiredMacropad;      /// Cut on max number of fired macropad
-  static const Int_t fgkFiredMacropadLimit; /// Limit on cut on number of fired macropad
+  int fgNbinsMultiplicity = 2000;                        /// Number of bins in multiplicity plot
+  static constexpr int fgRangeMinMultiplicity = 0;       /// Min range in multiplicity plot
+  int fgRangeMaxMultiplicity = fgNbinsMultiplicity;      /// Max range in multiplicity plot
+  int fgNbinsTime = 300;                                 /// Number of bins in time plot
+  float fgkNbinsWidthTime = 2.44;                        /// Width of bins in time plot
+  float fgRangeMinTime = 0.f;                            /// Range min in time plot
+  float fgRangeMaxTime = o2::constants::lhc::LHCOrbitNS; /// Range max in time plot
+  int fgNbinsToT = 100;                                  /// Number of bins in ToT plot
+  float fgRangeMinToT = 0;                               /// Range min in ToT plot
+  float fgRangeMaxToT = 48.8;                            /// Range max in ToT plot
 
  private:
   // Event info
@@ -110,8 +113,9 @@ class TaskDigits final : public TaskInterface
   // std::shared_ptr<TH1I> mNfiredMacropad = nullptr;          /// Number of fired TOF macropads per event
 
   // Counters
-  Counter<72, nullptr> mHitCounterPerStrip[91];         /// Hit map counter in the crate, one per strip
-  Counter<72 * 91 * 24, nullptr> mHitCounterPerChannel; /// Hit map counter in the single channel
+  static constexpr unsigned int nchannels = RawDataDecoder::ncrates * RawDataDecoder::nstrips * 24; /// Number of channels
+  Counter<RawDataDecoder::ncrates, nullptr> mHitCounterPerStrip[RawDataDecoder::nstrips];           /// Hit map counter in the crate, one per strip
+  Counter<nchannels, nullptr> mHitCounterPerChannel;                                                /// Hit map counter in the single channel
 };
 
 } // namespace o2::quality_control_modules::tof

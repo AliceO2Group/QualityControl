@@ -11,7 +11,7 @@
 
 ///
 /// \file   ITSTPCMatchingTask.cxx
-/// \author My Name
+/// \author Chiara Zampolli
 ///
 
 #include <TCanvas.h>
@@ -71,7 +71,7 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   mMatchITSTPCQC.init();
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtTPC());
-  getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoFractionITSTPCmatch());
+  getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatch());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPt());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoEta());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoChi2Matching());

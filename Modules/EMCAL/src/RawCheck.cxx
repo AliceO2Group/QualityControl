@@ -102,7 +102,8 @@ Quality RawCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* m
         result = Quality::Bad;
     }
   }
-  if (mo->getName() == "PayloadSizeTFPerDDL") {
+  if (mo->getName().find("PayloadSize") != std::string::npos && mo->getName().find("1D") == std::string::npos) {
+    // 2D checkers for payload size
     std::map<int, double> meanPayloadSizeDDL;
     double errormargin = 2.;
     auto* h = dynamic_cast<TH2*>(mo->getObject());
@@ -233,7 +234,7 @@ void RawCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
     }
     h->SetLineColor(kBlack);
   }
-  std::vector<std::string> payloadhists = { "FECidMaxChWithInput_perSM", "PayloadSizeTFPerDDL", "PayloadSizeTFPerDDL_1D", "PayloadSizePerDDL_1D" };
+  std::vector<std::string> payloadhists = { "FECidMaxChWithInput_perSM", "PayloadSizePerDDL", "PayloadSizeTFPerDDL", "PayloadSizeTFPerDDL_1D", "PayloadSizePerDDL_1D" };
   if (std::find(payloadhists.begin(), payloadhists.end(), mo->getName()) != payloadhists.end()) {
     auto* h = dynamic_cast<TH1*>(mo->getObject());
     if (checkResult == Quality::Good) {

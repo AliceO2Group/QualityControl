@@ -16,7 +16,7 @@
                 "url": "infologger:///debug?qc"
             },
             "consul": {
-                "url": "http://consul-test.cern.ch:8500"
+                "url": ""
             },
             "conditionDB": {
                 "url": "ccdb-test.cern.ch:8080"
@@ -56,7 +56,7 @@
                 "dataSource": [{
                     "type": "Task",
                     "name": "FHRTask",
-                    "MOs": ["General/ErrorPlots"]
+                    "MOs": ["General/ErrorPlots","General/General_Occupancy","General/Noisy_Pixel"]
                 }]
             }
        }

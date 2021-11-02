@@ -446,13 +446,13 @@ void RawTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void RawTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << ENDM;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   reset();
 }
 
 void RawTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << ENDM;
+  ILOG(Debug, Support) << "startOfCycle" << ENDM;
 }
 
 void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -782,21 +782,21 @@ void RawTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << ENDM;
+  ILOG(Debug, Support) << "endOfCycle" << ENDM;
 }
 
 void RawTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << ENDM;
-  QcInfoLogger::GetInstance() << "Total amount of messages: " << mNumberOfMessages << ENDM;
-  QcInfoLogger::GetInstance() << "Total amount of superpages: " << mNumberOfSuperpages << ", pages: " << mNumberOfPages << ENDM;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
+  ILOG(Info, Support) << "Total amount of messages: " << mNumberOfMessages << ENDM;
+  ILOG(Info, Support) << "Total amount of superpages: " << mNumberOfSuperpages << ", pages: " << mNumberOfPages << ENDM;
 }
 
 void RawTask::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << ENDM;
+  ILOG(Debug, Support) << "Resetting the histogram" << ENDM;
   EventType triggers[2] = { EventType::CAL_EVENT, EventType::PHYS_EVENT };
 
   for (const auto& trg : triggers) {

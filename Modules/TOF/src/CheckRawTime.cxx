@@ -19,11 +19,6 @@
 #include "TOF/CheckRawTime.h"
 #include "QualityControl/QcInfoLogger.h"
 
-// ROOT
-#include <TH1.h>
-#include <TPaveText.h>
-#include <TList.h>
-
 using namespace std;
 
 namespace o2::quality_control_modules::tof
@@ -31,18 +26,16 @@ namespace o2::quality_control_modules::tof
 
 void CheckRawTime::configure(std::string)
 {
-  mMinRawTime = 175.f;
-  mMaxRawTime = 250.f;
   if (auto param = mCustomParameters.find("MinRawTime"); param != mCustomParameters.end()) {
     mMinRawTime = ::atof(param->second.c_str());
   }
   if (auto param = mCustomParameters.find("MaxRawTime"); param != mCustomParameters.end()) {
     mMaxRawTime = ::atof(param->second.c_str());
   }
-  // if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
-  //   minTOFrawTime = 150.; //ns
-  //   maxTOFrawTime = 250.; //ns
-  // }
+  if (auto param = mCustomParameters.find("MinPeakRatioIntegral"); param != mCustomParameters.end()) {
+    mMinPeakRatioIntegral = ::atof(param->second.c_str());
+  }
+  mShifterMessages.configure(mCustomParameters);
 }
 
 Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
@@ -50,20 +43,8 @@ Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>
   auto mo = moMap->begin()->second;
   Quality result = Quality::Null;
 
-  // const Double_t binWidthTOFrawTime = 2.44;
-
-  // if ((histname.EndsWith("RawsTime")) || (histname.Contains("RawsTime") && suffixTrgCl)) {
   if (mo->getName().find("RawsTime") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    // if (!suffixTrgCl)
-    //   h->SetBit(AliQAv1::GetImageBit(), drawRawsTimeSumImage);
-    // if (suffixTrgCl) {
-    //   h->SetBit(AliQAv1::GetImageBit(), kFALSE);
-    //   for (int i = 0; i < nToDrawTrgCl; i++) {
-    //     if (histname.EndsWith(ClToDraw[i]))
-    //       h->SetBit(AliQAv1::GetImageBit(), kTRUE);
-    //   }
-    // }
     if (h->GetEntries() == 0) {
       result = Quality::Medium;
     } else {
@@ -75,7 +56,7 @@ Quality CheckRawTime::check(std::map<std::string, std::shared_ptr<MonitorObject>
       if ((mRawTimeMean > mMinRawTime) && (mRawTimeMean < mMaxRawTime)) {
         result = Quality::Good;
       } else {
-        if (mRawTimePeakIntegral / mRawTimeIntegral > 0.20) {
+        if (mRawTimePeakIntegral / mRawTimeIntegral > mMinPeakRatioIntegral) {
           ILOG(Warning, Support) << Form("Raw time: peak/total integral = %5.2f, mean = %5.2f ns -> Check filling scheme...", mRawTimePeakIntegral / mRawTimeIntegral, mRawTimeMean);
           result = Quality::Medium;
         } else {
@@ -94,39 +75,21 @@ void CheckRawTime::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResu
 {
   if (mo->getName().find("RawsTime") != std::string::npos) {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
-    TPaveText* msg = new TPaveText(0.5, 0.5, 0.9, 0.75, "blNDC");
-    h->GetListOfFunctions()->Add(msg);
-    msg->SetBorderSize(1);
-    msg->SetTextColor(kWhite);
-    msg->SetFillColor(kBlack);
-    msg->AddText("Default message for RawsTime");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-
+    auto msg = mShifterMessages.MakeMessagePad(h, checkResult);
+    if (!msg) {
+      return;
+    }
     if (checkResult == Quality::Good) {
-      ILOG(Info, Support) << "Quality::Good, setting to green";
-      msg->Clear();
-      msg->AddText("Mean inside limits: OK!!!");
+      msg->AddText("Mean inside limits: OK");
       msg->AddText(Form("Allowed range: %3.0f-%3.0f ns", mMinRawTime, mMaxRawTime));
-      msg->SetFillColor(kGreen);
-      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Bad) {
-      ILOG(Info, Support) << "Quality::Bad, setting to red";
-      msg->Clear();
       msg->AddText("Call TOF on-call.");
       msg->AddText(Form("Mean outside limits (%3.0f-%3.0f ns)", mMinRawTime, mMaxRawTime));
       msg->AddText(Form("Raw time peak/total integral = %5.2f%%", mRawTimePeakIntegral * 100. / mRawTimeIntegral));
       msg->AddText(Form("Mean = %5.2f ns", mRawTimeMean));
-      msg->SetFillColor(kRed);
-      msg->SetTextColor(kBlack);
     } else if (checkResult == Quality::Medium) {
-      ILOG(Info, Support) << "Quality::medium, setting to yellow";
-      //
-      msg->Clear();
       msg->AddText("No entries. If TOF in the run");
-      msg->AddText("check TOF TWiki");
-      msg->SetFillColor(kYellow);
-      msg->SetTextColor(kBlack);
-      // text->Clear();
+      msg->AddText("email TOF on-call.");
       // text->AddText(Form("Raw time peak/total integral = %5.2f%%", mRawTimePeakIntegral * 100. / mRawTimeIntegral));
       // text->AddText(Form("Mean = %5.2f ns", mRawTimeMean));
       // text->AddText(Form("Allowed range: %3.0f-%3.0f ns", mMinRawTime, mMaxRawTime));

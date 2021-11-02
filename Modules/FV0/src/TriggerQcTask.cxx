@@ -197,7 +197,7 @@ void TriggerQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           digit.mTriggers.amplA, int(sumAmplInner + sumAmplOuter),
           int(sumAmplInner),
           int(sumAmplOuter));
-        ILOG(Info, Support) << msg << ENDM;
+        ILOG(Debug, Support) << msg << ENDM;
       }
     }
   }

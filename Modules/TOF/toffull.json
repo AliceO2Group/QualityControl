@@ -16,7 +16,7 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
@@ -48,7 +48,7 @@
         "className": "o2::quality_control_modules::tof::TaskDigits",
         "moduleName": "QcTOF",
         "detectorName": "TOF",
-        "cycleDurationSeconds": "10",
+        "cycleDurationSeconds": "60",
         "maxNumberCycles": "-1",
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
@@ -109,6 +109,54 @@
             "name": "TaskRaw",
             "MOs": [
               "hDiagnostic"
+            ]
+          }
+        ]
+      },
+      "TOFRawsMulti": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
+        "moduleName": "QcTOF",
+        "policy": "OnAny",
+        "detectorName": "TOF",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskDigits",
+            "MOs": [
+              "TOFRawsMulti"
+            ]
+          }
+        ]
+      },
+      "TOFRawsTime": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckRawTime",
+        "moduleName": "QcTOF",
+        "policy": "OnAny",
+        "detectorName": "TOF",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskDigits",
+            "MOs": [
+              "TOFRawsTime"
+            ]
+          }
+        ]
+      },
+      "TOFRawsToT": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckRawToT",
+        "moduleName": "QcTOF",
+        "policy": "OnAny",
+        "detectorName": "TOF",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskDigits",
+            "MOs": [
+              "TOFRawsToT"
             ]
           }
         ]

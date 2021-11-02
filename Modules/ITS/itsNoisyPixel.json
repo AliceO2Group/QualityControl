@@ -16,7 +16,7 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
@@ -40,7 +40,9 @@
                     "layer": "1111111",
                     "clusterDictionaryPath": "/home/nvalle/alice/qc/workdir/ITSdictionary.bin",
                     "geomPath": "/home/nvalle/alice/qc/workdir/o2sim_geometry.root",
-	            "updateFrequency": "10000"
+	            "orderedPlots_comment": "The following are used for the OrderedHitsAddress objects only. If one of them is set to -1, the production of those objects is disabled",
+	            "orderedPlotsUpdateFrequency": "10000",
+	            "orderedPlotsBinNumber": "25"
         }
 	  
 

@@ -95,6 +95,8 @@ class TaskRunner : public framework::Task
   static header::DataOrigin createTaskDataOrigin();
   /// \brief Unified DataDescription naming scheme for all tasks
   static header::DataDescription createTaskDataDescription(const std::string& taskName);
+  /// \brief Unified DataDescription naming scheme for all timers
+  static header::DataDescription createTimerDataDescription(const std::string& taskName);
 
   /// \brief Callback for CallbackService::Id::EndOfStream
   void endOfStream(framework::EndOfStreamContext& eosContext) override;
@@ -103,7 +105,7 @@ class TaskRunner : public framework::Task
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
   void start(const framework::ServiceRegistry& services);
   /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
-  void stop();
+  void stop() override;
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
 

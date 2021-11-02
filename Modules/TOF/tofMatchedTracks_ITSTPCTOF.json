@@ -42,7 +42,14 @@
         },
         "taskParameters" : {
           "GID" : "ITS-TPC,ITS-TPC-TOF",
-          "verbose" : "false"
+          "verbose" : "false",
+          "minPtCut" : "0.1f",
+          "etaCut" : "1.4f",
+          "minNTPCClustersCut" : "40",
+          "minDCACut" : "100.f",
+          "minDCACutY" : "10.f",
+          "grpFileName" : "o2sim_grp.root",
+          "geomFileName" : "o2sim_geometry.root"
         },
         "location" : "remote",
         "saveObjectsToFile" : "TOFmatchedITSTPCTOF.root",

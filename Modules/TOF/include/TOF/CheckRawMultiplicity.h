@@ -19,7 +19,7 @@
 #define QC_MODULE_TOF_TOFCHECKRAWSMULTI_H
 
 #include "QualityControl/CheckInterface.h"
-#include "TString.h"
+#include "Base/MessagePad.h"
 
 namespace o2::quality_control_modules::tof
 {
@@ -41,17 +41,24 @@ class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult) override;
   std::string getAcceptedType() override;
 
+  /// Running modes available
+  static constexpr int kModeCollisions = 0; /// Standard running mode with collisions
+  static constexpr int kModeCosmics = 1;    /// Running mode with collisions
+
  private:
+  // Running configurable parameters
+  /// Running mode, cosmics or collisions
+  int mRunningMode = kModeCollisions;
   /// Minimum value of TOF raw hit multiplicity
-  float mMinRawHits;
+  float mMinRawHits = 10;
   /// Maximum value of TOF raw hit multiplicity
-  float mMaxRawHits;
+  float mMaxRawHits = 5000;
   /// Fraction of the total integral which are considered Ok at 0 mult
-  const float mFractAtZeroMult = 0.75;
+  float mMaxFractAtZeroMult = 0.75;
   /// Fraction of the total integral which are considered Ok at low mult
-  const float mFractAtLowMult = 0.75;
-  /// Maximum average TOF raw hit multiplicity in Pb-Pb
-  const float mMaxTOFRawHitsPbPb = 500;
+  float mMaxFractAtLowMult = 0.75;
+
+  // User variables
   /// Mean of the TOF hit multiplicity histogram
   float mRawHitsMean = 0.f;
   /// Number of events with 0 TOF hits
@@ -60,8 +67,8 @@ class CheckRawMultiplicity : public o2::quality_control::checker::CheckInterface
   float mRawHitsLowMultIntegral = 0.f;
   /// Number of events with TOF hits multiplicity > 0
   float mRawHitsIntegral = 0.f;
-  /// Message to print
-  TString shifter_msg = "";
+  /// Messages to print on the output PAD
+  MessagePad mShifterMessages;
 
   ClassDefOverride(CheckRawMultiplicity, 1);
 };

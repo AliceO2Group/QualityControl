@@ -66,6 +66,7 @@ add_root_dictionary(O2QcTOF
                             include/TOF/TrendingConfigTOF.h
                             # Utilities
                             include/Base/Counter.h
+                            include/Base/MessagePad.h
                     LINKDEF include/TOF/LinkDef.h
                     BASENAME O2QcTOF)
 
@@ -104,6 +105,11 @@ install(FILES tofdigits.json
               tofraw_multinode.json
               tofcosmics.json
               toftrending.json
+              tofMatchedTracks_ITSTPCTOF.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF_MC.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF_direct.json
+              tofMatchedTracks_ITSTPCTOF_TPCTOF_direct_MC.json
         DESTINATION etc)
 
 get_property(dirs

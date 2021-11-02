@@ -75,7 +75,7 @@
              "id" : "ITSTPCmatchingSampling",
              "active" : "true",
              "machines" : [],
-             "query_comment" : "checking every matched track",
+             "query_comment" : "checking every 10% matched track",
              "query" : "trackITSTPC:GLO/TPCITS/0;trackITSTPCABREFS:GLO/TPCITSAB_REFS/0;trackITSTPCABCLID:GLO/TPCITSAB_CLID/0;trackTPC:TPC/TRACKS;trackTPCClRefs:TPC/CLUSREFS",
              "samplingConditions" : [
                {

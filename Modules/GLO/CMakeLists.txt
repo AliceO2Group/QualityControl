@@ -23,6 +23,17 @@ install(TARGETS O2QcGLO
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+# install json files
+install(FILES ITSTPCmatchedTracks_external.json
+              ITSTPCmatchedTracks.json
+              ITSTPCmatchedTracks_direct.json
+              vertexing-qc-direct.json
+              vertexing-qc-direct-mc.json
+              vertexing-qc.json
+              vertexing-qc-mc.json
+        DESTINATION etc
+       )
+
 add_root_dictionary(O2QcGLO
                     HEADERS
   include/GLO/VertexingQcTask.h
