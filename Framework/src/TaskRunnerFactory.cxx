@@ -55,7 +55,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     throw std::runtime_error("This data source of the task '" + taskSpec.taskName + "' is not supported.");
   }
   auto cycleDurationSeconds = taskSpec.cycleDurationSeconds;
-  if(cycleDurationSeconds < 10) {
+  if (cycleDurationSeconds < 10) {
     ILOG(Error, Support) << "Cycle duration is too short (" << cycleDurationSeconds << "), replaced by a duration of 10 seconds." << ENDM;
     cycleDurationSeconds = 10;
   }
