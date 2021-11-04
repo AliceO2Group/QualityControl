@@ -202,6 +202,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   mNRofs += clusRofArr.size();        //USED to calculate occupancy for the whole run
   mNRofsMonitor += clusRofArr.size(); // Occupancy in the last N ROFs
 
+  if (mNRofs>0){
   for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
 
     if (!mEnableLayers[iLayer])
@@ -225,6 +226,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyOB[iLayer][iStave], mClusterOccupancyOBmonitor[iLayer][iStave] + mNHicPerStave[iLayer])) / mNRofs / 14);
       }
     }
+  }
   }
 
   if (mNRofsMonitor >= mOccUpdateFrequency) {
