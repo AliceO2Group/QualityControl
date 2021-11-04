@@ -305,8 +305,8 @@ def run(args, ccdb_url, rules):
     pool.join()
 
     logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
-    storeSavedTimestamp()
-
+    if not args.dry_run:
+        storeSavedTimestamp()
 
 # ****************
 # We start here !
