@@ -88,7 +88,6 @@ TaskSpec InfrastructureSpecReader::readSpecEntry<TaskSpec>(std::string taskName,
   ts.detectorName = taskTree.get<std::string>("detectorName");
   ts.cycleDurationSeconds = taskTree.get<int>("cycleDurationSeconds");
   ts.dataSource = readSpecEntry<DataSourceSpec>("", taskTree.get_child("dataSource"), wholeTree);
-
   ts.active = taskTree.get<bool>("active", ts.active);
   ts.maxNumberCycles = taskTree.get<int>("maxNumberCycles", ts.maxNumberCycles);
   ts.resetAfterCycles = taskTree.get<size_t>("resetAfterCycles", ts.resetAfterCycles);

@@ -113,7 +113,7 @@ The configuration for the QC is made of many parameters described in an [advance
     "active": "true",
     "className": "o2::quality_control_modules::skeleton::SkeletonTask",
     "moduleName": "QcSkeleton",
-    "cycleDurationSeconds": "10",
+    "cycleDurationSeconds": "10",     "": "10 seconds minimum",
 (...)
 ```
 Try and change the name of the task by replacing `QcTask` by a name of your choice (there are 2 places to update in the config file!). Relaunch the workflows. You should now see the object published under a different directory in the QCG.
