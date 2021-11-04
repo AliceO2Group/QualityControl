@@ -91,15 +91,17 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
   InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
     ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
   } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger Context." << ENDM;
+    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
   }
 
   try {
-    ILOG_INST.init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, ilContext);
-    ILOG_INST.setDetector(AggregatorRunner::getDetectorName(mAggregators));
+    QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, il, ilContext);
+    QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -323,8 +325,8 @@ void AggregatorRunner::start(const ServiceRegistry& services)
   mActivity.mPassName = computePassName(mRunnerConfig.fallbackPassName);
   mActivity.mProvenance = computeProvenance(mRunnerConfig.fallbackProvenance);
   string partitionName = computePartitionName(services);
-  ILOG_INST.setRun(mActivity.mId);
-  ILOG_INST.setPartition(partitionName);
+  QcInfoLogger::setRun(mActivity.mId);
+  QcInfoLogger::setPartition(partitionName);
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }

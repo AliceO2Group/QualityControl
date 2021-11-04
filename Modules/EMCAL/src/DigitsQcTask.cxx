@@ -66,7 +66,7 @@ DigitsQcTask::~DigitsQcTask()
 
 void DigitsQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG_INST.setDetector("EMC");
+  QcInfoLogger::setDetector("EMC");
   ILOG(Info, Support) << "initialize DigitsQcTask" << ENDM;
   //define histograms
 
@@ -219,7 +219,7 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto combinedEvents = buildCombinedEvents(triggerRecordSubevents);
 
-  //  QcInfoLogger::GetInstance() << "Received " << digitcontainer.size() << " digits " << ENDM;
+  //  ILOG(Info, Support) <<"Received " << digitcontainer.size() << " digits " << ENDM;
   int eventcounter = 0;
   int eventcounterCALIB = 0;
   int eventcounterPHYS = 0;
