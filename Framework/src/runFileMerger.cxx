@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObjectCollection.h"
 
 #include <string>
+#include <unordered_map>
 #include <fstream>
 #include <boost/program_options.hpp>
 #include <boost/exception/diagnostic_information.hpp>
