@@ -197,8 +197,12 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
-          mFakeMatchedTracksPt[trkType::UNCONS]->Fill(trk.getPt());
-          mFakeMatchedTracksEta[trkType::UNCONS]->Fill(trk.getEta());
+          if (fabs(trk.getEta()) < 0.8) {
+            mFakeMatchedTracksPt[trkType::UNCONS]->Fill(trk.getPt());
+          }
+          if (trk.getPt() > 0.3) {
+            mFakeMatchedTracksEta[trkType::UNCONS]->Fill(trk.getEta());
+          }
         }
       }
     }
@@ -214,8 +218,12 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
     for (const auto& matchTOF : mITSTPCTOFMatches) {
       GTrackID gTrackId = matchTOF.getTrackRef();
       const auto& trk = mITSTPCTracks[gTrackId.getIndex()];
-      mMatchedTracksPt[trkType::CONSTR]->Fill(trk.getPt());
-      mMatchedTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+      if (fabs(trk.getEta()) < 0.8) {
+        mMatchedTracksPt[trkType::CONSTR]->Fill(trk.getPt());
+      }
+      if (trk.getPt() > 0.3) {
+        mMatchedTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+      }
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
@@ -246,13 +254,21 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
           return true;
         }
       }
-      this->mInTracksPt[trkType::UNCONS]->Fill(trk.getPt());
-      this->mInTracksEta[trkType::UNCONS]->Fill(trk.getEta());
+      if (fabs(trk.getEta()) < 0.8) {
+        this->mInTracksPt[trkType::UNCONS]->Fill(trk.getPt());
+      }
+      if (trk.getPt() > 0.3) {
+        this->mInTracksEta[trkType::UNCONS]->Fill(trk.getEta());
+      }
     }
     // In case of ITS-TPC-TOF, the ITS-TPC tracks contain also the ITS-TPC-TOF
     if constexpr (isTPCITSTrack<decltype(trk)>()) {
-      this->mInTracksPt[trkType::CONSTR]->Fill(trk.getPt());
-      this->mInTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+      if (fabs(trk.getEta()) < 0.8) {
+        this->mInTracksPt[trkType::CONSTR]->Fill(trk.getPt());
+      }
+      if (trk.getPt() > 0.3) {
+        this->mInTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+      }
     }
     return true;
   };
