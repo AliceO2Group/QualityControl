@@ -62,9 +62,15 @@ class ITSTrackTask : public TaskInterface
   TH1D* hOccupancyROF;
   TH1D* hClusterUsage;
   TH2D* hAngularDistribution;
+  TH2D* hVertexCoordinates;
+  TH2D* hVertexRvsZ;
+  TH1D* hVertexZ;
   std::string mRunNumber;
   std::string mRunNumberPath;
 
+  int mVertexXYsize;
+  int mVertexZsize;
+  int mVertexRsize;
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
 

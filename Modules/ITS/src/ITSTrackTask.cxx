@@ -20,9 +20,18 @@
 #include <DataFormatsITS/TrackITS.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>
+#include "ReconstructionDataFormats/Vertex.h"
+#include "ReconstructionDataFormats/PrimaryVertex.h"
+
+
+
+#include <Framework/DataSpecUtils.h>
+
 
 using namespace o2::itsmft;
 using namespace o2::its;
+//using Vertex = o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>;
+
 
 namespace o2::quality_control_modules::its
 {
@@ -41,6 +50,9 @@ ITSTrackTask::~ITSTrackTask()
   delete hOccupancyROF;
   delete hClusterUsage;
   delete hAngularDistribution;
+  delete hVertexCoordinates;
+  delete hVertexRvsZ;
+  delete hVertexZ;
 }
 
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -49,6 +61,9 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   QcInfoLogger::GetInstance() << "initialize ITSTrackTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   mRunNumberPath = mCustomParameters["runNumberPath"];
+  mVertexXYsize = std::stoi(mCustomParameters["vertexXYsize"]);
+  mVertexZsize = std::stoi(mCustomParameters["vertexZsize"]);
+  mVertexRsize = std::stoi(mCustomParameters["vertexRsize"]);
 
   publishHistos();
 }
@@ -71,6 +86,63 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto rofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
 
+  std::cout<<" fsaasgasg " <<std:: endl;
+  std::cout<<" one more"<<endl;
+
+
+
+
+
+  fasfffffffffffffffffff
+  //auto vertexArr = ctx.inputs().get<o2::dataformats::VertexBase>("vertices");
+
+
+
+  std::vector<o2::dataformats::PrimaryVertex> vertexArr = ctx.inputs().get<o2::dataformats::PrimaryVertex>("Vertices");
+
+  // std::vector<o2::dataformats::VertexBase> vertexArr = ctx.inputs().get<gsl::span<o2::dataformats::VertexBase>>("vertices");
+ //auto vertexArr = ctx.inputs().get<gsl::span<  o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>        >>("vertices");
+ 
+
+
+//std::vector<Vertex> vertexArr = ctx.inputs().get<gsl::span<Vertex>>("Vertices");
+
+//std::vector<Vertex> vertexArr = ctx.inputs().get<Vertex>("Vertices");
+//
+
+//  std::vector<o2::dataformats::Vertex<int>>  vertexArr = ctx.inputs().get<gsl::span<  o2::dataformats::Vertex<int>>>("vertices");
+
+
+//   auto vertexArr = DataRefUtils::as< o2::dataformats::Vertex<int   >(ctx.inputs().get("vertices"));
+
+   //std::vector<o2::dataformats::Vertex<int>>  *vertexArr = ctx.inputs().get<o2::dataformats::Vertex<int>>("vertices");
+
+
+//    auto vertexArr = ctx.inputs().get<o2::dataformats::VertexBase>("vertices");
+
+
+// auto vertexArr = ctx.inputs().get<gsl::span<  o2::dataformats::Vertex<int>>>("vertices");
+
+  std::cout<<"$$$$$$$$$$$$$$ obtained vector with verticies: "<<vertexArr.size() <<std::endl;
+
+/*
+  for (const auto& vertex: vertexArr){
+  
+      hVertexCoordinates->Fill(vertex.getX(),vertex.getY());
+
+      std::cout<< " R = " <<sqrt(vertex.getX()*vertex.getX()+ vertex.getY()*vertex.getY()) << " X: "<<vertex.getX() << " Y: "<< vertex.getY() << " Z: "<<vertex.getZ()<<std::endl;
+      hVertexRvsZ->Fill(sqrt(vertex.getX()*vertex.getX()+ vertex.getY()*vertex.getY()),vertex.getZ());
+      hVertexZ->Fill(vertex.getZ());
+
+
+  
+
+  }
+
+
+
+
+
   for (const auto& ROF : rofArr) {
     for (int itrack = ROF.getFirstEntry(); itrack < ROF.getFirstEntry() + ROF.getNEntries(); itrack++) {
 
@@ -84,7 +156,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 
       hNClusters->Fill(track.getNumberOfClusters());
       mNClustersInTracks += track.getNumberOfClusters();
-    }
+   }
   }
 
   mNTracks += trackArr.size();
@@ -100,6 +172,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNClustersInTracks = 0;
     mNClusters = 0;
   }
+  */
 }
 
 void ITSTrackTask::endOfCycle()
@@ -133,6 +206,13 @@ void ITSTrackTask::reset()
   hTrackEta->Reset();
   hOccupancyROF->Reset();
   hClusterUsage->Reset();
+
+  hVertexCoordinates->Reset();
+  hVertexRvsZ->Reset();
+  hVertexZ->Reset();
+
+
+
 }
 
 void ITSTrackTask::createAllHistos()
@@ -142,7 +222,6 @@ void ITSTrackTask::createAllHistos()
   hAngularDistribution->SetTitle("AngularDistribution");
   addObject(hAngularDistribution);
   formatAxes(hAngularDistribution, "#eta", "#phi", 1, 1.10);
-  hAngularDistribution->SetStats(0);
 
   hNClusters = new TH1D("NClusters", "NClusters", 100, 0, 100);
   hNClusters->SetTitle("hNClusters");
@@ -168,6 +247,23 @@ void ITSTrackTask::createAllHistos()
   hClusterUsage->SetTitle("Fraction of clusters used in tracking");
   addObject(hClusterUsage);
   formatAxes(hClusterUsage, "", "nCluster in track / Total cluster", 1, 1.10);
+
+  hVertexCoordinates = new TH2D("VertexCoordinates", "VertexCoordinates",200,-mVertexXYsize,mVertexXYsize,200,-mVertexXYsize,mVertexXYsize);
+  hVertexCoordinates->SetTitle("Coordinates of track vertex");
+  addObject(hVertexCoordinates);
+  formatAxes(hVertexCoordinates, "X coordinate (cm)", "Y coordinate (cm)", 1, 1.10);
+
+  hVertexRvsZ = new TH2D("VertexRvsZ", "VertexRvsZ",200,0,mVertexRsize,200,-mVertexZsize,mVertexZsize);
+  hVertexRvsZ->SetTitle("Distance to primary vertex vs Z");
+  addObject(hVertexRvsZ);
+  formatAxes(hVertexRvsZ, "R (cm) ", "Z coordinate (cm)", 1, 1.10);
+
+  hVertexZ = new TH1D("VertexZ", "VertexZ", 200, -mVertexXYsize,mVertexXYsize);
+  hVertexZ->SetTitle("Z coordinate of vertex");
+  addObject(hVertexZ);
+  formatAxes(hVertexZ, "Z coordinate (cm)","counts", 1, 1.10);
+
+
 }
 
 void ITSTrackTask::addObject(TObject* aObject)

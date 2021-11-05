@@ -227,6 +227,17 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
+ // std::cout<<"cdsfsgsd"<<std::endl;
+
+
+//  hAverageClusterIB[2]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  hOccupancyIB[2]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  hAverageClusterOB[4]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  hOccupancyOB[4]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  hAverageClusterOB[6]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  hOccupancyOB[6]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
   if (mNRofsMonitor >= mOccUpdateFrequency) {
     updateOccMonitorPlots();
     mNRofsMonitor = 0;
@@ -336,6 +347,10 @@ void ITSClusterTask::reset()
       }
     }
   }
+
+
+
+
 }
 
 void ITSClusterTask::createAllHistos()
@@ -364,7 +379,7 @@ void ITSClusterTask::createAllHistos()
       hOccupancyIB[iLayer]->SetTitle(Form("Cluster Occupancy on Layer %d", iLayer));
       addObject(hOccupancyIB[iLayer]);
       formatAxes(hOccupancyIB[iLayer], "Chip Number", "Stave Number", 1, 1.10);
-      hOccupancyIB[iLayer]->SetStats(0);
+      //hOccupancyIB[iLayer]->SetStats(0);
 
       hOccupancyIBmonitor[iLayer] = new TH2D(Form("Layer%d/ClusterOccupationForLastNROFS", iLayer), Form("Layer%dClusterOccupancyForLastNROFS", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hOccupancyIBmonitor[iLayer]->SetTitle(Form("Cluster Occupancy for the last NROFs on Layer %d", iLayer));
@@ -377,7 +392,7 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterIB[iLayer]->SetTitle(Form("Average Cluster Size  on Layer %d", iLayer));
       addObject(hAverageClusterIB[iLayer]);
       formatAxes(hAverageClusterIB[iLayer], "Chip Number", "Stave Number", 1, 1.10);
-      hAverageClusterIB[iLayer]->SetStats(0);
+      //hAverageClusterIB[iLayer]->SetStats(0);
 
       hAverageClusterIBmonitor[iLayer] = new TH2D(Form("Layer%d/AverageClusterSizeForLastNROFS", iLayer), Form("Layer%dAverageClusterSizeForLastNROFS", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hAverageClusterIBmonitor[iLayer]->SetTitle(Form("Average Cluster Size for the last NROFs on Layer %d", iLayer));
@@ -410,10 +425,10 @@ void ITSClusterTask::createAllHistos()
 */
 
       hOccupancyOB[iLayer] = new TH2D(Form("Layer%d/ClusterOccupation", iLayer), Form("Layer%dClusterOccupancy", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
-      hOccupancyOB[iLayer]->SetTitle(Form("ClusterOccupancyInLastNROFS %d", iLayer));
+      hOccupancyOB[iLayer]->SetTitle(Form("Cluster Occupancy on Layer %d", iLayer));
       addObject(hOccupancyOB[iLayer]);
       formatAxes(hOccupancyOB[iLayer], "HIC Number", "Stave Number", 1, 1.10);
-      hOccupancyOB[iLayer]->SetStats(0);
+      //hOccupancyOB[iLayer]->SetStats(0);
 
       hOccupancyOBmonitor[iLayer] = new TH2D(Form("Layer%d/ClusterOccupationForLastNROFS", iLayer), Form("Layer%dClusterOccupancyForLastNROFS", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hOccupancyOBmonitor[iLayer]->SetTitle(Form("Cluster Occupancy in last NROFS on Layer %d", iLayer));
@@ -424,13 +439,13 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterOB[iLayer] = new TH2D(Form("Layer%d/AverageClusterSize", iLayer), Form("Layer%dAverageClusterSize", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hAverageClusterOB[iLayer]->SetTitle(Form("Average Cluster Size  on Layer %d", iLayer));
       addObject(hAverageClusterOB[iLayer]);
-      formatAxes(hAverageClusterOB[iLayer], "Chip Number", "Stave Number", 1, 1.10);
-      hAverageClusterOB[iLayer]->SetStats(0);
+      formatAxes(hAverageClusterOB[iLayer], "HIC Number", "Stave Number", 1, 1.10);
+      //hAverageClusterOB[iLayer]->SetStats(0);
 
       hAverageClusterOBmonitor[iLayer] = new TH2D(Form("Layer%d/AverageClusterSizeForLastNROFS", iLayer), Form("Layer%dAverageClusterSizeForLastNROFS", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
       hAverageClusterOBmonitor[iLayer]->SetTitle(Form("Average Cluster Size for the last NROFs on Layer %d", iLayer));
       addObject(hAverageClusterOBmonitor[iLayer]);
-      formatAxes(hAverageClusterOBmonitor[iLayer], "Chip Number", "Stave Number", 1, 1.10);
+      formatAxes(hAverageClusterOBmonitor[iLayer], "HIC Number", "Stave Number", 1, 1.10);
       hAverageClusterOBmonitor[iLayer]->SetStats(0);
 
       for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {

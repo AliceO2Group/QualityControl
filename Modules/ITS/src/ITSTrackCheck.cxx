@@ -17,7 +17,7 @@
 #include "ITS/ITSTrackCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
-
+#include <TPaveText.h>
 #include <TList.h>
 #include <TH1.h>
 #include <TH2.h>
@@ -33,56 +33,81 @@ void ITSTrackCheck::configure(std::string) {}
 
 Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = Quality::Null;
+  Quality result = 0;
+  Int_t id=0;
   std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;
   for (iter = moMap->begin(); iter != moMap->end(); ++iter) {
 
+    std::cout << " iter : " <<id<< " result " <<result<<std::endl;
+    id++;
+
     if (iter->second->getName() == "NClusters") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      if (h->GetMean() <= 10)
-        result = Quality::Good;
-      else if (h->GetMean() > 10 && h->GetMean() < 15)
-        result = Quality::Medium;
+      if (h->GetMean() > 10 && h->GetMean() < 15)
+        result = result.getLevel()+1;
       else if (h->GetMean() >= 15)
-        result = Quality::Bad;
+        result = result.getLevel()+2;
     }
 
     if (iter->second->getName() == "PhiDistribution") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
       Double_t ratio = abs(h->Integral(h->FindBin(0), h->FindBin(TMath::Pi())) / h->Integral(h->FindBin(TMath::Pi()), h->FindBin(TMath::TwoPi())) - 1);
 
-      if (ratio > 0.3)
-        result = Quality::Bad;
-      else
-        result = Quality::Good;
+
+     std::cout <<" PhiDistribution Ratio: "<< ratio << " 1: "<< h->Integral(h->FindBin(0), h->FindBin(TMath::Pi())) << " 2: "<< h->Integral(h->FindBin(TMath::Pi()), h->FindBin(TMath::TwoPi()))<<std:: endl;
+
+
+      if (ratio > 0.3)  result = result.getLevel()+10;
+      
     }
 
     if (iter->second->getName() == "AngularDistribution") {
       auto* hAngluar = dynamic_cast<TH2D*>(iter->second->getObject());
-      TH1D* projectPhi = hAngluar->ProjectionY("hAngluar", hAngluar->FindBin(-1.5), hAngluar->FindBin(1.5));
+      TH1D* projectPhi = hAngluar->ProjectionY();
       Double_t ratio = abs(projectPhi->Integral(projectPhi->FindBin(0), projectPhi->FindBin(TMath::Pi())) / projectPhi->Integral(projectPhi->FindBin(TMath::Pi()), projectPhi->FindBin(TMath::TwoPi())) - 1);
-
-      if (ratio > 0.3)
-        result = Quality::Bad;
-      else
-        result = Quality::Good;
+      
+      std::cout <<" Angular Distribution Ratio: "<< ratio << " 1: "<< projectPhi->Integral(projectPhi->FindBin(0), projectPhi->FindBin(TMath::Pi())) << " 2: "<< projectPhi->Integral(projectPhi->FindBin(TMath::Pi()), projectPhi->FindBin(TMath::TwoPi()))<<std:: endl;
+      if (ratio > 0.3) result.getLevel()+1e2;
+       
     }
 
     if (iter->second->getName() == "ClusterUsage") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      if (h->GetMaximum() < 0.1)
-        result = Quality::Bad;
-      else
-        result = Quality::Good;
+      if (h->GetMaximum() < 0.1) result.getLevel()+1e3;
     }
 
     if (iter->second->getName() == "EtaDistribution") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      if (abs(h->GetBinCenter(h->FindBin(h->GetMaximum()))) > 0.5)
-        result = Quality::Bad;
-      else
-        result = Quality::Good;
+      if (abs(h->GetBinCenter(h->FindBin(h->GetMaximum()))) > 0.5) result.getLevel()+1e4;
+       
     }
+
+    if (iter->second->getName() == "VertexCoordinates") {
+      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
+      TH1D* projectY = h->ProjectionY("projectY");
+
+      std::cout<<" ProjectY 1:"<< projectY->Integral(1,projectY->FindBin(-0.02)) << " 2: "<<projectY->Integral(projectY->FindBin(0.02),projectY->GetNbinsX()) <<std::endl;
+      if ( projectY->Integral(1,projectY->FindBin(-0.02)) > 0 || projectY->Integral(projectY->FindBin(0.02),projectY->GetNbinsX()) > 0) result = result.getLevel()+1e5;
+      TH1D* projectX = h->ProjectionX("projectX");
+      if ( projectX->Integral(1,projectX->FindBin(-0.02)) > 0 || projectX->Integral(projectX->FindBin(0.02),projectX->GetNbinsX()) > 0) result = result.getLevel()+2e5;
+      
+    }
+
+     if (iter->second->getName() == "VertexRvsZ") {
+      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
+      TH1D* projectZ = h->ProjectionY("projectZ");
+      if ( projectZ->Integral(1,projectZ->FindBin(-10)) > 0 || projectZ->Integral(projectZ->FindBin(10),projectZ->GetNbinsX()) > 0) result = result.getLevel()+1e6;
+      TH1D* projectR = h->ProjectionX("projectX");
+      if ( projectR->Integral(projectR->FindBin(2.8),projectR->GetNbinsX()) > 0) result = result.getLevel()+2e6;
+
+    }
+
+    if (iter->second->getName() == "VertexZ") {
+      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
+      if ( h->Integral(1,h->FindBin(-10)) > 0 || h->Integral(h->FindBin(10),h->GetNbinsX()) > 0) result = result.getLevel()+1e7;
+			    
+   }
+
   }
   return result;
 }
@@ -93,77 +118,193 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
 {
   auto* tInfo = new TText();
 
+ std::cout<<"!!!!!!!!!!!!!!!!! checkResult.getLevel() "<< checkResult.getLevel()<<std::endl;
+
+
   if (mo->getName() == "NClusters") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
-    if (checkResult == Quality::Good) {
-      tInfo->SetText(0.1, 0.8, "Quality::GOOD");
-      tInfo->SetTextColor(kGreen);
-    } else if (checkResult == Quality::Medium) {
-      tInfo->SetText(0.1, 0.8, "Info: a track(s) has between 10 and 15 clusters, inform expert on MM");
-      tInfo->SetTextColor(kOrange);
-    } else if (checkResult == Quality::Bad) {
-      tInfo->SetText(0.1, 0.8, "Info: a track(s) has more than 15 clusters, call expert");
-      tInfo->SetTextColor(kRed);
+    int histoQuality = getDigit( checkResult.getLevel(),1);
+    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->Clear();
+
+    if (histoQuality == 0 ) {
+      msg->AddText("Quality::GOOD");
+      msg->SetTextColor(kGreen);
+    } else if (histoQuality==1) {
+      msg->AddText("INFO: a track(s) has between 10 and 15 clusters");
+      msg->AddText("inform expert on MM");
+      msg->SetTextColor(kOrange);
+    } else{
+      msg->AddText("INFO: a track(s) has more than 15 clusters");
+      msg->AddText("call expert");
+      msg->SetTextColor(kRed);
     }
-    tInfo->SetTextSize(17);
-    tInfo->SetNDC();
-    h->GetListOfFunctions()->Add(tInfo);
+    msg->SetBorderSize(0);
+    msg->SetTextSize(17);
+    h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "PhiDistribution") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
-    if (checkResult == Quality::Good) {
-      tInfo->SetText(0.1, 0.8, "Quality::GOOD");
-      tInfo->SetTextColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      tInfo->SetText(0.1, 0.8, "Info: distribution asymmetric in phi, call expert");
-      tInfo->SetTextColor(kRed);
+    int histoQuality = getDigit( checkResult.getLevel(),2);
+    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->Clear();
+
+
+    if (histoQuality==0) {
+      msg->AddText("Quality::GOOD");
+      msg->SetTextColor(kGreen);
+    } else{
+      msg->AddText("INFO: distribution asymmetric in phi");
+      msg->AddText("call expert");
+      msg->SetTextColor(kRed);
     }
-    tInfo->SetTextSize(17);
-    tInfo->SetNDC();
-    h->GetListOfFunctions()->Add(tInfo);
+    msg->SetBorderSize(0);
+    msg->SetTextSize(17);
+    h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "AngularDistribution") {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
-    if (checkResult == Quality::Good) {
-      tInfo->SetText(0.1, 0.8, "Quality::GOOD");
-      tInfo->SetTextColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      tInfo->SetText(0.1, 0.8, "Info: distribution asymmetric in phi, call expert");
-      tInfo->SetTextColor(kRed);
+    int histoQuality = getDigit( checkResult.getLevel(),3);
+    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->Clear();
+
+    if (histoQuality==0) {
+      msg->AddText("Quality::GOOD");
+      msg->SetTextColor(kGreen);
+    } else {
+      msg->AddText("INFO: distribution asymmetric in phi");
+      msg->AddText("call expert");
+      msg->SetTextColor(kRed);
     }
-    tInfo->SetTextSize(17);
-    tInfo->SetNDC();
-    h->GetListOfFunctions()->Add(tInfo);
+    msg->SetBorderSize(0);
+    msg->SetTextSize(17);
+    h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "ClusterUsage") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
-    if (checkResult == Quality::Good) {
-      tInfo->SetText(0.1, 0.8, "Quality::GOOD");
-      tInfo->SetTextColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      tInfo->SetText(0.1, 0.8, "Info: fraction of clusters below 0.1, call expert");
-      tInfo->SetTextColor(kRed);
+    int histoQuality=getDigit(checkResult.getLevel(),4);
+    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->Clear();
+
+    if (histoQuality==0) {
+      msg->AddText("Quality::GOOD");
+      msg->SetTextColor(kGreen);
+    } else {
+      msg->AddText("INFO: fraction of clusters below 0.1");
+      msg->AddText("call expert");
+      msg->SetTextColor(kRed);
     }
+    msg->SetBorderSize(0);
     tInfo->SetTextSize(17);
-    tInfo->SetNDC();
-    h->GetListOfFunctions()->Add(tInfo);
+    h->GetListOfFunctions()->Add(msg);
   }
+
   if (mo->getName() == "EtaDistribution") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
-    if (checkResult == Quality::Good) {
-      tInfo->SetText(0.1, 0.8, "Quality::GOOD");
-      tInfo->SetTextColor(kGreen);
-    } else if (checkResult == Quality::Bad) {
-      tInfo->SetText(0.1, 0.8, "Info: distribution asymmetric in eta, call expert");
-      tInfo->SetTextColor(kRed);
+    int histoQuality = getDigit( checkResult.getLevel(),5);
+    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->Clear();
+    if (histoQuality==0) {
+      msg->AddText("Quality::GOOD");
+      msg->SetTextColor(kGreen);
+    } else {
+      msg->AddText("INFO: distribution asymmetric in eta");
+      msg->AddText("call expert");
+      msg->SetTextColor(kRed);
     }
-    tInfo->SetTextSize(17);
-    tInfo->SetNDC();
-    h->GetListOfFunctions()->Add(tInfo);
+    msg->SetTextSize(17);
+    msg->SetBorderSize(0);
+    h->GetListOfFunctions()->Add(msg);
   }
+
+  if (mo->getName() == "VertexCoordinates") {
+    auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    int histoQuality = getDigit( checkResult.getLevel(),6);
+    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->Clear();
+    if (histoQuality==0) {
+      msg->AddText("Quality::GOOD");
+      msg->SetTextColor(kGreen);
+    } else {	    
+	  if (histoQuality==1 || histoQuality==3) {
+              msg->AddText("INFO: vertex X displaced > 2 mm ");
+          }
+	  if (histoQuality==2 || histoQuality==3) {
+              msg->AddText("INFO: vertex Y displaced > 2 mm ");
+          }
+
+      msg->AddText("Inform expert on MM");
+      msg->SetTextColor(kRed);
+    }
+    msg->SetBorderSize(0);
+    msg->SetTextSize(17);
+    h->GetListOfFunctions()->Add(msg);
+  }
+
+  if (mo->getName() == "VertexRvsZ") {
+    auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    int histoQuality = getDigit( checkResult.getLevel(),7);
+    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->Clear();
+
+    if (histoQuality==0) {
+      msg->AddText("Quality::GOOD");
+      msg->SetTextColor(kGreen);
+    } else {
+    
+         if (histoQuality==1 || histoQuality==3) {
+              msg->AddText("INFO: vertex distance on XY plane > 2.8 mm");
+          }
+          if (histoQuality==2 || histoQuality==3) {
+              msg->AddText("INFO: vertex Z displaced > 10 cm");
+          }
+
+      msg->AddText("Inform expert on MM");
+      msg->SetTextColor(kRed);   
+    }	    
+    msg->SetTextSize(17);
+    msg->SetBorderSize(0);
+    h->GetListOfFunctions()->Add(msg);
+  }
+
+
+
+
+  if (mo->getName() == "VertexZ") {
+    auto* h = dynamic_cast<TH1D*>(mo->getObject());
+    int histoQuality = getDigit( checkResult.getLevel(),8);
+    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
+    msg->SetName(Form("%s_msg", mo->GetName()));
+    msg->Clear();
+
+
+    if (histoQuality==0) {
+      msg->AddText("Quality::GOOD");
+      msg->SetTextColor(kGreen);
+    } else {
+      msg->AddText("INFO: vertex z displaced > 10 cm");
+      msg->SetTextColor(kRed);
+    }
+    msg->SetTextSize(17);
+    msg->SetBorderSize(0);
+    h->GetListOfFunctions()->Add(msg);
+  }
+
+
 }
+int ITSTrackCheck::getDigit(int number, int digit){
+   return number % (int) pow(10,digit) / (int) pow(10,digit-1);
+}
+
 
 } // namespace o2::quality_control_modules::its
