@@ -86,46 +86,24 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
   auto rofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
 
-  std::cout<<" fsaasgasg " <<std:: endl;
-  std::cout<<" one more"<<endl;
+  auto vertexArr = ctx.inputs().get< gsl::span<o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>> >("Vertices");
 
 
-
-
-
-  fasfffffffffffffffffff
   //auto vertexArr = ctx.inputs().get<o2::dataformats::VertexBase>("vertices");
-
-
-
-  std::vector<o2::dataformats::PrimaryVertex> vertexArr = ctx.inputs().get<o2::dataformats::PrimaryVertex>("Vertices");
-
+//  std::vector<o2::dataformats::PrimaryVertex> vertexArr = ctx.inputs().get<o2::dataformats::PrimaryVertex>("Vertices");
   // std::vector<o2::dataformats::VertexBase> vertexArr = ctx.inputs().get<gsl::span<o2::dataformats::VertexBase>>("vertices");
  //auto vertexArr = ctx.inputs().get<gsl::span<  o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>        >>("vertices");
- 
-
-
 //std::vector<Vertex> vertexArr = ctx.inputs().get<gsl::span<Vertex>>("Vertices");
-
 //std::vector<Vertex> vertexArr = ctx.inputs().get<Vertex>("Vertices");
-//
-
 //  std::vector<o2::dataformats::Vertex<int>>  vertexArr = ctx.inputs().get<gsl::span<  o2::dataformats::Vertex<int>>>("vertices");
-
-
 //   auto vertexArr = DataRefUtils::as< o2::dataformats::Vertex<int   >(ctx.inputs().get("vertices"));
-
    //std::vector<o2::dataformats::Vertex<int>>  *vertexArr = ctx.inputs().get<o2::dataformats::Vertex<int>>("vertices");
-
-
 //    auto vertexArr = ctx.inputs().get<o2::dataformats::VertexBase>("vertices");
-
-
 // auto vertexArr = ctx.inputs().get<gsl::span<  o2::dataformats::Vertex<int>>>("vertices");
 
-  std::cout<<"$$$$$$$$$$$$$$ obtained vector with verticies: "<<vertexArr.size() <<std::endl;
+  std::cout<<"!!! obtained vector with verticies: "<<vertexArr.size() <<std::endl;
 
-/*
+
   for (const auto& vertex: vertexArr){
   
       hVertexCoordinates->Fill(vertex.getX(),vertex.getY());
@@ -133,10 +111,6 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       std::cout<< " R = " <<sqrt(vertex.getX()*vertex.getX()+ vertex.getY()*vertex.getY()) << " X: "<<vertex.getX() << " Y: "<< vertex.getY() << " Z: "<<vertex.getZ()<<std::endl;
       hVertexRvsZ->Fill(sqrt(vertex.getX()*vertex.getX()+ vertex.getY()*vertex.getY()),vertex.getZ());
       hVertexZ->Fill(vertex.getZ());
-
-
-  
-
   }
 
 
@@ -172,7 +146,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     mNClustersInTracks = 0;
     mNClusters = 0;
   }
-  */
+  
 }
 
 void ITSTrackTask::endOfCycle()
