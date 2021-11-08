@@ -56,7 +56,8 @@ class ServiceDiscovery
   void deregister();
 
   // https://stackoverflow.com/questions/33358321/using-c-and-boost-or-not-to-check-if-a-specific-port-is-being-used
-  static inline bool PortInUse(unsigned short port) {
+  static inline bool PortInUse(unsigned short port)
+  {
     using namespace boost::asio;
     using ip::tcp;
 
@@ -79,21 +80,21 @@ class ServiceDiscovery
   {
     // inspired by https://stackoverflow.com/questions/7560114/random-number-c-in-some-range/7560151
     size_t port;
-    std::random_device rd; // obtain a random number from hardware
+    std::random_device rd;  // obtain a random number from hardware
     std::mt19937 gen(rd()); // seed the generator
-    size_t rangeLength = HealthPortRangeEnd-HealthPortRangeStart+1;
-    std::uniform_int_distribution<> distr(0, rangeLength -1); // define the inclusive range
+    size_t rangeLength = HealthPortRangeEnd - HealthPortRangeStart + 1;
+    std::uniform_int_distribution<> distr(0, rangeLength - 1); // define the inclusive range
 
     size_t index = distr(gen); // get a random index in the range
-    port = HealthPortRangeStart+index;
-    size_t cycle = 1; // count how many ports we tried
-    while(cycle < rangeLength && PortInUse(port)) { // if the port is in use and we did not go through the whole range
-      index = (index + 1) % rangeLength; // pick the next index
-      port = HealthPortRangeStart+index;
+    port = HealthPortRangeStart + index;
+    size_t cycle = 1;                                // count how many ports we tried
+    while (cycle < rangeLength && PortInUse(port)) { // if the port is in use and we did not go through the whole range
+      index = (index + 1) % rangeLength;             // pick the next index
+      port = HealthPortRangeStart + index;
       cycle++;
     }
     if (cycle == rangeLength) {
-      ILOG (Error, Support) << "Could not find a free port for the ServiceDiscovery" << ENDM;
+      ILOG(Error, Support) << "Could not find a free port for the ServiceDiscovery" << ENDM;
       // we keep the last port but all calls will fail.
     } else {
       ILOG(Debug, Devel) << "ServiceDiscovery selected port: " << port << ENDM;
@@ -107,7 +108,7 @@ class ServiceDiscovery
   }
 
   static constexpr size_t HealthPortRangeStart = 47800; ///< Health check port range start
-  static constexpr size_t HealthPortRangeEnd = 47899; ///< Health check port range end  
+  static constexpr size_t HealthPortRangeEnd = 47899;   ///< Health check port range end
 
  private:
   /// Custom deleter of CURL object
@@ -119,7 +120,7 @@ class ServiceDiscovery
   const std::string mConsulUrl;     ///< Consul URL
   const std::string mName;          ///< Instance (service) Name
   const std::string mId;            ///< Instance (service) ID
-  std::string mHealthUrl;      ///< hostname and port of health check endpoint
+  std::string mHealthUrl;           ///< hostname and port of health check endpoint
   std::thread mHealthThread;        ///< Health check thread
   std::atomic<bool> mThreadRunning; ///< Health check thread running flag
 
