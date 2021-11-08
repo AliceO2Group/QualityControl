@@ -39,9 +39,9 @@
         "location" : "remote",
         "taskParameters" : {
           "runNumberPath" : "/home/its/QC/workdir/infiles/RunNumber.dat",
-	  "vertexXYsize" : "50",
-	  "vertexZsize": "50",
-	  "vertexRsize": "50"
+	  "vertexXYsize" : "5",
+	  "vertexZsize": "20",
+	  "vertexRsize": "10"
         }
 
       }

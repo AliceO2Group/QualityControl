@@ -65,6 +65,7 @@ class ITSTrackTask : public TaskInterface
   TH2D* hVertexCoordinates;
   TH2D* hVertexRvsZ;
   TH1D* hVertexZ;
+  TH1D* hVertexContributors;
   std::string mRunNumber;
   std::string mRunNumberPath;
 

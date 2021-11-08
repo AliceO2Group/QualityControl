@@ -504,6 +504,8 @@ void ITSClusterTask::getJsonParameters()
   mGeomPath = mCustomParameters["geomPath"];
   mNThreads = stoi(mCustomParameters.find("nThreads")->second);
   LOG(INFO) << "#################### mNThreads : " << mNThreads;
+
+   LOG(INFO) << "$$$$$$$$$$$$$$$$$$ mGeomPath : " << mGeomPath;
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
 
     if (mCustomParameters["layer"][ilayer] != '0') {

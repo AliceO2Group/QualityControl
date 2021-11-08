@@ -53,6 +53,7 @@ ITSTrackTask::~ITSTrackTask()
   delete hVertexCoordinates;
   delete hVertexRvsZ;
   delete hVertexZ;
+  delete hVertexContributors;
 }
 
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -64,6 +65,9 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mVertexXYsize = std::stoi(mCustomParameters["vertexXYsize"]);
   mVertexZsize = std::stoi(mCustomParameters["vertexZsize"]);
   mVertexRsize = std::stoi(mCustomParameters["vertexRsize"]);
+
+
+  std::cout<<" %%%%%%%%%%%%%%%%%%%%%%%%%% mVertexXYsize "<<mVertexXYsize<<" mVertexZsize "<<mVertexZsize<< " mVertexRsize "<<mVertexRsize<<std::endl; 
 
   publishHistos();
 }
@@ -111,6 +115,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       std::cout<< " R = " <<sqrt(vertex.getX()*vertex.getX()+ vertex.getY()*vertex.getY()) << " X: "<<vertex.getX() << " Y: "<< vertex.getY() << " Z: "<<vertex.getZ()<<std::endl;
       hVertexRvsZ->Fill(sqrt(vertex.getX()*vertex.getX()+ vertex.getY()*vertex.getY()),vertex.getZ());
       hVertexZ->Fill(vertex.getZ());
+      hVertexContributors->Fill(vertex.getNContributors());
   }
 
 
@@ -184,7 +189,7 @@ void ITSTrackTask::reset()
   hVertexCoordinates->Reset();
   hVertexRvsZ->Reset();
   hVertexZ->Reset();
-
+  hVertexContributors->Reset();
 
 
 }
@@ -222,7 +227,7 @@ void ITSTrackTask::createAllHistos()
   addObject(hClusterUsage);
   formatAxes(hClusterUsage, "", "nCluster in track / Total cluster", 1, 1.10);
 
-  hVertexCoordinates = new TH2D("VertexCoordinates", "VertexCoordinates",200,-mVertexXYsize,mVertexXYsize,200,-mVertexXYsize,mVertexXYsize);
+  hVertexCoordinates = new TH2D("VertexCoordinates", "VertexCoordinates",200,-1. * mVertexXYsize,mVertexXYsize,200,-1* mVertexXYsize,mVertexXYsize);
   hVertexCoordinates->SetTitle("Coordinates of track vertex");
   addObject(hVertexCoordinates);
   formatAxes(hVertexCoordinates, "X coordinate (cm)", "Y coordinate (cm)", 1, 1.10);
@@ -232,10 +237,16 @@ void ITSTrackTask::createAllHistos()
   addObject(hVertexRvsZ);
   formatAxes(hVertexRvsZ, "R (cm) ", "Z coordinate (cm)", 1, 1.10);
 
-  hVertexZ = new TH1D("VertexZ", "VertexZ", 200, -mVertexXYsize,mVertexXYsize);
+  hVertexZ = new TH1D("VertexZ", "VertexZ", 200, -1. *mVertexXYsize,mVertexXYsize);
   hVertexZ->SetTitle("Z coordinate of vertex");
   addObject(hVertexZ);
   formatAxes(hVertexZ, "Z coordinate (cm)","counts", 1, 1.10);
+
+  hVertexContributors = new TH1D("NVertexContributors", "NVertexContributors", 100, 0, 100);
+  hVertexContributors->SetTitle("NVertexContributors");
+  addObject(hVertexContributors); 
+  formatAxes(hVertexContributors, "Number of contributors for vertex", "Counts", 1, 1.10);
+
 
 
 }

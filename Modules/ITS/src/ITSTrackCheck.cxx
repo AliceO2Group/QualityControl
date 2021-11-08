@@ -64,6 +64,12 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     if (iter->second->getName() == "AngularDistribution") {
       auto* hAngluar = dynamic_cast<TH2D*>(iter->second->getObject());
       TH1D* projectPhi = hAngluar->ProjectionY();
+      for (int iBin=1;iBin<projectPhi->GetNbinsX();iBin++)
+         std::cout<<"ProjectY, iBin: "<<iBin<<" Content: "<< projectPhi->GetBinContent(iBin) << " BinCenter: "<< projectPhi->GetBinCenter(iBin)<<std::endl;
+
+
+
+
       Double_t ratio = abs(projectPhi->Integral(projectPhi->FindBin(0), projectPhi->FindBin(TMath::Pi())) / projectPhi->Integral(projectPhi->FindBin(TMath::Pi()), projectPhi->FindBin(TMath::TwoPi())) - 1);
       
       std::cout <<" Angular Distribution Ratio: "<< ratio << " 1: "<< projectPhi->Integral(projectPhi->FindBin(0), projectPhi->FindBin(TMath::Pi())) << " 2: "<< projectPhi->Integral(projectPhi->FindBin(TMath::Pi()), projectPhi->FindBin(TMath::TwoPi()))<<std:: endl;
@@ -83,28 +89,38 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
     }
 
     if (iter->second->getName() == "VertexCoordinates") {
-      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
-      TH1D* projectY = h->ProjectionY("projectY");
+      TH2D* h = dynamic_cast<TH2D*>(iter->second->getObject());
 
-      std::cout<<" ProjectY 1:"<< projectY->Integral(1,projectY->FindBin(-0.02)) << " 2: "<<projectY->Integral(projectY->FindBin(0.02),projectY->GetNbinsX()) <<std::endl;
-      if ( projectY->Integral(1,projectY->FindBin(-0.02)) > 0 || projectY->Integral(projectY->FindBin(0.02),projectY->GetNbinsX()) > 0) result = result.getLevel()+1e5;
-      TH1D* projectX = h->ProjectionX("projectX");
-      if ( projectX->Integral(1,projectX->FindBin(-0.02)) > 0 || projectX->Integral(projectX->FindBin(0.02),projectX->GetNbinsX()) > 0) result = result.getLevel()+2e5;
+
+
+
+      TH1D* projectY = h->ProjectionY();
+      if (   (projectY->FindBin(-0.02)!=0 && projectY->Integral(1,projectY->FindBin(-0.02)) > 0) || ( projectY->FindBin(0.02)!=(projectY->GetNbinsX()+1) &&  projectY->Integral(projectY->FindBin(0.02),projectY->GetNbinsX()) > 0)) result = result.getLevel()+1e5;
+      TH1D* projectX = h->ProjectionX();
+
+     if (  (projectX->FindBin(-0.02)!=0 && projectX->Integral(1,projectX->FindBin(-0.02))) > 0 || ( projectX->FindBin(0.02)!=(projectX->GetNbinsX()+1) && projectX->Integral(projectX->FindBin(0.02),projectX->GetNbinsX()) > 0)) result = result.getLevel()+2e5;
       
     }
 
      if (iter->second->getName() == "VertexRvsZ") {
       auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
       TH1D* projectZ = h->ProjectionY("projectZ");
-      if ( projectZ->Integral(1,projectZ->FindBin(-10)) > 0 || projectZ->Integral(projectZ->FindBin(10),projectZ->GetNbinsX()) > 0) result = result.getLevel()+1e6;
+
+      if ( (projectZ->FindBin(-10)!=0 && projectZ->Integral(1,projectZ->FindBin(-10)) > 0)  || (  projectZ->FindBin(10)!=(projectZ->GetNbinsX()+1) && projectZ->Integral(projectZ->FindBin(10),projectZ->GetNbinsX()) > 0)) result = result.getLevel()+1e6;
+        
+   
+
       TH1D* projectR = h->ProjectionX("projectX");
-      if ( projectR->Integral(projectR->FindBin(2.8),projectR->GetNbinsX()) > 0) result = result.getLevel()+2e6;
+
+      if (  projectR->FindBin(2.8)!=(projectR->GetNbinsX()+1) && projectR->Integral(projectR->FindBin(2.8),projectR->GetNbinsX()) > 0) result = result.getLevel()+2e6;
 
     }
 
     if (iter->second->getName() == "VertexZ") {
       auto* h = dynamic_cast<TH1D*>(iter->second->getObject());
-      if ( h->Integral(1,h->FindBin(-10)) > 0 || h->Integral(h->FindBin(10),h->GetNbinsX()) > 0) result = result.getLevel()+1e7;
+
+      if ( ( h->FindBin(-10)!=0 && h->Integral(1,h->FindBin(-10)) > 0) || ( h->FindBin(10)!=(h->GetNbinsX()+1) && h->Integral(h->FindBin(10),h->GetNbinsX()) > 0) ) result = result.getLevel()+1e7;
+
 			    
    }
 
@@ -236,10 +252,10 @@ void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       msg->SetTextColor(kGreen);
     } else {	    
 	  if (histoQuality==1 || histoQuality==3) {
-              msg->AddText("INFO: vertex X displaced > 2 mm ");
+              msg->AddText("INFO: vertex Y displaced > 2 mm ");
           }
 	  if (histoQuality==2 || histoQuality==3) {
-              msg->AddText("INFO: vertex Y displaced > 2 mm ");
+              msg->AddText("INFO: vertex X displaced > 2 mm ");
           }
 
       msg->AddText("Inform expert on MM");
