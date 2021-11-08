@@ -78,8 +78,8 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
     setPtCut(atof(param->second.c_str()));
   }
-  if (auto param = mCustomParameters.find("EtaCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - EtaCut (for track selection): " << param->second << ENDM;
+  if (auto param = mCustomParameters.find("etaCut"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - etaCut (for track selection): " << param->second << ENDM;
     setEtaCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minNTPCClustersCut"); param != mCustomParameters.end()) {
