@@ -94,7 +94,7 @@ class TOFMatchedTracks final : public TaskInterface
 
   // for track selection
   float mPtCut = 0.1f;
-  float mEtaCut = 1.4f;
+  float mEtaCut = 0.8f;
   int32_t mNTPCClustersCut = 40;
   float mDCACut = 100.f;
   float mDCACutY = 10.f;
