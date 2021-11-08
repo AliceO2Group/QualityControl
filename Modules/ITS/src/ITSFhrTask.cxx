@@ -89,13 +89,15 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeneralOccupancy->SetTitle("General Occupancy;mm;mm");
   mGeneralOccupancy->SetName("General/General_Occupancy");
   mGeneralOccupancy->SetStats(0);
-  mGeneralOccupancy->GetZaxis()->SetRangeUser(pow(10, mMinGeneralAxisRange), pow(10, mMaxGeneralAxisRange));
+  mGeneralOccupancy->SetMinimum(pow(10, mMinGeneralAxisRange));
+  mGeneralOccupancy->SetMaximum(pow(10, mMaxGeneralAxisRange));
 
   mGeneralNoisyPixel = new TH2Poly();
   mGeneralNoisyPixel->SetTitle("Noisy Pixel Number;mm;mm");
   mGeneralNoisyPixel->SetName("General/Noisy_Pixel");
   mGeneralNoisyPixel->SetStats(0);
-  mGeneralNoisyPixel->GetZaxis()->SetRangeUser(mMinGeneralNoisyAxisRange, mMaxGeneralNoisyAxisRange);
+  mGeneralNoisyPixel->SetMinimum(mMinGeneralNoisyAxisRange);
+  mGeneralNoisyPixel->SetMaximum(mMaxGeneralNoisyAxisRange);
 
   createGeneralPlots();
   createOccupancyPlots();
@@ -546,7 +548,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   //fill Monitor Objects use openMP multiple threads, and calculate the occupancy
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     int istave = activeStaves[i];
-    if (digVec[istave][0].size() < 1) {
+    if (digVec[istave][0].size() < 1 && lay < NLayerIB) {
       continue;
     }
     const auto* DecoderTmp = mDecoder;
@@ -653,7 +655,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
       }
-      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
+      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nHicPerStave[lay])));
       mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[lay][istave]);
     }
   }
