@@ -202,27 +202,29 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   mNRofs += clusRofArr.size();        //USED to calculate occupancy for the whole run
   mNRofsMonitor += clusRofArr.size(); // Occupancy in the last N ROFs
 
-  for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
+  if (mNRofs > 0) {
+    for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
 
-    if (!mEnableLayers[iLayer])
-      continue;
+      if (!mEnableLayers[iLayer])
+        continue;
 
-    for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
+      for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
 
-      if (iLayer < 3) {
-        for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
-          hOccupancyIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIB[iLayer][iStave][iChip] / mNRofs);
-          hAverageClusterIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, hClusterSizeIB[iLayer][iStave][iChip]->GetMean());
+        if (iLayer < 3) {
+          for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
+            hOccupancyIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIB[iLayer][iStave][iChip] / mNRofs);
+            hAverageClusterIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, hClusterSizeIB[iLayer][iStave][iChip]->GetMean());
+          }
+          mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyIB[iLayer][iStave], mClusterOccupancyIB[iLayer][iStave] + mNChipsPerHic[iLayer])) / mNRofs);
+        } else {
+
+          for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
+            hOccupancyOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, 1. * mClusterOccupancyOB[iLayer][iStave][iHic] / mNRofs / 14); //14 To have occupation per chip and HIC has 14 chips
+            hAverageClusterOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, hClusterSizeOB[iLayer][iStave][iHic]->GetMean());
+          }
+
+          mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyOB[iLayer][iStave], mClusterOccupancyOBmonitor[iLayer][iStave] + mNHicPerStave[iLayer])) / mNRofs / 14);
         }
-        mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyIB[iLayer][iStave], mClusterOccupancyIB[iLayer][iStave] + mNChipsPerHic[iLayer])) / mNRofs);
-      } else {
-
-        for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
-          hOccupancyOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, 1. * mClusterOccupancyOB[iLayer][iStave][iHic] / mNRofs / 14); //14 To have occupation per chip and HIC has 14 chips
-          hAverageClusterOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, hClusterSizeOB[iLayer][iStave][iHic]->GetMean());
-        }
-
-        mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyOB[iLayer][iStave], mClusterOccupancyOBmonitor[iLayer][iStave] + mNHicPerStave[iLayer])) / mNRofs / 14);
       }
     }
   }
