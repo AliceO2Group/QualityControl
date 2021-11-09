@@ -214,8 +214,7 @@ void AggregatorRunner::initServiceDiscovery()
     ILOG(Warning, Ops) << "Service Discovery disabled" << ENDM;
     return;
   }
-  std::string url = ServiceDiscovery::GetDefaultUrl(ServiceDiscovery::DefaultHealthPort + 2); // we try to avoid colliding with the CheckRunner
-  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName, url);
+  mServiceDiscovery = std::make_shared<ServiceDiscovery>(consulUrl, mDeviceName, mDeviceName);
   ILOG(Info, Devel) << "ServiceDiscovery initialized";
 }
 

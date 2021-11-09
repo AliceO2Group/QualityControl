@@ -17,7 +17,6 @@
 #include "QualityControl/QcInfoLogger.h"
 #include <string>
 #include <boost/asio.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
@@ -25,15 +24,15 @@
 namespace o2::quality_control::core
 {
 
-ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& name, const std::string& id, const std::string& healthEndpoint)
-  : curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mName(name), mId(id), mHealthEndpoint(healthEndpoint)
+ServiceDiscovery::ServiceDiscovery(const std::string& url, const std::string& name, const std::string& id, const std::string& healthEndUrl)
+  : curlHandle(initCurl(), &ServiceDiscovery::deleteCurl), mConsulUrl(url), mName(name), mId(id), mHealthUrl(healthEndUrl)
 {
   // parameter check
-  if (mHealthEndpoint.find(':') == std::string::npos) {
-    mHealthEndpoint = GetDefaultUrl();
+  if (mHealthUrl.find(':') == std::string::npos) {
+    mHealthUrl = GetDefaultUrl();
   }
 
-  mHealthThread = std::thread([=] { runHealthServer(std::stoi(mHealthEndpoint.substr(mHealthEndpoint.find(":") + 1))); });
+  mHealthThread = std::thread([=] { runHealthServer(std::stoi(mHealthUrl.substr(mHealthUrl.find(":") + 1))); });
   _register("");
 }
 
@@ -81,7 +80,7 @@ void ServiceDiscovery::_register(const std::string& objects)
   check.put("Name", "Health check " + mId);
   check.put("Interval", "5s");
   check.put("DeregisterCriticalServiceAfter", "1m");
-  check.put("TCP", mHealthEndpoint);
+  check.put("TCP", mHealthUrl);
   checks.push_back(std::make_pair("", check));
 
   pt.put("Name", mName);
