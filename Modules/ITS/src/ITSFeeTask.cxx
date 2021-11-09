@@ -134,6 +134,7 @@ void ITSFeeTask::setPlotsFormat()
   for (int i = 0; i < NFlags; i++) {
     if (mLaneStatus[i]) {
       setAxisTitle(mLaneStatus[i], "FEEID", "Lane");
+      mLaneStatus[i]->SetStats(0);
     }
   }
 
