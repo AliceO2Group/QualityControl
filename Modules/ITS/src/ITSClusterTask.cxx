@@ -227,17 +227,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
- // std::cout<<"cdsfsgsd"<<std::endl;
-
-
-//  hAverageClusterIB[2]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//  hOccupancyIB[2]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//  hAverageClusterOB[4]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//  hOccupancyOB[4]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//  hAverageClusterOB[6]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//  hOccupancyOB[6]->SetBinContent(2, 2, 50); //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
   if (mNRofsMonitor >= mOccUpdateFrequency) {
     updateOccMonitorPlots();
     mNRofsMonitor = 0;
@@ -347,10 +336,6 @@ void ITSClusterTask::reset()
       }
     }
   }
-
-
-
-
 }
 
 void ITSClusterTask::createAllHistos()
@@ -503,9 +488,7 @@ void ITSClusterTask::getJsonParameters()
   mRunNumberPath = mCustomParameters["runNumberPath"];
   mGeomPath = mCustomParameters["geomPath"];
   mNThreads = stoi(mCustomParameters.find("nThreads")->second);
-  LOG(INFO) << "#################### mNThreads : " << mNThreads;
 
-   LOG(INFO) << "$$$$$$$$$$$$$$$$$$ mGeomPath : " << mGeomPath;
   for (int ilayer = 0; ilayer < NLayer; ilayer++) {
 
     if (mCustomParameters["layer"][ilayer] != '0') {
