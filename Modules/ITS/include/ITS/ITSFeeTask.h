@@ -36,7 +36,7 @@ namespace o2::quality_control_modules::its
 /// \brief ITS FEE task aiming at 100% online data integrity checking
 class ITSFeeTask final : public TaskInterface
 {
-  struct GBTDiagnosticWord { //GBT diagnostic word
+  struct GBTDiagnosticWord { // GBT diagnostic word
     union {
       uint64_t word0 = 0x0;
       struct {
@@ -83,19 +83,19 @@ class ITSFeeTask final : public TaskInterface
   int mTimeFrameId = 0;
   static constexpr int mNTrigger = 13;
   TString mTriggerType[mNTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
-  std::string mLaneStatusFlag[NFlags] = { "OK", "WARNING", "ERROR", "FAULT" }; //b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
+  std::string mLaneStatusFlag[NFlags] = { "OK", "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
 
-  TH1I* mTFInfo; //count vs TF ID
+  TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;
   TH1I* mTrigger;
   TH2I* mLaneInfo;
-  TH2I* mFlag1Check;         //include transmission_timeout, packet_overflow, lane_starts_violation
-  TH2I* mIndexCheck;         //should be zero
-  TH2I* mIdCheck;            //should be 0x : e4
-  TH2I* mLaneStatus[NFlags]; //4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
+  TH2I* mFlag1Check;         // include transmission_timeout, packet_overflow, lane_starts_violation
+  TH2I* mIndexCheck;         // should be zero
+  TH2I* mIdCheck;            // should be 0x : e4
+  TH2I* mLaneStatus[NFlags]; // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
   TH1I* mProcessingTime;
-  TH2F* mPayloadSize;        //average payload size vs linkID
-  //TH1D* mInfoCanvas;//TODO: default, not implemented yet
+  TH2F* mPayloadSize; // average payload size vs linkID
+  // TH1D* mInfoCanvas;//TODO: default, not implemented yet
   std::string mRunNumberPath;
   std::string mRunNumber = "000000";
 };

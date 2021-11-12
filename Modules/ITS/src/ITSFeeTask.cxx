@@ -48,7 +48,7 @@ ITSFeeTask::~ITSFeeTask()
     delete mLaneStatus[i];
   }
 
-  //delete mInfoCanvas;
+  // delete mInfoCanvas;
 }
 
 void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -61,36 +61,36 @@ void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 void ITSFeeTask::createFeePlots()
 {
   mTrigger = new TH1I("TriggerFlag", "Trigger vs counts", mNTrigger, 0.5, mNTrigger + 0.5);
-  getObjectsManager()->startPublishing(mTrigger); //mTrigger
+  getObjectsManager()->startPublishing(mTrigger); // mTrigger
 
   mTFInfo = new TH1I("STFInfo", "STF vs count", 15000, 0, 15000);
-  getObjectsManager()->startPublishing(mTFInfo); //mTFInfo
+  getObjectsManager()->startPublishing(mTFInfo); // mTFInfo
 
   mLaneInfo = new TH2I("LaneInfo", "Lane Information", NLanes, -.5, NLanes - 0.5, NFlags, -.5, NFlags - 0.5);
-  getObjectsManager()->startPublishing(mLaneInfo); //mLaneInfo
+  getObjectsManager()->startPublishing(mLaneInfo); // mLaneInfo
 
   mProcessingTime = new TH1I("ProcessingTime", "Processing Time", 10000, 0, 10000);
-  getObjectsManager()->startPublishing(mProcessingTime); //mProcessingTime
+  getObjectsManager()->startPublishing(mProcessingTime); // mProcessingTime
 
   mTriggerVsFeeId = new TH2I("TriggerVsFeeid", "Trigger count vs Trigger ID and Fee ID", NFees, 0, NFees, mNTrigger, 0.5, mNTrigger + 0.5);
-  getObjectsManager()->startPublishing(mTriggerVsFeeId); //mTriggervsFeeId
+  getObjectsManager()->startPublishing(mTriggerVsFeeId); // mTriggervsFeeId
 
   for (int i = 0; i < NFlags; i++) {
     mLaneStatus[i] = new TH2I(Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flag : %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanes, 0, NLanes);
-    getObjectsManager()->startPublishing(mLaneStatus[i]); //mlaneStatus
+    getObjectsManager()->startPublishing(mLaneStatus[i]); // mlaneStatus
   }
 
   mFlag1Check = new TH2I("Flag1Check", "Flag 1 Check", NFees, 0, NFees, 3, 0, 3); // Row 1 : transmission_timeout, Row 2 : packet_overflow, Row 3 : lane_starts_violation
-  getObjectsManager()->startPublishing(mFlag1Check);                              //mFlag1Check
+  getObjectsManager()->startPublishing(mFlag1Check);                              // mFlag1Check
 
   mIndexCheck = new TH2I("IndexCheck", "Index Check", NFees, 0, NFees, 4, 0, 4);
-  getObjectsManager()->startPublishing(mIndexCheck); //mIndexCheck
+  getObjectsManager()->startPublishing(mIndexCheck); // mIndexCheck
 
   mIdCheck = new TH2I("IdCheck", "Id Check", NFees, 0, NFees, 8, 0, 8);
-  getObjectsManager()->startPublishing(mIdCheck); //mIdCheck
+  getObjectsManager()->startPublishing(mIdCheck); // mIdCheck
 
   mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, 5.12e3, 0, 5.12e6);
-  getObjectsManager()->startPublishing(mPayloadSize); //mPayloadSize
+  getObjectsManager()->startPublishing(mPayloadSize); // mPayloadSize
 }
 
 void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
@@ -190,7 +190,7 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     payloadTot[ifee] += memorysize;
 
-    if ((int)(rdh->stop) && it.size()) { //looking into the DDW0 from the closing packet
+    if ((int)(rdh->stop) && it.size()) { // looking into the DDW0 from the closing packet
       auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
       uint64_t laneInfo = ddw->laneWord.laneBits.laneStatus;
       uint8_t flag1 = ddw->indexWord.indexBits.flag1;
