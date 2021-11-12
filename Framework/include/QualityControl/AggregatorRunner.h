@@ -182,6 +182,7 @@ class AggregatorRunner : public framework::Task
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
   AliceO2::Common::Timer mTimer;
+  AliceO2::Common::Timer mTimerTotalDurationActivity;
   int mTotalNumberObjectsReceived;
   int mTotalNumberAggregatorExecuted;
   int mTotalNumberObjectsProduced;
