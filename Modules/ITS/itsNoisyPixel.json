@@ -56,7 +56,7 @@
     	    "id": "compclus",
             "active": "true",
             "machines": [],
-            "query": "compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0;digits:ITS/DIGITS/0",
+            "query": "compclus:ITS/COMPCLUSTERS/0;clustersrof:ITS/CLUSTERSROF/0",
             "samplingConditions": [
                 {
                     "condition": "random",
