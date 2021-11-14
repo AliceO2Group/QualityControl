@@ -101,6 +101,8 @@ class TOFMatchedTracks final : public TaskInterface
   std::string mGRPFileName = "o2sim_grp.root";
   std::string mGeomFileName = "o2sim_geometry.root";
   float mBz = 0; ///< nominal Bz
+
+  int mTF = -1; // to count the number of processed TFs
 };
 
 } // namespace o2::quality_control_modules::tof
