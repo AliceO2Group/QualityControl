@@ -65,6 +65,7 @@ class ITSFeeTask final : public TaskInterface
   void startOfActivity(Activity& activity) override;
   void startOfCycle() override;
   void monitorData(o2::framework::ProcessingContext& ctx) override;
+  void getParameters(); // get Task parameters from json file
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
@@ -84,6 +85,9 @@ class ITSFeeTask final : public TaskInterface
   static constexpr int mNTrigger = 13;
   TString mTriggerType[mNTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
   std::string mLaneStatusFlag[NFlags] = { "OK", "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
+
+  // parameters taken from the .json
+  int mNPayloadSizeBins = 0;
 
   TH1I* mTFInfo; // count vs TF ID
   TH2I* mTriggerVsFeeId;

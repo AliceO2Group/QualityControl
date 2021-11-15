@@ -23,7 +23,7 @@
             }
         },
         "tasks": {
-            "ITSFEE": {
+            "ITSFee": {
                 "active": "true",
                 "className": "o2::quality_control_modules::its::ITSFeeTask",
                 "moduleName": "QcITS",
@@ -34,7 +34,10 @@
                     "type": "dataSamplingPolicy",
                     "name": "RAWDATA"
                 },
-                "location": "remote"
+                "location": "remote",
+                "taskParameters": {
+                    "NPayloadSizeBins": "512"
+                }
             }
         },
         "checks": {
@@ -44,14 +47,19 @@
                 "moduleName": "QcITS",
                 "policy": "OnAny",
                 "detectorName": "ITS",
-                "dataSource": [{
-                    "type": "Task",
-                    "name": "ITSFEE",
-                    "MOs": ["LaneStatus/laneStatusFlagFAULT","LaneStatus/laneStatusFlagERROR","LaneStatus/laneStatusFlagWARNING"]
-                }]
+                "dataSource": [
+                    {
+                        "type": "Task",
+                        "name": "ITSFEE",
+                        "MOs": [
+                            "LaneStatus/laneStatusFlagFAULT",
+                            "LaneStatus/laneStatusFlagERROR",
+                            "LaneStatus/laneStatusFlagWARNING"
+                        ]
+                    }
+                ]
             }
         }
-
     },
     "dataSamplingPolicies": [
         {
@@ -70,4 +78,3 @@
         }
     ]
 }
-

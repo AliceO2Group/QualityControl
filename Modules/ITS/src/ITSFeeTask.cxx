@@ -56,6 +56,7 @@ void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "Initializing the ITSFeeTask" << ENDM;
   createFeePlots();
   setPlotsFormat();
+  getParameters();
 }
 
 void ITSFeeTask::createFeePlots()
@@ -89,7 +90,7 @@ void ITSFeeTask::createFeePlots()
   mIdCheck = new TH2I("IdCheck", "Id Check", NFees, 0, NFees, 8, 0, 8);
   getObjectsManager()->startPublishing(mIdCheck); // mIdCheck
 
-  mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, 5.12e3, 0, 5.12e6);
+  mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 5.12e5);
   getObjectsManager()->startPublishing(mPayloadSize); // mPayloadSize
 }
 
@@ -252,6 +253,11 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   mProcessingTime->SetBinContent(mTimeFrameId, difference);
+}
+
+void ITSFeeTask::getParameters()
+{
+  mNPayloadSizeBins = std::stoi(mCustomParameters["NPayloadSizeBins"]);
 }
 
 void ITSFeeTask::endOfCycle()
