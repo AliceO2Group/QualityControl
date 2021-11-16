@@ -180,15 +180,19 @@ void TOFMatchedTracks::startOfCycle()
 void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
+  ++mTF;
+  LOG(DEBUG) << " ************************ ";
+  LOG(DEBUG) << " *** Processing TF " << mTF << " *** ";
+  LOG(DEBUG) << " ************************ ";
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
   // TPC-TOF
   if (mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) { // this is enough to know that also TPC was loades, see "initialize"
     mTPCTracks = mRecoCont.getTPCTracks();
     mTPCTOFMatches = mRecoCont.getTPCTOFMatches();
-    ILOG(Info, Support) << "We found " << mTPCTracks.size() << " TPC-only tracks" << ENDM;
-    ILOG(Info, Support) << "We found " << mRecoCont.getTPCTOFTracks().size() << " TPC-TOF tracks" << ENDM;
-    ILOG(Info, Support) << "We found " << mTPCTOFMatches.size() << " TPC-only tracks matched to TOF" << ENDM;
+    LOG(DEBUG) << "We found " << mTPCTracks.size() << " TPC-only tracks";
+    LOG(DEBUG) << "We found " << mRecoCont.getTPCTOFTracks().size() << " TPC-TOF tracks";
+    LOG(DEBUG) << "We found " << mTPCTOFMatches.size() << " TPC-only tracks matched to TOF";
     if (mRecoCont.getTPCTOFTracks().size() != mTPCTOFMatches.size()) {
       ILOG(Fatal, Support) << "Number of TPCTOF tracks (" << mRecoCont.getTPCTOFTracks().size() << ") differs from number of TPCTOF matches (" << mTPCTOFMatches.size() << ")" << ENDM;
     }
@@ -197,9 +201,10 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       GTrackID gTrackId = matchTOF.getTrackRef();
       const auto& trk = mTPCTracks[gTrackId.getIndex()];
       if (!selectTrack(trk)) {
-        LOG(DEBUG) << "track with eta " << trk.getEta() << " discarded for numerator, UNCONS";
+        LOG(DEBUG) << "NUM UNCONS: track with eta " << trk.getEta() << " and pt " << trk.getPt() << " DISCARDED for numerator, UNCONS";
         continue;
       }
+      LOG(DEBUG) << "NUM UNCONS: track with eta " << trk.getEta() << " and pt " << trk.getPt() << " ACCEPTED for numerator, UNCONS";
       mMatchedTracksPt[trkType::UNCONS]->Fill(trk.getPt());
       mMatchedTracksEta[trkType::UNCONS]->Fill(trk.getEta());
       if (mUseMC) {
@@ -216,30 +221,32 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
   if (mRecoCont.isTrackSourceLoaded(GID::ITSTPCTOF)) { // this is enough to know that also ITSTPC was loades, see "initialize"
     mITSTPCTracks = mRecoCont.getTPCITSTracks();
     mITSTPCTOFMatches = mRecoCont.getITSTPCTOFMatches();
-    ILOG(Info, Support) << "We found " << mITSTPCTracks.size() << " ITS-TPC tracks" << ENDM;
-    ILOG(Info, Support) << "We found " << mITSTPCTOFMatches.size() << " ITS-TPC tracks matched to TOF" << ENDM;
+    LOG(DEBUG) << "We found " << mITSTPCTracks.size() << " ITS-TPC tracks";
+    LOG(DEBUG) << "We found " << mITSTPCTOFMatches.size() << " ITS-TPC tracks matched to TOF";
     // loop over TOF MatchInfo
     for (const auto& matchTOF : mITSTPCTOFMatches) {
       GTrackID gTrackId = matchTOF.getTrackRef();
       const auto& trk = mITSTPCTracks[gTrackId.getIndex()];
-      const auto& trkTPC = mTPCTracks[gTrackId.getIndex()];
+      const auto& trkTPC = mTPCTracks[trk.getRefTPC()];
       if (!selectTrack(trkTPC)) {
-        LOG(DEBUG) << "track with eta " << trkTPC.getEta() << " discarded for numerator, CONSTR";
+        LOG(DEBUG) << "NUM CONSTR: track with eta " << trkTPC.getEta() << " and pT " << trkTPC.getPt() << " DISCARDED for numerator, CONSTR";
         continue;
       }
-      mMatchedTracksPt[trkType::CONSTR]->Fill(trk.getPt());
-      mMatchedTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+      LOG(DEBUG) << "NUM CONSTR: track with eta " << trkTPC.getEta() << " and pT " << trkTPC.getPt() << " ACCEPTED for numerator, CONSTR"
+                 << " gid: " << gTrackId << " TPC gid =" << trk.getRefTPC();
+      mMatchedTracksPt[trkType::CONSTR]->Fill(trkTPC.getPt());
+      mMatchedTracksEta[trkType::CONSTR]->Fill(trkTPC.getEta());
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
-          mFakeMatchedTracksPt[trkType::CONSTR]->Fill(trk.getPt());
-          mFakeMatchedTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+          mFakeMatchedTracksPt[trkType::CONSTR]->Fill(trkTPC.getPt());
+          mFakeMatchedTracksEta[trkType::CONSTR]->Fill(trkTPC.getEta());
         }
       }
     }
   }
 
-  auto creator = [this](auto& trk, GID, float, float) {
+  auto creator = [this](auto& trk, GID gid, float, float) {
     // Getting the tracks for the denominator of the efficiencies for TPC-TOF tracks;
     // The RecoContainer will provide as TPCtracks only those not matched to TOF (lower
     // quality), so we need to ask also for the TPCTOF to have the full set in the denominator
@@ -251,36 +258,43 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       // E.g. (till the TrackCut class is used):
       if constexpr (isTPCTrack<decltype(trk)>()) {
         if (!selectTrack(trk)) {
-          LOG(DEBUG) << "track with eta " << trk.getEta() << " discarded for denominator, TPC track";
+          LOG(DEBUG) << "DEN UNCONS: track with eta " << trk.getEta() << " and pT " << trk.getPt() << " DISCARDED for denominator UNCONS, TPC track";
           return true;
         }
+        LOG(DEBUG) << "DEN UNCONS: track with eta " << trk.getEta() << " and pT " << trk.getPt() << " ACCEPTED for denominator UNCONS, TPC track"
+                   << " gid: " << gid;
+        this->mInTracksPt[trkType::UNCONS]->Fill(trk.getPt());
+        this->mInTracksEta[trkType::UNCONS]->Fill(trk.getEta());
       } else if constexpr (isTPCTOFTrack<decltype(trk)>()) {
         const auto& tpcTrack = mTPCTracks[mTPCTOFMatches[trk.getRefMatch()].getTrackRef().getIndex()];
         if (!selectTrack(tpcTrack)) {
-          LOG(DEBUG) << "track with eta " << tpcTrack.getEta() << " discarded for denominator, TPCTOF track";
+          LOG(DEBUG) << "DEN UNCONS: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " DISCARDED for denominator UNCONS, TPCTOF track";
           return true;
         }
+        LOG(DEBUG) << "DEN UNCONS: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " ACCEPTED for denominator UNCONS, TPCTOF track";
+        this->mInTracksPt[trkType::UNCONS]->Fill(tpcTrack.getPt());
+        this->mInTracksEta[trkType::UNCONS]->Fill(tpcTrack.getEta());
       }
-      this->mInTracksPt[trkType::UNCONS]->Fill(trk.getPt());
-      this->mInTracksEta[trkType::UNCONS]->Fill(trk.getEta());
     }
     // In case of ITS-TPC-TOF, the ITS-TPC tracks contain also the ITS-TPC-TOF
     if constexpr (isTPCITSTrack<decltype(trk)>()) {
       const auto& tpcTrack = mTPCTracks[trk.getRefTPC().getIndex()];
       if (!selectTrack(tpcTrack)) {
-        LOG(DEBUG) << "track with eta " << tpcTrack.getEta() << " discarded for denominator, ITSTPC track";
+        LOG(DEBUG) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " DISCARDED for denominator CONSTR, ITSTPC track";
         return true;
       }
-      this->mInTracksPt[trkType::CONSTR]->Fill(trk.getPt());
-      this->mInTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+      LOG(DEBUG) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " ACCEPTED for denominator CONSTR, ITSTPC track";
+      this->mInTracksPt[trkType::CONSTR]->Fill(tpcTrack.getPt());
+      this->mInTracksEta[trkType::CONSTR]->Fill(tpcTrack.getEta());
     }
     return true;
   };
   mRecoCont.createTracksVariadic(creator);
 
   int nTPCOnlytracks = mRecoCont.getTPCTracks().size() > 0 ? (mRecoCont.getTPCTracks().size() - mITSTPCTracks.size()) : 0;
-  ILOG(Info, Support) << "We have " << mInTracksPt[trkType::UNCONS]->GetEntries() << " unconstrained tracks at denominator (should be " << nTPCOnlytracks << "), and " << mInTracksPt[trkType::CONSTR]->GetEntries() << " constrained tracks at denominator (should be " << mRecoCont.getTPCITSTracks().size() << " but *before any quality cut!!*)" << ENDM;
-  ILOG(Info, Support) << "We have " << mMatchedTracksPt[trkType::UNCONS]->GetEntries() << " TOF matches from unconstrained tracks (should be " << mTPCTOFMatches.size() << "), and " << mMatchedTracksPt[trkType::CONSTR]->GetEntries() << " TOF matches from constrained tracks (should be " << mITSTPCTOFMatches.size() << " but *before any quality cut!!*))" << ENDM;
+
+  LOG(DEBUG) << "We have " << mInTracksPt[trkType::UNCONS]->GetEntries() << " unconstrained tracks at denominator (should be " << nTPCOnlytracks << "), and " << mInTracksPt[trkType::CONSTR]->GetEntries() << " constrained tracks at denominator (should be " << mRecoCont.getTPCITSTracks().size() << " but *before any quality cut!!*)";
+  LOG(DEBUG) << "We have " << mMatchedTracksPt[trkType::UNCONS]->GetEntries() << " TOF matches from unconstrained tracks (should be " << mTPCTOFMatches.size() << "), and " << mMatchedTracksPt[trkType::CONSTR]->GetEntries() << " TOF matches from constrained tracks (should be " << mITSTPCTOFMatches.size() << " but *before any quality cut!!*))";
 
   LOG(DEBUG) << "We have " << mInTracksPt[trkType::UNCONS]->GetEntries() << " unconstrained tracks at denominator, and " << mInTracksPt[trkType::CONSTR]->GetEntries() << " constrained tracks at denominator";
   LOG(DEBUG) << "We have " << mMatchedTracksPt[trkType::UNCONS]->GetEntries() << " TOF matches from unconstrained tracks and " << mMatchedTracksPt[trkType::CONSTR]->GetEntries() << " TOF matches from constrained tracks";
@@ -288,6 +302,7 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
   // logging in case denominator has less tracks than numerator
   for (int i = 0; i < trkType::SIZE; ++i) {
     for (int ibin = 1; ibin <= mMatchedTracksPt[i]->GetNbinsX(); ++ibin) {
+      LOG(DEBUG) << "check: ibin " << ibin << ": mInTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksPt[i]->GetBinContent(ibin) << ", mMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksPt[i]->GetBinContent(ibin);
       if (mInTracksPt[i]->GetBinContent(ibin) < mMatchedTracksPt[i]->GetBinContent(ibin)) {
         LOG(ERROR) << "issue spotted: ibin " << ibin << ": mInTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksPt[i]->GetBinContent(ibin) << ", mMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksPt[i]->GetBinContent(ibin);
       }
@@ -298,6 +313,7 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     for (int ibin = 1; ibin <= mMatchedTracksEta[i]->GetNbinsX(); ++ibin) {
+      LOG(DEBUG) << "check: ibin " << ibin << ": mInTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksEta[i]->GetBinContent(ibin) << ", mMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksEta[i]->GetBinContent(ibin);
       if (mInTracksEta[i]->GetBinContent(ibin) < mMatchedTracksEta[i]->GetBinContent(ibin)) {
         LOG(ERROR) << "issue spotted: ibin " << ibin << ": mInTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksEta[i]->GetBinContent(ibin) << ", mMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksEta[i]->GetBinContent(ibin);
       }
