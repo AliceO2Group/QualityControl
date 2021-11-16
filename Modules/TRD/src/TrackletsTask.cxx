@@ -25,7 +25,10 @@
 #include <Framework/InputRecordWalker.h>
 #include "DataFormatsTRD/Tracklet64.h"
 #include "DataFormatsTRD/Digit.h"
+#include "DataFormatsTRD/Digit.h"
+#include "DataFormatsTRD/NoiseCalibration.h"
 #include "DataFormatsTRD/TriggerRecord.h"
+#include "CCDB/BasicCCDBManager.h"
 
 namespace o2::quality_control_modules::trd
 {
@@ -58,6 +61,12 @@ void TrackletsTask::drawLinesMCM(TH2F* histo)
   }
 }
 
+void TrackletsTask::connectToCCDB()
+{
+  auto& ccdbmgr = o2::ccdb::BasicCCDBManager::instance();
+  //ccdbmgr.setURL("http://localhost:8080");
+  mNoiseMap.reset(ccdbmgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM"));
+}
 void TrackletsTask::buildHistograms()
 {
   for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
@@ -82,6 +91,29 @@ void TrackletsTask::buildHistograms()
   getObjectsManager()->startPublishing(mTrackletPositionRaw.get());
   mTrackletsPerEvent.reset(new TH1F("trackletsperevent", "Number of Tracklets per event", 2500, 0, 250000));
   getObjectsManager()->startPublishing(mTrackletsPerEvent.get());
+
+  for (Int_t sm = 0; sm < o2::trd::constants::NSECTOR; ++sm) {
+    std::string label = fmt::format("TrackletHCMCMnoise_{0}", sm);
+    std::string title = fmt::format("MCM in Tracklets data stream for sector {0} noise in", sm);
+    moHCMCMn[sm].reset(new TH2F(label.c_str(), title.c_str(), 76, -0.5, 75.5, 8 * 5, -0.5, 8 * 5 - 0.5));
+    moHCMCMn[sm]->GetYaxis()->SetTitle("ROB in stack");
+    moHCMCMn[sm]->GetXaxis()->SetTitle("mcm in rob in layer");
+    getObjectsManager()->startPublishing(moHCMCMn[sm].get());
+    getObjectsManager()->setDefaultDrawOptions(moHCMCMn[sm]->GetName(), "COLZ");
+    drawLinesMCM(moHCMCM[sm].get());
+  }
+  mTrackletSlopen.reset(new TH1F("trackletslopenoise", "uncalibrated Slope of tracklets noise in", 1024, -6.0, 6.0)); // slope is 8 bits in the tracklet
+  getObjectsManager()->startPublishing(mTrackletSlopen.get());
+  mTrackletSlopeRawn.reset(new TH1F("trackletsloperawnoise", "Raw Slope of tracklets noise in", 256, 0, 256)); // slope is 8 bits in the tracklet
+  getObjectsManager()->startPublishing(mTrackletSlopeRawn.get());
+  mTrackletHCIDn.reset(new TH1F("tracklethcidnoise", "Tracklet distribution over Halfchambers noise in", 1080, 0, 1080));
+  getObjectsManager()->startPublishing(mTrackletHCIDn.get());
+  mTrackletPositionn.reset(new TH1F("trackletposnoise", "Uncalibrated Position of Tracklets noise in", 1400, -70, 70));
+  getObjectsManager()->startPublishing(mTrackletPositionn.get());
+  mTrackletPositionRawn.reset(new TH1F("trackletposrawnoise", "Raw Position of Tracklets noise in", 2048, 0, 2048));
+  getObjectsManager()->startPublishing(mTrackletPositionRawn.get());
+  mTrackletsPerEventn.reset(new TH1F("trackletspereventn", "Number of Tracklets per event noise in", 2500, 0, 250000));
+  getObjectsManager()->startPublishing(mTrackletsPerEventn.get());
 }
 
 void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -89,6 +121,7 @@ void TrackletsTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize TrackletsTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   buildHistograms();
+  connectToCCDB();
 }
 
 void TrackletsTask::startOfActivity(Activity& activity)
@@ -133,12 +166,21 @@ void TrackletsTask::monitorData(o2::framework::ProcessingContext& ctx)
           // y=stack_rob, x=layer_mcm
           int x = o2::trd::constants::NMCMROB * layer + tracklets[currenttracklet].getMCM();
           int y = o2::trd::constants::NROBC1 * istack + tracklets[currenttracklet].getROB();
-          moHCMCM[sm]->Fill(x, y);
-          mTrackletSlope->Fill(tracklets[currenttracklet].getUncalibratedDy());
-          mTrackletSlopeRaw->Fill(tracklets[currenttracklet].getSlope());
-          mTrackletPosition->Fill(tracklets[currenttracklet].getUncalibratedY());
-          mTrackletPositionRaw->Fill(tracklets[currenttracklet].getPosition());
-          mTrackletHCID->Fill(tracklets[currenttracklet].getHCID());
+          if (mNoiseMap.get()->isTrackletFromNoisyMCM(tracklets[currenttracklet])) {
+            moHCMCMn[sm]->Fill(x, y);
+            mTrackletSlopen->Fill(tracklets[currenttracklet].getUncalibratedDy());
+            mTrackletSlopeRawn->Fill(tracklets[currenttracklet].getSlope());
+            mTrackletPositionn->Fill(tracklets[currenttracklet].getUncalibratedY());
+            mTrackletPositionRawn->Fill(tracklets[currenttracklet].getPosition());
+            mTrackletHCIDn->Fill(tracklets[currenttracklet].getHCID());
+          } else {
+            moHCMCM[sm]->Fill(x, y);
+            mTrackletSlope->Fill(tracklets[currenttracklet].getUncalibratedDy());
+            mTrackletSlopeRaw->Fill(tracklets[currenttracklet].getSlope());
+            mTrackletPosition->Fill(tracklets[currenttracklet].getUncalibratedY());
+            mTrackletPositionRaw->Fill(tracklets[currenttracklet].getPosition());
+            mTrackletHCID->Fill(tracklets[currenttracklet].getHCID());
+          }
         }
       }
     }

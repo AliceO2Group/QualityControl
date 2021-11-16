@@ -19,6 +19,7 @@
 
 #include "QualityControl/TaskInterface.h"
 #include <array>
+#include "DataFormatsTRD/NoiseCalibration.h"
 
 class TH1F;
 class TH1D;
@@ -49,6 +50,7 @@ class PulseHeight final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
   void buildHistograms();
+  void connectCCDB();
 
  private:
   std::shared_ptr<TH1F> mPulseHeight = nullptr;
@@ -56,6 +58,7 @@ class PulseHeight final : public TaskInterface
   std::shared_ptr<TH2F> mTotalPulseHeight2D = nullptr;
   std::array<std::shared_ptr<TH1F>, 18> mPulseHeight2DperSM; //ph2DSM;
   std::shared_ptr<TH1F> mPulseHeight2 = nullptr;
+  std::shared_ptr<TH1F> mPulseHeight2n = nullptr;
   std::shared_ptr<TH1F> mPulseHeightScaled2 = nullptr;
   std::shared_ptr<TH2F> mTotalPulseHeight2D2 = nullptr;
   std::array<std::shared_ptr<TH1F>, 18> mPulseHeight2DperSM2; //ph2DSM;
@@ -64,6 +67,7 @@ class PulseHeight final : public TaskInterface
   std::shared_ptr<TH1F> mPulseHeightDuration;
   std::shared_ptr<TH1F> mPulseHeightDuration1;
   std::shared_ptr<TH1F> mPulseHeightDurationDiff;
+  std::shared_ptr<o2::trd::NoiseStatusMCM> mNoiseMap = nullptr;
 };
 
 } // namespace o2::quality_control_modules::trd
