@@ -9,6 +9,7 @@ target_sources(O2QcMFT PRIVATE
                src/QcMFTClusterTask.cxx
                src/QcMFTTrackCheck.cxx
                src/QcMFTTrackTask.cxx
+               src/QcMFTRecoTaskExtra.cxx
                src/QcMFTReadoutCheck.cxx
                src/QcMFTReadoutTask.cxx)
 
@@ -33,6 +34,7 @@ add_root_dictionary(O2QcMFT
                     include/MFT/QcMFTClusterTask.h
                     include/MFT/QcMFTTrackCheck.h
                     include/MFT/QcMFTTrackTask.h 
+                    include/MFT/QcMFTRecoTaskExtra.h
                     include/MFT/QcMFTReadoutCheck.h
                     include/MFT/QcMFTReadoutTask.h
                     include/MFT/QcMFTUtilTables.h
