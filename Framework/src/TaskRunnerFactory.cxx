@@ -69,7 +69,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   OutputSpec monitorObjectsSpec{ { "mo" },
                                  TaskRunner::createTaskDataOrigin(),
                                  TaskRunner::createTaskDataDescription(taskSpec.taskName),
-                                 static_cast<header::DataHeader::SubSpecificationType>(parallelTaskID) };
+                                 static_cast<header::DataHeader::SubSpecificationType>(parallelTaskID),
+                                 Lifetime::Sporadic };
 
   Options options{
     { "period-timer-cycle", framework::VariantType::Int, static_cast<int>(taskSpec.cycleDurationSeconds * 1000000), { "timer period" } },
