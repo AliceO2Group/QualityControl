@@ -161,7 +161,7 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
     }
     case DataSourceType::Task: {
       dss.name = dataSourceTree.get<std::string>("name");
-      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(dss.name), 0 } };
+      dss.inputs = { { dss.name, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -171,7 +171,7 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
     }
     case DataSourceType::PostProcessingTask: {
       dss.name = dataSourceTree.get<std::string>("name");
-      dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(dss.name), 0 } };
+      dss.inputs = { { dss.name, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("MOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("MOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -181,7 +181,7 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
     }
     case DataSourceType::Check: {
       dss.name = dataSourceTree.get<std::string>("name");
-      dss.inputs = { { dss.name, "QC", Check::createCheckDataDescription(dss.name), 0 } };
+      dss.inputs = { { dss.name, "QC", Check::createCheckDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("QOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("QOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
@@ -191,7 +191,7 @@ DataSourceSpec InfrastructureSpecReader::readSpecEntry<DataSourceSpec>(std::stri
     }
     case DataSourceType::Aggregator: {
       dss.name = dataSourceTree.get<std::string>("name");
-      dss.inputs = { { dss.name, "QC", AggregatorRunner::createAggregatorRunnerDataDescription(dss.name), 0 } };
+      dss.inputs = { { dss.name, "QC", AggregatorRunner::createAggregatorRunnerDataDescription(dss.name), 0, Lifetime::Sporadic } };
       if (dataSourceTree.count("QOs") > 0) {
         for (const auto& moName : dataSourceTree.get_child("QOs")) {
           dss.subInputs.push_back(moName.second.get_value<std::string>());
