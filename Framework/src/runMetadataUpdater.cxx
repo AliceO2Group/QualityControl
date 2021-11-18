@@ -13,7 +13,9 @@
 /// \file    runMetadataUpdater.cxx
 /// \author  Barthelemy von Haller
 ///
-/// \brief Easily update the metadata of an object in the QCDB.
+/// \brief Easily update the metadata of an object in the QCDB or add new metadata if it does not exist yet.
+///
+/// Example: o2-qc-metadata-updater --url ccdb-test.cern.ch:8080 --path Test/pid61065/Test --pair something,else --id 8b9728fe-486b-11ec-afda-2001171b226b --pair key1,value1
 
 #include <CCDB/CcdbApi.h>
 #include <CCDB/CCDBTimeStampUtils.h>
