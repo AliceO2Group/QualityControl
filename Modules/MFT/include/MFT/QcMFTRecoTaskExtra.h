@@ -84,6 +84,9 @@ class QcMFTRecoTaskExt /*final*/ : public TaskInterface // todo add back the "fi
   unique_ptr<TH1F> mNOfTracksTime = nullptr;
   unique_ptr<TH1F> mNOfClustersTime = nullptr;
 
+  std::unique_ptr<TH1F> mClusterSensorIndex = nullptr;
+  std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
+
   uint32_t mRefOrbit = 0; // Reference orbit used in relative time calculation
 };
 

@@ -89,15 +89,16 @@ void QcMFTRecoTaskExt::initialize(o2::framework::InitContext& /*ctx*/)
 
   auto nHisto = 0;
   for (auto minNClusters : minNClustersList) {
-    mTrackEtaNCls[nHisto] = std::make_unique<TH1F>(Form("mMFTTrackEta_%d_MinClusters", minNClusters), Form("Track #eta (NCls > %d); #eta; # entries", minNClusters), 50, -4, -2);
+    mTrackEtaNCls[nHisto] = std::make_unique<TH1F>(Form("mMFTTrackEta_%d_MinClusters", minNClusters), Form("Track #eta (NCls >= %d); #eta; # entries", minNClusters), 50, -4, -2);
     getObjectsManager()->startPublishing(mTrackEtaNCls[nHisto].get());
     getObjectsManager()->addMetadata(mTrackEtaNCls[nHisto]->GetName(), "custom", "34");
 
-    mTrackPhiNCls[nHisto] = std::make_unique<TH1F>(Form("mMFTTrackPhi_%d_MinClusters", minNClusters), Form("Track #phi (NCls > %d); #phi; # entries", minNClusters), 100, -3.2, 3.2);
+    mTrackPhiNCls[nHisto] = std::make_unique<TH1F>(Form("mMFTTrackPhi_%d_MinClusters", minNClusters), Form("Track #phi (NCls >= %d); #phi; # entries", minNClusters), 100, -3.2, 3.2);
     getObjectsManager()->startPublishing(mTrackPhiNCls[nHisto].get());
     getObjectsManager()->addMetadata(mTrackPhiNCls[nHisto]->GetName(), "custom", "34");
 
-    mTrackXYNCls[nHisto] = std::make_unique<TH2F>(Form("mMFTTrackXY_%d_MinClusters", minNClusters), Form("Track Position (NCls > %d); x; y", minNClusters), 320, -16, 16, 320, -16, 16);
+    mTrackXYNCls[nHisto] = std::make_unique<TH2F>(Form("mMFTTrackXY_%d_MinClusters", minNClusters), Form("Track Position (NCls >= %d); x; y", minNClusters), 320, -16, 16, 320, -16, 16);
+    mTrackXYNCls[nHisto]->SetOption("COLZ");
     getObjectsManager()->startPublishing(mTrackXYNCls[nHisto].get());
     getObjectsManager()->addMetadata(mTrackXYNCls[nHisto]->GetName(), "custom", "34");
 
@@ -170,6 +171,12 @@ void QcMFTRecoTaskExt::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mNOfClustersTime.get());
   getObjectsManager()->addMetadata(mNOfClustersTime->GetName(), "custom", "34");
 
+  mClusterSensorIndex = std::make_unique<TH1F>("mMFTClusterSensorIndex", "Chip Cluster Occupancy;Chip ID;#Entries", 936, -0.5, 935.5);
+  getObjectsManager()->startPublishing(mClusterSensorIndex.get());
+
+  mClusterPatternIndex = std::make_unique<TH1F>("mMFTClusterPatternIndex", "Cluster Pattern ID;Pattern ID;#Entries", 300, -0.5, 299.5);
+  getObjectsManager()->startPublishing(mClusterPatternIndex.get());
+
   if (auto param = mCustomParameters.find("RefOrbit"); param != mCustomParameters.end()) {
     ILOG(Info, Devel) << "Custom parameter - RefOrbit: " << param->second << ENDM;
     mRefOrbit = static_cast<uint32_t>(stoi(param->second));
@@ -202,6 +209,9 @@ void QcMFTRecoTaskExt::startOfActivity(Activity& /*activity*/)
 
   mTrackROFNEntries->Reset();
   mClusterROFNEntries->Reset();
+
+  mClusterSensorIndex->Reset();
+  mClusterPatternIndex->Reset();
 }
 
 void QcMFTRecoTaskExt::startOfCycle()
@@ -218,8 +228,9 @@ void QcMFTRecoTaskExt::monitorData(o2::framework::ProcessingContext& ctx)
   const auto clusters = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("clusters");
   const auto clustersrofs = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrofs");
 
-  if (tracks.size() < 1)
+  if (!tracks.size()) {
     return;
+  }
   // fill the histograms
 
   for (const auto& rof : tracksrofs) {
@@ -233,6 +244,11 @@ void QcMFTRecoTaskExt::monitorData(o2::framework::ProcessingContext& ctx)
     mClusterROFNEntries->Fill(rof.getNEntries());
     float seconds = orbitToSeconds(rof.getBCData().orbit, mRefOrbit) + rof.getBCData().bc * o2::constants::lhc::LHCBunchSpacingNS * 1e-9;
     mNOfClustersTime->Fill(seconds, rof.getNEntries());
+  }
+
+  for (auto& oneCluster : clusters) {
+    mClusterSensorIndex->Fill(oneCluster.getSensorID());
+    mClusterPatternIndex->Fill(oneCluster.getPatternID());
   }
 
   for (auto& oneTrack : tracks) {
@@ -310,6 +326,9 @@ void QcMFTRecoTaskExt::reset()
 
   mTrackROFNEntries->Reset();
   mClusterROFNEntries->Reset();
+
+  mClusterSensorIndex->Reset();
+  mClusterPatternIndex->Reset();
 }
 
 } // namespace o2::quality_control_modules::mft

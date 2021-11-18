@@ -37,11 +37,11 @@
         },
         "taskParameters": {
           "ROFLengthInBC": "198",
-          "MaxTrackROFSize": "100",
+          "MaxTrackROFSize": "1000",
           "MaxClusterROFSize": "5000",
-          "MaxDuration": "6000",
+          "MaxDuration": "60000",
           "TimeBinSize": "0.01",
-          "RefOrbit": "73198348"
+          "RefOrbit": "0"
         },
         "location": "remote"
       }
