@@ -23,6 +23,7 @@
 #include <TH2.h>
 #include <TText.h>
 #include "TMath.h"
+#include "TLatex.h"
 
 #include <iostream>
 
@@ -91,7 +92,7 @@ Quality ITSTrackCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         result = result.getLevel() + 1e6;
 
       TH1D* projectR = h->ProjectionX();
-      if (projectR->Integral(projectR->FindBin(2.8), projectR->GetNbinsX()) > 0)
+      if (projectR->Integral(projectR->FindBin(0.02), projectR->GetNbinsX()) > 0)
         result = result.getLevel() + 2e6;
     }
 
@@ -108,182 +109,195 @@ std::string ITSTrackCheck::getAcceptedType() { return "TH1D"; }
 
 void ITSTrackCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  auto* tInfo = new TText();
+
+  TString text[2];
+  int textColor;
 
   if (mo->getName() == "NClusters") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     int histoQuality = getDigit(checkResult.getLevel(), 1);
-    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->Clear();
-
     if (histoQuality == 0) {
-      msg->AddText("Quality::GOOD");
-      msg->SetTextColor(kGreen);
+      text[0] = "Quality::GOOD";
+      textColor = kGreen;
     } else if (histoQuality == 1) {
-      msg->AddText("INFO: a track(s) has between 10 and 15 clusters");
-      msg->AddText("inform expert on MM");
-      msg->SetTextColor(kOrange);
+      text[0] = "INFO: a track(s) has between 10 and 15 clusters";
+      text[1] = "inform expert on MM";
+      textColor = kYellow;
     } else {
-      msg->AddText("INFO: a track(s) has more than 15 clusters");
-      msg->AddText("call expert");
-      msg->SetTextColor(kRed);
+      text[0] = "INFO: a track(s) has more than 15 clusters";
+      text[1] = "call expert";
+      textColor = kRed;
     }
-    msg->SetBorderSize(0);
-    msg->SetTextSize(17);
+    auto* msg = new TLatex(0.15, 0.7, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.08);
+    msg->SetTextFont(43);
+    msg->SetNDC();
     h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "PhiDistribution") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     int histoQuality = getDigit(checkResult.getLevel(), 2);
-    auto* msg = new TPaveText(0.15, 0.15, 0.6, 0.3, "NDC");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->Clear();
-
     if (histoQuality == 0) {
-      msg->AddText("Quality::GOOD");
-      msg->SetTextColor(kGreen);
+      text[0] = "Quality::GOOD";
+      textColor = kGreen;
     } else {
-      msg->AddText("INFO: distribution asymmetric in phi");
-      msg->AddText("call expert");
-      msg->SetTextColor(kRed);
+      text[0] = "INFO: distribution asymmetric in phi";
+      text[1] = "call expert";
+      textColor = kRed;
     }
-    msg->SetBorderSize(0);
-    msg->SetTextSize(17);
+
+    auto* msg = new TLatex(0.15, 0.25, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.08);
+    msg->SetTextFont(43);
+    msg->SetNDC();
     h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "AngularDistribution") {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
     int histoQuality = getDigit(checkResult.getLevel(), 3);
-    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->Clear();
-
+    Double_t positionX, positionY;
     if (histoQuality == 0) {
-      msg->AddText("Quality::GOOD");
-      msg->SetTextColor(kGreen);
+      text[0] = "Quality::GOOD";
+      textColor = kGreen;
+      positionX = 0.02;
+      positionY = 0.9;
     } else {
-      msg->AddText("INFO: distribution asymmetric in phi");
-      msg->AddText("call expert");
-      msg->SetTextColor(kRed);
+      text[0] = "INFO: distribution asymmetric in phi";
+      text[1] = "call expert";
+      textColor = kRed;
+      positionX = 0.15;
+      positionY = 0.7;
     }
-    msg->SetBorderSize(0);
-    msg->SetTextSize(17);
+
+    auto* msg = new TLatex(positionX, positionY, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.08);
+    msg->SetTextFont(43);
+    msg->SetNDC();
     h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "ClusterUsage") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     int histoQuality = getDigit(checkResult.getLevel(), 4);
-    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->Clear();
-
     if (histoQuality == 0) {
-      msg->AddText("Quality::GOOD");
-      msg->SetTextColor(kGreen);
+      text[0] = "Quality::GOOD";
+      textColor = kGreen;
     } else {
-      msg->AddText("INFO: fraction of clusters below 0.1");
-      msg->AddText("call expert");
-      msg->SetTextColor(kRed);
+      text[0] = "INFO: fraction of clusters below 0.1";
+      text[1] = "call expert";
+      textColor = kRed;
     }
-    msg->SetBorderSize(0);
-    tInfo->SetTextSize(17);
+    auto* msg = new TLatex(0.15, 0.7, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.08);
+    msg->SetTextFont(43);
+    msg->SetNDC();
     h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "EtaDistribution") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     int histoQuality = getDigit(checkResult.getLevel(), 5);
-    auto* msg = new TPaveText(0.15, 0.15, 0.6, 0.3, "NDC");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->Clear();
     if (histoQuality == 0) {
-      msg->AddText("Quality::GOOD");
-      msg->SetTextColor(kGreen);
+      text[0] = "Quality::GOOD";
+      textColor = kGreen;
     } else {
-      msg->AddText("INFO: distribution asymmetric in eta");
-      msg->AddText("call expert");
-      msg->SetTextColor(kRed);
+      text[0] = "INFO: distribution asymmetric in eta";
+      text[1] = "call expert";
+      textColor = kRed;
     }
-    msg->SetTextSize(17);
-    msg->SetBorderSize(0);
+    auto* msg = new TLatex(0.15, 0.2, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.08);
+    msg->SetTextFont(43);
+    msg->SetNDC();
     h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "VertexCoordinates") {
+    Double_t positionX, positionY;
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
     int histoQuality = getDigit(checkResult.getLevel(), 6);
-    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->Clear();
     if (histoQuality == 0) {
-      msg->AddText("Quality::GOOD");
-      msg->SetTextColor(kGreen);
+      text[0] = "Quality::GOOD";
+      textColor = kGreen;
+      positionX = 0.02;
+      positionY = 0.9;
     } else {
-      if (histoQuality == 1 || histoQuality == 3) {
-        msg->AddText("INFO: vertex Y displaced > 2 mm ");
-      }
-      if (histoQuality == 2 || histoQuality == 3) {
-        msg->AddText("INFO: vertex X displaced > 2 mm ");
+
+      if (histoQuality == 1) {
+        text[0] = "INFO: vertex Y displaced > 2 mm ";
+      } else if (histoQuality == 2) {
+        text[0] = "INFO: vertex X displaced > 2 mm ";
+      } else if (histoQuality == 3) {
+        text[0] = "INFO: vertex X and Y displaced > 2 mm ";
       }
 
-      msg->AddText("Inform expert on MM");
-      msg->SetTextColor(kRed);
+      text[1] = "Inform expert on MM";
+      textColor = kRed;
+      positionX = 0.15;
+      positionY = 0.7;
     }
-    msg->SetBorderSize(0);
-    msg->SetTextSize(17);
+    auto* msg = new TLatex(positionX, positionY, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.08);
+    msg->SetTextFont(43);
+    msg->SetNDC();
     h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "VertexRvsZ") {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
     int histoQuality = getDigit(checkResult.getLevel(), 7);
-    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->Clear();
 
     if (histoQuality == 0) {
-      msg->AddText("Quality::GOOD");
-      msg->SetTextColor(kGreen);
+      text[0] = "Quality::GOOD";
+      textColor = kGreen;
     } else {
 
-      if (histoQuality == 1 || histoQuality == 3) {
-        msg->AddText("INFO: vertex distance on XY plane > 2.8 mm");
+      if (histoQuality == 1) {
+        text[0] = "INFO: vertex distance on XY plane > 2 mm";
+      } else if (histoQuality == 2) {
+        text[0] = "INFO: vertex Z displaced > 10 cm";
+      } else if (histoQuality == 3) {
+        text[0] = "INFO: vertex Z displaced > 10 cm, XY > 2 mm";
       }
-      if (histoQuality == 2 || histoQuality == 3) {
-        msg->AddText("INFO: vertex Z displaced > 10 cm");
-      }
-
-      msg->AddText("Inform expert on MM");
-      msg->SetTextColor(kRed);
+      text[1] = "Inform expert on MM";
+      textColor = kRed;
     }
-    msg->SetTextSize(17);
-    msg->SetBorderSize(0);
+    auto* msg = new TLatex(0.15, 0.7, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.08);
+    msg->SetTextFont(43);
+    msg->SetNDC();
     h->GetListOfFunctions()->Add(msg);
   }
 
   if (mo->getName() == "VertexZ") {
     auto* h = dynamic_cast<TH1D*>(mo->getObject());
     int histoQuality = getDigit(checkResult.getLevel(), 8);
-    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->Clear();
-
     if (histoQuality == 0) {
-      msg->AddText("Quality::GOOD");
-      msg->SetTextColor(kGreen);
+      text[0] = "Quality::GOOD";
+      textColor = kGreen;
     } else {
-      msg->AddText("INFO: vertex z displaced > 10 cm");
-      msg->SetTextColor(kRed);
+      text[0] = "INFO: vertex z displaced > 10 cm";
+      textColor = kRed;
     }
-    msg->SetTextSize(17);
-    msg->SetBorderSize(0);
+
+    auto* msg = new TLatex(0.15, 0.7, Form("#bf{#splitline{%s}{%s}}", text[0].Data(), text[1].Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.08);
+    msg->SetTextFont(43);
+    msg->SetNDC();
     h->GetListOfFunctions()->Add(msg);
   }
 }
+
 int ITSTrackCheck::getDigit(int number, int digit)
 {
   return number % (int)pow(10, digit) / (int)pow(10, digit - 1);

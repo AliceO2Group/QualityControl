@@ -23,7 +23,7 @@
 #include <TList.h>
 #include <TH2.h>
 #include <string.h>
-#include <TPaveText.h>
+#include <TLatex.h>
 #include <iostream>
 
 namespace o2::quality_control_modules::its
@@ -83,24 +83,32 @@ std::string ITSClusterCheck::getAcceptedType() { return "TH2D"; }
 void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
 
+  TString text;
+  int textColor;
+  Double_t positionX, positionY;
+
   if (mo->getName().find("AverageClusterSize") != std::string::npos) {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
     std::string histoName = mo->getName();
     int iLayer = histoName[histoName.find("Layer") + 5] - 48; //Searching for position of "Layer" in the name of the file, then +5 is the NUMBER of the layer, -48 is conversion to int
 
-    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->Clear();
-
     if ((int)(checkResult.getLevel() & (1 << iLayer)) == 0) {
-      msg->AddText("Quality::GOOD");
-      msg->SetTextColor(kGreen);
+      text = "Quality::GOOD";
+      textColor = kGreen;
+      positionX = 0.02;
+      positionY = 0.91;
     } else {
-      msg->AddText("INFO: large clusters - do not call expert");
-      msg->SetTextColor(kRed);
+      text = "INFO: large clusters - do not call expert";
+      textColor = kYellow;
+      positionX = 0.15;
+      positionY = 0.8;
     }
-    msg->SetTextSize(17);
-    msg->SetBorderSize(0);
+
+    auto* msg = new TLatex(positionX, positionY, Form("#bf{%s}", text.Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.08);
+    msg->SetTextFont(43);
+    msg->SetNDC();
     h->GetListOfFunctions()->Add(msg);
   }
 
@@ -109,20 +117,24 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
 
     std::string histoName = mo->getName();
     int iLayer = histoName[histoName.find("Layer") + 5] - 48;
-    auto* msg = new TPaveText(0.15, 0.7, 0.6, 0.85, "NDC");
-    msg->SetName(Form("%s_msg", mo->GetName()));
-    msg->Clear();
 
     if ((int)(checkResult.getLevel() & (1 << (7 + iLayer))) == 0) {
-      msg->AddText("Quality::GOOD");
-      msg->SetTextColor(kGreen);
+      text = "Quality::GOOD";
+      textColor = kGreen;
+      positionX = 0.02;
+      positionY = 0.91;
     } else {
-      msg->AddText("INFO: large cluster occupancy, call expert");
-      msg->SetTextColor(kRed);
+      text = "INFO: large cluster occupancy, call expert";
+      textColor = kYellow;
+      positionX = 0.15;
+      positionY = 0.8;
     }
+    auto* msg = new TLatex(positionX, positionY, Form("#bf{%s}", text.Data()));
+    msg->SetTextColor(textColor);
+    msg->SetTextSize(0.08);
+    msg->SetTextFont(43);
+    msg->SetNDC();
 
-    msg->SetTextSize(17);
-    msg->SetBorderSize(0);
     h->GetListOfFunctions()->Add(msg);
   }
 }

@@ -181,52 +181,62 @@ void ITSTrackTask::createAllHistos()
   hAngularDistribution->SetTitle("AngularDistribution");
   addObject(hAngularDistribution);
   formatAxes(hAngularDistribution, "#eta", "#phi", 1, 1.10);
+  hAngularDistribution->SetStats(0);
 
   hNClusters = new TH1D("NClusters", "NClusters", 100, 0, 100);
   hNClusters->SetTitle("hNClusters");
   addObject(hNClusters);
   formatAxes(hNClusters, "Number of clusters per Track", "Counts", 1, 1.10);
+  hNClusters->SetStats(0);
 
   hTrackEta = new TH1D("EtaDistribution", "EtaDistribution", 30, -1.5, 1.5);
   hTrackEta->SetTitle("Eta Distribution of tracks");
   addObject(hTrackEta);
   formatAxes(hTrackEta, "#eta", "counts", 1, 1.10);
+  hTrackEta->SetStats(0);
 
   hTrackPhi = new TH1D("PhiDistribution", "PhiDistribution", 60, 0, TMath::TwoPi());
   hTrackPhi->SetTitle("Phi Distribution of tracks");
   hTrackPhi->SetMinimum(0);
   addObject(hTrackPhi);
   formatAxes(hTrackPhi, "#phi", "counts", 1, 1.10);
+  hTrackPhi->SetStats(0);
 
   hOccupancyROF = new TH1D("OccupancyROF", "OccupancyROF", 1, 0, 1);
   hOccupancyROF->SetTitle("Track occupancy in ROF");
   addObject(hOccupancyROF);
   formatAxes(hOccupancyROF, "", "nTracks/ROF", 1, 1.10);
+  hOccupancyROF->SetStats(0);
 
   hClusterUsage = new TH1D("ClusterUsage", "ClusterUsage", 1, 0, 1);
   hClusterUsage->SetTitle("Fraction of clusters used in tracking");
   addObject(hClusterUsage);
   formatAxes(hClusterUsage, "", "nCluster in track / Total cluster", 1, 1.10);
+  hClusterUsage->SetStats(0);
 
   hVertexCoordinates = new TH2D("VertexCoordinates", "VertexCoordinates", 1000, -1. * mVertexXYsize, mVertexXYsize, 1000, -1 * mVertexXYsize, mVertexXYsize);
   hVertexCoordinates->SetTitle("Coordinates of track vertex");
   addObject(hVertexCoordinates);
   formatAxes(hVertexCoordinates, "X coordinate (cm)", "Y coordinate (cm)", 1, 1.10);
+  hVertexCoordinates->SetStats(0);
 
   hVertexRvsZ = new TH2D("VertexRvsZ", "VertexRvsZ", 1000, 0, mVertexRsize, 2000, -mVertexZsize, mVertexZsize);
   hVertexRvsZ->SetTitle("Distance to primary vertex vs Z");
   addObject(hVertexRvsZ);
   formatAxes(hVertexRvsZ, "R (cm) ", "Z coordinate (cm)", 1, 1.10);
+  hVertexRvsZ->SetStats(0);
 
   hVertexZ = new TH1D("VertexZ", "VertexZ", 2000, -mVertexZsize, mVertexZsize);
   hVertexZ->SetTitle("Z coordinate of vertex");
   addObject(hVertexZ);
   formatAxes(hVertexZ, "Z coordinate (cm)", "counts", 1, 1.10);
+  hVertexRvsZ->SetStats(0);
 
   hVertexContributors = new TH1D("NVertexContributors", "NVertexContributors", 100, 0, 100);
   hVertexContributors->SetTitle("NVertexContributors");
   addObject(hVertexContributors);
   formatAxes(hVertexContributors, "Number of contributors for vertex", "Counts", 1, 1.10);
+  hVertexContributors->SetStats(0);
 }
 
 void ITSTrackTask::addObject(TObject* aObject)
