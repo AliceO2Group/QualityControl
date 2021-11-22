@@ -56,13 +56,13 @@ int main(int argc, const char* argv[])
     map<string, string> metadata;
     for (auto p : pairs) {
       size_t hit = -1; // on purpose ... don't worry
-      do { // make sure we ignore the escaped commas
-        hit = p.find(',', hit+1);
-      } while(hit != string::npos && hit > 0 && p.at(hit-1) == '\\');
+      do {             // make sure we ignore the escaped commas
+        hit = p.find(',', hit + 1);
+      } while (hit != string::npos && hit > 0 && p.at(hit - 1) == '\\');
       if (hit == string::npos) {
         continue;
       }
-      metadata[p.substr(0,hit)] = p.substr(hit+1);
+      metadata[p.substr(0, hit)] = p.substr(hit + 1);
     }
     if (metadata.empty()) {
       cout << "No proper pairs found, aborting." << endl;
