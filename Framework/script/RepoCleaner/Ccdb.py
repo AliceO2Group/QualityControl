@@ -125,9 +125,6 @@ class Ccdb:
         :param valid_to: The new "to" validity.
         :param metadata: Add or modify metadata
         '''
-        if version.validTo == valid_to:
-            logging.debug("The new timestamp for validTo is identical to the existing one. Skipping.")
-            return
         full_path = self.url + '/' + version.path + '/' + str(valid_from) + '/' + str(valid_to) + '/' + str(version.uuid) + '?'
         logging.debug(f"Update end limit validity of {version.path} ({version.uuid}) from {version.validTo} to {valid_to}")
         if metadata is not None:
@@ -141,9 +138,9 @@ class Ccdb:
             self.counter_validity_updated += 1
         except requests.exceptions.RequestException as e:  
             print(e)
-            sys.exit(1)  # really ? 
+            sys.exit(1)  # really ?
 
-    def putVersion(self, version: ObjectVersion, data):
+def putVersion(self, version: ObjectVersion, data):
         '''
         :param version: An ObjectVersion that describes the data to be uploaded.
         :param data: the actual data to send. E.g.:{'somekey': 'somevalue'}
