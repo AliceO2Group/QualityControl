@@ -35,21 +35,36 @@ namespace o2::quality_control_modules::tpc
 class ClustersData final : public TObject, public MergeInterface
 {
  public:
+  ClustersData()
+    : o2::mergers::MergeInterface(), TObject()
+  {
+  }
+
+  ClustersData(std::string_view nclName)
+    : o2::mergers::MergeInterface(), TObject(), mClusters{ nclName }
+  {
+  }
+
   ~ClustersData() final = default;
 
-  virtual void merge(MergeInterface* const other) final;
+  virtual void merge(MergeInterface* other) final;
 
   Clusters& getClusters() { return mClusters; }
 
+  void setName(std::string_view name) { mName = name.data(); }
+
+  virtual const char* GetName() const override { return mName.data(); }
+
  private:
   Clusters mClusters;
+  std::string mName;
 
   ClassDefOverride(ClustersData, 1);
 };
 
-inline void ClustersData::merge(MergeInterface* const other)
+inline void ClustersData::merge(MergeInterface* other)
 {
-  auto otherCl = dynamic_cast<const ClustersData* const>(other);
+  auto otherCl = dynamic_cast<ClustersData* const>(other);
   if (otherCl) {
     mClusters.merge(otherCl->mClusters);
   }

@@ -36,6 +36,7 @@
           "query" : "input:TPC/CLUSTERNATIVE"
         },
         "taskParameters": {
+          "mergeableOutput": "true",
           "NClustersNBins": "100",  "NClustersXMin": "0", "NClustersXMax": "100",
           "QmaxNBins":      "200",  "QmaxXMin":      "0", "QmaxXMax":      "200",
           "QtotNBins":      "600",  "QtotXMin":      "0", "QtotXMax":      "600",
@@ -43,7 +44,13 @@
           "SigmaTimeNBins": "200",  "SigmaTimeXMin": "0", "SigmaTimeXMax": "2",
           "TimeBinNBins":   "1000", "TimeBinXMin":   "0", "TimeBinXMax":   "100000"
         },
-        "location": "remote"
+        "location": "local",
+        "localMachines": [
+          "localhost"
+        ],
+        "remoteMachine": "localhost",
+        "remotePort": "32626",
+        "mergingMode": "delta"
       }
     }
   },
