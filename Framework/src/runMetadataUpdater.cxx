@@ -32,13 +32,7 @@ int main(int argc, const char* argv[])
 {
   try {
     bpo::options_description desc{ "Options" };
-    desc.add_options()
-      ("help,h", "Help screen")
-      ("url,u", bpo::value<std::string>()->required(), "URL to the QCDB")
-      ("path,p", bpo::value<std::string>()->required(), "Path to the object to update")
-      ("timestamp,t", bpo::value<long>()->default_value(o2::ccdb::getCurrentTimestamp()), "Timestamp to select the object")
-      ("id", bpo::value<std::string>()->default_value(""), "Id of the object to select")
-      ("pair", bpo::value< vector<string> >()->required(), "Key-value pair to update the metadata (e.g. --pair \"1,oil\", can be added multiple times)");
+    desc.add_options()("help,h", "Help screen")("url,u", bpo::value<std::string>()->required(), "URL to the QCDB")("path,p", bpo::value<std::string>()->required(), "Path to the object to update")("timestamp,t", bpo::value<long>()->default_value(o2::ccdb::getCurrentTimestamp()), "Timestamp to select the object")("id", bpo::value<std::string>()->default_value(""), "Id of the object to select")("pair", bpo::value<vector<string>>()->required(), "Key-value pair to update the metadata (e.g. --pair \"1,oil\", can be added multiple times)");
 
     bpo::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -57,8 +51,8 @@ int main(int argc, const char* argv[])
 
     // prepare the key value map
     map<string, string> metadata;
-    for(auto p: pairs) {
-      if(p.find(',')<p.length()) {
+    for (auto p : pairs) {
+      if (p.find(',') < p.length()) {
         std::vector<std::string> results;
         boost::algorithm::split(results, p, boost::is_any_of(","));
         metadata[results[0]] = results[1];
@@ -70,8 +64,8 @@ int main(int argc, const char* argv[])
     std::cout << "path,.............." << path << std::endl;
     std::cout << "timestamp.........." << timestamp << std::endl;
     std::cout << "id................." << id << std::endl;
-    std::cout << "pairs"  << std::endl;
-    for(auto m : metadata) {
+    std::cout << "pairs" << std::endl;
+    for (auto m : metadata) {
       std::cout << "   |........" << m.first << " -> " << m.second << endl;
     }
     std::cout << std::endl;
