@@ -540,6 +540,12 @@ Simply call `ObjectsManager::addMetadata(...)`, like in
 ```
 This metadata will end up in the QCDB.
 
+It is also possible to add or update metadata of a MonitorObject directly: 
+```
+  MonitorObject* mo = getMonitorObject(objectName);
+  mo->addOrUpdateMetadata(key, value);
+```
+
 ## Details on the data storage format in the CCDB
 
 Each MonitorObject is stored as a TFile in the CCDB.
