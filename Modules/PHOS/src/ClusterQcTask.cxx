@@ -53,7 +53,7 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::Facility, "QC");
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "PHS");
-  QcInfoLogger::GetInstance().setContext(context);
+  QcInfoLogger::GetInfoLogger().setContext(context);
   ILOG(Info, Support) << "initialize ClusterQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters

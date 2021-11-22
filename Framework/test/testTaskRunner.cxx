@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
   BOOST_CHECK(taskRunner.inputs[1].lifetime == Lifetime::Timer);
 
   BOOST_REQUIRE_EQUAL(taskRunner.outputs.size(), 1);
-  BOOST_CHECK_EQUAL(taskRunner.outputs[0], (OutputSpec{ { "mo" }, "QC", "abcTask-mo", 123 }));
+  BOOST_CHECK_EQUAL(taskRunner.outputs[0], (OutputSpec{ { "mo" }, "QC", "abcTask-mo", 123, Lifetime::Sporadic }));
 
   BOOST_CHECK(taskRunner.algorithm.onInit != nullptr);
 
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
   BOOST_CHECK_EQUAL(qcTask.getInputsSpecs()[0], DataSampling::InputSpecsForPolicy(dataSamplingTree, "tpcclust").at(0));
   BOOST_CHECK(qcTask.getInputsSpecs()[1].lifetime == Lifetime::Timer);
 
-  BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), (OutputSpec{ { "mo" }, "QC", "abcTask-mo", 0 }));
+  BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), (OutputSpec{ { "mo" }, "QC", "abcTask-mo", 0, Lifetime::Sporadic }));
 
   BOOST_REQUIRE_EQUAL(qcTask.getOptions().size(), 2);
   BOOST_CHECK_EQUAL(qcTask.getOptions()[0].name, "period-timer-cycle");

@@ -74,7 +74,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
   o2::base::GeometryManager::loadGeometry();
 
-  QcInfoLogger::GetInstance() << "START READER" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "START READER" << AliceO2::InfoLogger::InfoLogger::endm;
 
   specs.emplace_back(o2::its::getTestDataReaderSpec());
 
