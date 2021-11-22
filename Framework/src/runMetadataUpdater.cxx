@@ -16,6 +16,9 @@
 /// \brief Easily update the metadata of an object in the QCDB or add new metadata if it does not exist yet.
 ///
 /// Example: o2-qc-metadata-updater --url ccdb-test.cern.ch:8080 --path Test/pid61065/Test --pair something,else --id 8b9728fe-486b-11ec-afda-2001171b226b --pair key1,value1
+///
+/// Note: commas can be escaped if they must be part of the key: "my,key" --> "my\\,key". Note that it needs double escaping.
+///       commas don't have to escaped in the value.
 
 #include <CCDB/CcdbApi.h>
 #include <CCDB/CCDBTimeStampUtils.h>
@@ -49,14 +52,21 @@ int main(int argc, const char* argv[])
     const auto id = vm["id"].as<string>();
     const auto pairs = vm["pair"].as<vector<string>>();
 
-    // prepare the key value map
+    // prepare the key value map, take into account escaped commas
     map<string, string> metadata;
     for (auto p : pairs) {
-      if (p.find(',') < p.length()) {
-        std::vector<std::string> results;
-        boost::algorithm::split(results, p, boost::is_any_of(","));
-        metadata[results[0]] = results[1];
+      size_t hit = -1; // on purpose ... don't worry
+      do { // make sure we ignore the escaped commas
+        hit = p.find(',', hit+1);
+      } while(hit != string::npos && hit > 0 && p.at(hit-1) == '\\');
+      if (hit == string::npos) {
+        continue;
       }
+      metadata[p.substr(0,hit)] = p.substr(hit+1);
+    }
+    if (metadata.empty()) {
+      cout << "No proper pairs found, aborting." << endl;
+      return -1;
     }
 
     std::cout << "PARAMETERS" << std::endl;
