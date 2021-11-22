@@ -44,6 +44,9 @@ Rules:
   - object_path: Test
     delay: 240
     policy: none_kept
+  - object_path: qc_mc/.*
+    delay: 1440
+    policy: 1_per_hour
   - object_path: .*
     delay: 1440
     policy: skip
