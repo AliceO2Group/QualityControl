@@ -33,18 +33,18 @@ using namespace std;
 
 int main(int argc, const char* argv[])
 {
-  try {
+    try {
     bpo::options_description desc{ "Options" };
     desc.add_options()("help,h", "Help screen")("url,u", bpo::value<std::string>()->required(), "URL to the QCDB")("path,p", bpo::value<std::string>()->required(), "Path to the object to update")("timestamp,t", bpo::value<long>()->default_value(o2::ccdb::getCurrentTimestamp()), "Timestamp to select the object")("id", bpo::value<std::string>()->default_value(""), "Id of the object to select")("pair", bpo::value<vector<string>>()->required(), "Key-value pair to update the metadata (e.g. --pair \"1,oil\", can be added multiple times)");
 
     bpo::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
-    notify(vm);
 
     if (vm.count("help")) {
       std::cout << desc << std::endl;
       return 0;
     }
+    notify(vm);
 
     const auto url = vm["url"].as<string>();
     const auto path = vm["path"].as<string>();
