@@ -30,6 +30,7 @@
 #include "DataFormatsTRD/Digit.h"
 #include "DataFormatsTRD/Tracklet64.h"
 #include "DataFormatsTRD/TriggerRecord.h"
+#include "CCDB/BasicCCDBManager.h"
 
 namespace o2::quality_control_modules::trd
 {
@@ -38,12 +39,21 @@ PulseHeight::~PulseHeight()
 {
 }
 
+void PulseHeight::connectCCDB()
+{
+  auto& ccdbmgr = o2::ccdb::BasicCCDBManager::instance();
+  //ccdbmgr.setURL("http://localhost:8080");
+  mNoiseMap.reset(ccdbmgr.get<o2::trd::NoiseStatusMCM>("/TRD/Calib/NoiseMapMCM"));
+}
+
 void PulseHeight::buildHistograms()
 {
   mPulseHeight.reset(new TH1F("mPulseHeight", "Pulse height plot", 30, -0.5, 29.5));
   getObjectsManager()->startPublishing(mPulseHeight.get());
   mPulseHeight2.reset(new TH1F("mPulseHeight2", "Pulse height plot v2", 30, -0.5, 29.5));
   getObjectsManager()->startPublishing(mPulseHeight2.get());
+  mPulseHeight2n.reset(new TH1F("mPulseHeight2nonoise", "Pulse height plot v2 excluding noise", 30, -0.5, 29.5));
+  getObjectsManager()->startPublishing(mPulseHeight2n.get());
 
   mPulseHeightScaled.reset(new TH1F("mPulseHeightScaled", "Scaled Pulse height plot", 30, -0.5, 29.5));
   getObjectsManager()->startPublishing(mPulseHeightScaled.get());
@@ -111,6 +121,7 @@ void PulseHeight::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Support) << "configure() : using default pulseheightupper = " << mPulseHeightPeakRegion.second << ENDM;
   }
   buildHistograms();
+  connectCCDB();
 }
 
 void PulseHeight::startOfActivity(Activity& activity)
@@ -362,6 +373,8 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
                 phVal = (b->getADC()[tb] + a->getADC()[tb] + c->getADC()[tb]);
                 //TODO do we have a corresponding tracklet?
                 mPulseHeight2->Fill(tb, phVal);
+                if (!mNoiseMap.get()->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
+                  mPulseHeight2n->Fill(tb, phVal);
                 mTotalPulseHeight2D2->Fill(tb, phVal);
                 mPulseHeight2DperSM2[sector]->Fill(tb, phVal);
               }
@@ -376,6 +389,8 @@ void PulseHeight::monitorData(o2::framework::ProcessingContext& ctx)
               for (int tb = 0; tb < 30; tb++) {
                 phVal = (b->getADC()[tb] + a->getADC()[tb] + c->getADC()[tb]);
                 mPulseHeight2->Fill(tb, phVal);
+                if (!mNoiseMap.get()->getIsNoisy(b->getHCId(), b->getROB(), b->getMCM()))
+                  mPulseHeight2n->Fill(tb, phVal);
                 mTotalPulseHeight2D2->Fill(tb, phVal);
                 mPulseHeight2DperSM2[sector]->Fill(tb, phVal);
               }

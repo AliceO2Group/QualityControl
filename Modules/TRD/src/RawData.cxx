@@ -211,11 +211,6 @@ void RawData::initialize(o2::framework::InitContext& /*ctx*/)
 
   ILOG(Info, Support) << "initialize TRD RawData QC " << ENDM;
 
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  //if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-  //  ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
-  // } commented out for now I will come back to this.
-
   buildHistograms();
   ILOG(Info, Support) << "TRD RawData QC histograms built" << ENDM;
 
