@@ -209,11 +209,13 @@ void ITSFhrTask::createGeneralPlots()
     mInfoCanvasOBComm->GetXaxis()->SetBinLabel(i + 1, Form("layer%d", i + 3));
   }
 
-  mInfoCanvasComm->GetZaxis()->SetRangeUser(0, 2);
+  mInfoCanvasComm->SetMinimum(0);
+  mInfoCanvasComm->SetMaximum(2);
   mInfoCanvasComm->GetYaxis()->SetBinLabel(2, "ibt");
   mInfoCanvasComm->GetYaxis()->SetBinLabel(4, "ibb");
 
-  mInfoCanvasOBComm->GetZaxis()->SetRangeUser(0, 2);
+  mInfoCanvasOBComm->SetMinimum(0);
+  mInfoCanvasOBComm->SetMaximum(2);
   mInfoCanvasOBComm->GetYaxis()->SetBinLabel(2, "ibt");
   mInfoCanvasOBComm->GetYaxis()->SetBinLabel(4, "ibb");
 
@@ -571,7 +573,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
             if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
               mNoisyPixelNumber[lay][istave]++;
             }
-            int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip), (int)(iter->first % 1000) };
+            int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip) + 1, (int)(iter->first % 1000) + 1};
             mStaveHitmap[lay][istave]->SetBinContent(pixelPos, (double)iter->second);
             totalhit += (int)iter->second;
             occupancyPlotTmp[i]->Fill(log10((double)iter->second / GBTLinkInfo->statistics.nTriggers));
@@ -605,7 +607,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
                   int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + ichip * NCols + (int)(iter->first / 1000) + 1, NRows - ((int)iter->first % 1000) - 1 + (1024 * ilink) + 1 };
                   mStaveHitmap[lay][istave]->SetBinContent(pixelPos, pixelOccupancy);
                 } else {
-                  int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + (nChipsPerHic[lay] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000) + 1, NRows + ((int)iter->first % 1000) + (1024 * ilink) + 1 };
+                  int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + (nChipsPerHic[lay] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000), NRows + ((int)iter->first % 1000) + (1024 * ilink) + 1 };
                   mStaveHitmap[lay][istave]->SetBinContent(pixelPos, pixelOccupancy);
                 }
               }
