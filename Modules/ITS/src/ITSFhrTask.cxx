@@ -573,7 +573,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
             if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
               mNoisyPixelNumber[lay][istave]++;
             }
-            int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip) + 1, (int)(iter->first % 1000) + 1};
+            int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip) + 1, (int)(iter->first % 1000) + 1 };
             mStaveHitmap[lay][istave]->SetBinContent(pixelPos, (double)iter->second);
             totalhit += (int)iter->second;
             occupancyPlotTmp[i]->Fill(log10((double)iter->second / GBTLinkInfo->statistics.nTriggers));
