@@ -450,7 +450,7 @@ void InfrastructureGenerator::generateLocalTaskLocalProxy(framework::WorkflowSpe
 {
   std::string proxyName = taskName + "-proxy";
   std::string channelName = taskName + "-proxy";
-  InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) };
+  InputSpec proxyInput{ channelName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic };
   std::string channelConfig = "name=" + channelName + ",type=pub,method=connect,address=tcp://" +
                               remoteHost + ":" + remotePort + ",rateLogging=60,transport=zeromq";
 
@@ -471,7 +471,7 @@ void InfrastructureGenerator::generateLocalTaskRemoteProxy(framework::WorkflowSp
   Outputs proxyOutputs;
   for (size_t id = 1; id <= numberOfLocalMachines; id++) {
     proxyOutputs.emplace_back(
-      OutputSpec{ { channelName }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id) });
+      OutputSpec{ { channelName }, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName), static_cast<SubSpec>(id), Lifetime::Sporadic });
   }
 
   std::string channelConfig = "name=" + channelName + ",type=sub,method=bind,address=tcp://*:" + remotePort +
@@ -496,7 +496,8 @@ void InfrastructureGenerator::generateMergers(framework::WorkflowSpec& workflow,
       InputSpec{ { taskName + std::to_string(id) },
                  TaskRunner::createTaskDataOrigin(),
                  TaskRunner::createTaskDataDescription(taskName),
-                 static_cast<SubSpec>(id) });
+                 static_cast<SubSpec>(id),
+                 Lifetime::Sporadic });
   }
 
   MergerInfrastructureBuilder mergersBuilder;
@@ -531,14 +532,14 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   // todo: avoid code repetition
   for (const auto& taskSpec : infrastructureSpec.tasks) {
     if (taskSpec.active) {
-      InputSpec taskOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskSpec.taskName) };
+      InputSpec taskOutput{ taskSpec.taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskSpec.taskName), Lifetime::Sporadic };
       tasksOutputMap.insert({ DataSpecUtils::label(taskOutput), taskOutput });
     }
   }
 
   for (const auto& ppTaskSpec : infrastructureSpec.postProcessingTasks) {
     if (ppTaskSpec.active) {
-      InputSpec ppTaskOutput{ ppTaskSpec.taskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName) };
+      InputSpec ppTaskOutput{ ppTaskSpec.taskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(ppTaskSpec.taskName), Lifetime::Sporadic };
       tasksOutputMap.insert({ DataSpecUtils::label(ppTaskOutput), ppTaskOutput });
     }
   }

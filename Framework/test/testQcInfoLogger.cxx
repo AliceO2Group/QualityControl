@@ -31,8 +31,8 @@ namespace o2::quality_control::core
 
 BOOST_AUTO_TEST_CASE(qc_info_logger)
 {
-  QcInfoLogger& qc1 = QcInfoLogger::GetInstance();
-  QcInfoLogger& qc2 = QcInfoLogger::GetInstance();
+  AliceO2::InfoLogger::InfoLogger& qc1 = QcInfoLogger::GetInfoLogger();
+  AliceO2::InfoLogger::InfoLogger& qc2 = QcInfoLogger::GetInfoLogger();
   BOOST_CHECK_EQUAL(&qc1, &qc2);
   qc1 << "test" << AliceO2::InfoLogger::InfoLogger::endm;
 }
@@ -40,8 +40,8 @@ BOOST_AUTO_TEST_CASE(qc_info_logger)
 BOOST_AUTO_TEST_CASE(qc_info_logger_2)
 {
   // Decreasing verbosity of the code
-  QcInfoLogger::GetInstance() << "1. info message" << AliceO2::InfoLogger::InfoLogger::endm;
-  QcInfoLogger::GetInstance() << "2. info message" << InfoLogger::endm;
+  QcInfoLogger::GetInfoLogger() << "1. info message" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInfoLogger() << "2. info message" << InfoLogger::endm;
   ILOG(Info, Support) << "3. info message for support" << InfoLogger::endm;
   ILOG(Info, Devel) << "4. info message for devel" << ENDM;
   ILOG(Info) << "4b. info MEssage for default level" << ENDM;
@@ -76,10 +76,23 @@ BOOST_AUTO_TEST_CASE(qc_info_logger_2)
 BOOST_AUTO_TEST_CASE(qc_info_logger_fields)
 {
   ILOG(Info, Support) << "No fields set, facility=QC, system=QC, detector=<none>" << ENDM;
-  ILOG_INST.setDetector("ITS");
+  QcInfoLogger::setDetector("ITS");
   ILOG(Info, Support) << "Detector ITS set, facility=QC, system=QC, detector=ITS" << ENDM;
-  ILOG_INST.setFacility("Test");
+  QcInfoLogger::setFacility("Test");
   ILOG(Info, Support) << "Facility Test set, facility=Test, system=QC, detector=ITS" << ENDM;
+  QcInfoLogger::setRun(12345);
+  ILOG(Info, Support) << "Run set to 12345, facility=Test, system=QC, detector=ITS" << ENDM;
+  QcInfoLogger::setPartition("physics_1");
+  ILOG(Info, Support) << "Partition set to physics_1, facility=Test, system=QC, detector=ITS" << ENDM;
+}
+
+BOOST_AUTO_TEST_CASE(qc_info_logger_dplil)
+{
+  AliceO2::InfoLogger::InfoLogger dplInfoLogger;
+  auto dplContext = new AliceO2::InfoLogger::InfoLoggerContext();
+  dplContext->setField(infoContext::FieldName::Facility, "dplfacility");
+  dplContext->setField(infoContext::FieldName::System, "dplsystem");
+  QcInfoLogger::init("facility", false, 21, &dplInfoLogger, dplContext);
 }
 
 } // namespace o2::quality_control::core

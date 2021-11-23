@@ -54,7 +54,7 @@ ITSTrackTask::~ITSTrackTask()
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  QcInfoLogger::GetInstance() << "initialize ITSTrackTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize ITSTrackTask" << ENDM;
 
   mRunNumberPath = mCustomParameters["runNumberPath"];
   mVertexXYsize = std::stof(mCustomParameters["vertexXYsize"]);
@@ -67,18 +67,18 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSTrackTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
 }
 
 void ITSTrackTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
-  QcInfoLogger::GetInstance() << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "START DOING QC General" << ENDM;
   auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks");
   auto rofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
@@ -144,18 +144,18 @@ void ITSTrackTask::endOfCycle()
         getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
       mRunNumber = runNumber;
     }
-    QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "endOfCycle" << ENDM;
   }
 }
 
 void ITSTrackTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void ITSTrackTask::reset()
 {
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   hAngularDistribution->Reset();
   hNClusters->Reset();
   hTrackPhi->Reset();
@@ -245,7 +245,7 @@ void ITSTrackTask::createAllHistos()
 void ITSTrackTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    LOG(INFO) << " ERROR: trying to add non-existent object ";
+    ILOG(Info, Support) << " ERROR: trying to add non-existent object " << ENDM;
     return;
   } else {
     mPublishedObjects.push_back(aObject);
@@ -264,7 +264,7 @@ void ITSTrackTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    LOG(INFO) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
+    ILOG(Info, Support) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName() << ENDM;
   }
 }
 

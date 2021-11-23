@@ -84,7 +84,7 @@ class Ccdb:
         '''
         url_browse_all_versions = self.url + '/browse/' + object_path
         logging.debug(f"Ccdb::getVersionsList -> {url_browse_all_versions}")
-        headers = {'Accept':'application/json'}
+        headers = {'Accept':'application/json', 'Connection': 'close'}
         r = requests.get(url_browse_all_versions, headers=headers)
         r.raise_for_status()
         try:
@@ -107,8 +107,9 @@ class Ccdb:
         '''
         url_delete = self.url + '/' + version.path + '/' + str(version.validFrom) + '/' + version.uuid
         logging.debug(f"Delete version at url {url_delete}")
+        headers = {'Connection': 'close'}
         try:
-            r = requests.delete(url_delete)
+            r = requests.delete(url_delete, headers=headers)
             r.raise_for_status()
             self.counter_deleted += 1
         except requests.exceptions.RequestException as e:  
@@ -134,7 +135,8 @@ class Ccdb:
             for key in metadata:
                 full_path += key + "=" + metadata[key] + "&"
         try:
-            r = requests.put(full_path)
+            headers = {'Connection': 'close'}
+            r = requests.put(full_path, headers=headers)
             r.raise_for_status()
             self.counter_validity_updated += 1
         except requests.exceptions.RequestException as e:  
@@ -152,7 +154,8 @@ class Ccdb:
             for key in version.metadata:
                 full_path += key + "=" + version.metadata[key] + "/"
         logging.debug(f"fullpath: {full_path}")
-        r = requests.post(full_path, files=data)
+        headers = {'Connection': 'close'}
+        r = requests.post(full_path, files=data, headers=headers)
         if r.ok:
             logging.debug(f"Version pushed to {version.path}")
         else:

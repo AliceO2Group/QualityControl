@@ -117,7 +117,7 @@ void RepositoryBenchmark::InitTask()
   }
 
   if (mDeletionMode) {
-    QcInfoLogger::GetInstance() << "Deletion mode..." << infologger::endm;
+    ILOG(Info, Support) << "Deletion mode..." << infologger::endm;
     emptyDatabase();
   }
 
@@ -170,16 +170,16 @@ bool RepositoryBenchmark::ConditionalRun()
   // determine how long we should wait till next iteration in order to have 1 sec between storage
   auto duration2 = duration_cast<microseconds>(t2 - t1);
   auto remaining = duration_cast<microseconds>(std::chrono::seconds(1) - duration2);
-  //  QcInfoLogger::GetInstance() << "Remaining duration : " << remaining.count() << " us" << infologger::endm;
+  //  ILOG(Info, Support) <<"Remaining duration : " << remaining.count() << " us" << infologger::endm;
   if (remaining.count() < 0) {
-    QcInfoLogger::GetInstance() << "Remaining duration is negative, we don't sleep " << infologger::endm;
+    ILOG(Info, Support) << "Remaining duration is negative, we don't sleep " << infologger::endm;
   } else {
     this_thread::sleep_for(chrono::microseconds(remaining));
   }
 
   if (mMaxIterations > 0 && ++mNumIterations >= mMaxIterations) {
-    QcInfoLogger::GetInstance() << "Configured maximum number of iterations reached. Leaving RUNNING state."
-                                << infologger::endm;
+    ILOG(Info, Support) << "Configured maximum number of iterations reached. Leaving RUNNING state."
+                        << infologger::endm;
     return false;
   }
 

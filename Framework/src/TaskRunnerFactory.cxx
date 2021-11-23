@@ -54,6 +54,11 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   if (!taskSpec.dataSource.isOneOf(DataSourceType::DataSamplingPolicy, DataSourceType::Direct)) {
     throw std::runtime_error("This data source of the task '" + taskSpec.taskName + "' is not supported.");
   }
+  auto cycleDurationSeconds = taskSpec.cycleDurationSeconds;
+  if (cycleDurationSeconds < 10) {
+    ILOG(Error, Support) << "Cycle duration is too short (" << cycleDurationSeconds << "), replaced by a duration of 10 seconds." << ENDM;
+    cycleDurationSeconds = 10;
+  }
   auto inputs = taskSpec.dataSource.inputs;
   inputs.emplace_back("timer-cycle",
                       TaskRunner::createTaskDataOrigin(),
@@ -64,7 +69,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   OutputSpec monitorObjectsSpec{ { "mo" },
                                  TaskRunner::createTaskDataOrigin(),
                                  TaskRunner::createTaskDataDescription(taskSpec.taskName),
-                                 static_cast<header::DataHeader::SubSpecificationType>(parallelTaskID) };
+                                 static_cast<header::DataHeader::SubSpecificationType>(parallelTaskID),
+                                 Lifetime::Sporadic };
 
   Options options{
     { "period-timer-cycle", framework::VariantType::Int, static_cast<int>(taskSpec.cycleDurationSeconds * 1000000), { "timer period" } },
@@ -76,7 +82,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
     taskSpec.taskName,
     taskSpec.moduleName,
     taskSpec.className,
-    taskSpec.cycleDurationSeconds,
+    cycleDurationSeconds,
     taskSpec.maxNumberCycles,
     globalConfig.consulUrl,
     globalConfig.conditionDBUrl,

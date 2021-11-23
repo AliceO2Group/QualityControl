@@ -89,7 +89,7 @@ ITSClusterTask::~ITSClusterTask()
 void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
 
-  QcInfoLogger::GetInstance() << "initialize ITSClusterTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize ITSClusterTask" << ENDM;
 
   getJsonParameters();
 
@@ -119,22 +119,22 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   if (file.good()) {
     mDict.readBinaryFile(mDictPath);
-    LOG(INFO) << "Running with dictionary: " << mDictPath << " with size: " << mDict.getSize();
+    ILOG(Info, Support) << "Running with dictionary: " << mDictPath << " with size: " << mDict.getSize();
 
   } else {
-    LOG(INFO) << "Running without dictionary !";
+    ILOG(Info, Support) << "Running without dictionary !";
   }
 }
 
 void ITSClusterTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
   reset();
 }
 
 void ITSClusterTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
 void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -144,7 +144,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-  QcInfoLogger::GetInstance() << "START DOING QC General" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "START DOING QC General" << ENDM;
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
 
@@ -202,27 +202,29 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   mNRofs += clusRofArr.size();        //USED to calculate occupancy for the whole run
   mNRofsMonitor += clusRofArr.size(); // Occupancy in the last N ROFs
 
-  for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
+  if (mNRofs > 0) {
+    for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
 
-    if (!mEnableLayers[iLayer])
-      continue;
+      if (!mEnableLayers[iLayer])
+        continue;
 
-    for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
+      for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
 
-      if (iLayer < 3) {
-        for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
-          hOccupancyIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIB[iLayer][iStave][iChip] / mNRofs);
-          hAverageClusterIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, hClusterSizeIB[iLayer][iStave][iChip]->GetMean());
+        if (iLayer < 3) {
+          for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
+            hOccupancyIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIB[iLayer][iStave][iChip] / mNRofs);
+            hAverageClusterIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, hClusterSizeIB[iLayer][iStave][iChip]->GetMean());
+          }
+          mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyIB[iLayer][iStave], mClusterOccupancyIB[iLayer][iStave] + mNChipsPerHic[iLayer])) / mNRofs);
+        } else {
+
+          for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
+            hOccupancyOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, 1. * mClusterOccupancyOB[iLayer][iStave][iHic] / mNRofs / 14); //14 To have occupation per chip and HIC has 14 chips
+            hAverageClusterOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, hClusterSizeOB[iLayer][iStave][iHic]->GetMean());
+          }
+
+          mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyOB[iLayer][iStave], mClusterOccupancyOBmonitor[iLayer][iStave] + mNHicPerStave[iLayer])) / mNRofs / 14);
         }
-        mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyIB[iLayer][iStave], mClusterOccupancyIB[iLayer][iStave] + mNChipsPerHic[iLayer])) / mNRofs);
-      } else {
-
-        for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
-          hOccupancyOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, 1. * mClusterOccupancyOB[iLayer][iStave][iHic] / mNRofs / 14); //14 To have occupation per chip and HIC has 14 chips
-          hAverageClusterOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, hClusterSizeOB[iLayer][iStave][iHic]->GetMean());
-        }
-
-        mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyOB[iLayer][iStave], mClusterOccupancyOBmonitor[iLayer][iStave] + mNHicPerStave[iLayer])) / mNRofs / 14);
       }
     }
   }
@@ -251,7 +253,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-  ILOG(Info) << "Time in QC Cluster Task:  " << difference << ENDM;
+  ILOG(Info, Support) << "Time in QC Cluster Task:  " << difference << ENDM;
 }
 
 void ITSClusterTask::updateOccMonitorPlots()
@@ -291,18 +293,18 @@ void ITSClusterTask::endOfCycle()
         getObjectsManager()->addMetadata(mPublishedObjects.at(iObj)->GetName(), "Run", runNumber);
       mRunNumber = runNumber;
     }
-    QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "endOfCycle" << ENDM;
   }
 }
 
 void ITSClusterTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void ITSClusterTask::reset()
 {
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << ENDM;
 
   for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mEnableLayers[iLayer])
@@ -504,7 +506,7 @@ void ITSClusterTask::getJsonParameters()
 
     if (mCustomParameters["layer"][ilayer] != '0') {
       mEnableLayers[ilayer] = 1;
-      LOG(INFO) << "enable layer : " << ilayer;
+      ILOG(Info, Support) << "enable layer : " << ilayer;
     } else {
       mEnableLayers[ilayer] = 0;
     }
@@ -514,7 +516,7 @@ void ITSClusterTask::getJsonParameters()
 void ITSClusterTask::addObject(TObject* aObject)
 {
   if (!aObject) {
-    LOG(INFO) << " ERROR: trying to add non-existent object ";
+    ILOG(Info, Support) << " ERROR: trying to add non-existent object ";
     return;
   } else
     mPublishedObjects.push_back(aObject);
@@ -532,7 +534,7 @@ void ITSClusterTask::publishHistos()
 {
   for (unsigned int iObj = 0; iObj < mPublishedObjects.size(); iObj++) {
     getObjectsManager()->startPublishing(mPublishedObjects.at(iObj));
-    //LOG(INFO) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
+    //ILOG(Info, Support) << " Object will be published: " << mPublishedObjects.at(iObj)->GetName();
   }
 }
 
