@@ -52,7 +52,7 @@ void RawDataDecoder::rdhHandler(const o2::header::RAWDataHeader* rdh)
   bool isValidRDH = RDHUtils::checkRDH(rdh, false);
 
   if (!isValidRDH) {
-    LOG(DEBUG) << "No valid RDH... skipped";
+    LOG(debug) << "No valid RDH... skipped";
     return;
   }
 
