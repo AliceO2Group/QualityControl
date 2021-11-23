@@ -90,7 +90,7 @@ void ITSClusterCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkR
   if (mo->getName().find("AverageClusterSize") != std::string::npos) {
     auto* h = dynamic_cast<TH2D*>(mo->getObject());
     std::string histoName = mo->getName();
-    int iLayer = histoName[histoName.find("Layer") + 5] - 48; //Searching for position of "Layer" in the name of the file, then +5 is the NUMBER of the layer, -48 is conversion to int
+    int iLayer = histoName[histoName.find("Layer") + 5] - 48; // Searching for position of "Layer" in the name of the file, then +5 is the NUMBER of the layer, -48 is conversion to int
 
     if ((int)(checkResult.getLevel() & (1 << iLayer)) == 0) {
       text = "Quality::GOOD";

@@ -67,7 +67,7 @@ class ITSClusterTask : public TaskInterface
 
   TH1D* hClusterTopologyIB[7][48][9];
   TH2D* hOccupancyIB[7];
-  TH2D* hOccupancyIBmonitor[7]; //will be used in online data monitoring, showing occupation for the last N ROFs
+  TH2D* hOccupancyIBmonitor[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
   TH2D* hAverageClusterIB[7];
   TH2D* hAverageClusterIBmonitor[7];
 
@@ -77,7 +77,7 @@ class ITSClusterTask : public TaskInterface
   TH1D* hClusterSizeOBmonitor[7][48][14];
   TH1D* hClusterTopologyOB[7][48][14];
   TH2D* hOccupancyOB[7];
-  TH2D* hOccupancyOBmonitor[7]; //will be used in online data monitoring, showing occupation for the last N ROFs
+  TH2D* hOccupancyOBmonitor[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
   TH2D* hAverageClusterOB[7];
   TH2D* hAverageClusterOBmonitor[7];
 
@@ -100,7 +100,7 @@ class ITSClusterTask : public TaskInterface
   const int mNChipsPerHic[NLayer] = { 9, 9, 9, 14, 14, 14, 14 };
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
   const float MidPointRad[7] = { 23.49, 31.586, 39.341, 197.598, 246.944, 345.348, 394.883 };
-  const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; //start angle of first stave in each layer
+  const float StartAngle[7] = { 16.997 / 360 * (TMath::Pi() * 2.), 17.504 / 360 * (TMath::Pi() * 2.), 17.337 / 360 * (TMath::Pi() * 2.), 8.75 / 360 * (TMath::Pi() * 2.), 7 / 360 * (TMath::Pi() * 2.), 5.27 / 360 * (TMath::Pi() * 2.), 4.61 / 360 * (TMath::Pi() * 2.) }; // start angle of first stave in each layer
   //
   int mEnableLayers[7];
   o2::itsmft::TopologyDictionary mDict;
