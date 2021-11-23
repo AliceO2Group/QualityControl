@@ -207,12 +207,15 @@ void ITSTrackTask::createAllHistos()
   addObject(hOccupancyROF);
   formatAxes(hOccupancyROF, "", "nTracks/ROF", 1, 1.10);
   hOccupancyROF->SetStats(0);
+  hOccupancyROF->SetBit(TH1::kIsAverage);
+
 
   hClusterUsage = new TH1D("ClusterUsage", "ClusterUsage", 1, 0, 1);
   hClusterUsage->SetTitle("Fraction of clusters used in tracking");
   addObject(hClusterUsage);
   formatAxes(hClusterUsage, "", "nCluster in track / Total cluster", 1, 1.10);
   hClusterUsage->SetStats(0);
+  hClusterUsage->SetBit(TH1::kIsAverage);
 
   hVertexCoordinates = new TH2D("VertexCoordinates", "VertexCoordinates", 1000, -1. * mVertexXYsize, mVertexXYsize, 1000, -1 * mVertexXYsize, mVertexXYsize);
   hVertexCoordinates->SetTitle("Coordinates of track vertex");
