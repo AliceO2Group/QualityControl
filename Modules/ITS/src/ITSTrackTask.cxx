@@ -209,7 +209,6 @@ void ITSTrackTask::createAllHistos()
   hOccupancyROF->SetStats(0);
   hOccupancyROF->SetBit(TH1::kIsAverage);
 
-
   hClusterUsage = new TH1D("ClusterUsage", "ClusterUsage", 1, 0, 1);
   hClusterUsage->SetTitle("Fraction of clusters used in tracking");
   addObject(hClusterUsage);
