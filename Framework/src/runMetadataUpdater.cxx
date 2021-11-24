@@ -39,12 +39,12 @@ int main(int argc, const char* argv[])
 
     bpo::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
-    notify(vm);
 
     if (vm.count("help")) {
       std::cout << desc << std::endl;
       return 0;
     }
+    notify(vm);
 
     const auto url = vm["url"].as<string>();
     const auto path = vm["path"].as<string>();
@@ -92,5 +92,3 @@ int main(int argc, const char* argv[])
 
   return 0;
 }
-
-// -0.378347x + 2782.30
