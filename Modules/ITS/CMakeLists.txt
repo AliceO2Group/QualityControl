@@ -73,7 +73,7 @@ install(
 
 set(EXE_SRCS
     src/runITS.cxx
-    src/runITSClustersRootFileReader_Final.cxx)
+    src/runITSClustersRootFileReader.cxx)
 
 set(EXE_NAMES
     o2-qc-run-its
