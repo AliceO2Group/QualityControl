@@ -114,7 +114,7 @@ void PhysicsTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   //digits
   for (const auto& trigRecord : digitsTR) {
-    LOG(DEBUG) << " monitorData() : digit trigger record #" << mNEventsTotal
+    LOG(debug) << " monitorData() : digit trigger record #" << mNEventsTotal
                << " contains " << trigRecord.getNumberOfObjects() << " objects.";
     mNEventsTotal++;
     mNEventsFromLastFillHistogramsCall++;
