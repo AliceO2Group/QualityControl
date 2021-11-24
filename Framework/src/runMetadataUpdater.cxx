@@ -33,7 +33,7 @@ using namespace std;
 
 int main(int argc, const char* argv[])
 {
-    try {
+  try {
     bpo::options_description desc{ "Options" };
     desc.add_options()("help,h", "Help screen")("url,u", bpo::value<std::string>()->required(), "URL to the QCDB")("path,p", bpo::value<std::string>()->required(), "Path to the object to update")("timestamp,t", bpo::value<long>()->default_value(o2::ccdb::getCurrentTimestamp()), "Timestamp to select the object")("id", bpo::value<std::string>()->default_value(""), "Id of the object to select")("pair", bpo::value<vector<string>>()->required(), "Key-value pair to update the metadata (e.g. --pair \"1,oil\", can be added multiple times)");
 
@@ -92,5 +92,3 @@ int main(int argc, const char* argv[])
 
   return 0;
 }
-
-// -0.378347x + 2782.30
