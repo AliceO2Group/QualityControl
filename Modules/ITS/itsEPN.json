@@ -84,7 +84,7 @@
           {
             "type": "Task",
             "name": "ITSTrackTask",
-            "MOs" : ["NClusters","PhiDistribution","AngularDistribution","ClusterUsage","EtaDistribution"]
+	    "MOs" : ["NClusters","PhiDistribution","AngularDistribution","ClusterUsage","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ"]
           }
         ]
       }
