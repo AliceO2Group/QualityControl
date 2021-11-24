@@ -92,5 +92,3 @@ int main(int argc, const char* argv[])
 
   return 0;
 }
-
-// -0.378347x + 2782.30
