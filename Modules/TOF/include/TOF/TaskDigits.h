@@ -63,6 +63,7 @@ class TaskDigits final : public TaskInterface
   int fgNbinsToT = 100;                                  /// Number of bins in ToT plot
   float fgRangeMinToT = 0;                               /// Range min in ToT plot
   float fgRangeMaxToT = 48.8;                            /// Range max in ToT plot
+  bool fgDiagnostic = false;                             /// enable diagnostic plots
 
  private:
   // Event info
@@ -97,7 +98,7 @@ class TaskDigits final : public TaskInterface
 
   // std::shared_ptr<TH1F> mTOFRawsLTMHits = nullptr;          /// LTMs OR signals
   // std::shared_ptr<TH2F> mTOFrefMap = nullptr;               /// TOF enabled channel reference map
-  // std::shared_ptr<TH2I> mTOFDecodingErrors = nullptr;       /// Decoding error monitoring
+  std::shared_ptr<TH2I> mTOFDecodingErrors = nullptr; /// Decoding error monitoring
   // std::shared_ptr<TH1F> mTOFOrphansTime = nullptr;          /// TOF Raws - Orphans time (ns)
   // std::shared_ptr<TH2F> mTOFRawTimeVsTRM035 = nullptr;      /// TOF raws - Hit time vs TRM - crates 0 to 35
   // std::shared_ptr<TH2F> mTOFRawTimeVsTRM3671 = nullptr;     /// TOF raws - Hit time vs TRM - crates 36 to 72

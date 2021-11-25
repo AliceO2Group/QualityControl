@@ -76,6 +76,11 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   if (auto param = mCustomParameters.find("RangeMaxToT"); param != mCustomParameters.end()) {
     fgRangeMaxToT = ::atof(param->second.c_str());
   }
+  if (auto param = mCustomParameters.find("Diagnostic"); param != mCustomParameters.end()) {
+    if (param->second == "true" || param->second == "True" || param->second == "TRUE") {
+      fgDiagnostic = true;
+    }
+  }
 
   // Define histograms
   ILOG(Info, Support) << "initialize TaskDigits" << ENDM;
@@ -139,22 +144,23 @@ void TaskDigits::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->setDefaultDrawOptions(mTOFRawHitMap.get(), "colz logz");
   getObjectsManager()->setDisplayHint(mTOFRawHitMap.get(), "colz logz");
 
-  // mTOFDecodingErrors = std::make_shared<TH2I>("TOFDecodingErrors", "Decoding error monitoring; DDL; Error ", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates, 13, 1, 14);
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(1, "DRM ");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(2, "LTM ");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(3, "TRM 3 ");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(4, "TRM 4");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(5, "TRM 5");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(6, "TRM 6");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(7, "TRM 7");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(8, "TRM 8");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(9, "TRM 9");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(10, "TRM 10");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(11, "TRM 11");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(12, "TRM 12");
-  // mTOFDecodingErrors->GetYaxis()->SetBinLabel(13, "recovered");
-  // getObjectsManager()->startPublishing(mTOFDecodingErrors.get());
-
+  if (fgDiagnostic) {
+    mTOFDecodingErrors = std::make_shared<TH2I>("TOFDecodingErrors", "Decoding error monitoring; DDL; Error ", RawDataDecoder::ncrates, 0, RawDataDecoder::ncrates, 13, 1, 14);
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(1, "DRM ");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(2, "LTM ");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(3, "TRM 3 ");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(4, "TRM 4");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(5, "TRM 5");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(6, "TRM 6");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(7, "TRM 7");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(8, "TRM 8");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(9, "TRM 9");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(10, "TRM 10");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(11, "TRM 11");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(12, "TRM 12");
+    mTOFDecodingErrors->GetYaxis()->SetBinLabel(13, "recovered");
+    getObjectsManager()->startPublishing(mTOFDecodingErrors.get());
+  }
   // mTOFOrphansTime = std::make_shared<TH1F>("TOFOrphansTime", "TOF Raws - Orphans time (ns);Measured Hit time [ns];Hits", fgNbinsTime, fgRangeMinTime, fgRangeMaxTime);
   // getObjectsManager()->startPublishing(mTOFOrphansTime.get());
 
@@ -221,6 +227,8 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   const auto& digits = ctx.inputs().get<gsl::span<o2::tof::Digit>>("tofdigits");
   // Get TOF Readout window
   const auto& rows = ctx.inputs().get<std::vector<o2::tof::ReadoutWindowData>>("readoutwin");
+  // Get TOF Diagnostic words
+  //  const auto& diagnostics = ctx.inputs().get<std::vector<uint8_t>>("patterns");
 
   int eta, phi;       // Eta and phi indices
   int det[5] = { 0 }; // Coordinates
@@ -242,6 +250,7 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
   mROWSize->Fill(rows.size() / 3.0);
 
   int currentrow = 0;
+  int currentDia = 0;
   // Loop on readout windows
   for (const auto& row : rows) {
     for (unsigned int i = 0; i < RawDataDecoder::ncrates; i++) { // Loop on all crates
@@ -253,6 +262,31 @@ void TaskDigits::monitorData(o2::framework::ProcessingContext& ctx)
       mOrbitID->Fill(row.mFirstIR.orbit % 1048576, i);
       mTimeBC->Fill(row.mFirstIR.bc % o2::tof::Geo::BC_IN_ORBIT, i);
       mEventCounter->Fill(row.mEventCounter % 1000, i);
+
+      // check patterns
+      if (fgDiagnostic) {
+        // Get TOF Diagnostic words
+        const auto& diagnostics = ctx.inputs().get<std::vector<uint8_t>>("patterns");
+
+        int nDia = row.getDiagnosticInCrate(i);
+
+        mTOFDecodingErrors->Fill(i, 1);
+
+        int slot = -1;
+        int lastslot = -1;
+        for (int idia = currentDia; idia < currentDia + nDia; idia++) {
+          const uint8_t& el = diagnostics[idia];
+
+          if (el > 28) { // new slot
+            slot = el - 28;
+          } else if (slot > -1 && lastslot != slot) { // fill only one time per TRM and row
+            // fill error
+            mTOFDecodingErrors->Fill(i, slot);
+            lastslot = slot;
+          }
+        }
+        currentDia += nDia;
+      }
     }
     currentrow++;
     //
@@ -370,7 +404,9 @@ void TaskDigits::reset()
   mTOFRawsToTOC->Reset();
   // mTOFRawsLTMHits->Reset();
   // mTOFrefMap->Reset();
-  // mTOFDecodingErrors->Reset();
+  if (fgDiagnostic) {
+    mTOFDecodingErrors->Reset();
+  }
   // mTOFOrphansTime->Reset();
   // mTOFRawTimeVsTRM035->Reset();
   // mTOFRawTimeVsTRM3671->Reset();

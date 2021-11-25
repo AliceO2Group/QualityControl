@@ -1,111 +1,119 @@
 {
-  "qc": {
-    "config": {
-      "database": {
-        "implementation": "CCDB",
-        "host": "ccdb-test.cern.ch:8080",
-        "username": "not_applicable",
-        "password": "not_applicable",
-        "name": "not_applicable"
+  "qc" : {
+    "config" : {
+      "database" : {
+        "implementation" : "CCDB",
+        "host" : "ccdb-test.cern.ch:8080",
+        "username" : "not_applicable",
+        "password" : "not_applicable",
+        "name" : "not_applicable"
       },
-      "Activity": {
-        "number": "42",
-        "type": "2"
+      "Activity" : {
+        "number" : "42",
+        "type" : "2"
       },
-      "monitoring": {
-        "url": "infologger:///debug?qc"
+      "monitoring" : {
+        "url" : "infologger:///debug?qc"
       },
-      "consul": {
-        "url": ""
+      "consul" : {
+        "url" : ""
       },
-      "conditionDB": {
-        "url": "ccdb-test.cern.ch:8080"
+      "conditionDB" : {
+        "url" : "ccdb-test.cern.ch:8080"
       }
     },
-    "tasks": {
-      "TaskDigits": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::TaskDigits",
-        "moduleName": "QcTOF",
-        "detectorName": "TOF",
-        "cycleDurationSeconds": "10",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "tof-digits"
+    "tasks" : {
+      "TaskDigits" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::tof::TaskDigits",
+        "moduleName" : "QcTOF",
+        "detectorName" : "TOF",
+        "cycleDurationSeconds" : "10",
+        "maxNumberCycles" : "-1",
+        "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource" : {
+          "type" : "dataSamplingPolicy",
+          "name" : "tof-digits"
         },
-        "taskParameters": {
-          "nothing": "rien"
+        "taskParameters" : {
+          "Diagnostic" : "false"
         },
-        "location": "remote"
+        "location" : "remote"
       }
     },
-    "checks": {
-      "TOFRawsMulti": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::CheckRawMultiplicity",
-        "moduleName": "QcTOF",
-        "policy": "OnAny",
-        "detectorName": "TOF",
-        "dataSource": [
+    "checks" : {
+      "TOFRawsMulti" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::tof::CheckRawMultiplicity",
+        "moduleName" : "QcTOF",
+        "policy" : "OnAny",
+        "detectorName" : "TOF",
+        "dataSource" : [
           {
-            "type": "Task",
-            "name": "TaskDigits",
-            "MOs": [
-              "TOFRawsMulti"
-            ]
+            "type" : "Task",
+            "name" : "TaskDigits",
+            "MOs" : ["TOFRawsMulti"]
           }
         ]
       },
-      "TOFRawsTime": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::CheckRawTime",
-        "moduleName": "QcTOF",
-        "policy": "OnAny",
-        "detectorName": "TOF",
-        "dataSource": [
+      "TOFRawsTime" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::tof::CheckRawTime",
+        "moduleName" : "QcTOF",
+        "policy" : "OnAny",
+        "detectorName" : "TOF",
+        "dataSource" : [
           {
-            "type": "Task",
-            "name": "TaskDigits",
-            "MOs": [
-              "TOFRawsTime"
-            ]
+            "type" : "Task",
+            "name" : "TaskDigits",
+            "MOs" : ["TOFRawsTime"]
           }
         ]
       },
-      "TOFRawsToT": {
-        "active": "true",
-        "className": "o2::quality_control_modules::tof::CheckRawToT",
-        "moduleName": "QcTOF",
-        "policy": "OnAny",
-        "detectorName": "TOF",
-        "dataSource": [
+      "TOFRawsToT" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::tof::CheckRawToT",
+        "moduleName" : "QcTOF",
+        "policy" : "OnAny",
+        "detectorName" : "TOF",
+        "dataSource" : [
           {
-            "type": "Task",
-            "name": "TaskDigits",
-            "MOs": [
-              "TOFRawsToT"
-            ]
+            "type" : "Task",
+            "name" : "TaskDigits",
+            "MOs" : ["TOFRawsToT"]
           }
         ]
       }
     }
   },
-  "dataSamplingPolicies": [
-    {
-      "id": "tof-digits",
-      "active": "true",
-      "machines": [],
-      "query": "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
-      "samplingConditions": [
-        {
-          "condition": "random",
-          "fraction": "0.1",
-          "seed": "1234"
-        }
-      ],
-      "blocking": "false"
-    }
-  ]
+         "dataSamplingPolicies" : [
+           {
+             "id" : "tof-digits",
+             "active" : "true",
+             "machines" : [],
+             "query" : "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0",
+             "samplingConditions" : [
+               {
+                 "condition" : "random",
+                 "fraction" : "0.1",
+                 "seed" : "1234"
+               }
+             ],
+             "blocking" : "false"
+           },
+           {
+             "id" : "tof-digits-dia",
+             "active" : "true",
+             "machines" : [],
+             "query" : "tofdigits:TOF/DIGITS/0;readoutwin:TOF/READOUTWINDOW/0;patterns:TOF/PATTERNS",
+             "samplingConditions" : [
+               {
+                 "condition" : "random",
+                 "fraction" : "0.1",
+                 "seed" : "1234"
+               }
+             ],
+             "blocking" : "false"
+           }
+         ]
 }
