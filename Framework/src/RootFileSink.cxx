@@ -115,6 +115,7 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
       sinkFile->WriteObject(moc, moc->GetName(), "Overwrite");
       delete moc;
     }
+    closeSinkFile(sinkFile);
   } catch (...) {
     closeSinkFile(sinkFile);
     throw;
