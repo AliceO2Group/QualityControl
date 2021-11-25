@@ -49,7 +49,7 @@ TFile* openSinkFile(const std::string& name)
   return file;
 }
 
-TFile* closeSinkFile(TFile* file)
+void closeSinkFile(TFile* file)
 {
   if (file != nullptr) {
     if (file->IsOpen()) {
