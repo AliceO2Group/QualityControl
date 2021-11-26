@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   QcMFTRecoTaskExtra.h
+/// \file   QcMFTRecoTask.h
 /// \author Tomas Herman
 /// \author Guillermo Contreras
 /// \author Diana Maria Krupova
@@ -37,13 +37,13 @@ static constexpr array<short, 7> minNClustersList = { 4, 5, 6, 7, 8, 9, 10 };
 
 /// \brief MFT Track QC task
 ///
-class QcMFTRecoTaskExt /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class QcMFTRecoTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
-  QcMFTRecoTaskExt() = default;
+  QcMFTRecoTask() = default;
   /// Destructor
-  ~QcMFTRecoTaskExt() override;
+  ~QcMFTRecoTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;

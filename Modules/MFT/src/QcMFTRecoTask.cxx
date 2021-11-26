@@ -10,7 +10,7 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   QcMFTRecoTaskExtra.cxx
+/// \file   QcMFTRecoTask.cxx
 /// \author Tomas Herman
 /// \author Guillermo Contreras
 /// \author Diana Maria Krupova
@@ -28,21 +28,21 @@
 #include <DataFormatsITSMFT/CompCluster.h>
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
-#include "MFT/QcMFTRecoTaskExtra.h"
+#include "MFT/QcMFTRecoTask.h"
 
 namespace o2::quality_control_modules::mft
 {
 
-QcMFTRecoTaskExt::~QcMFTRecoTaskExt()
+QcMFTRecoTask::~QcMFTRecoTask()
 {
   /*
     not needed for unique pointers
   */
 }
 
-void QcMFTRecoTaskExt::initialize(o2::framework::InitContext& /*ctx*/)
+void QcMFTRecoTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize QcMFTRecoTaskExt" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
+  ILOG(Info, Support) << "initialize QcMFTRecoTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   mTrackNumberOfClusters = std::make_unique<TH1F>("mMFTTrackNumberOfClusters",
                                                   "Number Of Clusters Per Track; # clusters; # entries", 10, 0.5, 10.5);
@@ -183,7 +183,7 @@ void QcMFTRecoTaskExt::initialize(o2::framework::InitContext& /*ctx*/)
   }
 }
 
-void QcMFTRecoTaskExt::startOfActivity(Activity& /*activity*/)
+void QcMFTRecoTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
 
@@ -214,12 +214,12 @@ void QcMFTRecoTaskExt::startOfActivity(Activity& /*activity*/)
   mClusterPatternIndex->Reset();
 }
 
-void QcMFTRecoTaskExt::startOfCycle()
+void QcMFTRecoTask::startOfCycle()
 {
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
-void QcMFTRecoTaskExt::monitorData(o2::framework::ProcessingContext& ctx)
+void QcMFTRecoTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // get the tracks
   const auto tracks = ctx.inputs().get<gsl::span<o2::mft::TrackMFT>>("tracks");
@@ -288,17 +288,17 @@ void QcMFTRecoTaskExt::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void QcMFTRecoTaskExt::endOfCycle()
+void QcMFTRecoTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
-void QcMFTRecoTaskExt::endOfActivity(Activity& /*activity*/)
+void QcMFTRecoTask::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
-void QcMFTRecoTaskExt::reset()
+void QcMFTRecoTask::reset()
 {
   // clean all the monitor objects here
 

@@ -23,9 +23,9 @@
       }
     },
     "tasks": {
-      "QcMFTRecoTaskExt": {
+      "QcMFTRecoTask": {
         "active": "true",
-        "className": "o2::quality_control_modules::mft::QcMFTRecoTaskExt",
+        "className": "o2::quality_control_modules::mft::QcMFTRecoTask",
         "moduleName": "QcMFT",
         "detectorName": "MFT",
         "cycleDurationSeconds": "60",
@@ -40,7 +40,7 @@
           "MaxTrackROFSize": "1000",
           "MaxClusterROFSize": "5000",
           "MaxDuration": "60000",
-          "TimeBinSize": "0.01",
+          "TimeBinSize": "0.1",
           "RefOrbit": "0"
         },
         "location": "remote"
@@ -52,7 +52,7 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "QcMFTRecoTaskExt",
+            "name": "QcMFTRecoTask",
             "MOs": [
               "mMFTTrackCharge"
             ]

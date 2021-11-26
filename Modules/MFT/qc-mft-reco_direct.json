@@ -2,8 +2,8 @@
   "qc": {
     "config": {
       "database": {
-        "implementation": "CCDB",
-        "host": "dummy_qcdb.cern.ch:8083",
+        "implementation": "Dummy",
+        "host": "not_applicable",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -16,10 +16,10 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "dummy_aliecs.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
-        "url": "dummy_qcdb.cern.ch:8083"
+        "url": "qcdb.cern.ch:8083"
       }
     },
     "tasks": {
@@ -40,7 +40,7 @@
           "MaxTrackROFSize": "1000",
           "MaxClusterROFSize": "5000",
           "MaxDuration": "60000",
-          "TimeBinSize": "0.01",
+          "TimeBinSize": "0.1",
           "RefOrbit": "0"
         },
         "location": "remote"
