@@ -8,7 +8,7 @@
 #pragma link C++ class o2::quality_control_modules::mft::QcMFTClusterTask + ;
 #pragma link C++ class o2::quality_control_modules::mft::QcMFTClusterCheck + ;
 #pragma link C++ class o2::quality_control_modules::mft::QcMFTTrackTask + ;
-#pragma link C++ class o2::quality_control_modules::mft::QcMFTRecoTask + ;
+#pragma link C++ class o2::quality_control_modules::mft::QcMFTAsyncTask + ;
 #pragma link C++ class o2::quality_control_modules::mft::QcMFTTrackCheck + ;
 #pragma link C++ class o2::quality_control_modules::mft::QcMFTReadoutCheck + ;
 #pragma link C++ class o2::quality_control_modules::mft::QcMFTReadoutTask + ;

@@ -10,14 +10,14 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   QcMFTRecoTask.h
+/// \file   QcMFTAsyncTask.h
 /// \author Tomas Herman
 /// \author Guillermo Contreras
 /// \author Diana Maria Krupova
 /// \author Katarina Krizkova Gajdosova
 
-#ifndef QC_MFT_RECO_TASKEXTRA_H
-#define QC_MFT_RECO_TASKEXTRA_H
+#ifndef QC_MFT_ASYNC_TASK_H
+#define QC_MFT_ASYNC_TASK_H
 
 // ROOT
 #include <TH1.h>
@@ -33,17 +33,15 @@ using namespace std;
 namespace o2::quality_control_modules::mft
 {
 
-static constexpr array<short, 7> minNClustersList = { 4, 5, 6, 7, 8, 9, 10 };
-
-/// \brief MFT Track QC task
+/// \brief MFT Async QC task
 ///
-class QcMFTRecoTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
+class QcMFTAsyncTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
  public:
   /// \brief Constructor
-  QcMFTRecoTask() = default;
+  QcMFTAsyncTask() = default;
   /// Destructor
-  ~QcMFTRecoTask() override;
+  ~QcMFTAsyncTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
@@ -60,36 +58,38 @@ class QcMFTRecoTask /*final*/ : public TaskInterface // todo add back the "final
   }
 
  private:
-  unique_ptr<TH1F> mTrackNumberOfClusters = nullptr;
-  unique_ptr<TH1F> mCATrackNumberOfClusters = nullptr;
-  unique_ptr<TH1F> mLTFTrackNumberOfClusters = nullptr;
-  unique_ptr<TH1F> mTrackOnvQPt = nullptr;
-  unique_ptr<TH1F> mTrackChi2 = nullptr;
-  unique_ptr<TH1F> mTrackCharge = nullptr;
-  unique_ptr<TH1F> mTrackPhi = nullptr;
-  unique_ptr<TH1F> mPositiveTrackPhi = nullptr;
-  unique_ptr<TH1F> mNegativeTrackPhi = nullptr;
-  unique_ptr<TH1F> mTrackEta = nullptr;
-  array<unique_ptr<TH1F>, 7> mTrackEtaNCls = { nullptr };
-  array<unique_ptr<TH1F>, 7> mTrackPhiNCls = { nullptr };
-  array<unique_ptr<TH2F>, 7> mTrackXYNCls = { nullptr };
-  unique_ptr<TH1F> mCATrackEta = nullptr;
-  unique_ptr<TH1F> mLTFTrackEta = nullptr;
-  unique_ptr<TH1F> mTrackTanl = nullptr;
+  std::unique_ptr<TH1F> mTrackNumberOfClusters = nullptr;
+  std::unique_ptr<TH1F> mCATrackNumberOfClusters = nullptr;
+  std::unique_ptr<TH1F> mLTFTrackNumberOfClusters = nullptr;
+  std::unique_ptr<TH1F> mTrackOnvQPt = nullptr;
+  std::unique_ptr<TH1F> mTrackChi2 = nullptr;
+  std::unique_ptr<TH1F> mTrackCharge = nullptr;
+  std::unique_ptr<TH1F> mTrackPhi = nullptr;
+  std::unique_ptr<TH1F> mPositiveTrackPhi = nullptr;
+  std::unique_ptr<TH1F> mNegativeTrackPhi = nullptr;
+  std::unique_ptr<TH1F> mTrackEta = nullptr;
+  std::array<unique_ptr<TH1F>, 7> mTrackEtaNCls = { nullptr };
+  std::array<unique_ptr<TH1F>, 7> mTrackPhiNCls = { nullptr };
+  std::array<unique_ptr<TH2F>, 7> mTrackXYNCls = { nullptr };
+  std::unique_ptr<TH1F> mCATrackEta = nullptr;
+  std::unique_ptr<TH1F> mLTFTrackEta = nullptr;
+  std::unique_ptr<TH1F> mTrackTanl = nullptr;
 
-  unique_ptr<TH1F> mTrackROFNEntries = nullptr;
-  unique_ptr<TH1F> mClusterROFNEntries = nullptr;
-  unique_ptr<TH1F> mTracksBC = nullptr;
+  std::unique_ptr<TH1F> mTrackROFNEntries = nullptr;
+  std::unique_ptr<TH1F> mClusterROFNEntries = nullptr;
+  std::unique_ptr<TH1F> mTracksBC = nullptr;
 
-  unique_ptr<TH1F> mNOfTracksTime = nullptr;
-  unique_ptr<TH1F> mNOfClustersTime = nullptr;
+  std::unique_ptr<TH1F> mNOfTracksTime = nullptr;
+  std::unique_ptr<TH1F> mNOfClustersTime = nullptr;
 
   std::unique_ptr<TH1F> mClusterSensorIndex = nullptr;
   std::unique_ptr<TH1F> mClusterPatternIndex = nullptr;
 
   uint32_t mRefOrbit = 0; // Reference orbit used in relative time calculation
+
+  static constexpr array<short, 7> sMinNClustersList = { 4, 5, 6, 7, 8, 9, 10 };
 };
 
 } // namespace o2::quality_control_modules::mft
 
-#endif // QC_MFT_RECO_TASKEXTRA_H
+#endif // QC_MFT_ASYNC_TASK_H

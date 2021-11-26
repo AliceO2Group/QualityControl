@@ -3,7 +3,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-        "host": "qcdb.cern.ch:8083",
+        "host": "ccdb-test.cern.ch:8080",
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -16,16 +16,16 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "aliecs.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
-        "url": "qcdb.cern.ch:8083"
+        "url": "ccdb-test.cern.ch:8080"
       }
     },
     "tasks": {
-      "QcMFTRecoTask": {
+      "QcMFTAsync": {
         "active": "true",
-        "className": "o2::quality_control_modules::mft::QcMFTRecoTask",
+        "className": "o2::quality_control_modules::mft::QcMFTAsyncTask",
         "moduleName": "QcMFT",
         "detectorName": "MFT",
         "cycleDurationSeconds": "60",
@@ -33,7 +33,7 @@
         "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource": {
           "type": "dataSamplingPolicy",
-          "name": "mft-tracks"
+          "name": "mft-async"
         },
         "taskParameters": {
           "ROFLengthInBC": "198",
@@ -46,28 +46,11 @@
         "location": "remote"
       }
     },
-    "checks": {
-      "QcMFTTrackCheck": {
-        "active": "false",
-        "dataSource": [
-          {
-            "type": "Task",
-            "name": "QcMFTRecoTask",
-            "MOs": [
-              "mMFTTrackCharge"
-            ]
-          }
-        ],
-        "className": "o2::quality_control_modules::mft::QcMFTTrackCheck",
-        "moduleName": "QcMFT",
-        "detectorName": "MFT",
-        "policy": "OnAny"
-      }
-    }
+    "checks": {}
   },
   "dataSamplingPolicies": [
     {
-      "id": "mft-tracks",
+      "id": "mft-async",
       "active": "true",
       "machines": [],
       "query": "tracks:MFT/TRACKS/0;tracksrofs:MFT/MFTTrackROF/0;clusters:MFT/COMPCLUSTERS/0;clustersrofs:MFT/CLUSTERSROF/0",

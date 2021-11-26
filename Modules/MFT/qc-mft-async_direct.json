@@ -23,9 +23,9 @@
       }
     },
     "tasks": {
-      "QcMFTRecoTask": {
+      "QcMFTAsync": {
         "active": "true",
-        "className": "o2::quality_control_modules::mft::QcMFTRecoTask",
+        "className": "o2::quality_control_modules::mft::QcMFTAsyncTask",
         "moduleName": "QcMFT",
         "detectorName": "MFT",
         "cycleDurationSeconds": "60",
@@ -46,24 +46,7 @@
         "location": "remote"
       }
     },
-    "checks": {
-      "QcMFTTrackCheck": {
-        "active": "false",
-        "dataSource": [
-          {
-            "type": "Task",
-            "name": "QcMFTRecoTask",
-            "MOs": [
-              "mMFTTrackCharge"
-            ]
-          }
-        ],
-        "className": "o2::quality_control_modules::mft::QcMFTTrackCheck",
-        "moduleName": "QcMFT",
-        "detectorName": "MFT",
-        "policy": "OnAny"
-      }
-    }
+    "checks": {}
   },
   "dataSamplingPolicies": []
 }
