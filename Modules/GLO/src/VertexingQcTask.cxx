@@ -144,10 +144,10 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     for (const auto& lbl : mcLbl) {
-      auto header = mMCReader.getMCEventHeader(lbl.getSourceID(), lbl.getEventID());
       if (lbl.getSourceID() != 0) { // using only underlying event,  which is source 0
         continue;
       }
+      auto header = mMCReader.getMCEventHeader(lbl.getSourceID(), lbl.getEventID());
       auto mult = header.GetNPrim();
       auto nVertices = mMapEvIDSourceID[{ lbl.getEventID(), lbl.getSourceID() }];
       if (nVertices == 1) {
