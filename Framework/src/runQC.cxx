@@ -26,10 +26,14 @@
 /// Similarly, to generate only the remote part (running on QC servers) add '--remote'. By default, the executable
 /// generates both local and remote topologies, as it is the usual use-case for local development.
 
+#include <string>
+#include <vector>
+#include <utility>
 #include <boost/asio/ip/host_name.hpp>
 #include <DataSampling/DataSampling.h>
 #include <Configuration/ConfigurationFactory.h>
 #include <Configuration/ConfigurationInterface.h>
+#include <CommonUtils/StringUtils.h>
 #include "QualityControl/InfrastructureGenerator.h"
 #include "QualityControl/QcInfoLogger.h"
 
@@ -66,6 +70,10 @@ void customize(std::vector<ConfigParamSpec>& workflowOptions)
   workflowOptions.push_back(
     ConfigParamSpec{ "remote-batch", VariantType::String, "", { "Runs the remote part of the QC workflow reading the inputs from a file (files). "
                                                                 "Takes the file path as argument." } });
+
+  workflowOptions.push_back(
+    ConfigParamSpec{ "override-values", VariantType::String, "", { "QC configuration file key/value pairs which should be overwritten. "
+                                                                   "The format is \"full.path.to.key=value[;full.path.to.key=value]\"." } });
 }
 
 void customize(std::vector<CompletionPolicy>& policies)
@@ -102,6 +110,26 @@ bool validateArguments(const ConfigContext& config)
   }
 
   return true;
+}
+
+std::vector<std::pair<std::string, std::string>> parseOverrideValues(const std::string& input)
+{
+  std::vector<std::pair<std::string, std::string>> keyValuePairs;
+  for (const auto& keyValueToken : utils::Str::tokenize(input, ';', true)) {
+    auto keyValue = utils::Str::tokenize(keyValueToken, '=', true);
+    if (keyValue.size() != 2) {
+      throw std::runtime_error("Token '" + keyValueToken + "' in the --override-values argument is malformed, use key=value.");
+    }
+    keyValuePairs.emplace_back(keyValue[0], keyValue[1]);
+  }
+  return keyValuePairs;
+}
+
+void overrideValues(boost::property_tree::ptree& tree, std::vector<std::pair<std::string, std::string>> keyValues)
+{
+  for (const auto& [key, value] : keyValues) {
+    tree.put(key, value);
+  }
 }
 
 enum class WorkflowType {
@@ -161,6 +189,8 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
     ILOG_INST.filterDiscardLevel(infologgerDiscardLevel);
 
     ILOG(Info, Support) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
+    auto keyValuesToOverride = parseOverrideValues(config.options().get<std::string>("override-values"));
+    overrideValues(configTree, keyValuesToOverride);
 
     auto workflowType = getWorkflowType(config);
     switch (workflowType) {
