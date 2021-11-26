@@ -68,7 +68,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
-  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+  quality_control::generateStandaloneInfrastructure(specs, configInterface->getRecursive());
 
   // Finally the receiver
   DataProcessorSpec receiver{

@@ -138,7 +138,6 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
   }
 
   auto qcConfigurationSource = config.options().get<std::string>("config");
-
   try {
     // The online QC infrastructure is divided into two parts:
     // - local - QC tasks which are on the same machines as the main processing. We also put Data Sampling there.
@@ -174,7 +173,7 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
         } else {
           ILOG(Info, Support) << "Omitting Data Sampling" << ENDM;
         }
-        quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+        quality_control::generateStandaloneInfrastructure(specs, configTree);
         break;
       }
       case WorkflowType::Local: {
@@ -191,14 +190,14 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
         }
 
         // Generation of the local QC topology (local QC tasks and their output proxies)
-        quality_control::generateLocalInfrastructure(specs, qcConfigurationSource, host);
+        quality_control::generateLocalInfrastructure(specs, configTree, host);
         break;
       }
       case WorkflowType::Remote: {
         ILOG(Info, Support) << "Creating a remote QC workflow." << ENDM;
 
         // Generation of the remote QC topology (task for QC servers, input proxies, mergers and all check runners)
-        quality_control::generateRemoteInfrastructure(specs, qcConfigurationSource);
+        quality_control::generateRemoteInfrastructure(specs, configTree);
         break;
       }
       case WorkflowType::LocalBatch: {
@@ -212,13 +211,13 @@ WorkflowSpec defineDataProcessing(const ConfigContext& config)
 
         auto localBatchFilePath = config.options().get<std::string>("local-batch");
         // Generation of the local batch QC workflow (QC tasks and file sink)
-        quality_control::generateLocalBatchInfrastructure(specs, qcConfigurationSource, localBatchFilePath);
+        quality_control::generateLocalBatchInfrastructure(specs, configTree, localBatchFilePath);
         break;
       }
       case WorkflowType::RemoteBatch: {
         auto remoteBatchFilePath = config.options().get<std::string>("remote-batch");
         // Creating the remote batch QC topology (file reader, check runners, aggregator runners, postprocessing)
-        quality_control::generateRemoteBatchInfrastructure(specs, qcConfigurationSource, remoteBatchFilePath);
+        quality_control::generateRemoteBatchInfrastructure(specs, configTree, remoteBatchFilePath);
         break;
       }
     }
