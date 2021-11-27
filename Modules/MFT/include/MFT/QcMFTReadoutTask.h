@@ -20,6 +20,7 @@
 #ifndef QC_MFT_READOUT_TASK_H
 #define QC_MFT_READOUT_TASK_H
 
+
 // Quality Control
 #include "QualityControl/TaskInterface.h"
 
@@ -67,16 +68,22 @@ class QcMFTReadoutTask /*final*/ : public TaskInterface // todo add back the "fi
   void reset() override;
 
  private:
-  const int numberOfRU = 80;             // number of RU
-  const int maxNumberToIdentifyRU = 104; // max number to identify a RU
-  int mIndexOfRUMap[104];                // id start from zero
-  std::unique_ptr<TH1F> mSummaryLaneStatus = nullptr;
-  std::vector<std::unique_ptr<TH2F>> mIndividualLaneStatus;
 
-  // maps RUindex into an idx for histograms
-  void generateRUindexMap();
-  // unpacks RU ID into geometry information needed to name histograms
-  void unpackRUindex(int RUindex, int& zone, int& plane, int& disc, int& half);
+  const int nLanes = 25;
+  const int maxRUidx = 104;
+  std::array<int,(104*25)> mChipIndex;
+  
+  // histos
+  std::unique_ptr<TH1F> mSummaryLaneStatus = nullptr;
+  std::unique_ptr<TH1F> mSummaryChipError = nullptr;
+  std::unique_ptr<TH1F> mSummaryChipFault = nullptr;  
+  std::unique_ptr<TH1F> mSummaryChipOk = nullptr;
+  std::unique_ptr<TH1F> mSummaryChipWarning = nullptr;  
+  // std::vector<std::unique_ptr<TH2F>> mIndividualLaneStatus;
+
+  // maps RU+lane to Chip
+  void generateChipIndex();
+
 };
 
 } // namespace o2::quality_control_modules::mft
