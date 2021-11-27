@@ -50,11 +50,11 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
   // if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
   //  ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   // }
-  
+
   // create the index to link a RU+lane to a chip
   //==============================================
   generateChipIndex();
-  const o2::itsmft::ChipMappingMFT mapMFT; // MFT maps  
+  const o2::itsmft::ChipMappingMFT mapMFT; // MFT maps
   auto chipMapData = mapMFT.getChipMappingData();
 
   // Defining summary histogram
@@ -73,43 +73,41 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
   //==============================================
   int nChips = 936;
   // --> error
-  mSummaryChipError = std::make_unique<TH1F>("mSummaryChipError", "Summary of chips in error", nChips, -0.5, nChips-0.5);
+  mSummaryChipError = std::make_unique<TH1F>("mSummaryChipError", "Summary of chips in error", nChips, -0.5, nChips - 0.5);
   getObjectsManager()->startPublishing(mSummaryChipError.get());
   mSummaryChipError->GetYaxis()->SetTitle("#Entries");
   mSummaryChipError->SetStats(0);
   // --> fault
-  mSummaryChipFault = std::make_unique<TH1F>("mSummaryChipFault", "Summary of chips in fault", nChips, -0.5, nChips-0.5);
+  mSummaryChipFault = std::make_unique<TH1F>("mSummaryChipFault", "Summary of chips in fault", nChips, -0.5, nChips - 0.5);
   getObjectsManager()->startPublishing(mSummaryChipFault.get());
   mSummaryChipFault->GetYaxis()->SetTitle("#Entries");
   mSummaryChipFault->SetStats(0);
   // --> warning
-  mSummaryChipWarning = std::make_unique<TH1F>("mSummaryChipWarning", "Summary of chips in warning", nChips, -0.5, nChips-0.5);
+  mSummaryChipWarning = std::make_unique<TH1F>("mSummaryChipWarning", "Summary of chips in warning", nChips, -0.5, nChips - 0.5);
   getObjectsManager()->startPublishing(mSummaryChipWarning.get());
   mSummaryChipWarning->GetYaxis()->SetTitle("#Entries");
   mSummaryChipWarning->SetStats(0);
   // --> ok
-  mSummaryChipOk = std::make_unique<TH1F>("mSummaryChipOk", "Summary of chips in OK", nChips, -0.5, nChips-0.5);
+  mSummaryChipOk = std::make_unique<TH1F>("mSummaryChipOk", "Summary of chips in OK", nChips, -0.5, nChips - 0.5);
   getObjectsManager()->startPublishing(mSummaryChipOk.get());
   mSummaryChipOk->GetYaxis()->SetTitle("#Entries");
   mSummaryChipOk->SetStats(0);
-   
+
   for (int i = 0; i < nChips; i++) {
     int face = (chipMapData[i].layer) % 2;
     mSummaryChipError->GetXaxis()
-      ->SetBinLabel(i+1,Form("Chip %i:h%d-d%d-f%d-z%d-c%d",i, chipMapData[i].half,
-			   chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
+      ->SetBinLabel(i + 1, Form("Chip %i:h%d-d%d-f%d-z%d-c%d", i, chipMapData[i].half,
+                                chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
     mSummaryChipFault->GetXaxis()
-      ->SetBinLabel(i+1,Form("Chip %i:h%d-d%d-f%d-z%d-c%d",i, chipMapData[i].half,
-			   chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
+      ->SetBinLabel(i + 1, Form("Chip %i:h%d-d%d-f%d-z%d-c%d", i, chipMapData[i].half,
+                                chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
     mSummaryChipWarning->GetXaxis()
-      ->SetBinLabel(i+1,Form("Chip %i:h%d-d%d-f%d-z%d-c%d",i, chipMapData[i].half,
-			   chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
+      ->SetBinLabel(i + 1, Form("Chip %i:h%d-d%d-f%d-z%d-c%d", i, chipMapData[i].half,
+                                chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
     mSummaryChipOk->GetXaxis()
-      ->SetBinLabel(i+1,Form("Chip %i:h%d-d%d-f%d-z%d-c%d",i, chipMapData[i].half,
-			   chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
+      ->SetBinLabel(i + 1, Form("Chip %i:h%d-d%d-f%d-z%d-c%d", i, chipMapData[i].half,
+                                chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
   }
-
-
 }
 
 void QcMFTReadoutTask::startOfActivity(Activity& /*activity*/)
@@ -120,7 +118,6 @@ void QcMFTReadoutTask::startOfActivity(Activity& /*activity*/)
   mSummaryChipFault->Reset();
   mSummaryChipWarning->Reset();
   mSummaryChipOk->Reset();
-
 }
 
 void QcMFTReadoutTask::startOfCycle()
@@ -159,20 +156,25 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
         int RUindex = (rdhFeeIndex & 127); // look only at the rightmost 7 bits
         // check the status of each lane
         for (int i = 0; i < nLanes; i++) {
-      	  int idx = RUindex*nLanes+i;
-      	  // check if it is a valide lane
-      	  if (mChipIndex[idx] == -1) continue;
-                // get the two bits corresponding to the lane i
-                int MFTlaneStatus = ((ddwLaneStatus >> (i * 2)) & (3));
-      	  // fill the info 
-      	  if (MFTlaneStatus == 0) mSummaryChipOk->Fill(mChipIndex[idx]);	  
-      	  if (MFTlaneStatus == 1) mSummaryChipWarning->Fill(mChipIndex[idx]);
-      	  if (MFTlaneStatus == 2) mSummaryChipError->Fill(mChipIndex[idx]);	  
-      	  if (MFTlaneStatus == 3) mSummaryChipFault->Fill(mChipIndex[idx]);
+          int idx = RUindex * nLanes + i;
+          // check if it is a valide lane
+          if (mChipIndex[idx] == -1)
+            continue;
+          // get the two bits corresponding to the lane i
+          int MFTlaneStatus = ((ddwLaneStatus >> (i * 2)) & (3));
+          // fill the info
+          if (MFTlaneStatus == 0)
+            mSummaryChipOk->Fill(mChipIndex[idx]);
+          if (MFTlaneStatus == 1)
+            mSummaryChipWarning->Fill(mChipIndex[idx]);
+          if (MFTlaneStatus == 2)
+            mSummaryChipError->Fill(mChipIndex[idx]);
+          if (MFTlaneStatus == 3)
+            mSummaryChipFault->Fill(mChipIndex[idx]);
         } // end loop over lanes
-      } // end if is a DDW
-    }   // end if rdh->stop
-  } // end loop over input
+      }   // end if is a DDW
+    }     // end if rdh->stop
+  }       // end loop over input
 }
 
 void QcMFTReadoutTask::endOfCycle()
@@ -200,22 +202,22 @@ void QcMFTReadoutTask::generateChipIndex()
 // generate index to relate a RU+lane to a chip
 {
   // initialise
-  for(int i=0;i<maxRUidx;i++) {
-    for(int j=0;j<nLanes;j++) {
-      int idx = i*nLanes+j;
+  for (int i = 0; i < maxRUidx; i++) {
+    for (int j = 0; j < nLanes; j++) {
+      int idx = i * nLanes + j;
       mChipIndex[idx] = -1;
     }
   }
 
   // fill
-  const o2::itsmft::ChipMappingMFT mapMFT; // MFT maps  
+  const o2::itsmft::ChipMappingMFT mapMFT; // MFT maps
   auto chipMapData = mapMFT.getChipMappingData();
-  for(int i=0;i<936;i++) {
+  for (int i = 0; i < 936; i++) {
     int j = chipMapData[i].ruHWID;
     int k = chipMapData[i].cable;
-    int idx = j*nLanes+k;
-    mChipIndex[idx] = chipMapData[i].globalChipSWID;    
-  }  
+    int idx = j * nLanes + k;
+    mChipIndex[idx] = chipMapData[i].globalChipSWID;
+  }
 }
 
 } // namespace o2::quality_control_modules::mft

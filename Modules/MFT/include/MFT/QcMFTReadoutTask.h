@@ -20,7 +20,6 @@
 #ifndef QC_MFT_READOUT_TASK_H
 #define QC_MFT_READOUT_TASK_H
 
-
 // Quality Control
 #include "QualityControl/TaskInterface.h"
 
@@ -34,7 +33,7 @@ namespace o2::quality_control_modules::mft
 class QcMFTReadoutTask /*final*/ : public TaskInterface // todo add back the "final" when doxygen is fixed
 {
   // addapted from ITSFeeTask
-  struct MFTDDW { //GBT diagnostic word
+  struct MFTDDW { // GBT diagnostic word
     union {
       uint64_t word0 = 0x0;
       struct {
@@ -68,22 +67,20 @@ class QcMFTReadoutTask /*final*/ : public TaskInterface // todo add back the "fi
   void reset() override;
 
  private:
-
   const int nLanes = 25;
   const int maxRUidx = 104;
-  std::array<int,(104*25)> mChipIndex;
-  
+  std::array<int, (104 * 25)> mChipIndex;
+
   // histos
   std::unique_ptr<TH1F> mSummaryLaneStatus = nullptr;
   std::unique_ptr<TH1F> mSummaryChipError = nullptr;
-  std::unique_ptr<TH1F> mSummaryChipFault = nullptr;  
+  std::unique_ptr<TH1F> mSummaryChipFault = nullptr;
   std::unique_ptr<TH1F> mSummaryChipOk = nullptr;
-  std::unique_ptr<TH1F> mSummaryChipWarning = nullptr;  
+  std::unique_ptr<TH1F> mSummaryChipWarning = nullptr;
   // std::vector<std::unique_ptr<TH2F>> mIndividualLaneStatus;
 
   // maps RU+lane to Chip
   void generateChipIndex();
-
 };
 
 } // namespace o2::quality_control_modules::mft
