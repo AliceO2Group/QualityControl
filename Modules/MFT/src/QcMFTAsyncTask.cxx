@@ -128,6 +128,10 @@ void QcMFTAsyncTask::initialize(o2::framework::InitContext& /*ctx*/)
     mTrackXYNCls[nHisto] = std::make_unique<TH2F>(Form("tracks/mMFTTrackXY_%d_MinClusters", minNClusters), Form("Track Position (NCls >= %d); x; y", minNClusters), 320, -16, 16, 320, -16, 16);
     mTrackXYNCls[nHisto]->SetOption("COLZ");
     getObjectsManager()->startPublishing(mTrackXYNCls[nHisto].get());
+
+    mTrackEtaPhiNCls[nHisto] = std::make_unique<TH2F>(Form("tracks/mMFTTrackEtaPhi_%d_MinClusters", minNClusters), Form("Track #eta , #phi (NCls >= %d); #eta; #phi", minNClusters), 50, -4, -2, 100, -3.2, 3.2);
+    mTrackEtaPhiNCls[nHisto]->SetOption("COLZ");
+    getObjectsManager()->startPublishing(mTrackEtaPhiNCls[nHisto].get());
   }
 
   mCATrackEta = std::make_unique<TH1F>("tracks/CA/mMFTCATrackEta", "CA Track #eta; #eta; # entries", 50, -4, -2);
@@ -183,6 +187,7 @@ void QcMFTAsyncTask::startOfActivity(Activity& /*activity*/)
     mTrackEtaNCls[nHisto]->Reset();
     mTrackPhiNCls[nHisto]->Reset();
     mTrackXYNCls[nHisto]->Reset();
+    mTrackEtaPhiNCls[nHisto]->Reset();
   }
   mCATrackEta->Reset();
   mLTFTrackEta->Reset();
@@ -244,6 +249,7 @@ void QcMFTAsyncTask::monitorData(o2::framework::ProcessingContext& ctx)
         mTrackEtaNCls[minNClusters - sMinNClustersList[0]]->Fill(oneTrack.getEta());
         mTrackPhiNCls[minNClusters - sMinNClustersList[0]]->Fill(oneTrack.getPhi());
         mTrackXYNCls[minNClusters - sMinNClustersList[0]]->Fill(oneTrack.getX(), oneTrack.getY());
+        mTrackEtaPhiNCls[minNClusters - sMinNClustersList[0]]->Fill(oneTrack.getEta(), oneTrack.getPhi());
       }
     }
 
@@ -299,6 +305,7 @@ void QcMFTAsyncTask::reset()
     mTrackEtaNCls[nHisto]->Reset();
     mTrackPhiNCls[nHisto]->Reset();
     mTrackXYNCls[nHisto]->Reset();
+    mTrackEtaPhiNCls[nHisto]->Reset();
   }
   mCATrackEta->Reset();
   mLTFTrackEta->Reset();
