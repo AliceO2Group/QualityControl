@@ -170,11 +170,11 @@ void QcMFTReadoutCheck::writeMessages(TH1F* histo, std::vector<int> vector, Qual
     histo->SetMaximum(histo->GetMaximum() * (6. / 5.));
     TLatex* tlBad;
     if (strcmp(histo->GetName(), "mSummaryChipFault") == 0)
-      tlBad = drawLatex(0.15, 0.85, kRed + 1, Form("%i lanes in Fault.", vector.size()));
+      tlBad = drawLatex(0.15, 0.85, kRed + 1, Form("%lu lanes in Fault.", vector.size()));
     if (strcmp(histo->GetName(), "mSummaryChipError") == 0)
-      tlBad = drawLatex(0.15, 0.85, kRed + 1, Form("%i lanes in Error.", vector.size()));
+      tlBad = drawLatex(0.15, 0.85, kRed + 1, Form("%lu lanes in Error.", vector.size()));
     if (strcmp(histo->GetName(), "mSummaryChipWarning") == 0)
-      tlBad = drawLatex(0.15, 0.85, kRed + 1, Form("%i lanes in Warning.", vector.size()));
+      tlBad = drawLatex(0.15, 0.85, kRed + 1, Form("%lu lanes in Warning.", vector.size()));
     histo->GetListOfFunctions()->Add(tlBad);
     tlBad->Draw();
   }
