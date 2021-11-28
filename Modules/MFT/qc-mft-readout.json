@@ -23,7 +23,7 @@
       }
     },
     "tasks" : {
-      "QcMFTReadoutTask" : {
+      "QcMFTReadout" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTReadoutTask",
         "moduleName" : "QcMFT",
@@ -42,7 +42,7 @@
       }
     },
     "checks" : {
-      "QcMFTReadoutCheck" : {
+      "QcMFTReadout" : {
         "active" : "true",
         "className" : "o2::quality_control_modules::mft::QcMFTReadoutCheck",
         "moduleName" : "QcMFT",
