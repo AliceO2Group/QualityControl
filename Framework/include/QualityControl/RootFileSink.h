@@ -21,8 +21,6 @@
 #include <Framework/CompletionPolicy.h>
 #include <Framework/DataProcessorLabel.h>
 
-class TFile;
-
 namespace o2::quality_control::core
 {
 
@@ -48,7 +46,6 @@ class RootFileSink : public framework::Task
 
  private:
   std::string mFilePath;
-  TFile* mFile = nullptr;
 };
 
 } // namespace o2::quality_control::core
