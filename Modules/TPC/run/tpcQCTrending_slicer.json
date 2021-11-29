@@ -1,0 +1,73 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "TestTPCTH1Slicer": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::TrendingTaskTPC",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "dataSources": [
+          {
+            "type": "repository",
+            "path": "qc/TPC/MO/Tracks",
+            "names": [ "hEtaRatio", "hEta" ],
+            "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
+            "axisDivision": [ [ "-2.0", "-1.0", "0.0", "1.0", "2.0" ] ],
+            "moduleName": "QcTPC"
+          }
+        ],
+        "plots": [
+          {
+            "name": "hEtaRatio_StatMean_Trend",
+            "title": "Mean of the eta ratio",
+            "varexp": "hEtaRatio.meanX:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanX:0.5", 
+            "graphYRange": "-2.0:2.0"
+          },
+          {
+            "name": "hEta_StatMean_Trend",
+            "title": "Mean of eta",
+            "varexp": "hEta.meanX:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanX:0.5", 
+            "graphYRange": "-2.0:2.0"
+          }
+        ],
+        "initTrigger": [
+          "userorcontrol"
+        ],
+        "updateTrigger": [
+          "10 seconds"
+        ],
+        "stopTrigger": [
+          "userorcontrol"
+        ]
+      }
+    }
+  }
+}
