@@ -102,7 +102,7 @@ WorkflowSpec defineDataProcessing(ConfigContext const& config)
     auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
     DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
     // Generation of the remote QC topology (for the QC servers)
-    quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+    quality_control::generateStandaloneInfrastructure(specs, configInterface->getRecursive());
   }
   return specs;
 }
