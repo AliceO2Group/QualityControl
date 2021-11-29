@@ -86,7 +86,7 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
     for (const auto& input : InputRecordWalker(pctx.inputs())) {
       auto moc = DataRefUtils::as<MonitorObjectCollection>(input).release();
       if (moc == nullptr) {
-        ILOG(Error) << "Could not cast the input to MonitorObjectCollection, skipping." << ENDM;
+        ILOG(Error) << "Could not cast the input object to MonitorObjectCollection, skipping." << ENDM;
         continue;
       }
       moc->SetOwner();
