@@ -627,33 +627,36 @@ The QC is part of the FLP Suite. The Suite is installed on FLPs through RPMs and
 
 ## Developing QC modules on a machine with FLP suite
 
-FOLLOWING THE INTRODUCTION OF UPDATABLE RPMS, THE FOLLOWING PROCEDURES ARE NOT CORRECT ANY MORE, ALTHOUGH OPTION 1 should still work.
+Development RPMs are available on the FLPs. Start by installing them, then compile QC and finally tell aliECS to use it. 
 
-NEW PROCEDURES ARE BEING TESTED.
+**Installation**
 
-__Option 1__: Rebuild everything locally and point ECS to it
+As root do:
+```
+yum install o2-QualityControl-devel git -y
+```
 
-1. Prepare the machine for aliBuild : https://alice-doc.github.io/alice-analysis-tutorial/building/custom.html
-2. `aliBuild init QualityControl@master`
-3. You might want to switch alidist to a branch corresponding to an FLP Suite version but `master` should work as well.
-4. `aliBuild build O2Suite --defaults o2-dataflow`     
-   It is necessary to build `O2Suite` and not `QualityControl`
-6. Run alienv at least once, or each time you switch branch: `alienv enter O2Suite/latest`
-7. Copy the absolute path to `sw/MODULES/<arch>`
-8. In aliECS, add a parameter `modulepath` and paste the path.
-9. When running with aliECS, the software from your build will be used.
+**Compilation**
 
-__Option 2__: Build on your development setup and scp the library
+As user `flp` do:
+```
+git clone https://github.com/AliceO2Group/QualityControl.git
+cd QualityControl
+mkdir build
+cd build
+mkdir ~/installdir
+cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
+make
+```
 
-1. Switch alidist to the branch corresponding to the flp-suite you installed, e.g. `flp-suite-v0.12.0`.
-2. Rebuild QC using alibuild
-3. Backup the library (/opt/alisw/el7/QualityControl/<version>/lib)
-3. scp from development setup alice/sw/slc7_x86-64/QualityControl/latest/lib/yourlib* to /opt/alisw/el7/QualityControl/<version>/lib on the FLP.
-4. Rebuild the aliECS environment.
+**Use it in aliECS**
 
-__Option 3__: Rebuild only the QC reusing the installed software
+Set an extra variable `extra_env_vars` and set it to 
+```
+PATH=~/installdir/bin/:$PATH LD_LIBRARY_PATH=~/installdir/lib/:$LD_LIBRARY_PATH QUALITYCONTROL_ROOT=~/installdir/
+```
 
-NOT WORKING YET, follow it up here: https://alice.its.cern.ch/jira/browse/O2-1896
+Replace ~/installdir (which is relative to user flp) with your own path. Make sure that the directory is anyway readable and traversable by user flp.
 
 ## Switch detector in the workflow _readout-dataflow_
 
