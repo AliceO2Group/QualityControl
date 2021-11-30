@@ -164,39 +164,34 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 
 
-  hEfficiency_r = new TH1D("efficiency_r", ";r;Efficiency",  60, 0, 30);
+  hEfficiency_r = new TH1D("efficiency_r", ";r;Efficiency",  50, 0, 5);
   hEfficiency_r->SetTitle("r efficiency of tracking");
   addObject(hEfficiency_r);
   formatAxes(hEfficiency_r, "r", "Efficiency", 1, 1.10);
 
-  hFakeTrack_r = new TH1D("faketrack_r", ";r;Fake-track rate",  60, 0, 30);
+  hFakeTrack_r = new TH1D("faketrack_r", ";r;Fake-track rate",  50, 0, 5);
   hFakeTrack_r->SetTitle("r fake-track rate");
   addObject(hFakeTrack_r);
   formatAxes(hFakeTrack_r, "r", "Fake-track rate", 1, 1.10);
 
-  hNumRecoValid_r = new TH1D("NumRecoValid_r", "",  60,0, 30);
-  hNumRecoFake_r = new TH1D("NumRecoFake_r", "",  60,0, 30);
-  hDenTrue_r = new TH1D("DenTrueMC_r", "", 60, 0, 30);
+  hNumRecoValid_r = new TH1D("NumRecoValid_r", "",  50,0, 5);
+  hNumRecoFake_r = new TH1D("NumRecoFake_r", "",  50,0,5);
+  hDenTrue_r = new TH1D("DenTrueMC_r", "", 50, 0, 50);
 
 
-  hEfficiency_z = new TH1D("efficiency_z", ";z;Efficiency",  60, -30, 30);
+  hEfficiency_z = new TH1D("efficiency_z", ";z;Efficiency",  100, -5, 5);
   hEfficiency_z->SetTitle("z efficiency of tracking");
   addObject(hEfficiency_z);
   formatAxes(hEfficiency_z, "z", "Efficiency", 1, 1.10);
 
-  hFakeTrack_z = new TH1D("faketrack_z", ";z;Fake-track rate",  60, -30, 30);
+  hFakeTrack_z = new TH1D("faketrack_z", ";z;Fake-track rate",  100, -5, 5);
   hFakeTrack_z->SetTitle("z fake-track rate");
   addObject(hFakeTrack_z);
   formatAxes(hFakeTrack_z, "z", "Fake-track rate", 1, 1.10);
 
-  hNumRecoValid_z = new TH1D("NumRecoValid_z", "",  60,-30, 30);
-  hNumRecoFake_z = new TH1D("NumRecoFake_z", "",  60,-30, 30);
-  hDenTrue_z = new TH1D("DenTrueMC_z", "", 60, -30, 30);
-
-
-
-
-
+  hNumRecoValid_z = new TH1D("NumRecoValid_z", "",  100,-5, 5);
+  hNumRecoFake_z = new TH1D("NumRecoFake_z", "", 100,-5, 5);
+  hDenTrue_z = new TH1D("DenTrueMC_z", "", 100, -5, 5);
 
   hTrackImpactTransvValid = new TH1F("ImpactTransvVaild", "Transverse impact parameter for valid tracks; D (cm)", 60, -0.1, 0.1);
   hTrackImpactTransvValid->SetTitle("Transverse impact parameter distribution of valid tracks");
@@ -210,114 +205,35 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
   formatAxes(hTrackImpactTransvFake, "D (cm)", "counts", 1, 1.10);
 
 
-
-
-
-
-
-
-  
-/*
-  TFile* file = TFile::Open("o2sim_Kine.root");
-  TTree* mcTree = (TTree*)file->Get("o2sim");
-  mcTree->SetBranchStatus("MCTrack*", 1);  //WHY?! needs to be checked
-  mcTree->SetBranchStatus("MCEventHeader*", 1);
-  auto mcArr = new std::vector<o2::MCTrack>;
-  auto mcHeader = new o2::dataformats::MCEventHeader;
-
-  mcTree->SetBranchAddress("MCTrack", &mcArr);
-  mcTree->SetBranchAddress("MCEventHeader", &mcHeader);
-
-
-  for(int i=0; i<mcTree->GetEntriesFast(); ++i) {
-
-     if (!mcTree->GetEvent(i)) continue;
-
-//     bool isvalid;
-//     auto headerInfo = mcHeader->getInfo<int>("inputEventNumber", isvalid);
-     Double_t start_vertex_x= mcHeader->GetX();
-     Double_t start_vertex_y= mcHeader->GetY();
-     Double_t start_vertex_z= mcHeader->GetZ();
-
-     std::cout<<" new MC event, at positon: "<<start_vertex_x<<" "<<start_vertex_y<<" "<< start_vertex_z<<std::endl;       
-
-     Int_t nmc = mcArr->size();
-
-     for (int mc = 0; mc < nmc; mc++) {
-
-        const auto& mcTrack = (*mcArr)[mc];
-        auto x = mcTrack.Vx();
-        auto y = mcTrack.Vy();
-        //auto z = mcTrack.Vz();
-
-        if (x * x + y * y > 1) continue; // Select quasi-primary particles, originating from within the beam pipe
-        //if ( abs(z)>0.1) continue;
-
-        Int_t pdg = mcTrack.GetPdgCode();
-        if (TMath::Abs(pdg) != 211) continue; // Select pions
-
-        if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
-        
-
-         Double_t distance = sqrt(    pow(mcHeader->GetX()-mcTrack.Vx(),2) +  pow(mcHeader->GetY()-mcTrack.Vy(),2) +  pow(mcHeader->GetZ()-mcTrack.Vz(),2) );
-     
-
-
-        std::cout<<"Mc track with vertex: "<<mcTrack.Vx()<< " "<<mcTrack.Vy() << " " << mcTrack.Vz()<< "distance: "<<distance<<std::endl; 
-        hDenTrue_r->Fill(distance);
-        hDenTrue_pt->Fill(mcTrack.GetPt());
-        hDenTrue_eta->Fill(mcTrack.GetEta());
-        hDenTrue_phi->Fill(mcTrack.GetPhi());  
-        hDenTrue_z->Fill(mcTrack.Vz());
-
-      }
-  }
-*/
-
   o2::steer::MCKinematicsReader reader("o2sim", o2::steer::MCKinematicsReader::Mode::kMCKine);
  
- for (int iSource=0;iSource < (int) reader.getNSources();iSource++){
+  for (int iSource=0;iSource < (int) reader.getNSources();iSource++){
    for (int iEvent=0;iEvent < (int) reader.getNEvents(iSource);iEvent++){
       
       auto mcTracks = reader.getTracks(iSource, iEvent);
       auto mcHeader= reader.getMCEventHeader(iSource, iEvent);
       for (auto mcTrack : mcTracks){
 
-        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1) continue; // Select quasi-primary particles, originating from within the beam pipe
+        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1) continue; 
         if ( abs(mcTrack.Vz())  > 10 ) continue;
         Int_t pdg = mcTrack.GetPdgCode();
         if (TMath::Abs(pdg) != 211) continue; // Select pions
-
         if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
   
-
-
-        Double_t distance = sqrt(    pow(mcHeader.GetX()-mcTrack.Vx(),2) +  pow(mcHeader.GetY()-mcTrack.Vy(),2) +  pow(mcHeader.GetZ()-mcTrack.Vz(),2) );
-     
-    //    std::cout<<"event: "<< iEvent<< " trackId "<< iTrack<<"From File: MCTrack: " << mcTrack.Vx()<< " "<<mcTrack.Vy() << " " << mcTrack.Vz()<< " Header: "<< mcHeader.GetX() << " "<<mcHeader.GetY() << " " << mcHeader.GetZ()<< " Distance: " <<distance<< std::endl;
- //       iTrack++;
-
+        Double_t distance = sqrt(    pow(mcHeader.GetX()-mcTrack.Vx(),2) +  pow(mcHeader.GetY()-mcTrack.Vy(),2) +  pow(mcHeader.GetZ()-mcTrack.Vz(),2) );   
         hDenTrue_r->Fill(distance);
         hDenTrue_pt->Fill(mcTrack.GetPt());
         hDenTrue_eta->Fill(mcTrack.GetEta());
         hDenTrue_phi->Fill(mcTrack.GetPhi());  
         hDenTrue_z->Fill(mcTrack.Vz());
 
-       
-
-
       }
-
-
     }
-
-
   }
 
 
 
   publishHistos();
-
   o2::base::Propagator::initFieldFromGRP("./o2sim_grp.root");
   auto field = static_cast<o2::field::MagneticField*>(TGeoGlobalMagField::Instance()->GetField());
   double orig[3] = {0., 0., 0.};
@@ -340,107 +256,64 @@ void ITSTrackSimTask::startOfCycle()
 void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   ILOG(Info, Support) << "START DOING QC General" << ENDM;
+
+
   auto trackArr = ctx.inputs().get<gsl::span<o2::its::TrackITS>>("tracks");
-
-  //auto trackArr = ctx.inputs().get<gsl::span<o2::MCTrack>>("tracks");
-
-  auto rofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("rofs");
-  auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
-
   auto MCTruth= ctx.inputs().get<gsl::span<o2::MCCompLabel>>("mstruth");
-  auto mc2rofs = ctx.inputs().get<gsl::span<itsmft::MC2ROFRecord>>("mcrofs");
 
+  o2::steer::MCKinematicsReader reader("o2sim", o2::steer::MCKinematicsReader::Mode::kMCKine);
 
-  std::cout<< " !!!!!!!!!!!!!!!!!!!!!!!!!!1 " << MCTruth.size() << " MC label objects , in " << mc2rofs.size() << " MC events,  REAL ROFs size "<< rofArr.size()<< " trackArr size: "<<trackArr.size()<<std::endl ;
-
-
-o2::steer::MCKinematicsReader reader("o2sim", o2::steer::MCKinematicsReader::Mode::kMCKine);
-/*
-// loop over all events in the file
-for (int event = 0; event < (int) reader.getNEvents(0); ++event) {
-  // get all Monte Carlo tracks for this event
-
-  std::vector<MCTrack> const& tracks = reader.getTracks(event);
-
-  std::cout<<"event: "<< event<< " found tracks " << tracks.size()<<std::endl;
-  // analyse tracks
-}
-
-std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ after reader" <<std::endl;
-
-*/
-
-
-//o2::steer::MCKinematicsReader reader("collisioncontext.root");
-
-
-/*
-
- const Int_t nev = trackArr.size();
-  vector<DataFrames> trackFrames(nev);
-  for (const auto& ROF : rofArr) {
-     std::cout << "Number of tracks in frame " << ROF.GetFirstEntry() << ": " << ROF.getNEntries() << std::endl;
-     for (int itrack = ROF.getFirstEntry(); itrack < ROF.getFirstEntry() + ROF.getNEntries(); itrack++) {
-         auto lab = MCTruth[itrack];
-         if (!lab.isValid()) {
-             const TrackITS& recTrack = (*trackArr)[i];
-            // fak->Fill(recTrack.getPt());
-         }
-         //if (!lab.isValid() || lab.getSourceID() != 0 || lab.getEventID() < 0 || lab.getEventID() >= nev) continue;
-      
-         trackFrames[lab.getEventID()].update(ROF.GetFirstEntry(), itrack);
-
-     }
-  }
-
-
-*/
-
-std::cout<<"$$$$$$$$$$$$$$$$$$$ before the cycle"<<std::endl;
-
-   // for (const auto& ROF : rofArr) {
-   //    for (int itrack = ROF.getFirstEntry(); itrack < ROF.getFirstEntry() + ROF.getNEntries(); itrack++) {
-{     
-      for (int itrack = 0; itrack < trackArr.size(); itrack++) {
-      std::cout<<"!! Obtaining new mcTrack itrack" << itrack << " trackArr.size(): "<< trackArr.size() << " MCTruth.size()"<< MCTruth.size() <<std::endl;
+  for (int itrack = 0; itrack < trackArr.size(); itrack++) {
       const auto& track = trackArr[itrack];
       const auto& MCinfo = MCTruth[itrack];
       
       if (MCinfo.isNoise()) continue;
 
-       std::cout<<"1" <<std::endl;
-       std::cout<< " MCinfo.getTrackID()= "<<MCinfo.getTrackID()<< "  EventID(): "<< MCinfo.getEventID() << " SourceID: "<< MCinfo.getSourceID() << " isNoise "<< MCinfo.isNoise()<<std::endl;
-
       auto* mcTrack = reader.getTrack(MCinfo.getSourceID(), MCinfo.getEventID(), MCinfo.getTrackID());
-        std::cout<<"2" <<std::endl;
       auto mcHeader= reader.getMCEventHeader(MCinfo.getSourceID(), MCinfo.getEventID());
       Float_t ip[2]{0., 0.};
       Float_t vx = 0., vy = 0., vz = 0.; // Assumed primary vertex
-        std::cout<<"3" <<std::endl; 
       track.getImpactParams(vx, vy, vz, bz, ip);
-
-
-       std::cout<< "impact: "<< ip[0] << "pt= "<< track.getPt() <<   " MCinfo.getTrackID()= "<<MCinfo.getTrackID()<< "  EventID(): "<< MCinfo.getEventID() << " SourceID: "<< MCinfo.getSourceID() << " isNoise "<< MCinfo.isNoise()<<std::endl;
-
 
       if (mcTrack) {
 
+         if  (mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() > 0) std::cout<<"Track found: isPrimary: " <<  mcTrack->isPrimary() << " isFake "<<  MCinfo.isFake() << " x= "<< mcTrack->Vx() <<   " y= "<< mcTrack->Vy() <<  " z= "<< mcTrack->Vz()<< std::endl;
+               
 
-        if (mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() > 1) continue; // Select quasi-primary particles, originating from within the beam pipe
+/*
+        if (!mcTrack->isPrimary() && MCinfo.isFake()) std::cout<<"Secondary fake track found: "<< mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() <<std::endl;       
+        else 
+           if (MCinfo.isFake()) std::cout<<"Primary fake track found: "<< mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() <<std::endl;
+
+        if (!mcTrack->isPrimary() && !MCinfo.isFake()) std::cout<<"Secondary true track found: "<< mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() <<std::endl;
+        else
+           if (!MCinfo.isFake()) std::cout<<"Primary true track found: "<< mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() <<std::endl;
+
+*/
+
+
+        if (mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() > 1) continue; 
+                if (!mcTrack->isPrimary() && MCinfo.isFake()) std::cout<<"1"<<std::endl;
+
         if ( abs(mcTrack->Vz())  > 10 ) continue;
+                if (!mcTrack->isPrimary() && MCinfo.isFake()) std::cout<<"2"<<std::endl;
         Int_t pdg = mcTrack->GetPdgCode();
         if (TMath::Abs(pdg) != 211) continue; // Select pions
+                if (!mcTrack->isPrimary() && MCinfo.isFake()) std::cout<<"3"<<std::endl;
         if (TMath::Abs(mcTrack->GetEta()) > 1.2) continue;
+        
+        if (!mcTrack->isPrimary() && MCinfo.isFake())  std::cout<<"and it survived "<<std::endl;
 
-        Double_t distance = sqrt(   pow(mcHeader.GetX()-mcTrack->Vx(),2) +  pow(mcHeader.GetY()-mcTrack->Vy(),2) +  pow(mcHeader.GetZ()-mcTrack->Vz(),2)               );
-       std::cout<<"event: "<< MCinfo.getEventID()<< " trackId "<< MCinfo.getTrackID()<<  " RECO McTrack: " << mcTrack->Vx()<< " "<<mcTrack->Vy() << " " << mcTrack->Vz()<< " Header: "<< mcHeader.GetX() << " "<<mcHeader.GetY() << " " << mcHeader.GetZ()<< " Distance: " <<distance<<" primary: "<< mcTrack->isPrimary() << " fake: "<< MCinfo.isFake()<< std::endl;
+        Double_t distance = sqrt(   pow(mcHeader.GetX()-mcTrack->Vx(),2) +  pow(mcHeader.GetY()-mcTrack->Vy(),2) +  pow(mcHeader.GetZ()-mcTrack->Vz(),2));
          if (MCinfo.isFake()) {
             hNumRecoFake_pt->Fill(mcTrack->GetPt());
             hNumRecoFake_phi->Fill(mcTrack->GetPhi());
             hNumRecoFake_eta->Fill(mcTrack->GetEta());
             hNumRecoFake_z->Fill(mcTrack->Vz());
             hNumRecoFake_r->Fill(distance); 
-            if (mcTrack->isPrimary()) hTrackImpactTransvFake->Fill(ip[0]);
+            if (mcTrack->isPrimary())  hTrackImpactTransvFake->Fill(ip[0]);
+            else std::cout<< " I am fake but I am Secondary particle" <<std::endl;
+
          }
          else {
             hNumRecoValid_pt->Fill(mcTrack->GetPt());
@@ -451,66 +324,19 @@ std::cout<<"$$$$$$$$$$$$$$$$$$$ before the cycle"<<std::endl;
             hTrackImpactTransvValid->Fill(ip[0]); 
             if (mcTrack->isPrimary()) hTrackImpactTransvValid->Fill(ip[0]);
          }
-       std::cout<<"I have survived Fill of the histogram!!"<<std::endl;
       }
 
-        std::cout<<"I have survived 1 !!"<<std::endl;
-      }
-    }
-
-
-  std::cout<< "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! trackArr: "<< trackArr.size() << " MCTruth: "<<MCTruth.size() << " rofArr.size() "<< rofArr.size()<<std::endl;
-
-
-/*
-  TFile* file2 = TFile::Open("o2sim_Kine.root");
-  TTree* mcTree2 = (TTree*)file2->Get("o2sim");
-  mcTree2->SetBranchStatus("MCTrack*", 1);
-  auto mcArr2 = new std::vector<o2::MCTrack>;
-  mcTree2->SetBranchAddress("MCTrack", &mcArr2);
-  for(int i=0; i<mcTree2->GetEntriesFast(); ++i) {
-
-      if (!mcTree2->GetEvent(i)) continue;
-     Int_t nmc = mcArr2->size();
-
-     for (int mc = 0; mc < nmc; mc++) {
-
-        const auto& mcTrack = (*mcArr2)[mc];
-        auto x = mcTrack.Vx();
-        auto y = mcTrack.Vy();
-  
-        if (x * x + y * y > 1) continue;
-
-        Int_t pdg = mcTrack.GetPdgCode();
-        if (TMath::Abs(pdg) != 211) continue;
-
-        if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
-
-        std::cout<<" mcTrack id : "<<mc << " pt "<<mcTrack.GetPt() <<std::endl;
-        //mcTrack.Print();
-      }     
-  }
-
-*/
-/*
- std:: cout<<"hNumRecoValid->GetEntries() "<<hNumRecoValid->GetEntries() << " hNumRecoFake->GetEntries() "<< hNumRecoFake->GetEntries() << " hDenTrue->GetEntries()  "<< hDenTrue->GetEntries() <<std::endl;
-*/
+   }
+    
  
   hFakeTrack_pt->Divide(hNumRecoFake_pt, hDenTrue_pt, 1, 1);
   hEfficiency_pt->Divide(hNumRecoValid_pt, hDenTrue_pt, 1, 1);
-   hFakeTrack_phi->Divide(hNumRecoFake_phi, hDenTrue_phi, 1, 1);
+
+  hFakeTrack_phi->Divide(hNumRecoFake_phi, hDenTrue_phi, 1, 1);
   hEfficiency_phi->Divide(hNumRecoValid_phi, hDenTrue_phi, 1, 1);
 
- hFakeTrack_eta->Divide(hNumRecoFake_eta, hDenTrue_eta, 1, 1);
+  hFakeTrack_eta->Divide(hNumRecoFake_eta, hDenTrue_eta, 1, 1);
   hEfficiency_eta->Divide(hNumRecoValid_eta, hDenTrue_eta, 1, 1);
-
-  std::cout<<"Print of the RecoFake:" <<std::endl;
-  hNumRecoFake_r->Print("all");
-   std::cout<<"Print of the hNumRecoValid_r:" <<std::endl;
-   hNumRecoValid_r->Print("all");
-   std::cout<<"Print of the hDenTrue_r:" <<std::endl;
-   hDenTrue_r->Print("all");
-
  
   hFakeTrack_r->Divide(hNumRecoFake_r, hDenTrue_r, 1, 1);
   hEfficiency_r->Divide(hNumRecoValid_r, hDenTrue_r, 1, 1);
