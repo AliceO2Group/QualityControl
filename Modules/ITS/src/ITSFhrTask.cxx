@@ -89,13 +89,15 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mGeneralOccupancy->SetTitle("General Occupancy;mm;mm");
   mGeneralOccupancy->SetName("General/General_Occupancy");
   mGeneralOccupancy->SetStats(0);
-  mGeneralOccupancy->GetZaxis()->SetRangeUser(pow(10, mMinGeneralAxisRange), pow(10, mMaxGeneralAxisRange));
+  mGeneralOccupancy->SetMinimum(pow(10, mMinGeneralAxisRange));
+  mGeneralOccupancy->SetMaximum(pow(10, mMaxGeneralAxisRange));
 
   mGeneralNoisyPixel = new TH2Poly();
   mGeneralNoisyPixel->SetTitle("Noisy Pixel Number;mm;mm");
   mGeneralNoisyPixel->SetName("General/Noisy_Pixel");
   mGeneralNoisyPixel->SetStats(0);
-  mGeneralNoisyPixel->GetZaxis()->SetRangeUser(mMinGeneralNoisyAxisRange, mMaxGeneralNoisyAxisRange);
+  mGeneralNoisyPixel->SetMinimum(mMinGeneralNoisyAxisRange);
+  mGeneralNoisyPixel->SetMaximum(mMaxGeneralNoisyAxisRange);
 
   createGeneralPlots();
   createOccupancyPlots();
@@ -207,11 +209,13 @@ void ITSFhrTask::createGeneralPlots()
     mInfoCanvasOBComm->GetXaxis()->SetBinLabel(i + 1, Form("layer%d", i + 3));
   }
 
-  mInfoCanvasComm->GetZaxis()->SetRangeUser(0, 2);
+  mInfoCanvasComm->SetMinimum(0);
+  mInfoCanvasComm->SetMaximum(2);
   mInfoCanvasComm->GetYaxis()->SetBinLabel(2, "ibt");
   mInfoCanvasComm->GetYaxis()->SetBinLabel(4, "ibb");
 
-  mInfoCanvasOBComm->GetZaxis()->SetRangeUser(0, 2);
+  mInfoCanvasOBComm->SetMinimum(0);
+  mInfoCanvasOBComm->SetMaximum(2);
   mInfoCanvasOBComm->GetYaxis()->SetBinLabel(2, "ibt");
   mInfoCanvasOBComm->GetYaxis()->SetBinLabel(4, "ibb");
 
@@ -546,7 +550,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   //fill Monitor Objects use openMP multiple threads, and calculate the occupancy
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     int istave = activeStaves[i];
-    if (digVec[istave][0].size() < 1) {
+    if (digVec[istave][0].size() < 1 && lay < NLayerIB) {
       continue;
     }
     const auto* DecoderTmp = mDecoder;
@@ -569,7 +573,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
             if ((iter->second > mHitCutForNoisyPixel) && (iter->second / (double)GBTLinkInfo->statistics.nTriggers) > mOccupancyCutForNoisyPixel) {
               mNoisyPixelNumber[lay][istave]++;
             }
-            int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip), (int)(iter->first % 1000) };
+            int pixelPos[2] = { (int)(iter->first / 1000) + (1024 * ichip) + 1, (int)(iter->first % 1000) + 1 };
             mStaveHitmap[lay][istave]->SetBinContent(pixelPos, (double)iter->second);
             totalhit += (int)iter->second;
             occupancyPlotTmp[i]->Fill(log10((double)iter->second / GBTLinkInfo->statistics.nTriggers));
@@ -603,7 +607,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
                   int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + ichip * NCols + (int)(iter->first / 1000) + 1, NRows - ((int)iter->first % 1000) - 1 + (1024 * ilink) + 1 };
                   mStaveHitmap[lay][istave]->SetBinContent(pixelPos, pixelOccupancy);
                 } else {
-                  int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + (nChipsPerHic[lay] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000) + 1, NRows + ((int)iter->first % 1000) + (1024 * ilink) + 1 };
+                  int pixelPos[2] = { (ihic * ((nChipsPerHic[lay] / 2) * NCols)) + (nChipsPerHic[lay] / 2) * NCols - (ichip - 7) * NCols - ((int)iter->first / 1000), NRows + ((int)iter->first % 1000) + (1024 * ilink) + 1 };
                   mStaveHitmap[lay][istave]->SetBinContent(pixelPos, pixelOccupancy);
                 }
               }
@@ -653,7 +657,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
           }
         }
       }
-      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nChipsPerHic[lay])));
+      mGeneralOccupancy->SetBinContent(istave + 1 + StaveBoundary[mLayer], *(std::max_element(mOccupancy[istave], mOccupancy[istave] + nHicPerStave[lay])));
       mGeneralNoisyPixel->SetBinContent(istave + 1 + StaveBoundary[mLayer], mNoisyPixelNumber[lay][istave]);
     }
   }
