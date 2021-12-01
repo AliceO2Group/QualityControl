@@ -77,19 +77,14 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
           mySlice.stddevX = histo->GetStdDev(1);
           mySlice.errMeanX = mySlice.stddevX / (sqrt(mySlice.entries));
 
-          mySlice.meanY = histo->GetMean(2);
-          mySlice.stddevY = histo->GetStdDev(2);
-          mySlice.errMeanY = mySlice.stddevY / (sqrt(mySlice.entries));
-          /*
-          if (isCanvas) {
-            mySlice.meanX = histo->GetMean(1);
-            mySlice.stddevX = histo->GetStdDev(1);
-            mySlice.errMeanX = mySlice.stddevX/(sqrt(mySlice.entries));
-          }*/
+          float StatsY[3]; // 0 Mean, 1 Stddev, 2 Error
+          GetTH1StatsY(histo, StatsY, axis[i][j], axis[i][j + 1]);
+
+          mySlice.meanY = StatsY[0];
+          mySlice.stddevY = StatsY[1];
+          mySlice.errMeanY = StatsY[2];
 
           reducedSource.emplace_back(mySlice);
-          /*ILOG(Info, Support) << "i: " << i << " Index: " << index << " Mean slice along x: "
-            << mySlice.meanX << " Mean slice along y: " << mySlice.meanY << ENDM;*/
         }
       }
 
@@ -98,5 +93,52 @@ void TH1ReductorTPC::update(TObject* obj, std::vector<SliceInfo>& reducedSource,
     }
   } // All the vector elements have been updated.
 }
+
+void TH1ReductorTPC::GetTH1StatsY(TH1* Hist, float Stats[3],
+                                  float LowerBoundary, float UpperBoundary)
+{
+  const int LowerBin = Hist->FindBin(LowerBoundary);
+  const int UpperBin = Hist->FindBin(UpperBoundary);
+  const int NTotalBins = Hist->GetNbinsX();
+  const int IterateBins = UpperBin - LowerBin + 1; // Amount of bins included in the calculation.
+                                                   // Includes LowerBin and UpperBin.
+
+  // Safety measures.
+  if (LowerBin <= 0 || UpperBin <= 0) {
+    ILOG(Error, Support) << "Error: Negative bin in TH1ReducterTPC::GetTH1StatsY" << ENDM;
+    exit(0);
+  }
+  if (UpperBin <= LowerBin) {
+    ILOG(Error, Support) << "Error: Upper bin smaller than lower bin in TH1ReducterTPC::GetTH1StatsY" << ENDM;
+    exit(0);
+  }
+  if (NTotalBins < (UpperBin - LowerBin)) {
+    ILOG(Error, Support) << "Error: Bin region bigger than total amount of bins TH1ReducterTPC::GetTH1StatsY" << ENDM;
+    exit(0);
+  }
+
+  float MeanY = 0.;
+  float StddevY = 0.;
+  float ErrMeanY = 0.;
+
+  for (int i = LowerBin; i <= UpperBin; i++) {
+    MeanY += Hist->GetBinContent(i);
+  }
+
+  MeanY /= (float)IterateBins;
+
+  for (int i = LowerBin; i <= UpperBin; i++) {
+    StddevY += pow(MeanY - Hist->GetBinContent(i), 2.);
+  }
+
+  StddevY /= ((float)IterateBins - 1.);
+  ErrMeanY = StddevY / ((float)IterateBins);
+  StddevY = sqrt(StddevY);
+  ErrMeanY = sqrt(ErrMeanY);
+
+  Stats[0] = MeanY;
+  Stats[1] = StddevY;
+  Stats[2] = ErrMeanY;
+} // TH1ReductorTPC::GetTH1StatsY(TH1* Hist, float Stats[3], float LowerBoundary, float UpperBoundary)
 
 } // namespace o2::quality_control_modules::tpc

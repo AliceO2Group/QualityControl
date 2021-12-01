@@ -22,6 +22,7 @@
 #include "TPC/ReductorTPC.h"
 #include "TPC/SliceInfo.h"
 #include <vector>
+#include "TH1.h"
 
 namespace o2::quality_control_modules::tpc
 {
@@ -46,6 +47,9 @@ class TH1ReductorTPC : public quality_control_modules::tpc::ReductorTPC
   /// \brief Methods from the reductor class adapted for the needs of the TPC.
   void update(TObject* obj, std::vector<SliceInfo>& reducedSource,
               std::vector<std::vector<float>>& axis) final;
+
+ private:
+  void GetTH1StatsY(TH1* Hist, float Stats[3], float LowerBoundary, float UpperBoundary);
 };
 
 } // namespace o2::quality_control_modules::tpc
