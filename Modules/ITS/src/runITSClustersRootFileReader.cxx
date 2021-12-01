@@ -17,7 +17,7 @@
 /// The code is inspired by a similar reader "runMFTClustersRootFileReader.cxx" (authors Guillermo Contreras, Tomas Herman, Katarina Krizkova Gajdosova, Diana Maria Krupova)
 
 /// Code run:
-/// o2-qc-its-clusters-root-file-reader --its-cluster-root-file => File_Name.root | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/itsCluster.json
+/// o2-qc-its-clusters-root-file-reader --qc-its-clusters-root-file => File_Clusters.root | o2-qc --config json://${QUALITYCONTROL_ROOT}/etc/itsCluster.json
 
 // C++
 #include <vector>
@@ -43,10 +43,10 @@ class ITSClustersRootFileReader : public o2::framework::Task
  public:
   void init(framework::InitContext& ic)
   {
-    LOG(info) << " In ITSClustersRootFileReader::init ... entering ";
+    LOG(info) << "In ITSClustersRootFileReader::init ... entering ";
 
     // open input file
-    auto filename = ic.options().get<std::string>("its-cluster-root-file");
+    auto filename = ic.options().get<std::string>("qc-its-clusters-root-file");
     mFile = std::make_unique<TFile>(filename.c_str(), "READ");
     if (!mFile->IsOpen()) {
       LOG(error) << "ITSClustersRootFileReader::init. Cannot open file: " << filename.c_str();
@@ -55,11 +55,12 @@ class ITSClustersRootFileReader : public o2::framework::Task
       return;
     }
 
-    // get TTree
+    // load TTree and branches
     mTree = (TTree*)mFile->Get("o2sim");
     mTree->SetBranchAddress("ITSClusterComp", &pclusters);
     mTree->SetBranchAddress("ITSClustersROF", &profs);
 
+    // check entries
     mNumberOfEntries = mTree->GetEntries();
     if (mNumberOfEntries == 0) {
       LOG(error) << "ITSClustersRootFileReader::init. No entries.";
@@ -72,7 +73,7 @@ class ITSClustersRootFileReader : public o2::framework::Task
   void run(framework::ProcessingContext& pc)
   {
 
-    // Check if this is the last TF
+    // Check if this is the last Entry
     if (mCurrentEntry == mNumberOfEntries) {
       LOG(info) << " ITSClustersRootFileReader::run. End of file reached.";
       pc.services().get<ControlService>().endOfStream();
@@ -80,51 +81,33 @@ class ITSClustersRootFileReader : public o2::framework::Task
       return;
     }
 
-    mTree->GetEntry(mCurrentEntry); // load Entry from TTree
+    // load Entry from TTree
+    mTree->GetEntry(mCurrentEntry);
 
-    // Prepare ROF output
+    // Prepare ROFs output
     std::vector<o2::itsmft::ROFRecord>* clusRofArr = new std::vector<o2::itsmft::ROFRecord>();
     std::copy(rofs.begin(), rofs.end(), std::back_inserter(*clusRofArr));
 
     // Prepare vector with clusters for all ROFs
     std::vector<o2::itsmft::CompClusterExt>* clusArr = new std::vector<o2::itsmft::CompClusterExt>();
-
-    // Get number of rofs
-    mNumberOfROF = rofs.size();
-
-    for (unsigned int mCurrentROF = 0; mCurrentROF < mNumberOfROF; mCurrentROF++) {
-
-      // get clusters in current ROF
-      auto& rof = rofs[mCurrentROF];
-
-      // First cluster position in current ROF
-      unsigned int index = rof.getFirstEntry();
-
-      // Final cluster position in current ROF
-      unsigned int numberOfClustersInROF = rof.getNEntries();
-      unsigned int lastIndex = index + numberOfClustersInROF;
-
-      // Fill corresponding clusters
-      std::copy(clusters.begin() + index, clusters.begin() + lastIndex, std::back_inserter(*clusArr));
-    }
+    std::copy(clusters.begin(), clusters.end(), std::back_inserter(*clusArr));
 
     // Output vectors
-    pc.outputs().snapshot(Output{ "ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe }, *clusArr);
     pc.outputs().snapshot(Output{ "ITS", "CLUSTERSROF", 0, Lifetime::Timeframe }, *clusRofArr);
+    pc.outputs().snapshot(Output{ "ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe }, *clusArr);
 
-    // read a new entry in TTree
+    // move to a new entry in TTree
     ++mCurrentEntry;
   }
 
  private:
-  std::unique_ptr<TFile> mFile = nullptr;                                   // file to be read
+  std::unique_ptr<TFile> mFile = nullptr;                                   // root file with Clusters
   TTree* mTree = nullptr;                                                   // TTree object inside file
   std::vector<o2::itsmft::ROFRecord> rofs, *profs = &rofs;                  // pointer to ROF branch
   std::vector<o2::itsmft::CompClusterExt> clusters, *pclusters = &clusters; // pointer to Cluster branch
 
   unsigned long mNumberOfEntries = 0; // number of entries from TTree
   unsigned long mCurrentEntry = 0;    // index of current entry
-  unsigned long mNumberOfROF = 0;     // number of ROFs in current entry
 
 }; // end class definition
 
@@ -134,16 +117,16 @@ WorkflowSpec defineDataProcessing(const ConfigContext&)
 
   // Define the outputs
   std::vector<OutputSpec> outputs;
-  outputs.emplace_back("ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe);
   outputs.emplace_back("ITS", "CLUSTERSROF", 0, Lifetime::Timeframe);
+  outputs.emplace_back("ITS", "COMPCLUSTERS", 0, Lifetime::Timeframe);
 
   // The producer to generate data in the workflow
   DataProcessorSpec producer{
-    "clusters-root-file-reader-ITS",
+    "QC-ITS-clusters-root-file-reader",
     Inputs{},
     outputs,
     AlgorithmSpec{ adaptFromTask<ITSClustersRootFileReader>() },
-    Options{ { "its-cluster-root-file", VariantType::String, "o2clus_its.root", { "Name of the input file" } } }
+    Options{ { "qc-its-clusters-root-file", VariantType::String, "o2clus_its.root", { "Name of the input file with clusters" } } }
   };
   specs.push_back(producer);
 
