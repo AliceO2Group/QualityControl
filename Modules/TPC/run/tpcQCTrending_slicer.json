@@ -34,7 +34,7 @@
             "path": "qc/TPC/MO/Tracks",
             "names": [ "hEtaRatio", "hEta" ],
             "reductorName": "o2::quality_control_modules::tpc::TH1ReductorTPC",
-            "axisDivision": [ [ "-2.0", "-1.0", "0.0", "1.0", "2.0" ] ],
+            "axisDivision": [ [ "-1.0", "0.0", "1.0" ] ],
             "moduleName": "QcTPC"
           }
         ],
@@ -47,6 +47,15 @@
             "option": "*L",
             "graphErrors": "errMeanX:0.5", 
             "graphYRange": "-2.0:2.0"
+          },
+          {
+            "name": "hEtaRatio_StatMeanY_Trend",
+            "title": "Mean Y of the eta ratio",
+            "varexp": "hEtaRatio.meanY:time",
+            "selection": "",
+            "option": "*L",
+            "graphErrors": "errMeanY:0.5", 
+            "graphYRange": "0.0:2.0"
           },
           {
             "name": "hEta_StatMean_Trend",
