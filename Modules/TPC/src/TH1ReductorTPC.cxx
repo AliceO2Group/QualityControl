@@ -100,8 +100,8 @@ void TH1ReductorTPC::GetTH1StatsY(TH1* Hist, float Stats[3],
   const int LowerBin = Hist->FindBin(LowerBoundary);
   const int UpperBin = Hist->FindBin(UpperBoundary);
   const int NTotalBins = Hist->GetNbinsX();
-  const int IterateBins = UpperBin - LowerBin + 1; // Amount of bins included in the calculation.
-                                                   // Includes LowerBin and UpperBin.
+  const float IterateBins = (float)UpperBin - (float)LowerBin + 1.; // Amount of bins included in the calculation.
+                                                                    // Includes LowerBin and UpperBin.
 
   // Safety measures.
   if (LowerBin <= 0 || UpperBin <= 0) {
@@ -117,28 +117,21 @@ void TH1ReductorTPC::GetTH1StatsY(TH1* Hist, float Stats[3],
     exit(0);
   }
 
-  float MeanY = 0.;
-  float StddevY = 0.;
-  float ErrMeanY = 0.;
+  float SumY = 0.;
+  float SumY2 = 0.;
 
   for (int i = LowerBin; i <= UpperBin; i++) {
-    MeanY += Hist->GetBinContent(i);
+    SumY += Hist->GetBinContent(i);
+    SumY2 += Hist->GetBinContent(i) * Hist->GetBinContent(i);
   }
 
-  MeanY /= (float)IterateBins;
-
-  for (int i = LowerBin; i <= UpperBin; i++) {
-    StddevY += pow(MeanY - Hist->GetBinContent(i), 2.);
-  }
-
-  StddevY /= ((float)IterateBins - 1.);
-  ErrMeanY = StddevY / ((float)IterateBins);
-  StddevY = sqrt(StddevY);
-  ErrMeanY = sqrt(ErrMeanY);
+  float MeanY = SumY / IterateBins;
+  float StddevY = (SumY2 - SumY * SumY / IterateBins) / (IterateBins - 1.);
+  float ErrMeanY = StddevY / IterateBins;
 
   Stats[0] = MeanY;
-  Stats[1] = StddevY;
-  Stats[2] = ErrMeanY;
+  Stats[1] = sqrt(StddevY);
+  Stats[2] = sqrt(ErrMeanY);
 } // TH1ReductorTPC::GetTH1StatsY(TH1* Hist, float Stats[3], float LowerBoundary, float UpperBoundary)
 
 } // namespace o2::quality_control_modules::tpc
