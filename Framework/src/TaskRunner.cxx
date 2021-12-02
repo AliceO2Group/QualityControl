@@ -37,6 +37,7 @@
 
 #include <string>
 #include <TFile.h>
+#include <boost/property_tree/ptree.hpp>
 
 using namespace std;
 
@@ -76,6 +77,16 @@ void TaskRunner::init(InitContext& iCtx)
                      ilContext);
 
   ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
+
+  // get a fresh config
+  ILOG(Debug, Devel) << "update tree in init()" << ENDM;
+  try {
+    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("myConfigPayload");
+  } catch (std::invalid_argument & error) {
+    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
+    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init()" << ENDM;
+  }
+
   try {
     loadTaskConfig();
   } catch (...) {
