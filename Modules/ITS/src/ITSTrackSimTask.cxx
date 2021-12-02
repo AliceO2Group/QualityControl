@@ -214,8 +214,10 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
       auto mcHeader= reader.getMCEventHeader(iSource, iEvent);
       for (auto mcTrack : mcTracks){
 
-        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1) continue; 
-        if ( abs(mcTrack.Vz())  > 10 ) continue;
+        if (mcTrack.isPrimary()){
+           if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1) continue; 
+           if ( abs(mcTrack.Vz())  > 10 ) continue;
+        }
         Int_t pdg = mcTrack.GetPdgCode();
         if (TMath::Abs(pdg) != 211) continue; // Select pions
         if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
@@ -292,11 +294,11 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
 */
 
 
-        if (mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() > 1) continue; 
-                if (!mcTrack->isPrimary() && MCinfo.isFake()) std::cout<<"1"<<std::endl;
+        if (mcTrack->isPrimary()){
+           if (mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() > 1) continue; 
+           if ( abs(mcTrack->Vz())  > 10 ) continue;
+        }
 
-        if ( abs(mcTrack->Vz())  > 10 ) continue;
-                if (!mcTrack->isPrimary() && MCinfo.isFake()) std::cout<<"2"<<std::endl;
         Int_t pdg = mcTrack->GetPdgCode();
         if (TMath::Abs(pdg) != 211) continue; // Select pions
                 if (!mcTrack->isPrimary() && MCinfo.isFake()) std::cout<<"3"<<std::endl;
