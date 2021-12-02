@@ -79,12 +79,12 @@ void TaskRunner::init(InitContext& iCtx)
   ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
 
   // get a fresh config
-  ILOG(Debug, Devel) << "update tree in init()" << ENDM;
+  ILOG(Debug, Devel) << "update tree in init() with the content of option qcConfiguration" << ENDM;
   try {
     auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
   } catch (std::invalid_argument & error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
-    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init()" << ENDM;
+    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
   }
 
   try {
