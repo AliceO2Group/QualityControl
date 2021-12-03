@@ -50,7 +50,7 @@
         "policy" : "OnEachSeparately",
         "dataSource" : [ {
           "type" : "Task",
-          "name" : "QcMFTReadoutTask",
+          "name" : "QcMFTReadout",
           "MOs"  : ["mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning"]
         } ]
       }
