@@ -22,6 +22,13 @@
 #include <Framework/DeviceSpec.h>
 #include <Framework/CompletionPolicy.h>
 #include <Headers/DataHeader.h>
+#include <Framework/ConfigParamSpec.h>
+#include <Framework/CallbackService.h>
+#include <Framework/CompletionPolicyHelpers.h>
+#include <Framework/TimesliceIndex.h>
+#include <Framework/DataSpecUtils.h>
+#include <Framework/InputRecordWalker.h>
+#include <Framework/InputSpan.h>
 
 namespace o2::quality_control::core
 {
@@ -75,7 +82,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
 
   Options options{
     { "period-timer-cycle", framework::VariantType::Int, static_cast<int>(taskSpec.cycleDurationSeconds * 1000000), { "timer period" } },
-    { "runNumber", framework::VariantType::String, { "Run number" } }
+    { "runNumber", framework::VariantType::String, { "Run number" } },
+    {"qcConfiguration", VariantType::Dict, emptyDict(), {"Some dictionary configuration"} }
   };
 
   return {
