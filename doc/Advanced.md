@@ -649,6 +649,27 @@ cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
 make
 ```
 
+***Compilation on top of a local O2***
+
+If you want to build also O2 locally do 
+```
+# O2
+git clone https://github.com/AliceO2Group/AliceO2.git
+cd AliceO2
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=~/installdir ..
+make -j8 install
+
+# QC
+git clone https://github.com/AliceO2Group/QualityControl.git
+cd QualityControl
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=~/installdir .. -DO2_ROOT=~/installdir
+make -j8 install
+```
+
 **Use it in aliECS**
 
 Set an extra variable `extra_env_vars` and set it to 
