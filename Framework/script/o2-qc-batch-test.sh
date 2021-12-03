@@ -75,9 +75,9 @@ if (( $? != 0 )); then
 fi
 # try if it is a non empty histogram
 entries=`root -b -l -q -e 'TFile f("/tmp/batch_test_obj${UNIQUE_ID}.root"); TH1F *h = (TH1F*)f.Get("ccdb_object"); cout << h->GetEntries() << endl;' | tail -n 1`
-if [ $entries -ne 200 ] 2>/dev/null
+if [ $entries -lt 150 ] 2>/dev/null
 then
-  echo "The histogram of the QC Task does not have the expected 200 samples."
+  echo "The histogram of the QC Task has less than 150 (75%) of expected samples."
   delete_data
   exit 2
 fi
