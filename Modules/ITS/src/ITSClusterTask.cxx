@@ -21,7 +21,6 @@
 #include <TCanvas.h>
 #include <DataFormatsParameters/GRPObject.h>
 #include <ITSMFTReconstruction/DigitPixelReader.h>
-#include <DetectorsCommonDataFormats/NameConf.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <ITSMFTReconstruction/ChipMappingITS.h>
 #include <DataFormatsITSMFT/ClusterTopology.h>
@@ -114,7 +113,6 @@ void ITSClusterTask::initialize(o2::framework::InitContext& /*ctx*/)
   addObject(mGeneralOccupancy);
 
   publishHistos();
-  // std::string dictfile = o2::base::NameConf::getDictionaryFileName(o2::detectors::DetID::ITS, "", ".bin");
   std::ifstream file(mDictPath.c_str());
 
   if (file.good()) {
