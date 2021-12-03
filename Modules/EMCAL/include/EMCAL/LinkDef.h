@@ -13,4 +13,6 @@
 
 #pragma link C++ class o2::quality_control_modules::emcal::DigitOccupancyReductor + ;
 
+#pragma link C++ class o2::quality_control_modules::emcal::ClusterTask + ;
+
 #endif
