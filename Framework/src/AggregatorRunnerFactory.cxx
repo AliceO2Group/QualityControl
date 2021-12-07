@@ -49,8 +49,8 @@ DataProcessorSpec AggregatorRunnerFactory::create(AggregatorRunnerConfig arc, st
 // Specify a custom policy to trigger whenever something arrive regardless of the timeslice.
 void AggregatorRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [](framework::DeviceSpec const& device) {
-    return device.name.find(AggregatorRunner::createAggregatorRunnerIdString()) != std::string::npos;
+  auto matcher = [label = AggregatorRunner::getLabel()](framework::DeviceSpec const& device) {
+    return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 

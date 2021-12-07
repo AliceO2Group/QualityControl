@@ -107,8 +107,8 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
 
 void TaskRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [](framework::DeviceSpec const& device) {
-    return device.name.find(TaskRunner::createTaskRunnerIdString()) != std::string::npos;
+  auto matcher = [label = TaskRunner::getLabel()](framework::DeviceSpec const& device) {
+    return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   auto callback = TaskRunner::completionPolicyCallback;
 

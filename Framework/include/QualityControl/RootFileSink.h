@@ -36,7 +36,7 @@ class RootFileSink : public framework::Task
 
   static framework::DataProcessorLabel getLabel()
   {
-    return { "QC-ROOT-FILE-SINK" };
+    return { "qc-root-file-sink" };
   }
 
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
