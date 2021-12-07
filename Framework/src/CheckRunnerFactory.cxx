@@ -40,6 +40,7 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     AlgorithmSpec{},
                                     Options{} };
+  newCheckRunner.labels.emplace_back(CheckRunner::getLabel());
   newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
   return newCheckRunner;
 }

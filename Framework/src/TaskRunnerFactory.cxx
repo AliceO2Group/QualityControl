@@ -40,6 +40,7 @@ o2::framework::DataProcessorSpec
     adaptFromTask<TaskRunner>(std::move(qcTask)),
     taskConfig.options
   };
+  newTask.labels.emplace_back(TaskRunner::getLabel());
 
   return newTask;
 }

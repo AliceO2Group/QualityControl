@@ -42,6 +42,7 @@ DataProcessorSpec AggregatorRunnerFactory::create(AggregatorRunnerConfig arc, st
     AlgorithmSpec{},
     Options{}
   };
+  newAggregatorRunner.labels.emplace_back(AggregatorRunner::getLabel());
   newAggregatorRunner.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregator));
   return newAggregatorRunner;
 }
