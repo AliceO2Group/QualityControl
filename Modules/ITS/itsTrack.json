@@ -33,11 +33,10 @@
         "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
         "dataSource" : {
           "type" : "dataSamplingPolicy",
-          "name" : "compclus"
+          "name" : "tracks"
         },
         "location" : "remote",
         "taskParameters" : {
-          "runNumberPath" : "/home/its/QC/workdir/infiles/RunNumber.dat",
 	  "vertexXYsize" : "0.1",
 	  "vertexZsize": "15",
 	  "vertexRsize": "0.1"
@@ -63,14 +62,14 @@
 
          "dataSamplingPolicies" : [
            {
-             "id" : "compclus",
+             "id" : "tracks",
              "active" : "true",
              "machines" : [],
              "query" : "Vertices:ITS/VERTICES/0;tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;compclus:ITS/COMPCLUSTERS/0",
              "samplingConditions" : [
                {
                  "condition" : "random",
-                 "fraction" : "1",
+                 "fraction" : "0.3",
                  "seed" : "1441"
                }
              ],
