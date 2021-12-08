@@ -128,33 +128,30 @@ inline std::string indentTree(int level)
 
 inline void printTree(boost::property_tree::ptree &pt, int level=0)
 {
-  if (pt.empty())
-  {
-    std::cout << "\"" << pt.data() << "\"";
-  }
+  if (pt.empty()) {
 
-  else
-  {
-    if (level) std::cout << std::endl;
+    ILOG(Debug, Devel) << "\"" << pt.data() << "\"";
+  } else {
+    if (level) {
+      ILOG(Debug, Devel) << ENDM;
+    }
 
-    std::cout << indentTree(level) << "{" << std::endl;
+    ILOG(Debug, Devel) << indentTree(level) << "{" << ENDM;
 
-    for (boost::property_tree::ptree::iterator pos = pt.begin(); pos != pt.end();)
-    {
-      std::cout << indentTree(level + 1) << "\"" << pos->first << "\": ";
+    for (boost::property_tree::ptree::iterator pos = pt.begin(); pos != pt.end();) {
+      ILOG(Debug, Devel) << indentTree(level + 1) << "\"" << pos->first << "\": ";
 
       printTree(pos->second, level + 1);
       ++pos;
-      if (pos != pt.end())
-      {
-        std::cout << ",";
+      if (pos != pt.end()) {
+        ILOG(Debug, Devel) << ",";
       }
-      std::cout << std::endl;
+      ILOG(Debug, Devel) << ENDM;
     }
 
-    std::cout << indentTree(level) << " }";
+    ILOG(Debug, Devel) << indentTree(level) << " }";
   }
-  std::cout << std::endl;
+  ILOG(Debug, Devel) << ENDM;
   return;
 }
 
