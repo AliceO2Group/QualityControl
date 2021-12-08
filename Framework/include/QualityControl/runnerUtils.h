@@ -119,14 +119,14 @@ inline std::string computeProvenance(const std::string& fallbackProvenance = "")
   return provenance;
 }
 
-std::string indent(int level)
+inline std::string indentTree(int level)
 {
   std::string s;
   for (int i = 0; i<level; i++) s += "  ";
   return s;
 }
 
-void printTree(boost::property_tree::ptree &pt, int level=0)
+inline void printTree(boost::property_tree::ptree &pt, int level=0)
 {
   if (pt.empty())
   {
@@ -137,11 +137,11 @@ void printTree(boost::property_tree::ptree &pt, int level=0)
   {
     if (level) std::cout << std::endl;
 
-    std::cout << indent(level) << "{" << std::endl;
+    std::cout << indentTree(level) << "{" << std::endl;
 
     for (boost::property_tree::ptree::iterator pos = pt.begin(); pos != pt.end();)
     {
-      std::cout << indent(level + 1) << "\"" << pos->first << "\": ";
+      std::cout << indentTree(level + 1) << "\"" << pos->first << "\": ";
 
       printTree(pos->second, level + 1);
       ++pos;
@@ -152,7 +152,7 @@ void printTree(boost::property_tree::ptree &pt, int level=0)
       std::cout << std::endl;
     }
 
-    std::cout << indent(level) << " }";
+    std::cout << indentTree(level) << " }";
   }
   std::cout << std::endl;
   return;
