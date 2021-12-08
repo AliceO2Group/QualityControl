@@ -108,6 +108,7 @@ class AggregatorRunner : public framework::Task
   std::string getDeviceName() { return mDeviceName; }
   const std::vector<std::shared_ptr<Aggregator>>& getAggregators() const { return mAggregators; }
 
+  static framework::DataProcessorLabel getLabel() { return { "qc-aggregator" }; }
   static std::string createAggregatorRunnerIdString() { return "QC-AGGREGATOR-RUNNER"; };
   static std::string createAggregatorRunnerName();
   static header::DataDescription createAggregatorRunnerDataDescription(const std::string& aggregatorName);
