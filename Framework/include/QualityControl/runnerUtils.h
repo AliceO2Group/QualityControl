@@ -119,6 +119,45 @@ inline std::string computeProvenance(const std::string& fallbackProvenance = "")
   return provenance;
 }
 
+std::string indent(int level)
+{
+  std::string s;
+  for (int i = 0; i<level; i++) s += "  ";
+  return s;
+}
+
+void printTree(boost::property_tree::ptree &pt, int level=0)
+{
+  if (pt.empty())
+  {
+    std::cout << "\"" << pt.data() << "\"";
+  }
+
+  else
+  {
+    if (level) std::cout << std::endl;
+
+    std::cout << indent(level) << "{" << std::endl;
+
+    for (boost::property_tree::ptree::iterator pos = pt.begin(); pos != pt.end();)
+    {
+      std::cout << indent(level + 1) << "\"" << pos->first << "\": ";
+
+      printTree(pos->second, level + 1);
+      ++pos;
+      if (pos != pt.end())
+      {
+        std::cout << ",";
+      }
+      std::cout << std::endl;
+    }
+
+    std::cout << indent(level) << " }";
+  }
+  std::cout << std::endl;
+  return;
+}
+
 } // namespace o2::quality_control::core
 
 #endif //QUALITYCONTROL_RUNNERUTILS_H

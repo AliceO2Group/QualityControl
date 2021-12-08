@@ -81,8 +81,8 @@ void TaskRunner::init(InitContext& iCtx)
   // get a fresh config
   ILOG(Debug, Devel) << "update 2 tree in init() with the content of option qcConfiguration" << ENDM;
   try {
-    //    mTaskConfig.options.push_back(ConfigParamSpec{"qcConfiguration", VariantType::Dict, emptyDict(), {"Some dictionary configuration"}});
     auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
+    printTree(updatedTree);
   } catch (std::invalid_argument & error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
     ILOG(Warning, Devel) << error.what() << ENDM;
