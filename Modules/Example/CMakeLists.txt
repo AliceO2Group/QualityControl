@@ -2,6 +2,7 @@
 
 add_library(O2QcExample
   src/BenchmarkTask.cxx
+  src/EveryObject.cxx
   src/ExampleTask.cxx
   src/AnalysisTask.cxx
   src/FakeCheck.cxx
@@ -19,6 +20,7 @@ target_link_libraries(O2QcExample PUBLIC O2QualityControl)
 
 add_root_dictionary(O2QcExample
                     HEADERS include/Example/BenchmarkTask.h
+                            include/Example/EveryObject.h
                             include/Example/AnalysisTask.h
                             include/Example/ExampleTask.h
                             include/Example/FakeCheck.h
