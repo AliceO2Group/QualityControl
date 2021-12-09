@@ -89,7 +89,7 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
         ILOG(Error) << "Could not cast the input object to MonitorObjectCollection, skipping." << ENDM;
         continue;
       }
-      moc->SetOwner();
+      moc->postDeserialization();
 
       auto mocName = moc->GetName();
       if (*mocName == '\0') {
@@ -105,7 +105,7 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
           delete storedTObj;
           continue;
         }
-        storedMOC->SetOwner();
+        storedMOC->postDeserialization();
         ILOG(Info) << "Merging object '" << moc->GetName() << "' with the existing one in the file." << ENDM;
         moc->merge(storedMOC);
       }

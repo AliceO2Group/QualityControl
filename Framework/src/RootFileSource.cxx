@@ -61,7 +61,7 @@ void RootFileSource::run(framework::ProcessingContext& ctx)
       // snapshot does a shallow copy, so we cannot let it delete elements in MOC when it deletes the MOC
       storedMOC->SetOwner(false);
       ctx.outputs().snapshot(OutputRef{ storedMOC->GetName(), 0 }, *storedMOC);
-      storedMOC->SetOwner(true);
+      storedMOC->postDeserialization();
       ILOG(Info) << "Read and published object '" << storedMOC->GetName() << "'" << ENDM;
     }
     delete storedTObj;
