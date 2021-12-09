@@ -24,6 +24,7 @@
 #include "QualityControl/MonitorObject.h"
 
 #include <functional>
+#include <filesystem>
 #include <string>
 #include <boost/program_options.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -40,18 +41,19 @@ int main(int argc, const char* argv[])
 
   try {
     bpo::options_description desc{ "Options" };
-    desc.add_options()                                                                                                              //
-      ("help,h", "Help screen")                                                                                                     //
-      ("input-file", bpo::value<std::string>()->default_value("./QAResults.root"), "Path to the ROOT file with objects to insert.") //
-      ("qcdb-url", bpo::value<std::string>()->default_value("ccdb-test.cern.ch:8080"), "URL to the QCDB.")                          //
-      ("task-name", bpo::value<std::string>(), "Name of the task to which the objects belong. Use / to make directories")           //
-      ("detector-code", bpo::value<std::string>()->default_value("TST"), "3-letter detector code. Put AOD for analysis tasks")      //
-      ("validity-start", bpo::value<uint64_t>()->default_value(0), "Start of objects validity in ms since epoch")                   //
-      ("validity-end", bpo::value<uint64_t>()->default_value(0), "End of objects validity in ms since epoch")                       //
-      ("run-number", bpo::value<uint64_t>(), "Run number of objects (put 0 for many runs)")                                         //
-      ("period-name", bpo::value<std::string>()->default_value("unknown"), "Period name of the objects")                            // todo one could ask logbook
-      ("pass-name", bpo::value<std::string>()->default_value("unknown"), "Calib/reco/sim pass name")                                //
-      ("provenance", bpo::value<std::string>()->default_value("qc"), "Object path prefix used to mark if data comes from detector (use qc) or simulation (use qc_mc)");
+    desc.add_options()                                                                                                                                                 //
+      ("help,h", "Help screen")                                                                                                                                        //
+      ("input-file", bpo::value<std::string>()->default_value("./QAResults.root"), "Path to the ROOT file with objects to insert.")                                    //
+      ("qcdb-url", bpo::value<std::string>()->default_value("ccdb-test.cern.ch:8080"), "URL to the QCDB.")                                                             //
+      ("task-name", bpo::value<std::string>(), "Name of the task to which the objects belong. Use / to make directories")                                              //
+      ("detector-code", bpo::value<std::string>()->default_value("TST"), "3-letter detector code. Put AOD for analysis tasks")                                         //
+      ("validity-start", bpo::value<uint64_t>()->default_value(0), "Start of objects validity in ms since epoch")                                                      //
+      ("validity-end", bpo::value<uint64_t>()->default_value(0), "End of objects validity in ms since epoch")                                                          //
+      ("run-number", bpo::value<uint64_t>(), "Run number of objects (put 0 for many runs)")                                                                            //
+      ("period-name", bpo::value<std::string>()->default_value("unknown"), "Period name of the objects")                                                               // todo one could ask logbook
+      ("pass-name", bpo::value<std::string>()->default_value("unknown"), "Calib/reco/sim pass name")                                                                   //
+      ("provenance", bpo::value<std::string>()->default_value("qc"), "Object path prefix used to mark if data comes from detector (use qc) or simulation (use qc_mc)") //
+      ("preserve-directories", bpo::bool_switch()->default_value(false), "If present, the directory structure of the input file will be preserved in QCDB");
 
     bpo::variables_map vm;
     store(parse_command_line(argc, argv, desc), vm);
@@ -74,6 +76,7 @@ int main(int argc, const char* argv[])
     auto periodName = vm["period-name"].as<std::string>();
     auto passName = vm["pass-name"].as<std::string>();
     auto provenance = vm["provenance"].as<std::string>();
+    auto preserveDirectories = vm["preserve-directories"].as<bool>();
 
     if (validityStart == 0) {
       validityStart = CcdbDatabase::getCurrentTimestamp();
@@ -103,17 +106,25 @@ int main(int argc, const char* argv[])
     database.connect(qcdbUrl, "", "", "");
 
     /// Upload the objects
-    std::function<void(TDirectoryFile*)> browseFileAndUpload = [&](TDirectoryFile* directory) {
+    std::function<void(TDirectoryFile*, std::string)> browseFileAndUpload = [&](TDirectoryFile* directory, const std::string& path) {
       TIter next(directory->GetListOfKeys());
       TKey* key;
       while ((key = (TKey*)next())) {
         auto storedTObj = directory->Get(key->GetName());
         if (storedTObj != nullptr) {
           if (storedTObj->InheritsFrom("TDirectoryFile")) {
-            browseFileAndUpload(dynamic_cast<TDirectoryFile*>(storedTObj));
+            browseFileAndUpload(dynamic_cast<TDirectoryFile*>(storedTObj), path + std::string(key->GetName()) + std::filesystem::path::preferred_separator);
           } else {
-            std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(storedTObj, taskName, "unknown", detectorCode, runNumber, periodName, passName, provenance);
-            mo->setIsOwner(false);
+            std::shared_ptr<MonitorObject> mo = nullptr;
+            if (preserveDirectories) {
+              // one cannot change a name of a TObject, we have to create a new one...
+              auto clonedTObj = storedTObj->Clone((path + storedTObj->GetName()).c_str());
+              mo = std::make_shared<MonitorObject>(clonedTObj, taskName, "unknown", detectorCode, runNumber, periodName, passName, provenance);
+              mo->setIsOwner(true);
+            } else {
+              mo = std::make_shared<MonitorObject>(storedTObj, taskName, "unknown", detectorCode, runNumber, periodName, passName, provenance);
+              mo->setIsOwner(false);
+            }
             database.storeMO(mo, validityStart, validityEnd);
             objectsUploaded++;
           }
@@ -122,7 +133,7 @@ int main(int argc, const char* argv[])
       }
     };
 
-    browseFileAndUpload(file);
+    browseFileAndUpload(file, "");
 
     file->Close();
     delete file;
