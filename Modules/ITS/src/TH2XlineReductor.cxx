@@ -52,8 +52,10 @@ void TH2XlineReductor::update(TObject* obj)
         }
         sum += histo->GetBinContent(ix, iy);
       }
-      Double_t meanx = sum / entriesx;
+      Double_t meanx = !entriesx ? 0. : sum / entriesx;
       mStats.mean[iy - 1] = meanx;
+      //printf ("entiresx %f \n", entriesx);
+      //printf("meanx = %f \n",meanx);
       mStats.entries[iy - 1] = entriesx;
       mStats.mean_scaled[iy - 1] = meanx * 512. * 1024.;
       sum = 0.;
@@ -63,7 +65,8 @@ void TH2XlineReductor::update(TObject* obj)
           sum += (binc - meanx) * (binc - meanx);
         }
       }
-      mStats.stddev[iy - 1] = TMath::Sqrt(sum / (entriesx - 1));
+      mStats.stddev[iy - 1] = !entriesx ? 0. : entriesx==1? TMath::Sqrt(sum / (entriesx)) : TMath::Sqrt(sum / (entriesx - 1));
+      //printf("stddev %f \n",mStats.stddev[iy-1]);
       entriesx = 0.;
       sum = 0.;
     } //end loop on y bins

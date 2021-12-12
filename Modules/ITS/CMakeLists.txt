@@ -4,6 +4,7 @@ add_library(O2QcITS
             src/ITSRawTask.cxx
             src/TrendingTaskITSThr.cxx
             src/TrendingTaskITSFhr.cxx
+            src/TrendingTaskITSCluster.cxx
             src/TrendingTaskConfigITS.cxx
             src/TH2XlineReductor.cxx
             src/ITSFhrTask.cxx
@@ -43,6 +44,7 @@ add_root_dictionary(O2QcITS
                             include/ITS/ITSFhrTask.h
                             include/ITS/ITSFeeTask.h
                             include/ITS/ITSClusterTask.h
+                            include/ITS/TrendingTaskITSCluster.h
                             include/ITS/ITSTrackTask.h
                             include/ITS/ITSFhrCheck.h
                             include/ITS/ITSClusterCheck.h

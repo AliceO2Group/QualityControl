@@ -68,7 +68,7 @@ class ITSClusterTask : public TaskInterface
   TH2D* hAverageClusterOB[7];
   Int_t mClasterOccupancyOB[7][48][14];
 
-  const int mOccUpdateFrequency = 100000;
+  const int mOccUpdateFrequency = 100;
   int mNRofs = 0;
   int ChipIDprev = 0;
   std::string mDictPath;

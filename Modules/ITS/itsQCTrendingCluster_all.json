@@ -1,0 +1,1429 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": "http://consul-test.cern.ch:8500"
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "postprocessing": {
+      "ITSqcTrendingCluster": {
+        "active": "true",
+        "className": "o2::quality_control::postprocessing::TrendingTaskITSCluster",
+        "moduleName": "QualityControl",
+        "detectorName": "ITS",
+        "dataSources": [
+         {
+            "type": "repository",
+            "paths": ["qc/ITS/MO/ITSClusterTask/Layer0/AverageClusterSize",
+                      "qc/ITS/MO/ITSClusterTask/Layer1/AverageClusterSize",
+                      "qc/ITS/MO/ITSClusterTask/Layer2/AverageClusterSize",
+                      "qc/ITS/MO/ITSClusterTask/Layer3/AverageClusterSize",
+                      "qc/ITS/MO/ITSClusterTask/Layer4/AverageClusterSize",
+                      "qc/ITS/MO/ITSClusterTask/Layer5/AverageClusterSize",
+                      "qc/ITS/MO/ITSClusterTask/Layer6/AverageClusterSize"],
+            "names": ["Cluster_l0",
+                      "Cluster_l1",
+                      "Cluster_l2",
+                      "Cluster_l3",
+                      "Cluster_l4",
+                      "Cluster_l5",
+                      "Cluster_l6"],
+            "reductorName": "o2::quality_control_modules::its::TH2XlineReductor",
+            "moduleName": "QcITS"
+         },
+         {
+            "type": "repository",
+            "paths": ["qc/ITS/MO/ITSClusterTask/Layer0/ClusterOccupation",
+                      "qc/ITS/MO/ITSClusterTask/Layer1/ClusterOccupation",
+                      "qc/ITS/MO/ITSClusterTask/Layer2/ClusterOccupation",
+                      "qc/ITS/MO/ITSClusterTask/Layer3/ClusterOccupation",
+                      "qc/ITS/MO/ITSClusterTask/Layer4/ClusterOccupation",
+                      "qc/ITS/MO/ITSClusterTask/Layer5/ClusterOccupation",
+                      "qc/ITS/MO/ITSClusterTask/Layer6/ClusterOccupation"],
+            "names": ["Occupancy_l0",
+                      "Occupancy_l1",
+                      "Occupancy_l2",
+                      "Occupancy_l3",
+                      "Occupancy_l4",
+                      "Occupancy_l5",
+                      "Occupancy_l6"],
+            "reductorName": "o2::quality_control_modules::its::TH2XlineReductor",
+            "moduleName": "QcITS"
+         }     
+        ],
+        "plots": [
+          {
+            "names": ["cluster_mean_of_L0_00", "cluster_stddev_of_L0_00", "cluster_chips_of_L0_00", "cluster_occ_of_L0_00"],
+            "title": ["Average Cluster trend: L0_00", "Stddev Cluster trend: L0_00", "Active chips trend: L0_00", "Occupancy trend: L0_00"],
+            "varexp": ["Cluster_l0.mean[0]:ntreeentries", "Cluster_l0.stddev[0]:ntreeentries", "Cluster_l0.entries[0]:ntreeentries", "Occupancy_l0.mean[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_01", "cluster_stddev_of_L0_01", "cluster_chips_of_L0_01", "cluster_occ_of_L0_01"],
+            "title": ["Average Cluster trend: L0_01", "Stddev Cluster trend: L0_01", "Active chips trend: L0_01", "Occupancy trend: L0_01"],
+            "varexp": ["Cluster_l0.mean[1]:ntreeentries", "Cluster_l0.stddev[1]:ntreeentries", "Cluster_l0.entries[1]:ntreeentries", "Occupancy_l0.mean[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_02", "cluster_stddev_of_L0_02", "cluster_chips_of_L0_02", "cluster_occ_of_L0_02"],
+            "title": ["Average Cluster trend: L0_02", "Stddev Cluster trend: L0_02", "Active chips trend: L0_02", "Occupancy trend: L0_02"],
+            "varexp": ["Cluster_l0.mean[2]:ntreeentries", "Cluster_l0.stddev[2]:ntreeentries", "Cluster_l0.entries[2]:ntreeentries", "Occupancy_l0.mean[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_03", "cluster_stddev_of_L0_03", "cluster_chips_of_L0_03", "cluster_occ_of_L0_03"],
+            "title": ["Average Cluster trend: L0_03", "Stddev Cluster trend: L0_03", "Active chips trend: L0_03", "Occupancy trend: L0_03"],
+            "varexp": ["Cluster_l0.mean[3]:ntreeentries", "Cluster_l0.stddev[3]:ntreeentries", "Cluster_l0.entries[3]:ntreeentries", "Occupancy_l0.mean[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_04", "cluster_stddev_of_L0_04", "cluster_chips_of_L0_04", "cluster_occ_of_L0_04"],
+            "title": ["Average Cluster trend: L0_04", "Stddev Cluster trend: L0_04", "Active chips trend: L0_04", "Occupancy trend: L0_04"],
+            "varexp": ["Cluster_l0.mean[4]:ntreeentries", "Cluster_l0.stddev[4]:ntreeentries", "Cluster_l0.entries[4]:ntreeentries", "Occupancy_l0.mean[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_05", "cluster_stddev_of_L0_05", "cluster_chips_of_L0_05", "cluster_occ_of_L0_05"],
+            "title": ["Average Cluster trend: L0_05", "Stddev Cluster trend: L0_05", "Active chips trend: L0_05", "Occupancy trend: L0_05"],
+            "varexp": ["Cluster_l0.mean[5]:ntreeentries", "Cluster_l0.stddev[5]:ntreeentries", "Cluster_l0.entries[5]:ntreeentries", "Occupancy_l0.mean[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_06", "cluster_stddev_of_L0_06", "cluster_chips_of_L0_06", "cluster_occ_of_L0_06"],
+            "title": ["Average Cluster trend: L0_06", "Stddev Cluster trend: L0_06", "Active chips trend: L0_06", "Occupancy trend: L0_06"],
+            "varexp": ["Cluster_l0.mean[6]:ntreeentries", "Cluster_l0.stddev[6]:ntreeentries", "Cluster_l0.entries[6]:ntreeentries", "Occupancy_l0.mean[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_07", "cluster_stddev_of_L0_07", "cluster_chips_of_L0_07", "cluster_occ_of_L0_07"],
+            "title": ["Average Cluster trend: L0_07", "Stddev Cluster trend: L0_07", "Active chips trend: L0_07", "Occupancy trend: L0_07"],
+            "varexp": ["Cluster_l0.mean[7]:ntreeentries", "Cluster_l0.stddev[7]:ntreeentries", "Cluster_l0.entries[7]:ntreeentries", "Occupancy_l0.mean[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_08", "cluster_stddev_of_L0_08", "cluster_chips_of_L0_08", "cluster_occ_of_L0_08"],
+            "title": ["Average Cluster trend: L0_08", "Stddev Cluster trend: L0_08", "Active chips trend: L0_08", "Occupancy trend: L0_08"],
+            "varexp": ["Cluster_l0.mean[8]:ntreeentries", "Cluster_l0.stddev[8]:ntreeentries", "Cluster_l0.entries[8]:ntreeentries", "Occupancy_l0.mean[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_09", "cluster_stddev_of_L0_09", "cluster_chips_of_L0_09", "cluster_occ_of_L0_09"],
+            "title": ["Average Cluster trend: L0_09", "Stddev Cluster trend: L0_09", "Active chips trend: L0_09", "Occupancy trend: L0_09"],
+            "varexp": ["Cluster_l0.mean[9]:ntreeentries", "Cluster_l0.stddev[9]:ntreeentries", "Cluster_l0.entries[9]:ntreeentries", "Occupancy_l0.mean[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_10", "cluster_stddev_of_L0_10", "cluster_chips_of_L0_10", "cluster_occ_of_L0_10"],
+            "title": ["Average Cluster trend: L0_10", "Stddev Cluster trend: L0_10", "Active chips trend: L0_10", "Occupancy trend: L0_10"],
+            "varexp": ["Cluster_l0.mean[10]:ntreeentries", "Cluster_l0.stddev[10]:ntreeentries", "Cluster_l0.entries[10]:ntreeentries", "Occupancy_l0.mean[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L0_11", "cluster_stddev_of_L0_11", "cluster_chips_of_L0_11", "cluster_occ_of_L0_11"],
+            "title": ["Average Cluster trend: L0_11", "Stddev Cluster trend: L0_11", "Active chips trend: L0_11", "Occupancy trend: L0_11"],
+            "varexp": ["Cluster_l0.mean[11]:ntreeentries", "Cluster_l0.stddev[11]:ntreeentries", "Cluster_l0.entries[11]:ntreeentries", "Occupancy_l0.mean[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_00", "cluster_stddev_of_L1_00", "cluster_chips_of_L1_00", "cluster_occ_of_L1_00"],
+            "title": ["Average Cluster trend: L1_00", "Stddev Cluster trend: L1_00", "Active chips trend: L1_00", "Occupancy trend: L1_00"],
+            "varexp": ["Cluster_l1.mean[0]:ntreeentries", "Cluster_l1.stddev[0]:ntreeentries", "Cluster_l1.entries[0]:ntreeentries", "Occupancy_l1.mean[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_01", "cluster_stddev_of_L1_01", "cluster_chips_of_L1_01", "cluster_occ_of_L1_01"],
+            "title": ["Average Cluster trend: L1_01", "Stddev Cluster trend: L1_01", "Active chips trend: L1_01", "Occupancy trend: L1_01"],
+            "varexp": ["Cluster_l1.mean[1]:ntreeentries", "Cluster_l1.stddev[1]:ntreeentries", "Cluster_l1.entries[1]:ntreeentries", "Occupancy_l1.mean[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_02", "cluster_stddev_of_L1_02", "cluster_chips_of_L1_02", "cluster_occ_of_L1_02"],
+            "title": ["Average Cluster trend: L1_02", "Stddev Cluster trend: L1_02", "Active chips trend: L1_02", "Occupancy trend: L1_02"],
+            "varexp": ["Cluster_l1.mean[2]:ntreeentries", "Cluster_l1.stddev[2]:ntreeentries", "Cluster_l1.entries[2]:ntreeentries", "Occupancy_l1.mean[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_03", "cluster_stddev_of_L1_03", "cluster_chips_of_L1_03", "cluster_occ_of_L1_03"],
+            "title": ["Average Cluster trend: L1_03", "Stddev Cluster trend: L1_03", "Active chips trend: L1_03", "Occupancy trend: L1_03"],
+            "varexp": ["Cluster_l1.mean[3]:ntreeentries", "Cluster_l1.stddev[3]:ntreeentries", "Cluster_l1.entries[3]:ntreeentries", "Occupancy_l1.mean[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_04", "cluster_stddev_of_L1_04", "cluster_chips_of_L1_04", "cluster_occ_of_L1_04"],
+            "title": ["Average Cluster trend: L1_04", "Stddev Cluster trend: L1_04", "Active chips trend: L1_04", "Occupancy trend: L1_04"],
+            "varexp": ["Cluster_l1.mean[4]:ntreeentries", "Cluster_l1.stddev[4]:ntreeentries", "Cluster_l1.entries[4]:ntreeentries", "Occupancy_l1.mean[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_05", "cluster_stddev_of_L1_05", "cluster_chips_of_L1_05", "cluster_occ_of_L1_05"],
+            "title": ["Average Cluster trend: L1_05", "Stddev Cluster trend: L1_05", "Active chips trend: L1_05", "Occupancy trend: L1_05"],
+            "varexp": ["Cluster_l1.mean[5]:ntreeentries", "Cluster_l1.stddev[5]:ntreeentries", "Cluster_l1.entries[5]:ntreeentries", "Occupancy_l1.mean[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_06", "cluster_stddev_of_L1_06", "cluster_chips_of_L1_06", "cluster_occ_of_L1_06"],
+            "title": ["Average Cluster trend: L1_06", "Stddev Cluster trend: L1_06", "Active chips trend: L1_06", "Occupancy trend: L1_06"],
+            "varexp": ["Cluster_l1.mean[6]:ntreeentries", "Cluster_l1.stddev[6]:ntreeentries", "Cluster_l1.entries[6]:ntreeentries", "Occupancy_l1.mean[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_07", "cluster_stddev_of_L1_07", "cluster_chips_of_L1_07", "cluster_occ_of_L1_07"],
+            "title": ["Average Cluster trend: L1_07", "Stddev Cluster trend: L1_07", "Active chips trend: L1_07", "Occupancy trend: L1_07"],
+            "varexp": ["Cluster_l1.mean[7]:ntreeentries", "Cluster_l1.stddev[7]:ntreeentries", "Cluster_l1.entries[7]:ntreeentries", "Occupancy_l1.mean[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_08", "cluster_stddev_of_L1_08", "cluster_chips_of_L1_08", "cluster_occ_of_L1_08"],
+            "title": ["Average Cluster trend: L1_08", "Stddev Cluster trend: L1_08", "Active chips trend: L1_08", "Occupancy trend: L1_08"],
+            "varexp": ["Cluster_l1.mean[8]:ntreeentries", "Cluster_l1.stddev[8]:ntreeentries", "Cluster_l1.entries[8]:ntreeentries", "Occupancy_l1.mean[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_09", "cluster_stddev_of_L1_09", "cluster_chips_of_L1_09", "cluster_occ_of_L1_09"],
+            "title": ["Average Cluster trend: L1_09", "Stddev Cluster trend: L1_09", "Active chips trend: L1_09", "Occupancy trend: L1_09"],
+            "varexp": ["Cluster_l1.mean[9]:ntreeentries", "Cluster_l1.stddev[9]:ntreeentries", "Cluster_l1.entries[9]:ntreeentries", "Occupancy_l1.mean[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_10", "cluster_stddev_of_L1_10", "cluster_chips_of_L1_10", "cluster_occ_of_L1_10"],
+            "title": ["Average Cluster trend: L1_10", "Stddev Cluster trend: L1_10", "Active chips trend: L1_10", "Occupancy trend: L1_10"],
+            "varexp": ["Cluster_l1.mean[10]:ntreeentries", "Cluster_l1.stddev[10]:ntreeentries", "Cluster_l1.entries[10]:ntreeentries", "Occupancy_l1.mean[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_11", "cluster_stddev_of_L1_11", "cluster_chips_of_L1_11", "cluster_occ_of_L1_11"],
+            "title": ["Average Cluster trend: L1_11", "Stddev Cluster trend: L1_11", "Active chips trend: L1_11", "Occupancy trend: L1_11"],
+            "varexp": ["Cluster_l1.mean[11]:ntreeentries", "Cluster_l1.stddev[11]:ntreeentries", "Cluster_l1.entries[11]:ntreeentries", "Occupancy_l1.mean[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_12", "cluster_stddev_of_L1_12", "cluster_chips_of_L1_12", "cluster_occ_of_L1_12"],
+            "title": ["Average Cluster trend: L1_12", "Stddev Cluster trend: L1_12", "Active chips trend: L1_12", "Occupancy trend: L1_12"],
+            "varexp": ["Cluster_l1.mean[12]:ntreeentries", "Cluster_l1.stddev[12]:ntreeentries", "Cluster_l1.entries[12]:ntreeentries", "Occupancy_l1.mean[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_13", "cluster_stddev_of_L1_13", "cluster_chips_of_L1_13", "cluster_occ_of_L1_13"],
+            "title": ["Average Cluster trend: L1_13", "Stddev Cluster trend: L1_13", "Active chips trend: L1_13", "Occupancy trend: L1_13"],
+            "varexp": ["Cluster_l1.mean[13]:ntreeentries", "Cluster_l1.stddev[13]:ntreeentries", "Cluster_l1.entries[13]:ntreeentries", "Cluster_l1.mean_scaled[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_14", "cluster_stddev_of_L1_14", "cluster_chips_of_L1_14", "cluster_occ_of_L1_14"],
+            "title": ["Average Cluster trend: L1_14", "Stddev Cluster trend: L1_14", "Active chips trend: L1_14", "Occupancy trend: L1_14"],
+            "varexp": ["Cluster_l1.mean[14]:ntreeentries", "Cluster_l1.stddev[14]:ntreeentries", "Cluster_l1.entries[14]:ntreeentries", "Occupancy_l1.mean[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L1_15", "cluster_stddev_of_L1_15", "cluster_chips_of_L1_15", "cluster_occ_of_L1_15"],
+            "title": ["Average Cluster trend: L1_15", "Stddev Cluster trend: L1_15", "Active chips trend: L1_15", "Occupancy trend: L1_15"],
+            "varexp": ["Cluster_l1.mean[15]:ntreeentries", "Cluster_l1.stddev[15]:ntreeentries", "Cluster_l1.entries[15]:ntreeentries", "Occupancy_l1.mean[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_00", "cluster_stddev_of_L2_00", "cluster_chips_of_L2_00", "cluster_occ_of_L2_00"],
+            "title": ["Average Cluster trend: L2_00", "Stddev Cluster trend: L2_00", "Active chips trend: L2_00", "Occupancy trend: L2_00"],
+            "varexp": ["Cluster_l2.mean[0]:ntreeentries", "Cluster_l2.stddev[0]:ntreeentries", "Cluster_l2.entries[0]:ntreeentries", "Occupancy_l2.mean[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_01", "cluster_stddev_of_L2_01", "cluster_chips_of_L2_01", "cluster_occ_of_L2_01"],
+            "title": ["Average Cluster trend: L2_01", "Stddev Cluster trend: L2_01", "Active chips trend: L2_01", "Occupancy trend: L2_01"],
+            "varexp": ["Cluster_l2.mean[1]:ntreeentries", "Cluster_l2.stddev[1]:ntreeentries", "Cluster_l2.entries[1]:ntreeentries", "Occupancy_l2.mean[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_02", "cluster_stddev_of_L2_02", "cluster_chips_of_L2_02", "cluster_occ_of_L2_02"],
+            "title": ["Average Cluster trend: L2_02", "Stddev Cluster trend: L2_02", "Active chips trend: L2_02", "Occupancy trend: L2_02"],
+            "varexp": ["Cluster_l2.mean[2]:ntreeentries", "Cluster_l2.stddev[2]:ntreeentries", "Cluster_l2.entries[2]:ntreeentries", "Occupancy_l2.mean[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_03", "cluster_stddev_of_L2_03", "cluster_chips_of_L2_03", "cluster_occ_of_L2_03"],
+            "title": ["Average Cluster trend: L2_03", "Stddev Cluster trend: L2_03", "Active chips trend: L2_03", "Occupancy trend: L2_03"],
+            "varexp": ["Cluster_l2.mean[3]:ntreeentries", "Cluster_l2.stddev[3]:ntreeentries", "Cluster_l2.entries[3]:ntreeentries", "Occupancy_l2.mean[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_04", "cluster_stddev_of_L2_04", "cluster_chips_of_L2_04", "cluster_occ_of_L2_04"],
+            "title": ["Average Cluster trend: L2_04", "Stddev Cluster trend: L2_04", "Active chips trend: L2_04", "Occupancy trend: L2_04"],
+            "varexp": ["Cluster_l2.mean[4]:ntreeentries", "Cluster_l2.stddev[4]:ntreeentries", "Cluster_l2.entries[4]:ntreeentries", "Occupancy_l2.mean[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_05", "cluster_stddev_of_L2_05", "cluster_chips_of_L2_05", "cluster_occ_of_L2_05"],
+            "title": ["Average Cluster trend: L2_05", "Stddev Cluster trend: L2_05", "Active chips trend: L2_05", "Occupancy trend: L2_05"],
+            "varexp": ["Cluster_l2.mean[5]:ntreeentries", "Cluster_l2.stddev[5]:ntreeentries", "Cluster_l2.entries[5]:ntreeentries", "Occupancy_l2.mean[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_06", "cluster_stddev_of_L2_06", "cluster_chips_of_L2_06", "cluster_occ_of_L2_06"],
+            "title": ["Average Cluster trend: L2_06", "Stddev Cluster trend: L2_06", "Active chips trend: L2_06", "Occupancy trend: L2_06"],
+            "varexp": ["Cluster_l2.mean[6]:ntreeentries", "Cluster_l2.stddev[6]:ntreeentries", "Cluster_l2.entries[6]:ntreeentries", "Occupancy_l2.mean[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_07", "cluster_stddev_of_L2_07", "cluster_chips_of_L2_07", "cluster_occ_of_L2_07"],
+            "title": ["Average Cluster trend: L2_07", "Stddev Cluster trend: L2_07", "Active chips trend: L2_07", "Occupancy trend: L2_07"],
+            "varexp": ["Cluster_l2.mean[7]:ntreeentries", "Cluster_l2.stddev[7]:ntreeentries", "Cluster_l2.entries[7]:ntreeentries", "Occupancy_l2.mean[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_08", "cluster_stddev_of_L2_08", "cluster_chips_of_L2_08", "cluster_occ_of_L2_08"],
+            "title": ["Average Cluster trend: L2_08", "Stddev Cluster trend: L2_08", "Active chips trend: L2_08", "Occupancy trend: L2_08"],
+            "varexp": ["Cluster_l2.mean[8]:ntreeentries", "Cluster_l2.stddev[8]:ntreeentries", "Cluster_l2.entries[8]:ntreeentries", "Occupancy_l2.mean[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_09", "cluster_stddev_of_L2_09", "cluster_chips_of_L2_09", "cluster_occ_of_L2_09"],
+            "title": ["Average Cluster trend: L2_09", "Stddev Cluster trend: L2_09", "Active chips trend: L2_09", "Occupancy trend: L2_09"],
+            "varexp": ["Cluster_l2.mean[9]:ntreeentries", "Cluster_l2.stddev[9]:ntreeentries", "Cluster_l2.entries[9]:ntreeentries", "Occupancy_l2.mean[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_10", "cluster_stddev_of_L2_10", "cluster_chips_of_L2_10", "cluster_occ_of_L2_10"],
+            "title": ["Average Cluster trend: L2_10", "Stddev Cluster trend: L2_10", "Active chips trend: L2_10", "Occupancy trend: L2_10"],
+            "varexp": ["Cluster_l2.mean[10]:ntreeentries", "Cluster_l2.stddev[10]:ntreeentries", "Cluster_l2.entries[10]:ntreeentries", "Occupancy_l2.mean[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_11", "cluster_stddev_of_L2_11", "cluster_chips_of_L2_11", "cluster_occ_of_L2_11"],
+            "title": ["Average Cluster trend: L2_11", "Stddev Cluster trend: L2_11", "Active chips trend: L2_11", "Occupancy trend: L2_11"],
+            "varexp": ["Cluster_l2.mean[11]:ntreeentries", "Cluster_l2.stddev[11]:ntreeentries", "Cluster_l2.entries[11]:ntreeentries", "Occupancy_l2.mean[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_12", "cluster_stddev_of_L2_12", "cluster_chips_of_L2_12", "cluster_occ_of_L2_12"],
+            "title": ["Average Cluster trend: L2_12", "Stddev Cluster trend: L2_12", "Active chips trend: L2_12", "Occupancy trend: L2_12"],
+            "varexp": ["Cluster_l2.mean[12]:ntreeentries", "Cluster_l2.stddev[12]:ntreeentries", "Cluster_l2.entries[12]:ntreeentries", "Occupancy_l2.mean[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_13", "cluster_stddev_of_L2_13", "cluster_chips_of_L2_13", "cluster_occ_of_L2_13"],
+            "title": ["Average Cluster trend: L2_13", "Stddev Cluster trend: L2_13", "Active chips trend: L2_13", "Occupancy trend: L2_13"],
+            "varexp": ["Cluster_l2.mean[13]:ntreeentries", "Cluster_l2.stddev[13]:ntreeentries", "Cluster_l2.entries[13]:ntreeentries", "Occupancy_l2.mean[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_14", "cluster_stddev_of_L2_14", "cluster_chips_of_L2_14", "cluster_occ_of_L2_14"],
+            "title": ["Average Cluster trend: L2_14", "Stddev Cluster trend: L2_14", "Active chips trend: L2_14", "Occupancy trend: L2_14"],
+            "varexp": ["Cluster_l2.mean[14]:ntreeentries", "Cluster_l2.stddev[14]:ntreeentries", "Cluster_l2.entries[14]:ntreeentries", "Occupancy_l2.mean[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_15", "cluster_stddev_of_L2_15", "cluster_chips_of_L2_15", "cluster_occ_of_L2_15"],
+            "title": ["Average Cluster trend: L2_15", "Stddev Cluster trend: L2_15", "Active chips trend: L2_15", "Occupancy trend: L2_15"],
+            "varexp": ["Cluster_l2.mean[15]:ntreeentries", "Cluster_l2.stddev[15]:ntreeentries", "Cluster_l2.entries[15]:ntreeentries", "Occupancy_l2.mean[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_16", "cluster_stddev_of_L2_16", "cluster_chips_of_L2_16", "cluster_occ_of_L2_16"],
+            "title": ["Average Cluster trend: L2_16", "Stddev Cluster trend: L2_16", "Active chips trend: L2_16", "Occupancy trend: L2_16"],
+            "varexp": ["Cluster_l2.mean[16]:ntreeentries", "Cluster_l2.stddev[16]:ntreeentries", "Cluster_l2.entries[16]:ntreeentries", "Occupancy_l2.mean[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_17", "cluster_stddev_of_L2_17", "cluster_chips_of_L2_17", "cluster_occ_of_L2_17"],
+            "title": ["Average Cluster trend: L2_17", "Stddev Cluster trend: L2_17", "Active chips trend: L2_17", "Occupancy trend: L2_17"],
+            "varexp": ["Cluster_l2.mean[17]:ntreeentries", "Cluster_l2.stddev[17]:ntreeentries", "Cluster_l2.entries[17]:ntreeentries", "Occupancy_l2.mean[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_18", "cluster_stddev_of_L2_18", "cluster_chips_of_L2_18", "cluster_occ_of_L2_18"],
+            "title": ["Average Cluster trend: L2_18", "Stddev Cluster trend: L2_18", "Active chips trend: L2_18", "Occupancy trend: L2_18"],
+            "varexp": ["Cluster_l2.mean[18]:ntreeentries", "Cluster_l2.stddev[18]:ntreeentries", "Cluster_l2.entries[18]:ntreeentries", "Cluster_l2.mean_scaled[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L2_19", "cluster_stddev_of_L2_19", "cluster_chips_of_L2_19", "cluster_occ_of_L2_19"],
+            "title": ["Average Cluster trend: L2_19", "Stddev Cluster trend: L2_19", "Active chips trend: L2_19", "Occupancy trend: L2_19"],
+            "varexp": ["Cluster_l2.mean[19]:ntreeentries", "Cluster_l2.stddev[19]:ntreeentries", "Cluster_l2.entries[19]:ntreeentries", "Occupancy_l2.mean[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_00", "cluster_stddev_of_L3_00", "cluster_chips_of_L3_00", "cluster_occ_of_L3_00"],
+            "title": ["Average Cluster trend: L3_00", "Stddev Cluster trend: L3_00", "Active chips trend: L3_00", "Occupancy trend: L3_00"],
+            "varexp": ["Cluster_l3.mean[0]:ntreeentries", "Cluster_l3.stddev[0]:ntreeentries", "Cluster_l3.entries[0]:ntreeentries", "Occupancy_l3.mean[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_01", "cluster_stddev_of_L3_01", "cluster_chips_of_L3_01", "cluster_occ_of_L3_01"],
+            "title": ["Average Cluster trend: L3_01", "Stddev Cluster trend: L3_01", "Active chips trend: L3_01", "Occupancy trend: L3_01"],
+            "varexp": ["Cluster_l3.mean[1]:ntreeentries", "Cluster_l3.stddev[1]:ntreeentries", "Cluster_l3.entries[1]:ntreeentries", "Occupancy_l3.mean[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_02", "cluster_stddev_of_L3_02", "cluster_chips_of_L3_02", "cluster_occ_of_L3_02"],
+            "title": ["Average Cluster trend: L3_02", "Stddev Cluster trend: L3_02", "Active chips trend: L3_02", "Occupancy trend: L3_02"],
+            "varexp": ["Cluster_l3.mean[2]:ntreeentries", "Cluster_l3.stddev[2]:ntreeentries", "Cluster_l3.entries[2]:ntreeentries", "Occupancy_l3.mean[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_03", "cluster_stddev_of_L3_03", "cluster_chips_of_L3_03", "cluster_occ_of_L3_03"],
+            "title": ["Average Cluster trend: L3_03", "Stddev Cluster trend: L3_03", "Active chips trend: L3_03", "Occupancy trend: L3_03"],
+            "varexp": ["Cluster_l3.mean[3]:ntreeentries", "Cluster_l3.stddev[3]:ntreeentries", "Cluster_l3.entries[3]:ntreeentries", "Occupancy_l3.mean[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_04", "cluster_stddev_of_L3_04", "cluster_chips_of_L3_04", "cluster_occ_of_L3_04"],
+            "title": ["Average Cluster trend: L3_04", "Stddev Cluster trend: L3_04", "Active chips trend: L3_04", "Occupancy trend: L3_04"],
+            "varexp": ["Cluster_l3.mean[4]:ntreeentries", "Cluster_l3.stddev[4]:ntreeentries", "Cluster_l3.entries[4]:ntreeentries", "Occupancy_l3.mean[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_05", "cluster_stddev_of_L3_05", "cluster_chips_of_L3_05", "cluster_occ_of_L3_05"],
+            "title": ["Average Cluster trend: L3_05", "Stddev Cluster trend: L3_05", "Active chips trend: L3_05", "Occupancy trend: L3_05"],
+            "varexp": ["Cluster_l3.mean[5]:ntreeentries", "Cluster_l3.stddev[5]:ntreeentries", "Cluster_l3.entries[5]:ntreeentries", "Occupancy_l3.mean[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_06", "cluster_stddev_of_L3_06", "cluster_chips_of_L3_06", "cluster_occ_of_L3_06"],
+            "title": ["Average Cluster trend: L3_06", "Stddev Cluster trend: L3_06", "Active chips trend: L3_06", "Occupancy trend: L3_06"],
+            "varexp": ["Cluster_l3.mean[6]:ntreeentries", "Cluster_l3.stddev[6]:ntreeentries", "Cluster_l3.entries[6]:ntreeentries", "Occupancy_l3.mean[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_07", "cluster_stddev_of_L3_07", "cluster_chips_of_L3_07", "cluster_occ_of_L3_07"],
+            "title": ["Average Cluster trend: L3_07", "Stddev Cluster trend: L3_07", "Active chips trend: L3_07", "Occupancy trend: L3_07"],
+            "varexp": ["Cluster_l3.mean[7]:ntreeentries", "Cluster_l3.stddev[7]:ntreeentries", "Cluster_l3.entries[7]:ntreeentries", "Occupancy_l3.mean[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_08", "cluster_stddev_of_L3_08", "cluster_chips_of_L3_08", "cluster_occ_of_L3_08"],
+            "title": ["Average Cluster trend: L3_08", "Stddev Cluster trend: L3_08", "Active chips trend: L3_08", "Occupancy trend: L3_08"],
+            "varexp": ["Cluster_l3.mean[8]:ntreeentries", "Cluster_l3.stddev[8]:ntreeentries", "Cluster_l3.entries[8]:ntreeentries", "Occupancy_l3.mean[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_09", "cluster_stddev_of_L3_09", "cluster_chips_of_L3_09", "cluster_occ_of_L3_09"],
+            "title": ["Average Cluster trend: L3_09", "Stddev Cluster trend: L3_09", "Active chips trend: L3_09", "Occupancy trend: L3_09"],
+            "varexp": ["Cluster_l3.mean[9]:ntreeentries", "Cluster_l3.stddev[9]:ntreeentries", "Cluster_l3.entries[9]:ntreeentries", "Occupancy_l3.mean[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_10", "cluster_stddev_of_L0_10", "cluster_chips_of_L3_10", "cluster_occ_of_L3_10"],
+            "title": ["Average Cluster trend: L3_10", "Stddev Cluster trend: L3_10", "Active chips trend: L3_10", "Occupancy trend: L3_10"],
+            "varexp": ["Cluster_l3.mean[10]:ntreeentries", "Cluster_l3.stddev[10]:ntreeentries", "Cluster_l3.entries[10]:ntreeentries", "Occupancy_l3.mean[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_11", "cluster_stddev_of_L3_11", "cluster_chips_of_L3_11", "cluster_occ_of_L3_11"],
+            "title": ["Average Cluster trend: L3_11", "Stddev Cluster trend: L3_11", "Active chips trend: L3_11", "Occupancy trend: L3_11"],
+            "varexp": ["Cluster_l3.mean[11]:ntreeentries", "Cluster_l3.stddev[11]:ntreeentries", "Cluster_l3.entries[11]:ntreeentries", "Occupancy_l3.mean[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_12", "cluster_stddev_of_L3_12", "cluster_chips_of_L3_12", "cluster_occ_of_L3_12"],
+            "title": ["Average Cluster trend: L1_00", "Stddev Cluster trend: L1_00", "Active chips trend: L3_12", "Occupancy trend: L3_12"],
+            "varexp": ["Cluster_l3.mean[12]:ntreeentries", "Cluster_l3.stddev[12]:ntreeentries", "Cluster_l3.entries[12]:ntreeentries", "Occupancy_l3.mean[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_13", "cluster_stddev_of_L3_13", "cluster_chips_of_L3_13", "cluster_occ_of_L3_13"],
+            "title": ["Average Cluster trend: L3_13", "Stddev Cluster trend: L3_13", "Active chips trend: L3_13", "Occupancy trend: L3_13"],
+            "varexp": ["Cluster_l3.mean[13]:ntreeentries", "Cluster_l3.stddev[13]:ntreeentries", "Cluster_l3.entries[13]:ntreeentries", "Occupancy_l3.mean[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_14", "cluster_stddev_of_L3_14", "cluster_chips_of_L3_14", "cluster_occ_of_L3_14"],
+            "title": ["Average Cluster trend: L3_14", "Stddev Cluster trend: L3_14", "Active chips trend: L3_14", "Occupancy trend: L3_14"],
+            "varexp": ["Cluster_l3.mean[14]:ntreeentries", "Cluster_l3.stddev[14]:ntreeentries", "Cluster_l3.entries[14]:ntreeentries", "Occupancy_l3.mean[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_15", "cluster_stddev_of_L3_15", "cluster_chips_of_L3_15", "cluster_occ_of_L3_15"],
+            "title": ["Average Cluster trend: L3_15", "Stddev Cluster trend: L3_15", "Active chips trend: L3_15", "Occupancy trend: L3_15"],
+            "varexp": ["Cluster_l3.mean[15]:ntreeentries", "Cluster_l3.stddev[15]:ntreeentries", "Cluster_l3.entries[15]:ntreeentries", "Occupancy_l3.mean[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_16", "cluster_stddev_of_L3_16", "cluster_chips_of_L3_16", "cluster_occ_of_L3_16"],
+            "title": ["Average Cluster trend: L3_16", "Stddev Cluster trend: L3_16", "Active chips trend: L3_16", "Occupancy trend: L3_16"],
+            "varexp": ["Cluster_l3.mean[16]:ntreeentries", "Cluster_l3.stddev[16]:ntreeentries", "Cluster_l3.entries[16]:ntreeentries", "Occupancy_l3.mean[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_17", "cluster_stddev_of_L3_17", "cluster_chips_of_L3_17", "cluster_occ_of_L3_17"],
+            "title": ["Average Cluster trend: L3_17", "Stddev Cluster trend: L3_17", "Active chips trend: L3_17", "Occupancy trend: L3_17"],
+            "varexp": ["Cluster_l3.mean[17]:ntreeentries", "Cluster_l3.stddev[17]:ntreeentries", "Cluster_l3.entries[17]:ntreeentries", "Occupancy_l3.mean[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_18", "cluster_stddev_of_L3_18", "cluster_chips_of_L3_18", "cluster_occ_of_L3_18"],
+            "title": ["Average Cluster trend: L3_18", "Stddev Cluster trend: L3_18", "Active chips trend: L3_18", "Occupancy trend: L3_18"],
+            "varexp": ["Cluster_l3.mean[18]:ntreeentries", "Cluster_l3.stddev[18]:ntreeentries", "Cluster_l3.entries[18]:ntreeentries", "Occupancy_l3.mean[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_19", "cluster_stddev_of_L3_19", "cluster_chips_of_L3_19", "cluster_occ_of_L3_19"],
+            "title": ["Average Cluster trend: L3_19", "Stddev Cluster trend: L3_19", "Active chips trend: L3_19", "Occupancy trend: L3_19"],
+            "varexp": ["Cluster_l3.mean[19]:ntreeentries", "Cluster_l3.stddev[19]:ntreeentries", "Cluster_l3.entries[19]:ntreeentries", "Occupancy_l3.mean[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_20", "cluster_stddev_of_L3_20", "cluster_chips_of_L3_20", "cluster_occ_of_L3_20"],
+            "title": ["Average Cluster trend: L3_20", "Stddev Cluster trend: L3_20", "Active chips trend: L3_20", "Occupancy trend: L3_20"],
+            "varexp": ["Cluster_l3.mean[20]:ntreeentries", "Cluster_l3.stddev[20]:ntreeentries", "Cluster_l3.entries[20]:ntreeentries", "Occupancy_l3.mean[20]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_21", "cluster_stddev_of_L3_21", "cluster_chips_of_L3_21", "cluster_occ_of_L3_21"],
+            "title": ["Average Cluster trend: L3_21", "Stddev Cluster trend: L3_21", "Active chips trend: L3_21", "Occupancy trend: L3_21"],
+            "varexp": ["Cluster_l3.mean[21]:ntreeentries", "Cluster_l3.stddev[21]:ntreeentries", "Cluster_l3.entries[21]:ntreeentries", "Occupancy_l3.mean[21]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_22", "cluster_stddev_of_L3_22", "cluster_chips_of_L3_22", "cluster_occ_of_L3_22"],
+            "title": ["Average Cluster trend: L3_22", "Stddev Cluster trend: L3_22", "Active chips trend: L3_22", "Occupancy trend: L3_22"],
+            "varexp": ["Cluster_l3.mean[22]:ntreeentries", "Cluster_l3.stddev[22]:ntreeentries", "Cluster_l3.entries[22]:ntreeentries", "Occupancy_l3.mean[22]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L3_23", "cluster_stddev_of_L3_23", "cluster_chips_of_L3_23", "cluster_occ_of_L3_23"],
+            "title": ["Average Cluster trend: L3_23", "Stddev Cluster trend: L3_23", "Active chips trend: L3_23", "Occupancy trend: L3_23"],
+            "varexp": ["Cluster_l3.mean[23]:ntreeentries", "Cluster_l3.stddev[23]:ntreeentries", "Cluster_l3.entries[23]:ntreeentries", "Occupancy_l3.mean[23]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_00", "cluster_stddev_of_L4_00", "cluster_chips_of_L4_00", "cluster_occ_of_L4_00"],
+            "title": ["Average Cluster trend: L4_00", "Stddev Cluster trend: L4_00", "Active chips trend: L4_00", "Occupancy trend: L4_00"],
+            "varexp": ["Cluster_l4.mean[0]:ntreeentries", "Cluster_l4.stddev[0]:ntreeentries", "Cluster_l4.entries[0]:ntreeentries", "Occupancy_l4.mean[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_01", "cluster_stddev_of_L4_01", "cluster_chips_of_L4_01", "cluster_occ_of_L4_01"],
+            "title": ["Average Cluster trend: L4_01", "Stddev Cluster trend: L4_01", "Active chips trend: L4_01", "Occupancy trend: L4_01"],
+            "varexp": ["Cluster_l4.mean[1]:ntreeentries", "Cluster_l4.stddev[1]:ntreeentries", "Cluster_l4.entries[1]:ntreeentries", "Occupancy_l4.mean[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_02", "cluster_stddev_of_L4_02", "cluster_chips_of_L4_02", "cluster_occ_of_L4_02"],
+            "title": ["Average Cluster trend: L4_02", "Stddev Cluster trend: L4_02", "Active chips trend: L4_02", "Occupancy trend: L4_02"],
+            "varexp": ["Cluster_l4.mean[2]:ntreeentries", "Cluster_l4.stddev[2]:ntreeentries", "Cluster_l4.entries[2]:ntreeentries", "Occupancy_l4.mean[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_03", "cluster_stddev_of_L4_03", "cluster_chips_of_L4_03", "cluster_occ_of_L4_03"],
+            "title": ["Average Cluster trend: L4_03", "Stddev Cluster trend: L4_03", "Active chips trend: L4_03", "Occupancy trend: L4_03"],
+            "varexp": ["Cluster_l4.mean[3]:ntreeentries", "Cluster_l4.stddev[3]:ntreeentries", "Cluster_l4.entries[3]:ntreeentries", "Occupancy_l4.mean[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_04", "cluster_stddev_of_L4_04", "cluster_chips_of_L4_04", "cluster_occ_of_L4_04"],
+            "title": ["Average Cluster trend: L4_04", "Stddev Cluster trend: L4_04", "Active chips trend: L4_04", "Occupancy trend: L4_04"],
+            "varexp": ["Cluster_l4.mean[4]:ntreeentries", "Cluster_l4.stddev[4]:ntreeentries", "Cluster_l4.entries[4]:ntreeentries", "Occupancy_l4.mean[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_05", "cluster_stddev_of_L4_05", "cluster_chips_of_L4_05", "cluster_occ_of_L4_05"],
+            "title": ["Average Cluster trend: L4_05", "Stddev Cluster trend: L4_05", "Active chips trend: L4_05", "Occupancy trend: L4_05"],
+            "varexp": ["Cluster_l4.mean[5]:ntreeentries", "Cluster_l4.stddev[5]:ntreeentries", "Cluster_l4.entries[5]:ntreeentries", "Occupancy_l4.mean[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_06", "cluster_stddev_of_L4_06", "cluster_chips_of_L4_06", "cluster_occ_of_L4_06"],
+            "title": ["Average Cluster trend: L4_06", "Stddev Cluster trend: L4_06", "Active chips trend: L4_06", "Occupancy trend: L4_06"],
+            "varexp": ["Cluster_l4.mean[6]:ntreeentries", "Cluster_l4.stddev[6]:ntreeentries", "Cluster_l4.entries[6]:ntreeentries", "Occupancy_l4.mean[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_07", "cluster_stddev_of_L4_07", "cluster_chips_of_L4_07", "cluster_occ_of_L4_07"],
+            "title": ["Average Cluster trend: L4_07", "Stddev Cluster trend: L4_07", "Active chips trend: L4_07", "Occupancy trend: L4_07"],
+            "varexp": ["Cluster_l4.mean[7]:ntreeentries", "Cluster_l4.stddev[7]:ntreeentries", "Cluster_l4.entries[7]:ntreeentries", "Occupancy_l4.mean[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_08", "cluster_stddev_of_L4_08", "cluster_chips_of_L4_08", "cluster_occ_of_L4_08"],
+            "title": ["Average Cluster trend: L4_08", "Stddev Cluster trend: L4_08", "Active chips trend: L4_08", "Occupancy trend: L4_08"],
+            "varexp": ["Cluster_l4.mean[8]:ntreeentries", "Cluster_l4.stddev[8]:ntreeentries", "Cluster_l4.entries[8]:ntreeentries", "Occupancy_l4.mean[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_09", "cluster_stddev_of_L4_09", "cluster_chips_of_L4_09", "cluster_occ_of_L4_09"],
+            "title": ["Average Cluster trend: L4_09", "Stddev Cluster trend: L4_09", "Active chips trend: L4_09", "Occupancy trend: L4_09"],
+            "varexp": ["Cluster_l4.mean[9]:ntreeentries", "Cluster_l4.stddev[9]:ntreeentries", "Cluster_l4.entries[9]:ntreeentries", "Occupancy_l4.mean[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_10", "cluster_stddev_of_L0_10", "cluster_chips_of_L4_10", "cluster_occ_of_L4_10"],
+            "title": ["Average Cluster trend: L4_10", "Stddev Cluster trend: L4_10", "Active chips trend: L4_10", "Occupancy trend: L4_10"],
+            "varexp": ["Cluster_l4.mean[10]:ntreeentries", "Cluster_l4.stddev[10]:ntreeentries", "Cluster_l4.entries[10]:ntreeentries", "Occupancy_l4.mean[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_11", "cluster_stddev_of_L4_11", "cluster_chips_of_L4_11", "cluster_occ_of_L4_11"],
+            "title": ["Average Cluster trend: L4_11", "Stddev Cluster trend: L4_11", "Active chips trend: L4_11", "Occupancy trend: L4_11"],
+            "varexp": ["Cluster_l4.mean[11]:ntreeentries", "Cluster_l4.stddev[11]:ntreeentries", "Cluster_l4.entries[11]:ntreeentries", "Occupancy_l4.mean[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_12", "cluster_stddev_of_L4_12", "cluster_chips_of_L4_12", "cluster_occ_of_L4_12"],
+            "title": ["Average Cluster trend: L1_00", "Stddev Cluster trend: L1_00", "Active chips trend: L4_12", "Occupancy trend: L4_12"],
+            "varexp": ["Cluster_l4.mean[12]:ntreeentries", "Cluster_l4.stddev[12]:ntreeentries", "Cluster_l4.entries[12]:ntreeentries", "Occupancy_l4.mean[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_13", "cluster_stddev_of_L4_13", "cluster_chips_of_L4_13", "cluster_occ_of_L4_13"],
+            "title": ["Average Cluster trend: L4_13", "Stddev Cluster trend: L4_13", "Active chips trend: L4_13", "Occupancy trend: L4_13"],
+            "varexp": ["Cluster_l4.mean[13]:ntreeentries", "Cluster_l4.stddev[13]:ntreeentries", "Cluster_l4.entries[13]:ntreeentries", "Occupancy_l4.mean[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_14", "cluster_stddev_of_L4_14", "cluster_chips_of_L4_14", "cluster_occ_of_L4_14"],
+            "title": ["Average Cluster trend: L4_14", "Stddev Cluster trend: L4_14", "Active chips trend: L4_14", "Occupancy trend: L4_14"],
+            "varexp": ["Cluster_l4.mean[14]:ntreeentries", "Cluster_l4.stddev[14]:ntreeentries", "Cluster_l4.entries[14]:ntreeentries", "Occupancy_l4.mean[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_15", "cluster_stddev_of_L4_15", "cluster_chips_of_L4_15", "cluster_occ_of_L4_15"],
+            "title": ["Average Cluster trend: L4_15", "Stddev Cluster trend: L4_15", "Active chips trend: L4_15", "Occupancy trend: L4_15"],
+            "varexp": ["Cluster_l4.mean[15]:ntreeentries", "Cluster_l4.stddev[15]:ntreeentries", "Cluster_l4.entries[15]:ntreeentries", "Occupancy_l4.mean[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_16", "cluster_stddev_of_L4_16", "cluster_chips_of_L4_16", "cluster_occ_of_L4_16"],
+            "title": ["Average Cluster trend: L4_16", "Stddev Cluster trend: L4_16", "Active chips trend: L4_16", "Occupancy trend: L4_16"],
+            "varexp": ["Cluster_l4.mean[16]:ntreeentries", "Cluster_l4.stddev[16]:ntreeentries", "Cluster_l4.entries[16]:ntreeentries", "Occupancy_l4.mean[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_17", "cluster_stddev_of_L4_17", "cluster_chips_of_L4_17", "cluster_occ_of_L4_17"],
+            "title": ["Average Cluster trend: L4_17", "Stddev Cluster trend: L4_17", "Active chips trend: L4_17", "Occupancy trend: L4_17"],
+            "varexp": ["Cluster_l4.mean[17]:ntreeentries", "Cluster_l4.stddev[17]:ntreeentries", "Cluster_l4.entries[17]:ntreeentries", "Occupancy_l4.mean[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_18", "cluster_stddev_of_L4_18", "cluster_chips_of_L4_18", "cluster_occ_of_L4_18"],
+            "title": ["Average Cluster trend: L4_18", "Stddev Cluster trend: L4_18", "Active chips trend: L4_18", "Occupancy trend: L4_18"],
+            "varexp": ["Cluster_l4.mean[18]:ntreeentries", "Cluster_l4.stddev[18]:ntreeentries", "Cluster_l4.entries[18]:ntreeentries", "Occupancy_l4.mean[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_19", "cluster_stddev_of_L4_19", "cluster_chips_of_L4_19", "cluster_occ_of_L4_19"],
+            "title": ["Average Cluster trend: L4_19", "Stddev Cluster trend: L4_19", "Active chips trend: L4_19", "Occupancy trend: L4_19"],
+            "varexp": ["Cluster_l4.mean[19]:ntreeentries", "Cluster_l4.stddev[19]:ntreeentries", "Cluster_l4.entries[19]:ntreeentries", "Occupancy_l4.mean[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_20", "cluster_stddev_of_L4_20", "cluster_chips_of_L4_20", "cluster_occ_of_L4_20"],
+            "title": ["Average Cluster trend: L4_20", "Stddev Cluster trend: L4_20", "Active chips trend: L4_20", "Occupancy trend: L4_20"],
+            "varexp": ["Cluster_l4.mean[20]:ntreeentries", "Cluster_l4.stddev[20]:ntreeentries", "Cluster_l4.entries[20]:ntreeentries", "Occupancy_l4.mean[20]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_21", "cluster_stddev_of_L4_21", "cluster_chips_of_L4_21", "cluster_occ_of_L4_21"],
+            "title": ["Average Cluster trend: L4_20", "Stddev Cluster trend: L4_21", "Active chips trend: L4_21", "Occupancy trend: L4_21"],
+            "varexp": ["Cluster_l4.mean[20]:ntreeentries", "Cluster_l4.stddev[21]:ntreeentries", "Cluster_l4.entries[21]:ntreeentries", "Occupancy_l4.mean[21]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_22", "cluster_stddev_of_L4_22", "cluster_chips_of_L4_22", "cluster_occ_of_L4_22"],
+            "title": ["Average Cluster trend: L4_22", "Stddev Cluster trend: L4_22", "Active chips trend: L4_22", "Occupancy trend: L4_22"],
+            "varexp": ["Cluster_l4.mean[22]:ntreeentries", "Cluster_l4.stddev[22]:ntreeentries", "Cluster_l4.entries[22]:ntreeentries", "Occupancy_l4.mean[22]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_23", "cluster_stddev_of_L4_23", "cluster_chips_of_L4_23", "cluster_occ_of_L4_23"],
+            "title": ["Average Cluster trend: L4_23", "Stddev Cluster trend: L4_23", "Active chips trend: L4_23", "Occupancy trend: L4_23"],
+            "varexp": ["Cluster_l4.mean[23]:ntreeentries", "Cluster_l4.stddev[23]:ntreeentries", "Cluster_l4.entries[23]:ntreeentries", "Occupancy_l4.mean[23]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_24", "cluster_stddev_of_L4_24", "cluster_chips_of_L4_24", "cluster_occ_of_L4_24"],
+            "title": ["Average Cluster trend: L4_24", "Stddev Cluster trend: L4_24", "Active chips trend: L4_24", "Occupancy trend: L4_24"],
+            "varexp": ["Cluster_l4.mean[24]:ntreeentries", "Cluster_l4.stddev[24]:ntreeentries", "Cluster_l4.entries[24]:ntreeentries", "Occupancy_l4.mean[24]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_25", "cluster_stddev_of_L4_25", "cluster_chips_of_L4_25", "cluster_occ_of_L4_25"],
+            "title": ["Average Cluster trend: L4_25", "Stddev Cluster trend: L4_25", "Active chips trend: L4_25", "Occupancy trend: L4_25"],
+            "varexp": ["Cluster_l4.mean[25]:ntreeentries", "Cluster_l4.stddev[25]:ntreeentries", "Cluster_l4.entries[25]:ntreeentries", "Occupancy_l4.mean[25]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_26", "cluster_stddev_of_L4_26", "cluster_chips_of_L4_26", "cluster_occ_of_L4_26"],
+            "title": ["Average Cluster trend: L4_26", "Stddev Cluster trend: L4_26", "Active chips trend: L4_26", "Occupancy trend: L4_26"],
+            "varexp": ["Cluster_l4.mean[26]:ntreeentries", "Cluster_l4.stddev[26]:ntreeentries", "Cluster_l4.entries[26]:ntreeentries", "Occupancy_l4.mean[26]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_27", "cluster_stddev_of_L4_27", "cluster_chips_of_L4_27", "cluster_occ_of_L4_27"],
+            "title": ["Average Cluster trend: L4_19", "Stddev Cluster trend: L4_19", "Active chips trend: L4_19", "Occupancy trend: L4_27"],
+            "varexp": ["Cluster_l4.mean[27]:ntreeentries", "Cluster_l4.stddev[27]:ntreeentries", "Cluster_l4.entries[27]:ntreeentries", "Occupancy_l4.mean[27]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_28", "cluster_stddev_of_L4_28", "cluster_chips_of_L4_28", "cluster_occ_of_L4_28"],
+            "title": ["Average Cluster trend: L4_28", "Stddev Cluster trend: L4_28", "Active chips trend: L4_28", "Occupancy trend: L4_28"],
+            "varexp": ["Cluster_l4.mean[28]:ntreeentries", "Cluster_l4.stddev[28]:ntreeentries", "Cluster_l4.entries[28]:ntreeentries", "Occupancy_l4.mean[28]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L4_29", "cluster_stddev_of_L4_29", "cluster_chips_of_L4_29", "cluster_occ_of_L4_29"],
+            "title": ["Average Cluster trend: L4_29", "Stddev Cluster trend: L4_29", "Active chips trend: L4_29", "Occupancy trend: L4_29"],
+            "varexp": ["Cluster_l4.mean[29]:ntreeentries", "Cluster_l4.stddev[29]:ntreeentries", "Cluster_l4.entries[29]:ntreeentries", "Occupancy_l4.mean[29]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_00", "cluster_stddev_of_L5_00", "cluster_chips_of_L5_00", "cluster_occ_of_L5_00"],
+            "title": ["Average Cluster trend: L5_00", "Stddev Cluster trend: L5_00", "Active chips trend: L5_00", "Occupancy trend: L5_00"],
+            "varexp": ["Cluster_l5.mean[0]:ntreeentries", "Cluster_l5.stddev[0]:ntreeentries", "Cluster_l5.entries[0]:ntreeentries", "Occupancy_l5.mean[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_01", "cluster_stddev_of_L5_01", "cluster_chips_of_L5_01", "cluster_occ_of_L5_01"],
+            "title": ["Average Cluster trend: L5_01", "Stddev Cluster trend: L5_01", "Active chips trend: L5_01", "Occupancy trend: L5_01"],
+            "varexp": ["Cluster_l5.mean[1]:ntreeentries", "Cluster_l5.stddev[1]:ntreeentries", "Cluster_l5.entries[1]:ntreeentries", "Occupancy_l5.mean[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_02", "cluster_stddev_of_L5_02", "cluster_chips_of_L5_02", "cluster_occ_of_L5_02"],
+            "title": ["Average Cluster trend: L5_02", "Stddev Cluster trend: L5_02", "Active chips trend: L5_02", "Occupancy trend: L5_02"],
+            "varexp": ["Cluster_l5.mean[2]:ntreeentries", "Cluster_l5.stddev[2]:ntreeentries", "Cluster_l5.entries[2]:ntreeentries", "Occupancy_l5.mean[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_03", "cluster_stddev_of_L5_03", "cluster_chips_of_L5_03", "cluster_occ_of_L5_03"],
+            "title": ["Average Cluster trend: L5_03", "Stddev Cluster trend: L5_03", "Active chips trend: L5_03", "Occupancy trend: L5_03"],
+            "varexp": ["Cluster_l5.mean[3]:ntreeentries", "Cluster_l5.stddev[3]:ntreeentries", "Cluster_l5.entries[3]:ntreeentries", "Occupancy_l5.mean[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_04", "cluster_stddev_of_L5_04", "cluster_chips_of_L5_04", "cluster_occ_of_L5_04"],
+            "title": ["Average Cluster trend: L5_04", "Stddev Cluster trend: L5_04", "Active chips trend: L5_04", "Occupancy trend: L5_04"],
+            "varexp": ["Cluster_l5.mean[4]:ntreeentries", "Cluster_l5.stddev[4]:ntreeentries", "Cluster_l5.entries[4]:ntreeentries", "Occupancy_l5.mean[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_05", "cluster_stddev_of_L5_05", "cluster_chips_of_L5_05", "cluster_occ_of_L5_05"],
+            "title": ["Average Cluster trend: L5_05", "Stddev Cluster trend: L5_05", "Active chips trend: L5_05", "Occupancy trend: L5_05"],
+            "varexp": ["Cluster_l5.mean[5]:ntreeentries", "Cluster_l5.stddev[5]:ntreeentries", "Cluster_l5.entries[5]:ntreeentries", "Occupancy_l5.mean[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_06", "cluster_stddev_of_L5_06", "cluster_chips_of_L5_06", "cluster_occ_of_L5_06"],
+            "title": ["Average Cluster trend: L5_06", "Stddev Cluster trend: L5_06", "Active chips trend: L5_06", "Occupancy trend: L5_06"],
+            "varexp": ["Cluster_l5.mean[6]:ntreeentries", "Cluster_l5.stddev[6]:ntreeentries", "Cluster_l5.entries[6]:ntreeentries", "Occupancy_l5.mean[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_07", "cluster_stddev_of_L5_07", "cluster_chips_of_L5_07", "cluster_occ_of_L5_07"],
+            "title": ["Average Cluster trend: L5_07", "Stddev Cluster trend: L5_07", "Active chips trend: L5_07", "Occupancy trend: L5_07"],
+            "varexp": ["Cluster_l5.mean[7]:ntreeentries", "Cluster_l5.stddev[7]:ntreeentries", "Cluster_l5.entries[7]:ntreeentries", "Occupancy_l5.mean[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_08", "cluster_stddev_of_L5_08", "cluster_chips_of_L5_08", "cluster_occ_of_L5_08"],
+            "title": ["Average Cluster trend: L5_08", "Stddev Cluster trend: L5_08", "Active chips trend: L5_08", "Occupancy trend: L5_08"],
+            "varexp": ["Cluster_l5.mean[8]:ntreeentries", "Cluster_l5.stddev[8]:ntreeentries", "Cluster_l5.entries[8]:ntreeentries", "Occupancy_l5.mean[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_09", "cluster_stddev_of_L5_09", "cluster_chips_of_L5_09", "cluster_occ_of_L5_09"],
+            "title": ["Average Cluster trend: L5_09", "Stddev Cluster trend: L5_09", "Active chips trend: L5_09", "Occupancy trend: L5_09"],
+            "varexp": ["Cluster_l5.mean[9]:ntreeentries", "Cluster_l5.stddev[9]:ntreeentries", "Cluster_l5.entries[9]:ntreeentries", "Occupancy_l5.mean[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_10", "cluster_stddev_of_L0_10", "cluster_chips_of_L5_10", "cluster_occ_of_L5_10"],
+            "title": ["Average Cluster trend: L5_10", "Stddev Cluster trend: L5_10", "Active chips trend: L5_10", "Occupancy trend: L5_10"],
+            "varexp": ["Cluster_l5.mean[10]:ntreeentries", "Cluster_l5.stddev[10]:ntreeentries", "Cluster_l5.entries[10]:ntreeentries", "Occupancy_l5.mean[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_11", "cluster_stddev_of_L5_11", "cluster_chips_of_L5_11", "cluster_occ_of_L5_11"],
+            "title": ["Average Cluster trend: L5_11", "Stddev Cluster trend: L5_11", "Active chips trend: L5_11", "Occupancy trend: L5_11"],
+            "varexp": ["Cluster_l5.mean[11]:ntreeentries", "Cluster_l5.stddev[11]:ntreeentries", "Cluster_l5.entries[11]:ntreeentries", "Occupancy_l5.mean[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_12", "cluster_stddev_of_L5_12", "cluster_chips_of_L5_12", "cluster_occ_of_L5_12"],
+            "title": ["Average Cluster trend: L5_00", "Stddev Cluster trend: L5_00", "Active chips trend: L5_12", "Occupancy trend: L5_12"],
+            "varexp": ["Cluster_l5.mean[12]:ntreeentries", "Cluster_l5.stddev[12]:ntreeentries", "Cluster_l5.entries[12]:ntreeentries", "Occupancy_l5.mean[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_13", "cluster_stddev_of_L5_13", "cluster_chips_of_L5_13", "cluster_occ_of_L5_13"],
+            "title": ["Average Cluster trend: L5_13", "Stddev Cluster trend: L5_13", "Active chips trend: L5_13", "Occupancy trend: L5_13"],
+            "varexp": ["Cluster_l5.mean[13]:ntreeentries", "Cluster_l5.stddev[13]:ntreeentries", "Cluster_l5.entries[13]:ntreeentries", "Occupancy_l5.mean[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_14", "cluster_stddev_of_L5_14", "cluster_chips_of_L5_14", "cluster_occ_of_L5_14"],
+            "title": ["Average Cluster trend: L5_14", "Stddev Cluster trend: L5_14", "Active chips trend: L5_14", "Occupancy trend: L5_14"],
+            "varexp": ["Cluster_l5.mean[14]:ntreeentries", "Cluster_l5.stddev[14]:ntreeentries", "Cluster_l5.entries[14]:ntreeentries", "Occupancy_l5.mean[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_15", "cluster_stddev_of_L5_15", "cluster_chips_of_L5_15", "cluster_occ_of_L5_15"],
+            "title": ["Average Cluster trend: L5_15", "Stddev Cluster trend: L5_15", "Active chips trend: L5_15", "Occupancy trend: L5_15"],
+            "varexp": ["Cluster_l5.mean[15]:ntreeentries", "Cluster_l5.stddev[15]:ntreeentries", "Cluster_l5.entries[15]:ntreeentries", "Occupancy_l5.mean[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_16", "cluster_stddev_of_L5_16", "cluster_chips_of_L5_16", "cluster_occ_of_L5_16"],
+            "title": ["Average Cluster trend: L5_16", "Stddev Cluster trend: L5_16", "Active chips trend: L5_16", "Occupancy trend: L5_16"],
+            "varexp": ["Cluster_l5.mean[16]:ntreeentries", "Cluster_l5.stddev[16]:ntreeentries", "Cluster_l5.entries[16]:ntreeentries", "Occupancy_l5.mean[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_17", "cluster_stddev_of_L5_17", "cluster_chips_of_L5_17", "cluster_occ_of_L5_17"],
+            "title": ["Average Cluster trend: L5_17", "Stddev Cluster trend: L5_17", "Active chips trend: L5_17", "Occupancy trend: L5_17"],
+            "varexp": ["Cluster_l5.mean[17]:ntreeentries", "Cluster_l5.stddev[17]:ntreeentries", "Cluster_l5.entries[17]:ntreeentries", "Occupancy_l5.mean[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_18", "cluster_stddev_of_L5_18", "cluster_chips_of_L5_18", "cluster_occ_of_L5_18"],
+            "title": ["Average Cluster trend: L5_18", "Stddev Cluster trend: L5_18", "Active chips trend: L5_18", "Occupancy trend: L5_18"],
+            "varexp": ["Cluster_l5.mean[18]:ntreeentries", "Cluster_l5.stddev[18]:ntreeentries", "Cluster_l5.entries[18]:ntreeentries", "Occupancy_l5.mean[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_19", "cluster_stddev_of_L5_19", "cluster_chips_of_L5_19", "cluster_occ_of_L5_19"],
+            "title": ["Average Cluster trend: L5_19", "Stddev Cluster trend: L5_19", "Active chips trend: L5_19", "Occupancy trend: L5_19"],
+            "varexp": ["Cluster_l5.mean[19]:ntreeentries", "Cluster_l5.stddev[19]:ntreeentries", "Cluster_l5.entries[19]:ntreeentries", "Occupancy_l5.mean[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_20", "cluster_stddev_of_L5_20", "cluster_chips_of_L5_20", "cluster_occ_of_L5_20"],
+            "title": ["Average Cluster trend: L5_20", "Stddev Cluster trend: L5_20", "Active chips trend: L5_20", "Occupancy trend: L5_20"],
+            "varexp": ["Cluster_l5.mean[20]:ntreeentries", "Cluster_l5.stddev[20]:ntreeentries", "Cluster_l5.entries[20]:ntreeentries", "Occupancy_l5.mean[20]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_21", "cluster_stddev_of_L5_21", "cluster_chips_of_L5_21", "cluster_occ_of_L5_21"],
+            "title": ["Average Cluster trend: L5_21", "Stddev Cluster trend: L5_21", "Active chips trend: L5_21", "Occupancy trend: L5_21"],
+            "varexp": ["Cluster_l5.mean[21]:ntreeentries", "Cluster_l5.stddev[21]:ntreeentries", "Cluster_l5.entries[21]:ntreeentries", "Occupancy_l5.mean[21]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_22", "cluster_stddev_of_L5_22", "cluster_chips_of_L5_22", "cluster_occ_of_L5_22"],
+            "title": ["Average Cluster trend: L5_22", "Stddev Cluster trend: L5_22", "Active chips trend: L5_22", "Occupancy trend: L5_22"],
+            "varexp": ["Cluster_l5.mean[22]:ntreeentries", "Cluster_l5.stddev[22]:ntreeentries", "Cluster_l5.entries[22]:ntreeentries", "Occupancy_l5.mean[22]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_23", "cluster_stddev_of_L5_23", "cluster_chips_of_L5_23", "cluster_occ_of_L5_23"],
+            "title": ["Average Cluster trend: L5_23", "Stddev Cluster trend: L5_23", "Active chips trend: L5_23", "Occupancy trend: L5_23"],
+            "varexp": ["Cluster_l5.mean[23]:ntreeentries", "Cluster_l5.stddev[23]:ntreeentries", "Cluster_l5.entries[23]:ntreeentries", "Occupancy_l5.mean[23]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_24", "cluster_stddev_of_L5_24", "cluster_chips_of_L5_24", "cluster_occ_of_L5_24"],
+            "title": ["Average Cluster trend: L5_24", "Stddev Cluster trend: L5_24", "Active chips trend: L5_24", "Occupancy trend: L5_24"],
+            "varexp": ["Cluster_l5.mean[24]:ntreeentries", "Cluster_l5.stddev[24]:ntreeentries", "Cluster_l5.entries[24]:ntreeentries", "Occupancy_l5.mean[24]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          }, 
+          {
+            "names": ["cluster_mean_0f_L5_25", "cluster_stddev_of_L5_25", "cluster_chips_of_L5_25", "cluster_occ_of_L5_25"],
+            "title": ["Average Cluster trend: L5_25", "Stddev Cluster trend: L5_25", "Active chips trend: L5_25", "Occupancy trend: L5_25"],
+            "varexp": ["Cluster_l5.mean[25]:ntreeentries", "Cluster_l5.stddev[25]:ntreeentries", "Cluster_l5.entries[25]:ntreeentries", "Occupancy_l5.mean[25]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_26", "cluster_stddev_of_L5_26", "cluster_chips_of_L5_26", "cluster_occ_of_L5_26"],
+            "title": ["Average Cluster trend: L5_26", "Stddev Cluster trend: L5_26", "Active chips trend: L5_26", "Occupancy trend: L5_26"],
+            "varexp": ["Cluster_l5.mean[26]:ntreeentries", "Cluster_l5.stddev[26]:ntreeentries", "Cluster_l5.entries[26]:ntreeentries", "Occupancy_l5.mean[26]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_27", "cluster_stddev_of_L5_27", "cluster_chips_of_L5_27", "cluster_occ_of_L5_27"],
+            "title": ["Average Cluster trend: L5_27", "Stddev Cluster trend: L5_27", "Active chips trend: L5_27", "Occupancy trend: L5_27"],
+            "varexp": ["Cluster_l5.mean[27]:ntreeentries", "Cluster_l5.stddev[27]:ntreeentries", "Cluster_l5.entries[27]:ntreeentries", "Occupancy_l5.mean[27]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_28", "cluster_stddev_of_L5_28", "cluster_chips_of_L5_28", "cluster_occ_of_L5_28"],
+            "title": ["Average Cluster trend: L5_28", "Stddev Cluster trend: L5_28", "Active chips trend: L5_28", "Occupancy trend: L5_28"],
+            "varexp": ["Cluster_l5.mean[28]:ntreeentries", "Cluster_l5.stddev[28]:ntreeentries", "Cluster_l5.entries[28]:ntreeentries", "Occupancy_l5.mean[28]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_29", "cluster_stddev_of_L5_29", "cluster_chips_of_L5_29", "cluster_occ_of_L5_29"],
+            "title": ["Average Cluster trend: L5_29", "Stddev Cluster trend: L5_29", "Active chips trend: L5_29", "Occupancy trend: L5_29"],
+            "varexp": ["Cluster_l5.mean[29]:ntreeentries", "Cluster_l5.stddev[29]:ntreeentries", "Cluster_l5.entries[29]:ntreeentries", "Occupancy_l5.mean[29]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_30", "cluster_stddev_of_L5_30", "cluster_chips_of_L5_30", "cluster_occ_of_L5_30"],
+            "title": ["Average Cluster trend: L5_30", "Stddev Cluster trend: L5_30", "Active chips trend: L5_30", "Occupancy trend: L5_30"],
+            "varexp": ["Cluster_l5.mean[30]:ntreeentries", "Cluster_l5.stddev[30]:ntreeentries", "Cluster_l5.entries[30]:ntreeentries", "Occupancy_l5.mean[30]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_31", "cluster_stddev_of_L5_31", "cluster_chips_of_L5_31", "cluster_occ_of_L5_31"],
+            "title": ["Average Cluster trend: L5_31", "Stddev Cluster trend: L5_31", "Active chips trend: L5_31", "Occupancy trend: L5_31"],
+            "varexp": ["Cluster_l5.mean[31]:ntreeentries", "Cluster_l5.stddev[31]:ntreeentries", "Cluster_l5.entries[31]:ntreeentries", "Occupancy_l5.mean[31]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_32", "cluster_stddev_of_L5_32", "cluster_chips_of_L5_32", "cluster_occ_of_L5_32"],
+            "title": ["Average Cluster trend: L5_32", "Stddev Cluster trend: L5_32", "Active chips trend: L5_32", "Occupancy trend: L5_32"],
+            "varexp": ["Cluster_l5.mean[32]:ntreeentries", "Cluster_l5.stddev[32]:ntreeentries", "Cluster_l5.entries[32]:ntreeentries", "Occupancy_l5.mean[32]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_33", "cluster_stddev_of_L5_33", "cluster_chips_of_L5_33", "cluster_occ_of_L5_33"],
+            "title": ["Average Cluster trend: L5_33", "Stddev Cluster trend: L5_33", "Active chips trend: L5_33", "Occupancy trend: L5_33"],
+            "varexp": ["Cluster_l5.mean[33]:ntreeentries", "Cluster_l5.stddev[33]:ntreeentries", "Cluster_l5.entries[33]:ntreeentries", "Occupancy_l5.mean[33]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_34", "cluster_stddev_of_L5_34", "cluster_chips_of_L5_34", "cluster_occ_of_L5_34"],
+            "title": ["Average Cluster trend: L5_34", "Stddev Cluster trend: L5_34", "Active chips trend: L5_34", "Occupancy trend: L5_34"],
+            "varexp": ["Cluster_l5.mean[34]:ntreeentries", "Cluster_l5.stddev[34]:ntreeentries", "Cluster_l5.entries[34]:ntreeentries", "Occupancy_l5.mean[34]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_35", "cluster_stddev_of_L5_35", "cluster_chips_of_L5_35", "cluster_occ_of_L5_35"],
+            "title": ["Average Cluster trend: L5_35", "Stddev Cluster trend: L5_35", "Active chips trend: L5_35", "Occupancy trend: L5_35"],
+            "varexp": ["Cluster_l5.mean[35]:ntreeentries", "Cluster_l5.stddev[35]:ntreeentries", "Cluster_l5.entries[35]:ntreeentries", "Occupancy_l5.mean[35]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_36", "cluster_stddev_of_L5_36", "cluster_chips_of_L5_36", "cluster_occ_of_L5_36"],
+            "title": ["Average Cluster trend: L5_36", "Stddev Cluster trend: L5_36", "Active chips trend: L5_36", "Occupancy trend: L5_36"],
+            "varexp": ["Cluster_l5.mean[36]:ntreeentries", "Cluster_l5.stddev[36]:ntreeentries", "Cluster_l5.entries[36]:ntreeentries", "Occupancy_l5.mean[36]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_37", "cluster_stddev_of_L5_37", "cluster_chips_of_L5_37", "cluster_occ_of_L5_37"],
+            "title": ["Average Cluster trend: L5_37", "Stddev Cluster trend: L5_37", "Active chips trend: L5_37", "Occupancy trend: L5_37"],
+            "varexp": ["Cluster_l5.mean[37]:ntreeentries", "Cluster_l5.stddev[37]:ntreeentries", "Cluster_l5.entries[37]:ntreeentries", "Occupancy_l5.mean[37]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_38", "cluster_stddev_of_L5_38", "cluster_chips_of_L5_38", "cluster_occ_of_L5_38"],
+            "title": ["Average Cluster trend: L5_38", "Stddev Cluster trend: L5_38", "Active chips trend: L5_38", "Occupancy trend: L5_38"],
+            "varexp": ["Cluster_l5.mean[38]:ntreeentries", "Cluster_l5.stddev[38]:ntreeentries", "Cluster_l5.entries[38]:ntreeentries", "Occupancy_l5.mean[38]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_39", "cluster_stddev_of_L5_39", "cluster_chips_of_L5_39", "cluster_occ_of_L5_39"],
+            "title": ["Average Cluster trend: L5_39", "Stddev Cluster trend: L5_39", "Active chips trend: L5_39", "Occupancy trend: L5_39"],
+            "varexp": ["Cluster_l5.mean[39]:ntreeentries", "Cluster_l5.stddev[39]:ntreeentries", "Cluster_l5.entries[39]:ntreeentries", "Occupancy_l5.mean[39]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_40", "cluster_stddev_of_L5_40", "cluster_chips_of_L5_40", "cluster_occ_of_L5_40"],
+            "title": ["Average Cluster trend: L5_40", "Stddev Cluster trend: L5_40", "Active chips trend: L5_40", "Occupancy trend: L5_40"],
+            "varexp": ["Cluster_l5.mean[40]:ntreeentries", "Cluster_l5.stddev[40]:ntreeentries", "Cluster_l5.entries[40]:ntreeentries", "Occupancy_l5.mean[40]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_0f_L5_41", "cluster_stddev_of_L5_41", "cluster_chips_of_L5_41", "cluster_occ_of_L5_41"],
+            "title": ["Average Cluster trend: L5_41", "Stddev Cluster trend: L5_41", "Active chips trend: L5_41", "Occupancy trend: L5_41"],
+            "varexp": ["Cluster_l5.mean[41]:ntreeentries", "Cluster_l5.stddev[41]:ntreeentries", "Cluster_l5.entries[41]:ntreeentries", "Occupancy_l5.mean[41]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_00", "cluster_stddev_of_L6_00", "cluster_chips_of_L6_00", "cluster_occ_of_L6_00"],
+            "title": ["Average Cluster trend: L6_00", "Stddev Cluster trend: L6_00", "Active chips trend: L6_00", "Occupancy trend: L6_00"],
+            "varexp": ["Cluster_l6.mean[0]:ntreeentries", "Cluster_l6.stddev[0]:ntreeentries", "Cluster_l6.entries[0]:ntreeentries", "Occupancy_l6.mean[0]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_01", "cluster_stddev_of_L6_01", "cluster_chips_of_L6_01", "cluster_occ_of_L6_01"],
+            "title": ["Average Cluster trend: L6_01", "Stddev Cluster trend: L6_01", "Active chips trend: L6_01", "Occupancy trend: L6_01"],
+            "varexp": ["Cluster_l6.mean[1]:ntreeentries", "Cluster_l6.stddev[1]:ntreeentries", "Cluster_l6.entries[1]:ntreeentries", "Occupancy_l6.mean[1]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_02", "cluster_stddev_of_L6_02", "cluster_chips_of_L6_02", "cluster_occ_of_L6_02"],
+            "title": ["Average Cluster trend: L6_02", "Stddev Cluster trend: L6_02", "Active chips trend: L6_02", "Occupancy trend: L6_02"],
+            "varexp": ["Cluster_l6.mean[2]:ntreeentries", "Cluster_l6.stddev[2]:ntreeentries", "Cluster_l6.entries[2]:ntreeentries", "Occupancy_l6.mean[2]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_03", "cluster_stddev_of_L6_03", "cluster_chips_of_L6_03", "cluster_occ_of_L6_03"],
+            "title": ["Average Cluster trend: L6_03", "Stddev Cluster trend: L6_03", "Active chips trend: L6_03", "Occupancy trend: L6_03"],
+            "varexp": ["Cluster_l6.mean[3]:ntreeentries", "Cluster_l6.stddev[3]:ntreeentries", "Cluster_l6.entries[3]:ntreeentries", "Occupancy_l6.mean[3]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_04", "cluster_stddev_of_L6_04", "cluster_chips_of_L6_04", "cluster_occ_of_L6_04"],
+            "title": ["Average Cluster trend: L6_04", "Stddev Cluster trend: L6_04", "Active chips trend: L6_04", "Occupancy trend: L6_04"],
+            "varexp": ["Cluster_l6.mean[4]:ntreeentries", "Cluster_l6.stddev[4]:ntreeentries", "Cluster_l6.entries[4]:ntreeentries", "Occupancy_l6.mean[4]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_05", "cluster_stddev_of_L6_05", "cluster_chips_of_L6_05", "cluster_occ_of_L6_05"],
+            "title": ["Average Cluster trend: L6_05", "Stddev Cluster trend: L6_05", "Active chips trend: L6_05", "Occupancy trend: L6_05"],
+            "varexp": ["Cluster_l6.mean[5]:ntreeentries", "Cluster_l6.stddev[5]:ntreeentries", "Cluster_l6.entries[5]:ntreeentries", "Occupancy_l6.mean[5]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_06", "cluster_stddev_of_L6_06", "cluster_chips_of_L6_06", "cluster_occ_of_L6_06"],
+            "title": ["Average Cluster trend: L6_06", "Stddev Cluster trend: L6_06", "Active chips trend: L6_06", "Occupancy trend: L6_06"],
+            "varexp": ["Cluster_l6.mean[6]:ntreeentries", "Cluster_l6.stddev[6]:ntreeentries", "Cluster_l6.entries[6]:ntreeentries", "Occupancy_l6.mean[6]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_07", "cluster_stddev_of_L6_07", "cluster_chips_of_L6_07", "cluster_occ_of_L6_07"],
+            "title": ["Average Cluster trend: L6_07", "Stddev Cluster trend: L6_07", "Active chips trend: L6_07", "Occupancy trend: L6_07"],
+            "varexp": ["Cluster_l6.mean[7]:ntreeentries", "Cluster_l6.stddev[7]:ntreeentries", "Cluster_l6.entries[7]:ntreeentries", "Occupancy_l6.mean[7]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_08", "cluster_stddev_of_L6_08", "cluster_chips_of_L6_08", "cluster_occ_of_L6_08"],
+            "title": ["Average Cluster trend: L6_08", "Stddev Cluster trend: L6_08", "Active chips trend: L6_08", "Occupancy trend: L6_08"],
+            "varexp": ["Cluster_l6.mean[8]:ntreeentries", "Cluster_l6.stddev[8]:ntreeentries", "Cluster_l6.entries[8]:ntreeentries", "Occupancy_l6.mean[8]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_09", "cluster_stddev_of_L6_09", "cluster_chips_of_L6_09", "cluster_occ_of_L6_09"],
+            "title": ["Average Cluster trend: L6_09", "Stddev Cluster trend: L6_09", "Active chips trend: L6_09", "Occupancy trend: L6_09"],
+            "varexp": ["Cluster_l6.mean[9]:ntreeentries", "Cluster_l6.stddev[9]:ntreeentries", "Cluster_l6.entries[9]:ntreeentries", "Occupancy_l6.mean[9]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_10", "cluster_stddev_of_L0_10", "cluster_chips_of_L6_10", "cluster_occ_of_L6_10"],
+            "title": ["Average Cluster trend: L6_10", "Stddev Cluster trend: L6_10", "Active chips trend: L6_10", "Occupancy trend: L6_10"],
+            "varexp": ["Cluster_l6.mean[10]:ntreeentries", "Cluster_l6.stddev[10]:ntreeentries", "Cluster_l6.entries[10]:ntreeentries", "Occupancy_l6.mean[10]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_11", "cluster_stddev_of_L6_11", "cluster_chips_of_L6_11", "cluster_occ_of_L6_11"],
+            "title": ["Average Cluster trend: L6_11", "Stddev Cluster trend: L6_11", "Active chips trend: L6_11", "Occupancy trend: L6_11"],
+            "varexp": ["Cluster_l6.mean[11]:ntreeentries", "Cluster_l6.stddev[11]:ntreeentries", "Cluster_l6.entries[11]:ntreeentries", "Occupancy_l6.mean[11]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_12", "cluster_stddev_of_L6_12", "cluster_chips_of_L6_12", "cluster_occ_of_L6_12"],
+            "title": ["Average Cluster trend: L1_00", "Stddev Cluster trend: L1_00", "Active chips trend: L6_12", "Occupancy trend: L6_12"],
+            "varexp": ["Cluster_l6.mean[12]:ntreeentries", "Cluster_l6.stddev[12]:ntreeentries", "Cluster_l6.entries[12]:ntreeentries", "Occupancy_l6.mean[12]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_13", "cluster_stddev_of_L6_13", "cluster_chips_of_L6_13", "cluster_occ_of_L6_13"],
+            "title": ["Average Cluster trend: L6_13", "Stddev Cluster trend: L6_13", "Active chips trend: L6_13", "Occupancy trend: L6_13"],
+            "varexp": ["Cluster_l6.mean[13]:ntreeentries", "Cluster_l6.stddev[13]:ntreeentries", "Cluster_l6.entries[13]:ntreeentries", "Occupancy_l6.mean[13]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_14", "cluster_stddev_of_L6_14", "cluster_chips_of_L6_14", "cluster_occ_of_L6_14"],
+            "title": ["Average Cluster trend: L6_14", "Stddev Cluster trend: L6_14", "Active chips trend: L6_14", "Occupancy trend: L6_14"],
+            "varexp": ["Cluster_l6.mean[14]:ntreeentries", "Cluster_l6.stddev[14]:ntreeentries", "Cluster_l6.entries[14]:ntreeentries", "Occupancy_l6.mean[14]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_15", "cluster_stddev_of_L6_15", "cluster_chips_of_L6_15", "cluster_occ_of_L6_15"],
+            "title": ["Average Cluster trend: L6_15", "Stddev Cluster trend: L6_15", "Active chips trend: L6_15", "Occupancy trend: L6_15"],
+            "varexp": ["Cluster_l6.mean[15]:ntreeentries", "Cluster_l6.stddev[15]:ntreeentries", "Cluster_l6.entries[15]:ntreeentries", "Occupancy_l6.mean[15]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_16", "cluster_stddev_of_L6_16", "cluster_chips_of_L6_16", "cluster_occ_of_L6_16"],
+            "title": ["Average Cluster trend: L6_16", "Stddev Cluster trend: L6_16", "Active chips trend: L6_16", "Occupancy trend: L6_16"],
+            "varexp": ["Cluster_l6.mean[16]:ntreeentries", "Cluster_l6.stddev[16]:ntreeentries", "Cluster_l6.entries[16]:ntreeentries", "Occupancy_l6.mean[16]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_17", "cluster_stddev_of_L6_17", "cluster_chips_of_L6_17", "cluster_occ_of_L6_17"],
+            "title": ["Average Cluster trend: L6_17", "Stddev Cluster trend: L6_17", "Active chips trend: L6_17", "Occupancy trend: L6_17"],
+            "varexp": ["Cluster_l6.mean[17]:ntreeentries", "Cluster_l6.stddev[17]:ntreeentries", "Cluster_l6.entries[17]:ntreeentries", "Occupancy_l6.mean[17]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_18", "cluster_stddev_of_L6_18", "cluster_chips_of_L6_18", "cluster_occ_of_L6_18"],
+            "title": ["Average Cluster trend: L6_18", "Stddev Cluster trend: L6_18", "Active chips trend: L6_18", "Occupancy trend: L6_18"],
+            "varexp": ["Cluster_l6.mean[18]:ntreeentries", "Cluster_l6.stddev[18]:ntreeentries", "Cluster_l6.entries[18]:ntreeentries", "Occupancy_l6.mean[18]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_19", "cluster_stddev_of_L6_19", "cluster_chips_of_L6_19", "cluster_occ_of_L6_19"],
+            "title": ["Average Cluster trend: L6_19", "Stddev Cluster trend: L6_19", "Active chips trend: L6_19", "Occupancy trend: L6_19"],
+            "varexp": ["Cluster_l6.mean[19]:ntreeentries", "Cluster_l6.stddev[19]:ntreeentries", "Cluster_l6.entries[19]:ntreeentries", "Occupancy_l6.mean[19]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_20", "cluster_stddev_of_L6_20", "cluster_chips_of_L6_20", "cluster_occ_of_L6_20"],
+            "title": ["Average Cluster trend: L6_20", "Stddev Cluster trend: L6_20", "Active chips trend: L6_20", "Occupancy trend: L6_20"],
+            "varexp": ["Cluster_l6.mean[20]:ntreeentries", "Cluster_l6.stddev[20]:ntreeentries", "Cluster_l6.entries[20]:ntreeentries", "Occupancy_l6.mean[20]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_21", "cluster_stddev_of_L6_21", "cluster_chips_of_L6_21", "cluster_occ_of_L6_21"],
+            "title": ["Average Cluster trend: L6_21", "Stddev Cluster trend: L6_21", "Active chips trend: L6_21", "Occupancy trend: L6_21"],
+            "varexp": ["Cluster_l6.mean[21]:ntreeentries", "Cluster_l6.stddev[21]:ntreeentries", "Cluster_l6.entries[21]:ntreeentries", "Occupancy_l6.mean[21]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_22", "cluster_stddev_of_L6_22", "cluster_chips_of_L6_22", "cluster_occ_of_L6_22"],
+            "title": ["Average Cluster trend: L6_22", "Stddev Cluster trend: L6_22", "Active chips trend: L6_22", "Occupancy trend: L6_22"],
+            "varexp": ["Cluster_l6.mean[22]:ntreeentries", "Cluster_l6.stddev[22]:ntreeentries", "Cluster_l6.entries[22]:ntreeentries", "Occupancy_l6.mean[22]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_23", "cluster_stddev_of_L6_23", "cluster_chips_of_L6_23", "cluster_occ_of_L6_23"],
+            "title": ["Average Cluster trend: L6_23", "Stddev Cluster trend: L6_23", "Active chips trend: L6_23", "Occupancy trend: L6_23"],
+            "varexp": ["Cluster_l6.mean[23]:ntreeentries", "Cluster_l6.stddev[23]:ntreeentries", "Cluster_l6.entries[23]:ntreeentries", "Occupancy_l6.mean[23]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_24", "cluster_stddev_of_L6_24", "cluster_chips_of_L6_24", "cluster_occ_of_L6_24"],
+            "title": ["Average Cluster trend: L6_24", "Stddev Cluster trend: L6_24", "Active chips trend: L6_24", "Occupancy trend: L6_24"],
+            "varexp": ["Cluster_l6.mean[24]:ntreeentries", "Cluster_l6.stddev[24]:ntreeentries", "Cluster_l6.entries[24]:ntreeentries", "Occupancy_l6.mean[24]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_25", "cluster_stddev_of_L6_25", "cluster_chips_of_L6_25", "cluster_occ_of_L6_25"],
+            "title": ["Average Cluster trend: L6_25", "Stddev Cluster trend: L6_25", "Active chips trend: L6_25", "Occupancy trend: L6_25"],
+            "varexp": ["Cluster_l6.mean[25]:ntreeentries", "Cluster_l6.stddev[25]:ntreeentries", "Cluster_l6.entries[25]:ntreeentries", "Occupancy_l6.mean[25]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_26", "cluster_stddev_of_L6_26", "cluster_chips_of_L6_26", "cluster_occ_of_L6_26"],
+            "title": ["Average Cluster trend: L6_26", "Stddev Cluster trend: L6_26", "Active chips trend: L6_26", "Occupancy trend: L6_26"],
+            "varexp": ["Cluster_l6.mean[26]:ntreeentries", "Cluster_l6.stddev[26]:ntreeentries", "Cluster_l6.entries[26]:ntreeentries", "Occupancy_l6.mean[26]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_27", "cluster_stddev_of_L6_27", "cluster_chips_of_L6_27", "cluster_occ_of_L6_27"],
+            "title": ["Average Cluster trend: L6_27", "Stddev Cluster trend: L6_27", "Active chips trend: L6_27", "Occupancy trend: L6_27"],
+            "varexp": ["Cluster_l6.mean[27]:ntreeentries", "Cluster_l6.stddev[27]:ntreeentries", "Cluster_l6.entries[27]:ntreeentries", "Occupancy_l6.mean[27]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_28", "cluster_stddev_of_L6_28", "cluster_chips_of_L6_28", "cluster_occ_of_L6_28"],
+            "title": ["Average Cluster trend: L6_28", "Stddev Cluster trend: L6_28", "Active chips trend: L6_28", "Occupancy trend: L6_28"],
+            "varexp": ["Cluster_l6.mean[28]:ntreeentries", "Cluster_l6.stddev[28]:ntreeentries", "Cluster_l6.entries[28]:ntreeentries", "Occupancy_l6.mean[28]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_29", "cluster_stddev_of_L6_29", "cluster_chips_of_L6_29", "cluster_occ_of_L6_29"],
+            "title": ["Average Cluster trend: L6_29", "Stddev Cluster trend: L6_29", "Active chips trend: L6_29", "Occupancy trend: L6_29"],
+            "varexp": ["Cluster_l6.mean[29]:ntreeentries", "Cluster_l6.stddev[29]:ntreeentries", "Cluster_l6.entries[29]:ntreeentries", "Occupancy_l6.mean[29]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_30", "cluster_stddev_of_L6_30", "cluster_chips_of_L6_30", "cluster_occ_of_L6_30"],
+            "title": ["Average Cluster trend: L6_30", "Stddev Cluster trend: L6_30", "Active chips trend: L6_30", "Occupancy trend: L6_30"],
+            "varexp": ["Cluster_l6.mean[30]:ntreeentries", "Cluster_l6.stddev[30]:ntreeentries", "Cluster_l6.entries[30]:ntreeentries", "Occupancy_l6.mean[30]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_31", "cluster_stddev_of_L6_31", "cluster_chips_of_L6_31", "cluster_occ_of_L6_31"],
+            "title": ["Average Cluster trend: L6_31", "Stddev Cluster trend: L6_31", "Active chips trend: L6_31", "Occupancy trend: L6_31"],
+            "varexp": ["Cluster_l6.mean[31]:ntreeentries", "Cluster_l6.stddev[31]:ntreeentries", "Cluster_l6.entries[31]:ntreeentries", "Occupancy_l6.mean[31]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_32", "cluster_stddev_of_L6_32", "cluster_chips_of_L6_32", "cluster_occ_of_L6_32"],
+            "title": ["Average Cluster trend: L6_32", "Stddev Cluster trend: L6_32", "Active chips trend: L6_32", "Occupancy trend: L6_32"],
+            "varexp": ["Cluster_l6.mean[32]:ntreeentries", "Cluster_l6.stddev[32]:ntreeentries", "Cluster_l6.entries[32]:ntreeentries", "Occupancy_l6.mean[32]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_33", "cluster_stddev_of_L6_33", "cluster_chips_of_L6_33", "cluster_occ_of_L6_33"],
+            "title": ["Average Cluster trend: L6_33", "Stddev Cluster trend: L6_33", "Active chips trend: L6_33", "Occupancy trend: L6_33"],
+            "varexp": ["Cluster_l6.mean[33]:ntreeentries", "Cluster_l6.stddev[33]:ntreeentries", "Cluster_l6.entries[33]:ntreeentries", "Occupancy_l6.mean[33]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_34", "cluster_stddev_of_L6_34", "cluster_chips_of_L6_34", "cluster_occ_of_L6_34"],
+            "title": ["Average Cluster trend: L6_34", "Stddev Cluster trend: L6_34", "Active chips trend: L6_34", "Occupancy trend: L6_34"],
+            "varexp": ["Cluster_l6.mean[34]:ntreeentries", "Cluster_l6.stddev[34]:ntreeentries", "Cluster_l6.entries[34]:ntreeentries", "Occupancy_l6.mean[34]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_35", "cluster_stddev_of_L6_35", "cluster_chips_of_L6_35", "cluster_occ_of_L6_35"],
+            "title": ["Average Cluster trend: L6_35", "Stddev Cluster trend: L6_35", "Active chips trend: L6_35", "Occupancy trend: L6_35"],
+            "varexp": ["Cluster_l6.mean[35]:ntreeentries", "Cluster_l6.stddev[35]:ntreeentries", "Cluster_l6.entries[35]:ntreeentries", "Occupancy_l6.mean[35]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_36", "cluster_stddev_of_L6_36", "cluster_chips_of_L6_36", "cluster_occ_of_L6_36"],
+            "title": ["Average Cluster trend: L6_36", "Stddev Cluster trend: L6_36", "Active chips trend: L6_36", "Occupancy trend: L6_36"],
+            "varexp": ["Cluster_l6.mean[36]:ntreeentries", "Cluster_l6.stddev[36]:ntreeentries", "Cluster_l6.entries[36]:ntreeentries", "Occupancy_l6.mean[36]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_37", "cluster_stddev_of_L6_37", "cluster_chips_of_L6_37", "cluster_occ_of_L6_37"],
+            "title": ["Average Cluster trend: L6_37", "Stddev Cluster trend: L6_37", "Active chips trend: L6_37", "Occupancy trend: L6_37"],
+            "varexp": ["Cluster_l6.mean[37]:ntreeentries", "Cluster_l6.stddev[37]:ntreeentries", "Cluster_l6.entries[37]:ntreeentries", "Occupancy_l6.mean[37]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_38", "cluster_stddev_of_L6_38", "cluster_chips_of_L6_38", "cluster_occ_of_L6_38"],
+            "title": ["Average Cluster trend: L6_38", "Stddev Cluster trend: L6_38", "Active chips trend: L6_38", "Occupancy trend: L6_38"],
+            "varexp": ["Cluster_l6.mean[38]:ntreeentries", "Cluster_l6.stddev[38]:ntreeentries", "Cluster_l6.entries[38]:ntreeentries", "Occupancy_l6.mean[38]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_39", "cluster_stddev_of_L6_39", "cluster_chips_of_L6_39", "cluster_occ_of_L6_39"],
+            "title": ["Average Cluster trend: L6_39", "Stddev Cluster trend: L6_39", "Active chips trend: L6_39", "Occupancy trend: L6_39"],
+            "varexp": ["Cluster_l6.mean[39]:ntreeentries", "Cluster_l6.stddev[39]:ntreeentries", "Cluster_l6.entries[39]:ntreeentries", "Occupancy_l6.mean[39]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_40", "cluster_stddev_of_L6_40", "cluster_chips_of_L6_40", "cluster_occ_of_L6_40"],
+            "title": ["Average Cluster trend: L6_40", "Stddev Cluster trend: L6_40", "Active chips trend: L6_40", "Occupancy trend: L6_40"],
+            "varexp": ["Cluster_l6.mean[40]:ntreeentries", "Cluster_l6.stddev[40]:ntreeentries", "Cluster_l6.entries[40]:ntreeentries", "Occupancy_l6.mean[40]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_41", "cluster_stddev_of_L6_41", "cluster_chips_of_L6_41", "cluster_occ_of_L6_41"],
+            "title": ["Average Cluster trend: L6_41", "Stddev Cluster trend: L6_41", "Active chips trend: L6_41", "Occupancy trend: L6_41"],
+            "varexp": ["Cluster_l6.mean[41]:ntreeentries", "Cluster_l6.stddev[41]:ntreeentries", "Cluster_l6.entries[41]:ntreeentries", "Occupancy_l6.mean[41]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_42", "cluster_stddev_of_L6_42", "cluster_chips_of_L6_42", "cluster_occ_of_L6_42"],
+            "title": ["Average Cluster trend: L6_42", "Stddev Cluster trend: L6_42", "Active chips trend: L6_42", "Occupancy trend: L6_42"],
+            "varexp": ["Cluster_l6.mean[42]:ntreeentries", "Cluster_l6.stddev[42]:ntreeentries", "Cluster_l6.entries[42]:ntreeentries", "Occupancy_l6.mean[42]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_43", "cluster_stddev_of_L6_43", "cluster_chips_of_L6_43", "cluster_occ_of_L6_43"],
+            "title": ["Average Cluster trend: L6_43", "Stddev Cluster trend: L6_43", "Active chips trend: L6_43", "Occupancy trend: L6_43"],
+            "varexp": ["Cluster_l6.mean[43]:ntreeentries", "Cluster_l6.stddev[43]:ntreeentries", "Cluster_l6.entries[43]:ntreeentries", "Occupancy_l6.mean[43]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_44", "cluster_stddev_of_L6_44", "cluster_chips_of_L6_44", "cluster_occ_of_L6_44"],
+            "title": ["Average Cluster trend: L6_44", "Stddev Cluster trend: L6_44", "Active chips trend: L6_44", "Occupancy trend: L6_44"],
+            "varexp": ["Cluster_l6.mean[44]:ntreeentries", "Cluster_l6.stddev[44]:ntreeentries", "Cluster_l6.entries[44]:ntreeentries", "Occupancy_l6.mean[44]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_45", "cluster_stddev_of_L6_45", "cluster_chips_of_L6_45", "cluster_occ_of_L6_45"],
+            "title": ["Average Cluster trend: L6_45", "Stddev Cluster trend: L6_45", "Active chips trend: L6_45", "Occupancy trend: L6_45"],
+            "varexp": ["Cluster_l6.mean[45]:ntreeentries", "Cluster_l6.stddev[45]:ntreeentries", "Cluster_l6.entries[45]:ntreeentries", "Occupancy_l6.mean[45]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_46", "cluster_stddev_of_L6_46", "cluster_chips_of_L6_46", "cluster_occ_of_L6_46"],
+            "title": ["Average Cluster trend: L6_46", "Stddev Cluster trend: L6_46", "Active chips trend: L6_46", "Occupancy trend: L6_46"],
+            "varexp": ["Cluster_l6.mean[46]:ntreeentries", "Cluster_l6.stddev[46]:ntreeentries", "Cluster_l6.entries[46]:ntreeentries", "Occupancy_l6.mean[46]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          },
+          {
+            "names": ["cluster_mean_of_L6_47", "cluster_stddev_of_L6_47", "cluster_chips_of_L6_47", "cluster_occ_of_L6_47"],
+            "title": ["Average Cluster trend: L6_47", "Stddev Cluster trend: L6_47", "Active chips trend: L6_47", "Occupancy trend: L6_47"],
+            "varexp": ["Cluster_l6.mean[47]:ntreeentries", "Cluster_l6.stddev[47]:ntreeentries", "Cluster_l6.entries[47]:ntreeentries", "Occupancy_l6.mean[47]:ntreeentries"],
+            "selection": "",
+            "option": "PL"
+          }
+        ],
+        "initTrigger": [
+          "usercontrol"
+        ],
+        "updateTrigger": [
+          "10sec"
+        ],
+        "stopTrigger": [
+            "usercontrol"  
+        ]
+      }
+    }
+  }
+}
