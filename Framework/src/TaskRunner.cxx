@@ -81,7 +81,7 @@ void TaskRunner::init(InitContext& iCtx)
   // get a fresh config
   ILOG(Debug, Devel) << "update 2 tree in init() with the content of option qcConfiguration" << ENDM;
   try {
-    //    auto wholeTree = iCtx.options().get<boost::property_tree::ptree>("");                                                                   
+    //    auto wholeTree = iCtx.options().get<boost::property_tree::ptree>("");
     /*    ILOG(Debug, Devel) << "print whole tree: " << ENDM;
     auto wholeTree = iCtx.options().get<boost::property_tree::ptree>("");
     printTree(wholeTree);
@@ -93,14 +93,26 @@ void TaskRunner::init(InitContext& iCtx)
   MyFile.close();
     */
 
+    // get the tree
     auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
     //    auto updatedTree = iCtx.services().get<RawDeviceService>().device()->fConfig->GetProperty< boost::property_tree::ptree>("qcConfiguration");
 
     ILOG(Debug,Devel) << "print the updated tree : " << ENDM;
     if(updatedTree.empty()) {
-      ILOG(Error, Devel) << "   Updated tree is empty" << ENDM;   
+      ILOG(Error, Devel) << "   Updated tree is empty" << ENDM;
     } else {
       printTree(updatedTree);
+    }
+    // prepare the information we need
+    auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+    // find the correct taskSpec
+    auto it = find_if(infrastructureSpec.tasks.begin(),
+                      infrastructureSpec.tasks.end(),
+                      [this](const TaskSpec& ts) {return ts.taskName == mTaskConfig.taskName;});
+    if (it != infrastructureSpec.tasks.end()) {
+      mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common,  *it, mTaskConfig.parallelTaskID,  it->resetAfterCycles);
+    } else {
+      ILOG(Error, Support) << "Could not consume the templated config provided by ECS, we continue with the original one" << ENDM;
     }
   } catch (std::invalid_argument & error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode

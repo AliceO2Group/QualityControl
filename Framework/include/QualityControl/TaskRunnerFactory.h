@@ -14,8 +14,8 @@
 /// \author Piotr Konopka
 ///
 
-#ifndef QC_CORE_TASKFACTORY_H
-#define QC_CORE_TASKFACTORY_H
+#ifndef QC_CORE_TASKRUNNERFACTORY_H
+#define QC_CORE_TASKRUNNERFACTORY_H
 
 #include <string>
 #include <vector>
@@ -59,4 +59,4 @@ class TaskRunnerFactory
 
 } // namespace o2::quality_control::core
 
-#endif // QC_CORE_TASKFACTORY_H
+#endif // QC_CORE_TASKRUNNERFACTORY_H
