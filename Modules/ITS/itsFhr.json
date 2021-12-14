@@ -60,7 +60,7 @@
                 "dataSource": [{
                     "type": "Task",
                     "name": "FHRTask",
-                    "MOs": ["General/ErrorPlots","General/General_Occupancy","General/Noisy_Pixel"]
+                    "MOs": ["General/ErrorPlots","General/General_Occupancy","General/Noisy_Pixel","Occupancy/Layer0/Layer0ChipStave","Occupancy/Layer1/Layer1ChipStave","Occupancy/Layer2/Layer2ChipStave","Occupancy/Layer3/Layer3ChipStave","Occupancy/Layer4/Layer4ChipStave","Occupancy/Layer5/Layer5ChipStave","Occupancy/Layer6/Layer6ChipStave"]
                 }]
             }
        }

@@ -33,20 +33,20 @@ void ITSFhrCheck::configure(std::string) {}
 
 Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = 0;                                                    //The FHR Checker will check three plots:
-  std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;  //General/ErrorPlots, General/General_Occupancy and
-  for (iter = moMap->begin(); iter != moMap->end(); ++iter) {            //General/Noisy_Pixel. and store the result in a
-    if (iter->second->getName() == "General/ErrorPlots") {               //check the General/ErrorPlots		//three digits: XXX
-      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());          //		                                        |||-> ErrorPlots
-      if (h->GetMaximum() > 0) {                                         //		                                        ||-> General_Occupancy
-        result = result.getLevel() + 1;                                  //		                                        |-> Noisy_Pixel
-      }                                                                  //the number for each digits is correspond:
-    } else if (iter->second->getName() == "General/General_Occupancy") { //0: Good, 1: Bad, 2: Medium(if exist)
-      auto* h = dynamic_cast<TH2Poly*>(iter->second->getObject());       //So if the quality level is 210, that means
-      for (int ibin = 0; ibin < h->GetNumberOfBins(); ++ibin) {          //Medium Noisy_Pixel, Bad General_Occupancy and
-        if (h->GetBinContent(ibin) == 0) {                               //Good ErrorPlots
-          continue;
-        }
+  Quality result = 0;                                                    // The FHR Checker will check three plots:
+  std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter;  // General/ErrorPlots, General/General_Occupancy and
+  for (iter = moMap->begin(); iter != moMap->end(); ++iter) {            // General/Noisy_Pixel. and store the result in a
+    if (iter->second->getName() == "General/ErrorPlots") {               // check the General/ErrorPlots		//three digits: XXXXXXXXXX
+      auto* h = dynamic_cast<TH1D*>(iter->second->getObject());          //		                                                ||||||||||-> ErrorPlots
+      if (h->GetMaximum() > 0) {                                         //		                                                |||||||||-> General_Occupancy
+        result = result.getLevel() + 1;                                  //		                                                ||||||||-> Noisy_Pixel
+      }                                                                  // the number for each digits is correspond:		        |||||||->Occupancy Layer0
+    } else if (iter->second->getName() == "General/General_Occupancy") { // 0: Good, 1: Bad, 2: Medium(if exist)			||||||->Occupancy Layer1
+      auto* h = dynamic_cast<TH2Poly*>(iter->second->getObject());       // So if the quality level is 210, that means		        |||||->Occupancy Layer2
+      for (int ibin = 0; ibin < h->GetNumberOfBins(); ++ibin) {          // Medium Noisy_Pixel, Bad General_Occupancy and	        ||||->Occupancy Layer3
+        if (h->GetBinContent(ibin) == 0) {                               // Good ErrorPlots					        |||->Occupancy Layer4
+          continue;                                                      //							        ||->Occupancy Layer5
+        }                                                                //							        |->Occupancy Layer6
         if (ibin < 48) {
           if (h->GetBinContent(ibin) > pow(10, -5)) {
             result = (result.getLevel() % 10) + 10;
@@ -92,6 +92,18 @@ Quality ITSFhrCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>
             result = (result.getLevel() % 100) + 200;
           }
         }
+      }
+    }
+    TString objectName = iter->second->getName();
+    if (objectName.Contains("ChipStave")) {
+      auto* h = dynamic_cast<TH2D*>(iter->second->getObject());
+      TString layerString = TString(objectName(15, 1).Data());
+      int layer = layerString.Atoi();
+      double maxOccupancy = h->GetMaximum();
+      if (maxOccupancy > pow(10, -5)) {
+        result = (result.getLevel() % (int)pow(10, 3 + layer)) + (2 * pow(10, 3 + layer));
+      } else if (maxOccupancy > pow(10, -6)) {
+        result = (result.getLevel() % (int)pow(10, 3 + layer)) + (1 * pow(10, 3 + layer));
       }
     }
   }
@@ -150,7 +162,7 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       for (int i = 0; i < 2; ++i) {
         text[i]->SetTextAlign(23);
         text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(kOrange);
+        text[i]->SetTextColor(46);
         h->GetListOfFunctions()->Add(text[i]);
       }
     }
@@ -179,7 +191,47 @@ void ITSFhrCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResul
       for (int i = 0; i < 3; ++i) {
         text[i]->SetTextAlign(23);
         text[i]->SetTextSize(0.08);
-        text[i]->SetTextColor(kOrange);
+        text[i]->SetTextColor(46);
+        h->GetListOfFunctions()->Add(text[i]);
+      }
+    }
+  }
+  TString objectName = mo->getName();
+  if (objectName.Contains("ChipStave")) {
+    TString layerString = TString(objectName(15, 1).Data());
+    int layer = layerString.Atoi();
+    auto* h = dynamic_cast<TH2D*>(mo->getObject());
+    if ((int)(checkResult.getLevel() / pow(10, layer + 3)) == 0) {
+      text[0] = new TLatex(0.5, 0.6, "Quality::Good");
+      text[0]->SetNDC();
+      text[0]->SetTextAlign(23);
+      text[0]->SetTextSize(0.08);
+      text[0]->SetTextColor(kGreen);
+      h->GetListOfFunctions()->Add(text[0]);
+    } else if ((int)(checkResult.getLevel() / pow(10, layer + 3)) == 1) {
+      text[0] = new TLatex(0.5, 0.73, "Quality::Medium");
+      text[0]->SetNDC();
+      text[1] = new TLatex(0.5, 0.6, "Max Chip Occupancy Over 10^{-6}");
+      text[1]->SetNDC();
+      text[2] = new TLatex(0.5, 0.47, "Please Notify Expert On MM");
+      text[2]->SetNDC();
+      for (int i = 0; i < 3; ++i) {
+        text[i]->SetTextAlign(23);
+        text[i]->SetTextSize(0.08);
+        text[i]->SetTextColor(46);
+        h->GetListOfFunctions()->Add(text[i]);
+      }
+    } else if ((int)(checkResult.getLevel() / pow(10, layer + 3)) == 2) {
+      text[0] = new TLatex(0.5, 0.73, "Quality::Bad");
+      text[0]->SetNDC();
+      text[1] = new TLatex(0.5, 0.6, "Max Chip Occupancy Over 10^{-5}");
+      text[1]->SetNDC();
+      text[2] = new TLatex(0.5, 0.47, "Please Call Expert");
+      text[2]->SetNDC();
+      for (int i = 0; i < 3; ++i) {
+        text[i]->SetTextAlign(23);
+        text[i]->SetTextSize(0.08);
+        text[i]->SetTextColor(kRed);
         h->GetListOfFunctions()->Add(text[i]);
       }
     }
