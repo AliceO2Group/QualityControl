@@ -116,18 +116,18 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
 
   std::array<std::string, 2> title{ "UNCONS", "CONSTR" };
   for (int i = 0; i < trkType::SIZE; ++i) {
-    mInTracksPt[i] = new TH1F(Form("mInTracksPt_%s", title[i].c_str()), Form("mInTracksPt (trkType: %s); Pt; counts", title[i].c_str()), 100, 0.f, 20.f);
-    mInTracksEta[i] = new TH1F(Form("mInTracksEta_%s", title[i].c_str()), Form("mInTracksEta (trkType: %s); Eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
-    mMatchedTracksPt[i] = new TH1F(Form("mMatchedTracksPt_%s", title[i].c_str()), Form("mMatchedTracksPt (trkType: %s); Pt; counts", title[i].c_str()), 100, 0.f, 20.f);
-    mMatchedTracksEta[i] = new TH1F(Form("mMatchedTracksEta_%s", title[i].c_str()), Form("mMatchedTracksEta (trkType: %s); Eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
+    mInTracksPt[i] = new TH1F(Form("mInTracksPt_%s", title[i].c_str()), Form("mInTracksPt (trkType: %s); #it{p}_{T}; counts", title[i].c_str()), 100, 0.f, 20.f);
+    mInTracksEta[i] = new TH1F(Form("mInTracksEta_%s", title[i].c_str()), Form("mInTracksEta (trkType: %s); #eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
+    mMatchedTracksPt[i] = new TH1F(Form("mMatchedTracksPt_%s", title[i].c_str()), Form("mMatchedTracksPt (trkType: %s); #it{p}_{T}; counts", title[i].c_str()), 100, 0.f, 20.f);
+    mMatchedTracksEta[i] = new TH1F(Form("mMatchedTracksEta_%s", title[i].c_str()), Form("mMatchedTracksEta (trkType: %s); #eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
     if (mUseMC) {
-      mFakeMatchedTracksPt[i] = new TH1F(Form("mFakeMatchedTracksPt_%s", title[i].c_str()), Form("mFakeMatchedTracksPt (trkType: %s); Pt; counts", title[i].c_str()), 100, 0.f, 20.f);
-      mFakeMatchedTracksEta[i] = new TH1F(Form("mFakeMatchedTracksEta_%s", title[i].c_str()), Form("mFakeMatchedTracksEta (trkType: %s); Eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
-      mFakeFractionTracksPt[i] = new TEfficiency(Form("mFakeFractionPt_%s", title[i].c_str()), Form("Fraction of fake matches vs Pt (trkType: %s); Pt; Eff", title[i].c_str()), 100, 0.f, 20.f);
-      mFakeFractionTracksEta[i] = new TEfficiency(Form("mFakeFractionEta_%s", title[i].c_str()), Form("Fraction of fake matches vs Eta (trkType: %s); Eta; Eff", title[i].c_str()), 100, -1.0f, 1.0f);
+      mFakeMatchedTracksPt[i] = new TH1F(Form("mFakeMatchedTracksPt_%s", title[i].c_str()), Form("mFakeMatchedTracksPt (trkType: %s); #it{p}_{T}; counts", title[i].c_str()), 100, 0.f, 20.f);
+      mFakeMatchedTracksEta[i] = new TH1F(Form("mFakeMatchedTracksEta_%s", title[i].c_str()), Form("mFakeMatchedTracksEta (trkType: %s); #eta; counts", title[i].c_str()), 100, -1.0f, 1.0f);
+      mFakeFractionTracksPt[i] = new TEfficiency(Form("mFakeFractionPt_%s", title[i].c_str()), Form("Fraction of fake matches vs Pt (trkType: %s); #it{p}_{T}; Eff", title[i].c_str()), 100, 0.f, 20.f);
+      mFakeFractionTracksEta[i] = new TEfficiency(Form("mFakeFractionEta_%s", title[i].c_str()), Form("Fraction of fake matches vs Eta (trkType: %s); #eta; Eff", title[i].c_str()), 100, -1.0f, 1.0f);
     }
-    mEffPt[i] = new TEfficiency(Form("mEffPt_%s", title[i].c_str()), Form("Efficiency vs Pt (trkType: %s); Pt; Eff", title[i].c_str()), 100, 0.f, 20.f);
-    mEffEta[i] = new TEfficiency(Form("mEffEta_%s", title[i].c_str()), Form("Efficiency vs Eta (trkType: %s); Eta; Eff", title[i].c_str()), 100, -1.f, 1.f);
+    mEffPt[i] = new TEfficiency(Form("mEffPt_%s", title[i].c_str()), Form("Efficiency vs Pt (trkType: %s); #it{p}_{T}; Eff", title[i].c_str()), 100, 0.f, 20.f);
+    mEffEta[i] = new TEfficiency(Form("mEffEta_%s", title[i].c_str()), Form("Efficiency vs Eta (trkType: %s); #eta; Eff", title[i].c_str()), 100, -1.f, 1.f);
   }
 
   // initialize B field and geometry for track selection
