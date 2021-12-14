@@ -23,7 +23,8 @@
 // O2
 #include <DPLUtils/RawParser.h>
 #include <DPLUtils/DPLRawParser.h>
-// #include <Framework/InputRecord.h> // needed??
+#include <ITSMFTReconstruction/ChipMappingMFT.h>
+
 // Quality Control
 #include "QualityControl/QcInfoLogger.h"
 #include "MFT/QcMFTReadoutTask.h"
@@ -46,9 +47,15 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "initialize QcMFTReadoutTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
-  }
+  // if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
+  //  ILOG(Info, Support) << "Custom parameter - myOwnKey: " << param->second << ENDM;
+  // }
+
+  // create the index to link a RU+lane to a chip
+  //==============================================
+  generateChipIndex();
+  const o2::itsmft::ChipMappingMFT mapMFT; // MFT maps
+  auto chipMapData = mapMFT.getChipMappingData();
 
   // Defining summary histogram
   //==============================================
@@ -62,44 +69,55 @@ void QcMFTReadoutTask::initialize(o2::framework::InitContext& /*ctx*/)
   mSummaryLaneStatus->GetYaxis()->SetTitle("#Entries");
   mSummaryLaneStatus->SetStats(0);
 
-  //  Defining individual histograms
+  // Defining chip summary histograms
   //==============================================
-  generateRUindexMap(); // create a map of possible FEEid to
-  // histo name defined by half, disk, face, zone
-  int zone = -1;
-  int plane = -1;
-  int disc = -1;
-  int half = -1;
-  for (int i = 0; i < maxNumberToIdentifyRU; i++) { // loop over potential IDs
-    if (mIndexOfRUMap[i] == -1)
-      continue;                                // skip not asigned IDs
-    unpackRUindex(i, zone, plane, disc, half); // get geo info
-    // define histogram
-    auto histogramRU = std::make_unique<TH2F>(
-      Form("mMFTIndividualLaneStatus/h%d-d%d-f%d-z%d", half, disc, plane, zone),
-      Form("h%d-d%d-f%d-z%d", half, disc, plane, zone),
-      25, -0.5, 24.5, // lanes
-      4, -0.5, 3.5);  // status
-    histogramRU->GetYaxis()->SetBinLabel(1, "OK");
-    histogramRU->GetYaxis()->SetBinLabel(2, "Warning");
-    histogramRU->GetYaxis()->SetBinLabel(3, "Error");
-    histogramRU->GetYaxis()->SetBinLabel(4, "Fault");
-    histogramRU->SetXTitle("Lane");
-    histogramRU->SetStats(0);
-    histogramRU->SetOption("colz");
-    // push the histo into the vector of histograms and publish it
-    mIndividualLaneStatus.push_back(std::move(histogramRU));
-    getObjectsManager()->startPublishing(mIndividualLaneStatus[mIndexOfRUMap[i]].get());
-  } // end-potential IDs
+  int nChips = 936;
+  // --> error
+  mSummaryChipError = std::make_unique<TH1F>("mSummaryChipError", "Summary of chips in error", nChips, -0.5, nChips - 0.5);
+  getObjectsManager()->startPublishing(mSummaryChipError.get());
+  mSummaryChipError->GetYaxis()->SetTitle("#Entries");
+  mSummaryChipError->SetStats(0);
+  // --> fault
+  mSummaryChipFault = std::make_unique<TH1F>("mSummaryChipFault", "Summary of chips in fault", nChips, -0.5, nChips - 0.5);
+  getObjectsManager()->startPublishing(mSummaryChipFault.get());
+  mSummaryChipFault->GetYaxis()->SetTitle("#Entries");
+  mSummaryChipFault->SetStats(0);
+  // --> warning
+  mSummaryChipWarning = std::make_unique<TH1F>("mSummaryChipWarning", "Summary of chips in warning", nChips, -0.5, nChips - 0.5);
+  getObjectsManager()->startPublishing(mSummaryChipWarning.get());
+  mSummaryChipWarning->GetYaxis()->SetTitle("#Entries");
+  mSummaryChipWarning->SetStats(0);
+  // --> ok
+  mSummaryChipOk = std::make_unique<TH1F>("mSummaryChipOk", "Summary of chips in OK", nChips, -0.5, nChips - 0.5);
+  getObjectsManager()->startPublishing(mSummaryChipOk.get());
+  mSummaryChipOk->GetYaxis()->SetTitle("#Entries");
+  mSummaryChipOk->SetStats(0);
+
+  for (int i = 0; i < nChips; i++) {
+    int face = (chipMapData[i].layer) % 2;
+    mSummaryChipError->GetXaxis()
+      ->SetBinLabel(i + 1, Form("Chip %i:h%d-d%d-f%d-z%d-c%d", i, chipMapData[i].half,
+                                chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
+    mSummaryChipFault->GetXaxis()
+      ->SetBinLabel(i + 1, Form("Chip %i:h%d-d%d-f%d-z%d-c%d", i, chipMapData[i].half,
+                                chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
+    mSummaryChipWarning->GetXaxis()
+      ->SetBinLabel(i + 1, Form("Chip %i:h%d-d%d-f%d-z%d-c%d", i, chipMapData[i].half,
+                                chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
+    mSummaryChipOk->GetXaxis()
+      ->SetBinLabel(i + 1, Form("Chip %i:h%d-d%d-f%d-z%d-c%d", i, chipMapData[i].half,
+                                chipMapData[i].disk, face, chipMapData[i].zone, chipMapData[i].cable));
+  }
 }
 
 void QcMFTReadoutTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
   mSummaryLaneStatus->Reset();
-  for (int i = 0; i < numberOfRU; i++) {
-    mIndividualLaneStatus[i]->Reset();
-  }
+  mSummaryChipError->Reset();
+  mSummaryChipFault->Reset();
+  mSummaryChipWarning->Reset();
+  mSummaryChipOk->Reset();
 }
 
 void QcMFTReadoutTask::startOfCycle()
@@ -137,16 +155,26 @@ void QcMFTReadoutTask::monitorData(o2::framework::ProcessingContext& ctx)
         uint16_t rdhFeeIndex = rdh->feeId;
         int RUindex = (rdhFeeIndex & 127); // look only at the rightmost 7 bits
         // check the status of each lane
-        for (int i = 0; i < 25; i++) {
+        for (int i = 0; i < nLanes; i++) {
+          int idx = RUindex * nLanes + i;
+          // check if it is a valide lane
+          if (mChipIndex[idx] == -1)
+            continue;
           // get the two bits corresponding to the lane i
-          int laneStatus = ((ddwLaneStatus >> (i * 2)) & (3));
-          // fill the status in the histogram
-          mIndividualLaneStatus[mIndexOfRUMap[RUindex]]->Fill(i, laneStatus);
-        }
-      } // end if is a DDW
-    }   // end if rdh->stop
-
-  } // end loop over input
+          int MFTlaneStatus = ((ddwLaneStatus >> (i * 2)) & (3));
+          // fill the info
+          if (MFTlaneStatus == 0)
+            mSummaryChipOk->Fill(mChipIndex[idx]);
+          if (MFTlaneStatus == 1)
+            mSummaryChipWarning->Fill(mChipIndex[idx]);
+          if (MFTlaneStatus == 2)
+            mSummaryChipError->Fill(mChipIndex[idx]);
+          if (MFTlaneStatus == 3)
+            mSummaryChipFault->Fill(mChipIndex[idx]);
+        } // end loop over lanes
+      }   // end if is a DDW
+    }     // end if rdh->stop
+  }       // end loop over input
 }
 
 void QcMFTReadoutTask::endOfCycle()
@@ -164,46 +192,31 @@ void QcMFTReadoutTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-  mSummaryLaneStatus->Reset();
-  for (int i = 0; i < numberOfRU; i++) {
-    mIndividualLaneStatus[i]->Reset();
+  mSummaryChipError->Reset();
+  mSummaryChipFault->Reset();
+  mSummaryChipWarning->Reset();
+  mSummaryChipOk->Reset();
+}
+
+void QcMFTReadoutTask::generateChipIndex()
+// generate index to relate a RU+lane to a chip
+{
+  // initialise
+  for (int i = 0; i < maxRUidx; i++) {
+    for (int j = 0; j < nLanes; j++) {
+      int idx = i * nLanes + j;
+      mChipIndex[idx] = -1;
+    }
   }
-}
 
-void QcMFTReadoutTask::unpackRUindex(int RUindex, int& zone, int& plane, int& disc, int& half)
-// unpacks RU ID into geometry information needed to name histograms
-{
-  zone = (RUindex & 3);         // first and second bits from right to left
-  plane = ((RUindex >> 2) & 1); // third bit from right to left
-  disc = ((RUindex >> 3) & 7);  // fourth to sixth bits from right to left
-  half = ((RUindex >> 6) & 1);  // seventh bits from right to left
-}
-
-void QcMFTReadoutTask::generateRUindexMap()
-// maps RUindex into an index from 0 to 79 to be used
-// to access the vector of histograms
-{
-  // space to store geometrical info
-  int zone = -1;
-  int plane = -1;
-  int disc = -1;
-  int half = -1;
-
-  // loop over potential IDs
-  int idx = 0; // count good IDs
-  for (int i = 0; i < maxNumberToIdentifyRU; i++) {
-    mIndexOfRUMap[i] = -1; // -1 means no RU has such an ID
-    unpackRUindex(i, zone, plane, disc, half);
-    if (zone > 3)
-      continue;
-    if (plane > 1)
-      continue;
-    if (disc > 4)
-      continue;
-    if (half > 1)
-      continue;
-    mIndexOfRUMap[i] = idx;
-    idx++;
+  // fill
+  const o2::itsmft::ChipMappingMFT mapMFT; // MFT maps
+  auto chipMapData = mapMFT.getChipMappingData();
+  for (int i = 0; i < 936; i++) {
+    int j = chipMapData[i].ruHWID;
+    int k = chipMapData[i].cable;
+    int idx = j * nLanes + k;
+    mChipIndex[idx] = chipMapData[i].globalChipSWID;
   }
 }
 

@@ -34,6 +34,7 @@ import time
 import consul
 import multiprocessing as mp
 from pathlib import Path
+from datetime import datetime
 
 from Ccdb import Ccdb
 from pidfile import PIDFile, AlreadyRunningError
@@ -106,6 +107,10 @@ def parseConfig(config_file_path):
     with open(config_file_path, 'r') as stream:
         config_content = yaml.safe_load(stream)
 
+    # also add something to the important logs file
+    message = datetime.today().strftime('%Y-%m-%d - %H:%M:%S')
+    storeCrucialLog("\n" + message + " - Start of the cleaner")
+
     rules = []
     logging.debug("Rules found in the config file:")
     for rule_yaml in config_content["Rules"]:
@@ -113,6 +118,7 @@ def parseConfig(config_file_path):
                     rule_yaml)
         rules.append(rule)
         logging.debug(f"   * {rule}")
+        storeCrucialLog(f"   * {rule}")
 
     ccdb_url = config_content["Ccdb"]["Url"]
 
@@ -223,6 +229,20 @@ def storeMonitoringMetrics(success, duration):
         logging.warning(f"File {socket_file} does not exist, no monitoring metrics stored.")
 
 
+def storeCrucialLog(message):
+    """
+    Store few but very important messages to the file ~/repocleaner_logs.txt
+    :param message:
+    :return:
+    """
+    logs_filename = str(Path.home()) + "/repocleaner_logs.txt"   # very limited but important logs
+    try:
+        f = open(logs_filename, "a")
+        f.write(message+"\n")
+    except IOError as e:
+        logging.error(f"Could not write crucial log to {logs_filename} : {e}")
+
+
 def prepare_main_logger():
     logger = logging.getLogger()
     # Logging (split between stderr and stdout)
@@ -305,6 +325,8 @@ def run(args, ccdb_url, rules):
     pool.join()
 
     logging.info(f" *** DONE *** (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
+    message = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
+    storeCrucialLog(message + f" - End of the cleaner (total deleted: {ccdb.counter_deleted}, total updated: {ccdb.counter_validity_updated})")
     if not args.dry_run:
         storeSavedTimestamp()
 

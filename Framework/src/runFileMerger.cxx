@@ -20,6 +20,7 @@
 #include "QualityControl/MonitorObjectCollection.h"
 
 #include <string>
+#include <unordered_map>
 #include <fstream>
 #include <boost/program_options.hpp>
 #include <boost/exception/diagnostic_information.hpp>
@@ -38,6 +39,7 @@ int main(int argc, const char* argv[])
     desc.add_options()                                                                                                                                                         //
       ("help,h", "Help message")                                                                                                                                               //
       ("enable-alien", bpo::bool_switch()->default_value(false), "Connect to alien before accessing input files.")                                                             //
+      ("exit-on-error", bpo::bool_switch()->default_value(false), "Makes the executable exit if any of the input files could not be read.")                                    //
       ("output-file", bpo::value<std::string>()->default_value("merged.root"), "File path to store the merged results, if the file exists, it will be merged with new files.") //
       ("input-files-list", bpo::value<std::string>()->default_value(""), "Path to a file containing a list of input files (row by row)")                                       //
       ("input-files", bpo::value<std::vector<std::string>>()->composing(),
@@ -88,6 +90,10 @@ int main(int argc, const char* argv[])
       TGrid::Connect("alien:");
     }
 
+    auto handleError = vm["exit-on-error"].as<bool>()
+                         ? [](const std::string& message) { throw std::runtime_error(message); }
+                         : [](const std::string& message) { ILOG(Error, Support) << message << ENDM; };
+
     auto outputFilePath = vm["output-file"].as<std::string>();
     auto outputFile = new TFile(outputFilePath.c_str(), "UPDATE");
     if (outputFile->IsZombie()) {
@@ -105,13 +111,16 @@ int main(int argc, const char* argv[])
     for (const auto& inputFilePath : inputFilePaths) {
       auto* file = TFile::Open(inputFilePath.c_str(), "READ");
       if (file == nullptr) {
-        throw std::runtime_error("File handler for '" + inputFilePath + "' is nullptr.");
+        handleError("File handler for '" + inputFilePath + "' is nullptr.");
+        continue;
       }
       if (file->IsZombie()) {
-        throw std::runtime_error("File '" + inputFilePath + "' is zombie.");
+        handleError("File '" + inputFilePath + "' is zombie.");
+        continue;
       }
       if (!file->IsOpen()) {
-        throw std::runtime_error("Failed to open the file: " + inputFilePath);
+        handleError("Failed to open the file: " + inputFilePath);
+        continue;
       }
       ILOG(Debug) << "Input file '" << inputFilePath << "' successfully open." << ENDM;
 
@@ -122,7 +131,7 @@ int main(int argc, const char* argv[])
         if (inputTObj != nullptr) {
           auto inputMOC = dynamic_cast<MonitorObjectCollection*>(inputTObj);
           if (inputMOC == nullptr) {
-            ILOG(Error) << "Could not cast the input object to MonitorObjectCollection, skipping." << ENDM;
+            handleError("Could not cast the input object to MonitorObjectCollection.");
             delete inputTObj;
             continue;
           }
@@ -134,7 +143,7 @@ int main(int argc, const char* argv[])
             if (mergedTObj != nullptr) {
               auto mergedMOC = dynamic_cast<MonitorObjectCollection*>(mergedTObj);
               if (mergedMOC == nullptr) {
-                ILOG(Error) << "Could not cast the merged object to MonitorObjectCollection, skipping." << ENDM;
+                handleError("Could not cast the merged object to MonitorObjectCollection, skipping.");
                 delete mergedMOC;
                 continue;
               }

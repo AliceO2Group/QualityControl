@@ -13,6 +13,7 @@
 /// \file   ITSFeeTask.cxx
 /// \author Jian Liu
 /// \author Liang Zhang
+/// \author Pietro Fecchio
 ///
 
 #include "ITS/ITSFeeTask.h"
@@ -42,11 +43,12 @@ ITSFeeTask::~ITSFeeTask()
   delete mIndexCheck;
   delete mIdCheck;
   delete mProcessingTime;
+  delete mPayloadSize;
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
   }
 
-  //delete mInfoCanvas;
+  // delete mInfoCanvas;
 }
 
 void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -54,38 +56,42 @@ void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
   ILOG(Info, Support) << "Initializing the ITSFeeTask" << ENDM;
   createFeePlots();
   setPlotsFormat();
+  getParameters();
 }
 
 void ITSFeeTask::createFeePlots()
 {
   mTrigger = new TH1I("TriggerFlag", "Trigger vs counts", mNTrigger, 0.5, mNTrigger + 0.5);
-  getObjectsManager()->startPublishing(mTrigger); //mTrigger
+  getObjectsManager()->startPublishing(mTrigger); // mTrigger
 
   mTFInfo = new TH1I("STFInfo", "STF vs count", 15000, 0, 15000);
-  getObjectsManager()->startPublishing(mTFInfo); //mTFInfo
+  getObjectsManager()->startPublishing(mTFInfo); // mTFInfo
 
   mLaneInfo = new TH2I("LaneInfo", "Lane Information", NLanes, -.5, NLanes - 0.5, NFlags, -.5, NFlags - 0.5);
-  getObjectsManager()->startPublishing(mLaneInfo); //mLaneInfo
+  getObjectsManager()->startPublishing(mLaneInfo); // mLaneInfo
 
   mProcessingTime = new TH1I("ProcessingTime", "Processing Time", 10000, 0, 10000);
-  getObjectsManager()->startPublishing(mProcessingTime); //mProcessingTime
+  getObjectsManager()->startPublishing(mProcessingTime); // mProcessingTime
 
   mTriggerVsFeeId = new TH2I("TriggerVsFeeid", "Trigger count vs Trigger ID and Fee ID", NFees, 0, NFees, mNTrigger, 0.5, mNTrigger + 0.5);
-  getObjectsManager()->startPublishing(mTriggerVsFeeId); //mTriggervsFeeId
+  getObjectsManager()->startPublishing(mTriggerVsFeeId); // mTriggervsFeeId
 
   for (int i = 0; i < NFlags; i++) {
     mLaneStatus[i] = new TH2I(Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flag : %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanes, 0, NLanes);
-    getObjectsManager()->startPublishing(mLaneStatus[i]); //mlaneStatus
+    getObjectsManager()->startPublishing(mLaneStatus[i]); // mlaneStatus
   }
 
   mFlag1Check = new TH2I("Flag1Check", "Flag 1 Check", NFees, 0, NFees, 3, 0, 3); // Row 1 : transmission_timeout, Row 2 : packet_overflow, Row 3 : lane_starts_violation
-  getObjectsManager()->startPublishing(mFlag1Check);                              //mFlag1Check
+  getObjectsManager()->startPublishing(mFlag1Check);                              // mFlag1Check
 
   mIndexCheck = new TH2I("IndexCheck", "Index Check", NFees, 0, NFees, 4, 0, 4);
-  getObjectsManager()->startPublishing(mIndexCheck); //mIndexCheck
+  getObjectsManager()->startPublishing(mIndexCheck); // mIndexCheck
 
   mIdCheck = new TH2I("IdCheck", "Id Check", NFees, 0, NFees, 8, 0, 8);
-  getObjectsManager()->startPublishing(mIdCheck); //mIdCheck
+  getObjectsManager()->startPublishing(mIdCheck); // mIdCheck
+
+  mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 5.12e5);
+  getObjectsManager()->startPublishing(mPayloadSize); // mPayloadSize
 }
 
 void ITSFeeTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitle)
@@ -129,6 +135,7 @@ void ITSFeeTask::setPlotsFormat()
   for (int i = 0; i < NFlags; i++) {
     if (mLaneStatus[i]) {
       setAxisTitle(mLaneStatus[i], "FEEID", "Lane");
+      mLaneStatus[i]->SetStats(0);
     }
   }
 
@@ -138,6 +145,10 @@ void ITSFeeTask::setPlotsFormat()
 
   if (mIndexCheck) {
     setAxisTitle(mIndexCheck, "FEEID", "Flag");
+  }
+
+  if (mPayloadSize) {
+    setAxisTitle(mPayloadSize, "FEEID", "Avg. Payload size");
   }
 
   if (mIdCheck) {
@@ -155,22 +166,32 @@ void ITSFeeTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM;
 
 void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
+  // set timer
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
   start = std::chrono::high_resolution_clock::now();
 
-  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "feedata0" }, Lifetime::Timeframe } };
+  int nStops[NFees] = {};
+  int payloadTot[NFees] = {};
+
+  std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
+
   rawDataFilter.push_back(InputSpec{ "", ConcreteDataTypeMatcher{ "ITS", "RAWDATA" }, Lifetime::Timeframe });
   DPLRawParser parser(ctx.inputs(), rawDataFilter);
+
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>();
+    // Decoding data format (RDHv6)
     int istave = (int)(rdh->feeId & 0x00ff);
     int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
     int ilayer = (int)((rdh->feeId & 0xf000) >> 12);
     int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
+    int memorysize = (int)(rdh->memorySize);
 
-    if ((int)(rdh->stop) && it.size()) { //looking into the DDW0 from the closing packet
+    payloadTot[ifee] += memorysize;
+
+    if ((int)(rdh->stop) && it.size()) { // looking into the DDW0 from the closing packet
       auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
       uint64_t laneInfo = ddw->laneWord.laneBits.laneStatus;
       uint8_t flag1 = ddw->indexWord.indexBits.flag1;
@@ -213,6 +234,17 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         mTriggerVsFeeId->Fill(ifee, i + 1);
       }
     }
+
+    if ((int)(rdh->stop)) {
+      nStops[ifee]++;
+    }
+  }
+
+  for (int i = 0; i < NFees; i++) {
+    if (nStops[i]) {
+      float payloadAvg = (float)payloadTot[i] / nStops[i];
+      mPayloadSize->Fill(i + 1, payloadAvg);
+    }
   }
 
   mTimeFrameId = ctx.inputs().get<int>("G");
@@ -221,6 +253,11 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   mProcessingTime->SetBinContent(mTimeFrameId, difference);
+}
+
+void ITSFeeTask::getParameters()
+{
+  mNPayloadSizeBins = std::stoi(mCustomParameters["NPayloadSizeBins"]);
 }
 
 void ITSFeeTask::endOfCycle()

@@ -46,7 +46,7 @@ void DigitQcTask::rebinFromConfig()
      "binning_Amp_channel2": "5,-10,90" ...
   */
   auto rebinHisto = [](std::string hName, std::string binning) {
-    vector<std::string> tokenizedBinning;
+    std::vector<std::string> tokenizedBinning;
     boost::split(tokenizedBinning, binning, boost::is_any_of(","));
     if (tokenizedBinning.size() == 3) { // TH1
       ILOG(Debug, Support) << "config: rebinning TH1 " << hName << " -> " << binning << ENDM;

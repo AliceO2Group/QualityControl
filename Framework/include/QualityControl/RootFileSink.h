@@ -21,8 +21,6 @@
 #include <Framework/CompletionPolicy.h>
 #include <Framework/DataProcessorLabel.h>
 
-class TFile;
-
 namespace o2::quality_control::core
 {
 
@@ -38,7 +36,7 @@ class RootFileSink : public framework::Task
 
   static framework::DataProcessorLabel getLabel()
   {
-    return { "QC-ROOT-FILE-SINK" };
+    return { "qc-root-file-sink" };
   }
 
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
@@ -48,7 +46,6 @@ class RootFileSink : public framework::Task
 
  private:
   std::string mFilePath;
-  TFile* mFile = nullptr;
 };
 
 } // namespace o2::quality_control::core

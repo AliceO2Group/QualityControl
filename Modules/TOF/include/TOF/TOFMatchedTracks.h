@@ -94,13 +94,15 @@ class TOFMatchedTracks final : public TaskInterface
 
   // for track selection
   float mPtCut = 0.1f;
-  float mEtaCut = 1.4f;
+  float mEtaCut = 0.8f;
   int32_t mNTPCClustersCut = 40;
   float mDCACut = 100.f;
   float mDCACutY = 10.f;
   std::string mGRPFileName = "o2sim_grp.root";
   std::string mGeomFileName = "o2sim_geometry.root";
   float mBz = 0; ///< nominal Bz
+
+  int mTF = -1; // to count the number of processed TFs
 };
 
 } // namespace o2::quality_control_modules::tof

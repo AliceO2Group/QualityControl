@@ -69,6 +69,7 @@ void ITSTPCMatchingTask::initialize(o2::framework::InitContext& /*ctx*/)
     mMatchITSTPCQC.setGeomFileName(param->second);
   }
 
+  mMatchITSTPCQC.initDataRequest();
   mMatchITSTPCQC.init();
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getHistoPtTPC());
   getObjectsManager()->startPublishing(mMatchITSTPCQC.getFractionITSTPCmatch());

@@ -106,6 +106,16 @@ class ObjectsManager
   void addMetadata(const std::string& objectName, const std::string& key, const std::string& value);
 
   /**
+   * \brief Add or update metadata to a MonitorObject.
+   * Add or update a metadata pair to a MonitorObject. This is propagated to the database.
+   * @param objectName Name of the MonitorObject.
+   * @param key Key of the metadata.
+   * @param value Value of the metadata.
+   * @throw ObjectNotFoundError if object is not found.
+   */
+  void addOrUpdateMetadata(const std::string& objectName, const std::string& key, const std::string& value);
+
+  /**
    * \brief Set default draw options for this object.
    * If possible, the object will be drawn with these options (in the ROOT sense).
    * See for example https://root.cern/doc/master/classTHistPainter.html#HP01

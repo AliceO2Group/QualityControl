@@ -137,7 +137,8 @@ set(EXE_SRCS
   src/runLocationCalculator.cxx
   src/runMergerCalculator.cxx
   src/runUploadRootObjects.cxx
-  src/runFileMerger.cxx)
+  src/runFileMerger.cxx
+  src/runMetadataUpdater.cxx)
 
 set(EXE_NAMES
   o2-qc-run-producer
@@ -153,7 +154,8 @@ set(EXE_NAMES
   o2-qc-location-calculator
   o2-qc-merger-calculator
   o2-qc-upload-root-objects
-  o2-qc-file-merger)
+  o2-qc-file-merger
+  o2-qc-metadata-updater)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
@@ -172,7 +174,8 @@ set(EXE_OLD_NAMES
   o2-qc-location-calculator
   o2-qc-merger-calculator
   o2-qc-upload-root-objects
-  o2-qc-file-merger)
+  o2-qc-file-merger
+  o2-qc-metadata-updater)
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)
@@ -300,7 +303,7 @@ set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 50)
 set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 30)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
-set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 30)
+set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
 set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
 set_property(TEST testTrendingTask PROPERTY LABELS manual)

@@ -42,10 +42,14 @@ namespace o2::quality_control_modules::tof
 TOFMatchedTracks::~TOFMatchedTracks()
 {
   for (int i = 0; i < trkType::SIZE; ++i) {
-    delete mInTracksPt[i];
-    delete mInTracksEta[i];
     delete mMatchedTracksPt[i];
     delete mMatchedTracksEta[i];
+    if (mUseMC) {
+      delete mFakeMatchedTracksPt[i];
+      delete mFakeMatchedTracksEta[i];
+    }
+    delete mInTracksPt[i];
+    delete mInTracksEta[i];
     delete mEffPt[i];
     delete mEffEta[i];
   }
@@ -74,8 +78,8 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Devel) << "Custom parameter - minPtCut (for track selection): " << param->second << ENDM;
     setPtCut(atof(param->second.c_str()));
   }
-  if (auto param = mCustomParameters.find("EtaCut"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - EtaCut (for track selection): " << param->second << ENDM;
+  if (auto param = mCustomParameters.find("etaCut"); param != mCustomParameters.end()) {
+    ILOG(Info, Devel) << "Custom parameter - etaCut (for track selection): " << param->second << ENDM;
     setEtaCut(atof(param->second.c_str()));
   }
   if (auto param = mCustomParameters.find("minNTPCClustersCut"); param != mCustomParameters.end()) {
@@ -176,15 +180,19 @@ void TOFMatchedTracks::startOfCycle()
 void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
 {
 
+  ++mTF;
+  LOG(debug) << " ************************ ";
+  LOG(debug) << " *** Processing TF " << mTF << " *** ";
+  LOG(debug) << " ************************ ";
   mRecoCont.collectData(ctx, *mDataRequest.get());
 
   // TPC-TOF
   if (mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) { // this is enough to know that also TPC was loades, see "initialize"
     mTPCTracks = mRecoCont.getTPCTracks();
     mTPCTOFMatches = mRecoCont.getTPCTOFMatches();
-    ILOG(Info, Support) << "We found " << mTPCTracks.size() << " TPC-only tracks" << ENDM;
-    ILOG(Info, Support) << "We found " << mRecoCont.getTPCTOFTracks().size() << " TPC-TOF tracks" << ENDM;
-    ILOG(Info, Support) << "We found " << mTPCTOFMatches.size() << " TPC-only tracks matched to TOF" << ENDM;
+    LOG(debug) << "We found " << mTPCTracks.size() << " TPC-only tracks";
+    LOG(debug) << "We found " << mRecoCont.getTPCTOFTracks().size() << " TPC-TOF tracks";
+    LOG(debug) << "We found " << mTPCTOFMatches.size() << " TPC-only tracks matched to TOF";
     if (mRecoCont.getTPCTOFTracks().size() != mTPCTOFMatches.size()) {
       ILOG(Fatal, Support) << "Number of TPCTOF tracks (" << mRecoCont.getTPCTOFTracks().size() << ") differs from number of TPCTOF matches (" << mTPCTOFMatches.size() << ")" << ENDM;
     }
@@ -192,6 +200,11 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
     for (const auto& matchTOF : mTPCTOFMatches) {
       GTrackID gTrackId = matchTOF.getTrackRef();
       const auto& trk = mTPCTracks[gTrackId.getIndex()];
+      if (!selectTrack(trk)) {
+        LOG(debug) << "NUM UNCONS: track with eta " << trk.getEta() << " and pt " << trk.getPt() << " DISCARDED for numerator, UNCONS";
+        continue;
+      }
+      LOG(debug) << "NUM UNCONS: track with eta " << trk.getEta() << " and pt " << trk.getPt() << " ACCEPTED for numerator, UNCONS";
       mMatchedTracksPt[trkType::UNCONS]->Fill(trk.getPt());
       mMatchedTracksEta[trkType::UNCONS]->Fill(trk.getEta());
       if (mUseMC) {
@@ -208,25 +221,32 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
   if (mRecoCont.isTrackSourceLoaded(GID::ITSTPCTOF)) { // this is enough to know that also ITSTPC was loades, see "initialize"
     mITSTPCTracks = mRecoCont.getTPCITSTracks();
     mITSTPCTOFMatches = mRecoCont.getITSTPCTOFMatches();
-    ILOG(Info, Support) << "We found " << mITSTPCTracks.size() << " ITS-TPC tracks" << ENDM;
-    ILOG(Info, Support) << "We found " << mITSTPCTOFMatches.size() << " ITS-TPC tracks matched to TOF" << ENDM;
+    LOG(debug) << "We found " << mITSTPCTracks.size() << " ITS-TPC tracks";
+    LOG(debug) << "We found " << mITSTPCTOFMatches.size() << " ITS-TPC tracks matched to TOF";
     // loop over TOF MatchInfo
     for (const auto& matchTOF : mITSTPCTOFMatches) {
       GTrackID gTrackId = matchTOF.getTrackRef();
       const auto& trk = mITSTPCTracks[gTrackId.getIndex()];
-      mMatchedTracksPt[trkType::CONSTR]->Fill(trk.getPt());
-      mMatchedTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+      const auto& trkTPC = mTPCTracks[trk.getRefTPC()];
+      if (!selectTrack(trkTPC)) {
+        LOG(debug) << "NUM CONSTR: track with eta " << trkTPC.getEta() << " and pT " << trkTPC.getPt() << " DISCARDED for numerator, CONSTR";
+        continue;
+      }
+      LOG(debug) << "NUM CONSTR: track with eta " << trkTPC.getEta() << " and pT " << trkTPC.getPt() << " ACCEPTED for numerator, CONSTR"
+                 << " gid: " << gTrackId << " TPC gid =" << trk.getRefTPC();
+      mMatchedTracksPt[trkType::CONSTR]->Fill(trkTPC.getPt());
+      mMatchedTracksEta[trkType::CONSTR]->Fill(trkTPC.getEta());
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
-          mFakeMatchedTracksPt[trkType::CONSTR]->Fill(trk.getPt());
-          mFakeMatchedTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+          mFakeMatchedTracksPt[trkType::CONSTR]->Fill(trkTPC.getPt());
+          mFakeMatchedTracksEta[trkType::CONSTR]->Fill(trkTPC.getEta());
         }
       }
     }
   }
 
-  auto creator = [this](auto& trk, GID, float, float) {
+  auto creator = [this](auto& trk, GID gid, float, float) {
     // Getting the tracks for the denominator of the efficiencies for TPC-TOF tracks;
     // The RecoContainer will provide as TPCtracks only those not matched to TOF (lower
     // quality), so we need to ask also for the TPCTOF to have the full set in the denominator
@@ -238,29 +258,72 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       // E.g. (till the TrackCut class is used):
       if constexpr (isTPCTrack<decltype(trk)>()) {
         if (!selectTrack(trk)) {
+          LOG(debug) << "DEN UNCONS: track with eta " << trk.getEta() << " and pT " << trk.getPt() << " DISCARDED for denominator UNCONS, TPC track";
           return true;
         }
+        LOG(debug) << "DEN UNCONS: track with eta " << trk.getEta() << " and pT " << trk.getPt() << " ACCEPTED for denominator UNCONS, TPC track"
+                   << " gid: " << gid;
+        this->mInTracksPt[trkType::UNCONS]->Fill(trk.getPt());
+        this->mInTracksEta[trkType::UNCONS]->Fill(trk.getEta());
       } else if constexpr (isTPCTOFTrack<decltype(trk)>()) {
         const auto& tpcTrack = mTPCTracks[mTPCTOFMatches[trk.getRefMatch()].getTrackRef().getIndex()];
         if (!selectTrack(tpcTrack)) {
+          LOG(debug) << "DEN UNCONS: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " DISCARDED for denominator UNCONS, TPCTOF track";
           return true;
         }
+        LOG(debug) << "DEN UNCONS: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " ACCEPTED for denominator UNCONS, TPCTOF track";
+        this->mInTracksPt[trkType::UNCONS]->Fill(tpcTrack.getPt());
+        this->mInTracksEta[trkType::UNCONS]->Fill(tpcTrack.getEta());
       }
-      this->mInTracksPt[trkType::UNCONS]->Fill(trk.getPt());
-      this->mInTracksEta[trkType::UNCONS]->Fill(trk.getEta());
     }
     // In case of ITS-TPC-TOF, the ITS-TPC tracks contain also the ITS-TPC-TOF
     if constexpr (isTPCITSTrack<decltype(trk)>()) {
-      this->mInTracksPt[trkType::CONSTR]->Fill(trk.getPt());
-      this->mInTracksEta[trkType::CONSTR]->Fill(trk.getEta());
+      const auto& tpcTrack = mTPCTracks[trk.getRefTPC().getIndex()];
+      if (!selectTrack(tpcTrack)) {
+        LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " DISCARDED for denominator CONSTR, ITSTPC track";
+        return true;
+      }
+      LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " ACCEPTED for denominator CONSTR, ITSTPC track";
+      this->mInTracksPt[trkType::CONSTR]->Fill(tpcTrack.getPt());
+      this->mInTracksEta[trkType::CONSTR]->Fill(tpcTrack.getEta());
     }
     return true;
   };
   mRecoCont.createTracksVariadic(creator);
 
   int nTPCOnlytracks = mRecoCont.getTPCTracks().size() > 0 ? (mRecoCont.getTPCTracks().size() - mITSTPCTracks.size()) : 0;
-  ILOG(Info, Support) << "We have " << mInTracksPt[trkType::UNCONS]->GetEntries() << " unconstrained tracks at denominator (should be " << nTPCOnlytracks << "), and " << mInTracksPt[trkType::CONSTR]->GetEntries() << " constrained tracks at denominator (should be " << mRecoCont.getTPCITSTracks().size() << " but *before any quality cut!!*)" << ENDM;
-  ILOG(Info, Support) << "We have " << mMatchedTracksPt[trkType::UNCONS]->GetEntries() << " TOF matches from unconstrained tracks (should be " << mTPCTOFMatches.size() << "), and " << mMatchedTracksPt[trkType::CONSTR]->GetEntries() << " TOF matches from constrained tracks (should be " << mITSTPCTOFMatches.size() << " but *before any quality cut!!*))" << ENDM;
+
+  LOG(debug) << "We have " << mInTracksPt[trkType::UNCONS]->GetEntries() << " unconstrained tracks at denominator (should be " << nTPCOnlytracks << "), and " << mInTracksPt[trkType::CONSTR]->GetEntries() << " constrained tracks at denominator (should be " << mRecoCont.getTPCITSTracks().size() << " but *before any quality cut!!*)";
+  LOG(debug) << "We have " << mMatchedTracksPt[trkType::UNCONS]->GetEntries() << " TOF matches from unconstrained tracks (should be " << mTPCTOFMatches.size() << "), and " << mMatchedTracksPt[trkType::CONSTR]->GetEntries() << " TOF matches from constrained tracks (should be " << mITSTPCTOFMatches.size() << " but *before any quality cut!!*))";
+
+  LOG(debug) << "We have " << mInTracksPt[trkType::UNCONS]->GetEntries() << " unconstrained tracks at denominator, and " << mInTracksPt[trkType::CONSTR]->GetEntries() << " constrained tracks at denominator";
+  LOG(debug) << "We have " << mMatchedTracksPt[trkType::UNCONS]->GetEntries() << " TOF matches from unconstrained tracks and " << mMatchedTracksPt[trkType::CONSTR]->GetEntries() << " TOF matches from constrained tracks";
+
+  // logging in case denominator has less tracks than numerator
+  for (int i = 0; i < trkType::SIZE; ++i) {
+    for (int ibin = 1; ibin <= mMatchedTracksPt[i]->GetNbinsX(); ++ibin) {
+      LOG(debug) << "check: ibin " << ibin << ": mInTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksPt[i]->GetBinContent(ibin) << ", mMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksPt[i]->GetBinContent(ibin);
+      if (mInTracksPt[i]->GetBinContent(ibin) < mMatchedTracksPt[i]->GetBinContent(ibin)) {
+        LOG(error) << "issue spotted: ibin " << ibin << ": mInTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksPt[i]->GetBinContent(ibin) << ", mMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksPt[i]->GetBinContent(ibin);
+      }
+      if (mUseMC) {
+        if (mMatchedTracksPt[i]->GetBinContent(ibin) < mFakeMatchedTracksPt[i]->GetBinContent(ibin)) {
+          LOG(error) << "issue spotted: ibin " << ibin << ": mMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksPt[i]->GetBinContent(ibin) << ", mFakeMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mFakeMatchedTracksPt[i]->GetBinContent(ibin);
+        }
+      }
+    }
+    for (int ibin = 1; ibin <= mMatchedTracksEta[i]->GetNbinsX(); ++ibin) {
+      LOG(debug) << "check: ibin " << ibin << ": mInTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksEta[i]->GetBinContent(ibin) << ", mMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksEta[i]->GetBinContent(ibin);
+      if (mInTracksEta[i]->GetBinContent(ibin) < mMatchedTracksEta[i]->GetBinContent(ibin)) {
+        LOG(error) << "issue spotted: ibin " << ibin << ": mInTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksEta[i]->GetBinContent(ibin) << ", mMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksEta[i]->GetBinContent(ibin);
+      }
+      if (mUseMC) {
+        if (mMatchedTracksEta[i]->GetBinContent(ibin) < mFakeMatchedTracksEta[i]->GetBinContent(ibin)) {
+          LOG(error) << "issue spotted: ibin " << ibin << ": mMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksEta[i]->GetBinContent(ibin) << ", mFakeMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mFakeMatchedTracksEta[i]->GetBinContent(ibin);
+        }
+      }
+    }
+  }
 }
 
 void TOFMatchedTracks::endOfCycle()
@@ -268,33 +331,57 @@ void TOFMatchedTracks::endOfCycle()
 
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 
+  // Logging in case any denominator has less entries than the corresponding numerator
+  for (int i = 0; i < trkType::SIZE; ++i) {
+    for (int ibin = 1; ibin <= mMatchedTracksPt[i]->GetNbinsX(); ++ibin) {
+      if (mInTracksPt[i]->GetBinContent(ibin) < mMatchedTracksPt[i]->GetBinContent(ibin)) {
+        LOG(error) << "End Of Cycle issue spotted: ibin " << ibin << ": mInTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksPt[i]->GetBinContent(ibin) << ", mMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksPt[i]->GetBinContent(ibin);
+      }
+      if (mUseMC) {
+        if (mMatchedTracksPt[i]->GetBinContent(ibin) < mFakeMatchedTracksPt[i]->GetBinContent(ibin)) {
+          LOG(error) << "End Of Cycle issue spotted: ibin " << ibin << ": mMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksPt[i]->GetBinContent(ibin) << ", mFakeMatchedTracksPt[" << i << "]->GetBinContent(" << ibin << ") = " << mFakeMatchedTracksPt[i]->GetBinContent(ibin);
+        }
+      }
+    }
+    for (int ibin = 1; ibin <= mMatchedTracksEta[i]->GetNbinsX(); ++ibin) {
+      if (mInTracksEta[i]->GetBinContent(ibin) < mMatchedTracksEta[i]->GetBinContent(ibin)) {
+        LOG(error) << "End Of Cycle issue spotted: ibin " << ibin << ": mInTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mInTracksEta[i]->GetBinContent(ibin) << ", mMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksEta[i]->GetBinContent(ibin);
+      }
+      if (mUseMC) {
+        if (mMatchedTracksEta[i]->GetBinContent(ibin) < mFakeMatchedTracksEta[i]->GetBinContent(ibin)) {
+          LOG(error) << "End Of Cycle issue spotted: ibin " << ibin << ": mMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mMatchedTracksEta[i]->GetBinContent(ibin) << ", mFakeMatchedTracksEta[" << i << "]->GetBinContent(" << ibin << ") = " << mFakeMatchedTracksEta[i]->GetBinContent(ibin);
+        }
+      }
+    }
+  }
+
   if (mRecoCont.isTrackSourceLoaded(GID::TPCTOF)) {
-    if (!mEffPt[trkType::UNCONS]->SetTotalHistogram(*mInTracksPt[trkType::UNCONS], "") ||
+    if (!mEffPt[trkType::UNCONS]->SetTotalHistogram(*mInTracksPt[trkType::UNCONS], "f") || // all total have to be forcely replaced, or the passed from previous processing may have incompatible number of entries
         !mEffPt[trkType::UNCONS]->SetPassedHistogram(*mMatchedTracksPt[trkType::UNCONS], "") ||
-        !mEffEta[trkType::UNCONS]->SetTotalHistogram(*mInTracksEta[trkType::UNCONS], "") ||
+        !mEffEta[trkType::UNCONS]->SetTotalHistogram(*mInTracksEta[trkType::UNCONS], "f") ||
         !mEffEta[trkType::UNCONS]->SetPassedHistogram(*mMatchedTracksEta[trkType::UNCONS], "")) {
       ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms, UNCONS!!";
     }
     if (mUseMC) {
-      if (!mFakeFractionTracksPt[trkType::UNCONS]->SetTotalHistogram(*mMatchedTracksPt[trkType::UNCONS], "") ||
+      if (!mFakeFractionTracksPt[trkType::UNCONS]->SetTotalHistogram(*mMatchedTracksPt[trkType::UNCONS], "f") ||
           !mFakeFractionTracksPt[trkType::UNCONS]->SetPassedHistogram(*mFakeMatchedTracksPt[trkType::UNCONS], "") ||
-          !mFakeFractionTracksEta[trkType::UNCONS]->SetTotalHistogram(*mMatchedTracksEta[trkType::UNCONS], "") ||
+          !mFakeFractionTracksEta[trkType::UNCONS]->SetTotalHistogram(*mMatchedTracksEta[trkType::UNCONS], "f") ||
           !mFakeFractionTracksEta[trkType::UNCONS]->SetPassedHistogram(*mFakeMatchedTracksEta[trkType::UNCONS], "")) {
         ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms for MC, UNCONS!!";
       }
     }
   }
   if (mRecoCont.isTrackSourceLoaded(GID::ITSTPCTOF)) {
-    if (!mEffPt[trkType::CONSTR]->SetTotalHistogram(*mInTracksPt[trkType::CONSTR], "") ||
+    if (!mEffPt[trkType::CONSTR]->SetTotalHistogram(*mInTracksPt[trkType::CONSTR], "f") ||
         !mEffPt[trkType::CONSTR]->SetPassedHistogram(*mMatchedTracksPt[trkType::CONSTR], "") ||
-        !mEffEta[trkType::CONSTR]->SetTotalHistogram(*mInTracksEta[trkType::CONSTR], "") ||
+        !mEffEta[trkType::CONSTR]->SetTotalHistogram(*mInTracksEta[trkType::CONSTR], "f") ||
         !mEffEta[trkType::CONSTR]->SetPassedHistogram(*mMatchedTracksEta[trkType::CONSTR], "")) {
       ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms, CONSTR!!";
     }
     if (mUseMC) {
-      if (!mFakeFractionTracksPt[trkType::CONSTR]->SetTotalHistogram(*mMatchedTracksPt[trkType::CONSTR], "") ||
+      if (!mFakeFractionTracksPt[trkType::CONSTR]->SetTotalHistogram(*mMatchedTracksPt[trkType::CONSTR], "f") ||
           !mFakeFractionTracksPt[trkType::CONSTR]->SetPassedHistogram(*mFakeMatchedTracksPt[trkType::CONSTR], "") ||
-          !mFakeFractionTracksEta[trkType::CONSTR]->SetTotalHistogram(*mMatchedTracksEta[trkType::CONSTR], "") ||
+          !mFakeFractionTracksEta[trkType::CONSTR]->SetTotalHistogram(*mMatchedTracksEta[trkType::CONSTR], "f") ||
           !mFakeFractionTracksEta[trkType::CONSTR]->SetPassedHistogram(*mFakeMatchedTracksEta[trkType::CONSTR], "")) {
         ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms for MC, CONSTR!!";
       }
@@ -344,14 +431,14 @@ void TOFMatchedTracks::reset()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   for (int i = 0; i < trkType::SIZE; ++i) {
-    mInTracksPt[i]->Reset();
-    mInTracksEta[i]->Reset();
     mMatchedTracksPt[i]->Reset();
     mMatchedTracksEta[i]->Reset();
     if (mUseMC) {
       mFakeMatchedTracksPt[i]->Reset();
       mFakeMatchedTracksEta[i]->Reset();
     }
+    mInTracksPt[i]->Reset();
+    mInTracksEta[i]->Reset();
   }
 }
 

@@ -22,7 +22,6 @@
 #include <TH2.h>
 #include <TProfile2D.h>
 
-#include <DataFormatsEMCAL/EMCALBlockHeader.h>
 #include <DataFormatsEMCAL/TriggerRecord.h>
 #include <DataFormatsEMCAL/Digit.h>
 #include "QualityControl/QcInfoLogger.h"
@@ -177,15 +176,6 @@ void DigitsQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   mTimeFramesPerCycles++;
   // check if we have payoad
   using MaskType_t = o2::emcal::BadChannelMap::MaskType_t;
-
-  if (mDoEndOfPayloadCheck) {
-    auto dataref = ctx.inputs().get("emcal-digits");
-    auto const* emcheader = o2::framework::DataRefUtils::getHeader<o2::emcal::EMCALBlockHeader*>(dataref);
-    if (!emcheader->mHasPayload) {
-      ILOG(Info, Support) << "No more digits" << ENDM;
-      return;
-    }
-  }
 
   // Handling of inputs from multiple subevents (multiple FLPs)
   // Build maps of trigger records and cells according to the subspecification

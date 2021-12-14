@@ -49,6 +49,33 @@ The repo_cleaner is launched every 5 minutes by [Jenkins](https://alijenkins.cer
 
 Documentation of the repo_cleaner can be found [here](../Framework/script/RepoCleaner/README.md).
 
+### How to backup the local data of the QCDB
+
+Four things to backup: 
+
+1. database dump
+2. postgresql.conf
+3. QC directory (this is big)
+4. repocleaner.yaml (if not stored in consul)
+
+```
+ssh root@ali-qcdb
+
+# you could let them run but the data might not be 100% consistent
+systemctl stop ccdb-sql
+systemctl stop postgresql
+
+su - postgres
+cd /data/pgsql/backups/
+pg_dumpall -l ccdb -p 5432 -v | pbzip2 > ccdb-dd-mm-yy.sql.bz2
+cp ../data/postgresql.conf postgresql-dd.mm.yy.conf
+cp /etc/flp.d/ccdb-sql/repocleaner.yaml repocleaner-dd.mm.yy.yaml
+exit
+
+cd /data/pgsql
+cp -r QC QC-dd-mm-yy
+```
+
 ### Trick used to load old data
 Until version 3 of the class MonitorObject, objects were stored in the repository directly. They are now stored within TFiles. The issue with the former way is that the StreamerInfo are lost. To be able to load old data, the StreamerInfos have been saved in a root file "streamerinfos.root". The CcdbDatabase access class loads this file and the StreamerInfos upon creation which allows for a smooth reading of the old objects. The day we are certain nobody will add objects in the old format and that the old objects have been removed from the database, we can delete this file and remove the loading from CcdbDatabase. Moreover, the following lines can be removed : 
 ```
