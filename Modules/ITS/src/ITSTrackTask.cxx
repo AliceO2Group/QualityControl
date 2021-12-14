@@ -113,7 +113,8 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       vPhi.emplace_back(out.getPhi());
     }
 
-    if (mDoTTree) tClusterMap->Fill();
+    if (mDoTTree)
+      tClusterMap->Fill();
   }
 
   mNTracks += trackArr.size();
@@ -174,7 +175,8 @@ void ITSTrackTask::createAllHistos()
   tClusterMap->Branch("bitmap", &vMap);
   tClusterMap->Branch("eta", &vEta);
   tClusterMap->Branch("phi", &vPhi);
-  if (mDoTTree) addObject(tClusterMap);
+  if (mDoTTree)
+    addObject(tClusterMap);
 
   hAngularDistribution = new TH2D("AngularDistribution", "AngularDistribution", 30, -1.5, 1.5, 60, 0, TMath::TwoPi());
   hAngularDistribution->SetTitle("AngularDistribution");
