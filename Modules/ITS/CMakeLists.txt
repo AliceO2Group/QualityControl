@@ -6,8 +6,7 @@ add_library(O2QcITS
             src/TrendingTaskITSFhr.cxx
             src/TrendingTaskITSTracks.cxx            
             src/TrendingTaskConfigITS.cxx
-            src/TH2XlineReductor.cxx
-            src/TH1XlineReductor.cxx            
+            src/TH2XlineReductor.cxx           
             src/ITSFhrTask.cxx
             src/ITSFeeTask.cxx
             src/ITSClusterTask.cxx
@@ -19,7 +18,7 @@ add_library(O2QcITS
             src/ITSFeeCheck.cxx
             )
 
-target_sources(O2QcITS PRIVATE src/TH2XlineReductor.cxx src/TH1XlineReductor.cxx)
+target_sources(O2QcITS PRIVATE src/TH2XlineReductor.cxx)
 
 target_include_directories(
   O2QcITS
@@ -49,7 +48,6 @@ add_root_dictionary(O2QcITS
                             include/ITS/TrendingTaskITSFhr.h
                             include/ITS/TrendingTaskITSTracks.h                            
                             include/ITS/TH2XlineReductor.h
-                            include/ITS/TH1XlineReductor.h                            
                             include/ITS/ITSFhrTask.h
                             include/ITS/ITSFeeTask.h
                             include/ITS/ITSClusterTask.h
