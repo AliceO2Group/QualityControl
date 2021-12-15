@@ -56,6 +56,10 @@ TOFMatchedTracks::~TOFMatchedTracks()
     delete mEffPt[i];
     delete mEffEta[i];
     delete mEff2DPtEta[i];
+    delete mDeltaZEta[i];
+    delete mDeltaZPhi[i];
+    delete mDeltaXEta[i];
+    delete mDeltaXPhi[i];
   }
 }
 
@@ -135,6 +139,11 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     mEffPt[i] = new TEfficiency(Form("mEffPt_%s", title[i].c_str()), Form("Efficiency vs Pt (trkType: %s); #it{p}_{T}; Eff", title[i].c_str()), 100, 0.f, 20.f);
     mEffEta[i] = new TEfficiency(Form("mEffEta_%s", title[i].c_str()), Form("Efficiency vs Eta (trkType: %s); #eta; Eff", title[i].c_str()), 100, -1.f, 1.f);
     mEff2DPtEta[i] = new TEfficiency(Form("mEff2DPtEta_%s", title[i].c_str()), Form("Efficiency vs Pt vs Eta (trkType: %s); #it{p}_{T}; #eta; Eff", title[i].c_str()), 100, 0.f, 20.f, 100, -1.0f, 1.0f);
+    //
+    mDeltaZEta[i] = new TH2F(Form("mDeltaZEta%s", title[i].c_str()), Form("mDeltaZEta (trkType: %s); #eta; #Delta z (cm); counts", title[i].c_str()), 100, -1.0f, 1.0f, 100, -10.f, 10.f);
+    mDeltaZPhi[i] = new TH2F(Form("mDeltaZPhi%s", title[i].c_str()), Form("mDeltaZPhi (trkType: %s); #phi; #Delta z (cm); counts", title[i].c_str()), 100, .0f, 6.3f, 100, -10.f, 10.f);
+    mDeltaXEta[i] = new TH2F(Form("mDeltaXEta%s", title[i].c_str()), Form("mDeltaXEta (trkType: %s); #eta; #Delta x (cm); counts", title[i].c_str()), 100, -1.0f, 1.0f, 100, -10.f, 10.f);
+    mDeltaXPhi[i] = new TH2F(Form("mDeltaXPhi%s", title[i].c_str()), Form("mDeltaXPhi (trkType: %s); #phi; #Delta x (cm); counts", title[i].c_str()), 100, .0f, 6.3f, 100, -10.f, 10.f);
   }
 
   // initialize B field and geometry for track selection
@@ -158,6 +167,10 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mEffPt[trkType::UNCONS]);
     getObjectsManager()->startPublishing(mEffEta[trkType::UNCONS]);
     getObjectsManager()->startPublishing(mEff2DPtEta[trkType::UNCONS]);
+    getObjectsManager()->startPublishing(mDeltaZEta[trkType::UNCONS]);
+    getObjectsManager()->startPublishing(mDeltaZPhi[trkType::UNCONS]);
+    getObjectsManager()->startPublishing(mDeltaXEta[trkType::UNCONS]);
+    getObjectsManager()->startPublishing(mDeltaXPhi[trkType::UNCONS]);
   }
 
   if (mSrc[GID::Source::ITSTPCTOF] == 1) {
@@ -176,6 +189,10 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     getObjectsManager()->startPublishing(mEffPt[trkType::CONSTR]);
     getObjectsManager()->startPublishing(mEffEta[trkType::CONSTR]);
     getObjectsManager()->startPublishing(mEff2DPtEta[trkType::CONSTR]);
+    getObjectsManager()->startPublishing(mDeltaZEta[trkType::CONSTR]);
+    getObjectsManager()->startPublishing(mDeltaZPhi[trkType::CONSTR]);
+    getObjectsManager()->startPublishing(mDeltaXEta[trkType::CONSTR]);
+    getObjectsManager()->startPublishing(mDeltaXPhi[trkType::CONSTR]);
   }
 }
 
@@ -213,6 +230,8 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
     for (const auto& matchTOF : mTPCTOFMatches) {
       GTrackID gTrackId = matchTOF.getTrackRef();
       const auto& trk = mTPCTracks[gTrackId.getIndex()];
+      const auto& trkDz = matchTOF.getDZatTOF();
+      const auto& trkDx = matchTOF.getDXatTOF();
       if (!selectTrack(trk)) {
         LOG(debug) << "NUM UNCONS: track with eta " << trk.getEta() << " and pt " << trk.getPt() << " DISCARDED for numerator, UNCONS";
         continue;
@@ -221,6 +240,10 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       mMatchedTracksPt[trkType::UNCONS]->Fill(trk.getPt());
       mMatchedTracksEta[trkType::UNCONS]->Fill(trk.getEta());
       mMatchedTracks2DPtEta[trkType::UNCONS]->Fill(trk.getPt(),trk.getEta());
+      mDeltaZEta[trkType::UNCONS]->Fill(trk.getEta(),trkDz);
+      mDeltaZPhi[trkType::UNCONS]->Fill(trk.getPhi(),trkDz);
+      mDeltaXEta[trkType::UNCONS]->Fill(trk.getEta(),trkDx);
+      mDeltaXPhi[trkType::UNCONS]->Fill(trk.getPhi(),trkDx);
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
@@ -242,6 +265,8 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       GTrackID gTrackId = matchTOF.getTrackRef();
       const auto& trk = mITSTPCTracks[gTrackId.getIndex()];
       const auto& trkTPC = mTPCTracks[trk.getRefTPC()];
+      const auto& trkDz = matchTOF.getDZatTOF();
+      const auto& trkDx = matchTOF.getDXatTOF();
       if (!selectTrack(trkTPC)) {
         LOG(debug) << "NUM CONSTR: track with eta " << trkTPC.getEta() << " and pT " << trkTPC.getPt() << " DISCARDED for numerator, CONSTR";
         continue;
@@ -251,6 +276,10 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       mMatchedTracksPt[trkType::CONSTR]->Fill(trkTPC.getPt());
       mMatchedTracksEta[trkType::CONSTR]->Fill(trkTPC.getEta());
       mMatchedTracks2DPtEta[trkType::CONSTR]->Fill(trk.getPt(),trk.getEta());
+      mDeltaZEta[trkType::CONSTR]->Fill(trk.getEta(),trkDz);
+      mDeltaZPhi[trkType::CONSTR]->Fill(trk.getPhi(),trkDz);
+      mDeltaXEta[trkType::CONSTR]->Fill(trk.getEta(),trkDx);
+      mDeltaXPhi[trkType::CONSTR]->Fill(trk.getPhi(),trkDx);
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
         if (lbl.isFake()) {
@@ -463,6 +492,10 @@ void TOFMatchedTracks::reset()
     mInTracksPt[i]->Reset();
     mInTracksEta[i]->Reset();
     mInTracks2DPtEta[i]->Reset();
+    mDeltaZEta[i]->Reset();
+    mDeltaZPhi[i]->Reset();
+    mDeltaXEta[i]->Reset();
+    mDeltaXPhi[i]->Reset();
   }
 }
 
