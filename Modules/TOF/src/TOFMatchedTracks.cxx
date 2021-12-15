@@ -144,7 +144,7 @@ void TOFMatchedTracks::initialize(o2::framework::InitContext& /*ctx*/)
     mDeltaZPhi[i] = new TH2F(Form("mDeltaZPhi%s", title[i].c_str()), Form("mDeltaZPhi (trkType: %s); #phi; #Delta z (cm); counts", title[i].c_str()), 100, .0f, 6.3f, 100, -10.f, 10.f);
     mDeltaXEta[i] = new TH2F(Form("mDeltaXEta%s", title[i].c_str()), Form("mDeltaXEta (trkType: %s); #eta; #Delta x (cm); counts", title[i].c_str()), 100, -1.0f, 1.0f, 100, -10.f, 10.f);
     mDeltaXPhi[i] = new TH2F(Form("mDeltaXPhi%s", title[i].c_str()), Form("mDeltaXPhi (trkType: %s); #phi; #Delta x (cm); counts", title[i].c_str()), 100, .0f, 6.3f, 100, -10.f, 10.f);
-    mTOFChi2[i] = new TH1F(Form("mTOFChi2%s", title[i].c_str()), Form("mTOFChi2 (trkType: %s); #Chi^{2}; counts", title[i].c_str()), 100, 0.f, 10.f);
+    mTOFChi2[i] = new TH1F(Form("mTOFChi2%s", title[i].c_str()), Form("mTOFChi2 (trkType: %s); #chi^{2}; counts", title[i].c_str()), 100, 0.f, 10.f);
   }
 
   // initialize B field and geometry for track selection
@@ -243,11 +243,11 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       LOG(debug) << "NUM UNCONS: track with eta " << trk.getEta() << " and pt " << trk.getPt() << " ACCEPTED for numerator, UNCONS";
       mMatchedTracksPt[trkType::UNCONS]->Fill(trk.getPt());
       mMatchedTracksEta[trkType::UNCONS]->Fill(trk.getEta());
-      mMatchedTracks2DPtEta[trkType::UNCONS]->Fill(trk.getPt(),trk.getEta());
-      mDeltaZEta[trkType::UNCONS]->Fill(trk.getEta(),trkDz);
-      mDeltaZPhi[trkType::UNCONS]->Fill(trk.getPhi(),trkDz);
-      mDeltaXEta[trkType::UNCONS]->Fill(trk.getEta(),trkDx);
-      mDeltaXPhi[trkType::UNCONS]->Fill(trk.getPhi(),trkDx);
+      mMatchedTracks2DPtEta[trkType::UNCONS]->Fill(trk.getPt(), trk.getEta());
+      mDeltaZEta[trkType::UNCONS]->Fill(trk.getEta(), trkDz);
+      mDeltaZPhi[trkType::UNCONS]->Fill(trk.getPhi(), trkDz);
+      mDeltaXEta[trkType::UNCONS]->Fill(trk.getEta(), trkDx);
+      mDeltaXPhi[trkType::UNCONS]->Fill(trk.getPhi(), trkDx);
       mTOFChi2[trkType::UNCONS]->Fill(trkchi2);
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
@@ -281,11 +281,11 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
                  << " gid: " << gTrackId << " TPC gid =" << trk.getRefTPC();
       mMatchedTracksPt[trkType::CONSTR]->Fill(trkTPC.getPt());
       mMatchedTracksEta[trkType::CONSTR]->Fill(trkTPC.getEta());
-      mMatchedTracks2DPtEta[trkType::CONSTR]->Fill(trk.getPt(),trk.getEta());
-      mDeltaZEta[trkType::CONSTR]->Fill(trk.getEta(),trkDz);
-      mDeltaZPhi[trkType::CONSTR]->Fill(trk.getPhi(),trkDz);
-      mDeltaXEta[trkType::CONSTR]->Fill(trk.getEta(),trkDx);
-      mDeltaXPhi[trkType::CONSTR]->Fill(trk.getPhi(),trkDx);
+      mMatchedTracks2DPtEta[trkType::CONSTR]->Fill(trk.getPt(), trk.getEta());
+      mDeltaZEta[trkType::CONSTR]->Fill(trk.getEta(), trkDz);
+      mDeltaZPhi[trkType::CONSTR]->Fill(trk.getPhi(), trkDz);
+      mDeltaXEta[trkType::CONSTR]->Fill(trk.getEta(), trkDx);
+      mDeltaXPhi[trkType::CONSTR]->Fill(trk.getPhi(), trkDx);
       mTOFChi2[trkType::CONSTR]->Fill(trkchi2);
       if (mUseMC) {
         auto lbl = mRecoCont.getTrackMCLabel(gTrackId);
@@ -316,7 +316,7 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
                    << " gid: " << gid;
         this->mInTracksPt[trkType::UNCONS]->Fill(trk.getPt());
         this->mInTracksEta[trkType::UNCONS]->Fill(trk.getEta());
-        this->mInTracks2DPtEta[trkType::UNCONS]->Fill(trk.getPt(),trk.getEta());
+        this->mInTracks2DPtEta[trkType::UNCONS]->Fill(trk.getPt(), trk.getEta());
       } else if constexpr (isTPCTOFTrack<decltype(trk)>()) {
         const auto& tpcTrack = mTPCTracks[mTPCTOFMatches[trk.getRefMatch()].getTrackRef().getIndex()];
         if (!selectTrack(tpcTrack)) {
@@ -326,7 +326,7 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
         LOG(debug) << "DEN UNCONS: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " ACCEPTED for denominator UNCONS, TPCTOF track";
         this->mInTracksPt[trkType::UNCONS]->Fill(tpcTrack.getPt());
         this->mInTracksEta[trkType::UNCONS]->Fill(tpcTrack.getEta());
-        this->mInTracks2DPtEta[trkType::UNCONS]->Fill(tpcTrack.getPt(),tpcTrack.getEta());
+        this->mInTracks2DPtEta[trkType::UNCONS]->Fill(tpcTrack.getPt(), tpcTrack.getEta());
       }
     }
     // In case of ITS-TPC-TOF, the ITS-TPC tracks contain also the ITS-TPC-TOF
@@ -339,7 +339,7 @@ void TOFMatchedTracks::monitorData(o2::framework::ProcessingContext& ctx)
       LOG(debug) << "DEN CONSTR: track with eta " << tpcTrack.getEta() << " and pT " << tpcTrack.getPt() << " ACCEPTED for denominator CONSTR, ITSTPC track";
       this->mInTracksPt[trkType::CONSTR]->Fill(tpcTrack.getPt());
       this->mInTracksEta[trkType::CONSTR]->Fill(tpcTrack.getEta());
-      this->mInTracks2DPtEta[trkType::CONSTR]->Fill(tpcTrack.getPt(),tpcTrack.getEta());
+      this->mInTracks2DPtEta[trkType::CONSTR]->Fill(tpcTrack.getPt(), tpcTrack.getEta());
     }
     return true;
   };

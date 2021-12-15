@@ -79,7 +79,7 @@ class TOFMatchedTracks final : public TaskInterface
   // ITS-TPC-TOF
   gsl::span<const o2::dataformats::TrackTPCITS> mITSTPCTracks;
   gsl::span<const o2::dataformats::MatchInfoTOF> mITSTPCTOFMatches;
- 
+
   bool mUseMC = false;
   bool mVerbose = false;
   TH1F* mInTracksPt[trkType::SIZE] = {};
