@@ -78,6 +78,7 @@ class ITSTrackTask : public TaskInterface
   float mVertexZsize;
   float mVertexRsize;
   Int_t mNtracksMAX;
+  Int_t mDoTTree;
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
 

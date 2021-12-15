@@ -119,8 +119,6 @@ class DigitsQcTask final : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
-  void setEndOfPayloadCheck(Bool_t doCheck) { mDoEndOfPayloadCheck = doCheck; }
-
   bool hasConfigValue(const std::string_view key);
   std::string getConfigValue(const std::string_view key);
   std::string getConfigValueLower(const std::string_view key);
@@ -151,7 +149,6 @@ class DigitsQcTask final : public TaskInterface
     };
   };
   std::vector<CombinedEvent> buildCombinedEvents(const std::unordered_map<header::DataHeader::SubSpecificationType, gsl::span<const o2::emcal::TriggerRecord>>& triggerrecords) const;
-  Bool_t mDoEndOfPayloadCheck = false;                         ///< Do old style end-of-payload check
   Bool_t mIgnoreTriggerTypes = false;                          ///< Do not differenciate between trigger types, treat all triggers as phys. triggers
   std::map<std::string, DigitsHistograms> mHistogramContainer; ///< Container with histograms per trigger class
   o2::emcal::Geometry* mGeometry = nullptr;                    ///< EMCAL geometry

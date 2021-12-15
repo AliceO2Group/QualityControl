@@ -40,6 +40,7 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     AlgorithmSpec{},
                                     Options{} };
+  newCheckRunner.labels.emplace_back(CheckRunner::getLabel());
   newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
   return newCheckRunner;
 }
@@ -62,9 +63,10 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRu
 
 void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [](framework::DeviceSpec const& device) {
-    return device.name.find(CheckRunner::createCheckRunnerIdString()) != std::string::npos;
+  auto matcher = [label = CheckRunner::getLabel()](framework::DeviceSpec const& device) {
+    return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
+
   auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 
   policies.emplace_back("checkerCompletionPolicy", matcher, callback);

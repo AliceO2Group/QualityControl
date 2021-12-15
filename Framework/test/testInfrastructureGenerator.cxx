@@ -24,16 +24,20 @@
 #include "getTestDataDirectory.h"
 
 #include <Framework/DataSpecUtils.h>
+#include <Configuration/ConfigurationFactory.h>
 
 using namespace o2::quality_control::core;
 using namespace o2::framework;
+using namespace o2::configuration;
 
 BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   std::cout << configFilePath << std::endl;
+  auto configInterface = ConfigurationFactory::getConfiguration(configFilePath);
+  auto configTree = configInterface->getRecursive();
   {
-    auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configFilePath, "o2flp1");
+    auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configTree, "o2flp1");
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 3);
 
@@ -53,7 +57,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
   }
 
   {
-    auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configFilePath, "o2flp2");
+    auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configTree, "o2flp2");
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 2);
 
@@ -69,7 +73,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
   }
 
   {
-    auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configFilePath, "o2flp3");
+    auto workflow = InfrastructureGenerator::generateLocalInfrastructure(configTree, "o2flp3");
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 0);
   }
@@ -78,7 +82,9 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
-  auto workflow = InfrastructureGenerator::generateRemoteInfrastructure(configFilePath);
+  auto configInterface = ConfigurationFactory::getConfiguration(configFilePath);
+  auto configTree = configInterface->getRecursive();
+  auto workflow = InfrastructureGenerator::generateRemoteInfrastructure(configTree);
 
   // the infrastructure should consist of a proxy, merger and checker for the 'skeletonTask' (its taskRunner is declared to be
   // local) and also taskRunner and checker for the 'abcTask' and 'xyzTask'.
@@ -168,7 +174,9 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
 BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
-  auto workflow = InfrastructureGenerator::generateStandaloneInfrastructure(configFilePath);
+  auto configInterface = ConfigurationFactory::getConfiguration(configFilePath);
+  auto configTree = configInterface->getRecursive();
+  auto workflow = InfrastructureGenerator::generateStandaloneInfrastructure(configTree);
 
   // the infrastructure should consist of 3 TaskRunners, 1 PostProcessingRunner, 4 CheckRunners (including one for PP), 1 AggregatorRunner
   BOOST_REQUIRE_EQUAL(workflow.size(), 9);
@@ -230,29 +238,31 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
 BOOST_AUTO_TEST_CASE(qc_factory_empty_config)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testEmptyConfig.json";
+  auto configInterface = ConfigurationFactory::getConfiguration(configFilePath);
+  auto configTree = configInterface->getRecursive();
   {
     WorkflowSpec workflow;
-    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateStandaloneInfrastructure(workflow, configFilePath));
+    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateStandaloneInfrastructure(workflow, configTree));
     BOOST_CHECK_EQUAL(workflow.size(), 0);
   }
   {
     WorkflowSpec workflow;
-    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateLocalInfrastructure(workflow, configFilePath, "asdf"));
+    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateLocalInfrastructure(workflow, configTree, "asdf"));
     BOOST_CHECK_EQUAL(workflow.size(), 0);
   }
   {
     WorkflowSpec workflow;
-    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateRemoteInfrastructure(workflow, configFilePath));
+    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateRemoteInfrastructure(workflow, configTree));
     BOOST_CHECK_EQUAL(workflow.size(), 0);
   }
   {
     WorkflowSpec workflow;
-    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateLocalBatchInfrastructure(workflow, configFilePath, "file.root"));
+    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateLocalBatchInfrastructure(workflow, configTree, "file.root"));
     BOOST_CHECK_EQUAL(workflow.size(), 0);
   }
   {
     WorkflowSpec workflow;
-    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateRemoteBatchInfrastructure(workflow, configFilePath, "file.root"));
+    BOOST_REQUIRE_NO_THROW(InfrastructureGenerator::generateRemoteBatchInfrastructure(workflow, configTree, "file.root"));
     BOOST_CHECK_EQUAL(workflow.size(), 0);
   }
 }
@@ -261,8 +271,10 @@ BOOST_AUTO_TEST_CASE(qc_infrastructure_local_batch_test)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   std::cout << configFilePath << std::endl;
+  auto configInterface = ConfigurationFactory::getConfiguration(configFilePath);
+  auto configTree = configInterface->getRecursive();
   {
-    auto workflow = InfrastructureGenerator::generateLocalBatchInfrastructure(configFilePath, "file.root");
+    auto workflow = InfrastructureGenerator::generateLocalBatchInfrastructure(configTree, "file.root");
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 4);
 
@@ -302,7 +314,9 @@ BOOST_AUTO_TEST_CASE(qc_infrastructure_local_batch_test)
 BOOST_AUTO_TEST_CASE(qc_infrastructure_remote_batch_test)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
-  auto workflow = InfrastructureGenerator::generateRemoteBatchInfrastructure(configFilePath, "file.root");
+  auto configInterface = ConfigurationFactory::getConfiguration(configFilePath);
+  auto configTree = configInterface->getRecursive();
+  auto workflow = InfrastructureGenerator::generateRemoteBatchInfrastructure(configTree, "file.root");
 
   BOOST_REQUIRE_EQUAL(workflow.size(), 7);
 

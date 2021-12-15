@@ -32,7 +32,7 @@
                 "maxNumberCycles": "-1",
                 "dataSource": {
                     "type": "dataSamplingPolicy",
-                    "name": "RAWDATA"
+                    "name": "feedata"
                 },
                 "location": "remote",
                 "taskParameters": {
@@ -63,7 +63,7 @@
     },
     "dataSamplingPolicies": [
         {
-            "id": "RAWDATA",
+            "id": "feedata",
             "active": "true",
             "machines": [],
             "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME",

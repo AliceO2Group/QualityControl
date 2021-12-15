@@ -16,7 +16,6 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "ITS/ITSTrackTask.h"
-#include <DetectorsCommonDataFormats/NameConf.h>
 #include <DataFormatsITS/TrackITS.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>
@@ -65,7 +64,8 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mVertexZsize = std::stof(mCustomParameters["vertexZsize"]);
   mVertexRsize = std::stof(mCustomParameters["vertexRsize"]);
   mNtracksMAX  = std::stof(mCustomParameters["NtracksMAX"]);
-  
+  mDoTTree = std::stoi(mCustomParameters["doTTree"]);
+
   createAllHistos();
   publishHistos();
 }
@@ -135,6 +135,9 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     float clusterRatio = nClusterCnt >0 ? nClusterCntTrack/nClusterCnt : -1;
     hAssociatedClusterFraction->Fill(clusterRatio);
     hNtracks->Fill(ntrackCnt);    
+
+    if (mDoTTree)
+      tClusterMap->Fill();
   }
 
   mNTracks += trackArr.size();
@@ -200,7 +203,8 @@ void ITSTrackTask::createAllHistos()
   tClusterMap->Branch("bitmap", &vMap);
   tClusterMap->Branch("eta", &vEta);
   tClusterMap->Branch("phi", &vPhi);
-  addObject(tClusterMap);
+  if (mDoTTree)
+    addObject(tClusterMap);
 
   hAngularDistribution = new TH2D("AngularDistribution", "AngularDistribution", 30, -1.5, 1.5, 60, 0, TMath::TwoPi());
   hAngularDistribution->SetTitle("AngularDistribution");

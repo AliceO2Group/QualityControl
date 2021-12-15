@@ -144,6 +144,9 @@ void VertexingQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       }
     }
     for (const auto& lbl : mcLbl) {
+      if (!lbl.isSet()) { // using only valid labels
+        continue;
+      }
       if (lbl.getSourceID() != 0) { // using only underlying event,  which is source 0
         continue;
       }
@@ -212,7 +215,7 @@ void VertexingQcTask::endOfCycle()
 
   if (mUseMC) {
 
-    if (!mVtxEffVsMult->SetTotalHistogram(*mNPrimaryMCGen, "") ||
+    if (!mVtxEffVsMult->SetTotalHistogram(*mNPrimaryMCGen, "f") || // all total have to be forcely replaced, or the passed from previous processing may have incompatible number of entries
         !mVtxEffVsMult->SetPassedHistogram(*mNPrimaryMCEvWithVtx, "")) {
       ILOG(Fatal, Support) << "Something went wrong in defining the efficiency histograms!!";
     } else {
