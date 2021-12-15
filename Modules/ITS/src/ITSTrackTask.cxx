@@ -49,6 +49,10 @@ ITSTrackTask::~ITSTrackTask()
   delete hVertexRvsZ;
   delete hVertexZ;
   delete hVertexContributors;
+  
+  delete hAssociatedClusterFraction;
+  delete hNtracks;
+  delete hNClustersPerTrackEta; 
 }
 
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -60,7 +64,8 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mVertexXYsize = std::stof(mCustomParameters["vertexXYsize"]);
   mVertexZsize = std::stof(mCustomParameters["vertexZsize"]);
   mVertexRsize = std::stof(mCustomParameters["vertexRsize"]);
-
+  mNtracksMAX  = std::stof(mCustomParameters["NtracksMAX"]);
+  
   createAllHistos();
   publishHistos();
 }
@@ -98,9 +103,14 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     vEta.clear();
     vPhi.clear();
 
+    int ntrackCnt =0;
+    int nClusterCntTrack =0;
+    int nClusterCnt =0;
+        
     for (int itrack = ROF.getFirstEntry(); itrack < ROF.getFirstEntry() + ROF.getNEntries(); itrack++) {
 
       auto& track = trackArr[itrack];
+      //if(track) ntrackCnt++;
       auto out = track.getParamOut();
       Float_t Eta = -log(tan(out.getTheta() / 2.));
       hTrackEta->Fill(Eta);
@@ -112,9 +122,19 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       vMap.emplace_back(track.getPattern());
       vEta.emplace_back(Eta);
       vPhi.emplace_back(out.getPhi());
+      
+      hNClustersPerTrackEta->Fill(track.getNumberOfClusters(),Eta);
+      nClusterCntTrack += track.getNumberOfClusters();   
     }
-
     tClusterMap->Fill();
+
+    auto clusters_in_frame = ROF.getROFData(clusArr);
+    nClusterCnt = clusters_in_frame.size();
+    ntrackCnt   = ROF.getNEntries();
+    
+    float clusterRatio = nClusterCnt >0 ? nClusterCntTrack/nClusterCnt : -1;
+    hAssociatedClusterFraction->Fill(clusterRatio);
+    hNtracks->Fill(ntrackCnt);    
   }
 
   mNTracks += trackArr.size();
@@ -167,6 +187,11 @@ void ITSTrackTask::reset()
   hVertexRvsZ->Reset();
   hVertexZ->Reset();
   hVertexContributors->Reset();
+  
+  hAssociatedClusterFraction->Reset();
+  hNtracks->Reset();
+  hNClustersPerTrackEta->Reset();
+  
 }
 
 void ITSTrackTask::createAllHistos()
@@ -239,6 +264,25 @@ void ITSTrackTask::createAllHistos()
   addObject(hVertexContributors);
   formatAxes(hVertexContributors, "Number of contributors for vertex", "Counts", 1, 1.10);
   hVertexContributors->SetStats(0);
+  
+  hAssociatedClusterFraction = new TH1D("AssociatedClusterFraction", "AssociatedClusterFraction", 100, 0, 1);
+  hAssociatedClusterFraction->SetTitle("The fraction of clusters in tracking event by event");
+  addObject(hAssociatedClusterFraction);
+  formatAxes(hAssociatedClusterFraction, "", "Clusters in track / Clusters", 1, 1.10);
+  hAssociatedClusterFraction->SetStats(0);
+  
+  hNtracks = new TH1D("Ntracks", "Ntracks", mNtracksMAX, 0, mNtracksMAX);
+  hNtracks->SetTitle("The number of tracks event by event");
+  addObject(hNtracks);
+  formatAxes(hNtracks, "", "# of tracks ", 1, 1.10);
+  hNtracks->SetStats(0);
+
+  hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 50, 0, 10, 30, -1.5, 1.5);
+  hNClustersPerTrackEta->SetTitle("NClusters Per Track vs Eta");
+  addObject(hNClustersPerTrackEta);
+  formatAxes(hNClustersPerTrackEta, "# of Clusters per Track", "#Eta", 1, 1.10);
+  hNClustersPerTrackEta->SetStats(0);
+  
 }
 
 void ITSTrackTask::addObject(TObject* aObject)

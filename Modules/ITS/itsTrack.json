@@ -40,7 +40,8 @@
           "runNumberPath" : "/home/its/QC/workdir/infiles/RunNumber.dat",
 	  "vertexXYsize" : "0.1",
 	  "vertexZsize": "15",
-	  "vertexRsize": "0.1"
+	  "vertexRsize": "0.1",
+	  "NtracksMAX"  : "100"
         }
 
       }
