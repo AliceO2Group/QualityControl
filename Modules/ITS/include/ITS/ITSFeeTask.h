@@ -65,12 +65,12 @@ class ITSFeeTask final : public TaskInterface
   void startOfActivity(Activity& activity) override;
   void startOfCycle() override;
   void monitorData(o2::framework::ProcessingContext& ctx) override;
-  void getParameters(); // get Task parameters from json file
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
  private:
+  void getParameters(); // get Task parameters from json file
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createFeePlots();
   void setPlotsFormat();
