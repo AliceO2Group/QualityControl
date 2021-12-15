@@ -89,30 +89,32 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
         ILOG(Error) << "Could not cast the input object to MonitorObjectCollection, skipping." << ENDM;
         continue;
       }
+      ILOG(Info, Support) << "Received MonitorObjectCollection '" << moc->GetName() << "'" << ENDM;
       moc->postDeserialization();
 
       auto mocName = moc->GetName();
       if (*mocName == '\0') {
-        ILOG(Error) << "MonitorObjectCollection does not have a name, skipping." << ENDM;
+        ILOG(Error, Support) << "MonitorObjectCollection does not have a name, skipping." << ENDM;
         continue;
       }
 
+      ILOG(Info, Support) << "Checking for existing objects in the file." << ENDM;
       auto storedTObj = sinkFile->Get(mocName);
       if (storedTObj != nullptr) {
         auto storedMOC = dynamic_cast<MonitorObjectCollection*>(storedTObj);
         if (storedMOC == nullptr) {
-          ILOG(Error) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
+          ILOG(Error, Ops) << "Could not cast the stored object to MonitorObjectCollection, skipping." << ENDM;
           delete storedTObj;
           continue;
         }
         storedMOC->postDeserialization();
-        ILOG(Info) << "Merging object '" << moc->GetName() << "' with the existing one in the file." << ENDM;
+        ILOG(Info, Support) << "Merging object '" << moc->GetName() << "' with the existing one in the file." << ENDM;
         moc->merge(storedMOC);
       }
       delete storedTObj;
 
-      ILOG(Info) << "Object '" << moc->GetName() << "' has been stored in the file." << ENDM;
-      sinkFile->WriteObject(moc, moc->GetName(), "Overwrite");
+      auto nbytes = sinkFile->WriteObject(moc, moc->GetName(), "Overwrite");
+      ILOG(Info, Support) << "Object '" << moc->GetName() << "' has been stored in the file (" << nbytes << " bytes)." << ENDM;
       delete moc;
     }
     closeSinkFile(sinkFile);
