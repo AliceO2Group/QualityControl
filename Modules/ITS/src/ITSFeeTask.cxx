@@ -61,7 +61,7 @@ void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ITSFeeTask::createFeePlots()
 {
-  mTrigger = new TH1I("TriggerFlag", "Trigger vs counts", mNTrigger, 0.5, mNTrigger + 0.5);
+  mTrigger = new TH1I("TriggerFlag", "Trigger vs counts", NTrigger, 0.5, NTrigger + 0.5);
   getObjectsManager()->startPublishing(mTrigger); // mTrigger
 
   mTFInfo = new TH1I("STFInfo", "STF vs count", 15000, 0, 15000);
@@ -73,7 +73,7 @@ void ITSFeeTask::createFeePlots()
   mProcessingTime = new TH1I("ProcessingTime", "Processing Time", 10000, 0, 10000);
   getObjectsManager()->startPublishing(mProcessingTime); // mProcessingTime
 
-  mTriggerVsFeeId = new TH2I("TriggerVsFeeid", "Trigger count vs Trigger ID and Fee ID", NFees, 0, NFees, mNTrigger, 0.5, mNTrigger + 0.5);
+  mTriggerVsFeeId = new TH2I("TriggerVsFeeid", "Trigger count vs Trigger ID and Fee ID", NFees, 0, NFees, NTrigger, 0.5, NTrigger + 0.5);
   getObjectsManager()->startPublishing(mTriggerVsFeeId); // mTriggervsFeeId
 
   for (int i = 0; i < NFlags; i++) {
@@ -106,7 +106,7 @@ void ITSFeeTask::setPlotsFormat()
     setAxisTitle(mTrigger, "Trigger ID", "Counts");
     mTrigger->SetMinimum(0);
     mTrigger->SetFillColor(kBlue);
-    for (int i = 0; i < mNTrigger; i++) {
+    for (int i = 0; i < NTrigger; i++) {
       mTrigger->GetXaxis()->SetBinLabel(i + 1, mTriggerType[i]);
     }
   }
@@ -119,7 +119,7 @@ void ITSFeeTask::setPlotsFormat()
     setAxisTitle(mTriggerVsFeeId, "FeeID", "Trigger ID");
     mTriggerVsFeeId->SetMinimum(0);
     mTriggerVsFeeId->SetStats(0);
-    for (int i = 0; i < mNTrigger; i++) {
+    for (int i = 0; i < NTrigger; i++) {
       mTriggerVsFeeId->GetYaxis()->SetBinLabel(i + 1, mTriggerType[i]);
     }
   }
@@ -136,6 +136,10 @@ void ITSFeeTask::setPlotsFormat()
     if (mLaneStatus[i]) {
       setAxisTitle(mLaneStatus[i], "FEEID", "Lane");
       mLaneStatus[i]->SetStats(0);
+      for (const int& lay : LayerBoundaryFEE) {
+        auto l = new TLine(lay, 0, lay, NLanes);
+        mLaneStatus[i]->GetListOfFunctions()->Add(l);
+      }
     }
   }
 
@@ -278,6 +282,7 @@ void ITSFeeTask::resetGeneralPlots()
   mTriggerVsFeeId->Reset();
   mTrigger->Reset();
 }
+
 void ITSFeeTask::reset()
 {
   resetGeneralPlots();
