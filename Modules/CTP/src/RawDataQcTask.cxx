@@ -139,7 +139,7 @@ void RawDataQcTask::reset()
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
   mHistogram->Reset();
-  mHistogra2->Reset();
+  mHistogram2->Reset();
 }
 
 } // namespace o2::quality_control_modules::ctp
