@@ -54,9 +54,9 @@ ITSFeeTask::~ITSFeeTask()
 void ITSFeeTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
   ILOG(Info, Support) << "Initializing the ITSFeeTask" << ENDM;
+  getParameters();
   createFeePlots();
   setPlotsFormat();
-  getParameters();
 }
 
 void ITSFeeTask::createFeePlots()
@@ -90,7 +90,7 @@ void ITSFeeTask::createFeePlots()
   mIdCheck = new TH2I("IdCheck", "Id Check", NFees, 0, NFees, 8, 0, 8);
   getObjectsManager()->startPublishing(mIdCheck); // mIdCheck
 
-  mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 5.12e5);
+  mPayloadSize = new TH2F("PayloadSize", "Payload Size", NFees, 0, NFees, mNPayloadSizeBins, 0, 4.096e4);
   getObjectsManager()->startPublishing(mPayloadSize); // mPayloadSize
 }
 
@@ -149,6 +149,7 @@ void ITSFeeTask::setPlotsFormat()
 
   if (mPayloadSize) {
     setAxisTitle(mPayloadSize, "FEEID", "Avg. Payload size");
+    mPayloadSize->SetStats(0);
   }
 
   if (mIdCheck) {
@@ -188,8 +189,9 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
     int ilayer = (int)((rdh->feeId & 0xf000) >> 12);
     int ifee = 3 * StaveBoundary[ilayer] - (StaveBoundary[ilayer] - StaveBoundary[NLayerIB]) * (ilayer >= NLayerIB) + istave * (3 - (ilayer >= NLayerIB)) + ilink;
     int memorysize = (int)(rdh->memorySize);
+    int headersize = (int)(rdh->headerSize);
 
-    payloadTot[ifee] += memorysize;
+    payloadTot[ifee] += memorysize - headersize;
 
     if ((int)(rdh->stop) && it.size()) { // looking into the DDW0 from the closing packet
       auto const* ddw = reinterpret_cast<const GBTDiagnosticWord*>(it.data());
