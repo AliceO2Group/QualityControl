@@ -4,11 +4,7 @@
     "config": {
       "database": {
         "implementation": "CCDB",
-<<<<<<< HEAD
-        "host": "188.184.2.55:8080",
-=======
         "host": "ccdb-test.cern.ch:8080",
->>>>>>> fc5f9b7e2ffb84ab1035fe495386049d163e3dde
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -24,19 +20,11 @@
         "url": ""
       },
       "conditionDB": {
-<<<<<<< HEAD
-        "url": "188.184.2.55:8080"
-      }
-    },
-    "tasks": {
-      "ITSClusterTask_testc": {
-=======
         "url": "ccdb-test.cern.ch:8080"
       }
     },
    "tasks": {
       "ITSClusterTask": {
->>>>>>> fc5f9b7e2ffb84ab1035fe495386049d163e3dde
         "active": "true",
         "className": "o2::quality_control_modules::its::ITSClusterTask",
         "moduleName": "QcITS",
