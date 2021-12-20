@@ -23,6 +23,7 @@
 
 #include <TH1.h>
 #include <TH2.h>
+#include <TLine.h>
 
 class TH2I;
 class TH1I;
@@ -80,10 +81,11 @@ class ITSFeeTask final : public TaskInterface
   static constexpr int NLanes = 28;
   static constexpr int NFees = 48 * 3 + 144 * 2;
   static constexpr int NFlags = 4;
+  static constexpr int NTrigger = 13;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
+  const int LayerBoundaryFEE[NLayer - 1] = { 35, 83, 143, 191, 251, 335 };
   int mTimeFrameId = 0;
-  static constexpr int mNTrigger = 13;
-  TString mTriggerType[mNTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
+  TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
   std::string mLaneStatusFlag[NFlags] = { "OK", "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
 
   // parameters taken from the .json
