@@ -1,0 +1,8 @@
+# Global access
+*       @Barthelemy @knopers8
+
+# Detectors
+/Modules/TOF/      @njacazio
+/Modules/EMCAL/    @mfasDa
+/Modules/TPC/      @wiechula
+/Modules/MFT/      @tomas-herman

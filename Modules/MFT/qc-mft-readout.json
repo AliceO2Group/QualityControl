@@ -1,0 +1,59 @@
+{
+  "qc" : {
+    "config" : {
+      "database" : {
+        "implementation" : "CCDB",
+        "host" : "ccdb-test.cern.ch:8080",
+        "username" : "not_applicable",
+        "password" : "not_applicable",
+        "name" : "not_applicable"
+      },
+      "Activity" : {
+        "number" : "42",
+        "type" : "2"
+      },
+      "monitoring" : {
+        "url" : "infologger:///debug?qc"
+      },
+      "consul" : {
+        "url" : ""
+      },
+      "conditionDB" : {
+        "url" : "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks" : {
+      "QcMFTReadout" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::mft::QcMFTReadoutTask",
+        "moduleName" : "QcMFT",
+        "detectorName" : "MFT",
+        "cycleDurationSeconds" : "60",
+        "maxNumberCycles" : "-1",
+        "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource": {
+          "type": "direct",
+          "query": "filter:MFT/RAWDATA"
+        },
+        "taskParameters" : {
+          "myOwnKey" : "myOwnValue"
+        },
+        "location" : "remote"
+      }
+    },
+    "checks" : {
+      "QcMFTReadout" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::mft::QcMFTReadoutCheck",
+        "moduleName" : "QcMFT",
+        "detectorName" : "MFT",
+        "policy" : "OnEachSeparately",
+        "dataSource" : [ {
+          "type" : "Task",
+          "name" : "QcMFTReadout",
+          "MOs"  : ["mSummaryChipFault", "mSummaryChipError", "mSummaryChipWarning"]
+        } ]
+      }
+    }
+  }
+}

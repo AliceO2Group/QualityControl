@@ -1,20 +1,19 @@
 # QuickStart
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
-<!--./gh-md-toc --insert /path/to/README.md-->
+<!--./gh-md-toc --no-backup --hide-footer --indent 3  /path/to/README.md-->
 <!--ts-->
-   * [QuickStart](#quickstart)
-      * [Requirements](#requirements)
-      * [Setup](#setup)
-         * [Environment loading](#environment-loading)
-      * [Execution](#execution)
-         * [Basic workflow](#basic-workflow)
-         * [Readout chain](#readout-chain)
-            * [Getting real data from readout](#getting-real-data-from-readout)
-            * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
-         * [Post-processing example](#post-processing-example)
-<!-- Added by: bvonhall, at:  -->
-
+* [QuickStart](#quickstart)
+   * [Read this first!](#read-this-first)
+   * [Requirements](#requirements)
+   * [Setup](#setup)
+      * [Environment loading](#environment-loading)
+   * [Execution](#execution)
+      * [Basic workflow](#basic-workflow)
+      * [Readout chain](#readout-chain)
+         * [Getting real data from readout](#getting-real-data-from-readout)
+         * [Readout data format as received by the Task](#readout-data-format-as-received-by-the-task)
+      * [Post-processing example](#post-processing-example)
 <!--te-->
 
 [↑ Go to the Table of Content ↑](../README.md) | [Continue to Modules Development →](ModulesDevelopment.md)
@@ -29,29 +28,23 @@ Thanks!
 
 ## Requirements
 
-A CC7 machine (Mac, and in particular Ubuntu, are only supported on a best effort basis, some packages might not build properly).
+A CS8 machine (Mac, and in particular Ubuntu, are only supported on a best effort basis, some packages might not build properly).
 
 ## Setup
 
-1. Setup O2 environment and tools <br>We use alibuild, see complete instructions [here](https://alice-doc.github.io/alice-analysis-tutorial/building/) (prefer the second option, not alidock). In particular make sure to follow these steps:
+1. Setup O2 environment and tools <br>We use alibuild, **follow the complete instructions** [here](https://alice-doc.github.io/alice-analysis-tutorial/building/). In particular make sure to f:
    1. Install GLFW to have GUIs in the DPL (optional, **DPL GUIs do not work in containers nor over SSH**).
-        * CC7: `sudo yum install -y glfw-devel --enablerepo=epel`
+        * CS8: `sudo yum install -y glfw-devel --enablerepo=epel`
         * Mac: `brew install glfw`
-   2. Prerequisites  
-        * [CC7](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-centos7.html)
-        * [Mac](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-macos.html) (best effort)
-        * [Ubuntu](https://alice-doc.github.io/alice-analysis-tutorial/building/prereq-ubuntu.html) (best effort)
-   3. [Install aliBuild](https://alice-doc.github.io/alice-analysis-tutorial/building/custom.html#get-or-upgrade-alibuild)
-   4. [Check setup and build O2](https://alice-doc.github.io/alice-analysis-tutorial/building/build.html)
 
 2. Prepare the QualityControl development package
     * `aliBuild init QualityControl@master --defaults o2`
 
-4. Build/install the QualityControl, its GUI (qcg) and the readout. The simplest is to use the metapackage `O2Suite`.
+4. Build/install the QualityControl and the readout. The simplest is to use the metapackage `O2Suite`.
     * `aliBuild build O2Suite --defaults o2`
-    * At this point you might encounter a message about missing system requirements. Run `aliDoctor O2Suite` to get a full information about what is missing and how to install it.
+    * At this point you might encounter a message about missing system requirements. Run `aliDoctor --defaults o2 O2Suite` to get a full information about what is missing and how to install it.
 
-Note: on non-CC7 systems, you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages. Moreover, you can build `qcg` instead of `O2Suite` if you don't plan to use the readout (remember to substitute `O2Suite` with `qcg` when loading the environment).
+Note: you can also use the alibuild "defaults" called `o2-dataflow` to avoid building simulation related packages. Moreover, you can build `QualityControl` instead of `O2Suite` if you don't plan to use the readout (remember to substitute `O2Suite` with `QualityControl` when loading the environment).
 
 ### Environment loading
 
@@ -114,7 +107,7 @@ The configuration for the QC is made of many parameters described in an [advance
     "active": "true",
     "className": "o2::quality_control_modules::skeleton::SkeletonTask",
     "moduleName": "QcSkeleton",
-    "cycleDurationSeconds": "10",
+    "cycleDurationSeconds": "10",     "": "10 seconds minimum",
 (...)
 ```
 Try and change the name of the task by replacing `QcTask` by a name of your choice (there are 2 places to update in the config file!). Relaunch the workflows. You should now see the object published under a different directory in the QCG.

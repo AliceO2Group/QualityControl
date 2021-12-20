@@ -1,0 +1,73 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?METRIC"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "CalibrationTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ft0::CalibrationTask",
+        "moduleName": "QcFT0",
+        "detectorName": "FT0",
+        "mergingMode": "entire",
+        "cycleDurationSeconds": "5",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "ft0-digits"
+        },
+        "taskParameters": {"CCDBUrl": "http://ccdb-test.cern.ch:8080"}
+      }
+    },
+    "checks": {
+      "CalibratedChannelTimeCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::ft0::ChannelTimeCalibrationCheck",
+        "moduleName": "QcFT0",
+        "policy": "OnAny",
+        "detectorName": "FT0",
+        "dataSource": [{
+          "type": "Task",
+          "name": "CalibrationTask",
+          "MOs": ["Calibrated_time_per_channel"]
+        }],
+        "checkParameters": {"MeanWarning": 3, "MeanError": 5, "RMSWarning": 999, "RMSError": 999, "MinEntries": 0}
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "ft0-digits",
+      "active": "true",
+      "machines": [],
+      "query": "digits:FT0/DIGITSBC/0;channels:FT0/DIGITSCH/0",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.1",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+    "qc": {
+      "config": {
+        "database": {
+          "implementation": "CCDB",
+          "host": "http://localhost:8083",
+          "username": "not_applicable",
+          "password": "not_applicable",
+          "name": "not_applicable"
+        },
+        "Activity": {
+          "number": "42",
+          "type": "2"
+        },
+        "monitoring": {
+          "url": "infologger:///debug?METRIC"
+        },
+        "consul": {
+          "url": "http://localhost:8500"
+        },
+        "conditionDB": {
+          "url": "http://localhost:8083"
+        }
+      },
+      "tasks": {
+        "DigitQcTask": {
+          "active": "true",
+          "className": "o2::quality_control_modules::ft0::DigitQcTask",
+          "moduleName": "QcFT0",
+          "detectorName": "FT0",
+          "cycleDurationSeconds": "60",
+          "maxNumberCycles": "-1",
+          "dataSource": {
+              "type": "direct",
+              "query": "digits:FT0/DIGITSBC/0;channels:FT0/DIGITSCH/0"
+            },
+          "taskParameters": {
+            "ChannelIDs": "204,205"
+          },
+          "location": "local",
+          "localMachines": [
+            "localhost"
+          ],
+          "remoteMachine": "localhost",
+          "remotePort": "30132",
+          "mergingMode": "entire"
+        }
+      },
+      "checks": {
+        "DummyAnalysisCheck": {
+          "active": "true",
+          "className": "o2::quality_control_modules::skeleton::SkeletonCheck",
+          "moduleName": "QcSkeleton",
+          "policy": "OnAny",
+          "detectorName": "FT0",
+          "dataSource": [{
+            "type": "Task",
+            "name": "DigitQcTask",
+            "MOs": ["example"]
+          }]
+        }
+      }
+    }
+}

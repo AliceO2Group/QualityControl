@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -54,18 +55,24 @@ void RawQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::Facility, "QC");
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "PHS");
-  QcInfoLogger::GetInstance().setContext(context);
-  QcInfoLogger::GetInstance() << "initialize RawQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInfoLogger().setContext(context);
+  ILOG(Info, Support) << "initialize RawQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("pedestal"); param != mCustomParameters.end()) {
-    QcInfoLogger::GetInstance() << "Working in pedestal mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in pedestal mode " << AliceO2::InfoLogger::InfoLogger::endm;
     if (param->second.find("on") != std::string::npos) {
       mMode = 1;
     }
   }
+  if (auto param = mCustomParameters.find("LED"); param != mCustomParameters.end()) {
+    ILOG(Info, Support) << "Working in LED mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    if (param->second.find("on") != std::string::npos) {
+      mMode = 2;
+    }
+  }
   if (auto param = mCustomParameters.find("physics"); param != mCustomParameters.end()) {
-    QcInfoLogger::GetInstance() << "Working in physics mode " << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Working in physics mode " << AliceO2::InfoLogger::InfoLogger::endm;
     if (param->second.find("on") != std::string::npos) {
       mMode = 0;
     }
@@ -80,23 +87,14 @@ void RawQcTask::InitHistograms()
   //First init general histograms for any mode
 
   // Statistics histograms
-  mHist1D[kMessageCounter] = new TH1F("NumberOfMessages", "Number of messages in time interval", 1, 0.5, 1.5);
-  mHist1D[kMessageCounter]->GetXaxis()->SetTitle("MonitorData");
-  mHist1D[kMessageCounter]->GetYaxis()->SetTitle("Number of messages");
-  getObjectsManager()->startPublishing(mHist1D[kMessageCounter]);
+  mHist2D[kErrorNumber] = new TH2F("NumberOfErrors", "Number of hardware errors", 32, 0, 32, 15, 0, 15.); //xaxis: FEE card number + 2 for TRU and global errors
+  mHist2D[kErrorNumber]->GetXaxis()->SetTitle("FEE card");
+  mHist2D[kErrorNumber]->GetYaxis()->SetTitle("DDL");
+  mHist2D[kErrorNumber]->SetDrawOption("colz");
+  mHist2D[kErrorNumber]->SetStats(0);
+  getObjectsManager()->startPublishing(mHist2D[kErrorNumber]);
 
-  // mTotalDataVolume = new TH1F("TotalDataVolume", "Total data volume", 1, 0.5, 1.5);
-  // mTotalDataVolume->GetXaxis()->SetTitle("MonitorData");
-  // mTotalDataVolume->GetYaxis()->SetTitle("Total data volume (Byte)");
-  // getObjectsManager()->startPublishing(mTotalDataVolume);
-
-  // // PHOS related histograms
-  // mPayloadSizePerDDL = new TH2F("PayloadSizePerDDL", "PayloadSizePerDDL", 20, 0, 20, 100, 0, 1);
-  // mPayloadSizePerDDL->GetXaxis()->SetTitle("ddl");
-  // mPayloadSizePerDDL->GetYaxis()->SetTitle("PayloadSize");
-  // getObjectsManager()->startPublishing(mPayloadSizePerDDL);
-
-  mHist2D[kErrorType] = new TH2F("ErrorTypePerDDL", "ErrorTypePerDDL", 16, 0, 16, 15, 0, 15.); //xaxis: FEE card number + 2 for TRU and global errors
+  mHist2D[kErrorType] = new TH2F("ErrorTypePerDDL", "ErrorTypePerDDL", 32, 0, 32, 15, 0, 15.);
   mHist2D[kErrorType]->GetXaxis()->SetTitle("FEE card");
   mHist2D[kErrorType]->GetYaxis()->SetTitle("DDL");
   mHist2D[kErrorType]->SetDrawOption("colz");
@@ -116,23 +114,26 @@ void RawQcTask::InitHistograms()
 
 void RawQcTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   reset();
 }
 
 void RawQcTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-  if (mMode == 1) { //Pedestals
-    for (Int_t mod = 0; mod < 4; mod++) {
-      if (mHist2D[kHGmeanM1 + mod]) {
-        mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
-        mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  if (mMode == 1) {   //Pedestals
+    if (mFinalized) { //means were already calculated
+      for (Int_t mod = 0; mod < 4; mod++) {
+        if (mHist2D[kHGmeanM1 + mod]) {
+          mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+          mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+        }
+        if (mHist2D[kLGmeanM1 + mod]) {
+          mHist2D[kLGmeanM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+          mHist2D[kLGrmsM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+        }
       }
-      if (mHist2D[kLGmeanM1 + mod]) {
-        mHist2D[kLGmeanM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
-        mHist2D[kLGrmsM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
-      }
+      mFinalized = false;
     }
   }
 }
@@ -150,15 +151,10 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   auto hwerrors = ctx.inputs().get<std::vector<o2::phos::RawReaderError>>("rawerr");
   for (auto e : hwerrors) {
-    int ibin = mHist2D[kErrorType]->Fill(float(e.getFEC()), float(e.getDDL()));
-    char cont = mHist2D[kErrorType]->GetBinContent(ibin);
-    if (cont == 0) { //not filled yet
-      mHist2D[kErrorType]->Fill(float(e.getFEC()), float(e.getDDL()), float(e.getError()));
-    } else {
-      if (cont != e.getError()) {                     //if same alredy reported, do nothing, else ...
-        mHist2D[kErrorType]->SetBinContent(ibin, 30); //30: several errors
-      }
-    }
+    int ibin = mHist2D[kErrorNumber]->Fill(float(e.getFEC()), float(e.getDDL()));
+    int cont = mHist2D[kErrorType]->GetBinContent(ibin);
+    cont |= (1 << e.getError());
+    mHist2D[kErrorType]->SetBinContent(ibin, cont);
   }
 
   // //Chi2: not hardware errors but unusual/correpted sample
@@ -194,8 +190,11 @@ void RawQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void RawQcTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
-  if (mMode == 1) { //Pedestals
+  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  if (mMode == 1) {   //Pedestals
+    if (mFinalized) { //means were already calculated
+      return;
+    }
     for (Int_t mod = 0; mod < 4; mod++) {
       if (mHist2D[kHGmeanM1 + mod]) {
         mHist2D[kHGmeanM1 + mod]->Divide(mHist2D[kHGoccupM1 + mod]);
@@ -256,19 +255,22 @@ void RawQcTask::endOfCycle()
         mHist2D[kLGoccupM1 + mod]->SetMaximum(occMax);
       }
     }
+    mFinalized = true;
   }
 }
 
 void RawQcTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  endOfCycle();
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void RawQcTask::reset()
 {
   // clean all the monitor objects here
+  mFinalized = false;
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   for (int i = kNhist1D; i--;) {
     if (mHist1D[i]) {
       mHist1D[i]->Reset();
@@ -292,21 +294,22 @@ void RawQcTask::FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cel
       float e = c.getEnergy();
       if (e > kOcccupancyTh) {
         // Converts the absolute numbering into the following array
-        //  relid[0] = PHOS Module number 1:module
+        //  relid[0] = PHOS Module number 1,...4:module
         //  relid[1] = Row number inside a PHOS module (Phi coordinate)
         //  relid[2] = Column number inside a PHOS module (Z coordinate)
         char relid[3];
         o2::phos::Geometry::absToRelNumbering(address, relid);
-        int ibin = mHist2D[kCellOccupM1 + relid[0]]->FindBin(relid[1] - 0.5, relid[2] - 0.5);
+        short mod = relid[0] - 1;
+        int ibin = mHist2D[kCellOccupM1 + mod]->FindBin(relid[1] - 0.5, relid[2] - 0.5);
         float emean = e;
-        float n = mHist2D[kCellOccupM1 + relid[0]]->GetBinContent(ibin);
+        float n = mHist2D[kCellOccupM1 + mod]->GetBinContent(ibin);
         if (n > 0) {
-          emean = (e + mHist2D[kCellEM1 + relid[0]]->GetBinContent(ibin) * n) / (n + 1);
+          emean = (e + mHist2D[kCellEM1 + mod]->GetBinContent(ibin) * n) / (n + 1);
         }
-        mHist2D[kCellEM1 + relid[0]]->SetBinContent(ibin, emean);
-        mHist2D[kCellOccupM1 + relid[0]]->AddBinContent(ibin);
-        mHist2D[kTimeEM1 + relid[0]]->Fill(e, c.getTime());
-        mHist1D[kCellSpM1 + relid[0]]->Fill(e);
+        mHist2D[kCellEM1 + mod]->SetBinContent(ibin, emean);
+        mHist2D[kCellOccupM1 + mod]->AddBinContent(ibin);
+        mHist2D[kTimeEM1 + mod]->Fill(e, c.getTime());
+        mHist1D[kCellSpM1 + mod]->Fill(e);
       }
     }
   }
@@ -314,6 +317,15 @@ void RawQcTask::FillPhysicsHistograms(const gsl::span<const o2::phos::Cell>& cel
 
 void RawQcTask::FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& cells, const gsl::span<const o2::phos::TriggerRecord>& cellsTR)
 {
+  if (mFinalized) {
+    for (Int_t mod = 0; mod < 4; mod++) {
+      mHist2D[kHGmeanM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+      mHist2D[kHGrmsM1 + mod]->Multiply(mHist2D[kHGoccupM1 + mod]);
+      mHist2D[kLGmeanM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+      mHist2D[kLGrmsM1 + mod]->Multiply(mHist2D[kLGoccupM1 + mod]);
+    }
+    mFinalized = false;
+  }
 
   for (const auto& tr : cellsTR) {
     int firstCellInEvent = tr.getFirstEntry();
@@ -323,14 +335,15 @@ void RawQcTask::FillPedestalHistograms(const gsl::span<const o2::phos::Cell>& ce
       short address = c.getAbsId();
       char relid[3];
       o2::phos::Geometry::absToRelNumbering(address, relid);
+      short mod = relid[0] - 1;
       if (c.getHighGain()) {
-        mHist2D[kHGmeanM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
-        mHist2D[kHGrmsM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime()); //to store in Cells format
-        mHist2D[kHGoccupM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5);
+        mHist2D[kHGmeanM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
+        mHist2D[kHGrmsM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime()); //to store in Cells format
+        mHist2D[kHGoccupM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5);
       } else {
-        mHist2D[kLGmeanM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
-        mHist2D[kLGrmsM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime());
-        mHist2D[kLGoccupM1 + relid[0]]->Fill(relid[1] - 0.5, relid[2] - 0.5);
+        mHist2D[kLGmeanM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, c.getEnergy());
+        mHist2D[kLGrmsM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5, 1.e+7 * c.getTime());
+        mHist2D[kLGoccupM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5);
       }
     }
   }
@@ -342,7 +355,7 @@ void RawQcTask::CreatePedestalHistograms()
 
   for (Int_t mod = 0; mod < 4; mod++) {
     if (!mHist2D[kHGmeanM1 + mod]) {
-      mHist2D[kHGmeanM1 + mod] = new TH2F(Form("PedHGmean%d", mod + 1), Form("Pedestal mean High Gain, mod %d", mod), 64, 0., 64., 56, 0., 56.);
+      mHist2D[kHGmeanM1 + mod] = new TH2F(Form("PedHGmean%d", mod + 1), Form("Pedestal mean High Gain, mod %d", mod + 1), 64, 0., 64., 56, 0., 56.);
       mHist2D[kHGmeanM1 + mod]->GetXaxis()->SetNdivisions(508, kFALSE);
       mHist2D[kHGmeanM1 + mod]->GetYaxis()->SetNdivisions(514, kFALSE);
       mHist2D[kHGmeanM1 + mod]->GetXaxis()->SetTitle("x, cells");

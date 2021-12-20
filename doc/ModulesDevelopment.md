@@ -1,40 +1,38 @@
 # Modules development
 
 <!--TOC generated with https://github.com/ekalinin/github-markdown-toc-->
-<!--./gh-md-toc --insert /path/to/README.md-->
+<!--./gh-md-toc --insert --no-backup --hide-footer --indent 3 /path/to/README.md-->
 <!--ts-->
-   * [Modules development](#modules-development)
-      * [Context](#context)
-         * [QC architecture](#qc-architecture)
-         * [DPL](#dpl)
-         * [Data Sampling](#data-sampling)
-            * [Custom Data Sampling Condition](#custom-data-sampling-condition)
-            * [Bypassing the Data Sampling](#bypassing-the-data-sampling)
-         * [Code Organization](#code-organization)
-         * [Developing with aliBuild/alienv](#developing-with-alibuildalienv)
-         * [User-defined modules](#user-defined-modules)
-         * [Repository](#repository)
-            * [Paths](#paths)
-      * [Module creation](#module-creation)
-      * [Test run](#test-run)
-         * [Saving the QC objects in a local file](#saving-the-qc-objects-in-a-local-file)
-      * [Modification of the Task](#modification-of-the-task)
-      * [Check](#check)
-         * [Configuration](#configuration)
-         * [Implementation](#implementation)
-      * [Quality Aggregation](#quality-aggregation)
-         * [Quick try](#quick-try)
-         * [Configuration](#configuration-1)
-         * [Implementation](#implementation-1)
-      * [Committing code](#committing-code)
-      * [Data sources](#data-sources)
-         * [Readout](#readout)
-         * [DPL workflow](#dpl-workflow)
-      * [A more advanced example](#a-more-advanced-example)
-      * [Monitoring](#monitoring)
-
-<!-- Added by: bvonhall, at:  -->
-
+* [Modules development](#modules-development)
+   * [Context](#context)
+      * [QC architecture](#qc-architecture)
+      * [DPL](#dpl)
+      * [Data Sampling](#data-sampling)
+         * [Custom Data Sampling Condition](#custom-data-sampling-condition)
+         * [Bypassing the Data Sampling](#bypassing-the-data-sampling)
+      * [Code Organization](#code-organization)
+      * [Developing with aliBuild/alienv](#developing-with-alibuildalienv)
+      * [User-defined modules](#user-defined-modules)
+      * [Repository](#repository)
+         * [Paths](#paths)
+   * [Module creation](#module-creation)
+   * [Test run](#test-run)
+      * [Saving the QC objects in a local file](#saving-the-qc-objects-in-a-local-file)
+   * [Modification of the Task](#modification-of-the-task)
+   * [Check](#check)
+      * [Configuration](#configuration)
+      * [Implementation](#implementation)
+   * [Quality Aggregation](#quality-aggregation)
+      * [Quick try](#quick-try)
+      * [Configuration](#configuration-1)
+      * [Implementation](#implementation-1)
+   * [Committing code](#committing-code)
+   * [Data sources](#data-sources)
+      * [Readout](#readout)
+      * [DPL workflow](#dpl-workflow)
+   * [Run number and other run attributes (period, pass type, provenance)](#run-number-and-other-run-attributes-period-pass-type-provenance)
+   * [A more advanced example](#a-more-advanced-example)
+   * [Monitoring](#monitoring)
 <!--te-->
 
 [← Go back to Quickstart](QuickStart.md) | [↑ Go to the Table of Content ↑](../README.md) | [Continue to Post-processing →](PostProcessing.md)
@@ -321,7 +319,7 @@ A Check is a function that determines the quality of the Monitor Objects produce
     * _OnEachSeparately_ - Triggers separately for EACH of the listed objects whenever one of them changes.
     * In case the list of monitor objects is empty, the policy is simply ignored and the `check` will be triggered whenever a new MonitorObject is received.
 * __dataSource__ - declaration of the `check` input
-    * _type_ - currently only supported is _Task_
+    * _type_ - currently only supported are _Task_ and _ExternalTask_
     * _name_ - name of the _Task_
     * _MOs_ - list of MonitorObjects names or can be omitted to mean that all objects should be taken.
 
@@ -417,7 +415,8 @@ The `aggregate` method is called whenever the _policy_ is satisfied. It gets a m
 ## Committing code
 
 To commit your new or modified code, please follow this procedure
-1. Fork the [QualityControl](github.com/AliceO2Group/QualityControl) repo using github webpage or github desktop app.
+1. Fork the [QualityControl](https://github.com/AliceO2Group/QualityControl) repo using github webpage or github desktop app.
+   ![alt text](images/fork.png)
 1. Clone it : `git clone https://github.com/<yourIdentifier>/QualityControl.git`
 1. Before you start working on your code, create a branch in your fork : `git checkout -b feature-new-stuff`
 2. Push the branch : `git push --set-upstream origin feature-new-stuff`
@@ -516,26 +515,42 @@ __Live detector data__
 
 If the detector is ready and connected to the CRU(s), one can of course start the full data taking workflow, including the SubTimeFrameBuilder and the DPL processing and plug the QC onto it.
 
-## Run number
+## Run number and other run attributes (period, pass type, provenance)
 
-When running with the aliECS the run number is automatically provided to the modules' code: 
+The run attributes, such as the run number, are provided to the modules through the object `activity`:
 ```c++
 void ExampleTask::startOfActivity(Activity& activity)
 {
-  ILOG(Info, Support) << "startOfActivity : " << activity.mId << ENDM;
+  ILOG(Info, Support) << "Run number : " << activity.mId << ENDM;
 ```
+The other attributes are 
+- `type`, i.e. the run type
+- `periodName`
+- `passName`
+- `provenance`, can be either `qc` for normal data or `qc_mc` for Monte Carlo data.
 
-To set a run number in an "uncontrolled" environment such as a development setup, one can set it in the config file. Note that we call it `Activity` and not `Run` in this context: 
+When running with the aliECS the run number is automatically provided to the modules' code. 
+
+To set a run number and the other attributes in an "uncontrolled" environment such as a development setup, 
+one can set it in the config file:
 ```yaml
       "Activity": {
         "number": "42",
-        "type": "2"
+        "type": "2",
+        "periodName": "",           "": "Period name - e.g. LHC22c, LHC22c1b_test",
+        "passName": "",             "": "Pass type - e.g. spass, cpass1",
+        "provenance": "qc",         "": "Provenance - qc or qc_mc"
       },
 ```
-The way we compute it is :
-1. Pick the run number from aliECS, if it is not there
-2. Pick the run number from the config file, if it is not there
-3. Set it to `0`
+
+These attributes are also stored in the QCDB as metadata under the names `PeriodName`, `RunNumber` and `PassName`.
+The provenance is treated differently and is used to modify the path to the object by changing the top level directory:
+`qc/TST/QcTask/example` vs `qc_mc/TST/QcTask/example`.
+
+The way we compute the run number is done in this order:
+1. Pick the run number from aliECS
+2. If not found, pick the run number from the config file 
+3. If not found, set it to `0` otherwise
 
 ## A more advanced example
 

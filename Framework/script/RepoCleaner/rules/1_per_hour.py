@@ -32,18 +32,19 @@ def process(ccdb: Ccdb, object_path: str, delay: int, #migration: bool,
     deletion_list: List[ObjectVersion] = []
     update_list: List[ObjectVersion] = []
     for v in versions:
-        if last_preserved == None or last_preserved.validFromAsDatetime < v.validFromAsDt - timedelta(hours=1):
+        if last_preserved == None or last_preserved.validFromAsDt < v.validFromAsDt - timedelta(hours=1):
             # first extend validity of the previous preserved (should we take into account the run ?)
             if last_preserved != None:
                 ccdb.updateValidity(last_preserved, last_preserved.validFrom, str(int(v.validFrom) - 1))
                 update_list.append(last_preserved)
             last_preserved = v
-            preservation_list.append(v)
         else:
-            deletion_list.append(v)
             if v.validFromAsDt < datetime.now() - timedelta(minutes=delay):
+                deletion_list.append(v)
                 logging.debug(f"not in the grace period, we delete {v}")
                 ccdb.deleteVersion(v)
+            else:
+                preservation_list.append(v)
 
     logging.debug("deleted : ")
     for v in deletion_list:

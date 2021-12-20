@@ -1,0 +1,145 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "42",
+        "type": "2"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+    "tasks": {
+      "RawDigits_EPN": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::RawDigits",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "cycleDurationSeconds": "30",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "random-rawdata"
+        },
+        "taskParameters": {
+          "NRawDigitsNBins": "100",  "NRawDigitsXMin": "0", "NRawDigitsXMax": "100",
+          "QmaxNBins":       "200",  "QmaxXMin":       "0", "QmaxXMax":       "200",
+          "TimeBinNBins":    "600",  "TimeBinXMin":    "0", "TimeBinXMax":    "600"
+        },
+        "location": "remote"
+      },
+      "Clusters_EPN": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::Clusters",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "cycleDurationSeconds": "30",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "dataSamplingPolicy",
+          "name": "random-clusters"
+        },
+        "taskParameters": {
+          "NClustersNBins": "100",  "NClustersXMin": "0", "NClustersXMax": "100",
+          "QmaxNBins":      "200",  "QmaxXMin":      "0", "QmaxXMax":      "200",
+          "QtotNBins":      "600",  "QtotXMin":      "0", "QtotXMax":      "600",
+          "SigmaPadNBins":  "200",  "SigmaPadXMin":  "0", "SigmaPadXMax":  "2",
+          "SigmaTimeNBins": "200",  "SigmaTimeXMin": "0", "SigmaTimeXMax": "2",
+          "TimeBinNBins":   "1000", "TimeBinXMin":   "0", "TimeBinXMax":   "100000"
+        },
+        "location": "remote"
+      },
+      "PID_EPN": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::PID",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "cycleDurationSeconds": "30",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query" : "inputTracks:TPC/TRACKS/0"
+        },
+        "taskParameters": {},
+        "location": "local",
+        "localMachines": [
+          "epn160-ib", "epn161-ib", "epn162-ib", "epn163-ib", "epn164-ib", "epn165-ib", "epn166-ib", "epn167-ib", "epn168-ib", "epn169-ib", "epn170-ib", "epn171-ib", "epn172-ib", "epn173-ib", "epn174-ib", "epn175-ib", "epn176-ib", "epn177-ib", "epn178-ib", "epn179-ib", "epn180-ib", "epn181-ib", "epn182-ib", "epn183-ib", "epn184-ib", "epn185-ib", "epn186-ib", "epn187-ib", "epn188-ib", "epn189-ib", "epn190-ib", "epn191-ib", "epn192-ib", "epn193-ib", "epn194-ib", "epn195-ib", "epn196-ib", "epn197-ib", "epn198-ib", "epn199-ib", "epn200-ib", "epn201-ib", "epn202-ib", "epn203-ib", "epn204-ib", "epn205-ib", "epn206-ib", "epn207-ib", "epn208-ib", "epn209-ib", "epn210-ib", "epn211-ib", "epn212-ib", "epn213-ib", "epn214-ib", "epn215-ib", "epn216-ib", "epn217-ib", "epn218-ib", "epn219-ib", "epn220-ib", "epn221-ib", "epn222-ib", "epn223-ib", "epn224-ib", "epn225-ib", "epn226-ib", "epn227-ib", "epn228-ib", "epn229-ib", "epn230-ib", "epn231-ib", "epn232-ib", "epn233-ib", "epn234-ib", "epn235-ib", "epn236-ib", "epn237-ib", "epn238-ib", "epn239-ib", "epn240-ib", "epn241-ib", "epn242-ib", "epn243-ib", "epn244-ib", "epn245-ib", "epn246-ib", "epn247-ib", "epn248-ib"
+        ],
+        "remoteMachine": "epn160-ib",
+        "remotePort": "32625",
+        "mergingMode": "delta"
+      },
+      "Tracks_EPN": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tpc::Tracks",
+        "moduleName": "QcTPC",
+        "detectorName": "TPC",
+        "cycleDurationSeconds": "30",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query" : "inputTracks:TPC/TRACKS/0"
+        },
+        "taskParameters": {},
+        "location": "local",
+        "localMachines": [
+          "epn160-ib", "epn161-ib", "epn162-ib", "epn163-ib", "epn164-ib", "epn165-ib", "epn166-ib", "epn167-ib", "epn168-ib", "epn169-ib", "epn170-ib", "epn171-ib", "epn172-ib", "epn173-ib", "epn174-ib", "epn175-ib", "epn176-ib", "epn177-ib", "epn178-ib", "epn179-ib", "epn180-ib", "epn181-ib", "epn182-ib", "epn183-ib", "epn184-ib", "epn185-ib", "epn186-ib", "epn187-ib", "epn188-ib", "epn189-ib", "epn190-ib", "epn191-ib", "epn192-ib", "epn193-ib", "epn194-ib", "epn195-ib", "epn196-ib", "epn197-ib", "epn198-ib", "epn199-ib", "epn200-ib", "epn201-ib", "epn202-ib", "epn203-ib", "epn204-ib", "epn205-ib", "epn206-ib", "epn207-ib", "epn208-ib", "epn209-ib", "epn210-ib", "epn211-ib", "epn212-ib", "epn213-ib", "epn214-ib", "epn215-ib", "epn216-ib", "epn217-ib", "epn218-ib", "epn219-ib", "epn220-ib", "epn221-ib", "epn222-ib", "epn223-ib", "epn224-ib", "epn225-ib", "epn226-ib", "epn227-ib", "epn228-ib", "epn229-ib", "epn230-ib", "epn231-ib", "epn232-ib", "epn233-ib", "epn234-ib", "epn235-ib", "epn236-ib", "epn237-ib", "epn238-ib", "epn239-ib", "epn240-ib", "epn241-ib", "epn242-ib", "epn243-ib", "epn244-ib", "epn245-ib", "epn246-ib", "epn247-ib", "epn248-ib"
+        ],
+        "remoteMachine": "epn160-ib",
+        "remotePort": "32626",
+        "mergingMode": "delta"
+      }
+    }
+  },
+  "dataSamplingPolicies": [
+    {
+      "id": "random-clusters",
+      "active": "true",
+      "machines": [
+        "epn160-ib", "epn161-ib", "epn162-ib", "epn163-ib", "epn164-ib", "epn165-ib", "epn166-ib", "epn167-ib", "epn168-ib", "epn169-ib", "epn170-ib", "epn171-ib", "epn172-ib", "epn173-ib", "epn174-ib", "epn175-ib", "epn176-ib", "epn177-ib", "epn178-ib", "epn179-ib", "epn180-ib", "epn181-ib", "epn182-ib", "epn183-ib", "epn184-ib", "epn185-ib", "epn186-ib", "epn187-ib", "epn188-ib", "epn189-ib", "epn190-ib", "epn191-ib", "epn192-ib", "epn193-ib", "epn194-ib", "epn195-ib", "epn196-ib", "epn197-ib", "epn198-ib", "epn199-ib", "epn200-ib", "epn201-ib", "epn202-ib", "epn203-ib", "epn204-ib", "epn205-ib", "epn206-ib", "epn207-ib", "epn208-ib", "epn209-ib", "epn210-ib", "epn211-ib", "epn212-ib", "epn213-ib", "epn214-ib", "epn215-ib", "epn216-ib", "epn217-ib", "epn218-ib", "epn219-ib", "epn220-ib", "epn221-ib", "epn222-ib", "epn223-ib", "epn224-ib", "epn225-ib", "epn226-ib", "epn227-ib", "epn228-ib", "epn229-ib", "epn230-ib", "epn231-ib", "epn232-ib", "epn233-ib", "epn234-ib", "epn235-ib", "epn236-ib", "epn237-ib", "epn238-ib", "epn239-ib", "epn240-ib", "epn241-ib", "epn242-ib", "epn243-ib", "epn244-ib", "epn245-ib", "epn246-ib", "epn247-ib", "epn248-ib"
+      ],
+      "port": "32627",
+      "query": "inputClus:TPC/CLUSTERNATIVE",
+      "outputs": "sampled-clusters:DS/CLUSTERNATIVE",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.5",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    },
+    {
+      "id": "random-rawdata",
+      "active": "true",
+      "machines": [
+        "epn160-ib", "epn161-ib", "epn162-ib", "epn163-ib", "epn164-ib", "epn165-ib", "epn166-ib", "epn167-ib", "epn168-ib", "epn169-ib", "epn170-ib", "epn171-ib", "epn172-ib", "epn173-ib", "epn174-ib", "epn175-ib", "epn176-ib", "epn177-ib", "epn178-ib", "epn179-ib", "epn180-ib", "epn181-ib", "epn182-ib", "epn183-ib", "epn184-ib", "epn185-ib", "epn186-ib", "epn187-ib", "epn188-ib", "epn189-ib", "epn190-ib", "epn191-ib", "epn192-ib", "epn193-ib", "epn194-ib", "epn195-ib", "epn196-ib", "epn197-ib", "epn198-ib", "epn199-ib", "epn200-ib", "epn201-ib", "epn202-ib", "epn203-ib", "epn204-ib", "epn205-ib", "epn206-ib", "epn207-ib", "epn208-ib", "epn209-ib", "epn210-ib", "epn211-ib", "epn212-ib", "epn213-ib", "epn214-ib", "epn215-ib", "epn216-ib", "epn217-ib", "epn218-ib", "epn219-ib", "epn220-ib", "epn221-ib", "epn222-ib", "epn223-ib", "epn224-ib", "epn225-ib", "epn226-ib", "epn227-ib", "epn228-ib", "epn229-ib", "epn230-ib", "epn231-ib", "epn232-ib", "epn233-ib", "epn234-ib", "epn235-ib", "epn236-ib", "epn237-ib", "epn238-ib", "epn239-ib", "epn240-ib", "epn241-ib", "epn242-ib", "epn243-ib", "epn244-ib", "epn245-ib", "epn246-ib", "epn247-ib", "epn248-ib"
+      ],
+      "port": "32628",
+      "query": "inputRaw:TPC/RAWDATA",
+      "outputs": "sampled-rawdata:DS/RAWDATA",
+      "samplingConditions": [
+        {
+          "condition": "random",
+          "fraction": "0.5",
+          "seed": "1234"
+        }
+      ],
+      "blocking": "false"
+    }
+  ]
+}

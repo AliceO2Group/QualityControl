@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -116,14 +117,14 @@ void RepositoryBenchmark::InitTask()
   }
 
   if (mDeletionMode) {
-    QcInfoLogger::GetInstance() << "Deletion mode..." << infologger::endm;
+    ILOG(Info, Support) << "Deletion mode..." << infologger::endm;
     emptyDatabase();
   }
 
   // prepare objects
   for (uint64_t i = 0; i < mNumberObjects; i++) {
     TH1* histo = createHisto(mSizeObjects, mObjectName + to_string(i));
-    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(histo, mTaskName, "BMK");
+    shared_ptr<MonitorObject> mo = make_shared<MonitorObject>(histo, mTaskName, "Benchmark", "BMK");
     mo->setIsOwner(true);
     mMyObjects.push_back(mo);
   }
@@ -169,16 +170,16 @@ bool RepositoryBenchmark::ConditionalRun()
   // determine how long we should wait till next iteration in order to have 1 sec between storage
   auto duration2 = duration_cast<microseconds>(t2 - t1);
   auto remaining = duration_cast<microseconds>(std::chrono::seconds(1) - duration2);
-  //  QcInfoLogger::GetInstance() << "Remaining duration : " << remaining.count() << " us" << infologger::endm;
+  //  ILOG(Info, Support) <<"Remaining duration : " << remaining.count() << " us" << infologger::endm;
   if (remaining.count() < 0) {
-    QcInfoLogger::GetInstance() << "Remaining duration is negative, we don't sleep " << infologger::endm;
+    ILOG(Info, Support) << "Remaining duration is negative, we don't sleep " << infologger::endm;
   } else {
     this_thread::sleep_for(chrono::microseconds(remaining));
   }
 
   if (mMaxIterations > 0 && ++mNumIterations >= mMaxIterations) {
-    QcInfoLogger::GetInstance() << "Configured maximum number of iterations reached. Leaving RUNNING state."
-                                << infologger::endm;
+    ILOG(Info, Support) << "Configured maximum number of iterations reached. Leaving RUNNING state."
+                        << infologger::endm;
     return false;
   }
 

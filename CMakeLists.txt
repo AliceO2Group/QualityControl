@@ -13,7 +13,7 @@ include(AddQCWorkflow)
 # ---- Project ----
 
 project(QualityControl
-        VERSION 1.16.0 
+        VERSION 1.43.0 
         DESCRIPTION "O2 Data Quality Control Framework"
         LANGUAGES CXX)
 
@@ -77,9 +77,6 @@ if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 endif()
-
-# Add compiler flags for warnings and (more importantly) fPIC and debug symbols
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra -Werror")
 
 # Set fPIC for all targets
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)

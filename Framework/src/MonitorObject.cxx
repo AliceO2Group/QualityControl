@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -16,6 +17,7 @@
 #include "QualityControl/MonitorObject.h"
 
 #include <iostream>
+#include <utility>
 #include <Common/Exceptions.h>
 #include "QualityControl/RepoPathUtils.h"
 
@@ -26,12 +28,25 @@ ClassImp(o2::quality_control::core::MonitorObject)
 namespace o2::quality_control::core
 {
 
-MonitorObject::MonitorObject() : TObject(), mObject(nullptr), mTaskName(""), mDetectorName(""), mRunNumber(0), mIsOwner(true)
+MonitorObject::MonitorObject()
+  : TObject(),
+    mObject(nullptr),
+    mTaskName(""),
+    mDetectorName(""),
+    mIsOwner(true)
 {
+  mActivity.mProvenance = "qc";
+  mActivity.mId = 0;
 }
 
-MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& detectorName, int runNumber)
-  : TObject(), mObject(object), mTaskName(taskName), mDetectorName(detectorName), mRunNumber(runNumber), mIsOwner(true)
+MonitorObject::MonitorObject(TObject* object, const std::string& taskName, const std::string& taskClass, const std::string& detectorName, int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
+  : TObject(),
+    mObject(object),
+    mTaskName(taskName),
+    mTaskClass(taskClass),
+    mDetectorName(detectorName),
+    mActivity(runNumber, 0, periodName, passName, provenance),
+    mIsOwner(true)
 {
 }
 
@@ -113,14 +128,37 @@ void MonitorObject::setDescription(const string& description)
   mDescription = description;
 }
 
-int MonitorObject::getRunNumber() const
+const Activity& MonitorObject::getActivity() const
 {
-  return mRunNumber;
+  return mActivity;
 }
 
-void MonitorObject::setRunNumber(int runNumber)
+Activity& MonitorObject::getActivity()
 {
-  mRunNumber = runNumber;
+  return mActivity;
+}
+
+void MonitorObject::setActivity(const Activity& activity)
+{
+  MonitorObject::mActivity = activity;
+}
+
+void MonitorObject::updateActivity(int runNumber, const std::string& periodName, const std::string& passName, const std::string& provenance)
+{
+  mActivity.mId = runNumber;
+  mActivity.mPeriodName = periodName;
+  mActivity.mPassName = passName;
+  mActivity.mProvenance = provenance;
+}
+
+const string& MonitorObject::getTaskClass() const
+{
+  return mTaskClass;
+}
+
+void MonitorObject::setTaskClass(const string& taskClass)
+{
+  MonitorObject::mTaskClass = taskClass;
 }
 
 } // namespace o2::quality_control::core

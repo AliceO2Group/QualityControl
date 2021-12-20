@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -23,6 +24,9 @@
 // QC
 #include "QualityControl/QualityObject.h"
 #include "QualityControl/UpdatePolicyManager.h"
+#include "QualityControl/Activity.h"
+#include "QualityControl/AggregatorRunnerConfig.h"
+#include "QualityControl/AggregatorConfig.h"
 
 namespace o2::framework
 {
@@ -86,10 +90,10 @@ class AggregatorRunner : public framework::Task
    * \brief AggregatorRunner constructor
    * Create the AggregatorRunner device.
    *
-   * @param configurationSource Path to configuration
-   * @param checkRunnerOutputs List of checkRunners' output that it will take as inputs.
+   * @param arc AggregatorRunner Config
+   * @param acs Aggregator configs
    */
-  AggregatorRunner(const std::string& configurationSource, const vector<framework::OutputSpec> checkRunnerOutputs);
+  AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs);
 
   /// Destructor
   ~AggregatorRunner() override;
@@ -104,9 +108,15 @@ class AggregatorRunner : public framework::Task
   std::string getDeviceName() { return mDeviceName; }
   const std::vector<std::shared_ptr<Aggregator>>& getAggregators() const { return mAggregators; }
 
+  static framework::DataProcessorLabel getLabel() { return { "qc-aggregator" }; }
   static std::string createAggregatorRunnerIdString() { return "QC-AGGREGATOR-RUNNER"; };
   static std::string createAggregatorRunnerName();
   static header::DataDescription createAggregatorRunnerDataDescription(const std::string& aggregatorName);
+
+  /// \brief Compute the detector name to be used in the infologger for this runner.
+  /// Compute the detector name to be used in the infologger for this runner.
+  /// If all checks belong to the same detector we use it, otherwise we use "MANY"
+  static std::string getDetectorName(std::vector<std::shared_ptr<Aggregator>> aggregators);
 
  private:
   /**
@@ -152,13 +162,18 @@ class AggregatorRunner : public framework::Task
 
   /// \brief Callback for CallbackService::Id::Start (DPL) a.k.a. RUN transition (FairMQ)
   void start(const framework::ServiceRegistry& services);
+  /// \brief Callback for CallbackService::Id::Stop (DPL) a.k.a. STOP transition (FairMQ)
+  void stop() override;
+  /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
+  void reset();
 
   // General state
   std::string mDeviceName;
-  int mRunNumber;
+  core::Activity mActivity;
   std::vector<std::shared_ptr<Aggregator>> mAggregators;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
-  std::shared_ptr<o2::configuration::ConfigurationInterface> mConfigFile;
+  AggregatorRunnerConfig mRunnerConfig;
+  std::vector<AggregatorConfig> mAggregatorsConfigs;
   core::QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
   UpdatePolicyManager updatePolicyManager;
 
@@ -168,6 +183,7 @@ class AggregatorRunner : public framework::Task
   // monitoring
   std::shared_ptr<o2::monitoring::Monitoring> mCollector;
   AliceO2::Common::Timer mTimer;
+  AliceO2::Common::Timer mTimerTotalDurationActivity;
   int mTotalNumberObjectsReceived;
   int mTotalNumberAggregatorExecuted;
   int mTotalNumberObjectsProduced;

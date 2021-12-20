@@ -16,7 +16,7 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
@@ -57,6 +57,22 @@
             "name": "TaskRaw",
             "MOs": [
               "RDHCounterCrate0"
+            ]
+          }
+        ]
+      },
+      "CheckDRMDiagnostics": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckDRMDiagnostics",
+        "moduleName": "QcTOF",
+        "detectorName": "TOF",
+        "policy": "OnAny",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskRaw",
+            "MOs": [
+              "DRMCounter"
             ]
           }
         ]

@@ -1,13 +1,13 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// // distributed under the terms of the GNU General Public License v3 (GPL
-// // Version 3), copied verbatim in the file "COPYING".
-// //
-// // See http://alice-o2.web.cern.ch/license for full licensing information.
-// //
-// // In applying this license CERN does not waive the privileges and immunities
-// // granted to it by virtue of its status as an Intergovernmental Organization
-// // or submit itself to any jurisdiction.
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
 
 ///
 /// \file   ITSTrackTask.h
@@ -22,6 +22,7 @@
 #include <TH2D.h>
 #include <DataFormatsITSMFT/TopologyDictionary.h>
 #include <ITSBase/GeometryTGeo.h>
+#include <TTree.h>
 
 class TH1D;
 class TH2D;
@@ -62,8 +63,17 @@ class ITSTrackTask : public TaskInterface
   TH1D* hOccupancyROF;
   TH1D* hClusterUsage;
   TH2D* hAngularDistribution;
+  TH2D* hVertexCoordinates;
+  TH2D* hVertexRvsZ;
+  TH1D* hVertexZ;
+  TH1D* hVertexContributors;
   std::string mRunNumber;
+  std::string mRunNumberPath;
 
+  float mVertexXYsize;
+  float mVertexZsize;
+  float mVertexRsize;
+  Int_t mDoTTree;
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
 
@@ -71,8 +81,13 @@ class ITSTrackTask : public TaskInterface
   Int_t mNClustersInTracks = 0;
   Int_t mNClusters = 0;
 
+  TTree* tClusterMap;
+  //  Int_t mNtracksInROF;
+  std::vector<UInt_t> vMap;
+  std::vector<Float_t> vPhi;
+  std::vector<Float_t> vEta;
+
   o2::itsmft::TopologyDictionary mDict;
-  o2::its::GeometryTGeo* mGeom;
 };
 } // namespace o2::quality_control_modules::its
 

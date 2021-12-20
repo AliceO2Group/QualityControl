@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -43,11 +44,14 @@ void customize(std::vector<CompletionPolicy>& policies)
 #include "QualityControl/runnerUtils.h"
 #include <Framework/runDataProcessing.h>
 #include <Framework/ControlService.h>
+#include <Configuration/ConfigurationFactory.h>
+#include <Configuration/ConfigurationInterface.h>
 #include <set>
 #include <vector>
 
 using namespace o2::quality_control::core;
 using namespace o2::quality_control::checker;
+using namespace o2::configuration;
 
 /**
  * Test description
@@ -107,7 +111,7 @@ class Receiver : public framework::Task
   {
     Inputs inputs;
     for (auto& checkName : mNames) {
-      inputs.push_back({ checkName, "QC", Check::createCheckerDataDescription(checkName) });
+      inputs.push_back({ checkName, "QC", Check::createCheckDataDescription(checkName) });
     }
     return inputs;
   }
@@ -139,10 +143,12 @@ WorkflowSpec defineDataProcessing(ConfigContext const&)
   ILOG(Info) << "Using config file '" << qcConfigurationSource << "'" << ENDM;
 
   // Generation of Data Sampling infrastructure
-  DataSampling::GenerateInfrastructure(specs, qcConfigurationSource);
+  auto configInterface = ConfigurationFactory::getConfiguration(qcConfigurationSource);
+  auto dataSamplingTree = configInterface->getRecursive("dataSamplingPolicies");
+  DataSampling::GenerateInfrastructure(specs, dataSamplingTree);
 
   // Generation of the QC topology (one task, one checker in this case)
-  quality_control::generateStandaloneInfrastructure(specs, qcConfigurationSource);
+  quality_control::generateStandaloneInfrastructure(specs, configInterface->getRecursive());
 
   Receiver receiver(qcConfigurationSource);
   // Finally the receiver

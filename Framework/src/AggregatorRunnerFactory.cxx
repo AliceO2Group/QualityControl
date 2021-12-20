@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -30,9 +31,9 @@ using namespace o2::framework;
 namespace o2::quality_control::checker
 {
 
-DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& checkerRunnerOutputs, const std::string& configurationSource)
+DataProcessorSpec AggregatorRunnerFactory::create(AggregatorRunnerConfig arc, std::vector<AggregatorConfig> acs)
 {
-  AggregatorRunner aggregator{ configurationSource, checkerRunnerOutputs };
+  AggregatorRunner aggregator{ std::move(arc), std::move(acs) };
 
   DataProcessorSpec newAggregatorRunner{
     aggregator.getDeviceName(),
@@ -41,6 +42,7 @@ DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& chec
     AlgorithmSpec{},
     Options{}
   };
+  newAggregatorRunner.labels.emplace_back(AggregatorRunner::getLabel());
   newAggregatorRunner.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregator));
   return newAggregatorRunner;
 }
@@ -48,12 +50,27 @@ DataProcessorSpec AggregatorRunnerFactory::create(const vector<OutputSpec>& chec
 // Specify a custom policy to trigger whenever something arrive regardless of the timeslice.
 void AggregatorRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [](framework::DeviceSpec const& device) {
-    return device.name.find(AggregatorRunner::createAggregatorRunnerIdString()) != std::string::npos;
+  auto matcher = [label = AggregatorRunner::getLabel()](framework::DeviceSpec const& device) {
+    return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   auto callback = CompletionPolicyHelpers::consumeWhenAny().callback;
 
   policies.emplace_back("aggregatorRunnerCompletionPolicy", matcher, callback);
+}
+
+AggregatorRunnerConfig AggregatorRunnerFactory::extractConfig(const core::CommonSpec& commonSpec)
+{
+  return {
+    commonSpec.database,
+    commonSpec.consulUrl,
+    commonSpec.monitoringUrl,
+    commonSpec.infologgerFilterDiscardDebug,
+    commonSpec.infologgerDiscardLevel,
+    commonSpec.activityNumber,
+    commonSpec.activityPeriodName,
+    commonSpec.activityPassName,
+    commonSpec.activityProvenance
+  };
 }
 
 } // namespace o2::quality_control::checker

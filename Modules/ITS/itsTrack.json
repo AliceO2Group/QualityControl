@@ -16,66 +16,66 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+        "url": ""
       },
-            "conditionDB": {
-                "url": "ccdb-test.cern.ch:8080"
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
       }
     },
-    "tasks": {
-      "ITSTrackTask": {
-        "active": "true",
-        "className": "o2::quality_control_modules::its::ITSTrackTask",
-        "moduleName": "QcITS",
-	"detectorName": "ITS",	
-        "cycleDurationSeconds": "30",
-        "maxNumberCycles": "-1",
-        "dataSource_comment": "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
-        "dataSource": {
-          "type": "dataSamplingPolicy",
-          "name": "compclus"
+   "tasks" : {
+      "ITSTrackTask" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::its::ITSTrackTask",
+        "moduleName" : "QcITS",
+        "detectorName" : "ITS",
+        "cycleDurationSeconds" : "30",
+        "maxNumberCycles" : "-1",
+        "dataSource_comment" : "The other type of dataSource is \"direct\", see basic-no-sampling.json.",
+        "dataSource" : {
+          "type" : "dataSamplingPolicy",
+          "name" : "tracks"
         },
-        "location": "remote"
+        "location" : "remote",
+        "taskParameters" : {
+	  "vertexXYsize" : "0.1",
+	  "vertexZsize": "15",
+	  "vertexRsize": "0.1",
+          "doTTree": "0"
+        }
+
       }
     },
-    "checks": {
-      "ITSTrackCheck": {
-        "active": "true",
-        "className": "o2::quality_control_modules::its::ITSTrackCheck",
-        "moduleName": "QcITS",
-        "policy": "OnAny",
-        "detectorName": "ITS",
-        "dataSource": [{
-          "type": "Task",
-          "name": "ITSTrackTask",
-          "MOs": ["NClusters"]
-          }]
-        }
+    "checks" : {
+      "ITSTrackCheck" : {
+        "active" : "true",
+        "className" : "o2::quality_control_modules::its::ITSTrackCheck",
+        "moduleName" : "QcITS",
+        "policy" : "OnAny",
+        "detectorName" : "ITS",
+        "dataSource" : [ {
+          "type" : "Task",
+          "name" : "ITSTrackTask",
+          "MOs" : ["NClusters","PhiDistribution","AngularDistribution","ClusterUsage","EtaDistribution","VertexCoordinates","VertexRvsZ","VertexZ"]
+        } ]
+      }
     }
   },
 
+         "dataSamplingPolicies" : [
+           {
+             "id" : "tracks",
+             "active" : "true",
+             "machines" : [],
+             "query" : "Vertices:ITS/VERTICES/0;tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;compclus:ITS/COMPCLUSTERS/0",
+             "samplingConditions" : [
+               {
+                 "condition" : "random",
+                 "fraction" : "0.3",
+                 "seed" : "1441"
+               }
+             ],
 
-  "dataSamplingPolicies": [
-    {
-    	    "id": "compclus",
-            "active": "true",
-            "machines": [],
-            "query": "tracks:ITS/TRACKS/0;rofs:ITS/ITSTrackROF/0;compclus:ITS/COMPCLUSTERS/0",
-            "samplingConditions": [
-                {
-                    "condition": "random",
-                    "fraction": "1",
-                    "seed": "1441"
-                }
-            ],
-
-	    "blocking": "false"
-    }
-  ]
-
+             "blocking" : "false"
+           }
+         ]
 }
-                                                                                                                               
-
-
-
-

@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -52,19 +53,19 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   context.setField(infoCONTEXT::FieldName::Facility, "QC");
   context.setField(infoCONTEXT::FieldName::System, "QC");
   context.setField(infoCONTEXT::FieldName::Detector, "PHS");
-  QcInfoLogger::GetInstance().setContext(context);
-  QcInfoLogger::GetInstance() << "initialize ClusterQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
+  QcInfoLogger::GetInfoLogger().setContext(context);
+  ILOG(Info, Support) << "initialize ClusterQcTask" << AliceO2::InfoLogger::InfoLogger::endm;
 
   // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
   if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    QcInfoLogger::GetInstance() << "Custom parameter - myOwnKey : " << param->second << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << "Custom parameter - myOwnKey : " << param->second << AliceO2::InfoLogger::InfoLogger::endm;
   }
 
   //read alignment to calculate cluster global coordinates
   mGeom = o2::phos::Geometry::GetInstance("Run3");
 
   //TODO: configure reading bad map from CCDB
-  mBadMap.reset(new o2::phos::BadChannelMap());
+  mBadMap.reset(new o2::phos::BadChannelsMap());
 
   //Prepare histograms
   for (Int_t mod = 0; mod < 4; mod++) {
@@ -119,13 +120,13 @@ void ClusterQcTask::initialize(o2::framework::InitContext& /*ctx*/)
 
 void ClusterQcTask::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
   reset();
 }
 
 void ClusterQcTask::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
@@ -144,6 +145,10 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
     for (int i = firstCluInEvent; i < lastCluInEvent; i++) {
       const o2::phos::Cluster& clu = clusters[i];
+      float e = clu.getEnergy();
+      if (e < 1.e-4) {
+        continue;
+      }
 
       int mod = clu.module();
       //Fill occupancy and time-E histos
@@ -154,12 +159,11 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       char relid[3];
       mGeom->absToRelNumbering(absId, relid);
 
-      float e = clu.getEnergy();
       if (e > mOccCut) {
-        mHist2D[kOccupancyM1 + mod]->Fill(relid[1] - 0.5, relid[2] - 0.5);
+        mHist2D[kOccupancyM1 + mod - 1]->Fill(relid[1] - 0.5, relid[2] - 0.5);
       }
-      mHist2D[kTimeEM1 + mod]->Fill(e, clu.getTime());
-      mHist1D[kSpectrumM1 + mod]->Fill(e);
+      mHist2D[kTimeEM1 + mod - 1]->Fill(e, clu.getTime());
+      mHist1D[kSpectrumM1 + mod - 1]->Fill(e);
 
       if (!checkCluster(clu)) {
         continue;
@@ -169,13 +173,13 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       mGeom->local2Global(mod, posX, posZ, vec3);
       double norm = vec3.Mag();
       TLorentzVector v(vec3.X() * e / norm, vec3.Y() * e / norm, vec3.Z() * e / norm, e);
-      for (const TLorentzVector& v2 : mBuffer[mod]) {
+      for (const TLorentzVector& v2 : mBuffer[mod - 1]) {
         TLorentzVector sum = v + v2;
         if (sum.Pt() > mPtMin) {
-          mHist1D[kPi0M1 + mod]->Fill(sum.M());
+          mHist1D[kPi0M1 + mod - 1]->Fill(sum.M());
         }
       }
-      mBuffer[mod].emplace_back(v);
+      mBuffer[mod - 1].emplace_back(v);
     }
   }
 
@@ -183,19 +187,18 @@ void ClusterQcTask::monitorData(o2::framework::ProcessingContext& ctx)
 
 void ClusterQcTask::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ClusterQcTask::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
 }
 
 void ClusterQcTask::reset()
 {
   // clean all the monitor objects here
-
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
   for (int i = kNhist1D; i--;) {
     if (mHist1D[i]) {
       mHist1D[i]->Reset();

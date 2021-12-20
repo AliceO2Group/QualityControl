@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -15,104 +16,169 @@
 
 // O2 includes
 #include "Framework/ProcessingContext.h"
+#include "DataFormatsTPC/KrCluster.h"
 #include "DataFormatsTPC/ClusterNative.h"
 #include "TPCBase/Painter.h"
+#include "Framework/InputRecordWalker.h"
 
 // QC includes
 #include "QualityControl/QcInfoLogger.h"
 #include "TPC/Clusters.h"
 #include "TPC/Utility.h"
 
+using namespace o2::framework;
+using namespace o2::tpc;
+
 namespace o2::quality_control_modules::tpc
 {
 
 Clusters::Clusters() : TaskInterface()
 {
-  mWrapperVector.emplace_back(&mQCClusters.getNClusters());
-  mWrapperVector.emplace_back(&mQCClusters.getQMax());
-  mWrapperVector.emplace_back(&mQCClusters.getQTot());
-  mWrapperVector.emplace_back(&mQCClusters.getSigmaTime());
-  mWrapperVector.emplace_back(&mQCClusters.getSigmaPad());
-  mWrapperVector.emplace_back(&mQCClusters.getTimeBin());
 }
 
-void Clusters::initialize(o2::framework::InitContext& /*ctx*/)
+void Clusters::initialize(InitContext& /*ctx*/)
 {
-  QcInfoLogger::GetInstance() << "initialize TPC Clusters QC task" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "initialize TPC Clusters QC task" << ENDM;
 
-  addAndPublish(getObjectsManager(), mNClustersCanvasVec, { "c_Sides_N_Clusters", "c_ROCs_N_Clusters_1D", "c_ROCs_N_Clusters_2D" });
-  addAndPublish(getObjectsManager(), mQMaxCanvasVec, { "c_Sides_Q_Max", "c_ROCs_Q_Max_1D", "c_ROCs_Q_Max_2D" });
-  addAndPublish(getObjectsManager(), mQTotCanvasVec, { "c_Sides_Q_Tot", "c_ROCs_Q_Tot_1D", "c_ROCs_Q_Tot_2D" });
-  addAndPublish(getObjectsManager(), mSigmaTimeCanvasVec, { "c_Sides_Sigma_Time", "c_ROCs_Sigma_Time_1D", "c_ROCs_Sigma_Time_2D" });
-  addAndPublish(getObjectsManager(), mSigmaPadCanvasVec, { "c_Sides_Sigma_Pad", "c_ROCs_Sigma_Pad_1D", "c_ROCs_Sigma_Pad_2D" });
-  addAndPublish(getObjectsManager(), mTimeBinCanvasVec, { "c_Sides_Time_Bin", "c_ROCs_Time_Bin_1D", "c_ROCs_Time_Bin_2D" });
+  mQCClusters.setName("ClusterData");
 
-  for (auto& wrapper : mWrapperVector) {
-    getObjectsManager()->startPublishing(&wrapper);
-    getObjectsManager()->addMetadata(wrapper.getObj()->getName().data(), "custom", "87");
+  const auto last = mCustomParameters.end();
+  const auto itMergeable = mCustomParameters.find("mergeableOutput");
+  std::string mergeable;
+
+  if (itMergeable == last) {
+    LOGP(warning, "missing parameter 'mergeableOutput'");
+    LOGP(warning, "Please add 'mergeableOutput': '<value>' to the 'taskParameters'.");
+  } else {
+    mergeable = itMergeable->second;
+  }
+
+  if (mergeable == "true") {
+    mIsMergeable = true;
+    ILOG(Info, Support) << "Using mergeable output for Clusters Task." << ENDM;
+  } else if (mergeable == "false") {
+    mIsMergeable = false;
+    ILOG(Info, Support) << "Using non-mergeable output for Clusters Task." << ENDM;
+  } else {
+    mIsMergeable = false;
+    LOGP(warning, "No valid value for 'mergeableOutput'. Set it as 'true' or 'false'. Falling back to non-mergeable output.");
+  }
+
+  if (mIsMergeable) {
+    getObjectsManager()->startPublishing(&mQCClusters);
+  } else {
+    mWrapperVector.emplace_back(&mQCClusters.getClusters().getNClusters());
+    mWrapperVector.emplace_back(&mQCClusters.getClusters().getQMax());
+    mWrapperVector.emplace_back(&mQCClusters.getClusters().getQTot());
+    mWrapperVector.emplace_back(&mQCClusters.getClusters().getSigmaTime());
+    mWrapperVector.emplace_back(&mQCClusters.getClusters().getSigmaPad());
+    mWrapperVector.emplace_back(&mQCClusters.getClusters().getTimeBin());
+
+    addAndPublish(getObjectsManager(), mNClustersCanvasVec, { "c_Sides_N_Clusters", "c_ROCs_N_Clusters_1D", "c_ROCs_N_Clusters_2D" });
+    addAndPublish(getObjectsManager(), mQMaxCanvasVec, { "c_Sides_Q_Max", "c_ROCs_Q_Max_1D", "c_ROCs_Q_Max_2D" });
+    addAndPublish(getObjectsManager(), mQTotCanvasVec, { "c_Sides_Q_Tot", "c_ROCs_Q_Tot_1D", "c_ROCs_Q_Tot_2D" });
+    addAndPublish(getObjectsManager(), mSigmaTimeCanvasVec, { "c_Sides_Sigma_Time", "c_ROCs_Sigma_Time_1D", "c_ROCs_Sigma_Time_2D" });
+    addAndPublish(getObjectsManager(), mSigmaPadCanvasVec, { "c_Sides_Sigma_Pad", "c_ROCs_Sigma_Pad_1D", "c_ROCs_Sigma_Pad_2D" });
+    addAndPublish(getObjectsManager(), mTimeBinCanvasVec, { "c_Sides_Time_Bin", "c_ROCs_Time_Bin_1D", "c_ROCs_Time_Bin_2D" });
+
+    for (auto& wrapper : mWrapperVector) {
+      getObjectsManager()->startPublishing(&wrapper);
+    }
   }
 }
 
 void Clusters::startOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "startOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfActivity" << ENDM;
 }
 
 void Clusters::startOfCycle()
 {
-  QcInfoLogger::GetInstance() << "startOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
-void Clusters::monitorData(o2::framework::ProcessingContext& ctx)
+void Clusters::processClusterNative(InputRecord& inputs)
 {
-  o2::tpc::ClusterNativeAccess clusterIndex = clusterHandler(ctx.inputs());
+  ClusterNativeAccess clusterIndex = clusterHandler(inputs);
+  if (!clusterIndex.nClustersTotal) {
+    return;
+  }
 
-  for (int isector = 0; isector < o2::tpc::constants::MAXSECTOR; ++isector) {
-    for (int irow = 0; irow < o2::tpc::constants::MAXGLOBALPADROW; ++irow) {
+  for (int isector = 0; isector < constants::MAXSECTOR; ++isector) {
+    for (int irow = 0; irow < constants::MAXGLOBALPADROW; ++irow) {
       const int nClusters = clusterIndex.nClusters[isector][irow];
       for (int icl = 0; icl < nClusters; ++icl) {
         const auto& cl = *(clusterIndex.clusters[isector][irow] + icl);
-        mQCClusters.processCluster(cl, o2::tpc::Sector(isector), irow);
+        mQCClusters.getClusters().processCluster(cl, Sector(isector), irow);
       }
     }
   }
+}
 
-  mQCClusters.analyse();
+void Clusters::processKrClusters(InputRecord& inputs)
+{
+  std::vector<InputSpec> filterKr = {
+    { "krClusters", ConcreteDataTypeMatcher{ "TPC", "KRCLUSTERS" }, Lifetime::Timeframe },
+    { "sampled-krClusters", ConcreteDataTypeMatcher{ "DS", "KRCLUSTERS" }, Lifetime::Timeframe },
+  };
 
-  auto vecPtrNClusters = toVector(mNClustersCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getNClusters(), 300, 0, 0, true, &vecPtrNClusters);
+  for (auto const& inputRef : InputRecordWalker(inputs, filterKr)) {
+    auto krClusters = inputs.get<gsl::span<KrCluster>>(inputRef);
+    for (const auto& cl : krClusters) {
+      mQCClusters.getClusters().processCluster(cl, Sector(cl.sector), int(cl.meanRow));
+    }
+  }
+}
 
-  auto vecPtrQMax = toVector(mQMaxCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getQMax(), 300, 0, 0, true, &vecPtrQMax);
+void Clusters::monitorData(ProcessingContext& ctx)
+{
+  mQCClusters.getClusters().denormalize();
 
-  auto vecPtrQTot = toVector(mQTotCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getQTot(), 300, 0, 0, true, &vecPtrQTot);
+  processClusterNative(ctx.inputs());
+  processKrClusters(ctx.inputs());
 
-  auto vecPtrSigmaTime = toVector(mSigmaTimeCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getSigmaTime(), 300, 0, 0, true, &vecPtrSigmaTime);
+  if (!mIsMergeable) {
+    mQCClusters.getClusters().normalize();
 
-  auto vecPtrSigmaPad = toVector(mSigmaPadCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getSigmaPad(), 300, 0, 0, true, &vecPtrSigmaPad);
-
-  auto vecPtrTimeBin = toVector(mTimeBinCanvasVec);
-  o2::tpc::painter::makeSummaryCanvases(mQCClusters.getTimeBin(), 300, 0, 0, true, &vecPtrTimeBin);
+    fillCanvases(mQCClusters.getClusters().getNClusters(), mNClustersCanvasVec, mCustomParameters, "NClusters");
+    fillCanvases(mQCClusters.getClusters().getQMax(), mQMaxCanvasVec, mCustomParameters, "Qmax");
+    fillCanvases(mQCClusters.getClusters().getQTot(), mQTotCanvasVec, mCustomParameters, "Qtot");
+    fillCanvases(mQCClusters.getClusters().getSigmaTime(), mSigmaTimeCanvasVec, mCustomParameters, "SigmaPad");
+    fillCanvases(mQCClusters.getClusters().getSigmaPad(), mSigmaPadCanvasVec, mCustomParameters, "SigmaTime");
+    fillCanvases(mQCClusters.getClusters().getTimeBin(), mTimeBinCanvasVec, mCustomParameters, "TimeBin");
+  }
 }
 
 void Clusters::endOfCycle()
 {
-  QcInfoLogger::GetInstance() << "endOfCycle" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfCycle" << ENDM;
+
+  if (mIsMergeable) {
+    mQCClusters.getClusters().normalize();
+  }
 }
 
 void Clusters::endOfActivity(Activity& /*activity*/)
 {
-  QcInfoLogger::GetInstance() << "endOfActivity" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
 void Clusters::reset()
 {
   // clean all the monitor objects here
 
-  QcInfoLogger::GetInstance() << "Resetting the histogram" << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << "Resetting the data" << ENDM;
+
+  mQCClusters.getClusters().reset();
+
+  if (!mIsMergeable) {
+    clearCanvases(mNClustersCanvasVec);
+    clearCanvases(mQMaxCanvasVec);
+    clearCanvases(mQTotCanvasVec);
+    clearCanvases(mSigmaTimeCanvasVec);
+    clearCanvases(mSigmaPadCanvasVec);
+    clearCanvases(mTimeBinCanvasVec);
+  }
 }
 
 } // namespace o2::quality_control_modules::tpc

@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -18,11 +19,11 @@
 #define QC_MODULE_TPC_CLUSTERS_H
 
 // O2 includes
-#include "TPCQC/Clusters.h"
 #include "TPCQC/CalPadWrapper.h"
 
 // QC includes
 #include "QualityControl/TaskInterface.h"
+#include "TPC/ClustersData.h"
 
 class TCanvas;
 
@@ -53,7 +54,8 @@ class Clusters /*final*/ : public TaskInterface // todo add back the "final" whe
   void reset() override;
 
  private:
-  o2::tpc::qc::Clusters mQCClusters{};                         ///< O2 Cluster task to perform actions on cluster objects
+  bool mIsMergeable = true;
+  ClustersData mQCClusters{};                                  ///< O2 Cluster task to perform actions on cluster objects
   std::vector<o2::tpc::qc::CalPadWrapper> mWrapperVector{};    ///< vector holding CalPad objects wrapped as TObjects; published on QCG; will be non-wrapped CalPad objects in the future
   std::vector<std::unique_ptr<TCanvas>> mNClustersCanvasVec{}; ///< summary canvases of the NClusters object
   std::vector<std::unique_ptr<TCanvas>> mQMaxCanvasVec{};      ///< summary canvases of the QMax object
@@ -61,6 +63,9 @@ class Clusters /*final*/ : public TaskInterface // todo add back the "final" whe
   std::vector<std::unique_ptr<TCanvas>> mSigmaTimeCanvasVec{}; ///< summary canvases of the SigmaTime object
   std::vector<std::unique_ptr<TCanvas>> mSigmaPadCanvasVec{};  ///< summary canvases of the SigmaPad object
   std::vector<std::unique_ptr<TCanvas>> mTimeBinCanvasVec{};   ///< summary canvases of the TimeBin object
+
+  void processClusterNative(o2::framework::InputRecord& inputs);
+  void processKrClusters(o2::framework::InputRecord& inputs);
 };
 
 } // namespace o2::quality_control_modules::tpc

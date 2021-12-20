@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -14,8 +15,8 @@
 ///
 
 #include "QualityControl/MonitorObjectCollection.h"
-
 #include "QualityControl/MonitorObject.h"
+#include "QualityControl/QcInfoLogger.h"
 
 #include <Mergers/MergerAlgorithm.h>
 
@@ -48,6 +49,31 @@ void MonitorObjectCollection::merge(mergers::MergeInterface* const other)
     }
   }
   delete otherIterator;
+}
+
+void MonitorObjectCollection::postDeserialization()
+{
+  auto it = this->MakeIterator();
+  while (auto obj = it->Next()) {
+    auto mo = dynamic_cast<MonitorObject*>(obj);
+    if (mo == nullptr) {
+      ILOG(Warning) << "Could not cast an object of type '" << obj->ClassName() << "' in MonitorObjectCollection to MonitorObject, skipping." << ENDM;
+      continue;
+    }
+    mo->setIsOwner(true);
+    if (auto objPtr = mo->getObject(); objPtr != nullptr) {
+      if (objPtr->InheritsFrom(MergeInterface::Class())) {
+        auto mergeable = dynamic_cast<MergeInterface*>(mo->getObject());
+        mergeable->postDeserialization();
+      } else if (objPtr->InheritsFrom(TCollection::Class())) {
+        // if a class inherits from both MergeInterface and TCollection, we assume that MergeInterface does the correct job of setting the ownership.
+        auto collection = dynamic_cast<TCollection*>(mo->getObject());
+        collection->SetOwner(true);
+      }
+    }
+  }
+  this->SetOwner(true);
+  delete it;
 }
 
 } // namespace o2::quality_control::core

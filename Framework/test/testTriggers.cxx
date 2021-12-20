@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -86,7 +87,7 @@ BOOST_AUTO_TEST_CASE(test_trigger_new_object)
 
   TH1I* obj = new TH1I(objectName.c_str(), objectName.c_str(), 10, 0, 10.0);
   obj->Fill(4);
-  std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(obj, taskName, detectorCode);
+  std::shared_ptr<MonitorObject> mo = std::make_shared<MonitorObject>(obj, taskName, "TestClass", detectorCode);
 
   const std::string objectPath = RepoPathUtils::getMoPath(mo.get());
   auto newObjectTrigger = triggers::NewObject(CCDB_ENDPOINT, objectPath);

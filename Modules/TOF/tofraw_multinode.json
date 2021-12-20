@@ -16,14 +16,14 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
       }
     },
     "tasks": {
-      "TaskRawLocal": {
+      "TaskRaw": {
         "active": "true",
         "className": "o2::quality_control_modules::tof::TaskRaw",
         "moduleName": "QcTOF",
@@ -76,7 +76,7 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskRawLocal",
+            "name": "TaskRaw",
             "MOs": [
               "RDHCounterCrate0"
             ]
@@ -95,7 +95,7 @@
         "dataSource": [
           {
             "type": "Task",
-            "name": "TaskRawLocal",
+            "name": "TaskRaw",
             "MOs": [
               "hDiagnostic"
             ]
@@ -152,7 +152,7 @@
       "samplingConditions": [
         {
           "condition": "random",
-          "fraction": "1.0",
+          "fraction": "0.1",
           "seed": "1234"
         }
       ],

@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -15,125 +16,41 @@
 // boost
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm/copy.hpp>
+#include <utility>
 // ROOT
 #include <TClass.h>
 // O2
 #include <Common/Exceptions.h>
-#include <Configuration/ConfigurationFactory.h>
 #include <Framework/DataDescriptorQueryBuilder.h>
 // QC
-#include "QualityControl/TaskRunner.h"
 #include "QualityControl/InputUtils.h"
 #include "QualityControl/RootClassFactory.h"
-#include "QualityControl/PostProcessingDevice.h"
-// Fairlogger
-#include <fairlogger/Logger.h>
+#include "QualityControl/QcInfoLogger.h"
 
 using namespace AliceO2::Common;
 using namespace AliceO2::InfoLogger;
-using namespace o2::configuration;
 
 using namespace o2::quality_control::checker;
-using namespace o2::quality_control::core;
-using namespace o2::quality_control::postprocessing;
 using namespace std;
 
-/// Static functions
-o2::header::DataDescription Check::createCheckerDataDescription(const std::string name)
+namespace o2::quality_control::checker
 {
-  if (name.empty()) {
-    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for checker's data description"));
+
+/// Static functions
+o2::header::DataDescription Check::createCheckDataDescription(const std::string& checkName)
+{
+  if (checkName.empty()) {
+    BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty checkName for check's data description"));
   }
   o2::header::DataDescription description;
-  description.runtimeInit(std::string(name.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
+  description.runtimeInit(std::string(checkName.substr(0, o2::header::DataDescription::size - 4) + "-chk").c_str());
   return description;
 }
 
 /// Members
-
-Check::Check(std::string checkName, std::string configurationSource)
-  : mConfigurationSource(configurationSource),
-    mLogger(QcInfoLogger::GetInstance()),
-    mNumberOfTaskSources(0),
-    mInputs{},
-    mOutputSpec{ "QC", Check::createCheckerDataDescription(checkName), 0 },
-    mBeautify(true)
+Check::Check(CheckConfig config)
+  : mCheckConfig(std::move(config))
 {
-  try {
-    initConfig(checkName);
-  } catch (...) {
-    std::string diagnostic = boost::current_exception_diagnostic_information();
-    ILOG(Fatal, Ops) << "Unexpected exception, diagnostic information follows:\n"
-                     << diagnostic << ENDM;
-    throw;
-  }
-}
-
-void Check::initConfig(std::string checkName)
-{
-  mCheckConfig.name = checkName;
-
-  std::unique_ptr<ConfigurationInterface> config = ConfigurationFactory::getConfiguration(mConfigurationSource);
-  const auto& checkConfig = config->getRecursive("qc.checks." + mCheckConfig.name);
-
-  // Params
-  if (checkConfig.count("checkParameters")) {
-    mCheckConfig.customParameters = config->getRecursiveMap("qc.checks." + checkName + ".checkParameters");
-  }
-
-  // Policy
-  if (checkConfig.count("policy")) {
-    mCheckConfig.policyType = checkConfig.get<std::string>("policy");
-  }
-
-  // Inputs
-  mNumberOfTaskSources = 0;
-  for (const auto& [_key, dataSource] : checkConfig.get_child("dataSource")) {
-    (void)_key;
-    if (auto sourceType = dataSource.get<std::string>("type");
-        sourceType == "Task" || sourceType == "ExternalTask" || sourceType == "PostProcessing") {
-      auto taskName = dataSource.get<std::string>("name");
-      mNumberOfTaskSources++;
-
-      if (dataSource.get<std::string>("type") == "Task") {
-        mInputs.push_back({ taskName, TaskRunner::createTaskDataOrigin(), TaskRunner::createTaskDataDescription(taskName) });
-      } else if (dataSource.get<std::string>("type") == "PostProcessing") {
-        mInputs.push_back({ taskName, PostProcessingDevice::createPostProcessingDataOrigin(), PostProcessingDevice::createPostProcessingDataDescription(taskName) });
-      } else if (dataSource.get<std::string>("type") == "ExternalTask") {
-        auto query = config->getString("qc.externalTasks." + taskName + ".query").get();
-        framework::Inputs input = o2::framework::DataDescriptorQueryBuilder::parse(query.c_str());
-        mInputs.insert(mInputs.end(), std::make_move_iterator(input.begin()),
-                       std::make_move_iterator(input.end()));
-      }
-
-      // Subscribe on predefined MOs.
-      // If "MOs" are not set, the check function will be triggered whenever a new MO appears.
-      if (dataSource.count("MOs") == 0) {
-        // fixme: this is a dirty fix. Policies should be refactored, so this check won't be needed.
-        if (mCheckConfig.policyType != "OnEachSeparately") {
-          mCheckConfig.policyType = "_OnGlobalAny";
-        }
-        mCheckConfig.allObjects = true;
-      } else {
-        for (const auto& moName : dataSource.get_child("MOs")) {
-          auto name = std::string(taskName + "/" + moName.second.get_value<std::string>());
-          if (std::find(mCheckConfig.objectNames.begin(), mCheckConfig.objectNames.end(), name) == mCheckConfig.objectNames.end()) {
-            mCheckConfig.objectNames.push_back(name);
-          }
-        }
-      }
-    }
-
-    // Support for sources other than Tasks can be implemented here.
-  }
-  mInputsStringified = stringifyInput(mInputs);
-
-  // Prepare module loading
-  mCheckConfig.moduleName = checkConfig.get<std::string>("moduleName");
-  mCheckConfig.className = checkConfig.get<std::string>("className");
-
-  // Detector name, if none use "DET"
-  mCheckConfig.detectorName = checkConfig.get<std::string>("detectorName", "DET");
 }
 
 void Check::init()
@@ -149,21 +66,14 @@ void Check::init()
     throw;
   }
 
-  // Determine whether we can beautify
-  // See QC-299 for details
-  if (mNumberOfTaskSources > 1) {
-    mBeautify = false;
-    ILOG(Warning, Devel) << "Beautification disabled because more than one source is used in this Check (" << mCheckConfig.name << ")" << ENDM;
-  }
-
   // Print setting
-  mLogger << mCheckConfig.name << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": Policy " << mCheckConfig.policyType << AliceO2::InfoLogger::InfoLogger::endm;
-  mLogger << mCheckConfig.name << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Module " << mCheckConfig.moduleName << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Class " << mCheckConfig.className << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Detector " << mCheckConfig.detectorName << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": Policy " << UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType) << AliceO2::InfoLogger::InfoLogger::endm;
+  ILOG(Info, Support) << mCheckConfig.name << ": MonitorObjects : " << AliceO2::InfoLogger::InfoLogger::endm;
   for (const auto& moname : mCheckConfig.objectNames) {
-    mLogger << mCheckConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
+    ILOG(Info, Support) << mCheckConfig.name << "   - " << moname << AliceO2::InfoLogger::InfoLogger::endm;
   }
 }
 
@@ -199,7 +109,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
 
   // Prepare a vector of MO maps to be checked, each one will receive a separate Quality.
   std::vector<std::map<std::string, std::shared_ptr<MonitorObject>>> moMapsToCheck;
-  if (mCheckConfig.policyType == "OnEachSeparately") {
+  if (mCheckConfig.policyType == UpdatePolicyType::OnEachSeparately) {
     // In this case we want to check all MOs separately and we get separate QOs for them.
     for (auto mo : shadowMap) {
       moMapsToCheck.push_back({ std::move(mo) });
@@ -214,14 +124,14 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
     boost::copy(moMapToCheck | boost::adaptors::map_keys, std::back_inserter(monitorObjectsNames));
 
     auto quality = mCheckInterface->check(&moMapToCheck);
-    mLogger << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
+    ILOG(Info, Support) << "Check '" << mCheckConfig.name << "', quality '" << quality << "'" << ENDM;
     // todo: take metadata from somewhere
     qualityObjects.emplace_back(std::make_shared<QualityObject>(
       quality,
       mCheckConfig.name,
       mCheckConfig.detectorName,
-      mCheckConfig.policyType,
-      mInputsStringified,
+      UpdatePolicyTypeUtils::ToString(mCheckConfig.policyType),
+      stringifyInput(mCheckConfig.inputSpecs),
       monitorObjectsNames));
     beautify(moMapToCheck, quality);
   }
@@ -231,7 +141,7 @@ QualityObjectsType Check::check(std::map<std::string, std::shared_ptr<MonitorObj
 
 void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMap, Quality quality)
 {
-  if (!mBeautify) {
+  if (!mCheckConfig.allowBeautify) {
     return;
   }
 
@@ -239,8 +149,7 @@ void Check::beautify(std::map<std::string, std::shared_ptr<MonitorObject>>& moMa
     mCheckInterface->beautify(item.second /*mo*/, quality);
   }
 }
-
-std::string Check::getPolicyName() const
+UpdatePolicyType Check::getUpdatePolicyType() const
 {
   return mCheckConfig.policyType;
 }
@@ -254,3 +163,64 @@ bool Check::getAllObjectsOption() const
 {
   return mCheckConfig.allObjects;
 }
+
+CheckConfig Check::extractConfig(const CommonSpec&, const CheckSpec& checkSpec)
+{
+  framework::Inputs inputs;
+  std::vector<std::string> objectNames;
+  UpdatePolicyType updatePolicy = checkSpec.updatePolicy;
+  bool checkAllObjects = false;
+  for (const auto& dataSource : checkSpec.dataSources) {
+    if (!dataSource.isOneOf(DataSourceType::Task, DataSourceType::ExternalTask, DataSourceType::PostProcessingTask)) {
+      throw std::runtime_error(
+        "Unsupported dataSource '" + dataSource.name + "' for a Check '" + checkSpec.checkName + "'");
+    }
+    inputs.insert(inputs.end(), dataSource.inputs.begin(), dataSource.inputs.end());
+
+    // Subscribe on predefined MOs.
+    // If "MOs" are not set, the check function will be triggered whenever a new MO appears.
+    if (dataSource.subInputs.empty()) {
+      // fixme: this is a dirty fix. Policies should be refactored, so this check won't be needed.
+      if (checkSpec.updatePolicy != UpdatePolicyType::OnEachSeparately) {
+        updatePolicy = UpdatePolicyType::OnGlobalAny;
+      }
+      checkAllObjects = true;
+    } else {
+      // todo consider moving this to spec reader
+      for (const auto& moName : dataSource.subInputs) {
+        auto name = dataSource.name + "/" + moName;
+        // todo: consider making objectNames an std::set
+        if (std::find(objectNames.begin(), objectNames.end(), name) == objectNames.end()) {
+          objectNames.push_back(name);
+        }
+      }
+    }
+  }
+
+  bool allowBeautify = checkSpec.dataSources.size() <= 1;
+  if (!allowBeautify) {
+    // See QC-299 for details
+    ILOG(Warning, Devel) << "Beautification disabled because more than one source is used in this Check (" << checkSpec.checkName << ")" << ENDM;
+  }
+
+  return {
+    checkSpec.checkName,
+    checkSpec.moduleName,
+    checkSpec.className,
+    checkSpec.detectorName,
+    checkSpec.customParameters,
+    updatePolicy,
+    std::move(objectNames),
+    checkAllObjects,
+    allowBeautify,
+    std::move(inputs),
+    createOutputSpec(checkSpec.checkName)
+  };
+}
+
+framework::OutputSpec Check::createOutputSpec(const std::string& checkName)
+{
+  return { "QC", createCheckDataDescription(checkName), 0, framework::Lifetime::Sporadic };
+}
+
+} // namespace o2::quality_control::checker

@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -19,6 +20,7 @@
 #include "QualityControl/TaskInterface.h"
 
 class TH1F;
+class TH2F;
 
 using namespace o2::quality_control::core;
 
@@ -44,9 +46,48 @@ class DigitsTask final : public TaskInterface
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
+  void buildHistograms();
+  void drawLinesMCM(TH2F* histo);
 
  private:
-  TH1F* mADC = nullptr;
+  //limits
+  std::pair<float, float> mDriftRegion;
+  std::pair<float, float> mPulseHeightPeakRegion;
+
+  std::shared_ptr<TH1F> mDigitsPerEvent = nullptr;
+  std::shared_ptr<TH1F> mTotalChargevsTimeBin = nullptr; //
+  std::shared_ptr<TH1F> mDigitHCID = nullptr;
+  std::shared_ptr<TH1F> mParsingErrors = nullptr;
+
+  std::array<std::shared_ptr<TH1F>, 540> mClusterAmplitudeChamber;
+  std::array<std::shared_ptr<TH2F>, 6> mNClsLayer;        ///[layer]->Fill(sm - 0.5 + col / 144., startRow[istack]+row);
+  std::shared_ptr<TH1D> mADCvalue;                        //->Fill(value);
+  std::array<std::shared_ptr<TH1F>, 18> mADC;             //[sm]->Fill(value);
+  std::array<std::shared_ptr<TH2F>, 18> mADCTB;           //[sm]->Fill(time, value);
+  std::array<std::shared_ptr<TH2F>, 18> mADCTBfull;       //[sm]->Fill(time, value);
+  std::shared_ptr<TH1F> mNCls;                            //->Fill(sm);
+  std::array<std::shared_ptr<TH2F>, 18> mHCMCM;           //[sm]->Fill(sum);
+  std::array<std::shared_ptr<TH1F>, 18> mClsSM;           //[sm]->Fill(sum);
+  std::array<std::shared_ptr<TH2F>, 18> mcLStBsm;         //[SM]->fILL(TIme, sum);
+  std::shared_ptr<TH2F> mClsTb;                           //->Fill(time, sum);
+  std::shared_ptr<TH2F> mClsChargeFirst;                  //->Fill(sum, (1.*sum/sumU) -1.);
+  std::shared_ptr<TH1F> mClsChargeTb;                     //->Fill(time, sum);
+  std::shared_ptr<TH1F> mClsChargeTbCycle;                //->Fill(time, sum);
+  std::shared_ptr<TH1F> mClsNTb;                          //->Fill(time);
+  std::shared_ptr<TH1F> mClsAmp;                          //->Fill(sum);
+  std::shared_ptr<TH1F> mClsAmpDrift;                     //->Fill(sum);
+  std::shared_ptr<TH1F> mClsAmpTb;                        //, "ClsAmpTb", "ClsAmpTb", 30, -0.5, 29.5);
+  std::shared_ptr<TH1F> mClsAmpCh;                        //
+  std::array<std::shared_ptr<TH2F>, 18> mClsDetAmp;       //[sm]->Fill(detLoc, sum);
+  std::array<std::shared_ptr<TH1F>, 540> mClsAmpChamber;  //[iChamber]->Fill(sum);
+  std::shared_ptr<TH2F> mClsSector;                       //, "ClsSector", "ClsSector", nSMs, -0.5, 17.5, 500, -0.5, 999.5);
+  std::shared_ptr<TH2F> mClsStack;                        //, "ClsStack", "ClsStack", 5, -0.5, 4.5, 500, -0.5, 999.5);
+  std::array<std::shared_ptr<TH2F>, 18> mClsDetTime;      //[sm]->Fill(detLoc, time, sum);
+  std::array<std::shared_ptr<TH1F>, 10> mClsChargeTbTigg; //[trgg]->Fill(time, sum);
+  std::shared_ptr<TH2F> mClsChargeTbTrigHM;               //->Fill(time, sum);
+  std::shared_ptr<TH2F> mClsChargeTbTrigMinBias;          //->Fill(time, sum);
+  std::shared_ptr<TH2F> mClsChargeTbTrigTRDL1;            //->Fill(time, sum);
+  std::array<std::shared_ptr<TH2F>, 18> mClsTbSM;
 };
 
 } // namespace o2::quality_control_modules::trd

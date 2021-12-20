@@ -91,7 +91,7 @@ function benchmark() {
   printf "Test duration [s]:      %s\n" "$test_duration" >> $results_filename
   printf "Warm up cycles:         %s\n" "$warm_up_cycles" >> $results_filename
   echo "nb_checks   , nb_histograms,      nb_bins, objs_per_second, checks_per_second" >> $results_filename
-  local qc_common_args="--run -b --shm-segment-size 50000000000 --infologger-severity info --config json:/"`pwd`'/'$config_file_concrete
+  local qc_common_args="--run -b -b --resources-monitoring 10 --monitoring-backend stdout:// --shm-segment-size 50000000000 --infologger-severity info --config json:/"`pwd`'/'$config_file_concrete
   local producer_common_args="-b"
   if [[ $fill == "no" ]]; then
     producer_common_args=$producer_common_args' --empty'

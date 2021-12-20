@@ -31,6 +31,7 @@ add_root_dictionary(O2QualityControlTypes
   HEADERS include/QualityControl/MonitorObject.h
   include/QualityControl/QualityObject.h
   include/QualityControl/Quality.h
+  include/QualityControl/Activity.h
   LINKDEF include/QualityControl/TypesLinkDef.h
   BASENAME O2QualityControlTypes
   )
@@ -53,6 +54,7 @@ add_library(O2QualityControl
   src/TaskInterface.cxx
   src/RepositoryBenchmark.cxx
   src/InfrastructureGenerator.cxx
+  src/InfrastructureSpecReader.cxx
   src/Check.cxx
   src/Aggregator.cxx
   src/ServiceDiscovery.cxx
@@ -73,7 +75,11 @@ add_library(O2QualityControl
   src/UpdatePolicyManager.cxx
   src/AdvancedWorkflow.cxx
   src/QualitiesToTRFCollectionConverter.cxx
-  src/Calculators.cxx)
+  src/Calculators.cxx
+  src/DataSourceSpec.cxx
+  src/RootFileSink.cxx
+  src/RootFileSource.cxx
+  src/UpdatePolicyType.cxx)
 
 target_include_directories(
   O2QualityControl
@@ -96,8 +102,6 @@ target_link_libraries(O2QualityControl
                              Boost::container
                              O2::Framework
                              O2::CCDB
-                             O2::MCHBase
-                             ms_gsl::ms_gsl
                              O2QualityControlTypes
                              O2::Mergers
                              O2::DataSampling
@@ -105,10 +109,6 @@ target_link_libraries(O2QualityControl
                       PRIVATE Boost::system
                               ROOT::Gui
                               CURL::libcurl)
-
-if (TARGET AliceO2::DebugGUI)
-  target_link_libraries(O2QualityControl PUBLIC AliceO2::DebugGUI)
-endif()
 
 add_root_dictionary(O2QualityControl
   HEADERS
@@ -131,12 +131,14 @@ set(EXE_SRCS
   src/runBasic.cxx
   src/runAdvanced.cxx
   src/runReadout.cxx
-  src/runReadoutForDataDump.cxx
   src/runRepositoryBenchmark.cxx
   src/runPostProcessing.cxx
   src/runPostProcessingOCC.cxx
   src/runLocationCalculator.cxx
-  src/runMergerCalculator.cxx)
+  src/runMergerCalculator.cxx
+  src/runUploadRootObjects.cxx
+  src/runFileMerger.cxx
+  src/runMetadataUpdater.cxx)
 
 set(EXE_NAMES
   o2-qc-run-producer
@@ -146,12 +148,14 @@ set(EXE_NAMES
   o2-qc-run-basic
   o2-qc-run-advanced
   o2-qc-run-readout
-  o2-qc-run-readout-for-data-dump
   o2-qc-repository-benchmark
   o2-qc-run-postprocessing
   o2-qc-run-postprocessing-occ
   o2-qc-location-calculator
-  o2-qc-merger-calculator)
+  o2-qc-merger-calculator
+  o2-qc-upload-root-objects
+  o2-qc-file-merger
+  o2-qc-metadata-updater)
 
 # These were the original names before the convention changed. We will get rid
 # of them but for the time being we want to create symlinks to avoid confusion.
@@ -168,7 +172,10 @@ set(EXE_OLD_NAMES
   qcRunPostProcessing
   qcRunPostProcessingOCC
   o2-qc-location-calculator
-  o2-qc-merger-calculator)
+  o2-qc-merger-calculator
+  o2-qc-upload-root-objects
+  o2-qc-file-merger
+  o2-qc-metadata-updater)
 
 # As per https://stackoverflow.com/questions/35765106/symbolic-links-cmake
 macro(install_symlink filepath sympath)
@@ -190,21 +197,6 @@ foreach(i RANGE ${count})
   target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl ROOT::Tree)
   install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
-
-# ---- Gui ----
-
-set(DATADUMP "")
-if(TARGET AliceO2::DebugGUI)
-  set(DATADUMP "o2-qc-data-dump")
-
-  set(GUI_SRCS src/DataDumpGui.cxx src/runDataDump.cxx)
-
-  add_executable(${DATADUMP} ${GUI_SRCS})
-
-  target_link_libraries(${DATADUMP} PRIVATE O2QualityControl AliceO2::DebugGUI)
-else()
-  message(STATUS "DebugGUI not found, ${DATADUMP} will not be built")
-endif()
 
 # ---- Tests ----
 
@@ -305,13 +297,13 @@ target_include_directories(testVersion PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT
 target_include_directories(testCcdbDatabase PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
 target_link_libraries(testTaskInterface PRIVATE O2::EMCALBase O2::EMCALCalib) 
 
-set_property(TEST testWorkflow PROPERTY TIMEOUT 30)
+set_property(TEST testWorkflow PROPERTY TIMEOUT 40)
 set_property(TEST testWorkflow PROPERTY LABELS slow)
-set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 40)
+set_property(TEST testCheckWorkflow PROPERTY TIMEOUT 50)
 set_property(TEST testCheckWorkflow PROPERTY LABELS slow)
 set_property(TEST testObjectsManager PROPERTY TIMEOUT 30)
 set_property(TEST testObjectsManager PROPERTY LABELS slow)
-set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 30)
+set_property(TEST testCcdbDatabase PROPERTY TIMEOUT 60)
 set_property(TEST testCcdbDatabase PROPERTY LABELS slow)
 set_property(TEST testCcdbDatabaseExtra PROPERTY LABELS manual)
 set_property(TEST testTrendingTask PROPERTY LABELS manual)
@@ -322,7 +314,25 @@ configure_file(basic-functional.json.in ${CMAKE_BINARY_DIR}/tests/basic-function
 add_test(NAME functional_test COMMAND o2-qc-functional-test.sh)
 set_tests_properties(functional_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
 set_property(TEST functional_test PROPERTY LABELS slow)
-set_property(TEST functional_test PROPERTY TIMEOUT 30)
+set_property(TEST functional_test PROPERTY TIMEOUT 45)
+
+include(GenerateUniquePort)
+o2_generate_unique_port(UNIQUE_PORT_1)
+o2_generate_unique_port(UNIQUE_PORT_2)
+configure_file(multinode-test.json.in ${CMAKE_BINARY_DIR}/tests/multinode-test.json)
+add_test(NAME multinode_test COMMAND o2-qc-multinode-test.sh)
+set_tests_properties(multinode_test
+  PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_PORT_1=${UNIQUE_PORT_1};UNIQUE_PORT_2=${UNIQUE_PORT_2}")
+set_property(TEST multinode_test PROPERTY LABELS slow)
+set_property(TEST multinode_test PROPERTY TIMEOUT 75)
+
+# Batch processing test
+string(RANDOM UNIQUE_ID)
+configure_file(batch-test.json.in ${CMAKE_BINARY_DIR}/tests/batch-test.json) # substitute the unique id in the task name
+add_test(NAME batch_test COMMAND o2-qc-batch-test.sh)
+set_tests_properties(batch_test PROPERTIES ENVIRONMENT "JSON_DIR=${CMAKE_BINARY_DIR}/tests;UNIQUE_ID=${UNIQUE_ID}")
+set_property(TEST batch_test PROPERTY LABELS slow)
+set_property(TEST batch_test PROPERTY TIMEOUT 45)
 
 # disable some tests in the CI to avoid un-expected failures.
 # to be removed when it is fixed / understood
@@ -330,7 +340,7 @@ set_property(TEST functional_test PROPERTY TIMEOUT 30)
 #set_property(TEST testWorkflow PROPERTY LABELS manual)
 #set_property(TEST testCheckWorkflow PROPERTY LABELS manual)
 
-# ---- Install ----
+# ---- Install ---- 
 
 # Build targets with install rpath on Mac to dramatically speed up installation
 # https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
@@ -346,7 +356,7 @@ endif()
 unset(isSystemDir)
 
 # Install library and binaries
-install(TARGETS O2QualityControl O2QualityControlTypes ${EXE_NAMES} ${DATADUMP}
+install(TARGETS O2QualityControl O2QualityControlTypes ${EXE_NAMES}
         EXPORT QualityControlTargets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -387,7 +397,6 @@ install(
 
 install(FILES example-default.json
               alfa.json
-              dataDump.json
               basic.json
               basic-aggregator.json
               basic-external-histo.json
@@ -398,17 +407,27 @@ install(FILES example-default.json
               multiNode.json
               readout.json
               readout-no-sampling.json
-              readoutForDataDump.json
               postprocessing.json
               script/RepoCleaner/config.yaml
               streamerinfos.root
               streamerinfos_v017.root
         DESTINATION etc)
 
-install(PROGRAMS script/RepoCleaner/rules/1_per_hour.py script/RepoCleaner/Ccdb.py script/RepoCleaner/rules/skip.py
-                 script/RepoCleaner/repoCleaner.py script/RepoCleaner/rules/1_per_run.py script/RepoCleaner/rules/none_kept.py
-  script/o2-qc-functional-test.sh
+install(PROGRAMS script/RepoCleaner/o2-qc-repo-cleaner
+                 script/o2-qc-functional-test.sh
+                 script/o2-qc-multinode-test.sh
+                 script/o2-qc-batch-test.sh
         DESTINATION bin)
+
+install(FILES script/RepoCleaner/rules/1_per_hour.py
+              script/RepoCleaner/rules/1_per_run.py
+              script/RepoCleaner/rules/last_only.py
+              script/RepoCleaner/rules/none_kept.py
+              script/RepoCleaner/rules/production.py
+              script/RepoCleaner/rules/skip.py
+              script/RepoCleaner/Ccdb.py
+              script/RepoCleaner/pidfile.py
+        DESTINATION lib)
 
 # ---- Copy test files ----
 #

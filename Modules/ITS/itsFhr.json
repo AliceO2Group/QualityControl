@@ -16,7 +16,7 @@
                 "url": "infologger:///debug?qc"
             },
             "consul": {
-                "url": "http://consul-test.cern.ch:8500"
+                "url": ""
             },
             "conditionDB": {
                 "url": "ccdb-test.cern.ch:8080"
@@ -36,10 +36,17 @@
                 },
                 "location": "remote",
                 "taskParameters": {
-                    "layer": "0100000",
-                    "decoderThreads": "1",
-                    "runNumberPath": "/data/shifts/runs/ibb2a/.run_counter"
-                    "geomPath": "/tmp/qc_tmp/o2sim"
+                    "Layer": "2",
+		    "HitNumberCut": "512",
+                    "GetTFFromBinding": "0",
+                    "decoderThreads": "8",
+                    "geomPath": "/tmp/qc_tmp/o2sim",
+                    "HitNumberCutForNoisyPixel": "0",
+                    "OccupancyNumberCutForNoisyPixel": "0.000001",
+          	    "MaxGeneralAxisRange": "-2",
+          	    "MinGeneralAxisRange": "-12",
+          	    "MaxGeneralNoisyAxisRange": "5000",
+                    "MinGeneralNoisyAxisRange": "0"
                 }
             }
         },
@@ -53,7 +60,7 @@
                 "dataSource": [{
                     "type": "Task",
                     "name": "FHRTask",
-                    "MOs": ["General/ErrorPlots"]
+                    "MOs": ["General/ErrorPlots","General/General_Occupancy","General/Noisy_Pixel","Occupancy/Layer0/Layer0ChipStave","Occupancy/Layer1/Layer1ChipStave","Occupancy/Layer2/Layer2ChipStave","Occupancy/Layer3/Layer3ChipStave","Occupancy/Layer4/Layer4ChipStave","Occupancy/Layer5/Layer5ChipStave","Occupancy/Layer6/Layer6ChipStave"]
                 }]
             }
        }

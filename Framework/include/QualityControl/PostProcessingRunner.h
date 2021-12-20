@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -22,6 +23,8 @@
 #include <boost/property_tree/ptree_fwd.hpp>
 #include "QualityControl/PostProcessingInterface.h"
 #include "QualityControl/PostProcessingConfig.h"
+#include "QualityControl/PostProcessingRunnerConfig.h"
+#include "QualityControl/PostProcessingTaskSpec.h"
 #include "QualityControl/Triggers.h"
 #include "QualityControl/DatabaseInterface.h"
 #include "QualityControl/ObjectsManager.h"
@@ -31,6 +34,11 @@ namespace o2::framework
 {
 class DataAllocator;
 } // namespace o2::framework
+
+namespace o2::quality_control::core
+{
+struct CommonSpec;
+}
 
 namespace o2::quality_control::postprocessing
 {
@@ -49,8 +57,10 @@ class PostProcessingRunner
   PostProcessingRunner(std::string name);
   ~PostProcessingRunner() = default;
 
-  /// \brief Initialization. Throws on errors.
+  /// \brief Initialization. Creates configuration structures out of the ptree. Throws on errors.
   void init(const boost::property_tree::ptree& config);
+  /// \brief Initialization. Throws on errors.
+  void init(const PostProcessingRunnerConfig& runnerConfig, const PostProcessingConfig& taskConfig);
   /// \brief One iteration over the event loop. Throws on errors. Returns false when it can gracefully exit.
   bool run();
   /// \brief Start transition. Throws on errors.
@@ -71,6 +81,8 @@ class PostProcessingRunner
   void setPublicationCallback(MOCPublicationCallback callback);
 
   const std::string& getName();
+
+  static PostProcessingRunnerConfig extractConfig(const core::CommonSpec& commonSpec, const PostProcessingTaskSpec& ppTaskSpec);
 
  private:
   void doInitialize(Trigger trigger);
@@ -94,9 +106,9 @@ class PostProcessingRunner
   // TODO in a longer run, we should store from/to in the MonitorObject itself and use them.
   std::function<void(const o2::quality_control::core::MonitorObjectCollection*, long /*from*/, long /*to*/)> mPublicationCallback = nullptr;
 
-  std::string mName = "";
-  std::string mConfigPath = "";
-  PostProcessingConfig mConfig;
+  std::string mName{};
+  PostProcessingConfig mTaskConfig;
+  PostProcessingRunnerConfig mRunnerConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
 };
 

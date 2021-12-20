@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -42,23 +43,23 @@ class ExamplePrinterSpec : public framework::Task
  public:
   void run(ProcessingContext& processingContext) final
   {
-    LOG(INFO) << "Received data";
+    LOG(info) << "Received data";
     std::shared_ptr<TObjArray> moArray{ DataRefUtils::as<TObjArray>(*processingContext.inputs().begin()) };
 
     if (moArray->IsEmpty()) {
-      LOG(INFO) << "Array is empty";
+      LOG(info) << "Array is empty";
       return;
     }
 
     // get the object
     auto* mo = dynamic_cast<MonitorObject*>(moArray->At(0));
     if (mo == nullptr) {
-      LOG(INFO) << "First element is not a MonitorObject";
+      LOG(info) << "First element is not a MonitorObject";
       return;
     }
     auto* histo = dynamic_cast<TH1F*>(mo->getObject());
     if (histo == nullptr) {
-      LOG(INFO) << "MonitorObject does not contain a TH1";
+      LOG(info) << "MonitorObject does not contain a TH1";
       return;
     }
 
@@ -66,7 +67,7 @@ class ExamplePrinterSpec : public framework::Task
     for (int i = 0; i < histo->GetNbinsX(); i++) {
       bins += " " + std::to_string((int)histo->GetBinContent(i));
     }
-    LOG(INFO) << bins;
+    LOG(info) << bins;
   }
 };
 
@@ -83,7 +84,7 @@ class ExampleQualityPrinterSpec : public framework::Task
   {
     auto qo = processingContext.inputs().get<QualityObject*>("checked-mo");
 
-    LOG(INFO) << "Received Quality: " << qo->getQuality();
+    LOG(info) << "Received Quality: " << qo->getQuality();
   }
 };
 

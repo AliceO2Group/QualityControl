@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -124,7 +125,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
 
   for (auto& [moName, mo] : *moMap) {
 
-    (void)moName;
+    (void)moName;                          // trick the compiler about not used variable
     for (int iMod = 0; iMod < 3; iMod++) { //loop modules
       if (mo->getName() == Form("PedestalValueM%d", iMod + 2)) {
         bool isGoodMO = true;
@@ -135,6 +136,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
+        msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
         //count number of too small pedestals + too big pedestals
         int nOfBadPedestalValues = h->Integral(1, mMinGoodPedestalValueM[iMod]) + h->GetBinContent(h->GetNbinsX() + 1); //underflow + small pedestals + overflow
         if (nOfBadPedestalValues > mToleratedBadPedestalValueChannelsM[iMod]) {
@@ -170,6 +172,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
+        msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
         //count number of too small pedestals + too big pedestals
         float binWidth = h->GetBinWidth(1);
         int nOfBadPedestalSigmas = h->Integral(mMaxGoodPedestalSigmaM[iMod] / binWidth + 1,
@@ -197,6 +200,7 @@ Quality PedestalCheck::check(std::map<std::string, std::shared_ptr<MonitorObject
         h->GetListOfFunctions()->Add(msg);
         msg->SetName(Form("%s_msg", mo->GetName()));
         msg->Clear();
+        msg->AddText(Form("Run %d", getRunNumberFromMO(mo)));
         //count number of too small pedestals + too big pedestals
         float binWidth = h->GetBinWidth(1);
         int nOfBadPedestalEfficiencies = 7680 -
@@ -248,6 +252,34 @@ void PedestalCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkRes
       return; //exit when object is processed
     }
   }
+}
+
+int PedestalCheck::getRunNumberFromMO(std::shared_ptr<MonitorObject> mo)
+{
+  int runNumber{ 0 };
+  auto metaData = mo->getMetadataMap();
+  ILOG(Info, Support) << "PedestalCheck::check() : I have following metadata:" << ENDM;
+  for (auto [key, value] : metaData) {
+    ILOG(Info, Support) << "key = " << key << "; value = " << value << ENDM;
+  }
+  auto foundRN = metaData.find("RunNumber");
+  if (foundRN != metaData.end()) {
+    runNumber = std::stoi(foundRN->second);
+    ILOG(Info, Support) << "PedestalCheck::check() : I found in metadata RunNumber = " << foundRN->second << ENDM;
+  }
+  if (runNumber == 0) {
+    ILOG(Info, Support) << "PedestalCheck::check() : I haven't found RunNumber in metadata, using from Activity." << ENDM;
+    runNumber = mo->getActivity().mId;
+    ILOG(Info, Support) << "PedestalCheck::check() : RunNumber = " << runNumber << ENDM;
+  }
+  if (runNumber == 0) {
+    auto foundRNFT = metaData.find("RunNumberFromTask");
+    if (foundRNFT != metaData.end()) {
+      runNumber = std::stoi(foundRNFT->second);
+      ILOG(Info, Support) << "PedestalCheck::check() : I found in metadata RunNumberFromTask = " << foundRNFT->second << ENDM;
+    }
+  }
+  return runNumber;
 }
 
 } // namespace o2::quality_control_modules::cpv

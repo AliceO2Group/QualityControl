@@ -10,7 +10,13 @@ target_sources(O2QcTPC PRIVATE src/PID.cxx
                              src/ROCReductor.cxx
                              src/Clusters.cxx
                              src/CalDetPublisher.cxx
-                             src/Utility.cxx)
+                             src/PadCalibrationCheck2D.cxx
+                             src/Utility.cxx
+                             src/RawDigits.cxx
+                             src/CheckOfTrendings.cxx
+                             src/LaserTracks.cxx
+                             src/LtrCalibReductor.cxx
+                             src/ClusterVisualizer.cxx)
 
 target_include_directories(
   O2QcTPC
@@ -21,7 +27,8 @@ target_include_directories(
 
 target_link_libraries(O2QcTPC
                       PUBLIC O2QualityControl
-                             O2::TPCQC)
+                             O2::TPCQC
+                             O2::TPCWorkflow)
 
 
 
@@ -34,7 +41,14 @@ add_root_dictionary(O2QcTPC
                             include/TPC/ROCReductor.h
                             include/TPC/Clusters.h
                             include/TPC/CalDetPublisher.h
+                            include/TPC/PadCalibrationCheck2D.h
                             include/TPC/Utility.h
+                            include/TPC/RawDigits.h
+                            include/TPC/ClustersData.h
+                            include/TPC/CheckOfTrendings.h
+                            include/TPC/LaserTracks.h
+                            include/TPC/LtrCalibReductor.h
+                            include/TPC/ClusterVisualizer.h
                     LINKDEF include/TPC/LinkDef.h
                     BASENAME O2QcTPC)
 
@@ -87,8 +101,16 @@ install(FILES run/tpcQCPID_sampled.json
               run/tpcQCTracking_direct.json
               run/tpcQCClusterChecker.json
               run/tpcQCSimpleTrending.json
-              run/tpcQCTrendingClusters.json
+              run/tpcQCTrending.json
               run/tpcQCClusters_direct.json
               run/tpcQCTrackingFromExternal_direct.json
               run/tpcQCCalDetPublisher.json
+              run/tpcQCPadCalibrationCheck2D.json
+              run/tpcQCRawDigits_direct.json
+              run/tpcQCTasks_multinode.json
+              run/tpcQCCheckTrending.json
+              run/tpcQCLaserTracks.json
+              run/tpcQCTrending_laserCalib.json
+              run/tpcQCClusterVisualizer.json
+              run/tpcQCRawDigitVisualizer.json
         DESTINATION etc)

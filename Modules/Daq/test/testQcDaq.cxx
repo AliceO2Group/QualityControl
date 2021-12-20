@@ -19,14 +19,20 @@ using namespace std;
 namespace o2::quality_control_modules::daq
 {
 
+struct Config {
+  std::string taskName = "test";
+  std::string detectorName = "TST";
+  std::string consulUrl = "invalid";
+};
+
 BOOST_AUTO_TEST_CASE(instantiate_task)
 {
   DaqTask task;
-  TaskConfig config;
-  config.consulUrl = "http://consul-test.cern.ch:8500";
+  Config config;
+  config.consulUrl = "";
   config.taskName = "qcDaqTest";
   config.detectorName = "DAQ";
-  auto manager = make_shared<ObjectsManager>(config.taskName, config.detectorName, config.consulUrl, 0, true);
+  auto manager = make_shared<ObjectsManager>(config.taskName, "DaqTask", config.detectorName, config.consulUrl, 0, true);
   task.setObjectsManager(manager);
   //  o2::framework::InitContext ctx;
   //  task.initialize(ctx); // TODO

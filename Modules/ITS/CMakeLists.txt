@@ -1,4 +1,4 @@
-# ---- Library ----
+﻿# ---- Library ----
 
 add_library(O2QcITS
             src/ITSRawTask.cxx
@@ -10,6 +10,7 @@ add_library(O2QcITS
             src/ITSFhrTask.cxx
             src/ITSFeeTask.cxx
             src/ITSClusterTask.cxx
+            src/ITSNoisyPixelTask.cxx
             src/ITSTrackTask.cxx
             src/ITSFhrCheck.cxx
             src/ITSClusterCheck.cxx
@@ -29,6 +30,11 @@ include_directories(${O2_ROOT}/include/GPU)
 
 target_link_libraries(O2QcITS PUBLIC O2QualityControl O2::ITSBase O2::ITSMFTBase O2::ITSMFTReconstruction ROOT::Hist)
 
+if (OpenMP_CXX_FOUND)
+  target_compile_definitions(O2QcITS PRIVATE WITH_OPENMP)
+  target_link_libraries(O2QcITS PRIVATE OpenMP::OpenMP_CXX)
+endif()
+
 install(TARGETS O2QcITS
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -45,6 +51,7 @@ add_root_dictionary(O2QcITS
                             include/ITS/ITSFeeTask.h
                             include/ITS/ITSClusterTask.h
                             include/ITS/TrendingTaskITSCluster.h
+                            include/ITS/ITSNoisyPixelTask.h
                             include/ITS/ITSTrackTask.h
                             include/ITS/ITSFhrCheck.h
                             include/ITS/ITSClusterCheck.h
@@ -67,25 +74,22 @@ install(
 # ---- Executables ----
 
 set(EXE_SRCS
-    src/runITS.cxx)
+    src/runITS.cxx
+    src/runITSTracksRootFileReader.cxx
+    src/runITSClustersRootFileReader.cxx)
 
 set(EXE_NAMES
-    o2-qc-run-its)
-
-# These were the original names before the convention changed. We will get rid
-# of them but for the time being we want to create symlinks to avoid confusion.
-set(EXE_OLD_NAMES
-    qcRunITS)
+    o2-qc-run-its
+    o2-qc-its-tracks-root-file-reader
+    o2-qc-its-clusters-root-file-reader)
 
 list(LENGTH EXE_SRCS count)
 math(EXPR count "${count}-1")
 foreach(i RANGE ${count})
   list(GET EXE_SRCS ${i} src)
   list(GET EXE_NAMES ${i} name)
-  list(GET EXE_OLD_NAMES ${i} oldname)
   add_executable(${name} ${src})
   target_link_libraries(${name} PRIVATE O2QualityControl CURL::libcurl O2::ITSQCDataReaderWorkflow O2::DetectorsBase ROOT::Tree)
-  install_symlink(${name} ${CMAKE_INSTALL_FULL_BINDIR}/${oldname})
 endforeach()
 
 install(
@@ -102,6 +106,7 @@ install(FILES
         itsFhr.json
         itsFee.json
         itsCluster.json
+        itsNoisyPixel.json
         DESTINATION etc)
 
 get_property(dirs

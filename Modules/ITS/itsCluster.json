@@ -1,9 +1,14 @@
 {
-  "qc": {
+
+   "qc": {
     "config": {
       "database": {
         "implementation": "CCDB",
+<<<<<<< HEAD
         "host": "188.184.2.55:8080",
+=======
+        "host": "ccdb-test.cern.ch:8080",
+>>>>>>> fc5f9b7e2ffb84ab1035fe495386049d163e3dde
         "username": "not_applicable",
         "password": "not_applicable",
         "name": "not_applicable"
@@ -16,14 +21,22 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
+<<<<<<< HEAD
         "url": "188.184.2.55:8080"
       }
     },
     "tasks": {
       "ITSClusterTask_testc": {
+=======
+        "url": "ccdb-test.cern.ch:8080"
+      }
+    },
+   "tasks": {
+      "ITSClusterTask": {
+>>>>>>> fc5f9b7e2ffb84ab1035fe495386049d163e3dde
         "active": "true",
         "className": "o2::quality_control_modules::its::ITSClusterTask",
         "moduleName": "QcITS",
@@ -36,13 +49,13 @@
           "name": "compclus"
         },
         "location": "remote",
-        "taskParameters": {
-                    "layer": "1000000",
-                    "clusterDictionaryPath": "/home/its/cbartels/QCUtils/workdir/ITSdictionary.bin",
-                    "runNumberPath": "/home/its/cbartels/QCUtils/workdir/infiles/RunNumber.dat",
-                    "geomPath": "/home/its/cbartels/QCUtils/workdir/o2sim_geometry.root"  
+              "taskParameters": {
+                    "layer": "1111111",
+                    "clusterDictionaryPath": "/home/its/aisakov/workdir/ITSdictionary.bin",
+                    "geomPath": "./o2sim_geometry.root",
+                    "nThreads": "4"
         }
-
+ 
       }
     },
     "checks": {
@@ -54,8 +67,9 @@
         "detectorName": "ITS",
         "dataSource": [{
           "type": "Task",
-          "name": "ITSClusterTask_testc",
-          "MOs": ["Layer0/AverageClusterSize"]
+          "name": "ITSClusterTask",
+          "MOs": ["Layer0/AverageClusterSize","Layer1/AverageClusterSize","Layer2/AverageClusterSize","Layer3/AverageClusterSize","Layer4/AverageClusterSize","Layer5/AverageClusterSize","Layer6/AverageClusterSize", "Layer0/ClusterOccupation","Layer1/ClusterOccupation","Layer2/ClusterOccupation","Layer3/ClusterOccupation","Layer4/ClusterOccupation", "Layer5/ClusterOccupation",  "Layer6/ClusterOccupation"]
+
           }]
         }
     }

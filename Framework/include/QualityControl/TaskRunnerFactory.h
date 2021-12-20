@@ -1,8 +1,9 @@
-// Copyright CERN and copyright holders of ALICE O2. This software is
-// distributed under the terms of the GNU General Public License v3 (GPL
-// Version 3), copied verbatim in the file "COPYING".
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
 //
-// See http://alice-o2.web.cern.ch/license for full licensing information.
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -20,6 +21,8 @@
 #include <vector>
 
 #include <Framework/DataProcessorSpec.h>
+#include "QualityControl/CommonSpec.h"
+#include "QualityControl/TaskSpec.h"
 
 namespace o2::framework
 {
@@ -29,6 +32,8 @@ class CompletionPolicy;
 namespace o2::quality_control::core
 {
 
+struct TaskRunnerConfig;
+
 /// \brief Factory in charge of creating DataProcessorSpec of QC task
 class TaskRunnerFactory
 {
@@ -36,14 +41,13 @@ class TaskRunnerFactory
   TaskRunnerFactory() = default;
   virtual ~TaskRunnerFactory() = default;
 
-  /// \brief Creator of tasks
+  /// \brief Creates TaskRunner
   ///
-  /// \param taskName - name of the task, which exists in tasks list in the configuration file
-  /// \param configurationSource - absolute path to configuration file, preceded with backend (f.e. "json://")
-  /// \param id - subSpecification for taskRunner's OutputSpec, useful to avoid outputs collisions one more complex topologies
-  /// \param resetAfterPublish - should taskRunner reset the user's task after each MO publication
-  o2::framework::DataProcessorSpec
-    create(std::string taskName, std::string configurationSource, size_t id = 0, bool resetAfterPublish = false);
+  /// \param taskConfig
+  static o2::framework::DataProcessorSpec create(const TaskRunnerConfig&);
+
+  /// \brief Knows how to create TaskConfig from Specs
+  static TaskRunnerConfig extractConfig(const CommonSpec&, const TaskSpec&, std::optional<int> id = std::nullopt, std::optional<int> resetAfterCycles = std::nullopt);
 
   /// \brief Provides necessary customization of the TaskRunners.
   ///
