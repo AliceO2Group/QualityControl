@@ -33,7 +33,7 @@ using namespace o2::quality_control::postprocessing;
 using namespace o2::quality_control_modules::its;
 
 void TrendingTaskITSCluster::configure(std::string name,
-                                   const boost::property_tree::ptree& config)
+                                       const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfigITS(name, config);
 }
@@ -148,9 +148,11 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13 ? countplots - 14
-                                 : countplots > 6 ? countplots - 7 : countplots;
-    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
+    int colidx = countplots > 13  ? countplots - 14
+                 : countplots > 6 ? countplots - 7
+                                  : countplots;
+    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1
+                                                      : 0;
     int index = 0;
     if (plot.name.find("occ") != std::string::npos)
       index = 3;
@@ -195,11 +197,10 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
 
   for (int ilay = 0; ilay < NLAYERS; ilay++) { // define legends
     if (ilay > 2) {
-        legstaves[ilay] = new TLegend(0.90, 0.1, 1, 0.9);
-        legstaves[ilay]->SetNColumns(2);
-            }
-    else {
-        legstaves[ilay] = new TLegend(0.91, 0.1, 0.98, 0.9);
+      legstaves[ilay] = new TLegend(0.90, 0.1, 1, 0.9);
+      legstaves[ilay]->SetNColumns(2);
+    } else {
+      legstaves[ilay] = new TLegend(0.91, 0.1, 0.98, 0.9);
     }
     legstaves[ilay]->SetName(Form("legstaves_L%d", ilay));
     SetLegendStyle(legstaves[ilay]);
@@ -211,8 +212,18 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots>41?countplots-42:countplots>34?countplots-35:countplots>27?countplots-28:countplots>20?countplots-21:countplots > 13 ? countplots - 14 : countplots > 6 ? countplots - 7 : countplots;
-    int mkridx = countplots > 41 ? 6 : countplots > 34 ? 5 : countplots > 27 ? 4 : countplots > 20 ? 3 : countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
+    int colidx = countplots > 41 ? countplots - 42 : countplots > 34 ? countplots - 35
+                                                   : countplots > 27 ? countplots - 28
+                                                   : countplots > 20 ? countplots - 21
+                                                   : countplots > 13 ? countplots - 14
+                                                   : countplots > 6  ? countplots - 7
+                                                                     : countplots;
+    int mkridx = countplots > 41 ? 6 : countplots > 34 ? 5
+                                     : countplots > 27 ? 4
+                                     : countplots > 20 ? 3
+                                     : countplots > 13 ? 2
+                                     : countplots > 6  ? 1
+                                                       : 0;
     int index = 0;
     if (plot.name.find("occ") != std::string::npos)
       index = 3;
@@ -235,15 +246,14 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
     // post processing plot
     TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     SetGraphStyle(g, col[colidx], mkr[mkridx]);
-    if (ilay<3){
-        SetGraphNameAndAxes(g, plot.name,
-                            Form("L%d - %s trends", ilay, trendtitles[index].c_str()),
-                            isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
-    }
-    else {
-         SetGraphNameAndAxes(g, plot.name,
-                            Form("L%d - %s trends", ilay, trendtitles_OB[index].c_str()),
-                            isrun ? "run" : "time", ytitles_OB[index], ymin[index], ymax[index], runlist);
+    if (ilay < 3) {
+      SetGraphNameAndAxes(g, plot.name,
+                          Form("L%d - %s trends", ilay, trendtitles[index].c_str()),
+                          isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
+    } else {
+      SetGraphNameAndAxes(g, plot.name,
+                          Form("L%d - %s trends", ilay, trendtitles_OB[index].c_str()),
+                          isrun ? "run" : "time", ytitles_OB[index], ymin[index], ymax[index], runlist);
     }
     ILOG(Info, Support) << " Drawing " << plot.name << ENDM;
 
@@ -292,9 +302,9 @@ void TrendingTaskITSCluster::SetGraphStyle(TGraph* g, int col, int mkr)
 }
 
 void TrendingTaskITSCluster::SetGraphNameAndAxes(TGraph* g, std::string name,
-                                             std::string title, std::string xtitle,
-                                             std::string ytitle, double ymin,
-                                             double ymax, std::vector<std::string> runlist)
+                                                 std::string title, std::string xtitle,
+                                                 std::string ytitle, double ymin,
+                                                 double ymax, std::vector<std::string> runlist)
 {
   g->SetTitle(title.c_str());
   g->SetName(name.c_str());
@@ -323,8 +333,18 @@ void TrendingTaskITSCluster::SetGraphNameAndAxes(TGraph* g, std::string name,
 void TrendingTaskITSCluster::PrepareLegend(TLegend* leg, int layer)
 {
   for (int istv = 0; istv < nStaves[layer]; istv++) {
-    int colidx = istv>41?istv-42:istv>34?istv-35:istv>27?istv-28:istv>20?istv-21:istv > 13 ? istv - 14 : istv > 6 ? istv - 7 : istv;
-    int mkridx = istv > 41 ? 6 : istv > 34 ? 5 : istv > 27 ? 4 : istv > 20 ? 3 : istv > 13 ? 2 : istv > 6 ? 1 : 0;
+    int colidx = istv > 41 ? istv - 42 : istv > 34 ? istv - 35
+                                       : istv > 27 ? istv - 28
+                                       : istv > 20 ? istv - 21
+                                       : istv > 13 ? istv - 14
+                                       : istv > 6  ? istv - 7
+                                                   : istv;
+    int mkridx = istv > 41 ? 6 : istv > 34 ? 5
+                               : istv > 27 ? 4
+                               : istv > 20 ? 3
+                               : istv > 13 ? 2
+                               : istv > 6  ? 1
+                                           : 0;
     TGraph* gr = new TGraph(); // dummy histo
     SetGraphStyle(gr, col[colidx], mkr[mkridx]);
     leg->AddEntry(gr, Form("%02d", istv), "pl");
