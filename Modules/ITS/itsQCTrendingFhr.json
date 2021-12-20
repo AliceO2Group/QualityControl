@@ -486,7 +486,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "10sec"
+          "newobject:qcdb:qc/ITS/MO/ITSFHR/FinishedObjects/General/ErrorPlots"
         ],
         "stopTrigger": [
           "userorcontrol"
