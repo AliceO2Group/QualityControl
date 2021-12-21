@@ -90,15 +90,15 @@ class TrendingTaskITSCluster : public PostProcessingInterface
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
 
   const int col[7] = { 1, 2, 3, 4, 5, 6, 7 };
-  const int mkr[7] = {8, 29, 34, 21,22,33,23 };
+  const int mkr[7] = { 8, 29, 34, 21, 22, 33, 23 };
   static constexpr int NLAYERS = 7;
   static constexpr int NTRENDSCLUSTER = 4;
-  const int nStaves[NLAYERS] = { 12, 16, 20, 24, 30,42,48};
-  //const int nStaves[NLAYERS] = {48};
+  const int nStaves[NLAYERS] = { 12, 16, 20, 24, 30, 42, 48 };
+  // const int nStaves[NLAYERS] = {48};
   const std::string trendtitles[NTRENDSCLUSTER] = { "Cluster Size",
-                                                "Stddev Cluster", "Cluster Number of Active chips", "Cluster Occupancy"};
+                                                    "Stddev Cluster", "Cluster Number of Active chips", "Cluster Occupancy" };
   const std::string trendtitles_OB[NTRENDSCLUSTER] = { "Cluster Size",
-                                                "Stddev Cluster", "Cluster Number of Active HIC", "Cluster Occupancy" };
+                                                       "Stddev Cluster", "Cluster Number of Active HIC", "Cluster Occupancy" };
 
   const std::string trendnames[NTRENDSCLUSTER] = { "mean", "rms", "activechips", "occupancy" };
   const std::string ytitles[NTRENDSCLUSTER] = {
@@ -107,7 +107,6 @@ class TrendingTaskITSCluster : public PostProcessingInterface
   const std::string ytitles_OB[NTRENDSCLUSTER] = {
     "Avg. Cluster Size (pixels)", "Stddev Cluster (/event/pixel)", "Cluster # Active HIC", "Cluster Occupancy (/chip/event)"
   };
-
 };
 
 } // namespace o2::quality_control::postprocessing
