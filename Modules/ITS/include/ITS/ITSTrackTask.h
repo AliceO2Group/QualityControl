@@ -60,8 +60,6 @@ class ITSTrackTask : public TaskInterface
   TH1D* hNClusters;
   TH1D* hTrackEta;
   TH1D* hTrackPhi;
-  TH1D* hOccupancyROF;
-  TH1D* hClusterUsage;
   TH2D* hAngularDistribution;
   TH2D* hVertexCoordinates;
   TH2D* hVertexRvsZ;

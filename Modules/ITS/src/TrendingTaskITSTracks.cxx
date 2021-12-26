@@ -147,33 +147,22 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
       add = 0;
       ymin = 0.;
       ymax = 15.;  
-    } else if(plot.name.find("rms") != std::string::npos){
+    } else if(plot.name.find("stddev") != std::string::npos){
       add = 1;
       ymin = 0.;
       ymax = 5.;  
-    } else if(plot.name.find("ROF") != std::string::npos){
-      add = 2;
-      ymin = 0.;
-      ymax = 1.;  
-    } else if(plot.name.find("Usage") != std::string::npos){
-      add = 3;
-      ymin = 0.;
-      ymax = 20.;  
     }
 
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
     long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(),
-                              "goff"); // plot.option.c_str());
+                              "goff"); 
     double* x = mTrend->GetV2();
     double* y = mTrend->GetV1();
 
     // post processing plot
-    //TGraph* g = new TGraph(n, mTrend->GetV2(), mTrend->GetV1());
     TGraph* g = new TGraph(n, x, y);
     SetGraphStyle(g, col[add], mkr[add]);
-    //double ymin = plot.name.find("rms") != std::string::npos ? -1. : -10.;
 
-    //double ymax = plot.name.find("rms") != std::string::npos ? +1. : +10.;
     SetGraphNameAndAxes(g, plot.name, plot.title, isrun ? "run" : "time", ytitles[add], ymin,
                         ymax, runlist);
     ILOG(Info, Support) << " Saving " << plot.name << " to CCDB " << ENDM;

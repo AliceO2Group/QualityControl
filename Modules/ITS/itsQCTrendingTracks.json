@@ -35,70 +35,13 @@
             "names": ["NClusters"],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcITS"
-          },
-          {
-            "type": "repository",
-            "paths": ["qc/ITS/MO/ITSTrackTask/EtaDistribution"],
-            "names": ["Eta"],
-            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
-            "moduleName": "QcITS"
-          },
-          {
-            "type": "repository",
-            "paths": ["qc/ITS/MO/ITSTrackTask/PhiDistribution"],
-            "names": ["Phi"],
-            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
-            "moduleName": "QcITS"
-          },      
-          {
-            "type": "repository",
-            "paths": ["qc/ITS/MO/ITSTrackTask/OccupancyROF"],
-            "names": ["OccupancyROF"],
-            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
-            "moduleName": "QcITS"
-          },    
-          {
-            "type": "repository",
-            "paths": ["qc/ITS/MO/ITSTrackTask/ClusterUsage"],
-            "names": ["ClusterUsage"],
-            "reductorName": "o2::quality_control_modules::common::TH1Reductor",
-            "moduleName": "QcITS"
-          }    
-          
+          }  
         ],
         "plots": [
           {
             "names": ["NClusters_mean", "NClusters_stddev"],
             "title": ["Average NClusters trend", "Stddev NClusters trend"],
             "varexp": ["NClusters.mean:ntreeentries", "NClusters.stddev:ntreeentries"],
-            "selection": "",
-            "option": "PL"
-          }, 
-          {
-            "names": ["Eta_mean", "Eta_stddev"],
-            "title": ["Average Eta trend", "Stddev Eta trend"],
-            "varexp": ["Eta.mean:ntreeentries", "Eta.stddev:ntreeentries"],
-            "selection": "",
-            "option": "PL"
-          },
-          {
-            "names": ["Phi_mean", "Phi_stddev"],
-            "title": ["Average Phi trend", "Stddev Phi trend"],
-            "varexp": ["Phi.mean:ntreeentries", "Phi.stddev:ntreeentries"],
-            "selection": "",
-            "option": "PL"
-          },  
-          {
-            "names": ["OccupancyROF_mean", "OccupancyROF_stddev"],
-            "title": ["Average OccupancyROF trend", "Stddev OccupancyROF trend"],
-            "varexp": ["OccupancyROF.mean:ntreeentries", "OccupancyROF.stddev:ntreeentries"],
-            "selection": "",
-            "option": "PL"
-          },  
-          {
-            "names": ["ClusterUsage_mean", "ClusterUsage_stddev"],
-            "title": ["Average ClusterUsage trend", "Stddev ClusterUsage trend"],
-            "varexp": ["ClusterUsage.mean:ntreeentries", "ClusterUsage.stddev:ntreeentries"],
             "selection": "",
             "option": "PL"
           }
