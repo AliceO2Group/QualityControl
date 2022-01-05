@@ -44,8 +44,15 @@ ITSFeeTask::~ITSFeeTask()
   delete mIdCheck;
   delete mProcessingTime;
   delete mPayloadSize;
+  delete mLaneStatusSummaryIB;
+  delete mLaneStatusSummaryML;
+  delete mLaneStatusSummaryOL;
+  delete mLaneStatusSummaryGlobal;
   for (int i = 0; i < NFlags; i++) {
     delete mLaneStatus[i];
+  }
+  for (int i = 0; i < NLayer; i++) {
+    delete mLaneStatusSummary[i];
   }
 
   // delete mInfoCanvas;
@@ -67,7 +74,7 @@ void ITSFeeTask::createFeePlots()
   mTFInfo = new TH1I("STFInfo", "STF vs count", 15000, 0, 15000);
   getObjectsManager()->startPublishing(mTFInfo); // mTFInfo
 
-  mLaneInfo = new TH2I("LaneInfo", "Lane Information", NLanes, -.5, NLanes - 0.5, NFlags, -.5, NFlags - 0.5);
+  mLaneInfo = new TH2I("LaneInfo", "Lane Information", NLanesMax, -.5, NLanesMax - 0.5, NFlags, -.5, NFlags - 0.5);
   getObjectsManager()->startPublishing(mLaneInfo); // mLaneInfo
 
   mProcessingTime = new TH1I("ProcessingTime", "Processing Time", 10000, 0, 10000);
@@ -77,9 +84,23 @@ void ITSFeeTask::createFeePlots()
   getObjectsManager()->startPublishing(mTriggerVsFeeId); // mTriggervsFeeId
 
   for (int i = 0; i < NFlags; i++) {
-    mLaneStatus[i] = new TH2I(Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flag : %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanes, 0, NLanes);
+    mLaneStatus[i] = new TH2I(Form("LaneStatus/laneStatusFlag%s", mLaneStatusFlag[i].c_str()), Form("Lane Status Flag : %s", mLaneStatusFlag[i].c_str()), NFees, 0, NFees, NLanesMax, 0, NLanesMax);
     getObjectsManager()->startPublishing(mLaneStatus[i]); // mlaneStatus
   }
+
+  for (int i = 0; i < NLayer; i++) {
+    mLaneStatusSummary[i] = new TH1I(Form("LaneStatusSummary/LaneStatusSummaryL%i", i), Form("Lane Status Summary L%i", i), 3, 0, 3);
+    getObjectsManager()->startPublishing(mLaneStatusSummary[i]); // mLaneStatusSummary
+  }
+
+  mLaneStatusSummaryIB = new TH1I("LaneStatusSummary/LaneStatusSummaryIB", "Lane Status Summary IB", 3, 0, 3);
+  getObjectsManager()->startPublishing(mLaneStatusSummaryIB); // mLaneStatusSummaryIB
+  mLaneStatusSummaryML = new TH1I("LaneStatusSummary/LaneStatusSummaryML", "Lane Status Summary ML", 3, 0, 3);
+  getObjectsManager()->startPublishing(mLaneStatusSummaryML); // mLaneStatusSummaryML
+  mLaneStatusSummaryOL = new TH1I("LaneStatusSummary/LaneStatusSummaryOL", "Lane Status Summary OL", 3, 0, 3);
+  getObjectsManager()->startPublishing(mLaneStatusSummaryOL); // mLaneStatusSummaryOL
+  mLaneStatusSummaryGlobal = new TH1I("LaneStatusSummary/LaneStatusSummaryGlobal", "Lane Status Summary Global", 3, 0, 3);
+  getObjectsManager()->startPublishing(mLaneStatusSummaryGlobal); // mLaneStatusSummaryGlobal
 
   mFlag1Check = new TH2I("Flag1Check", "Flag 1 Check", NFees, 0, NFees, 3, 0, 3); // Row 1 : transmission_timeout, Row 2 : packet_overflow, Row 3 : lane_starts_violation
   getObjectsManager()->startPublishing(mFlag1Check);                              // mFlag1Check
@@ -137,10 +158,57 @@ void ITSFeeTask::setPlotsFormat()
       setAxisTitle(mLaneStatus[i], "FEEID", "Lane");
       mLaneStatus[i]->SetStats(0);
       for (const int& lay : LayerBoundaryFEE) {
-        auto l = new TLine(lay, 0, lay, NLanes);
+        auto l = new TLine(lay, 0, lay, NLanesMax);
         mLaneStatus[i]->GetListOfFunctions()->Add(l);
       }
     }
+  }
+
+  for (int i = 0; i < NLayer; i++) {
+    if (mLaneStatusSummary[i]) {
+      setAxisTitle(mLaneStatusSummary[i], "", "#Entries");
+      for (int j = 0; j < NFlags; j++) {
+        mLaneStatusSummary[i]->GetXaxis()->SetBinLabel(j + 1, mLaneStatusFlag[j].c_str());
+      }
+      mLaneStatusSummary[i]->GetXaxis()->CenterLabels();
+      mLaneStatusSummary[i]->SetStats(0);
+    }
+  }
+
+  if (mLaneStatusSummaryIB) {
+    setAxisTitle(mLaneStatusSummaryIB, "", "#Entries");
+    for (int i = 0; i < NFlags; i++) {
+      mLaneStatusSummaryIB->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
+    }
+    mLaneStatusSummaryIB->GetXaxis()->CenterLabels();
+    mLaneStatusSummaryIB->SetStats(0);
+  }
+
+  if (mLaneStatusSummaryML) {
+    setAxisTitle(mLaneStatusSummaryML, "", "#Entries");
+    for (int i = 0; i < NFlags; i++) {
+      mLaneStatusSummaryML->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
+    }
+    mLaneStatusSummaryML->GetXaxis()->CenterLabels();
+    mLaneStatusSummaryML->SetStats(0);
+  }
+
+  if (mLaneStatusSummaryOL) {
+    setAxisTitle(mLaneStatusSummaryOL, "", "#Entries");
+    for (int i = 0; i < NFlags; i++) {
+      mLaneStatusSummaryOL->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
+    }
+    mLaneStatusSummaryOL->GetXaxis()->CenterLabels();
+    mLaneStatusSummaryOL->SetStats(0);
+  }
+
+  if (mLaneStatusSummaryGlobal) {
+    setAxisTitle(mLaneStatusSummaryGlobal, "", "#Entries");
+    for (int i = 0; i < NFlags; i++) {
+      mLaneStatusSummaryGlobal->GetXaxis()->SetBinLabel(i + 1, mLaneStatusFlag[i].c_str());
+    }
+    mLaneStatusSummaryGlobal->GetXaxis()->CenterLabels();
+    mLaneStatusSummaryGlobal->SetStats(0);
   }
 
   if (mFlag1Check) {
@@ -226,10 +294,19 @@ void ITSFeeTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
 
-      for (int i = 0; i < NLanes; i++) {
+      for (int i = 0; i < NLanesMax; i++) {
         int laneValue = laneInfo >> (2 * i) & 0x3;
         if (laneValue) {
-          mLaneStatus[laneValue]->Fill(ifee, i);
+          mLaneStatus[laneValue - 1]->Fill(ifee, i);
+          mLaneStatusSummary[ilayer]->Fill(laneValue - 1);
+          mLaneStatusSummaryGlobal->Fill(laneValue - 1);
+          if (ilayer < 3) {
+            mLaneStatusSummaryIB->Fill(laneValue - 1);
+          } else if (ilayer < 5) {
+            mLaneStatusSummaryML->Fill(laneValue - 1);
+          } else {
+            mLaneStatusSummaryOL->Fill(laneValue - 1);
+          }
         }
       }
     }
