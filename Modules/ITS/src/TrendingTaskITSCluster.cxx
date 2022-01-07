@@ -270,7 +270,7 @@ void TrendingTaskITSCluster::storePlots(repository::DatabaseInterface& qcdb)
                         << ENDM;
     auto mo = std::make_shared<MonitorObject>(c[idx], mConfig.taskName, "o2::quality_control_modules::its::TrendingTaskITSCluster",
                                               mConfig.detectorName);
-    
+
     mo->setIsOwner(false);
     qcdb.storeMO(mo);
     if (idx % NTRENDSCLUSTER == NTRENDSCLUSTER - 1)

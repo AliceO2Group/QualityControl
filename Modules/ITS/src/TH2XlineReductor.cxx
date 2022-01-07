@@ -36,7 +36,7 @@ void TH2XlineReductor::update(TObject* obj)
 {
   auto histo = dynamic_cast<TH2*>(obj);
 
-  //initialize arrays
+  // initialize arrays
   for (int i = 0; i < NDIM; i++) {
     mStats.mean[i] = -1.;
     mStats.stddev[i] = -1.;
@@ -67,8 +67,8 @@ void TH2XlineReductor::update(TObject* obj)
       mStats.stddev[iy - 1] = TMath::Sqrt(sum / (entriesx - 1));
       entriesx = 0.;
       sum = 0.;
-    } //end loop on y bins
-  }   //end if
+    } // end loop on y bins
+  }   // end if
 }
 
 } // namespace o2::quality_control_modules::its

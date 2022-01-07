@@ -39,14 +39,14 @@ class TH2XlineReductor : public quality_control::postprocessing::Reductor
  private:
   static constexpr int NDIM = 20;
   struct mystat {
-    Double_t mean[NDIM];        //mean of the bin contents of each row (1 value per row)
-    Double_t stddev[NDIM];      //stddev of the bin contents of each row (1 value per row)
-    Double_t entries[NDIM];     //entries of each row (1 value per row)
-    Double_t mean_scaled[NDIM]; //mean scaled with number of active pixels in a stave to get the occupancy
+    Double_t mean[NDIM];        // mean of the bin contents of each row (1 value per row)
+    Double_t stddev[NDIM];      // stddev of the bin contents of each row (1 value per row)
+    Double_t entries[NDIM];     // entries of each row (1 value per row)
+    Double_t mean_scaled[NDIM]; // mean scaled with number of active pixels in a stave to get the occupancy
   };
   mystat mStats;
 };
 
 } // namespace o2::quality_control_modules::its
 
-#endif //QUALITYCONTROL_TH2XLINEREDUCTOR_H
+#endif // QUALITYCONTROL_TH2XLINEREDUCTOR_H
