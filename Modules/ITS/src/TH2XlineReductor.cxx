@@ -1,9 +1,8 @@
-// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
-// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
-// All rights not expressly granted are reserved.
+// Copyright CERN and copyright holders of ALICE O2. This software is
+// distributed under the terms of the GNU General Public License v3 (GPL
+// Version 3), copied verbatim in the file "COPYING".
 //
-// This software is distributed under the terms of the GNU General Public
-// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+// See http://alice-o2.web.cern.ch/license for full licensing information.
 //
 // In applying this license CERN does not waive the privileges and immunities
 // granted to it by virtue of its status as an Intergovernmental Organization
@@ -53,8 +52,10 @@ void TH2XlineReductor::update(TObject* obj)
         }
         sum += histo->GetBinContent(ix, iy);
       }
-      Double_t meanx = sum / entriesx;
+      Double_t meanx = !entriesx ? 0. : sum / entriesx;
       mStats.mean[iy - 1] = meanx;
+      // printf ("entiresx %f \n", entriesx);
+      // printf("meanx = %f \n",meanx);
       mStats.entries[iy - 1] = entriesx;
       mStats.mean_scaled[iy - 1] = meanx * 512. * 1024.;
       sum = 0.;
@@ -64,7 +65,9 @@ void TH2XlineReductor::update(TObject* obj)
           sum += (binc - meanx) * (binc - meanx);
         }
       }
-      mStats.stddev[iy - 1] = TMath::Sqrt(sum / (entriesx - 1));
+      mStats.stddev[iy - 1] = !entriesx ? 0. : entriesx == 1 ? TMath::Sqrt(sum / (entriesx))
+                                                             : TMath::Sqrt(sum / (entriesx - 1));
+      // printf("stddev %f \n",mStats.stddev[iy-1]);
       entriesx = 0.;
       sum = 0.;
     } // end loop on y bins
