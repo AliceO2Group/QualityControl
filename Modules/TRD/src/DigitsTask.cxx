@@ -191,13 +191,13 @@ namespace o2::quality_control_modules::trd
     mClsStack->SetTitle(";Stack;Amplitude");
 
     // local histos
-      std::string label = fmt::format("clsAmp");
-      std::string title = fmt::format("Cluster Amplitude for chamber");
-      mClusterAmplitudeChamber.reset(new TH2F(label.c_str(), title.c_str(), 300, -0.5, 299.5,540,-0.5,539.5));
+    std::string label = fmt::format("clsAmp");
+    std::string title = fmt::format("Cluster Amplitude for chamber");
+    mClusterAmplitudeChamber.reset(new TH2F(label.c_str(), title.c_str(), 300, -0.5, 299.5, 540, -0.5, 539.5));
 
-      //TODO come back to figure out proper names mClusterAmplitudeChamber[det]->GetXaxis()->SetTitle("PadRow");
-      mClusterAmplitudeChamber[det]->GetYaxis()->SetTitle("Chmaber");
-      getObjectsManager()->startPublishing(mClusterAmplitudeChamber.get());
+    //TODO come back to figure out proper names mClusterAmplitudeChamber[det]->GetXaxis()->SetTitle("PadRow");
+    mClusterAmplitudeChamber->GetYaxis()->SetTitle("Chamber");
+    getObjectsManager()->startPublishing(mClusterAmplitudeChamber.get());
     for (int trgg = 0; trgg < 10; ++trgg) {
       if (trgg == 3) {
         std::string label = fmt::format("ClsChargeTbTrgg_{0}", trgg);
@@ -421,7 +421,7 @@ namespace o2::quality_control_modules::trd
                   if (time > mDriftRegion.first && time < mDriftRegion.second) {
                     mClsAmpDrift->Fill(sum);
                     mClsDetAmp[sm]->Fill(detLoc, sum);
-                    mClusterAmplitudeChamber->Fill(sum,iChamber);
+                    mClusterAmplitudeChamber->Fill(sum, iChamber);
                   }
 
                   mClsSector->Fill(sm, sum);
@@ -457,9 +457,9 @@ namespace o2::quality_control_modules::trd
   void DigitsTask::endOfCycle()
   {
     ILOG(Info) << "endOfCycle" << ENDM;
-    TProfile *prof= mClusterAmplitudeChamber->ProfileY();
+    TProfile* prof = mClusterAmplitudeChamber->ProfileY();
     for (Int_t det = 0; det < 540; det++) {
-        mClsAmpCh->Fill(prof->GetBinContent(det));
+      mClsAmpCh->Fill(prof->GetBinContent(det));
     }
   }
 
