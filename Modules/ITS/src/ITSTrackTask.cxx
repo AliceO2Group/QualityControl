@@ -252,13 +252,13 @@ void ITSTrackTask::createAllHistos()
   formatAxes(hAssociatedClusterFraction, "", "Clusters in track / Clusters", 1, 1.10);
   hAssociatedClusterFraction->SetStats(0);
   
-  hNtracks = new TH1D("Ntracks", "Ntracks", mNtracksMAX, 0, mNtracksMAX);
+  hNtracks = new TH1D("Ntracks", "Ntracks", (int)mNtracksMAX, 0, mNtracksMAX);
   hNtracks->SetTitle("The number of tracks event by event");
   addObject(hNtracks);
   formatAxes(hNtracks, "", "# of tracks ", 1, 1.10);
   hNtracks->SetStats(0);
 
-  hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 30, -1.5, 1.5, 13, 1.5, 14.5);
+  hNClustersPerTrackEta = new TH2D("NClustersPerTrackEta", "NClustersPerTrackEta", 300, -1.5, 1.5, 13, 1.5, 14.5);
   hNClustersPerTrackEta->SetTitle("Eta vs NClusters Per Track");
   addObject(hNClustersPerTrackEta);
   formatAxes(hNClustersPerTrackEta, "#eta", "# of Clusters per Track", 1, 1.10);
