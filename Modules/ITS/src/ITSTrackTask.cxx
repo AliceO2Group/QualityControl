@@ -59,7 +59,7 @@ void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
   mVertexXYsize = std::stof(mCustomParameters["vertexXYsize"]);
   mVertexZsize = std::stof(mCustomParameters["vertexZsize"]);
   mVertexRsize = std::stof(mCustomParameters["vertexRsize"]);
-
+  mDoTTree = std::stoi(mCustomParameters["doTTree"]);
   createAllHistos();
   publishHistos();
 }
@@ -113,7 +113,8 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
       vPhi.emplace_back(out.getPhi());
     }
 
-    tClusterMap->Fill();
+    if (mDoTTree)
+      tClusterMap->Fill();
   }
 
   mNTracks += trackArr.size();
@@ -174,7 +175,8 @@ void ITSTrackTask::createAllHistos()
   tClusterMap->Branch("bitmap", &vMap);
   tClusterMap->Branch("eta", &vEta);
   tClusterMap->Branch("phi", &vPhi);
-  addObject(tClusterMap);
+  if (mDoTTree)
+    addObject(tClusterMap);
 
   hAngularDistribution = new TH2D("AngularDistribution", "AngularDistribution", 30, -1.5, 1.5, 60, 0, TMath::TwoPi());
   hAngularDistribution->SetTitle("AngularDistribution");

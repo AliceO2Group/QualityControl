@@ -39,7 +39,8 @@
         "taskParameters" : {
 	  "vertexXYsize" : "0.1",
 	  "vertexZsize": "15",
-	  "vertexRsize": "0.1"
+	  "vertexRsize": "0.1",
+          "doTTree": "0"
         }
 
       }

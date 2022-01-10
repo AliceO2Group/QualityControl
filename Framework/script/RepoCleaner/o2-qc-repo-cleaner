@@ -77,8 +77,8 @@ def parseArgs():
     parser.add_argument('--config-git', action='store_true',
                         help='Check out the config file from git (branch repo_cleaner), ignore --config.')
     parser.add_argument('--config-consul', action='store',
-                        help='Specify the consul url and port in the form of <url>:<port>, if specified'
-                             'ignore both --config and --config-git.')
+                        help='Specify the consul url (without initial `http[s]://` and port in the form of <url>:<port>,'
+                             ' if specified ignore both --config and --config-git.')
     parser.add_argument('--log-level', dest='log_level', action='store', default="20",
                         help='Log level (CRITICAL->50, ERROR->40, WARNING->30, INFO->20,DEBUG->10)')
     parser.add_argument('--dry-run', action='store_true',
@@ -281,7 +281,6 @@ def read_config(args):
     if args.config_consul:
         items = args.config_consul.split(':')
         path = downloadConfigFromConsul(items[0], items[1])
-        exit(0)
     elif args.config_git:
         path = downloadConfigFromGit()
     config = parseConfig(path)
