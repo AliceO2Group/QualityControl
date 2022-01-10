@@ -154,6 +154,16 @@ Any one in alice-member has access. We use the egroup alice-o2-qcg-access to gra
 
 `systemctl restart qcg`
 
+### Update host certificate for qcg-test
+
+1. Create a new host certificate and download it
+2. scp the p12 file to qcg-test
+3. `openssl pkcs12 -in /tmp/qcg-test-new.p12 -out qcg-test.pem -clcerts -nokeys`
+4. `openssl pkcs12 -in /tmp/qcg-test-new.p12 -out qcg-test.key -nocerts -nodes`
+5. `cd /etc/pki/tls/certs/ ; mv qcg-test.pem qcg-test.pem-old ; mv path/to/qcg-test.pem .`
+6. `cd /etc/pki/tls/private/ ; mv qcg-test.key qcg-test.key-old ; mv path/to/qcg-test.key .`
+7. Check that it works by connecting to the website and clicking the little lock in the bar to display the certificate.
+
 ### Logging
 
 We use the infologger. There is a utility class, `QcInfoLogger`, that can be used. It is a singleton. See [the header](../Framework/include/QualityControl/QcInfoLogger.h) for its usage.

@@ -35,7 +35,7 @@
             "names": ["NClusters"],
             "reductorName": "o2::quality_control_modules::common::TH1Reductor",
             "moduleName": "QcITS"
-          }  
+          }
         ],
         "plots": [
           {

@@ -156,6 +156,7 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
     long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(),
                               "goff"); 
+
     double* x = mTrend->GetV2();
     double* y = mTrend->GetV1();
 

@@ -118,6 +118,10 @@ void RootFileSink::run(framework::ProcessingContext& pctx)
       delete moc;
     }
     closeSinkFile(sinkFile);
+  } catch (const std::bad_alloc& ex) {
+    ILOG(Error, Ops) << "Caught a bad_alloc exception, there is probably a huge file or object present, but I will try to survive" << ENDM;
+    ILOG(Error, Support) << "Details: " << ex.what() << ENDM;
+    closeSinkFile(sinkFile);
   } catch (...) {
     closeSinkFile(sinkFile);
     throw;
