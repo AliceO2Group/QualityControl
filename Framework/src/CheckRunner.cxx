@@ -474,5 +474,4 @@ std::string CheckRunner::getDetectorName(const std::vector<CheckConfig> checks)
   return detectorName;
 }
 
-
 } // namespace o2::quality_control::checker

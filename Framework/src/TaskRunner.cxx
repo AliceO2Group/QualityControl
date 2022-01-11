@@ -200,7 +200,7 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
   if (taskName.length() > header::DataDescription::size) {
     ILOG(Warning, Devel) << "Task name is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
   }
-  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size ) ).c_str());
+  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size)).c_str());
   return description;
 }
 
