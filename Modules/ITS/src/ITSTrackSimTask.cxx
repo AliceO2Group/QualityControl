@@ -16,7 +16,6 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "ITS/ITSTrackSimTask.h"
-#include <DetectorsCommonDataFormats/NameConf.h>
 #include "DataFormatsITS/TrackITS.h"
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>
@@ -176,7 +175,7 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   hNumRecoValid_r = new TH1D("NumRecoValid_r", "",  50,0, 5);
   hNumRecoFake_r = new TH1D("NumRecoFake_r", "",  50,0,5);
-  hDenTrue_r = new TH1D("DenTrueMC_r", "", 50, 0, 50);
+  hDenTrue_r = new TH1D("DenTrueMC_r", "", 50, 0, 5);
 
 
   hEfficiency_z = new TH1D("efficiency_z", ";z;Efficiency",  100, -5, 5);
@@ -214,10 +213,8 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
       auto mcHeader= reader.getMCEventHeader(iSource, iEvent);
       for (auto mcTrack : mcTracks){
 
-        //if (mcTrack.isPrimary()){
-           if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1) continue; 
-           if ( abs(mcTrack.Vz())  > 10 ) continue;
-        //}
+        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1) continue; 
+        //if ( abs(mcTrack.Vz())  > 10 ) continue;
         Int_t pdg = mcTrack.GetPdgCode();
         if (TMath::Abs(pdg) != 211) continue; // Select pions
         if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
@@ -234,7 +231,6 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
 
-
   publishHistos();
   o2::base::Propagator::initFieldFromGRP("./o2sim_grp.root");
   auto field = static_cast<o2::field::MagneticField*>(TGeoGlobalMagField::Instance()->GetField());
@@ -246,7 +242,7 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
 void ITSTrackSimTask::startOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "startOfActivity" << ENDM;
-   //reset();
+  //reset();
 
 }
 
@@ -269,80 +265,71 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
       const auto& track = trackArr[itrack];
       const auto& MCinfo = MCTruth[itrack];
       
-      if (MCinfo.isNoise()) continue;
-
+      //if (MCinfo.isNoise()) continue;
+      std::cout<<"Check 1"<<std::endl;
       auto* mcTrack = reader.getTrack(MCinfo.getSourceID(), MCinfo.getEventID(), MCinfo.getTrackID());
+       std::cout<<"Check 1.5"<<std::endl;
       auto mcHeader= reader.getMCEventHeader(MCinfo.getSourceID(), MCinfo.getEventID());
+      std::cout<<"Check 2"<<std::endl;
       Float_t ip[2]{0., 0.};
       Float_t vx = 0., vy = 0., vz = 0.; // Assumed primary vertex
       track.getImpactParams(vx, vy, vz, bz, ip);
 
+      
       if (mcTrack) {
 
- //        if  (mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() > 0) std::cout<<"Track found: isPrimary: " <<  mcTrack->isPrimary() << " isFake "<<  MCinfo.isFake() << " x= "<< mcTrack->Vx() <<   " y= "<< mcTrack->Vy() <<  " z= "<< mcTrack->Vz()<< std::endl;
-               
 
-/*
-        if (!mcTrack->isPrimary() && MCinfo.isFake()) std::cout<<"Secondary fake track found: "<< mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() <<std::endl;       
-        else 
-           if (MCinfo.isFake()) std::cout<<"Primary fake track found: "<< mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() <<std::endl;
-
-        if (!mcTrack->isPrimary() && !MCinfo.isFake()) std::cout<<"Secondary true track found: "<< mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() <<std::endl;
-        else
-           if (!MCinfo.isFake()) std::cout<<"Primary true track found: "<< mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() <<std::endl;
-
-*/
-
-
-   //     if (mcTrack->isPrimary()){
            if (mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() > 1) continue; 
-           if ( abs(mcTrack->Vz())  > 10 ) continue;
-     //   }
+           //NEW COMMENTif ( abs(mcTrack->Vz())  > 10 ) continue;
+           Int_t pdg = mcTrack->GetPdgCode();
+           if (TMath::Abs(pdg) != 211) continue; // Select pions
+           if (TMath::Abs(mcTrack->GetEta()) > 1.2) continue;
+           std::cout<<" MC Particle survived selesction"<<std::endl;
+           Double_t distance = sqrt(   pow(mcHeader.GetX()-mcTrack->Vx(),2) +  pow(mcHeader.GetY()-mcTrack->Vy(),2) +  pow(mcHeader.GetZ()-mcTrack->Vz(),2));
+           if (MCinfo.isFake()) {
+               std::cout<<" MC Particle is Fake"<<std::endl;
 
-        Int_t pdg = mcTrack->GetPdgCode();
-        if (TMath::Abs(pdg) != 211) continue; // Select pions
-                if (!mcTrack->isPrimary() && MCinfo.isFake()) std::cout<<"3"<<std::endl;
-        if (TMath::Abs(mcTrack->GetEta()) > 1.2) continue;
-        
-        if (!mcTrack->isPrimary() && MCinfo.isFake())  std::cout<<"and it survived "<<std::endl;
+               hNumRecoFake_pt->Fill(mcTrack->GetPt());
+               hNumRecoFake_phi->Fill(mcTrack->GetPhi());
+               hNumRecoFake_eta->Fill(mcTrack->GetEta());
+               hNumRecoFake_z->Fill(mcTrack->Vz());
+               hNumRecoFake_r->Fill(distance); 
+               if (mcTrack->isPrimary())  hTrackImpactTransvFake->Fill(ip[0]);
+           } else {
+               std::cout<<" MC Particle is Valid"<<std::endl;
 
-        Double_t distance = sqrt(   pow(mcHeader.GetX()-mcTrack->Vx(),2) +  pow(mcHeader.GetY()-mcTrack->Vy(),2) +  pow(mcHeader.GetZ()-mcTrack->Vz(),2));
-         if (MCinfo.isFake()) {
-            hNumRecoFake_pt->Fill(mcTrack->GetPt());
-            hNumRecoFake_phi->Fill(mcTrack->GetPhi());
-            hNumRecoFake_eta->Fill(mcTrack->GetEta());
-            hNumRecoFake_z->Fill(mcTrack->Vz());
-            hNumRecoFake_r->Fill(distance); 
-            if (mcTrack->isPrimary())  hTrackImpactTransvFake->Fill(ip[0]);
-            else std::cout<< " I am fake but I am Secondary particle" <<std::endl;
+               hNumRecoValid_pt->Fill(mcTrack->GetPt());
+               hNumRecoValid_phi->Fill(mcTrack->GetPhi());
+               hNumRecoValid_eta->Fill(mcTrack->GetEta());
+               hNumRecoValid_z->Fill(mcTrack->Vz());
+               hNumRecoValid_r->Fill(distance);
+               hTrackImpactTransvValid->Fill(ip[0]); 
+               if (mcTrack->isPrimary()) hTrackImpactTransvValid->Fill(ip[0]);
+           }
+          std::cout<<" MC Particle analysd"<<std::endl;
 
-         }
-         else {
-            hNumRecoValid_pt->Fill(mcTrack->GetPt());
-            hNumRecoValid_phi->Fill(mcTrack->GetPhi());
-            hNumRecoValid_eta->Fill(mcTrack->GetEta());
-            hNumRecoValid_z->Fill(mcTrack->Vz());
-            hNumRecoValid_r->Fill(distance);
-            hTrackImpactTransvValid->Fill(ip[0]); 
-            if (mcTrack->isPrimary()) hTrackImpactTransvValid->Fill(ip[0]);
-         }
-      }
+            
+       }
 
    }
     
- 
+  std::cout<<"Divide #1"<<std::endl;
   hFakeTrack_pt->Divide(hNumRecoFake_pt, hDenTrue_pt, 1, 1);
   hEfficiency_pt->Divide(hNumRecoValid_pt, hDenTrue_pt, 1, 1);
 
+  std::cout<<"Divide #2"<<std::endl;
   hFakeTrack_phi->Divide(hNumRecoFake_phi, hDenTrue_phi, 1, 1);
   hEfficiency_phi->Divide(hNumRecoValid_phi, hDenTrue_phi, 1, 1);
 
+  std::cout<<"Divide #3"<<std::endl;
   hFakeTrack_eta->Divide(hNumRecoFake_eta, hDenTrue_eta, 1, 1);
   hEfficiency_eta->Divide(hNumRecoValid_eta, hDenTrue_eta, 1, 1);
  
+  std::cout<<"Divide #4"<<std::endl;
   hFakeTrack_r->Divide(hNumRecoFake_r, hDenTrue_r, 1, 1);
   hEfficiency_r->Divide(hNumRecoValid_r, hDenTrue_r, 1, 1);
 
+  std::cout<<"Divide #5"<<std::endl;
   hFakeTrack_z->Divide(hNumRecoFake_z, hDenTrue_z, 1, 1);
   hEfficiency_z->Divide(hNumRecoValid_z, hDenTrue_z, 1, 1);
 

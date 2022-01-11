@@ -16,7 +16,6 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "ITS/ITSTrackTask.h"
-#include <DetectorsCommonDataFormats/NameConf.h>
 #include <DataFormatsITS/TrackITS.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <Framework/InputRecord.h>

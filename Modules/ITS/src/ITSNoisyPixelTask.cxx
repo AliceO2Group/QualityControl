@@ -20,7 +20,6 @@
 #include <TCanvas.h>
 #include <DataFormatsParameters/GRPObject.h>
 #include <ITSMFTReconstruction/DigitPixelReader.h>
-#include <DetectorsCommonDataFormats/NameConf.h>
 #include <DataFormatsITSMFT/ROFRecord.h>
 #include <ITSMFTReconstruction/ChipMappingITS.h>
 #include <DataFormatsITSMFT/ClusterTopology.h>
