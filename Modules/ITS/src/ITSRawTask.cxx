@@ -200,7 +200,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   getProcessStatus(ctx.inputs().get<int>("Finish"), FileFinish);
   updateFile(ctx.inputs().get<int>("Run"), ctx.inputs().get<int>("EP"), FileID);
 
-  //Will Fix Later//
+  // Will Fix Later//
 
   int ResetDecision = ctx.inputs().get<int>("in");
   ILOG(Info, Support) << "Reset Histogram Decision = " << ResetDecision
@@ -245,7 +245,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
     //    mNEvent = pixeldata.getROFrame();
     mNEvent = events.get()[i].NEvent;
     i++;
-    //cout << "Event Compare: " << NEvent << ", " << NEventPre << endl;
+    // cout << "Event Compare: " << NEvent << ", " << NEventPre << endl;
 
     if (mNEvent % occUpdateFrequency == 0 && mNEvent > 0 && mNEvent != mNEventPre) {
       updateOccupancyPlots(mNEventPre);
@@ -339,7 +339,7 @@ void ITSRawTask::monitorData(o2::framework::ProcessingContext& ctx)
   if (mNEventPre > 0) {
     updateOccupancyPlots(mNEventPre);
   }
-  //cout << "EndUpdateOcc " << NEventPre <<endl;
+  // cout << "EndUpdateOcc " << NEventPre <<endl;
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
   ILOG(Info, Support) << "Time After Loop = " << difference / 1000.0 << "s"
@@ -401,7 +401,7 @@ void ITSRawTask::createGlobalHistos()
   hErrorFile = new TH2D("General/ErrorFile", "Decoding Errors vs File ID", NFiles + 1, -0.5, NFiles + 0.5, NError, 0.5, NError + 0.5);
   formatAxes(hErrorFile, "File ID (data-link)", "Error ID");
   formatStatistics(hErrorFile);
-  //format2DZaxis(hErrorFile);
+  // format2DZaxis(hErrorFile);
   hErrorFile->GetZaxis()->SetTitle("Counts");
   hErrorFile->SetMinimum(0);
 
@@ -640,7 +640,7 @@ void ITSRawTask::addMetadata(int runID, int EpID, int fileID)
 void ITSRawTask::getProcessStatus(int aInfoFile, int& aFileFinish)
 {
   aFileFinish = aInfoFile % 10;
-  //cout<<"aInfoFile = "<<aInfoFile<<endl;
+  // cout<<"aInfoFile = "<<aInfoFile<<endl;
   FileRest = (aInfoFile - aFileFinish) / 10;
 
   ILOG(Info, Support) << "FileFinish = " << aFileFinish << AliceO2::InfoLogger::InfoLogger::endm;
@@ -668,8 +668,8 @@ void ITSRawTask::updateFile(int aRunID, int aEpID, int aFileID)
     hFileNameInfo->Fill(0.5);
     hFileNameInfo->SetTitle(Form("Current File Name: %s", FileName.Data()));
     mTotalFileDone = mTotalFileDone + 1;
-    //hInfoCanvas->SetBinContent(1,FileID);
-    //hInfoCanvas->SetBinContent(2,TotalFileDone);
+    // hInfoCanvas->SetBinContent(1,FileID);
+    // hInfoCanvas->SetBinContent(2,TotalFileDone);
     ptFileName->Clear();
     ptNFile->Clear();
     ptFileName->AddText(Form("File Being Proccessed: %s", FileName.Data()));
@@ -760,7 +760,7 @@ void ITSRawTask::updateOccupancyPlots(int nEvents)
     if (!mlayerEnable[iLayer]) {
       continue;
     }
-    //hEtaPhiHitmap[iLayer]->Reset();
+    // hEtaPhiHitmap[iLayer]->Reset();
     for (int iStave = 0; iStave < NStaves[iLayer]; iStave++) {
       for (int iHic = 0; iHic < nHicPerStave[iLayer]; iHic++) {
         for (int iChip = 0; iChip < nChipsPerHic[iLayer]; iChip++) {
@@ -805,7 +805,7 @@ void ITSRawTask::enableLayers()
   for (int i = 0; i < 7; i++) {
     mlayerEnable[i] = stoi(enable[i]);
   }
-  //cout << "LayerEnable = " << " layer0 = " << layerEnable[0] << " layer5 = " << layerEnable[5] <<  endl;
+  // cout << "LayerEnable = " << " layer0 = " << layerEnable[0] << " layer5 = " << layerEnable[5] <<  endl;
 }
 
 } // namespace its

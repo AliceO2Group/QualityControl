@@ -105,13 +105,13 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
   mDecoder = new o2::itsmft::RawPixelDecoder<o2::itsmft::ChipMappingITS>();
   mDecoder->init();
   mDecoder->setNThreads(mNThreads);
-  mDecoder->setFormat(GBTLink::NewFormat);               //Using RDHv6 (NewFormat)
-  mDecoder->setUserDataOrigin(header::DataOrigin("DS")); //set user data origin in dpl
+  mDecoder->setFormat(GBTLink::NewFormat);               // Using RDHv6 (NewFormat)
+  mDecoder->setUserDataOrigin(header::DataOrigin("DS")); // set user data origin in dpl
   mDecoder->setUserDataDescription(header::DataDescription("RAWDATA0"));
   mChipsBuffer.resize(mGeom->getNumberOfChips());
 
   if (mLayer != -1) {
-    //define the hitnumber, occupancy, errorcount array
+    // define the hitnumber, occupancy, errorcount array
     mHitPixelID_InStave = new std::unordered_map<unsigned int, int>**[NStaves[mLayer]];
     mHitnumber = new int*[NStaves[mLayer]];
     mOccupancy = new double*[NStaves[mLayer]];
@@ -132,7 +132,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
     if (mGeneralNoisyPixel) {
       getObjectsManager()->startPublishing(mGeneralNoisyPixel);
     }
-    //define the errorcount array, there is some reason cause break when I define errorcount and hitnumber, occupancy at same block.
+    // define the errorcount array, there is some reason cause break when I define errorcount and hitnumber, occupancy at same block.
     if (mLayer < NLayerIB) {
       for (int istave = 0; istave < NStaves[mLayer]; istave++) {
         mErrorCount[istave] = new int*[3];
@@ -154,7 +154,7 @@ void ITSFhrTask::initialize(o2::framework::InitContext& /*ctx*/)
         }
       }
     }
-    //define the hitnumber and occupancy array
+    // define the hitnumber and occupancy array
     if (mLayer < NLayerIB) {
       for (int istave = 0; istave < NStaves[mLayer]; istave++) {
         mHitnumber[istave] = new int[nChipsPerHic[mLayer]];
@@ -190,12 +190,12 @@ void ITSFhrTask::createErrorTriggerPlots()
   mErrorPlots = new TH1D("General/ErrorPlots", "Decoding Errors", mNError, 0.5, mNError + 0.5);
   mErrorPlots->SetMinimum(0);
   mErrorPlots->SetFillColor(kRed);
-  getObjectsManager()->startPublishing(mErrorPlots); //mErrorPlots
+  getObjectsManager()->startPublishing(mErrorPlots); // mErrorPlots
 
   mTriggerPlots = new TH1D("General/TriggerPlots", "Decoding Triggers", mNTrigger, 0.5, mNTrigger + 0.5);
   mTriggerPlots->SetMinimum(0);
   mTriggerPlots->SetFillColor(kBlue);
-  getObjectsManager()->startPublishing(mTriggerPlots); //mTriggerPlots
+  getObjectsManager()->startPublishing(mTriggerPlots); // mTriggerPlots
 }
 
 void ITSFhrTask::createGeneralPlots()
@@ -241,7 +241,7 @@ void ITSFhrTask::createGeneralPlots()
   createErrorTriggerPlots();
 
   mTFInfo = new TH1F("General/TFInfo", "TF vs count", 15000, 0, 15000);
-  getObjectsManager()->startPublishing(mTFInfo); //mTFInfo
+  getObjectsManager()->startPublishing(mTFInfo); // mTFInfo
 
   mErrorVsFeeid = new TH2I("General/ErrorVsFeeid", "Error count vs Error id and Fee id", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), o2::itsmft::GBTLinkDecodingStat::NErrorsDefined, 0.5, o2::itsmft::GBTLinkDecodingStat::NErrorsDefined + 0.5);
   mTriggerVsFeeid = new TH2I("General/TriggerVsFeeid", "Trigger count vs Trigger id and Fee id", (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), 0, (3 * StaveBoundary[3]) + (2 * (StaveBoundary[7] - StaveBoundary[3])), mNTrigger, 0.5, mNTrigger + 0.5);
@@ -253,15 +253,15 @@ void ITSFhrTask::createGeneralPlots()
   getObjectsManager()->startPublishing(mTriggerVsFeeid);
 }
 
-void ITSFhrTask::createOccupancyPlots() //create general plots like error, trigger, TF id plots and so on....
-                                        //create occupancy plots like chip stave occupancy, occupancy distribution, hic hit map plots and so on....
+void ITSFhrTask::createOccupancyPlots() // create general plots like error, trigger, TF id plots and so on....
+                                        // create occupancy plots like chip stave occupancy, occupancy distribution, hic hit map plots and so on....
 {
   const int nDim(2);
   int nBins[nDim] = { 1024, 512 };
   double Min[nDim] = { 0, 0 };
   double Max[nDim] = { 1024, 512 };
 
-  //create IB plots
+  // create IB plots
   if (mLayer < NLayerIB) {
     int nBinstmp[nDim] = { nBins[0] * nChipsPerHic[mLayer] / ReduceFraction, nBins[1] / ReduceFraction };
     double Maxtmp[nDim] = { Max[0] * nChipsPerHic[mLayer], Max[1] };
@@ -272,16 +272,16 @@ void ITSFhrTask::createOccupancyPlots() //create general plots like error, trigg
 
     mChipStaveOccupancy[mLayer] = new TH2D(Form("Occupancy/Layer%d/Layer%dChipStave", mLayer, mLayer), Form("ITS Layer%d, Occupancy vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nChipsPerHic[mLayer], -0.5, nHicPerStave[mLayer] * nChipsPerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
     mChipStaveOccupancy[mLayer]->SetStats(0);
-    getObjectsManager()->startPublishing(mChipStaveOccupancy[mLayer]); //mChipStaveOccupancy
+    getObjectsManager()->startPublishing(mChipStaveOccupancy[mLayer]); // mChipStaveOccupancy
 
     mChipStaveEventHitCheck[mLayer] = new TH2I(Form("Occupancy/Layer%d/Layer%dChipStaveEventHit", mLayer, mLayer), Form("ITS Layer%d, Event Hit Check vs Chip and Stave", mLayer), nHicPerStave[mLayer] * nChipsPerHic[mLayer], -0.5, nHicPerStave[mLayer] * nChipsPerHic[mLayer] - 0.5, NStaves[mLayer], -0.5, NStaves[mLayer] - 0.5);
     mChipStaveEventHitCheck[mLayer]->SetStats(0);
     getObjectsManager()->startPublishing(mChipStaveEventHitCheck[mLayer]);
 
     mOccupancyPlot[mLayer] = new TH1D(Form("Occupancy/Layer%dOccupancy", mLayer), Form("ITS Layer %d Occupancy Distribution", mLayer), 300, -15, 0);
-    getObjectsManager()->startPublishing(mOccupancyPlot[mLayer]); //mOccupancyPlot
+    getObjectsManager()->startPublishing(mOccupancyPlot[mLayer]); // mOccupancyPlot
   } else {
-    //Create OB plots
+    // Create OB plots
     int nBinstmp[nDim] = { (nBins[0] * (nChipsPerHic[mLayer] / 2) * (nHicPerStave[mLayer] / 2) / ReduceFraction), (nBins[1] * 2 * NSubStave[mLayer] / ReduceFraction) };
     double Maxtmp[nDim] = { (double)(nBins[0] * (nChipsPerHic[mLayer] / 2) * (nHicPerStave[mLayer] / 2)), (double)(nBins[1] * 2 * NSubStave[mLayer]) };
     for (int istave = 0; istave < NStaves[mLayer]; istave++) {
@@ -297,7 +297,7 @@ void ITSFhrTask::createOccupancyPlots() //create general plots like error, trigg
     getObjectsManager()->startPublishing(mChipStaveEventHitCheck[mLayer]);
 
     mOccupancyPlot[mLayer] = new TH1D(Form("Occupancy/Layer%dOccupancy", mLayer), Form("ITS Layer %d Occupancy Distribution", mLayer), 300, -15, 0);
-    getObjectsManager()->startPublishing(mOccupancyPlot[mLayer]); //mOccupancyPlot
+    getObjectsManager()->startPublishing(mOccupancyPlot[mLayer]); // mOccupancyPlot
   }
 }
 
@@ -309,7 +309,7 @@ void ITSFhrTask::setAxisTitle(TH1* object, const char* xTitle, const char* yTitl
 
 void ITSFhrTask::setPlotsFormat()
 {
-  //set general plots format
+  // set general plots format
   if (mErrorPlots) {
     setAxisTitle(mErrorPlots, "Error ID", "Counts");
   }
@@ -365,13 +365,13 @@ void ITSFhrTask::startOfCycle() { ILOG(Info, Support) << "startOfCycle" << ENDM;
 
 void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
-  //set timer
+  // set timer
   std::chrono::time_point<std::chrono::high_resolution_clock> start;
   std::chrono::time_point<std::chrono::high_resolution_clock> end;
   int difference;
   start = std::chrono::high_resolution_clock::now();
-  //get TF id by dataorigin and datadescription
-  const InputSpec TFIdFilter{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA1" }, Lifetime::Timeframe }; //after Data Sampling the dataorigin will become to "DS" and the datadescription will become  to "RAWDATAX"
+  // get TF id by dataorigin and datadescription
+  const InputSpec TFIdFilter{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA1" }, Lifetime::Timeframe }; // after Data Sampling the dataorigin will become to "DS" and the datadescription will become  to "RAWDATAX"
   if (!mGetTFFromBinding) {
     for (auto& input : ctx.inputs()) {
       if (DataRefUtils::match(input, TFIdFilter)) {
@@ -382,16 +382,16 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     mTimeFrameId = ctx.inputs().get<int>("G");
   }
 
-  //set Decoder
+  // set Decoder
   mDecoder->startNewTF(ctx.inputs());
   mDecoder->setDecodeNextAuto(true);
   std::vector<InputSpec> rawDataFilter{ InputSpec{ "", ConcreteDataTypeMatcher{ "DS", "RAWDATA0" }, Lifetime::Timeframe } };
-  DPLRawParser parser(ctx.inputs(), rawDataFilter); //set input data
+  DPLRawParser parser(ctx.inputs(), rawDataFilter); // set input data
 
-  //get data information from RDH(like witch layer, stave, link, trigger type)
+  // get data information from RDH(like witch layer, stave, link, trigger type)
   int lay = 0;
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
-    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>(); //Decoding new data format (RDHv6)
+    auto const* rdh = it.get_if<o2::header::RAWDataHeaderV6>(); // Decoding new data format (RDHv6)
     int istave = (int)(rdh->feeId & 0x00ff);
     int ilink = (int)((rdh->feeId & 0x0f00) >> 8);
     lay = (int)(rdh->feeId >> 12);
@@ -416,7 +416,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  //update general information according trigger type
+  // update general information according trigger type
   if (mTriggerPlots->GetBinContent(10) || mTriggerPlots->GetBinContent(8)) {
     if (partID / 100 < 2) {
       mInfoCanvasComm->SetBinContent(partID / 100 + 1, partID % 100 + 1, 1);
@@ -441,9 +441,9 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  //define digit hit vector
-  std::vector<Digit>** digVec = new std::vector<Digit>*[NStaves[lay]];            //IB : digVec[stave][0]; OB : digVec[stave][hic]
-  std::vector<ROFRecord>** digROFVec = new std::vector<ROFRecord>*[NStaves[lay]]; //IB : digROFVec[stave][0]; OB : digROFVec[stave][hic]
+  // define digit hit vector
+  std::vector<Digit>** digVec = new std::vector<Digit>*[NStaves[lay]];            // IB : digVec[stave][0]; OB : digVec[stave][hic]
+  std::vector<ROFRecord>** digROFVec = new std::vector<ROFRecord>*[NStaves[lay]]; // IB : digROFVec[stave][0]; OB : digROFVec[stave][hic]
   if (lay < NLayerIB) {
     for (int istave = 0; istave < NStaves[lay]; istave++) {
       digVec[istave] = new std::vector<Digit>[nHicPerStave[lay]];
@@ -456,7 +456,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  //decode raw data and save digit hit to digit hit vector, and save hitnumber per chip/hic
+  // decode raw data and save digit hit to digit hit vector, and save hitnumber per chip/hic
   while ((mChipDataBuffer = mDecoder->getNextChipData(mChipsBuffer))) {
     if (mChipDataBuffer) {
       int stave = 0, ssta = 0, mod = 0, chip = 0;
@@ -495,7 +495,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  //calculate active staves according digit hit vector
+  // calculate active staves according digit hit vector
   std::vector<int> activeStaves;
   for (int i = 0; i < NStaves[lay]; i++) {
     for (int j = 0; j < nHicPerStave[lay]; j++) {
@@ -510,9 +510,9 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
   omp_set_num_threads(mNThreads);
 #pragma omp parallel for schedule(dynamic)
 #endif
-  //save digit hit vector to unordered_map by openMP multiple threads
-  //the reason of this step is: it will spend many time If we THnSparse::Fill the THnspase hit by hit.
-  //So we want save hit information to undordered_map and fill THnSparse by THnSparse::SetBinContent (pixel by pixel)
+  // save digit hit vector to unordered_map by openMP multiple threads
+  // the reason of this step is: it will spend many time If we THnSparse::Fill the THnspase hit by hit.
+  // So we want save hit information to undordered_map and fill THnSparse by THnSparse::SetBinContent (pixel by pixel)
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     int istave = activeStaves[i];
     if (lay < NLayerIB) {
@@ -529,13 +529,13 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  //Reset Error plots
+  // Reset Error plots
   mErrorPlots->Reset();
-  mErrorVsFeeid->Reset(); //Error is   statistic by decoder so if we didn't reset decoder, then we need reset Error plots, and use TH::SetBinContent function
-  //mTriggerVsFeeid->Reset();			  Trigger is statistic by ourself so we don't need reset this plot, just use TH::Fill function
+  mErrorVsFeeid->Reset(); // Error is   statistic by decoder so if we didn't reset decoder, then we need reset Error plots, and use TH::SetBinContent function
+  // mTriggerVsFeeid->Reset();			  Trigger is statistic by ourself so we don't need reset this plot, just use TH::Fill function
   mOccupancyPlot[lay]->Reset();
 
-  //define tmp occupancy plot, which will use for multiple threads
+  // define tmp occupancy plot, which will use for multiple threads
   TH1D** occupancyPlotTmp = new TH1D*[(int)activeStaves.size()];
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     occupancyPlotTmp[i] = new TH1D("", "", 300, -15, 0);
@@ -547,7 +547,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
 #pragma omp parallel for schedule(dynamic) reduction(+ \
                                                      : totalhit)
 #endif
-  //fill Monitor Objects use openMP multiple threads, and calculate the occupancy
+  // fill Monitor Objects use openMP multiple threads, and calculate the occupancy
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     int istave = activeStaves[i];
     if (digVec[istave][0].size() < 1 && lay < NLayerIB) {
@@ -629,7 +629,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
   }
 
-  //fill Occupancy plots, chip stave occupancy plots and error statistic plots
+  // fill Occupancy plots, chip stave occupancy plots and error statistic plots
   for (int i = 0; i < (int)activeStaves.size(); i++) {
     int istave = activeStaves[i];
     mOccupancyPlot[lay]->Add(occupancyPlotTmp[i]);
@@ -666,7 +666,7 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     mErrorPlots->SetBinContent(ierror + 1, feeError);
   }
 
-  //delete pointor in monitorData()
+  // delete pointor in monitorData()
   for (int istave = 0; istave < NStaves[mLayer]; istave++) {
     delete[] digVec[istave];
     delete[] digROFVec[istave];
@@ -677,9 +677,9 @@ void ITSFhrTask::monitorData(o2::framework::ProcessingContext& ctx)
     delete occupancyPlotTmp[i];
   }
   delete[] occupancyPlotTmp;
-  //temporarily reverting to get TFId by querying binding
-  //  mTimeFrameId = ctx.inputs().get<int>("G");
-  //Timer LOG
+  // temporarily reverting to get TFId by querying binding
+  //   mTimeFrameId = ctx.inputs().get<int>("G");
+  // Timer LOG
   mTFInfo->Fill(mTimeFrameId);
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
@@ -790,16 +790,16 @@ void ITSFhrTask::reset()
 
 void ITSFhrTask::getStavePoint(int layer, int stave, double* px, double* py)
 {
-  float stepAngle = TMath::Pi() * 2 / NStaves[layer];             //the angle between to stave
-  float midAngle = StartAngle[layer] + (stave * stepAngle);       //mid point angle
-  float staveRotateAngle = TMath::Pi() / 2 - (stave * stepAngle); //how many angle this stave rotate(compare with first stave)
-  px[1] = MidPointRad[layer] * TMath::Cos(midAngle);              //there are 4 point to decide this TH2Poly bin
-                                                                  //0:left point in this stave;
-                                                                  //1:mid point in this stave;
-                                                                  //2:right point in this stave;
-                                                                  //3:higher point int this stave;
-  py[1] = MidPointRad[layer] * TMath::Sin(midAngle);              //4 point calculated accord the blueprint
-                                                                  //roughly calculate
+  float stepAngle = TMath::Pi() * 2 / NStaves[layer];             // the angle between to stave
+  float midAngle = StartAngle[layer] + (stave * stepAngle);       // mid point angle
+  float staveRotateAngle = TMath::Pi() / 2 - (stave * stepAngle); // how many angle this stave rotate(compare with first stave)
+  px[1] = MidPointRad[layer] * TMath::Cos(midAngle);              // there are 4 point to decide this TH2Poly bin
+                                                     // 0:left point in this stave;
+                                                     // 1:mid point in this stave;
+                                                     // 2:right point in this stave;
+                                                     // 3:higher point int this stave;
+  py[1] = MidPointRad[layer] * TMath::Sin(midAngle); // 4 point calculated accord the blueprint
+                                                     // roughly calculate
   if (layer < NLayerIB) {
     px[0] = 7.7 * TMath::Cos(staveRotateAngle) + px[1];
     py[0] = -7.7 * TMath::Sin(staveRotateAngle) + py[1];

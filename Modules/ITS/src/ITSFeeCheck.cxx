@@ -31,14 +31,14 @@ void ITSFeeCheck::configure(std::string) {}
 
 Quality ITSFeeCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
-  Quality result = 0;                                                   //Fee Checker will check three plot in Fee Task, and will store the
-  std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter; //quality result in a three digits number:
+  Quality result = 0;                                                   // Fee Checker will check three plot in Fee Task, and will store the
+  std::map<std::string, std::shared_ptr<MonitorObject>>::iterator iter; // quality result in a three digits number:
   for (iter = moMap->begin(); iter != moMap->end(); ++iter) {           //   XXX
     if (iter->second->getName() == "LaneStatus/laneStatusFlagFAULT") {  //   |||-> laneStatusFlagFAULT
       auto* h = dynamic_cast<TH2I*>(iter->second->getObject());         //   ||-> laneStatusFlagERROR
       if (h->GetMaximum() > 0) {                                        //   |-> laneStatusFlagWARNING
-        result = result.getLevel() + 1;                                 //the number for each digits is correspond:
-      }                                                                 //0: Good, 1: Bad
+        result = result.getLevel() + 1;                                 // the number for each digits is correspond:
+      }                                                                 // 0: Good, 1: Bad
     } else if (iter->second->getName() == "LaneStatus/laneStatusFlagERROR") {
       auto* h = dynamic_cast<TH2I*>(iter->second->getObject());
       if (h->GetMaximum() > 0) {

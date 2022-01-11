@@ -297,7 +297,7 @@ void ITSNoisyPixelTask::reset()
       for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++)
         hNoisyPixelMapIB[iLayer][iStave]->Reset();
 
-    } //END INNER BARREL
+    } // END INNER BARREL
     // OUTER BARRREL
     else {
 

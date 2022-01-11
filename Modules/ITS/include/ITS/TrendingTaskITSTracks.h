@@ -88,12 +88,12 @@ class TrendingTaskITSTracks : public PostProcessingInterface
   Int_t ntreeentries = 0;
   std::unordered_map<std::string, std::unique_ptr<Reductor>> mReductors;
 
-  const int col[4] = { 1, 2, 3, 4};
-  const int mkr[4] = { 8, 16, 24, 32};
+  const int col[4] = { 1, 2, 3, 4 };
+  const int mkr[4] = { 8, 16, 24, 32 };
   static constexpr int NTRENDSTRACKS = 4;
-  const std::string trendtitles[NTRENDSTRACKS] = { "NCluster mean", "NCluster stddev"};
-  const std::string trendnames[NTRENDSTRACKS] = { "NCluster mean", "NCluster stddev"};
-  const std::string ytitles[NTRENDSTRACKS] = {"NCluster mean", "NCluster stddev"};
+  const std::string trendtitles[NTRENDSTRACKS] = { "NCluster mean", "NCluster stddev" };
+  const std::string trendnames[NTRENDSTRACKS] = { "NCluster mean", "NCluster stddev" };
+  const std::string ytitles[NTRENDSTRACKS] = { "NCluster mean", "NCluster stddev" };
 };
 
 } // namespace o2::quality_control::postprocessing

@@ -150,7 +150,7 @@ class ITSRawTask : public TaskInterface // todo add back the "final" when doxyge
   std::array<unsigned int, NError> mErrorPre;
   std::array<unsigned int, NError> mErrorPerFile;
 
-  //unsigned int Error[NError];
+  // unsigned int Error[NError];
   TPaveText* pt[NError];
   TPaveText* ptFileName;
   TPaveText* ptNFile;

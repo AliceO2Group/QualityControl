@@ -29,7 +29,7 @@ using namespace o2::quality_control::core;
 using namespace o2::quality_control::postprocessing;
 
 void TrendingTaskITSTracks::configure(std::string name,
-                                   const boost::property_tree::ptree& config)
+                                      const boost::property_tree::ptree& config)
 {
   mConfig = TrendingTaskConfigITS(name, config);
 }
@@ -100,15 +100,15 @@ void TrendingTaskITSTracks::trendValues(repository::DatabaseInterface& qcdb)
   int count = 0;
 
   for (auto& dataSource : mConfig.dataSources) {
-    //std::cout<<"TrendingTaskITSTracks dataSource type "<<dataSource.name<<" "<<dataSource.type<<std::endl;
-    // todo: make it agnostic to MOs, QOs or other objects. Let the reductor
-    // cast to whatever it needs.
+    // std::cout<<"TrendingTaskITSTracks dataSource type "<<dataSource.name<<" "<<dataSource.type<<std::endl;
+    //  todo: make it agnostic to MOs, QOs or other objects. Let the reductor
+    //  cast to whatever it needs.
     if (dataSource.type == "repository") {
       // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
       auto mo = qcdb.retrieveMO(dataSource.path, "");
       if (!count) {
-        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
-        mMetaData.runNumber = (entryMetadata["Run"]!="") ? std::stoi(entryMetadata["Run"]) : 0;                   //get and set run number
+        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap();                  // full list of metadata as a map
+        mMetaData.runNumber = (entryMetadata["Run"] != "") ? std::stoi(entryMetadata["Run"]) : 0; // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }
@@ -116,11 +116,11 @@ void TrendingTaskITSTracks::trendValues(repository::DatabaseInterface& qcdb)
       if (obj) {
         mReductors[dataSource.name]->update(obj);
       }
-    }else if (dataSource.type == "repository-quality") {
+    } else if (dataSource.type == "repository-quality") {
       auto qo = qcdb.retrieveQO(dataSource.path + "/" + dataSource.name);
       if (qo) {
         mReductors[dataSource.name]->update(qo.get());
-      } 
+      }
     } else {
       ILOGE << "Unknown type of data source '" << dataSource.type << "'.";
     }
@@ -143,19 +143,19 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
     int add = 0;
     double ymin = -10.;
     double ymax = +10.;
-    if(plot.name.find("mean") != std::string::npos){
+    if (plot.name.find("mean") != std::string::npos) {
       add = 0;
       ymin = 0.;
-      ymax = 15.;  
-    } else if(plot.name.find("stddev") != std::string::npos){
+      ymax = 15.;
+    } else if (plot.name.find("stddev") != std::string::npos) {
       add = 1;
       ymin = 0.;
-      ymax = 5.;  
+      ymax = 5.;
     }
 
     bool isrun = plot.varexp.find("ntreeentries") != std::string::npos ? true : false; // vs run or vs time
     long int n = mTrend->Draw(plot.varexp.c_str(), plot.selection.c_str(),
-                              "goff"); 
+                              "goff");
 
     double* x = mTrend->GetV2();
     double* y = mTrend->GetV1();
@@ -176,7 +176,6 @@ void TrendingTaskITSTracks::storePlots(repository::DatabaseInterface& qcdb)
     // after and getting a segfault.
     delete g;
   } // end loop on plots
-
 }
 
 void TrendingTaskITSTracks::SetLegendStyle(TLegend* leg)
@@ -194,9 +193,9 @@ void TrendingTaskITSTracks::SetGraphStyle(TGraph* g, int col, int mkr)
 }
 
 void TrendingTaskITSTracks::SetGraphNameAndAxes(TGraph* g, std::string name,
-                                             std::string title, std::string xtitle,
-                                             std::string ytitle, double ymin,
-                                             double ymax, std::vector<std::string> runlist)
+                                                std::string title, std::string xtitle,
+                                                std::string ytitle, double ymin,
+                                                double ymax, std::vector<std::string> runlist)
 {
   g->SetTitle(title.c_str());
   g->SetName(name.c_str());
@@ -225,5 +224,4 @@ void TrendingTaskITSTracks::SetGraphNameAndAxes(TGraph* g, std::string name,
 
 void TrendingTaskITSTracks::PrepareLegend(TLegend* leg, int layer)
 {
-
 }

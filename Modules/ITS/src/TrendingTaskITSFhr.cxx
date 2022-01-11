@@ -45,7 +45,7 @@ void TrendingTaskITSFhr::initialize(Trigger, framework::ServiceRegistry&)
                                       // continue trending. maybe do it
                                       // optionally?
   mTrend->SetName(PostProcessingInterface::getName().c_str());
-  //mTrend->Branch("meta", &mMetaData, "runNumber/I");
+  // mTrend->Branch("meta", &mMetaData, "runNumber/I");
   mTrend->Branch("runNumber", &mMetaData.runNumber);
   mTrend->Branch("ntreeentries", &ntreeentries);
   mTrend->Branch("time", &mTime);
@@ -108,8 +108,8 @@ void TrendingTaskITSFhr::trendValues(repository::DatabaseInterface& qcdb)
       // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
       auto mo = qcdb.retrieveMO(dataSource.path, "");
       if (!count) {
-        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
-        mMetaData.runNumber = std::stoi(entryMetadata["Run"]);                   //get and set run number
+        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); // full list of metadata as a map
+        mMetaData.runNumber = std::stoi(entryMetadata["Run"]);                   // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }
@@ -142,15 +142,17 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
   double ymin[NTRENDSFHR] = { 1e-15, 1e-1, -.5, 1e-9 };
   double ymax[NTRENDSFHR] = { 1e-3, 1e-5, 9.5, 1 };
 
-  //Loop on plots
+  // Loop on plots
   for (const auto& plot : mConfig.plots) {
     if (countplots > nStaves[ilay] - 1) {
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13 ? countplots - 14
-                                 : countplots > 6 ? countplots - 7 : countplots;
-    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
+    int colidx = countplots > 13  ? countplots - 14
+                 : countplots > 6 ? countplots - 7
+                                  : countplots;
+    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1
+                                                      : 0;
     int index = 0;
     if (plot.name.find("occ") != std::string::npos)
       index = 3;
@@ -205,9 +207,11 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
       countplots = 0;
       ilay++;
     }
-    int colidx = countplots > 13 ? countplots - 14
-                                 : countplots > 6 ? countplots - 7 : countplots;
-    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1 : 0;
+    int colidx = countplots > 13  ? countplots - 14
+                 : countplots > 6 ? countplots - 7
+                                  : countplots;
+    int mkridx = countplots > 13 ? 2 : countplots > 6 ? 1
+                                                      : 0;
     int index = 0;
     if (plot.name.find("occ") != std::string::npos)
       index = 3;
@@ -235,7 +239,7 @@ void TrendingTaskITSFhr::storePlots(repository::DatabaseInterface& qcdb)
                         isrun ? "run" : "time", ytitles[index], ymin[index], ymax[index], runlist);
     ILOG(Info, Support) << " Drawing " << plot.name << ENDM;
 
-    if (!countplots && isrun) { //fake histo with runs as x-axis labels
+    if (!countplots && isrun) { // fake histo with runs as x-axis labels
       int npoints = g->GetN();
       TH1F* hfake = new TH1F("hfake", Form("%s; %s; %s", g->GetTitle(), g->GetXaxis()->GetTitle(), g->GetYaxis()->GetTitle()), npoints, 0.5, (double)npoints + 0.5);
       hfake->GetYaxis()->SetRangeUser(ymin[index], ymax[index]);
@@ -311,8 +315,10 @@ void TrendingTaskITSFhr::SetGraphNameAndAxes(TGraph* g, std::string name,
 void TrendingTaskITSFhr::PrepareLegend(TLegend* leg, int layer)
 {
   for (int istv = 0; istv < nStaves[layer]; istv++) {
-    int colidx = istv > 13 ? istv - 14 : istv > 6 ? istv - 7 : istv;
-    int mkridx = istv > 13 ? 2 : istv > 6 ? 1 : 0;
+    int colidx = istv > 13 ? istv - 14 : istv > 6 ? istv - 7
+                                                  : istv;
+    int mkridx = istv > 13 ? 2 : istv > 6 ? 1
+                                          : 0;
     TGraph* gr = new TGraph(); // dummy histo
     SetGraphStyle(gr, col[colidx], mkr[mkridx]);
     leg->AddEntry(gr, Form("%02d", istv), "pl");
