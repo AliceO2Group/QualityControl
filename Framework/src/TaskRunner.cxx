@@ -183,7 +183,7 @@ CompletionPolicy::CompletionOp TaskRunner::completionPolicyCallback(o2::framewor
 
 std::string TaskRunner::createTaskRunnerIdString()
 {
-  return std::string("QC-TASK-RUNNER");
+  return std::string("qc-task");
 }
 
 header::DataOrigin TaskRunner::createTaskDataOrigin()
@@ -197,10 +197,10 @@ header::DataDescription TaskRunner::createTaskDataDescription(const std::string&
     BOOST_THROW_EXCEPTION(FatalException() << errinfo_details("Empty taskName for task's data description"));
   }
   o2::header::DataDescription description;
-  if (taskName.length() > header::DataDescription::size - 3) {
-    ILOG(Warning, Devel) << "Task name is longer than " << header::DataDescription::size - 3 << ", it might cause name clashes in the DPL workflow" << ENDM;
+  if (taskName.length() > header::DataDescription::size) {
+    ILOG(Warning, Devel) << "Task name is longer than " << (int)header::DataDescription::size << ", it might cause name clashes in the DPL workflow" << ENDM;
   }
-  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size - 3) + "-mo").c_str());
+  description.runtimeInit(std::string(taskName.substr(0, header::DataDescription::size ) ).c_str());
   return description;
 }
 

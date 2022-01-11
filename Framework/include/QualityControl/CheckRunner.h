@@ -114,8 +114,8 @@ class CheckRunner : public framework::Task
   void setTaskStoreSet(std::unordered_set<std::string> storeSet) { mInputStoreSet = storeSet; }
   std::string getDeviceName() { return mDeviceName; };
 
-  static framework::DataProcessorLabel getLabel() { return { "qc-check-runner" }; }
-  static std::string createCheckRunnerIdString() { return "QC-CHECK-RUNNER"; };
+  static framework::DataProcessorLabel getLabel() { return { "qc-check" }; }
+  static std::string createCheckRunnerIdString() { return "qc-check"; };
   static std::string createCheckRunnerName(const std::vector<CheckConfig>& checks);
   static std::string createSinkCheckRunnerName(o2::framework::InputSpec input);
   static std::string createCheckRunnerFacility(std::string deviceName);
