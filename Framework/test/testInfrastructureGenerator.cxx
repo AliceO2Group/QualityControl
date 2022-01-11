@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 3);
 
-    BOOST_CHECK_EQUAL(workflow[0].name, "qc-task-skeletonTask");
+    BOOST_CHECK_EQUAL(workflow[0].name, "qc-task-TST-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 2);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 1);
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_local_test)
 
     BOOST_REQUIRE_EQUAL(workflow.size(), 2);
 
-    BOOST_CHECK_EQUAL(workflow[0].name, "qc-task-skeletonTask");
+    BOOST_CHECK_EQUAL(workflow[0].name, "qc-task-TST-skeletonTask");
     BOOST_CHECK_EQUAL(workflow[0].inputs.size(), 2);
     BOOST_CHECK_EQUAL(workflow[0].outputs.size(), 1);
     BOOST_CHECK_EQUAL(DataSpecUtils::getOptionalSubSpec(workflow[0].outputs[0]).value_or(-1), 2);
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto taskRunnerAbcTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "qc-task-abcTask" &&
+      return d.name == "qc-task-MISC-abcTask" &&
              d.inputs.size() == 2 &&
              d.outputs.size() == 1;
     });
@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto taskRunnerXyzTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "qc-task-xyzTask" &&
+      return d.name == "qc-task-ITS-xyzTask" &&
              d.inputs.size() == 2 &&
              d.outputs.size() == 1;
     });
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_remote_test)
   auto taskRunnerSkeletonTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "qc-task-skeletonTask";
+      return d.name == "qc-task-TST-skeletonTask";
     });
   BOOST_CHECK(taskRunnerSkeletonTask == workflow.end());
 
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
   auto taskRunnerSkeleton = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "qc-task-skeletonTask" &&
+      return d.name == "qc-task-TST-skeletonTask" &&
              d.inputs.size() == 2 &&
              d.outputs.size() == 1;
     });
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
   auto taskRunnerAbcTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "qc-task-abcTask" &&
+      return d.name == "qc-task-MISC-abcTask" &&
              d.inputs.size() == 2 &&
              d.outputs.size() == 1;
     });
@@ -202,7 +202,7 @@ BOOST_AUTO_TEST_CASE(qc_factory_standalone_test)
   auto taskRunnerXyzTask = std::find_if(
     workflow.begin(), workflow.end(),
     [](const DataProcessorSpec& d) {
-      return d.name == "qc-task-xyzTask" &&
+      return d.name == "qc-task-ITS-xyzTask" &&
              d.inputs.size() == 2 &&
              d.outputs.size() == 1;
     });
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE(qc_infrastructure_local_batch_test)
     auto taskRunnerSkeleton = std::find_if(
       workflow.begin(), workflow.end(),
       [](const DataProcessorSpec& d) {
-        return d.name == "qc-task-skeletonTask" &&
+        return d.name == "qc-task-TST-skeletonTask" &&
                d.inputs.size() == 2 &&
                d.outputs.size() == 1;
       });
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE(qc_infrastructure_local_batch_test)
     auto taskRunnerAbcTask = std::find_if(
       workflow.begin(), workflow.end(),
       [](const DataProcessorSpec& d) {
-        return d.name == "qc-task-abcTask" &&
+        return d.name == "qc-task-MISC-abcTask" &&
                d.inputs.size() == 2 &&
                d.outputs.size() == 1;
       });
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE(qc_infrastructure_local_batch_test)
     auto taskRunnerXyzTask = std::find_if(
       workflow.begin(), workflow.end(),
       [](const DataProcessorSpec& d) {
-        return d.name == "qc-task-xyzTask" &&
+        return d.name == "qc-task-ITS-xyzTask" &&
                d.inputs.size() == 2 &&
                d.outputs.size() == 1;
       });

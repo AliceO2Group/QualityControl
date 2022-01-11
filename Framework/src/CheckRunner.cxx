@@ -67,7 +67,7 @@ std::string CheckRunner::createCheckRunnerName(const std::vector<CheckConfig>& c
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz";
   const int NAME_LEN = 4;
-  std::string name(CheckRunner::createCheckRunnerIdString() + "-");
+  std::string name(CheckRunner::createCheckRunnerIdString() + "-" + getDetectorName(checks));
 
   if (checks.size() == 1) {
     // If single check, use the check name
@@ -122,7 +122,8 @@ o2::framework::Outputs CheckRunner::collectOutputs(const std::vector<CheckConfig
 }
 
 CheckRunner::CheckRunner(CheckRunnerConfig checkRunnerConfig, const std::vector<CheckConfig>& checkConfigs)
-  : mDeviceName(createCheckRunnerName(checkConfigs)),
+  : mDetectorName(getDetectorName(checkConfigs)),
+    mDeviceName(createCheckRunnerName(checkConfigs)),
     mConfig(std::move(checkRunnerConfig)),
     /* All checks have the same Input */
     mInputs(checkConfigs.front().inputSpecs),
@@ -176,7 +177,7 @@ void CheckRunner::init(framework::InitContext& iCtx)
                        mConfig.infologgerDiscardLevel,
                        il,
                        ilContext);
-    QcInfoLogger::setDetector(CheckRunner::getDetectorName(mChecks));
+    QcInfoLogger::setDetector(mDetectorName);
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -458,11 +459,11 @@ void CheckRunner::reset()
   mTotalQOSent = 0;
 }
 
-std::string CheckRunner::getDetectorName(std::vector<Check> checks)
+std::string CheckRunner::getDetectorName(const std::vector<CheckConfig> checks)
 {
   std::string detectorName;
   for (auto& check : checks) {
-    const std::string& thisDetector = check.getDetector();
+    const std::string& thisDetector = check.detectorName;
     if (detectorName.length() == 0) {
       detectorName = thisDetector;
     } else if (thisDetector != detectorName) {
@@ -472,5 +473,6 @@ std::string CheckRunner::getDetectorName(std::vector<Check> checks)
   }
   return detectorName;
 }
+
 
 } // namespace o2::quality_control::checker

@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
 
   DataProcessorSpec taskRunner = TaskRunnerFactory::create(getTaskConfig(configFilePath, "abcTask", 123));
 
-  BOOST_CHECK_EQUAL(taskRunner.name, "qc-task-abcTask");
+  BOOST_CHECK_EQUAL(taskRunner.name, "qc-task-MISC-abcTask");
 
   auto dataSamplingTree = ConfigurationFactory::getConfiguration(configFilePath)->getRecursive("dataSamplingPolicies");
   BOOST_REQUIRE_EQUAL(taskRunner.inputs.size(), 2);
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   TaskRunner qcTask{ getTaskConfig(configFilePath, "abcTask", 0) };
 
-  BOOST_CHECK_EQUAL(qcTask.getDeviceName(), "qc-task-abcTask");
+  BOOST_CHECK_EQUAL(qcTask.getDeviceName(), "qc-task-MISC-abcTask");
 
   auto dataSamplingTree = ConfigurationFactory::getConfiguration(configFilePath)->getRecursive("dataSamplingPolicies");
   BOOST_REQUIRE_EQUAL(qcTask.getInputsSpecs().size(), 2);

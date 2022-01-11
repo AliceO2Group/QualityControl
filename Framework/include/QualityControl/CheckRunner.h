@@ -120,10 +120,10 @@ class CheckRunner : public framework::Task
   static std::string createSinkCheckRunnerName(o2::framework::InputSpec input);
   static std::string createCheckRunnerFacility(std::string deviceName);
 
-  /// \brief Compute the detector name to be used in the infologger for this checkrunner.
-  /// Compute the detector name to be used in the infologger for this checkrunner.
+  /// \brief Compute the detector name to be used for this checkrunner.
+  /// Compute the detector name to be used for this checkrunner.
   /// If all checks belong to the same detector we use it, otherwise we use "MANY"
-  static std::string getDetectorName(std::vector<Check> checks);
+  static std::string getDetectorName(const std::vector<CheckConfig> checks);
 
  private:
   /**
@@ -206,6 +206,7 @@ class CheckRunner : public framework::Task
   // General state
   std::string mDeviceName;
   std::vector<Check> mChecks;
+  std::string mDetectorName;
   Activity mActivity;
   CheckRunnerConfig mConfig;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
