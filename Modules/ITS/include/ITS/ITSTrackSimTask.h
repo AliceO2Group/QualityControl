@@ -53,12 +53,22 @@ class ITSTrackSimTask : public TaskInterface
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
+  struct InfoStruct {
+     unsigned short clusters = 0;
+     bool isFilled = 0;
+  };
+
+
+
+
  private:
   void publishHistos();
   void formatAxes(TH1* h, const char* xTitle, const char* yTitle, float xOffset = 1., float yOffset = 1.);
   void addObject(TObject* aObject);
   void createAllHistos();
 
+
+ 
   struct DataFrames {
     void update(int frame, long index)
     {
@@ -88,6 +98,8 @@ class ITSTrackSimTask : public TaskInterface
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
+
+  std::vector<std::vector<InfoStruct>> info;
 
   std::vector<TObject*> mPublishedObjects;
   TH1D* hNClusters;
