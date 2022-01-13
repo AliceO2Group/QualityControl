@@ -59,14 +59,12 @@ class ITSClusterTask : public TaskInterface
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
-
-  std::vector<TObject*> mPublishedObjects;
   TH2D* hClusterVsBunchCrossing;
-
-  TH1D* hClusterTopologySummaryIB[7][48][9];
+  std::vector<TObject*> mPublishedObjects;
   TH1D* hClusterSizeSummaryIB[7][48][9];
-  TH1D* hGroupedClusterSizeSummaryIB[7][48][9];
   TH1D* hClusterSizeMonitorIB[7][48][9];
+  TH1D* hClusterTopologySummaryIB[7][48][9];
+  TH1D* hGroupedClusterSizeSummaryIB[7][48][9];
 
   TH1D* hClusterSizeLayerSummary[7];
   TH1D* hGroupedClusterSizeLayerSummary[7];
@@ -79,13 +77,12 @@ class ITSClusterTask : public TaskInterface
   Int_t mClusterOccupancyIB[7][48][9];
   Int_t mClusterOccupancyIBmonitor[7][48][9];
 
-  TH1D* hClusterSizeOB[7][48][14];  //used to calculate hAverageClusterSizeSummaryIB
-  TH1D* hClusterSizeMonitorOB[7][48][14]; //used to calculate hAverageClusterSizeMonitorIB
+  TH1D* hClusterSizeOB[7][48][14];        // used to calculate hAverageClusterSizeSummaryIB
+  TH1D* hClusterSizeMonitorOB[7][48][14]; // used to calculate hAverageClusterSizeMonitorIB
 
   TH1D* hGroupedClusterSizeSummaryOB[7][48];
   TH1D* hClusterSizeSummaryOB[7][48];
   TH1D* hClusterTopologySummaryOB[7][48];
-
 
   TH2D* hAverageClusterOccupancySummaryOB[7];
   TH2D* hAverageClusterOccupancyMonitorOB[7]; // will be used in online data monitoring, showing occupation for the last N ROFs

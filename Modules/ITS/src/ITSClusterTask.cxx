@@ -81,7 +81,6 @@ ITSClusterTask::~ITSClusterTask()
         delete hClusterTopologySummaryOB[iLayer][iStave];
         delete hGroupedClusterSizeSummaryOB[iLayer][iStave];
 
-
         for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
           delete hClusterSizeOB[iLayer][iStave][iHic];
           delete hClusterSizeMonitorOB[iLayer][iStave][iHic];
@@ -151,12 +150,12 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   ILOG(Info, Support) << "START DOING QC General" << ENDM;
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
-  auto clusPatternArr = ctx.inputs().get< gsl::span<unsigned char> >("patterns");
+  auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
   auto pattIt = clusPatternArr.begin();
   int dictSize = mDict.getSize();
- 
+
   int iPattern = 0;
-  std::cout<< " Inputs clusArr: "<<clusArr.size() << " clusPatternArr " << clusPatternArr.size() <<std::endl;
+  std::cout << " Inputs clusArr: " << clusArr.size() << " clusPatternArr " << clusPatternArr.size() << std::endl;
 
 #ifdef WITH_OPENMP
   omp_set_num_threads(mNThreads);
@@ -165,32 +164,31 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Filling cluster histogram for each ROF by open_mp
 
   for (unsigned int iROF = 0; iROF < clusRofArr.size(); iROF++) {
-   
+
     const auto& ROF = clusRofArr[iROF];
     const auto bcdata = ROF.getBCData();
-    hClusterVsBunchCrossing-> Fill(bcdata.bc,ROF.getNEntries());  //we count only the number of clusters, not their sizes
+    hClusterVsBunchCrossing->Fill(bcdata.bc, ROF.getNEntries()); // we count only the number of clusters, not their sizes
     for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
-      
+
       auto& cluster = clusArr[icl];
       auto ChipID = cluster.getSensorID();
-      int ClusterID = cluster.getPatternID(); //used for normal (frequent) cluster shapes
+      int ClusterID = cluster.getPatternID(); // used for normal (frequent) cluster shapes
       int lay, sta, ssta, mod, chip;
-      
-     
+
       mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
       mod = mod + (ssta * (mNHicPerStave[lay] / 2));
       int npix = -1;
       int isGrouped = -1;
-      if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict.isGroup(ClusterID)) {  // Normal (frequent) cluster shapes
+      if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict.isGroup(ClusterID)) { // Normal (frequent) cluster shapes
         npix = mDict.getNpixels(ClusterID);
         isGrouped = 0;
       } else {
-       
+
         o2::itsmft::ClusterPattern patt(pattIt);
         npix = patt.getNPixels();
-        isGrouped =1;
+        isGrouped = 1;
       }
-   
+
       if (lay < 3) {
 
         mClusterOccupancyIB[lay][sta][chip]++;
@@ -206,9 +204,9 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           hClusterSizeLayerSummary[lay]->Fill(npix);
 
           hClusterSizeMonitorIB[lay][sta][chip]->Fill(npix);
-          if (isGrouped) { 
-             hGroupedClusterSizeSummaryIB[lay][sta][chip]->Fill(npix);
-             hGroupedClusterSizeLayerSummary[lay]->Fill(npix);
+          if (isGrouped) {
+            hGroupedClusterSizeSummaryIB[lay][sta][chip]->Fill(npix);
+            hGroupedClusterSizeLayerSummary[lay]->Fill(npix);
           }
         }
       } else {
@@ -222,14 +220,14 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           hClusterSizeOB[lay][sta][mod]->Fill(npix);
           hClusterSizeMonitorOB[lay][sta][mod]->Fill(npix);
 
-          hClusterTopologySummaryOB[lay][sta]->Fill(ClusterID);  
-          hClusterSizeSummaryOB[lay][sta]->Fill(npix);         
+          hClusterTopologySummaryOB[lay][sta]->Fill(ClusterID);
+          hClusterSizeSummaryOB[lay][sta]->Fill(npix);
           hClusterSizeLayerSummary[lay]->Fill(npix);
 
-          if (isGrouped){ 
-             hGroupedClusterSizeSummaryOB[lay][sta]->Fill(npix);
-             hGroupedClusterSizeLayerSummary[lay]->Fill(npix);
-          }  
+          if (isGrouped) {
+            hGroupedClusterSizeSummaryOB[lay][sta]->Fill(npix);
+            hGroupedClusterSizeLayerSummary[lay]->Fill(npix);
+          }
         }
       }
     }
@@ -290,15 +288,12 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   ILOG(Info, Support) << "Time in QC Cluster Task:  " << difference << ENDM;
-  
-   std::ofstream outfile;
 
-   outfile.open("aid_cluster_times.txt", std::ios_base::app); // append instead of overwrite
-   outfile << difference<<std::endl;
-   outfile.close();
- 
+  std::ofstream outfile;
 
-
+  outfile.open("aid_cluster_times.txt", std::ios_base::app); // append instead of overwrite
+  outfile << difference << std::endl;
+  outfile.close();
 }
 
 void ITSClusterTask::updateOccMonitorPlots()
@@ -369,7 +364,7 @@ void ITSClusterTask::reset()
         for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
           hClusterSizeSummaryIB[iLayer][iStave][iChip]->Reset();
           hClusterTopologySummaryIB[iLayer][iStave][iChip]->Reset();
-          hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]->Reset();  
+          hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]->Reset();
         }
       }
     } else {
@@ -382,7 +377,7 @@ void ITSClusterTask::reset()
 
         hClusterTopologySummaryOB[iLayer][iStave]->Reset();
         hGroupedClusterSizeSummaryOB[iLayer][iStave]->Reset();
- 
+
         for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
           hClusterSizeOB[iLayer][iStave][iHic]->Reset();
         }
@@ -394,13 +389,11 @@ void ITSClusterTask::reset()
 void ITSClusterTask::createAllHistos()
 {
 
-
-  hClusterVsBunchCrossing= new TH2D("BunchCrossingIDvsClusterSize", "BunchCrossingIDvsClusterSize", 4096, 0, 4095, 100, 0, 100);
+  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterSize", "BunchCrossingIDvsClusterSize", 4096, 0, 4095, 100, 0, 100);
   hClusterVsBunchCrossing->SetTitle("Bunch Crossing ID vs Cluster Size");
   addObject(hClusterVsBunchCrossing);
   formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters in ROF", 1, 1.10);
   hClusterVsBunchCrossing->SetStats(0);
-
 
   for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mEnableLayers[iLayer])
@@ -417,8 +410,6 @@ void ITSClusterTask::createAllHistos()
     addObject(hGroupedClusterSizeLayerSummary[iLayer]);
     formatAxes(hGroupedClusterSizeLayerSummary[iLayer], "Grouped Cluster Size (pixels)", "counts", 1, 1.10);
     hGroupedClusterSizeLayerSummary[iLayer]->SetStats(0);
-
-
 
     if (iLayer < 3) {
       /*
@@ -467,8 +458,7 @@ void ITSClusterTask::createAllHistos()
           hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterSizeGrouped", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterSizeGroped", iLayer, iStave, iChip), 100, 0, 100);
           hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Size for grouped topologies on Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
           addObject(hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]);
-          formatAxes(hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip], "Cluster size (Pixel)", "Counts", 1, 1.10); 
-
+          formatAxes(hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
           hClusterSizeMonitorIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterSizeMonitor", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterSizeMonitor", iLayer, iStave, iChip), 100, 0, 100);
 
@@ -516,28 +506,26 @@ void ITSClusterTask::createAllHistos()
       hAverageClusterSizeMonitorOB[iLayer]->SetBit(TH1::kIsAverage);
 
       for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
-        
 
-          hClusterSizeSummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/ClusterSize", iLayer, iStave), Form("Layer%dStave%dClusterSize", iLayer, iStave), 100, 0, 100);
-          hClusterSizeSummaryOB[iLayer][iStave]->SetTitle(Form("Cluster Size summary for Layer %d Stave %d", iLayer, iStave));
-          addObject(hClusterSizeSummaryOB[iLayer][iStave]);
-          formatAxes(hClusterSizeSummaryOB[iLayer][iStave], "Cluster size (Pixel)", "Counts", 1, 1.10);
+        hClusterSizeSummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/ClusterSize", iLayer, iStave), Form("Layer%dStave%dClusterSize", iLayer, iStave), 100, 0, 100);
+        hClusterSizeSummaryOB[iLayer][iStave]->SetTitle(Form("Cluster Size summary for Layer %d Stave %d", iLayer, iStave));
+        addObject(hClusterSizeSummaryOB[iLayer][iStave]);
+        formatAxes(hClusterSizeSummaryOB[iLayer][iStave], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
-          hGroupedClusterSizeSummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/GroupedClusterSize", iLayer, iStave), Form("Layer%dStave%dGroupedClusterSize", iLayer, iStave), 100, 0, 100);
-          hGroupedClusterSizeSummaryOB[iLayer][iStave]->SetTitle(Form("Grouped Cluster Size summary for Layer %d Stave %d", iLayer, iStave));
-          addObject(hGroupedClusterSizeSummaryOB[iLayer][iStave]);
-          formatAxes(hGroupedClusterSizeSummaryOB[iLayer][iStave], "Cluster size (Pixel)", "Counts", 1, 1.10);
+        hGroupedClusterSizeSummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/GroupedClusterSize", iLayer, iStave), Form("Layer%dStave%dGroupedClusterSize", iLayer, iStave), 100, 0, 100);
+        hGroupedClusterSizeSummaryOB[iLayer][iStave]->SetTitle(Form("Grouped Cluster Size summary for Layer %d Stave %d", iLayer, iStave));
+        addObject(hGroupedClusterSizeSummaryOB[iLayer][iStave]);
+        formatAxes(hGroupedClusterSizeSummaryOB[iLayer][iStave], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
-          hClusterTopologySummaryOB[iLayer][iStave]= new TH1D(Form("Layer%d/Stave%d/ClusterTopology", iLayer, iStave), Form("Layer%dStave%dClusterTopology", iLayer, iStave), 300, 0, 300);
-          hClusterTopologySummaryOB[iLayer][iStave]->SetTitle(Form("Cluster Toplogy summary for Layer %d Stave %d", iLayer, iStave));
-          addObject(hClusterTopologySummaryOB[iLayer][iStave]);
-          formatAxes(hClusterTopologySummaryOB[iLayer][iStave], "Cluster toplogy (ID)", "Counts", 1, 1.10);
+        hClusterTopologySummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/ClusterTopology", iLayer, iStave), Form("Layer%dStave%dClusterTopology", iLayer, iStave), 300, 0, 300);
+        hClusterTopologySummaryOB[iLayer][iStave]->SetTitle(Form("Cluster Toplogy summary for Layer %d Stave %d", iLayer, iStave));
+        addObject(hClusterTopologySummaryOB[iLayer][iStave]);
+        formatAxes(hClusterTopologySummaryOB[iLayer][iStave], "Cluster toplogy (ID)", "Counts", 1, 1.10);
 
-
-          for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) { //are used in TH2 construction, no need to keep on ccdb 
-             hClusterSizeOB[iLayer][iStave][iHic] = new TH1D(Form("Layer%d/Stave%d/HIC%d/ClusterSize", iLayer, iStave, iHic), Form("Layer%dStave%dHIC%dClusterSize", iLayer, iStave, iHic), 100, 0, 100);
-             hClusterSizeMonitorOB[iLayer][iStave][iHic] = new TH1D(Form("Layer%d/Stave%d/HIC%d/ClusterSizeMonitor", iLayer, iStave, iHic), Form("Layer%dStave%dHIC%dClusterSizeMonitor", iLayer, iStave, iHic), 100, 0, 100);
-       }
+        for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) { // are used in TH2 construction, no need to keep on ccdb
+          hClusterSizeOB[iLayer][iStave][iHic] = new TH1D(Form("Layer%d/Stave%d/HIC%d/ClusterSize", iLayer, iStave, iHic), Form("Layer%dStave%dHIC%dClusterSize", iLayer, iStave, iHic), 100, 0, 100);
+          hClusterSizeMonitorOB[iLayer][iStave][iHic] = new TH1D(Form("Layer%d/Stave%d/HIC%d/ClusterSizeMonitor", iLayer, iStave, iHic), Form("Layer%dStave%dHIC%dClusterSizeMonitor", iLayer, iStave, iHic), 100, 0, 100);
+        }
       }
     }
   }
