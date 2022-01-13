@@ -108,7 +108,7 @@ void TrendingTaskITSCluster::trendValues(repository::DatabaseInterface& qcdb)
       auto mo = qcdb.retrieveMO(dataSource.path, "");
       if (!count) {
         std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); // full list of metadata as a map
-        mMetaData.runNumber = std::stoi(entryMetadata["Run"]);                   // get and set run number
+        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);                   // get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }
