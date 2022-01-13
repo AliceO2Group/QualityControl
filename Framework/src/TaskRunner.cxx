@@ -40,6 +40,7 @@
 #include <string>
 #include <TFile.h>
 #include <boost/property_tree/ptree.hpp>
+#include <TSystem.h>
 
 using namespace std;
 
@@ -62,6 +63,40 @@ TaskRunner::TaskRunner(const TaskRunnerConfig& config)
 {
 }
 
+void TaskRunner::refreshConfig(InitContext& iCtx)
+{
+  try {
+    // get the tree
+    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
+
+    if(updatedTree.empty()) {
+      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
+    } else {
+      if(gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
+        ILOG(Debug,Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
+        printTree(updatedTree);
+      }
+
+      // prepare the information we need
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+      // find the correct taskSpec
+      auto it = find_if(infrastructureSpec.tasks.begin(),
+                        infrastructureSpec.tasks.end(),
+                        [this](const TaskSpec& ts) {return ts.taskName == mTaskConfig.taskName;});
+      if (it != infrastructureSpec.tasks.end()) {
+        mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common,  *it, mTaskConfig.parallelTaskID,  it->resetAfterCycles);
+        ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
+      } else {
+        ILOG(Error, Support) << "Could not find the task " << mTaskConfig.taskName <<
+          " in the templated config provided by ECS, we continue with the original config" << ENDM;
+      }
+    }
+  } catch (std::invalid_argument & error) {
+    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
+    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
+  }
+}
+
 void TaskRunner::init(InitContext& iCtx)
 {
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
@@ -80,47 +115,7 @@ void TaskRunner::init(InitContext& iCtx)
 
   ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
 
-  // get a fresh config
-  ILOG(Debug, Devel) << "update 2 tree in init() with the content of option qcConfiguration" << ENDM;
-  try {
-    //    auto wholeTree = iCtx.options().get<boost::property_tree::ptree>("");
-    /*    ILOG(Debug, Devel) << "print whole tree: " << ENDM;
-    auto wholeTree = iCtx.options().get<boost::property_tree::ptree>("");
-    printTree(wholeTree);
-    std::stringstream ss;
-    printTreeToFile(wholeTree, ss, 0);
-    // Create and open a text file
-  ofstream MyFile("/tmp/dump.txt");
-  MyFile << ss.str();
-  MyFile.close();
-    */
-
-    // get the tree
-    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
-
-    if(updatedTree.empty()) {
-      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
-    } else {
-      ILOG(Debug,Devel) << "print the updated tree : " << ENDM;
-      printTree(updatedTree);
-
-      // prepare the information we need
-      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
-      // find the correct taskSpec
-      auto it = find_if(infrastructureSpec.tasks.begin(),
-                        infrastructureSpec.tasks.end(),
-                        [this](const TaskSpec& ts) {return ts.taskName == mTaskConfig.taskName;});
-      if (it != infrastructureSpec.tasks.end()) {
-        mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common,  *it, mTaskConfig.parallelTaskID,  it->resetAfterCycles);
-      } else {
-        ILOG(Error, Support) << "Could not consume the templated config provided by ECS, we continue with the original one" << ENDM;
-      }
-    }
-  } catch (std::invalid_argument & error) {
-    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
-    ILOG(Warning, Devel) << error.what() << ENDM;
-    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
-  }
+  refreshConfig(iCtx);
 
   try {
     loadTaskConfig();

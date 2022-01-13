@@ -155,42 +155,6 @@ inline void printTree(boost::property_tree::ptree &pt, int level=0)
   return;
 }
 
-  using namespace std;
-  
-  inline void printTreeToFile(boost::property_tree::ptree &pt, stringstream& ss, int level=0)
-{
-  // Create and open a text file
-  //  ofstream MyFile("/tmp/ptreedump.txt");
-  if (pt.empty()) {
-
-    ss << "\"" << pt.data() << "\"";
-  } else {
-    if (level) {
-      ss << "\n";
-    }
-
-    ss << indentTree(level) << "{\n";
-
-    for (boost::property_tree::ptree::iterator pos = pt.begin(); pos != pt.end();) {
-      ss<< indentTree(level + 1) << "\"" << pos->first << "\": ";
-
-      printTreeToFile(pos->second, ss, level + 1);
-      ++pos;
-      if (pos != pt.end()) {
-        ss <<indentTree(level)<< ",";
-      }
-      ss << "\n";
-    }
-
-    ss << indentTree(level) << " }";
-  }
-  ss<< "\n";
-  // Close the file
-  //MyFile.close();
-  return;
-}
-
-
 } // namespace o2::quality_control::core
 
 #endif //QUALITYCONTROL_RUNNERUTILS_H
