@@ -56,6 +56,12 @@ class ITSTrackSimTask : public TaskInterface
   struct InfoStruct {
      unsigned short clusters = 0;
      bool isFilled = 0;
+     bool isPrimary = 0;
+     float r;
+     float pt;
+     float eta;
+     float phi;
+     float z;
   };
 
 
