@@ -245,15 +245,12 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
   TTree* mcTree = (TTree*)file->Get("o2sim");
   mcTree->SetBranchStatus("MCTrack*", 1);  //WHY?! needs to be checked
   mcTree->SetBranchStatus("MCEventHeader.*", 1);
-  mcTree->SetBranchStatus("TrackRefs*", 1);
 
   auto mcArr = new std::vector<o2::MCTrack>;
   auto mcHeader = new o2::dataformats::MCEventHeader;
-  auto mcTrackRefs = new std::vector<o2::TrackReference>;
 
   mcTree->SetBranchAddress("MCTrack", &mcArr);
   mcTree->SetBranchAddress("MCEventHeader.", &mcHeader);
-  mcTree->SetBranchAddress("TrackRefs", &mcTrackRefs);
 
   info.resize(mcTree->GetEntriesFast());
   for(int i=0; i<mcTree->GetEntriesFast(); ++i) {
@@ -284,14 +281,14 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
 
   clusTree->SetBranchAddress("ITSClusterComp", &clusArr);  
   clusTree->SetBranchAddress("ITSClusterMCTruth", &clusLabArr);
-  std::cout<<"Getting n Entries: "<<std::endl;
-  std::cout<<"clusTree->GetEntriesFast() = "<< clusTree->GetEntriesFast() <<std::endl; 
+  //std::cout<<"Getting n Entries: "<<std::endl;
+  //std::cout<<"clusTree->GetEntriesFast() = "<< clusTree->GetEntriesFast() <<std::endl; 
 
 
   for(int i=0; i<clusTree->GetEntriesFast(); ++i) {
      if (!clusTree->GetEvent(i)) continue;
 
-     std::cout<<"Cluster Tree event: "<< i << " with the size of "<<clusArr->size()<<std::endl;
+     //std::cout<<"Cluster Tree event: "<< i << " with the size of "<<clusArr->size()<<std::endl;
      for (int iCluster = 0; iCluster < clusArr->size(); iCluster++) {
      
        // auto lab = (*clusLabArr)[iCluster];
@@ -301,7 +298,7 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
           continue;
 
         int TrackID = lab.getTrackID();
-        std::cout<<"Good Cluster with trackID: "<< TrackID << " EventID: " << lab.getEventID() << " Source: " << lab.getSourceID() <<std::endl;
+       // std::cout<<"Good Cluster with trackID: "<< TrackID << " EventID: " << lab.getEventID() << " Source: " << lab.getSourceID() <<std::endl;
 
 
         if (TrackID < 0 || TrackID >= mcTree->GetEntriesFast()) {
@@ -311,12 +308,12 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
 
         if (!lab.isCorrect()) continue;
 
-        const CompClusterExt& Cluster = (*clusArr)[i];
+        const CompClusterExt& Cluster = (*clusArr)[iCluster];
 
         unsigned short& ok = info[lab.getEventID()][lab.getTrackID()].clusters;
         auto layer = geom->getLayer(Cluster.getSensorID());
-        std::cout<<" at the beginig ok = " << ok << " layer is " << layer << " Cluster.getSensorID() "<< Cluster.getSensorID() << "ClusterTopology: " << Cluster.getPatternID() <<std::endl;
-        Cluster.print();
+     //   std::cout<<" at the beginig ok = " << ok << " layer is " << layer << " Cluster.getSensorID() "<< Cluster.getSensorID() << "ClusterTopology: " << Cluster.getPatternID() <<std::endl;
+    //    Cluster.print();
         float r = 0.f;
         if (layer == 0)
           ok |= 0b1;
@@ -333,7 +330,7 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
         if (layer == 6)
           ok |= 0b1000000;
        
-        std::cout<< " OK after: " << ok <<std::endl;
+   //     std::cout<< " OK after: " << ok <<std::endl;
 
       }
   }
@@ -365,45 +362,29 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
       
      
      if (!mcTree->GetEvent(i)) continue;
-     std::cout<<"MCTrack Tree event: "<< i << " with the size of mcArr: "<<mcArr->size()<< " mcTrackRefs: "<<mcTrackRefs->size() <<std::endl;
-
-     Int_t nmc = mcArr->size();
-     std::cout<<"Info check 2 done "<<std::endl;
  
-  //   info[i].resize(nmc);
-     for (int mc = 0; mc < nmc; mc++) {
+     for (int mc = 0; mc < mcArr->size(); mc++) {
 
         const auto& mcTrack = (*mcArr)[mc];
-        const auto& mcTrackRef = (*mcTrackRefs)[mc];
 
-   //     std::cout<<"Track with TrackRef.trackID: "<< mcTrackRef.getTrackID() << " mc= "<<mc<< " EventID " << i <<std::endl; 
 
           
-        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1) {
-           //std::cout<<"Problem with Geomtry: " <<std::endl;
-           continue; 
-        }
-        Int_t pdg = mcTrack.GetPdgCode();
-        if (TMath::Abs(pdg) != 211) {
-         //  std::cout<<"Problem with PDG"<<std::endl;
-           continue; // Select pions
-        }
-        if (TMath::Abs(mcTrack.GetEta()) > 1.2) {
-         //   std::cout<<"Problem with Eta"<<std::endl;
-            continue;
-        }
-
-        if (info[i][mc].clusters != 0b1111111) {
-          std::cout<<"Problem with cluster map: "<< info[i][mc].clusters <<std::endl;
-          continue;
-       }
+        if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1)  continue;  
+        if (TMath::Abs(mcTrack.GetPdgCode()) != 211)   continue; // Select pions
+        if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
+        if (info[i][mc].clusters != 0b1111111) continue;
+       
         
-   //     auto trackStatus = mcTrackRef.getTrackStatus();   
-        std::cout<<"Fill Track with trackID: "<< mcTrackRef.getTrackID() << " imc= "<<mc<< " EventID " << i <<std::endl;
-   
-   //     std::cout<<" This track isInside: "<<trackStatus.isInside() << " isEntering: "<<trackStatus.isEntering() << " isStopped: "<<trackStatus.isStopped() << " isNew: "<<trackStatus.isNew() <<std::endl;      
-        info[i][mc].isFilled= true;
         Double_t distance = sqrt(    pow(mcHeader->GetX()-mcTrack.Vx(),2) +  pow(mcHeader->GetY()-mcTrack.Vy(),2) +  pow(mcHeader->GetZ()-mcTrack.Vz(),2) );   
+
+        info[i][mc].isFilled= true; 
+        info[i][mc].r= distance;
+        info[i][mc].pt= mcTrack.GetPt();
+        info[i][mc].eta= mcTrack.GetEta();
+        info[i][mc].phi= mcTrack.GetPhi();
+        info[i][mc].z= mcTrack.Vz();
+        info[i][mc].isPrimary= mcTrack.isPrimary();
+
         hDenTrue_r->Fill(distance);
         hDenTrue_pt->Fill(mcTrack.GetPt());
         hDenTrue_eta->Fill(mcTrack.GetEta());
@@ -415,8 +396,8 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
   }
 
 
-  std::cout<<"Getting n Entries: "<<std::endl;
-  std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! mcTree->GetEntriesFast(): " << mcTree->GetEntriesFast() <<std::endl; 
+ // std::cout<<"Getting n Entries: "<<std::endl;
+ // std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! mcTree->GetEntriesFast(): " << mcTree->GetEntriesFast() <<std::endl; 
   file->Close();
 
   publishHistos();
@@ -454,54 +435,38 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
       const auto& track = trackArr[itrack];
       const auto& MCinfo = MCTruth[itrack];
       
-      //if (MCinfo.isNoise()) continue;
-    //  std::cout<<"Check 1"<<std::endl;
-      auto* mcTrack = reader.getTrack(MCinfo.getSourceID(), MCinfo.getEventID(), MCinfo.getTrackID());
+      if (MCinfo.isNoise()) continue;
+    //  std::cout<<"Check 1: MCinfo.getEventID() "<< MCinfo.getEventID() << " MCinfo.getTrackID() : " << MCinfo.getTrackID() <<std::endl;
+    //  auto* mcTrack = reader.getTrack(MCinfo.getSourceID(), MCinfo.getEventID(), MCinfo.getTrackID());
    //    std::cout<<"Check 1.5"<<std::endl;
-      auto mcHeader= reader.getMCEventHeader(MCinfo.getSourceID(), MCinfo.getEventID());
-  //    std::cout<<"Check 2"<<std::endl;
+   //   auto mcHeader= reader.getMCEventHeader(MCinfo.getSourceID(), MCinfo.getEventID());
+    // std::cout<<"Check 2"<<std::endl;
+      
       Float_t ip[2]{0., 0.};
       Float_t vx = 0., vy = 0., vz = 0.; // Assumed primary vertex
       track.getImpactParams(vx, vy, vz, bz, ip);
 
-      std::cout<< "Reconsturcted track: "<<itrack << " EventID: " << MCinfo.getEventID() << " TrackID: "<< MCinfo.getTrackID() << " SourceID: "<< MCinfo.getSourceID()<<std::endl;
-     
-      if (mcTrack) {
-
-           if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isFilled) std::cout<<"$$$$$$$$$$$$$$$$$$$$$$$$$4 vector says that it's filled!!!"<<std::endl;
-          else std::cout<<"@@@@@@@@@@@@@@  vector says that it's wrong!!!"<<std::endl;
-
-
-        
-           std::cout<<" Was found"<<std::endl;
-           if (mcTrack->Vx() * mcTrack->Vx() + mcTrack->Vy() * mcTrack->Vy() > 1) continue; 
-           //NEW COMMENTif ( abs(mcTrack->Vz())  > 10 ) continue;
-           Int_t pdg = mcTrack->GetPdgCode();
-           if (TMath::Abs(pdg) != 211) continue; // Select pions
-           if (TMath::Abs(mcTrack->GetEta()) > 1.2) continue;
-           std::cout<<" MC Particle survived selesction"<<std::endl;
-           Double_t distance = sqrt(   pow(mcHeader.GetX()-mcTrack->Vx(),2) +  pow(mcHeader.GetY()-mcTrack->Vy(),2) +  pow(mcHeader.GetZ()-mcTrack->Vz(),2));
+      //std::cout<<"Check 3"<<std::endl;
+    
+      if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isFilled) {
+      //    std::cout<<"Check 4"<<std::endl;
            if (MCinfo.isFake()) {
-               std::cout<<" MC Particle is Fake"<<std::endl;
 
-               hNumRecoFake_pt->Fill(mcTrack->GetPt());
-               hNumRecoFake_phi->Fill(mcTrack->GetPhi());
-               hNumRecoFake_eta->Fill(mcTrack->GetEta());
-               hNumRecoFake_z->Fill(mcTrack->Vz());
-               hNumRecoFake_r->Fill(distance); 
-               if (mcTrack->isPrimary())  hTrackImpactTransvFake->Fill(ip[0]);
+               hNumRecoFake_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+               hNumRecoFake_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+               hNumRecoFake_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+               hNumRecoFake_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+               hNumRecoFake_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r); 
+               if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary)  hTrackImpactTransvFake->Fill(ip[0]);
            } else {
-               std::cout<<" MC Particle is Valid"<<std::endl;
-
-               hNumRecoValid_pt->Fill(mcTrack->GetPt());
-               hNumRecoValid_phi->Fill(mcTrack->GetPhi());
-               hNumRecoValid_eta->Fill(mcTrack->GetEta());
-               hNumRecoValid_z->Fill(mcTrack->Vz());
-               hNumRecoValid_r->Fill(distance);
-               hTrackImpactTransvValid->Fill(ip[0]); 
-               if (mcTrack->isPrimary()) hTrackImpactTransvValid->Fill(ip[0]);
+               hNumRecoValid_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
+               hNumRecoValid_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+               hNumRecoValid_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
+               hNumRecoValid_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
+               hNumRecoValid_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
+               if (info[MCinfo.getEventID()][MCinfo.getTrackID()].isPrimary) hTrackImpactTransvValid->Fill(ip[0]);
            }
-          std::cout<<" MC Particle analysd"<<std::endl;
+    //      std::cout<<" MC Particle analysd"<<std::endl;
            
        }
 
