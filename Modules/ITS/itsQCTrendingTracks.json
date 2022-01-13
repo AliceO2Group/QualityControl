@@ -50,7 +50,7 @@
           "userorcontrol"
         ],
         "updateTrigger": [
-          "10 seconds"
+          "60 seconds"
         ],
         "stopTrigger": [
           "userorcontrol"
