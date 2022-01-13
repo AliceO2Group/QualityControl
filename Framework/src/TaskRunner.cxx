@@ -81,7 +81,23 @@ void TaskRunner::init(InitContext& iCtx)
   // get a fresh config
   ILOG(Debug, Devel) << "update 2 tree in init() with the content of option qcConfiguration" << ENDM;
   try {
+    //    auto wholeTree = iCtx.options().get<boost::property_tree::ptree>("");                                                                   
+    /*    ILOG(Debug, Devel) << "print whole tree: " << ENDM;
+    auto wholeTree = iCtx.options().get<boost::property_tree::ptree>("");
+    printTree(wholeTree);
+    std::stringstream ss;
+    printTreeToFile(wholeTree, ss, 0);
+    // Create and open a text file
+  ofstream MyFile("/tmp/dump.txt");
+  MyFile << ss.str();
+  MyFile.close();
+    */
+
     auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
+    //    auto updatedTree = iCtx.services().get<RawDeviceService>().device()->fConfig->GetProperty< boost::property_tree::ptree>("qcConfiguration");
+
+    ILOG(Debug,Devel) << "print the updated tree : " << ENDM;
+    //    cout << "print tree: " << endl;
     printTree(updatedTree);
   } catch (std::invalid_argument & error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
