@@ -29,14 +29,16 @@
 #include <Framework/DataSpecUtils.h>
 #include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpan.h>
+#include <Framework/O2ControlLabels.h>
+#include <Framework/DataProcessorLabel.h>
+
 
 namespace o2::quality_control::core
 {
 
 using namespace o2::framework;
 
-o2::framework::DataProcessorSpec
-  TaskRunnerFactory::create(const TaskRunnerConfig& taskConfig)
+o2::framework::DataProcessorSpec TaskRunnerFactory::create(const TaskRunnerConfig& taskConfig)
 {
   TaskRunner qcTask{ taskConfig };
 
@@ -47,7 +49,8 @@ o2::framework::DataProcessorSpec
     adaptFromTask<TaskRunner>(std::move(qcTask)),
     taskConfig.options
   };
-  newTask.labels.emplace_back(TaskRunner::getLabel());
+  newTask.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
+  newTask.labels.emplace_back(TaskRunner::getTaskLabel());
 
   return newTask;
 }
@@ -116,7 +119,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
 
 void TaskRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = TaskRunner::getLabel()](framework::DeviceSpec const& device) {
+  auto matcher = [label = TaskRunner::getTaskLabel()](framework::DeviceSpec const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
   auto callback = TaskRunner::completionPolicyCallback;

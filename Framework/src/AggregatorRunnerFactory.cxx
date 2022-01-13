@@ -21,6 +21,7 @@
 #include <Framework/DeviceSpec.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/CompletionPolicyHelpers.h>
+#include <Framework/O2ControlLabels.h>
 
 #include "QualityControl/AggregatorRunner.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
@@ -42,6 +43,7 @@ DataProcessorSpec AggregatorRunnerFactory::create(AggregatorRunnerConfig arc, st
     AlgorithmSpec{},
     Options{}
   };
+  newAggregatorRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newAggregatorRunner.labels.emplace_back(AggregatorRunner::getLabel());
   newAggregatorRunner.algorithm = adaptFromTask<AggregatorRunner>(std::move(aggregator));
   return newAggregatorRunner;

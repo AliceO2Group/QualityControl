@@ -21,6 +21,7 @@
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/DataSpecUtils.h>
 #include <Framework/CompletionPolicyHelpers.h>
+#include <Framework/O2ControlLabels.h>
 
 #include "QualityControl/CheckRunner.h"
 #include "QualityControl/CheckRunnerFactory.h"
@@ -40,7 +41,8 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     AlgorithmSpec{},
                                     Options{} };
-  newCheckRunner.labels.emplace_back(CheckRunner::getLabel());
+  newCheckRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
+  newCheckRunner.labels.emplace_back(CheckRunner::getCheckLabel());
   newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
   return newCheckRunner;
 }
@@ -63,7 +65,7 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRu
 
 void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = CheckRunner::getLabel()](framework::DeviceSpec const& device) {
+  auto matcher = [label = CheckRunner::getCheckLabel()](framework::DeviceSpec const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
 
