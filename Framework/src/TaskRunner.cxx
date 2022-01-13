@@ -97,8 +97,11 @@ void TaskRunner::init(InitContext& iCtx)
     //    auto updatedTree = iCtx.services().get<RawDeviceService>().device()->fConfig->GetProperty< boost::property_tree::ptree>("qcConfiguration");
 
     ILOG(Debug,Devel) << "print the updated tree : " << ENDM;
-    //    cout << "print tree: " << endl;
-    printTree(updatedTree);
+    if(updatedTree.empty()) {
+      ILOG(Error, Devel) << "   Updated tree is empty" << ENDM;   
+    } else {
+      printTree(updatedTree);
+    }
   } catch (std::invalid_argument & error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
     ILOG(Warning, Devel) << error.what() << ENDM;
