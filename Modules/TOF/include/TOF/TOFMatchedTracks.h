@@ -26,6 +26,7 @@
 #include "SimulationDataFormat/MCCompLabel.h"
 
 class TH1F;
+class TH2F;
 class TEfficiency;
 
 namespace o2::quality_control_modules::tof
@@ -83,12 +84,20 @@ class TOFMatchedTracks final : public TaskInterface
   bool mVerbose = false;
   TH1F* mInTracksPt[trkType::SIZE] = {};
   TH1F* mInTracksEta[trkType::SIZE] = {};
+  TH2F* mInTracks2DPtEta[trkType::SIZE] = {};
   TH1F* mMatchedTracksPt[trkType::SIZE] = {};
   TH1F* mMatchedTracksEta[trkType::SIZE] = {};
+  TH2F* mMatchedTracks2DPtEta[trkType::SIZE] = {};
   TH1F* mFakeMatchedTracksPt[trkType::SIZE] = {};
   TH1F* mFakeMatchedTracksEta[trkType::SIZE] = {};
+  TH2F* mDeltaZEta[trkType::SIZE] = {};
+  TH2F* mDeltaZPhi[trkType::SIZE] = {};
+  TH2F* mDeltaXEta[trkType::SIZE] = {};
+  TH2F* mDeltaXPhi[trkType::SIZE] = {};
+  TH1F* mTOFChi2[trkType::SIZE] = {};
   TEfficiency* mEffPt[trkType::SIZE] = {};
   TEfficiency* mEffEta[trkType::SIZE] = {};
+  TEfficiency* mEff2DPtEta[trkType::SIZE] = {};
   TEfficiency* mFakeFractionTracksPt[trkType::SIZE] = {};  // fraction of fakes among the matched tracks vs pT
   TEfficiency* mFakeFractionTracksEta[trkType::SIZE] = {}; // fraction of fakes among the matched tracks vs Eta
 

@@ -23,6 +23,7 @@
 
 #include <TH1.h>
 #include <TH2.h>
+#include <TLine.h>
 
 class TH2I;
 class TH1I;
@@ -65,26 +66,27 @@ class ITSFeeTask final : public TaskInterface
   void startOfActivity(Activity& activity) override;
   void startOfCycle() override;
   void monitorData(o2::framework::ProcessingContext& ctx) override;
-  void getParameters(); // get Task parameters from json file
   void endOfCycle() override;
   void endOfActivity(Activity& activity) override;
   void reset() override;
 
  private:
+  void getParameters(); // get Task parameters from json file
   void setAxisTitle(TH1* object, const char* xTitle, const char* yTitle);
   void createFeePlots();
   void setPlotsFormat();
   void resetGeneralPlots();
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
-  static constexpr int NLanes = 28;
+  static constexpr int NLanesMax = 28;
   static constexpr int NFees = 48 * 3 + 144 * 2;
-  static constexpr int NFlags = 4;
+  static constexpr int NFlags = 3;
+  static constexpr int NTrigger = 13;
   const int StaveBoundary[NLayer + 1] = { 0, 12, 28, 48, 72, 102, 144, 192 };
+  const int LayerBoundaryFEE[NLayer - 1] = { 35, 83, 143, 191, 251, 335 };
   int mTimeFrameId = 0;
-  static constexpr int mNTrigger = 13;
-  TString mTriggerType[mNTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
-  std::string mLaneStatusFlag[NFlags] = { "OK", "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
+  TString mTriggerType[NTrigger] = { "ORBIT", "HB", "HBr", "HC", "PHYSICS", "PP", "CAL", "SOT", "EOT", "SOC", "EOC", "TF", "INT" };
+  std::string mLaneStatusFlag[NFlags] = { "WARNING", "ERROR", "FAULT" }; // b00 OK, b01 WARNING, b10 ERROR, b11 FAULT
 
   // parameters taken from the .json
   int mNPayloadSizeBins = 0;
@@ -97,6 +99,11 @@ class ITSFeeTask final : public TaskInterface
   TH2I* mIndexCheck;         // should be zero
   TH2I* mIdCheck;            // should be 0x : e4
   TH2I* mLaneStatus[NFlags]; // 4 flags for each lane. 3/8/14 lane for each link. 3/2/2 link for each RU. TODO: remove the OK flag in these 4 flag plots, OK flag plot just used to debug.
+  TH1I* mLaneStatusSummary[NLayer];
+  TH1I* mLaneStatusSummaryIB;
+  TH1I* mLaneStatusSummaryML;
+  TH1I* mLaneStatusSummaryOL;
+  TH1I* mLaneStatusSummaryGlobal;
   TH1I* mProcessingTime;
   TH2F* mPayloadSize; // average payload size vs linkID
   // TH1D* mInfoCanvas;//TODO: default, not implemented yet

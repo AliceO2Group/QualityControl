@@ -6,6 +6,7 @@
 #pragma link C++ class o2::quality_control_modules::its::ITSRawTask + ;
 #pragma link C++ class o2::quality_control::postprocessing::TrendingTaskITSThr + ;
 #pragma link C++ class o2::quality_control::postprocessing::TrendingTaskITSFhr + ;
+#pragma link C++ class o2::quality_control::postprocessing::TrendingTaskITSCluster + ;
 #pragma link C++ class o2::quality_control_modules::its::TH2XlineReductor + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSFhrTask + ;
 #pragma link C++ class o2::quality_control_modules::its::ITSFeeTask + ;

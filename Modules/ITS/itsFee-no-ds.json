@@ -31,8 +31,8 @@
                 "cycleDurationSeconds": "30",
                 "maxNumberCycles": "-1",
                 "dataSource": {
-                    "type": "dataSamplingPolicy",
-                    "name": "feedata"
+                    "type": "direct",
+                    "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME"
                 },
                 "location": "remote",
                 "taskParameters": {
@@ -62,19 +62,5 @@
         }
     },
     "dataSamplingPolicies": [
-        {
-            "id": "feedata",
-            "active": "true",
-            "machines": [],
-            "query": "filter:ITS/RAWDATA;G:FLP/DISTSUBTIMEFRAME",
-            "samplingConditions": [
-                {
-                    "condition": "random",
-                    "fraction": "1",
-                    "seed": "1441"
-                }
-            ],
-            "blocking": "false"
-        }
     ]
 }
