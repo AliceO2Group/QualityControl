@@ -398,7 +398,7 @@ void ITSClusterTask::createAllHistos()
   hClusterVsBunchCrossing= new TH2D("BunchCrossingIDvsClusterSize", "BunchCrossingIDvsClusterSize", 4096, 0, 4095, 100, 0, 100);
   hClusterVsBunchCrossing->SetTitle("Bunch Crossing ID vs Cluster Size");
   addObject(hClusterVsBunchCrossing);
-  formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Cluster size (pixels)", 1, 1.10);
+  formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters in ROF", 1, 1.10);
   hClusterVsBunchCrossing->SetStats(0);
 
 
@@ -415,7 +415,7 @@ void ITSClusterTask::createAllHistos()
     hGroupedClusterSizeLayerSummary[iLayer] = new TH1D(Form("Layer%d/AverageGroupedClusterSizeSummary", iLayer), Form("Layer%dAverageGroupedClusterSizeSummary", iLayer), 100, 0, 100);
     hGroupedClusterSizeLayerSummary[iLayer]->SetTitle(Form("Cluster size summary for %d Layer", iLayer));
     addObject(hGroupedClusterSizeLayerSummary[iLayer]);
-    formatAxes(hGroupedClusterSizeLayerSummary[iLayer], "Cluster Size (pixels)", "counts", 1, 1.10);
+    formatAxes(hGroupedClusterSizeLayerSummary[iLayer], "Grouped Cluster Size (pixels)", "counts", 1, 1.10);
     hGroupedClusterSizeLayerSummary[iLayer]->SetStats(0);
 
 
