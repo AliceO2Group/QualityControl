@@ -19,7 +19,7 @@
         "url": ""
       },
       "conditionDB": {
-        "url": "ccdb-cern.cern.ch:8080"
+        "url": "ccdb-test.cern.ch:8080"
       }
     },
     "postprocessing": {
