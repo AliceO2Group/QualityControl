@@ -122,15 +122,16 @@ inline std::string computeProvenance(const std::string& fallbackProvenance = "")
 inline std::string indentTree(int level)
 {
   std::string s;
-  for (int i = 0; i<level; i++) s += "  ";
+  for (int i = 0; i < level; i++)
+    s += "  ";
   return s;
 }
 
-inline void printTree(boost::property_tree::ptree &pt, int level=0)
+inline void printTree(boost::property_tree::ptree& pt, int level = 0)
 {
   if (pt.empty()) {
 
-    ILOG(Debug, Devel) <<"\"" <<  pt.data() << "\"";
+    ILOG(Debug, Devel) << "\"" << pt.data() << "\"";
   } else {
     if (level) {
       ILOG(Debug, Devel) << ENDM;
@@ -157,4 +158,4 @@ inline void printTree(boost::property_tree::ptree &pt, int level=0)
 
 } // namespace o2::quality_control::core
 
-#endif //QUALITYCONTROL_RUNNERUTILS_H
+#endif // QUALITYCONTROL_RUNNERUTILS_H
