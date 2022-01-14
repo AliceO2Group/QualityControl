@@ -23,6 +23,7 @@
 #include "Headers/RAWDataHeader.h"
 #include "DPLUtils/DPLRawParser.h"
 #include "DataFormatsCTP/Digits.h"
+//#include "Detectors/CTP/RawToDigitConverterSpec.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 
@@ -88,6 +89,9 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   o2::framework::DPLRawParser parser(ctx.inputs());
   LOG(info) << "hello =========================";
   // loop over input
+  o2::ctp::gbtword80_t remnant = 0;
+  uint32_t size_gbt = 0;
+
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     // get the header
     auto const* rdh = it.get_if<o2::header::RAWDataHeader>();
@@ -114,11 +118,12 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     gsl::span<const uint8_t> payload(it.data(), it.size());
     o2::ctp::gbtword80_t gbtWord = 0;
     int wordCount = 0;
+    std::vector<o2::ctp::gbtword80_t> diglets;
 
     for (auto payloadWord : payload) 
     {
       //LOG(info) << wordCount << " payload:" <<  int(payloadWord);
-      std::cout << wordCount << " payload: 0x" << std::hex << payloadWord << std::endl;
+      //std::cout << wordCount << " payload: 0x" << std::hex << payloadWord << std::endl;
       if (wordCount == 15) {
         wordCount = 0;
       } else if (wordCount > 9) {
@@ -126,6 +131,15 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       } else if (wordCount == 9) {
         for (int i = 0; i < 8; i++) {
           gbtWord[wordCount * 8 + i] = bool(int(payloadWord) & (1 << i));
+        }
+        wordCount++;
+        LOG(info) << " gbtword:" << gbtWord;
+        //makeGBTWordInverse(diglets, gbtWord, remnant, size_gbt, payloadCTP);
+        gbtWord = 0;
+      } else {
+        for (int i = 0; i < 8; i++) {
+            gbtWord[wordCount * 8 + i] = bool(int(payloadWord) & (1 << i));
+            //gbtWord[(9-wordCount) * 8 + i] = bool(int(payloadWord) & (1 << i));
         }
         wordCount++;
       }
