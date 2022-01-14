@@ -70,7 +70,12 @@ BOOST_AUTO_TEST_CASE(test_aggregator_runner)
   auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
   AggregatorRunner aggregatorRunner{ aggregatorRunnerConfig, infrastructureSpec };
 
-  std::unique_ptr<ConfigParamStore> store;
+  Options options{
+    { "runNumber", VariantType::String, { "Run number" } },
+    {"qcConfiguration", VariantType::Dict, emptyDict(), {"Some dictionary configuration"} }
+  };
+  std::vector<std::unique_ptr<ParamRetriever>> retr;
+  std::unique_ptr<ConfigParamStore> store = make_unique<ConfigParamStore>(move(options), move(retr));
   ConfigParamRegistry cfReg(std::move(store));
   ServiceRegistry sReg;
   InitContext initContext{ cfReg, sReg };

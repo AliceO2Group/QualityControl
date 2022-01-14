@@ -42,7 +42,7 @@ DataProcessorSpec AggregatorRunnerFactory::create(const o2::quality_control::cor
     aggregator.getInputs(),
     Outputs{},
     AlgorithmSpec{},
-    Options{}
+    aggConfig.options
   };
   newAggregatorRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newAggregatorRunner.labels.emplace_back(AggregatorRunner::getLabel());
@@ -63,6 +63,11 @@ void AggregatorRunnerFactory::customizeInfrastructure(std::vector<framework::Com
 
 AggregatorRunnerConfig AggregatorRunnerFactory::extractConfig(const core::CommonSpec& commonSpec)
 {
+  Options options{
+    { "runNumber", framework::VariantType::String, { "Run number" } },
+    {"qcConfiguration", VariantType::Dict, emptyDict(), {"Some dictionary configuration"} }
+  };
+
   return {
     commonSpec.database,
     commonSpec.consulUrl,
@@ -72,7 +77,8 @@ AggregatorRunnerConfig AggregatorRunnerFactory::extractConfig(const core::Common
     commonSpec.activityNumber,
     commonSpec.activityPeriodName,
     commonSpec.activityPassName,
-    commonSpec.activityProvenance
+    commonSpec.activityProvenance,
+    options
   };
 }
 

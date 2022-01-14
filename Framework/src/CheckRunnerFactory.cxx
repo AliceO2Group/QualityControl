@@ -40,7 +40,7 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
                                     qcCheckRunner.getInputs(),
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     AlgorithmSpec{},
-                                    Options{} };
+                                    checkRunnerConfig.options };
   newCheckRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
   newCheckRunner.labels.emplace_back(CheckRunner::getCheckLabel());
   newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
@@ -56,7 +56,7 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRu
                                     qcCheckRunner.getInputs(),
                                     Outputs{ qcCheckRunner.getOutputs() },
                                     adaptFromTask<CheckRunner>(std::move(qcCheckRunner)),
-                                    Options{},
+                                    checkRunnerConfig.options,
                                     {},
                                     std::vector<DataProcessorLabel>{} };
 
@@ -76,6 +76,11 @@ void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::Completi
 
 CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec)
 {
+  Options options{
+    { "runNumber", framework::VariantType::String, { "Run number" } },
+    {"qcConfiguration", VariantType::Dict, emptyDict(), {"Some dictionary configuration"} }
+  };
+
   return {
     commonSpec.database,
     commonSpec.consulUrl,
@@ -85,7 +90,8 @@ CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec
     commonSpec.activityNumber,
     commonSpec.activityPeriodName,
     commonSpec.activityPassName,
-    commonSpec.activityProvenance
+    commonSpec.activityProvenance,
+    options
   };
 }
 
