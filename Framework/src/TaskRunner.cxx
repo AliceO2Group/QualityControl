@@ -97,7 +97,7 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
   }
 }
 
-void TaskRunner::init(InitContext& iCtx)
+void TaskRunner::initInfologger(InitContext& iCtx)
 {
   AliceO2::InfoLogger::InfoLoggerContext* ilContext = nullptr;
   AliceO2::InfoLogger::InfoLogger* il = nullptr;
@@ -112,12 +112,16 @@ void TaskRunner::init(InitContext& iCtx)
                      mTaskConfig.infologgerDiscardLevel,
                      il,
                      ilContext);
+  QcInfoLogger::setDetector(mTaskConfig.detectorName);
+}
 
+
+void TaskRunner::init(InitContext& iCtx)
+{
+  initInfologger(iCtx);
   ILOG(Info, Support) << "Initializing TaskRunner" << ENDM;
 
   refreshConfig(iCtx);
-
-  QcInfoLogger::setDetector(mTaskConfig.detectorName);
   printTaskConfig();
 
   // registering state machine callbacks
@@ -134,8 +138,8 @@ void TaskRunner::init(InitContext& iCtx)
   mObjectsManager = std::make_shared<ObjectsManager>(mTaskConfig.taskName, mTaskConfig.className, mTaskConfig.detectorName, mTaskConfig.consulUrl, mTaskConfig.parallelTaskID);
 
   // setup user's task
-  TaskFactory f;
-  mTask.reset(f.create(mTaskConfig, mObjectsManager));
+  TaskFactory factory;
+  mTask.reset(factory.create(mTaskConfig, mObjectsManager));
   mTask->setMonitoring(mCollector);
 
   // init user's task

@@ -113,7 +113,8 @@ class TaskRunner : public framework::Task
 
   std::tuple<bool /*data ready*/, bool /*timer ready*/> validateInputs(const framework::InputRecord&);
   void refreshConfig(framework::InitContext& iCtx);
-  void printTaskConfig();
+  inline void initInfologger(framework::InitContext& iCtx);
+  inline void printTaskConfig();
   void startOfActivity();
   void endOfActivity();
   void startCycle();

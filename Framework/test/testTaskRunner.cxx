@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_factory)
 
   BOOST_CHECK(taskRunner.algorithm.onInit != nullptr);
 
-  BOOST_REQUIRE_EQUAL(taskRunner.options.size(), 2);
+  BOOST_REQUIRE_EQUAL(taskRunner.options.size(), 3);
   BOOST_CHECK_EQUAL(taskRunner.options[0].name, "period-timer-cycle");
 }
 
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(test_task_runner)
 
   BOOST_CHECK_EQUAL(qcTask.getOutputSpec(), (OutputSpec{ { "mo" }, "QC", "abcTask-mo", 0, Lifetime::Sporadic }));
 
-  BOOST_REQUIRE_EQUAL(qcTask.getOptions().size(), 2);
+  BOOST_REQUIRE_EQUAL(qcTask.getOptions().size(), 3);
   BOOST_CHECK_EQUAL(qcTask.getOptions()[0].name, "period-timer-cycle");
 
   // This is maximum that we can do until we are able to test the DPL algorithms in isolation.
