@@ -117,14 +117,8 @@ void TaskRunner::init(InitContext& iCtx)
 
   refreshConfig(iCtx);
 
-  try {
-    loadTaskConfig();
-  } catch (...) {
-    // catch the configuration exception and print it to avoid losing it
-    ILOG(Fatal, Ops) << "Unexpected exception during configuration:\n"
-                     << current_diagnostic(true) << ENDM;
-    throw;
-  }
+  QcInfoLogger::setDetector(mTaskConfig.detectorName);
+  printTaskConfig();
 
   // registering state machine callbacks
   iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
@@ -349,12 +343,8 @@ std::tuple<bool /*data ready*/, bool /*timer ready*/> TaskRunner::validateInputs
   return { dataReady, timerReady };
 }
 
-void TaskRunner::loadTaskConfig() // todo consider renaming
+void TaskRunner::printTaskConfig()
 {
-  ILOG(Info, Support) << "Loading configuration" << ENDM;
-
-  QcInfoLogger::setDetector(mTaskConfig.detectorName);
-
   ILOG(Info, Support) << "Configuration loaded : " << ENDM;
   ILOG(Info, Support) << ">> Task name : " << mTaskConfig.taskName << ENDM;
   ILOG(Info, Support) << ">> Module name : " << mTaskConfig.moduleName << ENDM;
