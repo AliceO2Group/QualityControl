@@ -11,7 +11,7 @@
 
 ///
 /// \file   RawDataQcTask.cxx
-/// \author My Name
+/// \author Marek Bombara
 ///
 
 #include <TCanvas.h>
@@ -19,6 +19,10 @@
 
 #include "QualityControl/QcInfoLogger.h"
 #include "CTP/RawDataQcTask.h"
+#include "DetectorsRaw/RDHUtils.h"
+#include "Headers/RAWDataHeader.h"
+#include "DPLUtils/DPLRawParser.h"
+#include "DataFormatsCTP/Digits.h"
 #include <Framework/InputRecord.h>
 #include <Framework/InputRecordWalker.h>
 
@@ -80,8 +84,56 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // One can find additional examples at:
   // https://github.com/AliceO2Group/AliceO2/blob/dev/Framework/Core/README.md#using-inputs---the-inputrecord-api
 
-  // Some examples:
+  // get the input
+  o2::framework::DPLRawParser parser(ctx.inputs());
+  LOG(info) << "hello =========================";
+  // loop over input
+  for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
+    // get the header
+    auto const* rdh = it.get_if<o2::header::RAWDataHeader>();
+    //o2::raw::RDHUtils::printRDH(rdh);
+    auto triggerBC = o2::raw::RDHUtils::getTriggerBC(rdh);
+    //LOG(info) << "trigger BC = " << triggerBC;
+    auto triggerOrbit = o2::raw::RDHUtils::getTriggerOrbit(rdh);
+    //LOG(info) << "trigger orbit = " << triggerOrbit;
+    mHistogram->Fill(triggerOrbit);
+    mHistogram2->Fill(triggerBC);
 
+    uint32_t payloadCTP;
+    auto feeID = o2::raw::RDHUtils::getFEEID(rdh); // 0 = IR, 1 = TCR
+    auto linkCRU = (feeID & 0xf00) >> 8;
+    if (linkCRU == o2::ctp::GBTLinkIDIntRec) {
+      payloadCTP = o2::ctp::NIntRecPayload;
+    } else if (linkCRU == o2::ctp::GBTLinkIDClassRec) {
+      payloadCTP = o2::ctp::NClassPayload;
+    } else {
+      LOG(error) << "Unxpected  CTP CRU link:" << linkCRU;
+    }
+    LOG(info) << "RDH FEEid: " << feeID << " CTP CRU link:" << linkCRU << " Orbit:" << triggerOrbit << " payloadCTP = " << payloadCTP;
+
+    gsl::span<const uint8_t> payload(it.data(), it.size());
+    o2::ctp::gbtword80_t gbtWord = 0;
+    int wordCount = 0;
+
+    for (auto payloadWord : payload) 
+    {
+      //LOG(info) << wordCount << " payload:" <<  int(payloadWord);
+      std::cout << wordCount << " payload: 0x" << std::hex << payloadWord << std::endl;
+      if (wordCount == 15) {
+        wordCount = 0;
+      } else if (wordCount > 9) {
+        wordCount++;
+      } else if (wordCount == 9) {
+        for (int i = 0; i < 8; i++) {
+          gbtWord[wordCount * 8 + i] = bool(int(payloadWord) & (1 << i));
+        }
+        wordCount++;
+      }
+    }
+
+  }
+  // Some examples:
+/*
   // 1. In a loop
   for (auto&& input : framework::InputRecordWalker(ctx.inputs())) {
     // get message header
@@ -93,7 +145,7 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     mHistogram->Fill(header->payloadSize);
     mHistogram2->Fill(4.);
   }
-
+*/
   // 2. Using get("<binding>")
 
   // get the payload of a specific input, which is a char array. "random" is the binding specified in the config file.
