@@ -1418,7 +1418,7 @@
           "usercontrol"
         ],
         "updateTrigger": [
-          "10sec"
+          "60seconds"
         ],
         "stopTrigger": [
             "usercontrol"  
