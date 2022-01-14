@@ -29,6 +29,10 @@
 #include "QualityControl/DatabaseFactory.h"
 #include "QualityControl/ServiceDiscovery.h"
 #include "QualityControl/runnerUtils.h"
+#include "QualityControl/InfrastructureSpecReader.h"
+#include "QualityControl/CheckRunnerFactory.h"
+
+#include <TSystem.h>
 
 using namespace std::chrono;
 using namespace AliceO2::Common;
@@ -159,24 +163,43 @@ CheckRunner::~CheckRunner()
   }
 }
 
+void CheckRunner::refreshConfig(InitContext& iCtx)
+{
+  try {
+    // get the tree
+    auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
+
+    if(updatedTree.empty()) {
+      ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
+    } else {
+      if(gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
+        ILOG(Debug,Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
+        printTree(updatedTree);
+      }
+
+      // prepare the information we need
+      auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
+
+      // TODO: use the config to reconfigure the check runner.
+      // TODO: in particular, reset mChecks and update it.
+      // TODO: Problem is that a lot of the logic is in the infrastructure generator.
+      // TODO: we should probably just preserve the checks list and update their state.
+
+      QcInfoLogger::setDetector(CheckRunner::getDetectorName(mChecks));
+    }
+  } catch (std::invalid_argument & error) {
+    // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
+    ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
+  }
+}
+
 void CheckRunner::init(framework::InitContext& iCtx)
 {
-  InfoLoggerContext* ilContext = nullptr;
-  AliceO2::InfoLogger::InfoLogger* il = nullptr;
   try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
-  }
+    initInfologger(iCtx);
 
-  try {
-    QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
-                       mConfig.infologgerFilterDiscardDebug,
-                       mConfig.infologgerDiscardLevel,
-                       il,
-                       ilContext);
-    QcInfoLogger::setDetector(CheckRunner::getDetectorName(mChecks));
+    refreshConfig(iCtx);
+
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -415,6 +438,23 @@ void CheckRunner::initServiceDiscovery()
   }
   mServiceDiscovery = std::make_shared<ServiceDiscovery>(mConfig.consulUrl, mDeviceName, mDeviceName);
   ILOG(Info, Support) << "ServiceDiscovery initialized" << ENDM;
+}
+
+void CheckRunner::initInfologger(framework::InitContext& iCtx)
+{
+  InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
+  try {
+    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
+  } catch (const RuntimeErrorRef& err) {
+    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
+  }
+  QcInfoLogger::init(createCheckRunnerFacility(mDeviceName),
+                     mConfig.infologgerFilterDiscardDebug,
+                     mConfig.infologgerDiscardLevel,
+                     il,
+                     ilContext);
 }
 
 void CheckRunner::start(const ServiceRegistry& services)

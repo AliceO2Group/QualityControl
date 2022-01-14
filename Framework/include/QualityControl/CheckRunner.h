@@ -167,6 +167,7 @@ class CheckRunner : public framework::Task
   inline void initDatabase();
   inline void initMonitoring();
   inline void initServiceDiscovery();
+  inline void initInfologger(framework::InitContext& iCtx);
 
   /**
    * Update the list of objects this TaskRunner is sending out.
@@ -202,6 +203,9 @@ class CheckRunner : public framework::Task
   void stop() override;
   /// \brief Callback for CallbackService::Id::Reset (DPL) a.k.a. RESET DEVICE transition (FairMQ)
   void reset();
+
+  /// Refresh the configuration using the payload found in the fairmq options (if available)
+  void refreshConfig(framework::InitContext& iCtx);
 
   // General state
   std::string mDeviceName;
