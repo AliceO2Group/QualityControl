@@ -27,6 +27,7 @@
 #include "QualityControl/Activity.h"
 #include "QualityControl/AggregatorRunnerConfig.h"
 #include "QualityControl/AggregatorConfig.h"
+#include "QualityControl/InfrastructureSpec.h"
 
 namespace o2::framework
 {
@@ -93,7 +94,7 @@ class AggregatorRunner : public framework::Task
    * @param arc AggregatorRunner Config
    * @param acs Aggregator configs
    */
-  AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs);
+  AggregatorRunner(AggregatorRunnerConfig arc, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec);
 
   /// Destructor
   ~AggregatorRunner() override;
@@ -135,6 +136,9 @@ class AggregatorRunner : public framework::Task
    */
   void store(core::QualityObjectsType& qualityObjects);
 
+  inline void extractConfigs(const o2::quality_control::core::InfrastructureSpec& infrastructureSpec);
+
+  inline void initInfoLogger(framework::InitContext& iCtx);
   inline void initDatabase();
   inline void initMonitoring();
   inline void initServiceDiscovery();

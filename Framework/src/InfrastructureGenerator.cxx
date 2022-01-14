@@ -631,15 +631,7 @@ void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, const I
     return;
   }
 
-  std::vector<AggregatorConfig> aggregatorConfigs;
-  for (const auto& aggregatorSpec : infrastructureSpec.aggregators) {
-    if (aggregatorSpec.active) {
-      ILOG(Debug, Devel) << ">> Aggregator name : " << aggregatorSpec.aggregatorName << ENDM;
-      aggregatorConfigs.emplace_back(Aggregator::extractConfig(infrastructureSpec.common, aggregatorSpec));
-    }
-  }
-
-  DataProcessorSpec spec = AggregatorRunnerFactory::create(AggregatorRunnerFactory::extractConfig(infrastructureSpec.common), aggregatorConfigs);
+  DataProcessorSpec spec = AggregatorRunnerFactory::create(infrastructureSpec);
   workflow.emplace_back(spec);
 }
 

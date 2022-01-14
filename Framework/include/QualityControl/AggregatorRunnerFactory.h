@@ -23,6 +23,7 @@
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/AggregatorRunnerConfig.h"
 #include "QualityControl/AggregatorConfig.h"
+#include "QualityControl/InfrastructureSpec.h"
 
 #include <vector>
 
@@ -36,7 +37,7 @@ class AggregatorRunnerFactory
   AggregatorRunnerFactory() = default;
   virtual ~AggregatorRunnerFactory() = default;
 
-  static framework::DataProcessorSpec create(AggregatorRunnerConfig arc, std::vector<AggregatorConfig> acs);
+  static framework::DataProcessorSpec create(const o2::quality_control::core::InfrastructureSpec& infrastructureSpec);
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 
   static AggregatorRunnerConfig extractConfig(const core::CommonSpec&);

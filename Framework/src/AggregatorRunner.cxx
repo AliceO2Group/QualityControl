@@ -46,14 +46,15 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs)
+AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
   : mDeviceName(createAggregatorRunnerName()),
     mRunnerConfig(std::move(arc)),
-    mAggregatorsConfigs(acs),
     mTotalNumberObjectsReceived(0),
     mTotalNumberAggregatorExecuted(0),
     mTotalNumberObjectsProduced(0)
 {
+  extractConfigs(infrastructureSpec);
+  
   // Prepare the inputs, remove duplicates
   std::set<std::string> alreadySeen;
   int i = 0;
@@ -75,6 +76,16 @@ AggregatorRunner::~AggregatorRunner()
   }
 }
 
+void AggregatorRunner::extractConfigs(const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
+{
+  for (const auto& aggregatorSpec : infrastructureSpec.aggregators) {
+    if (aggregatorSpec.active) {
+      ILOG(Debug, Devel) << ">> Aggregator name : " << aggregatorSpec.aggregatorName << ENDM;
+      mAggregatorsConfigs.emplace_back(Aggregator::extractConfig(infrastructureSpec.common, aggregatorSpec));
+    }
+  }
+}
+
 header::DataDescription AggregatorRunner::createAggregatorRunnerDataDescription(const std::string& aggregatorName)
 {
   if (aggregatorName.empty()) {
@@ -92,18 +103,13 @@ std::string AggregatorRunner::createAggregatorRunnerName()
 
 void AggregatorRunner::init(framework::InitContext& iCtx)
 {
-  InfoLoggerContext* ilContext = nullptr;
-  AliceO2::InfoLogger::InfoLogger* il = nullptr;
-  try {
-    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
-    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
-  } catch (const RuntimeErrorRef& err) {
-    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
-  }
+  initInfoLogger(iCtx);
+
+  // refresh
+  // reset mAggregatorsConfigs
+  // extractConfigs
 
   try {
-    QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, il, ilContext);
-    QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
     initDatabase();
     initMonitoring();
     initServiceDiscovery();
@@ -245,6 +251,20 @@ void AggregatorRunner::initAggregators()
   }
 
   reorderAggregators();
+}
+
+void AggregatorRunner::initInfoLogger(InitContext& iCtx)
+{
+  InfoLoggerContext* ilContext = nullptr;
+  AliceO2::InfoLogger::InfoLogger* il = nullptr;
+  try {
+    ilContext = &iCtx.services().get<AliceO2::InfoLogger::InfoLoggerContext>();
+    il = &iCtx.services().get<AliceO2::InfoLogger::InfoLogger>();
+  } catch (const RuntimeErrorRef& err) {
+    ILOG(Error) << "Could not find the DPL InfoLogger." << ENDM;
+  }
+  QcInfoLogger::init("aggregator", mRunnerConfig.infologgerFilterDiscardDebug, mRunnerConfig.infologgerDiscardLevel, il, ilContext);
+  QcInfoLogger::setDetector(AggregatorRunner::getDetectorName(mAggregators));
 }
 
 bool AggregatorRunner::areSourcesIn(const std::vector<AggregatorSource>& sources,

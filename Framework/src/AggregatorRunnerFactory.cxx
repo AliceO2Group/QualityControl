@@ -19,11 +19,11 @@
 
 #include <Framework/DataProcessorSpec.h>
 #include <Framework/DeviceSpec.h>
-#include <Framework/DataSpecUtils.h>
 #include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/O2ControlLabels.h>
 
 #include "QualityControl/AggregatorRunner.h"
+#include "QualityControl/Aggregator.h"
 #include "QualityControl/AggregatorRunnerFactory.h"
 
 using namespace std;
@@ -32,9 +32,10 @@ using namespace o2::framework;
 namespace o2::quality_control::checker
 {
 
-DataProcessorSpec AggregatorRunnerFactory::create(AggregatorRunnerConfig arc, std::vector<AggregatorConfig> acs)
+DataProcessorSpec AggregatorRunnerFactory::create(const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
 {
-  AggregatorRunner aggregator{ std::move(arc), std::move(acs) };
+  AggregatorRunnerConfig aggConfig = AggregatorRunnerFactory::extractConfig(infrastructureSpec.common);
+  AggregatorRunner aggregator{ aggConfig, infrastructureSpec};
 
   DataProcessorSpec newAggregatorRunner{
     aggregator.getDeviceName(),

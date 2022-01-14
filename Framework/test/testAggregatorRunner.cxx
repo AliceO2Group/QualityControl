@@ -66,7 +66,9 @@ BOOST_AUTO_TEST_CASE(test_aggregator_runner)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   auto [aggregatorRunnerConfig, aggregatorConfigs] = getAggregatorConfigs(configFilePath);
-  AggregatorRunner aggregatorRunner{ aggregatorRunnerConfig, aggregatorConfigs };
+  auto config = ConfigurationFactory::getConfiguration(configFilePath);
+  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
+  AggregatorRunner aggregatorRunner{ aggregatorRunnerConfig, infrastructureSpec };
 
   std::unique_ptr<ConfigParamStore> store;
   ConfigParamRegistry cfReg(std::move(store));
