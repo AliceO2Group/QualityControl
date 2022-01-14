@@ -60,19 +60,22 @@ class ITSTrackTask : public TaskInterface
   TH1D* hNClusters;
   TH1D* hTrackEta;
   TH1D* hTrackPhi;
-  TH1D* hOccupancyROF;
-  TH1D* hClusterUsage;
   TH2D* hAngularDistribution;
   TH2D* hVertexCoordinates;
   TH2D* hVertexRvsZ;
   TH1D* hVertexZ;
   TH1D* hVertexContributors;
+  TH1D* hAssociatedClusterFraction;
+  TH1D* hNtracks;
+  TH2D* hNClustersPerTrackEta;
+
   std::string mRunNumber;
   std::string mRunNumberPath;
 
   float mVertexXYsize;
   float mVertexZsize;
   float mVertexRsize;
+  Int_t mNtracksMAX;
   Int_t mDoTTree;
   Int_t mNTracks = 0;
   Int_t mNRofs = 0;
