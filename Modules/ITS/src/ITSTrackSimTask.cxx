@@ -368,13 +368,13 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
         const auto& mcTrack = (*mcArr)[mc];
 
 
-          
+        info[i][mc].isFilled=false;
+  
         if (mcTrack.Vx() * mcTrack.Vx() + mcTrack.Vy() * mcTrack.Vy() > 1)  continue;  
         if (TMath::Abs(mcTrack.GetPdgCode()) != 211)   continue; // Select pions
         if (TMath::Abs(mcTrack.GetEta()) > 1.2) continue;
         if (info[i][mc].clusters != 0b1111111) continue;
-       
-        
+               
         Double_t distance = sqrt(    pow(mcHeader->GetX()-mcTrack.Vx(),2) +  pow(mcHeader->GetY()-mcTrack.Vy(),2) +  pow(mcHeader->GetZ()-mcTrack.Vz(),2) );   
 
         info[i][mc].isFilled= true; 
@@ -384,7 +384,9 @@ void ITSTrackSimTask::initialize(o2::framework::InitContext& /*ctx*/)
         info[i][mc].phi= mcTrack.GetPhi();
         info[i][mc].z= mcTrack.Vz();
         info[i][mc].isPrimary= mcTrack.isPrimary();
+        
 
+        std::cout<<"den phi " << mcTrack.GetPhi()<< " event= "<<i<<" track= "<<mc<<std::endl;
         hDenTrue_r->Fill(distance);
         hDenTrue_pt->Fill(mcTrack.GetPt());
         hDenTrue_eta->Fill(mcTrack.GetEta());
@@ -430,7 +432,7 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   o2::steer::MCKinematicsReader reader("o2sim", o2::steer::MCKinematicsReader::Mode::kMCKine);
 
-  std::cout<< " @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2222 trackArr: "<<trackArr.size()<<std::endl;
+  std::cout<< " @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@2222 trackArr: "<<trackArr.size()<< " MCTruth: "<<MCTruth.size()   <<std::endl;
   for (int itrack = 0; itrack < trackArr.size(); itrack++) {
       const auto& track = trackArr[itrack];
       const auto& MCinfo = MCTruth[itrack];
@@ -461,6 +463,7 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
            } else {
                hNumRecoValid_pt->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].pt);
                hNumRecoValid_phi->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].phi);
+               std::cout<<"num phi " << info[MCinfo.getEventID()][MCinfo.getTrackID()].phi << " event= "<<MCinfo.getEventID()<<" MCinfo.trackID= "<<MCinfo.getTrackID()<<" SourceID"<<MCinfo.getSourceID()<< " itrack "<< itrack<< " traclPt: "<< track.getPt()<<std::endl;
                hNumRecoValid_eta->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].eta);
                hNumRecoValid_z->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].z);
                hNumRecoValid_r->Fill(info[MCinfo.getEventID()][MCinfo.getTrackID()].r);
@@ -478,6 +481,12 @@ void ITSTrackSimTask::monitorData(o2::framework::ProcessingContext& ctx)
 
   std::cout<<"Divide #2"<<std::endl;
   hFakeTrack_phi->Divide(hNumRecoFake_phi, hDenTrue_phi, 1, 1);
+  std::cout<<"Integral  Num: "<<hNumRecoValid_phi->Integral() << " Den: "<<hDenTrue_phi->Integral()<<std::endl;
+
+  std::cout<<"First num bin 1: " << hNumRecoValid_phi->GetBinContent(1) << " bin 2 "<< hNumRecoValid_phi->GetBinContent(1)<<std::endl;
+ std::cout<<"First den bin 1: " << hDenTrue_phi->GetBinContent(1) << " bin 2 "<< hDenTrue_phi->GetBinContent(1)<<std::endl;
+
+ 
   hEfficiency_phi->Divide(hNumRecoValid_phi, hDenTrue_phi, 1, 1);
 
   std::cout<<"Divide #3"<<std::endl;
