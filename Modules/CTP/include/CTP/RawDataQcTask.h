@@ -11,7 +11,7 @@
 
 ///
 /// \file   RawDataQcTask.h
-/// \author My Name
+/// \author Marek Bombara
 ///
 
 #ifndef QC_MODULE_CTP_CTPRAWDATAQCTASK_H
@@ -46,8 +46,9 @@ class RawDataQcTask final : public TaskInterface
   void reset() override;
 
  private:
-  TH1F* mHistogram = nullptr;
-  TH1F* mHistogram2 = nullptr;
+  TH1F* mHistoBC = nullptr;
+  TH1F* mHistoInputs = nullptr;
+  TH1F* mHistoClasses = nullptr;
 };
 
 } // namespace o2::quality_control_modules::ctp

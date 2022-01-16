@@ -32,8 +32,9 @@ namespace o2::quality_control_modules::ctp
 
 RawDataQcTask::~RawDataQcTask()
 {
-  delete mHistogram;
-  delete mHistogram2;
+  delete mHistoBC;
+  delete mHistoInputs;
+  delete mHistoClasses;
 }
 
 void RawDataQcTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -45,28 +46,33 @@ void RawDataQcTask::initialize(o2::framework::InitContext& /*ctx*/)
     ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
   }
 
-  mHistogram = new TH1F("example", "example", 20, 0, 30000);
-  mHistogram2 = new TH1F("example3", "example3", 20, 0, 20);
-  getObjectsManager()->startPublishing(mHistogram);
-  getObjectsManager()->startPublishing(mHistogram2);
-  getObjectsManager()->startPublishing(new TH1F("example2", "example2", 20, 0, 30000));
+  mHistoBC = new TH1F("histobc", "BC distribution", 3564, 0, 3564);
+  mHistoInputs = new TH1F("inputs", "Inputs distribution", 48, 0, 48);
+  mHistoClasses = new TH1F("classes", "Classes distribution", 64, 0, 64);
+  getObjectsManager()->startPublishing(mHistoBC);
+  getObjectsManager()->startPublishing(mHistoInputs);
+  getObjectsManager()->startPublishing(mHistoClasses);
+  //getObjectsManager()->startPublishing(new TH1F("example2", "example2", 20, 0, 30000));
   try {
-    getObjectsManager()->addMetadata(mHistogram->GetName(), "custom", "34");
-    getObjectsManager()->addMetadata(mHistogram2->GetName(), "custom", "34");
+    getObjectsManager()->addMetadata(mHistoBC->GetName(), "custom", "34");
+    getObjectsManager()->addMetadata(mHistoInputs->GetName(), "custom", "34");
+    getObjectsManager()->addMetadata(mHistoClasses->GetName(), "custom", "34");
   } catch (...) {
     // some methods can throw exceptions, it is indicated in their doxygen.
     // In case it is recoverable, it is recommended to catch them and do something meaningful.
     // Here we don't care that the metadata was not added and just log the event.
-    ILOG(Warning, Support) << "Metadata could not be added to " << mHistogram->GetName() << ENDM;
-    ILOG(Warning, Support) << "Metadata could not be added to " << mHistogram2->GetName() << ENDM;
+    ILOG(Warning, Support) << "Metadata could not be added to " << mHistoBC->GetName() << ENDM;
+    ILOG(Warning, Support) << "Metadata could not be added to " << mHistoInputs->GetName() << ENDM;
+    ILOG(Warning, Support) << "Metadata could not be added to " << mHistoClasses->GetName() << ENDM;
   }
 }
 
 void RawDataQcTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
-  mHistogram->Reset();
-  mHistogram2->Reset();
+  mHistoBC->Reset();
+  mHistoInputs->Reset();
+  mHistoClasses->Reset();
 }
 
 void RawDataQcTask::startOfCycle()
@@ -109,8 +115,8 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     }
 
     //LOG(info) << "trigger orbit = " << triggerOrbit;
-    mHistogram->Fill(triggerOrbit);
-    mHistogram2->Fill(triggerBC);
+    //mHistogram->Fill(triggerOrbit);
+    //mHistogram2->Fill(triggerBC);
 
     uint32_t payloadCTP;
     auto feeID = o2::raw::RDHUtils::getFEEID(rdh); // 0 = IR, 1 = TCR
@@ -185,6 +191,7 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           uint32_t bcid = (diglet & bcidmask).to_ulong();
           LOG(info) << " diglet:" << diglet;
           LOG(info) << " bcid:" << bcid;
+          mHistoBC->Fill(bcid);
 
           o2::ctp::gbtword80_t InputMask = 0;
           if (linkCRU == o2::ctp::GBTLinkIDIntRec)
@@ -193,7 +200,7 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
             LOG(info) << " InputMask:" << InputMask;
             for (Int_t i = 0; i<payloadCTP; i++)
             {
-              if (InputMask[i]!=0) {LOG(info) << " i:" << i;}
+              if (InputMask[i]!=0) {mHistoInputs->Fill(i);}
             }
           }
 
@@ -204,25 +211,14 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
             LOG(info) << " ClassMask:" << ClassMask;
             for (Int_t i = 0; i<payloadCTP; i++)
             {
-              if (ClassMask[i]!=0) {LOG(info) << " i:" << i;}
+              if (ClassMask[i]!=0) {mHistoClasses->Fill(i);}
+              //if (ClassMask[i]!=0) {LOG(info) << " i:" << i;}
             }
           }
 
         }
         // print BC - first 12 bits
-        Int_t gbtWordSize = gbtWord.size();
-        UShort_t bctemp = 0;
-        UInt_t BCid = 0; 
-        for (Int_t j=gbtWordSize-1; j>-1; j--)
-        //for (Int_t j=79; j>-1; j--)
-        {
-          if ((j<=11)&&(j>-1))
-          {
-            bctemp = gbtWord[j];
-            BCid = BCid | (bctemp << j);
-          }
-
-        }
+        
         //UInt_t BCid = gbtWord << 68;
         //BCid = BCid >> 20; 
         //LOG(info) << " BC = " << BCid;
@@ -296,8 +292,9 @@ void RawDataQcTask::reset()
   // clean all the monitor objects here
 
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
-  mHistogram->Reset();
-  mHistogram2->Reset();
+  mHistoBC->Reset();
+  mHistoInputs->Reset();
+  mHistoClasses->Reset();
 }
 
 } // namespace o2::quality_control_modules::ctp
