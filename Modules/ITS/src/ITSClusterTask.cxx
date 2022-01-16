@@ -50,6 +50,7 @@ ITSClusterTask::~ITSClusterTask()
 
     // delete sClustersSize[iLayer];
     delete hClusterSizeLayerSummary[iLayer];
+    delete hClusterTopologyLayerSummary[iLayer];
     delete hGroupedClusterSizeLayerSummary[iLayer];
 
     if (iLayer < 3) {
@@ -155,8 +156,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   int dictSize = mDict.getSize();
 
   int iPattern = 0;
-  std::cout << " Inputs clusArr: " << clusArr.size() << " clusPatternArr " << clusPatternArr.size() << std::endl;
-
+  int ChipIDprev = -1;
 #ifdef WITH_OPENMP
   omp_set_num_threads(mNThreads);
 #pragma omp parallel for schedule(dynamic)
@@ -167,7 +167,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
     const auto& ROF = clusRofArr[iROF];
     const auto bcdata = ROF.getBCData();
-    hClusterVsBunchCrossing->Fill(bcdata.bc, ROF.getNEntries()); // we count only the number of clusters, not their sizes
+    int nClustersForBunchCrossing = 0;
     for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
 
       auto& cluster = clusArr[icl];
@@ -175,19 +175,23 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
       int ClusterID = cluster.getPatternID(); // used for normal (frequent) cluster shapes
       int lay, sta, ssta, mod, chip;
 
-      mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
-      mod = mod + (ssta * (mNHicPerStave[lay] / 2));
+      if (ChipID != ChipIDprev) {
+        mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
+        mod = mod + (ssta * (mNHicPerStave[lay] / 2));
+      }
       int npix = -1;
       int isGrouped = -1;
       if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict.isGroup(ClusterID)) { // Normal (frequent) cluster shapes
         npix = mDict.getNpixels(ClusterID);
         isGrouped = 0;
       } else {
-
         o2::itsmft::ClusterPattern patt(pattIt);
         npix = patt.getNPixels();
         isGrouped = 1;
       }
+
+      if (npix > 2)
+        nClustersForBunchCrossing++;
 
       if (lay < 3) {
 
@@ -202,6 +206,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           hClusterSizeSummaryIB[lay][sta][chip]->Fill(npix);
 
           hClusterSizeLayerSummary[lay]->Fill(npix);
+          hClusterTopologyLayerSummary[lay]->Fill(ClusterID);
 
           hClusterSizeMonitorIB[lay][sta][chip]->Fill(npix);
           if (isGrouped) {
@@ -223,7 +228,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           hClusterTopologySummaryOB[lay][sta]->Fill(ClusterID);
           hClusterSizeSummaryOB[lay][sta]->Fill(npix);
           hClusterSizeLayerSummary[lay]->Fill(npix);
-
+          hClusterTopologyLayerSummary[lay]->Fill(ClusterID);
           if (isGrouped) {
             hGroupedClusterSizeSummaryOB[lay][sta]->Fill(npix);
             hGroupedClusterSizeLayerSummary[lay]->Fill(npix);
@@ -231,6 +236,7 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
         }
       }
     }
+    hClusterVsBunchCrossing->Fill(bcdata.bc, nClustersForBunchCrossing); // we count only the number of clusters, not their sizes
   }
 
   mNRofs += clusRofArr.size();        // USED to calculate occupancy for the whole run
@@ -288,12 +294,6 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   end = std::chrono::high_resolution_clock::now();
   difference = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
   ILOG(Info, Support) << "Time in QC Cluster Task:  " << difference << ENDM;
-
-  std::ofstream outfile;
-
-  outfile.open("aid_cluster_times.txt", std::ios_base::app); // append instead of overwrite
-  outfile << difference << std::endl;
-  outfile.close();
 }
 
 void ITSClusterTask::updateOccMonitorPlots()
@@ -353,6 +353,7 @@ void ITSClusterTask::reset()
     // sClustersSize[iLayer]->Reset();
     hClusterSizeLayerSummary[iLayer]->Reset();
     hGroupedClusterSizeLayerSummary[iLayer]->Reset();
+    hClusterTopologyLayerSummary[iLayer]->Reset();
 
     if (iLayer < 3) {
       hAverageClusterOccupancySummaryIB[iLayer]->Reset();
@@ -389,7 +390,7 @@ void ITSClusterTask::reset()
 void ITSClusterTask::createAllHistos()
 {
 
-  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterSize", "BunchCrossingIDvsClusterSize", 4096, 0, 4095, 100, 0, 100);
+  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterSize", "BunchCrossingIDvsClusterSize", 4096, 0, 4095, 100, 0, 1000);
   hClusterVsBunchCrossing->SetTitle("Bunch Crossing ID vs Cluster Size");
   addObject(hClusterVsBunchCrossing);
   formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters in ROF", 1, 1.10);
@@ -410,6 +411,12 @@ void ITSClusterTask::createAllHistos()
     addObject(hGroupedClusterSizeLayerSummary[iLayer]);
     formatAxes(hGroupedClusterSizeLayerSummary[iLayer], "Grouped Cluster Size (pixels)", "counts", 1, 1.10);
     hGroupedClusterSizeLayerSummary[iLayer]->SetStats(0);
+
+    hClusterTopologyLayerSummary[iLayer] = new TH1D(Form("Layer%d/ClusterTopologySummary", iLayer), Form("Layer%dClusterTopologySummary", iLayer), 300, 0, 300);
+    hClusterTopologyLayerSummary[iLayer]->SetTitle(Form("Cluster topology summary for %d Layer", iLayer));
+    addObject(hClusterTopologyLayerSummary[iLayer]);
+    formatAxes(hClusterTopologyLayerSummary[iLayer], "Cluster Topology (ID)", "counts", 1, 1.10);
+    hClusterTopologyLayerSummary[iLayer]->SetStats(0);
 
     if (iLayer < 3) {
       /*

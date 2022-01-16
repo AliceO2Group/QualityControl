@@ -67,6 +67,7 @@ class ITSClusterTask : public TaskInterface
   TH1D* hGroupedClusterSizeSummaryIB[7][48][9];
 
   TH1D* hClusterSizeLayerSummary[7];
+  TH1D* hClusterTopologyLayerSummary[7];
   TH1D* hGroupedClusterSizeLayerSummary[7];
 
   TH2D* hAverageClusterOccupancySummaryIB[7];
