@@ -91,6 +91,10 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // loop over input
   o2::ctp::gbtword80_t remnant = 0;
   uint32_t size_gbt = 0;
+  uint32_t orbit0 = 0;
+  bool first = true;
+  const o2::ctp::gbtword80_t bcidmask = 0xfff;
+  o2::ctp::gbtword80_t pldmask = 0;
 
   for (auto it = parser.begin(), end = parser.end(); it != end; ++it) {
     // get the header
@@ -99,6 +103,11 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     auto triggerBC = o2::raw::RDHUtils::getTriggerBC(rdh);
     //LOG(info) << "trigger BC = " << triggerBC;
     auto triggerOrbit = o2::raw::RDHUtils::getTriggerOrbit(rdh);
+    if (first) {
+      orbit0 = triggerOrbit;
+      first = false;
+    }
+
     //LOG(info) << "trigger orbit = " << triggerOrbit;
     mHistogram->Fill(triggerOrbit);
     mHistogram2->Fill(triggerBC);
@@ -113,17 +122,24 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     } else {
       LOG(error) << "Unxpected  CTP CRU link:" << linkCRU;
     }
-    LOG(info) << "RDH FEEid: " << feeID << " CTP CRU link:" << linkCRU << " Orbit:" << triggerOrbit << " payloadCTP = " << payloadCTP;
-
+    //LOG(info) << "RDH FEEid: " << feeID << " CTP CRU link:" << linkCRU << " Orbit:" << triggerOrbit << " payloadCTP = " << payloadCTP;
+    pldmask = 0;
+    for (uint32_t i = 0; i < payloadCTP; i++) {
+      pldmask[12 + i] = 1;
+    }
     gsl::span<const uint8_t> payload(it.data(), it.size());
     o2::ctp::gbtword80_t gbtWord = 0;
     int wordCount = 0;
     std::vector<o2::ctp::gbtword80_t> diglets;
 
+    Int_t plc = 0;
     for (auto payloadWord : payload) 
     {
       //LOG(info) << wordCount << " payload:" <<  int(payloadWord);
       //std::cout << wordCount << " payload: 0x" << std::hex << payloadWord << std::endl;
+      //LOG(info) << " payloadword:" << int(payloadWord) << " plcount = " << plc;
+      plc++;
+      //LOG(info) << " payload:" << payload;
       if (wordCount == 15) {
         wordCount = 0;
       } else if (wordCount > 9) {
@@ -133,7 +149,83 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
           gbtWord[wordCount * 8 + i] = bool(int(payloadWord) & (1 << i));
         }
         wordCount++;
-        LOG(info) << " gbtword:" << gbtWord;
+        diglets.clear();
+        //LOG(info) << " gbtword before:" << gbtWord;
+        // === according to makeGBTWordInverse in O2: Detectors/CTP/workflow/src/RawToDigitConverterSpec.cxx ========
+        o2::ctp::gbtword80_t diglet = remnant;
+        //o2::ctp::gbtword80_t diglet = 0;
+        uint32_t k = 0;
+        const uint32_t nGBT = o2::ctp::NGBT;
+        while (k < (nGBT - payloadCTP)) {
+          std::bitset<nGBT> masksize = 0;
+          for (uint32_t j = 0; j < (payloadCTP - size_gbt); j++) {
+            masksize[j] = 1;
+          }
+          diglet |= (gbtWord & masksize) << (size_gbt);
+          diglets.push_back(diglet);
+          diglet = 0;
+          k += payloadCTP - size_gbt;
+          gbtWord = gbtWord >> (payloadCTP - size_gbt);
+          size_gbt = 0;
+        }
+        size_gbt = nGBT - k;
+        remnant = gbtWord;
+        // ==========================================
+        //LOG(info) << " gbtword after:" << gbtWord;
+        for (auto diglet : diglets) {
+          //LOG(info) << " diglet:" << diglet;
+          //LOG(info) << " pldmask:" << pldmask;
+          o2::ctp::gbtword80_t pld = (diglet & pldmask);
+          if (pld.count() == 0) {
+            continue;
+          }
+          LOG(info) << "    pld:" << pld;
+          pld >>= 12;
+          //o2::ctp::CTPDigit digit;
+          uint32_t bcid = (diglet & bcidmask).to_ulong();
+          LOG(info) << " diglet:" << diglet;
+          LOG(info) << " bcid:" << bcid;
+
+          o2::ctp::gbtword80_t InputMask = 0;
+          if (linkCRU == o2::ctp::GBTLinkIDIntRec)
+          {
+            InputMask = pld;
+            LOG(info) << " InputMask:" << InputMask;
+            for (Int_t i = 0; i<payloadCTP; i++)
+            {
+              if (InputMask[i]!=0) {LOG(info) << " i:" << i;}
+            }
+          }
+
+          o2::ctp::gbtword80_t ClassMask = 0;
+          if (linkCRU == o2::ctp::GBTLinkIDClassRec)
+          {
+            ClassMask = pld;
+            LOG(info) << " ClassMask:" << ClassMask;
+            for (Int_t i = 0; i<payloadCTP; i++)
+            {
+              if (ClassMask[i]!=0) {LOG(info) << " i:" << i;}
+            }
+          }
+
+        }
+        // print BC - first 12 bits
+        Int_t gbtWordSize = gbtWord.size();
+        UShort_t bctemp = 0;
+        UInt_t BCid = 0; 
+        for (Int_t j=gbtWordSize-1; j>-1; j--)
+        //for (Int_t j=79; j>-1; j--)
+        {
+          if ((j<=11)&&(j>-1))
+          {
+            bctemp = gbtWord[j];
+            BCid = BCid | (bctemp << j);
+          }
+
+        }
+        //UInt_t BCid = gbtWord << 68;
+        //BCid = BCid >> 20; 
+        //LOG(info) << " BC = " << BCid;
         //makeGBTWordInverse(diglets, gbtWord, remnant, size_gbt, payloadCTP);
         gbtWord = 0;
       } else {
