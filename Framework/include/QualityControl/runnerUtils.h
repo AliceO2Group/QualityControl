@@ -121,10 +121,7 @@ inline std::string computeProvenance(const std::string& fallbackProvenance = "")
 
 inline std::string indentTree(int level)
 {
-  std::string s;
-  for (int i = 0; i < level; i++)
-    s += "  ";
-  return s;
+  return std::string(level * 2, ' ');
 }
 
 inline void printTree(boost::property_tree::ptree& pt, int level = 0)
