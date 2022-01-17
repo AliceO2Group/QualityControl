@@ -45,7 +45,7 @@
           "verbose" : "false",
           "minPtCut" : "0.1f",
           "etaCut" : "1.4f",
-          "minNTPCClustersCut" : "40",
+          "minNTPCClustersCut" : "60",
           "minDCACut" : "100.f",
           "minDCACutY" : "10.f",
           "grpFileName" : "o2sim_grp.root",
