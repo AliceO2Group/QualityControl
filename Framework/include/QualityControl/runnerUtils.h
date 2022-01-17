@@ -24,6 +24,7 @@
 #include <FairMQDevice.h>
 #include <Framework/ConfigParamRegistry.h>
 #include <QualityControl/QcInfoLogger.h>
+#include <boost/property_tree/json_parser.hpp>
 
 namespace o2::quality_control::core
 {
@@ -124,33 +125,12 @@ inline std::string indentTree(int level)
   return std::string(level * 2, ' ');
 }
 
-inline void printTree(boost::property_tree::ptree& pt, int level = 0)
+inline void printTree(const boost::property_tree::ptree& pt, int level = 0)
 {
-  if (pt.empty()) {
-
-    ILOG(Debug, Devel) << "\"" << pt.data() << "\"";
-  } else {
-    if (level) {
-      ILOG(Debug, Devel) << ENDM;
-    }
-
-    ILOG(Debug, Devel) << indentTree(level) << "{" << ENDM;
-
-    for (boost::property_tree::ptree::iterator pos = pt.begin(); pos != pt.end();) {
-      ILOG(Debug, Devel) << indentTree(level + 1) << "\"" << pos->first << "\": ";
-
-      printTree(pos->second, level + 1);
-      ++pos;
-      if (pos != pt.end()) {
-        ILOG(Debug, Devel) << ",";
-      }
-      ILOG(Debug, Devel) << ENDM;
-    }
-
-    ILOG(Debug, Devel) << indentTree(level) << " }";
-  }
-  ILOG(Debug, Devel) << ENDM;
-  return;
+  std::stringstream ss;
+  boost::property_tree::json_parser::write_json(ss, pt);
+  for (std::string line; std::getline(ss, line, '\n');)
+    ILOG(Debug, Trace) << line << ENDM;
 }
 
 } // namespace o2::quality_control::core
