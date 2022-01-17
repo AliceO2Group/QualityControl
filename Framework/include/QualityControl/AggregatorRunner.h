@@ -27,7 +27,6 @@
 #include "QualityControl/Activity.h"
 #include "QualityControl/AggregatorRunnerConfig.h"
 #include "QualityControl/AggregatorConfig.h"
-#include "QualityControl/InfrastructureSpec.h"
 
 namespace o2::framework
 {

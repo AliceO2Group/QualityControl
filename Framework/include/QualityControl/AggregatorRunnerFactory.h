@@ -23,7 +23,6 @@
 #include "QualityControl/CommonSpec.h"
 #include "QualityControl/AggregatorRunnerConfig.h"
 #include "QualityControl/AggregatorConfig.h"
-#include "QualityControl/InfrastructureSpec.h"
 
 #include <vector>
 

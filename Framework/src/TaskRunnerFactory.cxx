@@ -23,11 +23,8 @@
 #include <Framework/CompletionPolicy.h>
 #include <Headers/DataHeader.h>
 #include <Framework/ConfigParamSpec.h>
-#include <Framework/CallbackService.h>
-#include <Framework/CompletionPolicyHelpers.h>
 #include <Framework/TimesliceIndex.h>
 #include <Framework/DataSpecUtils.h>
-#include <Framework/InputRecordWalker.h>
 #include <Framework/InputSpan.h>
 #include <Framework/O2ControlLabels.h>
 #include <Framework/DataProcessorLabel.h>
