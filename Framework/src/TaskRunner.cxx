@@ -81,8 +81,8 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
       auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
       // find the correct taskSpec
       auto taskSpecIter = find_if(infrastructureSpec.tasks.begin(),
-                        infrastructureSpec.tasks.end(),
-                        [this](const TaskSpec& ts) { return ts.taskName == mTaskConfig.taskName; });
+                                  infrastructureSpec.tasks.end(),
+                                  [this](const TaskSpec& ts) { return ts.taskName == mTaskConfig.taskName; });
       if (taskSpecIter != infrastructureSpec.tasks.end()) {
         int resetAfterCycles = TaskRunnerFactory::computeResetAfterCycles(*taskSpecIter);
         mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, *taskSpecIter, mTaskConfig.parallelTaskID, resetAfterCycles);

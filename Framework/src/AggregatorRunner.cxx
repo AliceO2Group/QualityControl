@@ -51,7 +51,7 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs)//, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
+AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs) //, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
   : mDeviceName(createAggregatorRunnerName()),
     mRunnerConfig(std::move(arc)),
     mAggregatorsConfig(std::move(acs)),
