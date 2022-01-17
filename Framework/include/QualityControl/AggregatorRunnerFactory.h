@@ -43,7 +43,7 @@ class AggregatorRunnerFactory
 
   static AggregatorRunnerConfig extractRunnerConfig(const core::CommonSpec&);
   static std::vector<AggregatorConfig> extractAggregatorsConfig(const core::CommonSpec& commonSpec,
-                                                         const std::vector<AggregatorSpec>& aggregatorsSpec);
+                                                                const std::vector<AggregatorSpec>& aggregatorsSpec);
 };
 
 } // namespace o2::quality_control::checker

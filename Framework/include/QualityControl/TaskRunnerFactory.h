@@ -49,7 +49,6 @@ class TaskRunnerFactory
   /// \brief Knows how to create TaskConfig from Specs
   static TaskRunnerConfig extractConfig(const CommonSpec&, const TaskSpec&, std::optional<int> id = std::nullopt, std::optional<int> resetAfterCycles = std::nullopt);
 
-
   static bool computeResetAfterCycles(const TaskSpec& taskSpec);
 
   /// \brief Provides necessary customization of the TaskRunners.
