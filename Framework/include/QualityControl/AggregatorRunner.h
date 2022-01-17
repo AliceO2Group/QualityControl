@@ -94,7 +94,7 @@ class AggregatorRunner : public framework::Task
    * @param arc AggregatorRunner Config
    * @param acs Aggregator configs
    */
-  AggregatorRunner(AggregatorRunnerConfig arc, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec);
+  AggregatorRunner(AggregatorRunnerConfig arc, const core::InfrastructureSpec& infrastructureSpec);
 
   /// Destructor
   ~AggregatorRunner() override;
