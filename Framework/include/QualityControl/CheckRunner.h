@@ -164,10 +164,10 @@ class CheckRunner : public framework::Task
    */
   static o2::framework::Outputs collectOutputs(const std::vector<CheckConfig>& checks);
 
-  inline void initDatabase();
-  inline void initMonitoring();
-  inline void initServiceDiscovery();
-  inline void initInfologger(framework::InitContext& iCtx);
+  void initDatabase();
+  void initMonitoring();
+  void initServiceDiscovery();
+  void initInfologger(framework::InitContext& iCtx);
 
   /**
    * Update the list of objects this TaskRunner is sending out.

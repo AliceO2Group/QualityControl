@@ -137,17 +137,17 @@ class AggregatorRunner : public framework::Task
   void store(core::QualityObjectsType& qualityObjects);
 
   void refreshConfig(framework::InitContext& iCtx);
-  inline void extractConfigs(const o2::quality_control::core::InfrastructureSpec& infrastructureSpec);
+  void extractConfigs(const o2::quality_control::core::InfrastructureSpec& infrastructureSpec);
   /**
    * Prepare the inputs, remove duplicates
    */
   void prepareInputs();
 
-  inline void initInfoLogger(framework::InitContext& iCtx);
-  inline void initDatabase();
-  inline void initMonitoring();
-  inline void initServiceDiscovery();
-  inline void initAggregators();
+  void initInfoLogger(framework::InitContext& iCtx);
+  void initDatabase();
+  void initMonitoring();
+  void initServiceDiscovery();
+  void initAggregators();
 
   /**
    * Reorder the aggregators stored in mAggregators.
