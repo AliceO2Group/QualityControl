@@ -594,7 +594,7 @@ void InfrastructureGenerator::generateCheckRunners(framework::WorkflowSpec& work
   std::vector<framework::OutputSpec> checkRunnerOutputs;
   auto checkRunnerConfig = CheckRunnerFactory::extractConfig(infrastructureSpec.common);
   for (auto& [inputNames, checkConfigs] : checksMap) {
-    //Logging
+    // Logging
     ILOG(Info, Devel) << ">> Inputs (" << inputNames.size() << "): ";
     for (const auto& name : inputNames)
       ILOG(Info, Devel) << name << " ";

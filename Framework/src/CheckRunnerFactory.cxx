@@ -78,7 +78,7 @@ CheckRunnerConfig CheckRunnerFactory::extractConfig(const CommonSpec& commonSpec
 {
   Options options{
     { "runNumber", framework::VariantType::String, { "Run number" } },
-    {"qcConfiguration", VariantType::Dict, emptyDict(), {"Some dictionary configuration"} }
+    { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
 
   return {

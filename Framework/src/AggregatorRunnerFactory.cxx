@@ -35,7 +35,7 @@ namespace o2::quality_control::checker
 DataProcessorSpec AggregatorRunnerFactory::create(const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
 {
   AggregatorRunnerConfig aggConfig = AggregatorRunnerFactory::extractConfig(infrastructureSpec.common);
-  AggregatorRunner aggregator{ aggConfig, infrastructureSpec};
+  AggregatorRunner aggregator{ aggConfig, infrastructureSpec };
 
   DataProcessorSpec newAggregatorRunner{
     aggregator.getDeviceName(),
@@ -65,7 +65,7 @@ AggregatorRunnerConfig AggregatorRunnerFactory::extractConfig(const core::Common
 {
   Options options{
     { "runNumber", framework::VariantType::String, { "Run number" } },
-    {"qcConfiguration", VariantType::Dict, emptyDict(), {"Some dictionary configuration"} }
+    { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
 
   return {

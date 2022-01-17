@@ -75,11 +75,11 @@ void AggregatorRunner::refreshConfig(InitContext& iCtx)
     bool x = iCtx.options().isSet("qcConfiguration");
     auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
 
-    if(updatedTree.empty()) {
+    if (updatedTree.empty()) {
       ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
     } else {
-      if(gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
-        ILOG(Debug,Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
+      if (gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
+        ILOG(Debug, Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
         printTree(updatedTree);
       }
 
@@ -99,7 +99,7 @@ void AggregatorRunner::refreshConfig(InitContext& iCtx)
 
       ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
     }
-  } catch (std::invalid_argument & error) {
+  } catch (std::invalid_argument& error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
     ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
   }
@@ -397,7 +397,6 @@ void AggregatorRunner::start(const ServiceRegistry& services)
   ILOG(Info, Ops) << "Starting run " << mActivity.mId << ":"
                   << "\n   - period: " << mActivity.mPeriodName << "\n   - pass type: " << mActivity.mPassName << "\n   - provenance: " << mActivity.mProvenance << ENDM;
 }
-
 
 void AggregatorRunner::stop()
 {

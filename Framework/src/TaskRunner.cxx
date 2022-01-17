@@ -69,11 +69,11 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
     // get the tree
     auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
 
-    if(updatedTree.empty()) {
+    if (updatedTree.empty()) {
       ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
     } else {
-      if(gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
-        ILOG(Debug,Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
+      if (gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
+        ILOG(Debug, Devel) << "We print the tree we got from the ECS via DPL : " << ENDM;
         printTree(updatedTree);
       }
 
@@ -82,16 +82,15 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
       // find the correct taskSpec
       auto it = find_if(infrastructureSpec.tasks.begin(),
                         infrastructureSpec.tasks.end(),
-                        [this](const TaskSpec& ts) {return ts.taskName == mTaskConfig.taskName;});
+                        [this](const TaskSpec& ts) { return ts.taskName == mTaskConfig.taskName; });
       if (it != infrastructureSpec.tasks.end()) {
-        mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common,  *it, mTaskConfig.parallelTaskID,  it->resetAfterCycles);
+        mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, *it, mTaskConfig.parallelTaskID, it->resetAfterCycles);
         ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
       } else {
-        ILOG(Error, Support) << "Could not find the task " << mTaskConfig.taskName <<
-          " in the templated config provided by ECS, we continue with the original config" << ENDM;
+        ILOG(Error, Support) << "Could not find the task " << mTaskConfig.taskName << " in the templated config provided by ECS, we continue with the original config" << ENDM;
       }
     }
-  } catch (std::invalid_argument & error) {
+  } catch (std::invalid_argument& error) {
     // ignore the error, we just skip the update of the config file. It can be legit, e.g. in command line mode
     ILOG(Warning, Devel) << "Could not get updated config tree in TaskRunner::init() - `qcConfiguration` could not be retrieved" << ENDM;
   }
@@ -115,7 +114,6 @@ void TaskRunner::initInfologger(InitContext& iCtx)
   QcInfoLogger::setDetector(mTaskConfig.detectorName);
 }
 
-
 void TaskRunner::init(InitContext& iCtx)
 {
   initInfologger(iCtx);
@@ -125,7 +123,7 @@ void TaskRunner::init(InitContext& iCtx)
   printTaskConfig();
 
   // registering state machine callbacks
-  try{
+  try {
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Start, [this, &services = iCtx.services()]() { start(services); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Reset, [this]() { reset(); });
     iCtx.services().get<CallbackService>().set(CallbackService::Id::Stop, [this]() { stop(); });

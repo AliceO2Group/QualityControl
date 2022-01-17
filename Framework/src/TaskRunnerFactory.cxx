@@ -32,7 +32,6 @@
 #include <Framework/O2ControlLabels.h>
 #include <Framework/DataProcessorLabel.h>
 
-
 namespace o2::quality_control::core
 {
 
@@ -86,7 +85,7 @@ TaskRunnerConfig TaskRunnerFactory::extractConfig(const CommonSpec& globalConfig
   Options options{
     { "period-timer-cycle", framework::VariantType::Int, static_cast<int>(taskSpec.cycleDurationSeconds * 1000000), { "timer period" } },
     { "runNumber", framework::VariantType::String, { "Run number" } },
-    {"qcConfiguration", VariantType::Dict, emptyDict(), {"Some dictionary configuration"} }
+    { "qcConfiguration", VariantType::Dict, emptyDict(), { "Some dictionary configuration" } }
   };
 
   return {
