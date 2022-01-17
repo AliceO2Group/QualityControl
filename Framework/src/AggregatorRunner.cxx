@@ -71,14 +71,11 @@ AggregatorRunner::~AggregatorRunner()
 
 void AggregatorRunner::refreshConfig(InitContext& iCtx)
 {
-  cout << "refreshConfig" << endl;
-
   try {
     bool x = iCtx.options().isSet("qcConfiguration");
     auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
 
     if(updatedTree.empty()) {
-      cout << "test" << endl;
       ILOG(Warning, Devel) << "Templated config tree is empty, we continue with the original one" << ENDM;
     } else {
       if(gSystem->Getenv("O2_QC_DEBUG_CONFIG_TREE")) { // until we are sure it works, keep a backdoor
