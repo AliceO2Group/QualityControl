@@ -80,11 +80,12 @@ void TaskRunner::refreshConfig(InitContext& iCtx)
       // prepare the information we need
       auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
       // find the correct taskSpec
-      auto it = find_if(infrastructureSpec.tasks.begin(),
+      auto taskSpecIter = find_if(infrastructureSpec.tasks.begin(),
                         infrastructureSpec.tasks.end(),
                         [this](const TaskSpec& ts) { return ts.taskName == mTaskConfig.taskName; });
-      if (it != infrastructureSpec.tasks.end()) {
-        mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, *it, mTaskConfig.parallelTaskID, it->resetAfterCycles);
+      if (taskSpecIter != infrastructureSpec.tasks.end()) {
+        int resetAfterCycles = TaskRunnerFactory::computeResetAfterCycles(*taskSpecIter);
+        mTaskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, *taskSpecIter, mTaskConfig.parallelTaskID, resetAfterCycles);
         ILOG(Debug, Devel) << "Configuration refreshed" << ENDM;
       } else {
         ILOG(Error, Support) << "Could not find the task " << mTaskConfig.taskName << " in the templated config provided by ECS, we continue with the original config" << ENDM;

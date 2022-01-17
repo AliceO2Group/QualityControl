@@ -136,7 +136,7 @@ class AggregatorRunner : public framework::Task
   void store(core::QualityObjectsType& qualityObjects);
 
   void refreshConfig(framework::InitContext& iCtx);
-  void extractConfigs(const o2::quality_control::core::InfrastructureSpec& infrastructureSpec);
+
   /**
    * Prepare the inputs, remove duplicates
    */

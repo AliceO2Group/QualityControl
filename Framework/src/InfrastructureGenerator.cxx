@@ -103,6 +103,8 @@ void InfrastructureGenerator::generateStandaloneInfrastructure(framework::Workfl
   workflow.insert(std::end(workflow), std::begin(qcInfrastructure), std::end(qcInfrastructure));
 }
 
+
+
 WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::property_tree::ptree& configurationTree, std::string targetHost)
 {
   printVersion();
@@ -133,7 +135,6 @@ WorkflowSpec InfrastructureGenerator::generateLocalInfrastructure(const boost::p
         if (machine == targetHost) {
           // If we use delta mergers, then the moving window is implemented by the last Merger layer.
           // The QC Tasks should always send a delta covering one cycle.
-          int resetAfterCycles = taskSpec.mergingMode == "delta" ? 1 : (int)taskSpec.resetAfterCycles;
           auto taskConfig = TaskRunnerFactory::extractConfig(infrastructureSpec.common, taskSpec, id, resetAfterCycles);
           // Generate QC Task Runner
           workflow.emplace_back(TaskRunnerFactory::create(taskConfig));
