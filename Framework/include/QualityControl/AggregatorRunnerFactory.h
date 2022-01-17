@@ -37,10 +37,13 @@ class AggregatorRunnerFactory
   AggregatorRunnerFactory() = default;
   virtual ~AggregatorRunnerFactory() = default;
 
-  static framework::DataProcessorSpec create(const o2::quality_control::core::InfrastructureSpec& infrastructureSpec);
+  static framework::DataProcessorSpec create(const core::CommonSpec& commonSpec,
+                                             const std::vector<checker::AggregatorSpec>& aggregatorsSpec);
   static void customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies);
 
-  static AggregatorRunnerConfig extractConfig(const core::CommonSpec&);
+  static AggregatorRunnerConfig extractRunnerConfig(const core::CommonSpec&);
+  static std::vector<AggregatorConfig> extractAggregatorsConfig(const core::CommonSpec& commonSpec,
+                                                         const std::vector<checker::AggregatorSpec>& aggregatorsSpec);
 };
 
 } // namespace o2::quality_control::checker

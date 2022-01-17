@@ -50,7 +50,7 @@ std::pair<AggregatorRunnerConfig, std::vector<AggregatorConfig>> getAggregatorCo
       aggregatorConfigs.emplace_back(Aggregator::extractConfig(infrastructureSpec.common, aggregatorSpec));
     }
   }
-  auto aggregatorRunnerConfig = AggregatorRunnerFactory::extractConfig(infrastructureSpec.common);
+  auto aggregatorRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(infrastructureSpec.common);
 
   return { aggregatorRunnerConfig, aggregatorConfigs };
 }
@@ -66,9 +66,7 @@ BOOST_AUTO_TEST_CASE(test_aggregator_runner)
 {
   std::string configFilePath = std::string("json://") + getTestDataDirectory() + "testSharedConfig.json";
   auto [aggregatorRunnerConfig, aggregatorConfigs] = getAggregatorConfigs(configFilePath);
-  auto config = ConfigurationFactory::getConfiguration(configFilePath);
-  auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(config->getRecursive());
-  AggregatorRunner aggregatorRunner{ aggregatorRunnerConfig, infrastructureSpec };
+  AggregatorRunner aggregatorRunner{ aggregatorRunnerConfig, aggregatorConfigs };
 
   Options options{
     { "runNumber", VariantType::String, { "Run number" } },

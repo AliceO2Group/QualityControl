@@ -51,14 +51,14 @@ const auto current_diagnostic = boost::current_exception_diagnostic_information;
 namespace o2::quality_control::checker
 {
 
-AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
+AggregatorRunner::AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs)//, const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
   : mDeviceName(createAggregatorRunnerName()),
     mRunnerConfig(std::move(arc)),
+    mAggregatorsConfig(std::move(acs)),
     mTotalNumberObjectsReceived(0),
     mTotalNumberAggregatorExecuted(0),
     mTotalNumberObjectsProduced(0)
 {
-  extractConfigs(infrastructureSpec);
   prepareInputs();
 }
 
@@ -72,7 +72,6 @@ AggregatorRunner::~AggregatorRunner()
 void AggregatorRunner::refreshConfig(InitContext& iCtx)
 {
   try {
-    bool x = iCtx.options().isSet("qcConfiguration");
     auto updatedTree = iCtx.options().get<boost::property_tree::ptree>("qcConfiguration");
 
     if (updatedTree.empty()) {
@@ -87,11 +86,11 @@ void AggregatorRunner::refreshConfig(InitContext& iCtx)
       auto infrastructureSpec = InfrastructureSpecReader::readInfrastructureSpec(updatedTree);
 
       // replace the runner config
-      mRunnerConfig = AggregatorRunnerFactory::extractConfig(infrastructureSpec.common);
+      mRunnerConfig = AggregatorRunnerFactory::extractRunnerConfig(infrastructureSpec.common);
 
       // replace the aggregators configs
-      mAggregatorsConfigs.clear();
-      extractConfigs(infrastructureSpec);
+      mAggregatorsConfig.clear();
+      mAggregatorsConfig = AggregatorRunnerFactory::extractAggregatorsConfig(infrastructureSpec.common, infrastructureSpec.aggregators);
 
       // replace the inputs
       mInputs.clear();
@@ -109,23 +108,13 @@ void AggregatorRunner::prepareInputs()
 {
   std::set<std::string> alreadySeen;
   int i = 0;
-  for (const auto& aggConfig : mAggregatorsConfigs) {
+  for (const auto& aggConfig : mAggregatorsConfig) {
     for (auto input : aggConfig.inputSpecs) {
       if (alreadySeen.count(input.binding) == 0) {
         alreadySeen.insert(input.binding);
         input.binding = "checkerOutput" + to_string(i++);
         mInputs.emplace_back(input);
       }
-    }
-  }
-}
-
-void AggregatorRunner::extractConfigs(const o2::quality_control::core::InfrastructureSpec& infrastructureSpec)
-{
-  for (const auto& aggregatorSpec : infrastructureSpec.aggregators) {
-    if (aggregatorSpec.active) {
-      ILOG(Debug, Devel) << ">> Aggregator name : " << aggregatorSpec.aggregatorName << ENDM;
-      mAggregatorsConfigs.emplace_back(Aggregator::extractConfig(infrastructureSpec.common, aggregatorSpec));
     }
   }
 }
@@ -274,7 +263,7 @@ void AggregatorRunner::initAggregators()
   ILOG(Info, Devel) << "Initialization of the aggregators" << ENDM;
 
   // For every aggregator definition, create an Aggregator
-  for (const auto& aggregatorConfig : mAggregatorsConfigs) {
+  for (const auto& aggregatorConfig : mAggregatorsConfig) {
     ILOG(Info, Devel) << ">> Aggregator name : " << aggregatorConfig.name << ENDM;
     try {
       auto aggregator = make_shared<Aggregator>(aggregatorConfig);

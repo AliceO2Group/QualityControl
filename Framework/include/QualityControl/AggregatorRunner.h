@@ -94,7 +94,7 @@ class AggregatorRunner : public framework::Task
    * @param arc AggregatorRunner Config
    * @param acs Aggregator configs
    */
-  AggregatorRunner(AggregatorRunnerConfig arc, const core::InfrastructureSpec& infrastructureSpec);
+  AggregatorRunner(AggregatorRunnerConfig arc, const std::vector<AggregatorConfig>& acs);
 
   /// Destructor
   ~AggregatorRunner() override;
@@ -182,7 +182,7 @@ class AggregatorRunner : public framework::Task
   std::vector<std::shared_ptr<Aggregator>> mAggregators;
   std::shared_ptr<o2::quality_control::repository::DatabaseInterface> mDatabase;
   AggregatorRunnerConfig mRunnerConfig;
-  std::vector<AggregatorConfig> mAggregatorsConfigs;
+  std::vector<AggregatorConfig> mAggregatorsConfig;
   core::QualityObjectsMapType mQualityObjects; // where we cache the incoming quality objects and the output of the aggregators
   UpdatePolicyManager updatePolicyManager;
 

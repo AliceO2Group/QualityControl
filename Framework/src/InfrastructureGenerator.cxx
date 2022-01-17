@@ -631,7 +631,7 @@ void InfrastructureGenerator::generateAggregator(WorkflowSpec& workflow, const I
     return;
   }
 
-  DataProcessorSpec spec = AggregatorRunnerFactory::create(infrastructureSpec);
+  DataProcessorSpec spec = AggregatorRunnerFactory::create(infrastructureSpec.common, infrastructureSpec.aggregators);
   workflow.emplace_back(spec);
 }
 
