@@ -42,7 +42,7 @@ DataProcessorSpec CheckRunnerFactory::create(CheckRunnerConfig checkRunnerConfig
                                     AlgorithmSpec{},
                                     checkRunnerConfig.options };
   newCheckRunner.labels.emplace_back(o2::framework::ecs::qcReconfigurable);
-  newCheckRunner.labels.emplace_back(CheckRunner::getCheckLabel());
+  newCheckRunner.labels.emplace_back(CheckRunner::getCheckRunnerLabel());
   newCheckRunner.algorithm = adaptFromTask<CheckRunner>(std::move(qcCheckRunner));
   return newCheckRunner;
 }
@@ -65,7 +65,7 @@ DataProcessorSpec CheckRunnerFactory::createSinkDevice(CheckRunnerConfig checkRu
 
 void CheckRunnerFactory::customizeInfrastructure(std::vector<framework::CompletionPolicy>& policies)
 {
-  auto matcher = [label = CheckRunner::getCheckLabel()](framework::DeviceSpec const& device) {
+  auto matcher = [label = CheckRunner::getCheckRunnerLabel()](framework::DeviceSpec const& device) {
     return std::find(device.labels.begin(), device.labels.end(), label) != device.labels.end();
   };
 
