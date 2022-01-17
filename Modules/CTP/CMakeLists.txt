@@ -2,7 +2,7 @@
 
 add_library(O2QcCTP)
 
-target_sources(O2QcCTP PRIVATE src/Example2Check.cxx  src/RawDataQcTask.cxx )
+target_sources(O2QcCTP PRIVATE src/RawDataQcCheck.cxx  src/RawDataQcTask.cxx )
 
 target_include_directories(
   O2QcCTP
@@ -20,7 +20,7 @@ install(TARGETS O2QcCTP
 add_root_dictionary(O2QcCTP
                     HEADERS
 include/CTP/RawDataQcTask.h
-include/CTP/Example2Check.h
+include/CTP/RawDataQcCheck.h
                     LINKDEF include/CTP/LinkDef.h
                     BASENAME O2QcCTP)
 

@@ -10,11 +10,11 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   Example2Check.cxx
-/// \author My Name
+/// \file   RawDataQcCheck.cxx
+/// \author Marek Bombara
 ///
 
-#include "CTP/Example2Check.h"
+#include "CTP/RawDataQcCheck.h"
 #include "QualityControl/MonitorObject.h"
 #include "QualityControl/Quality.h"
 #include "QualityControl/QcInfoLogger.h"
@@ -29,16 +29,16 @@ using namespace o2::quality_control;
 namespace o2::quality_control_modules::ctp
 {
 
-void Example2Check::configure(std::string) {}
+void RawDataQcCheck::configure(std::string) {}
 
-Quality Example2Check::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
+Quality RawDataQcCheck::check(std::map<std::string, std::shared_ptr<MonitorObject>>* moMap)
 {
   Quality result = Quality::Null;
 
   for (auto& [moName, mo] : *moMap) {
 
     (void)moName;
-    if (mo->getName() == "example3") {
+    if (mo->getName() == "histobc") {
       auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
       result = Quality::Good;
@@ -62,11 +62,11 @@ Quality Example2Check::check(std::map<std::string, std::shared_ptr<MonitorObject
   return result;
 }
 
-std::string Example2Check::getAcceptedType() { return "TH1"; }
+std::string RawDataQcCheck::getAcceptedType() { return "TH1"; }
 
-void Example2Check::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
+void RawDataQcCheck::beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult)
 {
-  if (mo->getName() == "example") {
+  if (mo->getName() == "inputs") {
     auto* h = dynamic_cast<TH1F*>(mo->getObject());
 
     if (checkResult == Quality::Good) {

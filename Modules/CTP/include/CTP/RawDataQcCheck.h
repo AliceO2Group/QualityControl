@@ -10,27 +10,27 @@
 // or submit itself to any jurisdiction.
 
 ///
-/// \file   Example2Check.h
+/// \file   RawDataQcCheck.h
 /// \author My Name
 ///
 
-#ifndef QC_MODULE_CTP_CTPEXAMPLE2CHECK_H
-#define QC_MODULE_CTP_CTPEXAMPLE2CHECK_H
+#ifndef QC_MODULE_CTP_CTPRAWDATAQCCHECK_H
+#define QC_MODULE_CTP_CTPRAWDATAQCCHECK_H
 
 #include "QualityControl/CheckInterface.h"
 
 namespace o2::quality_control_modules::ctp
 {
 
-/// \brief  Example QC Check
+/// \brief  RawData QC Check
 /// \author My Name
-class Example2Check : public o2::quality_control::checker::CheckInterface
+class RawDataQcCheck : public o2::quality_control::checker::CheckInterface
 {
  public:
   /// Default constructor
-  Example2Check() = default;
+  RawDataQcCheck() = default;
   /// Destructor
-  ~Example2Check() override = default;
+  ~RawDataQcCheck() override = default;
 
   // Override interface
   void configure(std::string name) override;
@@ -38,9 +38,9 @@ class Example2Check : public o2::quality_control::checker::CheckInterface
   void beautify(std::shared_ptr<MonitorObject> mo, Quality checkResult = Quality::Null) override;
   std::string getAcceptedType() override;
 
-  ClassDefOverride(Example2Check, 1);
+  ClassDefOverride(RawDataQcCheck, 1);
 };
 
 } // namespace o2::quality_control_modules::ctp
 
-#endif // QC_MODULE_CTP_CTPEXAMPLE2CHECK_H
+#endif // QC_MODULE_CTP_CTPRAWDATAQCCHECK_H
