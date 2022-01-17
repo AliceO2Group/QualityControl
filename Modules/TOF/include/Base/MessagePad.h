@@ -56,6 +56,12 @@ struct MessagePad {
     if (auto param = CustomParameters.find("PadHighY"); param != CustomParameters.end()) {
       mPadHighY = ::atof(param->second.c_str());
     }
+    configureEnabledFlag(CustomParameters);
+  }
+
+  template <typename T>
+  void configureEnabledFlag(const T& CustomParameters)
+  {
     if (auto param = CustomParameters.find("EnabledFlag"); param != CustomParameters.end()) {
       mEnabledFlag = ::atoi(param->second.c_str());
     }
@@ -81,14 +87,14 @@ struct MessagePad {
 
   /// Function to add the message pad to the histogram. Returns nullptr if the message pad is disabled
   template <typename T>
-  TPaveText* MakeMessagePad(T* histogram, const Quality& quality)
+  TPaveText* MakeMessagePad(T* histogram, const Quality& quality, Option_t* padOpt = "blNDC")
   {
     if (!mEnabledFlag) {
       mMessages.clear();
       return nullptr;
     }
 
-    mMessagePad = new TPaveText(mPadLowX, mPadLowY, mPadHighX, mPadHighY, "blNDC");
+    mMessagePad = new TPaveText(mPadLowX, mPadLowY, mPadHighX, mPadHighY, padOpt);
     mMessagePad->SetName(Form("%s_msg", histogram->GetName()));
     histogram->GetListOfFunctions()->Add(mMessagePad);
     mMessagePad->SetBorderSize(1);
