@@ -390,10 +390,10 @@ void ITSClusterTask::reset()
 void ITSClusterTask::createAllHistos()
 {
 
-  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterSize", "BunchCrossingIDvsClusterSize", 4096, 0, 4095, 100, 0, 1000);
-  hClusterVsBunchCrossing->SetTitle("Bunch Crossing ID vs Cluster Size");
+  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusters", "BunchCrossingIDvsClusters", 4096, 0, 4095, 100, 0, 1000);
+  hClusterVsBunchCrossing->SetTitle("#clusters vs BC id for clusters with #pix > 2");
   addObject(hClusterVsBunchCrossing);
-  formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters in ROF", 1, 1.10);
+  formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters with #pix > 2 in ROF", 1, 1.10);
   hClusterVsBunchCrossing->SetStats(0);
 
   for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
@@ -401,19 +401,19 @@ void ITSClusterTask::createAllHistos()
       continue;
 
     hClusterSizeLayerSummary[iLayer] = new TH1D(Form("Layer%d/AverageClusterSizeSummary", iLayer), Form("Layer%dAverageClusterSizeSummary", iLayer), 100, 0, 100);
-    hClusterSizeLayerSummary[iLayer]->SetTitle(Form("Cluster size summary for %d Layer", iLayer));
+    hClusterSizeLayerSummary[iLayer]->SetTitle(Form("Cluster size summary for Layer %d", iLayer));
     addObject(hClusterSizeLayerSummary[iLayer]);
     formatAxes(hClusterSizeLayerSummary[iLayer], "Cluster Size (pixels)", "counts", 1, 1.10);
     hClusterSizeLayerSummary[iLayer]->SetStats(0);
 
     hGroupedClusterSizeLayerSummary[iLayer] = new TH1D(Form("Layer%d/AverageGroupedClusterSizeSummary", iLayer), Form("Layer%dAverageGroupedClusterSizeSummary", iLayer), 100, 0, 100);
-    hGroupedClusterSizeLayerSummary[iLayer]->SetTitle(Form("Cluster size summary for %d Layer", iLayer));
+    hGroupedClusterSizeLayerSummary[iLayer]->SetTitle(Form("Cluster size summary for Layer %d", iLayer));
     addObject(hGroupedClusterSizeLayerSummary[iLayer]);
     formatAxes(hGroupedClusterSizeLayerSummary[iLayer], "Grouped Cluster Size (pixels)", "counts", 1, 1.10);
     hGroupedClusterSizeLayerSummary[iLayer]->SetStats(0);
 
     hClusterTopologyLayerSummary[iLayer] = new TH1D(Form("Layer%d/ClusterTopologySummary", iLayer), Form("Layer%dClusterTopologySummary", iLayer), 300, 0, 300);
-    hClusterTopologyLayerSummary[iLayer]->SetTitle(Form("Cluster topology summary for %d Layer", iLayer));
+    hClusterTopologyLayerSummary[iLayer]->SetTitle(Form("Cluster topology summary for Layer %d", iLayer));
     addObject(hClusterTopologyLayerSummary[iLayer]);
     formatAxes(hClusterTopologyLayerSummary[iLayer], "Cluster Topology (ID)", "counts", 1, 1.10);
     hClusterTopologyLayerSummary[iLayer]->SetStats(0);
