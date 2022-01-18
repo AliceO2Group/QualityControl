@@ -138,7 +138,7 @@ class AggregatorRunner : public framework::Task
   void refreshConfig(framework::InitContext& iCtx);
 
   /**
-   * Prepare the inputs, remove duplicates
+   * Prepare the inputs, remove the duplicates
    */
   void prepareInputs();
 
