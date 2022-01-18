@@ -1,0 +1,144 @@
+{
+  "qc": {
+    "config": {
+      "database": {
+        "implementation": "CCDB",
+        "host": "ccdb-test.cern.ch:8080",
+        "username": "not_applicable",
+        "password": "not_applicable",
+        "name": "not_applicable"
+      },
+      "Activity": {
+        "number": "505618",
+        "type": "2",
+        "periodName": "",
+        "passName": "",
+        "provenance": "qc"
+      },
+      "monitoring": {
+        "url": "infologger:///debug?qc"
+      },
+      "consul": {
+        "url": ""
+      },
+      "conditionDB": {
+        "url": "ccdb-test.cern.ch:8080"
+      },
+      "infologger": { "": "Configuration of the Infologger (optional).",
+        "filterDiscardDebug": "false",    "": "Set to 1 to discard debug and trace messages (default: false)",
+        "filterDiscardLevel": "2", "": "Message at this level or above are discarded (default: 21 - Trace)" 
+      }
+    },
+    "tasks": {
+      "RawDataTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::trd::RawData",
+        "moduleName": "QcTRD",
+        "detectorName": "TRD",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"
+        },
+        "taskParameters": {
+          "peakregionstart": "7.0",
+          "peakregionend": "20.0",
+          "pulseheightpeaklower": "1.0",
+          "pulseheightpeakupper": "5.0"
+        },
+        "location": "remote",
+	"saveObjectsToFile":"qcrootobjects.root"
+      },
+      "DigitTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::trd::DigitsTask",
+        "moduleName": "QcTRD",
+        "detectorName": "TRD",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
+        },
+        "taskParameters": {
+          "peakregionstart": "7.0",
+          "peakregionend": "20.0",
+          "pulseheightpeaklower": "1.0",
+          "pulseheightpeakupper": "5.0"
+        },
+        "location": "remote",
+	"saveObjectsToFile":"digitrootobjects.root"
+      },
+      "TrackletsTask": {
+        "active": "true",
+        "className": "o2::quality_control_modules::trd::TrackletsTask",
+        "moduleName": "QcTRD",
+        "detectorName": "TRD",
+        "cycleDurationSeconds": "15",
+        "maxNumberCycles": "-1",
+        "dataSource_comment": "no comment",
+        "dataSource": {
+          "type": "direct",
+          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD"
+        },
+        "taskParameters": {
+          "peakregionstart": "7.0",
+          "peakregionend": "20.0",
+          "pulseheightpeaklower": "1.0",
+          "pulseheightpeakupper": "5.0"
+        },
+        "location": "remote",
+	"saveObjectsToFile":"trackletobjects.root"
+      },
+      "PulseHeight": {
+        "active": "true",
+        "className": "o2::quality_control_modules::trd::PulseHeight",
+        "moduleName": "QcTRD",
+        "detectorName": "TRD",
+        "cycleDurationSeconds": "60",
+        "maxNumberCycles": "-1",
+        "dataSource": {
+          "type": "direct",
+          "query": "digits:TRD/DIGITS;tracklets:TRD/TRACKLETS;triggers:TRD/TRKTRGRD;rawstats:TRD/RAWSTATS"
+        },
+        "taskParameters": {
+          "peakregionstart": "7.0",
+          "peakregionend": "20.0",
+          "pulseheightpeaklower": "1.0",
+          "pulseheightpeakupper": "5.0"
+        },
+        "location": "remote",
+	"saveObjectsToFile":"qcpulseheight.root"
+      }
+    },
+    "checks": {
+      "QcCheck": {
+        "active": "false",
+        "className": "o2::quality_control_modules::trd::RawDataCheck",
+        "moduleName": "QcTRD",
+        "policy": "OnAny",
+        "detectorName": "TRD",
+        "dataSource": [{
+          "type": "Task",
+          "name": "RawDataTask",
+          "MOs": ["trackletsperevent"]
+        }]
+      },
+      "PulseHeightCheck": {
+        "active": "true",
+        "className": "o2::quality_control_modules::trd::PulseHeightCheck",
+        "moduleName": "QcTRD",
+        "policy": "OnAny",
+        "detectorName": "TRD",
+        "dataSource": [{
+          "type": "Task",
+          "name": "RawDataTask",
+          "MOs": ["trackletsperevent"]
+        }]
+      }
+  },
+  "dataSamplingPolicies": [
+  ]
+}
+}

@@ -100,15 +100,15 @@ void TrendingTaskITSTracks::trendValues(repository::DatabaseInterface& qcdb)
   int count = 0;
 
   for (auto& dataSource : mConfig.dataSources) {
-    // std::cout<<"TrendingTaskITSTracks dataSource type "<<dataSource.name<<" "<<dataSource.type<<std::endl;
-    //  todo: make it agnostic to MOs, QOs or other objects. Let the reductor
-    //  cast to whatever it needs.
+    //std::cout<<"TrendingTaskITSTracks dataSource type "<<dataSource.name<<" "<<dataSource.type<<std::endl;
+    // todo: make it agnostic to MOs, QOs or other objects. Let the reductor
+    // cast to whatever it needs.
     if (dataSource.type == "repository") {
       // auto mo = qcdb.retrieveMO(dataSource.path, dataSource.name);
       auto mo = qcdb.retrieveMO(dataSource.path, "");
       if (!count) {
-        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap();                  // full list of metadata as a map
-        mMetaData.runNumber = (entryMetadata["Run"] != "") ? std::stoi(entryMetadata["Run"]) : 0; // get and set run number
+        std::map<std::string, std::string> entryMetadata = mo->getMetadataMap(); //full list of metadata as a map
+        mMetaData.runNumber = std::stoi(entryMetadata["RunNumber"]);             //get and set run number
         ntreeentries = (Int_t)mTrend->GetEntries() + 1;
         runlist.push_back(std::to_string(mMetaData.runNumber));
       }

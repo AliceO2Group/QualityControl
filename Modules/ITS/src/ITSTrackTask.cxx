@@ -48,6 +48,7 @@ ITSTrackTask::~ITSTrackTask()
   delete hAssociatedClusterFraction;
   delete hNtracks;
   delete hNClustersPerTrackEta;
+  delete hClusterVsBunchCrossing;  
 }
 
 void ITSTrackTask::initialize(o2::framework::InitContext& /*ctx*/)
@@ -106,7 +107,7 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     for (int itrack = ROF.getFirstEntry(); itrack < ROF.getFirstEntry() + ROF.getNEntries(); itrack++) {
 
       auto& track = trackArr[itrack];
-      // if(track) ntrackCnt++;
+      //if(track) ntrackCnt++;
       auto out = track.getParamOut();
       Float_t Eta = -log(tan(out.getTheta() / 2.));
       hTrackEta->Fill(Eta);
@@ -131,6 +132,8 @@ void ITSTrackTask::monitorData(o2::framework::ProcessingContext& ctx)
     hAssociatedClusterFraction->Fill(clusterRatio);
     hNtracks->Fill(ntrackCnt);
 
+    const auto bcdata = ROF.getBCData();    
+    hClusterVsBunchCrossing->Fill(bcdata.bc, nClusterCntTrack); // we count only the number of clusters, not their sizes
     if (mDoTTree)
       tClusterMap->Fill();
   }
@@ -185,6 +188,7 @@ void ITSTrackTask::reset()
   hAssociatedClusterFraction->Reset();
   hNtracks->Reset();
   hNClustersPerTrackEta->Reset();
+  hClusterVsBunchCrossing->Reset();
 }
 
 void ITSTrackTask::createAllHistos()
@@ -262,6 +266,12 @@ void ITSTrackTask::createAllHistos()
   addObject(hNClustersPerTrackEta);
   formatAxes(hNClustersPerTrackEta, "#eta", "# of Clusters per Track", 1, 1.10);
   hNClustersPerTrackEta->SetStats(0);
+  
+  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusterSize", "BunchCrossingIDvsClusterSize", 4096, 0, 4095, 100, 0, 100);
+  hClusterVsBunchCrossing->SetTitle("Bunch Crossing ID vs Cluster Size");
+  addObject(hClusterVsBunchCrossing);
+  formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters in ROF", 1, 1.10);
+  hClusterVsBunchCrossing->SetStats(0);
 }
 
 void ITSTrackTask::addObject(TObject* aObject)

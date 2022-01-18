@@ -311,7 +311,7 @@ def run(args, ccdb_url, rules):
     ccdb = Ccdb(ccdb_url)
     paths = ccdb.getObjectsList(getTimestampLastExecution())
     if args.only_path != '':
-        paths = [item for item in paths if item.startswith(args.only_path)]
+        paths = [item for item in paths if item is not None and item.startswith(args.only_path)]
     logging.debug(paths)
     logging.debug(len(paths))
     # For each object call the first matching rule

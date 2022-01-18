@@ -68,7 +68,8 @@ class ITSTrackTask : public TaskInterface
   TH1D* hAssociatedClusterFraction;
   TH1D* hNtracks;
   TH2D* hNClustersPerTrackEta;
-
+  TH2D* hClusterVsBunchCrossing;
+  
   std::string mRunNumber;
   std::string mRunNumberPath;
 
