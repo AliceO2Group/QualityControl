@@ -59,27 +59,36 @@ class ITSClusterTask : public TaskInterface
 
   static constexpr int NLayer = 7;
   static constexpr int NLayerIB = 3;
-
+  TH2D* hClusterVsBunchCrossing;
   std::vector<TObject*> mPublishedObjects;
-  TH1D* hClusterSizeIB[7][48][9];
-  TH1D* hClusterSizeIBmonitor[7][48][9];
-  TH1D* hAverageClusterSummary[7];
+  TH1D* hClusterSizeSummaryIB[7][48][9];
+  TH1D* hClusterSizeMonitorIB[7][48][9];
+  TH1D* hClusterTopologySummaryIB[7][48][9];
+  TH1D* hGroupedClusterSizeSummaryIB[7][48][9];
 
-  TH1D* hClusterTopologyIB[7][48][9];
-  TH2D* hOccupancyIB[7];
-  TH2D* hOccupancyIBmonitor[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
-  TH2D* hAverageClusterIB[7];
-  TH2D* hAverageClusterIBmonitor[7];
+  TH1D* hClusterSizeLayerSummary[7];
+  TH1D* hClusterTopologyLayerSummary[7];
+  TH1D* hGroupedClusterSizeLayerSummary[7];
+
+  TH2D* hAverageClusterOccupancySummaryIB[7];
+  TH2D* hAverageClusterOccupancyMonitorIB[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
+  TH2D* hAverageClusterSizeSummaryIB[7];
+  TH2D* hAverageClusterSizeMonitorIB[7];
 
   Int_t mClusterOccupancyIB[7][48][9];
   Int_t mClusterOccupancyIBmonitor[7][48][9];
-  TH1D* hClusterSizeOB[7][48][14];
-  TH1D* hClusterSizeOBmonitor[7][48][14];
-  TH1D* hClusterTopologyOB[7][48][14];
-  TH2D* hOccupancyOB[7];
-  TH2D* hOccupancyOBmonitor[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
-  TH2D* hAverageClusterOB[7];
-  TH2D* hAverageClusterOBmonitor[7];
+
+  TH1D* hClusterSizeOB[7][48][14];        // used to calculate hAverageClusterSizeSummaryIB
+  TH1D* hClusterSizeMonitorOB[7][48][14]; // used to calculate hAverageClusterSizeMonitorIB
+
+  TH1D* hGroupedClusterSizeSummaryOB[7][48];
+  TH1D* hClusterSizeSummaryOB[7][48];
+  TH1D* hClusterTopologySummaryOB[7][48];
+
+  TH2D* hAverageClusterOccupancySummaryOB[7];
+  TH2D* hAverageClusterOccupancyMonitorOB[7]; // will be used in online data monitoring, showing occupation for the last N ROFs
+  TH2D* hAverageClusterSizeSummaryOB[7];
+  TH2D* hAverageClusterSizeMonitorOB[7];
 
   //  THnSparseD *sClustersSize[7];
   TH2Poly* mGeneralOccupancy;
