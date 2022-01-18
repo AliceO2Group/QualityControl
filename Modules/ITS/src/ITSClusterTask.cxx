@@ -42,43 +42,49 @@ ITSClusterTask::ITSClusterTask() : TaskInterface() {}
 
 ITSClusterTask::~ITSClusterTask()
 {
-
+  delete hClusterVsBunchCrossing;
   for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
 
     if (!mEnableLayers[iLayer])
       continue;
 
     // delete sClustersSize[iLayer];
-    delete hAverageClusterSummary[iLayer];
+    delete hClusterSizeLayerSummary[iLayer];
+    delete hClusterTopologyLayerSummary[iLayer];
+    delete hGroupedClusterSizeLayerSummary[iLayer];
 
     if (iLayer < 3) {
 
-      delete hOccupancyIB[iLayer];
-      delete hOccupancyIBmonitor[iLayer];
-      delete hAverageClusterIB[iLayer];
-      delete hAverageClusterIBmonitor[iLayer];
+      delete hAverageClusterOccupancySummaryIB[iLayer];
+      delete hAverageClusterOccupancyMonitorIB[iLayer];
+      delete hAverageClusterSizeSummaryIB[iLayer];
+      delete hAverageClusterSizeMonitorIB[iLayer];
 
       for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
         for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
 
-          delete hClusterSizeIB[iLayer][iStave][iChip];
-          delete hClusterSizeIBmonitor[iLayer][iStave][iChip];
-          delete hClusterTopologyIB[iLayer][iStave][iChip];
+          delete hClusterSizeSummaryIB[iLayer][iStave][iChip];
+          delete hClusterSizeMonitorIB[iLayer][iStave][iChip];
+          delete hClusterTopologySummaryIB[iLayer][iStave][iChip];
+          delete hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip];
         }
       }
     } else {
 
-      delete hOccupancyOB[iLayer];
-      delete hOccupancyOBmonitor[iLayer];
-      delete hAverageClusterOB[iLayer];
-      delete hAverageClusterOBmonitor[iLayer];
+      delete hAverageClusterOccupancySummaryOB[iLayer];
+      delete hAverageClusterOccupancyMonitorOB[iLayer];
+      delete hAverageClusterSizeSummaryOB[iLayer];
+      delete hAverageClusterSizeMonitorOB[iLayer];
 
       for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
-        for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
 
+        delete hClusterSizeSummaryOB[iLayer][iStave];
+        delete hClusterTopologySummaryOB[iLayer][iStave];
+        delete hGroupedClusterSizeSummaryOB[iLayer][iStave];
+
+        for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
           delete hClusterSizeOB[iLayer][iStave][iHic];
-          delete hClusterSizeOBmonitor[iLayer][iStave][iHic];
-          delete hClusterTopologyOB[iLayer][iStave][iHic];
+          delete hClusterSizeMonitorOB[iLayer][iStave][iHic];
         }
       }
     }
@@ -145,9 +151,12 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   ILOG(Info, Support) << "START DOING QC General" << ENDM;
   auto clusArr = ctx.inputs().get<gsl::span<o2::itsmft::CompClusterExt>>("compclus");
   auto clusRofArr = ctx.inputs().get<gsl::span<o2::itsmft::ROFRecord>>("clustersrof");
-
+  auto clusPatternArr = ctx.inputs().get<gsl::span<unsigned char>>("patterns");
+  auto pattIt = clusPatternArr.begin();
   int dictSize = mDict.getSize();
 
+  int iPattern = 0;
+  int ChipIDprev = -1;
 #ifdef WITH_OPENMP
   omp_set_num_threads(mNThreads);
 #pragma omp parallel for schedule(dynamic)
@@ -155,16 +164,34 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
   // Filling cluster histogram for each ROF by open_mp
 
   for (unsigned int iROF = 0; iROF < clusRofArr.size(); iROF++) {
-    const auto& ROF = clusRofArr[iROF];
-    for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
-      auto& cluster = clusArr[icl];
 
+    const auto& ROF = clusRofArr[iROF];
+    const auto bcdata = ROF.getBCData();
+    int nClustersForBunchCrossing = 0;
+    for (int icl = ROF.getFirstEntry(); icl < ROF.getFirstEntry() + ROF.getNEntries(); icl++) {
+
+      auto& cluster = clusArr[icl];
       auto ChipID = cluster.getSensorID();
-      int ClusterID = cluster.getPatternID();
+      int ClusterID = cluster.getPatternID(); // used for normal (frequent) cluster shapes
       int lay, sta, ssta, mod, chip;
 
-      mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
-      mod = mod + (ssta * (mNHicPerStave[lay] / 2));
+      if (ChipID != ChipIDprev) {
+        mGeom->getChipId(ChipID, lay, sta, ssta, mod, chip);
+        mod = mod + (ssta * (mNHicPerStave[lay] / 2));
+      }
+      int npix = -1;
+      int isGrouped = -1;
+      if (ClusterID != o2::itsmft::CompCluster::InvalidPatternID && !mDict.isGroup(ClusterID)) { // Normal (frequent) cluster shapes
+        npix = mDict.getNpixels(ClusterID);
+        isGrouped = 0;
+      } else {
+        o2::itsmft::ClusterPattern patt(pattIt);
+        npix = patt.getNPixels();
+        isGrouped = 1;
+      }
+
+      if (npix > 2)
+        nClustersForBunchCrossing++;
 
       if (lay < 3) {
 
@@ -175,10 +202,17 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           // Double_t ClusterSizeFill[3] = {1.*sta, 1.*chip,1.* mDict.getNpixels(ClusterID)};
           // sClustersSize[lay]->Fill(ClusterSizeFill, 1.);
 
-          hClusterTopologyIB[lay][sta][chip]->Fill(ClusterID);
-          hClusterSizeIB[lay][sta][chip]->Fill(mDict.getNpixels(ClusterID));
-          hAverageClusterSummary[lay]->Fill(mDict.getNpixels(ClusterID));
-          hClusterSizeIBmonitor[lay][sta][chip]->Fill(mDict.getNpixels(ClusterID));
+          hClusterTopologySummaryIB[lay][sta][chip]->Fill(ClusterID);
+          hClusterSizeSummaryIB[lay][sta][chip]->Fill(npix);
+
+          hClusterSizeLayerSummary[lay]->Fill(npix);
+          hClusterTopologyLayerSummary[lay]->Fill(ClusterID);
+
+          hClusterSizeMonitorIB[lay][sta][chip]->Fill(npix);
+          if (isGrouped) {
+            hGroupedClusterSizeSummaryIB[lay][sta][chip]->Fill(npix);
+            hGroupedClusterSizeLayerSummary[lay]->Fill(npix);
+          }
         }
       } else {
 
@@ -188,13 +222,21 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
           // Double_t ClusterSizeFill[3] = {1.*sta, 1.*mod, 1.*mDict.getNpixels(ClusterID)};
           // sClustersSize[lay]->Fill(ClusterSizeFill, 1.);
 
-          hClusterSizeOB[lay][sta][mod]->Fill(mDict.getNpixels(ClusterID));
-          hClusterTopologyOB[lay][sta][mod]->Fill(ClusterID);
-          hClusterSizeOBmonitor[lay][sta][mod]->Fill(mDict.getNpixels(ClusterID));
-          hAverageClusterSummary[lay]->Fill(mDict.getNpixels(ClusterID));
+          hClusterSizeOB[lay][sta][mod]->Fill(npix);
+          hClusterSizeMonitorOB[lay][sta][mod]->Fill(npix);
+
+          hClusterTopologySummaryOB[lay][sta]->Fill(ClusterID);
+          hClusterSizeSummaryOB[lay][sta]->Fill(npix);
+          hClusterSizeLayerSummary[lay]->Fill(npix);
+          hClusterTopologyLayerSummary[lay]->Fill(ClusterID);
+          if (isGrouped) {
+            hGroupedClusterSizeSummaryOB[lay][sta]->Fill(npix);
+            hGroupedClusterSizeLayerSummary[lay]->Fill(npix);
+          }
         }
       }
     }
+    hClusterVsBunchCrossing->Fill(bcdata.bc, nClustersForBunchCrossing); // we count only the number of clusters, not their sizes
   }
 
   mNRofs += clusRofArr.size();        // USED to calculate occupancy for the whole run
@@ -210,15 +252,15 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         if (iLayer < 3) {
           for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
-            hOccupancyIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIB[iLayer][iStave][iChip] / mNRofs);
-            hAverageClusterIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, hClusterSizeIB[iLayer][iStave][iChip]->GetMean());
+            hAverageClusterOccupancySummaryIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIB[iLayer][iStave][iChip] / mNRofs);
+            hAverageClusterSizeSummaryIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, hClusterSizeSummaryIB[iLayer][iStave][iChip]->GetMean());
           }
           mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyIB[iLayer][iStave], mClusterOccupancyIB[iLayer][iStave] + mNChipsPerHic[iLayer])) / mNRofs);
         } else {
 
           for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
-            hOccupancyOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, 1. * mClusterOccupancyOB[iLayer][iStave][iHic] / mNRofs / 14); // 14 To have occupation per chip and HIC has 14 chips
-            hAverageClusterOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, hClusterSizeOB[iLayer][iStave][iHic]->GetMean());
+            hAverageClusterOccupancySummaryOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, 1. * mClusterOccupancyOB[iLayer][iStave][iHic] / mNRofs / 14); // 14 To have occupation per chip and HIC has 14 chips
+            hAverageClusterSizeSummaryOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, hClusterSizeOB[iLayer][iStave][iHic]->GetMean());
           }
 
           mGeneralOccupancy->SetBinContent(iStave + 1 + StaveBoundary[iLayer], *(std::max_element(mClusterOccupancyOB[iLayer][iStave], mClusterOccupancyOBmonitor[iLayer][iStave] + mNHicPerStave[iLayer])) / mNRofs / 14);
@@ -240,11 +282,11 @@ void ITSClusterTask::monitorData(o2::framework::ProcessingContext& ctx)
 
         if (iLayer < 3)
           for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++)
-            hClusterSizeIBmonitor[iLayer][iStave][iChip]->Reset();
+            hClusterSizeMonitorIB[iLayer][iStave][iChip]->Reset();
 
         else
           for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++)
-            hClusterSizeOBmonitor[iLayer][iStave][iHic]->Reset();
+            hClusterSizeMonitorOB[iLayer][iStave][iHic]->Reset();
       }
     }
   }
@@ -266,14 +308,14 @@ void ITSClusterTask::updateOccMonitorPlots()
       if (iLayer < 3) {
 
         for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
-          hOccupancyIBmonitor[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIBmonitor[iLayer][iStave][iChip] / mNRofsMonitor);
-          hAverageClusterIBmonitor[iLayer]->SetBinContent(iChip + 1, iStave + 1, hClusterSizeIBmonitor[iLayer][iStave][iChip]->GetMean());
+          hAverageClusterOccupancyMonitorIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, 1. * mClusterOccupancyIBmonitor[iLayer][iStave][iChip] / mNRofsMonitor);
+          hAverageClusterSizeMonitorIB[iLayer]->SetBinContent(iChip + 1, iStave + 1, hClusterSizeMonitorIB[iLayer][iStave][iChip]->GetMean());
         }
       } else {
 
         for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
-          hOccupancyOBmonitor[iLayer]->SetBinContent(iHic + 1, iStave + 1, 1. * mClusterOccupancyOBmonitor[iLayer][iStave][iHic] / mNRofsMonitor / 14); // 14 To have occupation per chip and HIC has 14 chips
-          hAverageClusterOBmonitor[iLayer]->SetBinContent(iHic + 1, iStave + 1, hClusterSizeOBmonitor[iLayer][iStave][iHic]->GetMean());
+          hAverageClusterOccupancyMonitorOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, 1. * mClusterOccupancyOBmonitor[iLayer][iStave][iHic] / mNRofsMonitor / 14); // 14 To have occupation per chip and HIC has 14 chips
+          hAverageClusterSizeMonitorOB[iLayer]->SetBinContent(iHic + 1, iStave + 1, hClusterSizeMonitorOB[iLayer][iStave][iHic]->GetMean());
         }
       }
   }
@@ -303,35 +345,42 @@ void ITSClusterTask::endOfActivity(Activity& /*activity*/)
 void ITSClusterTask::reset()
 {
   ILOG(Info, Support) << "Resetting the histogram" << ENDM;
+  hClusterVsBunchCrossing->Reset();
 
   for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mEnableLayers[iLayer])
       continue;
     // sClustersSize[iLayer]->Reset();
-    hAverageClusterSummary[iLayer]->Reset();
+    hClusterSizeLayerSummary[iLayer]->Reset();
+    hGroupedClusterSizeLayerSummary[iLayer]->Reset();
+    hClusterTopologyLayerSummary[iLayer]->Reset();
 
     if (iLayer < 3) {
-      hOccupancyIB[iLayer]->Reset();
-      hOccupancyIBmonitor[iLayer]->Reset();
-      hAverageClusterIB[iLayer]->Reset();
-      hAverageClusterIBmonitor[iLayer]->Reset();
+      hAverageClusterOccupancySummaryIB[iLayer]->Reset();
+      hAverageClusterOccupancyMonitorIB[iLayer]->Reset();
+      hAverageClusterSizeSummaryIB[iLayer]->Reset();
+      hAverageClusterSizeMonitorIB[iLayer]->Reset();
       // hAverageClusterIBsummary[iLayer]->Reset();
       for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
         for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
-          hClusterSizeIB[iLayer][iStave][iChip]->Reset();
-          hClusterTopologyIB[iLayer][iStave][iChip]->Reset();
+          hClusterSizeSummaryIB[iLayer][iStave][iChip]->Reset();
+          hClusterTopologySummaryIB[iLayer][iStave][iChip]->Reset();
+          hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]->Reset();
         }
       }
     } else {
-      hOccupancyOB[iLayer]->Reset();
-      hAverageClusterOB[iLayer]->Reset();
-      hOccupancyOBmonitor[iLayer]->Reset();
-      hAverageClusterOBmonitor[iLayer]->Reset();
+      hAverageClusterOccupancySummaryOB[iLayer]->Reset();
+      hAverageClusterSizeSummaryOB[iLayer]->Reset();
+      hAverageClusterOccupancyMonitorOB[iLayer]->Reset();
+      hAverageClusterSizeMonitorOB[iLayer]->Reset();
       // hAverageClusterOBsummary[iLayer]->Reset();
       for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
+
+        hClusterTopologySummaryOB[iLayer][iStave]->Reset();
+        hGroupedClusterSizeSummaryOB[iLayer][iStave]->Reset();
+
         for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
           hClusterSizeOB[iLayer][iStave][iHic]->Reset();
-          hClusterTopologyOB[iLayer][iStave][iHic]->Reset();
         }
       }
     }
@@ -341,15 +390,33 @@ void ITSClusterTask::reset()
 void ITSClusterTask::createAllHistos()
 {
 
+  hClusterVsBunchCrossing = new TH2D("BunchCrossingIDvsClusters", "BunchCrossingIDvsClusters", 4096, 0, 4095, 100, 0, 1000);
+  hClusterVsBunchCrossing->SetTitle("#clusters vs BC id for clusters with #pix > 2");
+  addObject(hClusterVsBunchCrossing);
+  formatAxes(hClusterVsBunchCrossing, "Bunch Crossing ID", "Number of clusters with #pix > 2 in ROF", 1, 1.10);
+  hClusterVsBunchCrossing->SetStats(0);
+
   for (Int_t iLayer = 0; iLayer < NLayer; iLayer++) {
     if (!mEnableLayers[iLayer])
       continue;
 
-    hAverageClusterSummary[iLayer] = new TH1D(Form("Layer%d/AverageClusterSizeSummary", iLayer), Form("Layer%dAverageClusterSizeSummary", iLayer), 50, 0, 50);
-    hAverageClusterSummary[iLayer]->SetTitle(Form("Summary of average Cluster on one Layer %d", iLayer));
-    addObject(hAverageClusterSummary[iLayer]);
-    formatAxes(hAverageClusterSummary[iLayer], "Cluster Size (pixels)", "counts", 1, 1.10);
-    hAverageClusterSummary[iLayer]->SetStats(0);
+    hClusterSizeLayerSummary[iLayer] = new TH1D(Form("Layer%d/AverageClusterSizeSummary", iLayer), Form("Layer%dAverageClusterSizeSummary", iLayer), 100, 0, 100);
+    hClusterSizeLayerSummary[iLayer]->SetTitle(Form("Cluster size summary for Layer %d", iLayer));
+    addObject(hClusterSizeLayerSummary[iLayer]);
+    formatAxes(hClusterSizeLayerSummary[iLayer], "Cluster Size (pixels)", "counts", 1, 1.10);
+    hClusterSizeLayerSummary[iLayer]->SetStats(0);
+
+    hGroupedClusterSizeLayerSummary[iLayer] = new TH1D(Form("Layer%d/AverageGroupedClusterSizeSummary", iLayer), Form("Layer%dAverageGroupedClusterSizeSummary", iLayer), 100, 0, 100);
+    hGroupedClusterSizeLayerSummary[iLayer]->SetTitle(Form("Cluster size summary for Layer %d", iLayer));
+    addObject(hGroupedClusterSizeLayerSummary[iLayer]);
+    formatAxes(hGroupedClusterSizeLayerSummary[iLayer], "Grouped Cluster Size (pixels)", "counts", 1, 1.10);
+    hGroupedClusterSizeLayerSummary[iLayer]->SetStats(0);
+
+    hClusterTopologyLayerSummary[iLayer] = new TH1D(Form("Layer%d/ClusterTopologySummary", iLayer), Form("Layer%dClusterTopologySummary", iLayer), 300, 0, 300);
+    hClusterTopologyLayerSummary[iLayer]->SetTitle(Form("Cluster topology summary for Layer %d", iLayer));
+    addObject(hClusterTopologyLayerSummary[iLayer]);
+    formatAxes(hClusterTopologyLayerSummary[iLayer], "Cluster Topology (ID)", "counts", 1, 1.10);
+    hClusterTopologyLayerSummary[iLayer]->SetStats(0);
 
     if (iLayer < 3) {
       /*
@@ -360,48 +427,52 @@ void ITSClusterTask::createAllHistos()
      addObject(sClustersSize[iLayer]);
 */
 
-      hOccupancyIB[iLayer] = new TH2D(Form("Layer%d/ClusterOccupation", iLayer), Form("Layer%dClusterOccupancy", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
-      hOccupancyIB[iLayer]->SetTitle(Form("Cluster Occupancy on Layer %d", iLayer));
-      addObject(hOccupancyIB[iLayer]);
-      formatAxes(hOccupancyIB[iLayer], "Chip Number", "Stave Number", 1, 1.10);
-      hOccupancyIB[iLayer]->SetStats(0);
-      hOccupancyIB[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterOccupancySummaryIB[iLayer] = new TH2D(Form("Layer%d/ClusterOccupation", iLayer), Form("Layer%dClusterOccupancy", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
+      hAverageClusterOccupancySummaryIB[iLayer]->SetTitle(Form("Cluster Occupancy on Layer %d", iLayer));
+      addObject(hAverageClusterOccupancySummaryIB[iLayer]);
+      formatAxes(hAverageClusterOccupancySummaryIB[iLayer], "Chip Number", "Stave Number", 1, 1.10);
+      hAverageClusterOccupancySummaryIB[iLayer]->SetStats(0);
+      hAverageClusterOccupancySummaryIB[iLayer]->SetBit(TH1::kIsAverage);
 
-      hOccupancyIBmonitor[iLayer] = new TH2D(Form("Layer%d/ClusterOccupationForLastNROFS", iLayer), Form("Layer%dClusterOccupancyForLastNROFS", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
-      hOccupancyIBmonitor[iLayer]->SetTitle(Form("Cluster Occupancy for the last NROFs on Layer %d", iLayer));
-      addObject(hOccupancyIBmonitor[iLayer]);
-      formatAxes(hOccupancyIBmonitor[iLayer], "Chip Number", "Stave Number", 1, 1.10);
-      hOccupancyIBmonitor[iLayer]->SetStats(0);
-      hOccupancyIBmonitor[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterOccupancyMonitorIB[iLayer] = new TH2D(Form("Layer%d/ClusterOccupationForLastNROFS", iLayer), Form("Layer%dClusterOccupancyForLastNROFS", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
+      hAverageClusterOccupancyMonitorIB[iLayer]->SetTitle(Form("Cluster Occupancy for the last NROFs on Layer %d", iLayer));
+      addObject(hAverageClusterOccupancyMonitorIB[iLayer]);
+      formatAxes(hAverageClusterOccupancyMonitorIB[iLayer], "Chip Number", "Stave Number", 1, 1.10);
+      hAverageClusterOccupancyMonitorIB[iLayer]->SetStats(0);
+      hAverageClusterOccupancyMonitorIB[iLayer]->SetBit(TH1::kIsAverage);
 
-      hAverageClusterIB[iLayer] = new TH2D(Form("Layer%d/AverageClusterSize", iLayer), Form("Layer%dAverageClusterSize", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
+      hAverageClusterSizeSummaryIB[iLayer] = new TH2D(Form("Layer%d/AverageClusterSize", iLayer), Form("Layer%dAverageClusterSize", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
+      hAverageClusterSizeSummaryIB[iLayer]->SetTitle(Form("Average Cluster Size  on Layer %d", iLayer));
+      addObject(hAverageClusterSizeSummaryIB[iLayer]);
+      formatAxes(hAverageClusterSizeSummaryIB[iLayer], "Chip Number", "Stave Number", 1, 1.10);
+      hAverageClusterSizeSummaryIB[iLayer]->SetStats(0);
+      hAverageClusterSizeSummaryIB[iLayer]->SetBit(TH1::kIsAverage);
 
-      hAverageClusterIB[iLayer]->SetTitle(Form("Average Cluster Size  on Layer %d", iLayer));
-      addObject(hAverageClusterIB[iLayer]);
-      formatAxes(hAverageClusterIB[iLayer], "Chip Number", "Stave Number", 1, 1.10);
-      hAverageClusterIB[iLayer]->SetStats(0);
-      hAverageClusterIB[iLayer]->SetBit(TH1::kIsAverage);
-
-      hAverageClusterIBmonitor[iLayer] = new TH2D(Form("Layer%d/AverageClusterSizeForLastNROFS", iLayer), Form("Layer%dAverageClusterSizeForLastNROFS", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
-      hAverageClusterIBmonitor[iLayer]->SetTitle(Form("Average Cluster Size for the last NROFs on Layer %d", iLayer));
-      addObject(hAverageClusterIBmonitor[iLayer]);
-      formatAxes(hAverageClusterIBmonitor[iLayer], "Chip Number", "Stave Number", 1, 1.10);
-      hAverageClusterIBmonitor[iLayer]->SetStats(0);
-      hAverageClusterIBmonitor[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterSizeMonitorIB[iLayer] = new TH2D(Form("Layer%d/AverageClusterSizeForLastNROFS", iLayer), Form("Layer%dAverageClusterSizeForLastNROFS", iLayer), mNChipsPerHic[iLayer], 0, mNChipsPerHic[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
+      hAverageClusterSizeMonitorIB[iLayer]->SetTitle(Form("Average Cluster Size for the last NROFs on Layer %d", iLayer));
+      addObject(hAverageClusterSizeMonitorIB[iLayer]);
+      formatAxes(hAverageClusterSizeMonitorIB[iLayer], "Chip Number", "Stave Number", 1, 1.10);
+      hAverageClusterSizeMonitorIB[iLayer]->SetStats(0);
+      hAverageClusterSizeMonitorIB[iLayer]->SetBit(TH1::kIsAverage);
 
       for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
         for (Int_t iChip = 0; iChip < mNChipsPerHic[iLayer]; iChip++) {
-          hClusterSizeIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterSize", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterSize", iLayer, iStave, iChip), 50, 0, 50);
-          hClusterSizeIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Size on Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
-          addObject(hClusterSizeIB[iLayer][iStave][iChip]);
-          formatAxes(hClusterSizeIB[iLayer][iStave][iChip], "Cluster size (Pixel)", "Counts", 1, 1.10);
+          hClusterSizeSummaryIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterSize", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterSize", iLayer, iStave, iChip), 100, 0, 100);
+          hClusterSizeSummaryIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Size on Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
+          addObject(hClusterSizeSummaryIB[iLayer][iStave][iChip]);
+          formatAxes(hClusterSizeSummaryIB[iLayer][iStave][iChip], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
-          hClusterSizeIBmonitor[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterSizeMonitor", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterSizeMonitor", iLayer, iStave, iChip), 50, 0, 50);
+          hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterSizeGrouped", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterSizeGroped", iLayer, iStave, iChip), 100, 0, 100);
+          hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Size for grouped topologies on Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
+          addObject(hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip]);
+          formatAxes(hGroupedClusterSizeSummaryIB[iLayer][iStave][iChip], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
-          hClusterTopologyIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterTopology", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterTopology", iLayer, iStave, iChip), 300, 0, 300);
-          hClusterTopologyIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Toplogy on Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
-          addObject(hClusterTopologyIB[iLayer][iStave][iChip]);
-          formatAxes(hClusterTopologyIB[iLayer][iStave][iChip], "Cluster toplogy (ID)", "Counts", 1, 1.10);
+          hClusterSizeMonitorIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterSizeMonitor", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterSizeMonitor", iLayer, iStave, iChip), 100, 0, 100);
+
+          hClusterTopologySummaryIB[iLayer][iStave][iChip] = new TH1D(Form("Layer%d/Stave%d/CHIP%d/ClusterTopology", iLayer, iStave, iChip), Form("Layer%dStave%dCHIP%dClusterTopology", iLayer, iStave, iChip), 300, 0, 300);
+          hClusterTopologySummaryIB[iLayer][iStave][iChip]->SetTitle(Form("Cluster Topology on Layer %d Stave %d Chip %d", iLayer, iStave, iChip));
+          addObject(hClusterTopologySummaryIB[iLayer][iStave][iChip]);
+          formatAxes(hClusterTopologySummaryIB[iLayer][iStave][iChip], "Cluster topology (ID)", "Counts", 1, 1.10);
         }
       }
     } else {
@@ -413,47 +484,54 @@ void ITSClusterTask::createAllHistos()
      addObject(sClustersSize[iLayer]);
 */
 
-      hOccupancyOB[iLayer] = new TH2D(Form("Layer%d/ClusterOccupation", iLayer), Form("Layer%dClusterOccupancy", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
-      hOccupancyOB[iLayer]->SetTitle(Form("Cluster Occupancy on Layer %d", iLayer));
-      addObject(hOccupancyOB[iLayer]);
-      formatAxes(hOccupancyOB[iLayer], "HIC Number", "Stave Number", 1, 1.10);
-      hOccupancyOB[iLayer]->SetStats(0);
-      hOccupancyOB[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterOccupancySummaryOB[iLayer] = new TH2D(Form("Layer%d/ClusterOccupation", iLayer), Form("Layer%dClusterOccupancy", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
+      hAverageClusterOccupancySummaryOB[iLayer]->SetTitle(Form("Cluster Occupancy on Layer %d", iLayer));
+      addObject(hAverageClusterOccupancySummaryOB[iLayer]);
+      formatAxes(hAverageClusterOccupancySummaryOB[iLayer], "HIC Number", "Stave Number", 1, 1.10);
+      hAverageClusterOccupancySummaryOB[iLayer]->SetStats(0);
+      hAverageClusterOccupancySummaryOB[iLayer]->SetBit(TH1::kIsAverage);
 
-      hOccupancyOBmonitor[iLayer] = new TH2D(Form("Layer%d/ClusterOccupationForLastNROFS", iLayer), Form("Layer%dClusterOccupancyForLastNROFS", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
-      hOccupancyOBmonitor[iLayer]->SetTitle(Form("Cluster Occupancy in last NROFS on Layer %d", iLayer));
-      addObject(hOccupancyOBmonitor[iLayer]);
-      formatAxes(hOccupancyOBmonitor[iLayer], "HIC Number", "Stave Number", 1, 1.10);
-      hOccupancyOBmonitor[iLayer]->SetStats(0);
-      hOccupancyOBmonitor[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterOccupancyMonitorOB[iLayer] = new TH2D(Form("Layer%d/ClusterOccupationForLastNROFS", iLayer), Form("Layer%dClusterOccupancyForLastNROFS", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
+      hAverageClusterOccupancyMonitorOB[iLayer]->SetTitle(Form("Cluster Occupancy in last NROFS on Layer %d", iLayer));
+      addObject(hAverageClusterOccupancyMonitorOB[iLayer]);
+      formatAxes(hAverageClusterOccupancyMonitorOB[iLayer], "HIC Number", "Stave Number", 1, 1.10);
+      hAverageClusterOccupancyMonitorOB[iLayer]->SetStats(0);
+      hAverageClusterOccupancyMonitorOB[iLayer]->SetBit(TH1::kIsAverage);
 
-      hAverageClusterOB[iLayer] = new TH2D(Form("Layer%d/AverageClusterSize", iLayer), Form("Layer%dAverageClusterSize", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
-      hAverageClusterOB[iLayer]->SetTitle(Form("Average Cluster Size  on Layer %d", iLayer));
-      addObject(hAverageClusterOB[iLayer]);
-      formatAxes(hAverageClusterOB[iLayer], "HIC Number", "Stave Number", 1, 1.10);
-      hAverageClusterOB[iLayer]->SetStats(0);
-      hAverageClusterOB[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterSizeSummaryOB[iLayer] = new TH2D(Form("Layer%d/AverageClusterSize", iLayer), Form("Layer%dAverageClusterSize", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
+      hAverageClusterSizeSummaryOB[iLayer]->SetTitle(Form("Average Cluster Size  on Layer %d", iLayer));
+      addObject(hAverageClusterSizeSummaryOB[iLayer]);
+      formatAxes(hAverageClusterSizeSummaryOB[iLayer], "HIC Number", "Stave Number", 1, 1.10);
+      hAverageClusterSizeSummaryOB[iLayer]->SetStats(0);
+      hAverageClusterSizeSummaryOB[iLayer]->SetBit(TH1::kIsAverage);
 
-      hAverageClusterOBmonitor[iLayer] = new TH2D(Form("Layer%d/AverageClusterSizeForLastNROFS", iLayer), Form("Layer%dAverageClusterSizeForLastNROFS", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
-      hAverageClusterOBmonitor[iLayer]->SetTitle(Form("Average Cluster Size for the last NROFs on Layer %d", iLayer));
-      addObject(hAverageClusterOBmonitor[iLayer]);
-      formatAxes(hAverageClusterOBmonitor[iLayer], "HIC Number", "Stave Number", 1, 1.10);
-      hAverageClusterOBmonitor[iLayer]->SetStats(0);
-      hAverageClusterOBmonitor[iLayer]->SetBit(TH1::kIsAverage);
+      hAverageClusterSizeMonitorOB[iLayer] = new TH2D(Form("Layer%d/AverageClusterSizeForLastNROFS", iLayer), Form("Layer%dAverageClusterSizeForLastNROFS", iLayer), mNHicPerStave[iLayer], 0, mNHicPerStave[iLayer], mNStaves[iLayer], 0, mNStaves[iLayer]);
+      hAverageClusterSizeMonitorOB[iLayer]->SetTitle(Form("Average Cluster Size for the last NROFs on Layer %d", iLayer));
+      addObject(hAverageClusterSizeMonitorOB[iLayer]);
+      formatAxes(hAverageClusterSizeMonitorOB[iLayer], "HIC Number", "Stave Number", 1, 1.10);
+      hAverageClusterSizeMonitorOB[iLayer]->SetStats(0);
+      hAverageClusterSizeMonitorOB[iLayer]->SetBit(TH1::kIsAverage);
 
       for (Int_t iStave = 0; iStave < mNStaves[iLayer]; iStave++) {
-        for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) {
-          hClusterSizeOB[iLayer][iStave][iHic] = new TH1D(Form("Layer%d/Stave%d/HIC%d/ClusterSize", iLayer, iStave, iHic), Form("Layer%dStave%dHIC%dClusterSize", iLayer, iStave, iHic), 50, 0, 50);
-          hClusterSizeOB[iLayer][iStave][iHic]->SetTitle(Form("Cluster Size on Layer %d Stave %d HIC %d", iLayer, iStave, iHic));
-          addObject(hClusterSizeOB[iLayer][iStave][iHic]);
-          formatAxes(hClusterSizeOB[iLayer][iStave][iHic], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
-          hClusterSizeOBmonitor[iLayer][iStave][iHic] = new TH1D(Form("Layer%d/Stave%d/HIC%d/ClusterSizeMonitor", iLayer, iStave, iHic), Form("Layer%dStave%dHIC%dClusterSizeMonitor", iLayer, iStave, iHic), 50, 0, 50);
+        hClusterSizeSummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/ClusterSize", iLayer, iStave), Form("Layer%dStave%dClusterSize", iLayer, iStave), 100, 0, 100);
+        hClusterSizeSummaryOB[iLayer][iStave]->SetTitle(Form("Cluster Size summary for Layer %d Stave %d", iLayer, iStave));
+        addObject(hClusterSizeSummaryOB[iLayer][iStave]);
+        formatAxes(hClusterSizeSummaryOB[iLayer][iStave], "Cluster size (Pixel)", "Counts", 1, 1.10);
 
-          hClusterTopologyOB[iLayer][iStave][iHic] = new TH1D(Form("Layer%d/Stave%d/HIC%d/ClusterTopology", iLayer, iStave, iHic), Form("Layer%dStave%dHIC%dClusterTopology", iLayer, iStave, iHic), 300, 0, 300);
-          hClusterTopologyOB[iLayer][iStave][iHic]->SetTitle(Form("Cluster Toplogy on Layer %d Stave %d HIC %d", iLayer, iStave, iHic));
-          addObject(hClusterTopologyOB[iLayer][iStave][iHic]);
-          formatAxes(hClusterTopologyOB[iLayer][iStave][iHic], "Cluster toplogy (ID)", "Counts", 1, 1.10);
+        hGroupedClusterSizeSummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/GroupedClusterSize", iLayer, iStave), Form("Layer%dStave%dGroupedClusterSize", iLayer, iStave), 100, 0, 100);
+        hGroupedClusterSizeSummaryOB[iLayer][iStave]->SetTitle(Form("Grouped Cluster Size summary for Layer %d Stave %d", iLayer, iStave));
+        addObject(hGroupedClusterSizeSummaryOB[iLayer][iStave]);
+        formatAxes(hGroupedClusterSizeSummaryOB[iLayer][iStave], "Cluster size (Pixel)", "Counts", 1, 1.10);
+
+        hClusterTopologySummaryOB[iLayer][iStave] = new TH1D(Form("Layer%d/Stave%d/ClusterTopology", iLayer, iStave), Form("Layer%dStave%dClusterTopology", iLayer, iStave), 300, 0, 300);
+        hClusterTopologySummaryOB[iLayer][iStave]->SetTitle(Form("Cluster Toplogy summary for Layer %d Stave %d", iLayer, iStave));
+        addObject(hClusterTopologySummaryOB[iLayer][iStave]);
+        formatAxes(hClusterTopologySummaryOB[iLayer][iStave], "Cluster toplogy (ID)", "Counts", 1, 1.10);
+
+        for (Int_t iHic = 0; iHic < mNHicPerStave[iLayer]; iHic++) { // are used in TH2 construction, no need to keep on ccdb
+          hClusterSizeOB[iLayer][iStave][iHic] = new TH1D(Form("Layer%d/Stave%d/HIC%d/ClusterSize", iLayer, iStave, iHic), Form("Layer%dStave%dHIC%dClusterSize", iLayer, iStave, iHic), 100, 0, 100);
+          hClusterSizeMonitorOB[iLayer][iStave][iHic] = new TH1D(Form("Layer%d/Stave%d/HIC%d/ClusterSizeMonitor", iLayer, iStave, iHic), Form("Layer%dStave%dHIC%dClusterSizeMonitor", iLayer, iStave, iHic), 100, 0, 100);
         }
       }
     }

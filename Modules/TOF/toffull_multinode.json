@@ -125,6 +125,22 @@
             ]
           }
         ]
+      },
+      "TOFRawHitMap": {
+        "active": "true",
+        "className": "o2::quality_control_modules::tof::CheckHitMap",
+        "moduleName": "QcTOF",
+        "policy": "OnAny",
+        "detectorName": "TOF",
+        "dataSource": [
+          {
+            "type": "Task",
+            "name": "TaskDigits",
+            "MOs": [
+              "TOFRawHitMap"
+            ]
+          }
+        ]
       }
     }
   },
