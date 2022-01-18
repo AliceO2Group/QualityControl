@@ -66,7 +66,7 @@ namespace o2::quality_control::checker
 /// \brief The class in charge of running the checks on a MonitorObject.
 ///
 /// A CheckRunner is in charge of loading/instantiating the proper checks for a given MonitorObject, to configure them
-/// and to run them on the MonitorObject in order to generate a quality.
+/// and to run them on the MonitorObjects in order to generate a quality.
 /// At the moment, a checker also stores quality in the repository.
 ///
 /// TODO Evaluate whether we should have a dedicated device to store in the database.
