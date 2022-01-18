@@ -83,7 +83,7 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   // get the input
   o2::framework::DPLRawParser parser(ctx.inputs());
   o2::ctp::gbtword80_t remnant = 0;
-  uint32_t size_gbt = 0;
+  uint32_t sizegbt = 0;
   uint32_t orbit0 = 0;
   bool first = true;
   const o2::ctp::gbtword80_t bcidmask = 0xfff;
@@ -99,9 +99,9 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
       first = false;
     }
 
-    //LOG(info) << "trigger orbit = " << triggerOrbit;
-    //mHistogram->Fill(triggerOrbit);
-    //mHistogram2->Fill(triggerBC);
+    // LOG(info) << "trigger orbit = " << triggerOrbit;
+    // mHistogram->Fill(triggerOrbit);
+    // mHistogram2->Fill(triggerBC);
 
     uint32_t payloadCTP;
     auto feeID = o2::raw::RDHUtils::getFEEID(rdh); // 0 = IR, 1 = TCR
@@ -113,7 +113,7 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     } else {
       LOG(error) << "Unxpected  CTP CRU link:" << linkCRU;
     }
-    //LOG(info) << "RDH FEEid: " << feeID << " CTP CRU link:" << linkCRU << " Orbit:" << triggerOrbit << " payloadCTP = " << payloadCTP;
+    // LOG(info) << "RDH FEEid: " << feeID << " CTP CRU link:" << linkCRU << " Orbit:" << triggerOrbit << " payloadCTP = " << payloadCTP;
     pldmask = 0;
     for (uint32_t i = 0; i < payloadCTP; i++) {
       pldmask[12 + i] = 1;
@@ -124,8 +124,7 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
     std::vector<o2::ctp::gbtword80_t> diglets;
 
     // === according to O2: Detectors/CTP/workflow/src/RawToDigitConverterSpec.cxx ========
-    for (auto payloadWord : payload) 
-    {
+    for (auto payloadWord : payload) {
       if (wordCount == 15) {
         wordCount = 0;
       } else if (wordCount > 9) {
@@ -141,66 +140,64 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
         const uint32_t nGBT = o2::ctp::NGBT;
         while (k < (nGBT - payloadCTP)) {
           std::bitset<nGBT> masksize = 0;
-          for (uint32_t j = 0; j < (payloadCTP - size_gbt); j++) {
+          for (uint32_t j = 0; j < (payloadCTP - sizegbt); j++) {
             masksize[j] = 1;
           }
-          diglet |= (gbtWord & masksize) << (size_gbt);
+          diglet |= (gbtWord & masksize) << (sizegbt);
           diglets.push_back(diglet);
           diglet = 0;
-          k += payloadCTP - size_gbt;
-          gbtWord = gbtWord >> (payloadCTP - size_gbt);
-          size_gbt = 0;
+          k += payloadCTP - sizegbt;
+          gbtWord = gbtWord >> (payloadCTP - sizegbt);
+          sizegbt = 0;
         }
-        size_gbt = nGBT - k;
+        sizegbt = nGBT - k;
         remnant = gbtWord;
         // ==========================================
-        //LOG(info) << " gbtword after:" << gbtWord;
+        // LOG(info) << " gbtword after:" << gbtWord;
         for (auto diglet : diglets) {
-          //LOG(info) << " diglet:" << diglet;
-          //LOG(info) << " pldmask:" << pldmask;
+          // LOG(info) << " diglet:" << diglet;
+          // LOG(info) << " pldmask:" << pldmask;
           o2::ctp::gbtword80_t pld = (diglet & pldmask);
           if (pld.count() == 0) {
             continue;
           }
-          //LOG(info) << "    pld:" << pld;
+          // LOG(info) << "    pld:" << pld;
           pld >>= 12;
           uint32_t bcid = (diglet & bcidmask).to_ulong();
-          //LOG(info) << " diglet:" << diglet;
-          //LOG(info) << " bcid:" << bcid;
+          // LOG(info) << " diglet:" << diglet;
+          // LOG(info) << " bcid:" << bcid;
           mHistoBC->Fill(bcid);
 
-          o2::ctp::gbtword80_t InputMask = 0;
-          if (linkCRU == o2::ctp::GBTLinkIDIntRec)
-          {
-            InputMask = pld;
-            //LOG(info) << " InputMask:" << InputMask;
-            for (Int_t i = 0; i<payloadCTP; i++)
-            {
-              if (InputMask[i]!=0) {mHistoInputs->Fill(i);}
+          o2::ctp::gbtword80_t inputMask = 0;
+          if (linkCRU == o2::ctp::GBTLinkIDIntRec) {
+            inputMask = pld;
+            // LOG(info) << " InputMask:" << inputMask;
+            for (Int_t i = 0; i < payloadCTP; i++) {
+              if (inputMask[i] != 0) {
+                mHistoInputs->Fill(i);
+              }
             }
           }
 
-          o2::ctp::gbtword80_t ClassMask = 0;
-          if (linkCRU == o2::ctp::GBTLinkIDClassRec)
-          {
-            ClassMask = pld;
-            //LOG(info) << " ClassMask:" << ClassMask;
-            for (Int_t i = 0; i<payloadCTP; i++)
-            {
-              if (ClassMask[i]!=0) {mHistoClasses->Fill(i);}
+          o2::ctp::gbtword80_t classMask = 0;
+          if (linkCRU == o2::ctp::GBTLinkIDClassRec) {
+            classMask = pld;
+            // LOG(info) << " ClassMask:" << classMask;
+            for (Int_t i = 0; i < payloadCTP; i++) {
+              if (classMask[i] != 0) {
+                mHistoClasses->Fill(i);
+              }
             }
           }
-
         }
         gbtWord = 0;
       } else {
         for (int i = 0; i < 8; i++) {
-            gbtWord[wordCount * 8 + i] = bool(int(payloadWord) & (1 << i));
+          gbtWord[wordCount * 8 + i] = bool(int(payloadWord) & (1 << i));
         }
         wordCount++;
       }
     }
-
   }
 }
 
