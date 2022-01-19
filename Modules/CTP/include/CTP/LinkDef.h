@@ -5,6 +5,4 @@
 
 #pragma link C++ class o2::quality_control_modules::ctp::RawDataQcTask + ;
 
-#pragma link C++ class o2::quality_control_modules::ctp::RawDataQcCheck + ;
-
 #endif

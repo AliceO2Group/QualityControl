@@ -29,21 +29,16 @@
 namespace o2::quality_control_modules::ctp
 {
 
-RawDataQcTask::~RawDataQcTask()
+CTPRawDataReaderTask::~CTPRawDataReaderTask()
 {
   delete mHistoBC;
   delete mHistoInputs;
   delete mHistoClasses;
 }
 
-void RawDataQcTask::initialize(o2::framework::InitContext& /*ctx*/)
+void CTPRawDataReaderTask::initialize(o2::framework::InitContext& /*ctx*/)
 {
-  ILOG(Info, Support) << "initialize RawDataQcTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
-
-  // this is how to get access to custom parameters defined in the config file at qc.tasks.<task_name>.taskParameters
-  if (auto param = mCustomParameters.find("myOwnKey"); param != mCustomParameters.end()) {
-    ILOG(Info, Devel) << "Custom parameter - myOwnKey: " << param->second << ENDM;
-  }
+  ILOG(Info, Support) << "initialize CTPRawDataReaderTask" << ENDM; // QcInfoLogger is used. FairMQ logs will go to there as well.
 
   mHistoBC = new TH1F("histobc", "BC distribution", 3564, 0, 3564);
   mHistoInputs = new TH1F("inputs", "Inputs distribution", 48, 0, 48);
@@ -51,21 +46,9 @@ void RawDataQcTask::initialize(o2::framework::InitContext& /*ctx*/)
   getObjectsManager()->startPublishing(mHistoBC);
   getObjectsManager()->startPublishing(mHistoInputs);
   getObjectsManager()->startPublishing(mHistoClasses);
-  try {
-    getObjectsManager()->addMetadata(mHistoBC->GetName(), "custom", "34");
-    getObjectsManager()->addMetadata(mHistoInputs->GetName(), "custom", "34");
-    getObjectsManager()->addMetadata(mHistoClasses->GetName(), "custom", "34");
-  } catch (...) {
-    // some methods can throw exceptions, it is indicated in their doxygen.
-    // In case it is recoverable, it is recommended to catch them and do something meaningful.
-    // Here we don't care that the metadata was not added and just log the event.
-    ILOG(Warning, Support) << "Metadata could not be added to " << mHistoBC->GetName() << ENDM;
-    ILOG(Warning, Support) << "Metadata could not be added to " << mHistoInputs->GetName() << ENDM;
-    ILOG(Warning, Support) << "Metadata could not be added to " << mHistoClasses->GetName() << ENDM;
-  }
 }
 
-void RawDataQcTask::startOfActivity(Activity& activity)
+void CTPRawDataReaderTask::startOfActivity(Activity& activity)
 {
   ILOG(Info, Support) << "startOfActivity " << activity.mId << ENDM;
   mHistoBC->Reset();
@@ -73,12 +56,12 @@ void RawDataQcTask::startOfActivity(Activity& activity)
   mHistoClasses->Reset();
 }
 
-void RawDataQcTask::startOfCycle()
+void CTPRawDataReaderTask::startOfCycle()
 {
   ILOG(Info, Support) << "startOfCycle" << ENDM;
 }
 
-void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
+void CTPRawDataReaderTask::monitorData(o2::framework::ProcessingContext& ctx)
 {
   // get the input
   o2::framework::DPLRawParser parser(ctx.inputs());
@@ -201,17 +184,17 @@ void RawDataQcTask::monitorData(o2::framework::ProcessingContext& ctx)
   }
 }
 
-void RawDataQcTask::endOfCycle()
+void CTPRawDataReaderTask::endOfCycle()
 {
   ILOG(Info, Support) << "endOfCycle" << ENDM;
 }
 
-void RawDataQcTask::endOfActivity(Activity& /*activity*/)
+void CTPRawDataReaderTask::endOfActivity(Activity& /*activity*/)
 {
   ILOG(Info, Support) << "endOfActivity" << ENDM;
 }
 
-void RawDataQcTask::reset()
+void CTPRawDataReaderTask::reset()
 {
   // clean all the monitor objects here
 

@@ -16,7 +16,7 @@
         "url": "infologger:///debug?qc"
       },
       "consul": {
-        "url": "http://consul-test.cern.ch:8500"
+        "url": ""
       },
       "conditionDB": {
         "url": "ccdb-test.cern.ch:8080"
@@ -38,31 +38,16 @@
         "taskParameters": {
           "myOwnKey": "myOwnValue"
         },
-        "location": "remote",
-        "saveObjectsToFile": "test.root",      "": "~/alice/QualityControl/Modules/CTP/"
+        "location": "remote"
       }
     },
-    "checks": {
-      "RawDataQcCheck": {
-        "active": "true",
-        "className": "o2::quality_control_modules::ctp::RawDataQcCheck",
-        "moduleName": "QcCTP",
-        "policy": "OnAny",
-        "detectorName": "CTP",
-        "dataSource": [{
-          "type": "Task",
-          "name": "MyRawDataQcTask",
-          "MOs": ["example2"]
-        }]
-      }
-    }
   },
   "dataSamplingPolicies": [
     {
-      "id": "tst-raw",
+      "id": "ctp-raw",
       "active": "true",
       "machines": [],
-      "query": "random:TST/RAWDATA/0",
+      "query": "random:CTP/RAWDATA/0",
       "samplingConditions": [
         {
           "condition": "random",

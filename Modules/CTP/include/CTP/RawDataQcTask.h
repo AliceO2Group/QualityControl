@@ -28,13 +28,13 @@ namespace o2::quality_control_modules::ctp
 
 /// \brief Example Quality Control DPL Task
 /// \author My Name
-class RawDataQcTask final : public TaskInterface
+class CTPRawDataReaderTask final : public TaskInterface
 {
  public:
   /// \brief Constructor
-  RawDataQcTask() = default;
+  CTPRawDataReaderTask() = default;
   /// Destructor
-  ~RawDataQcTask() override;
+  ~CTPRawDataReaderTask() override;
 
   // Definition of the methods for the template method pattern
   void initialize(o2::framework::InitContext& ctx) override;
