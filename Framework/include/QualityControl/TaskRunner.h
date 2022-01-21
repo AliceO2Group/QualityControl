@@ -90,7 +90,7 @@ class TaskRunner : public framework::Task
   const framework::Options& getOptions() const { return mTaskConfig.options; };
 
   /// \brief Data Processor Label to identify all Task Runners
-  static framework::DataProcessorLabel getLabel() { return { "qc-task-runner" }; }
+  static framework::DataProcessorLabel getLabel() { return { "qc-task" }; }
   /// \brief ID string for all TaskRunner devices
   static std::string createTaskRunnerIdString();
   /// \brief Unified DataOrigin for Quality Control tasks

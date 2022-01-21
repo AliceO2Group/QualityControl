@@ -70,7 +70,7 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "MultiNodeLocal",
+          "name": "MultiNodeLocalTest@UNIQUE_PORT_1@",
           "MOs": ["example"]
         }]
       },
@@ -82,7 +82,7 @@
         "detectorName": "TST",
         "dataSource": [{
           "type": "Task",
-          "name": "MultiNodeRemote",
+          "name": "MultiNodeRemoteTest@UNIQUE_PORT_2@",
           "MOs": ["example"]
         }]
       }
