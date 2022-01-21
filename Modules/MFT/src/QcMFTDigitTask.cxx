@@ -317,7 +317,7 @@ void QcMFTDigitTask::resetArrays(int* array1, int* array2, int* array3)
 {
 
   for (int iChip = 0; iChip < numberOfChips; iChip++) {
-    array[iChip] = -1;
+    array1[iChip] = -1;
     array2[iChip] = -1;
   }
 
