@@ -94,7 +94,7 @@ class QcMFTDigitTask final : public TaskInterface
   int getChipIndexPixelOccupancyMap(int vectorIndex);
   void getNameOfChipOccupancyMap(TString& folderName, TString& histogramName, int iOccupancyMapIndex);
   void getNameOfPixelOccupancyMap(TString& folderName, TString& histogramName, int iChipIndex);
-  void resetArrays(int* array[], int* array2[], int* array3[]);
+  void resetArrays(int* array1, int* array2, int* array3);
   void getChipMapData();
 };
 
